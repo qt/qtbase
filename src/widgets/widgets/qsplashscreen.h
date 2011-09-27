@@ -71,11 +71,6 @@ public Q_SLOTS:
     void showMessage(const QString &message, int alignment = Qt::AlignLeft,
                   const QColor &color = Qt::black);
     void clearMessage();
-#ifdef QT3_SUPPORT
-    inline QT_MOC_COMPAT void message(const QString &str, int alignment = Qt::AlignLeft,
-        const QColor &color = Qt::black) { showMessage(str, alignment, color); }
-    inline QT_MOC_COMPAT void clear() { clearMessage(); }
-#endif
 
 Q_SIGNALS:
     void messageChanged(const QString &message);

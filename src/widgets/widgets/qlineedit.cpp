@@ -291,67 +291,6 @@ QLineEdit::QLineEdit(const QString& contents, QWidget* parent)
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a line edit with no text.
-
-    The maximum text length is set to 32767 characters.
-
-    The \a parent and \a name arguments are sent to the QWidget constructor.
-
-    \sa setText(), setMaxLength()
-*/
-QLineEdit::QLineEdit(QWidget* parent, const char* name)
-    : QWidget(*new QLineEditPrivate, parent,0)
-{
-    Q_D(QLineEdit);
-    setObjectName(QString::fromAscii(name));
-    d->init(QString());
-}
-
-/*!
-    Constructs a line edit containing the text \a contents.
-
-    The cursor position is set to the end of the line and the maximum
-    text length to 32767 characters.
-
-    The \a parent and \a name arguments are sent to the QWidget
-    constructor.
-
-    \sa text(), setMaxLength()
-*/
-
-QLineEdit::QLineEdit(const QString& contents, QWidget* parent, const char* name)
-    : QWidget(*new QLineEditPrivate, parent, 0)
-{
-    Q_D(QLineEdit);
-    setObjectName(QString::fromAscii(name));
-    d->init(contents);
-}
-
-/*!
-    Constructs a line edit with an input \a inputMask and the text \a
-    contents.
-
-    The cursor position is set to the end of the line and the maximum
-    text length is set to the length of the mask (the number of mask
-    characters and separators).
-
-    The \a parent and \a name arguments are sent to the QWidget
-    constructor.
-
-    \sa setMask() text()
-*/
-QLineEdit::QLineEdit(const QString& contents, const QString &inputMask, QWidget* parent, const char* name)
-    : QWidget(*new QLineEditPrivate, parent, 0)
-{
-    Q_D(QLineEdit);
-    setObjectName(QString::fromAscii(name));
-    d->init(contents);
-    d->control->setInputMask(inputMask);
-    d->control->moveCursor(d->control->nextMaskBlank(contents.length()));
-}
-#endif
 
 /*!
     Destroys the line edit.
@@ -730,33 +669,6 @@ int QLineEdit::cursorPositionAt(const QPoint &pos)
 }
 
 
-#ifdef QT3_SUPPORT
-/*! \obsolete
-
-    Use setText(), setCursorPosition() and setSelection() instead.
-*/
-bool QLineEdit::validateAndSet(const QString &newText, int newPos,
-                                 int newMarkAnchor, int newMarkDrag)
-{
-    // The suggested functions above in the docs don't seem to validate,
-    // below code tries to mimic previous behaviour.
-    QString oldText = text();
-    setText(newText);
-    if(!hasAcceptableInput()){
-        setText(oldText);
-        return false;
-    }
-    int selstart = qMin(newMarkAnchor, newMarkDrag);
-    int sellength = qAbs(newMarkAnchor - newMarkDrag);
-    if (selstart == newPos) {
-        selstart = qMax(newMarkAnchor, newMarkDrag);
-        sellength = -sellength;
-    }
-    //setSelection also set the position
-    setSelection(selstart, sellength);
-    return true;
-}
-#endif //QT3_SUPPORT
 
 /*!
     \property QLineEdit::alignment
@@ -986,54 +898,6 @@ int QLineEdit::selectionStart() const
 }
 
 
-#ifdef QT3_SUPPORT
-
-/*!
-    \fn void QLineEdit::lostFocus()
-
-    This signal is emitted when the line edit has lost focus.
-
-    Use editingFinished() instead
-    \sa editingFinished(), returnPressed()
-*/
-
-/*!
-    Use isModified() instead.
-*/
-bool QLineEdit::edited() const { return isModified(); }
-/*!
-    Use setModified()  or setText().
-*/
-void QLineEdit::setEdited(bool on) { setModified(on); }
-
-/*!
-    There exists no equivalent functionality in Qt 4.
-*/
-int QLineEdit::characterAt(int xpos, QChar *chr) const
-{
-    Q_D(const QLineEdit);
-    int pos = d->xToPos(xpos + contentsRect().x() - d->hscroll + d->horizontalMargin);
-    QString txt = d->control->text();
-    if (chr && pos < (int) txt.length())
-        *chr = txt.at(pos);
-    return pos;
-
-}
-
-/*!
-    Use selectedText() and selectionStart() instead.
-*/
-bool QLineEdit::getSelection(int *start, int *end)
-{
-    Q_D(QLineEdit);
-    if (d->control->hasSelectedText() && start && end) {
-        *start = selectionStart();
-        *end = *start + selectedText().length();
-        return true;
-    }
-    return false;
-}
-#endif
 
 
 /*!
@@ -1857,9 +1721,6 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
             if (hasAcceptableInput() || d->control->fixup())
                 emit editingFinished();
-#ifdef QT3_SUPPORT
-        emit lostFocus();
-#endif
     }
 #ifdef Q_WS_MAC
     if (d->control->echoMode() == Password || d->control->echoMode() == NoEcho)

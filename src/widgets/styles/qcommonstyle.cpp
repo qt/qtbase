@@ -279,116 +279,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         }
         break;
 #endif // QT_NO_PROGRESSBAR
-#ifdef QT3_SUPPORT
-    case PE_Q3CheckListController:
-#ifndef QT_NO_IMAGEFORMAT_XPM
-        p->drawPixmap(opt->rect.topLeft(), QPixmap(check_list_controller_xpm));
-#endif
-        break;
-    case PE_Q3CheckListExclusiveIndicator:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if (lv->items.isEmpty())
-                return;
-            int x = lv->rect.x(),
-                y = lv->rect.y();
-#define INTARRLEN(x) sizeof(x)/(sizeof(int)*2)
-            static const int pts1[] = {                // dark lines
-                1,9, 1,8, 0,7, 0,4, 1,3, 1,2, 2,1, 3,1, 4,0, 7,0, 8,1, 9,1 };
-            static const int pts2[] = {                // black lines
-                2,8, 1,7, 1,4, 2,3, 2,2, 3,2, 4,1, 7,1, 8,2, 9,2 };
-            static const int pts3[] = {                // background lines
-                2,9, 3,9, 4,10, 7,10, 8,9, 9,9, 9,8, 10,7, 10,4, 9,3 };
-            static const int pts4[] = {                // white lines
-                2,10, 3,10, 4,11, 7,11, 8,10, 9,10, 10,9, 10,8, 11,7,
-                11,4, 10,3, 10,2 };
-            // static const int pts5[] = {                // inner fill
-            //    4,2, 7,2, 9,4, 9,7, 7,9, 4,9, 2,7, 2,4 };
-            //QPolygon a;
-
-            if (lv->state & State_Enabled)
-                p->setPen(lv->palette.text().color());
-            else
-                p->setPen(QPen(lv->viewportPalette.color(QPalette::Disabled, QPalette::Text)));
-            QPolygon a(INTARRLEN(pts1), pts1);
-            a.translate(x, y);
-            //p->setPen(pal.dark());
-            p->drawPolyline(a);
-            a.setPoints(INTARRLEN(pts2), pts2);
-            a.translate(x, y);
-            p->drawPolyline(a);
-            a.setPoints(INTARRLEN(pts3), pts3);
-            a.translate(x, y);
-            //                p->setPen(black);
-            p->drawPolyline(a);
-            a.setPoints(INTARRLEN(pts4), pts4);
-            a.translate(x, y);
-            //                        p->setPen(blue);
-            p->drawPolyline(a);
-            //                a.setPoints(INTARRLEN(pts5), pts5);
-            //                a.translate(x, y);
-            //        QColor fillColor = isDown() ? g.background() : g.base();
-            //        p->setPen(fillColor);
-            //        p->setBrush(fillColor);
-            //        p->drawPolygon(a);
-            if (opt->state & State_On) {
-                p->setPen(Qt::NoPen);
-                p->setBrush(opt->palette.text());
-                p->drawRect(x + 5, y + 4, 2, 4);
-                p->drawRect(x + 4, y + 5, 4, 2);
-            }
-#undef INTARRLEN
-        }
-        break;
-    case PE_Q3CheckListIndicator:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if(lv->items.isEmpty())
-                break;
-            QStyleOptionQ3ListViewItem item = lv->items.at(0);
-            int x = lv->rect.x(),
-                y = lv->rect.y(),
-                w = lv->rect.width(),
-                h = lv->rect.width(),
-             marg = lv->itemMargin;
-
-            if (lv->state & State_Enabled)
-                p->setPen(QPen(lv->palette.text().color(), 2));
-            else
-                p->setPen(QPen(lv->viewportPalette.color(QPalette::Disabled, QPalette::Text), 2));
-            if (opt->state & State_Selected && !lv->rootIsDecorated
-                && !(item.features & QStyleOptionQ3ListViewItem::ParentControl)) {
-                p->fillRect(0, 0, x + marg + w + 4, item.height,
-                            lv->palette.brush(QPalette::Highlight));
-                if (item.state & State_Enabled)
-                    p->setPen(QPen(lv->palette.highlightedText().color(), 2));
-            }
-
-            if (lv->state & State_NoChange)
-                p->setBrush(lv->palette.brush(QPalette::Button));
-            p->drawRect(x + marg, y + 2, w - 4, h - 4);
-            /////////////////////
-                ++x;
-                ++y;
-                if (lv->state & State_On || lv->state & State_NoChange) {
-                    QLineF lines[7];
-                    int i,
-                        xx = x + 1 + marg,
-                        yy = y + 5;
-                    for (i = 0; i < 3; ++i) {
-                        lines[i] = QLineF(xx, yy, xx, yy + 2);
-                        ++xx;
-                        ++yy;
-                    }
-                    yy -= 2;
-                    for (i = 3; i < 7; ++i) {
-                        lines[i] = QLineF(xx, yy, xx, yy + 2);
-                        ++xx;
-                        --yy;
-                    }
-                    p->drawLines(lines, 7);
-                }
-        }
-        break;
-#endif // QT3_SUPPORT
     case PE_IndicatorBranch: {
         int mid_h = opt->rect.x() + opt->rect.width() / 2;
         int mid_v = opt->rect.y() + opt->rect.height() / 2;
@@ -420,12 +310,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (opt->state & (State_Open | State_Children | State_Item | State_Sibling))
             p->drawLine(mid_h, opt->rect.y(), mid_h, bef_v);
         break; }
-#ifdef QT3_SUPPORT
-    case PE_Q3Separator:
-        qDrawShadeLine(p, opt->rect.left(), opt->rect.top(), opt->rect.right(), opt->rect.bottom(),
-                       opt->palette, opt->state & State_Sunken, 1, 0);
-        break;
-#endif // QT3_SUPPORT
     case PE_FrameStatusBarItem:
         qDrawShadeRect(p, opt->rect, opt->palette, true, 1, 0, 0);
         break;
@@ -2483,21 +2367,6 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_PROGRESSBAR
-#ifdef QT3_SUPPORT
-    case SE_Q3DockWindowHandleRect:
-        if (const QStyleOptionQ3DockWindow *dw = qstyleoption_cast<const QStyleOptionQ3DockWindow *>(opt)) {
-            if (!dw->docked || !dw->closeEnabled)
-                r.setRect(0, 0, dw->rect.width(), dw->rect.height());
-            else {
-                if (dw->state & State_Horizontal)
-                    r.setRect(0, 15, dw->rect.width(), dw->rect.height() - 15);
-                else
-                    r.setRect(0, 1, dw->rect.width() - 15, dw->rect.height() - 1);
-            }
-            r = visualRect(opt->direction, opt->rect, r);
-        }
-        break;
-#endif // QT3_SUPPORT
 #ifndef QT_NO_COMBOBOX
     case SE_ComboBoxFocusRect:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
@@ -3244,14 +3113,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_NO_SCROLLBAR
-#ifdef QT3_SUPPORT
-    case CC_Q3ListView:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if (lv->subControls & SC_Q3ListView)
-                p->fillRect(lv->rect, lv->viewportPalette.brush(lv->viewportBGRole));
-        }
-        break;
-#endif // QT3_SUPPORT
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -3835,14 +3696,6 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
 #endif // QT_NO_TOOLBUTTON
-#ifdef QT3_SUPPORT
-    case CC_Q3ListView:
-        if (const QStyleOptionQ3ListView *lv = qstyleoption_cast<const QStyleOptionQ3ListView *>(opt)) {
-            if (pt.x() >= 0 && pt.x() < lv->treeStepSize)
-                sc = SC_Q3ListViewExpand;
-        }
-        break;
-#endif // QT3_SUPPORT
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -4909,11 +4762,6 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QEvent::MouseButtonPress;
         break;
 
-#ifdef QT3_SUPPORT
-    case SH_GUIStyle:
-        ret = Qt::WindowsStyle;
-        break;
-#endif
 
     case SH_TabBar_Alignment:
     case SH_Header_ArrowAlignment:

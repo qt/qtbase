@@ -5816,9 +5816,6 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
     if (w->data->fnt == font)
         return;
 
-#ifdef QT3_SUPPORT
-    QFont old = w->data->fnt;
-#endif
     w->data->fnt = font;
 #if defined(Q_WS_X11)
     // make sure the font set on this widget is associated with the correct screen
@@ -5827,9 +5824,6 @@ void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const
 
     QEvent e(QEvent::FontChange);
     QApplication::sendEvent(w, &e);
-#ifdef QT3_SUPPORT
-    w->fontChange(old);
-#endif
 }
 
 void QStyleSheetStyle::saveWidgetFont(QWidget* w, const QFont& font) const

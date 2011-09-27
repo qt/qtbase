@@ -77,9 +77,6 @@ protected:
 #endif
 
 public:
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QSizeGrip(QWidget *parent, const char *name);
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QSizeGrip)

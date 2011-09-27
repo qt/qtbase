@@ -202,12 +202,6 @@ protected:
     void changeEvent(QEvent *);
     void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
-#ifdef QT3_SUPPORT
-public Q_SLOTS:
-    QT_MOC_COMPAT void setCurrentTab(int index) { setCurrentIndex(index); }
-Q_SIGNALS:
-    QT_MOC_COMPAT void selected(int);
-#endif
 
     friend class QAccessibleTabBar;
 private:

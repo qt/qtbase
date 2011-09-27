@@ -556,66 +556,6 @@ QBoxLayout::QBoxLayout(Direction dir, QWidget *parent)
     d->dir = dir;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a new QBoxLayout with direction \a dir and main widget \a
-    parent. \a parent may not be 0.
-
-    The \a margin is the number of pixels between the edge of the
-    widget and its managed children. The \a spacing is the default
-    number of pixels between neighboring children. If \a spacing is -1
-    the value of \a margin is used for \a spacing.
-
-    \a name is the internal object name.
-
-    \sa direction()
-*/
-QBoxLayout::QBoxLayout(QWidget *parent, Direction dir,
-                        int margin, int spacing, const char *name)
-    : QLayout(*new QBoxLayoutPrivate, 0, parent)
-{
-    Q_D(QBoxLayout);
-    d->dir = dir;
-    setMargin(margin);
-    setObjectName(QString::fromAscii(name));
-    setSpacing(spacing<0 ? margin : spacing);
-}
-
-/*!
-    Constructs a new QBoxLayout called \a name, with direction \a dir,
-    and inserts it into \a parentLayout.
-
-    The \a spacing is the default number of pixels between neighboring
-    children. If \a spacing is -1, the layout will inherit its
-    parent's spacing().
-*/
-QBoxLayout::QBoxLayout(QLayout *parentLayout, Direction dir, int spacing,
-                        const char *name)
-    : QLayout(*new QBoxLayoutPrivate, parentLayout, 0)
-{
-    Q_D(QBoxLayout);
-    d->dir = dir;
-    setObjectName(QString::fromAscii(name));
-    setSpacing(spacing);
-}
-
-/*!
-    Constructs a new QBoxLayout called \a name, with direction \a dir.
-
-    If \a spacing is -1, the layout will inherit its parent's
-    spacing(); otherwise \a spacing is used.
-
-    You must insert this box into another layout.
-*/
-QBoxLayout::QBoxLayout(Direction dir, int spacing, const char *name)
-    : QLayout(*new QBoxLayoutPrivate,0, 0)
-{
-    Q_D(QBoxLayout);
-    d->dir = dir;
-    setObjectName(QString::fromAscii(name));
-    setSpacing(spacing);
-}
-#endif // QT3_SUPPORT
 
 
 /*!
@@ -1337,60 +1277,6 @@ QHBoxLayout::QHBoxLayout()
 
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a new top-level horizontal box called \a name, with
-    parent \a parent.
-
-    The \a margin is the number of pixels between the edge of the
-    widget and its managed children. The \a spacing is the default
-    number of pixels between neighboring children. If \a spacing is -1
-    the value of \a margin is used for \a spacing.
-*/
-QHBoxLayout::QHBoxLayout(QWidget *parent, int margin,
-                         int spacing, const char *name)
-    : QBoxLayout(LeftToRight, parent)
-{
-    setMargin(margin);
-    setSpacing(spacing<0 ? margin : spacing);
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    Constructs a new horizontal box called name \a name and adds it to
-    \a parentLayout.
-
-    The \a spacing is the default number of pixels between neighboring
-    children. If \a spacing is -1, this QHBoxLayout will inherit its
-    parent's spacing().
-*/
-QHBoxLayout::QHBoxLayout(QLayout *parentLayout, int spacing,
-                          const char *name)
-    : QBoxLayout(LeftToRight)
-{
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-    if (parentLayout) {
-        setParent(parentLayout);
-        parentLayout->addItem(this);
-    }
-}
-
-/*!
-    Constructs a new horizontal box called name \a name. You must add
-    it to another layout.
-
-    The \a spacing is the default number of pixels between neighboring
-    children. If \a spacing is -1, this QHBoxLayout will inherit its
-    parent's spacing().
-*/
-QHBoxLayout::QHBoxLayout(int spacing, const char *name)
-    : QBoxLayout(LeftToRight)
-{
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 
 /*!
@@ -1451,62 +1337,6 @@ QVBoxLayout::QVBoxLayout()
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a new top-level vertical box called \a name, with
-    parent \a parent.
-
-    The \a margin is the number of pixels between the edge of the
-    widget and its managed children. The \a spacing is the default
-    number of pixels between neighboring children. If \a spacing is -1
-    the value of \a margin is used for \a spacing.
-*/
-QVBoxLayout::QVBoxLayout(QWidget *parent, int margin, int spacing,
-                         const char *name)
-    : QBoxLayout(TopToBottom, parent)
-{
-    setMargin(margin);
-    setSpacing(spacing<0 ? margin : spacing);
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    Constructs a new vertical box called name \a name and adds it to
-    \a parentLayout.
-
-    The \a spacing is the default number of pixels between neighboring
-    children. If \a spacing is -1, this QVBoxLayout will inherit its
-    parent's spacing().
-*/
-QVBoxLayout::QVBoxLayout(QLayout *parentLayout, int spacing,
-                          const char *name)
-    : QBoxLayout(TopToBottom)
-{
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-    if (parentLayout) {
-        setParent(parentLayout);
-        parentLayout->addItem(this);
-    }
-}
-
-/*!
-    Constructs a new vertical box called name \a name. You must add
-    it to another layout.
-
-    The \a spacing is the default number of pixels between neighboring
-    children. If \a spacing is -1, this QVBoxLayout will inherit its
-    parent's spacing().
-*/
-QVBoxLayout::QVBoxLayout(int spacing, const char *name)
-    : QBoxLayout(TopToBottom)
-{
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-}
-
-
-#endif
 
 /*!
     Destroys this box layout.

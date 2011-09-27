@@ -90,11 +90,6 @@ class Q_WIDGETS_EXPORT QLineEdit : public QWidget
 public:
     explicit QLineEdit(QWidget* parent=0);
     explicit QLineEdit(const QString &, QWidget* parent=0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QLineEdit(QWidget* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QLineEdit(const QString &, QWidget* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QLineEdit(const QString &, const QString &, QWidget* parent=0, const char* name=0);
-#endif
     ~QLineEdit();
 
     QString text() const;
@@ -218,9 +213,6 @@ protected:
 #ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *);
 #endif
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void repaintArea(int, int) { update(); }
-#endif
 
     void inputMethodEvent(QInputMethodEvent *);
     void initStyleOption(QStyleOptionFrame *option) const;
@@ -231,45 +223,6 @@ protected:
     QRect cursorRect() const;
 
 public:
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void clearModified() { setModified(false); }
-    inline QT3_SUPPORT void cursorLeft(bool mark, int steps = 1) { cursorForward(mark, -steps); }
-    inline QT3_SUPPORT void cursorRight(bool mark, int steps = 1) { cursorForward(mark, steps); }
-    QT3_SUPPORT bool validateAndSet(const QString &, int, int, int);
-    inline QT3_SUPPORT bool frame() const { return hasFrame(); }
-#ifndef QT_NO_VALIDATOR
-    inline QT3_SUPPORT void clearValidator() { setValidator(0); }
-#endif
-    inline QT3_SUPPORT bool hasMarkedText() const { return hasSelectedText(); }
-    inline QT3_SUPPORT QString markedText() const { return selectedText(); }
-    QT3_SUPPORT bool edited() const;
-    QT3_SUPPORT void setEdited(bool);
-    QT3_SUPPORT int characterAt(int, QChar*) const;
-    QT3_SUPPORT bool getSelection(int *, int *);
-
-    QT3_SUPPORT void setFrameRect(QRect) {}
-    QT3_SUPPORT QRect frameRect() const { return QRect(); }
-    enum DummyFrame { Box, Sunken, Plain, Raised, MShadow, NoFrame, Panel, StyledPanel,
-                      HLine, VLine, GroupBoxPanel, WinPanel, ToolBarPanel, MenuBarPanel,
-                      PopupPanel, LineEditPanel, TabWidgetPanel, MShape };
-    QT3_SUPPORT void setFrameShadow(DummyFrame) {}
-    QT3_SUPPORT DummyFrame frameShadow() const { return Plain; }
-    QT3_SUPPORT void setFrameShape(DummyFrame) {}
-    QT3_SUPPORT DummyFrame frameShape() const { return NoFrame; }
-    QT3_SUPPORT void setFrameStyle(int) {}
-    QT3_SUPPORT int frameStyle() const  { return 0; }
-    QT3_SUPPORT int frameWidth() const { return 0; }
-    QT3_SUPPORT void setLineWidth(int) {}
-    QT3_SUPPORT int lineWidth() const { return 0; }
-    QT3_SUPPORT void setMargin(int margin) { setContentsMargins(margin, margin, margin, margin); }
-    QT3_SUPPORT int margin() const
-    { int margin; int dummy; getContentsMargins(&margin, &dummy, &dummy, &dummy);  return margin; }
-    QT3_SUPPORT void setMidLineWidth(int) {}
-    QT3_SUPPORT int midLineWidth() const { return 0; }
-
-Q_SIGNALS:
-    QT_MOC_COMPAT void lostFocus();
-#endif
 
 private:
     friend class QAbstractSpinBox;

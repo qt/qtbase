@@ -747,32 +747,6 @@ void QGroupBox::mouseReleaseEvent(QMouseEvent *event)
         update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QGroupBox::QGroupBox(QWidget *parent, const char *name)
-    : QWidget(*new QGroupBoxPrivate, parent, 0)
-{
-    Q_D(QGroupBox);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QGroupBox::QGroupBox(const QString &title, QWidget *parent, const char *name)
-    : QWidget(*new QGroupBoxPrivate, parent, 0)
-{
-    Q_D(QGroupBox);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-    setTitle(title);
-}
-#endif // QT3_SUPPORT
 
 QT_END_NAMESPACE
 

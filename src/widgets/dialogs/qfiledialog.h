@@ -198,14 +198,6 @@ Q_SIGNALS:
     void filterSelected(const QString &filter);
 
 public:
-#ifdef QT3_SUPPORT
-    typedef FileMode Mode;
-    inline QT3_SUPPORT void setMode(FileMode m) { setFileMode(m); }
-    inline QT3_SUPPORT FileMode mode() const { return fileMode(); }
-    inline QT3_SUPPORT void setDir(const QString &directory) { setDirectory(directory); }
-    inline QT3_SUPPORT void setDir( const QDir &directory ) { setDirectory(directory); }
-    QT3_SUPPORT QString selectedFile() const;
-#endif
 
     static QString getOpenFileName(QWidget *parent = 0,
                                    const QString &caption = QString(),
@@ -233,49 +225,6 @@ public:
                                         QString *selectedFilter = 0,
                                         Options options = 0);
 
-#ifdef QT3_SUPPORT
-    inline static QString QT3_SUPPORT getOpenFileName(const QString &dir,
-                                                    const QString &filter = QString(),
-                                                    QWidget *parent = 0, const char* name = 0,
-                                                    const QString &caption = QString(),
-                                                    QString *selectedFilter = 0,
-                                                    bool resolveSymlinks = true)
-        { Q_UNUSED(name);
-          return getOpenFileName(parent, caption, dir, filter, selectedFilter,
-                                 resolveSymlinks ? Option(0) : DontResolveSymlinks); }
-
-    inline static QString QT3_SUPPORT getSaveFileName(const QString &dir,
-                                                    const QString &filter = QString(),
-                                                    QWidget *parent = 0, const char* name = 0,
-                                                    const QString &caption = QString(),
-                                                    QString *selectedFilter = 0,
-                                                    bool resolveSymlinks = true)
-        { Q_UNUSED(name);
-          return getSaveFileName(parent, caption, dir, filter, selectedFilter,
-                                 resolveSymlinks ? Option(0) : DontResolveSymlinks); }
-
-    inline static QString QT3_SUPPORT getExistingDirectory(const QString &dir,
-                                                         QWidget *parent = 0,
-                                                         const char* name = 0,
-                                                         const QString &caption = QString(),
-                                                         bool dirOnly = true,
-                                                         bool resolveSymlinks = true)
-        { Q_UNUSED(name);
-          return getExistingDirectory(parent, caption, dir,
-                                      Options((resolveSymlinks ? Option(0) : DontResolveSymlinks)
-                                      | (dirOnly ? ShowDirsOnly : Option(0)))); }
-
-    inline static QStringList QT3_SUPPORT getOpenFileNames(const QString &filter,
-                                                         const QString &dir = QString(),
-                                                         QWidget *parent = 0,
-                                                         const char* name = 0,
-                                                         const QString &caption = QString(),
-                                                         QString *selectedFilter = 0,
-                                                         bool resolveSymlinks = true)
-        { Q_UNUSED(name);
-          return getOpenFileNames(parent, caption, dir, filter, selectedFilter,
-                                  resolveSymlinks ? Option(0) : DontResolveSymlinks); }
-#endif // QT3_SUPPORT
 
 protected:
     QFileDialog(const QFileDialogArgs &args);

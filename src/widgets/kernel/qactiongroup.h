@@ -78,12 +78,6 @@ public:
     bool isEnabled() const;
     bool isVisible() const;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void add(QAction* a) { addAction(a); }
-    inline QT3_SUPPORT void addSeparator()
-    { QAction *act = new QAction(this); act->setSeparator(true); addAction(act); }
-    inline QT3_SUPPORT bool addTo(QWidget *w) { w->addActions(actions()); return true; }
-#endif
 
 public Q_SLOTS:
     void setEnabled(bool);

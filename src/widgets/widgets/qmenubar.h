@@ -59,9 +59,6 @@ QT_MODULE(Gui)
 class QMenuBarPrivate;
 class QStyleOptionMenuItem;
 class QWindowsStyle;
-#ifdef QT3_SUPPORT
-class QMenuItem;
-#endif
 
 class Q_WIDGETS_EXPORT QMenuBar : public QWidget
 {

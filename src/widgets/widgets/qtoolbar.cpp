@@ -568,18 +568,6 @@ QToolBar::QToolBar(const QString &title, QWidget *parent)
     setWindowTitle(title);
 }
 
-#ifdef QT3_SUPPORT
-/*! \obsolete
-    Constructs a QToolBar with the given \a parent and \a name.
-*/
-QToolBar::QToolBar(QWidget *parent, const char *name)
-    : QWidget(*new QToolBarPrivate, parent, 0)
-{
-    Q_D(QToolBar);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 /*!
     Destroys the toolbar.

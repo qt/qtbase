@@ -63,10 +63,6 @@ class Q_WIDGETS_EXPORT QDialog : public QWidget
 
 public:
     explicit QDialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QDialog(QWidget *parent, const char *name, bool modal = false,
-                                  Qt::WindowFlags f = 0);
-#endif
     ~QDialog();
 
     enum DialogCode { Rejected, Accepted };

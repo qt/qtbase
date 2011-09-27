@@ -128,10 +128,6 @@ protected:
     void changeEvent(QEvent *);
     void drawFrame(QPainter *);
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QFrame(QWidget* parent, const char* name, Qt::WindowFlags f = 0);
-#endif
 
 protected:
     QFrame(QFramePrivate &dd, QWidget* parent = 0, Qt::WindowFlags f = 0);

@@ -1413,41 +1413,9 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         painter->setPen(oldPen);
         break;
     }
-#ifdef QT3_SUPPORT
-    case PE_Q3DockWindowSeparator: {
-        QPen oldPen = painter->pen();
-        painter->setPen(alphaCornerColor);
-        QRect rect = option->rect;
-        if (option->state & State_Horizontal) {
-            painter->drawLine(rect.right(), rect.top() + 2, rect.right(), rect.bottom() - 1);
-        } else {
-            painter->drawLine(rect.left() + 2, rect.bottom(), rect.right() - 1, rect.bottom());
-        }
-        painter->setPen(oldPen);
-        break;
-    }
-    case PE_Q3Separator: {
-        QPen oldPen = painter->pen();
-        painter->setPen(alphaCornerColor);
-        if ((option->state & State_Horizontal) == 0)
-            painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
-        else
-            painter->drawLine(option->rect.topRight(), option->rect.bottomRight());
-        painter->setPen(option->palette.background().color().lighter(104));
-        if ((option->state & State_Horizontal) == 0)
-            painter->drawLine(option->rect.topLeft(), option->rect.topRight());
-        else
-            painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
-        painter->setPen(oldPen);
-        break;
-    }
-#endif // QT3_SUPPORT
 #ifndef QT_NO_MAINWINDOW
     case PE_PanelMenuBar:
         if ((widget && qobject_cast<const QMainWindow *>(widget->parentWidget()))
-#ifdef QT3_SUPPORT
-            || (widget && widget->parentWidget() && widget->parentWidget()->inherits("Q3MainWindow"))
-#endif
             ) {
             // Draws the light line above and the dark line below menu bars and
             // tool bars.
@@ -1489,12 +1457,6 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     case PE_IndicatorToolBarHandle: {
         QPixmap cache;
         QRect rect = option->rect;
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3DockWindowHandle") && widget->parentWidget()->inherits("Q3DockWindow")) {
-            if (!(option->state & State_Horizontal))
-                rect.adjust(2, 0, -2, 0);
-        }
-#endif
         QString pixmapName = QStyleHelper::uniqueName(QLatin1String("toolbarhandle"), option, rect.size());
         if (!QPixmapCache::find(pixmapName, cache)) {
             cache = QPixmap(rect.size());
@@ -1865,18 +1827,6 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         points[1] = QPoint(option->rect.right() - 1, option->rect.bottom() - 1);
         painter->drawPoints(points, 2);
 
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3DockWindow")) {
-            // also draw the frame on the title bar
-            lines[0] = QLine(option->rect.left() + 1, option->rect.top(),
-                             option->rect.right() - 1, option->rect.top());
-            lines[1] = QLine(option->rect.left(), option->rect.top() + 1,
-                             option->rect.left(), titleBarStop);
-            lines[2] = QLine(option->rect.right(), option->rect.top() + 1,
-                             option->rect.right(), titleBarStop);
-            painter->drawLines(lines, 3);
-        }
-#endif
 
         // alpha corners
         painter->setPen(mergedColors(palette.highlight().color(), palette.background().color(), 55));
@@ -1886,31 +1836,11 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         points[3] = QPoint(option->rect.right() - 1, option->rect.bottom() - 2);
         painter->drawPoints(points, 4);
 
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3DockWindow")) {
-            // also draw the frame on the title bar
-            points[0] = option->rect.topLeft();
-            points[1] = option->rect.topRight();
-            painter->drawPoints(points, 2);
-        }
-#endif
 
         // upper and lower left inner
         painter->setPen(active ? mergedColors(palette.highlight().color(), palette.background().color()) : palette.background().color().darker(120));
         painter->drawLine(option->rect.left() + 1, titleBarStop, option->rect.left() + 1, option->rect.bottom() - 2);
 
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3DockWindow")) {
-            // also draw the frame on the title bar
-            lines[0] = QLine(option->rect.left() + 1, option->rect.top() + 1,
-                             option->rect.left() + 1, titleBarStop);
-            lines[1] = QLine(option->rect.right() - 1, option->rect.top() + 1,
-                             option->rect.right() - 1, titleBarStop);
-            lines[2] = QLine(option->rect.left() + 1, option->rect.top() + 1,
-                             option->rect.right() - 1, option->rect.top() + 1);
-            painter->drawLines(lines, 3);
-        }
-#endif
 
         painter->setPen(active ? mergedColors(palette.highlight().color(), palette.background().color(), 57) : palette.background().color().darker(130));
         lines[0] = QLine(option->rect.right() - 1, titleBarStop, option->rect.right() - 1, option->rect.bottom() - 2);
@@ -3260,12 +3190,6 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             if (title.isEmpty()) {
                 // Joint handle if there's no title
                 QRect r;
-#ifdef QT3_SUPPORT
-                // Q3DockWindow doesn't need space for buttons
-                if (widget && widget->inherits("Q3DockWindowTitleBar")) {
-                    r = rect;
-                } else
-#endif
                     r.setRect(titleRect.left(), titleRect.top(), titleRect.width(), titleRect.bottom());
                     int nchunks = (r.width() / handle.width()) - 1;
                     int indent = (r.width() - (nchunks * handle.width())) / 2;
@@ -4573,14 +4497,6 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             QColor textColor(active ? 0x282e40 : 0x282e40);
             QColor textAlphaColor(active ? 0x3f4862 : 0x3f4862);
 
-#ifdef  QT3_SUPPORT
-            if (widget && widget->inherits("Q3DockWindowTitleBar")) {
-                QStyleOptionDockWidgetV2 dockwidget;
-                dockwidget.QStyleOption::operator=(*option);
-                dockwidget.title = titleBar->text;
-                proxy()->drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
-            } else
-#endif // QT3_SUPPORT
 
             {
                 // Fill title bar gradient
@@ -5588,12 +5504,6 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
         ret = 4;
         break;
     case PM_TitleBarHeight:
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3DockWindowTitleBar")) {
-            // Q3DockWindow has smaller title bars than QDockWidget
-            ret = qMax(widget->fontMetrics().height(), 20);
-        } else
-#endif
         ret = qMax(widget ? widget->fontMetrics().height() :
                    (option ? option->fontMetrics.height() : 0), 30);
         break;
@@ -5728,9 +5638,6 @@ void QPlastiqueStyle::polish(QWidget *widget)
 #ifndef QT_NO_MENUBAR
         || qobject_cast<QMenuBar *>(widget)
 #endif
-#ifdef QT3_SUPPORT
-        || widget->inherits("Q3ToolBar")
-#endif
 #ifndef QT_NO_TOOLBAR
         || qobject_cast<QToolBar *>(widget)
         || (widget && qobject_cast<QToolBar *>(widget->parent()))
@@ -5789,9 +5696,6 @@ void QPlastiqueStyle::unpolish(QWidget *widget)
 #endif
 #ifndef QT_NO_TOOLBOX
         || qobject_cast<QToolBox *>(widget)
-#endif
-#ifdef QT3_SUPPORT
-        || widget->inherits("Q3ToolBar")
 #endif
 #ifndef QT_NO_TOOLBAR
         || qobject_cast<QToolBar *>(widget)

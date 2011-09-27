@@ -86,11 +86,6 @@ QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::NoSoftKey),
                                    priority(QAction::NormalPriority)
 {
-#ifdef QT3_SUPPORT
-    static int qt_static_action_id = -1;
-    param = id = --qt_static_action_id;
-    act_signal = 0;
-#endif
 #ifndef QT_NO_SHORTCUT
     shortcutId = 0;
     shortcutContext = Qt::WindowShortcut;
@@ -595,56 +590,6 @@ QFont QAction::font() const
     return d->font;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the QAction constructors that doesn't take a \a name
-    argument and call setObjectName() instead.
-*/
-QAction::QAction(QObject* parent, const char* name)
- : QObject(*(new QActionPrivate), parent)
-{
-    Q_D(QAction);
-    setObjectName(QString::fromAscii(name));
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
-}
-
-
-/*!
-    Use one of the QAction constructors that doesn't take a \a name
-    argument and call setObjectName() instead.
-*/
-QAction::QAction(const QString &text, const QKeySequence &shortcut, QObject* parent, const char* name)
- : QObject(*(new QActionPrivate), parent)
-{
-    Q_D(QAction);
-    setObjectName(QString::fromAscii(name));
-    d->text = text;
-    setShortcut(shortcut);
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
-}
-
-/*!
-    Use one of the QAction constructors that doesn't take a \a name
-    argument and call setObjectName() instead.
-*/
-QAction::QAction(const QIcon &icon, const QString &text, const QKeySequence &shortcut,
-                 QObject* parent, const char* name)
-    : QObject(*(new QActionPrivate), parent)
-{
-    Q_D(QAction);
-    setObjectName(QString::fromAscii(name));
-    d->text = text;
-    setShortcut(shortcut);
-    d->icon = icon;
-    d->group = qobject_cast<QActionGroup *>(parent);
-    if (d->group)
-        d->group->addAction(this);
-}
-#endif
 
 /*!
     Destroys the object and frees allocated resources.
@@ -1255,10 +1200,6 @@ void QAction::activate(ActionEvent event)
         }
         if (guard)
             emit triggered(d->checked);
-#ifdef QT3_SUPPORT
-        if (guard)
-            emit activated(d->param);
-#endif
         QMetaObject::removeGuard(&guard);
     } else if(event == Hover) {
         emit hovered();

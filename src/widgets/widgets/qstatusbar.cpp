@@ -218,55 +218,6 @@ QRect QStatusBarPrivate::messageRect() const
     Status Bar}, {Application Example}
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a status bar with a size grip and the given \a parent
-    and object \a name.
-
-    Use the QStatusBar() constructor and the QObject::setObjectName()
-    function instead.
-
-    \oldcode
-        QStatusBar *myStatusBar = new QStatusBar(parent, name);
-    \newcode
-        QStatusBar *myStatusBar = new QStatusBar(parent);
-        myStatusBar->setObjectName(name);
-    \endcode
-*/
-QStatusBar::QStatusBar(QWidget * parent, const char *name)
-    : QWidget(*new QStatusBarPrivate, parent, 0)
-{
-    Q_D(QStatusBar);
-    setObjectName(QString::fromAscii(name));
-    d->box = 0;
-    d->timer = 0;
-
-#ifndef QT_NO_SIZEGRIP
-    d->resizer = 0;
-    d->showSizeGrip = false;
-    setSizeGripEnabled(true); // causes reformat()
-#else
-    reformat();
-#endif
-}
-
-
-/*!
-    \fn void QStatusBar::addWidget(QWidget * widget, int stretch, bool permanent)
-
-   Use addWidget() or addPermanentWidget() instead, depending on the
-   value of the \a permanent parameter.
-
-    \oldcode
-        QStatusBar *myStatusBar;
-        myStatusBar->addWidget(widget, stretch, permanent);  // permanent == true
-    \newcode
-        QStatusBar *myStatusBar;
-        myStatusBar->addPermanentWidget(widget, stretch);
-    \endcode
- */
-
-#endif
 
 /*!
     Constructs a status bar with a size grip and the given \a parent.
@@ -760,9 +711,6 @@ bool QStatusBar::event(QEvent *e)
     Q_D(QStatusBar);
 
     if (e->type() == QEvent::LayoutRequest
-#ifdef QT3_SUPPORT
-        || e->type() == QEvent::LayoutHint
-#endif
         ) {
         // Calculate new strut height and call reformat() if it has changed
         int maxH = fontMetrics().height();

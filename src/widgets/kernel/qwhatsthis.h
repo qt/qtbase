@@ -54,9 +54,6 @@ QT_MODULE(Gui)
 #ifndef QT_NO_WHATSTHIS
 
 class QAction;
-#ifdef QT3_SUPPORT
-class QToolButton;
-#endif
 
 class Q_WIDGETS_EXPORT QWhatsThis
 {
@@ -72,11 +69,6 @@ public:
 
     static QAction *createAction(QObject *parent = 0);
 
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT void add(QWidget *w, const QString &s);
-    static QT3_SUPPORT void remove(QWidget *);
-    static QT3_SUPPORT QToolButton *whatsThisButton(QWidget *parent);
-#endif
 };
 
 #endif // QT_NO_WHATSTHIS

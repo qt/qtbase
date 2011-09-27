@@ -370,19 +370,6 @@ QMainWindow::QMainWindow(QWidget *parent, Qt::WindowFlags flags)
     d_func()->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-    Constructs a QMainWindow with the given \a parent, \a name, and
-    with the specified widget \a flags.
- */
-QMainWindow::QMainWindow(QWidget *parent, const char *name, Qt::WindowFlags flags)
-    : QWidget(*(new QMainWindowPrivate()), parent, flags | Qt::WType_TopLevel)
-{
-    setObjectName(QString::fromAscii(name));
-    d_func()->init();
-}
-#endif
 
 /*!
     Destroys the main window.

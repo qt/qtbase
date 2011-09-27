@@ -96,9 +96,6 @@ public:
     //workaround for task 177850
     QList<QAction *> actionsCopy;
 #endif
-#ifdef QT3_SUPPORT
-    bool userDefinedPopupDelay;
-#endif
 };
 
 #ifndef QT_NO_MENU
@@ -193,77 +190,6 @@ QToolButton::QToolButton(QWidget * parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs an empty tool button called \a name, with parent \a
-    parent.
-*/
-
-QToolButton::QToolButton(QWidget * parent, const char *name)
-    : QAbstractButton(*new QToolButtonPrivate, parent)
-{
-    Q_D(QToolButton);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Constructs a tool button called \a name, that is a child of \a
-    parent.
-
-    The tool button will display the given \a icon, with its text
-    label and tool tip set to \a textLabel and its status bar message
-    set to \a statusTip. It will be connected to the \a slot in
-    object \a receiver.
-*/
-
-QToolButton::QToolButton(const QIcon& icon, const QString &textLabel,
-                         const QString& statusTip,
-                         QObject * receiver, const char *slot,
-                         QWidget * parent, const char *name)
-    : QAbstractButton(*new QToolButtonPrivate, parent)
-{
-    Q_D(QToolButton);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-    setIcon(icon);
-    setText(textLabel);
-    if (receiver && slot)
-        connect(this, SIGNAL(clicked()), receiver, slot);
-#ifndef QT_NO_TOOLTIP
-    if (!textLabel.isEmpty())
-        setToolTip(textLabel);
-#endif
-#ifndef QT_NO_STATUSTIP
-    if (!statusTip.isEmpty())
-        setStatusTip(statusTip);
-#else
-    Q_UNUSED(statusTip);
-#endif
-}
-
-
-/*!
-    Constructs a tool button as an arrow button. The Qt::ArrowType \a
-    type defines the arrow direction. Possible values are
-    Qt::LeftArrow, Qt::RightArrow, Qt::UpArrow, and Qt::DownArrow.
-
-    An arrow button has auto-repeat turned on by default.
-
-    The \a parent and \a name arguments are sent to the QWidget
-    constructor.
-*/
-QToolButton::QToolButton(Qt::ArrowType type, QWidget *parent, const char *name)
-    : QAbstractButton(*new QToolButtonPrivate, parent)
-{
-    Q_D(QToolButton);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-    setAutoRepeat(true);
-    d->arrowType = type;
-}
-
-#endif
 
 
 /*  Set-up code common to all the constructors */
@@ -272,9 +198,6 @@ void QToolButtonPrivate::init()
 {
     Q_Q(QToolButton);
     delay = q->style()->styleHint(QStyle::SH_ToolButton_PopupDelay, 0, q);
-#ifdef QT3_SUPPORT
-    userDefinedPopupDelay = false;
-#endif
     defaultAction = 0;
 #ifndef QT_NO_TOOLBAR
     if (qobject_cast<QToolBar*>(parent))
@@ -324,15 +247,6 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
         if (QToolBar *toolBar = qobject_cast<QToolBar *>(parentWidget())) {
             option->iconSize = toolBar->iconSize();
         }
-#ifdef QT3_SUPPORT
-        else if (parentWidget()->inherits("Q3ToolBar")) {
-            if (!option->iconSize.isValid()) {
-                int iconSize = style()->pixelMetric(QStyle::PM_ToolBarIconSize, option, this);
-                option->iconSize = d->icon.actualSize(QSize(iconSize, iconSize));
-            }
-            forceNoText = d->toolButtonStyle == Qt::ToolButtonIconOnly;
-        }
-#endif
     }
 #endif // QT_NO_TOOLBAR
 
@@ -663,9 +577,6 @@ void QToolButton::changeEvent(QEvent *e)
                || e->type() == QEvent::MacSizeChange
 #endif
                ) {
-#ifdef QT3_SUPPORT
-        if (!d->userDefinedPopupDelay)
-#endif
         d->delay = style()->styleHint(QStyle::SH_ToolButton_PopupDelay, 0, this);
         d->setLayoutItemMargins(QStyle::SE_ToolButtonLayoutItem);
     }
@@ -717,80 +628,6 @@ bool QToolButton::hitButton(const QPoint &pos) const
     return false;
 }
 
-#ifdef QT3_SUPPORT
-
-/*!
-    Use icon() instead.
-*/
-QIcon QToolButton::onIconSet() const
-{
-    return icon();
-}
-
-/*!
-    Use icon() instead.
-*/
-QIcon QToolButton::offIconSet() const
-{
-    return icon();
-}
-
-
-/*!
-  \obsolete
-
-  Use setIcon() instead.
-*/
-void QToolButton::setOnIconSet(const QIcon& set)
-{
-    setIcon(set);
-}
-
-/*!
-  \obsolete
-
-  Use setIcon() instead.
-*/
-void QToolButton::setOffIconSet(const QIcon& set)
-{
-    setIcon(set);
-}
-
-
-/*! \overload
-    \obsolete
-
-  Since Qt 3.0, QIcon contains both the On and Off icons.
-
-  For ease of porting, this function ignores the \a on parameter and
-  sets the \l{QAbstractButton::icon} {icon} property. If you relied on
-  the \a on parameter, you probably want to update your code to use
-  the QIcon On/Off mechanism.
-
-  \sa icon QIcon::State
-*/
-
-void QToolButton::setIconSet(const QIcon & set, bool /* on */)
-{
-    QAbstractButton::setIcon(set);
-}
-
-/*! \overload
-    \obsolete
-
-  Since Qt 3.0, QIcon contains both the On and Off icons.
-
-  For ease of porting, this function ignores the \a on parameter and
-  returns the \l{QAbstractButton::icon} {icon} property. If you relied
-  on the \a on parameter, you probably want to update your code to use
-  the QIcon On/Off mechanism.
-*/
-QIcon QToolButton::iconSet(bool /* on */) const
-{
-    return QAbstractButton::icon();
-}
-
-#endif
 
 #ifndef QT_NO_MENU
 /*!
@@ -970,30 +807,6 @@ void QToolButtonPrivate::_q_menuTriggered(QAction *action)
 }
 #endif // QT_NO_MENU
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn void QToolButton::setPopupDelay(int delay)
-
-    Use the style hint QStyle::SH_ToolButton_PopupDelay instead.
-*/
-void QToolButton::setPopupDelay(int delay)
-{
-    Q_D(QToolButton);
-    d->userDefinedPopupDelay = true;
-    d->delay = delay;
-
-    update();
-}
-
-/*!
-    Use the style hint QStyle::SH_ToolButton_PopupDelay instead.
-*/
-int QToolButton::popupDelay() const
-{
-    Q_D(const QToolButton);
-    return d->delay;
-}
-#endif
 
 #ifndef QT_NO_MENU
 /*! \enum QToolButton::ToolButtonPopupMode

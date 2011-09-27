@@ -345,19 +345,6 @@ QTabWidget::QTabWidget(QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QTabWidget::QTabWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
-    : QWidget(*new QTabWidgetPrivate, parent, f)
-{
-    Q_D(QTabWidget);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-#endif
 
 /*!
     Destroys the tabbed widget.
@@ -743,10 +730,6 @@ void QTabWidgetPrivate::_q_showTab(int index)
     if (index < stack->count() && index >= 0)
         stack->setCurrentIndex(index);
     emit q->currentChanged(index);
-#ifdef QT3_SUPPORT
-    emit q->selected(q->tabText(index));
-    emit q->currentChanged(stack->widget(index));
-#endif
 }
 
 void QTabWidgetPrivate::_q_removeTab(int index)

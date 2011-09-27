@@ -714,46 +714,6 @@ bool QPushButtonPrivate::hitButton(const QPoint &pos)
 }
 #endif // Q_WS_MAC
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QPushButton::QPushButton(QWidget *parent, const char *name)
-    : QAbstractButton(*new QPushButtonPrivate, parent)
-{
-    Q_D(QPushButton);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QPushButton::QPushButton(const QString &text, QWidget *parent, const char *name)
-    : QAbstractButton(*new QPushButtonPrivate, parent)
-{
-    Q_D(QPushButton);
-    setObjectName(QString::fromAscii(name));
-    setText(text);
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QPushButton::QPushButton(const QIcon& icon, const QString &text, QWidget *parent, const char *name)
-    : QAbstractButton(*new QPushButtonPrivate, parent)
-{
-    Q_D(QPushButton);
-    setObjectName(QString::fromAscii(name));
-    setText(text);
-    setIcon(icon);
-    d->init();
-}
-#endif
 
 /*!
     \fn void QPushButton::openPopup()

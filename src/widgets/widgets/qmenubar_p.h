@@ -79,9 +79,6 @@ public:
     QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
                          closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
                          nativeMenuBar(-1), doChildEffects(false), platformMenuBar(0)
-#ifdef QT3_SUPPORT
-                         , doAutoResize(false)
-#endif
 
 #ifdef Q_WS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
@@ -165,9 +162,6 @@ public:
     QPointer<QAction> defaultAction;
 
     QBasicTimer autoReleaseTimer;
-#ifdef QT3_SUPPORT
-    bool doAutoResize;
-#endif
     QPlatformMenuBar *platformMenuBar;
 
 #ifdef Q_WS_WINCE

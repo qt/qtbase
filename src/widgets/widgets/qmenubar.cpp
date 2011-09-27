@@ -59,10 +59,6 @@
 
 #ifndef QT_NO_MENUBAR
 
-#ifdef QT3_SUPPORT
-#include <private/qaction_p.h>
-#include <qmenudata.h>
-#endif
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
@@ -259,12 +255,6 @@ void QMenuBarPrivate::updateGeometries()
         extension->hide();
     }
     q->updateGeometry();
-#ifdef QT3_SUPPORT
-    if (parent) {
-        QMenubarUpdatedEvent menubarUpdated(q);
-        QApplication::sendEvent(parent, &menubarUpdated);
-    }
-#endif
 }
 
 QRect QMenuBarPrivate::actionRect(QAction *act) const
@@ -529,9 +519,6 @@ void QMenuBarPrivate::_q_actionTriggered()
     Q_Q(QMenuBar);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
         emit q->triggered(action);
-#ifdef QT3_SUPPORT
-        emit q->activated(q->findIdForAction(action));
-#endif
     }
 }
 

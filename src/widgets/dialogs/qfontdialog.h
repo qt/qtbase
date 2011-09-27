@@ -104,12 +104,6 @@ public:
     static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0);
     static QFont getFont(bool *ok, QWidget *parent = 0);
 
-#ifdef QT3_SUPPORT
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent, const char *name)
-        { Q_UNUSED(name); return getFont(ok, initial, parent); }
-    static QFont getFont(bool *ok, QWidget *parent, const char *name)
-        { Q_UNUSED(name); return getFont(ok, parent); }
-#endif
 
 Q_SIGNALS:
     void currentFontChanged(const QFont &font);

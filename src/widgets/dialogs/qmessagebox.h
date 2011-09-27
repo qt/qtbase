@@ -288,31 +288,6 @@ public:
     void setWindowTitle(const QString &title);
     void setWindowModality(Qt::WindowModality windowModality);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QMessageBox(const QString &title, const QString &text, Icon icon,
-                                          int button0, int button1, int button2,
-                                          QWidget *parent, const char *name, bool modal,
-                                           Qt::WindowFlags f =  Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-    QT3_SUPPORT_CONSTRUCTOR QMessageBox(QWidget *parent, const char *name);
-
-    static QT3_SUPPORT QPixmap standardIcon(Icon icon, Qt::GUIStyle);
-    static QT3_SUPPORT int message(const QString &title,
-                                   const QString& text,
-                                   const QString& buttonText=QString(),
-                                   QWidget *parent = 0, const char * = 0) {
-        return QMessageBox::information(parent, title, text,
-                                        buttonText.isEmpty() ? tr("OK") : buttonText) == 0;
-    }
-    static QT3_SUPPORT bool query(const QString &title,
-                                  const QString& text,
-                                  const QString& yesButtonText = QString(),
-                                  const QString& noButtonText = QString(),
-                                  QWidget *parent = 0, const char * = 0) {
-        return QMessageBox::information(parent, title, text,
-                                        yesButtonText.isEmpty() ? tr("OK") : yesButtonText,
-                                        noButtonText) == 0;
-    }
-#endif
 
     static QPixmap standardIcon(Icon icon);
 

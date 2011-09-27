@@ -102,14 +102,6 @@ public:
     QAction(const QString &text, QObject* parent);
     QAction(const QIcon &icon, const QString &text, QObject* parent);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QAction(QObject* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QAction(const QString &text, const QKeySequence &shortcut,
-                                    QObject* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QAction(const QIcon &icon, const QString &text,
-                                    const QKeySequence &shortcut,
-                                    QObject* parent, const char* name);
-#endif
     ~QAction();
 
     void setActionGroup(QActionGroup *group);
@@ -186,19 +178,6 @@ public:
     void setIconVisibleInMenu(bool visible);
     bool isIconVisibleInMenu() const;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void setMenuText(const QString &text) { setText(text); }
-    inline QT3_SUPPORT QString menuText() const { return text(); }
-    inline QT3_SUPPORT bool isOn() const { return isChecked(); }
-    inline QT3_SUPPORT bool isToggleAction() const { return isCheckable(); }
-    inline QT3_SUPPORT void setToggleAction(bool b) { setCheckable(b); }
-    inline QT3_SUPPORT void setIconSet(const QIcon &i) { setIcon(i); }
-    inline QT3_SUPPORT QIcon iconSet() const { return icon(); }
-    inline QT3_SUPPORT bool addTo(QWidget *w) { w->addAction(this); return true; }
-    inline QT3_SUPPORT bool removeFrom(QWidget *w) { w->removeAction(this); return true; }
-    inline QT3_SUPPORT void setAccel(const QKeySequence &shortcut) { setShortcut(shortcut); }
-    inline QT3_SUPPORT QKeySequence accel() const { return shortcut(); }
-#endif
 
     QWidget *parentWidget() const;
 
@@ -212,9 +191,6 @@ protected:
     QAction(QActionPrivate &dd, QObject *parent);
 
 public Q_SLOTS:
-#ifdef QT3_SUPPORT
-    inline QT_MOC_COMPAT void setOn(bool b) { setChecked(b); }
-#endif
     void trigger() { activate(Trigger); }
     void hover() { activate(Hover); }
     void setChecked(bool);
@@ -228,16 +204,10 @@ Q_SIGNALS:
     void triggered(bool checked = false);
     void hovered();
     void toggled(bool);
-#ifdef QT3_SUPPORT
-    QT_MOC_COMPAT void activated(int = 0);
-#endif
 
 private:
     Q_DISABLE_COPY(QAction)
 
-#ifdef QT3_SUPPORT
-    friend class QMenuItem;
-#endif
     friend class QGraphicsWidget;
     friend class QWidget;
     friend class QActionGroup;

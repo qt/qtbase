@@ -204,27 +204,6 @@ public:
                           int minValue = -2147483647, int maxValue = 2147483647,
                           int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0);
 
-#ifdef QT3_SUPPORT
-    inline static QT3_SUPPORT QString getText(const QString &title, const QString &label,
-                                              QLineEdit::EchoMode echo = QLineEdit::Normal,
-                                              const QString &text = QString(), bool *ok = 0,
-                                              QWidget *parent = 0, const char * = 0, Qt::WindowFlags flags = 0)
-        { return getText(parent, title, label, echo, text, ok, flags); }
-    inline static QT3_SUPPORT int getInteger(const QString &title, const QString &label, int value = 0,
-                                             int minValue = -2147483647, int maxValue = 2147483647,
-                                             int step = 1, bool *ok = 0,
-                                             QWidget *parent = 0, const char * = 0, Qt::WindowFlags flags = 0)
-        { return getInteger(parent, title, label, value, minValue, maxValue, step, ok, flags); }
-    inline static QT3_SUPPORT double getDouble(const QString &title, const QString &label, double value = 0,
-                                               double minValue = -2147483647, double maxValue = 2147483647,
-                                               int decimals = 1, bool *ok = 0,
-                                               QWidget *parent = 0, const char * = 0, Qt::WindowFlags flags = 0)
-        { return getDouble(parent, title, label, value, minValue, maxValue, decimals, ok, flags); }
-    inline static QT3_SUPPORT QString getItem(const QString &title, const QString &label, const QStringList &list,
-                                              int current = 0, bool editable = true, bool *ok = 0,
-                                              QWidget *parent = 0, const char * = 0, Qt::WindowFlags flags = 0)
-        { return getItem(parent, title, label, list, current, editable, ok, flags); }
-#endif
 
 Q_SIGNALS:
     // ### emit signals!

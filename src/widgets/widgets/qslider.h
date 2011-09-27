@@ -104,19 +104,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *ev);
     void initStyleOption(QStyleOptionSlider *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QSlider(QWidget *parent, const char *name);
-    QT3_SUPPORT_CONSTRUCTOR QSlider(Qt::Orientation, QWidget *parent, const char *name);
-    QT3_SUPPORT_CONSTRUCTOR QSlider(int minValue, int maxValue, int pageStep, int value,
-                                  Qt::Orientation orientation,
-                                  QWidget *parent = 0, const char *name = 0);
-    inline QT3_SUPPORT void setTickmarks(TickPosition position) { setTickPosition(position); }
-    inline QT3_SUPPORT TickPosition tickmarks() const { return tickPosition(); }
-public Q_SLOTS:
-    inline QT_MOC_COMPAT void addStep() { triggerAction(SliderSingleStepAdd); }
-    inline QT_MOC_COMPAT void subtractStep() { triggerAction(SliderSingleStepSub); }
-#endif
 
 private:
     friend Q_WIDGETS_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider);

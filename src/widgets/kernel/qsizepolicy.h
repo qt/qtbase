@@ -148,51 +148,6 @@ public:
 
     void transpose();
 
-#ifdef QT3_SUPPORT
-    typedef Policy SizeType;
-#ifndef qdoc
-    typedef Qt::Orientations ExpandData;
-    enum {
-        NoDirection = 0,
-        Horizontally = 1,
-        Vertically = 2,
-        BothDirections = Horizontally | Vertically
-    };
-#else
-    enum ExpandData {
-        NoDirection = 0x0,
-        Horizontally = 0x1,
-        Vertically = 0x2,
-        BothDirections = 0x3
-    };
-#endif // qdoc
-
-    inline QT3_SUPPORT bool mayShrinkHorizontally() const
-        { return horizontalPolicy() & ShrinkFlag; }
-    inline QT3_SUPPORT bool mayShrinkVertically() const { return verticalPolicy() & ShrinkFlag; }
-    inline QT3_SUPPORT bool mayGrowHorizontally() const { return horizontalPolicy() & GrowFlag; }
-    inline QT3_SUPPORT bool mayGrowVertically() const { return verticalPolicy() & GrowFlag; }
-    inline QT3_SUPPORT Qt::Orientations expanding() const { return expandingDirections(); }
-
-    QT3_SUPPORT_CONSTRUCTOR QSizePolicy(Policy hor, Policy ver, bool hfw)
-        : data(hor | (ver<<HSize) | (hfw ? (1U<<2*HSize) : 0)) { }
-
-    QT3_SUPPORT_CONSTRUCTOR QSizePolicy(Policy hor, Policy ver, uchar hors, uchar vers, bool hfw = false)
-        : data(hor | (ver<<HSize) | (hfw ? (1U<<2*HSize) : 0)) {
-        setHorizontalStretch(hors);
-        setVerticalStretch(vers);
-    }
-
-    inline QT3_SUPPORT Policy horData() const { return static_cast<Policy>(data & HMask); }
-    inline QT3_SUPPORT Policy verData() const { return static_cast<Policy>((data & VMask) >> HSize); }
-    inline QT3_SUPPORT void setHorData(Policy d) { setHorizontalPolicy(d); }
-    inline QT3_SUPPORT void setVerData(Policy d) { setVerticalPolicy(d); }
-
-    inline QT3_SUPPORT uint horStretch() const { return horizontalStretch(); }
-    inline QT3_SUPPORT uint verStretch() const { return verticalStretch(); }
-    inline QT3_SUPPORT void setHorStretch(uchar sf) { setHorizontalStretch(sf); }
-    inline QT3_SUPPORT void setVerStretch(uchar sf) { setVerticalStretch(sf); }
-#endif
 
 private:
 #ifndef QT_NO_DATASTREAM

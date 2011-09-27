@@ -67,13 +67,6 @@ public:
 
     explicit QBoxLayout(Direction, QWidget *parent = 0);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QBoxLayout(QWidget *parent, Direction, int border = 0, int spacing = -1,
-                const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR  QBoxLayout(QLayout *parentLayout, Direction, int spacing = -1,
-                const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR  QBoxLayout(Direction, int spacing, const char *name = 0);
-#endif
     ~QBoxLayout();
 
     Direction direction() const;
@@ -115,9 +108,6 @@ public:
     QLayoutItem *takeAt(int);
     int count() const;
     void setGeometry(const QRect&);
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT int findWidget(QWidget* w) {return indexOf(w);}
-#endif
 protected:
     // ### Qt 5: make public
     void insertItem(int index, QLayoutItem *);
@@ -134,13 +124,6 @@ public:
     explicit QHBoxLayout(QWidget *parent);
     ~QHBoxLayout();
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QHBoxLayout(QWidget *parent, int border,
-                 int spacing = -1, const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QHBoxLayout(QLayout *parentLayout,
-                 int spacing = -1, const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QHBoxLayout(int spacing, const char *name = 0);
-#endif
 
 private:
     Q_DISABLE_COPY(QHBoxLayout)
@@ -154,13 +137,6 @@ public:
     explicit QVBoxLayout(QWidget *parent);
     ~QVBoxLayout();
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QVBoxLayout(QWidget *parent, int border,
-                 int spacing = -1, const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QVBoxLayout(QLayout *parentLayout,
-                 int spacing = -1, const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QVBoxLayout(int spacing, const char *name = 0);
-#endif
 
 private:
     Q_DISABLE_COPY(QVBoxLayout)

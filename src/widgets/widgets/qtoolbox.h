@@ -106,22 +106,6 @@ protected:
     void showEvent(QShowEvent *e);
     void changeEvent(QEvent *);
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QToolBox(QWidget *parent, const char *name, Qt::WindowFlags f = 0);
-    inline QT3_SUPPORT void setItemLabel(int index, const QString &text) { setItemText(index, text); }
-    inline QT3_SUPPORT QString itemLabel(int index) const { return itemText(index); }
-    inline QT3_SUPPORT QWidget *currentItem() const { return widget(currentIndex()); }
-    inline QT3_SUPPORT void setCurrentItem(QWidget *item) { setCurrentIndex(indexOf(item)); }
-    inline QT3_SUPPORT void setItemIconSet(int index, const QIcon &icon) { setItemIcon(index, icon); }
-    inline QT3_SUPPORT QIcon itemIconSet(int index) const { return itemIcon(index); }
-    inline QT3_SUPPORT int removeItem(QWidget *item)
-    { int i = indexOf(item); removeItem(i); return i; }
-    inline QT3_SUPPORT QWidget *item(int index) const { return widget(index); }
-    QT3_SUPPORT void setMargin(int margin) { setContentsMargins(margin, margin, margin, margin); }
-    QT3_SUPPORT int margin() const
-    { int margin; int dummy; getContentsMargins(&margin, &dummy, &dummy, &dummy);  return margin; }
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QToolBox)

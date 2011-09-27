@@ -1051,19 +1051,6 @@ QWorkspace::QWorkspace(QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QWorkspace::QWorkspace(QWidget *parent, const char *name)
-    : QWidget(*new QWorkspacePrivate, parent, 0)
-{
-    Q_D(QWorkspace);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-#endif // QT3_SUPPORT
 
 /*!
     \internal
@@ -1171,25 +1158,6 @@ QSize QWorkspace::sizeHint() const
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Sets the background color to \a c.
-    Use setBackground() instead.
-*/
-void QWorkspace::setPaletteBackgroundColor(const QColor & c)
-{
-    setBackground(c);
-}
-
-/*!
-    Sets the background pixmap to \a pm.
-    Use setBackground() instead.
-*/
-void QWorkspace::setPaletteBackgroundPixmap(const QPixmap & pm)
-{
-    setBackground(pm);
-}
-#endif // QT3_SUPPORT
 
 /*!
     \property QWorkspace::background

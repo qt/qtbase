@@ -85,22 +85,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void initStyleOption(QStyleOptionButton *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    enum ToggleState {
-        Off =      Qt::Unchecked,
-        NoChange = Qt::PartiallyChecked,
-        On =       Qt::Checked
-    };
-    inline QT3_SUPPORT ToggleState state() const
-        { return static_cast<QCheckBox::ToggleState>(static_cast<int>(checkState())); }
-    inline QT3_SUPPORT void setState(ToggleState state)
-        { setCheckState(static_cast<Qt::CheckState>(static_cast<int>(state))); }
-    inline QT3_SUPPORT void setNoChange()
-        { setCheckState(Qt::PartiallyChecked); }
-    QT3_SUPPORT_CONSTRUCTOR QCheckBox(QWidget *parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QCheckBox(const QString &text, QWidget *parent, const char* name);
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QCheckBox)

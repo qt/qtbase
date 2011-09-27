@@ -50,10 +50,6 @@
 
 #ifndef QT_NO_TEXTEDIT
 
-#ifdef QT3_SUPPORT
-#include <QtGui/qtextobject.h>
-#include <QtGui/qtextlayout.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -325,88 +321,6 @@ protected:
 
     virtual void scrollContentsBy(int dx, int dy);
 
-#ifdef QT3_SUPPORT
-Q_SIGNALS:
-    QT_MOC_COMPAT void currentFontChanged(const QFont &f);
-    QT_MOC_COMPAT void currentColorChanged(const QColor &c);
-
-public:
-    QT3_SUPPORT_CONSTRUCTOR QTextEdit(QWidget *parent, const char *name);
-    inline QT3_SUPPORT bool find(const QString &exp, bool cs, bool wo)
-    {
-        QTextDocument::FindFlags flags = 0;
-        if (cs)
-            flags |= QTextDocument::FindCaseSensitively;
-        if (wo)
-            flags |= QTextDocument::FindWholeWords;
-        return find(exp, flags);
-    }
-
-    inline QT3_SUPPORT void sync() {}
-
-    QT3_SUPPORT void moveCursor(CursorAction action, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
-    QT3_SUPPORT void moveCursor(CursorAction action, bool select);
-
-    enum KeyboardAction {
-        ActionBackspace,
-        ActionDelete,
-        ActionReturn,
-        ActionKill,
-        ActionWordBackspace,
-        ActionWordDelete
-    };
-
-    QT3_SUPPORT void doKeyboardAction(KeyboardAction action);
-
-    QT3_SUPPORT QString text() const;
-    QT3_SUPPORT void setTextFormat(Qt::TextFormat);
-    QT3_SUPPORT Qt::TextFormat textFormat() const;
-
-    inline QT3_SUPPORT void setBold(bool b) { setFontWeight(b ? QFont::Bold : QFont::Normal); }
-    inline QT3_SUPPORT void setUnderline(bool b) { setFontUnderline(b); }
-    inline QT3_SUPPORT void setItalic(bool i) { setFontItalic(i); }
-    inline QT3_SUPPORT void setFamily(const QString &family) { setFontFamily(family); }
-    inline QT3_SUPPORT void setPointSize(int size) { setFontPointSize(size); }
-
-    inline QT3_SUPPORT bool italic() const { return fontItalic(); }
-    inline QT3_SUPPORT bool bold() const { return fontWeight() >= QFont::Bold; }
-    inline QT3_SUPPORT bool underline() const { return fontUnderline(); }
-    inline QT3_SUPPORT QString family() const { return fontFamily(); }
-    inline QT3_SUPPORT int pointSize() const { return (int)(fontPointSize()+0.5); }
-
-    inline QT3_SUPPORT bool hasSelectedText() const
-    { return textCursor().hasSelection(); }
-    inline QT3_SUPPORT QString selectedText() const
-    { return textCursor().selectedText(); }
-
-    inline QT3_SUPPORT bool isUndoAvailable() const
-    { return document()->isUndoAvailable(); }
-    inline QT3_SUPPORT bool isRedoAvailable() const
-    { return document()->isRedoAvailable(); }
-
-    inline QT3_SUPPORT void insert(const QString &text)
-    { insertPlainText(text); }
-
-    inline QT3_SUPPORT bool isModified() const
-    { return document()->isModified(); }
-
-    inline QT3_SUPPORT QColor color() const
-    { return textColor(); }
-
-public Q_SLOTS:
-    inline QT_MOC_COMPAT void setModified(bool m = true)
-    { document()->setModified(m); }
-public:
-    inline QT3_SUPPORT void undo() const
-    { document()->undo(); }
-    inline QT3_SUPPORT void redo() const
-    { document()->redo(); }
-
-public Q_SLOTS:
-    inline QT_MOC_COMPAT void setColor(const QColor &c)
-    { setTextColor(c); }
-
-#endif
 
 private:
     Q_DISABLE_COPY(QTextEdit)

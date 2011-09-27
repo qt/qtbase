@@ -1228,9 +1228,6 @@ void QTabBar::setCurrentIndex(int index)
             QAccessible::updateAccessibility(this, index + 1, QAccessible::Selection);
         }
 #endif
-#ifdef QT3_SUPPORT
-        emit selected(index);
-#endif
         emit currentChanged(index);
     }
 }

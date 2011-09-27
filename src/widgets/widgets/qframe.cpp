@@ -220,19 +220,6 @@ QFrame::QFrame(QFramePrivate &dd, QWidget* parent, Qt::WindowFlags f)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QFrame::QFrame(QWidget *parent, const char *name, Qt::WindowFlags f)
-    : QWidget(*new QFramePrivate, parent, f)
-{
-    Q_D(QFrame);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-#endif
 
 /*!
   Destroys the frame.

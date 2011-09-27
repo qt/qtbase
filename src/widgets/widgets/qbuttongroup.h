@@ -90,11 +90,6 @@ Q_SIGNALS:
     void buttonReleased(QAbstractButton *);
     void buttonReleased(int);
 
-#ifdef QT3_SUPPORT
-public:
-    inline QT3_SUPPORT void insert(QAbstractButton *b) { addButton(b); }
-    inline QT3_SUPPORT void remove(QAbstractButton *b) { removeButton(b); }
-#endif
 
 private:
     Q_DISABLE_COPY(QButtonGroup)

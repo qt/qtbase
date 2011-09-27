@@ -364,51 +364,6 @@ QScrollBar::QScrollBar(Qt::Orientation orientation, QWidget *parent)
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QScrollBar::QScrollBar(QWidget *parent, const char *name)
-    : QAbstractSlider(*new QScrollBarPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    d_func()->orientation = Qt::Vertical;
-    d_func()->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QScrollBar::QScrollBar(Qt::Orientation orientation, QWidget *parent, const char *name)
-    : QAbstractSlider(*new QScrollBarPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    d_func()->orientation = orientation;
-    d_func()->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QScrollBar::QScrollBar(int minimum, int maximum, int lineStep, int pageStep,
-                        int value, Qt::Orientation orientation,
-                        QWidget *parent, const char *name)
-    : QAbstractSlider(*new QScrollBarPrivate, parent)
-{
-    Q_D(QScrollBar);
-    setObjectName(QString::fromAscii(name));
-    d->minimum = minimum;
-    d->maximum = maximum;
-    d->singleStep = lineStep;
-    d->pageStep = pageStep;
-    d->value = value;
-    d->orientation = orientation;
-    d->init();
-}
-#endif // QT3_SUPPORT
 
 /*!
     Destroys the scroll bar.

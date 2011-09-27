@@ -67,9 +67,6 @@ public:
 public Q_SLOTS:
     void showMessage(const QString &message);
     void showMessage(const QString &message, const QString &type);
-#ifdef QT3_SUPPORT
-    inline QT_MOC_COMPAT void message(const QString &text) { showMessage(text); }
-#endif
 
 protected:
     void done(int);

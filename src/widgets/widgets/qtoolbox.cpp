@@ -291,20 +291,6 @@ void QToolBoxButton::paintEvent(QPaintEvent *)
     current item.
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a toolbox called \a name with parent \a parent and flags \a f.
-*/
-QToolBox::QToolBox(QWidget *parent, const char *name, Qt::WindowFlags f)
-    :  QFrame(*new QToolBoxPrivate, parent, f)
-{
-    Q_D(QToolBox);
-    setObjectName(QString::fromAscii(name));
-    d->layout = new QVBoxLayout(this);
-    d->layout->setMargin(0);
-    setBackgroundRole(QPalette::Button);
-}
-#endif
 
 /*!
     Constructs a new toolbox with the given \a parent and the flags, \a f.

@@ -669,19 +669,6 @@ QTextBrowser::QTextBrowser(QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QTextBrowser::QTextBrowser(QWidget *parent, const char *name)
-    : QTextEdit(*new QTextBrowserPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    Q_D(QTextBrowser);
-    d->init();
-}
-#endif
 
 /*!
     \internal

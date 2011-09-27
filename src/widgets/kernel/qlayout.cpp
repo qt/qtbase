@@ -202,97 +202,6 @@ QSpacerItem *QLayoutPrivate::createSpacerItem(const QLayout *layout, int w, int 
     return new QSpacerItem(w, h,  hPolicy, vPolicy);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a new top-level QLayout called \a name, with parent
-    widget \a parent. \a parent may not be 0.
-
-    The \a margin is the number of pixels between the edge of the
-    widget and the managed children. The \a spacing sets the value of
-    spacing(), which gives the spacing between the managed widgets. If
-    \a spacing is -1 (the default), spacing is set to the value of \a
-    margin.
-
-    There can be only one top-level layout for a widget. It is
-    returned by QWidget::layout()
-
-    \sa QWidget::setLayout()
-*/
-QLayout::QLayout(QWidget *parent, int margin, int spacing, const char *name)
-    : QObject(*new QLayoutPrivate,parent)
-{
-    Q_D(QLayout);
-    setObjectName(QString::fromAscii(name));
-    setMargin(margin);
-    if (spacing < 0)
-        d->insideSpacing = margin;
-    else
-        d->insideSpacing = spacing;
-    if (parent) {
-        if (parent->layout()) {
-            qWarning("QLayout \"%s\" added to %s \"%s\", which already has a layout",
-                     QObject::objectName().toLocal8Bit().data(), parent->metaObject()->className(),
-                     parent->objectName().toLocal8Bit().data());
-            parent->layout()->setParent(0);
-        } else {
-            d->topLevel = true;
-            parent->d_func()->layout = this;
-            QT_TRY {
-                invalidate();
-            } QT_CATCH(...) {
-                parent->d_func()->layout = 0;
-                QT_RETHROW;
-            }
-        }
-    }
-}
-
-/*!
-    Constructs a new child QLayout called \a name, and places it
-    inside \a parentLayout by using the default placement defined by
-    addItem().
-
-    If \a spacing is -1, this QLayout inherits \a parentLayout's
-    spacing(), otherwise the value of \a spacing is used.
-*/
-QLayout::QLayout(QLayout *parentLayout, int spacing, const char *name)
-    : QObject(*new QLayoutPrivate,parentLayout)
-
-{
-    Q_D(QLayout);
-    setObjectName(QString::fromAscii(name));
-    d->insideSpacing = spacing;
-    parentLayout->addItem(this);
-}
-
-/*!
-    Constructs a new child QLayout called \a name. If \a spacing is
-    -1, this QLayout inherits its parent's spacing(); otherwise the
-    value of \a spacing is used.
-
-    This layout has to be inserted into another layout before geometry
-    management will work.
-*/
-QLayout::QLayout(int spacing, const char *name)
-    : QObject(*new QLayoutPrivate, 0)
-{
-    Q_D(QLayout);
-    setObjectName(QString::fromAscii(name));
-    d->insideSpacing = spacing;
-}
-
-/*!
-    Automatically adding widgets is deprecated. Use addWidget() or
-    addLayout() instead.
-*/
-void QLayout::setAutoAdd(bool a) { Q_D(QLayout); d->autoNewChild = a; }
-
-/*!
-    Automatically adding widgets is deprecated. Use addWidget() or
-    addLayout() instead.
-*/
-bool QLayout::autoAdd() const { Q_D(const QLayout); return d->autoNewChild; }
-#endif
 
 
 /*!
@@ -568,13 +477,6 @@ QRect QLayout::contentsRect() const
     return d->rect.adjusted(+left, +top, -right, -bottom);
 }
 
-#ifdef QT3_SUPPORT
-bool QLayout::isTopLevel() const
-{
-    Q_D(const QLayout);
-    return d->topLevel;
-}
-#endif
 
 /*!
     Returns the parent widget of this layout, or 0 if this layout is
@@ -720,33 +622,6 @@ void QLayout::widgetEvent(QEvent *e)
             }
         }
         break;
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInserted:
-        if (d->topLevel && d->autoNewChild) {
-            QChildEvent *c = (QChildEvent *)e;
-            if (c->child()->isWidgetType()) {
-                QWidget *w = (QWidget *)c->child();
-                if (!w->isWindow()) {
-#if !defined(QT_NO_MENUBAR) && !defined(QT_NO_TOOLBAR)
-                    if (qobject_cast<QMenuBar*>(w) && !qobject_cast<QToolBar*>(w->parentWidget())) {
-                        d->menubar = (QMenuBar *)w;
-                        invalidate();
-                    } else
-#endif
-#ifndef QT_NO_SIZEGRIP
-                    if (qobject_cast<QSizeGrip*>(w) ) {
-                        //SizeGrip is handled by the dialog itself.
-                    } else
-#endif
-                        addItem(QLayoutPrivate::createWidgetItem(this, w));
-                }
-            }
-        }
-        break;
-    case QEvent::LayoutHint:
-        d->activated = false;
-        // fall through
-#endif
     case QEvent::LayoutRequest:
         if (static_cast<QWidget *>(parent())->isVisible())
             activate();
@@ -899,17 +774,6 @@ QLayout::~QLayout()
         ((QWidget*)parent())->d_func()->layout = 0;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Removes and deletes all items in this layout.
-*/
-void QLayout::deleteAllItems()
-{
-    QLayoutItem *l;
-    while ((l = takeAt(0)))
-        delete l;
-}
-#endif
 
 /*!
     This function is called from \c addLayout() or \c insertLayout() functions in
@@ -1019,44 +883,6 @@ void QLayout::addChildWidget(QWidget *w)
         QMetaObject::invokeMethod(w, "_q_showIfNotHidden", Qt::QueuedConnection); //show later
 }
 
-#ifdef QT3_SUPPORT
-/*!
-  \compat
-
-    Sets this layout's parent widget to a fixed size with width \a w
-    and height \a h, stopping the user from resizing it, and also
-    prevents the layout from resizing it, even if the layout's size
-    hint should change. Does nothing if this is not a top-level
-    layout (i.e., if parent()->isWidgetType()).
-
-    As a special case, if both \a w and \a h are 0, then the layout's
-    current sizeHint() is used.
-
-    Use \c setResizeMode(Fixed) to stop the widget from being resized
-    by the user, while still allowing the layout to resize it when
-    the sizeHint() changes.
-
-    Use \c setResizeMode(FreeResize) to allow the user to resize the
-    widget, while preventing the layout from resizing it.
-
-*/
-void QLayout::freeze(int w, int h)
-{
-    Q_D(QLayout);
-    if (!d->topLevel)
-        return;
-    if (w <= 0 || h <= 0) {
-        QSize s = totalSizeHint();
-        w = s.width();
-        h = s.height();
-    }
-    setSizeConstraint(SetNoConstraint); // layout will not change min/max size
-    QWidget *parent = parentWidget();
-    if (parent)
-        parent->setFixedSize(w, h);
-}
-
-#endif
 
 
 

@@ -67,11 +67,6 @@ class Q_WIDGETS_EXPORT QSpinBox : public QAbstractSpinBox
 
 public:
     explicit QSpinBox(QWidget *parent = 0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QSpinBox(QWidget *parent, const char *name);
-    QT3_SUPPORT_CONSTRUCTOR QSpinBox(int min, int max, int step, QWidget *parent,
-                                     const char *name = 0);
-#endif
 
     int value() const;
 
@@ -94,13 +89,6 @@ public:
 
     void setRange(int min, int max);
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void setLineStep(int step) { setSingleStep(step); }
-    inline QT3_SUPPORT void setMaxValue(int val) { setMaximum(val); }
-    inline QT3_SUPPORT void setMinValue(int val) { setMinimum(val); }
-    inline QT3_SUPPORT int maxValue() const { return maximum(); }
-    inline QT3_SUPPORT int minValue() const { return minimum(); }
-#endif
 
 protected:
     bool event(QEvent *event);

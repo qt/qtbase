@@ -96,17 +96,6 @@ protected:
     void sliderChange(SliderChange change);
     void initStyleOption(QStyleOptionSlider *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QDial(int minValue, int maxValue, int pageStep, int value,
-                                QWidget* parent = 0, const char* name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QDial(QWidget *parent, const char *name);
-
-Q_SIGNALS:
-    QT_MOC_COMPAT void dialPressed();
-    QT_MOC_COMPAT void dialMoved(int value);
-    QT_MOC_COMPAT void dialReleased();
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QDial)

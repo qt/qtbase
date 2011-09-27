@@ -2808,22 +2808,6 @@ bool qt_nograb()                                // application no-grab option
   Platform specific QApplication members
  *****************************************************************************/
 
-#ifdef QT3_SUPPORT
-void QApplication::setMainWidget(QWidget *mainWidget)
-{
-#ifndef QT_NO_DEBUG
-    if (mainWidget && mainWidget->parentWidget() && mainWidget->isWindow())
-        qWarning("QApplication::setMainWidget: New main widget (%s/%s) "
-                  "has a parent",
-                  mainWidget->metaObject()->className(), mainWidget->objectName().toLocal8Bit().constData());
-#endif
-    if (mainWidget)
-        mainWidget->d_func()->createWinId();
-    QApplicationPrivate::main_widget = mainWidget;
-    if (QApplicationPrivate::main_widget) // give WM command line
-        QApplicationPrivate::applyX11SpecificCommandLineArguments(QApplicationPrivate::main_widget);
-}
-#endif
 
 void QApplicationPrivate::applyX11SpecificCommandLineArguments(QWidget *main_widget)
 {

@@ -265,32 +265,5 @@ bool QRadioButton::event(QEvent *e)
     return QAbstractButton::event(e);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QRadioButton::QRadioButton(QWidget *parent, const char* name)
-    : QAbstractButton(*new QRadioButtonPrivate, parent)
-{
-    Q_D(QRadioButton);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QRadioButton::QRadioButton(const QString &text, QWidget *parent, const char* name)
-    : QAbstractButton(*new QRadioButtonPrivate, parent)
-{
-    Q_D(QRadioButton);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-    setText(text);
-}
-
-#endif
 
 QT_END_NAMESPACE

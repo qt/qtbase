@@ -171,69 +171,6 @@ protected:
     bool event(QEvent *);
     void initStyleOption(QStyleOptionTabWidgetFrame *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QTabWidget(QWidget *parent, const char *name, Qt::WindowFlags f = 0);
-
-    inline QT3_SUPPORT void insertTab(QWidget * w, const QString &s, int index = -1) { insertTab(index, w, s); }
-    inline QT3_SUPPORT void insertTab(QWidget *child, const QIcon& icon,
-                                    const QString &label, int index = -1) { insertTab(index, child, icon, label); }
-
-    inline QT3_SUPPORT void changeTab(QWidget *w, const QString &s) {setTabText(indexOf(w), s); }
-    inline QT3_SUPPORT void changeTab(QWidget *w, const QIcon& icon,
-                                    const QString &label) { int idx = indexOf(w); setTabText(idx, label); setTabIcon(idx, icon); }
-
-    inline QT3_SUPPORT bool isTabEnabled( QWidget *w) const {return isTabEnabled(indexOf(w)); }
-    inline QT3_SUPPORT void setTabEnabled(QWidget *w, bool b) { setTabEnabled(indexOf(w), b); }
-
-    inline QT3_SUPPORT QString tabLabel(QWidget *w) const  {return tabText(indexOf(w)); }
-    inline QT3_SUPPORT void setTabLabel(QWidget *w, const QString &l) { setTabText(indexOf(w), l); }
-
-    inline QT3_SUPPORT QIcon tabIconSet(QWidget * w) const  {return tabIcon(indexOf(w)); }
-    inline QT3_SUPPORT void setTabIconSet(QWidget * w, const QIcon & icon) { setTabIcon(indexOf(w), icon); }
-
-    inline QT3_SUPPORT void removeTabToolTip(QWidget * w) {
-#ifndef QT_NO_TOOLTIP
-        setTabToolTip(indexOf(w), QString());
-#else
-        Q_UNUSED(w);
-#endif
-    }
-    inline QT3_SUPPORT void setTabToolTip(QWidget * w, const QString & tip) {
-#ifndef QT_NO_TOOLTIP
-        setTabToolTip(indexOf(w), tip);
-#else
-        Q_UNUSED(w);
-        Q_UNUSED(tip);
-#endif
-    }
-
-    inline QT3_SUPPORT QString tabToolTip(QWidget * w) const {
-#ifndef QT_NO_TOOLTIP
-        return tabToolTip(indexOf(w));
-#else
-        Q_UNUSED(w);
-        return QString();
-#endif
-    }
-
-    inline QT3_SUPPORT QWidget * currentPage() const { return currentWidget(); }
-    inline QT3_SUPPORT QWidget *page(int index) const { return widget(index); }
-    inline QT3_SUPPORT QString label(int index) const { return tabText(index); }
-    inline QT3_SUPPORT int currentPageIndex() const { return currentIndex(); }
-
-    inline QT3_SUPPORT int margin() const { return 0; }
-    inline QT3_SUPPORT void setMargin(int) {}
-
-public Q_SLOTS:
-    inline QT_MOC_COMPAT void setCurrentPage(int index) { setCurrentIndex(index); }
-    inline QT_MOC_COMPAT void showPage(QWidget *w) { setCurrentIndex(indexOf(w)); }
-    inline QT_MOC_COMPAT void removePage(QWidget *w) { removeTab(indexOf(w)); }
-
-Q_SIGNALS:
-    QT_MOC_COMPAT void currentChanged(QWidget *);
-    QT_MOC_COMPAT void selected(const QString&);
-#endif // QT3_SUPPORT
 
 private:
     Q_DECLARE_PRIVATE(QTabWidget)

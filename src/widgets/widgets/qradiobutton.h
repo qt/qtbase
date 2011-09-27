@@ -71,11 +71,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *);
     void initStyleOption(QStyleOptionButton *button) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QRadioButton(QWidget *parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QRadioButton(const QString &text, QWidget *parent, const char* name);
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QRadioButton)

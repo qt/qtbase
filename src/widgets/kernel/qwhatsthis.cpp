@@ -390,9 +390,6 @@ class QWhatsThisPrivate : public QObject
     static QWhatsThisPrivate *instance;
     bool eventFilter(QObject *, QEvent *);
     QPointer<QAction> action;
-#ifdef QT3_SUPPORT
-    QPointer<QToolButton> button;
-#endif
     static void say(QWidget *, const QString &, int x = 0, int y = 0);
     static void notifyToplevels(QEvent *e);
     bool leaveOnMouseRelease;
@@ -437,10 +434,6 @@ QWhatsThisPrivate::~QWhatsThisPrivate()
 {
     if (action)
         action->setChecked(false);
-#ifdef QT3_SUPPORT
-    if (button)
-        button->setChecked(false);
-#endif
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
@@ -549,66 +542,6 @@ QWhatsThis::QWhatsThis()
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-
-    Sets the What's This text \a s for the widget \a w.
-
-    Use QWidget::setWhatsThis() or QAction::setWhatsThis() instead.
-*/
-void QWhatsThis::add(QWidget *w, const QString &s)
-{
-    w->setWhatsThis(s);
-}
-
-/*!
-    \obsolete
-
-    Remove's the What's This text for the widget \a w.
-
-    Use QWidget::setWhatsThis() or QAction::setWhatsThis() instead.
-*/
-void QWhatsThis::remove(QWidget *w)
-{
-    w->setWhatsThis(QString());
-}
-
-class QWhatsThisButton : public QToolButton
-{
-    Q_OBJECT
-public:
-    QWhatsThisButton(QWidget *p) : QToolButton(p) {
-        setCheckable(true);
-        QPixmap pix( const_cast<const char**>(button_image) );
-        setIcon( pix );
-        QObject::connect(this, SIGNAL(toggled(bool)), this, SLOT(whatToggled(bool)));
-        setAutoRaise(true);
-        setFocusPolicy(Qt::NoFocus);
-    }
-
-public slots:
-    void whatToggled(bool b) {
-        if (b) {
-            QWhatsThis::enterWhatsThisMode();
-            QWhatsThisPrivate::instance->button = this;
-        }
-    }
-};
-
-/*!
-    Returns a new "What's This?" QToolButton with the given \a
-    parent. To do this now, create your own QToolButton and a
-    QWhatsThis object and call the QWhatsThis object's showText()
-    function when the QToolButton is invoked.
-
-    Use createAction() instead.
-*/
-QToolButton * QWhatsThis::whatsThisButton(QWidget * parent)
-{
-    return new QWhatsThisButton(parent);
-}
-#endif
 
 /*!
     This function switches the user interface into "What's This?"

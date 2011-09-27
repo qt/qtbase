@@ -91,11 +91,6 @@ void QDialPrivate::init()
     Q_Q(QDial);
     showNotches = false;
     q->setFocusPolicy(Qt::WheelFocus);
-#ifdef QT3_SUPPORT
-    QObject::connect(q, SIGNAL(sliderPressed()), q, SIGNAL(dialPressed()));
-    QObject::connect(q, SIGNAL(sliderMoved(int)), q, SIGNAL(dialMoved(int)));
-    QObject::connect(q, SIGNAL(sliderReleased()), q, SIGNAL(dialReleased()));
-#endif
 }
 
 int QDialPrivate::bound(int val) const
@@ -259,36 +254,6 @@ QDial::QDial(QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QDial::QDial(QWidget *parent, const char *name)
-    : QAbstractSlider(*new QDialPrivate, parent)
-{
-    Q_D(QDial);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QDial::QDial(int minValue, int maxValue, int pageStep, int value,
-              QWidget *parent, const char *name)
-    : QAbstractSlider(*new QDialPrivate, parent)
-{
-    Q_D(QDial);
-    setObjectName(QString::fromAscii(name));
-    d->minimum = minValue;
-    d->maximum = maxValue;
-    d->pageStep = pageStep;
-    d->position = d->value = value;
-    d->init();
-}
-#endif
 /*!
     Destroys the dial.
 */

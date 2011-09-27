@@ -336,49 +336,6 @@ static const char *getSegments(char ch)               // gets list of segments f
 }
 
 
-#ifdef QT3_SUPPORT
-/*! \obsolete
-    Constructs an LCD number, sets the number of digits to 5, the base
-    to decimal, the decimal point mode to 'small' and the frame style
-    to a raised box. The segmentStyle() is set to \c Outline.
-
-    The \a parent and \a name arguments are passed to the QFrame
-    constructor.
-
-    \sa setDigitCount(), setSmallDecimalPoint()
-*/
-
-QLCDNumber::QLCDNumber(QWidget *parent, const char *name)
-        : QFrame(*new QLCDNumberPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    Q_D(QLCDNumber);
-    d->ndigits = 5;
-    d->init();
-}
-
-
-/*! \obsolete
-    Constructs an LCD number, sets the number of digits to \a
-    numDigits, the base to decimal, the decimal point mode to 'small'
-    and the frame style to a raised box. The segmentStyle() is set to
-    \c Outline.
-
-    The \a parent and \a name arguments are passed to the QFrame
-    constructor.
-
-    \sa setDigitCount(), setSmallDecimalPoint()
-*/
-
-QLCDNumber::QLCDNumber(uint numDigits, QWidget *parent, const char *name)
-        : QFrame(*new QLCDNumberPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    Q_D(QLCDNumber);
-    d->ndigits = numDigits;
-    d->init();
-}
-#endif //QT3_SUPPORT
 
 /*!
     Constructs an LCD number, sets the number of digits to 5, the base

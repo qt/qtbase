@@ -101,11 +101,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);  
     void initStyleOption(QStyleOptionGroupBox *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QGroupBox(QWidget* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QGroupBox(const QString &title, QWidget* parent, const char* name);
-#endif
 
 private:
     Q_DISABLE_COPY(QGroupBox)

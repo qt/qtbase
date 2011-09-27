@@ -154,20 +154,6 @@ protected:
 #endif
     void changeEvent(QEvent *e);
 
-#ifdef QT3_SUPPORT
-public:
-    inline QT3_SUPPORT int minValue() const { return minimum(); }
-    inline QT3_SUPPORT int maxValue() const { return maximum(); }
-    inline QT3_SUPPORT int lineStep() const { return singleStep(); }
-    inline QT3_SUPPORT void setMinValue(int v) { setMinimum(v); }
-    inline QT3_SUPPORT void setMaxValue(int v) { setMaximum(v); }
-    inline QT3_SUPPORT void setLineStep(int v) { setSingleStep(v); }
-    inline QT3_SUPPORT void setSteps(int single, int page) { setSingleStep(single); setPageStep(page); }
-    inline QT3_SUPPORT void addPage() { triggerAction(SliderPageStepAdd); }
-    inline QT3_SUPPORT void subtractPage() { triggerAction(SliderPageStepSub); }
-    inline QT3_SUPPORT void addLine() { triggerAction(SliderSingleStepAdd); }
-    inline QT3_SUPPORT void subtractLine() { triggerAction(SliderSingleStepSub); }
-#endif
 
 protected:
     QAbstractSlider(QAbstractSliderPrivate &dd, QWidget *parent=0);

@@ -79,15 +79,6 @@ public Q_SLOTS:
     void showMessage(const QString &text, int timeout = 0);
     void clearMessage();
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QStatusBar(QWidget* parent, const char* name);
-    QT3_SUPPORT void addWidget(QWidget *w, int stretch, bool permanent)
-        { if (permanent) addPermanentWidget(w, stretch); else addWidget(w, stretch); }
-public Q_SLOTS:
-    inline QT_MOC_COMPAT void message(const QString &text, int timeout = 0) { showMessage(text, timeout); }
-    inline QT_MOC_COMPAT void clear() { clearMessage(); }
-#endif
 
 Q_SIGNALS:
     void messageChanged(const QString &text);

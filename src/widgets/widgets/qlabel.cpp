@@ -193,75 +193,6 @@ QLabel::QLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
 }
 
 
-#ifdef QT3_SUPPORT
-/*! \obsolete
-    Constructs an empty label.
-
-    The \a parent, \a name and widget flag \a f, arguments are passed
-    to the QFrame constructor.
-
-    \sa setAlignment(), setFrameStyle(), setIndent()
-*/
-
-QLabel::QLabel(QWidget *parent, const char *name, Qt::WindowFlags f)
-    : QFrame(*new QLabelPrivate(), parent, f)
-{
-    Q_D(QLabel);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-
-/*! \obsolete
-    Constructs a label that displays the text, \a text.
-
-    The \a parent, \a name and widget flag \a f, arguments are passed
-    to the QFrame constructor.
-
-    \sa setText(), setAlignment(), setFrameStyle(), setIndent()
-*/
-
-QLabel::QLabel(const QString &text, QWidget *parent, const char *name,
-                Qt::WindowFlags f)
-        : QFrame(*new QLabelPrivate(), parent, f)
-{
-    Q_D(QLabel);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    d->init();
-    setText(text);
-}
-
-
-/*! \obsolete
-    Constructs a label that displays the text \a text. The label has a
-    buddy widget, \a buddy.
-
-    If the \a text contains an underlined letter (a letter preceded by
-    an ampersand, \&), when the user presses Alt+ the underlined letter,
-    focus is passed to the buddy widget.
-
-    The \a parent, \a name and widget flag, \a f, arguments are passed
-    to the QFrame constructor.
-
-    \sa setText(), setBuddy(), setAlignment(), setFrameStyle(),
-    setIndent()
-*/
-QLabel::QLabel(QWidget *buddy, const QString &text,
-                QWidget *parent, const char *name, Qt::WindowFlags f)
-    : QFrame(*new QLabelPrivate(), parent, f)
-{
-    Q_D(QLabel);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    d->init();
-#ifndef QT_NO_SHORTCUT
-    setBuddy(buddy);
-#endif
-    setText(text);
-}
-#endif //QT3_SUPPORT
 
 /*!
     Destroys the label.
@@ -512,20 +443,6 @@ void QLabel::setAlignment(Qt::Alignment alignment)
     d->updateLabel();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use setAlignment(Qt::Alignment) instead.
-
-    If \a alignment specifies text flags as well, use setTextFormat()
-    to set those.
-*/
-void QLabel::setAlignment(int alignment)
-{
-    Q_D(QLabel);
-    d->align = alignment & ~(Qt::AlignVertical_Mask|Qt::AlignHorizontal_Mask|Qt::TextWordWrap);
-    setAlignment(Qt::Alignment(QFlag(alignment)));
-}
-#endif
 
 Qt::Alignment QLabel::alignment() const
 {

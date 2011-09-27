@@ -809,92 +809,6 @@ QSplitterLayoutStruct *QSplitterPrivate::findWidget(QWidget *w) const
     return 0;
 }
 
-#ifdef QT3_SUPPORT
-static void setStretch(QWidget *w, int sf)
-{
-    QSizePolicy sp = w->sizePolicy();
-    sp.setHorizontalStretch(sf);
-    sp.setVerticalStretch(sf);
-    w->setSizePolicy(sp);
-}
-
-static int getStretch(const QWidget *w)
-{
-    QSizePolicy sp = w->sizePolicy();
-    return qMax(sp.horizontalStretch(), sp.verticalStretch());
-}
-
-void QSplitter::setResizeMode(QWidget *w, ResizeMode mode)
-{
-    /*
-        Internal comment:
-
-        This function tries to simulate the Qt 3.x ResizeMode
-        behavior using QSizePolicy stretch factors. This isn't easy,
-        because the default \l ResizeMode was \l Stretch, not \l
-        KeepSize, whereas the default stetch factor is 0.
-
-        So what we do is this: When the user calls setResizeMode()
-        the first time, we iterate through all the child widgets and
-        set their stretch factors to 1. Later on, if children are
-        added (using addWidget()), their stretch factors are also set
-        to 1.
-
-        There is just one problem left: Often, setResizeMode() is
-        called \e{before} addWidget(), because addWidget() is called
-        from the event loop. In that case, we use a special value,
-        243, instead of 0 to prevent 0 from being overwritten with 1
-        in addWidget(). This is a wicked hack, but fortunately it
-        only occurs as a result of calling a \c QT3_SUPPORT function.
-    */
-
-    Q_D(QSplitter);
-    bool metWidget = false;
-    if (!d->compatMode) {
-        d->compatMode = true;
-        for (int i = 0; i < d->list.size(); ++i) {
-            QSplitterLayoutStruct *s = d->list.at(i);
-            if (s->widget == w)
-                metWidget = true;
-            if (getStretch(s->widget) == 0)
-                setStretch(s->widget, 1);
-        }
-    }
-    int sf;
-    if (mode == KeepSize)
-        sf = metWidget ? 0 : 243;
-    else
-        sf = 1;
-    setStretch(w, sf);
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QSplitter::QSplitter(QWidget *parent, const char *name)
-    : QFrame(*new QSplitterPrivate, parent)
-{
-    Q_D(QSplitter);
-    setObjectName(QString::fromAscii(name));
-    d->orient = Qt::Horizontal;
-    d->init();
-}
-
-
-/*!
-    Use one of the constructors that don't take the \a name argument
-    and then use setObjectName() instead.
-*/
-QSplitter::QSplitter(Qt::Orientation orientation, QWidget *parent, const char *name)
-    : QFrame(*new QSplitterPrivate, parent)
-{
-    Q_D(QSplitter);
-    setObjectName(QString::fromAscii(name));
-    d->orient = orientation;
-    d->init();
-}
-#endif
 
 /*!
     \internal
@@ -953,15 +867,6 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
         if (newHandle && q->isVisible())
             newHandle->show(); // will trigger sending of post events
 
-#ifdef QT3_SUPPORT
-        if (compatMode) {
-            int sf = getStretch(sls->widget);
-            if (sf == 243)
-                setStretch(sls->widget, 0);
-            else if (sf == 0)
-                setStretch(sls->widget, 1);
-        }
-#endif
     }
     return sls;
 }
@@ -1372,9 +1277,6 @@ bool QSplitter::event(QEvent *e)
     case QEvent::HideToParent:
     case QEvent::ShowToParent:
     case QEvent::LayoutRequest:
-#ifdef QT3_SUPPORT
-    case QEvent::LayoutHint:
-#endif
         d->recalc(isVisible());
         break;
     default:
@@ -1503,57 +1405,6 @@ void QSplitter::setOpaqueResize(bool on)
     d->opaque = on;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn void QSplitter::moveToFirst(QWidget *widget)
-
-    Use insertWidget(0, \a widget) instead.
-*/
-
-
-/*!
-    \fn void QSplitter::moveToLast(QWidget *widget)
-
-    Use addWidget(\a widget) instead.
-*/
-
-/*!
-    \fn void QSplitter::setResizeMode(QWidget *widget, ResizeMode mode)
-
-    Use setStretchFactor() instead.
-
-    \oldcode
-        splitter->setResizeMode(firstChild, QSplitter::KeepSize);
-        splitter->setResizeMode(secondChild, QSplitter::Stretch);
-    \newcode
-        splitter->setStretchFactor(splitter->indexOf(firstChild), 0);
-        splitter->setStretchFactor(splitter->indexOf(secondChild), 1);
-    \endcode
-*/
-
-/*!
-    \fn void QSplitter::setCollapsible(QWidget *widget, bool collapsible)
-
-    Use setCollapsible(indexOf(\a widget, \a collapsible)) instead.
-*/
-
-/*!
-    \fn void QSplitter::setMargin(int margin)
-    Sets the width of the margin around the contents of the widget to \a margin.
-
-    Use QWidget::setContentsMargins() instead.
-    \sa margin(), QWidget::setContentsMargins()
-*/
-
-/*!
-    \fn int QSplitter::margin() const
-    Returns the width of the margin around the contents of the widget.
-
-    Use QWidget::getContentsMargins() instead.
-    \sa setMargin(), QWidget::getContentsMargins()
-*/
-
-#endif
 
 /*!
     \reimp

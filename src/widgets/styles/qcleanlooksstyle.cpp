@@ -884,12 +884,6 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameLineEdit:
         // fall through
 #endif // QT_NO_LINEEDIT
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3ToolBar")) {
-            proxy()->drawPrimitive(PE_Q3Separator, option, painter, widget);
-            break;
-        }
-#endif
         {
             QPen oldPen = painter->pen();
             if (option->state & State_Enabled) {
@@ -2697,13 +2691,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             QColor textColor(active ? 0xffffff : 0xff000000);
             QColor textAlphaColor(active ? 0xffffff : 0xff000000 );
 
-#ifdef  QT3_SUPPORT
-            if (widget && widget->inherits("Q3DockWindowTitleBar")) {
-                QStyleOptionDockWidgetV2 dockwidget;
-                dockwidget.QStyleOption::operator=(*option);
-                proxy()->drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
-            } else
-#endif // QT3_SUPPORT
             {
                 // Fill title bar gradient
                 QColor titlebarColor = QColor(active ? highlight: palette.background().color());
@@ -4324,10 +4311,6 @@ int QCleanlooksStyle::styleHint(StyleHint hint, const QStyleOption *option, cons
             break;
         }
     case SH_ComboBox_Popup:
-#ifdef QT3_SUPPORT
-        if (widget && widget->inherits("Q3ComboBox"))
-            return 0;
-#endif
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option))
             ret = !cmb->editable;
         else

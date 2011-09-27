@@ -154,14 +154,6 @@ protected:
     bool event(QEvent *event);
     void initStyleOption(QStyleOptionToolBar *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QToolBar(QWidget *parent, const char *name);
-    inline QT3_SUPPORT void setLabel(const QString &label)
-    { setWindowTitle(label); }
-    inline QT3_SUPPORT QString label() const
-    { return windowTitle(); }
-#endif
 
 private:
     Q_DECLARE_PRIVATE(QToolBar)

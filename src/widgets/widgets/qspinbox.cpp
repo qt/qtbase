@@ -209,35 +209,6 @@ QSpinBox::QSpinBox(QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QSpinBox::QSpinBox(QWidget *parent, const char *name)
-    : QAbstractSpinBox(*new QSpinBoxPrivate, parent)
-{
-    Q_D(QSpinBox);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QSpinBox::QSpinBox(int minimum, int maximum, int step, QWidget *parent, const char *name)
-    : QAbstractSpinBox(*new QSpinBoxPrivate, parent)
-{
-    Q_D(QSpinBox);
-    d->minimum = QVariant(qMin<int>(minimum, maximum));
-    d->maximum = QVariant(qMax<int>(minimum, maximum));
-    d->singleStep = QVariant(step);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-#endif
 
 /*!
     \property QSpinBox::value

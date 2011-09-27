@@ -79,14 +79,6 @@ protected:
 #endif
     void initStyleOption(QStyleOptionSlider *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QScrollBar(QWidget *parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QScrollBar(Qt::Orientation, QWidget *parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QScrollBar(int minValue, int maxValue, int lineStep, int pageStep,
-                int value, Qt::Orientation, QWidget *parent=0, const char* name = 0);
-    inline QT3_SUPPORT bool draggingSlider() { return isSliderDown(); }
-#endif
 
 private:
     friend Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollBar);

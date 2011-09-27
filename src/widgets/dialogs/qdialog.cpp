@@ -274,21 +274,6 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
 #endif
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \overload
-    \obsolete
-*/
-QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags f)
-    : QWidget(*new QDialogPrivate, parent,
-              f
-              | QFlag(modal ? Qt::WShowModal : Qt::WindowType(0))
-              | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0))
-        )
-{
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 /*!
   \overload

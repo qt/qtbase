@@ -102,9 +102,6 @@ public:
 
     enum StateFlag {
         State_None =                0x00000000,
-#ifdef QT3_SUPPORT
-        State_Default =             State_None,
-#endif
         State_Enabled =             0x00000001,
         State_Raised =              0x00000002,
         State_Sunken =              0x00000004,
@@ -138,9 +135,6 @@ public:
     };
     Q_DECLARE_FLAGS(State, StateFlag)
 
-#ifdef QT3_SUPPORT
-    typedef State SFlags;
-#endif
 
     enum PrimitiveElement {
         PE_Q3CheckListController,
@@ -460,9 +454,6 @@ public:
     };
     Q_DECLARE_FLAGS(SubControls, SubControl)
 
-#ifdef QT3_SUPPORT
-    typedef SubControls SCFlags;
-#endif
 
     virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                     const QWidget *widget = 0) const = 0;
@@ -739,13 +730,6 @@ public:
         SH_RequestSoftwareInputPanel,
         // Add new style hint values here
 
-#ifdef QT3_SUPPORT
-        SH_GUIStyle = 0x00000100,
-        SH_ScrollBar_BackgroundMode,
-        // Add other compat values here
-
-        SH_UnderlineAccelerator = SH_UnderlineShortcut,
-#endif
         SH_CustomBase = 0xf0000000
     };
 

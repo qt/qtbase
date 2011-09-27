@@ -125,20 +125,6 @@ protected:
     void setRubberBand(int position);
     int closestLegalPosition(int, int);
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QSplitter(QWidget* parent, const char* name);
-    QT3_SUPPORT_CONSTRUCTOR QSplitter(Qt::Orientation, QWidget* parent, const char* name);
-    enum ResizeMode { Stretch, KeepSize, FollowSizeHint, Auto };
-    QT3_SUPPORT void setResizeMode(QWidget *w, ResizeMode mode);
-    inline QT3_SUPPORT void moveToFirst(QWidget *w) { insertWidget(0,w); }
-    inline QT3_SUPPORT void moveToLast(QWidget *w) { addWidget(w); }
-    inline QT3_SUPPORT void setCollapsible(QWidget *w, bool collapse)
-    { setCollapsible(indexOf(w), collapse); }
-    QT3_SUPPORT void setMargin(int margin) { setContentsMargins(margin, margin, margin, margin); }
-    QT3_SUPPORT int margin() const 
-    { int margin; int dummy; getContentsMargins(&margin, &dummy, &dummy, &dummy);  return margin; }    
-#endif
 
 private:
     Q_DISABLE_COPY(QSplitter)

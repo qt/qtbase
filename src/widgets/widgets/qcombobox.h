@@ -134,9 +134,6 @@ public:
         BeforeCurrent = InsertBeforeCurrent
 #endif
     };
-#ifdef QT3_SUPPORT
-    typedef InsertPolicy Policy;
-#endif
 
     InsertPolicy insertPolicy() const;
     void setInsertPolicy(InsertPolicy policy);
@@ -253,49 +250,6 @@ protected:
     QVariant inputMethodQuery(Qt::InputMethodQuery) const;
     void initStyleOption(QStyleOptionComboBox *option) const;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QComboBox(QWidget *parent, const char *name);
-    QT3_SUPPORT_CONSTRUCTOR QComboBox(bool rw, QWidget *parent, const char *name = 0);
-    inline QT3_SUPPORT int currentItem() const { return currentIndex(); }
-    inline QT3_SUPPORT void setCurrentItem(int index) { setCurrentIndex(index); }
-    inline QT3_SUPPORT InsertPolicy insertionPolicy() const { return insertPolicy(); }
-    inline QT3_SUPPORT void setInsertionPolicy(InsertPolicy policy) { setInsertPolicy(policy); }
-    inline QT3_SUPPORT bool editable() const { return isEditable(); }
-    inline QT3_SUPPORT void popup() { showPopup(); }
-    inline QT3_SUPPORT void setCurrentText(const QString& text) {
-        int i = findText(text);
-        if (i != -1)
-            setCurrentIndex(i);
-        else if (isEditable())
-            setEditText(text);
-        else
-            setItemText(currentIndex(), text);
-    }
-    inline QT3_SUPPORT QString text(int index) const { return itemText(index); }
-
-    inline QT3_SUPPORT QPixmap pixmap(int index) const
-    { return itemIcon(index).pixmap(iconSize(), isEnabled() ? QIcon::Normal : QIcon::Disabled); }
-    inline QT3_SUPPORT void insertStringList(const QStringList &list, int index = -1)
-        { insertItems((index < 0 ? count() : index), list); }
-    inline QT3_SUPPORT void insertItem(const QString &text, int index = -1)
-        { insertItem((index < 0 ? count() : index), text); }
-    inline QT3_SUPPORT void insertItem(const QPixmap &pix, int index = -1)
-        { insertItem((index < 0 ? count() : index), QIcon(pix), QString()); }
-    inline QT3_SUPPORT void insertItem(const QPixmap &pix, const QString &text, int index = -1)
-        { insertItem((index < 0 ? count() : index), QIcon(pix), text); }
-    inline QT3_SUPPORT void changeItem(const QString &text, int index)
-        { setItemText(index, text); }
-    inline QT3_SUPPORT void changeItem(const QPixmap &pix, int index)
-        { setItemIcon(index, QIcon(pix)); }
-    inline QT3_SUPPORT void changeItem(const QPixmap &pix, const QString &text, int index)
-        { setItemIcon(index, QIcon(pix)); setItemText(index, text); }
-    inline QT3_SUPPORT void clearValidator() { setValidator(0); }
-    inline QT3_SUPPORT void clearEdit() { clearEditText(); }
-
-Q_SIGNALS:
-    QT_MOC_COMPAT void textChanged(const QString &);
-#endif
 
 protected:
     QComboBox(QComboBoxPrivate &, QWidget *);

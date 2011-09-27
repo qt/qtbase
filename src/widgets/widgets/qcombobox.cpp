@@ -860,33 +860,6 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QComboBox::QComboBox(QWidget *parent, const char *name)
-    : QWidget(*new QComboBoxPrivate(), parent, 0)
-{
-    Q_D(QComboBox);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
-    : QWidget(*new QComboBoxPrivate(), parent, 0)
-{
-    Q_D(QComboBox);
-    d->init();
-    setEditable(rw);
-    setObjectName(QString::fromAscii(name));
-}
-
-#endif //QT3_SUPPORT
 
 /*!
     \class QComboBox
@@ -1736,9 +1709,6 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     connect(d->lineEdit, SIGNAL(returnPressed()), this, SLOT(_q_returnPressed()));
     connect(d->lineEdit, SIGNAL(editingFinished()), this, SLOT(_q_editingFinished()));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(editTextChanged(QString)));
-#ifdef QT3_SUPPORT
-    connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(textChanged(QString)));
-#endif
     d->lineEdit->setFrame(false);
     d->lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     d->lineEdit->setFocusProxy(this);

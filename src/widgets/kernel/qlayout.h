@@ -59,31 +59,6 @@ QT_MODULE(Gui)
 class QLayout;
 class QSize;
 
-#ifdef QT3_SUPPORT
-class Q_WIDGETS_EXPORT QLayoutIterator
-{
-public:
-    inline QT3_SUPPORT_CONSTRUCTOR QLayoutIterator(QLayout *i) : layout(i), index(0) {}
-    inline QLayoutIterator(const QLayoutIterator &i)
-        : layout(i.layout), index(i.index) {}
-    inline QLayoutIterator &operator=(const QLayoutIterator &i) {
-        layout = i.layout;
-        index = i.index;
-        return *this;
-    }
-    inline QT3_SUPPORT QLayoutItem *operator++();
-    inline QT3_SUPPORT QLayoutItem *current();
-    inline QT3_SUPPORT QLayoutItem *takeCurrent();
-    inline QT3_SUPPORT void deleteCurrent();
-
-private:
-    // hack to avoid deprecated warning
-    friend class QLayout;
-    inline QLayoutIterator(QLayout *i, bool) : layout(i), index(0) {}
-    QLayout *layout;
-    int index;
-};
-#endif
 
 class QLayoutPrivate;
 
@@ -138,10 +113,6 @@ public:
 
     void setSizeConstraint(SizeConstraint);
     SizeConstraint sizeConstraint() const;
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void setResizeMode(SizeConstraint s) {setSizeConstraint(s);}
-    inline QT3_SUPPORT SizeConstraint resizeMode() const {return sizeConstraint();}
-#endif
     void setMenuBar(QWidget *w);
     QWidget *menuBar() const;
 
@@ -177,10 +148,6 @@ public:
     void setEnabled(bool);
     bool isEnabled() const;
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT void freeze(int w=0, int h=0);
-    QT3_SUPPORT bool isTopLevel() const;
-#endif
 
     static QSize closestAcceptableSize(const QWidget *w, const QSize &s);
 
@@ -189,9 +156,6 @@ protected:
     void childEvent(QChildEvent *e);
     void addChildLayout(QLayout *l);
     void addChildWidget(QWidget *w);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT void deleteAllItems();
-#endif
 
     QRect alignmentRect(const QRect&) const;
 protected:
@@ -205,30 +169,8 @@ private:
     friend class QApplicationPrivate;
     friend class QWidget;
 
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QLayout(QWidget *parent, int margin, int spacing = -1,
-                             const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QLayout(QLayout *parentLayout, int spacing = -1, const char *name = 0);
-    QT3_SUPPORT_CONSTRUCTOR QLayout(int spacing, const char *name = 0);
-    inline QT3_SUPPORT QWidget *mainWidget() const { return parentWidget(); }
-    inline QT3_SUPPORT void remove(QWidget *w) { removeWidget(w); }
-    inline QT3_SUPPORT void add(QWidget *w) { addWidget(w); }
-
-    QT3_SUPPORT void setAutoAdd(bool a);
-    QT3_SUPPORT bool autoAdd() const;
-    inline QT3_SUPPORT QLayoutIterator iterator() { return QLayoutIterator(this,true); }
-
-    inline QT3_SUPPORT int defaultBorder() const { return spacing(); }
-#endif
 };
 
-#ifdef QT3_SUPPORT
-inline QLayoutItem *QLayoutIterator::operator++() { return layout->itemAt(++index); }
-inline QLayoutItem *QLayoutIterator::current() { return layout->itemAt(index); }
-inline QLayoutItem *QLayoutIterator::takeCurrent() { return layout->takeAt(index); }
-inline void QLayoutIterator::deleteCurrent() { delete  layout->takeAt(index); }
-#endif
 
 //### support old includes
 #if 1 //def QT3_SUPPORT

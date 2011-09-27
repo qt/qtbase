@@ -571,28 +571,6 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     automatic bullet lists are supported.
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    \enum QTextEdit::CursorAction
-    \compat
-
-    \value MoveBackward
-    \value MoveForward
-    \value MoveWordBackward
-    \value MoveWordForward
-    \value MoveUp
-    \value MoveDown
-    \value MoveLineStart
-    \value MoveLineEnd
-    \value MoveHome
-    \value MoveEnd
-    \value MovePageUp
-    \value MovePageDown
-
-    \omitvalue MovePgUp
-    \omitvalue MovePgDown
-*/
-#endif
 
 /*!
     Constructs an empty QTextEdit with parent \a
@@ -626,19 +604,6 @@ QTextEdit::QTextEdit(const QString &text, QWidget *parent)
     d->init(text);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QTextEdit::QTextEdit(QWidget *parent, const char *name)
-    : QAbstractScrollArea(*new QTextEditPrivate, parent)
-{
-    Q_D(QTextEdit);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 
 /*!
@@ -1516,11 +1481,6 @@ void QTextEditPrivate::_q_currentCharFormatChanged(const QTextCharFormat &fmt)
 {
     Q_Q(QTextEdit);
     emit q->currentCharFormatChanged(fmt);
-#ifdef QT3_SUPPORT
-    // compat signals
-    emit q->currentFontChanged(fmt.font());
-    emit q->currentColorChanged(fmt.foreground().color());
-#endif
 }
 
 void QTextEditPrivate::updateDefaultTextOption()
@@ -2486,120 +2446,6 @@ void QTextEdit::setText(const QString &text)
         setPlainText(text);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use the QTextCursor class instead.
-*/
-void QTextEdit::moveCursor(CursorAction action, QTextCursor::MoveMode mode)
-{
-    Q_D(QTextEdit);
-    if (action == MovePageUp) {
-        d->pageUpDown(QTextCursor::Up, mode);
-        return;
-    } else if (action == MovePageDown) {
-        d->pageUpDown(QTextCursor::Down, mode);
-        return;
-    }
-
-    QTextCursor cursor = d->control->textCursor();
-    QTextCursor::MoveOperation op = QTextCursor::NoMove;
-    switch (action) {
-        case MoveBackward: op = QTextCursor::Left; break;
-        case MoveForward: op = QTextCursor::Right; break;
-        case MoveWordBackward: op = QTextCursor::WordLeft; break;
-        case MoveWordForward: op = QTextCursor::WordRight; break;
-        case MoveUp: op = QTextCursor::Up; break;
-        case MoveDown: op = QTextCursor::Down; break;
-        case MoveLineStart: op = QTextCursor::StartOfLine; break;
-        case MoveLineEnd: op = QTextCursor::EndOfLine; break;
-        case MoveHome: op = QTextCursor::Start; break;
-        case MoveEnd: op = QTextCursor::End; break;
-        default: return;
-    }
-    cursor.movePosition(op, mode);
-    d->control->setTextCursor(cursor);
-}
-
-/*!
-    Use the QTextCursor class instead.
-*/
-void QTextEdit::moveCursor(CursorAction action, bool select)
-{
-    moveCursor(action, select ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
-}
-
-/*!
-    Executes keyboard action \a action.
-
-    Use the QTextCursor class instead.
-
-    \sa textCursor()
-*/
-void QTextEdit::doKeyboardAction(KeyboardAction action)
-{
-    Q_D(QTextEdit);
-    QTextCursor cursor = d->control->textCursor();
-    switch (action) {
-        case ActionBackspace: cursor.deletePreviousChar(); break;
-        case ActionDelete: cursor.deleteChar(); break;
-        case ActionReturn: cursor.insertBlock(); break;
-        case ActionKill: {
-                QTextBlock block = cursor.block();
-                if (cursor.position() == block.position() + block.length() - 2)
-                    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-                else
-                    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-                cursor.deleteChar();
-                break;
-            }
-        case ActionWordBackspace:
-            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
-            cursor.deletePreviousChar();
-            break;
-        case ActionWordDelete:
-            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-            cursor.deleteChar();
-            break;
-    }
-    d->control->setTextCursor(cursor);
-}
-
-/*!
-    Returns all the text in the text edit as plain text.
-*/
-QString QTextEdit::text() const
-{
-    Q_D(const QTextEdit);
-    if (d->textFormat == Qt::RichText || d->textFormat == Qt::LogText || (d->textFormat == Qt::AutoText && d->preferRichText))
-        return d->control->toHtml();
-    else
-        return d->control->toPlainText();
-}
-
-
-/*!
-    Sets the text format to format \a f.
-
-    \sa textFormat()
-*/
-void QTextEdit::setTextFormat(Qt::TextFormat f)
-{
-    Q_D(QTextEdit);
-    d->textFormat = f;
-}
-
-/*!
-    Returns the text format.
-
-    \sa setTextFormat()
-*/
-Qt::TextFormat QTextEdit::textFormat() const
-{
-    Q_D(const QTextEdit);
-    return d->textFormat;
-}
-
-#endif // QT3_SUPPORT
 
 /*!
     Appends a new paragraph with \a text to the end of the text edit.

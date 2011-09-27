@@ -216,21 +216,6 @@ QSizeGrip::QSizeGrip(QWidget * parent)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-
-    Constructs a resize corner with the given \a name, as a child
-    widget of the given \a parent.
-*/
-QSizeGrip::QSizeGrip(QWidget * parent, const char* name)
-    : QWidget(*new QSizeGripPrivate, parent, 0)
-{
-    Q_D(QSizeGrip);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-#endif
 
 void QSizeGripPrivate::init()
 {

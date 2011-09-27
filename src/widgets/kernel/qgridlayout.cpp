@@ -1076,71 +1076,6 @@ QGridLayout::QGridLayout()
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-    Constructs a new QGridLayout with \a nRows rows, \a nCols columns
-    and parent widget, \a  parent. \a parent may not be 0. The grid
-    layout is called \a name.
-
-    \a margin is the number of pixels between the edge of the widget
-    and its managed children. \a space is the default number of pixels
-    between cells. If \a space is -1, the value of \a margin is used.
-*/
-QGridLayout::QGridLayout(QWidget *parent, int nRows, int nCols, int margin,
-                         int space, const char *name)
-    : QLayout(*new QGridLayoutPrivate, 0, parent)
-{
-    Q_D(QGridLayout);
-    d->expand(nRows, nCols);
-    setMargin(margin);
-    setSpacing(space < 0 ? margin : space);
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    \obsolete
-
-    Constructs a new grid with \a nRows rows and \a nCols columns. If
-    \a spacing is -1, this QGridLayout inherits its parent's
-    spacing(); otherwise \a spacing is used. The grid layout is called
-    \a name.
-
-    You must insert this grid into another layout. You can insert
-    widgets and layouts into this layout at any time, but laying out
-    will not be performed before this is inserted into another layout.
-*/
-QGridLayout::QGridLayout(QLayout *parentLayout, int nRows, int nCols,
-                         int spacing, const char *name)
-    : QLayout(*new QGridLayoutPrivate, parentLayout, 0)
-{
-    Q_D(QGridLayout);
-    d->expand(nRows, nCols);
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-}
-
-/*!
-    \obsolete
-
-    Constructs a new grid with \a nRows rows and \a nCols columns. If
-    \a spacing is -1, this QGridLayout inherits its parent's
-    spacing(); otherwise \a spacing is used. The grid layout is called
-    \a name.
-
-    You must insert this grid into another layout. You can insert
-    widgets and layouts into this layout at any time, but laying out
-    will not be performed before this is inserted into another layout.
-*/
-QGridLayout::QGridLayout(int nRows, int nCols, int spacing, const char *name)
-    : QLayout(*new QGridLayoutPrivate, 0, 0)
-{
-    Q_D(QGridLayout);
-    d->expand(nRows, nCols);
-    setSpacing(spacing);
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 
 /*!
@@ -1353,31 +1288,6 @@ int QGridLayout::minimumHeightForWidth(int w) const
     return dat->minimumHeightForWidth(w, horizontalSpacing(), verticalSpacing());
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \compat
-
-    Searches for widget \a w in this layout (not including child
-    layouts). If \a w is found, it sets \c{*}\a{row} and
-    \c{*}\a{column} to the row and column that the widget
-    occupies and returns true; otherwise returns false.
-
-    If the widget spans multiple rows/columns, the top-left cell
-    is returned.
-
-    Use indexOf() and getItemPosition() instead.
-*/
-bool QGridLayout::findWidget(QWidget* w, int *row, int *column)
-{
-    Q_D(QGridLayout);
-    int index = indexOf(w);
-    if (index < 0)
-        return false;
-    int dummy1, dummy2;
-    d->getItemPosition(index, row, column, &dummy1, &dummy2);
-    return true;
-}
-#endif
 /*!
     \reimp
 */
@@ -1471,20 +1381,6 @@ QRect QGridLayout::cellRect(int row, int column) const
     Q_D(const QGridLayout);
     return d->cellRect(row, column);
 }
-#ifdef QT3_SUPPORT
-/*!
-  \obsolete
-    Expands this grid so that it will have \a nRows rows and \a nCols
-    columns. Will not shrink the grid. You should not need to call
-    this function because QGridLayout expands automatically as new
-    items are inserted.
-*/
-void QGridLayout::expand(int nRows, int nCols)
-{
-    Q_D(QGridLayout);
-    d->expand(nRows, nCols);
-}
-#endif
 
 /*!
     \reimp

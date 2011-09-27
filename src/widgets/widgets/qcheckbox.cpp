@@ -385,33 +385,6 @@ bool QCheckBox::event(QEvent *e)
     return QAbstractButton::event(e);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QCheckBox::QCheckBox(QWidget *parent, const char* name)
-    : QAbstractButton (*new QCheckBoxPrivate, parent)
-{
-    Q_D(QCheckBox);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-}
-
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QCheckBox::QCheckBox(const QString &text, QWidget *parent, const char* name)
-    : QAbstractButton (*new QCheckBoxPrivate, parent)
-{
-    Q_D(QCheckBox);
-    setObjectName(QString::fromAscii(name));
-    d->init();
-    setText(text);
-}
-
-#endif
 
 
 QT_END_NAMESPACE

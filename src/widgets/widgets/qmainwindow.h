@@ -183,9 +183,6 @@ public:
     virtual QMenu *createPopupMenu();
 #endif
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QMainWindow(QWidget *parent, const char *name, Qt::WindowFlags flags = 0);
-#endif
 
 #ifndef QT_NO_DOCKWIDGET
 public Q_SLOTS:

@@ -195,13 +195,6 @@ QMacTabletHash *qt_mac_tablet_hash();
 # endif
 #endif
 
-#ifdef QT3_SUPPORT
-extern "C" {
-    typedef bool (*Ptrqt_tryAccelEvent)(QWidget *w, QKeyEvent *e);
-    typedef bool (*Ptrqt_tryComposeUnicode)(QWidget *w, QKeyEvent *e);
-    typedef bool (*Ptrqt_dispatchAccelEvent)(QWidget *w, QKeyEvent *e);
-}
-#endif
 
 #if defined(Q_WS_WIN)
 typedef BOOL (WINAPI *PtrRegisterTouchWindow)(HWND, ULONG);
@@ -387,19 +380,6 @@ public:
     QShortcutMap shortcutMap;
 #endif
 
-#ifdef QT3_SUPPORT
-    bool qt_compat_used;
-    bool qt_compat_resolved;
-    Ptrqt_tryAccelEvent qt_tryAccelEvent;
-    Ptrqt_tryComposeUnicode qt_tryComposeUnicode;
-    Ptrqt_dispatchAccelEvent qt_dispatchAccelEvent;
-
-    bool use_compat() {
-        return qt_tryAccelEvent
-               && qt_tryComposeUnicode
-               && qt_dispatchAccelEvent;
-    }
-#endif
     static QInputContext *inputContext;
 
     static Qt::MouseButtons mouse_buttons;

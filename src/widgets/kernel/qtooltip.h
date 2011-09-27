@@ -67,12 +67,6 @@ public:
     static void setPalette(const QPalette &);
     static QFont font();
     static void setFont(const QFont &);
-#ifdef QT3_SUPPORT
-    static inline QT3_SUPPORT void add(QWidget *w, const QString &s) { w->setToolTip(s); }
-    static inline QT3_SUPPORT void add(QWidget *w, const QRect &, const QString &s)
-    { w->setToolTip(s); }
-    static inline QT3_SUPPORT void remove(QWidget *w) { w->setToolTip(QString()); }
-#endif
 };
 
 #endif // QT_NO_TOOLTIP

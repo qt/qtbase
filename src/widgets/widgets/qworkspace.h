@@ -79,11 +79,6 @@ public:
     bool scrollBarsEnabled() const;
     void setScrollBarsEnabled(bool enable);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QWorkspace(QWidget* parent, const char* name);
-    QT3_SUPPORT void setPaletteBackgroundColor(const QColor &);
-    QT3_SUPPORT void setPaletteBackgroundPixmap(const QPixmap &);
-#endif
 
     void setBackground(const QBrush &background);
     QBrush background() const;

@@ -50,10 +50,6 @@
 #ifdef QT_INCLUDE_COMPAT
 # include <QtWidgets/qdesktopwidget.h>
 #endif
-#ifdef QT3_SUPPORT
-# include <QtWidgets/qwidget.h>
-# include <QtGui/qpalette.h>
-#endif
 #ifdef Q_WS_QWS
 # include <QtGui/qrgb.h>
 # include <QtGui/qtransportauth_qws.h>
@@ -170,10 +166,6 @@ public:
     static QIcon windowIcon();
 
 
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QWidget *mainWidget();
-    static QT3_SUPPORT void setMainWidget(QWidget *);
-#endif
 
     static QWidgetList allWidgets();
     static QWidgetList topLevelWidgets();
@@ -320,45 +312,6 @@ protected:
     bool event(QEvent *);
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 
-#ifdef QT3_SUPPORT
-public:
-    static inline QT3_SUPPORT void setReverseLayout(bool b) { setLayoutDirection(b?Qt::RightToLeft:Qt::LeftToRight); }
-    static inline bool QT3_SUPPORT reverseLayout() { return layoutDirection() == Qt::RightToLeft; }
-    static QT3_SUPPORT Qt::Alignment horizontalAlignment(Qt::Alignment align);
-    typedef int ColorMode;
-    enum { NormalColors = NormalColor, CustomColors = CustomColor };
-    static inline QT3_SUPPORT ColorMode colorMode() { return static_cast<ColorMode>(colorSpec()); }
-    static inline QT3_SUPPORT void setColorMode(ColorMode mode) { setColorSpec(int(mode)); }
-#if defined(Q_OS_WIN32) || defined(Q_OS_CYGWIN)
-    static QT3_SUPPORT Qt::WindowsVersion winVersion() { return (Qt::WindowsVersion)QSysInfo::WindowsVersion; }
-#endif
-#if defined(Q_OS_MAC)
-    static QT3_SUPPORT Qt::MacintoshVersion macVersion() { return (Qt::MacintoshVersion)QSysInfo::MacintoshVersion; }
-#endif
-#  ifndef QT_NO_CURSOR
-    inline static  QT3_SUPPORT void setOverrideCursor(const QCursor &cursor, bool replace)
-    { if (replace) changeOverrideCursor(cursor); else setOverrideCursor(cursor); }
-#  endif
-    inline static QT3_SUPPORT bool hasGlobalMouseTracking() {return true;}
-    inline static QT3_SUPPORT void setGlobalMouseTracking(bool) {}
-    inline static QT3_SUPPORT void flushX() { flush(); }
-    static inline QT3_SUPPORT void setWinStyleHighlightColor(const QColor &c) {
-        QPalette p(palette());
-        p.setColor(QPalette::Highlight, c);
-        setPalette(p);
-    }
-    static inline QT3_SUPPORT const QColor &winStyleHighlightColor()
-        { return palette().color(QPalette::Active, QPalette::Highlight); }
-    static inline QT3_SUPPORT void setPalette(const QPalette &pal, bool, const char* className = 0)
-        { setPalette(pal, className); }
-    static inline QT3_SUPPORT void setFont(const QFont &font, bool, const char* className = 0)
-        { setFont(font, className); }
-
-    static inline QT3_SUPPORT QWidget *widgetAt(int x, int y, bool child)
-        { QWidget *w = widgetAt(x, y); return child ? w : (w ? w->window() : 0); }
-    static inline QT3_SUPPORT QWidget *widgetAt(const QPoint &p, bool child)
-        { QWidget *w = widgetAt(p); return child ? w : (w ? w->window() : 0); }
-#endif // QT3_SUPPORT
 
 #if defined(Q_INTERNAL_QAPP_SRC) || defined(qdoc)
     QApplication(int &argc, char **argv);
