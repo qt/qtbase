@@ -42,7 +42,7 @@
 #ifndef QPLATFORMDRAG_H
 #define QPLATFORMDRAG_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 

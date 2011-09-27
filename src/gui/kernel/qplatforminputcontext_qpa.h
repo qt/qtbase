@@ -42,7 +42,7 @@
 #ifndef QPLATFORMINPUTCONTEXT_H
 #define QPLATFORMINPUTCONTEXT_H
 
-#include <qinputpanel.h>
+#include <QtGui/qinputpanel.h>
 
 QT_BEGIN_HEADER
 

@@ -42,8 +42,8 @@
 #ifndef QPLATFORMMENU_H
 #define QPLATFORMMENU_H
 
-#include <qglobal.h>
-#include <qpointer.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/qpointer.h>
 #include <QtWidgets/qaction.h>
 
 QT_BEGIN_NAMESPACE

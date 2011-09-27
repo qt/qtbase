@@ -41,7 +41,7 @@
 #ifndef QSURFACEFORMAT_H
 #define QSURFACEFORMAT_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
