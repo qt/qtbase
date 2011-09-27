@@ -52,11 +52,6 @@
 #define Q_NO_SYMLINKS
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#define Q_NO_SYMLINKS
-#define Q_NO_SYMLINKS_TO_DIRS
-#endif
-
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include "../../../network-settings.h"
 #endif
@@ -159,7 +154,7 @@ tst_QDirIterator::tst_QDirIterator()
     createDirectory("empty");
 
 #ifndef Q_NO_SYMLINKS
-#  if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#  if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     createLink("entrylist/file", "entrylist/linktofile.lnk");
 #    ifndef Q_NO_SYMLINKS_TO_DIRS
@@ -211,7 +206,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
                   "entrylist/.,"
                    "entrylist/..,"
 #endif
@@ -229,7 +224,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
         << QDir::Filters(QDir::AllEntries | QDir::NoDot) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
                    "entrylist/..,"
 #endif
                    "entrylist/file,"
@@ -246,7 +241,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
         << QDir::Filters(QDir::AllEntries | QDir::NoDotDot) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
                   "entrylist/.,"
 #endif
                    "entrylist/file,"
@@ -277,7 +272,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
                    "entrylist/.,"
                    "entrylist/..,"
                    "entrylist/directory/.,"
@@ -317,7 +312,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
     QTest::newRow("empty, default")
         << QString("empty") << QDirIterator::IteratorFlags(0)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
         << QStringList();
 #else
         << QString("empty/.,empty/..").split(',');

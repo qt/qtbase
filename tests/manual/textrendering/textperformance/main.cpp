@@ -219,11 +219,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     FontBlaster dlg;
-#ifdef Q_OS_SYMBIAN
-    dlg.showFullScreen();
-#else
     dlg.show();
-#endif
 
     return a.exec();
 }

@@ -43,10 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtCore>
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR "."
-#endif
-
 class tst_QResourceEngine: public QObject
 {
     Q_OBJECT

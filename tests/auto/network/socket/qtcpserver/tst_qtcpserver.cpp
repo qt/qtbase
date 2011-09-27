@@ -39,9 +39,8 @@
 **
 ****************************************************************************/
 
-// Just to get Q_OS_SYMBIAN
 #include <qglobal.h>
-#if defined(_WIN32) && !defined(Q_OS_SYMBIAN)
+#if defined(_WIN32)
 #include <winsock2.h>
 #else
 #include <sys/types.h>
@@ -137,7 +136,6 @@ void tst_QTcpServer::getSetCheck()
 
 tst_QTcpServer::tst_QTcpServer()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QTcpServer::~tst_QTcpServer()
@@ -454,7 +452,7 @@ void tst_QTcpServer::waitForConnectionTest()
     ThreadConnector connector(findLocalIpSocket.localAddress(), server.serverPort());
     connector.start();
 
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     QVERIFY(server.waitForNewConnection(9000, &timeout));
 #else
     QVERIFY(server.waitForNewConnection(3000, &timeout));
@@ -466,12 +464,8 @@ void tst_QTcpServer::waitForConnectionTest()
 void tst_QTcpServer::setSocketDescriptor()
 {
     QTcpServer server;
-#ifdef Q_OS_SYMBIAN
-    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
-#endif
     QVERIFY(!server.setSocketDescriptor(42));
     QCOMPARE(server.serverError(), QAbstractSocket::UnsupportedSocketOperationError);
-#ifndef Q_OS_SYMBIAN
     //adopting Open C sockets is not supported, neither is adopting externally created RSocket
 #ifdef Q_OS_WIN
     // ensure winsock is started
@@ -494,7 +488,6 @@ void tst_QTcpServer::setSocketDescriptor()
 
 #ifdef Q_OS_WIN
     WSACleanup();
-#endif
 #endif
 }
 
@@ -522,11 +515,7 @@ protected:
     {
         // how a user woulddo it (qabstractsocketengine is not public)
         unsigned long arg = 0;
-#if defined(Q_OS_SYMBIAN)
-        arg = fcntl(socketDescriptor, F_GETFL, NULL);
-        arg &= (~O_NONBLOCK);
-        ok = ::fcntl(socketDescriptor, F_SETFL, arg) != -1;
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
         ok = ::ioctlsocket(socketDescriptor, FIONBIO, &arg) == 0;
         ::closesocket(socketDescriptor);
 #else
@@ -538,10 +527,6 @@ protected:
 
 void tst_QTcpServer::addressReusable()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    QSKIP("Symbian: Emulator does not support process launching", SkipAll );
-#endif
-
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else
@@ -553,7 +538,7 @@ void tst_QTcpServer::addressReusable()
             QSKIP("With socks5 this test does not make senans at the momment", SkipAll);
         }
     }
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     QString signalName = QString::fromLatin1("/test_signal.txt");
     QFile::remove(signalName);
     // The crashingServer process will crash once it gets a connection.
@@ -587,9 +572,6 @@ void tst_QTcpServer::addressReusable()
 
 void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("open C ioctls on Qt sockets not supported", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
@@ -604,7 +586,6 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
     socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
     QVERIFY(server.waitForNewConnection(5000));
     QVERIFY(server.ok);
-#endif
 }
 
 void tst_QTcpServer::invalidProxy_data()

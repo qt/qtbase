@@ -73,10 +73,6 @@
 #include <qlineedit.h>
 #include <qmdiarea.h>
 
-#if defined(Q_OS_SYMBIAN)
-#define SRCDIR "."
-#endif
-
 #include <QCleanlooksStyle>
 
 #ifdef Q_WS_MAC
@@ -273,17 +269,6 @@ void tst_QStyle::drawItemPixmap()
     QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
 
-#ifdef Q_OS_SYMBIAN
-    // QPixmap cannot be assumed to be exactly same, unless it is created from exactly same content.
-    // In Symbian, pixmap format might get "optimized" depending on how QPixmap is created.
-    // Therefore, force the content to specific format and compare QImages.
-    // Then re-create the QPixmaps and compare those.
-    QImage i1 = p.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    p = QPixmap::fromImage(i1);
-    QImage i2 = actualPix.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    actualPix = QPixmap::fromImage(i2);
-    QVERIFY(i1 == i2);
-#endif
     QVERIFY(pixmapsAreEqual(&actualPix,&p));
     testWidget->hide();
 }

@@ -64,18 +64,9 @@
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
-#ifdef Q_OS_SYMBIAN
-#include <f32file.h>
-#include <private/qcore_symbian_p.h>
-#endif
 #include "../../../network-settings.h"
 #include <private/qfileinfo_p.h>
 #include "../../../../shared/filesystem.h"
-
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-# define NO_SYMLINKS
-#endif
 
 QT_BEGIN_NAMESPACE
 extern Q_AUTOTEST_EXPORT bool qIsLikelyToBeNfs(int /* handle */);
@@ -191,7 +182,7 @@ private slots:
 
     void detachingOperations();
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     void owner();
 #endif
     void group();
@@ -211,14 +202,9 @@ tst_QFileInfo::~tst_QFileInfo()
     QFile::remove("dummyfile");
     QFile::remove("simplefile.txt");
     QFile::remove("longFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileName.txt");
-#ifdef Q_OS_SYMBIAN
-    QFile::remove("hidden.txt");
-    QFile::remove("nothidden.txt");
-#else
     QFile::remove("tempfile.txt");
-#endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     QDir().rmdir("./.hidden-directory");
     QFile::remove("link_to_tst_qfileinfo");
 #endif
@@ -346,7 +332,7 @@ void tst_QFileInfo::isDir_data()
 
     QTest::newRow("broken link") << "brokenlink.lnk" << false;
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("drive 1") << "c:" << true;
     QTest::newRow("drive 2") << "c:/" << true;
     //QTest::newRow("drive 2") << "t:s" << false;
@@ -384,7 +370,7 @@ void tst_QFileInfo::isRoot_data()
 
     QTest::newRow("simple dir") << SRCDIR "resources" << false;
     QTest::newRow("simple dir with slash") << SRCDIR "resources/" << false;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
     QTest::newRow("drive 3") << "p:/" << false;
@@ -459,7 +445,7 @@ void tst_QFileInfo::absolutePath_data()
     QTest::addColumn<QString>("filename");
 
     QString drivePrefix;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
@@ -508,7 +494,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("relativeFile") << "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
     QString drivePrefix;
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QString curr = QDir::currentPath();
 
     curr.remove(0, 2);   // Make it a absolute path with no drive specifier: \depot\qt-4.2\tests\auto\qfileinfo
@@ -536,7 +522,7 @@ void tst_QFileInfo::absFilePath()
     QFETCH(QString, expected);
 
     QFileInfo fi(file);
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QVERIFY(QString::compare(fi.absoluteFilePath(), expected, Qt::CaseInsensitive) == 0);
 #else
     QCOMPARE(fi.absoluteFilePath(), expected);
@@ -565,7 +551,7 @@ void tst_QFileInfo::canonicalFilePath()
     QFileInfo info("/tmp/../../../../../../../../../../../../../../../../../");
     info.canonicalFilePath();
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     // This used to crash on Mac
     QFileInfo dontCrash(QLatin1String("/"));
     QCOMPARE(dontCrash.canonicalFilePath(), QLatin1String("/"));
@@ -582,8 +568,6 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
-#  if !defined(Q_OS_SYMBIAN)
-    // Symbian doesn't support links to directories
     {
         const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
         QFile::remove(link);
@@ -624,7 +608,6 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
-#  endif
 #endif
 
 #ifdef Q_OS_WIN
@@ -663,7 +646,7 @@ void tst_QFileInfo::fileName_data()
 
     QTest::newRow("relativeFile") << "tmp.txt" << "tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << "tmp.txt";
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "tmp.txt";
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "tmp.txt";
@@ -863,9 +846,6 @@ void tst_QFileInfo::permission()
     QFETCH(QString, file);
     QFETCH(int, perms);
     QFETCH(bool, expected);
-#ifdef Q_OS_SYMBIAN
-    QSKIP("No user based rights in Symbian OS - SOS needs platform security tests instead", SkipAll);
-#endif
     QFileInfo fi(file);
     QCOMPARE(fi.permission(QFile::Permissions(perms)), expected);
 }
@@ -937,7 +917,7 @@ void tst_QFileInfo::compare_data()
     QTest::newRow("casesense1")
         << QString::fromLatin1(SRCDIR "tst_qfileInfo.cpp")
         << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
         << true;
 #elif defined(Q_OS_MAC)
         << !caseSensitiveOnMac;
@@ -960,7 +940,7 @@ void tst_QFileInfo::consistent_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("expected");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QTest::newRow("slashes") << QString::fromLatin1("\\a\\a\\a\\a") << QString::fromLatin1("/a/a/a/a");
 #endif
     QTest::newRow("ending slash") << QString::fromLatin1("/a/somedir/") << QString::fromLatin1("/a/somedir/");
@@ -1011,9 +991,6 @@ void tst_QFileInfo::fileTimes()
 #if defined(Q_OS_WINCE)
         QEXPECT_FAIL("longfile", "No long filenames on WinCE", Abort);
         QEXPECT_FAIL("longfile absolutepath", "No long filenames on WinCE", Abort);
-#elif defined(Q_OS_SYMBIAN)
-        QEXPECT_FAIL("longfile", "Maximum total filepath cannot exceed 256 characters in Symbian", Abort);
-        QEXPECT_FAIL("longfile absolutepath", "Maximum total filepath cannot exceed 256 characters in Symbian", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
 #ifdef Q_OS_UNIX
@@ -1060,9 +1037,6 @@ void tst_QFileInfo::fileTimes()
     //is set to 0, in the test machine.
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
-#endif
-#ifdef Q_OS_SYMBIAN
-        QEXPECT_FAIL("simple", "Symbian implementation of stat doesn't return read time right", Abort);
 #endif
     QVERIFY(fileInfo.lastRead() > beforeRead);
     QVERIFY(fileInfo.lastModified() > beforeWrite);
@@ -1176,7 +1150,7 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
     QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     QVERIFY(QDir("./.hidden-directory").exists() || QDir().mkdir("./.hidden-directory"));
     QTest::newRow("/path/to/.hidden-directory") << QDir::currentPath() + QString("/.hidden-directory") << true;
     QTest::newRow("/path/to/.hidden-directory/.") << QDir::currentPath() + QString("/.hidden-directory/.") << true;
@@ -1186,7 +1160,7 @@ void tst_QFileInfo::isHidden_data()
 #if defined(Q_OS_MAC)
     // /bin has the hidden attribute on Mac OS X
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << true;
-#elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#elif !defined(Q_OS_WIN)
     QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
 #endif
 
@@ -1194,35 +1168,6 @@ void tst_QFileInfo::isHidden_data()
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;
     QTest::newRow("mac_Applications") << QString::fromLatin1("/Applications") << false;
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    // No guaranteed hidden file knows to exist in Symbian filesystem, so make one.
-    QString hiddenFileName("hidden.txt");
-    QString notHiddenFileName("nothidden.txt");
-    QTest::newRow("hidden file") << hiddenFileName << true;
-    QTest::newRow("non-hidden file") << notHiddenFileName << false;
-
-    {
-        QFile file(hiddenFileName);
-        QVERIFY(file.open(QIODevice::WriteOnly));
-        QTextStream t(&file);
-        t << "foobar";
-
-        QFile file2(notHiddenFileName);
-        QVERIFY(file2.open(QIODevice::WriteOnly));
-        QTextStream t2(&file2);
-        t2 << "foobar";
-    }
-
-    RFs rfs;
-    TInt err = rfs.Connect();
-    QCOMPARE(err, KErrNone);
-    HBufC* symFile = qt_QString2HBufC(hiddenFileName);
-    err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
-    rfs.Close();
-    delete symFile;
-    QCOMPARE(err, KErrNone);
 #endif
 }
 
@@ -1508,7 +1453,7 @@ void tst_QFileInfo::isWritable()
     QVERIFY(fi.exists());
     QVERIFY(!fi.isWritable());
 #endif
-#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+#if defined (Q_OS_UNIX)
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
@@ -1518,14 +1463,10 @@ void tst_QFileInfo::isWritable()
 
 void tst_QFileInfo::isExecutable()
 {
-#ifdef Q_OS_SYMBIAN
-    QString appPath = "c:/sys/bin/tst_qfileinfo.exe";
-#else
     QString appPath = QCoreApplication::applicationDirPath();
     appPath += "/tst_qfileinfo";
-# if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     appPath += ".exe";
-# endif
 #endif
     QFileInfo fi(appPath);
     QCOMPARE(fi.isExecutable(), true);
@@ -1652,7 +1593,7 @@ void tst_QFileInfo::detachingOperations()
     QVERIFY(!info1.caching());
 }
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
 #if defined (Q_OS_WIN)
 BOOL IsUserAdmin()
 {
@@ -1743,7 +1684,7 @@ void tst_QFileInfo::owner()
 void tst_QFileInfo::group()
 {
     QString expected;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     struct group *gr;
     gid_t gid = getegid();
     gr = getgrgid(gid);

@@ -5,8 +5,8 @@ QT += core-private gui-private
 
 SOURCES += tst_qlabel.cpp
 wince*::DEFINES += SRCDIR=\\\"\\\"
-else:!symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
-wince*|symbian { 
+else:DEFINES += SRCDIR=\\\"$$PWD/\\\"
+wince* {
     addFiles.files = *.png \
         testdata
     addFiles.path = .

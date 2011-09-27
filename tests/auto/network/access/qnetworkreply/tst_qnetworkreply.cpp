@@ -77,10 +77,6 @@
 
 #include "private/qnetworkaccessmanager_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR "."
-#endif
-
 #include "../../../network-settings.h"
 
 Q_DECLARE_METATYPE(QSharedPointer<char>)
@@ -754,7 +750,7 @@ public:
 
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
-#ifndef Q_OS_SYMBIAN
+
         // need more time as working with embedded
         // device and testing from emualtor
         // things tend to get slower
@@ -763,13 +759,7 @@ public:
 
         if (!server.waitForNewConnection(1000))
             return false;
-#else
-        if (!active->waitForConnected(100))
-            return false;
 
-        if (!server.waitForNewConnection(100))
-            return false;
-#endif
         QTcpSocket *passive = server.nextPendingConnection();
         passive->setParent(this);
 
@@ -1088,8 +1078,6 @@ tst_QNetworkReply::tst_QNetworkReply()
     qRegisterMetaType<QList<QSslError> >();
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
-
-    Q_SET_DEFAULT_IAP
 
     testFileName = QDir::currentPath() + "/testfile";
     uniqueExtension = createUniqueExtension();
@@ -1637,7 +1625,7 @@ void tst_QNetworkReply::getErrors_data()
                                  << int(QNetworkReply::ContentOperationNotPermittedError) << 0 << true;
     QTest::newRow("file-exist") << QUrl::fromLocalFile(QDir::currentPath() + "/this-file-doesnt-exist.txt").toString()
                                 << int(QNetworkReply::ContentNotFoundError) << 0 << true;
-#if !defined Q_OS_WIN && !defined(Q_OS_SYMBIAN)
+#if !defined Q_OS_WIN
     QTest::newRow("file-is-wronly") << QUrl::fromLocalFile(wronlyFileName).toString()
                                     << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 #endif
@@ -3763,8 +3751,8 @@ void tst_QNetworkReply::ioPutToFileFromProcess_data()
 
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
-#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
-    QSKIP("Currently no stdin/out supported for Windows CE / Symbian OS", SkipAll);
+#if defined(Q_OS_WINCE)
+    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
 #else
 
 #ifdef Q_OS_WIN
@@ -4625,14 +4613,7 @@ void tst_QNetworkReply::downloadProgress_data()
 
     QTest::newRow("empty") << 0;
     QTest::newRow("small") << 4;
-#ifndef Q_OS_SYMBIAN
     QTest::newRow("big") << 4096;
-#else
-    // it can run even with 4096
-    // but it takes lot time
-    //especially on emulator
-    QTest::newRow("big") << 1024;
-#endif
 }
 
 void tst_QNetworkReply::downloadProgress()
@@ -5264,13 +5245,7 @@ void tst_QNetworkReply::httpConnectionCount()
             break;
     }
 
-#ifdef Q_OS_SYMBIAN
-    // see in qhttpnetworkconnection.cpp
-    // hardcoded defaultChannelCount = 3
-    QCOMPARE(pendingConnectionCount, 3);
-#else
     QCOMPARE(pendingConnectionCount, 6);
-#endif
 }
 
 void tst_QNetworkReply::httpReUsingConnectionSequential_data()
@@ -5798,7 +5773,7 @@ void tst_QNetworkReply::getFromHttpIntoBuffer2()
     QFETCH(bool, useDownloadBuffer);
 
     // On my Linux Desktop the results are already visible with 128 kB, however we use this to have good results.
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
+#if defined(Q_WS_WINCE_WM)
     // Show some mercy to non-desktop platform/s
     enum {UploadSize = 4*1024*1024}; // 4 MB
 #else

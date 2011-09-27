@@ -13,6 +13,3 @@ SUBDIRS=\
    qshortcut \
    qtouchevent \
 
-symbian {
-    SUBDIRS += qsoftkeymanager
-}

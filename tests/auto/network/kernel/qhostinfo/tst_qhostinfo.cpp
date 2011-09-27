@@ -187,7 +187,6 @@ void tst_QHostInfo::staticInformation()
 
 tst_QHostInfo::tst_QHostInfo()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QHostInfo::~tst_QHostInfo()
@@ -207,10 +206,6 @@ void tst_QHostInfo::initTestCase()
     }
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    ipv6Available = true;
-    ipv6LookupsAvailable = true;
-#else
     ipv6Available = false;
     ipv6LookupsAvailable = false;
 
@@ -239,7 +234,6 @@ void tst_QHostInfo::initTestCase()
             ipv6LookupsAvailable = true;
         }
     }
-#endif
 #endif
 
     // run each testcase with and without test enabled
@@ -450,7 +444,7 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     const int runs = 10;
 #else
     const int runs = 100;

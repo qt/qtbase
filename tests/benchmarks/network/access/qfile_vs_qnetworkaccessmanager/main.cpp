@@ -50,8 +50,6 @@
 class qfile_vs_qnetworkaccessmanager : public QObject
 {
     Q_OBJECT
-    // do not use on symbian.. 100 MB is too large..
-    // but.. this is a manual test anyway, so :)
 protected:
     void qnamFileRead_iteration(QNetworkAccessManager &manager, QNetworkRequest &request);
     void qnamImmediateFileRead_iteration(QNetworkAccessManager &manager, QNetworkRequest &request);
@@ -77,11 +75,7 @@ void qfile_vs_qnetworkaccessmanager::initTestCase()
 {
     testFile.open();
     QByteArray qba(1*1024*1024, 'x'); // 1 MB
-#ifdef Q_OS_SYMBIAN
-    for (int i = 0; i < 10; i++) { // for Symbian only 10 MB
-#else
     for (int i = 0; i < 100; i++) {
-#endif
         testFile.write(qba);
         testFile.flush();
         size += qba.size();

@@ -4,10 +4,6 @@ HEADERS  += ../qbearertestcommon.h
 
 QT = core network
 
-symbian {
-    TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData
-}
-
 maemo6|maemo5 {
     CONFIG += link_pkgconfig
 

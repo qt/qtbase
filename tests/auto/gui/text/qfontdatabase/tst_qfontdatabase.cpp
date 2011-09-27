@@ -39,17 +39,11 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qfontmetrics.h>
-
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR "."
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=

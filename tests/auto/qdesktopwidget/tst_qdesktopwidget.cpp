@@ -142,9 +142,7 @@ void tst_QDesktopWidget::screenNumberForQPoint()
     QRect allScreens;
     for (int i = 0; i < desktopWidget->numScreens(); ++i) {
         QRect screenGeometry = desktopWidget->screenGeometry(i);
-#if !defined(Q_OS_SYMBIAN)
         QCOMPARE(desktopWidget->screenNumber(screenGeometry.center()), i);
-#endif
         allScreens |= screenGeometry;
     }
 

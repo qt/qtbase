@@ -107,9 +107,6 @@ PlatformInfo PlatformInfo::localHostInfo()
 #elif defined(Q_OS_MAC)
     pi.insert(PI_OSName, QLS("MacOS"));
     pi.insert(PI_OSVersion, QString::number(qMacVersion()));
-#elif defined(Q_OS_SYMBIAN)
-    pi.insert(PI_OSName, QLS("Symbian"));
-    pi.insert(PI_OSVersion, QString::number(QSysInfo::symbianVersion());
 #else
     pi.insert(PI_OSName, QLS("Other"));
 #endif

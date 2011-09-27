@@ -11,9 +11,3 @@ SUBDIRS=\
    qtconcurrentthreadengine \
    qthreadpool
 
-symbian:SUBDIRS -= \
-   qtconcurrentfilter \
-   qtconcurrentiteratekernel \
-   qtconcurrentmap \
-   qtconcurrentrun \
-   qtconcurrentthreadengine \

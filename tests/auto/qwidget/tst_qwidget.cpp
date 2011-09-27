@@ -82,14 +82,6 @@
 #include <akncontext.h>             // CAknContextPane
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <eikspane.h>               // CEikStatusPane
-#include <eikbtgpc.h>               // CEikButtonGroupContainer
-#include <eikenv.h>                 // CEikonEnv
-#include <eikaufty.h>               // MEikAppUiFactory
-#include <eikmenub.h>               // CEikMenuBar
-#endif
-
 #ifdef Q_WS_QWS
 # include <qscreen_qws.h>
 #endif
@@ -250,11 +242,7 @@ private slots:
 
     void ensureCreated();
     void winIdChangeEvent();
-#ifdef Q_OS_SYMBIAN
-    void reparentCausesChildWinIdChange();
-#else
     void persistentWinId();
-#endif
     void showNativeChild();
     void qobject_castInDestroyedSlot();
 
@@ -390,20 +378,10 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
-    void destroyBackingStoreWhenHidden();
 
     void activateWindow();
 
     void openModal_taskQTBUG_5804();
-
-#ifdef Q_OS_SYMBIAN
-    void cbaVisibility();
-    void fullScreenWindowModeTransitions();
-    void maximizedWindowModeTransitions();
-    void minimizedWindowModeTransitions();
-    void normalWindowModeTransitions();
-    void focusSwitchClosesPopupMenu();
-#endif
 
     void focusProxyAndInputMethods();
     void scrollWithoutBackingStore();
@@ -1421,7 +1399,7 @@ void tst_QWidget::mapFromAndTo()
     subWindow2->setGeometry(75, 75, 100, 100);
     subSubWindow->setGeometry(10, 10, 10, 10);
 
-#if !defined (Q_OS_WINCE) && !defined(Q_OS_SYMBIAN) //still no proper minimizing
+#if !defined (Q_OS_WINCE) //still no proper minimizing
     //update visibility
     if (windowMinimized) {
         if (!windowHidden) {
@@ -3289,9 +3267,6 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
-#endif
 #if defined(Q_WS_QPA)
     QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
 #endif
@@ -3310,9 +3285,6 @@ void tst_QWidget::widgetAt()
     QTest::qWait(10);
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
 #endif
 #if defined(Q_WS_QPA)
     QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
@@ -4079,7 +4051,6 @@ void tst_QWidget::winIdChangeEvent()
 
     {
         // Changing grandparent of a native widget
-        // Should cause winId of grandchild to change only on Symbian
         QWidget grandparent1, grandparent2;
         QWidget parent(&grandparent1);
         WinIdChangeWidget child(&parent);
@@ -4087,14 +4058,8 @@ void tst_QWidget::winIdChangeEvent()
         QCOMPARE(child.winIdChangeEventCount(), 1);
         parent.setParent(&grandparent2);
         const WId winIdAfter = child.internalWinId();
-#ifdef Q_OS_SYMBIAN
-        QVERIFY(winIdBefore != winIdAfter);
-        QVERIFY(winIdAfter != 0);
-        QCOMPARE(child.winIdChangeEventCount(), 2);
-#else
         QCOMPARE(winIdBefore, winIdAfter);
         QCOMPARE(child.winIdChangeEventCount(), 1);
-#endif
     }
 
     {
@@ -4125,71 +4090,6 @@ void tst_QWidget::winIdChangeEvent()
     }
 }
 
-#ifdef Q_OS_SYMBIAN
-void tst_QWidget::reparentCausesChildWinIdChange()
-{
-    QWidget *parent = new QWidget;
-    QWidget *w1 = new QWidget;
-    QWidget *w2 = new QWidget;
-    QWidget *w3 = new QWidget;
-    w1->setParent(parent);
-    w2->setParent(w1);
-    w3->setParent(w2);
-
-    WId winId1 = w1->winId();
-    WId winId2 = w2->winId();
-    WId winId3 = w3->winId();
-
-    // reparenting causes winIds of the widget being reparented, and all of its children, to change
-    w1->setParent(0);
-    QVERIFY(w1->winId() != winId1);
-    winId1 = w1->winId();
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w1->setParent(parent);
-    QVERIFY(w1->winId() != winId1);
-    winId1 = w1->winId();
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w2->setParent(0);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w2->setParent(parent);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w2->setParent(w1);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w3->setParent(0);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w3->setParent(w1);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    w3->setParent(w2);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
-
-    delete parent;
-}
-#else
 void tst_QWidget::persistentWinId()
 {
     QWidget *parent = new QWidget;
@@ -4246,7 +4146,6 @@ void tst_QWidget::persistentWinId()
 
     delete parent;
 }
-#endif // Q_OS_SYMBIAN
 
 void tst_QWidget::showNativeChild()
 {
@@ -8140,12 +8039,7 @@ void tst_QWidget::customDpi()
     custom->logicalDpiX();
     QCOMPARE(custom->metricCallCount, 1);
     child->logicalDpiX();
-#ifdef Q_WS_S60
-    // QWidget::metric is not recursive on Symbian
-    QCOMPARE(custom->metricCallCount, 1);
-#else
     QCOMPARE(custom->metricCallCount, 2);
-#endif
 
     delete topLevel;
 }
@@ -9144,330 +9038,6 @@ QWidgetBackingStore* backingStore(QWidget &widget)
     return backingStore;
 }
 
-// Wait for a condition to be true, timing out after 1 second
-// This is used following calls to QWidget::show() and QWidget::hide(), which are
-// expected to asynchronously trigger native window visibility events.
-#define WAIT_AND_VERIFY(condition)                                              \
-    do {                                                                        \
-        QTime start = QTime::currentTime();                                     \
-        while (!(condition) && (start.elapsed() < 1000)) {                      \
-            qApp->processEvents();                                              \
-            QTest::qWait(50);                                                   \
-        }                                                                       \
-        if (!QTest::qVerify((condition), #condition, "", __FILE__, __LINE__))   \
-            return;                                                             \
-    } while (0)
-
-void tst_QWidget::destroyBackingStoreWhenHidden()
-{
-#ifndef QT_BUILD_INTERNAL
-    QSKIP("Test step requires access to Q_AUTOTEST_EXPORT", SkipAll);
-#endif
-
-#ifndef Q_OS_SYMBIAN
-    QSKIP("Only Symbian destroys backing store when native window becomes invisible", SkipAll);
-#endif
-
-    testWidget->hide();
-    QTest::qWait(1000);
-
-    // 1. Single top-level QWidget
-    {
-    QWidget w;
-    w.setAutoFillBackground(true);
-    w.setPalette(Qt::yellow);
-    w.setGeometry(0, 0, 100, 100);
-    w.show();
-    QTest::qWaitForWindowShown(&w);
-    QVERIFY(0 != backingStore(w));
-
-    w.hide();
-    WAIT_AND_VERIFY(0 == backingStore(w));
-
-    w.show();
-    QTest::qWaitForWindowShown(&w);
-    QVERIFY(0 != backingStore(w));
-    }
-
-    // 2. Two top-level widgets
-    {
-    QWidget w1;
-    w1.setGeometry(0, 0, 100, 100);
-    w1.setAutoFillBackground(true);
-    w1.setPalette(Qt::red);
-    w1.show();
-    QTest::qWaitForWindowShown(&w1);
-    QVERIFY(0 != backingStore(w1));
-
-    QWidget w2;
-    w2.setGeometry(w1.geometry());
-    w1.setAutoFillBackground(true);
-    w1.setPalette(Qt::blue);
-    w2.show();
-    QTest::qWaitForWindowShown(&w2);
-    QVERIFY(0 != backingStore(w2));
-
-    // Check that w1 deleted its backing store when obscured by w2
-    QVERIFY(0 == backingStore(w1));
-
-    w2.move(w2.pos() + QPoint(10, 10));
-
-    // Check that w1 recreates its backing store when partially revealed
-    WAIT_AND_VERIFY(0 != backingStore(w1));
-    }
-
-    // 3. Native child widget
-    {
-    QWidget parent;
-    parent.setGeometry(0, 0, 100, 100);
-    parent.setAutoFillBackground(true);
-    parent.setPalette(Qt::yellow);
-
-    QWidget child(&parent);
-    child.setAutoFillBackground(true);
-    child.setPalette(Qt::green);
-
-    QVBoxLayout layout(&parent);
-    layout.setContentsMargins(10, 10, 10, 10);
-    layout.addWidget(&child);
-    parent.setLayout(&layout);
-
-    child.winId();
-
-    parent.show();
-    QTest::qWaitForWindowShown(&parent);
-
-    // Check that child window does not obscure parent window
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Native child widget should share parent's backing store
-    QWidgetBackingStore *const parentBs = backingStore(parent);
-    QVERIFY(0 != parentBs);
-    QVERIFY(0 == backingStore(child));
-
-    // Set margins to zero so that child widget totally obscures parent
-    layout.setContentsMargins(0, 0, 0, 0);
-
-    WAIT_AND_VERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Backing store should remain unchanged despite child window obscuring
-    // parent window
-    QVERIFY(parentBs == backingStore(parent));
-    QVERIFY(0 == backingStore(child));
-    }
-
-    // 4. Alien child widget which is made full-screen
-    {
-    QWidget parent;
-    parent.setGeometry(0, 0, 100, 100);
-    parent.setAutoFillBackground(true);
-    parent.setPalette(Qt::red);
-
-    QWidget child(&parent);
-    child.setAutoFillBackground(true);
-    child.setPalette(Qt::blue);
-
-    QVBoxLayout layout(&parent);
-    layout.setContentsMargins(10, 10, 10, 10);
-    layout.addWidget(&child);
-    parent.setLayout(&layout);
-
-    parent.show();
-    QTest::qWaitForWindowShown(&parent);
-
-    // Check that child window does not obscure parent window
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Native child widget should share parent's backing store
-    QVERIFY(0 != backingStore(parent));
-    QVERIFY(0 == backingStore(child));
-
-    // Make child widget full screen
-    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
-    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
-    child.show();
-    QTest::qWaitForWindowShown(&child);
-
-    // Check that child window obscures parent window
-    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Now that extent of child widget goes beyond parent's extent,
-    // a new backing store should be created for the child widget.
-    QVERIFY(0 != backingStore(child));
-
-    // Parent is obscured, therefore its backing store should be destroyed
-    QVERIFY(0 == backingStore(parent));
-
-    // Disable full screen
-    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
-    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
-    child.show();
-    QTest::qWaitForWindowShown(&child);
-
-    // Check that parent is now visible again
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Native child widget should once again share parent's backing store
-    QVERIFY(0 != backingStore(parent));
-    QVERIFY(0 == backingStore(child));
-    }
-
-    // 5. Native child widget which is made full-screen
-    {
-    QWidget parent;
-    parent.setGeometry(0, 0, 100, 100);
-    parent.setAutoFillBackground(true);
-    parent.setPalette(Qt::red);
-
-    QWidget child(&parent);
-    child.setAutoFillBackground(true);
-    child.setPalette(Qt::blue);
-
-    QWidget grandChild(&child);
-    grandChild.setAutoFillBackground(true);
-    grandChild.setPalette(Qt::yellow);
-
-    QVBoxLayout layout(&parent);
-    layout.setContentsMargins(10, 10, 10, 10);
-    layout.addWidget(&child);
-    parent.setLayout(&layout);
-
-    QVBoxLayout childLayout(&child);
-    childLayout.setContentsMargins(10, 10, 10, 10);
-    childLayout.addWidget(&grandChild);
-    child.setLayout(&childLayout);
-
-    // Ensure that this widget and all its ancestors are native
-    grandChild.winId();
-
-    parent.show();
-
-    QTest::qWaitForWindowShown(&parent);
-
-    // Check that child window does not obscure parent window
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
-
-    // Native child widget should share parent's backing store
-    QVERIFY(0 != backingStore(parent));
-    QVERIFY(0 == backingStore(child));
-    QVERIFY(0 == backingStore(grandChild));
-
-    // Make child widget full screen
-    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
-    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
-    child.show();
-
-    // Paint into the child to ensure that it gets a backing store
-    QPainter painter(&child);
-    painter.fillRect(QRect(0, 0, 90, 90), Qt::white);
-
-    QTest::qWaitForWindowShown(&child);
-
-    // Ensure that 'window hidden' event is received by parent
-    qApp->processEvents();
-
-    // Check that child window obscures parent window
-    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
-
-    // Now that extent of child widget goes beyond parent's extent,
-    // a new backing store should be created for the child widget.
-    QVERIFY(0 != backingStore(child));
-
-    // Parent is obscured, therefore its backing store should be destroyed
-    QVERIFY(0 == backingStore(parent));
-
-    // Disable full screen
-    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
-    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
-    child.show();
-    QTest::qWaitForWindowShown(&child);
-
-    // Check that parent is now visible again
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
-
-    // Native child widget should once again share parent's backing store
-    QVERIFY(0 != backingStore(parent));
-    QVERIFY(0 == backingStore(child));
-    QVERIFY(0 == backingStore(grandChild));
-    }
-
-    // 6. Partial reveal followed by full reveal
-    {
-    QWidget upper;
-    upper.setAutoFillBackground(true);
-    upper.setPalette(Qt::red);
-    upper.setGeometry(50, 50, 100, 100);
-
-    QWidget lower;
-    lower.setAutoFillBackground(true);
-    lower.setPalette(Qt::green);
-    lower.setGeometry(50, 50, 100, 100);
-
-    lower.show();
-    QTest::qWaitForWindowShown(&lower);
-    upper.show();
-    QTest::qWaitForWindowShown(&upper);
-    upper.raise();
-
-    QVERIFY(0 != backingStore(upper));
-    QVERIFY(0 == backingStore(lower));
-
-    // Check that upper obscures lower
-    QVERIFY(lower.visibleRegion().subtracted(upper.visibleRegion()).isEmpty());
-
-    // Partially reveal lower
-    upper.move(100, 100);
-
-    // Completely reveal lower
-    upper.hide();
-
-    // Hide lower widget - this should cause its backing store to be deleted
-    lower.hide();
-
-    // Check that backing store was deleted
-    WAIT_AND_VERIFY(0 == backingStore(lower));
-    }
-
-    // 7. Reparenting of visible native child widget
-    {
-    QWidget parent1;
-    parent1.setAutoFillBackground(true);
-    parent1.setPalette(Qt::green);
-    parent1.setGeometry(50, 50, 100, 100);
-
-    QWidget *child = new QWidget(&parent1);
-    child->winId();
-    child->setAutoFillBackground(true);
-    child->setPalette(Qt::red);
-    child->setGeometry(10, 10, 30, 30);
-
-    QWidget parent2;
-    parent2.setAutoFillBackground(true);
-    parent2.setPalette(Qt::blue);
-    parent2.setGeometry(150, 150, 100, 100);
-
-    parent1.show();
-    QTest::qWaitForWindowShown(&parent1);
-    QVERIFY(0 != backingStore(parent1));
-
-    parent2.show();
-    QTest::qWaitForWindowShown(&parent2);
-    QVERIFY(0 != backingStore(parent2));
-
-    child->setParent(&parent2);
-    child->setGeometry(10, 10, 30, 30);
-    child->show();
-
-    parent1.hide();
-    WAIT_AND_VERIFY(0 == backingStore(parent1));
-
-    parent2.hide();
-    WAIT_AND_VERIFY(0 == backingStore(parent2));
-    }
-}
-
-#undef WAIT_AND_VERIFY
-
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
 #ifdef Q_OS_WINCE_WM
@@ -9628,289 +9198,6 @@ void tst_QWidget::openModal_taskQTBUG_5804()
     delete win;
 }
 
-#ifdef Q_OS_SYMBIAN
-void tst_QWidget::cbaVisibility()
-{
-    // Test case for task 261048
-
-    // Create first mainwindow in fullsreen and activate it
-    QMainWindow* mainwindow = new QMainWindow();
-    QLabel* label = new QLabel(mainwindow);
-    mainwindow->setCentralWidget(label);
-    mainwindow->setWindowState(Qt::WindowFullScreen);
-    mainwindow->setVisible(true);
-    mainwindow->activateWindow();
-    qApp->processEvents();
-
-    QVERIFY(mainwindow->isActiveWindow());
-    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow->size());
-
-    // Create second mainwindow in maximized and activate it
-    QMainWindow* mainwindow2 = new QMainWindow();
-    QLabel* label2 = new QLabel(mainwindow2);
-    mainwindow2->setCentralWidget(label2);
-    mainwindow2->setWindowState(Qt::WindowMaximized);
-    mainwindow2->setVisible(true);
-    mainwindow2->activateWindow();
-    qApp->processEvents();
-
-    QVERIFY(!mainwindow->isActiveWindow());
-    QVERIFY(mainwindow2->isActiveWindow());
-    QVERIFY(QDesktopWidget().availableGeometry().size() == mainwindow2->size());
-
-    // Verify window decorations i.e. status pane and CBA are visible.
-    CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    QVERIFY(statusPane->IsVisible());
-    CEikButtonGroupContainer* buttonGroup = CEikButtonGroupContainer::Current();
-    QVERIFY(buttonGroup->IsVisible());
-}
-
-void tst_QWidget::fullScreenWindowModeTransitions()
-{
-    QWidget widget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    QPushButton *button = new QPushButton("test Button");
-    layout->addWidget(button);
-    widget.setLayout(layout);
-    widget.show();
-
-    const QRect normalGeometry = widget.normalGeometry();
-    const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
-    const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
-    CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
-
-    //Enter
-    widget.showNormal();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showMaximized();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showMinimized();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    //Exit
-    widget.showFullScreen();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showFullScreen();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showFullScreen();
-    widget.showMinimized();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-}
-
-void tst_QWidget::maximizedWindowModeTransitions()
-{
-    QWidget widget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    QPushButton *button = new QPushButton("test Button");
-    layout->addWidget(button);
-    widget.setLayout(layout);
-    widget.show();
-
-    const QRect normalGeometry = widget.normalGeometry();
-    const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
-    const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
-    CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
-
-    //Enter
-    widget.showNormal();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showFullScreen();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showMinimized();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    //Exit
-    widget.showMaximized();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showMaximized();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showMaximized();
-    widget.showMinimized();
-    // Since showMinimized hides window decoration availableGeometry gives different value
-    // than with decoration visible. Altual size does not really matter since widget is invisible.
-    QCOMPARE(widget.geometry(), qApp->desktop()->availableGeometry(&widget));
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-}
-
-void tst_QWidget::minimizedWindowModeTransitions()
-{
-    QWidget widget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    QPushButton *button = new QPushButton("test Button");
-    layout->addWidget(button);
-    widget.setLayout(layout);
-    widget.show();
-
-    const QRect normalGeometry = widget.normalGeometry();
-    const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
-    const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
-    CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
-
-    //Enter
-    widget.showNormal();
-    widget.showMinimized();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showFullScreen();
-    widget.showMinimized();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showMaximized();
-    widget.showMinimized();
-    // Since showMinimized hides window decoration availableGeometry gives different value
-    // than with decoration visible. Altual size does not really matter since widget is invisible.
-    QCOMPARE(widget.geometry(), qApp->desktop()->availableGeometry(&widget));
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    //Exit
-    widget.showMinimized();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showMinimized();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showMinimized();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-}
-
-void tst_QWidget::normalWindowModeTransitions()
-{
-    QWidget widget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    QPushButton *button = new QPushButton("test Button");
-    layout->addWidget(button);
-    widget.setLayout(layout);
-    widget.show();
-
-    const QRect normalGeometry = widget.normalGeometry();
-    const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
-    const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
-    CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
-
-    //Enter
-    widget.showMaximized();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showFullScreen();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showMinimized();
-    widget.showNormal();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    //Exit
-    widget.showNormal();
-    widget.showMaximized();
-    QCOMPARE(widget.geometry(), maximumScreenGeometry);
-    QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());
-
-    widget.showNormal();
-    widget.showFullScreen();
-    QCOMPARE(widget.geometry(), fullScreenGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-
-    widget.showNormal();
-    widget.showMinimized();
-    QCOMPARE(widget.geometry(), normalGeometry);
-    QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());
-}
-
-void tst_QWidget::focusSwitchClosesPopupMenu()
-{
-    QMainWindow mainWindow;
-    QAction action("Test action", &mainWindow);
-    mainWindow.menuBar()->addAction(&action);
-
-    mainWindow.show();
-    QT_TRAP_THROWING(CEikonEnv::Static()->AppUiFactory()->MenuBar()->TryDisplayMenuBarL());
-    QVERIFY(CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
-
-    // Close the popup by opening a new window.
-    QMainWindow mainWindow2;
-    QAction action2("Test action", &mainWindow2);
-    mainWindow2.menuBar()->addAction(&action2);
-    mainWindow2.show();
-    QVERIFY(!CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
-
-    QT_TRAP_THROWING(CEikonEnv::Static()->AppUiFactory()->MenuBar()->TryDisplayMenuBarL());
-    QVERIFY(CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
-
-    // Close the popup by switching focus.
-    mainWindow.activateWindow();
-    QVERIFY(!CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
-}
-#endif
-
 class InputContextTester : public QInputContext
 {
     Q_OBJECT
@@ -10022,7 +9309,7 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 
 void tst_QWidget::movedAndResizedAttributes()
 {
-#if defined (Q_OS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_MAC) || defined(Q_WS_QWS)
     QEXPECT_FAIL("", "FixMe, QTBUG-8941 and QTBUG-8977", Abort);
     QVERIFY(false);
 #else

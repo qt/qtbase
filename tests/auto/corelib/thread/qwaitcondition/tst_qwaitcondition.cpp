@@ -47,13 +47,7 @@
 #include <qthread.h>
 #include <qwaitcondition.h>
 
-#if defined(Q_OS_SYMBIAN)
-// Symbian Open C has a bug that causes very short waits to fail sometimes
-#define COND_WAIT_TIME 50
-#else
 #define COND_WAIT_TIME 1
-#endif
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -326,12 +320,7 @@ void tst_QWaitCondition::wait_QReadWriteLock()
         thread[x].readWriteLock.lockForRead();
         thread[x].start();
         // wait for thread to start
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_WINSCW)
-        // Symbian emulator startup simultaneously with this thread causes additional delay
-        QVERIFY(thread[x].cond.wait(&thread[x].readWriteLock, 10000));
-#else
         QVERIFY(thread[x].cond.wait(&thread[x].readWriteLock, 1000));
-#endif
         thread[x].readWriteLock.unlock();
         }
 

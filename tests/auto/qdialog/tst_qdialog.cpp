@@ -492,12 +492,7 @@ void tst_QDialog::throwInExec()
     } catch(...) {
         ++caughtExceptions;
     }
-#ifdef Q_OS_SYMBIAN
-    //on symbian, the event loop absorbs exceptions
-    QCOMPARE(caughtExceptions, 0);
-#else
     QCOMPARE(caughtExceptions, 1);
-#endif
 }
 #else
 void tst_QDialog::throwInExec()

@@ -20,10 +20,3 @@ wince* {
 
    DEPLOYMENT += addFile_processUniqueness
 }
-
-symbian {
-   binDep.files = testProcessUniqueness.exe
-   binDep.path = \\sys\\bin
-
-   DEPLOYMENT += binDep
-}

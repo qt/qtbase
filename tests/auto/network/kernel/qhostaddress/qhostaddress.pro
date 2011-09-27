@@ -11,5 +11,3 @@ wince*: {
 	LIBS += -lws2_32
 }
 }
-
-symbian: TARGET.CAPABILITY = NetworkServices

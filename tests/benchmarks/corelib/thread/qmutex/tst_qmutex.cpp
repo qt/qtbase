@@ -44,26 +44,7 @@
 
 #include <math.h>
 
-#ifdef Q_OS_SYMBIAN
-# include <e32std.h>
-typedef RMutex NativeMutexType;
-void NativeMutexInitialize(NativeMutexType *mutex)
-{
-    mutex->CreateLocal();
-}
-void NativeMutexDestroy(NativeMutexType *mutex)
-{
-    mutex->Close();
-}
-void NativeMutexLock(NativeMutexType *mutex)
-{
-    mutex->Wait();
-}
-void NativeMutexUnlock(NativeMutexType *mutex)
-{
-    mutex->Signal();
-}
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #  include <pthread.h>
 #  include <errno.h>
 typedef pthread_mutex_t NativeMutexType;

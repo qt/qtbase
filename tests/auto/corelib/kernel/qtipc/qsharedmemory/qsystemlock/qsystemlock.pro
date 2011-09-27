@@ -7,7 +7,7 @@ mac:CONFIG -= app_bundle
 
 wince* {
     DEFINES	+= SRCDIR=\\\"\\\"
-} else:!symbian {
+} else {
     DEFINES	+= SRCDIR=\\\"$$PWD\\\"
 }
 

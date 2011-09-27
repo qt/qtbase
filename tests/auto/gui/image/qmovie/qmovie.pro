@@ -15,14 +15,3 @@ wince*: {
 
 RESOURCES += resources.qrc
 
-symbian: {
-   addFiles.files = animations\\*
-   addFiles.path = animations
-   DEPLOYMENT += addFiles
-
-   qt_not_deployed {
-      imagePlugins.files = qjpeg.dll qgif.dll qmng.dll
-      imagePlugins.path = imageformats
-      DEPLOYMENT += imagePlugins
-   }
-}

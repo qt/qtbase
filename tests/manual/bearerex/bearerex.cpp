@@ -249,12 +249,8 @@ DetailedInfoDialog::DetailedInfoDialog(QNetworkConfiguration* apNetworkConfigura
             tableWidget->setItem(i+2, 1, new QTableWidgetItem(apNetworkConfiguration->children()[i].name()));
         }
     }
-    
-    tableWidget->setFocusPolicy(Qt::NoFocus);
 
-#ifdef Q_OS_SYMBIAN
-    this->showMaximized();
-#endif
+    tableWidget->setFocusPolicy(Qt::NoFocus);
 }
 
 SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,

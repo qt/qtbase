@@ -18,10 +18,7 @@ win32: {
 
 
 QT = core
-
-!symbian: {
-    QT += network
-}
+QT += network
 
 embedded: QT += gui
 
@@ -105,20 +102,4 @@ wince*: {
                  addFile_testProcessTwoSpacesArgs \
                  addFile_testSoftExit \
                  addFile_testSpaceInName 
-}
-
-symbian: {
-   binDep.files = \
-        fileWriterProcess.exe \
-        testDetached.exe \
-        testExitCodes.exe \
-        testProcessCrash.exe \
-        testProcessEcho.exe \
-        testProcessNormal.exe \
-        testProcessOutput.exe \
-        nospace.exe \
-        testSpaceInName.exe
-   binDep.path = \\sys\\bin
-
-   DEPLOYMENT += binDep
 }

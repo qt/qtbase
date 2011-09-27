@@ -132,7 +132,6 @@ private:
 
 tst_QUdpSocket::tst_QUdpSocket()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QUdpSocket::~tst_QUdpSocket()
@@ -609,13 +608,6 @@ void tst_QUdpSocket::writeDatagram()
                 qint64(i * 1024));
         QCOMPARE(errorspy.count(), 0);
         if (!server.waitForReadyRead(5000)) {
-#ifdef Q_OS_SYMBIAN
-            //symbian receive buffer for datagrams is ~30k, but it can send datagrams up to the maximum 64k...
-            if (i > 28) {
-                i = 64;
-                continue;
-            }
-#endif
             QSKIP(QString("UDP packet lost at size %1, unable to complete the test.").arg(i * 1024).toLatin1().data(), SkipSingle);
         }
         QCOMPARE(server.pendingDatagramSize(), qint64(i * 1024));
@@ -625,21 +617,7 @@ void tst_QUdpSocket::writeDatagram()
 
 void tst_QUdpSocket::performance()
 {
-#if defined(Q_OS_SYMBIAN)
-    // Large packets seems not to go through on Symbian
-    // Reason might be also fragmentation due to VPN connection etc
-
-    QFETCH_GLOBAL(bool, setProxy);
-    QFETCH_GLOBAL(int, proxyType);
-
-    int arrSize = 8192;
-    if (setProxy && proxyType == QNetworkProxy::Socks5Proxy)
-        arrSize = 1024;
-
-    QByteArray arr(arrSize, '@');
-#else
     QByteArray arr(8192, '@');
-#endif // Q_OS_SYMBIAN
 
     QUdpSocket server;
 #ifdef FORCE_SESSION
@@ -675,14 +653,6 @@ void tst_QUdpSocket::performance()
     float secs = stopWatch.elapsed() / 1000.0;
     qDebug("\t%.2fMB/%.2fs: %.2fMB/s", float(nbytes / (1024.0*1024.0)),
            secs, float(nbytes / (1024.0*1024.0)) / secs);
-
-#if defined(Q_OS_SYMBIAN)
-    if(nbytes == 0) {
-        qDebug("No bytes passed through local UDP socket, since UDP socket write returns EWOULDBLOCK");
-        qDebug("Should try with blocking sockets, but it is not currently possible due to Open C defect");
-    }
-#endif
-
 }
 
 void tst_QUdpSocket::bindMode()
@@ -705,47 +675,7 @@ void tst_QUdpSocket::bindMode()
     socket2.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
     QVERIFY(!socket2.bind(socket.localPort()));
-#if defined(Q_OS_SYMBIAN)
-    if(RProcess().HasCapability(ECapabilityNetworkControl)) {
-        qDebug("Test executed *with* NetworkControl capability");
-        // In Symbian OS ReuseAddressHint together with NetworkControl capability
-        // gives application *always* right to bind to port. I.e. it does not matter
-        // if first socket was bound with any bind flag. Since autotests in Symbian
-        // are currently executed with ALL -TCB rights, this path is the one executed.
-        QVERIFY(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
-        socket.close();
-        socket2.close();
-
-        QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
-        QVERIFY(!socket2.bind(socket.localPort()));
-        QVERIFY2(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData());
-        socket.close();
-        socket2.close();
-
-        QVERIFY2(socket.bind(0, QUdpSocket::DontShareAddress), socket.errorString().toLatin1().constData());
-        QVERIFY(!socket2.bind(socket.localPort()));
-        QVERIFY(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
-        socket.close();
-        socket2.close();
-    } else {
-        qDebug("Test executed *without* NetworkControl capability");
-        // If we don't have NetworkControl capability, attempt to bind already bound
-        // address will *always* fail. I.e. it does not matter if first socket was
-        // bound with any bind flag.
-        QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
-        socket.close();
-
-        QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
-        QVERIFY(!socket2.bind(socket.localPort()));
-        QVERIFY2(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData());
-        socket.close();
-
-        QVERIFY2(socket.bind(0, QUdpSocket::DontShareAddress), socket.errorString().toLatin1().constData());
-        QVERIFY(!socket2.bind(socket.localPort()));
-        QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
-        socket.close();
-    }
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
     QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
     socket.close();
     QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
@@ -862,8 +792,8 @@ void tst_QUdpSocket::writeToNonExistingPeer()
 
 void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE and Symbian).", SkipAll);
+#if defined(Q_OS_WINCE)
+    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -927,8 +857,8 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 
 void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE and Symbian).", SkipAll);
+#if defined(Q_OS_WINCE)
+    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -1143,13 +1073,8 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
 #ifdef FORCE_SESSION
     udpSocket.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
-#ifdef Q_OS_SYMBIAN
-    QVERIFY2(udpSocket.bind(),
-        qPrintable(udpSocket.errorString()));
-#else
     QVERIFY2(udpSocket.bind(groupAddress, 0),
              qPrintable(udpSocket.errorString()));
-#endif
     QVERIFY2(udpSocket.joinMulticastGroup(groupAddress),
              qPrintable(udpSocket.errorString()));
     udpSocket.close();
@@ -1173,9 +1098,6 @@ void tst_QUdpSocket::setMulticastInterface_data()
 
 void tst_QUdpSocket::setMulticastInterface()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Symbian has no IPV6_MULTICAST_IF equivalent", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QNetworkInterface, iface);
     QFETCH(QHostAddress, address);
@@ -1198,7 +1120,6 @@ void tst_QUdpSocket::setMulticastInterface()
     } else {
         QVERIFY(!iface2.isValid());
     }
-#endif
 }
 
 void tst_QUdpSocket::multicast_data()
@@ -1247,12 +1168,6 @@ void tst_QUdpSocket::multicast()
 #endif
 
     // bind first, then verify that we can join the multicast group
-#ifdef Q_OS_SYMBIAN
-    if (!setProxy) {
-        QEXPECT_FAIL("same bind, group ipv4 address", "bind to group address not supported on symbian", Abort);
-        QEXPECT_FAIL("same bind, group ipv6 address", "bind to group address not supported on symbian", Abort);
-    }
-#endif
     QVERIFY2(receiver.bind(bindAddress, 0) == bindResult,
              qPrintable(receiver.errorString()));
     if (!bindResult)
@@ -1289,9 +1204,6 @@ void tst_QUdpSocket::multicast()
         receiver.readDatagram(datagram.data(), datagram.size(), 0, 0);
         receivedDatagrams << datagram;
     }
-#ifdef Q_OS_SYMBIAN
-    QEXPECT_FAIL("valid bind, group ipv4 address", "IPv4 multicast not supported on symbian", Abort);
-#endif
     QCOMPARE(receivedDatagrams, datagrams);
 
     QVERIFY2(receiver.leaveMulticastGroup(groupAddress), qPrintable(receiver.errorString()));

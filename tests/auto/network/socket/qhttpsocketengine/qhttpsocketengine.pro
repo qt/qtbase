@@ -8,6 +8,3 @@ MOC_DIR=tmp
 
 QT = core-private network-private
 
-symbian: TARGET.CAPABILITY = NetworkServices
-
-

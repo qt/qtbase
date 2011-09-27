@@ -167,8 +167,6 @@ bool dumpHtml(const QString &pathName)
             "Win32"
 #elif defined(Q_WS_X11)
             "X11"
-#elif defined(Q_OS_SYMBIAN)
-            "Symbian"
 #else
             ""
 #endif

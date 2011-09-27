@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += ../tst_qfile.cpp
 
-wince*|symbian {
+wince* {
     QT = core gui
     files.files += ..\\dosfile.txt ..\\noendofline.txt ..\\testfile.txt \
                      ..\\testlog.txt ..\\two.dots.file ..\\tst_qfile.cpp \
@@ -16,9 +16,6 @@ wince*|symbian {
 wince* {
     SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp     # needed for QT_OPEN
     DEFINES += SRCDIR=\\\"\\\"
-} else:symbian {
-    # do not define SRCDIR at all
-    TARGET.EPOCHEAPSIZE = 0x100000 0x3000000
 } else {
     QT = core network
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
@@ -35,10 +32,6 @@ win32 {
         TARGET = ../../release/tst_qfile
     }
     LIBS+=-lole32 -luuid
-}
-
-symbian {
-    LIBS+=-lefsrv
 }
 
 mac*:CONFIG+=insignificant_test

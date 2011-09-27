@@ -44,23 +44,13 @@
 
 int main()
 {
-#if defined(__SYMBIAN32__)
-    // Printing to stdout messes up the out.txt, so open a file and print there.
-    FILE* file = fopen("c:\\logs\\qprocess_output_test.txt","w+");
-    for (int i=0; i<200; i++) {
-        fprintf(file, "%d -this is a number\n", i);
-        fflush(file);
-    }
-    fclose(file);
-#else
-# if defined(_WIN32_WCE)
+#if defined(_WIN32_WCE)
     for (int i=0; i<240; i++) {
-# else //fprintf Output is very slow on Windows CE/Symbian
+#else //fprintf Output is very slow on Windows CE
     for (int i=0; i<10240; i++) {
-# endif
+#endif
         fprintf(stdout, "%d -this is a number\n", i);
         fflush(stderr);
     }
-#endif
     return 0;
 }

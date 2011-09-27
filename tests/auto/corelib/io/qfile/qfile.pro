@@ -1,10 +1,10 @@
 TEMPLATE = subdirs
-wince*|symbian:{
+wince* {
   SUBDIRS = test
 } else {
   SUBDIRS = test stdinprocess
 }
 
-!symbian:SUBDIRS += largefile
+SUBDIRS += largefile
 
 CONFIG += parallel_test

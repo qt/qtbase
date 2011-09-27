@@ -118,7 +118,6 @@ private Q_SLOTS:
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 void tst_QHttpNetworkConnection::initTestCase()

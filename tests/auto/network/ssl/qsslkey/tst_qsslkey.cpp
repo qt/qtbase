@@ -47,12 +47,6 @@
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Current path (C:\private\<UID>) contains only ascii chars
-#define SRCDIR "."
-#endif
-
 class tst_QSslKey : public QObject
 {
     Q_OBJECT

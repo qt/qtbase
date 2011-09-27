@@ -8,9 +8,3 @@ requires(contains(QT_CONFIG,private_tests))
 MOC_DIR=tmp
 
 QT = core-private network-private
-
-symbian {
-    TARGET.CAPABILITY = NetworkServices
-    INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
-    LIBS += -lesock
-}

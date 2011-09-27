@@ -43,10 +43,6 @@
 #include <QtTest/QtTest>
 #include <QImageReader>
 #include <qicon.h>
-
-#if defined(Q_OS_SYMBIAN)
-#define SRCDIR "."
-#endif
 #include <qiconengine.h>
 
 Q_DECLARE_METATYPE(QSize)

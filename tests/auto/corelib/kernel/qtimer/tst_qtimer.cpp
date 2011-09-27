@@ -92,9 +92,6 @@ private slots:
 
     void QTBUG13633_dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
-#ifdef Q_OS_SYMBIAN
-    void handleLeaks();
-#endif
 };
 
 class TimerHelper : public QObject
@@ -169,13 +166,7 @@ void tst_QTimer::singleShotTimeout()
     QCOMPARE(helper.count, 1);
 }
 
-#if defined(Q_OS_SYMBIAN)
-// Increase wait as emulator startup can cause unexpected delays, and
-// on hardware there are sometimes spikes right after process startup.
-#define TIMEOUT_TIMEOUT 2000
-#else
 #define TIMEOUT_TIMEOUT 200
-#endif
 
 void tst_QTimer::timeout()
 {
@@ -417,14 +408,8 @@ void tst_QTimer::deleteLaterOnQTimer()
     QVERIFY(pointer.isNull());
 }
 
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-// Increase wait as emulator startup can cause unexpected delays
-#define MOVETOTHREAD_TIMEOUT 200
-#define MOVETOTHREAD_WAIT 5000
-#else
 #define MOVETOTHREAD_TIMEOUT 200
 #define MOVETOTHREAD_WAIT 300
-#endif
 
 void tst_QTimer::moveToThread()
 {
@@ -609,7 +594,7 @@ void tst_QTimer::cancelLongTimer()
 {
     QTimer timer;
     timer.setSingleShot(true);
-    timer.start(1000 * 60 * 60); //set timer for 1 hour (which would overflow Symbian RTimer)
+    timer.start(1000 * 60 * 60); //set timer for 1 hour
     QCoreApplication::processEvents();
     QVERIFY(timer.isActive()); //if the timer completes immediately with an error, then this will fail
     timer.stop();
@@ -754,41 +739,6 @@ void tst_QTimer::postedEventsShouldNotStarveTimers()
     QTest::qWait(100);
     QVERIFY(timerHelper.count > 5);
 }
-
-#ifdef Q_OS_SYMBIAN
-void tst_QTimer::handleLeaks()
-{
-    const int timercount = 5;
-    int processhandles_start;
-    int threadhandles_start;
-    RThread().HandleCount(processhandles_start, threadhandles_start);
-    {
-    TimerHelper timerHelper;
-    QList<QTimer*> timers;
-    for (int i=0;i<timercount;i++) {
-        QTimer* timer = new QTimer;
-        timers.append(timer);
-        connect(timer, SIGNAL(timeout()), &timerHelper, SLOT(timeout()));
-        timer->setSingleShot(true);
-        timer->start(i); //test both zero and normal timeouts
-    }
-    int processhandles_mid;
-    int threadhandles_mid;
-    RThread().HandleCount(processhandles_mid, threadhandles_mid);
-    qDebug() << threadhandles_mid - threadhandles_start << "new thread owned handles";
-    QTest::qWait(100);
-    QCOMPARE(timerHelper.count, timercount);
-    qDeleteAll(timers);
-    }
-    int processhandles_end;
-    int threadhandles_end;
-    RThread().HandleCount(processhandles_end, threadhandles_end);
-    QCOMPARE(threadhandles_end, threadhandles_start); //RTimer::CreateLocal creates a thread owned handle
-    //Can not verify process handles because QObject::connect may create up to 2 mutexes
-    //from a QMutexPool (4 process owned handles with open C imp.)
-    //QCOMPARE(processhandles_end, processhandles_start);
-}
-#endif
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"

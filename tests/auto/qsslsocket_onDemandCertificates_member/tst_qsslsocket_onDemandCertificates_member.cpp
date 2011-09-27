@@ -50,10 +50,6 @@
 
 #include "../network-settings.h"
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR ""
-#endif
-
 #ifndef QT_NO_OPENSSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
 {
@@ -97,7 +93,6 @@ private:
 
 tst_QSslSocket_onDemandCertificates_member::tst_QSslSocket_onDemandCertificates_member()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QSslSocket_onDemandCertificates_member::~tst_QSslSocket_onDemandCertificates_member()

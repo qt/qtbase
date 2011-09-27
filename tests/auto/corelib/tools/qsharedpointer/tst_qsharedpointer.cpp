@@ -59,10 +59,6 @@ namespace QtSharedPointer {
 }
 QT_END_NAMESPACE
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR "."
-#endif
-
 class tst_QSharedPointer: public QObject
 {
     Q_OBJECT

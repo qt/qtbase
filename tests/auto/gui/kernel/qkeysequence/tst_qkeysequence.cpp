@@ -567,8 +567,8 @@ void tst_QKeySequence::translated()
     QFETCH(QString, compKey);
 #ifdef Q_WS_MAC
     QSKIP("No need to translate modifiers on Mac OS X", SkipAll);
-#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    QSKIP("No need to translate modifiers on WinCE or Symbian", SkipAll);
+#elif defined(Q_OS_WINCE)
+    QSKIP("No need to translate modifiers on WinCE", SkipAll);
 #endif
 
     qApp->installTranslator(ourTranslator);

@@ -1047,7 +1047,7 @@ void tst_QRegExp::rainersSlowRegExpCopyBug()
 {
     // this test should take an extreme amount of time if QRegExp is broken
     QRegExp original(email);
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
 	for (int i = 0; i < 100; ++i) {
 #else
     for (int i = 0; i < 100000; ++i) {
@@ -1100,7 +1100,7 @@ void Thread::run()
     str += "abbbdekcz";
     int x;
 
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
 	for (int j = 0; j < 100; ++j) {
 #else
     for (int j = 0; j < 10000; ++j) {

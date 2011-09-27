@@ -559,8 +559,8 @@ void tst_qnetworkreply::uploadPerformance()
 
 void tst_qnetworkreply::httpUploadPerformance()
 {
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
-      // SHow some mercy for non-desktop platform/s
+#if defined(Q_WS_WINCE_WM)
+      // Show some mercy for non-desktop platform/s
       enum {UploadSize = 4*1024*1024}; // 4 MB
 #else
       enum {UploadSize = 128*1024*1024}; // 128 MB
@@ -630,7 +630,7 @@ void tst_qnetworkreply::httpDownloadPerformance()
 {
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
+#if defined(Q_WS_WINCE_WM)
     // Show some mercy to non-desktop platform/s
     enum {UploadSize = 4*1024*1024}; // 4 MB
 #else
@@ -714,7 +714,7 @@ void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
     QFETCH(HttpDownloadPerformanceDownloadBufferTestType, testType);
 
     // On my Linux Desktop the results are already visible with 128 kB, however we use this to have good results.
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
+#if defined(Q_WS_WINCE_WM)
     // Show some mercy to non-desktop platform/s
     enum {UploadSize = 4*1024*1024}; // 4 MB
 #else

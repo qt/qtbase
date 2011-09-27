@@ -15,10 +15,6 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-symbian {
-    TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData PowerMgmt
-}
-
 maemo6|maemo5 {
     CONFIG += link_pkgconfig
 

@@ -1,6 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = test
-!symbian: SUBDIRS += stdinProcess readAllStdinProcess readLineStdinProcess
-
-
-
+SUBDIRS = test stdinProcess readAllStdinProcess readLineStdinProcess

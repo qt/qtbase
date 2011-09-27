@@ -14,8 +14,3 @@ wince*: {
     addFiles.path = .
     DEPLOYMENT += addFiles
 }
-symbian: { 
-    addFiles.files = signalbug.exe
-    addFiles.path = \\sys\\bin
-    DEPLOYMENT += addFiles
-}

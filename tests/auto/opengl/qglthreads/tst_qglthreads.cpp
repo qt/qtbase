@@ -46,14 +46,7 @@
 #include <QtOpenGL/QtOpenGL>
 #include "tst_qglthreads.h"
 
-#ifdef Q_OS_SYMBIAN
-#define RUNNING_TIME 2000 // save GPU mem by running shorter time.
-#else
 #define RUNNING_TIME 5000
-#endif
-
-
-
 
 tst_QGLThreads::tst_QGLThreads(QObject *parent)
     : QObject(parent)
@@ -205,12 +198,6 @@ public:
         while (time.elapsed() < RUNNING_TIME) {
             int width = 400;
             int height = 300;
-#ifdef Q_OS_SYMBIAN
-            // GPU mem is very scarce resource on Symbian currently.
-            // That's why we create only small textures.
-            width = 50;
-            height = 20;
-#endif
             QImage image(width, height, QImage::Format_RGB32);
             QPainter p(&image);
             p.fillRect(image.rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
@@ -439,10 +426,6 @@ void tst_QGLThreads::renderInThread()
 {
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    QSKIP("OpenGL threading tests are disabled on Symbian as accessing RWindow from a secondary thread is not supported", SkipAll);
 #endif
 
     QFETCH(bool, resize);

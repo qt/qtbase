@@ -9,7 +9,7 @@ RESOURCES += images.qrc
 
 include($$PWD/../../baselineserver/shared/qbaselinetest.pri)
 
-!symbian:!wince*:DEFINES += SRCDIR=\\\"$$PWD\\\"
+!wince*:DEFINES += SRCDIR=\\\"$$PWD\\\"
 linux-g++-maemo:DEFINES += USE_RUNTIME_DIR
 
 CONFIG += insignificant_test # QTBUG-21402

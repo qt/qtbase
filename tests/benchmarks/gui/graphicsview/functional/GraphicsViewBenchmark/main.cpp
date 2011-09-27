@@ -322,7 +322,7 @@ void tst_GraphicsViewBenchmark::initTestCase()
         mMainView->resize(mSettings->size().width(), mSettings->size().height());
         mMainView->show();
     } else {
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
         mMainView->showFullScreen();
 #else
         if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
@@ -780,7 +780,7 @@ int main(int argc, char *argv[])
             view.resize(settings.size().width(), settings.size().height());
             view.show();
         } else {
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
             view.showFullScreen();
 #else
             if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {

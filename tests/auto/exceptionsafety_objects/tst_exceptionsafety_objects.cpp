@@ -51,15 +51,12 @@ QT_USE_NAMESPACE
 // this test only works with
 //   * GLIBC
 //   * MSVC - only debug builds (we need the crtdbg.h helpers)
-//   * SYMBIAN
-#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && !defined(Q_OS_SYMBIAN))) && !defined(Q_MOC_RUN)
+#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC))) && !defined(Q_MOC_RUN)
     QTEST_NOOP_MAIN
 #else
 
 #include "oomsimulator.h"
-#if !defined(Q_OS_SYMBIAN)
 #include "3rdparty/memcheck.h"
-#endif
 
 class tst_ExceptionSafety_Objects: public QObject
 {
@@ -328,12 +325,6 @@ void tst_ExceptionSafety_Objects::initTestCase()
     free(buf);
     QVERIFY(!buf2);
 
-#ifdef Q_OS_SYMBIAN
-    // temporary workaround for INC138398
-    std::new_handler nh_func = std::set_new_handler(0);
-    (void) std::set_new_handler(nh_func);
-#endif
-
     ObjectCreator<SelfTestObject> *selfTest = new ObjectCreator<SelfTestObject>;
     doOOMTest(*selfTest, 0);
     delete selfTest;
@@ -401,13 +392,6 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
 };
 void tst_ExceptionSafety_Objects::widgets_data()
 {
-#ifdef Q_OS_SYMBIAN
-    // Initialise the S60 rasteriser, which crashes if started while out of memory
-    QImage image(20, 20, QImage::Format_RGB32);
-    QPainter p(&image);
-    p.drawText(0, 15, "foo");
-#endif
-
     QTest::addColumn<AbstractTester *>("widgetCreator");
 
 #undef NEWROW

@@ -19,15 +19,6 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
-symbian: {
-   libDep.files = tst_qpluginloaderlib.dll
-   libDep.path = /sys/bin
-   pluginDep.files = theplugin.dll
-   pluginDep.path = bin
-
-   DEPLOYMENT += libDep pluginDep
-}
-
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 mac*:CONFIG+=insignificant_test
 

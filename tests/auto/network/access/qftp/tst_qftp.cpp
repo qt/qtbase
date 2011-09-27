@@ -60,12 +60,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
-#endif
-
 #ifndef QT_NO_BEARERMANAGEMENT
 Q_DECLARE_METATYPE(QNetworkConfiguration)
 #endif
@@ -1358,8 +1352,8 @@ void tst_QFtp::abort_data()
     QTest::newRow( "get_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/bigfile") << QByteArray();
     QTest::newRow( "get_fluke02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/rfc3252") << QByteArray();
 
-    // Qt/CE and Symbian test environment has to less memory for this test
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    // Qt/CE test environment has too little memory for this test
+#if !defined(Q_OS_WINCE)
     QByteArray bigData( 10*1024*1024, 0 );
 #else
     QByteArray bigData( 1*1024*1024, 0 );

@@ -13,6 +13,3 @@ win32 {
     DESTDIR = release
   }
 }
-
-symbian: TARGET.CAPABILITY = NetworkServices
-

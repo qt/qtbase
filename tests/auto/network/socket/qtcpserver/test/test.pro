@@ -12,13 +12,6 @@ wince*: {
 }
 }
 
-symbian {
-    crashApp.files = $$QT_BUILD_TREE/examples/widgets/wiggly/$${BUILD_DIR}/crashingServer.exe
-    crashApp.path = .
-    DEPLOYMENT += crashApp
-    TARGET.CAPABILITY += NetworkServices ReadUserData
-}
-
 TARGET = ../tst_qtcpserver
 
 win32 {

@@ -3,12 +3,9 @@
 ######################################################################
 
 TEMPLATE = app
-!symbian: {
 DEPENDPATH += .
 INCLUDEPATH += .
-}
 wince*:TARGET = ../desktopsettingsaware
-symbian:TARGET = desktopsettingsaware
 
 # Input
 QT += widgets

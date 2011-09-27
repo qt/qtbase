@@ -12,12 +12,10 @@ QT -= gui
 
 CONFIG += release
 
-SOURCES += main.cpp
-
-SOURCES += qfilesystemiterator.cpp
+SOURCES += main.cpp qfilesystemiterator.cpp
 HEADERS += qfilesystemiterator.h
 
-wince*|symbian: {
+wince* {
    corelibdir.files = $$QT_SOURCE_TREE/src/corelib
    corelibdir.path = ./depot/src
    DEPLOYMENT += corelibdir

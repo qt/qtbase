@@ -46,13 +46,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// And underlying Open C have application private dir in default search path
-#define SRCDIR ""
-#endif
-
-
 #define EXISTING_SHARE "existing"
 
 class tst_QSystemLock : public QObject

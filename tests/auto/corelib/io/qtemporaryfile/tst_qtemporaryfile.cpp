@@ -59,10 +59,6 @@
 # include <unistd.h>            // close(2)
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR ""
-#endif
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -227,7 +223,7 @@ void tst_QTemporaryFile::fileName()
     QVERIFY(QFile::exists(fileName));
     // Get path to the temp file, without the file name.
     QString absoluteFilePath = QFileInfo(fileName).absolutePath();
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     absoluteFilePath = absoluteFilePath.toLower();
     absoluteTempPath = absoluteTempPath.toLower();
 #endif
@@ -398,7 +394,7 @@ void tst_QTemporaryFile::openOnRootDrives()
 
 void tst_QTemporaryFile::stressTest()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     // 200 is still ok, first colision happens after ~30
     const int iterations = 200;
 #else

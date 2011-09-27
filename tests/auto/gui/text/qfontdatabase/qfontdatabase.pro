@@ -1,8 +1,8 @@
 load(qttest_p4)
 SOURCES  += tst_qfontdatabase.cpp
-!symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-wince*|symbian {
+wince* {
     additionalFiles.files = FreeMono.ttf
     additionalFiles.path = .
     DEPLOYMENT += additionalFiles

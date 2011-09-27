@@ -8,5 +8,3 @@ CONFIG -= debug
 CONFIG += release
 QT -= gui
 SOURCES += main.cpp
-
-symbian: LIBS += -llibpthread

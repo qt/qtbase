@@ -104,7 +104,7 @@ tst_QFileSystemWatcher::tst_QFileSystemWatcher()
     if (inotify_init() != -1)
         do_force_engines << "inotify";
 #endif
-#elif defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_FREEBSD) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_FREEBSD)
     // we have native engines for win32, macosx and freebsd
     do_force_engines << "native";
 #endif
@@ -464,8 +464,6 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     //Note that if there are several changes during a short period of time, some
     //of the changes might not emit this signal. However, the last change in the
     //sequence of changes will always generate this signal.
-    //Symbian behaves as documented (and can't be filtered), but the other platforms don't
-    //so test should not assert this
     QVERIFY(dirChangedSpy.count() < 2);
 
     if (backend == "dnotify")
@@ -504,9 +502,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
-    // polling watcher has generated separate events for content and time change
-    // on Symbian emulator, so allow possibility of 2 events
-    QVERIFY(dirChangedSpy.count() == 1 || dirChangedSpy.count() == 2);
+    QCOMPARE(dirChangedSpy.count(), 1);
 
     QVERIFY(QDir().rmdir("testDir"));
 }

@@ -70,12 +70,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#if defined(Q_OS_SYMBIAN)
-# define STRINGIFY(x) #x
-# define TOSTRING(x) STRINGIFY(x)
-# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
-#endif
-
 #if defined QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT bool qt_test_isFetchedRoot();

@@ -14,16 +14,6 @@ wince* {
   DEPLOYMENT += additional deploy someTest
 }
 
-symbian: {
-  additional.files = $$OUT_PWD/../desktopsettingsaware/desktopsettingsaware.exe
-  additional.path = desktopsettingsaware
-  someTest.files = test.pro
-  someTest.path = test
-  windowIcon.files = ../heart.svg
-  DEPLOYMENT += additional deploy someTest windowIcon
-  LIBS += -lcone -lavkon
-}
-
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qapplication

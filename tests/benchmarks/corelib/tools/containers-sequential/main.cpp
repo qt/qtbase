@@ -132,8 +132,8 @@ struct Large { // A "large" item type
     int x[1000];
 };
 
-// Symbian devices typically have limited memory
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE)
+// Embedded devices typically have limited memory
+#if defined(Q_WS_WINCE)
 #  define LARGE_MAX_SIZE 2000
 #else
 #  define LARGE_MAX_SIZE 20000

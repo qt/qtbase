@@ -52,10 +52,6 @@
 #include <QtXml>
 #include <QVariant>
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

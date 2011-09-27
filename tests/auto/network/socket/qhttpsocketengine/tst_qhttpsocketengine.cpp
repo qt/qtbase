@@ -141,7 +141,6 @@ public slots:
 
 tst_QHttpSocketEngine::tst_QHttpSocketEngine()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QHttpSocketEngine::~tst_QHttpSocketEngine()
@@ -654,7 +653,7 @@ void tst_QHttpSocketEngine::downloadBigFile()
     QTime stopWatch;
     stopWatch.start();
 
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     QTestEventLoop::instance().enterLoop(240);
 #else
     QTestEventLoop::instance().enterLoop(60);

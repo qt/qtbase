@@ -12,9 +12,7 @@ CONFIG += release
 
 wince*: {
    DEFINES += SRCDIR=\\\"\\\"
-} else:symbian {
-   # SRCDIR and SVGFILE defined in code in symbian
-}else {
+} else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 

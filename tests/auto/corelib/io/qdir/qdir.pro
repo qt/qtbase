@@ -3,7 +3,7 @@ SOURCES   += tst_qdir.cpp
 RESOURCES += qdir.qrc
 QT        = core
 
-wince*|symbian {
+wince* {
   DirFiles.files = testdir testData searchdir resources entrylist types tst_qdir.cpp
   DirFiles.path = .
   DEPLOYMENT += DirFiles
@@ -11,12 +11,6 @@ wince*|symbian {
 
 wince* {
   DEFINES += SRCDIR=\\\"\\\"
-} else:symbian {
-  TARGET.CAPABILITY += AllFiles
-  TARGET.UID3 = 0xE0340002
-  DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
-  LIBS += -lefsrv
-  INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 } else {
   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

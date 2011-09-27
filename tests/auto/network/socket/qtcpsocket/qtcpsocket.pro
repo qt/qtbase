@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 
 !wince*: SUBDIRS = test stressTest
-wince*|symbian|vxworks* : SUBDIRS = test
+wince*|vxworks* : SUBDIRS = test
 
 
 requires(contains(QT_CONFIG,private_tests))

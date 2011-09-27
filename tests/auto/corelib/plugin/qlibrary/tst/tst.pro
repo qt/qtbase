@@ -16,17 +16,6 @@ wince*: {
    addFiles.path = .
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\"\\\"
-}else:symbian {
-   binDep.files = \
-        mylib.dll \
-        system.trolltech.test.mylib.dll
-   binDep.path = /sys/bin
-#mylib.dl2 nonstandard binary deployment will cause warning in emulator,
-#but it can be safely ignored.
-   custBinDep.files = mylib.dl2
-   custBinDep.path = /sys/bin
-
-   DEPLOYMENT += binDep custBinDep
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }

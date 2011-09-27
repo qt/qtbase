@@ -62,12 +62,6 @@
 #define Q_CHECK_PAINTEVENTS
 #endif
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Current path (C:\private\<UID>) contains only ascii chars
-#define SRCDIR QDir::currentPath().append("\\").toAscii()
-#endif
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

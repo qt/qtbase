@@ -14,19 +14,16 @@ win32 {
   }
 }
 
-wince*|symbian: {
-   keyFiles.files = keys
-   keyFiles.path    = .
+wince* {
+    keyFiles.files = keys
+    keyFiles.path    = .
 
-   passphraseFiles.files = rsa-without-passphrase.pem rsa-with-passphrase.pem
-   passphraseFiles.path    = .
+    passphraseFiles.files = rsa-without-passphrase.pem rsa-with-passphrase.pem
+    passphraseFiles.path    = .
 
-   DEPLOYMENT += keyFiles passphraseFiles
-}
-
-wince*: {
-   DEFINES += SRCDIR=\\\".\\\"
-} else:!symbian {
-   DEFINES+= SRCDIR=\\\"$$PWD\\\"
-   TARGET.CAPABILITY = NetworkServices
+    DEPLOYMENT += keyFiles passphraseFiles
+    DEFINES += SRCDIR=\\\".\\\"
+} else {
+    DEFINES+= SRCDIR=\\\"$$PWD\\\"
+    TARGET.CAPABILITY = NetworkServices
 }

@@ -39,14 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef Q_OS_SYMBIAN
 #include <malloc.h>
-#endif
 #include <limits.h>
 #include <stdio.h>
 #include <exception>
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN)
 #  include "3rdparty/memcheck.h"
 #endif
 
@@ -197,82 +195,6 @@ static struct QCrtDebugRegistrator
 
 } crtDebugRegistrator;
 
-#elif defined(Q_OS_SYMBIAN)
-
-struct QAllocFailAllocator : public RAllocator
-{
-    QAllocFailAllocator() : allocator(User::Allocator())
-    {
-        User::SwitchAllocator(this);
-    }
-
-    ~QAllocFailAllocator()
-    {
-        User::SwitchAllocator(&allocator);
-    }
-
-    RAllocator& allocator;
-
-    // from MAllocator
-    TAny* Alloc(TInt aSize)
-    {
-        ++mallocCount;
-        if (mallocFailActive && --mallocFailIndex < 0)
-            return 0; // simulate OOM
-        return allocator.Alloc(aSize);
-    }
-
-    void Free(TAny* aPtr)
-    {
-        allocator.Free(aPtr);
-    }
-
-    TAny* ReAlloc(TAny* aPtr, TInt aSize, TInt aMode)
-    {
-        ++mallocCount;
-        if (mallocFailActive && --mallocFailIndex < 0)
-            return 0; // simulate OOM
-        return allocator.ReAlloc(aPtr, aSize, aMode);
-    }
-
-    TInt AllocLen(const TAny* aCell) const
-    {
-        return allocator.AllocLen(aCell);
-    }
-
-    TInt Compress()
-    {
-        return allocator.Compress();
-    }
-
-    void Reset()
-    {
-        allocator.Reset();
-    }
-
-    TInt AllocSize(TInt& aTotalAllocSize) const
-    {
-        return allocator.AllocSize(aTotalAllocSize);
-    }
-
-    TInt Available(TInt& aBiggestBlock) const
-    {
-        return allocator.Available(aBiggestBlock);
-    }
-
-    TInt DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
-    {
-        return allocator.DebugFunction(aFunc, a1, a2);
-    }
-
-    TInt Extension_(TUint aExtensionId, TAny*& a0, TAny* a1)
-    {
-        return ((MAllocator&)allocator).Extension_(aExtensionId, a0, a1);
-    }
-};
-
-QAllocFailAllocator symbianTestAllocator;
-
 #endif
 
 struct AllocFailer
@@ -327,8 +249,6 @@ struct AllocFailer
     }
 };
 
-#ifndef Q_OS_SYMBIAN
-
 static void *new_helper(std::size_t size)
 {
     void *ptr = malloc(size);
@@ -356,8 +276,6 @@ void operator delete[](void *ptr, const std::nothrow_t&) throw() { if (ptr) free
 
 #ifdef Q_CC_MSVC
 #  pragma warning(pop)
-#endif
-
 #endif
 
 // ignore placement new and placement delete - those don't allocate.

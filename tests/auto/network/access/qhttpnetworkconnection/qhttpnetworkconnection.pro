@@ -5,9 +5,4 @@ requires(contains(QT_CONFIG,private_tests))
 
 QT = core-private network-private
 
-symbian: TARGET.CAPABILITY = NetworkServices
-symbian: {
-  INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
-}
-
 CONFIG+=insignificant_test  # QTBUG-20981, crashes sometimes

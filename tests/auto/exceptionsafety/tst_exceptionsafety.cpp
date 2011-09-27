@@ -682,10 +682,7 @@ void tst_ExceptionSafety::exceptionEventLoop()
     }
     // here, we should have received on non-throwing event and one throwing one
     QCOMPARE(obj.throwEventCount, 3);
-#ifndef __SYMBIAN32__
-    // symbian event loops will have absorbed the exceptions
     QCOMPARE(obj.noThrowEventCount, 1);
-#endif
 
     // spin the event loop again
     qApp->processEvents();

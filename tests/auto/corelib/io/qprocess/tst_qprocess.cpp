@@ -48,10 +48,8 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
-#if !defined(Q_OS_SYMBIAN)
 // Network test unnecessary?
 #include <QtNetwork/QHostInfo>
-#endif
 #include <stdlib.h>
 
 #ifdef QT_NO_PROCESS
@@ -132,7 +130,7 @@ private slots:
     void waitForBytesWrittenInABytesWrittenSlot();
     void spaceArgsTest_data();
     void spaceArgsTest();
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     void nativeArguments();
 #endif
     void exitCodeTest();
@@ -208,12 +206,6 @@ tst_QProcess::~tst_QProcess()
 
 void tst_QProcess::init()
 {
-#ifdef Q_OS_SYMBIAN
-    QString dirStr = QString::fromLatin1("c:\\logs");
-    QDir dir;
-    if (!dir.exists(dirStr))
-        dir.mkpath(dirStr);
-#endif
 }
 
 void tst_QProcess::cleanup()
@@ -274,8 +266,6 @@ void tst_QProcess::simpleStart()
     // Note: This actually seems incorrect, it will only exit the while loop when finishing fails
     while (process->waitForFinished(5000))
     { }
-#elif defined(Q_OS_SYMBIAN)
-    QVERIFY(process->waitForFinished(5000));
 #else
     while (process->waitForReadyRead(5000))
     { }
@@ -409,9 +399,6 @@ void tst_QProcess::echoTest()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QFETCH(QByteArray, input);
 
@@ -470,9 +457,6 @@ void tst_QProcess::echoTest2()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     process = new QProcess;
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
@@ -523,9 +507,6 @@ void tst_QProcess::echoTest_performance()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess process;
@@ -581,9 +562,6 @@ void tst_QProcess::echoTestGui()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QProcess process;
 
@@ -613,9 +591,6 @@ void tst_QProcess::batFiles()
 {
 #if defined(Q_OS_WINCE)
     QSKIP("Batch files are not supported on Windows CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Batch files are not supported on Symbian", SkipAll);
 #endif
     QFETCH(QString, batFile);
     QFETCH(QByteArray, output);
@@ -687,9 +662,6 @@ void tst_QProcess::loopBackTest()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     process = new QProcess;
 #ifdef Q_OS_MAC
@@ -719,9 +691,6 @@ void tst_QProcess::readTimeoutAndThenCrash()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     process = new QProcess;
@@ -764,30 +733,18 @@ void tst_QProcess::waitForFinished()
     process.start("testProcessOutput/testProcessOutput");
 #endif
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     QVERIFY(process.waitForFinished(5000));
 #else
     QVERIFY(process.waitForFinished(30000));
 #endif
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 
-#if defined(Q_OS_SYMBIAN)
-    // Symbian test outputs to a file, so check that
-    FILE* file = fopen("c:\\logs\\qprocess_output_test.txt","r");
-    int retval = 0;
-    int count = 0;
-    while((int)(retval = fgetc(file) )!= EOF)
-        if (retval == '\n')
-            count++;
-    fclose(file);
-    QCOMPARE(count, 200);
-#else
-#  if defined (Q_OS_WINCE)
+#if defined (Q_OS_WINCE)
     QEXPECT_FAIL("", "Reading and writing to a process is not supported on Qt/CE", Continue);
-#  endif
+#endif
     QString output = process.readAll();
     QCOMPARE(output.count("\n"), 10*1024);
-#endif
 
     process.start("blurdybloop");
     QVERIFY(!process.waitForFinished());
@@ -799,9 +756,6 @@ void tst_QProcess::deadWhileReading()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess process;
@@ -827,9 +781,6 @@ void tst_QProcess::restartProcessDeadlock()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     // The purpose of this test is to detect whether restarting a
@@ -869,9 +820,6 @@ void tst_QProcess::closeWriteChannel()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QProcess more;
     more.start("testProcessEOF/testProcessEOF");
@@ -900,9 +848,6 @@ void tst_QProcess::closeReadChannel()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     for (int i = 0; i < 10; ++i) {
@@ -940,9 +885,6 @@ void tst_QProcess::openModes()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess proc;
@@ -994,9 +936,6 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QProcess proc;
     connect(&proc, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
@@ -1033,9 +972,6 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 //-----------------------------------------------------------------------------
 void tst_QProcess::hardExit()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Killing started processes is not supported on Qt/Symbian due platform security", SkipAll);
-#endif
     QProcess proc;
 
 #if defined(Q_OS_MAC)
@@ -1062,9 +998,6 @@ void tst_QProcess::hardExit()
 //-----------------------------------------------------------------------------
 void tst_QProcess::softExit()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Terminating started processes is not supported on Qt/Symbian due platform security", SkipAll);
-#endif
     QProcess proc;
 
     proc.start("testSoftExit/testSoftExit");
@@ -1169,9 +1102,6 @@ void tst_QProcess::softExitInSlots()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QFETCH(QString, appName);
 
@@ -1190,9 +1120,6 @@ void tst_QProcess::mergedChannels()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess process;
@@ -1224,9 +1151,6 @@ void tst_QProcess::forwardedChannels()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QProcess process;
     process.setReadChannelMode(QProcess::ForwardedChannels);
@@ -1253,9 +1177,6 @@ void tst_QProcess::atEnd()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess process;
@@ -1289,10 +1210,6 @@ public:
         return exitCode;
     }
 
-#if defined(Q_OS_SYMBIAN)
-    int serial;
-#endif
-
 protected:
     inline void run()
     {
@@ -1304,21 +1221,11 @@ protected:
 
 #ifdef Q_OS_MAC
         process.start("testProcessEcho/testProcessEcho.app");
-#elif defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // WINSCW builds in Symbian do not allow multiple processes to load Qt libraries,
-    // so use just a simple process instead of testDetached.
-    process.start("testProcessNormal");
-#elif defined(Q_OS_SYMBIAN)
-        // testDetached used because it does something, but doesn't take too long.
-        QFile infoFile(QString("c:\\logs\\detinfo%1").arg(serial));
-        QStringList args;
-        args << infoFile.fileName();
-        process.start("testDetached", args);
 #else
         process.start("testProcessEcho/testProcessEcho");
 #endif
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
         QCOMPARE(process.write("abc\0", 4), qint64(4));
 #endif
         exitCode = exec();
@@ -1349,20 +1256,11 @@ void tst_QProcess::processInAThread()
 //-----------------------------------------------------------------------------
 void tst_QProcess::processesInMultipleThreads()
 {
-#if defined(Q_OS_SYMBIAN)
-    int serialCounter = 0;
-#endif
-
     for (int i = 0; i < 10; ++i) {
         TestThread thread1;
         TestThread thread2;
         TestThread thread3;
 
-#if defined(Q_OS_SYMBIAN)
-        thread1.serial = serialCounter++;
-        thread2.serial = serialCounter++;
-        thread3.serial = serialCounter++;
-#endif
         thread1.start();
         thread2.start();
         thread3.start();
@@ -1388,21 +1286,14 @@ void tst_QProcess::waitForFinishedWithTimeout()
 
 #ifdef Q_OS_MAC
     process->start("testProcessEcho/testProcessEcho.app");
-#elif defined(Q_OS_SYMBIAN)
-    process->start("testProcessOutput");
 #else
     process->start("testProcessEcho/testProcessEcho");
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    QVERIFY(process->waitForStarted(50));
-    QVERIFY(!process->waitForFinished(1));
-#else
     QVERIFY(process->waitForStarted(5000));
     QVERIFY(!process->waitForFinished(1));
 
     process->write("", 1);
-#endif
 
     QVERIFY(process->waitForFinished());
 
@@ -1415,9 +1306,6 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     process = new QProcess(this);
@@ -1452,9 +1340,6 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     bytesAvailable = process->bytesAvailable();
     process->write("bar", 4);
@@ -1467,9 +1352,6 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     process = new QProcess(this);
@@ -1502,9 +1384,6 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlotSlot()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     process->write("b");
@@ -1564,12 +1443,8 @@ void tst_QProcess::spaceArgsTest()
 
     QStringList programs;
     programs << QString::fromLatin1("testProcessSpacesArgs/nospace")
-#if defined(Q_OS_SYMBIAN)
-    ; // Symbian toolchain doesn't like exes with spaces in the name
-#else
              << QString::fromLatin1("testProcessSpacesArgs/one space")
              << QString::fromLatin1("testProcessSpacesArgs/two space s");
-#endif
 
     process = new QProcess(this);
 
@@ -1577,7 +1452,7 @@ void tst_QProcess::spaceArgsTest()
         QString program = programs.at(i);
         process->start(program, args);
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
         QVERIFY(process->waitForStarted(5000));
         QVERIFY(process->waitForFinished(5000));
 #else
@@ -1585,15 +1460,7 @@ void tst_QProcess::spaceArgsTest()
         QVERIFY(process->waitForFinished(10000));
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-        // Symbian test outputs to a file, so check that
-        FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","r");
-        QVERIFY(file);
-        char buf[256];
-        fgets(buf, 256, file);
-        fclose(file);
-        QStringList actual = QString::fromLatin1(buf).split("|");
-#elif !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE)
         QStringList actual = QString::fromLatin1(process->readAll()).split("|");
 #endif
 #if !defined(Q_OS_WINCE)
@@ -1615,14 +1482,7 @@ void tst_QProcess::spaceArgsTest()
         QVERIFY(process->waitForStarted(5000));
         QVERIFY(process->waitForFinished(5000));
 
-#if defined(Q_OS_SYMBIAN)
-        // Symbian test outputs to a file, so check that
-        file = fopen("c:\\logs\\qprocess_args_test.txt","r");
-        QVERIFY(file);
-        fgets(buf, 256, file);
-        fclose(file);
-        actual = QString::fromLatin1(buf).split("|");
-#elif !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE)
         actual = QString::fromLatin1(process->readAll()).split("|");
 #endif
 #if !defined(Q_OS_WINCE)
@@ -1638,7 +1498,7 @@ void tst_QProcess::spaceArgsTest()
     process = 0;
 }
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::nativeArguments()
@@ -1651,7 +1511,7 @@ void tst_QProcess::nativeArguments()
 
     proc.start(QString::fromLatin1("testProcessSpacesArgs/nospace"), QStringList());
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     QVERIFY(proc.waitForStarted(5000));
     QVERIFY(proc.waitForFinished(5000));
 #else
@@ -1659,13 +1519,9 @@ void tst_QProcess::nativeArguments()
     QVERIFY(proc.waitForFinished(10000));
 #endif
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
-    // Symbian test outputs to a file, so check that
-# ifdef Q_OS_SYMBIAN
-    FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","r");
-# else
+#if defined(Q_OS_WINCE)
+    // WinCE test outputs to a file, so check that
     FILE* file = fopen("\\temp\\qprocess_args_test.txt","r");
-# endif
     QVERIFY(file);
     char buf[256];
     fgets(buf, 256, file);
@@ -1691,13 +1547,7 @@ void tst_QProcess::nativeArguments()
 //-----------------------------------------------------------------------------
 void tst_QProcess::exitCodeTest()
 {
-#if defined(Q_OS_SYMBIAN)
-    // Kernel will run out of process handles on some hw, as there is some
-    // delay before they are recycled, so limit the amount of processes.
-    for (int i = 0; i < 50; ++i) {
-#else
     for (int i = 0; i < 255; ++i) {
-#endif
         QProcess process;
         process.start("testExitCodes/testExitCodes " + QString::number(i));
         QVERIFY(process.waitForFinished(5000));
@@ -1825,9 +1675,6 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QFile file("removeFile.txt");
     QVERIFY(file.open(QFile::WriteOnly));
@@ -1867,7 +1714,7 @@ void tst_QProcess::setEnvironment_data()
 
 void tst_QProcess::setEnvironment()
 {
-#if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_WINCE)
     QSKIP("OS doesn't support environment variables", SkipAll);
 #endif
 
@@ -1935,7 +1782,7 @@ void tst_QProcess::setProcessEnvironment_data()
 
 void tst_QProcess::setProcessEnvironment()
 {
-#if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_WINCE)
     QSKIP("OS doesn't support environment variables", SkipAll);
 #endif
 
@@ -1972,7 +1819,7 @@ void tst_QProcess::setProcessEnvironment()
 //-----------------------------------------------------------------------------
 void tst_QProcess::systemEnvironment()
 {
-#if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_WINCE)
     // there is no concept of system variables on Windows CE as there is no console
     QVERIFY(QProcess::systemEnvironment().isEmpty());
     QVERIFY(QProcessEnvironment::systemEnvironment().isEmpty());
@@ -1991,9 +1838,6 @@ void tst_QProcess::spaceInName()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
     QProcess process;
     process.start("test Space In Name/testSpaceInName", QStringList());
     QVERIFY(process.waitForStarted());
@@ -2004,7 +1848,6 @@ void tst_QProcess::spaceInName()
 //-----------------------------------------------------------------------------
 void tst_QProcess::lockupsInStartDetached()
 {
-#if !defined(Q_OS_SYMBIAN)
     // Check that QProcess doesn't cause a lock up at this program's
     // exit if a thread was started and we tried to run a program that
     // doesn't exist. Before Qt 4.2, this used to lock up on Unix due
@@ -2013,7 +1856,6 @@ void tst_QProcess::lockupsInStartDetached()
     QHostInfo::lookupHost(QString("something.invalid"), 0, 0);
     QProcess::execute("yjhbrty");
     QProcess::startDetached("yjhbrty");
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2021,9 +1863,6 @@ void tst_QProcess::atEnd2()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     QProcess process;
@@ -2069,9 +1908,6 @@ void tst_QProcess::setStandardInputFile()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     static const char data[] = "A bunch\1of\2data\3\4\5\6\7...";
@@ -2128,9 +1964,6 @@ void tst_QProcess::setStandardOutputFile()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
 
     static const char data[] = "Original data. ";
@@ -2197,9 +2030,6 @@ void tst_QProcess::setStandardOutputProcess()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QProcess source;
     QProcess sink;
@@ -2235,9 +2065,6 @@ void tst_QProcess::fileWriterProcess()
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
-#endif
 
     QString stdinStr;
     for (int i = 0; i < 5000; ++i)
@@ -2264,30 +2091,18 @@ void tst_QProcess::fileWriterProcess()
 //-----------------------------------------------------------------------------
 void tst_QProcess::detachedWorkingDirectoryAndPid()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // WINSCW builds in Symbian do not allow multiple processes to load Qt libraries,
-    // so this test must be skipped.
-    QSKIP("Multiple processes loading Qt are not allowed in Qt/Symbian emulator.", SkipAll);
-#endif
     qint64 pid;
 
 #ifdef Q_OS_WINCE
     QTest::qSleep(1000);
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    // Symbian has no working directory support, so use logs dir as a shared directory
-    QFile infoFile(QLatin1String("c:\\logs\\detachedinfo.txt"));
-#else
     QFile infoFile(QDir::currentPath() + QLatin1String("/detachedinfo.txt"));
-#endif
     infoFile.remove();
 
     QString workingDir = QDir::currentPath() + "/testDetached";
 
-#ifndef Q_OS_SYMBIAN
     QVERIFY(QFile::exists(workingDir));
-#endif
 
     QStringList args;
     args << infoFile.fileName();
@@ -2313,9 +2128,6 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
     qint64 actualPid = processIdString.toLongLong(&ok);
     QVERIFY(ok);
 
-#if defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("", "Working directory is not supported on Qt/symbian", Continue);
-#endif
     QCOMPARE(actualWorkingDir, workingDir);
     QCOMPARE(actualPid, pid);
 }
@@ -2325,9 +2137,6 @@ void tst_QProcess::switchReadChannels()
 {
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE", SkipAll);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Reading and writing to a process is not supported on Qt/Symbian", SkipAll);
 #endif
     const char data[] = "ABCD";
 
@@ -2364,9 +2173,6 @@ void tst_QProcess::setWorkingDirectory()
 #ifdef Q_OS_WINCE
     QSKIP("Windows CE does not support working directory logic", SkipAll);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian does not support working directory logic", SkipAll);
-#endif
     process = new QProcess;
     process->setWorkingDirectory("test");
 #ifdef Q_OS_MAC
@@ -2399,23 +2205,13 @@ void tst_QProcess::startFinishStartFinish()
 #else
         process.start("testProcessOutput/testProcessOutput");
 #endif
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
         QVERIFY(process.waitForReadyRead(10000));
         QCOMPARE(QString::fromLatin1(process.readLine().trimmed()),
                  QString("0 -this is a number"));
 #endif
         if (process.state() != QProcess::NotRunning)
             QVERIFY(process.waitForFinished(10000));
-#if defined(Q_OS_SYMBIAN)
-        // Symbian test outputs to a file, so check that
-        FILE* file = fopen("c:\\logs\\qprocess_output_test.txt","r");
-        QVERIFY(file);
-        char buf[30];
-        fgets(buf, 30, file);
-        QCOMPARE(QString::fromLatin1(buf),
-                 QString("0 -this is a number\n"));
-        fclose(file);
-#endif
     }
 }
 

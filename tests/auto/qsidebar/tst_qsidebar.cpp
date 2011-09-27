@@ -122,12 +122,7 @@ void tst_QSidebar::addUrls()
     QSidebar qsidebar;
     qsidebar.init(&fsmodel, emptyUrls);
     QAbstractItemModel *model = qsidebar.model();
-#if defined(Q_OS_SYMBIAN)
-    // On Symbian, QDir::rootPath() and QDir::home() are same.
-    QDir testDir = QDir::currentPath();
-#else
     QDir testDir = QDir::home();
-#endif
 
     // default
     QCOMPARE(model->rowCount(), 0);

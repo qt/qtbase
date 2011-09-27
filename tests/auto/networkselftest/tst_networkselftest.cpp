@@ -50,13 +50,6 @@
 #include <QtNetwork/qnetworksession.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Current path (C:\private\<UID>) contains only ascii chars
-//#define SRCDIR QDir::currentPath()
-#define SRCDIR "."
-#endif
-
 #include "../network-settings.h"
 
 class tst_NetworkSelfTest: public QObject
@@ -345,7 +338,6 @@ static void netChat(int port, const QList<Chat> &chat)
 
 tst_NetworkSelfTest::tst_NetworkSelfTest()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_NetworkSelfTest::~tst_NetworkSelfTest()
@@ -450,11 +442,6 @@ void tst_NetworkSelfTest::remotePortsOpen_data()
 
 void tst_NetworkSelfTest::remotePortsOpen()
 {
-#ifdef Q_OS_SYMBIAN
-    if (qstrcmp(QTest::currentDataTag(), "http-proxy-auth-ntlm") == 0)
-        QSKIP("NTML authentication not yet supported in Symbian", SkipSingle);
-#endif
-
     QFETCH(int, portNumber);
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), portNumber);
@@ -532,9 +519,6 @@ static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 //            << Chat::expect("213 40\r\n")
 
             << Chat::send("QUIT\r\n");
-#ifdef Q_OS_SYMBIAN
-    if (userSuffix.length() == 0) // received but unacknowledged packets are discarded by TCP RST, so this doesn't work with frox proxy
-#endif
         rv  << Chat::expect("221")
             << Chat::discardUntil("\r\n");
 
@@ -877,9 +861,6 @@ void tst_NetworkSelfTest::httpProxyBasicAuth()
 
 void tst_NetworkSelfTest::httpProxyNtlmAuth()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("NTML authentication not yet supported in Symbian", SkipAll);
-#else
     netChat(3130, QList<Chat>()
             // test auth required response
             << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
@@ -892,7 +873,6 @@ void tst_NetworkSelfTest::httpProxyNtlmAuth()
             << Chat::discardUntil("\r\nProxy-Authenticate: NTLM\r\n")
             << Chat::DiscardUntilDisconnect
             );
-#endif
 }
 
 // SOCKSv5 is a binary protocol

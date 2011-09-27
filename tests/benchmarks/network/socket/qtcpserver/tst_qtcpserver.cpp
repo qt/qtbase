@@ -39,12 +39,8 @@
 **
 ****************************************************************************/
 
-// Just to get Q_OS_SYMBIAN
-#include <qglobal.h>
-
 #include <QtTest/QtTest>
-
-
+#include <qglobal.h>
 #include <qcoreapplication.h>
 #include <qtcpsocket.h>
 #include <qtcpserver.h>
@@ -84,7 +80,6 @@ private slots:
 
 tst_QTcpServer::tst_QTcpServer()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QTcpServer::~tst_QTcpServer()
@@ -179,9 +174,6 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
     QSKIP("WinCE WM: Not yet supported", SkipAll);
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {
         QVERIFY(server.serverError() == QAbstractSocket::UnsupportedSocketOperationError);

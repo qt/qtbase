@@ -52,9 +52,7 @@
 #include <QTime>
 #include <QStyle>
 #include <QtGlobal>
-#if defined(Q_OS_SYMBIAN)
-# include <f32file.h>
-#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -69,23 +67,6 @@
             QTest::qWait(step); \
         } \
     } while(0)
-
-#if defined(Q_OS_SYMBIAN)
-static HBufC* qt_QString2HBufCNewL(const QString& aString)
-{
-    HBufC *buffer;
-#ifdef QT_NO_UNICODE
-    TPtrC8 ptr(reinterpret_cast<const TUint8*>(aString.toLocal8Bit().constData()));
-    buffer = HBufC8::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
-#else
-    TPtrC16 ptr(reinterpret_cast<const TUint16*>(aString.utf16()));
-    buffer = HBufC16::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
-#endif
-    return buffer;
-}
-#endif
 
 class tst_QFileSystemModel : public QObject {
   Q_OBJECT
@@ -150,9 +131,6 @@ protected:
 private:
     QFileSystemModel *model;
     QString flatDirTestPath;
-#if defined(Q_OS_SYMBIAN)
-    RFs rfs;
-#endif
 };
 
 tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
@@ -163,16 +141,10 @@ tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
     qsrand(midnight.secsTo(QTime::currentTime()));
     // generating unique temporary directory name
     flatDirTestPath = QDir::temp().path() + '/' + QString("flatdirtest.") + QString::number(qrand());
-#if defined(Q_OS_SYMBIAN)
-    rfs.Connect();
-#endif
 }
 
 tst_QFileSystemModel::~tst_QFileSystemModel()
 {
-#if defined(Q_OS_SYMBIAN)
-    rfs.Close();
-#endif
     QString tmp = flatDirTestPath;
     QDir dir(tmp);
     if (dir.exists() && !dir.rmdir(tmp))
@@ -212,7 +184,7 @@ void tst_QFileSystemModel::cleanup()
 
 void tst_QFileSystemModel::indexPath()
 {
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN)
     int depth = QDir::currentPath().count('/');
     model->setRootPath(QDir::currentPath());
     QTest::qWait(WAITTIME);
@@ -436,12 +408,6 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         if (initial_files.at(i)[0] == '.')
             QProcess::execute(QString("attrib +h %1").arg(file.fileName()));
-#elif defined(Q_OS_SYMBIAN)
-        if (initial_files.at(i)[0] == '.') {
-            HBufC* buffer = qt_QString2HBufCNewL(QDir::toNativeSeparators(file.fileName()));
-            rfs.SetAtt(*buffer, KEntryAttHidden, 0);
-            delete buffer;
-            }
 #endif
         //qDebug() << test_path + '/' + initial_files.at(i) << (QFile::exists(test_path + '/' + initial_files.at(i)));
     }
@@ -630,7 +596,7 @@ void tst_QFileSystemModel::filters_data()
     QTest::addColumn<int>("dirFilters");
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<int>("rowCount");
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 2;
     QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
     QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
@@ -665,12 +631,7 @@ void tst_QFileSystemModel::filters_data()
     QTest::newRow("no dir + hidden") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::Hidden) << QStringList() << 0;
     QTest::newRow("dir+hid+files") << (QStringList() << "a" << "b" << "c") << QStringList() <<
                          (int)(QDir::Dirs | QDir::Files | QDir::Hidden) << QStringList() << 3;
-#if defined(Q_OS_SYMBIAN)
-    // Some symbian envs have a bug that causes "A" and ".A" to be considered same name in file system.
-    QTest::newRow("dir+file+hid-dot .D") << (QStringList() << "a" << "b" << "c") << (QStringList() << ".D") <<
-#else
     QTest::newRow("dir+file+hid-dot .A") << (QStringList() << "a" << "b" << "c") << (QStringList() << ".A") <<
-#endif
                          (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << QStringList() << 4;
     QTest::newRow("dir+files+hid+dot A") << (QStringList() << "a" << "b" << "c") << (QStringList() << "AFolder") <<
                          (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << (QStringList() << "A*") << 2;

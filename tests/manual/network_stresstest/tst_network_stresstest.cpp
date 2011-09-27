@@ -118,7 +118,7 @@ tst_NetworkStressTest::tst_NetworkStressTest()
 
     // IPv6 requires Winsock v2.0 or better.
     WSAStartup(MAKEWORD(2,0), &wsadata);
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_UNIX)
     ::signal(SIGALRM, SIG_IGN);
 #endif
 }
@@ -224,7 +224,7 @@ void tst_NetworkStressTest::nativeBlockingConnectDisconnect()
         byteCounter = 0;
         timeout.start();
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
         alarm(10);
 #endif
 
@@ -279,7 +279,7 @@ void tst_NetworkStressTest::nativeBlockingConnectDisconnect()
     }
     qDebug() << "Average transfer rate was" << (totalBytes / 1024.0 / 1024 * 1000 / outerTimer.elapsed()) << "MB/s";
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     alarm(0);
 #endif
 }

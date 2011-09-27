@@ -39,11 +39,9 @@
 **
 ****************************************************************************/
 
-
-// Just to get Q_OS_SYMBIAN
 #include <qglobal.h>
 
-#if defined(_WIN32) && !defined(Q_OS_SYMBIAN)
+#if defined(_WIN32)
 #include <winsock2.h>
 #else
 #include <sys/types.h>
@@ -478,9 +476,6 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
     QTcpSocket *socket = newSocket();
     QCOMPARE(socket->socketDescriptor(), -1);
-#ifdef Q_OS_SYMBIAN
-    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
-#endif
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), -1);
 
@@ -493,9 +488,6 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 
 void tst_QTcpSocket::setSocketDescriptor()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("adopting open c socket handles is not supported", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;                 // this test doesn't make sense with proxies
@@ -535,7 +527,6 @@ void tst_QTcpSocket::setSocketDescriptor()
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
-#endif
 #endif
 }
 
@@ -1053,11 +1044,7 @@ void tst_QTcpSocket::disconnectWhileConnecting()
     }
 
     connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
-#ifndef Q_OS_SYMBIAN
     enterLoop(10);
-#else
-    enterLoop(30);
-#endif
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -1117,11 +1104,7 @@ protected:
     {
         bool timedOut = false;
         while (!quit) {
-#ifndef Q_OS_SYMBIAN
             if (server->waitForNewConnection(500, &timedOut))
-#else
-            if (server->waitForNewConnection(5000, &timedOut))
-#endif
                 break;
             if (!timedOut)
                 return;
@@ -1129,11 +1112,7 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
-#ifndef Q_OS_SYMBIAN
             if (socket->waitForDisconnected(500))
-#else
-            if (socket->waitForDisconnected(5000))
-#endif
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -1182,11 +1161,7 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
-#ifndef Q_OS_SYMBIAN
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
-#else
-    QVERIFY2(socket->waitForDisconnected(30000), "Network timeout");
-#endif
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
@@ -1234,11 +1209,7 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
-#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(50, &loop, SLOT(quit()));
-#else
-    QTimer::singleShot(5000, &loop, SLOT(quit()));
-#endif
     loop.exec();
 
     // recheck
@@ -1511,19 +1482,11 @@ void tst_QTcpSocket::dontCloseOnTimeout()
 
     QTcpSocket *socket = newSocket();
     socket->connectToHost(serverAddress, server.serverPort());
-#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForReadyRead(100));
-#else
-    QVERIFY(!socket->waitForReadyRead(5000));
-#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
-#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForDisconnected(100));
-#else
-    QVERIFY(!socket->waitForDisconnected(5000));
-#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
@@ -2200,9 +2163,6 @@ void tst_QTcpSocket::suddenRemoteDisconnect_data()
 
 void tst_QTcpSocket::suddenRemoteDisconnect()
 {
-#if defined( Q_OS_SYMBIAN )
-    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);
-#else
     QFETCH(QString, client);
     QFETCH(QString, server);
 
@@ -2249,7 +2209,6 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     // Check that both exited normally.
     QCOMPARE(clientProcess.readAll().constData(), "SUCCESS\n");
     QCOMPARE(serverProcess.readAll().constData(), "SUCCESS\n");
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -2485,12 +2444,10 @@ void tst_QTcpSocket::invalidProxy_data()
     QTest::newRow("no-such-host-http") << int(QNetworkProxy::HttpProxy)
                                        << "this-host-will-never-exist.troll.no" << 3128 << false
                                        << int(QAbstractSocket::ProxyNotFoundError);
-#if !defined(Q_OS_SYMBIAN)
     QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << fluke << 1080 << false
                                     << int(QAbstractSocket::ProxyConnectionClosedError);
     QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << fluke << 3128 << false
                                     << int(QAbstractSocket::SocketTimeoutError);
-#endif
 }
 
 void tst_QTcpSocket::invalidProxy()

@@ -17,16 +17,11 @@ SUBDIRS = \
           testGuiProcess \
           testDetached \
           fileWriterProcess \
-          testSetWorkingDirectory
-
-!symbian: {
-SUBDIRS +=testProcessSpacesArgs/onespace.pro \
+          testSetWorkingDirectory \
+          testProcessSpacesArgs/onespace.pro \
           testProcessSpacesArgs/twospaces.pro \
           testSoftExit
-}
 
 win32:!wince*:SUBDIRS+=testProcessEchoGui
 
 SUBDIRS += test
-
-

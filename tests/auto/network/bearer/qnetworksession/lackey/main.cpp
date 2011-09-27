@@ -83,7 +83,7 @@ int main(int argc, char** argv)
         return NO_DISCOVERED_CONFIGURATIONS_ERROR;
     }
 
-    // Cannot read/write to processes on WinCE or Symbian.
+    // Cannot read/write to processes on WinCE.
     // Easiest alternative is to use sockets for IPC.
     QLocalSocket oopSocket;
 

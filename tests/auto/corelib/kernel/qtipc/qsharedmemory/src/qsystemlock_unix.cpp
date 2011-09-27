@@ -63,25 +63,6 @@ union qt_semun {
 
 #define tr(x) QT_TRANSLATE_NOOP(QLatin1String("QSystemLock"), (x))
 
-#if defined(Q_OS_SYMBIAN)
-int createUnixKeyFile(const QString &fileName)
-{
-    if (QFile::exists(fileName))
-        return 0;
-
-    int fd = open(QFile::encodeName(fileName).constData(),
-            O_EXCL | O_CREAT | O_RDWR, 0640);
-    if (-1 == fd) {
-        if (errno == EEXIST)
-            return 0;
-        return -1;
-    } else {
-        close(fd);
-    }
-    return 1;
-}
-#endif
-
 QSystemLockPrivate::QSystemLockPrivate() :
         semaphore(-1), lockCount(0),
         error(QSystemLock::NoError), unix_key(-1), createdFile(false), createdSemaphore(false)
@@ -125,11 +106,7 @@ key_t QSystemLockPrivate::handle()
     }
 
     // Create the file needed for ftok
-#if defined(Q_OS_SYMBIAN)
-    int built = createUnixKeyFile(fileName);
-#else
     int built = QSharedMemoryPrivate::createUnixKeyFile(fileName);
-#endif
     if (-1 == built)
         return -1;
     createdFile = (1 == built);

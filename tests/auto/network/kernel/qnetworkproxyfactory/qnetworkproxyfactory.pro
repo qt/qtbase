@@ -6,6 +6,3 @@ load(qttest_p4)
 QT = core network
 
 SOURCES += tst_qnetworkproxyfactory.cpp
-
-symbian: TARGET.CAPABILITY = NetworkServices ReadUserData
-

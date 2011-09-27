@@ -123,7 +123,6 @@ private:
 
 tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QProgressDialog()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck_data()

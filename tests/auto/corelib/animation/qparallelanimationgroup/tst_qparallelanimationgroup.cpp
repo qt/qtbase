@@ -90,8 +90,8 @@ tst_QParallelAnimationGroup::~tst_QParallelAnimationGroup()
 void tst_QParallelAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAC) || defined(Q_WS_WINCE)
-    // give the Symbian and mac app start event queue time to clear
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE)
+    // give the mac/wince app start event queue time to clear
     QTest::qWait(1000);
 #endif
 }

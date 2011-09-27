@@ -3,14 +3,11 @@ SOURCES  += tst_qchar.cpp
 
 QT = core core-private
 
-wince*|symbian: {
-deploy.files += NormalizationTest.txt
-DEPLOYMENT += deploy
+wince*: {
+    deploy.files += NormalizationTest.txt
+    DEPLOYMENT += deploy
 }
 
-symbian: {
-    DEFINES += SRCDIR=""
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
+
 CONFIG += parallel_test

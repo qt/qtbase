@@ -151,7 +151,6 @@ private slots:
 
 tst_QSocks5SocketEngine::tst_QSocks5SocketEngine()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QSocks5SocketEngine::~tst_QSocks5SocketEngine()
@@ -532,10 +531,6 @@ void tst_QSocks5SocketEngine::serverTest()
 //---------------------------------------------------------------------------
 void tst_QSocks5SocketEngine::udpTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
-    QSKIP("UDP works bads on non WinPCAP emulator setting", SkipAll);
-#endif
-
     QSocks5SocketEngine udpSocket;
 
     // Initialize device #1
@@ -795,7 +790,7 @@ void tst_QSocks5SocketEngine::downloadBigFile()
     QTime stopWatch;
     stopWatch.start();
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     QTestEventLoop::instance().enterLoop(60);
 #else
     QTestEventLoop::instance().enterLoop(180);

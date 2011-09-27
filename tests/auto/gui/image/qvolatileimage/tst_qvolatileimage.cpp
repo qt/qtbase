@@ -44,9 +44,6 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/private/qvolatileimage_p.h>
-#ifdef Q_OS_SYMBIAN
-#include <fbs.h>
-#endif
 
 class tst_QVolatileImage : public QObject
 {
@@ -60,10 +57,8 @@ private slots:
     void ensureFormat();
     void dataAccess();
     void sharing();
-    void paint();
     void fill();
     void copy();
-    void bitmap();
 };
 
 void tst_QVolatileImage::create()
@@ -93,21 +88,6 @@ void tst_QVolatileImage::create()
     QCOMPARE(img.hasAlphaChannel(), img.imageRef().hasAlphaChannel());
     QCOMPARE(img.hasAlphaChannel(), img.toImage().hasAlphaChannel());
     QCOMPARE(img.depth(), 32);
-
-#ifdef Q_OS_SYMBIAN
-    CFbsBitmap *bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(100, 50), EColor16MAP) == KErrNone);
-    QVolatileImage bmpimg(bmp);
-    QVERIFY(!bmpimg.isNull());
-    QCOMPARE(bmpimg.width(), 100);
-    QCOMPARE(bmpimg.height(), 50);
-    // Verify that we only did handle duplication, not pixel data copying.
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    delete bmp;
-    // Check if content is still valid.
-    QImage copyimg = bmpimg.toImage();
-    QCOMPARE(copyimg.format(), QImage::Format_ARGB32_Premultiplied);
-#endif
 }
 
 void tst_QVolatileImage::ensureFormat()
@@ -127,30 +107,6 @@ void tst_QVolatileImage::ensureFormat()
     QVERIFY(img.imageRef() != source);
     QVERIFY(img.toImage() != source);
     QVERIFY(img.format() == QImage::Format_RGB32);
-
-#ifdef Q_OS_SYMBIAN
-    CFbsBitmap *bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(100, 50), EColor16MAP) == KErrNone);
-    QVolatileImage bmpimg(bmp);
-    QVERIFY(bmpimg.ensureFormat(QImage::Format_ARGB32_Premultiplied)); // no-op
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-
-    // A different format should cause data copying.
-    QVERIFY(bmpimg.ensureFormat(QImage::Format_RGB32));
-    QVERIFY(bmpimg.constBits() != (const uchar *) bmp->DataAddress());
-    const uchar *prevBits = bmpimg.constBits();
-
-    QVERIFY(bmpimg.ensureFormat(QImage::Format_RGB16));
-    QVERIFY(bmpimg.constBits() != (const uchar *) bmp->DataAddress());
-    QVERIFY(bmpimg.constBits() != prevBits);
-    prevBits = bmpimg.constBits();
-
-    QVERIFY(bmpimg.ensureFormat(QImage::Format_MonoLSB));
-    QVERIFY(bmpimg.constBits() != (const uchar *) bmp->DataAddress());
-    QVERIFY(bmpimg.constBits() != prevBits);
-
-    delete bmp;
-#endif
 }
 
 void tst_QVolatileImage::dataAccess()
@@ -190,21 +146,6 @@ void tst_QVolatileImage::sharing()
     // toImage() should return a copy of the internal QImage.
     // imageRef() is a reference to the internal QImage.
     QVERIFY(img1.imageRef().constBits() != img1.toImage().constBits());
-
-#ifdef Q_OS_SYMBIAN
-    CFbsBitmap *bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(100, 50), EColor16MAP) == KErrNone);
-    QVolatileImage bmpimg(bmp);
-    QVolatileImage bmpimg2;
-    bmpimg2 = bmpimg;
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    QCOMPARE(bmpimg2.constBits(), (const uchar *) bmp->DataAddress());
-    // Now force a detach, which should copy the pixel data under-the-hood.
-    bmpimg.imageRef();
-    QVERIFY(bmpimg.constBits() != (const uchar *) bmp->DataAddress());
-    QCOMPARE(bmpimg2.constBits(), (const uchar *) bmp->DataAddress());
-    delete bmp;
-#endif
 }
 
 bool fuzzyCompareImages(const QImage &image1, const QImage &image2, int tolerance)
@@ -227,52 +168,6 @@ bool fuzzyCompareImages(const QImage &image1, const QImage &image2, int toleranc
     return true;
 }
 
-void tst_QVolatileImage::paint()
-{
-#ifdef Q_OS_SYMBIAN
-    QVolatileImage img(100, 100, QImage::Format_ARGB32);
-    img.beginDataAccess();
-    img.imageRef().fill(QColor(Qt::green).rgba());
-    QPainter p(&img.imageRef());
-    p.drawRect(10, 10, 50, 50);
-    p.end();
-    img.endDataAccess();
-    QImage imgA = img.toImage();
-
-    // The following assumes that on openvg the pixmapdata is backed by QVolatileImage)
-    // (and that openvg is in use)
-    // It should pass with any engine nonetheless.
-    // See if painting into the underlying QImage succeeds.
-    QPixmap pm(100, 100);
-    if (pm.paintEngine()->type() == QPaintEngine::Raster) {
-        pm.fill(Qt::green);
-        QPainter pmp(&pm);
-        pmp.drawRect(10, 10, 50, 50);
-        pmp.end();
-        QImage imgB = pm.toImage();
-        QVERIFY(fuzzyCompareImages(imgA, imgB, 0));
-        // Exercise the accelerated QVolatileImagePaintEngine::drawPixmap() a bit.
-        QPixmap targetPm(pm.size());
-        targetPm.fill(Qt::black);
-        pmp.begin(&targetPm);
-        pmp.drawPixmap(QPointF(0, 0), pm);
-        pmp.end();
-        imgB = targetPm.toImage();
-        QVERIFY(fuzzyCompareImages(imgA, imgB, 0));
-        // Now the overload taking rects.
-        targetPm.fill(Qt::black);
-        pmp.begin(&targetPm);
-        QRectF rect(QPointF(0, 0), pm.size());
-        pmp.drawPixmap(rect, pm, rect);
-        pmp.end();
-        imgB = targetPm.toImage();
-        QVERIFY(fuzzyCompareImages(imgA, imgB, 0));
-    } else {
-        QSKIP("Pixmaps not painted via raster, skipping paint test", SkipSingle);
-    }
-#endif
-}
-
 void tst_QVolatileImage::fill()
 {
     QVolatileImage img(100, 100, QImage::Format_ARGB32_Premultiplied);
@@ -280,17 +175,6 @@ void tst_QVolatileImage::fill()
     img.fill(col.rgba());
     QVERIFY(img.imageRef().pixel(1, 1) == col.rgba());
     QVERIFY(img.toImage().pixel(1, 1) == col.rgba());
-
-#ifdef Q_OS_SYMBIAN
-    CFbsBitmap *bmp = static_cast<CFbsBitmap *>(img.duplicateNativeImage());
-    QVERIFY(bmp);
-    TRgb pix;
-    bmp->GetPixel(pix, TPoint(1, 1));
-    QCOMPARE(pix.Red(), col.red());
-    QCOMPARE(pix.Green(), col.green());
-    QCOMPARE(pix.Blue(), col.blue());
-    delete bmp;
-#endif
 }
 
 void tst_QVolatileImage::copy()
@@ -316,80 +200,6 @@ void tst_QVolatileImage::copy()
     imgB = img2.toImage();
     QCOMPARE(imgA.size(), imgB.size());
     QVERIFY(fuzzyCompareImages(imgA, imgB, 0));
-}
-
-void tst_QVolatileImage::bitmap()
-{
-#ifdef Q_OS_SYMBIAN
-    CFbsBitmap *bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(100, 50), EColor64K) == KErrNone);
-    QVolatileImage bmpimg(bmp);
-    CFbsBitmap *dupbmp = static_cast<CFbsBitmap *>(bmpimg.duplicateNativeImage());
-    QVERIFY(dupbmp);
-    QVERIFY(dupbmp != bmp);
-    QCOMPARE(dupbmp->DataAddress(), bmp->DataAddress());
-    delete dupbmp;
-    delete bmp;
-    bmpimg.beginDataAccess();
-    qMemSet(bmpimg.bits(), 0, bmpimg.byteCount());
-    qMemSet(bmpimg.bits(), 1, bmpimg.bytesPerLine() * bmpimg.height());
-    bmpimg.endDataAccess();
-
-    // Test bgr->rgb conversion in case of EColor16M.
-    bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(101, 89), EColor16M) == KErrNone);
-    bmp->BeginDataAccess();
-    TUint32 *addr = bmp->DataAddress();
-    uint rgb = QColor(10, 20, 30).rgb();
-    qMemCopy(bmp->DataAddress(), &rgb, 3);
-    bmp->EndDataAccess();
-    TRgb symrgb;
-    bmp->GetPixel(symrgb, TPoint(0, 0));
-    QVERIFY(symrgb.Red() == 10 && symrgb.Green() == 20 && symrgb.Blue() == 30);
-    bmpimg = QVolatileImage(bmp);
-    QVERIFY(bmpimg.toImage().pixel(0, 0) == rgb);
-    // check if there really was a conversion
-    bmp->BeginDataAccess();
-    bmpimg.beginDataAccess();
-    qMemCopy(&rgb, bmpimg.constBits(), 3);
-    uint rgb2 = rgb;
-    qMemCopy(&rgb2, bmp->DataAddress(), 3);
-    QVERIFY(rgb != rgb2);
-    bmpimg.endDataAccess(true);
-    bmp->EndDataAccess(true);
-    delete bmp;
-
-    bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(101, 89), EGray2) == KErrNone);
-    bmpimg = QVolatileImage(bmp); // inverts pixels, but should do it in place
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    QCOMPARE(bmpimg.format(), QImage::Format_MonoLSB);
-    bmpimg.ensureFormat(QImage::Format_ARGB32_Premultiplied);
-    QVERIFY(bmpimg.constBits() != (const uchar *) bmp->DataAddress());
-    QCOMPARE(bmpimg.format(), QImage::Format_ARGB32_Premultiplied);
-    delete bmp;
-
-    // The following two formats must be optimal always.
-    bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(101, 89), EColor16MAP) == KErrNone);
-    bmpimg = QVolatileImage(bmp);
-    QCOMPARE(bmpimg.format(), QImage::Format_ARGB32_Premultiplied);
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    bmpimg.ensureFormat(QImage::Format_ARGB32_Premultiplied);
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    delete bmp;
-    bmp = new CFbsBitmap;
-    QVERIFY(bmp->Create(TSize(101, 89), EColor16MU) == KErrNone);
-    bmpimg = QVolatileImage(bmp);
-    QCOMPARE(bmpimg.format(), QImage::Format_RGB32);
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    bmpimg.ensureFormat(QImage::Format_RGB32);
-    QCOMPARE(bmpimg.constBits(), (const uchar *) bmp->DataAddress());
-    delete bmp;
-
-#else
-    QSKIP("CFbsBitmap is only available on Symbian, skipping bitmap test", SkipSingle);
-#endif
 }
 
 int main(int argc, char *argv[])

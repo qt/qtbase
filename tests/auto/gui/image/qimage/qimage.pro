@@ -8,16 +8,6 @@ wince*: {
    addImages.path = images
    DEPLOYMENT += addImages
    DEFINES += SRCDIR=\\\".\\\"
-} else:symbian {
-   TARGET.EPOCHEAPSIZE = 0x200000 0x800000
-   addImages.files = images/*
-   addImages.path = images
-   DEPLOYMENT += addImages
-   qt_not_deployed {
-      imagePlugins.files = qjpeg.dll qgif.dll qmng.dll qtiff.dll qico.dll
-      imagePlugins.path = imageformats
-      DEPLOYMENT += imagePlugins
-   }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

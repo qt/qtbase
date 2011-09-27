@@ -6,7 +6,7 @@ SOURCES += \
 HEADERS += \
         $$PWD/qbaselinetest.h
 
-win32|symbian*:MKSPEC=$$replace(QMAKESPEC, \\\\, /)
+win32:MKSPEC=$$replace(QMAKESPEC, \\\\, /)
 else:MKSPEC=$$QMAKESPEC
 DEFINES += QMAKESPEC=\\\"$$MKSPEC\\\"
 

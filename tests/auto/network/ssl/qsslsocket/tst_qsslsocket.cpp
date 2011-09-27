@@ -79,10 +79,6 @@ Q_DECLARE_METATYPE(QSslConfiguration)
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR ""
-#endif
-
 #ifndef QT_NO_OPENSSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
 {
@@ -240,7 +236,6 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QSslSocket::SslMode");
 #endif
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QSslSocket::~tst_QSslSocket()
@@ -446,10 +441,8 @@ void tst_QSslSocket::simpleConnect()
     enterLoop(10);
 
     // Entered connecting state
-#ifndef Q_OS_SYMBIAN
     QCOMPARE(socket.state(), QAbstractSocket::ConnectingState);
     QCOMPARE(connectedSpy.count(), 0);
-#endif
     QCOMPARE(hostFoundSpy.count(), 1);
     QCOMPARE(disconnectedSpy.count(), 0);
     enterLoop(10);
@@ -1157,24 +1150,11 @@ void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
     connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
 
-#ifdef Q_OS_SYMBIAN
-    QVERIFY(socket->waitForConnected(10000));
-    QVERIFY(socket->waitForEncrypted(10000));
-
-    // dont forget to login
-    QCOMPARE((int) socket->write("USER ftptest\r\n"), 14);
-    QCOMPARE((int) socket->write("PASS ftP2Ptf\r\n"), 14);
-
-    QVERIFY(socket->waitForReadyRead(10000));
-    QVERIFY(!socket->peerCertificate().isNull());
-    QVERIFY(!socket->peerCertificateChain().isEmpty());
-#else
     QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->waitForEncrypted(10000));
     QVERIFY(socket->waitForReadyRead(10000));
     QVERIFY(!socket->peerCertificate().isNull());
     QVERIFY(!socket->peerCertificateChain().isEmpty());
-#endif
 }
 
 void tst_QSslSocket::startClientEncryption()
@@ -1604,11 +1584,7 @@ protected:
 
         // delayed acceptance:
         QTest::qSleep(100);
-#ifndef Q_OS_SYMBIAN
         bool ret = server.waitForNewConnection(2000);
-#else
-        bool ret = server.waitForNewConnection(20000);
-#endif
         Q_UNUSED(ret);
 
         // delayed start of encryption
@@ -1821,27 +1797,12 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
     socket->ignoreSslErrors();
-#ifndef Q_OS_SYMBIAN
     QVERIFY(socket->waitForEncrypted(5000));
-#else
-    QVERIFY(socket->waitForEncrypted(10000));
-#endif
     socket->write("XXXX LOGOUT\r\n");
     QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
     socket->disconnectFromHost();
     QCOMPARE(socket->state(), QAbstractSocket::ClosingState);
-#ifdef Q_OS_SYMBIAN
-    // I don't understand how socket->waitForDisconnected can work on other platforms
-    // since socket->write will end to:
-    //   QMetaObject::invokeMethod(this, "_q_flushWriteBuffer", Qt::QueuedConnection);
-    // In order that _q_flushWriteBuffer will be called the eventloop need to run
-    // If we just call waitForDisconnected, which blocks the whole thread how that can happen?
-    connect(socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
-    enterLoop(5);
-    QVERIFY(!timeout());
-#else
     QVERIFY(socket->waitForDisconnected(5000));
-#endif
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 }
 

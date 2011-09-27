@@ -133,7 +133,7 @@ void tst_QCssParser::scanner_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("output");
 
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE)
     QDir d(SRCDIR);
 #else
     QDir d(QDir::current());

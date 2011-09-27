@@ -308,11 +308,6 @@ void tst_QListWidget::openPersistentEditor()
 
 void tst_QListWidget::closePersistentEditor()
 {
-#if defined(Q_OS_SYMBIAN)
-    //give the Symbian app start event queue time to clear
-    QTest::qWait(1000);
-#endif
-
     // Boundary checking
     int childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(0);

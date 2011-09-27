@@ -49,13 +49,8 @@
 #include <QtCore/QSocketNotifier>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
-#ifdef Q_OS_SYMBIAN
-#include <private/qsymbiansocketengine_p.h>
-#define NATIVESOCKETENGINE QSymbianSocketEngine
-#else
 #include <private/qnativesocketengine_p.h>
 #define NATIVESOCKETENGINE QNativeSocketEngine
-#endif
 #ifdef Q_OS_UNIX
 #include <private/qnet_unix_p.h>
 #include <sys/select.h>
@@ -129,9 +124,6 @@ signals:
 
 void tst_QSocketNotifier::unexpectedDisconnection()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Symbian socket engine pseudo descriptors can't be used for QSocketNotifier", SkipAll);
-#else
     /*
       Given two sockets and two QSocketNotifiers registered on each
       their socket. If both sockets receive data, and the first slot
@@ -201,7 +193,6 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd1->close();
     writeEnd2->close();
     server.close();
-#endif
 }
 
 class MixingWithTimersHelper : public QObject

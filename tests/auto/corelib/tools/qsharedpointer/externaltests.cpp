@@ -52,10 +52,6 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 
-#ifdef Q_OS_SYMBIAN
-#define DEFAULT_MAKESPEC "X:/STLsupport/mkspecs/symbian-abld/"
-#endif
-
 #ifndef DEFAULT_MAKESPEC
 # error DEFAULT_MAKESPEC not defined
 #endif

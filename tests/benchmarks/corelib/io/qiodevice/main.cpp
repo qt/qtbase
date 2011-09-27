@@ -66,10 +66,8 @@ void tst_qiodevice::read_data()
     QTest::newRow("100k")     << qint64(100 * 1024);
     QTest::newRow("1000k")    << qint64(1000 * 1024);
     QTest::newRow("10000k")   << qint64(10000 * 1024);
-#ifndef Q_OS_SYMBIAN // Symbian devices don't (yet) have enough available RAM to run these
     QTest::newRow("100000k")  << qint64(100000 * 1024);
     QTest::newRow("1000000k") << qint64(1000000 * 1024);
-#endif
 }
 
 void tst_qiodevice::read_old()

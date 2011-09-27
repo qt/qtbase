@@ -9,7 +9,7 @@ HEADERS += forwarddeclared.h \
     wrapper.h
 
 QT = core
-!symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include(externaltests.pri)
 CONFIG += parallel_test

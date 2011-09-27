@@ -56,12 +56,7 @@
 
 #include "../../../../shared/filesystem.h"
 
-#if defined(Q_OS_SYMBIAN)
-# include <f32file.h>
-# define STRINGIFY(x) #x
-# define TOSTRING(x) STRINGIFY(x)
-# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 # include <unistd.h>
 # include <sys/stat.h>
 #endif
@@ -69,12 +64,6 @@
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
-
-#if defined(Q_OS_SYMBIAN)
-#define Q_NO_SYMLINKS
-#define Q_NO_SYMLINKS_TO_DIRS
-#endif
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -224,20 +213,10 @@ void tst_QDir::getSetCheck()
 
 tst_QDir::tst_QDir()
 {
-#ifdef Q_OS_SYMBIAN
-    // Can't deploy empty test dir, so create it here
-    QDir dir(SRCDIR);
-    dir.mkdir("testData");
-#endif
 }
 
 tst_QDir::~tst_QDir()
 {
-#ifdef Q_OS_SYMBIAN
-    // Remove created test dir
-    QDir dir(SRCDIR);
-    dir.rmdir("testData");
-#endif
 }
 
 void tst_QDir::construction()
@@ -253,7 +232,7 @@ void tst_QDir::setPath_data()
     QTest::addColumn<QString>("dir2");
 
     QTest::newRow("data0") << QString(".") << QString("..");
-#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("data1") << QString("c:/") << QDir::currentPath();
 #endif
 }
@@ -372,7 +351,7 @@ void tst_QDir::exists_data()
     QTest::newRow("unc 8") << "//"  + QtNetworkSettings::winServerName() + "/asharethatshouldnotexist" << false;
     QTest::newRow("unc 9") << "//ahostthatshouldnotexist" << false;
 #endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("This drive should exist") <<  "C:/" << true;
     // find a non-existing drive and check if it does not exist
     QFileInfoList drives = QFSFileEngine::drives();
@@ -408,7 +387,7 @@ void tst_QDir::isRelativePath_data()
     QTest::addColumn<bool>("relative");
 
     QTest::newRow("data0") << "../somedir" << true;
-#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("data1") << "C:/sOmedir" << false;
 #endif
     QTest::newRow("data2") << "somedir" << true;
@@ -617,8 +596,8 @@ void tst_QDir::entryList()
     QFile::remove(SRCDIR "entrylist/brokenlink.lnk");
     QFile::remove(SRCDIR "entrylist/brokenlink");
 
-    // WinCE/Symbian does not have . and .. in the directory listing
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    // WinCE does not have . and .. in the directory listing
+#if defined(Q_OS_WINCE)
     expected.removeAll(".");
     expected.removeAll("..");
 #endif
@@ -629,50 +608,6 @@ void tst_QDir::entryList()
     QFile::link(SRCDIR "entryList/file", SRCDIR "entrylist/linktofile.lnk");
     QFile::link(SRCDIR "entryList/directory", SRCDIR "entrylist/linktodirectory.lnk");
     QFile::link(SRCDIR "entryList/nothing", SRCDIR "entrylist/brokenlink.lnk");
-#elif defined(Q_OS_SYMBIAN)
-    // Symbian doesn't support links to directories
-      expected.removeAll("linktodirectory.lnk");
-
-    // Expecting failures from a couple of OpenC bugs. Do checks only once.
-    static int xFailChecked = false;
-    static int expectedFail1 = false;
-    static int expectedFail2 = false;
-
-    if (!expectedFail1) {
-        // Can't create link if file doesn't exist in symbian, so create file temporarily,
-        // But only if testing for
-        QFile tempFile(SRCDIR "entryList/nothing");
-        tempFile.open(QIODevice::WriteOnly);
-        tempFile.link(SRCDIR "entryList/brokenlink.lnk");
-        tempFile.remove();
-    }
-
-    if (!expectedFail2) {
-        QFile::link(SRCDIR "entryList/file", SRCDIR "entrylist/linktofile.lnk");
-    }
-
-    if (!xFailChecked) {
-        // ### Until OpenC supports stat correctly for symbolic links, expect them to fail.
-        expectedFail1 = QFileInfo(SRCDIR "entryList/brokenlink.lnk").exists();
-        expectedFail2 = !(QFileInfo(SRCDIR "entryList/linktofile.lnk").isFile());
-
-        QEXPECT_FAIL("", "OpenC bug, stat for broken links returns normally, when it should return error.", Continue);
-        QVERIFY(!expectedFail1);
-
-        QEXPECT_FAIL("", "OpenC bug, stat for file links doesn't indicate them as such.", Continue);
-        QVERIFY(!expectedFail2);
-        xFailChecked = true;
-    }
-
-    if (expectedFail1) {
-        expected.removeAll("brokenlink.lnk");
-        QFile::remove(SRCDIR "entrylist/brokenlink.lnk");
-    }
-
-    if (expectedFail2) {
-        expected.removeAll("linktofile.lnk");
-        QFile::remove(SRCDIR "entrylist/linktofile.lnk");
-    }
 #else
     QFile::link("file", SRCDIR "entrylist/linktofile.lnk");
     QFile::link("directory", SRCDIR "entrylist/linktodirectory.lnk");
@@ -698,7 +633,7 @@ void tst_QDir::entryList()
         return;
     }
     bool doContentCheck = true;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
         // for root, everything is writeable
         if (::getuid() == 0)
@@ -712,11 +647,6 @@ void tst_QDir::entryList()
 
         QCOMPARE(actual.count(), expected.count());
     }
-
-#if defined(Q_OS_SYMBIAN)
-    // Test cleanup on device requires setting the permissions back to normal
-    QFile(SRCDIR "entrylist/file").setPermissions(QFile::WriteUser | QFile::ReadUser);
-#endif
 
     QFile::remove(SRCDIR "entrylist/writable");
     QFile::remove(SRCDIR "entrylist/linktofile");
@@ -733,7 +663,7 @@ void tst_QDir::entryListSimple_data()
     QTest::addColumn<int>("countMin");
 
     QTest::newRow("data2") << "do_not_expect_this_path_to_exist/" << 0;
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     QTest::newRow("simple dir") << SRCDIR "resources" << 0;
     QTest::newRow("simple dir with slash") << SRCDIR "resources/" << 0;
 #else
@@ -794,9 +724,6 @@ void tst_QDir::entryListWithSymLinks()
 #  ifndef Q_NO_SYMLINKS_TO_DIRS
         QVERIFY(entryList.contains("myLinkToDir.lnk"));
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("", "OpenC stat for symlinks is buggy.", Continue);
-#endif
         QVERIFY(!entryList.contains("myLinkToFile.lnk"));
     }
     {
@@ -852,7 +779,7 @@ void tst_QDir::canonicalPath_data()
         QTest::newRow("rootPath + ./") << QDir::rootPath().append("./") << QDir::rootPath();
 
     QTest::newRow("rootPath + ../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QTest::newRow("drive:\\") << QDir::toNativeSeparators(QDir::rootPath()) << QDir::rootPath();
     QTest::newRow("drive:\\.\\") << QDir::toNativeSeparators(QDir::rootPath().append("./")) << QDir::rootPath();
     QTest::newRow("drive:\\..\\..") << QDir::toNativeSeparators(QDir::rootPath().append("../..")) << QDir::rootPath();
@@ -879,7 +806,7 @@ void tst_QDir::canonicalPath()
     QFETCH(QString, canonicalPath);
 
     QDir dir(path);
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QCOMPARE(dir.canonicalPath().toLower(), canonicalPath.toLower());
 #else
     QCOMPARE(dir.canonicalPath(), canonicalPath);
@@ -934,7 +861,7 @@ void tst_QDir::current()
     if (!currentDir.isEmpty()) {
         QDir newCurrent = QDir::current();
         QDir::setCurrent(oldDir);
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QCOMPARE(newCurrent.absolutePath().toLower(), currentDir.toLower());
 #else
     QCOMPARE(newCurrent.absolutePath(), currentDir);
@@ -955,7 +882,7 @@ void tst_QDir::cd_data()
     int index = appPath.lastIndexOf("/");
     QTest::newRow("cdUp") << QDir::currentPath() << ".." << true << appPath.left(index==0?1:index);
     QTest::newRow("noChange") << QDir::currentPath() << "." << true << appPath;
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN) // on windows QDir::root() is usually c:/ but cd "/" will not force it to be root
+#if defined(Q_OS_WIN)  // on windows QDir::root() is usually c:/ but cd "/" will not force it to be root
     QTest::newRow("absolute") << QDir::currentPath() << "/" << true << "/";
 #else
     QTest::newRow("absolute") << QDir::currentPath() << "/" << true << QDir::root().absolutePath();
@@ -1036,7 +963,7 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data3") << QDir::cleanPath("../.") << "..";
     QTest::newRow("data4") << QDir::cleanPath("../..") << "../..";
 #if !defined(Q_OS_WINCE)
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QTest::newRow("data5") << "d:\\a\\bc\\def\\.." << "d:/a/bc";
     QTest::newRow("data6") << "d:\\a\\bc\\def\\../../.." << "d:/";
 #else
@@ -1100,12 +1027,10 @@ void tst_QDir::absolutePath_data()
     QTest::addColumn<QString>("expectedPath");
 
     QTest::newRow("0") << "/machine/share/dir1" << "/machine/share/dir1";
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("1") << "\\machine\\share\\dir1" << "/machine/share/dir1";
-# if !defined(Q_OS_SYMBIAN)
     QTest::newRow("2") << "//machine/share/dir1" << "//machine/share/dir1";
     QTest::newRow("3") << "\\\\machine\\share\\dir1" << "//machine/share/dir1";
-# endif
     QTest::newRow("4") << "c:/machine/share/dir1" << "c:/machine/share/dir1";
     QTest::newRow("5") << "c:\\machine\\share\\dir1" << "c:/machine/share/dir1";
 #endif
@@ -1148,7 +1073,7 @@ void tst_QDir::relativeFilePath_data()
 
     QTest::newRow("11") << "" << "" << "";
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("12") << "C:/foo/bar" << "ding" << "ding";
     QTest::newRow("13") << "C:/foo/bar" << "C:/ding/dong" << "../../ding/dong";
     QTest::newRow("14") << "C:/foo/bar" << "/ding/dong" << "../../ding/dong";
@@ -1167,12 +1092,10 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("27") << "C:" << "D:/" << "D:/";
     QTest::newRow("28") << "C:/" << "D:" << "D:";
     QTest::newRow("29") << "C:/" << "D:/" << "D:/";
-# if !defined(Q_OS_SYMBIAN)
     QTest::newRow("30") << "C:/foo/bar" << "//anotherHost/foo/bar" << "//anotherHost/foo/bar";
     QTest::newRow("31") << "//anotherHost/foo" << "//anotherHost/foo/bar" << "bar";
     QTest::newRow("32") << "//anotherHost/foo" << "bar" << "bar";
     QTest::newRow("33") << "//anotherHost/foo" << "C:/foo/bar" << "C:/foo/bar";
-# endif
 #endif
 
     QTest::newRow("resource0") << ":/prefix" << "foo.bar" << "foo.bar";
@@ -1235,8 +1158,6 @@ void tst_QDir::rename()
     QVERIFY(dir.rename("rename-test-renamed", "rename-test"));
 #if defined(Q_OS_MAC)
     QVERIFY(!dir.rename("rename-test", "/etc/rename-test-renamed"));
-#elif defined(Q_OS_SYMBIAN)
-    QVERIFY(!dir.rename("rename-test", "/resource/rename-test-renamed"));
 #elif !defined(Q_OS_WIN)
     // on windows this is possible - maybe make the test a bit better
     QVERIFY(!dir.rename("rename-test", "/rename-test-renamed"));
@@ -1295,7 +1216,7 @@ void tst_QDir::dirName_data()
     QTest::newRow("slash0") << "c:/winnt/system32" << "system32";
     QTest::newRow("slash1") << "/winnt/system32" << "system32";
     QTest::newRow("slash2") << "c:/winnt/system32/kernel32.dll" << "kernel32.dll";
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QTest::newRow("bslash0") << "c:\\winnt\\system32" << "system32";
     QTest::newRow("bslash1") << "\\winnt\\system32" << "system32";
     QTest::newRow("bslash2") << "c:\\winnt\\system32\\kernel32.dll" << "kernel32.dll";
@@ -1322,8 +1243,8 @@ void tst_QDir::operator_eq()
 
 void tst_QDir::dotAndDotDot()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    QSKIP("WinCE and Symbian do not have . nor ..", SkipAll);
+#if defined(Q_OS_WINCE)
+    QSKIP("WinCE does not have . nor ..", SkipAll);
 #else
     QDir dir(QString(SRCDIR "testdir/"));
     QStringList entryList = dir.entryList(QDir::Dirs);
@@ -1384,14 +1305,14 @@ void tst_QDir::rootPath()
     QCOMPARE(path, dir.absolutePath());
     QVERIFY(QDir::isAbsolutePath(path));
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     QCOMPARE(path, QString("/"));
 #endif
 }
 
 void tst_QDir::nativeSeparators()
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("/")), QString("\\"));
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("\\")), QString("\\"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("/")), QString("/"));
@@ -1564,7 +1485,7 @@ void tst_QDir::updateFileLists()
 
     QDir dir("update-file-lists");
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
     //no . and .. on these OS.
     QCOMPARE(dir.count(), uint(4));
     QCOMPARE(dir.entryList().size(), 4);
@@ -1762,7 +1683,7 @@ void tst_QDir::isRoot_data()
 #endif
         QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     test = QDir::rootPath().left(2);
     QTest::newRow(QString("drive relative " + test).toLatin1()) << test << false;
 #endif
@@ -1811,32 +1732,18 @@ void tst_QDir::drives()
 #if defined(Q_OS_WIN)
     QVERIFY(list.count() >= 1); //system
     QLatin1Char systemdrive('c');
-#elif defined(Q_OS_SYMBIAN)
-    QVERIFY(list.count() >= 2); //system, rom
-    QLatin1Char romdrive('z');
-    QLatin1Char systemdrive('a' + int(RFs::GetSystemDrive()));
 #endif
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     QVERIFY(list.count() <= 26);
     bool foundsystem = false;
-#ifdef Q_OS_SYMBIAN
-    bool foundrom = false;
-#endif
     foreach (QFileInfo fi, list) {
         QCOMPARE(fi.absolutePath().size(), 3); //"x:/"
         QCOMPARE(fi.absolutePath().at(1), QChar(QLatin1Char(':')));
         QCOMPARE(fi.absolutePath().at(2), QChar(QLatin1Char('/')));
         if (fi.absolutePath().at(0).toLower() == systemdrive)
             foundsystem = true;
-#ifdef Q_OS_SYMBIAN
-        if (fi.absolutePath().at(0).toLower() == romdrive)
-            foundrom = true;
-#endif
     }
     QCOMPARE(foundsystem, true);
-#ifdef Q_OS_SYMBIAN
-    QCOMPARE(foundrom, true);
-#endif
 #else
     QCOMPARE(list.count(), 1); //root
     QCOMPARE(list.at(0).absolutePath(), QLatin1String("/"));
@@ -1951,7 +1858,7 @@ void tst_QDir::isReadable()
     QDir dir;
 
     QVERIFY(dir.isReadable());
-#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+#if defined (Q_OS_UNIX)
     QVERIFY(dir.mkdir("nonreadabledir"));
     QVERIFY(0 == ::chmod("nonreadabledir", 0));
     QVERIFY(!QDir("nonreadabledir").isReadable());

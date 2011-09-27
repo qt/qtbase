@@ -7,5 +7,3 @@ QT = core network
 
 SOURCES += tst_qabstractsocket.cpp
 
-symbian: TARGET.CAPABILITY = NetworkServices
-

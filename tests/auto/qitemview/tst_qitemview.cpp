@@ -298,7 +298,7 @@ void tst_QItemView::populate()
 {
     treeModel = new CheckerModel;
     QModelIndex parent;
-#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN)
+#if defined(QT_ARCH_ARM)
     const int baseInsert = 4;
 #else
     const int baseInsert = 26;
@@ -506,7 +506,7 @@ void tst_QItemView::spider()
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
     view->show();
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     srandom(0);
 #else
     srandom(time(0));

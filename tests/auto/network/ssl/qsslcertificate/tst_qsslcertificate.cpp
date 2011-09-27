@@ -45,12 +45,6 @@
 #include <qsslkey.h>
 #include <qsslsocket.h>
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// Current path (C:\private\<UID>) contains only ascii chars
-#define SRCDIR "./"
-#endif
-
 class tst_QSslCertificate : public QObject
 {
     Q_OBJECT

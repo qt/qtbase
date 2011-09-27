@@ -455,8 +455,6 @@ void tst_QMenu::overrideMenuAction()
     QSKIP("On Mac, we need to create native key events to test menu action activation", SkipAll);
 #elif defined(Q_OS_WINCE)
     QSKIP("On Windows CE, we need to create native key events to test menu action activation", SkipAll);
-#elif defined(Q_OS_SYMBIAN)
-    QSKIP("On Symbian OS, we need to create native key events to test menu action activation", SkipAll);
 #endif
 
     QAction *aQuit = new QAction("Quit", &w);
@@ -661,11 +659,7 @@ void tst_QMenu::activeSubMenuPosition()
 
     main->setActiveAction(menuAction);
     sub->setActiveAction(subAction);
-#ifdef Q_OS_SYMBIAN
-    main->popup(QPoint(50,200));
-#else
     main->popup(QPoint(200,200));
-#endif
 
     QVERIFY(main->isVisible());
     QCOMPARE(main->activeAction(), menuAction);
@@ -677,12 +671,7 @@ void tst_QMenu::activeSubMenuPosition()
     QSKIP("Not true for Windows Mobile Soft Keys", SkipSingle);
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    // On Symbian, QS60Style::pixelMetric(QStyle::PM_SubMenuOverlap) is different with other styles.
-    QVERIFY(sub->pos().x() < main->pos().x());
-#else
     QVERIFY(sub->pos().x() > main->pos().x());
-#endif
     QCOMPARE(sub->activeAction(), subAction);
 }
 
@@ -831,8 +820,7 @@ void tst_QMenu::task258920_mouseBorder()
     QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa", SkipAll);
 #endif
     Menu258920 menu;
-    // On Symbian, styleHint(QStyle::SH_Menu_MouseTracking) in QS60Style is false.
-    // For other styles which inherit from QWindowsStyle, the value is true.
+    // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
     menu.setMouseTracking(true);
     QAction *action = menu.addAction("test");
 

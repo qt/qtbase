@@ -8,9 +8,3 @@ wince*: {
    plugins.path = plugins
    DEPLOYMENT += plugins
 }
-
-symbian: {
-    rpDep.files = releaseplugin.dll debugplugin.dll
-    rpDep.path = plugins
-    DEPLOYMENT += rpDep dpDep
-}

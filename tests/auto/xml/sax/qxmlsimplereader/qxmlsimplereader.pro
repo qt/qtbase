@@ -11,8 +11,7 @@ CONFIG += no_batch
 QT += network xml
 QT -= gui
 
-
-wince*|symbian: {
+wince* {
    addFiles.files = encodings parser xmldocs
    addFiles.path = .
    DEPLOYMENT += addFiles

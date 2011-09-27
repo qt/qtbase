@@ -7,7 +7,7 @@ SOURCES += \
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
-wince*|symbian*: {
+wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

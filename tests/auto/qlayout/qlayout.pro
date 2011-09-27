@@ -3,7 +3,7 @@ load(qttest_p4)
 QT += widgets widgets-private
 
 SOURCES += tst_qlayout.cpp
-wince*|symbian: {
+wince* {
    addFiles.files = baseline
    addFiles.path = .
    DEPLOYMENT += addFiles

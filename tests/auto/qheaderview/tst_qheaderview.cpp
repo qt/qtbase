@@ -698,9 +698,6 @@ void tst_QHeaderView::length()
 #if defined(Q_OS_WINCE)
     QFont font(QLatin1String("Tahoma"), 7);
     view->setFont(font);
-#elif defined(Q_OS_SYMBIAN)
-    QFont font(QLatin1String("Series 60 Sans"), 6);
-    view->setFont(font);
 #endif
     view->setStretchLastSection(true);
     topLevel->show();

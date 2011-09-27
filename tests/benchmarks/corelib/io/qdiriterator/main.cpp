@@ -73,7 +73,7 @@ private slots:
 
 void tst_qdiriterator::data()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     QByteArray qtdir = qPrintable(QCoreApplication::applicationDirPath());
     qtdir += "/depot";
 #else

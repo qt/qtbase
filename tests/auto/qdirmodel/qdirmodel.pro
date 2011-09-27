@@ -2,7 +2,7 @@ load(qttest_p4)
 QT += widgets
 SOURCES         += tst_qdirmodel.cpp
 
-wince*|symbian {
+wince* {
 	addit.files = dirtest\\test1\\*
 	addit.path = dirtest\\test1
 	tests.files = test\\*
@@ -14,9 +14,6 @@ wince*|symbian {
 
 wince*: {
     DEFINES += SRCDIR=\\\"./\\\"
-} else:symbian {
-    TARGET.UID3 = 0xE0340003
-    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

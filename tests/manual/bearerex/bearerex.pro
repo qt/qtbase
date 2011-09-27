@@ -24,5 +24,3 @@ SOURCES += bearerex.cpp \
            main.cpp \
            xqlistwidget.cpp \
     datatransferer.cpp
-
-symbian:TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData WriteDeviceData ReadDeviceData

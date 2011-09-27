@@ -64,26 +64,13 @@
 #include <qscreen_qws.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <e32std.h>
-#include <fbs.h>
-#include <gdi.h>
-#include <bitdev.h>
-#if !defined(QT_NO_OPENVG)
-#include <QtOpenVG/qvg.h>
-#include <QtOpenVG/private/qpixmapdata_vg_p.h>
-#endif
-#endif
-
 #ifdef Q_WS_X11
 #include <QX11Info>
 #endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
+
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QPixmap : public QObject
@@ -148,13 +135,6 @@ private slots:
     void fromWinHICON();
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-    void fromSymbianCFbsBitmap_data();
-    void fromSymbianCFbsBitmap();
-    void toSymbianCFbsBitmap_data();
-    void toSymbianCFbsBitmap();
-#endif
-
     void onlyNullPixmapsOutsideGuiThread();
     void refUnref();
 
@@ -185,9 +165,6 @@ private slots:
 
     void loadAsBitmapOrPixmap();
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
-    void vgImageReadBack();
-#endif
     void scaled_QTBUG19157();
 };
 
@@ -337,11 +314,8 @@ void tst_QPixmap::convertFromImage_data()
 {
     QTest::addColumn<QImage>("img1");
     QTest::addColumn<QImage>("img2");
-#ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "convertFromImage";
-#else
     const QString prefix = QLatin1String(SRCDIR) + "/convertFromImage";
-#endif
+
     {
         QImage img1;
         QImage img2;
@@ -1107,157 +1081,6 @@ void tst_QPixmap::fromWinHICON()
 
 #endif // Q_WS_WIN
 
-#if defined(Q_OS_SYMBIAN)
-Q_DECLARE_METATYPE(TDisplayMode)
-
-void tst_QPixmap::fromSymbianCFbsBitmap_data()
-{
-    QTest::addColumn<TDisplayMode>("format");
-    QTest::addColumn<int>("width");
-    QTest::addColumn<int>("height");
-    QTest::addColumn<QColor>("color");
-
-    const int smallWidth = 20;
-    const int smallHeight = 20;
-    const int largeWidth = 240;
-    const int largeHeight = 320;
-    const int notAlignedWidth = 250;
-    const int notAlignedHeight = 250;
-
-    // Indexed Color Formats - Disabled since images seem to be blank -> no palette?
-//    QTest::newRow("EGray2 small") << EGray2 << smallWidth << smallHeight << QColor(Qt::black);
-//    QTest::newRow("EGray2 big") << EGray2 << largeWidth << largeHeight << QColor(Qt::black);
-//    QTest::newRow("EGray256 small") << EGray256 << smallWidth << smallHeight << QColor(Qt::blue);
-//    QTest::newRow("EGray256 big") << EGray256 << largeWidth << largeHeight << QColor(Qt::blue);
-//    QTest::newRow("EColor256 small") << EColor256 << smallWidth << smallHeight << QColor(Qt::red);
-//    QTest::newRow("EColor256 big") << EColor256 << largeWidth << largeHeight << QColor(Qt::red);
-
-    // Direct Color Formats
-    QTest::newRow("EColor4K small") << EColor4K << smallWidth << smallHeight << QColor(Qt::red);
-    QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
-    QTest::newRow("EColor4K not aligned") << EColor4K << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
-    QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
-    QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
-    QTest::newRow("EColor64K not aligned") << EColor64K << notAlignedWidth << notAlignedHeight << QColor(Qt::green);
-    QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
-    QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
-    QTest::newRow("EColor16M not aligned") << EColor16M << notAlignedWidth << notAlignedHeight << QColor(Qt::yellow);
-    QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
-    QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
-    QTest::newRow("EColor16MU not aligned") << EColor16MU << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
-    QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
-    QTest::newRow("EColor16MA big opaque") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0);
-    QTest::newRow("EColor16MA not aligned opaque") << EColor16MA << notAlignedWidth << notAlignedHeight << QColor(255, 255, 0);
-
-    // Semi-transparent Colors - Disabled for now, since the QCOMPARE fails, but visually confirmed to work
-//    QTest::newRow("EColor16MA small semi") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 127);
-//    QTest::newRow("EColor16MA big semi") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0, 127);
-//    QTest::newRow("EColor16MA small trans") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 0);
-//    QTest::newRow("EColor16MA big trans") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0, 0);
-
-#if !defined(__SERIES60_31__)
-    QTest::newRow("EColor16MAP small") << EColor16MAP << smallWidth << smallHeight << QColor(Qt::red);
-    QTest::newRow("EColor16MAP big") << EColor16MAP << largeWidth << largeHeight << QColor(Qt::red);
-#endif
-}
-
-void tst_QPixmap::fromSymbianCFbsBitmap()
-{
-    QFETCH(TDisplayMode, format);
-    QFETCH(int, width);
-    QFETCH(int, height);
-    QFETCH(QColor, color);
-    int expectedDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(format);
-
-    CFbsBitmap *nativeBitmap = 0;
-    CFbsBitmapDevice *bitmapDevice = 0;
-    CBitmapContext *bitmapContext = 0;
-
-    nativeBitmap = new (ELeave) CFbsBitmap();
-    TInt err = nativeBitmap->Create(TSize(width, height), format);
-    CleanupStack::PushL(nativeBitmap);
-    QVERIFY(err == KErrNone);
-    bitmapDevice = CFbsBitmapDevice::NewL(nativeBitmap);
-    CleanupStack::PushL(bitmapDevice);
-
-    err = bitmapDevice->CreateBitmapContext(bitmapContext);
-    CleanupStack::PushL(bitmapContext);
-    QVERIFY(err == KErrNone);
-    TRgb symbianColor = TRgb(color.red(), color.green(), color.blue(), color.alpha());
-    bitmapContext->SetBrushColor(symbianColor);
-    bitmapContext->Clear();
-
-    __UHEAP_MARK;
-    { // Test the null case
-        CFbsBitmap *bitmap = 0;
-        QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(bitmap);
-        QVERIFY(pixmap.isNull());
-    }
-    __UHEAP_MARKEND;
-
-    __UHEAP_MARK;
-    { // Test the normal case
-        QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(nativeBitmap);
-//        QCOMPARE(pixmap.depth(), expectedDepth); // Depth is not preserved now
-        QCOMPARE(pixmap.width(), width);
-        QCOMPARE(pixmap.height(), height);
-        QImage image = pixmap.toImage();
-
-        QColor actualColor(image.pixel(1, 1));
-        QCOMPARE(actualColor, color);
-
-        QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
-        if (image.format() == QImage::Format_RGB16)
-            shouldBe.fill(qrgb565(color.rgba()).rawValue());
-        else
-            shouldBe.fill(color.rgba());
-        QCOMPARE(image, shouldBe);
-    }
-    __UHEAP_MARKEND;
-
-    CleanupStack::PopAndDestroy(3);
-}
-
-void tst_QPixmap::toSymbianCFbsBitmap_data()
-{
-    QTest::addColumn<int>("red");
-    QTest::addColumn<int>("green");
-    QTest::addColumn<int>("blue");
-
-    QTest::newRow("red")   << 255 << 0 << 0;
-    QTest::newRow("green") << 0 << 255 << 0;
-    QTest::newRow("blue")  << 0 << 0 << 255;
-}
-
-void tst_QPixmap::toSymbianCFbsBitmap()
-{
-    QFETCH(int, red);
-    QFETCH(int, green);
-    QFETCH(int, blue);
-
-    QPixmap pm(100, 100);
-    pm.fill(QColor(red, green, blue));
-
-    CFbsBitmap *bitmap = pm.toSymbianCFbsBitmap();
-
-    QVERIFY(bitmap != 0);
-
-    // Verify size
-    QCOMPARE(100, (int) bitmap->SizeInPixels().iWidth);
-    QCOMPARE(100, (int) bitmap->SizeInPixels().iHeight);
-
-    // Verify pixel color
-    TRgb pixel;
-    bitmap->GetPixel(pixel, TPoint(0,0));
-    QCOMPARE((int)pixel.Red(), red);
-    QCOMPARE((int)pixel.Green(), green);
-    QCOMPARE((int)pixel.Blue(), blue);
-
-    // Clean up
-    delete bitmap;
-}
-#endif
-
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {
 #ifdef Q_WS_QPA
@@ -1286,16 +1109,8 @@ void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
         }
     };
     Thread thread;
-#if defined(Q_OS_SYMBIAN)
-    thread.setStackSize(0x10000);
-#endif
     thread.start();
-#if defined(Q_OS_SYMBIAN)
-    QVERIFY(thread.wait(10000));
-#else
     thread.wait();
-#endif
-
 #endif // !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
 }
 
@@ -1489,11 +1304,9 @@ void tst_QPixmap::loadFromDataNullValues()
 void tst_QPixmap::loadFromDataImage_data()
 {
     QTest::addColumn<QString>("imagePath");
-#ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
-#else
+
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
-#endif
+
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     // When no extension is provided we try all extensions that has been registered by image providers
     QTest::newRow("designer_argb32") << prefix + "/designer_argb32.png";
@@ -1525,11 +1338,9 @@ void tst_QPixmap::loadFromDataImage()
 void tst_QPixmap::fromImageReader_data()
 {
     QTest::addColumn<QString>("imagePath");
-#ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
-#else
+
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
-#endif
+
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
     QTest::newRow("designer_indexed8_with_alpha.png") << prefix + "/designer_indexed8_with_alpha.png";
@@ -1565,11 +1376,8 @@ void tst_QPixmap::fromImageReaderAnimatedGif_data()
 void tst_QPixmap::fromImageReaderAnimatedGif()
 {
     QFETCH(QString, imagePath);
-#ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
-#else
+
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
-#endif
     const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
@@ -1676,105 +1484,6 @@ void tst_QPixmap::toImageDeepCopy()
 
     QVERIFY(first != second);
 }
-
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
-Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap);
-class FriendlyVGPlatformPixmap : public QVGPlatformPixmap
-{
-public:
-    FriendlyVGPlatformPixmap(PixelType type) : QVGPlatformPixmap(type) { }
-    bool sourceIsNull() { return source.isNull(); }
-    friend QPixmap pixmapFromVGImage(VGImage image);
-};
-QPixmap pixmapFromVGImage(VGImage image)
-{
-    if (image != VG_INVALID_HANDLE) {
-        int w = vgGetParameteri(image, VG_IMAGE_WIDTH);
-        int h = vgGetParameteri(image, VG_IMAGE_HEIGHT);
-        FriendlyVGPlatformPixmap *pd = new FriendlyVGPlatformPixmap(QPlatformPixmap::PixmapType);
-        pd->resize(w, h);
-        pd->vgImage = image;
-        pd->recreate = false;
-        pd->prevSize = QSize(pd->w, pd->h);
-        return QPixmap(pd);
-    }
-    return QPixmap();
-}
-class Content : public QWidget
-{
-public:
-    void paintEvent(QPaintEvent *) {
-        QPainter painter(this);
-        QColor testPixel(qRgb(200, 150, 100));
-        if (pm.isNull()) { // first phase: create a VGImage
-            painter.beginNativePainting();
-            vgimage = vgCreateImage(VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER);
-            QImage img(20, 10, QImage::Format_ARGB32_Premultiplied);
-            img.fill(qRgb(0, 0, 0));
-            QPainter p(&img);
-            p.fillRect(0, 0, img.width(), img.height(), testPixel);
-            p.end();
-            vgImageSubData(vgimage, img.bits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
-            // Now the area 0,0 20x10 (in OpenVG coords) is filled with some color.
-            painter.endNativePainting();
-        } else { // second phase: check if readback works
-            painter.drawPixmap(0, 0, pm);
-            // Drawing should not cause readback, this is important for performance;
-            noreadback_ok = static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull();
-            // However toImage() requires readback.
-            QImage img = pm.toImage();
-            readback_ok = img.width() == pm.width();
-            readback_ok &= img.height() == pm.height();
-            readback_ok &= !static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull();
-            uint pix = img.pixel(1, 1);
-            content_ok = qRed(pix) == testPixel.red();
-            content_ok &= qGreen(pix) == testPixel.green();
-            content_ok &= qBlue(pix) == testPixel.blue();
-            pix = img.pixel(img.width() - 1, img.height() - 1);
-            content_ok &= qRed(pix) == 0;
-            content_ok &= qGreen(pix) == 0;
-            content_ok &= qBlue(pix) == 0;
-        }
-    }
-    int w;
-    int h;
-    VGImage vgimage;
-    QPixmap pm;
-    bool noreadback_ok;
-    bool readback_ok;
-    bool content_ok;
-};
-void tst_QPixmap::vgImageReadBack()
-{
-    QPixmap tmp(10, 20);
-    if (tmp.handle()->classId() == QPlatformPixmap::OpenVGClass) {
-        Content c;
-        c.w = 50;
-        c.h = 60;
-        c.vgimage = VG_INVALID_HANDLE;
-        c.noreadback_ok = c.readback_ok = c.content_ok = false;
-        c.showFullScreen();
-        QTest::qWaitForWindowShown(&c);
-        QVERIFY(c.vgimage != VG_INVALID_HANDLE);
-        QPixmap pm = pixmapFromVGImage(c.vgimage);
-        QVERIFY(!pm.isNull());
-        QCOMPARE(pm.width(), c.w);
-        QCOMPARE(pm.height(), c.h);
-        QVERIFY(qPixmapToVGImage(pm) == c.vgimage);
-        QVERIFY(static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull());
-        c.pm = pm;
-        // Make sure the second phase in paintEvent is executed too.
-        c.hide();
-        c.showFullScreen();
-        QTest::qWaitForWindowShown(&c);
-        QVERIFY(c.noreadback_ok);
-        QVERIFY(c.readback_ok);
-        QVERIFY(c.content_ok);
-    } else {
-        QSKIP("Not using openvg graphicssystem", SkipSingle);
-    }
-}
-#endif // Symbian & OpenVG
 
 void tst_QPixmap::scaled_QTBUG19157()
 {

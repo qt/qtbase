@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QTest>
 
 #ifdef Q_OS_WIN
@@ -47,10 +46,7 @@
 #endif
 
 #include <qcoreapplication.h>
-
-
 #include <qdatastream.h>
-
 #include <qhostaddress.h>
 #include <qdatetime.h>
 
@@ -62,20 +58,9 @@
 
 #include <stddef.h>
 
-#ifdef Q_OS_SYMBIAN
-#include <QNetworkConfigurationManager>
-#include <QNetworkConfiguration>
-#include <QNetworkSession>
-#include <QScopedPointer>
-#define PLATFORMSOCKETENGINE QSymbianSocketEngine
-#define PLATFORMSOCKETENGINESTRING "QSymbianSocketEngine"
-#include <private/qsymbiansocketengine_p.h>
-#include <private/qcore_symbian_p.h>
-#else
 #define PLATFORMSOCKETENGINE QNativeSocketEngine
 #define PLATFORMSOCKETENGINESTRING "QNativeSocketEngine"
 #include <private/qnativesocketengine_p.h>
-#endif
 
 #include <qstringlist.h>
 
@@ -115,7 +100,6 @@ private slots:
 
 tst_PlatformSocketEngine::tst_PlatformSocketEngine()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_PlatformSocketEngine::~tst_PlatformSocketEngine()
@@ -314,20 +298,6 @@ void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::broadcastTest()
 {
-#ifdef Q_OS_SYMBIAN
-    //broadcast isn't supported on loopback connections, but is on WLAN
-#ifndef QT_NO_BEARERMANAGEMENT
-    QScopedPointer<QNetworkConfigurationManager> netConfMan(new QNetworkConfigurationManager());
-    QNetworkConfiguration networkConfiguration(netConfMan->defaultConfiguration());
-    QScopedPointer<QNetworkSession> networkSession(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        bool ok = networkSession->waitForOpened(30000);
-        qDebug() << networkSession->isOpen() << networkSession->error() << networkSession->errorString();
-        QVERIFY(ok);
-    }
-#endif
-#endif
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko", SkipAll);
 #endif
@@ -350,12 +320,6 @@ void tst_PlatformSocketEngine::broadcastTest()
                                          QHostAddress::Broadcast,
                                          port);
 
-#ifdef Q_OS_SYMBIAN
-    //On symbian, broadcasts return 0 bytes written if none of the interfaces support it.
-    //Notably the loopback interfaces do not. (though they do support multicast!?)
-    if (written == 0)
-        QEXPECT_FAIL("", "No active interface supports broadcast", Abort);
-#endif
     QCOMPARE((int)written, trollMessage.size());
 
     // Wait until we receive it ourselves
@@ -431,9 +395,6 @@ void tst_PlatformSocketEngine::serverTest()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::udpLoopbackPerformance()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
-    QSKIP("Not working on Emulator without WinPCAP", SkipAll);
-#endif
     PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
@@ -520,11 +481,7 @@ void tst_PlatformSocketEngine::tcpLoopbackPerformance()
     QVERIFY(serverSocket.initialize(socketDescriptor));
     QVERIFY(serverSocket.state() == QAbstractSocket::ConnectedState);
 
-#if defined (Q_OS_SYMBIAN) && defined (__WINS__)
-    const int messageSize = 1024 * 16;
-#else
     const int messageSize = 1024 * 256;
-#endif
     QByteArray message1(messageSize, '@');
     QByteArray answer(messageSize, '@');
 
@@ -595,7 +552,7 @@ void tst_PlatformSocketEngine::tooManySockets()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::bind()
 {
-#if !defined Q_OS_WIN && !defined Q_OS_SYMBIAN
+#if !defined Q_OS_WIN
     PLATFORMSOCKETENGINE binder;
     QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder.bind(QHostAddress::Any, 82));
@@ -609,13 +566,7 @@ void tst_PlatformSocketEngine::bind()
     PLATFORMSOCKETENGINE binder3;
     QVERIFY(binder3.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder3.bind(QHostAddress::Any, 31180));
-
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
-    qDebug("On Symbian Emulator (WinSock) we get EADDRNOTAVAIL instead of EADDRINUSE");
-    QVERIFY(binder3.error() == QAbstractSocket::SocketAddressNotAvailableError);
-#else
     QVERIFY(binder3.error() == QAbstractSocket::AddressInUseError);
-#endif
 }
 
 //---------------------------------------------------------------------------
@@ -637,12 +588,6 @@ void tst_PlatformSocketEngine::networkError()
 #ifdef Q_OS_WIN
     // could use shutdown to produce different errors
     ::closesocket(client.socketDescriptor());
-#elif defined(Q_OS_SYMBIAN)
-    RSocket sock;
-    QVERIFY(QSymbianSocketManager::instance().lookupSocket(client.socketDescriptor(), sock));
-    TRequestStatus stat;
-    sock.Shutdown(RSocket::EImmediate, stat);
-    User::WaitForRequest(stat);
 #else
     ::close(client.socketDescriptor());
 #endif
@@ -715,18 +660,7 @@ void tst_PlatformSocketEngine::receiveUrgentData()
 
     // The server sends an urgent message
     msg = 'Q';
-#if defined(Q_OS_SYMBIAN)
-    RSocket sock;
-    QVERIFY(QSymbianSocketManager::instance().lookupSocket(socketDescriptor, sock));
-    TRequestStatus stat;
-    TSockXfrLength len;
-    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
-    User::WaitForRequest(stat);
-    QVERIFY(stat == KErrNone);
-    QCOMPARE(len(), 1);
-#else
     QCOMPARE(int(::send(socketDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
-#endif
 
     // The client receives the urgent message
     QVERIFY(client.waitForRead());
@@ -739,15 +673,7 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     // The client sends an urgent message
     msg = 'T';
     int clientDescriptor = client.socketDescriptor();
-#if defined(Q_OS_SYMBIAN)
-    QVERIFY(QSymbianSocketManager::instance().lookupSocket(clientDescriptor, sock));
-    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
-    User::WaitForRequest(stat);
-    QVERIFY(stat == KErrNone);
-    QCOMPARE(len(), 1);
-#else
     QCOMPARE(int(::send(clientDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
-#endif
 
     // The server receives the urgent message
     QVERIFY(serverSocket.waitForRead());
@@ -756,7 +682,6 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     response.resize(available);
     QCOMPARE(serverSocket.read(response.data(), response.size()), qint64(1));
     QCOMPARE(response.at(0), msg);
-
 }
 
 QTEST_MAIN(tst_PlatformSocketEngine)

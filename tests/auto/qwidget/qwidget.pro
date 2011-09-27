@@ -18,11 +18,6 @@ x11 {
     LIBS += $$QMAKE_LIBS_X11
 }
 
-symbian  {
-    INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
-    LIBS += -leikcore -lcone -leikcoctl
-}
-
-!wince*:!symbian:win32: LIBS += -luser32 -lgdi32
+!wince*:win32: LIBS += -luser32 -lgdi32
 
 CONFIG+=insignificant_test

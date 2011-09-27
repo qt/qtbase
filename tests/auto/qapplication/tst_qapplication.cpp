@@ -54,27 +54,9 @@
 #ifdef Q_OS_WINCE
 #include <windows.h>
 #endif
-#ifdef Q_OS_SYMBIAN
-#include <aknenv.h>
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
-
-#if defined(Q_OS_SYMBIAN)
-// In Symbian, the PluginsPath doesn't specify the only absolute path; just the dir that can be found on any drive
-static void addExpectedSymbianPluginsPath(QStringList& expected)
-{
-    QString installPathPlugins = QDir::fromNativeSeparators(QLibraryInfo::location(QLibraryInfo::PluginsPath));
-    QFileInfoList driveList = QDir::drives();
-    QListIterator<QFileInfo> iter(driveList);
-    while (iter.hasNext()) {
-        QFileInfo testFi(iter.next().canonicalPath().append(installPathPlugins));
-        if (testFi.exists())
-            expected << testFi.canonicalFilePath();
-    }
-}
-#endif
 
 class tst_QApplication : public QObject
 {
@@ -143,13 +125,7 @@ private slots:
 
     void touchEventPropagation();
 
-    void symbianNoApplicationPanes();
-
-    void symbianNeedForTraps();
-    void symbianLeaveThroughMain();
     void qtbug_12673();
-
-
 
     void globalStaticObjectDestruction(); // run this last
 };
@@ -899,13 +875,7 @@ void tst_QApplication::libraryPaths()
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
 
-#if defined(Q_OS_SYMBIAN)
-        QStringList expected;
-        addExpectedSymbianPluginsPath(expected);
-        expected << appDirPath;
-#else
         QStringList expected = QSet<QString>::fromList((QStringList() << installPathPlugins << appDirPath)).toList();
-#endif
         expected.sort();
 
         QVERIFY2(isPathListIncluded(actual, expected),
@@ -1008,11 +978,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path()
 
 void tst_QApplication::libraryPaths_qt_plugin_path_2()
 {
-#ifdef Q_OS_SYMBIAN
-    QByteArray validPath = "C:\\data";
-    QByteArray nonExistentPath = "Z:\\nonexistent";
-    QByteArray pluginPath = validPath + ";" + nonExistentPath;
-#elif defined(Q_OS_UNIX)
+#ifdef Q_OS_UNIX
     QByteArray validPath = QDir("/tmp").canonicalPath().toLatin1();
     QByteArray nonExistentPath = "/nonexistent";
     QByteArray pluginPath = validPath + ":" + nonExistentPath;
@@ -1037,13 +1003,6 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         QApplication app(argc, &argv0, QApplication::GuiServer);
 
         // library path list should contain the default plus the one valid path
-#if defined(Q_OS_SYMBIAN)
-        // In Symbian, the PluginsPath doesn't specify the only absolute path; just the dir that can be found on any drive
-        QStringList expected;
-        addExpectedSymbianPluginsPath(expected);
-        expected << QDir(app.applicationDirPath()).canonicalPath()
-            << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
-#else
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
@@ -1052,7 +1011,6 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
 # ifdef Q_OS_WINCE
         expected = QSet<QString>::fromList(expected).toList();
 # endif
-#endif
         QVERIFY2(isPathListIncluded(app.libraryPaths(), expected),
                  qPrintable("actual:\n - " + app.libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
@@ -1068,11 +1026,6 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         qputenv("QT_PLUGIN_PATH", pluginPath);
 
         // library path list should contain the default
-#if defined(Q_OS_SYMBIAN)
-        QStringList expected;
-        addExpectedSymbianPluginsPath(expected);
-        expected << app.applicationDirPath();
-#else
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
@@ -1080,7 +1033,6 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
 # ifdef Q_OS_WINCE
         expected = QSet<QString>::fromList(expected).toList();
 # endif
-#endif
         QVERIFY(isPathListIncluded(app.libraryPaths(), expected));
 
         qputenv("QT_PLUGIN_PATH", QByteArray());
@@ -1531,13 +1483,6 @@ void tst_QApplication::desktopSettingsAware()
     testProcess.start("desktopsettingsaware/debug/desktopsettingsaware");
 #elif defined(Q_OS_WIN)
     testProcess.start("desktopsettingsaware/release/desktopsettingsaware");
-#elif defined(Q_OS_SYMBIAN)
-    testProcess.start("desktopsettingsaware");
-#if defined(Q_CC_NOKIAX86)
-    QEXPECT_FAIL("", "QProcess on Q_CC_NOKIAX86 cannot launch another Qt application, due to DLL conflicts.", Abort);
-    // TODO: Remove XFAIL, as soon as we can launch Qt applications from within Qt applications on Symbian
-    QVERIFY(testProcess.error() != QProcess::FailedToStart);
-#endif // defined(Q_CC_NOKIAX86)
 #else
     testProcess.start("desktopsettingsaware/desktopsettingsaware");
 #endif
@@ -2102,154 +2047,8 @@ void tst_QApplication::touchEventPropagation()
     }
 }
 
-void tst_QApplication::symbianNoApplicationPanes()
-{
-#ifndef Q_OS_SYMBIAN
-    QSKIP("This is a Symbian only test", SkipAll);
-#else
-    QApplication::setAttribute(Qt::AA_S60DontConstructApplicationPanes);
-
-    // Run in a block so that QApplication is destroyed before resetting the attribute.
-    {
-        // Actually I wasn't able to get the forced orientation change to work properly,
-        // but I'll leave the code here for the future in case we manage to test that
-        // later. If someone knows how to force an orientation switch in an autotest, do
-        // feel free to fix this testcase.
-        int argc = 0;
-        QApplication app(argc, 0);
-        QWidget *w;
-
-        w = new QWidget;
-        w->show();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->show();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->showMaximized();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->showMaximized();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->showFullScreen();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape));
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->showFullScreen();
-        QT_TRAP_THROWING(static_cast<CAknAppUi *>(CCoeEnv::Static()->AppUi())
-                ->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait));
-        app.processEvents();
-        delete w;
-
-        // These will have no effect, since there is no status pane, but they shouldn't
-        // crash either.
-        w = new QWidget;
-        w->show();
-        w->setWindowTitle("Testing title");
-        app.processEvents();
-        delete w;
-
-        w = new QWidget;
-        w->show();
-        w->setWindowIcon(QIcon(QPixmap("heart.svg")));
-        app.processEvents();
-        delete w;
-
-        QDesktopWidget desktop;
-        QCOMPARE(desktop.availableGeometry(), desktop.screenGeometry());
-    }
-
-    QApplication::setAttribute(Qt::AA_S60DontConstructApplicationPanes, false);
-
-    // No other error condition. Program will crash if unsuccessful.
-#endif
-}
-
-#ifdef Q_OS_SYMBIAN
-class CBaseDummy : public CBase
-{
-public:
-    CBaseDummy(int *numDestroyed) : numDestroyed(numDestroyed)
-    {
-    }
-    ~CBaseDummy()
-    {
-        (*numDestroyed)++;
-    }
-
-private:
-    int *numDestroyed;
-};
-
-static void fakeMain(int *numDestroyed)
-{
-    // Push a few objects, just so that the cleanup stack has something to clean up.
-    CleanupStack::PushL(new (ELeave) CBaseDummy(numDestroyed));
-    int argc = 0;
-    QApplication app(argc, 0);
-    CleanupStack::PushL(new (ELeave) CBaseDummy(numDestroyed));
-
-    User::Leave(KErrGeneral); // Fake error
-}
-#endif
-
-void tst_QApplication::symbianNeedForTraps()
-{
-#ifndef Q_OS_SYMBIAN
-    QSKIP("This is a Symbian-only test", SkipAll);
-#else
-    int argc = 0;
-    QApplication app(argc, 0);
-    int numDestroyed = 0;
-
-    // This next part should not require a trap. If it does, the test will crash.
-    CleanupStack::PushL(new (ELeave) CBaseDummy(&numDestroyed));
-    CleanupStack::PopAndDestroy();
-
-    QCOMPARE(numDestroyed, 1);
-
-    // No other failure condition. The program will crash if it does not pass.
-#endif
-}
-
-void tst_QApplication::symbianLeaveThroughMain()
-{
-#ifndef Q_OS_SYMBIAN
-    QSKIP("This is a Symbian-only test", SkipAll);
-#else
-    int numDestroyed = 0;
-    TInt err;
-    TRAP(err, fakeMain(&numDestroyed));
-
-    QCOMPARE(numDestroyed, 2);
-#endif
-}
-
 void tst_QApplication::qtbug_12673()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("This might not make sense in Symbian, but since I do not know how to test it I'll just skip it for now.", SkipAll);
-#else
     QProcess testProcess;
     QStringList arguments;
 #ifdef Q_OS_MAC
@@ -2259,7 +2058,6 @@ void tst_QApplication::qtbug_12673()
 #endif
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
-#endif //  Q_OS_SYMBIAN
 }
 
 /*

@@ -54,10 +54,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
 class TestBrowser : public QTextBrowser
 {
 public:

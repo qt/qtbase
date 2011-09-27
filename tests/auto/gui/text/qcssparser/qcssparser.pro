@@ -3,11 +3,9 @@ SOURCES += tst_qcssparser.cpp
 QT += xml gui-private
 
 requires(contains(QT_CONFIG,private_tests))
-!symbian: {
-   DEFINES += SRCDIR=\\\"$$PWD\\\"
-}
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-wince*|symbian: {
+wince* {
    addFiles.files = testdata
    addFiles.path = .
    timesFont.files = C:/Windows/Fonts/times.ttf

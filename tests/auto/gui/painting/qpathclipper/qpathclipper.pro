@@ -6,4 +6,4 @@ QT += gui-private
 
 requires(contains(QT_CONFIG,private_tests))
 
-unix:!mac:!symbian:LIBS+=-lm
+unix:!mac:LIBS+=-lm

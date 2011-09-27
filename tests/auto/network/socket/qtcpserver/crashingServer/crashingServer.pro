@@ -6,4 +6,3 @@ DESTDIR = ./
 # This means the auto test works on some machines for MinGW. No dialog stalls
 # the application.
 win32-g++*:CONFIG += console
-symbian: TARGET.CAPABILITY += NetworkServices ReadUserData

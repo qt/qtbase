@@ -4322,9 +4322,6 @@ void tst_QString::localeAwareCompare_data()
 
 void tst_QString::localeAwareCompare()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("QTBUG-16921: There is no way to set up the system locale, so this test is not reliable in Symbian.");
-#else
 #ifdef Q_OS_WIN
 #   ifndef Q_OS_WINCE
        QSKIP("On others than Win CE, we cannot set the system or user locale.", SkipAll);
@@ -4429,7 +4426,6 @@ void tst_QString::localeAwareCompare()
     if (!locale.isEmpty())
 	    setlocale(LC_ALL, "");
 #endif
-#endif // Q_OS_SYMBIAN
 }
 
 void tst_QString::split_data()

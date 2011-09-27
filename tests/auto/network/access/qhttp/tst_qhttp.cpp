@@ -62,12 +62,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#ifdef Q_OS_SYMBIAN
-// In Symbian OS test data is located in applications private dir
-// And underlying Open C have application private dir in default search path
-#define SRCDIR ""
-#endif
-
 Q_DECLARE_METATYPE(QHttpResponseHeader)
 
 class tst_QHttp : public QObject
@@ -196,7 +190,6 @@ const int bytesDone_init = -10;
 
 tst_QHttp::tst_QHttp()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 tst_QHttp::~tst_QHttp()

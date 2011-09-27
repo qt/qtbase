@@ -3,7 +3,7 @@ SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
 QT += widgets widgets-private core-private gui-private network
 RESOURCES += qimagereader.qrc
-!symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
+DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 win32-msvc:QMAKE_CXXFLAGS -= -Zm200
 win32-msvc:QMAKE_CXXFLAGS += -Zm800
@@ -19,18 +19,4 @@ wince*: {
 
     DEPLOYMENT += images imagePlugins
     DEFINES += SRCDIR=\\\".\\\"
-}
-
-symbian: {
-    images.files = images
-    images.path = .
-
-    DEPLOYMENT += images
-
-    qt_not_deployed {
-        imagePlugins.files = qjpeg.dll qgif.dll qmng.dll
-        imagePlugins.path = imageformats
-
-        DEPLOYMENT += imagePlugins
-    }
 }

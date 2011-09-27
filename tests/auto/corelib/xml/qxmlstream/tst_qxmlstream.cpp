@@ -55,10 +55,6 @@
 //TESTED_CLASS=QXmlStreamReader QXmlStreamWriter
 //TESTED_FILES=corelib/xml/stream/qxmlutils.cpp corelib/xml/stream/qxmlstream.cpp corelib/xml/stream/qxmlstream_p.h
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR ""
-#endif
-
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
 static const char *const catalogFile = SRCDIR "XML-Test-Suite/xmlconf/finalCatalog.xml";

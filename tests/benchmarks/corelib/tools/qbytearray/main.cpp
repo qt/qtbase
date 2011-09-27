@@ -73,11 +73,6 @@ void tst_qbytearray::append()
 {
     QFETCH(int, size);
 
-#ifdef Q_OS_SYMBIAN
-    if (size > 1000000)
-        QSKIP("Skipped due to limited memory in many Symbian devices.", SkipSingle);
-#endif
-
     QByteArray ba;
     QBENCHMARK {
         QByteArray ba2(size, 'x');

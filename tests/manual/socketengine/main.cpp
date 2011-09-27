@@ -63,36 +63,6 @@ int main(int argc, char**argv)
 {
     QCoreApplication app(argc, argv);
 
-#ifdef Q_OS_SYMBIAN
-    QNetworkConfigurationManager configurationManager;
-    QNetworkConfiguration configuration = configurationManager.defaultConfiguration();
-    if (!configuration.isValid()) {
-        qDebug() << "Got an invalid session configuration";
-        exit(1);
-    }
-
-    qDebug() << "Opening session...";
-    QNetworkSession *session = new QNetworkSession(configuration);
-
-    // Does not work:
-//    session->open();
-//    session->waitForOpened();
-
-    // works:
-    QEventLoop loop;
-    QObject::connect(session, SIGNAL(opened()), &loop, SLOT(quit()), Qt::QueuedConnection);
-    QMetaObject::invokeMethod(session, "open", Qt::QueuedConnection);
-    loop.exec();
-
-
-    if (session->isOpen()) {
-        qDebug() << "session opened";
-    } else {
-        qDebug() << "session could not be opened -" << session->errorString();
-        exit(1);
-    }
-#endif
-
     // create it
     QAbstractSocketEngine *socketEngine =
             QAbstractSocketEngine::createSocketEngine(QAbstractSocket::TcpSocket, QNetworkProxy(QNetworkProxy::NoProxy), 0);
@@ -131,11 +101,7 @@ int main(int argc, char**argv)
                 bzero(buf, bufsize);
                 ret = socketEngine->read(buf, available);
                 if (ret > 0) {
-#ifdef Q_OS_SYMBIAN
-                    qDebug() << buf; //printf goes only to screen, this goes to remote debug channel
-#else
                     printf("%s", buf);
-#endif
                 } else {
                     // some failure when reading
                     exit(1);

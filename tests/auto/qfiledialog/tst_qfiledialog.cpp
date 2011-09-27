@@ -74,11 +74,7 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#if defined(Q_OS_SYMBIAN)
-# define STRINGIFY(x) #x
-# define TOSTRING(x) STRINGIFY(x)
-# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
@@ -536,7 +532,7 @@ void tst_QFiledialog::completer()
         if (input.startsWith(".."))
             input.clear();
         for (int ii = 0; ii < expectedFiles.count(); ++ii) {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
             if (expectedFiles.at(ii).startsWith(input,Qt::CaseInsensitive))
 #else
             if (expectedFiles.at(ii).startsWith(input))
@@ -554,12 +550,6 @@ void tst_QFiledialog::completer()
         //qDebug() << expectedFiles;
     }
 
-
-    // ### FIXME: This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel
-    // are fixed to properly capitalize paths, so that some folders are not duplicated in QFileSystemModel.
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel are fixed to properly capitalize paths", SkipAll);
-#endif
     QTRY_COMPARE(cModel->rowCount(), expected);
     } QT_CATCH(...) {
         qDeleteAll(files);
@@ -927,8 +917,8 @@ void tst_QFiledialog::selectFiles()
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
         fd.selectFile(fd.directory().path() + "/" + list.at(i));
-#if defined(QT_MAC_USE_COCOA) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("", "This test does not work on Mac, Windows, or Symbian", Abort);
+#if defined(QT_MAC_USE_COCOA) || defined(Q_WS_WIN)
+    QEXPECT_FAIL("", "This test does not work on Mac or Windows", Abort);
 #endif
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
         toSelect.append(listView->selectionModel()->selectedRows().last());
@@ -1318,10 +1308,6 @@ QString saveName(QWidget *, const QString &, const QString &, const QString &, Q
 
 void tst_QFiledialog::hooks()
 {
-#ifdef Q_OS_SYMBIAN
-    if(QSysInfo::symbianVersion() < QSysInfo::SV_SF_3)
-        QSKIP("writing to data exports in paged dll not supported and crashes on symbian versions prior to ^3", SkipAll);
-#endif
     qt_filedialog_existing_directory_hook = &existing;
     qt_filedialog_save_filename_hook = &saveName;
     qt_filedialog_open_filename_hook = &openName;

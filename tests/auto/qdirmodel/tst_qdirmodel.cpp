@@ -50,12 +50,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#if defined(Q_OS_SYMBIAN)
-# define STRINGIFY(x) #x
-# define TOSTRING(x) STRINGIFY(x)
-# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
-#endif
-
 class tst_QDirModel : public QObject
 {
     Q_OBJECT
@@ -583,9 +577,6 @@ void tst_QDirModel::unreadable()
 
 void tst_QDirModel::filePath()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("OS doesn't support symbolic links", SkipAll);
-#else
     QFile::remove(SRCDIR "test.lnk");
     QVERIFY(QFile(SRCDIR "tst_qdirmodel.cpp").link(SRCDIR "test.lnk"));
     QDirModel model;
@@ -601,7 +592,6 @@ void tst_QDirModel::filePath()
     model.setResolveSymlinks(true);
     QCOMPARE(model.filePath(index), path + QString( "tst_qdirmodel.cpp"));
     QFile::remove(SRCDIR "test.lnk");
-#endif
 }
 
 void tst_QDirModel::task196768_sorting()
@@ -629,10 +619,6 @@ void tst_QDirModel::task196768_sorting()
     view.setSortingEnabled(true);
     index2 = model.index(path);
 
-#ifdef Q_OS_SYMBIAN
-    if(!RProcess().HasCapability(ECapabilityAllFiles))
-        QEXPECT_FAIL("", "QTBUG-9746", Continue);
-#endif
     QCOMPARE(index.data(), index2.data());
 }
 

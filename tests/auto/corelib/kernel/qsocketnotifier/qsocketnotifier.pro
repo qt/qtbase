@@ -6,6 +6,4 @@ requires(contains(QT_CONFIG,private_tests))
 
 include(../platformsocketengine/platformsocketengine.pri)
 
-symbian: TARGET.CAPABILITY = NetworkServices
-
 CONFIG += insignificant_test # QTBUG-21204

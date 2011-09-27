@@ -155,6 +155,3 @@ win32:SUBDIRS -= qtextpiecetable
            qtipc \
            qtoolbar \
 
-symbian:SUBDIRS -= \
-    qsystemtrayicon \
-

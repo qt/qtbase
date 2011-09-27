@@ -543,7 +543,7 @@ void tst_qfile::createSmallFiles()
     dir.cd("tst");
     tmpDirName = dir.absolutePath();
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE)  
+#if defined(Q_WS_WINCE)
     for (int i = 0; i < 100; ++i)
 #else
     for (int i = 0; i < 1000; ++i)

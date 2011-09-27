@@ -2,11 +2,11 @@ load(qttest_p4)
 QT += widgets
 SOURCES  += tst_qsplitter.cpp
 
-wince*|symbian: {
+wince* {
    addFiles.files = extradata.txt setSizes3.dat
    addFiles.path = .
    DEPLOYMENT += addFiles
-   !symbian:DEFINES += SRCDIR=\\\"./\\\"
+   DEFINES += SRCDIR=\\\"./\\\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

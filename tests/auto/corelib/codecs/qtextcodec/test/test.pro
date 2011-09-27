@@ -16,7 +16,7 @@ win32: {
    TARGET = tst_qtextcodec
 }
 
-wince*|symbian {
+wince* {
    addFiles.files = ../*.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
@@ -27,9 +27,6 @@ wince*|symbian {
 
 wince*: {
    DEFINES += SRCDIR=\\\"\\\"
-}else:symbian {
-    # Symbian can't define SRCDIR meaningfully here
-    LIBS += -lcharconv -lconvnames -lgb2312_shared -ljisx0201 -ljisx0208 -lefsrv
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }

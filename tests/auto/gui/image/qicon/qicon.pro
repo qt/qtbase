@@ -15,16 +15,6 @@ wince* {
 
    DEPLOYMENT_PLUGIN += qsvg
    DEFINES += SRCDIR=\\\".\\\"
-} else:symbian {
-   QT += xml svg
-   addFiles.files =  *.png tst_qicon.cpp *.svg *.svgz
-   addFiles.path = .
-   DEPLOYMENT += addFiles
-   qt_not_deployed {
-      plugins.files = qsvgicon.dll
-      plugins.path = iconengines
-      DEPLOYMENT += plugins
-   }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

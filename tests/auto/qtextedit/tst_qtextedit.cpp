@@ -74,11 +74,6 @@ Q_DECLARE_METATYPE(QList<int>);
 #include <Carbon/Carbon.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
-
 bool nativeClipboardWorking()
 {
 #ifdef Q_WS_MAC

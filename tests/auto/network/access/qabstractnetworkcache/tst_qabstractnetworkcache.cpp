@@ -121,8 +121,6 @@ public:
 
 tst_QAbstractNetworkCache::tst_QAbstractNetworkCache()
 {
-    Q_SET_DEFAULT_IAP
-
     QCoreApplication::setOrganizationName(QLatin1String("Trolltech"));
     QCoreApplication::setApplicationName(QLatin1String("autotest_qabstractnetworkcache"));
     QCoreApplication::setApplicationVersion(QLatin1String("1.0"));

@@ -17,11 +17,7 @@ win32 {
 
 # OpenSSL support
 contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-    symbian {
-        INCLUDEPATH *= $$OS_LAYER_SSL_SYSTEMINCLUDE
-    } else {
-        include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri)
-    }
+    include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri)
     # Add optional SSL libs
     LIBS += $$OPENSSL_LIBS
 }
@@ -32,15 +28,6 @@ wince* {
     certFiles.files = certs ssl.tar.gz
     certFiles.path    = .
     DEPLOYMENT += certFiles
-} else:symbian {
-    DEFINES += QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    TARGET.EPOCHEAPSIZE="0x100 0x3000000"
-    TARGET.CAPABILITY=NetworkServices ReadUserData
-
-    certFiles.files = certs ssl.tar.gz
-    certFiles.path    = .
-    DEPLOYMENT += certFiles
-    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

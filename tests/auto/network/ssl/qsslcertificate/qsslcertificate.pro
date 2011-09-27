@@ -14,16 +14,11 @@ win32 {
   }
 }
 
-wince*|symbian: {
-  certFiles.files = certificates more-certificates
-  certFiles.path    = .
-  DEPLOYMENT += certFiles
+wince* {
+    certFiles.files = certificates more-certificates
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+    DEFINES += SRCDIR=\\\".\\\"
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
-
-wince*: {
-  DEFINES += SRCDIR=\\\".\\\"
-} else:!symbian {
-   DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
-
-symbian:TARGET.CAPABILITY = NetworkServices ReadUserData

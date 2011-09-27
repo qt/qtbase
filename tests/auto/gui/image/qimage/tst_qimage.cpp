@@ -54,9 +54,6 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
 
 Q_DECLARE_METATYPE(QImage::Format)
 Q_DECLARE_METATYPE(Qt::GlobalColor)
@@ -268,11 +265,7 @@ void tst_QImage::formatHandlersInput_data()
 {
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
-    #ifdef Q_OS_SYMBIAN
-    const QString prefix = QLatin1String(SRCDIR) + "images/";
-    #else
     const QString prefix = QLatin1String(SRCDIR) + "/images/";
-    #endif
 
     // add a new line here when a file is added
     QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
@@ -1498,8 +1491,6 @@ void tst_QImage::smoothScale3()
 void tst_QImage::smoothScaleBig()
 {
 #if defined(Q_OS_WINCE)
-    int bigValue = 2000;
-#elif defined(Q_OS_SYMBIAN)
     int bigValue = 2000;
 #else
     int bigValue = 200000;

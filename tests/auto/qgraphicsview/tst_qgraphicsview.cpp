@@ -2712,7 +2712,7 @@ void tst_QGraphicsView::scrollBarRanges()
         QSKIP("No Motif style compiled.", SkipSingle);
 #endif
     } else {
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
         view.setStyle(new QWindowsStyle);
 #elif !defined(QT_NO_STYLE_PLASTIQUE)
         view.setStyle(new QPlastiqueStyle);

@@ -111,11 +111,6 @@ void tst_qnetworkdiskcache::timeInsertion_data()
 
     QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
     QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
-#ifdef Q_OS_SYMBIAN
-    if (QDir::drives().contains(QFileInfo("E:\\")))
-        QTest::newRow("Symbian E: drive") << cacheLoc.replace(0, 1, QString("E"));
-#endif
-
 }
 
 //This functions times an insert() operation.
@@ -177,11 +172,6 @@ void tst_qnetworkdiskcache::timeRead_data()
 
     QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
     QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
-#ifdef Q_OS_SYMBIAN
-    if (QDir::drives().contains(QFileInfo("E:\\")))
-        QTest::newRow("Symbian E: drive") << cacheLoc.replace(0, 1, QString("E"));
-#endif
-
 }
 
 //Times metadata as well payload lookup
@@ -241,11 +231,6 @@ void tst_qnetworkdiskcache::timeRemoval_data()
 
     QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
     QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
-#ifdef Q_OS_SYMBIAN
-    if (QDir::drives().contains(QFileInfo("E:\\")))
-        QTest::newRow("Symbian E: drive") << cacheLoc.replace(0, 1, QString("E"));
-#endif
-
 }
 
 void tst_qnetworkdiskcache::timeRemoval()
@@ -296,12 +281,8 @@ void tst_qnetworkdiskcache::timeExpiration_data()
 
     QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
     QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
-#ifdef Q_OS_SYMBIAN
-    if (QDir::drives().contains(QFileInfo("E:\\")))
-        QTest::newRow("Symbian E: drive") << cacheLoc.replace(0, 1, QString("E"));
-#endif
-
 }
+
 void tst_qnetworkdiskcache::timeExpiration()
 {
 

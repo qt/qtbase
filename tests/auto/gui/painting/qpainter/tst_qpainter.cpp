@@ -52,7 +52,7 @@
 #include <qimage.h>
 #include <qthread.h>
 #include <limits.h>
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
 #include <qprinter.h>
 #include <math.h>
 #endif
@@ -71,10 +71,6 @@
 #include <qgraphicsproxywidget.h>
 #include <qlayout.h>
 #include <qfontdatabase.h>
-
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR "."
-#endif
 
 Q_DECLARE_METATYPE(QGradientStops)
 Q_DECLARE_METATYPE(QLine)
@@ -565,7 +561,7 @@ void tst_QPainter::qt_format_text_boundingRect()
 			QCOMPARE(pbr, br);
 		    }
 #endif
-#if !defined(QT_NO_PRINTER) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(QT_NO_PRINTER) && !defined(Q_OS_WINCE)
 		    {
 			QPrinter printer(QPrinter::HighResolution);
 			if (printer.printerName().isEmpty()) {
@@ -1498,7 +1494,7 @@ void tst_QPainter::drawPath2()
 
 void tst_QPainter::drawPath3()
 {
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE)
     QImage imgA(400, 400, QImage::Format_RGB32);
 #else
     QImage imgA(100, 100, QImage::Format_RGB32);
@@ -2970,7 +2966,7 @@ void tst_QPainter::monoImages()
     }
 }
 
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS)
 #include <fenv.h>
 
 static const QString fpeExceptionString(int exception)

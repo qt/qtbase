@@ -42,7 +42,7 @@
 
 #include <QtCore/private/qfilesystementry_p.h>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #   define WIN_STUFF
 #endif
 

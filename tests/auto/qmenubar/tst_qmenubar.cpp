@@ -338,9 +338,6 @@ void tst_QMenuBar::accel()
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
-#ifdef Q_OS_SYMBIAN
-    QSKIP("On Symbian OS, native key events are needed to test menu action activation", SkipAll);
-#endif
 
     // create a popup menu with menu items set the accelerators later...
     initSimpleMenubar();

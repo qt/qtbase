@@ -44,10 +44,6 @@
 #include <private/qzipwriter_p.h>
 #include <private/qzipreader_p.h>
 
-#ifdef Q_OS_SYMBIAN
-#define SRCDIR "."
-#endif
-
 class tst_QZip : public QObject
 {
     Q_OBJECT

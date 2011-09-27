@@ -4,7 +4,7 @@ QT = core gui
 SOURCES += \
     tst_qglyphrun.cpp
 
-wince*|symbian*: {
+wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

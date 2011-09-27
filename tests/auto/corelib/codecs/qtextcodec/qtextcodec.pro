@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 SUBDIRS = test
 
-!wince*:!symbian:SUBDIRS += echo
+!wince*:SUBDIRS += echo
