@@ -48,10 +48,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#ifndef QT_NO_IM
-#include "qinputcontext.h"
-#include "qlist.h"
-#endif
+
 #include "qapplication.h"
 #ifndef QT_NO_GRAPHICSVIEW
 #include "qgraphicssceneevent.h"

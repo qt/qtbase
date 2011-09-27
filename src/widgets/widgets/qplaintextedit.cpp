@@ -64,7 +64,6 @@
 #include <limits.h>
 #include <qtexttable.h>
 #include <qvariant.h>
-#include <qinputcontext.h>
 
 #ifndef QT_NO_TEXTEDIT
 

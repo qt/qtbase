@@ -78,10 +78,6 @@
 #include <private/qt_x11_p.h>
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
-#include "qinputcontextfactory.h"
-#endif
-
 #include "qguiplatformplugin_p.h"
 
 #include <qthread.h>
@@ -2054,16 +2050,13 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         focus_widget = focus;
 #ifndef QT_NO_IM
         if (prev && ((reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
-            && prev->testAttribute(Qt::WA_InputMethodEnabled))
-            // Do reset the input context, in case the new focus widget won't accept keyboard input
-            // or it is not created fully yet.
-            || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
-            || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
-             QInputContext *qic = prev->inputContext();
-            if(qic) {
-                qic->reset();
-                qic->setFocusWidget(0);
-            }
+                      && prev->testAttribute(Qt::WA_InputMethodEnabled))
+                     // Do reset the input context, in case the new focus widget won't accept keyboard input
+                     // or it is not created fully yet.
+                     || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
+                                          || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
+            qApp->inputPanel()->commit();
+            qApp->inputPanel()->setInputItem(0);
         }
 #endif //QT_NO_IM
 
@@ -2092,11 +2085,10 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
 #ifndef QT_NO_IM
-                if (focus->testAttribute(Qt::WA_InputMethodEnabled)) {
-                    QInputContext *qic = focus->inputContext();
-                    if (qic && focus->testAttribute(Qt::WA_WState_Created)
-                        && focus->isEnabled())
-                        qic->setFocusWidget(focus);
+                if (focus->testAttribute(Qt::WA_InputMethodEnabled)
+                    && focus->testAttribute(Qt::WA_WState_Created)
+                    && focus->isEnabled()) {
+                    qApp->inputPanel()->setInputItem(focus);
                 }
 #endif //QT_NO_IM
                 QFocusEvent in(QEvent::FocusIn, reason);

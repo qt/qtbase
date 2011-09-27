@@ -67,7 +67,6 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
-#include <qinputcontext.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -57,9 +57,6 @@
 #include <qtreeview.h>
 #include <qheaderview.h>
 #include <qmath.h>
-#ifndef QT_NO_IM
-#include "qinputcontext.h"
-#endif
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
@@ -2489,10 +2486,10 @@ void QComboBox::showPopup()
         listRect.moveBottomLeft(above);
     }
 
-#ifndef QT_NO_IM
-    if (QInputContext *qic = inputContext())
-        qic->reset();
-#endif
+    if (qApp) {
+        qApp->inputPanel()->reset();
+    }
+
     QScrollBar *sb = view()->horizontalScrollBar();
     Qt::ScrollBarPolicy policy = view()->horizontalScrollBarPolicy();
     bool needHorizontalScrollBar = (policy == Qt::ScrollBarAsNeeded || policy == Qt::ScrollBarAlwaysOn)

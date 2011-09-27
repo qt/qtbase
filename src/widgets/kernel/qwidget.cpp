@@ -3186,13 +3186,13 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
         QWidget *focusWidget = effectiveFocusWidget();
-        QInputContext *qic = focusWidget->d_func()->inputContext();
+
         if (enable) {
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
-                qic->setFocusWidget(focusWidget);
+                qApp->inputPanel()->setInputItem(focusWidget);
         } else {
-            qic->reset();
-            qic->setFocusWidget(0);
+            qApp->inputPanel()->commit();
+            qApp->inputPanel()->setInputItem(0);
         }
     }
 #endif //QT_NO_IM
@@ -9017,12 +9017,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 #ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
-    // Optimization to update input context only it has already been created.
-    if (d->ic || qApp->d_func()->inputContext) {
-        QInputContext *ic = inputContext();
-        if (ic)
-            ic->update();
-    }
+    qApp->inputPanel()->update(Qt::ImHints);
 #endif //QT_NO_IM
 }
 
@@ -10320,14 +10315,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = 0;
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            ic = focusWidget->d_func()->inputContext();
-            if (ic) {
-                ic->reset();
-                ic->setFocusWidget(0);
-            }
+            qApp->inputPanel()->commit();
+            qApp->inputPanel()->setInputItem(0);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
 #if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
@@ -10339,9 +10330,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic && isEnabled() && focusWidget->isEnabled()
+        if (isEnabled() && focusWidget->isEnabled()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            ic->setFocusWidget(focusWidget);
+            qApp->inputPanel()->setInputItem(focusWidget);
         }
 #endif //QT_NO_IM
         break;
@@ -10375,15 +10366,12 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = qApp->inputContext();
-        if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()
-                && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-                ic->setFocusWidget(focusWidget);
-            } else if (!on && ic->focusWidget() == focusWidget) {
-                ic->reset();
-                ic->setFocusWidget(0);
-            }
+        if (on && hasFocus() && isEnabled()
+            && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
+            qApp->inputPanel()->setInputItem(focusWidget);
+        } else if (!on && qApp->inputPanel()->inputItem() == focusWidget) {
+            qApp->inputPanel()->commit();
+            qApp->inputPanel()->setInputItem(0);
         }
 #endif //QT_NO_IM
         break;
@@ -10845,6 +10833,7 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
         qApp->d_func()->shortcutMap.setShortcutAutoRepeat(enable, id, this, 0);
 }
 #endif // QT_NO_SHORTCUT
+
 /*!
     Updates the widget's micro focus.
 
@@ -10852,13 +10841,9 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 */
 void QWidget::updateMicroFocus()
 {
-    Q_D(QWidget);
-    // and optimization to update input context only it has already been created.
-    if (d->assignedInputContext() || qApp->d_func()->inputContext) {
-        QInputContext *ic = inputContext();
-        if (ic)
-            ic->update();
-    }
+    // updating everything since this is currently called for any kind of state change
+    qApp->inputPanel()->update(Qt::ImQueryAll);
+
 #ifndef QT_NO_ACCESSIBILITY
     if (isVisible()) {
         // ##### is this correct
