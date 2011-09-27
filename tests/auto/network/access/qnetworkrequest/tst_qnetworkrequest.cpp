@@ -414,7 +414,7 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
     QTest::newRow("SetCookie-3") << QNetworkRequest::SetCookieHeader
                                  << QVariant::fromValue(QList<QNetworkCookie>() << cookie << cookie2)
                                  << true << "Set-Cookie"
-                                 << "a=b; path=/, c=d";
+                                 << "a=b; path=/\nc=d";
 }
 
 void tst_QNetworkRequest::rawHeaderParsing()
