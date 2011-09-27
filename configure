@@ -787,9 +787,6 @@ CFG_MAC_ARCHS=
 MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_DWARF2=auto
 CFG_MAC_XARCH=auto
-CFG_MAC_CARBON=no
-CFG_MAC_COCOA=yes
-COMMANDLINE_MAC_CARBON=no
 CFG_MAC_HARFBUZZ=no
 CFG_SXE=no
 CFG_PREFIX_INSTALL=yes
@@ -1019,7 +1016,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1407,7 +1404,7 @@ while [ "$#" -gt 0 ]; do
     arch)
         # if this is a Mac then "windows" probably means
         # we are cross-compiling for MinGW
-        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" != "windows" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" != "windows" ]; then
             CFG_MAC_ARCHS="$CFG_MAC_ARCHS $VAL"
         else
             CFG_ARCH=$VAL
@@ -1416,26 +1413,8 @@ while [ "$#" -gt 0 ]; do
     host-arch)
         CFG_HOST_ARCH=$VAL
         ;;
-    universal)
-        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
-            CFG_MAC_ARCHS="$CFG_MAC_ARCHS x86 ppc"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    cocoa)
-#       do nothing - Cocoa is the default.
-        ;;
-    carbon)
-        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
-            CFG_MAC_CARBON="$VAL"
-            COMMANDLINE_MAC_CARBON="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     harfbuzz)
-        if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_CARBON" != "yes" ] && [ "$VAL" = "yes" ]; then
+        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
             CFG_MAC_HARFBUZZ="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -1527,7 +1506,6 @@ while [ "$#" -gt 0 ]; do
             esac
 	    if [ ! -z "$NATIVE_64_ARCH" ]; then
 		QTCONFIG_CONFIG="$QTCONFIG_CONFIG $NATIVE_64_ARCH"
-		CFG_MAC_ARCHS="$CFG_MAC_ARCHS $NATIVE_64_ARCH"
             fi
             ;;
         esac
@@ -3210,31 +3188,6 @@ if [ ! -n "$PKG_CONFIG" ]; then
     QT_CONFIG="$QT_CONFIG no-pkg-config"
 fi
 
-# process CFG_MAC_ARCHS
-if [ "$PLATFORM_MAC" = "yes" ]; then
-#   check -arch arguments for validity.
-    ALLOWED="x86 ppc x86_64 ppc64 i386"
-    # Save the list so we can re-write it using only valid values
-    CFG_MAC_ARCHS_IN="$CFG_MAC_ARCHS"
-    CFG_MAC_ARCHS=
-    for i in $CFG_MAC_ARCHS_IN
-    do 
-        if echo "$ALLOWED" | grep -w -v "$i" > /dev/null 2>&1; then
-            echo "Unknown architecture: \"$i\". Supported architectures: x86[i386] ppc x86_64 ppc64";
-            exit 2;
-        fi
-        if [ "$i" = "i386" -o "$i" = "x86" ]; then
-            # These are synonymous values
-            # CFG_MAC_ARCHS requires x86 while GCC requires i386
-            CFG_MAC_ARCHS="$CFG_MAC_ARCHS x86"
-            MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -arch i386"
-        else
-            CFG_MAC_ARCHS="$CFG_MAC_ARCHS $i"
-            MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -arch $i"
-        fi
-    done
-fi
-
 # pass on $CFG_SDK to the configure tests.
 if [ '!' -z "$CFG_SDK" ]; then
     MAC_CONFIG_TEST_COMMANDLINE="$MAC_CONFIG_TEST_COMMANDLINE -sdk $CFG_SDK"
@@ -3283,18 +3236,11 @@ export SYSROOT_FLAG    # used by config.tests/unix/compile.test
 
 # auto-detect precompiled header support
 if [ "$CFG_PRECOMPILE" = "auto" ]; then
-    if [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ]; then
-       CFG_PRECOMPILE=no
-    elif "$unixtests/precomp.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+    if "$unixtests/precomp.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
        CFG_PRECOMPILE=no
     else
        CFG_PRECOMPILE=yes
     fi
-elif [ "$CFG_PRECOMPILE" = "yes" ] && [ `echo "$CFG_MAC_ARCHS" | wc -w` -gt 1 ]; then
-    echo
-    echo "WARNING: Using universal binaries disables precompiled headers."
-    echo
-    CFG_PRECOMPILE=no
 fi
 
 #auto-detect DWARF2 on the mac
@@ -3303,15 +3249,6 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
         CFG_MAC_DWARF2=no
     else
         CFG_MAC_DWARF2=yes
-    fi
-fi
-
-# auto-detect support for -Xarch on the mac
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" = "auto" ]; then
-    if "$mactests/xarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests" ; then
-        CFG_MAC_XARCH=no
-    else
-        CFG_MAC_XARCH=yes
     fi
 fi
 
@@ -4171,19 +4108,13 @@ Qt/X11 only:
 EOF
 fi
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     cat << EOF
 
 Qt/Mac only:
 
     -Fstring ........... Add an explicit framework path.
     -fw string ......... Add an explicit framework.
-
-    -cocoa ............. [Deprecated] Cocoa is now enabled by default.
-
-    -carbon .............Build the Carbon version of Qt. 64-bit archs
-                         are not supported by carbon and will be built
-                         with cocoa
 
  *  -framework ......... Build Qt as a series of frameworks and
                          link tools against those frameworks.
@@ -4192,17 +4123,13 @@ Qt/Mac only:
  *  -dwarf2 ............ Enable dwarf2 debugging symbols.
     -no-dwarf2 ......... Disable dwarf2 debugging symbols.
 
-    -universal ......... Equivalent to -arch "ppc x86"
-
-    -arch <arch> ....... Build Qt for <arch>
-                         Example values for <arch>: x86 ppc x86_64 ppc64
-                         Multiple -arch arguments can be specified.
+    -arch <arch> ....... Build Qt for <arch>. Supported arch values: x86 x86_64.
+                         Only one arch value can be specified.
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
                          To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
 
     -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
-                         It is only available to Cocoa builds.
  *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
                          QT_ENABLE_HARFBUZZ environment variable.
 
@@ -4801,7 +4728,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             done
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
+            echo "export MACOSX_DEPLOYMENT_TARGET = 10.6" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
@@ -4809,20 +4736,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
             EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
-	    if echo "$CFG_MAC_ARCHS" | grep x86 > /dev/null 2>&1; then # matches both x86 and x86_64
-		X86_CFLAGS="-arch i386"
-		X86_LFLAGS="-arch i386"
-		EXTRA_CFLAGS="$X86_CFLAGS $EXTRA_CFLAGS"
-		EXTRA_CXXFLAGS="$X86_CFLAGS $EXTRA_CXXFLAGS"
-                EXTRA_LFLAGS="$EXTRA_LFLAGS $X86_LFLAGS"
-            fi
-	    if echo "$CFG_MAC_ARCHS" | grep ppc > /dev/null 2>&1; then # matches both ppc and ppc64
-		PPC_CFLAGS="-arch ppc"
-		PPC_LFLAGS="-arch ppc"
-		EXTRA_CFLAGS="$PPC_CFLAGS $EXTRA_CFLAGS"
-		EXTRA_CXXFLAGS="$PPC_CFLAGS $EXTRA_CXXFLAGS"
-                EXTRA_LFLAGS="$EXTRA_LFLAGS $PPC_LFLAGS"
-            fi
 	    if [ '!' -z "$CFG_SDK" ]; then
 		echo "SDK_LFLAGS =-Wl,-syslibroot,$CFG_SDK" >>"$mkfile"
 		echo "SDK_CFLAGS =-isysroot $CFG_SDK" >>"$mkfile"
@@ -5422,13 +5335,6 @@ fi
 if [ "$CFG_MULTIMEDIA" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
     echo "QtMultimedia requested, but it can't be built without QtGui"
     exit 1
-fi
-
-# Generate a CRC of the namespace for using in constants for the Carbon port.
-# This should mean that you really *can* load two Qt's and have our custom
-# Carbon events work.
-if [ "$PLATFORM_MAC" = "yes" -a ! -z "$QT_NAMESPACE" ]; then
-    QT_NAMESPACE_MAC_CRC=`"$mactests/crc.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/crc $QT_NAMESPACE $L_FLAGS $I_FLAGS $l_FLAGS`
 fi
 
 # X11/QWS/Lighthouse
@@ -6675,67 +6581,11 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
 fi
 
 # Set the default arch if there are no "-arch" arguments on the configure line
-# For "-carbon" builds: 32 bit x86/ppc.
-# For builds on snow leopard : compiler default (64-bit).
-# For builds on leopard : compiler default (32-bit).
 if [ "$CFG_ARCH" = "macosx" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
-
-	if [ "$CFG_MAC_CARBON" = "yes" ]; then
-		if [ "$QT_MAC_DEFAULT_ARCH" = "x86_64" ]; then
-			CFG_MAC_ARCHS=" x86"
-		elif [ "$QT_MAC_DEFAULT_ARCH" = "ppc64" ]; then
-			CFG_MAC_ARCHS=" ppc"
-		else
-			CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
-		fi
-	else
-		CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
-    fi
-
+    CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
-
-# enable Cocoa and/or Carbon on Mac
-#  -carbon on the command line disables Cocoa, except for 64-bit archs
-if [ "$CFG_MAC_CARBON" = "yes" ]; then
-    CFG_MAC_CARBON="YES"
-    CFG_MAC_COCOA="NO"
-
-#    check which archs are in use, enable cocoa if we find a 64-bit one
-    if echo "$CFG_MAC_ARCHS" | grep 64 > /dev/null 2>&1; then
-        CFG_MAC_COCOA="yes";
-        CFG_MAC_CARBON="no";
-        if echo "$CFG_MAC_ARCHS" | grep -w ppc > /dev/null 2>&1; then
-            CFG_MAC_CARBON="yes";
-        fi
-        if echo "$CFG_MAC_ARCHS" | grep -w x86 > /dev/null 2>&1; then
-            CFG_MAC_CARBON="yes";
-        fi
-    fi
-fi
-
-# select Carbon on 10.4 Tiger.
-if [ "$PLATFORM_MAC" = "yes" ]; then
-    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
-    if [ "$VERSION" == 8 ]; then
-        CFG_MAC_COCOA="no";
-        CFG_MAC_CARBON="yes";
-    fi
-fi
-
-# select Carbon when using the 10.4u SDK
-if [ "$PLATFORM_MAC" = "yes" ]; then
-    if [ "TEST$CFG_SDK" = "TEST/Developer/SDKs/MacOSX10.4u.sdk/" ]; then
-        echo "Carbon on";
-        CFG_MAC_COCOA="no";
-        CFG_MAC_CARBON="yes";
-    fi
-fi
-
-# but disable Cocoa if cross-building for mingw
-[ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
-
 # enable Phonon
 if [ "$CFG_PHONON" = "yes" ]; then
     # No longer needed after modularization
@@ -7464,33 +7314,12 @@ if [ "$CFG_EXCEPTIONS" = "no" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG exceptions_off"
 fi
 
-# On Mac, set the minimum deployment target for the different architechtures 
-# using the Xarch compiler option when supported (10.5 and up).
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
-    if echo "$CFG_MAC_ARCHS" | grep '\<x86\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_X86 "-arch i386 -Xarch_i386 -mmacosx-version-min=10.4"
-    fi
-    if echo "$CFG_MAC_ARCHS" | grep '\<ppc\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC "-arch ppc -Xarch_ppc -mmacosx-version-min=10.4"
-    fi
-    if echo "$CFG_MAC_ARCHS" | grep '\<x86_64\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_x86_64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_x86_64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_x86_64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_X86_64 "-arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5"
-    fi
-    if echo "$CFG_MAC_ARCHS" | grep '\<ppc64\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc64 -mmacosx-version-min=10.5"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC_64 "-arch ppc64 -Xarch_ppc64 -mmacosx-version-min=10.5"
-    fi
+# Set the minimum deployment target.
+if [ "$BUILD_ON_MAC" = "yes" ]; then
+    QMakeVar add QMAKE_CFLAGS "-mmacosx-version-min=10.6"
+    QMakeVar add QMAKE_CXXFLAGS "-mmacosx-version-min=10.6"
+    QMakeVar add QMAKE_LFLAGS "-mmacosx-version-min=10.6"
+    QMakeVar add QMAKE_OBJECTIVE_CFLAGS "-mmacosx-version-min=10.6"
 fi
 
 case "$COMPILER" in
@@ -7617,13 +7446,6 @@ echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
 
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     echo "#define QT_LARGEFILE_SUPPORT 64" >>"$outpath/src/corelib/global/qconfig.h.new"
-fi
-
-# if both carbon and cocoa are specified, enable the autodetection code.
-if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
-    echo "#define QT_AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
-elif [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
-    echo "#define QT_MAC_USE_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
 if [ "$CFG_FRAMEWORK" = "yes" ]; then
@@ -7881,7 +7703,7 @@ else
     QT_CONFIG="$QT_CONFIG qt_framework"
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG qt_framework"
 fi
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG $CFG_MAC_ARCHS"
 fi
 if [ "$CFG_DEV" = "yes" ]; then
@@ -8137,18 +7959,6 @@ fi
 
 if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
     echo "Host architecture: $CFG_HOST_ARCH"
-fi
-
-if [ "$PLATFORM_MAC" = "yes" ]; then
-    if [ "$CFG_MAC_COCOA" = "yes" ]; then
-        if [ "$CFG_MAC_CARBON" = "yes" ]; then
-            echo "Using framework: Carbon for 32-bit, Cocoa for 64-bit"
-        else
-            echo "Using framework: Cocoa"
-        fi
-    else
-        echo "Using framework: Carbon"
-    fi
 fi
 
 if [ -n "$PLATFORM_NOTES" ]; then
