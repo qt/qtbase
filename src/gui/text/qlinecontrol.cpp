@@ -654,10 +654,10 @@ void QLineControl::internalSetText(const QString &txt, int pos, bool edited)
     m_cursor = (pos < 0 || pos > m_text.length()) ? m_text.length() : pos;
     m_textDirty = (oldText != m_text);
 
-#ifdef QT_NO_ACCESSIBILITY
-    Q_UNUSED(edited)
-#else
     bool changed = finishChange(-1, true, edited);
+#ifdef QT_NO_ACCESSIBILITY
+    Q_UNUSED(changed)
+#else
     if (changed)
         QAccessible::updateAccessibility(parent(), 0, QAccessible::TextUpdated);
 #endif
