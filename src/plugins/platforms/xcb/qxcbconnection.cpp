@@ -679,7 +679,7 @@ xcb_generic_event_t *QXcbConnection::checkEvent(int type)
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
-        if (event->response_type == type) {
+        if (event && event->response_type == type) {
             (*eventqueue)[i] = 0;
             m_reader->unlock();
             return event;
