@@ -51,8 +51,6 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qevent.h>
 
-class QWindow;
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -62,6 +60,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
+class QWindow;
 
 class Q_GUI_EXPORT QAccessible
 {
@@ -369,10 +368,6 @@ public:
     virtual QObject *object() const = 0;
     virtual QWindow *window() const;
 
-    // hierarchy
-    virtual int childCount() const = 0;
-    virtual int indexOfChild(const QAccessibleInterface *) const = 0;
-
     // relations
     virtual Relation relationTo(int child, const QAccessibleInterface *other,
                                 int otherChild) const;
@@ -380,9 +375,11 @@ public:
 
     virtual int childAt(int x, int y) const = 0;
 
-    // navigation
+    // navigation, hierarchy
     virtual QAccessibleInterface *parent() const = 0;
     virtual QAccessibleInterface *child(int index) const = 0;
+    virtual int childCount() const = 0;
+    virtual int indexOfChild(const QAccessibleInterface *) const = 0;
     virtual int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
 
     // properties and state
