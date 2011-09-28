@@ -287,7 +287,7 @@ void QCocoaWindow::determineWindowClass()
 QNSWindow * QCocoaWindow::createWindow()
 {
     // Determine if we need to add in our "custom window" attribute. Cocoa is rather clever
-    // in deciding if we need the maximize button or not (i.e., it's resizeable, so you
+    // in deciding if we need the maximize button or not (i.e., it's resizable, so you
     // must need a maximize button). So, the only buttons we have control over are the
     // close and minimize buttons. If someone wants to customize and NOT have the maximize
     // button, then we have to do our hack. We only do it for these cases because otherwise
@@ -368,8 +368,8 @@ NSRect QCocoaWindow::globalGeometry(const QRect localGeometry) const
 
         // Qt child window geometry assumes that the origin is at the
         // top-left of the content area of the parent window. The title
-        // bar is not a part of this contet area, but is still included
-        // in the NSWindow height. Move the child window down to acccount
+        // bar is not a part of this content area, but is still included
+        // in the NSWindow height. Move the child window down to account
         // for this if the parent window has a title bar.
         const int titlebarHeight = 22;
         if (!(window()->windowFlags() & Qt::FramelessWindowHint))
@@ -382,7 +382,7 @@ NSRect QCocoaWindow::globalGeometry(const QRect localGeometry) const
     return NSMakeRect(finalGeometry.x(), flippedY, finalGeometry.width(), finalGeometry.height());
 }
 
-// Returns the current global screen geometry for the nswindow accociated with this window.
+// Returns the current global screen geometry for the nswindow associated with this window.
 QRect QCocoaWindow::windowGeometry() const
 {
     NSRect rect = [m_nsWindow frame];

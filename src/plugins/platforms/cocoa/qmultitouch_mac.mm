@@ -197,14 +197,14 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     }
 
     // Finally: If this call _started_ to reject single
-    // touches, we need to fake a relase for the remaining
+    // touches, we need to fake a release for the remaining
     // touch now (and refake a begin for it later, if needed).
 
     if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
         QCocoaTouch *qcocoaTouch = _currentTouches.values().first();
         qcocoaTouch->_touchPoint.state = Qt::TouchPointReleased;
         touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
-        // Since this last touch also will end up beeing the first
+        // Since this last touch also will end up being the first
         // touch (if the user adds a second finger without lifting
         // the first), we promote it to be the primary touch:
         qcocoaTouch->_touchPoint.id = 0;

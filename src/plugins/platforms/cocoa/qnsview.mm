@@ -270,7 +270,7 @@
     const bool scrollEvent = carbonEventKind == kEventMouseScroll;
 
     if (scrollEvent) {
-        // The mouse device containts pixel scroll wheel support (Mighty Mouse, Trackpad).
+        // The mouse device contains pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
         // convert from pixels to degrees in a sensible manner.
         // It looks like 1/4 degrees per pixel behaves most native.

@@ -238,7 +238,7 @@ static const KeyPair * const end = entries + NumEntries;
 QChar qt_mac_qtKey2CocoaKey(Qt::Key key)
 {
     // The first time this function is called, create a reverse
-    // looup table sorted on Qt Key rather than Cocoa key:
+    // lookup table sorted on Qt Key rather than Cocoa key:
     static QVector<KeyPair> rev_entries(NumEntries);
     static bool mustInit = true;
     if (mustInit){

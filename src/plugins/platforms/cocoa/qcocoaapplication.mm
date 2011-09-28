@@ -189,7 +189,7 @@ QT_USE_NAMESPACE
 
 - (void)qtDispatcherToQAction:(id)sender
 {
-    // Forward actions sendt from the menu bar (e.g. quit) to the menu loader.
+    // Forward actions sent from the menu bar (e.g. quit) to the menu loader.
     // Having this method here means that we are the last stop in the responder
     // chain, and that we are able to handle menu actions even when no window is
     // visible on screen. Note: If Qt is used as a plugin, Qt will not use a 
