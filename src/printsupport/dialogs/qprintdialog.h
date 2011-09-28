@@ -96,12 +96,6 @@ public:
 #endif
     void done(int result);
 
-#if defined (Q_OS_UNIX) && defined (QT3_SUPPORT)
-    QT3_SUPPORT void setPrinter(QPrinter *, bool = false);
-    QT3_SUPPORT QPrinter *printer() const;
-    QT3_SUPPORT void addButton(QPushButton *button);
-#endif
-
     void setOption(PrintDialogOption option, bool on = true);
     bool testOption(PrintDialogOption option) const;
     void setOptions(PrintDialogOptions options);

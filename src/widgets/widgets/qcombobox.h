@@ -124,15 +124,6 @@ public:
         InsertAfterCurrent,
         InsertBeforeCurrent,
         InsertAlphabetically
-#if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-        ,
-        NoInsertion = NoInsert,
-        AtTop = InsertAtTop,
-        AtCurrent = InsertAtCurrent,
-        AtBottom = InsertAtBottom,
-        AfterCurrent = InsertAfterCurrent,
-        BeforeCurrent = InsertBeforeCurrent
-#endif
     };
 
     InsertPolicy insertPolicy() const;

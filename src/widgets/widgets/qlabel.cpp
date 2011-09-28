@@ -1427,14 +1427,6 @@ Qt::LayoutDirection QLabelPrivate::textDirection() const
     return text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
 }
 
-/*!
-    \fn void QLabel::setAlignment(Qt::AlignmentFlag flag)
-    \internal
-
-    Without this function, a call to e.g. setAlignment(Qt::AlignTop)
-    results in the \c QT3_SUPPORT function setAlignment(int) being called,
-    rather than setAlignment(Qt::Alignment).
-*/
 
 // Returns the rect that is available for us to draw the document
 QRect QLabelPrivate::documentRect() const

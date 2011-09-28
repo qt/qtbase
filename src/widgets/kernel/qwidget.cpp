@@ -1807,9 +1807,6 @@ void QWidgetPrivate::propagatePaletteChange()
             wd->resolvePalette();
         }
     }
-#if defined(QT3_SUPPORT)
-    q->paletteChange(q->palette()); // compatibility
-#endif
 }
 
 /*
@@ -3228,46 +3225,6 @@ void QWidget::setAcceptDrops(bool on)
 
 }
 
-/*!
-    \fn void QWidget::enabledChange(bool)
-
-    \internal
-    \obsolete
-*/
-
-/*!
-    \fn void QWidget::paletteChange(const QPalette &)
-
-    \internal
-    \obsolete
-*/
-
-/*!
-    \fn void QWidget::fontChange(const QFont &)
-
-    \internal
-    \obsolete
-*/
-
-/*!
-    \fn void QWidget::windowActivationChange(bool)
-
-    \internal
-    \obsolete
-*/
-
-/*!
-    \fn void QWidget::languageChange()
-
-    \obsolete
-*/
-
-/*!
-    \fn void QWidget::styleChange(QStyle& style)
-
-    \internal
-    \obsolete
-*/
 
 /*!
     Disables widget input events if \a disable is true; otherwise
@@ -11007,14 +10964,6 @@ void QWidget::stackUnder(QWidget* w)
     QEvent e(QEvent::ZOrderChange);
     QApplication::sendEvent(this, &e);
 }
-
-void QWidget::styleChange(QStyle&) { }
-void QWidget::enabledChange(bool) { }  // compat
-void QWidget::paletteChange(const QPalette &) { }  // compat
-void QWidget::fontChange(const QFont &) { }  // compat
-void QWidget::windowActivationChange(bool) { }  // compat
-void QWidget::languageChange() { }  // compat
-
 
 /*!
     \enum QWidget::BackgroundOrigin

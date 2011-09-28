@@ -627,32 +627,6 @@ void QPrintDialog::accept()
     QDialog::accept();
 }
 
-#ifdef QT3_SUPPORT
-QPrinter *QPrintDialog::printer() const
-{
-    Q_D(const QPrintDialog);
-    return d->printer;
-}
-
-void QPrintDialog::setPrinter(QPrinter *printer, bool pickupSettings)
-{
-    if (!printer)
-        return;
-
-    Q_D(QPrintDialog);
-    d->printer = printer;
-
-    if (pickupSettings)
-        d->applyPrinterProperties(printer);
-}
-
-void QPrintDialog::addButton(QPushButton *button)
-{
-    Q_D(QPrintDialog);
-    d->buttons->addButton(button, QDialogButtonBox::HelpRole);
-}
-#endif // QT3_SUPPORT
-
 #if defined (Q_OS_UNIX)
 
 /*! \internal

@@ -215,20 +215,6 @@ QValidator::QValidator(QObject * parent)
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-  \obsolete
-    Sets up the validator. The \a parent and \a name parameters are
-    passed on to the QObject constructor.
-*/
-
-QValidator::QValidator(QObject * parent, const char *name)
-    : QObject(*new QValidatorPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-}
-#endif
-
 /*!
     Destroys the validator, freeing any storage and other resources
     used.
@@ -359,40 +345,6 @@ QIntValidator::QIntValidator(int minimum, int maximum,
     t = maximum;
 }
 
-
-#ifdef QT3_SUPPORT
-/*!
-  \obsolete
-
-    Constructs a validator with a \a parent object and a \a name that
-    accepts all integers.
-*/
-
-QIntValidator::QIntValidator(QObject * parent, const char *name)
-    : QValidator(parent)
-{
-    setObjectName(QString::fromAscii(name));
-    b = INT_MIN;
-    t = INT_MAX;
-}
-
-
-/*!
-  \obsolete
-
-    Constructs a validator called \a name with a \a parent, that
-    accepts integers from \a minimum to \a maximum inclusive.
-*/
-
-QIntValidator::QIntValidator(int minimum, int maximum,
-                              QObject * parent, const char* name)
-    : QValidator(parent)
-{
-    setObjectName(QString::fromAscii(name));
-    b = minimum;
-    t = maximum;
-}
-#endif
 
 /*!
     Destroys the validator.
@@ -640,42 +592,6 @@ QDoubleValidator::QDoubleValidator(double bottom, double top, int decimals,
     dec = decimals;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-  \obsolete
-
-    Constructs a validator object with a \a parent object and a \a name
-    that accepts any double.
-*/
-
-QDoubleValidator::QDoubleValidator(QObject * parent, const char *name)
-    : QValidator(*new QDoubleValidatorPrivate , parent)
-{
-    setObjectName(QString::fromAscii(name));
-    b = -HUGE_VAL;
-    t = HUGE_VAL;
-    dec = 1000;
-}
-
-
-/*!
-  \obsolete
-
-    Constructs a validator object with a \a parent object, called \a
-    name. This validator will accept doubles from \a bottom to \a top
-    inclusive, with up to \a decimals digits after the decimal point.
-*/
-
-QDoubleValidator::QDoubleValidator(double bottom, double top, int decimals,
-                                    QObject * parent, const char* name)
-    : QValidator(*new QDoubleValidatorPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-    b = bottom;
-    t = top;
-    dec = decimals;
-}
-#endif
 
 /*!
     Destroys the validator.
@@ -920,37 +836,6 @@ QRegExpValidator::QRegExpValidator(const QRegExp& rx, QObject *parent)
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-  \obsolete
-
-    Constructs a validator with a \a parent object and \a name that accepts
-    any string (including an empty one) as valid.
-*/
-
-QRegExpValidator::QRegExpValidator(QObject *parent, const char *name)
-    : QValidator(parent), r(QString::fromLatin1(".*"))
-{
-        setObjectName(QString::fromAscii(name));
-}
-
-/*!
-  \obsolete
-
-    Constructs a validator with a \a parent object and a \a name that
-    accepts all strings that match the regular expression \a rx.
-
-    The match is made against the entire string; e.g. if the regexp is
-    \bold{[A-Fa-f0-9]+} it will be treated as \bold{^[A-Fa-f0-9]+$}.
-*/
-
-QRegExpValidator::QRegExpValidator(const QRegExp& rx, QObject *parent,
-                                    const char *name)
-    : QValidator(parent), r(rx)
-{
-        setObjectName(QString::fromAscii(name));
-}
-#endif
 
 /*!
     Destroys the validator.

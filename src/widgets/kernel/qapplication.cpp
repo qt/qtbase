@@ -3607,24 +3607,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     if (!receiver->isWidgetType()) {
         res = d->notify_helper(receiver, e);
     } else switch (e->type()) {
-#if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
-    case QEvent::Accel:
-        {
-            if (d->use_compat()) {
-                QKeyEvent* key = static_cast<QKeyEvent*>(e);
-                res = d->notify_helper(receiver, e);
-
-                if (!res && !key->isAccepted())
-                    res = d->qt_dispatchAccelEvent(static_cast<QWidget *>(receiver), key);
-
-                // next lines are for compatibility with Qt <= 3.0.x: old
-                // QAccel was listening on toplevel widgets
-                if (!res && !key->isAccepted() && !static_cast<QWidget *>(receiver)->isWindow())
-                    res = d->notify_helper(static_cast<QWidget *>(receiver)->window(), e);
-            }
-            break;
-        }
-#endif //QT3_SUPPORT && !QT_NO_SHORTCUT
     case QEvent::ShortcutOverride:
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
@@ -3640,10 +3622,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
 
             QKeyEvent* key = static_cast<QKeyEvent*>(e);
-#if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
-            if (d->use_compat() && d->qt_tryComposeUnicode(static_cast<QWidget*>(receiver), key))
-                break;
-#endif
             if (key->type()==QEvent::KeyPress) {
 #ifndef QT_NO_SHORTCUT
                 // Try looking for a Shortcut before sending key events

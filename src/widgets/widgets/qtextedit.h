@@ -104,28 +104,6 @@ public:
 
     Q_DECLARE_FLAGS(AutoFormatting, AutoFormattingFlag)
 
-#if defined(QT3_SUPPORT)
-    enum CursorAction {
-        MoveBackward,
-        MoveForward,
-        MoveWordBackward,
-        MoveWordForward,
-        MoveUp,
-        MoveDown,
-        MoveLineStart,
-        MoveLineEnd,
-        MoveHome,
-        MoveEnd,
-        MovePageUp,
-        MovePageDown
-#if !defined(Q_MOC_RUN)
-        ,
-        MovePgUp = MovePageUp,
-        MovePgDown = MovePageDown
-#endif
-    };
-#endif
-
     explicit QTextEdit(QWidget *parent = 0);
     explicit QTextEdit(const QString &text, QWidget *parent = 0);
     virtual ~QTextEdit();

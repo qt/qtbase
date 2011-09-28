@@ -970,36 +970,10 @@ QKeyMapper::sendKeyEvent(QWidget *widget, bool grab,
                          quint32 nativeModifiers, bool *isAccepted)
 {
     Q_UNUSED(count);
+    Q_UNUSED(grab);
+
     if (widget && widget->isEnabled()) {
         bool key_event = true;
-#if defined(QT3_SUPPORT) && !defined(QT_NO_SHORTCUT)
-        if (type == QEvent::KeyPress && !grab
-           && QApplicationPrivate::instance()->use_compat()) {
-               QKeyEventEx accel_ev(type, code, modifiers,
-                                    text, autorepeat, qMax(1, int(text.length())),
-                                    nativeScanCode, nativeVirtualKey, nativeModifiers);
-            if (QApplicationPrivate::instance()->qt_tryAccelEvent(widget, &accel_ev)) {
-#if defined(DEBUG_KEY_BINDINGS) || defined(DEBUG_KEY_BINDINGS_MODIFIERS)
-                qDebug("KeyEvent: %s::%s consumed Accel: %s",
-                       widget ? widget->metaObject()->className() : "none",
-                       widget ? widget->objectName().toLatin1().constData() : "",
-                       text.toLatin1().constData());
-#endif
-                key_event = false;
-            } else {
-                if (accel_ev.isAccepted()) {
-#if defined(DEBUG_KEY_BINDINGS) || defined(DEBUG_KEY_BINDINGS_MODIFIERS)
-                    qDebug("KeyEvent: %s::%s overrode Accel: %s",
-                           widget ? widget->metaObject()->className() : "none",
-                           widget ? widget->objectName().toLatin1().constData() : "",
-                           text.toLatin1().constData());
-#endif
-                }
-            }
-        }
-#else
-Q_UNUSED(grab);
-#endif // QT3_SUPPORT && !QT_NO_SHORTCUT
         if (key_event) {
 #if defined(DEBUG_KEY_BINDINGS) || defined(DEBUG_KEY_BINDINGS_MODIFIERS)
             qDebug("KeyEvent: Sending %s to %s::%s: %s 0x%08x%s",

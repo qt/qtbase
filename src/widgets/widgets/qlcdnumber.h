@@ -73,9 +73,6 @@ public:
 
     enum Mode {
         Hex, Dec, Oct, Bin
-#if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-        , HEX = Hex, DEC = Dec, OCT = Oct, BIN = Bin
-#endif
     };
     enum SegmentStyle {
         Outline, Filled, Flat

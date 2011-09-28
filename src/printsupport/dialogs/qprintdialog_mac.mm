@@ -378,13 +378,6 @@ int QPrintDialog::exec()
     return result();
 }
 
-#ifdef QT3_SUPPORT
-QPrinter *QPrintDialog::printer() const
-{
-    Q_D(const QPrintDialog);
-    return d->printer;
-}
-#endif
 
 /*!
     \reimp

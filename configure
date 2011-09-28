@@ -6385,9 +6385,6 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
                QMakeVar set QT_CFLAGS_DIRECTFB "$QT_CFLAGS_DIRECTFB"
                QMakeVar set QT_LIBS_DIRECTFB "$QT_LIBS_DIRECTFB"
            fi
-           if [ "$CFG_QT3SUPPORT" = "yes" ]; then
-               QMakeVar set QT_DEFINES_DIRECTFB "QT3_SUPPORT"
-           fi
 
            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB
            if [ $? != "0" ]; then

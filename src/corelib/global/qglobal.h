@@ -1078,11 +1078,7 @@ redefine to built-in booleans to make autotests work properly */
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT
-#  if defined(QT3_SUPPORT)
-#    define QT_MOC_COMPAT QT3_SUPPORT
-#  else
-#    define QT_MOC_COMPAT
-#  endif
+#  define QT_MOC_COMPAT
 #else
 #  undef QT_MOC_COMPAT
 #  define QT_MOC_COMPAT

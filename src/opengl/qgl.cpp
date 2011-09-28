@@ -4684,61 +4684,6 @@ QPaintEngine *QGLWidget::paintEngine() const
     return qt_qgl_paint_engine();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \overload
-    \obsolete
- */
-QGLWidget::QGLWidget(QWidget *parent, const char *name,
-                      const QGLWidget* shareWidget, Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
-{
-    Q_D(QGLWidget);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
-    d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
-}
-
-/*!
-    \overload
-    \obsolete
- */
-QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent,
-                      const char *name, const QGLWidget* shareWidget,
-                      Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
-{
-    Q_D(QGLWidget);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
-    d->init(new QGLContext(format, this), shareWidget);
-}
-
-/*!
-    \overload
-    \obsolete
- */
-QGLWidget::QGLWidget(QGLContext *context, QWidget *parent,
-                      const char *name, const QGLWidget *shareWidget, Qt::WindowFlags f)
-    : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
-{
-    Q_D(QGLWidget);
-    if (name)
-        setObjectName(QString::fromAscii(name));
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_NoSystemBackground);
-    setAutoFillBackground(true); // for compatibility
-    d->init(context, shareWidget);
-}
-
-#endif // QT3_SUPPORT
-
 typedef GLubyte * (*qt_glGetStringi)(GLenum, GLuint);
 
 #ifndef GL_NUM_EXTENSIONS

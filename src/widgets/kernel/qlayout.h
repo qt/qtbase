@@ -79,12 +79,6 @@ public:
         SetFixedSize,
         SetMaximumSize,
         SetMinAndMaxSize
-#if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-        , Auto = SetDefaultConstraint,
-        FreeResize = SetNoConstraint,
-        Minimum = SetMinimumSize,
-        Fixed = SetFixedSize
-#endif
     };
 
     QLayout(QWidget *parent);
@@ -173,12 +167,10 @@ private:
 
 
 //### support old includes
-#if 1 //def QT3_SUPPORT
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtWidgets/qboxlayout.h>
 #include <QtWidgets/qgridlayout.h>
 QT_END_INCLUDE_NAMESPACE
-#endif
 
 QT_END_NAMESPACE
 

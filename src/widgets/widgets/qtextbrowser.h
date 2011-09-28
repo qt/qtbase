@@ -118,11 +118,6 @@ protected:
     virtual bool focusNextPrevChild(bool next);
     virtual void paintEvent(QPaintEvent *e);
 
-#if defined(QT3_SUPPORT)
-public:
-    QT3_SUPPORT_CONSTRUCTOR QTextBrowser(QWidget *parent, const char *name);
-#endif
-
 private:
     Q_DISABLE_COPY(QTextBrowser)
     Q_DECLARE_PRIVATE(QTextBrowser)

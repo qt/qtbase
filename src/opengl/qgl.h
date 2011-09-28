@@ -82,13 +82,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#ifdef QT3_SUPPORT
-#define QGL_VERSION        460
-#define QGL_VERSION_STR        "4.6"
-inline QT3_SUPPORT const char *qGLVersion() {
-    return QGL_VERSION_STR;
-}
-#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 class QGLCmap;
@@ -410,14 +403,6 @@ public:
                        const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
     explicit QGLWidget(const QGLFormat& format, QWidget* parent=0,
                        const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QGLWidget(QWidget* parent, const char* name,
-                                    const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-    QT3_SUPPORT_CONSTRUCTOR QGLWidget(QGLContext *context, QWidget* parent, const char* name,
-                                    const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-    QT3_SUPPORT_CONSTRUCTOR QGLWidget(const QGLFormat& format, QWidget* parent, const char* name,
-                                    const QGLWidget* shareWidget = 0, Qt::WindowFlags f=0);
-#endif
     ~QGLWidget();
 
     void qglColor(const QColor& c) const;

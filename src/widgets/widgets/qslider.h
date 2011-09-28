@@ -70,15 +70,6 @@ public:
         TicksBelow = 2,
         TicksRight = TicksBelow,
         TicksBothSides = 3
-
-#if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-        ,NoMarks = NoTicks,
-        Above = TicksAbove,
-        Left = TicksAbove,
-        Below = TicksBelow,
-        Right = TicksRight,
-        Both = TicksBothSides
-#endif
     };
 
     explicit QSlider(QWidget *parent = 0);

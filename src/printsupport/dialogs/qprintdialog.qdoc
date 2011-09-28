@@ -25,34 +25,3 @@
 **
 ****************************************************************************/
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QPrinter *QPrintDialog::printer() const
-
-    Returns a pointer to the printer this dialog configures, or 0 if
-    this dialog does not operate on any printer.
-
-    This function is available for Unix platforms only.
-*/
-
-/*!
-    \fn void QPrintDialog::setPrinter(QPrinter *printer, bool pickupSettings)
-
-    Sets this dialog to configure printer \a printer, or no printer if \a printer
-    is null. If \a pickupSettings is true, the dialog reads most of
-    its settings from \a printer. If \a pickupSettings is false (the
-    default) the dialog keeps its old settings.
-
-    This function is available for Unix platforms only.
-*/
-
-/*!
-    \fn void QPrintDialog::addButton(QPushButton *button)
-
-    Adds the \a button to the layout of the print dialog. The added
-    buttons are arranged from the left to the right below the
-    last groupbox of the printdialog.
-
-    This function is available for Unix platforms only.
-*/
-#endif

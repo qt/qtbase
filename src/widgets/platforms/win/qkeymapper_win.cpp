@@ -1168,24 +1168,8 @@ bool QKeyMapper::sendKeyEvent(QWidget *widget, bool grab,
                               quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                               bool *)
 {
-#if defined(Q_OS_WINCE)
     Q_UNUSED(grab);
-#endif
     Q_UNUSED(count);
-#if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
-    if (type == QEvent::KeyPress
-        && !grab
-        && QApplicationPrivate::instance()->use_compat()) {
-        // send accel events if the keyboard is not grabbed
-        QKeyEventEx a(type, code, modifiers,
-                      text, autorepeat, qMax(1, int(text.length())),
-                      nativeScanCode, nativeVirtualKey, nativeModifiers);
-        if (QApplicationPrivate::instance()->qt_tryAccelEvent(widget, &a))
-            return true;
-    }
-#else
-    Q_UNUSED(grab);
-#endif
     if (!widget->isEnabled())
         return false;
 

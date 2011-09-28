@@ -1673,7 +1673,6 @@ void QSplitter::setStretchFactor(int index, int stretch)
 }
 
 
-//#ifdef QT3_SUPPORT
 #ifndef QT_NO_TEXTSTREAM
 /*!
     \relates QSplitter
@@ -1706,7 +1705,6 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     return ts;
 }
 #endif // QT_NO_TEXTSTREAM
-//#endif // QT3_SUPPORT
 
 QT_END_NAMESPACE
 

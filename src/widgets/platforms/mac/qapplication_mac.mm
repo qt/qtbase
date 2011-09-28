@@ -1350,15 +1350,6 @@ bool qt_wstate_iconified(WId)
 extern QWidget * mac_mouse_grabber;
 extern QWidget * mac_keyboard_grabber;
 
-#ifdef QT3_SUPPORT
-void QApplication::setMainWidget(QWidget *mainWidget)
-{
-    QApplicationPrivate::main_widget = mainWidget;
-    if (QApplicationPrivate::main_widget && windowIcon().isNull()
-        && QApplicationPrivate::main_widget->testAttribute(Qt::WA_SetWindowIcon))
-        setWindowIcon(QApplicationPrivate::main_widget->windowIcon());
-}
-#endif
 #ifndef QT_NO_CURSOR
 
 /*****************************************************************************

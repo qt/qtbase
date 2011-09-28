@@ -109,11 +109,7 @@ public:
     int indexOf(QWidget *widget) const;
     int count() const;
 
-    enum TabPosition { North, South, West, East
-#if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
-        , Top = North, Bottom = South
-#endif
-    };
+    enum TabPosition { North, South, West, East };
     TabPosition tabPosition() const;
     void setTabPosition(TabPosition);
 

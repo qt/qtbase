@@ -389,9 +389,6 @@ static inline bool isTreeView(const QWidget *widget)
 {
     return (widget && widget->parentWidget() &&
             (qobject_cast<const QTreeView *>(widget->parentWidget())
-#ifdef QT3_SUPPORT
-             || widget->parentWidget()->inherits("Q3ListView")
-#endif
              ));
 }
 
@@ -518,17 +515,9 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             ct = QStyle::CT_ProgressBar;
         else if (qobject_cast<const QLineEdit *>(widg))
             ct = QStyle::CT_LineEdit;
-        else if (qobject_cast<const QHeaderView *>(widg)
-#ifdef QT3_SUPPORT
-                 || widg->inherits("Q3Header")
-#endif
-                )
+        else if (qobject_cast<const QHeaderView *>(widg))
             ct = QStyle::CT_HeaderSection;
-        else if (qobject_cast<const QMenuBar *>(widg)
-#ifdef QT3_SUPPORT
-                || widg->inherits("Q3MenuBar")
-#endif
-               )
+        else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
         else if (qobject_cast<const QSizeGrip *>(widg))
             ct = QStyle::CT_SizeGrip;
@@ -1476,11 +1465,7 @@ bool QMacStylePrivate::addWidget(QWidget *w)
             startAnimate(AquaPushButton, btn);
         return true;
     } else {
-        bool isProgressBar = (qobject_cast<QProgressBar *>(w)
-#ifdef QT3_SUPPORT
-                || w->inherits("Q3ProgressBar")
-#endif
-            );
+        bool isProgressBar = (qobject_cast<QProgressBar *>(w));
         if (isProgressBar) {
             w->installEventFilter(this);
             startAnimate(AquaProgressBar, w);
@@ -1499,11 +1484,7 @@ void QMacStylePrivate::removeWidget(QWidget *w)
     QPushButton *btn = qobject_cast<QPushButton *>(w);
     if (btn && btn == defaultButton) {
         stopAnimate(AquaPushButton, btn);
-    } else if (qobject_cast<QProgressBar *>(w)
-#ifdef QT3_SUPPORT
-            || w->inherits("Q3ProgressBar")
-#endif
-            ) {
+    } else if (qobject_cast<QProgressBar *>(w)) {
         stopAnimate(AquaProgressBar, w);
     }
 }
@@ -1548,21 +1529,6 @@ void QMacStylePrivate::timerEvent(QTimerEvent *)
                             pb->update();
                     }
                 }
-#ifdef QT3_SUPPORT
-                else {
-                    // Watch me now...
-                    QVariant progress = maybeProgress->property("progress");
-                    QVariant totalSteps = maybeProgress->property("totalSteps");
-                    if (progress.isValid() && totalSteps.isValid()) {
-                        int intProgress = progress.toInt();
-                        int intTotalSteps = totalSteps.toInt();
-                        if (intTotalSteps == 0 || intProgress > 0 && intProgress < intTotalSteps) {
-                            if (doAnimate(AquaProgressBar))
-                                maybeProgress->update();
-                        }
-                    }
-                }
-#endif
                 ++i;
             }
         }
@@ -2012,9 +1978,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
                 || (qobject_cast<const QMainWindow*>(widget->parentWidget())
                    && static_cast<QMainWindow *>(widget->parentWidget())->centralWidget() == widget))
                 && (qobject_cast<const QAbstractScrollArea *>(widget)
-#ifdef QT3_SUPPORT
-                    || widget->inherits("QScrollView")
-#endif
                     || widget->inherits("QWorkspaceChild")))
             ret = 0;
         else
@@ -2378,9 +2341,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ScrollView_FrameOnlyAroundContents:
         if (w && (w->isWindow() || !w->parentWidget() || w->parentWidget()->isWindow())
                 && (w->inherits("QWorkspaceChild")
-#ifdef QT3_SUPPORT
-                || w->inherits("QScrollView")
-#endif
                 ))
             ret = true;
         else

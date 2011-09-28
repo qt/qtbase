@@ -1708,18 +1708,6 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *keyWidget, const XEvent *even
         curr_autorep = autor ? event->xkey.keycode : 0;
     }
 
-#if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
-    // process accelerators before doing key compression
-    if (type == QEvent::KeyPress && !grab
-        && QApplicationPrivate::instance()->use_compat()) {
-        // send accel events if the keyboard is not grabbed
-        QKeyEventEx a(type, code, modifiers, text, autor, qMax(qMax(count,1), int(text.length())),
-                      event->xkey.keycode, keysym, event->xkey.state);
-        if (QApplicationPrivate::instance()->qt_tryAccelEvent(keyWidget, &a))
-            return true;
-    }
-#endif
-
 #ifndef QT_NO_IM
     QInputContext *qic = keyWidget->inputContext();
 #endif
