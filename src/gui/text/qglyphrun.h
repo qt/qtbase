@@ -59,6 +59,14 @@ class QGlyphRunPrivate;
 class Q_GUI_EXPORT QGlyphRun
 {
 public:
+    enum GlyphRunFlag {
+        Overline    = 0x1,
+        Underline   = 0x2,
+        StrikeOut   = 0x4,
+        RightToLeft = 0x8
+    };
+    Q_DECLARE_FLAGS(GlyphRunFlags, GlyphRunFlag)
+
     QGlyphRun();
     QGlyphRun(const QGlyphRun &other);
     ~QGlyphRun();
@@ -92,6 +100,13 @@ public:
 
     void setStrikeOut(bool strikeOut);
     bool strikeOut() const;
+
+    void setRightToLeft(bool on);
+    bool isRightToLeft() const;
+
+    void setFlag(GlyphRunFlag flag, bool enabled = true);
+    void setFlags(GlyphRunFlags flags);
+    GlyphRunFlags flags() const;
 
     void setBoundingRect(const QRectF &boundingRect);
     QRectF boundingRect() const;

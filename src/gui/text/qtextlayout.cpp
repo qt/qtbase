@@ -1022,6 +1022,8 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
                     flags |= QTextItem::Overline;
                 if (glyphRun.strikeOut())
                     flags |= QTextItem::StrikeOut;
+                if (glyphRun.isRightToLeft())
+                    flags |= QTextItem::RightToLeft;
                 QPair<QFontEngine *, int> key(fontEngine, int(flags));
                 // merge the glyph runs using the same font
                 if (glyphRunHash.contains(key)) {
@@ -2181,6 +2183,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     glyphRun.setOverline(flags.testFlag(QTextItem::Overline));
     glyphRun.setUnderline(flags.testFlag(QTextItem::Underline));
     glyphRun.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
+    if (flags.testFlag(QTextItem::RightToLeft))
+        glyphRun.setRightToLeft(true);
     glyphRun.setRawFont(font);
 
     glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY, selectionWidth.toReal(), height));

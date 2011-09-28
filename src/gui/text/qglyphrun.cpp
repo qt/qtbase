@@ -85,6 +85,22 @@ QT_BEGIN_NAMESPACE
     QRawFont is considered invalid and inaccessible in this case.
 */
 
+/*!
+  \enum QGlyphRun::GlyphRunFlag
+  \since 5.0
+
+  This enum describes flags that alter the way the run of glyphs might be presented or behave in
+  a visual layout. The layout which generates the glyph runs can set these flags based on relevant
+  internal data, to retain information needed to present the text as intended by the user of the
+  layout.
+
+  \value Overline Indicates that the glyphs should be visualized together with an overline.
+  \value Underline Indicates that the glyphs should be visualized together with an underline.
+  \value StrikeOut Indicates that the glyphs should be struck out visually.
+  \value RightToLeft Indicates that the glyphs are ordered right to left. This can affect the
+  positioning of other screen elements that are relative to the glyph run, such as an inline
+  text object.
+*/
 
 /*!
     Constructs an empty QGlyphRun object.
@@ -154,10 +170,7 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
         }
     }
 
-    return (d->overline == other.d->overline
-            && d->underline == other.d->underline
-            && d->strikeOut == other.d->strikeOut
-            && d->rawFont == other.d->rawFont);
+    return (d->flags == other.d->flags && d->rawFont == other.d->rawFont);
 }
 
 /*!
@@ -251,9 +264,7 @@ void QGlyphRun::clear()
 {
     detach();
     d->rawFont = QRawFont();
-    d->strikeOut = false;
-    d->overline = false;
-    d->underline = false;
+    d->flags = 0;
 
     setPositions(QVector<QPointF>());
     setGlyphIndexes(QVector<quint32>());
@@ -282,76 +293,131 @@ void QGlyphRun::setRawData(const quint32 *glyphIndexArray, const QPointF *glyphP
 /*!
    Returns true if this QGlyphRun should be painted with an overline decoration.
 
-   \sa setOverline()
+   \sa setOverline(), flags()
 */
 bool QGlyphRun::overline() const
 {
-    return d->overline;
+    return d->flags & Overline;
 }
 
 /*!
   Indicates that this QGlyphRun should be painted with an overline decoration if \a overline is true.
   Otherwise the QGlyphRun should be painted with no overline decoration.
 
-  \sa overline()
+  \sa overline(), setFlag(), setFlags()
 */
 void QGlyphRun::setOverline(bool overline)
 {
-    if (d->overline == overline)
-        return;
-
-    detach();
-    d->overline = overline;
+    setFlag(Overline, overline);
 }
 
 /*!
    Returns true if this QGlyphRun should be painted with an underline decoration.
 
-   \sa setUnderline()
+   \sa setUnderline(), flags()
 */
 bool QGlyphRun::underline() const
 {
-    return d->underline;
+    return d->flags & Underline;
 }
 
 /*!
   Indicates that this QGlyphRun should be painted with an underline decoration if \a underline is
   true. Otherwise the QGlyphRun should be painted with no underline decoration.
 
-  \sa underline()
+  \sa underline(), setFlag(), setFlags()
 */
 void QGlyphRun::setUnderline(bool underline)
 {
-    if (d->underline == underline)
-        return;
-
-    detach();
-    d->underline = underline;
+    setFlag(Underline, underline);
 }
 
 /*!
    Returns true if this QGlyphRun should be painted with a strike out decoration.
 
-   \sa setStrikeOut()
+   \sa setStrikeOut(), flags()
 */
 bool QGlyphRun::strikeOut() const
 {
-    return d->strikeOut;
+    return d->flags & StrikeOut;
 }
 
 /*!
   Indicates that this QGlyphRun should be painted with an strike out decoration if \a strikeOut is
   true. Otherwise the QGlyphRun should be painted with no strike out decoration.
 
-  \sa strikeOut()
+  \sa strikeOut(), setFlag(), setFlags()
 */
 void QGlyphRun::setStrikeOut(bool strikeOut)
 {
-    if (d->strikeOut == strikeOut)
+    setFlag(StrikeOut, strikeOut);
+}
+
+/*!
+  Returns true if this QGlyphRun contains glyphs that are painted from the right to the left.
+
+  \since 5.0
+  \sa setRightToLeft(), flags()
+*/
+bool QGlyphRun::isRightToLeft() const
+{
+    return d->flags & RightToLeft;
+}
+
+/*!
+  Indicates that this QGlyphRun contains glyphs that should be ordered from the right to left
+  if \a rightToLeft is true. Otherwise the order of the glyphs is assumed to be left to right.
+
+  \since 5.0
+  \sa isRightToLeft(), setFlag(), setFlags()
+*/
+void QGlyphRun::setRightToLeft(bool rightToLeft)
+{
+    setFlag(RightToLeft, rightToLeft);
+}
+
+/*!
+  Returns the flags set for this QGlyphRun.
+
+  \since 5.0
+  \sa setFlag(), setFlag()
+*/
+QGlyphRun::GlyphRunFlags QGlyphRun::flags() const
+{
+    return d->flags;
+}
+
+/*!
+  If \a enabled is true, then \a flag is enabled; otherwise, it is disabled.
+
+  \since 5.0
+  \sa flags(), setFlags()
+*/
+void QGlyphRun::setFlag(GlyphRunFlag flag, bool enabled)
+{
+    if (d->flags.testFlag(flag) == enabled)
         return;
 
     detach();
-    d->strikeOut = strikeOut;
+    if (enabled)
+        d->flags |= flag;
+    else
+        d->flags &= ~flag;
+}
+
+/*!
+  Sets the flags of this QGlyphRun to \a flags.
+
+  \since 5.0
+  \sa setFlag(), flags()
+*/
+void QGlyphRun::setFlags(GlyphRunFlags flags)
+{
+    if (d->flags == flags)
+        return;
+
+    detach();
+    d->flags = flags;
 }
 
 /*!

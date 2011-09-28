@@ -68,9 +68,7 @@ class QGlyphRunPrivate: public QSharedData
 {
 public:
     QGlyphRunPrivate()
-        : overline(false)
-        , underline(false)
-        , strikeOut(false)
+        : flags(0)
         , glyphIndexData(glyphIndexes.constData())
         , glyphIndexDataSize(0)
         , glyphPositionData(glyphPositions.constData())
@@ -84,9 +82,7 @@ public:
       , glyphPositions(other.glyphPositions)
       , rawFont(other.rawFont)
       , boundingRect(other.boundingRect)
-      , overline(other.overline)
-      , underline(other.underline)
-      , strikeOut(other.strikeOut)
+      , flags(other.flags)
       , glyphIndexData(other.glyphIndexData)
       , glyphIndexDataSize(other.glyphIndexDataSize)
       , glyphPositionData(other.glyphPositionData)
@@ -99,9 +95,7 @@ public:
     QRawFont rawFont;
     QRectF boundingRect;
 
-    uint overline  : 1;
-    uint underline : 1;
-    uint strikeOut : 1;
+    QGlyphRun::GlyphRunFlags flags;
 
     const quint32 *glyphIndexData;
     int glyphIndexDataSize;
