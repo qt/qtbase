@@ -111,6 +111,7 @@ void tst_QTemporaryFile::initTestCase()
 {
     // For QTBUG_4796
     QVERIFY(QDir("test-XXXXXX").exists() || QDir().mkdir("test-XXXXXX"));
+    QCoreApplication::setApplicationName("tst_qtemporaryfile");
 }
 
 void tst_QTemporaryFile::cleanupTestCase()
@@ -221,8 +222,9 @@ void tst_QTemporaryFile::fileName()
     file.setAutoRemove(true);
     file.open();
     QString fileName = file.fileName();
+    QVERIFY2(fileName.contains("/tst_qtemporaryfile."), qPrintable(fileName));
     QVERIFY(QFile::exists(fileName));
-    // Get path to the temp file, whithout the file name.
+    // Get path to the temp file, without the file name.
     QString absoluteFilePath = QFileInfo(fileName).absolutePath();
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     absoluteFilePath = absoluteFilePath.toLower();
