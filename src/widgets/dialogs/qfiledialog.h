@@ -261,9 +261,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex & parent))
     Q_PRIVATE_SLOT(d_func(), void _q_fileRenamed(const QString &path,
                 const QString oldName, const QString newName))
-#if defined(Q_WS_MAC)
-    Q_PRIVATE_SLOT(d_func(), void _q_macRunNativeAppModalPanel())
-#endif
+    Q_PRIVATE_SLOT(d_func(), void _q_platformRunNativeAppModalPanel())
+    friend class QPlatformDialogHelper;
 };
 
 inline void QFileDialog::setDirectory(const QDir &adirectory)

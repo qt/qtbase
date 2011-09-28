@@ -250,6 +250,18 @@ QPlatformMenuBar *QPlatformIntegration::createPlatformMenuBar(QMenuBar *menuBar)
     return 0;
 }
 
+bool QPlatformIntegration::usePlatformNativeDialog(QDialog *dialog) const
+{
+    Q_UNUSED(dialog);
+    return false;
+}
+
+QPlatformDialogHelper * QPlatformIntegration::createPlatformDialogHelper(QDialog *dialog) const
+{
+    Q_UNUSED(dialog);
+    return 0;
+}
+
 /*!
   Should be called by the implementation whenever a new screen is added.
 

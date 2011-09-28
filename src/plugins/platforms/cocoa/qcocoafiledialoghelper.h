@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,74 +39,50 @@
 **
 ****************************************************************************/
 
-#ifndef QDIALOG_P_H
-#define QDIALOG_P_H
+#ifndef QCOCOAFILEDIALOGHELPER_H
+#define QCOCOAFILEDIALOGHELPER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QObject>
+#include <qplatformdialoghelper_qpa.h>
+class QFileDialog;
+class QFileDialogPrivate;
 
-#include "private/qwidget_p.h"
-#include "QtCore/qeventloop.h"
-#include "QtCore/qpointer.h"
-#include "QtWidgets/qdialog.h"
-#include "QtWidgets/qpushbutton.h"
-#include "QtWidgets/qplatformdialoghelper_qpa.h"
-
-QT_BEGIN_NAMESPACE
-
-class QSizeGrip;
-
-class QDialogPrivate : public QWidgetPrivate
+class QCocoaFileDialogHelper : public QPlatformDialogHelper
 {
-    Q_DECLARE_PUBLIC(QDialog)
 public:
+    QCocoaFileDialogHelper(QFileDialog *dialog);
+    virtual ~QCocoaFileDialogHelper();
 
-    QDialogPrivate()
-        : mainDef(0), orientation(Qt::Horizontal),extension(0), doShowExtension(false),
-#ifndef QT_NO_SIZEGRIP
-          resizer(0),
-          sizeGripEnabled(false),
-#endif
-          rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(0), platformHelper(0)
-        {}
+    void platformNativeDialogModalHelp();
+    void _q_platformRunNativeAppModalPanel();
 
-    QPointer<QPushButton> mainDef;
-    Qt::Orientation orientation;
-    QWidget *extension;
-    bool doShowExtension;
-    QSize size, min, max;
-#ifndef QT_NO_SIZEGRIP
-    QSizeGrip *resizer;
-    bool sizeGripEnabled;
-#endif
-    QPoint lastRMBPress;
+    bool defaultNameFilterDisables() const;
 
-    void setDefault(QPushButton *);
-    void setMainDefault(QPushButton *);
-    void hideDefault();
-    void resetModalitySetByOpen();
+    void deleteNativeDialog_sys();
+    bool setVisible_sys(bool visible);
+    QDialog::DialogCode dialogResultCode_sys();
+    void setDirectory_sys(const QString &directory);
+    QString directory_sys() const;
+    void selectFile_sys(const QString &filename);
+    QStringList selectedFiles_sys() const;
+    void setFilter_sys();
+    void setNameFilters_sys(const QStringList &filters);
+    void selectNameFilter_sys(const QString &filter);
+    QString selectedNameFilter_sys() const;
 
-#ifdef Q_WS_WINCE_WM
-    void _q_doneAction();
-#endif
+public:
+    bool showCocoaFilePanel();
+    bool hideCocoaFilePanel();
 
-    int rescode;
-    int resetModalityTo;
-    bool wasModalitySet;
+    void createNSOpenSavePanelDelegate();
+    void QNSOpenSavePanelDelegate_selectionChanged(const QString &newPath);
+    void QNSOpenSavePanelDelegate_panelClosed(bool accepted);
+    void QNSOpenSavePanelDelegate_directoryEntered(const QString &newDir);
+    void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
 
-    QPointer<QEventLoop> eventLoop;
-
-    QPlatformDialogHelper *platformHelper;
+private:
+    QFileDialog *qtFileDialog;
+    void *mDelegate;
 };
 
-QT_END_NAMESPACE
-
-#endif // QDIALOG_P_H
+#endif // QCOCOAFILEDIALOGHELPER_H

@@ -45,6 +45,7 @@
 
 #ifndef QT_NO_FILEDIALOG
 #include "qfiledialog_p.h"
+#include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
 #include <qaction.h>
 #include <qheaderview.h>
@@ -70,6 +71,7 @@ extern bool qt_priv_ptr_valid;
 #include <pwd.h>
 #endif
 #endif
+#include "qplatformdialoghelper_qpa.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -295,9 +297,9 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_h
   This signal is emitted when the user selects a \a filter.
 */
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-bool Q_WIDGETS_EXPORT qt_use_native_dialogs = true; // for the benefit of testing tools, until we have a proper API
-#endif
+//#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+//bool Q_WIDGETS_EXPORT qt_use_native_dialogs = true; // for the benefit of testing tools, until we have a proper API
+//#endif
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #ifdef Q_WS_WIN
@@ -400,7 +402,7 @@ QList<QUrl> QFileDialog::sidebarUrls() const
 
 static const qint32 QFileDialogMagic = 0xbe;
 
-const char *qt_file_dialog_filter_reg_exp =
+const char *QFileDialogPrivate::qt_file_dialog_filter_reg_exp =
 "^(.*)\\(([a-zA-Z0-9_.*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
 
 /*!
@@ -515,9 +517,6 @@ QFileDialogPrivate::QFileDialogPrivate()
         defaultFileTypes(true),
         fileNameLabelExplicitlySat(false),
         nativeDialogInUse(false),
-#ifdef Q_WS_MAC
-        mDelegate(0),
-#endif
         qFileDialogUi(0)
 {
 }
@@ -1066,7 +1065,7 @@ bool QFileDialog::isNameFilterDetailsVisible() const
 QStringList qt_strip_filters(const QStringList &filters)
 {
     QStringList strippedFilters;
-    QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
+    QRegExp r(QString::fromLatin1(QFileDialogPrivate::qt_file_dialog_filter_reg_exp));
     for (int i = 0; i < filters.count(); ++i) {
         QString filterName;
         int index = r.indexIn(filters[i]);
@@ -1361,7 +1360,7 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     d->deleteNativeDialog_sys();
     setAttribute(Qt::WA_DontShowOnScreen, false);
 #endif
@@ -1761,7 +1760,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.mode = ExistingFile;
     args.options = options;
 #if defined(Q_WS_WIN)
-    if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog)) {
+    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
         return qt_win_get_open_file_name(args, &(args.directory), selectedFilter);
     }
 #endif
@@ -1854,7 +1853,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     args.options = options;
 
 #if defined(Q_WS_WIN)
-    if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog)) {
+    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
         return qt_win_get_open_file_names(args, &(args.directory), selectedFilter);
     }
 #endif
@@ -1948,7 +1947,7 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     args.options = options;
 
 #if defined(Q_WS_WIN)
-    if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog)) {
+    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog)) {
         return qt_win_get_save_file_name(args, &(args.directory), selectedFilter);
     }
 #endif
@@ -2028,7 +2027,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
     args.options = options;
 
 #if defined(Q_WS_WIN)
-    if (qt_use_native_dialogs && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
+    if (QGuiApplicationPrivate::platformIntegration()->usePlatformNativeDialog() && !(args.options & DontUseNativeDialog) && (options & ShowDirsOnly)
 #if defined(Q_WS_WINCE)
         && qt_priv_ptr_valid
 #endif
@@ -2224,6 +2223,10 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
                               const QString &caption)
 {
     Q_Q(QFileDialog);
+    platformHelper = QGuiApplicationPrivate::platformIntegration()->createPlatformDialogHelper(q);
+    if (platformHelper)
+        platformHelper->d_ptr = this;
+
     if (!caption.isEmpty()) {
         useDefaultCaption = false;
         setWindowTitle = caption;
@@ -2270,11 +2273,10 @@ void QFileDialogPrivate::createWidgets()
     Q_Q(QFileDialog);
     model = new QFileSystemModel(q);
     model->setObjectName(QLatin1String("qt_filesystem_model"));
-#ifdef Q_WS_MAC
-    model->setNameFilterDisables(true);
-#else
-    model->setNameFilterDisables(false);
-#endif
+    if (platformHelper)
+        model->setNameFilterDisables(platformHelper->defaultNameFilterDisables());
+    else
+        model->setNameFilterDisables(false);
     model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(QString,QString,QString)), q, SLOT(_q_fileRenamed(QString,QString,QString)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(QString)),
@@ -3013,7 +3015,7 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 }
 
 // Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
-QStringList qt_clean_filter_list(const QString &filter)
+QStringList QFileDialogPrivate::qt_clean_filter_list(const QString &filter)
 {
     QRegExp regexp(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
     QString f = filter;
@@ -3124,6 +3126,12 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
         if (path == rootPath() && lineEdit()->text() == oldName)
             lineEdit()->setText(newName);
     }
+}
+
+void QFileDialogPrivate::_q_platformRunNativeAppModalPanel()
+{
+    if (platformHelper)
+        platformHelper->_q_platformRunNativeAppModalPanel();
 }
 
 /*!

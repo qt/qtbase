@@ -22,6 +22,7 @@ OBJECTIVE_SOURCES += main.mm \
     qmultitouch_mac.mm \
     qcocoaaccessibilityelement.mm \
     qcocoaaccessibility.mm \
+    qcocoafiledialoghelper.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -41,7 +42,9 @@ HEADERS += qcocoaintegration.h \
     qmultitouch_mac_p.h \
     qcocoaaccessibilityelement.h \
     qcocoaaccessibility.h \
+    qcocoafiledialoghelper.h \
 
+FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc
 
 #add libz for freetype.

@@ -116,7 +116,6 @@ static void qt_win_resolve_libs()
     }
 }
 
-extern const char* qt_file_dialog_filter_reg_exp; // defined in qfiledialog.cpp
 extern QStringList qt_make_filter_list(const QString &filter);
 
 const int maxNameLen = 1023;
@@ -126,7 +125,7 @@ const int maxMultiLen = 65535;
 static QString qt_win_extract_filter(const QString &rawFilter)
 {
     QString result = rawFilter;
-    QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
+    QRegExp r(QString::fromLatin1(QFileDialogPrivate::qt_file_dialog_filter_reg_exp));
     int index = r.indexIn(result);
     if (index >= 0)
         result = r.cap(2);
@@ -156,7 +155,7 @@ static QString qt_win_filter(const QString &filter, bool hideFiltersDetails)
     QStringList filterLst = qt_win_make_filters_list(filter);
     QStringList::Iterator it = filterLst.begin();
     QString winfilters;
-    QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
+    QRegExp r(QString::fromLatin1(QFileDialogPrivate::qt_file_dialog_filter_reg_exp));
     for (; it != filterLst.end(); ++it) {
         QString subfilter = *it;
         if (!subfilter.isEmpty()) {

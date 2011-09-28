@@ -313,27 +313,27 @@
   <customwidget>
    <class>QFileDialogTreeView</class>
    <extends>QTreeView</extends>
-   <header>qfiledialog_p.h</header>
+   <header>private/qfiledialog_p.h</header>
   </customwidget>
   <customwidget>
    <class>QFileDialogListView</class>
    <extends>QListView</extends>
-   <header>qfiledialog_p.h</header>
+   <header>private/qfiledialog_p.h</header>
   </customwidget>
   <customwidget>
    <class>QSidebar</class>
    <extends>QListWidget</extends>
-   <header>qsidebar_p.h</header>
+   <header>private/qsidebar_p.h</header>
   </customwidget>
   <customwidget>
    <class>QFileDialogLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>qfiledialog_p.h</header>
+   <header>private/qfiledialog_p.h</header>
   </customwidget>
   <customwidget>
    <class>QFileDialogComboBox</class>
    <extends>QComboBox</extends>
-   <header>qfiledialog_p.h</header>
+   <header>private/qfiledialog_p.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

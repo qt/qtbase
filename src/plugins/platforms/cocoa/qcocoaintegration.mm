@@ -50,9 +50,13 @@
 #include "qcocoaapplication.h"
 #include "qcocoaapplicationdelegate.h"
 #include "qmenu_mac.h"
+#include "qcocoafiledialoghelper.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
 #include <QtCore/qcoreapplication.h>
+
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QFileDialog>
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
@@ -190,6 +194,28 @@ QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
     return mAccessibility;
+}
+
+bool QCocoaIntegration::usePlatformNativeDialog(QDialog *dialog) const
+{
+    Q_UNUSED(dialog);
+    return true;
+#if 0
+    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
+    if (fileDialog) {
+        return true;
+    }
+    return false;
+#endif
+}
+
+QPlatformDialogHelper * QCocoaIntegration::createPlatformDialogHelper(QDialog *dialog) const
+{
+    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
+    if (fileDialog) {
+        return new QCocoaFileDialogHelper(fileDialog);
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE

@@ -52,6 +52,7 @@
 #include "qmenu.h"
 #include "qcursor.h"
 #include "private/qdialog_p.h"
+#include "private/qguiapplication_p.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -251,6 +252,10 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
+    Q_D(QDialog);
+    d->platformHelper = QGuiApplicationPrivate::platformIntegration()->createPlatformDialogHelper(this);
+    if (d->platformHelper)
+        d->platformHelper->d_ptr = d_func();
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
@@ -264,7 +269,6 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     }
 #endif
 }
-
 
 /*!
   \overload
@@ -361,7 +365,7 @@ void QDialogPrivate::resetModalitySetByOpen()
         // open() changed the window modality and the user didn't touch it afterwards; restore it
         q->setWindowModality(Qt::WindowModality(resetModalityTo));
         q->setAttribute(Qt::WA_SetWindowModality, wasModalitySet);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         Q_ASSERT(resetModalityTo != Qt::WindowModal);
         q->setParent(q->parentWidget(), Qt::Dialog);
 #endif
@@ -449,7 +453,7 @@ void QDialog::open()
         d->wasModalitySet = testAttribute(Qt::WA_SetWindowModality);
         setWindowModality(Qt::WindowModal);
         setAttribute(Qt::WA_SetWindowModality, false);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         setParent(parentWidget(), Qt::Sheet);
 #endif
     }
@@ -511,9 +515,8 @@ int QDialog::exec()
     }
     show();
 
-#ifdef Q_WS_MAC
-    d->mac_nativeDialogModalHelp();
-#endif
+    if (d->platformHelper)
+        d->platformHelper->platformNativeDialogModalHelp();
 
     QEventLoop eventLoop;
     d->eventLoop = &eventLoop;
@@ -635,7 +638,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
     //   Calls reject() if Escape is pressed. Simulates a button
     //   click for the default button if Enter is pressed. Move focus
     //   for the arrow keys. Ignore the rest.
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
         reject();
     } else

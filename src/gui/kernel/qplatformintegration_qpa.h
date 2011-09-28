@@ -68,6 +68,7 @@ class QMenuBar;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformAccessibility;
+class QPlatformDialogHelper;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -103,6 +104,9 @@ public:
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
     virtual QPlatformAccessibility *accessibility() const;
+
+    virtual bool usePlatformNativeDialog(QDialog *dialog = 0) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
