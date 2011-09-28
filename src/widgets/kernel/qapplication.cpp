@@ -2302,7 +2302,6 @@ bool QApplication::event(QEvent *e)
             d->toolTipFallAsleep.stop();
         }
     }
-    return QApplicationBase::event(e);
 
     if(e->type() == QEvent::LanguageChange) {
 #if defined(QT_MAC_USE_COCOA)
@@ -2316,7 +2315,9 @@ bool QApplication::event(QEvent *e)
         }
     }
 
+    return QApplicationBase::event(e);
 }
+
 #if !defined(Q_WS_X11)
 
 // The doc and X implementation of this function is in qapplication_x11.cpp
