@@ -14,7 +14,4 @@ mac {
     SUBDIRS += cocoa
 }
 
-win32 {
-    warning(Windows platform plugin is currently not working)
-    #SUBDIRS += windows
-}
+win32: SUBDIRS += windows
