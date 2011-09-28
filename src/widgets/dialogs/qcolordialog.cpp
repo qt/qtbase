@@ -60,7 +60,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qvalidator.h"
-#include "qmime.h"
+#include "qmimedata.h"
 #include "qspinbox.h"
 #include "qdialogbuttonbox.h"
 #include "private/qguiplatformplugin_p.h"

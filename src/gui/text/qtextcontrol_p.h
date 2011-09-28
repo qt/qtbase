@@ -61,6 +61,7 @@
 #include <QtGui/qabstracttextdocumentlayout.h>
 #include <QtGui/qtextdocumentfragment.h>
 #include <QtGui/qclipboard.h>
+#include <QtCore/qmimedata.h>
 
 QT_BEGIN_HEADER
 
@@ -71,7 +72,6 @@ QT_MODULE(Gui)
 class QStyleSheet;
 class QTextDocument;
 class QTextControlPrivate;
-class QMimeData;
 class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;

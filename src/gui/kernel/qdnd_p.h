@@ -55,7 +55,7 @@
 
 #include "QtCore/qobject.h"
 #include "QtCore/qmap.h"
-#include "QtGui/qmime.h"
+#include "QtCore/qmimedata.h"
 #include "QtGui/qdrag.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qcursor.h"

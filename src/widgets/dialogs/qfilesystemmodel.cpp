@@ -42,7 +42,7 @@
 #include "qfilesystemmodel_p.h"
 #include "qfilesystemmodel.h"
 #include <qlocale.h>
-#include <qmime.h>
+#include <qmimedata.h>
 #include <qurl.h>
 #include <qdebug.h>
 #include <qmessagebox.h>

@@ -43,8 +43,8 @@
 
 #ifndef QT_NO_CLIPBOARD
 
+#include "qmimedata.h"
 #include "qpixmap.h"
-#include "qclipboard_p.h"
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qimage.h"
@@ -137,8 +137,6 @@ QT_BEGIN_NAMESPACE
     \sa QApplication
 */
 
-#ifndef Q_WS_X11
-// for X11 there is a separate implementation of a constructor.
 /*!
     \internal
 
@@ -154,13 +152,11 @@ QT_BEGIN_NAMESPACE
 */
 
 QClipboard::QClipboard(QObject *parent)
-    : QObject(*new QClipboardPrivate, parent)
+    : QObject(parent)
 {
     // nothing
 }
-#endif
 
-#ifndef Q_WS_WIN32
 /*!
     \internal
 
@@ -172,7 +168,6 @@ QClipboard::QClipboard(QObject *parent)
 QClipboard::~QClipboard()
 {
 }
-#endif
 
 /*!
     \fn void QClipboard::changed(QClipboard::Mode mode)
@@ -488,45 +483,6 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     \sa QClipboard::Mode, supportsSelection()
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QMimeSource *QClipboard::data(Mode mode) const
-    \compat
-
-    Use mimeData() instead.
-*/
-QMimeSource *QClipboard::data(Mode mode) const
-{
-    Q_D(const QClipboard);
-
-    if (supportsMode(mode) == false)
-        return 0;
-
-    if (d->compat_data[mode])
-        return d->compat_data[mode];
-
-    d->wrapper[mode]->data = mimeData(mode);
-    return d->wrapper[mode];
-}
-
-
-/*!
-    \fn void QClipboard::setData(QMimeSource *src, Mode mode)
-    \compat
-
-    Use setMimeData() instead.
-*/
-void QClipboard::setData(QMimeSource *source, Mode mode)
-{
-    Q_D(QClipboard);
-
-    if (supportsMode(mode) == false)
-        return;
-
-    d->compat_data[mode] = source;
-    setMimeData(new QMimeSourceWrapper(d, mode), mode);
-}
-#endif // QT3_SUPPORT
 
 /*!
     Returns true if the clipboard supports mouse selection; otherwise
@@ -609,55 +565,6 @@ void QClipboard::emitChanged(Mode mode)
         break;
     }
     emit changed(mode);
-}
-
-const char* QMimeDataWrapper::format(int n) const
-{
-    if (formats.isEmpty()) {
-        QStringList fmts = data->formats();
-        for (int i = 0; i < fmts.size(); ++i)
-            formats.append(fmts.at(i).toLatin1());
-    }
-    if (n < 0 || n >= formats.size())
-        return 0;
-    return formats.at(n).data();
-}
-
-QByteArray QMimeDataWrapper::encodedData(const char *format) const
-{
-    if (QLatin1String(format) != QLatin1String("application/x-qt-image")){
-        return data->data(QLatin1String(format));
-    } else{
-        QVariant variant = data->imageData();
-        QImage img = qvariant_cast<QImage>(variant);
-        QByteArray ba;
-        QBuffer buffer(&ba);
-        buffer.open(QIODevice::WriteOnly);
-        img.save(&buffer, "PNG");
-        return ba;
-    }
-}
-
-QVariant QMimeSourceWrapper::retrieveData(const QString &mimetype, QVariant::Type) const
-{
-    return source->encodedData(mimetype.toLatin1());
-}
-
-bool QMimeSourceWrapper::hasFormat(const QString &mimetype) const
-{
-    return source->provides(mimetype.toLatin1());
-}
-
-QStringList QMimeSourceWrapper::formats() const
-{
-    QStringList fmts;
-    int i = 0;
-    const char *fmt;
-    while ((fmt = source->format(i))) {
-        fmts.append(QLatin1String(fmt));
-        ++i;
-    }
-    return fmts;
 }
 
 #endif // QT_NO_CLIPBOARD

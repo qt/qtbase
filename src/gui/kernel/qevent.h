@@ -49,7 +49,6 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qkeysequence.h>
 #include <QtCore/qcoreevent.h>
-#include <QtGui/qmime.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qvector.h>
@@ -475,9 +474,6 @@ private:
 class QMimeData;
 
 class Q_GUI_EXPORT QDropEvent : public QEvent
-// QT3_SUPPORT
-                              , public QMimeSource
-// END QT3_SUPPORT
 {
 public:
     QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
@@ -498,13 +494,6 @@ public:
     QObject* source() const;
     inline const QMimeData *mimeData() const { return mdata; }
 
-// QT3_SUPPORT
-    const char* format(int n = 0) const;
-    QByteArray encodedData(const char*) const;
-    bool provides(const char*) const;
-// END QT3_SUPPORT
-
-
 protected:
     friend class QApplication;
     QPoint p;
@@ -514,7 +503,6 @@ protected:
     Qt::DropAction drop_action;
     Qt::DropAction default_action;
     const QMimeData *mdata;
-    mutable QList<QByteArray> fmts; // only used for QT3_SUPPORT
 };
 
 

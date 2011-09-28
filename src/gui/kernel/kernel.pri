@@ -18,7 +18,6 @@ HEADERS += \
         kernel/qkeysequence.h \
         kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
-        kernel/qmime.h \
         kernel/qpalette.h \
         kernel/qsessionmanager.h \
         kernel/qwindowdefs.h \
@@ -35,7 +34,6 @@ SOURCES += \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qkeymapper_qpa.cpp \
-        kernel/qmime.cpp \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \

@@ -52,17 +52,13 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_CLIPBOARD
 
-class QMimeSource;
 class QMimeData;
 class QImage;
 class QPixmap;
 
-class QClipboardPrivate;
-
 class Q_GUI_EXPORT QClipboard : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QClipboard)
 private:
     QClipboard(QObject *parent);
     ~QClipboard();
@@ -83,10 +79,6 @@ public:
     QString text(QString& subtype, Mode mode = Clipboard) const;
     void setText(const QString &, Mode mode = Clipboard);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT QMimeSource *data(Mode mode = Clipboard) const;
-    QT3_SUPPORT void setData(QMimeSource*, Mode mode = Clipboard);
-#endif
     const QMimeData *mimeData(Mode mode = Clipboard ) const;
     void setMimeData(QMimeData *data, Mode mode = Clipboard);
 
@@ -112,7 +104,6 @@ protected:
     friend class QGuiApplication;
     friend class QBaseApplication;
     friend class QDragManager;
-    friend class QMimeSource;
     friend class QPlatformClipboard;
 
 private:

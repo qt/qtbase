@@ -45,7 +45,7 @@
 #include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
 #include "qdebug.h"
-#include "qmime.h"
+#include "qmimedata.h"
 #include "private/qdnd_p.h"
 #include "qevent_p.h"
 #include "qmath.h"
@@ -2304,63 +2304,6 @@ QDropEvent::~QDropEvent()
 {
 }
 
-/*!
-    \compat
-    Returns a byte array containing the drag's data, in \a format.
-
-    data() normally needs to get the data from the drag source, which
-    is potentially very slow, so it's advisable to call this function
-    only if you're sure that you will need the data in that
-    particular \a format.
-
-    The resulting data will have a size of 0 if the format was not
-    available.
-
-    \sa format() QByteArray::size()
-*/
-
-QByteArray QDropEvent::encodedData(const char *format) const
-{
-    return mdata->data(QLatin1String(format));
-}
-
-/*!
-    \compat
-    Returns a string describing one of the available data types for
-    this drag. Common examples are "text/plain" and "image/gif".
-    If \a n is less than zero or greater than the number of available
-    data types, format() returns 0.
-
-    This function is provided mainly for debugging. Most drop targets
-    will use provides().
-
-    \sa data() provides()
-*/
-
-const char* QDropEvent::format(int n) const
-{
-    if (fmts.isEmpty()) {
-        QStringList formats = mdata->formats();
-        for (int i = 0; i < formats.size(); ++i)
-            fmts.append(formats.at(i).toLatin1());
-    }
-    if (n < 0 || n >= fmts.size())
-        return 0;
-    return fmts.at(n).constData();
-}
-
-/*!
-    \compat
-    Returns true if this event provides format \a mimeType; otherwise
-    returns false.
-
-    \sa data()
-*/
-
-bool QDropEvent::provides(const char *mimeType) const
-{
-    return mdata->formats().contains(QLatin1String(mimeType));
-}
 
 /*!
     If the source of the drag operation is a widget in this
@@ -2918,15 +2861,6 @@ QShowEvent::QShowEvent()
 QShowEvent::~QShowEvent()
 {
 }
-
-/*!
-  \fn QByteArray QDropEvent::data(const char* f) const
-
-  \obsolete
-
-  The encoded data is in \a f.
-  Use QDropEvent::encodedData().
-*/
 
 /*!
     \class QFileOpenEvent

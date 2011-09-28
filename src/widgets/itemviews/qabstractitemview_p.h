@@ -57,7 +57,7 @@
 #include "private/qabstractitemmodel_p.h"
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
-#include "QtGui/qmime.h"
+#include "QtCore/qmimedata.h"
 #include "QtGui/qpainter.h"
 #include "QtCore/qpair.h"
 #include "QtGui/qregion.h"

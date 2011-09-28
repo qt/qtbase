@@ -65,6 +65,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QPrintPreviewDialog>
+#include <QMimeData>
 
 #ifdef Q_WS_MAC
 const QString rsrcPath = ":/images/mac";

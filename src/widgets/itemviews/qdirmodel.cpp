@@ -46,7 +46,7 @@
 #include <qfile.h>
 #include <qfilesystemmodel.h>
 #include <qurl.h>
-#include <qmime.h>
+#include <qmimedata.h>
 #include <qpair.h>
 #include <qvector.h>
 #include <qobject.h>
