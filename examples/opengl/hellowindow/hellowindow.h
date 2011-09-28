@@ -46,7 +46,9 @@
 #include <QColor>
 #include <QTime>
 
+QT_BEGIN_NAMESPACE
 class QOpenGLContext;
+QT_END_NAMESPACE
 
 class Renderer : public QObject
 {

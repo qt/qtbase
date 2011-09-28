@@ -43,7 +43,9 @@
 #define PRINTVIEW_H
 
 #include <QTableView>
+QT_BEGIN_NAMESPACE
 class QPrinter;
+QT_END_NAMESPACE
 
 class PrintView : public QTableView
 {
