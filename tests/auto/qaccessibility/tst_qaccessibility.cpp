@@ -81,6 +81,32 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
         return false;
     }
 
+    // Verify that we get a valid QAccessibleInterface for the child.
+    QAccessibleInterface *childInterface = QAccessible::queryAccessibleInterface(child);
+    if (!childInterface) {
+        qWarning("tst_QAccessibility::verifyChild: Failed to retrieve interface for child.");
+        return false;
+    }
+
+    // QAccessibleInterface::indexOfChild():
+    // Verify that indexOfChild() returns an index equal to the index passed in
+    int indexFromIndexOfChild = interface->indexOfChild(childInterface);
+    delete childInterface;
+    if (indexFromIndexOfChild != index) {
+        qWarning("tst_QAccessibility::verifyChild (indexOfChild()):");
+        qWarning() << "Expected:" << index;
+        qWarning() << "Actual:  " << indexFromIndexOfChild;
+        return false;
+    }
+
+    // Navigate to child, compare its object and role with the interface from queryAccessibleInterface(child).
+    QAccessibleInterface *navigatedChildInterface = interface->child(index - 1);
+    if (navigatedChildInterface == 0)
+        return false;
+
+    const QRect rectFromInterface = navigatedChildInterface->rect();
+    delete navigatedChildInterface;
+
     // QAccessibleInterface::childAt():
     // Calculate global child position and check that the interface
     // returns the correct index for that position.
@@ -97,7 +123,6 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     // Calculate global child geometry and check that the interface
     // returns a QRect which is equal to the calculated QRect.
     const QRect expectedGlobalRect = QRect(globalChildPos, child->size());
-    const QRect rectFromInterface = interface->rect(index);
     if (expectedGlobalRect != rectFromInterface) {
         qWarning("tst_QAccessibility::verifyChild (rect()):");
         qWarning() << "Expected:" << expectedGlobalRect;
@@ -109,39 +134,6 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     if (!domain.contains(rectFromInterface)) {
         qWarning("tst_QAccessibility::verifyChild: Child is not within its domain.");
         return false;
-    }
-
-    // Verify that we get a valid QAccessibleInterface for the child.
-    QAccessibleInterface *childInterface = QAccessible::queryAccessibleInterface(child);
-    if (!childInterface) {
-        qWarning("tst_QAccessibility::verifyChild: Failed to retrieve interface for child.");
-        return false;
-    }
-
-    // QAccessibleInterface::indexOfChild():
-    // Verify that indexOfChild() returns an index equal to the index passed by,
-    // or -1 if child is "Self" (index == 0).
-    int indexFromIndexOfChild = interface->indexOfChild(childInterface);
-    delete childInterface;
-    int expectedIndex = index == 0 ? -1 : index;
-    if (indexFromIndexOfChild != expectedIndex) {
-        qWarning("tst_QAccessibility::verifyChild (indexOfChild()):");
-        qWarning() << "Expected:" << expectedIndex;
-        qWarning() << "Actual:  " << indexFromIndexOfChild;
-        return false;
-    }
-
-    // Navigate to child, compare its object and role with the interface from queryAccessibleInterface(child).
-    {
-        QAccessibleInterface *navigatedChildInterface = 0;
-        const int status = interface->navigate(QAccessible::Child, index, &navigatedChildInterface);
-        // We are navigating to a separate widget/interface, so status should be 0.
-        if (status != 0)
-            return false;
-
-        if (navigatedChildInterface == 0)
-            return false;
-        delete navigatedChildInterface;
     }
 
     return true;
@@ -2413,7 +2405,6 @@ void tst_QAccessibility::abstractScrollAreaTest()
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&abstractScrollArea);
     QVERIFY(interface);
     QVERIFY(!interface->rect(0).isValid());
-    QVERIFY(!interface->rect(1).isValid());
     QCOMPARE(interface->childAt(200, 200), -1);
 
     abstractScrollArea.resize(400, 400);
@@ -3138,7 +3129,7 @@ void tst_QAccessibility::calendarWidgetTest()
 
     const QRect globalGeometry = QRect(calendarWidget.mapToGlobal(QPoint(0, 0)),
                                        calendarWidget.size());
-    QCOMPARE(interface->rect(0), globalGeometry);
+    QCOMPARE(interface->rect(), globalGeometry);
 
     QWidget *navigationBar = 0;
     foreach (QObject *child, calendarWidget.children()) {

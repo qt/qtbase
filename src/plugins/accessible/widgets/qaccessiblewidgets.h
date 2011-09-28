@@ -228,13 +228,14 @@ class QAccessibleCalendarWidget : public QAccessibleWidget
 public:
     explicit QAccessibleCalendarWidget(QWidget *widget);
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
-    QRect rect(int child) const;
-    int childAt(int x, int y) const;
 
+    QAccessibleInterface *child(int index) const;
+
+
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 protected:
     QCalendarWidget *calendarWidget() const;
 

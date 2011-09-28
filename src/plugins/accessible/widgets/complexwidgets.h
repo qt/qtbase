@@ -74,16 +74,13 @@ public:
         Undefined
     };
 
-    QString text(Text textType, int child) const;
-    void setText(Text textType, int child, const QString &text);
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
+    QAccessibleInterface *child(int index) const;
+    QVariant invokeMethod(QAccessible::Method method, int, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
-    QRect rect(int child) const;
-    int childAt(int x, int y) const;
+//    int childAt(int x, int y) const;
 
 //protected:
     QAbstractScrollArea *abstractScrollArea() const;

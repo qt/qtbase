@@ -1200,6 +1200,17 @@ int QAccessibleCalendarWidget::indexOfChild(const QAccessibleInterface *child) c
     return 1;
 }
 
+QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
+{
+    if (index < 0 || index >= childCount())
+        return 0;
+
+    if (childCount() > 1 && index == 0)
+        return queryAccessibleInterface(navigationBar());
+
+    return queryAccessibleInterface(calendarView());
+}
+
 int QAccessibleCalendarWidget::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
     *target = 0;
@@ -1208,15 +1219,8 @@ int QAccessibleCalendarWidget::navigate(RelationFlag relation, int entry, QAcces
     QWidget *targetWidget = 0;
     switch (relation) {
     case Child:
-        if (childCount() == 1) {
-            targetWidget = calendarView();
-        } else {
-            if (entry == 1)
-                targetWidget = navigationBar();
-            else
-                targetWidget = calendarView();
-        }
-        break;
+        *target = child(entry - 1);
+        return *target ? 0 : -1;
     case Up:
         if (entry == 2)
             targetWidget = navigationBar();
@@ -1229,33 +1233,7 @@ int QAccessibleCalendarWidget::navigate(RelationFlag relation, int entry, QAcces
         return QAccessibleWidget::navigate(relation, entry, target);
     }
     *target = queryAccessibleInterface(targetWidget);
-    return *target ? 0: -1;
-}
-
-QRect QAccessibleCalendarWidget::rect(int child) const
-{
-    if (!calendarWidget()->isVisible() || child > childCount())
-        return QRect();
-    if (child == 0)
-        return QAccessibleWidget::rect(child);
-    QWidget *childWidget = 0;
-    if (childCount() == 2)
-        childWidget = child == 1 ? navigationBar() : calendarView();
-    else
-        childWidget = calendarView();
-    return QRect(childWidget->mapToGlobal(QPoint(0, 0)), childWidget->size());
-}
-
-int QAccessibleCalendarWidget::childAt(int x, int y) const
-{
-    const QPoint globalTargetPos = QPoint(x, y);
-    if (!rect(0).contains(globalTargetPos))
-        return -1;
-    if (rect(1).contains(globalTargetPos))
-        return 1;
-    if (rect(2).contains(globalTargetPos))
-        return 2;
-    return 0;
+    return *target ? 0 : -1;
 }
 
 QCalendarWidget *QAccessibleCalendarWidget::calendarWidget() const
