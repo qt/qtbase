@@ -87,6 +87,7 @@ private slots:
     void fileName();
     void fileNameIsEmpty();
     void autoRemove();
+    void nonWritableCurrentDir();
     void write();
     void openCloseOpenClose();
     void size();
@@ -288,6 +289,22 @@ void tst_QTemporaryFile::autoRemove()
 	}
 	QVERIFY(!QFile::exists(fileName));
 
+}
+
+void tst_QTemporaryFile::nonWritableCurrentDir()
+{
+#ifdef Q_OS_UNIX
+    QString cwd = QDir::currentPath();
+    QDir::setCurrent("/");
+    // QTemporaryFile("tempXXXXXX") is probably a bad idea in any app
+    // where the current dir could anything...
+    QString fileName;
+    QTemporaryFile file("tempXXXXXX");
+    file.setAutoRemove(true);
+    QVERIFY(!file.open());
+    fileName = file.fileName();
+    QDir::setCurrent(cwd);
+#endif
 }
 
 void tst_QTemporaryFile::write()
