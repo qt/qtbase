@@ -10393,7 +10393,17 @@ public:
 
     void doUpdateMicroFocus()
     {
-        updateMicroFocus();
+        if (QWidget *fw = QApplication::focusWidget()) {
+            if (scene()) {
+                for (int i = 0 ; i < scene()->views().count() ; ++i) {
+                    if (scene()->views().at(i) == fw) {
+                        if (QInputContext *inputContext = fw->inputContext()) {
+                            inputContext->update();
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 
