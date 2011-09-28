@@ -922,8 +922,9 @@ QObject::~QObject()
 
 QObjectPrivate::Connection::~Connection()
 {
-    if (argumentTypes != &DIRECT_CONNECTION_ONLY)
-        delete [] static_cast<int *>(argumentTypes);
+    int *v = argumentTypes.load();
+    if (v != &DIRECT_CONNECTION_ONLY)
+        delete [] v;
 }
 
 
@@ -3220,20 +3221,22 @@ void QMetaObject::connectSlotsByName(QObject *o)
 
 static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
 {
-    if (!c->argumentTypes && c->argumentTypes != &DIRECT_CONNECTION_ONLY) {
+    int *argumentTypes = c->argumentTypes.load();
+    if (!argumentTypes && argumentTypes != &DIRECT_CONNECTION_ONLY) {
         QMetaMethod m = sender->metaObject()->method(signal);
-        int *tmp = queuedConnectionTypes(m.parameterTypes());
-        if (!tmp) // cannot queue arguments
-            tmp = &DIRECT_CONNECTION_ONLY;
-        if (!c->argumentTypes.testAndSetOrdered(0, tmp)) {
-            if (tmp != &DIRECT_CONNECTION_ONLY)
-                delete [] tmp;
+        argumentTypes = queuedConnectionTypes(m.parameterTypes());
+        if (!argumentTypes) // cannot queue arguments
+            argumentTypes = &DIRECT_CONNECTION_ONLY;
+        if (!c->argumentTypes.testAndSetOrdered(0, argumentTypes)) {
+            if (argumentTypes != &DIRECT_CONNECTION_ONLY)
+                delete [] argumentTypes;
+            argumentTypes = c->argumentTypes.load();
         }
     }
-    if (c->argumentTypes == &DIRECT_CONNECTION_ONLY) // cannot activate
+    if (argumentTypes == &DIRECT_CONNECTION_ONLY) // cannot activate
         return;
     int nargs = 1; // include return type
-    while (c->argumentTypes[nargs-1])
+    while (argumentTypes[nargs-1])
         ++nargs;
     int *types = (int *) qMalloc(nargs*sizeof(int));
     Q_CHECK_PTR(types);
@@ -3242,7 +3245,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     types[0] = 0; // return type
     args[0] = 0; // return value
     for (int n = 1; n < nargs; ++n)
-        args[n] = QMetaType::create((types[n] = c->argumentTypes[n-1]), argv[n]);
+        args[n] = QMetaType::create((types[n] = argumentTypes[n-1]), argv[n]);
     QCoreApplication::postEvent(c->receiver, new QMetaCallEvent(c->method_offset,
                                                                 c->method_relative,
                                                                 c->callFunction,
