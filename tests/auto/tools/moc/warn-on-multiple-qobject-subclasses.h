@@ -47,7 +47,7 @@ class Foo : public QObject
 public:
 };
 
-class Bar : public QWidget, public Foo
+class Bar : public QWindow, public Foo
 {
     Q_OBJECT
 };

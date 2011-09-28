@@ -867,7 +867,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/warn-on-multiple-qobject-subclasses.h:53: Warning: Class Bar inherits from two QObject subclasses QWidget and Foo. This is not supported!\n"));
+                QString("/warn-on-multiple-qobject-subclasses.h:53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc", SkipAll);
 #endif
