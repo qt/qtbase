@@ -231,24 +231,14 @@ int QAccessibleWidget::childAt(int x, int y) const
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
         return -1;
 
-    QWidgetList list = childWidgets(w);
-    int ccount = childCount();
-
-    // a complex child
-    if (list.size() < ccount) {
-        for (int i = 1; i <= ccount; ++i) {
-            if (rect(i).contains(x, y))
-                return i;
-        }
-        return 0;
-    }
-
-    QPoint rp = w->mapFromGlobal(QPoint(x, y));
-    for (int i = 0; i<list.size(); ++i) {
-        QWidget *child = list.at(i);
-        if (!child->isWindow() && !child->isHidden() && child->geometry().contains(rp)) {
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
+        bool found = false;
+        if (childIface->rect().contains(x, y))
+            found = true;
+        delete childIface;
+        if (found)
             return i + 1;
-        }
     }
     return 0;
 }

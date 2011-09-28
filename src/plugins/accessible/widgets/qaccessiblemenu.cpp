@@ -199,15 +199,6 @@ QRect QAccessibleMenuBar::rect(int child) const
     return QAccessibleWidget::rect(child);
 }
 
-int QAccessibleMenuBar::childAt(int x, int y) const
-{
-    for (int i = childCount(); i >= 0; --i) {
-        if (rect(i).contains(x,y))
-            return i;
-    }
-    return -1;
-}
-
 QAccessibleInterface *QAccessibleMenuBar::child(int index) const
 {
     if (index < childCount())

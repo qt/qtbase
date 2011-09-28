@@ -85,7 +85,6 @@ public:
 
     QAccessibleInterface *child(int index) const;
     int childCount() const;
-    int childAt(int x, int y) const;
 
     QRect rect(int child) const;
     QString text(Text t, int child) const;
