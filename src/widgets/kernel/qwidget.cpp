@@ -7456,11 +7456,6 @@ void QWidget::setVisible(bool visible)
     Convenience function, equivalent to setVisible(!\a hidden).
 */
 
-/*!\fn void QWidget::setShown(bool shown)
-
-    Use setVisible(\a shown) instead.
-*/
-
 
 void QWidgetPrivate::_q_showIfNotHidden()
 {

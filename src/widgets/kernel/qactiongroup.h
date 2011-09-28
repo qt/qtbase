@@ -87,7 +87,6 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void triggered(QAction *);
-    QT_MOC_COMPAT void selected(QAction *);
     void hovered(QAction *);
 
 private:

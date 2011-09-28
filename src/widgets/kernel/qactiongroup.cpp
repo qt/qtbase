@@ -91,7 +91,6 @@ void QActionGroupPrivate::_q_actionTriggered()
     QAction *action = qobject_cast<QAction*>(q->sender());
     Q_ASSERT_X(action != 0, "QWidgetGroup::_q_actionTriggered", "internal error");
     emit q->triggered(action);
-    emit q->selected(action);
 }
 
 void QActionGroupPrivate::_q_actionHovered()
@@ -408,12 +407,6 @@ bool QActionGroup::isVisible() const
     \endcode
 */
 
-/*!
-    \fn void QActionGroup::selected(QAction *action);
-
-    Use triggered() instead.
-
-*/
 
 QT_END_NAMESPACE
 
