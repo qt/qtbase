@@ -26,5 +26,3 @@ contains(QT_CONFIG, dbus){
     DEFINES += WITH_DBUS
     QT += dbus
 }
-
-CONFIG += insignificant_test # QTBUG-21402
