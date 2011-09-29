@@ -142,38 +142,6 @@ bool Qt::mightBeRichText(const QString& text)
 }
 
 /*!
-    Converts the plain text string \a plain to a HTML string with
-    HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
-    entities.
-
-    Example:
-
-    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 0
-
-    This function is defined in the \c <QTextDocument> header file.
-
-    \sa convertFromPlainText(), mightBeRichText()
-*/
-QString Qt::escape(const QString& plain)
-{
-    QString rich;
-    rich.reserve(int(plain.length() * 1.1));
-    for (int i = 0; i < plain.length(); ++i) {
-        if (plain.at(i) == QLatin1Char('<'))
-            rich += QLatin1String("&lt;");
-        else if (plain.at(i) == QLatin1Char('>'))
-            rich += QLatin1String("&gt;");
-        else if (plain.at(i) == QLatin1Char('&'))
-            rich += QLatin1String("&amp;");
-        else if (plain.at(i) == QLatin1Char('"'))
-            rich += QLatin1String("&quot;");
-        else
-            rich += plain.at(i);
-    }
-    return rich;
-}
-
-/*!
     \fn QString Qt::convertFromPlainText(const QString &plain, WhiteSpaceMode mode)
 
     Converts the plain text string \a plain to an HTML-formatted
@@ -3002,7 +2970,7 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
     The \a encoding parameter specifies the value for the charset attribute
     in the html header. For example if 'utf-8' is specified then the
     beginning of the generated html will look like this:
-    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 1
+    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 0
 
     If no encoding is specified then no such meta information is generated.
 

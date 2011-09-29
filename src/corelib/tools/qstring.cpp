@@ -8789,6 +8789,39 @@ QVector<uint> QStringRef::toUcs4() const
 }
 
 /*!
+    Converts the plain text string \a plain to a HTML string with
+    HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
+    entities.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 0
+
+    This function is defined in the \c <QString> header file.
+
+    \sa convertFromPlainText(), mightBeRichText()
+*/
+QString Qt::escape(const QString &plain)
+{
+    QString rich;
+    rich.reserve(int(plain.length() * 1.1));
+    for (int i = 0; i < plain.length(); ++i) {
+        if (plain.at(i) == QLatin1Char('<'))
+            rich += QLatin1String("&lt;");
+        else if (plain.at(i) == QLatin1Char('>'))
+            rich += QLatin1String("&gt;");
+        else if (plain.at(i) == QLatin1Char('&'))
+            rich += QLatin1String("&amp;");
+        else if (plain.at(i) == QLatin1Char('"'))
+            rich += QLatin1String("&quot;");
+        else
+            rich += plain.at(i);
+    }
+    rich.squeeze();
+    return rich;
+}
+
+/*!
   \macro QStringLiteral(str)
   \relates QString
 

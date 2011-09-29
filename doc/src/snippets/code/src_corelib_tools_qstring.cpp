@@ -85,3 +85,10 @@ if (str == QLatin1String("auto")
 //! [6]
 QLabel *label = new QLabel(QLatin1String("MOD"), this);
 //! [6]
+
+
+//! [7]
+QString plain = "#include <QtCore>"
+QString html = Qt::escape(plain);
+// html == "#include &lt;QtCore&gt;"
+//! [7]

@@ -1249,6 +1249,9 @@ inline QBool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
 inline QBool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(s, 0, cs) != -1); }
 
+namespace Qt {
+    Q_CORE_EXPORT QString escape(const QString &plain);
+}
 
 QT_END_NAMESPACE
 
