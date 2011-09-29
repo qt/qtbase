@@ -74,11 +74,11 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
 
     if (alpha) {
         surfaceDesc.caps = DSCAPS_PREMULTIPLIED;
-        surfaceDesc.pixelformat = DSPF_ARGB;
+        surfaceDesc.pixelformat = QDirectFbBlitter::alphaPixmapFormat();
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_CAPS | DSDESC_PIXELFORMAT);
     } else {
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
-        surfaceDesc.pixelformat = DSPF_RGB32;
+        surfaceDesc.pixelformat = QDirectFbBlitter::pixmapFormat();
     }
 
 
@@ -90,6 +90,21 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
 QDirectFbBlitter::~QDirectFbBlitter()
 {
     unlock();
+}
+
+DFBSurfacePixelFormat QDirectFbBlitter::alphaPixmapFormat()
+{
+    return DSPF_ARGB;
+}
+
+DFBSurfacePixelFormat QDirectFbBlitter::pixmapFormat()
+{
+    return DSPF_RGB32;
+}
+
+DFBSurfacePixelFormat QDirectFbBlitter::selectPixmapFormat(bool withAlpha)
+{
+    return withAlpha ? alphaPixmapFormat() : pixmapFormat();
 }
 
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)

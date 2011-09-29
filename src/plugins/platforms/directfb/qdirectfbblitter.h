@@ -58,6 +58,10 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
 
+    static DFBSurfacePixelFormat alphaPixmapFormat();
+    static DFBSurfacePixelFormat pixmapFormat();
+    static DFBSurfacePixelFormat selectPixmapFormat(bool withAlpha);
+
 protected:
     virtual QImage *doLock();
     virtual void doUnlock();
