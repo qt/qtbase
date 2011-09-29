@@ -128,8 +128,9 @@ public:
     class UserEvent : public WindowSystemEvent {
     public:
         UserEvent(QWindow * w, ulong time, EventType t)
-            : WindowSystemEvent(t), window(w), timestamp(time) { }
+            : WindowSystemEvent(t), window(w), nullWindow(w == 0), timestamp(time) { }
         QWeakPointer<QWindow> window;
+        bool nullWindow;
         unsigned long timestamp;
     };
 

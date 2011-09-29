@@ -636,6 +636,8 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
     QWindow *window = e->window.data();
+    if (e->nullWindow)
+        window = QGuiApplication::activeWindow();
     if (!window)
         return;
 
