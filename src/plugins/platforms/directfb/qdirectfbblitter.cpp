@@ -45,9 +45,15 @@
 #include <QtGui/private/qpixmap_blitter_p.h>
 
 #include <QDebug>
+#include <QFile>
 
 #include <directfb.h>
 
+
+#define QDFB_STRINGIFY(x) #x
+#define QDFB_TOSTRING(x) QDFB_STRINGIFY(x)
+#define QDFB_PRETTY \
+    (__FILE__ ":" QDFB_TOSTRING(__LINE__))
 
 static QBlittable::Capabilities dfb_blitter_capabilities()
 {
@@ -176,6 +182,94 @@ QImage *QDirectFbBlitter::doLock()
     }
 
     return &m_image;
+}
+
+bool QDirectFbBlitterPlatformPixmap::fromDataBufferDescription(const DFBDataBufferDescription &dataBufferDescription)
+{
+    DFBResult result;
+    IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
+
+    // Create a data buffer
+    QDirectFBPointer<IDirectFBDataBuffer> dataBuffer;
+    result = dfb->CreateDataBuffer(dfb, &dataBufferDescription, dataBuffer.outPtr());
+    if (result != DFB_OK) {
+        DirectFBError(QDFB_PRETTY, result);
+        return false;
+    }
+
+    // Create the image provider
+    QDirectFBPointer<IDirectFBImageProvider> provider;
+    result = dataBuffer->CreateImageProvider(dataBuffer.data(), provider.outPtr());
+    if (result != DFB_OK) {
+        DirectFBError(QDFB_PRETTY, result);
+        return false;
+    }
+
+    // Extract image information
+    DFBImageDescription imageDescription;
+    result = provider->GetImageDescription(provider.data(), &imageDescription);
+    if (result != DFB_OK) {
+        DirectFBError(QDFB_PRETTY, result);
+        return false;
+    }
+
+    // Can we handle this directlu?
+    if (imageDescription.caps & DICAPS_COLORKEY)
+        return false;
+
+    DFBSurfaceDescription surfaceDescription;
+    result = provider->GetSurfaceDescription(provider.data(), &surfaceDescription);
+    if (result != DFB_OK) {
+        DirectFBError(QDFB_PRETTY, result);
+        return false;
+    }
+
+    m_alpha = imageDescription.caps & DICAPS_ALPHACHANNEL;
+    resize(surfaceDescription.width, surfaceDescription.height);
+    // TODO: FIXME; update d
+
+
+    result = provider->RenderTo(provider.data(), dfbBlitter()->dfbSurface(), 0);
+    if (result != DFB_OK) {
+        DirectFBError(QDFB_PRETTY, result);
+        return false;
+    }
+
+    return true;
+}
+
+bool QDirectFbBlitterPlatformPixmap::fromFile(const QString &filename, const char *format,
+                                              Qt::ImageConversionFlags flags)
+{
+    // If we can't find the file, pass it on to the base class as it is
+    // trying harder by appending various extensions to the path.
+    if (!QFile::exists(filename))
+        return QBlittablePlatformPixmap::fromFile(filename, format, flags);
+
+    // Stop if there is a requirement for colors
+    if (flags != Qt::AutoColor)
+        return QBlittablePlatformPixmap::fromFile(filename, format, flags);
+
+    // Deal with resources
+    if (filename.startsWith(QLatin1Char(':'))) { // resource
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+            return false;
+        const QByteArray data = file.readAll();
+        file.close();
+        return fromData(reinterpret_cast<const uchar*>(data.constData()), data.size(), format, flags);
+    }
+
+    // Try to use directfb to load it.
+    DFBDataBufferDescription description;
+    description.flags = DBDESC_FILE;
+    const QByteArray fileNameData = filename.toLocal8Bit();
+    description.file = fileNameData.constData();
+    if (fromDataBufferDescription(description))
+        return true;
+
+    // Fallback
+    return QBlittablePlatformPixmap::fromFile(filename, format, flags);
 }
 
 void QDirectFbBlitter::doUnlock()

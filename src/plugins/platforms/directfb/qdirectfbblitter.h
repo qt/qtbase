@@ -58,6 +58,8 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
 
+    IDirectFBSurface *dfbSurface() const;
+
     static DFBSurfacePixelFormat alphaPixmapFormat();
     static DFBSurfacePixelFormat pixmapFormat();
     static DFBSurfacePixelFormat selectPixmapFormat(bool withAlpha);
@@ -76,11 +78,29 @@ class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap
 {
 public:
     QBlittable *createBlittable(const QSize &size, bool alpha) const;
+
+    QDirectFbBlitter *dfbBlitter() const;
+
+    virtual bool fromFile(const QString &filename, const char *format,
+                          Qt::ImageConversionFlags flags);
+
+private:
+    bool fromDataBufferDescription(const DFBDataBufferDescription &);
 };
 
 inline QBlittable *QDirectFbBlitterPlatformPixmap::createBlittable(const QSize& size, bool alpha) const
 {
     return new QDirectFbBlitter(size, alpha);
+}
+
+inline QDirectFbBlitter *QDirectFbBlitterPlatformPixmap::dfbBlitter() const
+{
+    return static_cast<QDirectFbBlitter*>(blittable());
+}
+
+inline IDirectFBSurface *QDirectFbBlitter::dfbSurface() const
+{
+    return m_surface.data();
 }
 
 #endif // QDIRECTFBBLITTER_H
