@@ -741,11 +741,6 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     case QStyle::CT_MenuBar:
         if (sz == QAquaSizeLarge) {
-#ifndef QT_MAC_USE_COCOA
-            SInt16 size;
-            if (!GetThemeMenuBarHeight(&size))
-                ret = QSize(-1, size);
-#else
             ret = QSize(-1, [[NSApp mainMenu] menuBarHeight]);
             // In the qt_mac_set_native_menubar(false) case,
             // we come it here with a zero-height main menu,
@@ -753,7 +748,6 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             // Use 22 pixels for the height, by observation.
             if (ret.height() <= 0)
                 ret.setHeight(22);
-#endif
         }
         break;
     default:

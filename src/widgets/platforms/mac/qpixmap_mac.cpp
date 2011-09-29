@@ -860,28 +860,6 @@ static QPixmap qt_mac_grabScreenRect(const QRect &rect)
     return QPixmap::fromMacCGImageRef(image);
 }
 
-#ifndef QT_MAC_USE_COCOA // no QuickDraw in 64-bit mode
-static QPixmap qt_mac_grabScreenRect_10_3(int x, int y, int w, int h, QWidget *widget)
-{
-    QPixmap pm = QPixmap(w, h);
-    extern WindowPtr qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
-    const BitMap *windowPort = 0;
-    if((widget->windowType() == Qt::Desktop)) {
-        GDHandle gdh;
-          if(!(gdh=GetMainDevice()))
-              qDebug("Qt: internal: Unexpected condition reached: %s:%d", __FILE__, __LINE__);
-          windowPort = (BitMap*)(*(*gdh)->gdPMap);
-    } else {
-        windowPort = GetPortBitMapForCopyBits(GetWindowPort(qt_mac_window_for(widget)));
-    }
-    const BitMap *pixmapPort = GetPortBitMapForCopyBits(static_cast<GWorldPtr>(pm.macQDHandle()));
-    Rect macSrcRect, macDstRect;
-    SetRect(&macSrcRect, x, y, x + w, y + h);
-    SetRect(&macDstRect, 0, 0, w, h);
-    CopyBits(windowPort, pixmapPort, &macSrcRect, &macDstRect, srcCopy, 0);
-    return pm;
-}
-#endif
 
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {
@@ -898,18 +876,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     globalCoord = widget->mapToGlobal(globalCoord);
     QRect rect(globalCoord.x() + x, globalCoord.y() + y, w, h);
 
-#ifdef QT_MAC_USE_COCOA
     return qt_mac_grabScreenRect(rect);
-#else
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-        return qt_mac_grabScreenRect(rect);
-    } else
-#endif
-   {
-        return qt_mac_grabScreenRect_10_3(x, y, w, h, widget);
-   }
-#endif // ifdef Q_WS_MAC64
 }
 
 /*! \internal
@@ -1005,85 +972,6 @@ CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
     return px->cg_mask;
 }
 
-#ifndef QT_MAC_USE_COCOA
-IconRef qt_mac_create_iconref(const QPixmap &px)
-{
-    if (px.isNull())
-        return 0;
-
-    //create icon
-    IconFamilyHandle iconFamily = reinterpret_cast<IconFamilyHandle>(NewHandle(0));
-    //create data
-    {
-        struct {
-            OSType mac_type;
-            int width, height, depth;
-            bool mask;
-        } images[] = {
-            { kThumbnail32BitData, 128, 128, 32, false },
-            { kThumbnail8BitMask, 128, 128, 8, true },
-            { 0, 0, 0, 0, false } //end marker
-        };
-        for(int i = 0; images[i].mac_type; i++) {
-            //get QPixmap data
-            QImage scaled_px = px.toImage().scaled(images[i].width, images[i].height);
-
-            quint32 *sptr = (quint32 *) scaled_px.bits();
-            quint32 *srow;
-            uint sbpr = scaled_px.bytesPerLine();
-
-            //get Handle data
-            const int dbpr = images[i].width * (images[i].depth/8);
-            Handle hdl = NewHandle(dbpr*images[i].height);
-            if(!sptr) { //handle null pixmap
-                memset((*hdl), '\0', dbpr*images[i].height);
-            } else if(images[i].mask) {
-                if(images[i].mac_type == kThumbnail8BitMask) {
-                    for(int y = 0, hindex = 0; y < images[i].height; ++y) {
-                        srow = sptr + (y * (sbpr/4));
-                        for(int x = 0; x < images[i].width; ++x)
-                            *((*hdl)+(hindex++)) = qAlpha(*(srow+x));
-                    }
-                }
-            } else {
-                char *dest = (*hdl);
-#if defined(__i386__)
-                if(images[i].depth == 32) {
-                    for(int y = 0; y < images[i].height; ++y) {
-                        uint *source = (uint*)((const uchar*)sptr+(sbpr*y));
-                        for(int x = 0; x < images[i].width; ++x, dest += 4)
-                            *((uint*)dest) = CFSwapInt32(*(source + x));
-                    }
-                } else
-#endif
-                {
-                    for(int y = 0; y < images[i].height; ++y)
-                        memcpy(dest+(y*dbpr), ((const uchar*)sptr+(sbpr*y)), dbpr);
-                }
-            }
-
-            //set the family data to the Handle
-            OSStatus set = SetIconFamilyData(iconFamily, images[i].mac_type, hdl);
-            if(set != noErr)
-                qWarning("%s: %d -- Unable to create icon data[%d]!! %ld",
-                         __FILE__, __LINE__, i, long(set));
-            DisposeHandle(hdl);
-        }
-    }
-
-    //acquire and cleanup
-    IconRef ret;
-    static int counter = 0;
-    const OSType kQtCreator = 'CUTE';
-    RegisterIconRefFromIconFamily(kQtCreator, (OSType)counter, iconFamily, &ret);
-    AcquireIconRef(ret);
-    UnregisterIconRef(kQtCreator, (OSType)counter);
-    DisposeHandle(reinterpret_cast<Handle>(iconFamily));
-    counter++;
-    return ret;
-
-}
-#endif
 
 /*! \internal */
 QPaintEngine* QMacPlatformPixmap::paintEngine() const

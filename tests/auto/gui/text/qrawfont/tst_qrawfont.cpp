@@ -96,7 +96,7 @@ private slots:
     void rawFontSetPixelSize_data();
     void rawFontSetPixelSize();
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC)
     void multipleRawFontsFromData();
 #endif
 
@@ -854,7 +854,7 @@ void tst_QRawFont::rawFontSetPixelSize()
     QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC)
 void tst_QRawFont::multipleRawFontsFromData()
 {
     QFile file(QString::fromLatin1(SRCDIR "testfont.ttf"));

@@ -231,11 +231,6 @@ void QToolBarPrivate::startDrag(bool moving)
 
     if (!moving) {
         state->widgetItem = layout->unplug(q);
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-        if (q->isWindow()) {
-           setWindowState(true, true); //set it to floating
-        }
-#endif
         Q_ASSERT(state->widgetItem != 0);
     }
     state->dragging = !moving;
@@ -1129,36 +1124,6 @@ bool QToolBar::event(QEvent *event)
             mwLayout->fixSizeInUnifiedToolbar(this);
             mwLayout->syncUnifiedToolbarVisibility();
         }
-#  if !defined(QT_MAC_USE_COCOA)
-        // Fall through
-    case QEvent::LayoutRequest: {
-        // There's currently no way to invalidate the size and let
-        // HIToolbar know about it. This forces a re-check.
-        int earlyResult = -1;
-        if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget())) {
-            bool needUpdate = true;
-            if (event->type() == QEvent::LayoutRequest) {
-                QSize oldSizeHint = sizeHint();
-                earlyResult = QWidget::event(event) ? 1 : 0;
-                needUpdate = oldSizeHint != sizeHint();
-            }
-
-            if (needUpdate) {
-                OSWindowRef windowRef = qt_mac_window_for(mainWindow);
-                if (toolbarInUnifiedToolBar(this)
-                        && macWindowToolbarIsVisible(windowRef))   {
-                    DisableScreenUpdates();
-                    macWindowToolbarShow(this, false);
-                    macWindowToolbarShow(this, true);
-                    EnableScreenUpdates();
-                }
-            }
-
-            if (earlyResult != -1)
-                return earlyResult;
-        }
-    }
-#  endif // !QT_MAC_USE_COCOA
 #endif // Q_WS_MAC
         break;
     case QEvent::ParentChange:

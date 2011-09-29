@@ -49,52 +49,18 @@ QString nativeWindowTitle(QWidget *window, Qt::WindowState state)
     OSWindowRef windowRef = qt_mac_window_for(window);
     QCFString macTitle;
     if (state == Qt::WindowMinimized) {
-#ifndef QT_MAC_USE_COCOA
-        CopyWindowAlternateTitle(windowRef, &macTitle);
-#else
         macTitle = reinterpret_cast<CFStringRef>([[windowRef miniwindowTitle] retain]);
-#endif
     } else {
-#ifndef QT_MAC_USE_COCOA
-        CopyWindowTitleAsCFString(windowRef, &macTitle);
-#else
         macTitle = reinterpret_cast<CFStringRef>([[windowRef title] retain]);
-#endif
     }
     return macTitle;
 }
 
 bool nativeWindowModified(QWidget *widget)
 {
-#ifndef QT_MAC_USE_COCOA
-    return IsWindowModified(qt_mac_window_for(widget));
-#else
     return [qt_mac_window_for(widget) isDocumentEdited];
-#endif
 }
 
-#ifndef QT_MAC_USE_COCOA
-bool testAndRelease(const HIViewRef view)
-{
-//    qDebug() << CFGetRetainCount(view);
-    if (CFGetRetainCount(view) != 2)
-        return false;
-    CFRelease(view);
-    CFRelease(view);
-    return true;
-}
-
-WidgetViewPair createAndRetain(QWidget * const parent)
-{
-    QWidget * const widget = new QWidget(parent);
-    const HIViewRef view = (HIViewRef)widget->winId();
-    // Retain twice so we can safely call CFGetRetaintCount even if the retain count
-    // is off by one because of a double release.
-    CFRetain(view);
-    CFRetain(view);
-    return qMakePair(widget, view);
-}
-#else
 bool testAndRelease(const WId view)
 {
     if ([id(view) retainCount] != 2)
@@ -114,5 +80,4 @@ WidgetViewPair createAndRetain(QWidget * const parent)
     [id(view) retain];
     return qMakePair(widget, view);
 }
-#endif
 

@@ -53,7 +53,6 @@
 #ifndef QCOCOAWINDOW_MAC_P
 #define QCOCOAWINDOW_MAC_P
 
-#ifdef QT_MAC_USE_COCOA
 #include "qmacdefines_mac.h"
 #import <Cocoa/Cocoa.h>
 #include <private/qapplication_p.h>
@@ -92,6 +91,5 @@ QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 - (void)drawRectOriginal:(NSRect)rect;
 
 @end
-#endif
 
 #endif

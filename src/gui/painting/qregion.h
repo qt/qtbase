@@ -152,13 +152,8 @@ public:
     RgnHandle toQDRgnForUpdate_sys() const;
     static QRegion fromQDRgn(RgnHandle shape);
 #endif
-#ifdef QT_MAC_USE_COCOA
     inline HIMutableShapeRef handle(bool unused = false) const
     { Q_UNUSED(unused); return toHIMutableShape(); }
-#else
-    inline RgnHandle handle() const { return handle(false); }
-    inline RgnHandle handle(bool) const { return toQDRgn(); }
-#endif
     HIMutableShapeRef toHIMutableShape() const;
     static QRegion fromHIShapeRef(HIShapeRef shape);
 #elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
@@ -201,8 +196,6 @@ Q_GUI_EXPORT
 #elif defined(Q_WS_X11)
         Region rgn;
         void *xrectangles;
-#elif defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-        mutable RgnHandle unused; // Here for binary compatibility reasons. ### Qt 5 remove.
 #endif
 #if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
         QRegionPrivate *qt_rgn;

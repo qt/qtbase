@@ -85,9 +85,7 @@ typedef HIObjectRef                     HIToolbarItemRef;
 typedef const void * CFTypeRef;
 typedef const struct __CFString * CFStringRef;
 
-#  ifdef QT_MAC_USE_COCOA
 #include <private/qunifiedtoolbarsurface_mac_p.h>
-# endif // QT_MAC_USE_COCOA
 
 #endif // Q_WS_MAC
 
@@ -312,7 +310,6 @@ private:
     void updateTabBarShapes();
 #endif
 #ifdef Q_WS_MAC
-#  ifndef QT_MAC_USE_COCOA
     static OSStatus qtmacToolbarDelegate(EventHandlerCallRef, EventRef , void *);
     static OSStatus qtoolbarInHIToolbarHandler(EventHandlerCallRef inCallRef, EventRef event,
                                                void *data);
@@ -320,7 +317,6 @@ private:
     static HIToolbarItemRef CreateToolbarItemForIdentifier(CFStringRef identifier, CFTypeRef data);
     static HIToolbarItemRef createQToolBarInHIToolbarItem(QToolBar *toolbar,
                                                           QMainWindowLayout *layout);
-#  endif
 public:
     struct ToolBarSaveState {
         ToolBarSaveState() : movable(false) { }
@@ -343,10 +339,8 @@ public:
     void syncUnifiedToolbarVisibility();
     bool blockVisiblityCheck;
 
-#ifdef QT_MAC_USE_COCOA
     QUnifiedToolbarSurface *unifiedSurface;
     void updateUnifiedToolbarOffset();
-#endif // QT_MAC_USE_COCOA
 
 #endif // Q_WS_MAC
 };

@@ -150,11 +150,7 @@ public:
     QList<QVariant> supportedResolutions() const;
     inline bool isPrintSessionInitialized() const
     {
-#ifndef QT_MAC_USE_COCOA
-        return session != 0;
-#else
         return printInfo != 0;
-#endif
     }
     bool shouldSuppressStatus() const;
 };

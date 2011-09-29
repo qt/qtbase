@@ -78,9 +78,7 @@ QGestureManager::QGestureManager(QObject *parent)
 #if defined(Q_WS_MAC)
     registerGestureRecognizer(new QMacSwipeGestureRecognizer);
     registerGestureRecognizer(new QMacPinchGestureRecognizer);
-  #if defined(QT_MAC_USE_COCOA)
     registerGestureRecognizer(new QMacPanGestureRecognizer);
-  #endif
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
     registerGestureRecognizer(new QPinchGestureRecognizer);

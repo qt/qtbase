@@ -435,10 +435,6 @@ static Boolean qt_KeyEventComparatorProc(EventRef inEvent, void *data)
 static bool translateKeyEventInternal(EventHandlerCallRef er, EventRef keyEvent, int *qtKey,
                                       QChar *outChar, Qt::KeyboardModifiers *outModifiers, bool *outHandled)
 {
-#if !defined(QT_MAC_USE_COCOA) || defined(Q_OS_MAC64)
-    Q_UNUSED(er);
-    Q_UNUSED(outHandled);
-#endif
     const UInt32 ekind = GetEventKind(keyEvent);
     {
         UInt32 mac_modifiers = 0;
@@ -534,14 +530,12 @@ static bool translateKeyEventInternal(EventHandlerCallRef er, EventRef keyEvent,
                                                               rightShiftKey|alphaLock)) | keyCode,
                                            &tmp_unused_state);
         if (!translatedChar) {
-#ifdef QT_MAC_USE_COCOA
             if (outHandled) {
                 qt_mac_eat_unicode_key = false;
                 if (er)
                     CallNextEventHandler(er, keyEvent);
                 *outHandled = qt_mac_eat_unicode_key;
             }
-#endif
             return false;
         }
 
@@ -774,26 +768,6 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
 
 
     if (widget) {
-#ifndef QT_MAC_USE_COCOA
-        Q_UNUSED(info);
-        // Try not to call "other" event handlers if we have a popup,
-        // However, if the key has text
-        // then we should pass it along because otherwise then people
-        // can use input method stuff.
-        if (!qApp->activePopupWidget()
-                || (qApp->activePopupWidget() && !text.isEmpty())) {
-            //Find out if someone else wants the event, namely
-            //is it of use to text services? If so we won't bother
-            //with a QKeyEvent.
-            qt_mac_eat_unicode_key = false;
-            if (er)
-                CallNextEventHandler(er, event);
-            extern bool qt_mac_menubar_is_open();   
-            if (qt_mac_eat_unicode_key || qt_mac_menubar_is_open()) {
-                return true;
-            }
-        }
-#endif
         // Try to compress key events.
         if (!text.isEmpty() && widget->testAttribute(Qt::WA_KeyCompression)) {
             EventTime lastTime = GetEventTime(event);
@@ -866,7 +840,6 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         UInt32 macModifiers = 0;
         GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, 0,
                           sizeof(macModifiers), 0, &macModifiers);
-#ifdef QT_MAC_USE_COCOA
         // The unicode characters in the range 0xF700-0xF747 are reserved
         // by Mac OS X for transient use as keyboard function keys. We
         // wont send 'text' for such key events. This is done to match
@@ -875,27 +848,20 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         if (*unicodeKey >= 0xf700 && *unicodeKey <= 0xf747)
             text = QString();
         bool isAccepted;
-#endif
         handled_event = QKeyMapper::sendKeyEvent(widget, grab,
                                                  (ekind == kEventRawKeyUp) ? QEvent::KeyRelease : QEvent::KeyPress,
                                                  qtKey, modifiers, text, ekind == kEventRawKeyRepeat, 0,
                                                  macScanCode, macVirtualKey, macModifiers
-#ifdef QT_MAC_USE_COCOA
                                                  ,&isAccepted
-#endif
                                                  );
-#ifdef QT_MAC_USE_COCOA
         *unicodeKey = (unsigned int)isAccepted;
-#endif
     }
     return handled_event;
 }
 
 void
 QKeyMapperPrivate::updateKeyMap(EventHandlerCallRef, EventRef event, void *
-#if defined(QT_MAC_USE_COCOA)
                                 unicodeKey // unicode character from NSEvent (modifiers applied)
-#endif
                                 )
 {
     UInt32 macVirtualKey = 0;

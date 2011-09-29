@@ -57,9 +57,7 @@
 
 #ifdef __OBJC__
 #include <Cocoa/Cocoa.h>
-#ifdef QT_MAC_USE_COCOA
 #include <objc/runtime.h>
-#endif // QT_MAC_USE_COCOA
 #endif
 
 #include <CoreServices/CoreServices.h>

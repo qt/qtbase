@@ -78,9 +78,6 @@ class QPixmap;
 #   undef qDebug
 # endif
 QT_BEGIN_INCLUDE_NAMESPACE
-#ifndef QT_MAC_USE_COCOA
-# include <AGL/agl.h>
-#endif
 QT_END_INCLUDE_NAMESPACE
 # ifdef old_qDebug
 #   undef qDebug

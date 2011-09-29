@@ -279,36 +279,8 @@ public:
 
 #if defined(Q_WS_MAC)
     void *mDelegate;
-#ifndef QT_MAC_USE_COCOA
-    NavDialogRef mDialog;
-    bool mDialogStarted;
-    bool mDialogClosed;
-    QString mCurrentLocation;
-    QString mCurrentSelection;
-    QStringList mCurrentSelectionList;
-
-    struct QtMacFilterName {
-        QString description;
-        QString regexp;
-        QString filter;
-    };
-    struct QtMacNavFilterInfo {
-        QtMacNavFilterInfo() : currentSelection(-1) {}
-        int currentSelection;
-        QList<QtMacFilterName> filters;
-    } filterInfo;
-
-    static void qt_mac_filedialog_event_proc(const NavEventCallbackMessage msg, NavCBRecPtr p,
-                                             NavCallBackUserData data);
-    static Boolean qt_mac_filedialog_filter_proc(AEDesc *theItem, void *info, void *data,
-                                                 NavFilterModes);
-    bool showCarbonNavServicesDialog();
-    bool hideCarbonNavServicesDialog();
-    void createNavServicesDialog();
-#else
     bool showCocoaFilePanel();
     bool hideCocoaFilePanel();
-#endif
     void createNSOpenSavePanelDelegate();
     void QNSOpenSavePanelDelegate_selectionChanged(const QString &newPath);
     void QNSOpenSavePanelDelegate_panelClosed(bool accepted);

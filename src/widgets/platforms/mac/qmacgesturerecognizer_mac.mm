@@ -159,7 +159,6 @@ void QMacPinchGestureRecognizer::reset(QGesture *gesture)
 
 ////////////////////////////////////////////////////////////////////////
 
-#if defined(QT_MAC_USE_COCOA)
 
 QMacPanGestureRecognizer::QMacPanGestureRecognizer() : _panCanceled(true)
 {
@@ -265,7 +264,6 @@ void QMacPanGestureRecognizer::reset(QGesture *gesture)
     g->setAcceleration(qreal(1));
     QGestureRecognizer::reset(gesture);
 }
-#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
 

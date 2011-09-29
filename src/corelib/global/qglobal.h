@@ -298,10 +298,6 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_WS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
-#error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
-#endif
-
 #if defined(Q_OS_MSDOS) || defined(Q_OS_OS2) || defined(Q_OS_WIN)
 #  undef Q_OS_UNIX
 #elif !defined(Q_OS_UNIX)
@@ -2740,7 +2736,6 @@ QT_LICENSED_MODULE(Sensors)
 #endif
 
 #if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
-    && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
     && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
     && !(defined(Q_WS_QPA))
 #  define QT_NO_RAWFONT

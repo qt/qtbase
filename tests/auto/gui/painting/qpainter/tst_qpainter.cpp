@@ -223,7 +223,7 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_OS_MAC)
     void drawText_subPixelPositionsInRaster_qtbug5053();
 #endif
 
@@ -4528,11 +4528,11 @@ void tst_QPainter::clipBoundingRect()
 
 }
 
-// Only Mac/Cocoa supports sub pixel positions in raster engine currently
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+//Only Mac/Cocoa supports sub pixel positions in raster engine currently
+#ifdef Q_OS_MAC
 void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
-    QFontMetricsF fm(qApp->font());
+	QFontMetricsF fm(qApp->font());
 
     QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
     baseLine.fill(Qt::white);

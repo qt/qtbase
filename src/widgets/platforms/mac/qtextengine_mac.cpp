@@ -566,11 +566,7 @@ void QTextEngine::shapeTextMac(int item) const
         return;
     }
     
-#ifndef QT_MAC_USE_COCOA
-    QFontEngineMacMulti *fe = static_cast<QFontEngineMacMulti *>(font);
-#else
     QCoreTextFontEngineMulti *fe = static_cast<QCoreTextFontEngineMulti *>(font);
-#endif
     QTextEngine::ShaperFlags flags;
     if (si.analysis.bidiLevel % 2)
         flags |= RightToLeft;

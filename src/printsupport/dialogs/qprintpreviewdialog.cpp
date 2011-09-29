@@ -208,9 +208,6 @@ public:
     QActionGroup *printerGroup;
     QAction *printAction;
     QAction *pageSetupAction;
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-    QAction *closeAction;
-#endif
 
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
@@ -304,9 +301,6 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     toolbar->addSeparator();
     toolbar->addAction(pageSetupAction);
     toolbar->addAction(printAction);
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-    toolbar->addAction(closeAction);
-#endif
 
     // Cannot use the actions' triggered signal here, since it doesn't autorepeat
     QToolButton *zoomInButton = static_cast<QToolButton *>(toolbar->widgetForAction(zoomInAction));
@@ -426,10 +420,6 @@ void QPrintPreviewDialogPrivate::setupActions()
     qt_setupActionIcon(pageSetupAction, QLatin1String("page-setup"));
     QObject::connect(printAction, SIGNAL(triggered(bool)), q, SLOT(_q_print()));
     QObject::connect(pageSetupAction, SIGNAL(triggered(bool)), q, SLOT(_q_pageSetup()));
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-    closeAction = printerGroup->addAction(QCoreApplication::translate("QPrintPreviewDialog", "Close"));
-    QObject::connect(closeAction, SIGNAL(triggered(bool)), q, SLOT(reject()));
-#endif
 
     // Initial state:
     fitPageAction->setChecked(true);

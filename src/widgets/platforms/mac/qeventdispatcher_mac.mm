@@ -110,11 +110,7 @@ extern bool qt_mac_is_macsheet(const QWidget *); //qwidget_mac.cpp
 
 static inline CFRunLoopRef mainRunLoop()
 {
-#ifndef QT_MAC_USE_COCOA
-    return reinterpret_cast<CFRunLoopRef>(const_cast<void *>(GetCFRunLoopFromEventLoop(GetMainEventLoop())));
-#else
     return CFRunLoopGetMain();
-#endif
 }
 
 /*****************************************************************************
@@ -453,20 +449,13 @@ bool QEventDispatcherMac::hasPendingEvents()
 
 static bool qt_mac_send_event(QEventLoop::ProcessEventsFlags, OSEventRef event, OSWindowRef pt)
 {
-#ifndef QT_MAC_USE_COCOA
-    if(pt && SendEventToWindow(event, pt) != eventNotHandledErr)
-        return true;
-    return !SendEventToEventTarget(event, GetEventDispatcherTarget());
-#else // QT_MAC_USE_COCOA
     if (pt)
         [pt sendEvent:event];
     else
         [NSApp sendEvent:event];
     return true;
-#endif
 }
 
-#ifdef QT_MAC_USE_COCOA
 static bool IsMouseOrKeyEvent( NSEvent* event )
 {
     bool    result    = false;
@@ -510,13 +499,9 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
     }
     return result;
 }
-#endif
 
 static inline void qt_mac_waitForMoreEvents()
 {
-#ifndef QT_MAC_USE_COCOA
-    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut) ;
-#else
     // If no event exist in the cocoa event que, wait
     // (and free up cpu time) until at least one event occur.
     // This implementation is a bit on the edge, but seems to
@@ -527,10 +512,8 @@ static inline void qt_mac_waitForMoreEvents()
         dequeue:YES];
     if (event)
         [NSApp postEvent:event atStart:YES];
-#endif
 }
 
-#ifdef QT_MAC_USE_COCOA
 static inline void qt_mac_waitForMoreModalSessionEvents()
 {
     // If no event exist in the cocoa event que, wait
@@ -544,17 +527,14 @@ static inline void qt_mac_waitForMoreModalSessionEvents()
     if (event)
         [NSApp postEvent:event atStart:YES];
 }
-#endif
 
 bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherMac);
     d->interrupt = false;
 
-#ifdef QT_MAC_USE_COCOA
     bool interruptLater = false;
     QtMacInterruptDispatcherHelp::cancelInterruptLater();
-#endif
 
     // In case we end up recursing while we now process events, make sure
     // that we send remaining posted Qt events before this call returns:
@@ -567,7 +547,6 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         if (d->interrupt)
             break;
 
-#ifdef QT_MAC_USE_COCOA
         QMacCocoaAutoReleasePool pool;
         NSEvent* event = 0;
 
@@ -685,40 +664,6 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
             // disturb the 'wait for more events' below (as deleteLater will post an event):
             interruptLater = true;
         }
-#else
-        do {
-            EventRef event;
-            if (!(flags & QEventLoop::ExcludeUserInputEvents)
-                    && !d->queuedUserInputEvents.isEmpty()) {
-                // process a pending user input event
-                event = static_cast<EventRef>(d->queuedUserInputEvents.takeFirst());
-            } else {
-                OSStatus err = ReceiveNextEvent(0,0, kEventDurationNoWait, true, &event);
-                if(err != noErr)
-                    continue;
-                // else
-                if (flags & QEventLoop::ExcludeUserInputEvents) {
-                    UInt32 ekind = GetEventKind(event),
-                           eclass = GetEventClass(event);
-                    switch(eclass) {
-                        case kEventClassQt:
-                            if(ekind != kEventQtRequestContext)
-                                break;
-                            // fall through
-                        case kEventClassMouse:
-                        case kEventClassKeyboard:
-                            d->queuedUserInputEvents.append(event);
-                            continue;
-                    }
-                }
-            }
-
-            if (!filterEvent(&event) && qt_mac_send_event(flags, event, 0))
-                retVal = true;
-            ReleaseEvent(event);
-        } while(!d->interrupt && GetNumEventsInQueue(GetMainEventQueue()) > 0);
-
-#endif
 
         bool canWait = (d->threadData->canWait
                 && !retVal
@@ -744,10 +689,8 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
     if (d->interrupt)
         interrupt();
 
-#ifdef QT_MAC_USE_COCOA
     if (interruptLater)
         QtMacInterruptDispatcherHelp::interruptLater();
-#endif
 
     return retVal;
 }
@@ -779,7 +722,6 @@ MacTimerHash QEventDispatcherMacPrivate::macTimerHash;
 bool QEventDispatcherMacPrivate::blockSendPostedEvents = false;
 bool QEventDispatcherMacPrivate::interrupt = false;
 
-#ifdef QT_MAC_USE_COCOA
 QStack<QCocoaModalSessionInfo> QEventDispatcherMacPrivate::cocoaModalSessionStack;
 bool QEventDispatcherMacPrivate::currentExecIsNSAppRun = false;
 bool QEventDispatcherMacPrivate::nsAppRunCalledByQt = false;
@@ -973,7 +915,6 @@ void QEventDispatcherMacPrivate::endModalSession(QWidget *widget)
     }
 }
 
-#endif
 
 QEventDispatcherMacPrivate::QEventDispatcherMacPrivate()
 {
@@ -1043,13 +984,10 @@ inline static void processPostedEvents(QEventDispatcherMacPrivate *const d, cons
         return;
     }
 
-#ifdef QT_MAC_USE_COCOA
     if (d->cleanupModalSessionsNeeded)
         d->cleanupModalSessions();
-#endif
 
     if (d->interrupt) {
-#ifdef QT_MAC_USE_COCOA
         if (d->currentExecIsNSAppRun) {
             // The event dispatcher has been interrupted. But since
             // [NSApplication run] is running the event loop, we
@@ -1060,7 +998,6 @@ inline static void processPostedEvents(QEventDispatcherMacPrivate *const d, cons
             [NSApp stop:NSApp];
             d->cancelWaitForMoreEvents();
         }
-#endif
         return;
     }
 
@@ -1076,9 +1013,7 @@ void QEventDispatcherMacPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 {
     Q_UNUSED(ref);
     Q_UNUSED(activity);
-#ifdef QT_MAC_USE_COCOA
     QApplicationPrivate::qt_initAfterNSAppStarted();
-#endif
     processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
 }
 
@@ -1087,7 +1022,6 @@ void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
     processPostedEvents(static_cast<QEventDispatcherMacPrivate *>(info), blockSendPostedEvents);
 }
 
-#ifdef QT_MAC_USE_COCOA
 void QEventDispatcherMacPrivate::cancelWaitForMoreEvents()
 {
     // In case the event dispatcher is waiting for more
@@ -1097,7 +1031,6 @@ void QEventDispatcherMacPrivate::cancelWaitForMoreEvents()
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
         subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];
 }
-#endif
 
 void QEventDispatcherMac::interrupt()
 {
@@ -1105,9 +1038,6 @@ void QEventDispatcherMac::interrupt()
     d->interrupt = true;
     wakeUp();
 
-#ifndef QT_MAC_USE_COCOA
-    CFRunLoopStop(mainRunLoop());
-#else
     // We do nothing more here than setting d->interrupt = true, and
     // poke the event loop if it is sleeping. Actually stopping
     // NSApp, or the current modal session, is done inside the send
@@ -1116,7 +1046,6 @@ void QEventDispatcherMac::interrupt()
     // the last event loop recursion, cocoa will just drop pending posted
     // events on the floor before we get a chance to reestablish a new session.
     d->cancelWaitForMoreEvents();
-#endif
 }
 
 QEventDispatcherMac::~QEventDispatcherMac()
@@ -1156,7 +1085,6 @@ QEventDispatcherMac::~QEventDispatcherMac()
     CFRelease(d->firstTimeObserver);
 }
 
-#ifdef QT_MAC_USE_COCOA
 
 QtMacInterruptDispatcherHelp* QtMacInterruptDispatcherHelp::instance = 0;
 
@@ -1194,7 +1122,6 @@ void QtMacInterruptDispatcherHelp::interruptLater()
     instance = new QtMacInterruptDispatcherHelp;
 }
 
-#endif
 
 QT_END_NAMESPACE
 

@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #import "private/qcocoawindowdelegate_mac_p.h"
-#ifdef QT_MAC_USE_COCOA
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -436,4 +435,3 @@ static void cleanupCocoaWindowDelegate()
 }
 
 @end
-#endif// QT_MAC_USE_COCOA

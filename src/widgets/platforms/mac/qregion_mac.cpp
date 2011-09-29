@@ -47,152 +47,6 @@ QT_BEGIN_NAMESPACE
 
 QRegion::QRegionData QRegion::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1), 0 };
 
-#if defined(Q_WS_MAC32) && !defined(QT_MAC_USE_COCOA)
-#define RGN_CACHE_SIZE 200
-#ifdef RGN_CACHE_SIZE
-static bool rgncache_init = false;
-static int rgncache_used;
-static RgnHandle rgncache[RGN_CACHE_SIZE];
-static void qt_mac_cleanup_rgncache()
-{
-    rgncache_init = false;
-    for(int i = 0; i < RGN_CACHE_SIZE; ++i) {
-        if(rgncache[i]) {
-            --rgncache_used;
-            DisposeRgn(rgncache[i]);
-            rgncache[i] = 0;
-        }
-    }
-}
-#endif
-
-Q_WIDGETS_EXPORT RgnHandle qt_mac_get_rgn()
-{
-#ifdef RGN_CACHE_SIZE
-    if(!rgncache_init) {
-        rgncache_used = 0;
-        rgncache_init = true;
-        for(int i = 0; i < RGN_CACHE_SIZE; ++i)
-            rgncache[i] = 0;
-        qAddPostRoutine(qt_mac_cleanup_rgncache);
-    } else if(rgncache_used) {
-        for(int i = 0; i < RGN_CACHE_SIZE; ++i) {
-            if(rgncache[i]) {
-                RgnHandle ret = rgncache[i];
-                SetEmptyRgn(ret);
-                rgncache[i] = 0;
-                --rgncache_used;
-                return ret;
-            }
-        }
-    }
-#endif
-    return NewRgn();
-}
-
-Q_WIDGETS_EXPORT void qt_mac_dispose_rgn(RgnHandle r)
-{
-#ifdef RGN_CACHE_SIZE
-    if(rgncache_init && rgncache_used < RGN_CACHE_SIZE) {
-        for(int i = 0; i < RGN_CACHE_SIZE; ++i) {
-            if(!rgncache[i]) {
-                ++rgncache_used;
-                rgncache[i] = r;
-                return;
-            }
-        }
-    }
-#endif
-    DisposeRgn(r);
-}
-
-static OSStatus qt_mac_get_rgn_rect(UInt16 msg, RgnHandle, const Rect *rect, void *reg)
-{
-    if(msg == kQDRegionToRectsMsgParse) {
-        QRect rct(rect->left, rect->top, (rect->right - rect->left), (rect->bottom - rect->top));
-        if(!rct.isEmpty())
-            *((QRegion *)reg) += rct;
-    }
-    return noErr;
-}
-
-Q_WIDGETS_EXPORT QRegion qt_mac_convert_mac_region(RgnHandle rgn)
-{
-    return QRegion::fromQDRgn(rgn);
-}
-
-QRegion QRegion::fromQDRgn(RgnHandle rgn)
-{
-    QRegion ret;
-    ret.detach();
-    OSStatus oss = QDRegionToRects(rgn, kQDParseRegionFromTopLeft, qt_mac_get_rgn_rect, (void *)&ret);
-    if(oss != noErr)
-        return QRegion();
-    return ret;
-}
-
-/*!
-    \internal
-     Create's a RegionHandle, it's the caller's responsibility to release.
-*/
-RgnHandle QRegion::toQDRgn() const
-{
-    RgnHandle rgnHandle = qt_mac_get_rgn();
-    if(d->qt_rgn && d->qt_rgn->numRects) {
-        RgnHandle tmp_rgn = qt_mac_get_rgn();
-        int n = d->qt_rgn->numRects;
-        const QRect *qt_r = (n == 1) ? &d->qt_rgn->extents : d->qt_rgn->rects.constData();
-        while (n--) {
-            SetRectRgn(tmp_rgn,
-                       qMax(SHRT_MIN, qt_r->x()),
-                       qMax(SHRT_MIN, qt_r->y()),
-                       qMin(SHRT_MAX, qt_r->right() + 1),
-                       qMin(SHRT_MAX, qt_r->bottom() + 1));
-            UnionRgn(rgnHandle, tmp_rgn, rgnHandle);
-            ++qt_r;
-        }
-        qt_mac_dispose_rgn(tmp_rgn);
-    }
-    return rgnHandle;
-}
-
-/*!
-    \internal
-     Create's a RegionHandle, it's the caller's responsibility to release.
-     Returns 0 if the QRegion overflows.
-*/
-RgnHandle QRegion::toQDRgnForUpdate_sys() const
-{
-    RgnHandle rgnHandle = qt_mac_get_rgn();
-    if(d->qt_rgn && d->qt_rgn->numRects) {
-        RgnHandle tmp_rgn = qt_mac_get_rgn();
-        int n = d->qt_rgn->numRects;
-        const QRect *qt_r = (n == 1) ? &d->qt_rgn->extents : d->qt_rgn->rects.constData();
-        while (n--) {
-
-            // detect overflow. Tested for use with HIViewSetNeedsDisplayInRegion
-            // in QWidgetPrivate::update_sys().
-            enum { HIViewSetNeedsDisplayInRegionOverflow = 10000 }; // empirically determined conservative value
-            if (qt_r->right() > HIViewSetNeedsDisplayInRegionOverflow || qt_r->bottom() > HIViewSetNeedsDisplayInRegionOverflow) {
-                qt_mac_dispose_rgn(tmp_rgn);
-                qt_mac_dispose_rgn(rgnHandle);
-                return 0;
-            }
-
-            SetRectRgn(tmp_rgn,
-                       qMax(SHRT_MIN, qt_r->x()),
-                       qMax(SHRT_MIN, qt_r->y()),
-                       qMin(SHRT_MAX, qt_r->right() + 1),
-                       qMin(SHRT_MAX, qt_r->bottom() + 1));
-            UnionRgn(rgnHandle, tmp_rgn, rgnHandle);
-            ++qt_r;
-        }
-        qt_mac_dispose_rgn(tmp_rgn);
-    }
-    return rgnHandle;
-}
-
-#endif
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 OSStatus QRegion::shape2QRegionHelper(int inMessage, HIShapeRef,
@@ -239,18 +93,10 @@ HIMutableShapeRef QRegion::toHIMutableShape() const
     } else
 #endif
     {
-#ifndef QT_MAC_USE_COCOA
-        QCFType<HIShapeRef> qdShape = HIShapeCreateWithQDRgn(QMacSmartQuickDrawRegion(toQDRgn()));
-        HIShapeUnion(qdShape, shape, shape);
-#endif
     }
     return shape;
 }
 
-#if !defined(Q_WS_MAC64) && !defined(QT_MAC_USE_COCOA)
-typedef OSStatus (*PtrHIShapeGetAsQDRgn)(HIShapeRef, RgnHandle);
-static PtrHIShapeGetAsQDRgn ptrHIShapeGetAsQDRgn = 0;
-#endif
 
 
 QRegion QRegion::fromHIShapeRef(HIShapeRef shape)
@@ -268,17 +114,6 @@ QRegion QRegion::fromHIShapeRef(HIShapeRef shape)
 # endif
 #endif
     {
-#if !defined(Q_WS_MAC64) && !defined(QT_MAC_USE_COCOA)
-        if (ptrHIShapeGetAsQDRgn == 0) {
-            QLibrary library(QLatin1String("/System/Library/Frameworks/Carbon.framework/Carbon"));
-            library.setLoadHints(QLibrary::ExportExternalSymbolsHint);
-                    ptrHIShapeGetAsQDRgn = reinterpret_cast<PtrHIShapeGetAsQDRgn>(library.resolve("HIShapeGetAsQDRgn"));
-        }
-        RgnHandle rgn = qt_mac_get_rgn();
-        ptrHIShapeGetAsQDRgn(shape, rgn);
-        returnRegion = QRegion::fromQDRgn(rgn);
-        qt_mac_dispose_rgn(rgn);
-#endif
     }
     return returnRegion;
 }

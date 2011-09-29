@@ -186,18 +186,8 @@ static bool qt_mac_collapse_on_dblclick = true;
 extern int qt_antialiasing_threshold; // from qapplication.cpp
 QWidget * qt_button_down;                // widget got last button-down
 QPointer<QWidget> qt_last_mouse_receiver;
-#ifndef QT_MAC_USE_COCOA
-static bool qt_button_down_in_content; // whether the button_down was in the content area.
-static bool qt_mac_previous_press_in_popup_mode = false;
-static bool qt_mac_no_click_through_mode = false;
-static int tablet_button_state = 0;
-#endif
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // mouse/keyboard grabbing
-#endif
-#ifndef QT_MAC_USE_COCOA
-static EventHandlerRef app_proc_handler = 0;
-static EventHandlerUPP app_proc_handlerUPP = 0;
 #endif
 static AEEventHandlerUPP app_proc_ae_handlerUPP = NULL;
 static EventHandlerRef tablet_proximity_handler = 0;
@@ -356,74 +346,20 @@ static void qt_mac_debug_palette(const QPalette &pal, const QPalette &pal2, cons
 #endif
 
 //raise a notification
-#ifndef QT_MAC_USE_COCOA
-static NMRec qt_mac_notification = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-#endif
 void qt_mac_send_notification()
 {
-#ifndef QT_MAC_USE_COCOA
-    //send it
-    qt_mac_notification.nmMark = 1; //non-zero magic number
-    qt_mac_notification.qType = nmType;
-    NMInstall(&qt_mac_notification);
-#else
     QMacCocoaAutoReleasePool pool;
     [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest];
-#endif
 }
 
 void qt_mac_cancel_notification()
 {
-#ifndef QT_MAC_USE_COCOA
-    NMRemove(&qt_mac_notification);
-#else
     QMacCocoaAutoReleasePool pool;
     [[NSApplication sharedApplication] cancelUserAttentionRequest:NSInformationalRequest];
-#endif
 }
-
-#ifndef QT_MAC_USE_COCOA
-//find widget (and part) at a given point
-static short qt_mac_window_at(int x, int y, QWidget **w=0)
-{
-    Point p;
-    p.h = x;
-    p.v = y;
-    OSWindowRef wp;
-    WindowPartCode wpc;
-    OSStatus err = FindWindowOfClass(&p, kAllWindowClasses, &wp, &wpc);
-    if(err != noErr) {
-        if(w)
-            (*w) = 0;
-        return wpc;
-    }
-    if(w) {
-        if(wp) {
-            *w = qt_mac_find_window(wp);
-#if 0
-            if(!*w)
-                qWarning("QApplication: qt_mac_window_at: Couldn't find %d",(int)wp);
-#endif
-        } else {
-            *w = 0;
-        }
-    }
-    return wpc;
-}
-
-#endif
 
 void qt_mac_set_app_icon(const QPixmap &pixmap)
 {
-#ifndef QT_MAC_USE_COCOA
-    if(pixmap.isNull()) {
-        RestoreApplicationDockTileImage();
-    } else {
-        CGImageRef img = (CGImageRef)pixmap.macCGHandle();
-        SetApplicationDockTileImage(img);
-        CGImageRelease(img);
-    }
-#else
     QMacCocoaAutoReleasePool pool;
     NSImage *image = NULL;
     if (pixmap.isNull()) {
@@ -435,7 +371,6 @@ void qt_mac_set_app_icon(const QPixmap &pixmap)
 
     [NSApp setApplicationIconImage:image];
     [image release];
-#endif
 }
 
 Q_GUI_EXPORT void qt_mac_set_press_and_hold_context(bool b)
@@ -680,49 +615,13 @@ static void qt_mac_event_release(EventRef &event)
     ReleaseEvent(event);
     event = 0;
 }
-#ifndef QT_MAC_USE_COCOA
-static void qt_mac_event_release(QWidget *w, EventRef &event)
-{
-    if (event) {
-        QWidget *widget = 0;
-        if (GetEventParameter(event, kEventParamQWidget, typeQWidget, 0, sizeof(widget), 0, &widget) == noErr
-           && w == widget) {
-            if (IsEventInQueue(GetMainEventQueue(), event))
-                RemoveEventFromQueue(GetMainEventQueue(), event);
-            qt_mac_event_release(event);
-        }
-    }
-}
-
-static bool qt_mac_event_remove(EventRef &event)
-{
-    if (event) {
-        if (IsEventInQueue(GetMainEventQueue(), event))
-            RemoveEventFromQueue(GetMainEventQueue(), event);
-        qt_mac_event_release(event);
-        return true;
-    }
-    return false;
-}
-#endif
 
 /* sheets */
-#ifndef QT_MAC_USE_COCOA
-static EventRef request_showsheet_pending = 0;
-#endif
 void qt_event_request_showsheet(QWidget *w)
 {
     Q_ASSERT(qt_mac_is_macsheet(w));
-#ifdef QT_MAC_USE_COCOA
     [NSApp beginSheet:qt_mac_window_for(w) modalForWindow:qt_mac_window_for(w->parentWidget())
         modalDelegate:nil didEndSelector:nil contextInfo:0];
-#else
-    qt_mac_event_remove(request_showsheet_pending);
-    CreateEvent(0, kEventClassQt, kEventQtRequestShowSheet, GetCurrentEventTime(),
-                kEventAttributeUserEvent, &request_showsheet_pending);
-    SetEventParameter(request_showsheet_pending, kEventParamQWidget, typeQWidget, sizeof(w), &w);
-    PostEventToQueue(GetMainEventQueue(), request_showsheet_pending, kEventPriorityStandard);
-#endif
 }
 
 static void qt_post_window_change_event(QWidget *widget)
@@ -770,37 +669,7 @@ void qt_mac_send_posted_gl_updates(QWidget *widget)
 */
 static void qt_mac_update_intersected_gl_widgets(QWidget *widget)
 {
-#ifndef QT_MAC_USE_COCOA
-    QList<QWidgetPrivate::GlWidgetInfo> &glWidgets = qt_widget_private(widget->window())->glWidgets;
-    if (glWidgets.isEmpty())
-        return;
-
-    // Exit if the window has not been created yet (mapToGlobal/size will force create it)
-    if (widget->testAttribute(Qt::WA_WState_Created) == false || HIViewGetWindow(qt_mac_nativeview_for(widget)) == 0)
-        return;
-
-    const QRect globalWidgetRect = QRect(widget->mapToGlobal(QPoint(0, 0)), widget->size());
-
-    QList<QWidgetPrivate::GlWidgetInfo>::iterator end = glWidgets.end();
-    QList<QWidgetPrivate::GlWidgetInfo>::iterator it = glWidgets.begin();
-
-    for (;it != end; ++it){
-        QWidget *glWidget = it->widget;
-        const QRect globalGlWidgetRect = QRect(glWidget->mapToGlobal(QPoint(0, 0)), glWidget->size());
-        if (globalWidgetRect.intersects(globalGlWidgetRect)) {
-            qt_post_window_change_event(glWidget);
-            it->lastUpdateWidget = widget;
-        } else if (it->lastUpdateWidget == widget) {
-            // Update the gl wigets that the widget intersected the last time around,
-            // and that we are not intersecting now. This prevents paint errors when the
-            // intersecting widget leaves a gl widget.
-            qt_post_window_change_event(glWidget);
-            it->lastUpdateWidget = 0;
-        }
-    }
-#else
     Q_UNUSED(widget);
-#endif
 }
 
 /*
@@ -888,46 +757,13 @@ void qt_event_request_activate(QWidget *w)
 
 
 /* menubars */
-#ifndef QT_MAC_USE_COCOA
-static EventRef request_menubarupdate_pending = 0;
-#endif
 void qt_event_request_menubarupdate()
 {
-#ifndef QT_MAC_USE_COCOA
-    if (request_menubarupdate_pending) {
-        if (IsEventInQueue(GetMainEventQueue(), request_menubarupdate_pending))
-            return;
-#ifdef DEBUG_DROPPED_EVENTS
-        qDebug("%s:%d Whoa, we dropped an event on the floor!", __FILE__, __LINE__);
-#endif
-    }
-
-    CreateEvent(0, kEventClassQt, kEventQtRequestMenubarUpdate, GetCurrentEventTime(),
-                kEventAttributeUserEvent, &request_menubarupdate_pending);
-    PostEventToQueue(GetMainEventQueue(), request_menubarupdate_pending, kEventPriorityHigh);
-#else
     // Just call this. The request has the benefit that we don't call this multiple times, but
     // we can optimize this.
     QMenuBar::macUpdateMenuBar();
-#endif
 }
 
-#ifndef QT_MAC_USE_COCOA
-//context menu
-static EventRef request_context_pending = 0;
-static void qt_event_request_context(QWidget *w=0, EventRef *where=0)
-{
-    if (!where)
-        where = &request_context_pending;
-    if (*where)
-        return;
-    CreateEvent(0, kEventClassQt, kEventQtRequestContext, GetCurrentEventTime(),
-                kEventAttributeUserEvent, where);
-    if (w)
-        SetEventParameter(*where, kEventParamQWidget, typeQWidget, sizeof(w), &w);
-    PostEventToQueue(GetMainEventQueue(), *where, kEventPriorityStandard);
-}
-#endif
 
 void QApplicationPrivate::createEventDispatcher()
 {
@@ -941,13 +777,6 @@ void QApplicationPrivate::createEventDispatcher()
 /* clipboard */
 void qt_event_send_clipboard_changed()
 {
-#ifndef QT_MAC_USE_COCOA
-    AppleEvent ae;
-    if (AECreateAppleEvent(kEventClassQt, typeAEClipboardChanged, 0, kAutoGenerateReturnID, kAnyTransactionID, &ae) != noErr)
-        qDebug("Can't happen!!");
-    AppleEvent reply;
-    AESend(&ae, &reply, kAENoReply, kAENormalPriority, kAEDefaultTimeout, 0, 0);
-#endif
 }
 
 /* app menu */
@@ -955,28 +784,16 @@ static QMenu *qt_mac_dock_menu = 0;
 Q_GUI_EXPORT void qt_mac_set_dock_menu(QMenu *menu)
 {
     qt_mac_dock_menu = menu;
-#ifdef QT_MAC_USE_COCOA
     [NSApp setDockMenu:menu->macMenu()];
-#else
-    SetApplicationDockTileMenu(menu->macMenu());
-#endif
 }
 
 /* events that hold pointers to widgets, must be cleaned up like this */
 void qt_mac_event_release(QWidget *w)
 {
     if (w) {
-#ifndef QT_MAC_USE_COCOA
-        qt_mac_event_release(w, request_showsheet_pending);
-        qt_mac_event_release(w, request_context_pending);
-#endif
         if (w == qt_mac_dock_menu) {
             qt_mac_dock_menu = 0;
-#ifndef QT_MAC_USE_COCOA
-            SetApplicationDockTileMenu(0);
-#else
             [NSApp setDockMenu:0];
-#endif
         }
     }
 }
@@ -989,62 +806,6 @@ struct QMacAppleEventTypeSpec {
     { kCoreEventClass, kAEOpenDocuments },
     { kInternetEventClass, kAEGetURL },
 };
-
-#ifndef QT_MAC_USE_COCOA
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
-enum
-{
-    kEventMouseScroll                          = 11,
-    kEventParamMouseWheelSmoothVerticalDelta   = 'saxy',
-    kEventParamMouseWheelSmoothHorizontalDelta = 'saxx',
-};
-#endif
-
-/* watched events */
-static EventTypeSpec app_events[] = {
-    { kEventClassQt, kEventQtRequestWindowChange },
-    { kEventClassQt, kEventQtRequestShowSheet },
-    { kEventClassQt, kEventQtRequestContext },
-    { kEventClassQt, kEventQtRequestActivate },
-    { kEventClassQt, kEventQtRequestMenubarUpdate },
-
-    { kEventClassWindow, kEventWindowActivated },
-    { kEventClassWindow, kEventWindowDeactivated },
-
-    { kEventClassMouse, kEventMouseScroll },
-    { kEventClassMouse, kEventMouseWheelMoved },
-    { kEventClassMouse, kEventMouseDown },
-    { kEventClassMouse, kEventMouseUp },
-    { kEventClassMouse, kEventMouseDragged },
-    { kEventClassMouse, kEventMouseMoved },
-
-    { kEventClassTablet, kEventTabletProximity },
-
-    { kEventClassApplication, kEventAppActivated },
-    { kEventClassApplication, kEventAppDeactivated },
-    { kEventClassApplication, kEventAppAvailableWindowBoundsChanged },
-
-    //    { kEventClassTextInput, kEventTextInputUnicodeForKeyEvent },
-    { kEventClassKeyboard, kEventRawKeyModifiersChanged },
-    { kEventClassKeyboard, kEventRawKeyRepeat },
-    { kEventClassKeyboard, kEventRawKeyUp },
-    { kEventClassKeyboard, kEventRawKeyDown },
-
-    { kEventClassCommand, kEventCommandProcess },
-
-    { kEventClassAppleEvent, kEventAppleEvent },
-
-    { kAppearanceEventClass, kAEAppearanceChanged }
-};
-
-void qt_init_app_proc_handler()
-{
-    InstallEventHandler(GetApplicationEventTarget(), app_proc_handlerUPP,
-                        GetEventTypeCount(app_events), app_events, (void *)qApp,
-                        &app_proc_handler);
-}
-#endif // QT_MAC_USE_COCOA
 
 static void qt_init_tablet_proximity_handler()
 {
@@ -1075,12 +836,6 @@ QString QApplicationPrivate::appName() const
 
 void qt_release_app_proc_handler()
 {
-#ifndef QT_MAC_USE_COCOA
-    if (app_proc_handler) {
-        RemoveEventHandler(app_proc_handler);
-        app_proc_handler = 0;
-    }
-#endif
 }
 
 void qt_color_profile_changed(CFNotificationCenterRef, void *, CFStringRef, const void *,
@@ -1211,13 +966,6 @@ void qt_init(QApplicationPrivate *priv, int)
 
         if (QApplication::desktopSettingsAware())
             qt_mac_update_os_settings();
-#ifndef QT_MAC_USE_COCOA
-        if (!app_proc_handler) {
-            app_proc_handlerUPP = NewEventHandlerUPP(QApplicationPrivate::globalEventProcessor);
-            qt_init_app_proc_handler();
-        }
-
-#endif
         if (!app_proc_ae_handlerUPP && !QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i) {
@@ -1241,7 +989,6 @@ void qt_init(QApplicationPrivate *priv, int)
         QApplicationPrivate::qt_mac_apply_settings();
 
     // Cocoa application delegate
-#ifdef QT_MAC_USE_COCOA
     NSApplication *cocoaApp = [QNSApplication sharedApplication];
     qt_redirectNSApplicationSendEvent();
 
@@ -1266,7 +1013,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
     }
-#endif
     // Register for Carbon tablet proximity events on the event monitor target.
     // This means that we should receive proximity events even when we aren't the active application.
     if (!tablet_proximity_handler) {
@@ -1302,13 +1048,6 @@ void qt_cleanup()
     CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceProfilesNotification, 0);
     CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceProfileNotification, 0);
 
-#ifndef QT_MAC_USE_COCOA
-    qt_release_app_proc_handler();
-    if (app_proc_handlerUPP) {
-        DisposeEventHandlerUPP(app_proc_handlerUPP);
-        app_proc_handlerUPP = 0;
-    }
-#endif
     qt_release_apple_event_handler();
     qt_release_tablet_proximity_handler();
     if (tablet_proximity_UPP)
@@ -1360,12 +1099,7 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
-#ifdef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
-#else
-    if (qApp && qApp->activeWindow())
-        qt_mac_set_cursor(&qApp->d_func()->cursor_list.first());
-#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1374,24 +1108,12 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
-#ifdef QT_MAC_USE_COCOA
     qt_mac_update_cursor();
-#else
-    if (qApp && qApp->activeWindow()) {
-        const QCursor def(Qt::ArrowCursor);
-        qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first());
-    }
-#endif
 }
 #endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
-#ifndef QT_MAC_USE_COCOA
-    QWidget *widget;
-    qt_mac_window_at(p.x(), p.y(), &widget);
-    return widget;
-#else
     // Use a cache to avoid iterate through the whole list of windows for all
     // calls to to topLevelAt. We e.g. do this for each and every mouse
     // move since we need to find the widget under mouse:
@@ -1440,7 +1162,6 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
 
     topLevelAt_cache = 0;
     return 0;
-#endif
 }
 
 /*****************************************************************************
@@ -1452,8 +1173,6 @@ bool QApplicationPrivate::modalState()
     return app_do_modal;
 }
 
-#ifdef QT_MAC_USE_COCOA
-#endif
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
@@ -1474,10 +1193,8 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
     app_do_modal = true;
     qt_button_down = 0;
 
-#ifdef QT_MAC_USE_COCOA
     if (!qt_mac_is_macsheet(widget))
         QEventDispatcherMacPrivate::beginModalSession(widget);
-#endif
 }
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
@@ -1500,10 +1217,8 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
             dispatchEnterLeave(w, qt_last_mouse_receiver); // send synthetic enter event
             qt_last_mouse_receiver = w;
         }
-#ifdef QT_MAC_USE_COCOA
         if (!qt_mac_is_macsheet(widget))
             QEventDispatcherMacPrivate::endModalSession(widget);
-#endif
     }
 #ifdef DEBUG_MODAL_EVENTS
     else qDebug("Failure to remove %s::%s::%p -- %p", widget->metaObject()->className(), widget->objectName().toLocal8Bit().constData(), widget, qt_modal_stack);
@@ -1515,52 +1230,9 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 
 QWidget *QApplicationPrivate::tryModalHelper_sys(QWidget *top)
 {
-#ifndef QT_MAC_USE_COCOA
-    if(top && qt_mac_is_macsheet(top) && !IsWindowVisible(qt_mac_window_for(top))) {
-        if(OSWindowRef wp = GetFrontWindowOfClass(kSheetWindowClass, true)) {
-            if(QWidget *sheet = qt_mac_find_window(wp))
-                top = sheet;
-        }
-    }
-#endif
     return top;
 }
 
-#ifndef QT_MAC_USE_COCOA
-static bool qt_try_modal(QWidget *widget, EventRef event)
-{
-    QWidget * top = 0;
-
-    if (QApplicationPrivate::tryModalHelper(widget, &top))
-        return true;
-
-    // INVARIANT: widget is modally shaddowed within its
-    // window, and should therefore not handle the event.
-    // However, if the window is not active, the event
-    // might suggest that we should bring it to front:
-
-    bool block_event = false;
-
-    if (event) {
-        switch (GetEventClass(event)) {
-        case kEventClassMouse:
-        case kEventClassKeyboard:
-            block_event = true;
-            break;
-        }
-    }
-
-    QWidget *activeWidget = QApplication::activeWindow();
-    if ((!activeWidget || QApplicationPrivate::isBlockedByModal(activeWidget)) &&
-       top->isWindow() && block_event && !QApplicationPrivate::native_modal_dialog_active)
-        top->raise();
-
-#ifdef DEBUG_MODAL_EVENTS
-    qDebug("%s:%d -- final decision! (%s)", __FILE__, __LINE__, block_event ? "false" : "true");
-#endif
-    return !block_event;
-}
-#endif
 
 OSStatus QApplicationPrivate::tabletProximityCallback(EventHandlerCallRef, EventRef carbonEvent,
                                                       void *)
@@ -1581,910 +1253,12 @@ OSStatus QApplicationPrivate::tabletProximityCallback(EventHandlerCallRef, Event
 OSStatus
 QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event, void *data)
 {
-#ifndef QT_MAC_USE_COCOA
-    QApplication *app = (QApplication *)data;
-    QScopedLoopLevelCounter loopLevelCounter(app->d_func()->threadData);
-    long result;
-    if (app->filterEvent(&event, &result))
-        return result;
-    if(app->macEventFilter(er, event)) //someone else ate it
-        return noErr;
-    QPointer<QWidget> widget;
-
-    /*We assume all events are handled and in
-      the code below we set it to false when we know we didn't handle it, this
-      will let rogue events through (shouldn't really happen, but better safe
-      than sorry) */
-    bool handled_event=true;
-    UInt32 ekind = GetEventKind(event), eclass = GetEventClass(event);
-    switch(eclass)
-    {
-    case kEventClassQt:
-        if(ekind == kEventQtRequestShowSheet) {
-            request_showsheet_pending = 0;
-            QWidget *widget = 0;
-            GetEventParameter(event, kEventParamQWidget, typeQWidget, 0,
-                              sizeof(widget), 0, &widget);
-            if(widget) {
-                if (widget->macEvent(er, event))
-                    return noErr;
-                WindowPtr window = qt_mac_window_for(widget);
-                bool just_show = !qt_mac_is_macsheet(widget);
-                if(!just_show) {
-                    OSStatus err = ShowSheetWindow(window, qt_mac_window_for(widget->parentWidget()));
-                    if(err != noErr)
-                        qWarning("Qt: QWidget: Unable to show as sheet %s::%s [%ld]", widget->metaObject()->className(),
-                                 widget->objectName().toLocal8Bit().constData(), long(err));
-                    just_show = true;
-                }
-                if(just_show) //at least the window will be visible, but the sheet flag doesn't work sadly (probalby too many sheets)
-                    ShowHide(window, true);
-            }
-        } else if(ekind == kEventQtRequestWindowChange) {
-            qt_mac_event_release(request_window_change_pending);
-        } else if(ekind == kEventQtRequestMenubarUpdate) {
-            qt_mac_event_release(request_menubarupdate_pending);
-            QMenuBar::macUpdateMenuBar();
-        } else if(ekind == kEventQtRequestActivate) {
-            qt_mac_event_release(request_activate_pending.event);
-            if(request_activate_pending.widget) {
-                QWidget *tlw = request_activate_pending.widget->window();
-                if (tlw->macEvent(er, event))
-                    return noErr;
-                request_activate_pending.widget = 0;
-                tlw->activateWindow();
-                SelectWindow(qt_mac_window_for(tlw));
-            }
-        } else if(ekind == kEventQtRequestContext) {
-            bool send = false;
-            if ((send = (event == request_context_pending)))
-                qt_mac_event_release(request_context_pending);
-            if(send) {
-                //figure out which widget to send it to
-                QPoint where = QCursor::pos();
-                QWidget *widget = 0;
-                GetEventParameter(event, kEventParamQWidget, typeQWidget, 0,
-                                  sizeof(widget), 0, &widget);
-                if(!widget) {
-                    if(qt_button_down)
-                        widget = qt_button_down;
-                    else
-                        widget = QApplication::widgetAt(where.x(), where.y());
-                }
-                if(widget && !isBlockedByModal(widget)) {
-                    if (widget->macEvent(er, event))
-                        return noErr;
-                    QPoint plocal(widget->mapFromGlobal(where));
-                    const Qt::KeyboardModifiers keyboardModifiers = qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
-                    QContextMenuEvent qme(QContextMenuEvent::Mouse, plocal, where, keyboardModifiers);
-                    QApplication::sendEvent(widget, &qme);
-                    if(qme.isAccepted()) { //once this happens the events before are pitched
-                        qt_button_down = 0;
-                        qt_mac_dblclick.last_widget = 0;
-                    }
-                } else {
-                    handled_event = false;
-                }
-            }
-        } else {
-            handled_event = false;
-        }
-        break;
-    case kEventClassTablet:
-        switch (ekind) {
-        case kEventTabletProximity:
-            // Get the current point of the device and its unique ID.
-            ::TabletProximityRec proxRec;
-            GetEventParameter(event, kEventParamTabletProximityRec, typeTabletProximityRec, 0,
-                              sizeof(proxRec), 0, &proxRec);
-            qt_dispatchTabletProximityEvent(proxRec);
-        }
-        break;
-    case kEventClassMouse:
-    {
-        static const int kEventParamQAppSeenMouseEvent = 'QASM';
-        // Check if we've seen the event, if we have we shouldn't process
-        // it again as it may lead to spurious "double events"
-        bool seenEvent;
-        if (GetEventParameter(event, kEventParamQAppSeenMouseEvent,
-                              typeBoolean, 0, sizeof(bool), 0, &seenEvent) == noErr) {
-            if (seenEvent)
-                return eventNotHandledErr;
-        }
-        seenEvent = true;
-        SetEventParameter(event, kEventParamQAppSeenMouseEvent, typeBoolean,
-                          sizeof(bool), &seenEvent);
-
-        Point where;
-        bool inNonClientArea = false;
-        GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, 0,
-                          sizeof(where), 0, &where);
-#if defined(DEBUG_MOUSE_MAPS)
-        const char *edesc = 0;
-        switch(ekind) {
-        case kEventMouseDown: edesc = "MouseButtonPress"; break;
-        case kEventMouseUp: edesc = "MouseButtonRelease"; break;
-        case kEventMouseDragged: case kEventMouseMoved: edesc = "MouseMove"; break;
-        case kEventMouseScroll: edesc = "MouseWheelScroll"; break;
-        case kEventMouseWheelMoved: edesc = "MouseWheelMove"; break;
-        }
-        if(ekind == kEventMouseDown || ekind == kEventMouseUp)
-            qDebug("Handling mouse: %s", edesc);
-#endif
-        QEvent::Type etype = QEvent::None;
-        Qt::KeyboardModifiers modifiers;
-        {
-            UInt32 mac_modifiers = 0;
-            GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, 0,
-                              sizeof(mac_modifiers), 0, &mac_modifiers);
-            modifiers = qt_mac_get_modifiers(mac_modifiers);
-        }
-        Qt::MouseButtons buttons;
-        {
-            UInt32 mac_buttons = 0;
-            GetEventParameter(event, kEventParamMouseChord, typeUInt32, 0,
-                              sizeof(mac_buttons), 0, &mac_buttons);
-            if (ekind != kEventMouseWheelMoved)
-                buttons = qt_mac_get_buttons(mac_buttons);
-            else
-                buttons = QApplication::mouseButtons();
-        }
-
-        int wheel_deltaX = 0;
-        int wheel_deltaY = 0;
-        static EventRef compatibilityEvent = 0;
-
-        if (ekind == kEventMouseScroll) {
-            // kEventMouseScroll is the new way of dealing with mouse wheel
-            // events (kEventMouseWheelMoved was the old). kEventMouseScroll results
-            // in much smoother scrolling when using Mighty Mouse or TrackPad. For
-            // compatibility with older applications, carbon will also send us
-            // kEventMouseWheelMoved events if we dont eat this event
-            // (actually two events; one for horizontal and one for vertical).
-            // As a results of this, and to make sure we dont't receive duplicate events,
-            // we try to detect when this happend by checking the 'compatibilityEvent'.
-            // Since delta is delivered as pixels rather than degrees, we need to
-            // convert from pixels to degrees in a sensible manner.
-            // It looks like 1/4 degrees per pixel behaves most native.
-            // (NB: Qt expects the unit for delta to be 8 per degree):
-            const int pixelsToDegrees = 2;
-            SInt32 mdelt = 0;
-            GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
-                              sizeof(mdelt), 0, &mdelt);
-            wheel_deltaX = mdelt * pixelsToDegrees;
-            mdelt = 0;
-            GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
-                              sizeof(mdelt), 0, &mdelt);
-            wheel_deltaY = mdelt * pixelsToDegrees;
-            GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
-                              sizeof(compatibilityEvent), 0, &compatibilityEvent);
-        } else if (ekind == kEventMouseWheelMoved) {
-            if (event != compatibilityEvent) {
-                compatibilityEvent = 0;
-                int mdelt = 0;
-                GetEventParameter(event, kEventParamMouseWheelDelta, typeSInt32, 0,
-                        sizeof(mdelt), 0, &mdelt);
-                EventMouseWheelAxis axis;
-                GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, 0,
-                        sizeof(axis), 0, &axis);
-
-                // Remove acceleration, and use either -120 or 120 as delta:
-                if (axis == kEventMouseWheelAxisX)
-                    wheel_deltaX = qBound(-120, int(mdelt * 10000), 120);
-                else
-                    wheel_deltaY = qBound(-120, int(mdelt * 10000), 120);
-            }
-        }
-
-        Qt::MouseButton button = Qt::NoButton;
-        if(ekind == kEventMouseDown || ekind == kEventMouseUp) {
-            EventMouseButton mac_button = 0;
-            GetEventParameter(event, kEventParamMouseButton, typeMouseButton, 0,
-                              sizeof(mac_button), 0, &mac_button);
-            button = qt_mac_get_button(mac_button);
-        }
-
-        switch(ekind) {
-        case kEventMouseDown:
-            etype = QEvent::MouseButtonPress;
-            break;
-        case kEventMouseUp:
-            etype = QEvent::MouseButtonRelease;
-            break;
-        case kEventMouseDragged:
-        case kEventMouseMoved:
-            etype = QEvent::MouseMove;
-            break;
-        }
-
-        const bool inPopupMode = app->d_func()->inPopupMode();
-
-        // A click outside a popup closes the popup. Make sure
-        // that no events are generated for the release part of that click.
-        // (The press goes to the popup and closes it.)
-        if (etype == QEvent::MouseButtonPress) {
-            qt_mac_previous_press_in_popup_mode = inPopupMode;
-        } else if (qt_mac_previous_press_in_popup_mode && !inPopupMode && etype == QEvent::MouseButtonRelease) {
-            qt_mac_previous_press_in_popup_mode = false;
-            handled_event = true;
-#if defined(DEBUG_MOUSE_MAPS)
-            qDebug("Bail out early due to qt_mac_previous_press_in_popup_mode");
-#endif
-            break; // break from case kEventClassMouse
-        }
-
-        //figure out which widget to send it to
-        if(inPopupMode) {
-            QWidget *popup = qApp->activePopupWidget();
-            if (qt_button_down && qt_button_down->window() == popup) {
-                widget = qt_button_down;
-            } else {
-                QPoint pos = popup->mapFromGlobal(QPoint(where.h, where.v));
-                widget = popup->childAt(pos);
-            }
-            if(!widget)
-                widget = popup;
-        } else {
-            if(mac_mouse_grabber) {
-                widget = mac_mouse_grabber;
-            } else if (qt_button_down) {
-                widget = qt_button_down;
-            } else {
-                {
-                    WindowPtr window = 0;
-                    if(GetEventParameter(event, kEventParamWindowRef, typeWindowRef, 0,
-                                         sizeof(window), 0, &window) != noErr)
-                        FindWindowOfClass(&where, kAllWindowClasses, &window, 0);
-                    if(window) {
-                        HIViewRef hiview;
-                        if(HIViewGetViewForMouseEvent(HIViewGetRoot(window), event, &hiview) == noErr) {
-                            widget = QWidget::find((WId)hiview);
-                            if (widget) {
-                                // Make sure we didn't pass over a widget with a "fake hole" in it.
-                                QWidget *otherWidget = QApplication::widgetAt(where.h, where.v);
-                                if (otherWidget && otherWidget->testAttribute(Qt::WA_MouseNoMask))
-                                    widget = otherWidget;
-                            }
-                        }
-                    }
-                }
-                if(!widget) //fallback
-                    widget = QApplication::widgetAt(where.h, where.v);
-                if(ekind == kEventMouseUp && widget) {
-                    short part = qt_mac_window_at(where.h, where.v);
-                    if(part == inDrag) {
-                        UInt32 count = 0;
-                        GetEventParameter(event, kEventParamClickCount, typeUInt32, NULL,
-                                          sizeof(count), NULL, &count);
-                        if(count == 2 && qt_mac_collapse_on_dblclick) {
-                            if (widget->macEvent(er, event))
-                                return noErr;
-                            widget->setWindowState(widget->windowState() | Qt::WindowMinimized);
-                            //we send a hide to be like X11/Windows
-                            QEvent e(QEvent::Hide);
-                            QApplication::sendSpontaneousEvent(widget, &e);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (widget && widget->macEvent(er, event))
-            return noErr;
-        WindowPartCode wpc = qt_mac_window_at(where.h, where.v, 0);
-        if (wpc == inProxyIcon && modifiers == Qt::ControlModifier && buttons != Qt::NoButton) {
-            QIconDragEvent e;
-            QApplication::sendSpontaneousEvent(widget, &e);
-            if (e.isAccepted()) {
-                return noErr; // IconDrag ate it.
-            }
-        }
-        if (inPopupMode == false
-                && (qt_button_down == 0 || qt_button_down_in_content == false)
-                && (wpc != inContent && wpc != inStructure)) {
-            inNonClientArea = true;
-            switch (etype) {
-            case QEvent::MouseButtonPress: {
-                UInt32 count = 0;
-                GetEventParameter(event, kEventParamClickCount, typeUInt32, 0,
-                                      sizeof(count), 0, &count);
-                if(count % 2 || count == 0) {
-                    etype = QEvent::NonClientAreaMouseButtonPress;
-                } else {
-                    etype = QEvent::NonClientAreaMouseButtonDblClick;
-                }} break;
-            case QEvent::MouseButtonRelease:
-                etype = QEvent::NonClientAreaMouseButtonRelease;
-                break;
-            case QEvent::MouseMove:
-                if (widget == 0 || widget->hasMouseTracking())
-                    etype = QEvent::NonClientAreaMouseMove;
-                break;
-            default:
-                break;
-            }
-        }
-
-        if(qt_mac_find_window((FrontWindow()))) { //set the cursor up
-            QCursor cursor(Qt::ArrowCursor);
-            QWidget *cursor_widget = widget;
-            if(cursor_widget && cursor_widget == qt_button_down && ekind == kEventMouseUp)
-                cursor_widget = QApplication::widgetAt(where.h, where.v);
-            if(cursor_widget) { //only over the app, do we set a cursor..
-                if(!qApp->d_func()->cursor_list.isEmpty()) {
-                    cursor = qApp->d_func()->cursor_list.first();
-                } else {
-                    for(; cursor_widget; cursor_widget = cursor_widget->parentWidget()) {
-                        QWExtra *extra = cursor_widget->d_func()->extraData();
-                        if(extra && extra->curs && cursor_widget->isEnabled()) {
-                            cursor = *extra->curs;
-                            break;
-                        }
-                    }
-                }
-            }
-            qt_mac_set_cursor(&cursor);
-        }
-
-        //This mouse button state stuff looks like this on purpose
-        //although it looks hacky it is VERY intentional..
-        if(widget && app_do_modal && !qt_try_modal(widget, event)) {
-            if(ekind == kEventMouseDown && qt_mac_is_macsheet(QApplication::activeModalWidget()))
-                QApplication::activeModalWidget()->parentWidget()->activateWindow(); //sheets have a parent
-            handled_event = false;
-#if defined(DEBUG_MOUSE_MAPS)
-            qDebug("Bail out early due to qt_try_modal");
-#endif
-            break;
-        }
-
-        UInt32 tabletEventType = 0;
-        GetEventParameter(event, kEventParamTabletEventType, typeUInt32, 0,
-                          sizeof(tabletEventType), 0, &tabletEventType);
-        if (tabletEventType == kEventTabletPoint) {
-            TabletPointRec tabletPointRec;
-            GetEventParameter(event, kEventParamTabletPointRec, typeTabletPointRec, 0,
-                              sizeof(tabletPointRec), 0, &tabletPointRec);
-            QEvent::Type t = QEvent::TabletMove; //default
-            int new_tablet_button_state = tabletPointRec.buttons ? 1 : 0;
-            if (new_tablet_button_state != tablet_button_state)
-                if (new_tablet_button_state)
-                    t = QEvent::TabletPress;
-                else
-                    t = QEvent::TabletRelease;
-            tablet_button_state = new_tablet_button_state;
-
-            QMacTabletHash *tabletHash = qt_mac_tablet_hash();
-            if (!tabletHash->contains(tabletPointRec.deviceID) && t != QEvent::TabletRelease) {
-                // Never discard TabletRelease events as they may be delivered *after* TabletLeaveProximity events
-                qWarning("handleTabletEvent: This tablet device is unknown"
-                         " (received no proximity event for it). Discarding event.");
-                return false;
-            }
-            QTabletDeviceData &deviceData = tabletHash->operator[](tabletPointRec.deviceID);
-            if (t == QEvent::TabletPress) {
-                deviceData.widgetToGetPress = widget;
-            } else if (t == QEvent::TabletRelease && deviceData.widgetToGetPress) {
-                widget = deviceData.widgetToGetPress;
-                deviceData.widgetToGetPress = 0;
-            }
-
-            if (widget) {
-                int tiltX = ((int)tabletPointRec.tiltX)/(32767/64); // 32K -> 60
-                int tiltY = ((int)tabletPointRec.tiltY)/(-32767/64); // 32K -> 60
-                HIPoint hiPoint;
-                GetEventParameter(event, kEventParamMouseLocation, typeHIPoint, 0, sizeof(HIPoint), 0, &hiPoint);
-                QPointF hiRes(hiPoint.x, hiPoint.y);
-                QPoint global(where.h, where.v);
-
-
-
-                QPoint local(widget->mapFromGlobal(global));
-                int z = 0;
-                qreal rotation = 0.0;
-                qreal tp = 0.0;
-                // Again from the Wacom.h header
-
-                if (deviceData.capabilityMask & 0x0200)     // Z-axis
-                    z = tabletPointRec.absZ;
-
-                if (deviceData.capabilityMask & 0x0800)  // Tangential pressure
-                    tp = tabletPointRec.tangentialPressure / 32767.0;
-
-                if (deviceData.capabilityMask & 0x2000) // Rotation
-                    rotation = qreal(tabletPointRec.rotation) / 64.0;
-
-                QTabletEvent e(t, local, global, hiRes, deviceData.tabletDeviceType,
-                               deviceData.tabletPointerType,
-                               qreal(tabletPointRec.pressure / qreal(0xffff)), tiltX, tiltY,
-                               tp, rotation, z, modifiers, deviceData.tabletUniqueID);
-                QApplication::sendSpontaneousEvent(widget, &e);
-                if (e.isAccepted()) {
-                    if (t == QEvent::TabletPress) {
-                        qt_button_down = widget;
-                    } else if (t == QEvent::TabletRelease) {
-                        qt_button_down = 0;
-                    }
-#if defined(DEBUG_MOUSE_MAPS)
-                    qDebug("Bail out early due to tablet acceptance");
-#endif
-                    break;
-                }
-            }
-        }
-
-        if(ekind == kEventMouseDown) {
-            qt_mac_no_click_through_mode = false;
-            const short windowPart = qt_mac_window_at(where.h, where.v, 0);
-            // Menubar almost always wins.
-            if (!inPopupMode && windowPart == inMenuBar) {
-                MenuSelect(where); //allow menu tracking
-                return noErr;
-            }
-
-            if (widget && !(GetCurrentKeyModifiers() & cmdKey)) {
-                extern bool qt_isGenuineQWidget(const QWidget *); // qwidget_mac.cpp
-                QWidget *window = widget->window();
-                bool genuineQtWidget = qt_isGenuineQWidget(widget);  // the widget, not the window.
-                window->raise();
-
-                bool needActivate = (window->windowType() != Qt::Desktop)
-                                     && (window->windowType() != Qt::Popup)
-                                     && !qt_mac_is_macsheet(window);
-                if (needActivate && (!window->isModal() && qobject_cast<QDockWidget *>(window)))
-                    needActivate = false;
-
-                if (genuineQtWidget && needActivate)
-                    needActivate = !window->isActiveWindow()
-                                    || !IsWindowActive(qt_mac_window_for(window));
-
-                if (needActivate) {
-                    window->activateWindow();
-                    if (!qt_mac_can_clickThrough(widget)) {
-                        qt_mac_no_click_through_mode = true;
-                        handled_event = false;
-#if defined(DEBUG_MOUSE_MAPS)
-                        qDebug("Bail out early due to qt_mac_canClickThrough %s::%s", widget->metaObject()->className(),
-                                widget->objectName().toLocal8Bit().constData());
-#endif
-                        break;
-                    }
-                }
-            }
-
-            if(qt_mac_dblclick.last_widget &&
-               qt_mac_dblclick.last_x != -1 && qt_mac_dblclick.last_y != -1 &&
-               QRect(qt_mac_dblclick.last_x-2, qt_mac_dblclick.last_y-2, 4, 4).contains(QPoint(where.h, where.v))) {
-                if(qt_mac_dblclick.use_qt_time_limit) {
-                    EventTime now = GetEventTime(event);
-                    if(qt_mac_dblclick.last_time != -2 && qt_mac_dblclick.last_widget == widget &&
-                       now - qt_mac_dblclick.last_time <= ((double)QApplicationPrivate::mouse_double_click_time)/1000 &&
-                       qt_mac_dblclick.last_button == button)
-                        etype = QEvent::MouseButtonDblClick;
-                } else {
-                    UInt32 count = 0;
-                    GetEventParameter(event, kEventParamClickCount, typeUInt32, 0,
-                                      sizeof(count), 0, &count);
-                    if(!(count % 2) && qt_mac_dblclick.last_modifiers == modifiers &&
-                       qt_mac_dblclick.last_widget == widget && qt_mac_dblclick.last_button == button)
-                        etype = QEvent::MouseButtonDblClick;
-                }
-                if(etype == QEvent::MouseButtonDblClick)
-                    qt_mac_dblclick.last_widget = 0;
-            }
-            if(etype != QEvent::MouseButtonDblClick) {
-                qt_mac_dblclick.last_x = where.h;
-                qt_mac_dblclick.last_y = where.v;
-            } else {
-                qt_mac_dblclick.last_x = qt_mac_dblclick.last_y = -1;
-            }
-        } else if(qt_mac_no_click_through_mode) {
-            if(ekind == kEventMouseUp)
-                qt_mac_no_click_through_mode = false;
-            handled_event = false;
-#if defined(DEBUG_MOUSE_MAPS)
-            qDebug("Bail out early due to qt_mac_no_click_through_mode");
-#endif
-            break;
-        }
-
-        QPointer<QWidget> leaveAfterRelease = 0;
-        switch(ekind) {
-        case kEventMouseUp:
-            if (!buttons) {
-                if (!inPopupMode && !QWidget::mouseGrabber())
-                    leaveAfterRelease = qt_button_down;
-                qt_button_down = 0;
-            }
-            break;
-        case kEventMouseDown: {
-            if (!qt_button_down)
-                qt_button_down = widget;
-            WindowPartCode wpc = qt_mac_window_at(where.h, where.v, 0);
-            qt_button_down_in_content = (wpc == inContent || wpc == inStructure);
-            break;  }
-        }
-
-        // Check if we should send enter/leave events:
-        switch(ekind) {
-        case kEventMouseDragged:
-        case kEventMouseMoved:
-        case kEventMouseUp:
-        case kEventMouseDown: {
-            // If we are in popup mode, widget will point to the current popup no matter
-            // where the mouse cursor is. In that case find out if the mouse cursor is
-            // really over the popup in order to send correct enter / leave envents.
-            QWidget * const enterLeaveWidget = (inPopupMode || ekind == kEventMouseUp) ?
-                    QApplication::widgetAt(where.h, where.v) :  static_cast<QWidget*>(widget);
-
-            if ((QWidget *) qt_last_mouse_receiver != enterLeaveWidget || inNonClientArea) {
-#ifdef DEBUG_MOUSE_MAPS
-                qDebug("Entering: %p - %s (%s), Leaving %s (%s)", (QWidget*)enterLeaveWidget,
-                       enterLeaveWidget ? enterLeaveWidget->metaObject()->className() : "none",
-                       enterLeaveWidget ? enterLeaveWidget->objectName().toLocal8Bit().constData() : "",
-                       qt_last_mouse_receiver ? qt_last_mouse_receiver->metaObject()->className() : "none",
-                       qt_last_mouse_receiver ? qt_last_mouse_receiver->objectName().toLocal8Bit().constData() : "");
-#endif
-
-                QWidget * const mouseGrabber = QWidget::mouseGrabber();
-
-                if (inPopupMode) {
-                    QWidget *enter = enterLeaveWidget;
-                    QWidget *leave = qt_last_mouse_receiver;
-                    if (mouseGrabber) {
-                        QWidget * const popupWidget = qApp->activePopupWidget();
-                        if (leave == popupWidget)
-                            enter = mouseGrabber;
-                        if (enter == popupWidget)
-                            leave = mouseGrabber;
-                        if ((enter == mouseGrabber && leave == popupWidget)
-                            || (leave == mouseGrabber  && enter == popupWidget)) {
-                            QApplicationPrivate::dispatchEnterLeave(enter, leave);
-                            qt_last_mouse_receiver = enter;
-                        }
-                    } else {
-                        QApplicationPrivate::dispatchEnterLeave(enter, leave);
-                        qt_last_mouse_receiver = enter;
-                    }
-                } else if ((!qt_button_down || !qt_last_mouse_receiver) && !mouseGrabber && !leaveAfterRelease) {
-                    QApplicationPrivate::dispatchEnterLeave(enterLeaveWidget, qt_last_mouse_receiver);
-                    qt_last_mouse_receiver = enterLeaveWidget;
-                }
-            }
-            break; }
-        }
-
-        if(widget) {
-            QPoint p(where.h, where.v);
-            QPoint plocal(widget->mapFromGlobal(p));
-            if(etype == QEvent::MouseButtonPress) {
-                qt_mac_dblclick.last_widget = widget;
-                qt_mac_dblclick.last_modifiers = modifiers;
-                qt_mac_dblclick.last_button = button;
-                qt_mac_dblclick.last_time = GetEventTime(event);
-            }
-
-            if (wheel_deltaX || wheel_deltaY) {
-#ifndef QT_NO_WHEELEVENT
-                if (wheel_deltaX) {
-                    QWheelEvent qwe(plocal, p, wheel_deltaX, buttons, modifiers, Qt::Horizontal);
-                    QApplication::sendSpontaneousEvent(widget, &qwe);
-                    if (!qwe.isAccepted() && QApplicationPrivate::focus_widget && QApplicationPrivate::focus_widget != widget) {
-                        QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(p), p,
-                                wheel_deltaX, buttons, modifiers, Qt::Horizontal);
-                        QApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
-                        if (!qwe2.isAccepted())
-                            handled_event = false;
-                    }
-                }
-                if (wheel_deltaY) {
-                    QWheelEvent qwe(plocal, p, wheel_deltaY, buttons, modifiers, Qt::Vertical);
-                    QApplication::sendSpontaneousEvent(widget, &qwe);
-                    if (!qwe.isAccepted() && QApplicationPrivate::focus_widget && QApplicationPrivate::focus_widget != widget) {
-                        QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(p), p,
-                                wheel_deltaY, buttons, modifiers, Qt::Vertical);
-                        QApplication::sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
-                        if (!qwe2.isAccepted())
-                            handled_event = false;
-                    }
-                }
-#endif // QT_NO_WHEELEVENT
-            } else {
-#ifdef QMAC_SPEAK_TO_ME
-                const int speak_keys = Qt::AltModifier | Qt::ShiftModifier;
-		if(etype == QMouseEvent::MouseButtonDblClick && ((modifiers & speak_keys) == speak_keys)) {
-                    QVariant v = widget->property("displayText");
-                    if(!v.isValid()) v = widget->property("text");
-                    if(!v.isValid()) v = widget->property("windowTitle");
-                    if(v.isValid()) {
-                        QString s = v.toString();
-                        s.replace(QRegExp(QString::fromLatin1("(\\&|\\<[^\\>]*\\>)")), QLatin1String(""));
-                        SpeechChannel ch;
-                        NewSpeechChannel(0, &ch);
-                        SpeakText(ch, s.toLatin1().constData(), s.length());
-                        DisposeSpeechChannel(ch);
-                    }
-                }
-#endif
-                Qt::MouseButton buttonToSend = button;
-                static bool lastButtonTranslated = false;
-                if(ekind == kEventMouseDown &&
-                   button == Qt::LeftButton && (modifiers & Qt::MetaModifier)) {
-                    buttonToSend = Qt::RightButton;
-                    lastButtonTranslated = true;
-                } else if(ekind == kEventMouseUp && lastButtonTranslated) {
-                    buttonToSend = Qt::RightButton;
-                    lastButtonTranslated = false;
-                }
-                QMouseEvent qme(etype, plocal, p, buttonToSend, buttons, modifiers);
-                QApplication::sendSpontaneousEvent(widget, &qme);
-                if(!qme.isAccepted() || inNonClientArea)
-                    handled_event = false;
-            }
-
-            if (leaveAfterRelease) {
-                QWidget *enter = QApplication::widgetAt(where.h, where.v);
-                QApplicationPrivate::dispatchEnterLeave(enter, leaveAfterRelease);
-                qt_last_mouse_receiver = enter;
-                leaveAfterRelease = 0;
-            }
-
-            if(ekind == kEventMouseDown &&
-               ((button == Qt::RightButton) ||
-                (button == Qt::LeftButton && (modifiers & Qt::MetaModifier))))
-                qt_event_request_context();
-
-#ifdef DEBUG_MOUSE_MAPS
-            const char *event_desc = edesc;
-            if(etype == QEvent::MouseButtonDblClick)
-                event_desc = "Double Click";
-            else if(etype == QEvent::NonClientAreaMouseButtonPress)
-                event_desc = "NonClientMousePress";
-            else if(etype == QEvent::NonClientAreaMouseButtonRelease)
-                event_desc = "NonClientMouseRelease";
-            else if(etype == QEvent::NonClientAreaMouseMove)
-                event_desc = "NonClientMouseMove";
-            else if(etype == QEvent::NonClientAreaMouseButtonDblClick)
-                event_desc = "NonClientMouseDblClick";
-            qDebug("%d %d (%d %d) - Would send (%s) event to %p %s %s (%d 0x%08x 0x%08x %d)", p.x(), p.y(),
-                   plocal.x(), plocal.y(), event_desc, (QWidget*)widget,
-                   widget ? widget->objectName().toLocal8Bit().constData() : "*Unknown*",
-                   widget ? widget->metaObject()->className() : "*Unknown*",
-                   button, (int)buttons, (int)modifiers, wheel_deltaX);
-#endif
-        } else {
-            handled_event = false;
-        }
-        break;
-    }
-    case kEventClassTextInput:
-    case kEventClassKeyboard: {
-        EventRef key_event = event;
-        if(eclass == kEventClassTextInput) {
-            Q_ASSERT(ekind == kEventTextInputUnicodeForKeyEvent);
-            OSStatus err = GetEventParameter(event, kEventParamTextInputSendKeyboardEvent, typeEventRef, 0,
-                                             sizeof(key_event), 0, &key_event);
-            Q_ASSERT(err == noErr);
-            Q_UNUSED(err);
-        }
-        const UInt32 key_ekind = GetEventKind(key_event);
-        Q_ASSERT(GetEventClass(key_event) == kEventClassKeyboard);
-
-        if(key_ekind == kEventRawKeyDown)
-            qt_keymapper_private()->updateKeyMap(er, key_event, data);
-        if(mac_keyboard_grabber)
-            widget = mac_keyboard_grabber;
-        else if (app->activePopupWidget())
-            widget = (app->activePopupWidget()->focusWidget() ?
-                      app->activePopupWidget()->focusWidget() : app->activePopupWidget());
-        else if(QApplication::focusWidget())
-            widget = QApplication::focusWidget();
-        else
-            widget = app->activeWindow();
-
-        if (widget) {
-            if (widget->macEvent(er, event))
-                return noErr;
-        } else {
-            // Darn, I need to update tho modifier state, even though
-            // Qt itself isn't getting them, otherwise the keyboard state get inconsistent.
-            if (key_ekind == kEventRawKeyModifiersChanged) {
-                UInt32 modifiers = 0;
-                GetEventParameter(key_event, kEventParamKeyModifiers, typeUInt32, 0,
-                                  sizeof(modifiers), 0, &modifiers);
-                extern void qt_mac_send_modifiers_changed(quint32 modifiers, QObject *object); // qkeymapper_mac.cpp
-                // Just send it to the qApp for the time being.
-                qt_mac_send_modifiers_changed(modifiers, qApp);
-            }
-            handled_event = false;
-            break;
-        }
-
-        if(app_do_modal && !qt_try_modal(widget, key_event))
-            break;
-        if (eclass == kEventClassTextInput) {
-            handled_event = false;
-        } else {
-            handled_event = qt_keymapper_private()->translateKeyEvent(widget, er, key_event, data,
-                                                                      widget == mac_keyboard_grabber);
-        }
-        break; }
-    case kEventClassWindow: {
-        WindowRef wid = 0;
-        GetEventParameter(event, kEventParamDirectObject, typeWindowRef, 0,
-                          sizeof(WindowRef), 0, &wid);
-        widget = qt_mac_find_window(wid);
-        if (widget && widget->macEvent(er, event))
-            return noErr;
-        if(ekind == kEventWindowActivated) {
-            if(QApplicationPrivate::app_style) {
-                QEvent ev(QEvent::Style);
-                QApplication::sendSpontaneousEvent(QApplicationPrivate::app_style, &ev);
-            }
-
-            if(widget && app_do_modal && !qt_try_modal(widget, event))
-                break;
-
-            if(widget && widget->window()->isVisible()) {
-                QWidget *tlw = widget->window();
-		if(tlw->isWindow() && !(tlw->windowType() == Qt::Popup)
-                   && !qt_mac_is_macdrawer(tlw)
-                   && (!tlw->parentWidget() || tlw->isModal()
-                       || !(tlw->windowType() == Qt::Tool))) {
-                    bool just_send_event = false;
-                    {
-                        WindowActivationScope scope;
-                        if(GetWindowActivationScope((WindowRef)wid, &scope) == noErr &&
-                           scope == kWindowActivationScopeIndependent) {
-                            if(GetFrontWindowOfClass(kAllWindowClasses, true) != wid)
-                                just_send_event = true;
-                        }
-                    }
-                    if(just_send_event) {
-                        QEvent e(QEvent::WindowActivate);
-                        QApplication::sendSpontaneousEvent(widget, &e);
-                    } else {
-                        app->setActiveWindow(tlw);
-                    }
-                }
-                QMenuBar::macUpdateMenuBar();
-            }
-        } else if(ekind == kEventWindowDeactivated) {
-            if(widget && QApplicationPrivate::active_window == widget)
-                app->setActiveWindow(0);
-        } else {
-            handled_event = false;
-        }
-        break; }
-    case kEventClassApplication:
-        if(ekind == kEventAppActivated) {
-            if(QApplication::desktopSettingsAware())
-                qt_mac_update_os_settings();
-            if(qt_clipboard) { //manufacture an event so the clipboard can see if it has changed
-                QEvent ev(QEvent::Clipboard);
-                QApplication::sendSpontaneousEvent(qt_clipboard, &ev);
-            }
-            if(app) {
-                QEvent ev(QEvent::ApplicationActivate);
-                QApplication::sendSpontaneousEvent(app, &ev);
-            }
-            if(!app->activeWindow()) {
-                WindowPtr wp = ActiveNonFloatingWindow();
-                if(QWidget *tmp_w = qt_mac_find_window(wp))
-                    app->setActiveWindow(tmp_w);
-            }
-            QMenuBar::macUpdateMenuBar();
-        } else if(ekind == kEventAppDeactivated) {
-            //qt_mac_no_click_through_mode = false;
-            while(app->d_func()->inPopupMode())
-                app->activePopupWidget()->close();
-            if(app) {
-                QEvent ev(QEvent::ApplicationDeactivate);
-                QApplication::sendSpontaneousEvent(app, &ev);
-            }
-            app->setActiveWindow(0);
-        } else if(ekind == kEventAppAvailableWindowBoundsChanged) {
-            QDesktopWidgetImplementation::instance()->onResize();
-        } else {
-            handled_event = false;
-        }
-        break;
-    case kAppearanceEventClass:
-        if(ekind == kAEAppearanceChanged) {
-            if(QApplication::desktopSettingsAware())
-                qt_mac_update_os_settings();
-            if(QApplicationPrivate::app_style) {
-                QEvent ev(QEvent::Style);
-                QApplication::sendSpontaneousEvent(QApplicationPrivate::app_style, &ev);
-            }
-        } else {
-            handled_event = false;
-        }
-        break;
-    case kEventClassAppleEvent:
-        if(ekind == kEventAppleEvent) {
-            EventRecord erec;
-            if(!ConvertEventRefToEventRecord(event, &erec))
-                qDebug("Qt: internal: WH0A, unexpected condition reached. %s:%d", __FILE__, __LINE__);
-            else if(AEProcessAppleEvent(&erec) != noErr)
-                handled_event = false;
-        } else {
-            handled_event = false;
-        }
-        break;
-    case kEventClassCommand:
-        if(ekind == kEventCommandProcess) {
-            HICommand cmd;
-            GetEventParameter(event, kEventParamDirectObject, typeHICommand,
-                              0, sizeof(cmd), 0, &cmd);
-            handled_event = false;
-            if(!cmd.menu.menuRef && GetApplicationDockTileMenu()) {
-                EventRef copy = CopyEvent(event);
-                HICommand copy_cmd;
-                GetEventParameter(event, kEventParamDirectObject, typeHICommand,
-                                  0, sizeof(copy_cmd), 0, &copy_cmd);
-                copy_cmd.menu.menuRef = GetApplicationDockTileMenu();
-                SetEventParameter(copy, kEventParamDirectObject, typeHICommand, sizeof(copy_cmd), &copy_cmd);
-                if(SendEventToMenu(copy, copy_cmd.menu.menuRef) == noErr)
-                    handled_event = true;
-            }
-            if(!handled_event) {
-                if(cmd.commandID == kHICommandQuit) {
-                    // Quitting the application is not Qt's responsibility if
-                    // used in a plugin or just embedded into a native application.
-                    // In that case, let the event pass down to the native apps event handler.
-                    if (!QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
-                        handled_event = true;
-                        HiliteMenu(0);
-                        bool handle_quit = true;
-                        if(QApplicationPrivate::modalState()) {
-                            int visible = 0;
-                            const QWidgetList tlws = QApplication::topLevelWidgets();
-                            for(int i = 0; i < tlws.size(); ++i) {
-                                if(tlws.at(i)->isVisible())
-                                    ++visible;
-                            }
-                            handle_quit = (visible <= 1);
-                        }
-                        if(handle_quit) {
-                            QCloseEvent ev;
-                            QApplication::sendSpontaneousEvent(app, &ev);
-                            if(ev.isAccepted())
-                                app->quit();
-                        } else {
-                            QApplication::beep();
-                        }
-                    }
-                } else if(cmd.commandID == kHICommandSelectWindow) {
-                    if((GetCurrentKeyModifiers() & cmdKey))
-                        handled_event = true;
-                } else if(cmd.commandID == kHICommandAbout) {
-                    QMessageBox::aboutQt(0);
-                    HiliteMenu(0);
-                    handled_event = true;
-                }
-            }
-        }
-        break;
-    }
-
-#ifdef DEBUG_EVENTS
-    qDebug("%shandled event %c%c%c%c %d", handled_event ? "(*) " : "",
-           char(eclass >> 24), char((eclass >> 16) & 255), char((eclass >> 8) & 255),
-           char(eclass & 255), (int)ekind);
-#endif
-    if(!handled_event) //let the event go through
-        return eventNotHandledErr;
-    return noErr; //we eat the event
-#else
     Q_UNUSED(er);
     Q_UNUSED(event);
     Q_UNUSED(data);
     return eventNotHandledErr;
-#endif
 }
 
-#ifdef QT_MAC_USE_COCOA
 void QApplicationPrivate::qt_initAfterNSAppStarted()
 {
     setupAppleEvents();
@@ -2511,7 +1285,6 @@ void QApplicationPrivate::setupAppleEvents()
     [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
       forEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
-#endif
 
 // In Carbon this is your one stop for apple events.
 // In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists
@@ -3013,15 +1786,8 @@ bool QApplicationPrivate::qt_mac_apply_settings()
 
 bool QApplicationPrivate::canQuit()
 {
-#ifndef QT_MAC_USE_COCOA
-    return true;
-#else
     Q_Q(QApplication);
-#ifdef QT_MAC_USE_COCOA
     [[NSApp mainMenu] cancelTracking];
-#else
-    HiliteMenu(0);
-#endif
 
     bool handle_quit = true;
     if (QApplicationPrivate::modalState() && [[[[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate]
@@ -3042,12 +1808,10 @@ bool QApplicationPrivate::canQuit()
         }
     }
     return false;
-#endif
 }
 
 void onApplicationWindowChangedActivation(QWidget *widget, bool activated)
 {
-#if QT_MAC_USE_COCOA
     if (!widget)
         return;
 
@@ -3064,16 +1828,11 @@ void onApplicationWindowChangedActivation(QWidget *widget, bool activated)
 
     QMenuBar::macUpdateMenuBar();
     qt_mac_update_cursor();
-#else
-    Q_UNUSED(widget);
-    Q_UNUSED(activated);
-#endif
 }
 
 
 void onApplicationChangedActivation( bool activated )
 {
-#if QT_MAC_USE_COCOA
     QApplication    *app    = qApp;
 
 //NSLog(@"App Changed Activation\n");
@@ -3109,9 +1868,6 @@ void onApplicationChangedActivation( bool activated )
         }
         app->setActiveWindow(0);
     }
-#else
-    Q_UNUSED(activated);
-#endif
 }
 
 void QApplicationPrivate::initializeMultitouch_sys()

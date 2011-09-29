@@ -1489,12 +1489,8 @@ void QTextEngine::itemize() const
     int length = layoutData->string.length();
     if (!length)
         return;
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-    // ATSUI requires RTL flags to correctly identify the character stops.
-    bool ignore = false;
-#else
+
     bool ignore = ignoreBidi;
-#endif
 
     bool rtl = isRightToLeft();
 

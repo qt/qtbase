@@ -107,33 +107,8 @@ static QCursorData *currentCursor = 0; //current cursor
 
 void qt_mac_set_cursor(const QCursor *c)
 {
-#ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(*c)) set];
-#else
-    if (!c) {
-        currentCursor = 0;
-        return;
-    }
-    c->handle(); //force the cursor to get loaded, if it's not
-
-    if(currentCursor && currentCursor->type == QCursorData::TYPE_ThemeCursor
-            && currentCursor->curs.tc.anim)
-        currentCursor->curs.tc.anim->stop();
-    if(c->d->type == QCursorData::TYPE_ImageCursor) {
-        [static_cast<NSCursor *>(c->d->curs.cp.nscursor) set];
-    } else if(c->d->type == QCursorData::TYPE_ThemeCursor) {
-        if(SetAnimatedThemeCursor(c->d->curs.tc.curs, 0) == themeBadCursorIndexErr) {
-            SetThemeCursor(c->d->curs.tc.curs);
-        } else {
-            if(!c->d->curs.tc.anim)
-                c->d->curs.tc.anim = new QMacAnimateCursor;
-            c->d->curs.tc.anim->start(c->d->curs.tc.curs);
-        }
-    }
-
-    currentCursor = c->d;
-#endif
 }
 
 static QPointer<QWidget> lastWidgetUnderMouse = 0;
@@ -186,16 +161,12 @@ void qt_mac_updateCursorWithWidgetUnderMouse(QWidget *widgetUnderMouse)
         }
     }
 
-#ifdef QT_MAC_USE_COCOA
     cursor.d->update();
     NSCursor *nsCursor = static_cast<NSCursor *>(cursor.d->curs.cp.nscursor);
     if ([NSCursor currentCursor] != nsCursor) {
         QMacCocoaAutoReleasePool pool;
         [nsCursor set];
     }
-#else
-    qt_mac_set_cursor(&cursor);
-#endif
 }
 
 void qt_mac_update_cursor()
@@ -206,7 +177,6 @@ void qt_mac_update_cursor()
     // application has been deactivated/activated etc.
     // NB: since we dont have any true native widget, the call to
     // qt_mac_getTargetForMouseEvent will fail when the mouse is over QMacNativeWidgets.
-#ifdef QT_MAC_USE_COCOA
     lastWidgetUnderMouse = 0;
     lastMouseCursorWidget = 0;
     QWidget *widgetUnderMouse = 0;
@@ -219,9 +189,6 @@ void qt_mac_update_cursor()
         qt_mac_getTargetForMouseEvent(0, QEvent::None, localPoint, globalPoint, 0, &widgetUnderMouse);
     }
     qt_mac_updateCursorWithWidgetUnderMouse(widgetUnderMouse);
-#else
-    qt_mac_updateCursorWithWidgetUnderMouse(QApplication::widgetAt(QCursor::pos()));
-#endif
 }
 
 void qt_mac_setMouseGrabCursor(bool set, QCursor *const cursor = 0)
@@ -241,12 +208,6 @@ void qt_mac_setMouseGrabCursor(bool set, QCursor *const cursor = 0)
     qt_mac_update_cursor();
 }
 
-#ifndef QT_MAC_USE_COCOA
-void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos)
-{
-    qt_mac_updateCursorWithWidgetUnderMouse(QApplication::widgetAt(globalPos));
-}
-#endif
 
 static int nextCursorId = Qt::BitmapCursor;
 
@@ -314,7 +275,6 @@ QPoint QCursor::pos()
 
 void QCursor::setPos(int x, int y)
 {
-#ifdef QT_MAC_USE_COCOA
     CGPoint pos;
     pos.x = x;
     pos.y = y;
@@ -322,24 +282,6 @@ void QCursor::setPos(int x, int y)
     CGEventRef e = CGEventCreateMouseEvent(0, kCGEventMouseMoved, pos, 0);
     CGEventPost(kCGHIDEventTap, e);
     CFRelease(e);
-#else
-    CGWarpMouseCursorPosition(CGPointMake(x, y));
-
-    /* I'm not too keen on doing this, but this makes it a lot easier, so I just
-       send the event back through the event system and let it get propagated correctly
-       ideally this would not really need to be faked --Sam
-    */
-    QWidget *widget = 0;
-    if(QWidget *grb = QWidget::mouseGrabber())
-        widget = grb;
-    else
-        widget = QApplication::widgetAt(QPoint(x, y));
-    if(widget) {
-        QMouseEvent me(QMouseEvent::MouseMove, widget->mapFromGlobal(QPoint(x, y)), Qt::NoButton,
-                       QApplication::mouseButtons(), QApplication::keyboardModifiers());
-        qt_sendSpontaneousEvent(widget, &me);
-    }
-#endif
 }
 
 void QCursorData::initCursorFromBitmap()
@@ -453,7 +395,6 @@ void QCursorData::update()
 #endif
     const uchar *cursorData = 0;
     const uchar *cursorMaskData = 0;
-#ifdef QT_MAC_USE_COCOA
     switch (cshape) {                        // map Q cursor to MAC cursor
     case Qt::BitmapCursor: {
         if (pixmap.isNull())
@@ -561,114 +502,6 @@ void QCursorData::update()
         qWarning("Qt: QCursor::update: Invalid cursor shape %d", cshape);
         return;
     }
-#else
-    // Carbon
-    switch (cshape) {                        // map Q cursor to MAC cursor
-    case Qt::BitmapCursor: {
-        if (pixmap.isNull())
-            initCursorFromBitmap();
-        else
-            initCursorFromPixmap();
-        break; }
-    case Qt::BlankCursor: {
-        pixmap = QPixmap(16, 16);
-        pixmap.fill(Qt::transparent);
-        initCursorFromPixmap();
-        break; }
-    case Qt::ArrowCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeArrowCursor;
-        break; }
-    case Qt::CrossCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeCrossCursor;
-        break; }
-    case Qt::WaitCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeWatchCursor;
-        break; }
-    case Qt::IBeamCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeIBeamCursor;
-        break; }
-    case Qt::SizeAllCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemePlusCursor;
-        break; }
-    case Qt::WhatsThisCursor: { //for now just use the pointing hand
-    case Qt::PointingHandCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemePointingHandCursor;
-        break; }
-    case Qt::BusyCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeSpinningCursor;
-        break; }
-    case Qt::SplitVCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeResizeUpDownCursor;
-        break; }
-    case Qt::SplitHCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeResizeLeftRightCursor;
-        break; }
-    case Qt::ForbiddenCursor: {
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeNotAllowedCursor;
-        break; }
-    case Qt::OpenHandCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeOpenHandCursor;
-        break;
-    case Qt::ClosedHandCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeClosedHandCursor;
-        break;
-    case Qt::DragMoveCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeArrowCursor;
-        break;
-    case Qt::DragCopyCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeCopyArrowCursor;
-        break;
-    case Qt::DragLinkCursor:
-        type = QCursorData::TYPE_ThemeCursor;
-        curs.tc.curs = kThemeAliasArrowCursor;
-        break;
-#define QT_USE_APPROXIMATE_CURSORS
-#ifdef QT_USE_APPROXIMATE_CURSORS
-    case Qt::SizeVerCursor:
-        cursorData = cur_ver_bits;
-        cursorMaskData = mcur_ver_bits;
-        hx = hy = 8;
-        break;
-    case Qt::SizeHorCursor:
-        cursorData = cur_hor_bits;
-        cursorMaskData = mcur_hor_bits;
-        hx = hy = 8;
-        break;
-    case Qt::SizeBDiagCursor:
-        cursorData = cur_fdiag_bits;
-        cursorMaskData = mcur_fdiag_bits;
-        hx = hy = 8;
-        break;
-    case Qt::SizeFDiagCursor:
-        cursorData = cur_bdiag_bits;
-        cursorMaskData = mcur_bdiag_bits;
-        hx = hy = 8;
-        break;
-    case Qt::UpArrowCursor:
-        cursorData = cur_up_arrow_bits;
-        cursorMaskData = mcur_up_arrow_bits;
-        hx = 8;
-        break;
-#endif
-    default:
-        qWarning("Qt: QCursor::update: Invalid cursor shape %d", cshape);
-        return;
-    }
-#endif
 
     if (cursorData) {
         bm = new QBitmap(QBitmap::fromData(QSize(16, 16), cursorData,

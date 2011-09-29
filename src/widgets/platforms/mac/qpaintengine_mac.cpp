@@ -556,11 +556,7 @@ QCoreGraphicsPaintEngine::end()
     Q_D(QCoreGraphicsPaintEngine);
     setActive(false);
     if(d->pdev->devType() == QInternal::Widget && static_cast<QWidget*>(d->pdev)->windowType() == Qt::Desktop) {
-#ifndef QT_MAC_USE_COCOA
-        HideWindow(qt_mac_window_for(static_cast<QWidget*>(d->pdev)));
-#else
 //        // ### need to do [qt_mac_window_for(static_cast<QWidget *>(d->pdev)) orderOut]; (need to rename)
-#endif
 
 	}
     if(d->shading) {
@@ -1045,11 +1041,7 @@ void QCoreGraphicsPaintEngine::drawTextItem(const QPointF &pos, const QTextItem 
     if (ti.glyphs.numGlyphs) {
         switch (fe->type()) {
         case QFontEngine::Mac:
-#ifdef QT_MAC_USE_COCOA
             static_cast<QCoreTextFontEngine *>(fe)->draw(d->hd, pos.x(), pos.y(), ti, paintDevice()->height());
-#else
-            static_cast<QFontEngineMac *>(fe)->draw(d->hd, pos.x(), pos.y(), ti, paintDevice()->height());
-#endif
             break;
         case QFontEngine::Box:
             d->drawBoxTextItem(pos, ti);

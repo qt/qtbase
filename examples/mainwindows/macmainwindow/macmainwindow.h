@@ -47,7 +47,6 @@
 
 #import <qmaccocoaviewcontainer_mac.h>
 
-#ifdef QT_MAC_USE_COCOA
 class SearchWidget : public QMacCocoaViewContainer
 {
     Q_OBJECT
@@ -59,24 +58,6 @@ public:
 private:
 };
 
-#else
-#include <Carbon/Carbon.h>
-
-// The SearchWidget class wraps a native HISearchField.
-class SearchWidget : public QWidget
-{
-    Q_OBJECT
-private:
-    HIViewRef searchField;
-    CFStringRef searchFieldText;
-
-public:
-    QSize sizeHint() const;
-    SearchWidget(QWidget *parent = 0);
-    ~SearchWidget();
-};
-
-#endif
 
 QMenu *createMenu(QWidget *parent);
 

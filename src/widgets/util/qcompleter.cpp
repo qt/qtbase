@@ -1133,11 +1133,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         delete d->popup;
     if (popup->model() != d->proxy)
         popup->setModel(d->proxy);
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
-     popup->show();
-#else
      popup->hide();
-#endif
 
     Qt::FocusPolicy origPolicy = Qt::NoFocus;
     if (d->widget)

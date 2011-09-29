@@ -388,7 +388,6 @@ QMacPasteboard::setMimeData(QMimeData *mime_src)
         clear_helper();
         QStringList formats = mime_src->formats();
 
-#ifdef QT_MAC_USE_COCOA
         // QMimeData sub classes reimplementing the formats() might not expose the
         // temporary "application/x-qt-mime-type-name" mimetype. So check the existence
         // of this mime type while doing drag and drop.
@@ -399,7 +398,6 @@ QMacPasteboard::setMimeData(QMimeData *mime_src)
                 formats.append(dummyMimeType);
             }
         }
-#endif
         for(int f = 0; f < formats.size(); ++f) {
             QString mimeType = formats.at(f);
             for (QList<QMacPasteboardMime *>::Iterator it = availableConverters.begin(); it != availableConverters.end(); ++it) {

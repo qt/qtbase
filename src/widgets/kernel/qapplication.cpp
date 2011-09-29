@@ -115,7 +115,7 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 #include "qdatetime.h"
 
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_WS_MAC
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
@@ -2306,7 +2306,7 @@ bool QApplication::event(QEvent *e)
     }
 
     if(e->type() == QEvent::LanguageChange) {
-#if defined(QT_MAC_USE_COCOA)
+#ifdef Q_WS_MAC
         qt_mac_post_retranslateAppMenu();
 #endif
         QWidgetList list = topLevelWidgets();
@@ -2430,7 +2430,7 @@ void QApplication::setActiveWindow(QWidget* act)
         sendSpontaneousEvent(w, &activationChange);
     }
 
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_WS_MAC
     // In case the user clicked on a child window, we need to
     // reestablish the stacking order of the window so
     // it pops in front of other child windows in cocoa:
@@ -2852,7 +2852,7 @@ bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
     if (QApplication::activePopupWidget())
         return true;
 
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_MAC)
     top = QApplicationPrivate::tryModalHelper_sys(top);
     if (rettop)
         *rettop = top;
@@ -4136,7 +4136,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
 #endif // QT_NO_GESTURES
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_WS_MAC
     case QEvent::Enter:
         if (receiver->isWidgetType()) {
             QWidget *w = static_cast<QWidget *>(receiver);

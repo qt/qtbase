@@ -96,28 +96,18 @@ class QMacCocoaViewContainerPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMacCocoaViewContainer)
 public:
     NSView *nsview;
-#ifndef QT_MAC_USE_COCOA
-    HIViewRef wrapperView;
-#endif
     QMacCocoaViewContainerPrivate();
     ~QMacCocoaViewContainerPrivate();
 };
 
 QMacCocoaViewContainerPrivate::QMacCocoaViewContainerPrivate()
      : nsview(0)
-#ifndef QT_MAC_USE_COCOA
-       , wrapperView(0)
-#endif
 {
 }
 
 QMacCocoaViewContainerPrivate::~QMacCocoaViewContainerPrivate()
 {
     [nsview release];
-#ifndef QT_MAC_USE_COCOA
-    if (wrapperView)
-        CFRelease(wrapperView);
-#endif
 }
 
 /*!
@@ -168,20 +158,7 @@ void QMacCocoaViewContainer::setCocoaView(void *cocoaViewToWrap)
     destroy(true, true);
     [view retain];
     d->nsview = view;
-#ifndef QT_MAC_USE_COCOA
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5) {
-        qWarning("QMacCocoaViewContainer::setCocoaView: You cannot use this class with Carbon on versions of Mac OS X less than 10.5.");
-        return;
-    }
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-    if (d->wrapperView)
-        CFRelease(d->wrapperView);
-    HICocoaViewCreate(d->nsview, 0, &d->wrapperView);
-    create(WId(d->wrapperView), false, true);
-#endif
-#else
     create(WId(d->nsview), false, true);
-#endif
     [oldView release];
 }
 

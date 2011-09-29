@@ -95,14 +95,12 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_MAC_USE_COCOA
 typedef struct _NSModalSession *NSModalSession;
 typedef struct _QCocoaModalSessionInfo {
     QPointer<QWidget> widget;
     NSModalSession session;
     void *nswindow;
 } QCocoaModalSessionInfo;
-#endif
 
 class QEventDispatcherMacPrivate;
 
@@ -170,7 +168,6 @@ public:
     // low-level cocoa functions (like beginModalForWindow). And
     // use a QBoolBlocker to be safe:
     static bool blockSendPostedEvents;
-#ifdef QT_MAC_USE_COCOA
     // The following variables help organizing modal sessions:
     static QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
     static bool currentExecIsNSAppRun;
@@ -185,7 +182,6 @@ public:
     static void cancelWaitForMoreEvents();
     static void cleanupModalSessions();
     static void ensureNSAppInitialized();
-#endif
 
     MacSocketHash macSockets;
     QList<void *> queuedUserInputEvents; // List of EventRef in Carbon, and NSEvent * in Cocoa
@@ -204,7 +200,6 @@ private:
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
 };
 
-#ifdef QT_MAC_USE_COCOA
 class QtMacInterruptDispatcherHelp : public QObject
 {
     static QtMacInterruptDispatcherHelp *instance;
@@ -217,7 +212,6 @@ class QtMacInterruptDispatcherHelp : public QObject
     static void interruptLater();
     static void cancelInterruptLater();
 };
-#endif
 
 QT_END_NAMESPACE
 

@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #import <private/qcocoaview_mac_p.h>
-#ifdef QT_MAC_USE_COCOA
 
 #include <private/qwidget_p.h>
 #include <private/qt_mac_p.h>
@@ -1385,4 +1384,3 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
 QT_END_NAMESPACE
 
-#endif // QT_MAC_USE_COCOA

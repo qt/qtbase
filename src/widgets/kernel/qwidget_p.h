@@ -218,13 +218,11 @@ struct QTLWExtra {
     WindowGroupRef group;
     IconRef windowIcon; // the current window icon, if set with setWindowIcon_sys.
     quint32 savedWindowAttributesFromMaximized; // Saved attributes from when the calling updateMaximizeButton_sys()
-#ifdef QT_MAC_USE_COCOA
     // This value is just to make sure we maximize and restore to the right location, yet we allow apps to be maximized and
     // manually resized.
     // The name is misleading, since this is set when maximizing the window. It is a hint to saveGeometry(..) to record the
     // starting position as 0,0 instead of the normal starting position.
     bool wasMaximized;
-#endif // QT_MAC_USE_COCOA
 
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
 #ifndef QT_NO_QWS_MANAGER
@@ -285,11 +283,9 @@ struct QWExtra {
     uint compress_events : 1;
     WId xDndProxy; // XDND forwarding to embedded windows
 #elif defined(Q_WS_MAC) // <------------------------------------------------------ MAC
-#ifdef QT_MAC_USE_COCOA
     // Cocoa Mask stuff
     QImage maskBits;
     CGImageRef imageMask;
-#endif
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
 
@@ -844,10 +840,6 @@ public:
     void setWindowFilePath_sys(const QString &filePath);
     void createWindow_sys();
     void recreateMacWindow();
-#ifndef QT_MAC_USE_COCOA
-    void initWindowPtr();
-    void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
-#else
     void setSubWindowStacking(bool set);
     void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
@@ -868,7 +860,6 @@ public:
     QWidget *toolbar_ancestor;
     bool flushRequested;
     bool touchEventsEnabled;
-#endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
     bool qt_mac_dnd_event(uint, DragRef);

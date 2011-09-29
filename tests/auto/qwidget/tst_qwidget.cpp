@@ -419,9 +419,7 @@ private slots:
     void childAt();
 #ifdef Q_WS_MAC
     void childAt_unifiedToolBar();
-#ifdef QT_MAC_USE_COCOA
     void taskQTBUG_11373();
-#endif // QT_MAC_USE_COCOA
 #endif
     void taskQTBUG_17333_ResizeInfiniteRecursion();
 
@@ -2691,7 +2689,7 @@ void tst_QWidget::raise()
     QTest::qWaitForWindowShown(parent);
     QTest::qWait(10);
 
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC
     if (child1->internalWinId()) {
         QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.", SkipAll);
     }
@@ -2721,7 +2719,7 @@ void tst_QWidget::raise()
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child2 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child2 ? 1 : 0;
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC
         QSKIP("Not yet sure why this fails.", SkipSingle);
 #endif
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
@@ -2775,7 +2773,7 @@ void tst_QWidget::raise()
 }
 
 // Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_MAC_USE_COCOA
+#ifndef QT_OS_MAC
 void tst_QWidget::lower()
 {
     QWidget *parent = new QWidget(0);
@@ -2840,7 +2838,7 @@ void tst_QWidget::lower()
 #endif
 
 // Cocoa has no Z-Order for views, we hack it, but it results in paint events.
-#ifndef QT_MAC_USE_COCOA
+#ifndef QT_OS_MAC
 void tst_QWidget::stackUnder()
 {
     QTest::qWait(10);
@@ -4242,6 +4240,9 @@ void tst_QWidget::update()
     QApplication::processEvents();
     QApplication::processEvents();
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL(0, "Cocoa compositor says to paint this twice.", Continue);
+#endif
     QTRY_COMPARE(w.numPaintEvents, 1);
 
     QCOMPARE(w.visibleRegion(), QRegion(w.rect()));
@@ -4301,10 +4302,6 @@ void tst_QWidget::update()
                                   - child.visibleRegion().translated(childOffset);
         QCOMPARE(w.visibleRegion(), expectedVisible);
         QCOMPARE(w.paintedRegion, expectedVisible);
-#ifdef QT_MAC_USE_COCOA
-        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
-            QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
-#endif
         QCOMPARE(child.numPaintEvents, 0);
 
         w.reset();
@@ -4373,7 +4370,7 @@ void tst_QWidget::update()
         QCOMPARE(sibling.numPaintEvents, 1);
         QCOMPARE(sibling.paintedRegion, sibling.visibleRegion());
 
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC
         if (child.internalWinId()) // child is native
             QEXPECT_FAIL(0, "Cocoa compositor paints child and sibling", Continue);
 #endif
@@ -4817,11 +4814,6 @@ void tst_QWidget::windowMoveResize()
         widget.show();
 
         QTest::qWait(10);
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-        QEXPECT_FAIL("130,50 0x0, flags 0",
-                     "Showing a window with 0x0 size shifts it up.",
-                     Continue);
-#endif
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -4863,7 +4855,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_MAC)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -4932,7 +4924,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_MAC)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -5106,7 +5098,7 @@ void tst_QWidget::showAndMoveChild()
 }
 
 // Cocoa only has rect granularity.
-#ifndef QT_MAC_USE_COCOA
+#ifndef QT_OS_MAC
 void tst_QWidget::subtractOpaqueSiblings()
 {
     QWidget w;
@@ -5837,9 +5829,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 {
     EventRecorder::EventList expected;
     bool accessibilityEnabled = false;
-#if defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-    accessibilityEnabled = AXAPIEnabled();
-#endif
 
     // Move away the cursor; otherwise it might result in an enter event if it's
     // inside the widget when the widget is shown.
@@ -5893,12 +5882,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1));
 
-#ifndef QT_MAC_USE_CARBON
-#ifdef QT_MAC_USE_COCOA
-        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
-#endif // QT_MAC_USE_COCOA
-            expected << qMakePair(&widget, QEvent::UpdateRequest);
-#endif // !QT_MAC_USE_CARBON
+#ifdef Q_OS_MAC
+        expected << qMakePair(&widget, QEvent::UpdateLater);
+#endif
+        expected << qMakePair(&widget, QEvent::UpdateRequest);
 
         QCOMPARE(spy.eventList(), expected);
     }
@@ -5981,12 +5968,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
 
-#ifndef QT_MAC_USE_CARBON
-#ifdef QT_MAC_USE_COCOA
-        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
-#endif // QT_MAC_USE_COCOA
-            expected << qMakePair(&widget, QEvent::UpdateRequest);
-#endif // !QT_MAC_USE_CARBON
+#ifdef Q_OS_MAC
+        expected << qMakePair(&widget, QEvent::UpdateLater);
+#endif
+        expected << qMakePair(&widget, QEvent::UpdateRequest);
 
         QCOMPARE(spy.eventList(), expected);
     }
@@ -6071,12 +6056,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
 
-#ifndef QT_MAC_USE_CARBON
-#ifdef QT_MAC_USE_COCOA
-        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
-#endif // QT_MAC_USE_COCOA
-            expected << qMakePair(&widget, QEvent::UpdateRequest);
-#endif // !QT_MAC_USE_CARBON
+#ifdef Q_OS_MAC
+        expected << qMakePair(&widget, QEvent::UpdateLater);
+#endif
+        expected << qMakePair(&widget, QEvent::UpdateRequest);
 
         QCOMPARE(spy.eventList(), expected);
     }
@@ -9425,7 +9408,6 @@ void tst_QWidget::childAt_unifiedToolBar()
     QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
 }
 
-#ifdef QT_MAC_USE_COCOA
 void tst_QWidget::taskQTBUG_11373()
 {
     QMainWindow * myWindow = new QMainWindow();
@@ -9443,7 +9425,6 @@ void tst_QWidget::taskQTBUG_11373()
     // The drawer should still not be visible, since we haven't shown it.
     QCOMPARE(drawer->isVisible(), false);
 }
-#endif // QT_MAC_USE_COCOA
 #endif
 
 void tst_QWidget::taskQTBUG_17333_ResizeInfiniteRecursion()

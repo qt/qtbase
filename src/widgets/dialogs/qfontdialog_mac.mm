@@ -196,7 +196,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)setSubwindowStacking
 {
-#ifdef QT_MAC_USE_COCOA
     // Stack the native dialog in front of its parent, if any:
     QFontDialog *q = mPriv->fontDialog();
     if (!qt_mac_is_macsheet(q)) {
@@ -207,7 +206,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
             }
         }
     }
-#endif
 }
 
 - (void)dealloc
@@ -245,13 +243,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)showWindowModalSheet:(QWidget *)docWidget
 {
-#ifdef QT_MAC_USE_COCOA
     NSWindow *window = qt_mac_window_for(docWidget);
-#else
-    WindowRef hiwindowRef = qt_mac_window_for(docWidget);
-    NSWindow *window = [[NSWindow alloc] initWithWindowRef:hiwindowRef];
-    CFRetain(hiwindowRef);
-#endif
 
     mAppModal = false;
     NSWindow *ourPanel = [mStolenContentView window];
@@ -261,9 +253,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         didEndSelector:0
         contextInfo:0 ];
 
-#ifndef QT_MAC_USE_COCOA
-    CFRelease(hiwindowRef);
-#endif
 }
 
 - (void)changeFont:(id)sender
@@ -279,13 +268,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     NSDictionary *dummyAttribs = [NSDictionary dictionary];
     NSDictionary *attribs = [sender convertAttributes:dummyAttribs];
 
-#ifdef QT_MAC_USE_COCOA
     for (id key in attribs) {
-#else
-    NSEnumerator *enumerator = [attribs keyEnumerator];
-    id key;
-    while((key = [enumerator nextObject])) {
-#endif
         NSNumber *number = static_cast<NSNumber *>([attribs objectForKey:key]);
         if ([key isEqual:NSUnderlineStyleAttributeName]) {
             mQtFont->setUnderline([number intValue] != NSUnderlineStyleNone);
@@ -441,14 +424,12 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)finishOffWithCode:(NSInteger)code
 {
-#ifdef QT_MAC_USE_COCOA
     QFontDialog *q = mPriv->fontDialog();
     if (QWidget *parent = q->parentWidget()) {
         if (parent->isWindow()) {
             [qt_mac_window_for(parent) removeChildWindow:[mStolenContentView window]];
         }
     }
-#endif
 
     if(code == NSOKButton)
         mPriv->sampleEdit->setFont([self qtFont]);
@@ -479,9 +460,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     }
     [mFontPanel setDelegate:nil];
     [[NSFontManager sharedFontManager] setDelegate:nil];
-#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:nil];
-#endif
 }
 @end
 
@@ -609,9 +588,7 @@ void QFontDialogPrivate::createNSFontPanelDelegate()
     [ourPanel setDelegate:del];
 
     [[NSFontManager sharedFontManager] setDelegate:del];
-#ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:del];
-#endif
     setFont(del, q_func()->currentFont());
 
     {

@@ -52,7 +52,6 @@
 
 #include "qmacdefines_mac.h"
 
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
@@ -107,4 +106,3 @@ QT_FORWARD_DECLARE_CLASS(QWidgetData)
 - (QWidget *)qt_qwidgetForWindow:(NSWindow *)window;
 - (void)syncContentViewFrame: (NSNotification *)notification;
 @end
-#endif

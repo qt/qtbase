@@ -45,27 +45,14 @@
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
-#ifdef QT_MAC_USE_COCOA
 static CTFontRef CopyCTThemeFont(ThemeFontID themeID)
 {
     CTFontUIFontType ctID = HIThemeGetUIFontType(themeID);
     return CTFontCreateUIFontForLanguage(ctID, 0, 0);
 }
-#endif
 
 QFont qfontForThemeFont(ThemeFontID themeID)
 {
-#ifndef QT_MAC_USE_COCOA
-    static const ScriptCode Script = smRoman;
-    Str255 f_name;
-    SInt16 f_size;
-    Style f_style;
-    GetThemeFont(themeID, Script, f_name, &f_size, &f_style);
-    extern QString qt_mac_from_pascal_string(const Str255); //qglobal.cpp
-    return QFont(qt_mac_from_pascal_string(f_name), f_size,
-                 (f_style & ::bold) ? QFont::Bold : QFont::Normal,
-                 (bool)(f_style & ::italic));
-#else
     QCFType<CTFontRef> ctfont = CopyCTThemeFont(themeID);
     QString familyName = QCFString(CTFontCopyFamilyName(ctfont));
     QCFType<CFDictionaryRef> dict = CTFontCopyTraits(ctfont);
@@ -77,7 +64,6 @@ QFont qfontForThemeFont(ThemeFontID themeID)
     CFNumberGetValue(num, kCFNumberFloatType, &fW);
     bool italic = (fW != 0.0);
     return QFont(familyName, CTFontGetSize(ctfont), wght, italic);
-#endif
 }
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
@@ -110,20 +96,7 @@ static inline QColor leopardBrush(ThemeBrush brush)
 
 QColor qcolorForTheme(ThemeBrush brush)
 {
-#ifndef QT_MAC_USE_COCOA
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-        return leopardBrush(brush);
-    } else
-#  endif
-    {
-        RGBColor rgbcolor;
-        GetThemeBrushAsColor(brush, 32, true, &rgbcolor);
-        return QColor(rgbcolor.red / 256, rgbcolor.green / 256, rgbcolor.blue / 256);
-    }
-#else
     return leopardBrush(brush);
-#endif
 }
 
 QColor qcolorForThemeTextColor(ThemeTextColor themeColor)

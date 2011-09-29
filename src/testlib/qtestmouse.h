@@ -117,7 +117,7 @@ namespace QTest
             case MouseMove:
                 QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton);
                 //QCursor::setPos(window->mapToGlobal(pos));
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC
                 QTest::qWait(20);
 #else
                 qApp->processEvents();
@@ -183,7 +183,7 @@ namespace QTest
                 break;
             case MouseMove:
                 QCursor::setPos(widget->mapToGlobal(pos));
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_OS_MAC
                 QTest::qWait(20);
 #else
                 qApp->processEvents();

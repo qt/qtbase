@@ -2285,7 +2285,7 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
-#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
     QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(14, 14));
     QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(14, 14));
@@ -3360,9 +3360,8 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-#ifdef QT_MAC_USE_COCOA
-    if (QApplicationPrivate::graphicsSystem() == 0)
-        QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
 #endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
@@ -3712,7 +3711,7 @@ void tst_QGraphicsView::exposeRegion()
     COMPARE_REGIONS(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
-#ifndef QT_MAC_USE_COCOA
+#ifndef Q_OS_MAC
     QCOMPARE(item->paints, 0);
 #endif
 }
@@ -3870,7 +3869,7 @@ void tst_QGraphicsView::update2()
     rect->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), expectedUpdateRegion);
@@ -3926,7 +3925,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape()
     child->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
@@ -3978,7 +3977,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     child->update();
     QTRY_VERIFY(view.painted);
 
-#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
@@ -3998,7 +3997,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     expected = child->deviceTransform(view.viewportTransform()).mapRect(child->boundingRect());
     expected.adjust(-2, -2, 2, 2); // Antialiasing
 
-#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+#ifndef Q_OS_MAC //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));

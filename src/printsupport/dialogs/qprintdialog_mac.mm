@@ -57,44 +57,10 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
 
 public:
     QPrintDialogPrivate() : ep(0), printPanel(0)
-#ifndef QT_MAC_USE_COCOA
-       ,upp(0)
-#endif
        {}
-#ifndef QT_MAC_USE_COCOA
-    ~QPrintDialogPrivate() {
-        if (upp) {
-            DisposePMSheetDoneUPP(upp);
-            upp = 0;
-        }
-        QHash<PMPrintSession, QPrintDialogPrivate *>::iterator it = sheetCallbackMap.begin();
-        while (it != sheetCallbackMap.end()) {
-            if (it.value() == this) {
-                it = sheetCallbackMap.erase(it);
-            } else {
-                ++it;
-            }
-        }
-    }
-#endif
 
-#ifndef QT_MAC_USE_COCOA
-    void openCarbonPrintPanel(Qt::WindowModality modality);
-    void closeCarbonPrintPanel();
-    static void printDialogSheetDoneCallback(PMPrintSession printSession, WindowRef /*documentWindow*/, Boolean accepted) {
-        QPrintDialogPrivate *priv = sheetCallbackMap.value(printSession);
-        if (!priv) {
-            qWarning("%s:%d: QPrintDialog::exec: Could not retrieve data structure, "
-                     "you most likely now have an infinite loop", __FILE__, __LINE__);
-            return;
-        }
-        priv->q_func()->done(accepted ? QDialog::Accepted : QDialog::Rejected);
-        priv->closeCarbonPrintPanel();
-    }
-#else
     void openCocoaPrintPanel(Qt::WindowModality modality);
     void closeCocoaPrintPanel();
-#endif
     void initBeforeRun();
 
     inline QPrintDialog *printDialog() { return q_func(); }
@@ -112,17 +78,12 @@ public:
 
     QMacPrintEnginePrivate *ep;
     NSPrintPanel *printPanel;
-#ifndef QT_MAC_USE_COCOA
-    PMSheetDoneUPP upp;
-    static QHash<PMPrintSession, QPrintDialogPrivate *> sheetCallbackMap;
-#endif
 };
 
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-#ifdef QT_MAC_USE_COCOA
 
 @class QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate);
 
@@ -190,7 +151,6 @@ QT_USE_NAMESPACE
 }
 @end
 
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -218,76 +178,6 @@ void QPrintDialogPrivate::initBeforeRun()
     }
 }
 
-#ifndef QT_MAC_USE_COCOA
-QHash<PMPrintSession, QPrintDialogPrivate *> QPrintDialogPrivate::sheetCallbackMap;
-void QPrintDialogPrivate::openCarbonPrintPanel(Qt::WindowModality modality)
-{
-    Q_Q(QPrintDialog);
-    initBeforeRun();
-    sheetCallbackMap.insert(ep->session, this);
-    if (modality == Qt::ApplicationModal) {
-        QWidget modal_widg(0, Qt::Window);
-        modal_widg.setObjectName(QLatin1String(__FILE__ "__modal_dlg"));
-        modal_widg.createWinId();
-        QApplicationPrivate::enterModal(&modal_widg);
-        QApplicationPrivate::native_modal_dialog_active = true;
-        Boolean acceptStatus;
-        PMSessionPrintDialog(ep->session, ep->settings, ep->format, &acceptStatus);
-        QApplicationPrivate::leaveModal(&modal_widg);
-        QApplicationPrivate::native_modal_dialog_active = false;
-        printDialogSheetDoneCallback(ep->session, 0, acceptStatus);
-    } else {
-        // Window Modal means that we use a sheet at the moment, there's no other way to do it correctly.
-        if (!upp)
-            upp = NewPMSheetDoneUPP(QPrintDialogPrivate::printDialogSheetDoneCallback);
-        PMSessionUseSheets(ep->session, qt_mac_window_for(q->parentWidget()), upp);
-        QApplicationPrivate::native_modal_dialog_active = true;
-        Boolean unused;
-        PMSessionPrintDialog(ep->session, ep->settings, ep->format, &unused);
-    }
-}
-
-void QPrintDialogPrivate::closeCarbonPrintPanel()
-{
-    Q_Q(QPrintDialog);
-    QApplicationPrivate::native_modal_dialog_active = false;
-    if (q->result() == QDialog::Accepted) {
-        UInt32 frompage, topage;
-        PMGetFirstPage(ep->settings, &frompage);
-        PMGetLastPage(ep->settings, &topage);
-        topage = qMin(UInt32(INT_MAX), topage);
-        q->setFromTo(frompage, topage);
-
-        // OK, I need to map these values back let's see
-        // If from is 1 and to is INT_MAX, then print it all
-        // (Apologies to the folks with more than INT_MAX pages)
-        // ...that's a joke.
-        if (q->fromPage() == 1 && q->toPage() == INT_MAX) {
-            q->setPrintRange(QAbstractPrintDialog::AllPages);
-            q->setFromTo(0,0);
-        } else {
-            q->setPrintRange(QAbstractPrintDialog::PageRange); // In a way a lie, but it shouldn't hurt.
-            // Carbon hands us back a very large number here even for ALL, set it to max
-            // in that case to follow the behavior of the other print dialogs.
-            if (q->maxPage() < q->toPage())
-                q->setFromTo(q->fromPage(), q->maxPage());
-        }
-        // Keep us in sync with file output
-        PMDestinationType dest;
-        PMSessionGetDestinationType(ep->session, ep->settings, &dest);
-        if (dest == kPMDestinationFile) {
-            QCFType<CFURLRef> file;
-            PMSessionCopyDestinationLocation(ep->session, ep->settings, &file);
-            UInt8 localFile[2048];  // Assuming there's a POSIX file system here.
-            CFURLGetFileSystemRepresentation(file, true, localFile, sizeof(localFile));
-            ep->outputFilename = QString::fromUtf8(reinterpret_cast<const char *>(localFile));
-        } else {
-            ep->outputFilename = QString();
-        }
-    }
-    sheetCallbackMap.remove(ep->session);
-}
-#else
 void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
 {
     Q_Q(QPrintDialog);
@@ -327,7 +217,6 @@ void QPrintDialogPrivate::closeCocoaPrintPanel()
 {
     // ###
 }
-#endif
 
 static bool warnIfNotNative(QPrinter *printer)
 {
@@ -367,14 +256,10 @@ int QPrintDialog::exec()
     if (!warnIfNotNative(d->printer))
         return QDialog::Rejected;
 
-#ifndef QT_MAC_USE_COCOA
-    d->openCarbonPrintPanel(Qt::ApplicationModal);
-#else
     QMacCocoaAutoReleasePool pool;
 
     d->openCocoaPrintPanel(Qt::ApplicationModal);
     d->closeCocoaPrintPanel();
-#endif
     return result();
 }
 
@@ -395,21 +280,12 @@ void QPrintDialog::setVisible(bool visible)
         return;
 
     if (visible) {
-#ifndef QT_MAC_USE_COCOA
-        d->openCarbonPrintPanel(parentWidget() ? Qt::WindowModal
-                                               : Qt::ApplicationModal);
-#else
         d->openCocoaPrintPanel(parentWidget() ? Qt::WindowModal
                                               : Qt::ApplicationModal);
-#endif
         return;
     } else {
         if (d->printPanel) {
-#ifndef QT_MAC_USE_COCOA
-            d->closeCarbonPrintPanel();
-#else
             d->closeCocoaPrintPanel();
-#endif
             return;
         }
     }

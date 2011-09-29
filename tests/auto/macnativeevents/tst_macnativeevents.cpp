@@ -68,11 +68,9 @@ private slots:
     void testDragWindow();
     void testMouseEnter();
     void testChildDialogInFrontOfModalParent();
-#ifdef QT_MAC_USE_COCOA
 //    void testChildWindowInFrontOfParentWindow();
 //    void testChildToolWindowInFrontOfChildNormalWindow();
     void testChildWindowInFrontOfStaysOnTopParentWindow();
-#endif
     void testKeyPressOnToplevel();
     void testModifierShift();
     void testModifierAlt();
@@ -318,7 +316,6 @@ void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
     QVERIFY(!child.isVisible());
 }
 
-#ifdef QT_MAC_USE_COCOA
 #if 0
 // This test is disabled as of Qt-4.7.4 because we cannot do it
 // unless we use the Cocoa sub window API. But using that opens up
@@ -398,7 +395,6 @@ void tst_MacNativeEvents::testChildWindowInFrontOfStaysOnTopParentWindow()
     QTest::qWait(100);
     QVERIFY(!button.isVisible());
 }
-#endif
 
 void tst_MacNativeEvents::testKeyPressOnToplevel()
 {

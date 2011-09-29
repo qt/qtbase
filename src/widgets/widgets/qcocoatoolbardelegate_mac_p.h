@@ -51,7 +51,6 @@
 //
 
 #include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
@@ -68,4 +67,3 @@ QT_END_NAMESPACE
 
 - (id)initWithMainWindowLayout:(QT_PREPEND_NAMESPACE(QMainWindowLayout) *)layout;
 @end
-#endif

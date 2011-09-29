@@ -47,12 +47,6 @@
 QString nativeWindowTitle(QWidget *widget, Qt::WindowState state);
 bool nativeWindowModified(QWidget *widget);
 
-#ifndef QT_MAC_USE_COCOA
-typedef QPair<QWidget *, HIViewRef> WidgetViewPair;
-bool testAndRelease(const HIViewRef view);
-WidgetViewPair createAndRetain(QWidget * const parent = 0);
-#else
 typedef QPair<QWidget *, WId> WidgetViewPair;
 bool testAndRelease(const WId);
 WidgetViewPair createAndRetain(QWidget * const parent = 0);
-#endif

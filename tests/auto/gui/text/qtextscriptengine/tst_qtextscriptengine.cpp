@@ -1178,7 +1178,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 #if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
 void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 {
-#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+#if defined(Q_WS_MAC)
     QString s;
     s.append(QChar(0x0061));
     s.append(QChar(0x0062));

@@ -54,7 +54,6 @@
 #define QCOCOAPANEL_MAC_P
 
 #include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 QT_FORWARD_DECLARE_CLASS(QStringList);
@@ -78,6 +77,5 @@ QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
 - (void)drawRectOriginal:(NSRect)rect;
 
 @end
-#endif
 
 #endif

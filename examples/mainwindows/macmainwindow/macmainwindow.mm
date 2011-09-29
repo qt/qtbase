@@ -47,7 +47,6 @@
 
 #include <Carbon/Carbon.h>
 
-#ifdef QT_MAC_USE_COCOA
 
 //![0]
 SearchWidget::SearchWidget(QWidget *parent)
@@ -84,56 +83,6 @@ QSize SearchWidget::sizeHint() const
     return QSize(150, 40);
 }
 
-#else
-
-// The SearchWidget class wraps a native HISearchField.
-SearchWidget::SearchWidget(QWidget *parent)
-    :QWidget(parent)
-{
-
-    // Create a native search field and pass its window id to QWidget::create.
-    searchFieldText = CFStringCreateWithCString(0, "search", 0);
-    HISearchFieldCreate(NULL/*bounds*/, kHISearchFieldAttributesSearchIcon | kHISearchFieldAttributesCancel,
-                        NULL/*menu ref*/, searchFieldText, &searchField);
-    create(reinterpret_cast<WId>(searchField));
-
-    // Use a Qt menu for the search field menu.
-    QMenu *searchMenu = createMenu(this);
-    MenuRef menuRef = searchMenu->macMenu(0);
-    HISearchFieldSetSearchMenu(searchField, menuRef);
-    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-}
-
-SearchWidget::~SearchWidget()
-{
-    CFRelease(searchField);
-    CFRelease(searchFieldText);
-}
-
-// Get the size hint from the search field.
-QSize SearchWidget::sizeHint() const
-{
-    EventRef event;
-    HIRect optimalBounds;
-    CreateEvent(0, kEventClassControl,
-        kEventControlGetOptimalBounds,
-        GetCurrentEventTime(),
-        kEventAttributeUserEvent, &event);
-
-    SendEventToEventTargetWithOptions(event,
-        HIObjectGetEventTarget(HIObjectRef(winId())),
-        kEventTargetDontPropagate);
-
-    GetEventParameter(event,
-        kEventParamControlOptimalBounds, typeHIRect,
-        0, sizeof(HIRect), 0, &optimalBounds);
-
-    ReleaseEvent(event);
-    return QSize(optimalBounds.size.width + 100, // make it a bit wider.
-                 optimalBounds.size.height);
-}
-
-#endif
 
 QMenu *createMenu(QWidget *parent)
 {

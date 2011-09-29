@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #import <private/qcocoawindow_mac_p.h>
 #import <private/qcocoawindowdelegate_mac_p.h>
 #import <private/qcocoaview_mac_p.h>
@@ -87,4 +86,3 @@ QT_USE_NAMESPACE
 #include "qcocoasharedwindowmethods_mac_p.h"
 
 @end
-#endif

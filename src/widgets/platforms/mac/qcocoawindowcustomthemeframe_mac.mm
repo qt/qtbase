@@ -41,7 +41,6 @@
 
 #include "qmacdefines_mac.h"
 
-#ifdef QT_MAC_USE_COCOA
 
 #import "private/qcocoawindowcustomthemeframe_mac_p.h"
 #import "private/qcocoawindow_mac_p.h"
@@ -59,4 +58,3 @@
 
 @end
 
-#endif

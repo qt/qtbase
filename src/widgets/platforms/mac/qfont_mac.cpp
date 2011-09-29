@@ -100,31 +100,20 @@ void QFont::cleanup()
 */
 quint32 QFont::macFontID() const  // ### need 64-bit version
 {
-#ifdef QT_MAC_USE_COCOA
     return 0;
 #elif 1
     QFontEngine *fe = d->engineForScript(QUnicodeTables::Common);
     if (fe && fe->type() == QFontEngine::Multi)
         return static_cast<QFontEngineMacMulti*>(fe)->macFontID();
-#else
-    Str255 name;
-    if(FMGetFontFamilyName((FMFontFamily)((UInt32)handle()), name) == noErr) {
-        short fnum;
-        GetFNum(name, &fnum);
-        return fnum;
-    }
-#endif
     return 0;
 }
 
 // Returns an ATSUFonFamilyRef
 Qt::HANDLE QFont::handle() const
 {
-#ifdef QT_MAC_USE_COCOA
     QFontEngine *fe = d->engineForScript(QUnicodeTables::Common);
     if (fe && fe->type() == QFontEngine::Multi)
         return (Qt::HANDLE)static_cast<QCoreTextFontEngineMulti*>(fe)->macFontID();
-#endif
     return 0;
 }
 

@@ -79,9 +79,6 @@ QT_BEGIN_NAMESPACE
 
 void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class proxyClass, SEL replacementSel, SEL backupSel)
 {
-#ifndef QT_MAC_USE_COCOA
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-#endif
     {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
         // The following code replaces the _implementation_ for the selector we want to hack
@@ -110,9 +107,6 @@ void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class prox
 
 void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL backupSel)
 {
-#ifndef QT_MAC_USE_COCOA
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-#endif
     {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
         Method originalMethod = class_getInstanceMethod(baseClass, originalSel);

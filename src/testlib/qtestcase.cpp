@@ -78,11 +78,7 @@
 
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h> // for SetFrontProcess
-#ifdef QT_MAC_USE_COCOA
 #include <IOKit/pwr_mgt/IOPMLib.h>
-#else
-#include <Security/AuthSession.h>
-#endif
 #undef verify
 #endif
 
@@ -1797,9 +1793,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
 #ifdef Q_WS_MAC
     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
-#ifdef QT_MAC_USE_COCOA
     IOPMAssertionID powerID;
-#endif
 #endif
 #ifndef QT_NO_EXCEPTIONS
     try {
@@ -1816,13 +1810,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     if (macNeedsActivate) {
         ProcessSerialNumber psn = { 0, kCurrentProcess };
         SetFrontProcess(&psn);
-#ifdef QT_MAC_USE_COCOA
         IOReturn ok = IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, &powerID);
         if (ok != kIOReturnSuccess)
             macNeedsActivate = false; // no need to release the assertion on exit.
-#else
-        UpdateSystemActivity(1); // Wake the display.
-#endif
     }
 #endif
 
@@ -1873,7 +1863,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          }
 
         QTestLog::stopLogging();
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_WS_MAC
          if (macNeedsActivate) {
              IOPMAssertionRelease(powerID);
          }
@@ -1887,7 +1877,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
     currentTestObject = 0;
-#ifdef QT_MAC_USE_COCOA
+#ifdef Q_WS_MAC
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
      }
