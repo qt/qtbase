@@ -2087,7 +2087,7 @@ void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &valu
     html += QLatin1Char(' ');
     html += QLatin1String(attribute);
     html += QLatin1String("=\"");
-    html += Qt::escape(value);
+    html += value.toHtmlEscaped();
     html += QLatin1Char('"');
 }
 
@@ -2360,7 +2360,7 @@ void QTextHtmlExporter::emitFontFamily(const QString &family)
         quote = QLatin1String("&quot;");
 
     html += quote;
-    html += Qt::escape(family);
+    html += family.toHtmlEscaped();
     html += quote;
     html += QLatin1Char(';');
 }
@@ -2394,13 +2394,13 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         const QString name = format.anchorName();
         if (!name.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += Qt::escape(name);
+            html += name.toHtmlEscaped();
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();
         if (!href.isEmpty()) {
             html += QLatin1String("<a href=\"");
-            html += Qt::escape(href);
+            html += href.toHtmlEscaped();
             html += QLatin1String("\">");
             closeAnchor = true;
         }
@@ -2449,7 +2449,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     } else {
         Q_ASSERT(!txt.contains(QChar::ObjectReplacementCharacter));
 
-        txt = Qt::escape(txt);
+        txt = txt.toHtmlEscaped();
 
         // split for [\n{LineSeparator}]
         QString forcedLineBreakRegExp = QString::fromLatin1("[\\na]");

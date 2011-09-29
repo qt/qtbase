@@ -330,6 +330,7 @@ public:
 
     QString trimmed() const Q_REQUIRED_RESULT;
     QString simplified() const Q_REQUIRED_RESULT;
+    QString toHtmlEscaped() const Q_REQUIRED_RESULT;
 
     QString &insert(int i, QChar c);
     QString &insert(int i, const QChar *uc, int len);
@@ -1250,7 +1251,11 @@ inline QBool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) c
 { return QBool(indexOf(s, 0, cs) != -1); }
 
 namespace Qt {
-    Q_CORE_EXPORT QString escape(const QString &plain);
+#if QT_DEPRECATED_SINCE(5, 0)
+QT_DEPRECATED inline QString escape(const QString &plain) {
+    return plain.toHtmlEscaped();
+}
+#endif
 }
 
 QT_END_NAMESPACE

@@ -30,6 +30,9 @@ information about a particular change.
 
 - QCoreApplication::translate() will no longer return the source text when
   the translation is empty. Use lrelease -removeidentical for optimization.
+  
+- Qt::escape() is deprecated (but can be enabled via
+  QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
 ****************************************************************************
 *                           General                                        *

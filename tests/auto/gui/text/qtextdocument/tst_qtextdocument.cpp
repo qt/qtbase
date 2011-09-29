@@ -177,8 +177,6 @@ private slots:
     void testUndoBlocks();
 
     void receiveCursorPositionChangedAfterContentsChange();
-    void escape_data();
-    void escape();
 
     void copiedFontSize();
 
@@ -2716,26 +2714,6 @@ void tst_QTextDocument::receiveCursorPositionChangedAfterContentsChange()
             &rec, SLOT(contentsChange()));
     cursor.insertText("Hello World");
     QCOMPARE(rec.first, QString("contentsChanged"));
-}
-
-void tst_QTextDocument::escape_data()
-{
-    QTest::addColumn<QString>("original");
-    QTest::addColumn<QString>("expected");
-
-    QTest::newRow("1") << "Hello World\n" << "Hello World\n";
-    QTest::newRow("2") << "#include <QtCore>" << "#include &lt;QtCore&gt;";
-    QTest::newRow("3") << "<p class=\"cool\"><a href=\"http://example.com/?foo=bar&amp;bar=foo\">plop --&gt; </a></p>"
-                       << "&lt;p class=&quot;cool&quot;&gt;&lt;a href=&quot;http://example.com/?foo=bar&amp;amp;bar=foo&quot;&gt;plop --&amp;gt; &lt;/a&gt;&lt;/p&gt;";
-    QTest::newRow("4") << QString::fromUtf8("<\320\222\321\201>") << QString::fromUtf8("&lt;\320\222\321\201&gt;");
-}
-
-void tst_QTextDocument::escape()
-{
-    QFETCH(QString, original);
-    QFETCH(QString, expected);
-
-    QCOMPARE(Qt::escape(original), expected);
 }
 
 void tst_QTextDocument::copiedFontSize()

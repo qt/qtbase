@@ -8788,6 +8788,14 @@ QVector<uint> QStringRef::toUcs4() const
     return v;
 }
 
+
+/*!
+    \obsolete
+    \fn QString Qt::escape(const QString &plain)
+
+    \sa QString::toHtmlEscaped()
+*/
+
 /*!
     Converts the plain text string \a plain to a HTML string with
     HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
@@ -8795,27 +8803,24 @@ QVector<uint> QStringRef::toUcs4() const
 
     Example:
 
-    \snippet doc/src/snippets/code/src_gui_text_qtextdocument.cpp 0
-
-    This function is defined in the \c <QString> header file.
-
-    \sa convertFromPlainText(), mightBeRichText()
+    \snippet doc/src/snippets/code/src_corelib_tools_qstring.cpp 7
 */
-QString Qt::escape(const QString &plain)
+QString QString::toHtmlEscaped() const
 {
     QString rich;
-    rich.reserve(int(plain.length() * 1.1));
-    for (int i = 0; i < plain.length(); ++i) {
-        if (plain.at(i) == QLatin1Char('<'))
+    const int len = length();
+    rich.reserve(int(len * 1.1));
+    for (int i = 0; i < len; ++i) {
+        if (at(i) == QLatin1Char('<'))
             rich += QLatin1String("&lt;");
-        else if (plain.at(i) == QLatin1Char('>'))
+        else if (at(i) == QLatin1Char('>'))
             rich += QLatin1String("&gt;");
-        else if (plain.at(i) == QLatin1Char('&'))
+        else if (at(i) == QLatin1Char('&'))
             rich += QLatin1String("&amp;");
-        else if (plain.at(i) == QLatin1Char('"'))
+        else if (at(i) == QLatin1Char('"'))
             rich += QLatin1String("&quot;");
         else
-            rich += plain.at(i);
+            rich += at(i);
     }
     rich.squeeze();
     return rich;

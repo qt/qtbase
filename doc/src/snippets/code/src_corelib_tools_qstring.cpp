@@ -89,6 +89,6 @@ QLabel *label = new QLabel(QLatin1String("MOD"), this);
 
 //! [7]
 QString plain = "#include <QtCore>"
-QString html = Qt::escape(plain);
+QString html = plain.toHtmlEscaped();
 // html == "#include &lt;QtCore&gt;"
 //! [7]
