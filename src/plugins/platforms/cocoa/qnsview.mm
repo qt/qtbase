@@ -146,14 +146,35 @@
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 {
-    NSPoint windowPoint = [self convertPoint: [theEvent locationInWindow] fromView: nil];
-    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    // Calculate the mouse position in the QWindow and Qt screen coordinate system,
+    // starting from coordinates in the NSWindow coordinate system.
+    //
+    // This involves translating according to the window location on screen,
+    // as well as inverting the y coordinate due to the origin change.
+    //
+    // Coordinate system overview, outer to innermost:
+    //
+    // Name             Origin
+    //
+    // OS X screen      bottom-left
+    // Qt screen        top-left
+    // NSWindow         bottom-left
+    // NSView/QWindow   top-left
+    //
+    // NSView and QWindow are equal coordinate systems: the QWindow covers the
+    // entire NSView, and we've set the NSView's isFlipped property to true.
 
-    NSTimeInterval timestamp = [theEvent timestamp];
-    ulong qt_timestamp = timestamp * 1000;
+    NSPoint nsWindowPoint = [theEvent locationInWindow];                    // NSWindow coordinates
 
-    // ### Should the points be windowPoint and screenPoint?
-    QWindowSystemInterface::handleMouseEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, m_buttons);
+    NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
+    QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
+
+    NSRect screenRect = [[self window] convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)];  // OS X screen coordinates
+    QPoint qtScreenPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));                        // Qt screen coordinates
+
+    ulong timestamp = [theEvent timestamp] * 1000;
+
+    QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
 }
 
 - (void)mouseDown:(NSEvent *)theEvent

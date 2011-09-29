@@ -2865,7 +2865,7 @@ bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
    \internal
 */
 QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint &globalPos,
-                                                QPoint &pos, QEvent::Type type,
+                                                QPoint *pos, QEvent::Type type,
                                                 Qt::MouseButtons buttons, QWidget *buttonDown,
                                                 QWidget *alienWidget)
 {
@@ -2887,7 +2887,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
 
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;
-        pos = receiver->mapFromGlobal(globalPos);
+        *pos = receiver->mapFromGlobal(globalPos);
 #ifdef ALIEN_DEBUG
         qDebug() << "  ** receiver adjusted to:" << receiver << "pos:" << pos;
 #endif
