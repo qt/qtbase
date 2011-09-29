@@ -234,6 +234,21 @@ void QWindow::setFormat(const QSurfaceFormat &format)
     d->requestedFormat = format;
 }
 
+
+/*!
+    Returns the requested surfaceformat of this window.
+
+    If the requested format was not supported by the platform implementation,
+    the requestedFormat will differ from the actual window format.
+
+    \sa format.
+ */
+QSurfaceFormat QWindow::requestedFormat() const
+{
+    Q_D(const QWindow);
+    return d->requestedFormat;
+}
+
 QSurfaceFormat QWindow::format() const
 {
     Q_D(const QWindow);

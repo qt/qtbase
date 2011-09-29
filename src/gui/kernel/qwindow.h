@@ -112,6 +112,7 @@ public:
 
     void setFormat(const QSurfaceFormat &format);
     QSurfaceFormat format() const;
+    QSurfaceFormat requestedFormat() const;
 
     void setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowFlags windowFlags() const;
