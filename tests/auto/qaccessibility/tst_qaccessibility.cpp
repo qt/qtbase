@@ -172,7 +172,7 @@ static int verifyHierarchy(QAccessibleInterface *iface)
     int errorAt = 0;
     int entry = 0;
     static int treelevel = 0;   // for error diagnostics
-    QAccessibleInterface *middleChild, *if2, *if3;
+    QAccessibleInterface *middleChild, *if2;
     middleChild = 0;
     ++treelevel;
     int middle = iface->childCount()/2 + 1;
@@ -3302,14 +3302,14 @@ void tst_QAccessibility::comboBoxTest()
     QCOMPARE(iface->childCount(), 1);
 
 #ifdef Q_OS_UNIX
-    QCOMPARE(iface->text(QAccessible::Name), QStringLiteral("one"));
+    QCOMPARE(iface->text(QAccessible::Name), QLatin1String("one"));
 #endif
-    QCOMPARE(iface->text(QAccessible::Value), QStringLiteral("one"));
+    QCOMPARE(iface->text(QAccessible::Value), QLatin1String("one"));
     combo.setCurrentIndex(2);
 #ifdef Q_OS_UNIX
-    QCOMPARE(iface->text(QAccessible::Name), QStringLiteral("three"));
+    QCOMPARE(iface->text(QAccessible::Name), QLatin1String("three"));
 #endif
-    QCOMPARE(iface->text(QAccessible::Value), QStringLiteral("three"));
+    QCOMPARE(iface->text(QAccessible::Value), QLatin1String("three"));
 
     QAccessibleInterface *listIface = iface->child(0);
     QCOMPARE(listIface->role(), QAccessible::List);

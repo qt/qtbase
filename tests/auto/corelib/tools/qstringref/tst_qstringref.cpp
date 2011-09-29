@@ -102,7 +102,7 @@ Q_DECLARE_METATYPE(IntList)
 #include <float.h>
 #include <limits.h>
 #include <math.h>
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #   include <windows.h>
 // mingw defines NAN and INFINITY to 0/0 and x/0
 #   if defined(Q_CC_GNU)

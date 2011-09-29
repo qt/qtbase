@@ -1193,7 +1193,7 @@ void tst_QVariant::toString_data()
     QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QString( "12:34:56" );
     QTest::newRow( "qdatetime" ) << QVariant( QDateTime( QDate( 2002, 1, 1 ), QTime( 12, 34, 56 ) ) ) << QString( "2002-01-01T12:34:56" );
     QTest::newRow( "qkeysequence" ) << qVariantFromValue( QKeySequence( Qt::CTRL + Qt::Key_A ) )
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
         << QString( "Ctrl+A" );
 #else
         << QString(QChar(0x2318)) + "A";

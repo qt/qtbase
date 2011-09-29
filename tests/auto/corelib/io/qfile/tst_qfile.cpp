@@ -576,7 +576,7 @@ void tst_QFile::size()
     QFETCH( QString, filename );
     QFETCH( qint64, size );
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
         filename = QFileInfo(filename).absoluteFilePath();
 #endif
 
@@ -600,7 +600,7 @@ void tst_QFile::size()
     }
 
     {
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
         QSKIP("Currently low level file I/O not well supported on Windows CE", SkipSingle);
 #endif
         QFile f;
@@ -1042,7 +1042,7 @@ void tst_QFile::ungetChar()
 void tst_QFile::invalidFile_data()
 {
     QTest::addColumn<QString>("fileName");
-#if !defined(Q_WS_WIN)
+#if !defined(Q_OS_WIN)
     QTest::newRow( "x11" ) << QString( "qwe//" );
 #else
     QTest::newRow( "colon1" ) << QString( "fail:invalid" );
@@ -1225,7 +1225,7 @@ void tst_QFile::copyFallback()
     QVERIFY(QFile::exists("file-copy-destination.txt"));
     QVERIFY(!file.isOpen());
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     // Need to reset permissions on Windows to be able to delete
     QVERIFY(QFile::setPermissions("file-copy-destination.txt",
             QFile::WriteOther));
@@ -1801,7 +1801,7 @@ void tst_QFile::largeFileSupport()
     sizeNeeded *= 2;
     sizeNeeded += 1024;
     qlonglong freespace = qlonglong(0);
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     _ULARGE_INTEGER free;
     if (::GetDiskFreeSpaceEx((wchar_t*)QDir::currentPath().utf16(), &free, 0, 0))
         freespace = free.QuadPart;
@@ -2793,7 +2793,7 @@ void tst_QFile::map()
 
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
      fileName = QFileInfo(fileName).absoluteFilePath();
 #endif
 
@@ -2994,7 +2994,7 @@ void tst_QFile::openDirectory()
 
 void tst_QFile::openStandardStreamsFileDescriptors()
 {
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     //allthough Windows CE (not mobile!) has functions that allow redirecting
     //the standard file descriptors to a file (see SetStdioPathW/GetStdioPathW)
     //it does not have functions to simply open them like below .

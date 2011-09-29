@@ -4,6 +4,6 @@ QT = core-private network-private
 
 requires(contains(QT_CONFIG,private_tests))
 
-include(../platformsocketengine/platformsocketengine.pri)
+include(../../../network/socket/platformsocketengine/platformsocketengine.pri)
 
 CONFIG += insignificant_test # QTBUG-21204

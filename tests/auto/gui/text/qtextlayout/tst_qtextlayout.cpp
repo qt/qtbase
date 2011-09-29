@@ -1115,7 +1115,7 @@ void tst_QTextLayout::tabsForRtl()
 }
 
 QT_BEGIN_NAMESPACE
-extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiY();
 QT_END_NAMESPACE
 
 void tst_QTextLayout::testTabDPIScale()

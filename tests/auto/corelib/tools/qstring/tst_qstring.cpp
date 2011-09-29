@@ -2127,7 +2127,7 @@ void tst_QString::remove_regexp()
 
 void tst_QString::toNum()
 {
-#if defined (Q_WS_WIN) && defined (Q_CC_MSVC)
+#if defined (Q_OS_WIN) && defined (Q_CC_MSVC)
 #define TEST_TO_INT(num, func) \
     a = #num; \
     QVERIFY2(a.func(&ok) == num ## i64 && ok, "Failed: num=" #num ", func=" #func);
@@ -2165,7 +2165,7 @@ void tst_QString::toNum()
 
 #undef TEST_TO_INT
 
-#if defined (Q_WS_WIN) && defined (Q_CC_MSVC)
+#if defined (Q_OS_WIN) && defined (Q_CC_MSVC)
 #define TEST_TO_UINT(num, func) \
     a = #num; \
     QVERIFY2(a.func(&ok) == num ## i64 && ok, "Failed: num=" #num ", func=" #func);
@@ -4352,7 +4352,7 @@ void tst_QString::localeAwareCompare()
     QCOMPARE(locale, GetThreadLocale());
 #  endif
 
-#elif defined (Q_WS_MAC)
+#elif defined (Q_OS_MAC)
     QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)", SkipAll);
 #elif defined(QT_USE_ICU)
     QLocale::setDefault(QLocale(locale));

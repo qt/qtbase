@@ -99,7 +99,7 @@ private slots:
 
 tst_QSslKey::tst_QSslKey()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // applicationDirPath() points to a path inside the app bundle on Mac.
     QDir dir(qApp->applicationDirPath() + QLatin1String("/../../../keys"));
 #else

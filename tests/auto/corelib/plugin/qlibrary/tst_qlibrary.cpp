@@ -257,7 +257,7 @@ void tst_QLibrary::unload_data()
     QString currDir = QDir::currentPath();
 
     QTest::newRow( "mylib" ) << currDir + "/mylib" << true;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_3)
         QEXPECT_FAIL("mylib", "dlcompat cannot unload libraries", Continue);
 #endif
@@ -502,7 +502,7 @@ void tst_QLibrary::fileName_data()
 
     QTest::newRow( "ok02" ) << sys_qualifiedLibraryName(QLatin1String("mylib"))
                             << sys_qualifiedLibraryName(QLatin1String("mylib"));
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #ifndef Q_OS_WINCE
     QTest::newRow( "ok03" ) << "user32"
                             << "USER32.dll";

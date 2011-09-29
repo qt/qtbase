@@ -232,7 +232,7 @@ void tst_QDir::setPath_data()
     QTest::addColumn<QString>("dir2");
 
     QTest::newRow("data0") << QString(".") << QString("..");
-#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("data1") << QString("c:/") << QDir::currentPath();
 #endif
 }
@@ -387,7 +387,7 @@ void tst_QDir::isRelativePath_data()
     QTest::addColumn<bool>("relative");
 
     QTest::newRow("data0") << "../somedir" << true;
-#if (defined(Q_WS_WIN) && !defined(Q_OS_WINCE))
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("data1") << "C:/sOmedir" << false;
 #endif
     QTest::newRow("data2") << "somedir" << true;
@@ -615,7 +615,7 @@ void tst_QDir::entryList()
 #endif
 #endif //Q_NO_SYMLINKS
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (qstrcmp(QTest::currentDataTag(), "unprintablenames") == 0)
         QSKIP("p4 doesn't sync the files with the unprintable names properly on Mac",SkipSingle);
 #endif
@@ -750,7 +750,7 @@ void tst_QDir::canonicalPath_data()
     else
         appPath.chop(1);        // remove the ending slash
 
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     if (appPath.endsWith("release", Qt::CaseInsensitive) || appPath.endsWith("debug", Qt::CaseInsensitive)) {
         QDir appDir(appPath);
         QVERIFY(appDir.cdUp());
@@ -761,7 +761,7 @@ void tst_QDir::canonicalPath_data()
     QTest::newRow("relative") << "." << appPath;
     QTest::newRow("relativeSubDir") << "./testData/../testData" << appPath + "/testData";
 
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     QTest::newRow("absPath") << appPath + "/testData/../testData" << appPath + "/testData";
 #else
     QTest::newRow("absPath") << appPath + "\\testData\\..\\testData" << appPath + "/testData";
@@ -824,7 +824,7 @@ void tst_QDir::current_data()
         appPath = QCoreApplication::instance()->applicationDirPath();
     else
         appPath.chop(1);        // remove the ending slash
-#if defined Q_WS_WIN
+#if defined Q_OS_WIN
     if (appPath.endsWith("release", Qt::CaseInsensitive))
         appPath = appPath.left(appPath.length()-8);
     else if (appPath.endsWith("debug", Qt::CaseInsensitive))
@@ -833,7 +833,7 @@ void tst_QDir::current_data()
 
     QTest::newRow("startup") << QString() << appPath;
     QTest::newRow("relPath") << "testData" << appPath + "/testData";
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     QTest::newRow("absPath") << appPath + "/testData" << appPath + "/testData";
 #else
     QTest::newRow("absPath") << appPath + "\\testData" << appPath + "/testData";

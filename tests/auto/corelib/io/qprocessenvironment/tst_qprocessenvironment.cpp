@@ -251,7 +251,7 @@ void tst_QProcessEnvironment::systemEnvironment()
 
     QVERIFY(nonexistant.isNull());
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     // Windows CE has no environment
     QVERIFY(path.isEmpty());
     QVERIFY(!system.contains("PATH"));
@@ -278,7 +278,7 @@ void tst_QProcessEnvironment::systemEnvironment()
 
 void tst_QProcessEnvironment::putenv()
 {
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
     QSKIP("Windows CE has no environment", SkipAll);
 #else
     static const char envname[] = "WE_RE_SETTING_THIS_ENVIRONMENT_VARIABLE";
