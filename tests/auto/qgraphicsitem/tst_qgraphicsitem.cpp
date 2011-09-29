@@ -305,6 +305,7 @@ private slots:
     void inputMethodHints();
     void toolTip();
     void visible();
+    void isVisibleTo();
     void explicitlyVisible();
     void enabled();
     void explicitlyEnabled();
@@ -1136,6 +1137,113 @@ void tst_QGraphicsItem::visible()
     QVERIFY(!item->hasFocus());
     item->setVisible(true);
     QVERIFY(!item->hasFocus());
+}
+
+void tst_QGraphicsItem::isVisibleTo()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *parent = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsItem *child = scene.addRect(QRectF(25, 25, 50, 50));
+    QGraphicsItem *grandChild = scene.addRect(QRectF(50, 50, 50, 50));
+    QGraphicsItem *stranger = scene.addRect(100, 100, 100, 100);
+
+    child->setParentItem(parent);
+    grandChild->setParentItem(child);
+
+    QVERIFY(grandChild->isVisible());
+    QVERIFY(grandChild->isVisibleTo(grandChild));
+    QVERIFY(grandChild->isVisibleTo(child));
+    QVERIFY(grandChild->isVisibleTo(parent));
+    QVERIFY(grandChild->isVisibleTo(0));
+    QVERIFY(child->isVisible());
+    QVERIFY(child->isVisibleTo(child));
+    QVERIFY(child->isVisibleTo(parent));
+    QVERIFY(child->isVisibleTo(0));
+    QVERIFY(parent->isVisible());
+    QVERIFY(parent->isVisibleTo(parent));
+    QVERIFY(parent->isVisibleTo(0));
+    QVERIFY(!parent->isVisibleTo(child));
+    QVERIFY(!child->isVisibleTo(grandChild));
+    QVERIFY(!grandChild->isVisibleTo(stranger));
+    QVERIFY(!child->isVisibleTo(stranger));
+    QVERIFY(!parent->isVisibleTo(stranger));
+    QVERIFY(!stranger->isVisibleTo(grandChild));
+    QVERIFY(!stranger->isVisibleTo(child));
+    QVERIFY(!stranger->isVisibleTo(parent));
+
+    // Case 1: only parent is explicitly hidden
+    parent->hide();
+
+    QVERIFY(!grandChild->isVisible());
+    QVERIFY(grandChild->isVisibleTo(grandChild));
+    QVERIFY(grandChild->isVisibleTo(child));
+    QVERIFY(grandChild->isVisibleTo(parent));
+    QVERIFY(!grandChild->isVisibleTo(0));
+    QVERIFY(!child->isVisible());
+    QVERIFY(child->isVisibleTo(child));
+    QVERIFY(child->isVisibleTo(parent));
+    QVERIFY(!child->isVisibleTo(0));
+    QVERIFY(!parent->isVisible());
+    QVERIFY(!parent->isVisibleTo(parent));
+    QVERIFY(!parent->isVisibleTo(0));
+    QVERIFY(!parent->isVisibleTo(child));
+    QVERIFY(!child->isVisibleTo(grandChild));
+    QVERIFY(!grandChild->isVisibleTo(stranger));
+    QVERIFY(!child->isVisibleTo(stranger));
+    QVERIFY(!parent->isVisibleTo(stranger));
+    QVERIFY(!stranger->isVisibleTo(grandChild));
+    QVERIFY(!stranger->isVisibleTo(child));
+    QVERIFY(!stranger->isVisibleTo(parent));
+
+    // Case 2: only child is hidden
+    parent->show();
+    child->hide();
+
+    QVERIFY(!grandChild->isVisible());
+    QVERIFY(grandChild->isVisibleTo(grandChild));
+    QVERIFY(grandChild->isVisibleTo(child));
+    QVERIFY(!grandChild->isVisibleTo(parent));
+    QVERIFY(!grandChild->isVisibleTo(0));
+    QVERIFY(!child->isVisible());
+    QVERIFY(!child->isVisibleTo(child));
+    QVERIFY(!child->isVisibleTo(parent));
+    QVERIFY(!child->isVisibleTo(0));
+    QVERIFY(parent->isVisible());
+    QVERIFY(parent->isVisibleTo(parent));
+    QVERIFY(parent->isVisibleTo(0));
+    QVERIFY(!parent->isVisibleTo(child));
+    QVERIFY(!child->isVisibleTo(grandChild));
+    QVERIFY(!grandChild->isVisibleTo(stranger));
+    QVERIFY(!child->isVisibleTo(stranger));
+    QVERIFY(!parent->isVisibleTo(stranger));
+    QVERIFY(!stranger->isVisibleTo(grandChild));
+    QVERIFY(!stranger->isVisibleTo(child));
+    QVERIFY(!stranger->isVisibleTo(parent));
+
+    // Case 3: only grand child is hidden
+    child->show();
+    grandChild->hide();
+
+    QVERIFY(!grandChild->isVisible());
+    QVERIFY(!grandChild->isVisibleTo(grandChild));
+    QVERIFY(!grandChild->isVisibleTo(child));
+    QVERIFY(!grandChild->isVisibleTo(parent));
+    QVERIFY(!grandChild->isVisibleTo(0));
+    QVERIFY(child->isVisible());
+    QVERIFY(child->isVisibleTo(child));
+    QVERIFY(child->isVisibleTo(parent));
+    QVERIFY(child->isVisibleTo(0));
+    QVERIFY(parent->isVisible());
+    QVERIFY(parent->isVisibleTo(parent));
+    QVERIFY(parent->isVisibleTo(0));
+    QVERIFY(!parent->isVisibleTo(child));
+    QVERIFY(!child->isVisibleTo(grandChild));
+    QVERIFY(!grandChild->isVisibleTo(stranger));
+    QVERIFY(!child->isVisibleTo(stranger));
+    QVERIFY(!parent->isVisibleTo(stranger));
+    QVERIFY(!stranger->isVisibleTo(grandChild));
+    QVERIFY(!stranger->isVisibleTo(child));
+    QVERIFY(!stranger->isVisibleTo(parent));
 }
 
 void tst_QGraphicsItem::explicitlyVisible()
