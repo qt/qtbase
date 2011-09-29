@@ -94,7 +94,7 @@ private:
     QScopedPointer<QDirectFbScreen> m_primaryScreen;
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
-    QPlatformFontDatabase *m_fontDb;
+    QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QAbstractEventDispatcher *m_eventDispatcher;
 };
 

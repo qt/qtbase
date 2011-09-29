@@ -142,7 +142,7 @@ QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow 
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
-    return m_fontDb;
+    return m_fontDb.data();
 }
 
 QT_END_NAMESPACE
