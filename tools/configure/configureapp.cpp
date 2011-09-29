@@ -282,7 +282,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
-    dictionary[ "V8" ]              = "auto";
+    dictionary[ "V8" ]              = "yes";
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
