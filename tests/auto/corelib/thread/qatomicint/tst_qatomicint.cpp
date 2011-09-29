@@ -61,14 +61,6 @@ private slots:
     void constructor();
     void copy_constructor_data();
     void copy_constructor();
-    void equality_operator_data();
-    void equality_operator();
-    void inequality_operator_data();
-    void inequality_operator();
-    void not_operator_data();
-    void not_operator();
-    void cast_operator_data();
-    void cast_operator();
     void assignment_operator_data();
     void assignment_operator();
 
@@ -185,71 +177,6 @@ void tst_QAtomicInt::copy_constructor()
     QCOMPARE(atomic5.load(), value);
 }
 
-void tst_QAtomicInt::equality_operator_data()
-{
-    QTest::addColumn<int>("value1");
-    QTest::addColumn<int>("value2");
-    QTest::addColumn<int>("result");
-
-    QTest::newRow("success0") <<  1 <<  1 << 1;
-    QTest::newRow("success1") << -1 << -1 << 1;
-    QTest::newRow("failure0") <<  0 <<  1 << 0;
-    QTest::newRow("failure1") <<  1 <<  0 << 0;
-    QTest::newRow("failure2") <<  0 << -1 << 0;
-    QTest::newRow("failure3") << -1 <<  0 << 0;
-}
-
-void tst_QAtomicInt::equality_operator()
-{
-    QFETCH(int, value1);
-    QFETCH(int, value2);
-    QAtomicInt x = value1;
-    QTEST(x == value2 ? 1 : 0, "result");
-}
-
-void tst_QAtomicInt::inequality_operator_data()
-{
-    QTest::addColumn<int>("value1");
-    QTest::addColumn<int>("value2");
-    QTest::addColumn<int>("result");
-
-    QTest::newRow("failure0") <<  1 <<  1 << 0;
-    QTest::newRow("failure1") << -1 << -1 << 0;
-    QTest::newRow("success0") <<  0 <<  1 << 1;
-    QTest::newRow("success1") <<  1 <<  0 << 1;
-    QTest::newRow("success2") <<  0 << -1 << 1;
-    QTest::newRow("success3") << -1 <<  0 << 1;
-}
-
-void tst_QAtomicInt::inequality_operator()
-{
-    QFETCH(int, value1);
-    QFETCH(int, value2);
-    QAtomicInt x = value1;
-    QTEST(x != value2 ? 1 : 0, "result");
-}
-
-void tst_QAtomicInt::not_operator_data()
-{ constructor_data(); }
-
-void tst_QAtomicInt::not_operator()
-{
-    QFETCH(int, value);
-    QAtomicInt atomic = value;
-    QCOMPARE(!atomic, !value);
-}
-
-void tst_QAtomicInt::cast_operator_data()
-{ constructor_data(); }
-
-void tst_QAtomicInt::cast_operator()
-{
-    QFETCH(int, value);
-    QAtomicInt atomic = value;
-    int copy = atomic;
-    QCOMPARE(copy, value);
-}
-
 void tst_QAtomicInt::assignment_operator_data()
 {
     QTest::addColumn<int>("value");
@@ -271,9 +198,9 @@ void tst_QAtomicInt::assignment_operator()
     {
         QAtomicInt atomic1 = value;
         atomic1 = newval;
-        QCOMPARE(int(atomic1), newval);
+        QCOMPARE(atomic1.load(), newval);
         atomic1 = value;
-        QCOMPARE(int(atomic1), value);
+        QCOMPARE(atomic1.load(), value);
 
         QAtomicInt atomic2 = newval;
         atomic1 = atomic2;

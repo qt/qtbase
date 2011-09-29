@@ -55,11 +55,7 @@ private slots:
 
     void constructor();
     void copy_constructor();
-    void equality_operator();
-    void inequality_operator();
     void assignment_operator();
-    void star_operator();
-    void dereference_operator();
 
     void isTestAndSetNative();
     void isTestAndSetWaitFree();
@@ -157,52 +153,6 @@ void tst_QAtomicPointer::copy_constructor()
     QCOMPARE(atomic3_copy.load(), atomic3.load());
 }
 
-void tst_QAtomicPointer::equality_operator()
-{
-    void *one = this;
-    void *two = &one;
-    void *three = &two;
-
-    QAtomicPointer<void> atomic1 = one;
-    QAtomicPointer<void> atomic2 = two;
-    QAtomicPointer<void> atomic3 = three;
-
-    QVERIFY(atomic1 == one);
-    QVERIFY(!(atomic1 == two));
-    QVERIFY(!(atomic1 == three));
-
-    QVERIFY(!(atomic2 == one));
-    QVERIFY(atomic2 == two);
-    QVERIFY(!(atomic2 == three));
-
-    QVERIFY(!(atomic3 == one));
-    QVERIFY(!(atomic3 == two));
-    QVERIFY(atomic3 == three);
-}
-
-void tst_QAtomicPointer::inequality_operator()
-{
-    void *one = this;
-    void *two = &one;
-    void *three = &two;
-
-    QAtomicPointer<void> atomic1 = one;
-    QAtomicPointer<void> atomic2 = two;
-    QAtomicPointer<void> atomic3 = three;
-
-    QVERIFY(!(atomic1 != one));
-    QVERIFY(atomic1 != two);
-    QVERIFY(atomic1 != three);
-
-    QVERIFY(atomic2 != one);
-    QVERIFY(!(atomic2 != two));
-    QVERIFY(atomic2 != three);
-
-    QVERIFY(atomic3 != one);
-    QVERIFY(atomic3 != two);
-    QVERIFY(!(atomic3 != three));
-}
-
 void tst_QAtomicPointer::assignment_operator()
 {
     void *one = this;
@@ -213,37 +163,17 @@ void tst_QAtomicPointer::assignment_operator()
     QAtomicPointer<void> atomic2 = two;
     QAtomicPointer<void> atomic3 = three;
 
-    QVERIFY(atomic1 == one);
-    QVERIFY(atomic2 == two);
-    QVERIFY(atomic3 == three);
+    QVERIFY(atomic1.load() == one);
+    QVERIFY(atomic2.load() == two);
+    QVERIFY(atomic3.load() == three);
 
     atomic1 = two;
     atomic2 = three;
     atomic3 = one;
 
-    QVERIFY(atomic1 == two);
-    QVERIFY(atomic2 == three);
-    QVERIFY(atomic3 == one);
-}
-
-struct Type
-{
-    inline const Type *self() const
-    { return this; }
-};
-
-void tst_QAtomicPointer::star_operator()
-{
-    Type t;
-    QAtomicPointer<Type> p = &t;
-    QCOMPARE((*p).self(), t.self());
-}
-
-void tst_QAtomicPointer::dereference_operator()
-{
-    Type t;
-    QAtomicPointer<Type> p = &t;
-    QCOMPARE(p->self(), t.self());
+    QVERIFY(atomic1.load() == two);
+    QVERIFY(atomic2.load() == three);
+    QVERIFY(atomic3.load() == one);
 }
 
 void tst_QAtomicPointer::isTestAndSetNative()

@@ -1545,8 +1545,8 @@ void tst_QSharedPointer::threadStressTest()
         // verify that the count is the right range
         int minValue = strongThreadCount;
         int maxValue = strongThreadCount + weakThreadCount;
-        QVERIFY(counter >= minValue);
-        QVERIFY(counter <= maxValue);
+        QVERIFY(counter.load() >= minValue);
+        QVERIFY(counter.load() <= maxValue);
     }
 }
 
