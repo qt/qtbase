@@ -85,7 +85,7 @@ QThreadData::QThreadData(int initialRefCount)
 
 QThreadData::~QThreadData()
 {
-    Q_ASSERT(_ref == 0);
+    Q_ASSERT(_ref.load() == 0);
 
     // In the odd case that Qt is running on a secondary thread, the main
     // thread instance will have been dereffed asunder because of the deref in
@@ -117,7 +117,7 @@ void QThreadData::ref()
 {
 #ifndef QT_NO_THREAD
     (void) _ref.ref();
-    Q_ASSERT(_ref != 0);
+    Q_ASSERT(_ref.load() != 0);
 #endif
 }
 

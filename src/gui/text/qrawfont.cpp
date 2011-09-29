@@ -683,7 +683,7 @@ void QRawFont::setPixelSize(qreal pixelSize)
         d->fontEngine->ref.ref();
 
     oldFontEngine->ref.deref();
-    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
+    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref.load() == 0)
         delete oldFontEngine;
 }
 
@@ -695,7 +695,7 @@ void QRawFontPrivate::cleanUp()
     platformCleanUp();
     if (fontEngine != 0) {
         fontEngine->ref.deref();
-        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+        if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
             delete fontEngine;
         fontEngine = 0;
     }

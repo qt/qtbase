@@ -1823,7 +1823,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
 
 void QVariant::detach()
 {
-    if (!d.is_shared || d.data.shared->ref == 1)
+    if (!d.is_shared || d.data.shared->ref.load() == 1)
         return;
 
     Private dd;

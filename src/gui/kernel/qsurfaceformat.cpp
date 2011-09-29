@@ -120,7 +120,7 @@ QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options) :
 */
 void QSurfaceFormat::detach()
 {
-    if (d->ref != 1) {
+    if (d->ref.load() != 1) {
         QSurfaceFormatPrivate *newd = new QSurfaceFormatPrivate(d);
         if (!d->ref.deref())
             delete d;

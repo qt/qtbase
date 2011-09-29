@@ -4509,7 +4509,7 @@ void QDomElementPrivate::setAttributeNS(const QString& nsURI, const QString& qNa
 void QDomElementPrivate::removeAttribute(const QString& aname)
 {
     QDomNodePrivate* p = m_attr->removeNamedItem(aname);
-    if (p && p->ref == 0)
+    if (p && p->ref.load() == 0)
         delete p;
 }
 

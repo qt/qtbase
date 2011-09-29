@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 */
 void QOpenGLFramebufferObjectFormat::detach()
 {
-    if (d->ref != 1) {
+    if (d->ref.load() != 1) {
         QOpenGLFramebufferObjectFormatPrivate *newd
             = new QOpenGLFramebufferObjectFormatPrivate(d);
         if (!d->ref.deref())

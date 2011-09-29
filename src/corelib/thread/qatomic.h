@@ -259,7 +259,7 @@ inline void qAtomicAssign(T *&d, T *x)
 template <typename T>
 inline void qAtomicDetach(T *&d)
 {
-    if (d->ref == 1)
+    if (d->ref.load() == 1)
         return;
     T *x = d;
     d = new T(*d);

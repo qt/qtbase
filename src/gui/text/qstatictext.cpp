@@ -177,7 +177,7 @@ QStaticText::QStaticText(const QStaticText &other)
 */
 QStaticText::~QStaticText()
 {
-    Q_ASSERT(!data || data->ref >= 1);
+    Q_ASSERT(!data || data->ref.load() >= 1);
 }
 
 /*!
@@ -185,7 +185,7 @@ QStaticText::~QStaticText()
 */
 void QStaticText::detach()
 {    
-    if (data->ref != 1)
+    if (data->ref.load() != 1)
         data.detach();
 }
 

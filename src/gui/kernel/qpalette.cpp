@@ -753,7 +753,7 @@ bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 */
 void QPalette::detach()
 {
-    if (d->ref != 1) {
+    if (d->ref.load() != 1) {
         QPalettePrivate *x = new QPalettePrivate;
         for(int grp = 0; grp < (int)NColorGroups; grp++) {
             for(int role = 0; role < (int)NColorRoles; role++)

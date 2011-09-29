@@ -983,8 +983,9 @@ void processPostedEvents(QCocoaEventDispatcherPrivate *const d, const bool block
         return;
     }
 
-    if (!d->threadData->canWait || (d->serialNumber != d->lastSerial)) {
-        d->lastSerial = d->serialNumber;
+    int serial = d->serialNumber.load();
+    if (!d->threadData->canWait || (serial != d->lastSerial)) {
+        d->lastSerial = serial;
         QWindowSystemInterface::sendWindowSystemEvents(d->q_func(), QEventLoop::AllEvents);
     }
 }

@@ -544,7 +544,7 @@ QOpenGLMultiGroupSharedResource::~QOpenGLMultiGroupSharedResource()
         active.deref();
     }
 #ifndef QT_NO_DEBUG
-    if (active != 0) {
+    if (active.load() != 0) {
         qWarning("QtGui: Resources are still available at program shutdown.\n"
                  "          This is possibly caused by a leaked QOpenGLWidget, \n"
                  "          QOpenGLFramebufferObject or QOpenGLPixelBuffer.");

@@ -245,7 +245,7 @@ inline bool QPainterPathData::isClosed() const
 
 inline void QPainterPathData::close()
 {
-    Q_ASSERT(ref == 1);
+    Q_ASSERT(ref.load() == 1);
     require_moveTo = true;
     const QPainterPath::Element &first = elements.at(cStart);
     QPainterPath::Element &last = elements.last();

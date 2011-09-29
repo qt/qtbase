@@ -419,7 +419,7 @@ inline void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
 
 inline void QPainterPath::detach()
 {
-    if (d_ptr->ref != 1)
+    if (d_ptr->ref.load() != 1)
         detach_helper();
     setDirty(true);
 }

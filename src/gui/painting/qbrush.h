@@ -174,7 +174,7 @@ inline Qt::BrushStyle QBrush::style() const { return d->style; }
 inline const QColor &QBrush::color() const { return d->color; }
 inline const QMatrix &QBrush::matrix() const { return d->transform.toAffine(); }
 inline QTransform QBrush::transform() const { return d->transform; }
-inline bool QBrush::isDetached() const { return d->ref == 1; }
+inline bool QBrush::isDetached() const { return d->ref.load() == 1; }
 
 
 /*******************************************************************************

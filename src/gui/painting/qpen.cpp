@@ -230,10 +230,9 @@ typedef QPenPrivate QPenData;
 */
 inline QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle penStyle,
                                 Qt::PenCapStyle _capStyle, Qt::PenJoinStyle _joinStyle)
-    : dashOffset(0), miterLimit(2),
+    : ref(1), dashOffset(0), miterLimit(2),
       cosmetic(false)
 {
-    ref = 1;
     width = _width;
     brush = _brush;
     style = penStyle;
@@ -353,7 +352,7 @@ QPen::~QPen()
 
 void QPen::detach()
 {
-    if (d->ref == 1)
+    if (d->ref.load() == 1)
         return;
 
     QPenData *x = new QPenData(*static_cast<QPenData *>(d));
@@ -860,7 +859,7 @@ bool QPen::operator==(const QPen &p) const
 
 bool QPen::isDetached()
 {
-    return d->ref == 1;
+    return d->ref.load() == 1;
 }
 
 

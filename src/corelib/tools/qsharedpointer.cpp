@@ -1238,9 +1238,9 @@ void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj,
     Q_ASSERT(obj);
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
 
-    if (d->sharedRefcount)
+    if (d->sharedRefcount.load() != 0)
         qFatal("QSharedPointer: pointer %p already has reference counting", obj);
-    d->sharedRefcount = this;
+    d->sharedRefcount.store(this);
 
     // QObject decreases the refcount too, so increase it up
     weakref.ref();
@@ -1252,7 +1252,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
     Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
 
-    ExternalRefCountData *that = d->sharedRefcount;
+    ExternalRefCountData *that = d->sharedRefcount.load();
     if (that) {
         that->weakref.ref();
         return that;
@@ -1264,9 +1264,10 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     x->weakref.store(2);  // the QWeakPointer that called us plus the QObject itself
     if (!d->sharedRefcount.testAndSetRelease(0, x)) {
         delete x;
-        d->sharedRefcount->weakref.ref();
+        x = d->sharedRefcount.loadAcquire();
+        x->weakref.ref();
     }
-    return d->sharedRefcount.loadAcquire();
+    return x;
 }
 
 QT_END_NAMESPACE

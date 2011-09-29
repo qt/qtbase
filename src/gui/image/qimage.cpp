@@ -1075,10 +1075,10 @@ QImage::operator QVariant() const
 void QImage::detach()
 {
     if (d) {
-        if (d->is_cached && d->ref == 1)
+        if (d->is_cached && d->ref.load() == 1)
             QImagePixmapCleanupHooks::executeImageHooks(cacheKey());
 
-        if (d->ref != 1 || d->ro_data)
+        if (d->ref.load() != 1 || d->ro_data)
             *this = copy();
 
         if (d)
@@ -5289,7 +5289,7 @@ qint64 QImage::cacheKey() const
 
 bool QImage::isDetached() const
 {
-    return d && d->ref == 1;
+    return d && d->ref.load() == 1;
 }
 
 
@@ -5849,7 +5849,7 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
         return true;
 
     // No in-place conversion if we have to detach
-    if (ref > 1)
+    if (ref.load() > 1)
         return false;
 
     const InPlace_Image_Converter *const converterPtr = &inplace_converter_map[format][newFormat];

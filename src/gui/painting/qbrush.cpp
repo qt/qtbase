@@ -343,7 +343,7 @@ public:
     QBrushData *brush;
     QNullBrushData() : brush(new QBrushData)
     {
-        brush->ref = 1;
+        brush->ref.store(1);
         brush->style = Qt::BrushStyle(0);
         brush->color = Qt::black;
     }
@@ -402,7 +402,7 @@ void QBrush::init(const QColor &color, Qt::BrushStyle style)
         d.reset(new QBrushData);
         break;
     }
-    d->ref = 1;
+    d->ref.store(1);
     d->style = style;
     d->color = color;
 }
@@ -577,7 +577,7 @@ void QBrush::cleanUp(QBrushData *x)
 
 void QBrush::detach(Qt::BrushStyle newStyle)
 {
-    if (newStyle == d->style && d->ref == 1)
+    if (newStyle == d->style && d->ref.load() == 1)
         return;
 
     QScopedPointer<QBrushData> x;
@@ -605,7 +605,7 @@ void QBrush::detach(Qt::BrushStyle newStyle)
         x.reset(new QBrushData);
         break;
     }
-    x->ref = 1;
+    x->ref.store(1);
     x->style = newStyle;
     x->color = d->color;
     x->transform = d->transform;

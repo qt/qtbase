@@ -214,9 +214,9 @@ public:
     bool shouldStartThread()
     {
         if (forIteration)
-            return (currentIndex < iterationCount) && !this->shouldThrottleThread();
+            return (currentIndex.load() < iterationCount) && !this->shouldThrottleThread();
         else // whileIteration
-            return (iteratorThreads == 0);
+            return (iteratorThreads.load() == 0);
     }
 
     ThreadFunctionResult threadFunction()
@@ -238,7 +238,7 @@ public:
 
             const int currentBlockSize = blockSizeManager.blockSize();
 
-            if (currentIndex >= iterationCount)
+            if (currentIndex.load() >= iterationCount)
                 break;
 
             // Atomically reserve a block of iterationCount for this thread.
@@ -269,7 +269,7 @@ public:
             // Report progress if progress reporting enabled.
             if (progressReportingEnabled) {
                 completed.fetchAndAddAcquire(finalBlockSize);
-                this->setProgressValue(this->completed);
+                this->setProgressValue(this->completed.load());
             }
 
             if (this->shouldThrottleThread())

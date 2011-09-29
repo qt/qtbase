@@ -96,19 +96,19 @@ bool QBearerEngine::configurationsInUse() const
 
     for (it = accessPointConfigurations.constBegin(),
          end = accessPointConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref > 1)
+        if (it.value()->ref.load() > 1)
             return true;
     }
 
     for (it = snapConfigurations.constBegin(),
          end = snapConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref > 1)
+        if (it.value()->ref.load() > 1)
             return true;
     }
 
     for (it = userChoiceConfigurations.constBegin(),
          end = userChoiceConfigurations.constEnd(); it != end; ++it) {
-        if (it.value()->ref > 1)
+        if (it.value()->ref.load() > 1)
             return true;
     }
 

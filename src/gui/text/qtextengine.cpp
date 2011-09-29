@@ -1219,7 +1219,7 @@ static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
 {
     if (fontEngine) {
         fontEngine->ref.deref();
-        if (fontEngine->cache_count == 0 && fontEngine->ref == 0)
+        if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
             delete fontEngine;
     }
 }

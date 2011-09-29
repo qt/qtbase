@@ -226,7 +226,7 @@ void QPicture::detach()
 
 bool QPicture::isDetached() const
 {
-    return d_func()->ref == 1;
+    return d_func()->ref.load() == 1;
 }
 
 /*!

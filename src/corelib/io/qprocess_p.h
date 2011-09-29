@@ -184,7 +184,7 @@ public:
 
 template<> Q_INLINE_TEMPLATE void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
 {
-    if (d && d->ref == 1)
+    if (d && d->ref.load() == 1)
         return;
     QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
                                      : new QProcessEnvironmentPrivate);

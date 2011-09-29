@@ -464,7 +464,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 
             emit q->resultsReadyAt(beginIndex, endIndex);
 
-            if (int(resultAtConnected) <= 0)
+            if (resultAtConnected.load() <= 0)
                 break;
 
             for (int i = beginIndex; i < endIndex; ++i)

@@ -79,21 +79,21 @@ public:
     int id;
 
     bool ref() {
-        Q_ASSERT(refCount >= 0);
+        Q_ASSERT(refCount.load() >= 0);
         int c;
         do {
-            c = refCount;
+            c = refCount.load();
             if (c == 0)
                 return false;
         } while (!refCount.testAndSetRelaxed(c, c + 1));
-        Q_ASSERT(refCount >= 0);
+        Q_ASSERT(refCount.load() >= 0);
         return true;
     }
     void deref() {
-        Q_ASSERT(refCount >=0);
+        Q_ASSERT(refCount.load() >= 0);
         if (!refCount.deref())
             release();
-        Q_ASSERT(refCount >=0);
+        Q_ASSERT(refCount.load() >= 0);
     }
     void release();
     static QMutexPrivate *allocate();

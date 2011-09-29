@@ -767,7 +767,7 @@ bool QIcon::isNull() const
  */
 bool QIcon::isDetached() const
 {
-    return !d || d->ref == 1;
+    return !d || d->ref.load() == 1;
 }
 
 /*! \internal
@@ -775,7 +775,7 @@ bool QIcon::isDetached() const
 void QIcon::detach()
 {
     if (d) {
-        if (d->ref != 1) {
+        if (d->ref.load() != 1) {
             QIconPrivate *x = new QIconPrivate;
             if (d->engine_version > 1) {
                 QIconEngineV2 *engine = static_cast<QIconEngineV2 *>(d->engine);

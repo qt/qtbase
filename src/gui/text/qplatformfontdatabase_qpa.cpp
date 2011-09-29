@@ -194,7 +194,7 @@ QSupportedWritingSystems::~QSupportedWritingSystems()
 */
 void QSupportedWritingSystems::detach()
 {
-    if (d->ref != 1) {
+    if (d->ref.load() != 1) {
         QWritingSystemsPrivate *newd = new QWritingSystemsPrivate(d);
         if (!d->ref.deref())
             delete d;
