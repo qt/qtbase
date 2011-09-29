@@ -72,7 +72,6 @@ class Q_WIDGETS_EXPORT QCalendarWidget : public QWidget
     Q_PROPERTY(SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
     Q_PROPERTY(HorizontalHeaderFormat horizontalHeaderFormat READ horizontalHeaderFormat WRITE setHorizontalHeaderFormat)
     Q_PROPERTY(VerticalHeaderFormat verticalHeaderFormat READ verticalHeaderFormat WRITE setVerticalHeaderFormat)
-    Q_PROPERTY(bool headerVisible READ isHeaderVisible WRITE setHeaderVisible STORED false DESIGNABLE false) // obsolete
     Q_PROPERTY(bool navigationBarVisible READ isNavigationBarVisible WRITE setNavigationBarVisible)
     Q_PROPERTY(bool dateEditEnabled READ isDateEditEnabled WRITE setDateEditEnabled)
     Q_PROPERTY(int dateEditAcceptDelay READ dateEditAcceptDelay WRITE setDateEditAcceptDelay)
@@ -115,12 +114,7 @@ public:
     Qt::DayOfWeek firstDayOfWeek() const;
     void setFirstDayOfWeek(Qt::DayOfWeek dayOfWeek);
 
-    // ### Qt 5: eliminate these two
-    bool isHeaderVisible() const;
-    void setHeaderVisible(bool show); 
-
-    inline bool isNavigationBarVisible() const { return isHeaderVisible(); }
-
+    bool isNavigationBarVisible() const;
     bool isGridVisible() const;
 
     SelectionMode selectionMode() const;

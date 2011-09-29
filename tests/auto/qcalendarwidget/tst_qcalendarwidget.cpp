@@ -116,10 +116,10 @@ void tst_QCalendarWidget::getSetCheck()
     object.setGridVisible(false);
     QVERIFY(!object.isGridVisible());
     //header visible
-    object.setHeaderVisible(true);
-    QVERIFY(object.isHeaderVisible());
-    object.setHeaderVisible(false);
-    QVERIFY(!object.isHeaderVisible());
+    object.setNavigationBarVisible(true);
+    QVERIFY(object.isNavigationBarVisible());
+    object.setNavigationBarVisible(false);
+    QVERIFY(!object.isNavigationBarVisible());
     //selection mode
     QCOMPARE(QCalendarWidget::SingleSelection, object.selectionMode());
     object.setSelectionMode(QCalendarWidget::NoSelection);
