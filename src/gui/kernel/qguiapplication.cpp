@@ -114,7 +114,7 @@ QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 QList<QScreen *> QGuiApplicationPrivate::screen_list;
 
 QWindowList QGuiApplicationPrivate::window_list;
-QWindow *QGuiApplicationPrivate::active_window = 0;
+QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
@@ -181,9 +181,9 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     self = this;
 }
 
-QWindow *QGuiApplication::activeWindow()
+QWindow *QGuiApplication::focusWindow()
 {
-    return QGuiApplicationPrivate::active_window;
+    return QGuiApplicationPrivate::focus_window;
 }
 
 QWindowList QGuiApplication::topLevelWindows()
@@ -678,8 +678,20 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (!e->activated)
         return;
 
-    QWindow *previous = QGuiApplicationPrivate::active_window;
-    QGuiApplicationPrivate::active_window = e->activated.data();
+    QWindow *previous = QGuiApplicationPrivate::focus_window;
+    QGuiApplicationPrivate::focus_window = e->activated.data();
+
+    if (previous == QGuiApplicationPrivate::focus_window)
+        return;
+
+    if (previous) {
+        QFocusEvent focusOut(QEvent::FocusOut);
+        QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
+    }
+
+    QFocusEvent focusIn(QEvent::FocusIn);
+    QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+
     if (self)
         self->notifyActiveWindowChange(previous);
 }

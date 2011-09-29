@@ -157,7 +157,7 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
 {
     Q_UNUSED(previous);
     Q_Q(QApplication);
-    QWindow *wnd = QGuiApplicationPrivate::active_window;
+    QWindow *wnd = QGuiApplicationPrivate::focus_window;
     if (inPopupMode()) // some delayed focus event to ignore
         return;
     QWidget *tlw = qt_tlw_for_window(wnd);

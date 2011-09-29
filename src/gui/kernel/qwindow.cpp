@@ -95,8 +95,8 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
 
 QWindow::~QWindow()
 {
-    if (QGuiApplicationPrivate::active_window == this)
-        QGuiApplicationPrivate::active_window = 0;
+    if (QGuiApplicationPrivate::focus_window == this)
+        QGuiApplicationPrivate::focus_window = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
 }
@@ -320,9 +320,32 @@ void QWindow::setOpacity(qreal level)
 void QWindow::requestActivateWindow()
 {
     Q_D(QWindow);
-    QGuiApplicationPrivate::active_window = this;
-    if (d->platformWindow) {
+    if (d->platformWindow)
         d->platformWindow->requestActivateWindow();
+}
+
+/*!
+    Returns true if the window should appear active from a style perspective.
+
+    This is the case for the window that has input focus as well as windows
+    that are in the same parent / transient parent chain as the focus window.
+
+    To get the window that currently has focus, use QGuiApplication::focusWindow().
+*/
+bool QWindow::isActive() const
+{
+    Q_D(const QWindow);
+    if (!d->platformWindow)
+        return false;
+
+    QWindow *focus = QGuiApplication::focusWindow();
+    if (focus == this)
+        return true;
+
+    if (!parent() && !transientParent()) {
+        return isAncestorOf(focus);
+    } else {
+        return (parent() && parent()->isActive()) || (transientParent() && transientParent()->isActive());
     }
 }
 
@@ -335,7 +358,7 @@ Qt::WindowState QWindow::windowState() const
 void QWindow::setWindowState(Qt::WindowState state)
 {
     if (state == Qt::WindowActive) {
-        requestActivateWindow();
+        qWarning() << "QWindow::setWindowState does not accept Qt::WindowActive";
         return;
     }
 
@@ -359,6 +382,29 @@ QWindow *QWindow::transientParent() const
 {
     Q_D(const QWindow);
     return d->transientParent.data();
+}
+
+/*!
+    \enum QWindow::AncestorMode
+
+    This enum is used to control whether or not transient parents
+    should be considered ancestors.
+
+    \value ExcludeTransients Transient parents are not considered ancestors.
+    \value IncludeTransients Transient parents are considered ancestors.
+*/
+
+/*!
+  Returns true if the window is an ancestor of the given child. If mode is
+  IncludeTransients transient parents are also considered ancestors.
+*/
+bool QWindow::isAncestorOf(const QWindow *child, AncestorMode mode) const
+{
+    if (child->parent() == this || (mode == IncludeTransients && child->transientParent() == this))
+        return true;
+
+    return (child->parent() && isAncestorOf(child->parent(), mode))
+        || (mode == IncludeTransients && child->transientParent() && isAncestorOf(child->transientParent(), mode));
 }
 
 QSize QWindow::minimumSize() const
@@ -670,6 +716,14 @@ bool QWindow::event(QEvent *event)
         keyReleaseEvent(static_cast<QKeyEvent *>(event));
         break;
 
+    case QEvent::FocusIn:
+        focusInEvent(static_cast<QFocusEvent *>(event));
+        break;
+
+    case QEvent::FocusOut:
+        focusOutEvent(static_cast<QFocusEvent *>(event));
+        break;
+
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         wheelEvent(static_cast<QWheelEvent*>(event));
@@ -707,6 +761,14 @@ void QWindow::keyPressEvent(QKeyEvent *)
 }
 
 void QWindow::keyReleaseEvent(QKeyEvent *)
+{
+}
+
+void QWindow::focusInEvent(QFocusEvent *)
+{
+}
+
+void QWindow::focusOutEvent(QFocusEvent *)
 {
 }
 

@@ -85,7 +85,9 @@ public:
     static QWindowList topLevelWindows();
     static QWindow *topLevelAt(const QPoint &pos);
 
-    static QWindow *activeWindow();
+    static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
+    static QWindow *focusWindow();
+
     static QScreen *primaryScreen();
     static QList<QScreen *> screens();
 

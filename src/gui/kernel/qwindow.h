@@ -60,6 +60,7 @@ QT_MODULE(Gui)
 class QWindowPrivate;
 
 class QExposeEvent;
+class QFocusEvent;
 class QMoveEvent;
 class QResizeEvent;
 class QShowEvent;
@@ -123,11 +124,20 @@ public:
     void setOpacity(qreal level);
     void requestActivateWindow();
 
+    bool isActive() const;
+
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);
 
     void setTransientParent(QWindow *parent);
     QWindow *transientParent() const;
+
+    enum AncestorMode {
+        ExcludeTransients,
+        IncludeTransients
+    };
+
+    bool isAncestorOf(const QWindow *child, AncestorMode mode = IncludeTransients) const;
 
     QSize minimumSize() const;
     QSize maximumSize() const;
@@ -205,6 +215,8 @@ protected:
     virtual void exposeEvent(QExposeEvent *);
     virtual void resizeEvent(QResizeEvent *);
     virtual void moveEvent(QMoveEvent *);
+    virtual void focusInEvent(QFocusEvent *);
+    virtual void focusOutEvent(QFocusEvent *);
 
     virtual void showEvent(QShowEvent *);
     virtual void hideEvent(QHideEvent *);

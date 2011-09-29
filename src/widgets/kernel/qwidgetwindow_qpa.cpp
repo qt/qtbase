@@ -79,6 +79,12 @@ bool QWidgetWindow::event(QEvent *event)
         handleEnterLeaveEvent(event);
         return true;
 
+    // these should not be sent to QWidget, the corresponding events
+    // are sent by QApplicationPrivate::notifyActiveWindowChange()
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        return false;
+
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
         handleKeyEvent(static_cast<QKeyEvent *>(event));

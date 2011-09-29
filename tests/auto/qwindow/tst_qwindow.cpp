@@ -52,6 +52,7 @@ class tst_QWindow: public QObject
 private slots:
     void mapGlobal();
     void positioning();
+    void isActive();
 };
 
 
@@ -78,35 +79,30 @@ class Window : public QWindow
 {
 public:
     Window()
-        : gotResizeEvent(false)
-        , gotMapEvent(false)
-        , gotMoveEvent(false)
     {
+        reset();
         setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    }
+
+    void reset()
+    {
+        m_received.clear();
     }
 
     bool event(QEvent *event)
     {
-        switch (event->type()) {
-        case QEvent::Map:
-            gotMapEvent = true;
-            break;
-        case QEvent::Resize:
-            gotResizeEvent = true;
-            break;
-        case QEvent::Move:
-            gotMoveEvent = true;
-            break;
-        default:
-            break;
-        }
+        m_received[event->type()]++;
 
         return QWindow::event(event);
     }
 
-    bool gotResizeEvent;
-    bool gotMapEvent;
-    bool gotMoveEvent;
+    int received(QEvent::Type type)
+    {
+        return m_received.value(type, 0);
+    }
+
+private:
+    QHash<QEvent::Type, int> m_received;
 };
 
 void tst_QWindow::positioning()
@@ -118,7 +114,8 @@ void tst_QWindow::positioning()
     QCOMPARE(window.geometry(), geometry);
     window.show();
 
-    QTRY_VERIFY(window.gotResizeEvent && window.gotMapEvent);
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+    QTRY_COMPARE(window.received(QEvent::Map), 1);
 
     QMargins originalMargins = window.frameMargins();
 
@@ -128,14 +125,11 @@ void tst_QWindow::positioning()
     QPoint originalPos = window.pos();
     QPoint originalFramePos = window.framePos();
 
-    window.gotResizeEvent = false;
-
     window.setWindowState(Qt::WindowFullScreen);
-    QTRY_VERIFY(window.gotResizeEvent);
+    QTRY_COMPARE(window.received(QEvent::Resize), 2);
 
-    window.gotResizeEvent = false;
     window.setWindowState(Qt::WindowNoState);
-    QTRY_VERIFY(window.gotResizeEvent);
+    QTRY_COMPARE(window.received(QEvent::Resize), 3);
 
     QTRY_COMPARE(originalPos, window.pos());
     QTRY_COMPARE(originalFramePos, window.framePos());
@@ -146,21 +140,87 @@ void tst_QWindow::positioning()
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
         QPoint framePos(40, 40);
 
-        window.gotMoveEvent = false;
+        window.reset();
         window.setFramePos(framePos);
 
-        QTRY_VERIFY(window.gotMoveEvent);
+        QTRY_VERIFY(window.received(QEvent::Move));
         QTRY_COMPARE(framePos, window.framePos());
         QTRY_COMPARE(originalMargins, window.frameMargins());
         QCOMPARE(window.pos(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
 
         // and back to regular positioning
 
-        window.gotMoveEvent = false;
+        window.reset();
         window.setPos(originalPos);
-        QTRY_VERIFY(window.gotMoveEvent);
+        QTRY_VERIFY(window.received(QEvent::Move));
         QTRY_COMPARE(originalPos, window.pos());
     }
+}
+
+void tst_QWindow::isActive()
+{
+    Window window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+
+    QTRY_COMPARE(window.received(QEvent::Map), 1);
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QVERIFY(window.isActive());
+
+    Window child;
+    child.setParent(&window);
+    child.setGeometry(10, 10, 20, 20);
+    child.show();
+
+    QTRY_COMPARE(child.received(QEvent::Map), 1);
+
+    child.requestActivateWindow();
+
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
+    QVERIFY(child.isActive());
+
+    // parent shouldn't receive new map or resize events from child being shown
+    QTRY_COMPARE(window.received(QEvent::Map), 1);
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+    QTRY_COMPARE(window.received(QEvent::FocusIn), 1);
+    QTRY_COMPARE(window.received(QEvent::FocusOut), 1);
+    QTRY_COMPARE(child.received(QEvent::FocusIn), 1);
+
+    // child has focus
+    QVERIFY(window.isActive());
+
+    Window dialog;
+    dialog.setTransientParent(&window);
+    dialog.setGeometry(110, 110, 30, 30);
+    dialog.show();
+
+    dialog.requestActivateWindow();
+
+    QTRY_COMPARE(dialog.received(QEvent::Map), 1);
+    QTRY_COMPARE(dialog.received(QEvent::Resize), 1);
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &dialog);
+    QVERIFY(dialog.isActive());
+
+    // transient child has focus
+    QVERIFY(window.isActive());
+
+    // parent is active
+    QVERIFY(child.isActive());
+
+    window.requestActivateWindow();
+
+    QTRY_VERIFY(QGuiApplication::focusWindow() == &window);
+    QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
+    QTRY_COMPARE(window.received(QEvent::FocusIn), 2);
+
+    QVERIFY(window.isActive());
+
+    // transient parent has focus
+    QVERIFY(dialog.isActive());
+
+    // parent has focus
+    QVERIFY(child.isActive());
 }
 
 #include <tst_qwindow.moc>

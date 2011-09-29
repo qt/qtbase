@@ -589,7 +589,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     QCOMPARE(edit->text(), QString("completionOnLevelAfterRootTest"));
     current.rmdir("completionOnLevelAfterRootTest");
 #else
-    QCOMPARE(edit->text(), QString("etc"));
+    QTRY_COMPARE(edit->text(), QString("etc"));
 #endif
 }
 
