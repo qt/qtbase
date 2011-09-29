@@ -218,21 +218,21 @@ template <typename T, typename ConstantsType>
 inline QFreeList<T, ConstantsType>::~QFreeList()
 {
     for (int i = 0; i < ConstantsType::BlockCount; ++i)
-        delete [] static_cast<ElementType *>(_v[i]);
+        delete [] _v[i].load();
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ConstReferenceType QFreeList<T, ConstantsType>::at(int x) const
 {
     const int block = blockfor(x);
-    return _v[block][x].t();
+    return (_v[block].load())[x].t();
 }
 
 template <typename T, typename ConstantsType>
 inline typename QFreeList<T, ConstantsType>::ReferenceType QFreeList<T, ConstantsType>::operator[](int x)
 {
     const int block = blockfor(x);
-    return _v[block][x].t();
+    return (_v[block].load())[x].t();
 }
 
 template <typename T, typename ConstantsType>
@@ -241,24 +241,24 @@ inline int QFreeList<T, ConstantsType>::next()
     int id, newid, at;
     ElementType *v;
     do {
-        id = _next; // .loadAqcuire();
+        id = _next.load();
 
         at = id & ConstantsType::IndexMask;
         const int block = blockfor(at);
-        v = _v[block];
+        v = _v[block].loadAcquire();
 
         if (!v) {
             v = allocate((id & ConstantsType::IndexMask) - at, ConstantsType::Sizes[block]);
             if (!_v[block].testAndSetRelease(0, v)) {
                 // race with another thread lost
                 delete [] v;
-                v = _v[block];
+                v = _v[block].loadAcquire();
                 Q_ASSERT(v != 0);
             }
         }
 
         newid = v[at].next | (id & ~ConstantsType::IndexMask);
-    } while (!_next.testAndSetRelease(id, newid));
+    } while (!_next.testAndSetRelaxed(id, newid));
     // qDebug("QFreeList::next(): returning %d (_next now %d, serial %d)",
     //        id & ConstantsType::IndexMask,
     //        newid & ConstantsType::IndexMask,
@@ -271,11 +271,11 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 {
     int at = id & ConstantsType::IndexMask;
     const int block = blockfor(at);
-    ElementType *v = _v[block];
+    ElementType *v = _v[block].load();
 
     int x, newid;
     do {
-        x = _next; // .loadAcquire();
+        x = _next.loadAcquire();
         v[at].next = x & ConstantsType::IndexMask;
 
         newid = incrementserial(x, id);
