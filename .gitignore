@@ -127,6 +127,9 @@ src/sql/qtsqlversion.h
 src/testlib/qttestversion.h
 src/xml/qtxmlversion.h
 src/v8/qtv8version.h
+src/platformsupport/qtplatformsupportversion.h
+src/printsupport/qtprintsupportversion.h
+src/widgets/qtwidgetsversion.h
 
 # Test generated files
 QObject.log
