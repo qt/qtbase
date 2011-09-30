@@ -185,6 +185,7 @@ void QCocoaWindow::windowDidResize()
     NSRect windowRect = [m_nsWindow frame];
 
     QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    setGeometry(geo);
     QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
 }
 
