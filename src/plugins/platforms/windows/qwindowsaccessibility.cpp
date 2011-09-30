@@ -58,7 +58,8 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
-#include "qt_windows.h"
+
+#include <OleAcc.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId

@@ -42,8 +42,8 @@
 #ifndef QWINDOWSACCESSIBILITY_H
 #define QWINDOWSACCESSIBILITY_H
 
+#include "qtwindowsglobal.h"
 #include <QtGui/QPlatformAccessibility>
-#include <OleAcc.h>
 
 class QWindowsAccessibility : public QPlatformAccessibility
 {

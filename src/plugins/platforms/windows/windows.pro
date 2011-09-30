@@ -8,7 +8,7 @@ INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
-LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm
+LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm  -lOleaut32
 win32-g++: LIBS *= -luuid
 
 contains(QT_CONFIG, directwrite) {
