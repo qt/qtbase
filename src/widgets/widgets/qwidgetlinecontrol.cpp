@@ -1380,156 +1380,51 @@ void QWidgetLineControl::timerEvent(QTimerEvent *event)
     }
 }
 
-bool QWidgetLineControl::processEvent(QEvent* ev)
-{
-#ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
-        if ((ev->type() == QEvent::KeyPress) || (ev->type() == QEvent::KeyRelease)) {
-            QKeyEvent *ke = (QKeyEvent *)ev;
-            if (ke->key() == Qt::Key_Back) {
-                if (ke->isAutoRepeat()) {
-                    // Swallow it. We don't want back keys running amok.
-                    ke->accept();
-                    return true;
-                }
-                if ((ev->type() == QEvent::KeyRelease)
-                    && !isReadOnly()
-                    && m_deleteAllTimer) {
-                    killTimer(m_deleteAllTimer);
-                    m_deleteAllTimer = 0;
-                    backspace();
-                    ke->accept();
-                    return true;
-                }
-            }
-        }
-    }
-#endif
-    switch(ev->type()){
-#ifndef QT_NO_GRAPHICSVIEW
-        case QEvent::GraphicsSceneMouseDoubleClick:
-        case QEvent::GraphicsSceneMouseMove:
-        case QEvent::GraphicsSceneMouseRelease:
-        case QEvent::GraphicsSceneMousePress:{
-               QGraphicsSceneMouseEvent *gvEv = static_cast<QGraphicsSceneMouseEvent*>(ev);
-               QMouseEvent mouse(ev->type(),
-                    gvEv->pos(), gvEv->pos(), gvEv->screenPos(), gvEv->button(), gvEv->buttons(), gvEv->modifiers());
-               processMouseEvent(&mouse); break;
-        }
-#endif
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseButtonDblClick:
-        case QEvent::MouseMove:
-            processMouseEvent(static_cast<QMouseEvent*>(ev)); break;
-        case QEvent::KeyPress:
-        case QEvent::KeyRelease:
-            processKeyEvent(static_cast<QKeyEvent*>(ev)); break;
-        case QEvent::InputMethod:
-            processInputMethodEvent(static_cast<QInputMethodEvent*>(ev)); break;
 #ifndef QT_NO_SHORTCUT
-        case QEvent::ShortcutOverride:{
-            if (isReadOnly())
-                return false;
-            QKeyEvent* ke = static_cast<QKeyEvent*>(ev);
-            if (ke == QKeySequence::Copy
-                || ke == QKeySequence::Paste
-                || ke == QKeySequence::Cut
-                || ke == QKeySequence::Redo
-                || ke == QKeySequence::Undo
-                || ke == QKeySequence::MoveToNextWord
-                || ke == QKeySequence::MoveToPreviousWord
-                || ke == QKeySequence::MoveToStartOfDocument
-                || ke == QKeySequence::MoveToEndOfDocument
-                || ke == QKeySequence::SelectNextWord
-                || ke == QKeySequence::SelectPreviousWord
-                || ke == QKeySequence::SelectStartOfLine
-                || ke == QKeySequence::SelectEndOfLine
-                || ke == QKeySequence::SelectStartOfBlock
-                || ke == QKeySequence::SelectEndOfBlock
-                || ke == QKeySequence::SelectStartOfDocument
-                || ke == QKeySequence::SelectAll
-                || ke == QKeySequence::SelectEndOfDocument) {
-                ke->accept();
-            } else if (ke->modifiers() == Qt::NoModifier || ke->modifiers() == Qt::ShiftModifier
-                       || ke->modifiers() == Qt::KeypadModifier) {
-                if (ke->key() < Qt::Key_Escape) {
-                    ke->accept();
-                } else {
-                    switch (ke->key()) {
-                    case Qt::Key_Delete:
-                    case Qt::Key_Home:
-                    case Qt::Key_End:
-                    case Qt::Key_Backspace:
-                    case Qt::Key_Left:
-                    case Qt::Key_Right:
-                        ke->accept();
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
-#endif
-        default:
-            return false;
-    }
-    return true;
-}
-
-void QWidgetLineControl::processMouseEvent(QMouseEvent* ev)
+void QWidgetLineControl::processShortcutOverrideEvent(QKeyEvent *ke)
 {
+    if (isReadOnly())
+        return;
 
-    switch (ev->type()) {
-        case QEvent::GraphicsSceneMousePress:
-        case QEvent::MouseButtonPress:{
-            if (m_tripleClickTimer
-                && (ev->pos() - m_tripleClick).manhattanLength()
-                    < QApplication::startDragDistance()) {
-                selectAll();
-                return;
+    if (ke == QKeySequence::Copy
+        || ke == QKeySequence::Paste
+        || ke == QKeySequence::Cut
+        || ke == QKeySequence::Redo
+        || ke == QKeySequence::Undo
+        || ke == QKeySequence::MoveToNextWord
+        || ke == QKeySequence::MoveToPreviousWord
+        || ke == QKeySequence::MoveToStartOfDocument
+        || ke == QKeySequence::MoveToEndOfDocument
+        || ke == QKeySequence::SelectNextWord
+        || ke == QKeySequence::SelectPreviousWord
+        || ke == QKeySequence::SelectStartOfLine
+        || ke == QKeySequence::SelectEndOfLine
+        || ke == QKeySequence::SelectStartOfBlock
+        || ke == QKeySequence::SelectEndOfBlock
+        || ke == QKeySequence::SelectStartOfDocument
+        || ke == QKeySequence::SelectAll
+        || ke == QKeySequence::SelectEndOfDocument) {
+        ke->accept();
+    } else if (ke->modifiers() == Qt::NoModifier || ke->modifiers() == Qt::ShiftModifier
+               || ke->modifiers() == Qt::KeypadModifier) {
+        if (ke->key() < Qt::Key_Escape) {
+            ke->accept();
+        } else {
+            switch (ke->key()) {
+            case Qt::Key_Delete:
+            case Qt::Key_Home:
+            case Qt::Key_End:
+            case Qt::Key_Backspace:
+            case Qt::Key_Left:
+            case Qt::Key_Right:
+                ke->accept();
+            default:
+                break;
             }
-            if (ev->button() == Qt::RightButton)
-                return;
-
-            bool mark = ev->modifiers() & Qt::ShiftModifier;
-            int cursor = xToPos(ev->pos().x());
-            moveCursor(cursor, mark);
-            break;
         }
-        case QEvent::GraphicsSceneMouseDoubleClick:
-        case QEvent::MouseButtonDblClick:
-            if (ev->button() == Qt::LeftButton) {
-                selectWordAtPos(xToPos(ev->pos().x()));
-                if (m_tripleClickTimer)
-                    killTimer(m_tripleClickTimer);
-                m_tripleClickTimer = startTimer(QApplication::doubleClickInterval());
-                m_tripleClick = ev->pos();
-            }
-            break;
-        case QEvent::GraphicsSceneMouseRelease:
-        case QEvent::MouseButtonRelease:
-#ifndef QT_NO_CLIPBOARD
-            if (QApplication::clipboard()->supportsSelection()) {
-                if (ev->button() == Qt::LeftButton) {
-                    copy(QClipboard::Selection);
-                } else if (!isReadOnly() && ev->button() == Qt::MidButton) {
-                    deselect();
-                    insert(QApplication::clipboard()->text(QClipboard::Selection));
-                }
-            }
-#endif
-            break;
-        case QEvent::GraphicsSceneMouseMove:
-        case QEvent::MouseMove:
-            if (ev->buttons() & Qt::LeftButton) {
-                moveCursor(xToPos(ev->pos().x()), true);
-            }
-            break;
-        default:
-            break;
     }
 }
+#endif
 
 void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 {

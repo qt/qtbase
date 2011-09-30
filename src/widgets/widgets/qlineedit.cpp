@@ -1347,8 +1347,11 @@ bool QLineEdit::event(QEvent * e)
         //d->separate();
     } else if (e->type() == QEvent::WindowActivate) {
         QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
-    }else if(e->type() == QEvent::ShortcutOverride){
-        d->control->processEvent(e);
+#ifndef QT_NO_SHORTCUT
+    } else if (e->type() == QEvent::ShortcutOverride) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(e);
+        d->control->processShortcutOverrideEvent(ke);
+#endif
     } else if (e->type() == QEvent::KeyRelease) {
         d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
     } else if (e->type() == QEvent::Show) {
