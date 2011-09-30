@@ -56,12 +56,6 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-
-#if defined(Q_OS_WIN32)
-# define ACCEPTABLE_WINDOWS
-#endif
-
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -80,8 +74,10 @@ public slots:
     //void init();
     //void cleanup();
 private slots:
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
     void testForDefaultPrinter();
     void testForPrinters();
+#endif
     void testForPaperSizes();
     void testConstructors();
     void testAssignment();
@@ -208,13 +204,13 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
     }
 #else
 	return QString();
-#endif // Q_OS_UNIX
+#endif
 }
 
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
 void tst_QPrinterInfo::testForDefaultPrinter()
 {
-#if defined(Q_OS_UNIX) || defined(ACCEPTABLE_WINDOWS)
-# ifdef ACCEPTABLE_WINDOWS
+# ifdef Q_OS_WIN32
     if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
         QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
     } else {
@@ -245,15 +241,13 @@ void tst_QPrinterInfo::testForDefaultPrinter()
     }
 
     if (!found && defSysPrinter != "") QFAIL("No default printer reported by Qt, although there is one");
-#else
-    QSKIP("Test doesn't work on non-Unix", SkipAll);
-#endif // defined(Q_OS_UNIX) || defined(ACCEPTABLE_WINDOWS)
 }
+#endif
 
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
 void tst_QPrinterInfo::testForPrinters()
 {
-#if defined(Q_OS_UNIX) || defined(ACCEPTABLE_WINDOWS)
-# ifdef ACCEPTABLE_WINDOWS
+# ifdef Q_OS_WIN32
     if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
         QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
     } else {
@@ -296,10 +290,8 @@ void tst_QPrinterInfo::testForPrinters()
             QFAIL(qPrintable(QString("Printer '%1' reported by system, but not reported by Qt").arg(sysPrinters.at(i))));
         }
     }
-#else
-    QSKIP("Test doesn't work on non-Unix", SkipAll);
-#endif // defined(Q_OS_UNIX) || defined(ACCEPTABLE_WINDOWS)
 }
+#endif
 
 void tst_QPrinterInfo::testForPaperSizes()
 {

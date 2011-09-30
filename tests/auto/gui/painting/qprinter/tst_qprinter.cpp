@@ -82,13 +82,17 @@ public slots:
 private slots:
     void getSetCheck();
 // Add your testfunctions and testdata create functions here
+#ifdef Q_WS_WIN
     void testPageSize();
+#endif
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
     void testSetOptions();
     void testMargins_data();
     void testMargins();
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(Q_OS_MAC)
     void testNonExistentPrinter();
+#endif
     void testPageSetupDialog();
     void testMulitpleSets_data();
     void testMulitpleSets();
@@ -100,15 +104,15 @@ private slots:
     void valuePreservation();
     void errorReporting();
     void testCustomPageSizes();
+#if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
     void printDialogCompleter();
+#endif
 
     void testCopyCount();
     void testCurrentPage();
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
-
-private:
 };
 
 // Testing get/set functions
@@ -259,9 +263,10 @@ void tst_QPrinter::testPageSetupDialog()
     }
 }
 
+// QPrinter::winPageSize() does not exist for non-Windows platforms.
+#ifdef Q_WS_WIN
 void tst_QPrinter::testPageSize()
 {
-#if defined (Q_WS_WIN)
     QPrinter prn;
 
     prn.setPageSize(QPrinter::Letter);
@@ -279,10 +284,8 @@ void tst_QPrinter::testPageSize()
     prn.setWinPageSize(DMPAPER_A4);
     MYCOMPARE(prn.winPageSize(), DMPAPER_A4);
     MYCOMPARE(prn.pageSize(), QPrinter::A4);
-#else
-    QSKIP("QPrinter::winPageSize() does not exist for nonwindows platforms", SkipAll);
-#endif
 }
+#endif
 
 void tst_QPrinter::testPageRectAndPaperRect_data()
 {
@@ -421,11 +424,10 @@ void tst_QPrinter::testMargins()
         delete painter;
 }
 
+// QPrinter::testNonExistentPrinter() is not relevant for some platforms.
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(Q_OS_MAC)
 void tst_QPrinter::testNonExistentPrinter()
 {
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_MAC)
-    QSKIP("QPrinter::testNonExistentPrinter() is not relevant for this platform", SkipAll);
-#else
     QPrinter printer;
     QPainter painter;
 
@@ -453,9 +455,8 @@ void tst_QPrinter::testNonExistentPrinter()
     QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmPhysicalDpiY), 0);
 
     QVERIFY(!painter.begin(&printer));
-#endif
 }
-
+#endif
 
 void tst_QPrinter::testMulitpleSets_data()
 {
@@ -930,11 +931,9 @@ void tst_QPrinter::testCustomPageSizes()
     QCOMPARE(paperSize, customSize);
 }
 
+#if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
 void tst_QPrinter::printDialogCompleter()
 {
-#if defined(QT_NO_COMPLETER) || defined(QT_NO_FILEDIALOG)
-    QSKIP("QT_NO_COMPLETER || QT_NO_FILEDIALOG: Auto-complete turned off in QPrinterDialog.", QTest::SkipAll);
-#else
     QPrintDialog dialog;
     dialog.printer()->setOutputFileName("file.pdf");
     dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
@@ -945,8 +944,8 @@ void tst_QPrinter::printDialogCompleter()
     QTest::keyClick(&dialog, Qt::Key_Tab);
     QTest::keyClick(&dialog, 'P');
     // The test passes if it doesn't crash.
-#endif
 }
+#endif
 
 void tst_QPrinter::testCopyCount()
 {

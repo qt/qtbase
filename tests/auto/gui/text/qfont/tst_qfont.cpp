@@ -72,12 +72,18 @@ private slots:
     void resolve();
     void resetFont();
     void isCopyOf();
+#ifdef Q_WS_X11
     void setFontRaw();
+#endif
     void italicOblique();
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
+#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
     void lastResortFont();
+#endif
+#if defined(Q_WS_MAC)
     void styleName();
+#endif
 };
 
 // Testing get/set functions
@@ -512,11 +518,9 @@ void tst_QFont::isCopyOf()
     QVERIFY(!font3.isCopyOf(font));
 }
 
+#ifdef Q_WS_X11
 void tst_QFont::setFontRaw()
 {
-#ifndef Q_WS_X11
-    QSKIP("Only tested on X11", SkipAll);
-#else
     QFont f;
     f.setRawName("-*-fixed-bold-r-normal--0-0-*-*-*-0-iso8859-1");
 //     qDebug("font family: %s", f.family().utf8());
@@ -534,8 +538,8 @@ void tst_QFont::setFontRaw()
         QSKIP("Fixed font not available.", SkipSingle);
     }
     QCOMPARE(QFontInfo(f).family().left(5).toLower(), QString("fixed"));
-#endif
 }
+#endif
 
 void tst_QFont::insertAndRemoveSubstitutions()
 {
@@ -602,28 +606,26 @@ void tst_QFont::serializeSpacing()
     QCOMPARE(font3.wordSpacing(), 50.);
 }
 
+// QFont::lastResortFont() may abort with qFatal() on QWS/QPA
+// if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
+// This happens on our CI machines which run QWS autotests.
+#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 void tst_QFont::lastResortFont()
 {
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
-    QSKIP("QFont::lastResortFont() may abort with qFatal() on QWS/QPA", SkipAll);
-    // ...if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
-    // This happens on our CI machines which run QWS autotests.
-#endif
     QFont font;
     QVERIFY(!font.lastResortFont().isEmpty());
 }
+#endif
 
+#if defined(Q_WS_MAC)
 void tst_QFont::styleName()
 {
-#if !defined(Q_WS_MAC)
-    QSKIP("Only tested on Mac", SkipAll);
-#else
     QFont font("Helvetica Neue");
     font.setStyleName("UltraLight");
 
     QCOMPARE(QFontInfo(font).styleName(), QString("UltraLight"));
-#endif
 }
+#endif
 
 QTEST_MAIN(tst_QFont)
 #include "tst_qfont.moc"
