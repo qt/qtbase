@@ -739,12 +739,15 @@ int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
 
-    QPlatformScreen *screen = 0;
+    QScreen *screen = 0;
     if (QWidget *topLevel = window())
-        if (QWindow *topLevelWindow = topLevel->windowHandle())
-            screen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
+        if (QWindow *topLevelWindow = topLevel->windowHandle()) {
+            QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
+            if (platformScreen)
+                screen = platformScreen->screen();
+        }
     if (!screen && QGuiApplication::primaryScreen())
-        screen = QGuiApplication::primaryScreen()->handle();
+        screen = QGuiApplication::primaryScreen();
 
     if (!screen) {
         if (m == PdmDpiX || m == PdmDpiY)
@@ -762,18 +765,22 @@ int QWidget::metric(PaintDeviceMetric m) const
         val = data->crect.height() * screen->physicalSize().height() / screen->geometry().height();
     } else if (m == PdmDepth) {
         return screen->depth();
-    } else if (m == PdmDpiX || m == PdmPhysicalDpiX) {
+    } else if (m == PdmDpiX) {
         if (d->extra && d->extra->customDpiX)
             return d->extra->customDpiX;
         else if (d->parent)
             return static_cast<QWidget *>(d->parent)->metric(m);
-        return qRound(screen->geometry().width() / double(screen->physicalSize().width() / 25.4));
-    } else if (m == PdmDpiY || m == PdmPhysicalDpiY) {
+        return qRound(screen->logicalDotsPerInchX());
+    } else if (m == PdmDpiY) {
         if (d->extra && d->extra->customDpiY)
             return d->extra->customDpiY;
         else if (d->parent)
             return static_cast<QWidget *>(d->parent)->metric(m);
-        return qRound(screen->geometry().height() / double(screen->physicalSize().height() / 25.4));
+        return qRound(screen->logicalDotsPerInchY());
+    } else if (m == PdmPhysicalDpiX) {
+        return qRound(screen->physicalDotsPerInchX());
+    } else if (m == PdmPhysicalDpiY) {
+        return qRound(screen->physicalDotsPerInchY());
     } else {
         val = QPaintDevice::metric(m);// XXX
     }

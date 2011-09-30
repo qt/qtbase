@@ -67,7 +67,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
         dpi = 132.;
         dragDistance = 10;
     }
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
+    m_physicalSize = QSizeF(bounds.size.width, bounds.size.height) * inch / dpi;
     qApp->setStartDragDistance(dragDistance);
     [pool release];
 }

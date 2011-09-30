@@ -44,6 +44,9 @@
 
 #include <QtCore/QList>
 #include <QtCore/QObject>
+#include <QtCore/QRect>
+#include <QtCore/QSize>
+#include <QtCore/QSizeF>
 
 QT_BEGIN_HEADER
 
@@ -54,7 +57,6 @@ QT_MODULE(Gui)
 class QPlatformScreen;
 class QScreenPrivate;
 class QWindow;
-class QSize;
 class QRect;
 
 class Q_GUI_EXPORT QScreen : public QObject
@@ -71,6 +73,14 @@ public:
 
     QSize size() const;
     QRect geometry() const;
+
+    QSizeF physicalSize() const;
+
+    qreal physicalDotsPerInchX() const;
+    qreal physicalDotsPerInchY() const;
+
+    qreal logicalDotsPerInchX() const;
+    qreal logicalDotsPerInchY() const;
 
     QSize availableSize() const;
     QRect availableGeometry() const;

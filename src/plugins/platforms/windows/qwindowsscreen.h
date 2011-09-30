@@ -56,8 +56,8 @@ struct QWindowsScreenData
 
     QRect geometry;
     QRect availableGeometry;
-    QPair<int, int> dpi;
-    QSize physicalSizeMM;
+    QDpi dpi;
+    QSizeF physicalSizeMM;
     int depth;
     QImage::Format format;
     bool primary;
@@ -74,7 +74,8 @@ public:
     virtual QRect availableGeometry() const { return m_data.availableGeometry; }
     virtual int depth() const { return m_data.depth; }
     virtual QImage::Format format() const { return m_data.format; }
-    virtual QSize physicalSize() const { return m_data.physicalSizeMM; }
+    virtual QSizeF physicalSize() const { return m_data.physicalSizeMM; }
+    virtual QDpi logicalDpi() const { return m_data.dpi; }
 
     virtual QWindow *topLevelAt(const QPoint &point) const
         {  return QWindowsScreen::findTopLevelAt(point, CWP_SKIPINVISIBLE);  }

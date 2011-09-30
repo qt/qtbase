@@ -170,9 +170,7 @@ Q_GUI_EXPORT int qt_defaultDpiX()
 #elif defined(Q_WS_QPA)
     QScreen *screen = QGuiApplication::primaryScreen();
     if (screen) {
-        const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->handle()->physicalSize();
-        dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
+        dpi = qRound(screen->logicalDotsPerInchX());
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi
         dpi = 100;
@@ -200,9 +198,7 @@ Q_GUI_EXPORT int qt_defaultDpiY()
 #elif defined(Q_WS_QPA)
     QScreen *screen = QGuiApplication::primaryScreen();
     if (screen) {
-        const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->handle()->physicalSize();
-        dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
+        dpi = qRound(screen->logicalDotsPerInchY());
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi
         dpi = 100;

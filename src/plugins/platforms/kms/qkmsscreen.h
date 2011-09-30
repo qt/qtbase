@@ -60,7 +60,7 @@ public:
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
-    QSize physicalSize() const;
+    QSizeF physicalSize() const;
 
     GLuint framebufferObject() const;
     quint32 crtcId() const { return m_crtcId; }
@@ -83,7 +83,7 @@ private:
     quint32 m_crtcId;
     drmModeModeInfo m_mode;
     QRect m_geometry;
-    QSize m_physicalSize;
+    QSizeF m_physicalSize;
     int m_depth;
     QImage::Format m_format;
 

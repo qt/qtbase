@@ -222,9 +222,9 @@ QImage::Format QXcbScreen::format() const
     return QImage::Format_RGB32;
 }
 
-QSize QXcbScreen::physicalSize() const
+QSizeF QXcbScreen::physicalSize() const
 {
-    return QSize(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
+    return QSizeF(m_screen->width_in_millimeters, m_screen->height_in_millimeters);
 }
 
 int QXcbScreen::screenNumber() const

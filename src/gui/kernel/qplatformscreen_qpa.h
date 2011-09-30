@@ -67,6 +67,8 @@ class QPlatformWindow;
 class QScreen;
 class QSurfaceFormat;
 
+typedef QPair<qreal, qreal> QDpi;
+
 class Q_GUI_EXPORT QPlatformScreenPageFlipper : public QObject
 {
     Q_OBJECT
@@ -93,7 +95,9 @@ public:
 
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
-    virtual QSize physicalSize() const;
+
+    virtual QSizeF physicalSize() const;
+    virtual QDpi logicalDpi() const;
 
     virtual QWindow *topLevelAt(const QPoint &point) const;
     virtual QList<QPlatformScreen *> virtualSiblings() const;

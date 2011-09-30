@@ -70,7 +70,7 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
 
     const int dpi = 72;
     const qreal inch = 25.4;
-    m_physicalSize = QSize(qRound(m_geometry.width() * inch / dpi), qRound(m_geometry.height() *inch / dpi));
+    m_physicalSize = QSizeF(m_geometry.size()) * inch / dpi;
 }
 
 QCocoaScreen::~QCocoaScreen()

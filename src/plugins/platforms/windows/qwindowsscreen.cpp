@@ -55,8 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QPair<int, int> DPI;
-
 QWindowsScreenData::QWindowsScreenData() :
     dpi(96, 96),
     depth(32),
@@ -64,25 +62,25 @@ QWindowsScreenData::QWindowsScreenData() :
 {
 }
 
-static inline DPI deviceDPI(HDC hdc)
+static inline QDpi deviceDPI(HDC hdc)
 {
-    return DPI(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
+    return QDpi(GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY));
 }
 
-static inline QSize deviceSizeMM(const QSize &pixels, const DPI &dpi)
+static inline QSizeF deviceSizeMM(const QSize &pixels, const QDpi &dpi)
 {
     const qreal inchToMM = 25.4;
     const qreal h = qreal(pixels.width())  / qreal(dpi.first)  * inchToMM;
     const qreal v = qreal(pixels.height()) / qreal(dpi.second) * inchToMM;
-    return QSize(qRound(h), qRound(v));
+    return QSizeF(h, v);
 }
 
-static inline DPI deviceDPI(const QSize &pixels, const QSize &physicalSizeMM)
+static inline QDpi deviceDPI(const QSize &pixels, const QSizeF &physicalSizeMM)
 {
     const qreal inchToMM = 25.4;
     const qreal h = qreal(pixels.width())  / (qreal(physicalSizeMM.width())  / inchToMM);
     const qreal v = qreal(pixels.height()) / (qreal(physicalSizeMM.height()) / inchToMM);
-    return DPI(qRound(v), qRound(h));
+    return QDpi(h, v);
 }
 
 typedef QList<QWindowsScreenData> WindowsScreenDataList;
@@ -101,13 +99,13 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     if (HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL)) {
         data.dpi = deviceDPI(hdc);
+        data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
         DeleteDC(hdc);
     } else {
         qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %d DPI.",
                  __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
                  data.dpi.first);
     }
-    data.physicalSizeMM = deviceSizeMM(data.geometry.size(), data.dpi);
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data.availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
     data.primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0;

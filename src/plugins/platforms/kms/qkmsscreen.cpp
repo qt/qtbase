@@ -91,7 +91,7 @@ QImage::Format QKmsScreen::format() const
     return m_format;
 }
 
-QSize QKmsScreen::physicalSize() const
+QSizeF QKmsScreen::physicalSize() const
 {
     return m_physicalSize;
 }
@@ -132,7 +132,7 @@ void QKmsScreen::initializeScreenMode()
     m_geometry = QRect(0, 0, m_mode.hdisplay, m_mode.vdisplay);
     m_depth = 32;
     m_format = QImage::Format_RGB32;
-    m_physicalSize = QSize(connector->mmWidth, connector->mmHeight);
+    m_physicalSize = QSizeF(connector->mmWidth, connector->mmHeight);
 
     //Setup three buffers for current mode
     m_bufferManager.setupBuffersForMode(m_mode, 3);

@@ -127,20 +127,41 @@ QScreen *QPlatformScreen::screen() const
 
 /*!
     Reimplement this function in subclass to return the physical size of the
-    screen. This function is used by QFont to convert point sizes to pixel
-    sizes.
+    screen. The physical size represents the actual physical dimensions of
+    the display.
 
     The default implementation takes the pixel size of the screen, considers a
     resolution of 100 dots per inch, and returns the calculated physical size.
     A device with a screen that has different resolutions will need to be
     supported by a suitable reimplementation of this function.
+
+    \sa logcalDpi
 */
-QSize QPlatformScreen::physicalSize() const
+QSizeF QPlatformScreen::physicalSize() const
 {
     static const int dpi = 100;
-    int width = geometry().width() / dpi * qreal(25.4) ;
-    int height = geometry().height() / dpi * qreal(25.4) ;
-    return QSize(width,height);
+    return QSizeF(geometry().size()) / dpi * qreal(25.4);
+}
+
+/*!
+    Reimplement this function in subclass to return the logical horizontal
+    and vertical dots per inch metrics of the screen.
+
+    The logical dots per inch metrics are used by QFont to convert point sizes
+    to pixel sizes.
+
+    The default implementation uses the screen pixel size and physical size to
+    compute the metrics.
+
+    \sa physicalSize
+*/
+QDpi QPlatformScreen::logicalDpi() const
+{
+    QSizeF ps = physicalSize();
+    QSize s = geometry().size();
+
+    return QDpi(25.4 * s.width() / ps.width(),
+                25.4 * s.height() / ps.height());
 }
 
 QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)

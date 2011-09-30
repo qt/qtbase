@@ -218,7 +218,7 @@ QXlibScreen::QXlibScreen()
 
     int physicalWidth = DisplayWidthMM(mDisplay->nativeDisplay(), mScreen);
     int physicalHeight = DisplayHeightMM(mDisplay->nativeDisplay(), mScreen);
-    mPhysicalSize = QSize(physicalWidth,physicalHeight);
+    mPhysicalSize = QSizeF(physicalWidth, physicalHeight);
 
     int xSocketNumber = XConnectionNumber(mDisplay->nativeDisplay());
 

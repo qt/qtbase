@@ -112,9 +112,9 @@ QImage::Format QOpenWFDScreen::format() const
     return QImage::Format_RGB32;
 }
 
-QSize QOpenWFDScreen::physicalSize() const
+QSizeF QOpenWFDScreen::physicalSize() const
 {
-    return mPort->physicalSize().toSize();
+    return mPort->physicalSize();
 }
 
 QOpenWFDPort * QOpenWFDScreen::port() const

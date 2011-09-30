@@ -102,6 +102,75 @@ QSize QScreen::size() const
 }
 
 /*!
+  Gets the number of physical dots or pixels per inch in the horizontal direction.
+
+  This value represents the actual horizontal pixel density on the screen's display.
+  Depending on what information the underlying system provides the value might not be
+  entirely accurate.
+
+  \sa physicalDotsPerInchY()
+*/
+qreal QScreen::physicalDotsPerInchX() const
+{
+    return size().width() / physicalSize().width() * 25.4;
+}
+
+/*!
+  Gets the number of physical dots or pixels per inch in the vertical direction.
+
+  This value represents the actual vertical pixel density on the screen's display.
+  Depending on what information the underlying system provides the value might not be
+  entirely accurate.
+
+  \sa physicalDotsPerInchX()
+*/
+qreal QScreen::physicalDotsPerInchY() const
+{
+    return size().height() / physicalSize().height() * 25.4;
+}
+
+/*!
+  Gets the number of logical dots or pixels per inch in the horizontal direction.
+
+  This value is used to convert font point sizes to pixel sizes.
+
+  \sa logicalDotsPerInchY()
+*/
+qreal QScreen::logicalDotsPerInchX() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->logicalDpi().first;
+}
+
+/*!
+  Gets the number of logical dots or pixels per inch in the vertical direction.
+
+  This value is used to convert font point sizes to pixel sizes.
+
+  \sa logicalDotsPerInchX()
+*/
+qreal QScreen::logicalDotsPerInchY() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->logicalDpi().second;
+}
+
+/*!
+  Get the screen's physical size (in millimeters).
+
+  The physical size represents the actual physical dimensions of the
+  screen's display.
+
+  Depending on what information the underlying system provides the value
+  might not be entirely accurate.
+*/
+QSizeF QScreen::physicalSize() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->physicalSize();
+}
+
+/*!
   Get the screen's available size.
 
   The available size is the size excluding window manager reserved areas

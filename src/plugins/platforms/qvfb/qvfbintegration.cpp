@@ -392,8 +392,8 @@ QImage::Format QVFbScreen::format() const
     return d_ptr->format();
 }
 
-QSize QVFbScreen::physicalSize() const {
-    return (d_ptr->screenSize()*254)/720;
+QSizeF QVFbScreen::physicalSize() const {
+    return (QSizeF(d_ptr->screenSize())*254)/720.;
 }
 
 #if 0

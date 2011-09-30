@@ -64,7 +64,7 @@ public:
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;
-    QSize physicalSize() const;
+    QSizeF physicalSize() const;
 
     QOpenWFDPort *port() const;
 

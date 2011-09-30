@@ -62,7 +62,7 @@ public:
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+    QSizeF physicalSize() const { return mPhysicalSize; }
 
     Window rootWindow();
     unsigned long blackPixel();
@@ -94,7 +94,7 @@ private:
 
     void handleSelectionRequest(XEvent *event);
     QRect mGeometry;
-    QSize mPhysicalSize;
+    QSizeF mPhysicalSize;
     int mDepth;
     QImage::Format mFormat;
     QXlibCursor *mCursor;
