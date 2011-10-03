@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTLOGGER_P_H
-#define QTESTLOGGER_P_H
+#ifndef QXUNITTESTLOGGER_P_H
+#define QXUNITTESTLOGGER_P_H
 
 //
 //  W A R N I N G
@@ -93,4 +93,4 @@ class QXunitTestLogger : public QAbstractTestLogger
 
 QT_END_NAMESPACE
 
-#endif // QTESTLOGGER_P_H
+#endif // QXUNITTESTLOGGER_P_H

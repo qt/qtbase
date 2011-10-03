@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBENCHMARK_MEASUREMENT_P_H
-#define QBENCHMARK_MEASUREMENT_P_H
+#ifndef QBENCHMARKMEASUREMENT_P_H
+#define QBENCHMARKMEASUREMENT_P_H
 
 //
 //  W A R N I N G
@@ -113,4 +113,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QBENCHMARK_MEASUREMENT_P_H
+#endif // QBENCHMARKMEASUREMENT_P_H

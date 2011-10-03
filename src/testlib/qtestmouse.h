@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#if !defined(QTESTMOUSE_H)
+#ifndef QTESTMOUSE_H
 #define QTESTMOUSE_H
 
 #if 0
