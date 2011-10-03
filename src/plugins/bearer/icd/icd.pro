@@ -1,7 +1,7 @@
 TARGET = qicdbearer
 load(qt_plugin)
 
-QT = core network dbus
+QT = core network network-private dbus
 
 QMAKE_CXXFLAGS *= $$QT_CFLAGS_DBUS $$QT_CFLAGS_CONNSETTINGS
 LIBS += $$QT_LIBS_CONNSETTINGS
