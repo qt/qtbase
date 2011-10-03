@@ -32,6 +32,6 @@ HEADERS = qdirectfbintegration.h \
 
 # ### port the GL context
 
-include(../fontdatabases/genericunix/genericunix.pri)
+CONFIG += qpa/genericunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

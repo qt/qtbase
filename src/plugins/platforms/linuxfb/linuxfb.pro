@@ -9,7 +9,7 @@ SOURCES = main.cpp qlinuxfbintegration.cpp
 HEADERS = qlinuxfbintegration.h
 
 include(../fb_base/fb_base.pri)
-include(../fontdatabases/genericunix/genericunix.pri)
+CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

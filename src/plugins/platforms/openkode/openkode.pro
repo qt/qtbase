@@ -19,7 +19,7 @@ HEADERS =   qopenkodeintegration.h \
             qopenkodeeventloopintegration.h \
             openkodekeytranslator.h
 
-include (../fontdatabases/genericunix/genericunix.pri)
+CONFIG += qpa/genericunixfontdatabase
 
 RESOURCES = resources.qrc
 

@@ -8,7 +8,7 @@ QT += core-private gui-private platformsupport-private
 SOURCES = main.cpp qvfbintegration.cpp qvfbwindowsurface.cpp
 HEADERS = qvfbintegration.h qvfbwindowsurface.h
 
-include(../fontdatabases/genericunix/genericunix.pri)
+CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
