@@ -193,6 +193,8 @@ private Q_SLOTS:
     void getFromHttp();
     void getErrors_data();
     void getErrors();
+    void headFromHttp_data();
+    void headFromHttp();
     void putToFile_data();
     void putToFile();
     void putToFtp_data();
@@ -1599,6 +1601,65 @@ void tst_QNetworkReply::getFromHttp()
         QVERIFY(reply->header(QNetworkRequest::ServerHeader).toString().contains("Apache"));
 
     QCOMPARE(reply->readAll(), reference.readAll());
+}
+
+void tst_QNetworkReply::headFromHttp_data()
+{
+    QTest::addColumn<qint64>("referenceSize");
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("contentType");
+    QTest::addColumn<QNetworkProxy>("proxy");
+
+    qint64 rfcsize = QFileInfo(SRCDIR "/rfc3252.txt").size();
+    qint64 bigfilesize = QFileInfo(SRCDIR "/bigfile").size();
+    qint64 indexsize = QFileInfo(SRCDIR "/index.html").size();
+
+    //testing proxies, mainly for the 407 response from http proxy
+    for (int i = 0; i < proxies.count(); ++i) {
+        QTest::newRow("rfc" + proxies.at(i).tag) << rfcsize << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt") << "text/plain" << proxies.at(i).proxy;
+        QTest::newRow("bigfile" + proxies.at(i).tag) << bigfilesize << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile") << "text/plain" << proxies.at(i).proxy;
+        QTest::newRow("index" + proxies.at(i).tag) << indexsize << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/") << "text/html" << proxies.at(i).proxy;
+        QTest::newRow("with-authentication" + proxies.at(i).tag) << rfcsize << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt") << "text/plain" << proxies.at(i).proxy;
+        QTest::newRow("cgi" + proxies.at(i).tag) << (qint64)-1 << QUrl("http://qt-test-server/qtest/cgi-bin/httpcachetest_expires500.cgi") << "text/html" << proxies.at(i).proxy;
+    }
+}
+
+void tst_QNetworkReply::headFromHttp()
+{
+    QFETCH(qint64, referenceSize);
+    QFETCH(QUrl, url);
+    QFETCH(QString, contentType);
+    QFETCH(QNetworkProxy, proxy);
+
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply;
+
+    QElapsedTimer time;
+    time.start();
+
+    manager.setProxy(proxy);
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::HeadOperation, request, reply));
+
+    manager.disconnect(SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    manager.disconnect(SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+               this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+
+    QVERIFY(time.elapsed() < 8000); //check authentication didn't wait for the server to timeout the http connection (15s on qt test server)
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    // only compare when the header is set.
+    if (reply->header(QNetworkRequest::ContentLengthHeader).isValid() && referenceSize >= 0)
+        QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), referenceSize);
+    if (reply->header(QNetworkRequest::ContentTypeHeader).isValid())
+        QCOMPARE(reply->header(QNetworkRequest::ContentTypeHeader).toString(), contentType);
 }
 
 void tst_QNetworkReply::getErrors_data()
