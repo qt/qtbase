@@ -68,6 +68,10 @@ contains(DEFINES, XCB_USE_DRI2) {
         DEFINES += XCB_USE_EGL
         LIBS += -lEGL
         HEADERS += qxcbeglsurface.h
+
+        # EGL on MeeGo 1.2 Harmattan needs this macro to map EGLNativeDisplayType
+        # and other types to the correct X11 types
+        DEFINES += SUPPORT_X11
     } else:contains(QT_CONFIG, xcb-xlib) {
         DEFINES += XCB_USE_GLX
         HEADERS += qglxintegration.h

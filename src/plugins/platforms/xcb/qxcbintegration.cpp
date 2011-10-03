@@ -62,6 +62,10 @@
 #include <EGL/egl.h>
 #endif
 
+#ifdef XCB_USE_XLIB
+#include <X11/Xlib.h>
+#endif
+
 #include <private/qplatforminputcontextfactory_qpa_p.h>
 #include <qplatforminputcontext_qpa.h>
 
