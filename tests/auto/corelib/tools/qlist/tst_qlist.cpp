@@ -91,6 +91,8 @@ private slots:
     void testOperators() const;
 
     void initializeList() const;
+
+    void const_shared_null() const;
 };
 
 void tst_QList::length() const
@@ -686,6 +688,17 @@ void tst_QList::initializeList() const
     v3 << v1 << (QList<int>() << 1) << QList<int>() << v1;
     QCOMPARE(v3, v2);
 #endif
+}
+
+void tst_QList::const_shared_null() const
+{
+    QList<int> list1;
+    list1.setSharable(false);
+    QVERIFY(list1.isDetached());
+
+    QList<int> list2;
+    list2.setSharable(true);
+    QVERIFY(!list2.isDetached());
 }
 
 QTEST_APPLESS_MAIN(tst_QList)

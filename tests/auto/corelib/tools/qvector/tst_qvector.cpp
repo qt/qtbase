@@ -92,6 +92,8 @@ private slots:
     void QTBUG11763_data();
     void QTBUG11763();
     void initializeList();
+
+    void const_shared_null();
 };
 
 void tst_QVector::constructors() const
@@ -938,6 +940,17 @@ void tst_QVector::initializeList()
     v3 << v1 << (QVector<int>() << 1) << QVector<int>() << v1;
     QCOMPARE(v3, v2);
 #endif
+}
+
+void tst_QVector::const_shared_null()
+{
+    QVector<int> v1;
+    v1.setSharable(false);
+    QVERIFY(v1.isDetached());
+
+    QVector<int> v2;
+    v2.setSharable(true);
+    QVERIFY(!v2.isDetached());
 }
 
 QTEST_APPLESS_MAIN(tst_QVector)

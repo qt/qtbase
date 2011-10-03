@@ -79,6 +79,8 @@ private slots:
     void iterators(); // sligthly modified from tst_QMap
     void keys_values_uniqueKeys(); // slightly modified from tst_QMap
     void noNeedlessRehashes();
+
+    void const_shared_null();
 };
 
 struct Foo {
@@ -1235,6 +1237,17 @@ void tst_QHash::noNeedlessRehashes()
         hash.insert(j, j + 1);
         QCOMPARE(oldCapacity, hash.capacity());
     }
+}
+
+void tst_QHash::const_shared_null()
+{
+    QHash<int, QString> hash1;
+    hash1.setSharable(false);
+    QVERIFY(hash1.isDetached());
+
+    QHash<int, QString> hash2;
+    hash2.setSharable(true);
+    QVERIFY(!hash2.isDetached());
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)

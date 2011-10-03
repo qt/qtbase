@@ -80,6 +80,8 @@ private slots:
     void iterators();
     void keys_values_uniqueKeys();
     void qmultimap_specific();
+
+    void const_shared_null();
 };
 
 tst_QMap::tst_QMap()
@@ -869,6 +871,21 @@ void tst_QMap::qmultimap_specific()
     QVERIFY(map2.remove(42,5));
     QVERIFY(map1 == map2);
     }
+}
+
+void tst_QMap::const_shared_null()
+{
+    QMap<int, QString> map1;
+    map1.setSharable(false);
+    QVERIFY(map1.isDetached());
+
+    QMap<int, QString> map2;
+    map2.setSharable(true);
+    QVERIFY(!map2.isDetached());
+
+    QMap<int, QString> map3;
+    map3.setInsertInOrder(true);
+    map3.setInsertInOrder(false);
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)

@@ -204,9 +204,9 @@ public:
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref == 1; }
-    inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
+    inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QMapData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QMap<Key, T> &other) const { return d == other.d; }
-    inline void setInsertInOrder(bool ordered) { d->insertInOrder = ordered; }
+    inline void setInsertInOrder(bool ordered) { if (ordered) detach(); if (d != &QMapData::shared_null) d->insertInOrder = ordered; }
 
     void clear();
 

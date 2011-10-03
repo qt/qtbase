@@ -146,7 +146,7 @@ public:
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
     inline bool isDetached() const { return d->ref == 1; }
-    inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
+    inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QVectorData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QVector<T> &other) const { return d == other.d; }
 
     inline T *data() { detach(); return p->array; }
