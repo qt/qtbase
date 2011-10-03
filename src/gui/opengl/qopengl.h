@@ -46,6 +46,10 @@
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
 #if 1
 #if defined(QT_OPENGL_ES_2)
 # if defined(Q_OS_MAC)
@@ -70,6 +74,8 @@ typedef GLfloat GLdouble;
 # endif
 #endif
 #endif
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 
