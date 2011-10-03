@@ -59,6 +59,7 @@
 #include "qimagereader.h"
 #include "qimagewriter.h"
 #include "qpaintengine.h"
+#include "qscreen.h"
 #include "qthread.h"
 #include "qdebug.h"
 
@@ -1648,16 +1649,14 @@ QBitmap QPixmap::mask() const
 /*!
     Returns the default pixmap depth used by the application.
 
-    On Windows and Mac, the default depth is always 32. On X11 and
-    embedded, the depth of the screen will be returned by this
-    function.
+    On all platforms the depth of the primary screen will be returned.
 
     \sa depth(), QColormap::depth(), {QPixmap#Pixmap Information}{Pixmap Information}
 
 */
 int QPixmap::defaultDepth()
 {
-    return 32; // LITE: ### use QPlatformScreen (we should do that in general)
+    return QGuiApplication::primaryScreen()->depth();
 }
 
 /*!
