@@ -83,14 +83,20 @@ private slots:
     void lock();
 
     // custom edge cases
+#ifndef Q_OS_HPUX
     void removeWhileAttached();
+#endif
     void emptyMemory();
+#ifndef Q_OS_WIN
     void readOnly();
+#endif
 
     // basics all together
+#ifndef Q_OS_HPUX
     void simpleProducerConsumer_data();
     void simpleProducerConsumer();
     void simpleDoubleProducerConsumer();
+#endif
 
     // with threads
     void simpleThreadedProducerConsumer_data();
@@ -102,7 +108,9 @@ private slots:
 
     // extreme cases
     void useTooMuchMemory();
+#if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
     void attachTooMuch();
+#endif
 
     // unique keys
     void uniqueKey_data();
@@ -381,11 +389,10 @@ void tst_QSharedMemory::lock()
     Other shared memory are allowed to be attached after we remove,
     but new shared memory are not allowed to attach after a remove.
  */
+// HPUX doesn't allow for multiple attaches per process.
+#ifndef Q_OS_HPUX
 void tst_QSharedMemory::removeWhileAttached()
 {
-#ifdef Q_OS_HPUX
-    QSKIP("HPUX doesn't allow for multiple attaches per process", SkipAll);
-#endif
     rememberKey("one");
 
     // attach 1
@@ -407,6 +414,7 @@ void tst_QSharedMemory::removeWhileAttached()
     QVERIFY(!smThree.attach());
     QCOMPARE(smThree.error(), QSharedMemory::NotFound);
 }
+#endif
 
 /*!
     The memory should be set to 0 after created.
@@ -426,11 +434,10 @@ void tst_QSharedMemory::emptyMemory()
     Verify that attach with ReadOnly is actually read only
     by writing to data and causing a segfault.
 */
+// This test opens a crash dialog on Windows.
+#ifndef Q_OS_WIN
 void tst_QSharedMemory::readOnly()
 {
-#ifdef Q_OS_WIN
-    QSKIP("This test opens a crash dialog on Windows", SkipSingle);
-#endif
     QString program = LACKEYDIR "/lackey";
     QStringList arguments;
     rememberKey("readonly_segfault");
@@ -443,6 +450,7 @@ void tst_QSharedMemory::readOnly()
     p.waitForFinished();
     QCOMPARE(p.error(), QProcess::Crashed);
 }
+#endif
 
 /*!
     Keep making shared memory until the kernel stops us.
@@ -490,15 +498,13 @@ void tst_QSharedMemory::useTooMuchMemory()
     Create one shared memory (government) and see how many other shared memories (wars) we can
     attach before the system runs out of resources.
  */
+// HPUX doesn't allow for multiple attaches per process.
+// For WinCE, this test nearly kills the system, so skip it.
+#if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
 void tst_QSharedMemory::attachTooMuch()
 {
     QSKIP("disabled", SkipAll);
-#ifdef Q_OS_HPUX
-    QSKIP("HPUX doesn't allow for multiple attaches per process", SkipAll);
-#endif
-#ifdef Q_OS_WINCE
-    QSKIP("This nearly kills the system itself, so skip for Qt/WinCE", SkipAll);
-#endif
+
     QSharedMemory government(rememberKey("government"));
     QVERIFY(government.create(1024));
     while (true) {
@@ -519,7 +525,10 @@ void tst_QSharedMemory::attachTooMuch()
         }
     }
 }
+#endif
 
+// HPUX doesn't allow for multiple attaches per process.
+#ifndef Q_OS_HPUX
 void tst_QSharedMemory::simpleProducerConsumer_data()
 {
     QTest::addColumn<QSharedMemory::AccessMode>("mode");
@@ -537,9 +546,6 @@ void tst_QSharedMemory::simpleProducerConsumer_data()
  */
 void tst_QSharedMemory::simpleProducerConsumer()
 {
-#ifdef Q_OS_HPUX
-    QSKIP("HPUX doesn't allow for multiple attaches per process", SkipAll);
-#endif
     QFETCH(QSharedMemory::AccessMode, mode);
 
     rememberKey(QLatin1String("market"));
@@ -562,12 +568,12 @@ void tst_QSharedMemory::simpleProducerConsumer()
     }
     QVERIFY(consumer.detach());
 }
+#endif
 
+// HPUX doesn't allow for multiple attaches per process.
+#ifndef Q_OS_HPUX
 void tst_QSharedMemory::simpleDoubleProducerConsumer()
 {
-#ifdef Q_OS_HPUX
-    QSKIP("HPUX doesn't allow for multiple attaches per process", SkipAll);
-#endif
     rememberKey(QLatin1String("market"));
     QSharedMemory producer(QLatin1String("market"));
     int size = 512;
@@ -580,6 +586,7 @@ void tst_QSharedMemory::simpleDoubleProducerConsumer()
         QVERIFY(consumer.attach());
     }
 }
+#endif
 
 class Consumer : public QThread
 {

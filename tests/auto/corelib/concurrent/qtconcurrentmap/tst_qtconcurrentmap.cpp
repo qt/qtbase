@@ -73,7 +73,9 @@ private slots:
 #endif
     void incrementalResults();
     void noDetatch();
+#ifndef QT_NO_STL
     void stlContainers();
+#endif
     void qFutureAssignmentLeak();
     void stressTest();
 public slots:
@@ -2316,10 +2318,9 @@ void tst_QtConcurrentMap::noDetatch()
 
 }
 
+#ifndef QT_NO_STL
 void tst_QtConcurrentMap::stlContainers()
 {
-#ifdef QT_NO_STL
-    QSKIP("Qt compiled without STL support", SkipAll);
     std::vector<int> vector;
     vector.push_back(1);
     vector.push_back(2);
@@ -2337,8 +2338,8 @@ void tst_QtConcurrentMap::stlContainers()
     QtConcurrent::mapped(list, mapper).waitForFinished();
     
     QtConcurrent::blockingMap(list, multiplyBy2Immutable);
-#endif
 }
+#endif
 
 InstanceCounter ic_fn(const InstanceCounter & ic)
 {

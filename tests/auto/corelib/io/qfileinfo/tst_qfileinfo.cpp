@@ -136,7 +136,9 @@ private slots:
     void size_data();
     void size();
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void systemFiles();
+#endif
 
     void compare_data();
     void compare();
@@ -148,8 +150,10 @@ private slots:
     void fileTimes();
     void fileTimes_oldFile();
 
+#ifndef Q_NO_SYMLINKS
     void isSymLink_data();
     void isSymLink();
+#endif
 
     void isHidden_data();
     void isHidden();
@@ -173,8 +177,10 @@ private slots:
 
     void isWritable();
     void isExecutable();
+#ifdef Q_OS_MAC
     void testDecomposedUnicodeNames_data();
     void testDecomposedUnicodeNames();
+#endif
 
     void equalOperator() const;
     void equalOperatorWithDifferentSlashes() const;
@@ -874,16 +880,16 @@ void tst_QFileInfo::size()
     QTEST(int(fi.size()), "size");
 }
 
+// This is a Windows only test.
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 void tst_QFileInfo::systemFiles()
 {
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-    QSKIP("This is a Windows only test", SkipAll);
-#endif
     QFileInfo fi("c:\\pagefile.sys");
     QVERIFY(fi.exists());      // task 167099
     QVERIFY(fi.size() > 0);    // task 189202
     QVERIFY(fi.lastModified().isValid());
 }
+#endif
 
 void tst_QFileInfo::compare_data()
 {
@@ -1096,9 +1102,9 @@ void tst_QFileInfo::fileTimes_oldFile()
 #endif
 }
 
+#ifndef Q_NO_SYMLINKS
 void tst_QFileInfo::isSymLink_data()
 {
-#ifndef NO_SYMLINKS
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
@@ -1118,12 +1124,10 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
-#endif
 }
 
 void tst_QFileInfo::isSymLink()
 {
-#ifndef NO_SYMLINKS
     QFETCH(QString, path);
     QFETCH(bool, isSymLink);
     QFETCH(QString, linkTarget);
@@ -1131,10 +1135,8 @@ void tst_QFileInfo::isSymLink()
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
     QCOMPARE(fi.symLinkTarget(), linkTarget);
-#else
-    QSKIP("no symbolic link support on this platform", SkipAll);
-#endif
 }
+#endif
 
 void tst_QFileInfo::isHidden_data()
 {
@@ -1475,6 +1477,8 @@ void tst_QFileInfo::isExecutable()
 }
 
 
+// This is a OS X only test (unless you know more about filesystems, then maybe you should try it ;)
+#ifdef Q_OS_MAC
 void tst_QFileInfo::testDecomposedUnicodeNames_data()
 {
     QTest::addColumn<QString>("filePath");
@@ -1489,32 +1493,21 @@ void tst_QFileInfo::testDecomposedUnicodeNames_data()
 
 static void createFileNative(const QString &filePath)
 {
-#ifdef Q_OS_UNIX
     int fd = open(filePath.normalized(QString::NormalizationForm_D).toUtf8().constData(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0) {
         QFAIL("couldn't create file");
     } else {
         close(fd);
     }
-#else
-    Q_UNUSED(filePath);
-#endif
 }
 
 static void removeFileNative(const QString &filePath)
 {
-#ifdef Q_OS_UNIX
     unlink(filePath.normalized(QString::NormalizationForm_D).toUtf8().constData());
-#else
-    Q_UNUSED(filePath);
-#endif
 }
 
 void tst_QFileInfo::testDecomposedUnicodeNames()
 {
-#ifndef Q_OS_MAC
-    QSKIP("This is a OS X only test (unless you know more about filesystems, then maybe you should try it ;)", SkipAll);
-#endif
     QFETCH(QString, filePath);
     createFileNative(filePath);
 
@@ -1523,6 +1516,7 @@ void tst_QFileInfo::testDecomposedUnicodeNames()
     QTEST(file.exists(), "exists");
     removeFileNative(filePath);
 }
+#endif
 
 void tst_QFileInfo::equalOperator() const
 {

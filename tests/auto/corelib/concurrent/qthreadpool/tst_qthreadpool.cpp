@@ -74,7 +74,9 @@ private slots:
     void destruction();
     void threadRecycling();
     void expiryTimeout();
+#ifndef QT_NO_EXCEPTIONS
     void exceptions();
+#endif
     void maxThreadCount();
     void setMaxThreadCount_data();
     void setMaxThreadCount();
@@ -354,21 +356,17 @@ public:
         throw new int;
     }
 };
-#endif
 
 void tst_QThreadPool::exceptions()
 {
-#ifndef QT_NO_EXCEPTIONS
     ExceptionTask task;
     {
         QThreadPool threadPool;
 //  Uncomment this for a nice crash.
 //        threadPool.start(&task);
     }
-#else
-    QSKIP("No exception support", SkipAll);
-#endif
 }
+#endif
 
 void tst_QThreadPool::maxThreadCount()
 {

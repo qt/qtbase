@@ -63,10 +63,14 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
+#if !defined(Q_OS_WINCE) || !defined(WINCE_EMULATOR_TEST)
     void constructing_QTcpSocket();
+#endif
     void constructing_QFile();
     void read_QByteArray();
+#if !defined(Q_OS_WINCE) || !defined(WINCE_EMULATOR_TEST)
     void unget();
+#endif
     void peek();
     void peekAndRead();
 
@@ -113,11 +117,11 @@ void tst_QIODevice::cleanup()
 }
 
 //----------------------------------------------------------------------------------
+
+// Networking tests in a WinCE emulator are unstable.
+#if !defined(Q_OS_WINCE) || !defined(WINCE_EMULATOR_TEST)
 void tst_QIODevice::constructing_QTcpSocket()
 {
-#if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
-    QSKIP("Networking tests in a WinCE emulator are unstable", SkipAll);
-#endif
     QTcpSocket socket;
     QIODevice *device = &socket;
 
@@ -157,6 +161,7 @@ void tst_QIODevice::constructing_QTcpSocket()
     }
     QCOMPARE(*c1, *c2);
 }
+#endif
 
 //----------------------------------------------------------------------------------
 void tst_QIODevice::constructing_QFile()
@@ -209,11 +214,11 @@ void tst_QIODevice::read_QByteArray()
 }
 
 //--------------------------------------------------------------------
+
+// Networking tests in a WinCE emulator are unstable.
+#if !defined(Q_OS_WINCE) || !defined(WINCE_EMULATOR_TEST)
 void tst_QIODevice::unget()
 {
-#if defined(Q_OS_WINCE) && defined(WINCE_EMULATOR_TEST)
-    QSKIP("Networking tests in a WinCE emulator are unstable", SkipAll);
-#endif
     QBuffer buffer;
     buffer.open(QBuffer::ReadWrite);
     buffer.write("ZXCV");
@@ -310,6 +315,7 @@ void tst_QIODevice::unget()
             socket.close();
     }
 }
+#endif
 
 //--------------------------------------------------------------------
 void tst_QIODevice::peek()

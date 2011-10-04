@@ -91,7 +91,7 @@ private slots:
     void codecForUtfText_data();
     void codecForUtfText();
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     void toLocal8Bit();
 #endif
 
@@ -1934,12 +1934,9 @@ void tst_QTextCodec::codecForUtfText()
         QVERIFY(codec == 0);
 }
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
 void tst_QTextCodec::toLocal8Bit()
 {
-#ifdef QT_NO_PROCESS
-    QSKIP("This test requires QProcess", SkipAll);
-#else
     QProcess process;
     process.start("echo/echo");
     QString string(QChar(0x410));
@@ -1949,7 +1946,6 @@ void tst_QTextCodec::toLocal8Bit()
     process.waitForFinished();
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
     QCOMPARE(process.exitCode(), 0);
-#endif
 }
 #endif
 

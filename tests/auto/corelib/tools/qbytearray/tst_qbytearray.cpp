@@ -71,8 +71,10 @@ private slots:
     void qCompress_data();
 #ifndef QT_NO_COMPRESS
     void qCompress();
+#if !(defined Q_OS_HPUX && !defined __ia64 && defined Q_CC_GNU) && !defined Q_OS_SOLARIS && !defined Q_OS_QNX && !defined Q_OS_WIN
     void qUncompress_data();
     void qUncompress();
+#endif
     void qCompressionZeroTermination();
 #endif
     void constByteArray();
@@ -142,7 +144,9 @@ private slots:
 
     void reserve();
 
+#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
     void literals();
+#endif
 };
 
 tst_QByteArray::tst_QByteArray()
@@ -214,9 +218,9 @@ void tst_QByteArray::qCompress()
     QTEST( ::qUncompress( compressed ), "ba" );
 }
 
-/*
-    Just making sure it doesn't crash on invalid data.
-*/
+// Corrupt data causes this test to lock up on HP-UX / PA-RISC with gcc,
+// SOLARIS, QNX and Windows.
+#if !(defined Q_OS_HPUX && !defined __ia64 && defined Q_CC_GNU) && !defined Q_OS_SOLARIS && !defined Q_OS_QNX && !defined Q_OS_WIN
 void tst_QByteArray::qUncompress_data()
 {
     QTest::addColumn<QByteArray>("in");
@@ -241,16 +245,6 @@ void tst_QByteArray::qUncompress()
     QFETCH(QByteArray, in);
     QFETCH(QByteArray, out);
 
-#if defined Q_OS_HPUX && !defined __ia64 && defined Q_CC_GNU
-    QSKIP("Corrupt data causes this tests to lock up on HP-UX / PA-RISC with gcc", SkipAll);
-#elif defined Q_OS_SOLARIS
-    QSKIP("Corrupt data causes this tests to lock up on Solaris", SkipAll);
-#elif defined Q_OS_QNX
-    QSKIP("Corrupt data causes this test to lock up on QNX", SkipAll);
-#elif defined Q_OS_WIN
-    QSKIP("Corrupt data causes this test to lock up on Windows", SkipAll);
-#endif
-
     QByteArray res;
     res = ::qUncompress(in);
     QCOMPARE(res, out);
@@ -258,6 +252,7 @@ void tst_QByteArray::qUncompress()
     res = ::qUncompress(in + "blah");
     QCOMPARE(res, out);
 }
+#endif
 
 void tst_QByteArray::qCompressionZeroTermination()
 {
@@ -1540,9 +1535,10 @@ void tst_QByteArray::reserve()
     nil2.reserve(0);
 }
 
+// Only tested on c++0x compliant compiler or gcc.
+#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
 void tst_QByteArray::literals()
 {
-#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
     QByteArray str(QByteArrayLiteral("abcd"));
 
     QVERIFY(str.length() == 4);
@@ -1559,11 +1555,8 @@ void tst_QByteArray::literals()
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
-
-#else
-    QSKIP("Only tested on c++0x compliant compiler or gcc", SkipAll);
-#endif
 }
+#endif
 
 const char globalChar = '1';
 

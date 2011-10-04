@@ -146,7 +146,9 @@ private slots:
 
     void operator_eq();
 
+#ifndef Q_OS_WINCE
     void dotAndDotDot();
+#endif
     void homePath();
     void tempPath();
     void rootPath();
@@ -1241,18 +1243,17 @@ void tst_QDir::operator_eq()
     dir1.setPath("..");
 }
 
+// WinCE does not have . nor ..
+#ifndef Q_OS_WINCE
 void tst_QDir::dotAndDotDot()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("WinCE does not have . nor ..", SkipAll);
-#else
     QDir dir(QString(SRCDIR "testdir/"));
     QStringList entryList = dir.entryList(QDir::Dirs);
     QCOMPARE(entryList, QStringList() << QString(".") << QString("..") << QString("dir") << QString("spaces"));
     entryList = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     QCOMPARE(entryList, QStringList() << QString("dir") << QString("spaces"));
-#endif
 }
+#endif
 
 void tst_QDir::homePath()
 {

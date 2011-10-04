@@ -110,7 +110,9 @@ private slots:
     void floatProperty();
     void qrealProperty();
     void property();
+#ifndef QT_NO_PROCESS
     void recursiveSignalEmission();
+#endif
     void blockingQueuedConnection();
     void compatibilityChildInsertedEvents();
     void installEventFilter();
@@ -2804,18 +2806,16 @@ void tst_QObject::dynamicProperties()
     QVERIFY(obj.dynamicPropertyNames().isEmpty());
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QObject::recursiveSignalEmission()
 {
-#if defined(QT_NO_PROCESS)
-    QSKIP("Test requires QProcess", SkipAll);
-#else
     QProcess proc;
     proc.start("./signalbug");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
-#endif
 }
+#endif
 
 void tst_QObject::blockingQueuedConnection()
 {

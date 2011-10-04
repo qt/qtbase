@@ -100,8 +100,10 @@ private slots:
     void stresstest();
     void noIterations();
     void throttling();
+#ifndef QT_NO_STL
     void blockSize();
     void multipleResults();
+#endif
 #if 0
     //"while" iterations tests:
     void instantiateWhile();
@@ -274,17 +276,17 @@ public:
     }
 };
 
+// Missing stl iterators prevent correct block size calculation.
+#ifndef QT_NO_STL
 void tst_QtConcurrentIterateKernel::blockSize()
 {
-#ifdef QT_NO_STL
-    QSKIP("Missing stl iterators prevent correct block size calculation", SkipAll);
-#endif
     const int expectedMinimumBlockSize = 1024 / QThread::idealThreadCount();
     BlockSizeRecorder(0, 10000).startBlocking();
     if (peakBlockSize < expectedMinimumBlockSize)
         qDebug() << "block size" << peakBlockSize;
     QVERIFY(peakBlockSize >= expectedMinimumBlockSize);
 }
+#endif
 
 class MultipleResultsFor : public IterateKernel<TestIterator, int>
 {
@@ -298,12 +300,10 @@ public:
     }
 };
 
-
+// Missing stl iterators prevent correct summation.
+#ifndef QT_NO_STL
 void tst_QtConcurrentIterateKernel::multipleResults()
 {
-#ifdef QT_NO_STL
-    QSKIP("Missing stl iterators prevent correct summation", SkipAll);
-#endif
     QFuture<int> f = startThreadEngine(new MultipleResultsFor(0, 10)).startAsynchronously();
     QCOMPARE(f.results().count() , 10);
     QCOMPARE(f.resultAt(0), 0);
@@ -311,6 +311,7 @@ void tst_QtConcurrentIterateKernel::multipleResults()
     QCOMPARE(f.resultAt(9), 9);
     f.waitForFinished();
 }
+#endif
 
 #if 0
 class PrintWhile : public IterateKernel<TestIterator, void>

@@ -77,7 +77,9 @@ private slots:
     void processes_data();
     void processes();
 
+#ifndef Q_OS_WIN
     void undo();
+#endif
     void initialValue();
 
 private:
@@ -257,12 +259,10 @@ void tst_QSystemSemaphore::processes()
     }
 }
 
+// This test only checks a unix behavior.
+#ifndef Q_OS_WIN
 void tst_QSystemSemaphore::undo()
 {
-#if defined(Q_OS_WIN)
-    QSKIP("This test only checks a unix behavior", SkipSingle);
-#endif
-
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
 
     QStringList acquireArguments = QStringList() << acquire_js();
@@ -278,6 +278,7 @@ void tst_QSystemSemaphore::undo()
     acquire.waitForFinished(LACKYWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
+#endif
 
 void tst_QSystemSemaphore::initialValue()
 {

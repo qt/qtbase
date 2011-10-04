@@ -68,7 +68,9 @@ private slots:
     void basics();
     void operators();
     void swap();
+#ifndef Q_CC_SUN
     void forwardDeclaration1();
+#endif
     void forwardDeclaration2();
     void memoryManagement();
     void downCast();
@@ -98,8 +100,10 @@ private slots:
     void map();
     void hash();
     void validConstructs();
+#ifndef QTEST_CROSS_COMPILED
     void invalidConstructs_data();
     void invalidConstructs();
+#endif
 
 public slots:
     void cleanup() { check(); }
@@ -340,11 +344,10 @@ ForwardDeclared *forwardPointer();
 void externalForwardDeclaration();
 extern int forwardDeclaredDestructorRunCount;
 
+// This type of forward declaration is not valid with SunCC.
+#ifndef Q_CC_SUN
 void tst_QSharedPointer::forwardDeclaration1()
 {
-#if defined(Q_CC_SUN) || defined(Q_CC_WINSCW) || defined(Q_CC_RVCT)
-    QSKIP("This type of forward declaration is not valid with this compiler", SkipAll);
-#else
     externalForwardDeclaration();
 
     struct Wrapper { QSharedPointer<ForwardDeclared> pointer; };
@@ -356,8 +359,8 @@ void tst_QSharedPointer::forwardDeclaration1()
         QVERIFY(!w.pointer.isNull());
     }
     QCOMPARE(forwardDeclaredDestructorRunCount, 1);
-#endif
 }
+#endif
 
 #include "forwarddeclared.h"
 
@@ -1657,6 +1660,9 @@ void tst_QSharedPointer::validConstructs()
 
 typedef bool (QTest::QExternalTest:: * TestFunction)(const QByteArray &body);
 Q_DECLARE_METATYPE(TestFunction)
+
+// This test does not work on cross compiled systems.
+#ifndef QTEST_CROSS_COMPILED
 void tst_QSharedPointer::invalidConstructs_data()
 {
     QTest::addColumn<TestFunction>("testFunction");
@@ -1801,9 +1807,6 @@ void tst_QSharedPointer::invalidConstructs()
 #ifdef Q_CC_MINGW
     QSKIP("The maintainer of QSharedPointer: 'We don't know what the problem is so skip the tests.'", SkipAll);
 #endif
-#ifdef QTEST_CROSS_COMPILED
-    QSKIP("This test does not work on cross compiled systems", SkipAll);
-#endif
 
     QTest::QExternalTest test;
     test.setQtModules(QTest::QExternalTest::QtCore);
@@ -1858,6 +1861,7 @@ void tst_QSharedPointer::invalidConstructs()
         QFAIL("Fail");
     }
 }
+#endif
 
 namespace QTBUG11730 {
     struct IB

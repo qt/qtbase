@@ -198,16 +198,20 @@ private slots:
     void octTest();
     void zeroTermination();
     void ws_manipulator();
+#ifndef Q_OS_WINCE
     void stillOpenWhenAtEnd();
+#endif
     void readNewlines_data();
     void readNewlines();
     void seek();
     void pos();
     void pos2();
     void pos3LargeFile();
+#ifndef Q_OS_WINCE
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
+#endif
     void read();
     void qbool();
     void forcePoint();
@@ -1103,6 +1107,9 @@ void tst_QTextStream::ws_manipulator()
 }
 
 // ------------------------------------------------------------------------------
+
+// Qt/CE: Cannot test network on emulator.
+#ifndef Q_OS_WINCE
 void tst_QTextStream::stillOpenWhenAtEnd()
 {
     int argc = 0;
@@ -1116,9 +1123,6 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream.readLine().isNull()) {}
     QVERIFY(file.isOpen());
 
-#ifdef Q_OS_WINCE
-    QSKIP("Qt/CE: Cannot test network on emulator", SkipAll);
-#endif
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForReadyRead(5000));
@@ -1127,6 +1131,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream2.readLine().isNull()) {}
     QVERIFY(socket.isOpen());
 }
+#endif
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readNewlines_data()
@@ -1397,11 +1402,11 @@ void tst_QTextStream::pos3LargeFile()
 }
 
 // ------------------------------------------------------------------------------
+
+// Qt/CE has no stdin/out support for processes.
+#ifndef Q_OS_WINCE
 void tst_QTextStream::readStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE has no stdin/out support for processes", SkipAll);
-#endif
     QProcess stdinProcess;
     stdinProcess.start("stdinProcess/stdinProcess");
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1421,13 +1426,14 @@ void tst_QTextStream::readStdin()
     QCOMPARE(b, 2);
     QCOMPARE(c, 3);
 }
+#endif
 
 // ------------------------------------------------------------------------------
+
+// Qt/CE has no stdin/out support for processes.
+#ifndef Q_OS_WINCE
 void tst_QTextStream::readAllFromStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE has no stdin/out support for processes", SkipAll);
-#endif
     QProcess stdinProcess;
     stdinProcess.start("readAllStdinProcess/readAllStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1442,13 +1448,14 @@ void tst_QTextStream::readAllFromStdin()
     QChar quoteChar('"');
     QCOMPARE(stream.readAll(), QString::fromLatin1("%1hello world%2 \n").arg(quoteChar).arg(quoteChar));
 }
+#endif
 
 // ------------------------------------------------------------------------------
+
+// Qt/CE has no stdin/out support for processes.
+#ifndef Q_OS_WINCE
 void tst_QTextStream::readLineFromStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE has no stdin/out support for processes", SkipAll);
-#endif
     QProcess stdinProcess;
     stdinProcess.start("readLineStdinProcess/readLineStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
     stdinProcess.setReadChannel(QProcess::StandardError);
@@ -1465,6 +1472,7 @@ void tst_QTextStream::readLineFromStdin()
 
     QVERIFY(stdinProcess.waitForFinished(5000));
 }
+#endif
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::read()

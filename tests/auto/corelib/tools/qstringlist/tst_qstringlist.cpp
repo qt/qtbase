@@ -79,7 +79,9 @@ private slots:
     void join_data() const;
     void joinEmptiness() const;
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
     void initializeList() const;
+#endif
 };
 
 extern const char email[];
@@ -323,16 +325,15 @@ void tst_QStringList::joinEmptiness() const
     QVERIFY(string.isNull());
 }
 
+// this test require C++0x support
+#ifdef Q_COMPILER_INITIALIZER_LISTS
 void tst_QStringList::initializeList() const
 {
-#ifdef Q_COMPILER_INITIALIZER_LISTS
     QStringList v1{QLatin1String("hello"),"world",QString::fromLatin1("plop")};
     QCOMPARE(v1, (QStringList() << "hello" << "world" << "plop"));
     QCOMPARE(v1, (QStringList{"hello","world","plop"}));
-#else
-    QSKIP("Require C++0x support, pass the right flag to the compiler", SkipAll);
-#endif
 }
+#endif
 
 QTEST_APPLESS_MAIN(tst_QStringList)
 #include "tst_qstringlist.moc"

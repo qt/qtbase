@@ -124,7 +124,9 @@ private slots:
     void dateTimeFromStringFormat_data();
     void dateTimeFromStringFormat();
 
+#ifdef Q_OS_WIN
     void fromString_LOCALE_ILDATE();
+#endif
 
     void fromString();
 
@@ -1583,19 +1585,17 @@ void tst_QDateTime::fromString()
     QLocale::setDefault(def);
 }
 
+#ifdef Q_OS_WIN
 void tst_QDateTime::fromString_LOCALE_ILDATE()
 {
-#ifdef Q_OS_WIN
     QString date1 = QLatin1String("Sun 1. Dec 13:02:00 1974");
     QString date2 = QLatin1String("Sun Dec 1 13:02:00 1974");
 
     QDateTime ref(QDate(1974, 12, 1), QTime(13, 2));
     QCOMPARE(ref, QDateTime::fromString(date2, Qt::TextDate));
     QCOMPARE(ref, QDateTime::fromString(date1, Qt::TextDate));
-#else
-    QSKIP("Windows only", SkipAll);
-#endif
 }
+#endif
 
 void tst_QDateTime::utcOffset()
 {

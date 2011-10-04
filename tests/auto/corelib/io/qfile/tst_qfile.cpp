@@ -129,9 +129,11 @@ private slots:
     void readAll_data();
     void readAll();
     void readAllBuffer();
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
+#endif
     void text();
     void missingEndOfLine();
     void readBlock();
@@ -156,14 +158,18 @@ private slots:
     void readTextFile2();
     void writeTextFile_data();
     void writeTextFile();
+#ifndef Q_OS_SOLARIS
     /* void largeFileSupport(); */
+#endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void largeUncFileSupport();
 #endif
     void tailFile();
     void flush();
     void bufferedRead();
+#ifdef Q_OS_UNIX
     void isSequential();
+#endif
     void encodeName();
     void truncate();
     void seekToPos();
@@ -236,8 +242,12 @@ private:
         NumberOfFileTypes
     };
 
+#ifndef Q_WS_WINCE
     void openStandardStreamsFileDescriptors();
+#endif
+#ifdef Q_OS_UNIX
     void openStandardStreamsBufferedStreams();
+#endif
 
     bool openFd(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
@@ -842,14 +852,10 @@ void tst_QFile::readAllBuffer()
     QFile::remove(fileName);
 }
 
+// Currently no stdin/out supported for Windows CE.
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QFile::readAllStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
@@ -866,18 +872,13 @@ void tst_QFile::readAllStdin()
     process.closeWriteChannel();
     process.waitForFinished();
     QCOMPARE(process.readAll().size(), lotsOfData.size() * 5);
-#endif
 }
+#endif
 
+// Currently no stdin/out supported for Windows CE.
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QFile::readLineStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
-
     QByteArray lotsOfData(1024, '@'); // 10 megs
     for (int i = 0; i < lotsOfData.size(); ++i) {
         if ((i % 32) == 31)
@@ -909,17 +910,13 @@ void tst_QFile::readLineStdin()
                 QCOMPARE(char(array[i]), char('0' + i % 32));
         }
     }
-#endif
 }
+#endif
 
+// Currently no stdin/out supported for Windows CE.
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QFile::readLineStdin_lineByLine()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
         process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
@@ -937,8 +934,8 @@ void tst_QFile::readLineStdin_lineByLine()
         process.closeWriteChannel();
         QVERIFY(process.waitForFinished(5000));
     }
-#endif
 }
+#endif
 
 void tst_QFile::text()
 {
@@ -1581,16 +1578,14 @@ void tst_QFile::bufferedRead()
     fclose(stdFile);
 }
 
+#ifdef Q_OS_UNIX
 void tst_QFile::isSequential()
 {
-#if defined (Q_OS_WIN)
-    QSKIP("Unix only test.", SkipAll);
-#endif
-
     QFile zero("/dev/null");
     QVERIFY(zero.open(QFile::ReadOnly));
     QVERIFY(zero.isSequential());
 }
+#endif
 
 void tst_QFile::encodeName()
 {
@@ -1792,11 +1787,11 @@ void tst_QFile::FILEReadWrite()
 #include <qglobal.h>
 #define BUFFSIZE 1
 #define FILESIZE   0x10000000f
+
+// Solaris does not support statfs.
+#ifndef Q_OS_SOLARIS
 void tst_QFile::largeFileSupport()
 {
-#ifdef Q_OS_SOLARIS
-    QSKIP("Solaris does not support statfs", SkipAll);
-#else
     qlonglong sizeNeeded = 2147483647;
     sizeNeeded *= 2;
     sizeNeeded += 1024;
@@ -1851,8 +1846,8 @@ void tst_QFile::largeFileSupport()
     } else {
         QFAIL("Could not determin disk space");
     }
-#endif
 }
+#endif
 */
 
 void tst_QFile::i18nFileName_data()
@@ -2992,14 +2987,12 @@ void tst_QFile::openDirectory()
     f1.close();
 }
 
+// Although Windows CE (not mobile!) has functions that allow redirecting
+// the standard file descriptors to a file (see SetStdioPathW/GetStdioPathW)
+// it does not have functions to simply open them like below.
+#ifndef Q_WS_WINCE
 void tst_QFile::openStandardStreamsFileDescriptors()
 {
-#ifdef Q_OS_WINCE
-    //allthough Windows CE (not mobile!) has functions that allow redirecting
-    //the standard file descriptors to a file (see SetStdioPathW/GetStdioPathW)
-    //it does not have functions to simply open them like below .
-    QSKIP("Opening standard streams on Windows CE via descriptor not implemented", SkipAll);
-#endif
     // Using file descriptors
     {
         QFile in;
@@ -3025,12 +3018,11 @@ void tst_QFile::openStandardStreamsFileDescriptors()
         QVERIFY( err.isSequential() );
     }
 }
+#endif
 
+#ifdef Q_OS_UNIX
 void tst_QFile::openStandardStreamsBufferedStreams()
 {
-#if defined (Q_OS_WIN)
-    QSKIP("Unix only test.", SkipAll);
-#endif
     // Using streams
     {
         QFile in;
@@ -3056,11 +3048,16 @@ void tst_QFile::openStandardStreamsBufferedStreams()
         QVERIFY( err.isSequential() );
     }
 }
+#endif
 
 void tst_QFile::openStandardStreams()
 {
+#ifndef Q_WS_WINCE
     openStandardStreamsFileDescriptors();
+#endif
+#ifdef Q_OS_UNIX
     openStandardStreamsBufferedStreams();
+#endif
 }
 
 void tst_QFile::writeNothing()

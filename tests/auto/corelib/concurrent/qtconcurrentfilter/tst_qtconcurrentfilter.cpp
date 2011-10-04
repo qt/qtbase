@@ -58,7 +58,9 @@ private slots:
     void resultAt();
     void incrementalResults();
     void noDetatch();
+#ifndef QT_NO_STL
     void stlContainers();
+#endif
 };
 
 #if !defined (QT_NO_CONCURRENT_TEST) && !defined(QT_NO_CONCURRENT_FILTER)
@@ -1497,11 +1499,10 @@ void tst_QtConcurrentFilter::noDetatch()
     }
 }
 
+#ifndef QT_NO_STL
 void tst_QtConcurrentFilter::stlContainers()
 {
-#if defined(QT_NO_STL)
-    QSKIP("Qt compiled without STL support", SkipAll);
-#elif defined(_MSC_VER) && _MSC_VER >= 1600
+#if defined(_MSC_VER) && _MSC_VER >= 1600
     QSKIP("Test does not compile with MSVC 2010 (see QTBUG-18996)", SkipAll);
 #else
     std::vector<int> vector;
@@ -1529,6 +1530,7 @@ void tst_QtConcurrentFilter::stlContainers()
     QCOMPARE(*list2.begin(), 1);
 #endif
 }
+#endif
 
 QTEST_MAIN(tst_QtConcurrentFilter)
 

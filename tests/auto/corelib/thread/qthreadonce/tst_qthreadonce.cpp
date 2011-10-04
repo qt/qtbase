@@ -62,7 +62,9 @@ private slots:
 
     void nesting();
     void reentering();
+#ifndef QT_NO_EXCEPTIONS
     void exception();
+#endif
 };
 
 class SingletonObject: public QObject
@@ -207,11 +209,9 @@ static void exception_helper(int &val)
 }
 #endif
 
+#ifndef QT_NO_EXCEPTIONS
 void tst_QThreadOnce::exception()
 {
-#if defined(QT_NO_EXCEPTIONS)
-    QSKIP("Compiled without exceptions, skipping test", SkipAll);
-#else
     int count = 0;
 
     try {
@@ -227,8 +227,8 @@ void tst_QThreadOnce::exception()
         QVERIFY2(false, "Exception shouldn't have been thrown...");
     }
     QCOMPARE(count, 2);
-#endif
 }
+#endif
 
 QTEST_MAIN(tst_QThreadOnce)
 #include "tst_qthreadonce.moc"

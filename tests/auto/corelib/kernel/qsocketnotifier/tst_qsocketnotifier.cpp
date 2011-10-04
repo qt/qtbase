@@ -72,7 +72,9 @@ public:
 private slots:
     void unexpectedDisconnection();
     void mixingWithTimers();
+#ifdef Q_OS_UNIX
     void posixSockets();
+#endif
     void bogusFds();
 };
 
@@ -257,12 +259,9 @@ void tst_QSocketNotifier::mixingWithTimers()
     QCOMPARE(helper.socketActivated, true);
 }
 
+#ifdef Q_OS_UNIX
 void tst_QSocketNotifier::posixSockets()
 {
-#ifndef Q_OS_UNIX
-    QSKIP("test only for posix", SkipAll);
-#else
-
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost, 0));
 
@@ -310,8 +309,8 @@ void tst_QSocketNotifier::posixSockets()
         QCOMPARE(passive->readAll(), QByteArray("goodbye",8));
     }
     qt_safe_close(posixSocket);
-#endif
 }
+#endif
 
 void tst_QSocketNotifier::bogusFds()
 {
