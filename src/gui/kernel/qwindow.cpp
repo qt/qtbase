@@ -585,22 +585,27 @@ QAccessibleInterface *QWindow::accessibleRoot() const
 
 void QWindow::showMinimized()
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    setWindowState(Qt::WindowMinimized);
+    show();
 }
 
 void QWindow::showMaximized()
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    setWindowState(Qt::WindowMaximized);
+    show();
 }
 
 void QWindow::showFullScreen()
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    setWindowState(Qt::WindowFullScreen);
+    show();
+    requestActivateWindow();
 }
 
 void QWindow::showNormal()
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    setWindowState(Qt::WindowNoState);
+    show();
 }
 
 bool QWindow::close()
