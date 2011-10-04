@@ -228,7 +228,6 @@ private slots:
 
     void userActionCount();
     void actionText();
-    void doAction();
 
     void applicationTest();
     void mainWindowTest();
@@ -983,11 +982,6 @@ void tst_QAccessibility::actionText()
     delete widget;
 
     QTestAccessibility::clearEvents();
-}
-
-void tst_QAccessibility::doAction()
-{
-    QSKIP("TODO: Implement me", SkipAll);
 }
 
 void tst_QAccessibility::applicationTest()
