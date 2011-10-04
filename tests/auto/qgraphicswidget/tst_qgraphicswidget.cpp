@@ -1111,10 +1111,6 @@ void tst_QGraphicsWidget::initStyleOption_data()
 // void initStyleOption(QStyleOption* option) const public
 void tst_QGraphicsWidget::initStyleOption()
 {
-#ifdef Q_WS_MAEMO_5
-    QSKIP("The test passes, but it doesn't work when the display is in energy saving mode", SkipAll);
-#endif
-
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
@@ -1777,9 +1773,6 @@ void tst_QGraphicsWidget::verifyFocusChain()
 
 void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 {
-#ifdef Q_WS_MAEMO_5
-    QSKIP("On Maemo 5 the Display Manager is shown on Window change, so the test won't work", SkipAll);
-#endif
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();

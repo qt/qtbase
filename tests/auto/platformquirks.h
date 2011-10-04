@@ -67,9 +67,7 @@ struct PlatformQuirks
      */
     static inline bool isImageLoaderImprecise()
     {
-#ifdef Q_WS_MAEMO_5
-        return true;
-#elif defined(Q_WS_X11)
+#if defined(Q_WS_X11)
         // ### this is a very bad assumption, we should really check the version of libjpeg
         return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
 #else
@@ -82,9 +80,7 @@ struct PlatformQuirks
     */
     static inline bool isAutoMaximizing()
     {
-#ifdef Q_WS_MAEMO_5
-        return true;
-#elif defined(Q_WS_X11)
+#if defined(Q_WS_X11)
         return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
 #else
         return false;
@@ -93,9 +89,7 @@ struct PlatformQuirks
 
     static inline bool haveMouseCursor()
     {
-#ifdef Q_WS_MAEMO_5
-        return false;
-#elif defined(Q_WS_X11)
+#if defined(Q_WS_X11)
         return X11->desktopEnvironment != DE_MEEGO_COMPOSITOR;
 #else
         return true;
@@ -106,9 +100,6 @@ struct PlatformQuirks
     The autotests have to know which fileType is the default on the system*/
     static inline MediaFileTypes defaultMediaFileType()
     {
-#ifdef Q_WS_MAEMO_5
-        return PlatformQuirks::mp3;
-#endif
 #ifdef Q_WS_X11
         // ### very bad assumption
         if (X11->desktopEnvironment == DE_MEEGO_COMPOSITOR)

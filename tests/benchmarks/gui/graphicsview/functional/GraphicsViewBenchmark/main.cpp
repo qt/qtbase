@@ -321,17 +321,11 @@ void tst_GraphicsViewBenchmark::initTestCase()
     if (mSettings->size().width() > 0 && mSettings->size().height() > 0) {
         mMainView->resize(mSettings->size().width(), mSettings->size().height());
         mMainView->show();
-    } else {
-#if defined(Q_WS_MAEMO_5)
+    } else if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
         mMainView->showFullScreen();
-#else
-        if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
-            mMainView->showFullScreen();
-        } else {
-            mMainView->resize(360, 640);
-            mMainView->show();
-        }
-#endif
+    } else {
+        mMainView->resize(360, 640);
+        mMainView->show();
     }
 
     mDataGenerator.Reset();
@@ -779,17 +773,11 @@ int main(int argc, char *argv[])
         if (settings.size().width() > 0 && settings.size().height() > 0) {
             view.resize(settings.size().width(), settings.size().height());
             view.show();
-        } else {
-#if defined(Q_WS_MAEMO_5)
+        } else if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
             view.showFullScreen();
-#else
-            if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
-                view.showFullScreen();
-            } else {
-                view.resize(360, 640);
-                view.show();
-            }
-#endif
+        } else {
+            view.resize(360, 640);
+            view.show();
         }
         returnValue = app.exec();
     } else {
