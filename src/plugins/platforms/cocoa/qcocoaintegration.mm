@@ -87,18 +87,20 @@ QCocoaIntegration::QCocoaIntegration()
 
     QNSApplication *cocoaApplication = [QNSApplication sharedApplication];
 
-    // Applications launched from plain executables (without an app
-    // bundle) are "background" applications that does not take keybaord
-    // focus or have a dock icon or task switcher entry. Qt Gui apps generally
-    // wants to be foreground applications so change the process type. (But
-    // see the function implementation for exceptions.)
-    qt_mac_transformProccessToForegroundApplication();
+    if (qgetenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM").isEmpty()) {
+        // Applications launched from plain executables (without an app
+        // bundle) are "background" applications that does not take keybaord
+        // focus or have a dock icon or task switcher entry. Qt Gui apps generally
+        // wants to be foreground applications so change the process type. (But
+        // see the function implementation for exceptions.)
+        qt_mac_transformProccessToForegroundApplication();
 
-    // Move the application window to front to avoid launching behind the terminal.
-    // Ignoring other apps is neccessary (we must ignore the terminal), but makes
-    // Qt apps play slightly less nice with other apps when lanching from Finder
-    // (See the activateIgnoringOtherApps docs.)
-    [cocoaApplication activateIgnoringOtherApps : YES];
+        // Move the application window to front to avoid launching behind the terminal.
+        // Ignoring other apps is neccessary (we must ignore the terminal), but makes
+        // Qt apps play slightly less nice with other apps when lanching from Finder
+        // (See the activateIgnoringOtherApps docs.)
+        [cocoaApplication activateIgnoringOtherApps : YES];
+    }
 
     // ### For AA_MacPluginApplication we don't want to load the menu nib.
     // Qt 4 also does not set the application delegate, so that behavior
