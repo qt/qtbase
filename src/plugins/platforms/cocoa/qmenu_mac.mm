@@ -755,9 +755,10 @@ void QCocoaMenu::setMenuEnabled(bool enable)
             }
         }
     } else {
-        NSMenu *menu = menu;
-        for (NSMenuItem *item in [menu itemArray]) {
-            [item setEnabled:false];
+        NSMenu *m = menu;
+        for (NSMenuItem *item in [m itemArray]) {
+            if (item)
+                [item setEnabled:false];
         }
     }
 }
