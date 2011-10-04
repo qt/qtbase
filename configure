@@ -6273,6 +6273,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
             exit 1
         else
             CFG_WAYLAND=no
+            QMakeVar add DEFINES QT_NO_WAYLAND
         fi
     fi
 
@@ -6304,6 +6305,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 exit 1
             fi
             CFG_XCB=no
+            QMakeVar add DEFINES QT_NO_XCB
         fi
     fi
 
