@@ -250,7 +250,7 @@ class QAccessibleDockWidget: public QAccessibleWidget
 {
 public:
     explicit QAccessibleDockWidget(QWidget *widget);
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
     QRect rect (int child ) const;

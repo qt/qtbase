@@ -291,7 +291,6 @@ QAccessibleInterface *QAccessibleApplication::parent() const
 
 QAccessibleInterface *QAccessibleApplication::child(int index) const
 {
-    Q_ASSERT(index >= 0);
     const QObjectList tlo(topLevelObjects());
     if (index >= 0 && index < tlo.count())
         return QAccessible::queryAccessibleInterface(tlo.at(index));
@@ -299,7 +298,7 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
 }
 
 /*! \reimp */
-int QAccessibleApplication::navigate(RelationFlag relation, int entry,
+int QAccessibleApplication::navigate(RelationFlag relation, int,
                                      QAccessibleInterface **target) const
 {
     if (!target)

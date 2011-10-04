@@ -1267,21 +1267,14 @@ QAccessibleDockWidget::QAccessibleDockWidget(QWidget *widget)
 
 }
 
-int QAccessibleDockWidget::navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const
+QAccessibleInterface *QAccessibleDockWidget::child(int index) const
 {
-    if (relation == Child) {
-        if (entry == 1) {
-            *iface = new QAccessibleTitleBar(dockWidget());
-            return 0;
-        } else if (entry == 2) {
-            if (dockWidget()->widget())
-                *iface = QAccessible::queryAccessibleInterface(dockWidget()->widget());
-            return 0;
-        }
-        *iface = 0;
-        return -1;
+    if (index == 0) {
+        return new QAccessibleTitleBar(dockWidget());
+    } else if (index == 1 && dockWidget()->widget()) {
+        return QAccessible::queryAccessibleInterface(dockWidget()->widget());
     }
-    return QAccessibleWidget::navigate(relation, entry, iface);
+    return 0;
 }
 
 int QAccessibleDockWidget::childAt(int x, int y) const
@@ -1332,7 +1325,7 @@ QAccessible::State QAccessibleDockWidget::state(int child) const
     return QAccessibleWidget::state(child);
 }
 
-QRect QAccessibleDockWidget::rect (int child ) const
+QRect QAccessibleDockWidget::rect(int child) const
 {
     QRect rect;
     bool mapToGlobal = true;

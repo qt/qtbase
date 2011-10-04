@@ -407,7 +407,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(int child,
         QRect sg = sibIface->rect(0);
         if (wg.intersects(sg)) {
             QAccessibleInterface *pIface = 0;
-            sibIface->navigate(Ancestor, 1, &pIface);
+            pIface = sibIface->parent();
             if (pIface && !((sibIface->state(0) | state(0)) & Invisible)) {
                 int wi = pIface->indexOfChild(this);
                 int si = pIface->indexOfChild(sibIface);
@@ -488,7 +488,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             if (!iface)
                 return -1;
 
-            iface->navigate(Child, entry, target);
+            *target = iface->child(entry - 1);
             delete iface;
             if (*target)
                 return 0;
@@ -594,8 +594,8 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             int sibCount = pIface->childCount();
             QAccessibleInterface *sibling = 0;
             for (int i = pIface->indexOfChild(this) + 1; i <= sibCount && entry; ++i) {
-                pIface->navigate(Child, i, &sibling);
-                if (!sibling || (sibling->state(0) & Invisible)) {
+                sibling = pIface->child(i - 1);
+                if (!sibling || (sibling->state() & Invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -623,7 +623,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             int index = pIface->indexOfChild(this);
             QAccessibleInterface *sibling = 0;
             for (int i = 1; i < index && entry; ++i) {
-                pIface->navigate(Child, i, &sibling);
+                sibling = pIface->child(i - 1);
                 Q_ASSERT(sibling);
                 if (!sibling || (sibling->state(0) & Invisible)) {
                     delete sibling;
@@ -680,16 +680,14 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             int sibCount = pIface->childCount();
             QAccessibleInterface *candidate = 0;
             for (int i = 0; i < sibCount && entry; ++i) {
-                const int childId = pIface->navigate(Child, i+1, &candidate);
-                Q_ASSERT(childId >= 0);
-                if (childId > 0)
-                    candidate = pIface;
-                if (candidate->relationTo(childId, this, 0) & Label)
+                candidate = pIface->child(i);
+                Q_ASSERT(candidate);
+                if (candidate->relationTo(0, this, 0) & Label)
                     --entry;
                 if (!entry)
                     break;
-                if (candidate != pIface)
-                    delete candidate;
+
+                delete candidate;
                 candidate = 0;
             }
             if (!candidate) {

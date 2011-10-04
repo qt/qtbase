@@ -162,23 +162,22 @@ static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *c
 static int verifyHierarchy(QAccessibleInterface *iface)
 {
     int errorAt = 0;
-    int entry = 0;
     static int treelevel = 0;   // for error diagnostics
     QAccessibleInterface *middleChild, *if2;
     middleChild = 0;
     ++treelevel;
     int middle = iface->childCount()/2 + 1;
     if (iface->childCount() >= 2) {
-        entry = iface->navigate(QAccessible::Child, middle, &middleChild);
+        middleChild = iface->child(middle - 1);
     }
     for (int i = 0; i < iface->childCount() && !errorAt; ++i) {
-        entry = iface->navigate(QAccessible::Child, i + 1, &if2);
-        if (entry == 0) {
-            // navigate Ancestor...
-            QAccessibleInterface *parent = 0;
-            entry = if2->navigate(QAccessible::Ancestor, 1, &parent);
-            EXPECT(entry == 0 && iface->object() == parent->object());
-            delete parent;
+        if2 = iface->child(i);
+        EXPECT(if2 != 0);
+        // navigate Ancestor...
+        QAccessibleInterface *parent = 0;
+        parent = if2->parent();
+        EXPECT(iface->object() == parent->object());
+        delete parent;
 
             // navigate Sibling...
 //            if (middleChild) {
@@ -189,13 +188,10 @@ static int verifyHierarchy(QAccessibleInterface *iface)
 //                EXPECT(iface->indexOfChild(middleChild) == middle);
 //            }
 
-            // verify children...
-            if (!errorAt)
-                errorAt = verifyHierarchy(if2);
-            delete if2;
-        } else {
-            // leaf nodes
-        }
+        // verify children...
+        if (!errorAt)
+            errorAt = verifyHierarchy(if2);
+        delete if2;
     }
     delete middleChild;
 
@@ -502,9 +498,9 @@ void tst_QAccessibility::navigateGeometric()
 
     // test invisible widget
     target = QAccessible::queryAccessibleInterface(aw);
-    QVERIFY(!(target->state(0) & QAccessible::Invisible));
+    QVERIFY(!(target->state() & QAccessible::Invisible));
     aw->hide();
-    QVERIFY(target->state(0) & QAccessible::Invisible);
+    QVERIFY(target->state() & QAccessible::Invisible);
     delete target; target = 0;
 
     aw->move(center->x() + 10, center->y());
@@ -711,15 +707,14 @@ void tst_QAccessibility::navigateHierarchy()
     QVERIFY(target == 0);
     QCOMPARE(iface->navigate(QAccessible::Sibling, 42, &target), -1);
     QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Child, 15, &target), -1);
-    QVERIFY(iface->child(15) == 0);
+
+    target = iface->child(14);
     QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Child, 0, &target), -1);
-    QVERIFY(iface->child(-1) == 0);
+    target = iface->child(-1);
     QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Child, 1, &target), 0);
+    target = iface->child(0);
     QAccessibleInterface *interfaceW1 = iface->child(0);
-    QVERIFY(target != 0);
+    QVERIFY(target);
     QVERIFY(target->isValid());
     QCOMPARE(target->object(), (QObject*)w1);
     QVERIFY(interfaceW1 != 0);
@@ -745,7 +740,7 @@ void tst_QAccessibility::navigateHierarchy()
     QCOMPARE(target->object(), (QObject*)w3);
     delete iface; iface = 0;
 
-    QCOMPARE(target->navigate(QAccessible::Child, 1, &iface), 0);
+    iface = target->child(0);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
     QCOMPARE(iface->object(), (QObject*)w31);
@@ -1207,19 +1202,11 @@ void tst_QAccessibility::buttonTest()
 
 void tst_QAccessibility::scrollBarTest()
 {
-    // Test that when we hide() a slider, the PageLeft, Indicator, and PageRight also gets the
-    // Invisible state bit set.
-    enum SubControls { LineUp = 1,
-        PageUp = 2,
-        Position = 3,
-        PageDown = 4,
-        LineDown = 5
-    };
-
-    QScrollBar *scrollBar  = new QScrollBar();
+    QScrollBar *scrollBar  = new QScrollBar(Qt::Horizontal);
     QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
     QVERIFY(scrollBarInterface);
     QVERIFY(scrollBarInterface->state()         & QAccessible::Invisible);
+    scrollBar->resize(200, 50);
     scrollBar->show();
     QVERIFY(scrollBarInterface->state()         ^ QAccessible::Invisible);
     QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(scrollBar, 0, QAccessible::ObjectShow)));
@@ -1248,39 +1235,13 @@ void tst_QAccessibility::scrollBarTest()
     valueIface->setCurrentValue(77);
     QCOMPARE(77, scrollBar->value());
 
+    const QRect scrollBarRect = scrollBarInterface->rect();
+    QVERIFY(scrollBarRect.isValid());
+
+    qDebug() << scrollBarRect;
+
     delete scrollBarInterface;
     delete scrollBar;
-
-
-    // Test that the rects are ok.
-    {
-        QScrollBar *scrollBar  = new QScrollBar(Qt::Horizontal);
-        scrollBar->resize(200, 50);
-        scrollBar->show();
-#if defined(Q_OS_UNIX)
-        QCoreApplication::processEvents();
-        QTest::qWait(100);
-#endif
-        QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
-        QVERIFY(scrollBarInterface);
-
-        scrollBar->setMinimum(0);
-        scrollBar->setMaximum(100);
-        scrollBar->setValue(50);
-
-        QApplication::processEvents();
-
-        const QRect scrollBarRect = scrollBarInterface->rect(0);
-        QVERIFY(scrollBarRect.isValid());
-        // Verify that the sub-control rects are valid and inside the scrollBar rect.
-        for (int i = LineUp; i <= LineDown; ++i) {
-            const QRect testRect = scrollBarInterface->rect(i);
-            QVERIFY(testRect.isValid());
-            QVERIFY(scrollBarRect.contains(testRect));
-        }
-        delete scrollBarInterface;
-        delete scrollBar;
-    }
 
     QTestAccessibility::clearEvents();
 }
@@ -2262,7 +2223,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QStringList actualOrder;
     QAccessibleInterface *child;
     QAccessibleInterface *leftmost;
-    iface->navigate(QAccessible::Child, 1, &child);
+    child = iface->child(0);
     // first find the leftmost button
     while (child->navigate(QAccessible::Left, 1, &leftmost) != -1) {
         delete child;
@@ -2321,7 +2282,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QApplication::processEvents();
     QAccessibleInterface *child;
     QStringList actualOrder;
-    iface->navigate(QAccessible::Child, 1, &child);
+    child = iface->child(0);
     // first find the topmost button
     QAccessibleInterface *other;
     while (child->navigate(QAccessible::Up, 1, &other) != -1) {
@@ -2597,10 +2558,10 @@ void tst_QAccessibility::tableWidgetTest()
     QCOMPARE(client->role(0), QAccessible::Client);
     QCOMPARE(client->childCount(), 3);
     QAccessibleInterface *view = 0;
-    client->navigate(QAccessible::Child, 1, &view);
+    view = client->child(0);
     QCOMPARE(view->role(0), QAccessible::Table);
     QAccessibleInterface *ifRow;
-    view->navigate(QAccessible::Child, 2, &ifRow);
+    ifRow = view->child(1);
     QCOMPARE(ifRow->role(0), QAccessible::Row);
     QAccessibleInterface *item;
     int entry = ifRow->navigate(QAccessible::Child, 1, &item);
@@ -2810,7 +2771,7 @@ void tst_QAccessibility::table2ListTest()
     QCOMPARE(iface->childCount(), 3);
 
     QAccessibleInterface *child1 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 1, &child1), 0);
+    child1 = iface->child(0);
     QVERIFY(child1);
     QCOMPARE(iface->indexOfChild(child1), 1);
     QCOMPARE(child1->text(QAccessible::Name, 0), QString("Oslo"));
@@ -2818,14 +2779,14 @@ void tst_QAccessibility::table2ListTest()
     delete child1;
 
     QAccessibleInterface *child2 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 2, &child2), 0);
+    child2 = iface->child(1);
     QVERIFY(child2);
     QCOMPARE(iface->indexOfChild(child2), 2);
     QCOMPARE(child2->text(QAccessible::Name, 0), QString("Berlin"));
     delete child2;
 
     QAccessibleInterface *child3 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 3, &child3), 0);
+    child3 = iface->child(2);
     QVERIFY(child3);
     QCOMPARE(iface->indexOfChild(child3), 3);
     QCOMPARE(child3->text(QAccessible::Name, 0), QString("Brisbane"));
@@ -2916,7 +2877,7 @@ void tst_QAccessibility::table2TreeTest()
     QCOMPARE(iface->childCount(), 6);
 
     QAccessibleInterface *header1 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 1, &header1), 0);
+    header1 = iface->child(0);
     QVERIFY(header1);
     QCOMPARE(iface->indexOfChild(header1), 1);
     QCOMPARE(header1->text(QAccessible::Name, 0), QString("Artist"));
@@ -2924,7 +2885,7 @@ void tst_QAccessibility::table2TreeTest()
     delete header1;
 
     QAccessibleInterface *child1 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 3, &child1), 0);
+    child1 = iface->child(2);
     QVERIFY(child1);
     QCOMPARE(iface->indexOfChild(child1), 3);
     QCOMPARE(child1->text(QAccessible::Name, 0), QString("Spain"));
@@ -2933,7 +2894,7 @@ void tst_QAccessibility::table2TreeTest()
     delete child1;
 
     QAccessibleInterface *child2 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 5, &child2), 0);
+    child2 = iface->child(4);
     QVERIFY(child2);
     QCOMPARE(iface->indexOfChild(child2), 5);
     QCOMPARE(child2->text(QAccessible::Name, 0), QString("Austria"));
@@ -3027,15 +2988,13 @@ void tst_QAccessibility::table2TableTest()
     // header and 2 rows (the others are not expanded, thus not visible)
     QCOMPARE(iface->childCount(), 9+3+3+1); // cell+headers+topleft button
 
-    QAccessibleInterface *cornerButton = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 1, &cornerButton), 0);
+    QAccessibleInterface *cornerButton = iface->child(0);
     QVERIFY(cornerButton);
     QCOMPARE(iface->indexOfChild(cornerButton), 1);
     QCOMPARE(cornerButton->role(0), QAccessible::Pane);
     delete cornerButton;
 
-    QAccessibleInterface *child1 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 3, &child1), 0);
+    QAccessibleInterface *child1 = iface->child(2);
     QVERIFY(child1);
     QCOMPARE(iface->indexOfChild(child1), 3);
     QCOMPARE(child1->text(QAccessible::Name, 0), QString("h2"));
@@ -3043,8 +3002,7 @@ void tst_QAccessibility::table2TableTest()
     QVERIFY(!(child1->state(0) & QAccessible::Expanded));
     delete child1;
 
-    QAccessibleInterface *child2 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 11, &child2), 0);
+    QAccessibleInterface *child2 = iface->child(10);
     QVERIFY(child2);
     QCOMPARE(iface->indexOfChild(child2), 11);
     QCOMPARE(child2->text(QAccessible::Name, 0), QString("1.1"));
@@ -3053,8 +3011,7 @@ void tst_QAccessibility::table2TableTest()
     QCOMPARE(cell2Iface->columnIndex(), 1);
     delete child2;
 
-    QAccessibleInterface *child3 = 0;
-    QCOMPARE(iface->navigate(QAccessible::Child, 12, &child3), 0);
+    QAccessibleInterface *child3 = iface->child(11);
     QCOMPARE(iface->indexOfChild(child3), 12);
     QCOMPARE(child3->text(QAccessible::Name, 0), QString("1.2"));
     delete child3;
@@ -3164,24 +3121,20 @@ void tst_QAccessibility::calendarWidgetTest()
     QVERIFY(navigationBar->isVisible());
 
     // Navigate to the navigation bar via Child.
-    QAccessibleInterface *navigationBarInterface = 0;
-    QCOMPARE(interface->navigate(QAccessible::Child, 1, &navigationBarInterface), 0);
+    QAccessibleInterface *navigationBarInterface = interface->child(0);
     QVERIFY(navigationBarInterface);
     QCOMPARE(navigationBarInterface->object(), (QObject*)navigationBar);
     delete navigationBarInterface;
     navigationBarInterface = 0;
 
     // Navigate to the view via Child.
-    QAccessibleInterface *calendarViewInterface = 0;
-    QCOMPARE(interface->navigate(QAccessible::Child, 2, &calendarViewInterface), 0);
+    QAccessibleInterface *calendarViewInterface = interface->child(1);
     QVERIFY(calendarViewInterface);
     QCOMPARE(calendarViewInterface->object(), (QObject*)calendarView);
     delete calendarViewInterface;
     calendarViewInterface = 0;
 
-    QAccessibleInterface *doesNotExistsInterface = 0;
-    QCOMPARE(interface->navigate(QAccessible::Child, 3, &doesNotExistsInterface), -1);
-    QVERIFY(!doesNotExistsInterface);
+    QVERIFY(!interface->child(-1));
 
     // Navigate from navigation bar -> view (Down).
     QCOMPARE(interface->navigate(QAccessible::Down, 1, &calendarViewInterface), 0);
@@ -3236,7 +3189,7 @@ void tst_QAccessibility::dockWidgetTest()
     QAccessibleInterface *accDock1 = 0;
     for (int i = 1; i <= 4; ++i) {
         if (accMainWindow->role(i) == QAccessible::Window) {
-            accMainWindow->navigate(QAccessible::Child, i, &accDock1);
+            accDock1 = accMainWindow->child(i-1);
             if (accDock1 && qobject_cast<QDockWidget*>(accDock1->object()) == dock1) {
                 break;
             } else {
@@ -3253,15 +3206,15 @@ void tst_QAccessibility::dockWidgetTest()
     globalPos.rx()+=5;  //### query style
     globalPos.ry()+=5;
     int entry = accDock1->childAt(globalPos.x(), globalPos.y());    //###
-    QAccessibleInterface *accTitleBar;
-    entry = accDock1->navigate(QAccessible::Child, entry, &accTitleBar);
+    QCOMPARE(entry, 1);
+    QAccessibleInterface *accTitleBar = accDock1->child(entry - 1);
+
     QCOMPARE(accTitleBar->role(0), QAccessible::TitleBar);
     QCOMPARE(accDock1->indexOfChild(accTitleBar), 1);
     QAccessibleInterface *acc;
-    entry = accTitleBar->navigate(QAccessible::Ancestor, 1, &acc);
+    acc = accTitleBar->parent();
     QVERIFY(acc);
-    QCOMPARE(entry, 0);
-    QCOMPARE(acc->role(0), QAccessible::Window);
+    QCOMPARE(acc->role(), QAccessible::Window);
 
 
     delete accTitleBar;
