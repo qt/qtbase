@@ -110,7 +110,6 @@ private slots:
     void testSignalOrder();
     void testDefaultButton_data();
     void testDefaultButton();
-    void testS60SoftKeys();
 #ifdef QT_SOFTKEYS_ENABLED
     void testSoftKeyReparenting();
 #endif
@@ -729,32 +728,6 @@ static int softKeyCount(QWidget *widget)
     }
 #endif
     return softkeyCount;
-}
-
-void tst_QDialogButtonBox::testS60SoftKeys()
-{
-#ifdef Q_WS_S60
-    QDialog dialog(0);
-    QDialogButtonBox buttonBox(&dialog);
-    buttonBox.setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    dialog.show();
-
-#ifndef QT_NO_ACTION
-    QCOMPARE( softKeyCount(&dialog), 2);
-#endif
-
-    QDialog dialog2(0);
-    QDialogButtonBox buttonBox2(&dialog2);
-    buttonBox2.setStandardButtons(QDialogButtonBox::Cancel);
-    dialog2.show();
-
-#ifndef QT_NO_ACTION
-    QCOMPARE( softKeyCount(&dialog2), 1);
-#endif
-
-#else
-    QSKIP("S60-specific test", SkipAll );
-#endif
 }
 
 #ifdef QT_SOFTKEYS_ENABLED
