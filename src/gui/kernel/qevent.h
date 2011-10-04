@@ -69,6 +69,7 @@ class QAction;
 #ifndef QT_NO_GESTURES
 class QGesture;
 #endif
+class QScreen;
 
 class Q_GUI_EXPORT QInputEvent : public QEvent
 {
@@ -840,24 +841,15 @@ class QScreenOrientationChangeEventPrivate;
 class Q_GUI_EXPORT QScreenOrientationChangeEvent : public QEvent
 {
 public:
-    enum Orientation {
-        Portrait = 1,
-        Landscape = 2,
-        PortraitInverted = 4,
-        LandscapeInverted = 8
-    };
-    QScreenOrientationChangeEvent(qint32 screenOrientationInDegrees);
-    QScreenOrientationChangeEvent(Orientation screenOrientation);
+    QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation orientation);
     ~QScreenOrientationChangeEvent();
 
-    bool isValid() const;
-    qint32 orientationInDegrees() const;
-    Orientation orientation() const;
+    QScreen *screen() const;
+    Qt::ScreenOrientation orientation() const;
 
 private:
     QScreenOrientationChangeEventPrivate *d_func();
     const QScreenOrientationChangeEventPrivate *d_func() const;
-
 };
 
 QT_END_NAMESPACE

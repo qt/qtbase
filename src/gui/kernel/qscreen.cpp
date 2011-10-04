@@ -278,4 +278,122 @@ QRect QScreen::availableVirtualGeometry() const
     return result;
 }
 
+/*!
+    Gets the primary screen orientation.
+
+    The primary screen orientation is the orientation that corresponds
+    to an un-rotated screen buffer. When the current orientation is equal
+    to the primary orientation no rotation needs to be done by the
+    application.
+*/
+Qt::ScreenOrientation QScreen::primaryOrientation() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->primaryOrientation();
+}
+
+/*!
+    Gets the current orientation of the screen.
+
+    The current orientation is a hint to the application saying
+    what the preferred application orientation should be, based on the
+    current orientation of the physical display and / or other factors.
+
+    \sa primaryOrientation()
+    \sa currentOrientationChanged()
+*/
+Qt::ScreenOrientation QScreen::currentOrientation() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->currentOrientation();
+}
+
+/*!
+    Convenience function to compute the angle of rotation to get from
+    rotation \a a to rotation \a b.
+
+    The result will be 0, 90, 180, or 270.
+*/
+int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
+{
+    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+        return 0;
+
+    int delta = int(b) - int(a);
+
+    if (delta < 0)
+        delta = delta + 4;
+
+    int angles[] = { 0, 90, 180, 270 };
+    return angles[delta];
+}
+
+/*!
+    Convenience function to compute a transform that maps from the coordinate system
+    defined by orientation \a a into the coordinate system defined by orientation
+    \a b and target dimensions \a target.
+
+    Example, \a a is Qt::Landscape, \a b is Qt::Portrait, and \a target is QRect(0, 0, w, h)
+    the resulting transform will be such that the point QPoint(0, 0) is mapped to QPoint(0, w),
+    and QPoint(h, w) is mapped to QPoint(0, h). Thus, the landscape coordinate system QRect(0, 0, h, w)
+    is mapped (with a 90 degree rotation) into the portrait coordinate system QRect(0, 0, w, h).
+*/
+QTransform QScreen::transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target)
+{
+    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+        return QTransform();
+
+    int angle = angleBetween(a, b);
+
+    QTransform result;
+    switch (angle) {
+    case 90:
+        result.translate(target.width(), 0);
+        break;
+    case 180:
+        result.translate(target.width(), target.height());
+        break;
+    case 270:
+        result.translate(0, target.height());
+        break;
+    default:
+        Q_ASSERT(false);
+    }
+    result.rotate(angle);
+
+    return result;
+}
+
+/*!
+    Maps the rect between two screen orientations.
+
+    This will flip the x and y dimensions of the rectangle if orientation \a is
+    Qt::PortraitOrientation or Qt::InvertedPortraitOrientation and orientation \b is
+    Qt::LandscapeOrientation or Qt::InvertedLandscapeOrientation, or vice versa.
+*/
+QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect)
+{
+    if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
+        return rect;
+
+    if ((a == Qt::PortraitOrientation || a == Qt::InvertedPortraitOrientation)
+        != (b == Qt::PortraitOrientation || b == Qt::InvertedPortraitOrientation))
+    {
+        return QRect(rect.y(), rect.x(), rect.height(), rect.width());
+    }
+
+    return rect;
+}
+
+/*!
+    \fn QScreen::currentOrientationChanged()
+
+    This signal is emitted when the current orientation of the screen
+    changes. The current orientation is a hint to the application saying
+    what the preferred application orientation should be, based on the
+    current orientation of the physical display and / or other factors.
+
+    \sa currentOrientation()
+*/
+
 QT_END_NAMESPACE

@@ -99,6 +99,9 @@ public:
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;
 
+    virtual Qt::ScreenOrientation currentOrientation() const;
+    virtual Qt::ScreenOrientation primaryOrientation() const;
+
     virtual QWindow *topLevelAt(const QPoint &point) const;
     virtual QList<QPlatformScreen *> virtualSiblings() const;
 

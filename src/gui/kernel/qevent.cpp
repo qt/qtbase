@@ -4328,58 +4328,15 @@ const QScrollEventPrivate *QScrollEvent::d_func() const
 }
 
 /*!
-    \enum QScreenOrientationChangeEvent::Orientation
-
-    This enum describes the orientations that a device can have.
-
-    \value Portrait The device is in a position where its top edge is pointing up.
-
-    \value Landscape The device is rotated clockwise 90 degrees, so that its left edge is pointing up.
-
-    \value PortraitInverted The device is rotated 180 degrees, so that its bottom edge is pointing up.
-
-    \value LandscapeInverted The device is counterclockwise 90 degrees, so that its right edge is pointing up.
-
-    \sa QScreenOrientationChangeEvent::orientation()
-    \sa QScreenOrientationChangeEvent::orientationInDegrees()
-*/
-
-/*!
-    Creates a new QScreenOrientationChangeEvent
-    \a screenOrientationInDegrees is the new screen orientation, expressed in degrees.
-    The orientation must be expressed in steps of 90 degrees.
-*/
-QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(qint32 screenOrientationInDegrees)
-    : QEvent(QEvent::OrientationChange)
-{
-    d = reinterpret_cast<QEventPrivate *>(new QScreenOrientationChangeEventPrivate());
-    d_func()->orientationInDegrees = screenOrientationInDegrees;
-
-    qint32 orientationIndex = (qAbs(screenOrientationInDegrees) % 360) / 90;
-    // flip around the negative coords to correct order.
-    if (screenOrientationInDegrees < 0) {
-        if (orientationIndex == 1)
-            orientationIndex = 3;
-        else if (orientationIndex == 3)
-            orientationIndex = 1;
-    }
-
-    orientationIndex = qPow(2, orientationIndex);
-    d_func()->orientation = (QScreenOrientationChangeEvent::Orientation)(orientationIndex);
-    d_func()->isValid = (screenOrientationInDegrees % 90 == 0);
-}
-
-/*!
     Creates a new QScreenOrientationChangeEvent
     \a orientation is the new orientation of the screen.
 */
-QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreenOrientationChangeEvent::Orientation screenOrientation)
+QScreenOrientationChangeEvent::QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation screenOrientation)
     : QEvent(QEvent::OrientationChange)
 {
     d = reinterpret_cast<QEventPrivate *>(new QScreenOrientationChangeEventPrivate());
+    d_func()->screen = screen;
     d_func()->orientation = screenOrientation;
-    d_func()->orientationInDegrees = 90 * ((uint)screenOrientation);
-    d_func()->isValid = true;
 }
 
 /*!
@@ -4391,21 +4348,19 @@ QScreenOrientationChangeEvent::~QScreenOrientationChangeEvent()
 }
 
 /*!
-    Returns the orientation of the screen.
+    Returns the screen whose orientation changed.
 */
-QScreenOrientationChangeEvent::Orientation QScreenOrientationChangeEvent::orientation() const
+QScreen *QScreenOrientationChangeEvent::screen() const
 {
-    return d_func()->orientation;
+    return d_func()->screen;
 }
 
 /*!
-    Returns the screen orientation in degrees.
-    The orientation is expressed in steps of 90 degrees and depends on the previous value of the orientation.
-    This is intended to allow for smooth animations from one orientation to the other.
+    Returns the orientation of the screen.
 */
-qint32 QScreenOrientationChangeEvent::orientationInDegrees() const
+Qt::ScreenOrientation QScreenOrientationChangeEvent::orientation() const
 {
-    return d_func()->orientationInDegrees;
+    return d_func()->orientation;
 }
 
 /*!

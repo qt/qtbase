@@ -45,6 +45,7 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/QEvent>
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
@@ -112,9 +113,9 @@ public:
     static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
     // Changes to the screen
-    static void handleScreenGeometryChange(int screenIndex);
-    static void handleScreenAvailableGeometryChange(int screenIndex);
-    static void handleScreenCountChange(int count);
+    static void handleScreenOrientationChange(QScreen *screen);
+    static void handleScreenGeometryChange(QScreen *screen);
+    static void handleScreenAvailableGeometryChange(QScreen *screen);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);

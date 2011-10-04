@@ -249,24 +249,24 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenGeometryChange(int screenIndex)
+void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen)
+{
+    QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =
+            new QWindowSystemInterfacePrivate::ScreenOrientationEvent(screen);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen)
 {
     QWindowSystemInterfacePrivate::ScreenGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screenIndex);
+            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenAvailableGeometryChange(int screenIndex)
+void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen)
 {
     QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screenIndex);
-    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
-}
-
-void QWindowSystemInterface::handleScreenCountChange(int count)
-{
-    QWindowSystemInterfacePrivate::ScreenCountEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenCountEvent(count);
+            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

@@ -63,6 +63,7 @@ private slots:
 private:
     void resizeEvent(QResizeEvent *);
     void exposeEvent(QExposeEvent *);
+    void mousePressEvent(QMouseEvent *);
 
     QOpenGLContext *m_context;
 };

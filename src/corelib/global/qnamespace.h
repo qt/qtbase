@@ -283,6 +283,14 @@ public:
 
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
+    enum ScreenOrientation {
+        UnknownOrientation,
+        LandscapeOrientation,
+        PortraitOrientation,
+        InvertedLandscapeOrientation,
+        InvertedPortraitOrientation
+    };
+
     enum WidgetAttribute {
         WA_Disabled = 0,
         WA_UnderMouse = 1,

@@ -47,6 +47,8 @@
 #include <QtCore/QMargins>
 #include <QtCore/QRect>
 
+#include <QtCore/qnamespace.h>
+
 #include <QtGui/qsurface.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
@@ -125,6 +127,9 @@ public:
     void requestActivateWindow();
 
     bool isActive() const;
+
+    Qt::ScreenOrientation orientation() const;
+    void setOrientation(Qt::ScreenOrientation orientation);
 
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);

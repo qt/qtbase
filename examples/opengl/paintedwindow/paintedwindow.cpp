@@ -40,9 +40,11 @@
 
 #include "paintedwindow.h"
 
+#include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>
 #include <QPainter>
+#include <QScreen>
 #include <QTimer>
 
 #include <qmath.h>
@@ -74,19 +76,56 @@ void PaintedWindow::exposeEvent(QExposeEvent *)
     paint();
 }
 
+void PaintedWindow::mousePressEvent(QMouseEvent *)
+{
+    Qt::ScreenOrientation o = orientation();
+    if (o == Qt::UnknownOrientation)
+        o = QGuiApplication::primaryScreen()->primaryOrientation();
+
+    switch (o) {
+    case Qt::LandscapeOrientation:
+        setOrientation(Qt::PortraitOrientation);
+        break;
+    case Qt::PortraitOrientation:
+        setOrientation(Qt::InvertedLandscapeOrientation);
+        break;
+    case Qt::InvertedLandscapeOrientation:
+        setOrientation(Qt::InvertedPortraitOrientation);
+        break;
+    case Qt::InvertedPortraitOrientation:
+        setOrientation(Qt::LandscapeOrientation);
+        break;
+    default:
+        Q_ASSERT(false);
+    }
+
+    paint();
+}
+
 void PaintedWindow::paint()
 {
     m_context->makeCurrent(this);
 
-    QPainterPath path;
-    path.addEllipse(0, 0, width(), height());
-
     QOpenGLPaintDevice device(size());
 
+    Qt::ScreenOrientation screenOrientation = QGuiApplication::primaryScreen()->primaryOrientation();
+    Qt::ScreenOrientation appOrientation = orientation();
+
+    QRect rect(0, 0, width(), height());
+    QRect mapped = QScreen::mapBetween(appOrientation, screenOrientation, rect);
+
+    QPainterPath path;
+    path.addEllipse(mapped);
+
     QPainter painter(&device);
-    painter.fillRect(0, 0, width(), height(), Qt::white);
+    painter.setTransform(QScreen::transformBetween(appOrientation, screenOrientation, rect));
+    painter.fillRect(mapped, Qt::white);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.fillPath(path, Qt::blue);
+    QFont font;
+    font.setPixelSize(64);
+    painter.setFont(font);
+    painter.drawText(mapped, Qt::AlignCenter, "Hello");
     painter.end();
 
     m_context->swapBuffers(this);

@@ -48,6 +48,10 @@
 #include <QtCore/QSize>
 #include <QtCore/QSizeF>
 
+#include <QtGui/QTransform>
+
+#include <QtCore/qnamespace.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -93,10 +97,21 @@ public:
     QSize availableVirtualSize() const;
     QRect availableVirtualGeometry() const;
 
+    Qt::ScreenOrientation primaryOrientation() const;
+    Qt::ScreenOrientation currentOrientation() const;
+
+    static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
+    static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
+    static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
+
+Q_SIGNALS:
+    void currentOrientationChanged(Qt::ScreenOrientation orientation);
+
 private:
     QScreen(QPlatformScreen *screen);
 
     Q_DISABLE_COPY(QScreen)
+    friend class QGuiApplicationPrivate;
     friend class QPlatformScreen;
 };
 

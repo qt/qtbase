@@ -349,6 +349,41 @@ bool QWindow::isActive() const
     }
 }
 
+/*!
+  Returns the window's currently set orientation.
+
+  The default value is Qt::UnknownOrientation.
+
+  \sa setOrientation(), QScreen::currentOrientation()
+*/
+Qt::ScreenOrientation QWindow::orientation() const
+{
+    Q_D(const QWindow);
+    return d->orientation;
+}
+
+/*!
+  Set the orientation of the window's contents.
+
+  This is a hint to the window manager in case it needs to display
+  additional content like popups, dialogs, status bars, or similar
+  in relation to the window.
+
+  The recommended orientation is QScreen::currentOrientation() but
+  an application doesn't have to support all possible orientations,
+  and thus can opt to ignore the current screen orientation.
+
+  \sa QScreen::currentOrientation()
+*/
+void QWindow::setOrientation(Qt::ScreenOrientation orientation)
+{
+    Q_D(QWindow);
+    d->orientation = orientation;
+    if (d->platformWindow) {
+        d->platformWindow->setOrientation(orientation);
+    }
+}
+
 Qt::WindowState QWindow::windowState() const
 {
     Q_D(const QWindow);

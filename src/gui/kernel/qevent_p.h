@@ -159,9 +159,9 @@ public:
     inline QScreenOrientationChangeEventPrivate()
     {
     }
-    QScreenOrientationChangeEvent::Orientation orientation;
-    qint32 orientationInDegrees;
-    bool isValid;
+
+    QScreen *screen;
+    Qt::ScreenOrientation orientation;
 };
 
 QT_END_NAMESPACE

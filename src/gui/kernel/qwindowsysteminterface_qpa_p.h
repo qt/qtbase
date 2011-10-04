@@ -60,9 +60,9 @@ public:
         Wheel,
         Key,
         Touch,
+        ScreenOrientation,
         ScreenGeometry,
         ScreenAvailableGeometry,
-        ScreenCountChange,
         Map,
         Unmap,
         Expose
@@ -194,25 +194,25 @@ public:
 
     };
 
-    class ScreenCountEvent : public WindowSystemEvent {
+    class ScreenOrientationEvent : public WindowSystemEvent {
     public:
-        ScreenCountEvent (int count)
-            : WindowSystemEvent(ScreenCountChange) , count(count) { }
-        int count;
+        ScreenOrientationEvent(QScreen *s)
+            : WindowSystemEvent(ScreenOrientation), screen(s) { }
+        QWeakPointer<QScreen> screen;
     };
 
     class ScreenGeometryEvent : public WindowSystemEvent {
     public:
-        ScreenGeometryEvent(int index)
-            : WindowSystemEvent(ScreenGeometry), index(index) { }
-        int index;
+        ScreenGeometryEvent(QScreen *s)
+            : WindowSystemEvent(ScreenGeometry), screen(s) { }
+        QWeakPointer<QScreen> screen;
     };
 
     class ScreenAvailableGeometryEvent : public WindowSystemEvent {
     public:
-        ScreenAvailableGeometryEvent(int index)
-            : WindowSystemEvent(ScreenAvailableGeometry), index(index) { }
-        int index;
+        ScreenAvailableGeometryEvent(QScreen *s)
+            : WindowSystemEvent(ScreenAvailableGeometry), screen(s) { }
+        QWeakPointer<QScreen> screen;
     };
 
     class MapEvent : public WindowSystemEvent {

@@ -533,9 +533,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processCloseEvent(
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::ScreenCountChange:
-        QGuiApplicationPrivate::reportScreenCount(
-                static_cast<QWindowSystemInterfacePrivate::ScreenCountEvent *>(e));
+    case QWindowSystemInterfacePrivate::ScreenOrientation:
+        QGuiApplicationPrivate::reportScreenOrientationChange(
+                static_cast<QWindowSystemInterfacePrivate::ScreenOrientationEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ScreenGeometry:
         QGuiApplicationPrivate::reportGeometryChange(
@@ -919,16 +919,20 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     }
 }
 
-void QGuiApplicationPrivate::reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *)
+void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfacePrivate::ScreenOrientationEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
 
-    //QGuiApplication::desktop()->d_func()->updateScreenList();
-    // signal anything listening for creation or deletion of screens
-    //QDesktopWidget *desktop = QGuiApplication::desktop();
-    //emit desktop->screenCountChanged(e->count);
+    if (!e->screen)
+        return;
+
+    QScreen *s = e->screen.data();
+    emit s->currentOrientationChanged(s->currentOrientation());
+
+    QScreenOrientationChangeEvent event(s, s->currentOrientation());
+    QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 }
 
 void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *)

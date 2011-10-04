@@ -231,6 +231,20 @@ void QPlatformWindow::requestActivateWindow()
     QWindowSystemInterface::handleWindowActivated(window());
 }
 
+/*!
+  Set the orientation of the platform window's contents.
+
+  This is a hint to the window manager in case it needs to display
+  additional content like popups, dialogs, status bars, or similar
+  in relation to the window.
+
+  \sa QWindow::setOrientation()
+*/
+void QPlatformWindow::setOrientation(Qt::ScreenOrientation orientation)
+{
+    Q_UNUSED(orientation);
+}
+
 bool QPlatformWindow::setKeyboardGrabEnabled(bool grab)
 {
     Q_UNUSED(grab);

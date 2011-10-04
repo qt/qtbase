@@ -1826,6 +1826,19 @@
 */
 
 /*!
+    \enum Qt::ScreenOrientation
+
+    This enum type specifies the various orientations a screen might have.
+
+    \value UnknownOrientation           The orientation is unknown or the platform doesn't support orientations.
+    \value LandscapeOrientation         Landscape orientation, display width is greater than display height.
+    \value PortraitOrientation          Portrait orientation, display height is greater than display width,
+                                        rotated 90 degree clockwise relative to landscape.
+    \value InvertedLandscapeOrientation Inverted landscape orientation, rotated 180 degrees relative to landscape.
+    \value InvertedPortraitOrientation  Inverted portrait orientation, rotated 180 degrees relative to portrait.
+*/
+
+/*!
     \enum Qt::ContextMenuPolicy
 
     This enum type defines the various policies a widget can have with
