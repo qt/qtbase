@@ -102,14 +102,10 @@ static bool qt_wince_is_smartphone() {
 }
 #endif
 
-#ifdef Q_WS_S60
-#include <qs60style.h>
-#endif
-
 #include <qwidget.h>
 
 //TESTED_CLASS=
-//TESTED_FILES=gui/styles/qstyle.h gui/styles/qstyle.cpp gui/styles/qplastiquestyle.cpp gui/styles/qwindowsstyle.cpp gui/styles/qwindowsxpstyle.cpp gui/styles/qwindowsvistastyle.cpp gui/styles/qmotifstyle.cpp gui/styles/qs60style.cpp
+//TESTED_FILES=gui/styles/qstyle.h gui/styles/qstyle.cpp gui/styles/qplastiquestyle.cpp gui/styles/qwindowsstyle.cpp gui/styles/qwindowsxpstyle.cpp gui/styles/qwindowsvistastyle.cpp gui/styles/qmotifstyle.cpp
 
 class tst_QStyle : public QObject
 {
@@ -147,11 +143,12 @@ private slots:
     void testMacStyle();
     void testWindowsCEStyle();
     void testWindowsMobileStyle();
-    void testS60Style();
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
+#if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
     void progressBarChangeStyle();
+#endif
     void defaultFont();
     void testDrawingShortcuts();
 private:
@@ -376,12 +373,6 @@ void tst_QStyle::testScrollBarSubControls(QStyle* style)
     scrollBar.show();
     const QStyleOptionSlider opt = qt_qscrollbarStyleOption(&scrollBar);
     foreach (int subControl, QList<int>() << 1 << 2 << 4 << 8) {
-
-#ifdef Q_WS_S60
-// in s60style add line and sub line have been removed.
-        if (subControl == QStyle::SC_ScrollBarAddLine || subControl == QStyle::SC_ScrollBarSubLine )
-            continue;
-#endif
         QRect sr = testWidget->style()->subControlRect(QStyle::CC_ScrollBar, &opt,
                                     QStyle::SubControl(subControl), &scrollBar);
         QVERIFY(sr.isNull() == false);
@@ -606,16 +597,6 @@ void tst_QStyle::testWindowsMobileStyle()
 #endif
 }
 
-void tst_QStyle::testS60Style()
-    {
-#if defined(Q_WS_S60)
-    QS60Style cstyle;
-    testAllFunctions(&cstyle);
-#else
-    QSKIP("No S60Style style", SkipAll);
-#endif
-    }
-
 // Helper class...
 
 MyWidget::MyWidget( QWidget* parent, const char* name )
@@ -697,9 +678,9 @@ void tst_QStyle::pixelMetric()
     delete style;
 }
 
+#if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
 void tst_QStyle::progressBarChangeStyle()
 {
-#if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
     //test a crashing situation (task 143530)
     //where changing the styles and deleting a progressbar would crash
 
@@ -719,30 +700,8 @@ void tst_QStyle::progressBarChangeStyle()
     QTest::qWait(100);
 
     //before the correction, there would be a crash here
-#elif !defined(QT_NO_STYLE_S60) && !defined(QT_NO_STYLE_WINDOWS)
-    //test a crashing situation (task 143530)
-    //where changing the styles and deleting a progressbar would crash
-
-    QWindowsStyle style1;
-    QS60Style style2;
-
-    QProgressBar *progress=new QProgressBar;
-    progress->setStyle(&style1);
-
-    progress->show();
-
-    progress->setStyle(&style2);
-
-    QTest::qWait(100);
-    delete progress;
-
-    QTest::qWait(100);
-
-    //before the correction, there would be a crash here
-#else
-    QSKIP("Either style Plastique or Windows or S60 missing", SkipAll);
-#endif
 }
+#endif
 
 void tst_QStyle::lineUpLayoutTest(QStyle *style)
 {

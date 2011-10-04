@@ -350,9 +350,6 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("forward") << (int)QKeySequence::Forward << QString("CTRL+]");
     QTest::newRow("backward") << (int)QKeySequence::Back << QString("CTRL+[");
     QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+DOWN"); //mac only
-#elif defined(Q_WS_S60)
-    QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("F2");
-    QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+END"); //mac only
 #else
     QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("F1");
     QTest::newRow("nextChild") << (int)QKeySequence::NextChild<< QString("CTRL+Tab");
@@ -377,7 +374,7 @@ void tst_QKeySequence::keyBindings()
 {
     QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::Copy);
     QList<QKeySequence> expected;
-#if defined(Q_WS_MAC) || defined (Q_WS_S60)
+#if defined(Q_WS_MAC)
     expected  << QKeySequence("CTRL+C");
 #elif defined Q_WS_X11
     expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");

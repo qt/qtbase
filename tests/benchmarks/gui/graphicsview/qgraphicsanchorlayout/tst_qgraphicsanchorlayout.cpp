@@ -53,8 +53,8 @@ public:
     ~tst_QGraphicsAnchorLayout() {}
 
 private slots:
-    void s60_hard_complex_data();
-    void s60_hard_complex();
+    void hard_complex_data();
+    void hard_complex();
     void linearVsAnchorSizeHints_data();
     void linearVsAnchorSizeHints();
     void linearVsAnchorSetGeometry_data();
@@ -103,7 +103,7 @@ static void setAnchor(QGraphicsAnchorLayout *l,
     anchor->setSpacing(spacing);
 }
 
-void tst_QGraphicsAnchorLayout::s60_hard_complex_data()
+void tst_QGraphicsAnchorLayout::hard_complex_data()
 {
     QTest::addColumn<int>("whichSizeHint");
     QTest::newRow("minimumSizeHint")
@@ -117,7 +117,7 @@ void tst_QGraphicsAnchorLayout::s60_hard_complex_data()
         << -1;
 }
 
-void tst_QGraphicsAnchorLayout::s60_hard_complex()
+void tst_QGraphicsAnchorLayout::hard_complex()
 {
     QFETCH(int, whichSizeHint);
 

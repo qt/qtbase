@@ -203,33 +203,14 @@ void tst_QDialog::showExtension()
     QCOMPARE( testWidget->size(), dlgSize );
     QPoint oldPosition = testWidget->pos();
 
-#ifdef Q_WS_S60
-    const int htDiff = ext->size().height() - testWidget->size().height();
-#endif
     // show
     ((DummyDialog*)testWidget)->showExtension( TRUE );
 //     while ( testWidget->size() == dlgSize )
 // 	qApp->processEvents();
 
-#ifdef Q_WS_S60
-    QPoint expectedPosition;
-    if (!horizontal) {
-        expectedPosition = QPoint(0, oldPosition.y() - extSize.height());
-    } else {
-        if (htDiff>0)
-            expectedPosition = QPoint(0, oldPosition.y() - htDiff);
-        else
-            expectedPosition = oldPosition;
-    }
-#endif
-
     QTEST( testWidget->size(), "result"  );
 
-#ifdef Q_WS_S60
-    QCOMPARE(testWidget->pos(), expectedPosition);
-#else
     QCOMPARE(testWidget->pos(), oldPosition);
-#endif
 
     // hide extension. back to old size ?
     ((DummyDialog*)testWidget)->showExtension( FALSE );

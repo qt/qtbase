@@ -174,8 +174,6 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
     QApplication::processEvents();
 #if defined(Q_WS_QWS)
     QApplication::sendPostedEvents(); //for the glib event loop
-#elif defined(Q_WS_S60)
-    QTest::qWait(5000);
 #endif
     VERIFY_COLOR(w.geometry(), w.color);
     w.reset();
