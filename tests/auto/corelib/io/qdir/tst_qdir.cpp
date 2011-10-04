@@ -459,16 +459,6 @@ void tst_QDir::entryList_data()
     QTest::newRow("testdir1")  << SRCDIR "testdir" << QStringList()
               << (int)(QDir::AllDirs) << (int)(QDir::NoSort)
               << QString(".,..,dir,spaces").split(',');
-// #### this test uses filenames that cannot be represented on all filesystems we test, in
-// particular HFS+ on the Mac. When checking out the files with perforce it silently ignores the
-// error that it cannot represent the file names stored in the repository and the test fails. That
-// is why the test is marked as 'skip' for the mac. When checking out the files with git on the mac
-// the error of not being able to represent the files stored in the repository is not silently
-// ignored but git reports an error. The test only tried to prevent QDir from _hanging_ when listing
-// the directory.
-//    QTest::newRow("unprintablenames")  << SRCDIR "unprintablenames" << QStringList("*")
-//              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
-//              << QString(".,..").split(",");
     QTest::newRow("resources1") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << (int)(QDir::NoFilter) << (int)(QDir::NoSort)
                              << QString("file1.data,file2.data,file3.data").split(',');
@@ -617,10 +607,6 @@ void tst_QDir::entryList()
 #endif
 #endif //Q_NO_SYMLINKS
 
-#ifdef Q_OS_MAC
-    if (qstrcmp(QTest::currentDataTag(), "unprintablenames") == 0)
-        QSKIP("p4 doesn't sync the files with the unprintable names properly on Mac",SkipSingle);
-#endif
     QDir dir(dirName);
     QVERIFY(dir.exists());
 
@@ -629,11 +615,6 @@ void tst_QDir::entryList()
 
     int max = qMin(actual.count(), expected.count());
 
-    if (qstrcmp(QTest::currentDataTag(), "unprintablenames") == 0) {
-        // The purpose of this entry is to check that QDir doesn't
-        // lock up. The actual result depends on the file system.
-        return;
-    }
     bool doContentCheck = true;
 #if defined(Q_OS_UNIX)
     if (qstrcmp(QTest::currentDataTag(), "QDir::AllEntries | QDir::Writable") == 0) {
