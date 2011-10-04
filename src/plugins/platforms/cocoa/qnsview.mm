@@ -169,8 +169,14 @@
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
     QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
-    NSRect screenRect = [[self window] convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)];  // OS X screen coordinates
-    QPoint qtScreenPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));                        // Qt screen coordinates
+    QPoint qtScreenPoint;
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
+    NSRect screenRect = [[self window] convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
+    qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));                     // Qt screen coordinates
+#else
+    NSPoint screenPoint = [[self window] convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
+    qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+#endif
 
     ulong timestamp = [theEvent timestamp] * 1000;
 
