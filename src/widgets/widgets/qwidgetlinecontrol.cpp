@@ -167,6 +167,31 @@ void QWidgetLineControl::paste(QClipboard::Mode clipboardMode)
 /*!
     \internal
 
+    Exits preedit mode and commits parts marked as tentative commit
+*/
+void QWidgetLineControl::commitPreedit()
+{
+    if (!composeMode())
+        return;
+
+    qApp->inputPanel()->reset();
+
+    if (!m_tentativeCommit.isEmpty()) {
+        internalInsert(m_tentativeCommit);
+        m_tentativeCommit.clear();
+        finishChange(-1, true/*not used, not documented*/, false);
+    }
+
+    m_preeditCursor = 0;
+    setPreeditArea(-1, QString());
+    m_textLayout.clearAdditionalFormats();
+    updateDisplayText(/*force*/ true);
+}
+
+
+/*!
+    \internal
+
     Handles the behavior for the backspace key or function.
     Removes the current selection if there is a selection, otherwise
     removes the character prior to the cursor position.
@@ -259,6 +284,8 @@ void QWidgetLineControl::clear()
 */
 void QWidgetLineControl::setSelection(int start, int length)
 {
+    commitPreedit();
+
     if(start < 0 || start > (int)m_text.length()){
         qWarning("QWidgetLineControl::setSelection: Invalid start position");
         return;
@@ -394,6 +421,8 @@ bool QWidgetLineControl::fixup() // this function assumes that validate currentl
 */
 void QWidgetLineControl::moveCursor(int pos, bool mark)
 {
+    commitPreedit();
+
     if (pos != m_cursor) {
         separate();
         if (m_maskData)

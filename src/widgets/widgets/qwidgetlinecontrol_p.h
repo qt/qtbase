@@ -234,6 +234,7 @@ public:
         m_tentativeCommit.clear();
         internalSetText(txt, -1, false);
     }
+    void commitPreedit();
 
     QString displayText() const { return m_textLayout.text(); }
 

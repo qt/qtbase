@@ -137,8 +137,8 @@ public:
 #ifndef QT_NO_COMPLETER
     void _q_completionHighlighted(QString);
 #endif
+    QPoint mousePressPos;
 #ifndef QT_NO_DRAGANDDROP
-    QPoint dndPos;
     QBasicTimer dndTimer;
     void drag();
 #endif

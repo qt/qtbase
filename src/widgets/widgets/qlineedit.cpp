@@ -1388,6 +1388,9 @@ bool QLineEdit::event(QEvent * e)
 void QLineEdit::mousePressEvent(QMouseEvent* e)
 {
     Q_D(QLineEdit);
+
+    d->mousePressPos = e->pos();
+
     if (d->sendMouseEventToInputContext(e))
         return;
     if (e->button() == Qt::RightButton)
@@ -1410,7 +1413,6 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 #ifndef QT_NO_DRAGANDDROP
     if (!mark && d->dragEnabled && d->control->echoMode() == Normal &&
          e->button() == Qt::LeftButton && d->control->inSelection(e->pos().x())) {
-        d->dndPos = e->pos();
         if (!d->dndTimer.isActive())
             d->dndTimer.start(QApplication::startDragTime(), this);
     } else
@@ -1425,20 +1427,28 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
 void QLineEdit::mouseMoveEvent(QMouseEvent * e)
 {
     Q_D(QLineEdit);
-    if (d->sendMouseEventToInputContext(e))
-        return;
 
     if (e->buttons() & Qt::LeftButton) {
 #ifndef QT_NO_DRAGANDDROP
         if (d->dndTimer.isActive()) {
-            if ((d->dndPos - e->pos()).manhattanLength() > QApplication::startDragDistance())
+            if ((d->mousePressPos - e->pos()).manhattanLength() > QApplication::startDragDistance())
                 d->drag();
         } else
 #endif
         {
-            d->control->moveCursor(d->xToPos(e->pos().x()), true);
+            if (d->control->composeMode()) {
+                int startPos = d->xToPos(d->mousePressPos.x());
+                int currentPos = d->xToPos(e->pos().x());
+                if (startPos != currentPos)
+                    d->control->setSelection(startPos, currentPos - startPos);
+
+            } else {
+                d->control->moveCursor(d->xToPos(e->pos().x()), true);
+            }
         }
     }
+
+    d->sendMouseEventToInputContext(e);
 }
 
 /*! \reimp
@@ -1478,12 +1488,43 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
 void QLineEdit::mouseDoubleClickEvent(QMouseEvent* e)
 {
     Q_D(QLineEdit);
-    if (d->sendMouseEventToInputContext(e))
-        return;
+
     if (e->button() == Qt::LeftButton) {
-        d->control->selectWordAtPos(d->xToPos(e->pos().x()));
+        int position = d->xToPos(e->pos().x());
+
+        // exit composition mode
+        if (d->control->composeMode()) {
+            int preeditPos = d->control->cursor();
+            int posInPreedit = position - d->control->cursor();
+            int preeditLength = d->control->preeditAreaText().length();
+            bool positionOnPreedit = false;
+
+            if (posInPreedit >= 0 && posInPreedit <= preeditLength)
+                positionOnPreedit = true;
+
+            int textLength = d->control->end();
+            d->control->commitPreedit();
+            int sizeChange = d->control->end() - textLength;
+
+            if (positionOnPreedit) {
+                if (sizeChange == 0)
+                    position = -1; // cancel selection, word disappeared
+                else
+                    // ensure not selecting after preedit if event happened there
+                    position = qBound(preeditPos, position, preeditPos + sizeChange);
+            } else if (position > preeditPos) {
+                // adjust positions after former preedit by how much text changed
+                position += (sizeChange - preeditLength);
+            }
+        }
+
+        if (position >= 0)
+            d->control->selectWordAtPos(position);
+
         d->tripleClickTimer.start(QApplication::doubleClickInterval(), this);
         d->tripleClick = e->pos();
+    } else {
+        d->sendMouseEventToInputContext(e);
     }
 }
 

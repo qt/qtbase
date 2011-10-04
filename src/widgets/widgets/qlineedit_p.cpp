@@ -259,19 +259,15 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
     if ( control->composeMode() ) {
         int tmp_cursor = xToPos(e->pos().x());
         int mousePos = tmp_cursor - control->cursor();
-        if ( mousePos < 0 || mousePos > control->preeditAreaText().length() ) {
+        if ( mousePos < 0 || mousePos > control->preeditAreaText().length() )
             mousePos = -1;
-            // don't send move events outside the preedit area
-            if ( e->type() == QEvent::MouseMove )
-                return true;
-        }
 
         QInputContext *qic = q->inputContext();
-        if ( qic )
+        if (qic && mousePos >= 0) {
             // may be causing reset() in some input methods
             qic->mouseHandler(mousePos, e);
-        if (!control->preeditAreaText().isEmpty())
             return true;
+        }
     }
 #else
     Q_UNUSED(e);
