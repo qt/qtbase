@@ -135,6 +135,9 @@ SUBDIRS=\
     qwswindowsystem \
     qx11info \
 
+# This test takes too long to run on IRIX, so skip it on that platform
+irix-*:SUBDIRS -= qitemview
+
 win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

@@ -244,10 +244,6 @@ public:
 
 void tst_QItemView::init()
 {
-#ifdef Q_OS_IRIX
-    return;
-#endif
-
     testViews = new ViewsToTest();
     populate();
 }
@@ -264,11 +260,6 @@ void tst_QItemView::cleanup()
 
 void tst_QItemView::setupWithNoTestData()
 {
-#ifdef Q_OS_IRIX
-    //QSKIP("This test takes too long to execute on IRIX", SkipAll);
-    return;
-#endif
-
     ViewsToTest testViews;
     QTest::addColumn<QString>("viewType");
     QTest::addColumn<bool>("displays");
@@ -329,10 +320,6 @@ void tst_QItemView::nonDestructiveBasicTest_data()
  */
 void tst_QItemView::nonDestructiveBasicTest()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
-
 #ifdef Q_OS_WINCE
      QTest::qWait(400);
 #endif
@@ -493,9 +480,6 @@ void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress){
   */
 void tst_QItemView::spider()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -527,12 +511,8 @@ void tst_QItemView::resize_data()
   */
 void tst_QItemView::resize()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
-   return;
-    // This test needs to be re-thought out, it takes too long and
-    // doesn't really catch theproblem.
+    QSKIP("This test needs to be re-thought out, it takes too long and doesn't really catch the problem.", SkipAll);
+
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -560,9 +540,6 @@ void tst_QItemView::visualRect_data()
 
 void tst_QItemView::visualRect()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -696,9 +673,6 @@ void tst_QItemView::indexAt_data()
 
 void tst_QItemView::indexAt()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -732,9 +706,6 @@ void tst_QItemView::scrollTo_data()
 
 void tst_QItemView::scrollTo()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
@@ -783,9 +754,6 @@ public:
 
 void tst_QItemView::moveCursor()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test takes too long to execute on IRIX", SkipAll);
-#endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
     QVERIFY(view);
