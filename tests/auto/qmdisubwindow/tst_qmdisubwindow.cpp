@@ -183,8 +183,10 @@ private slots:
     void showShaded();
     void showNormal_data();
     void showNormal();
+#if !defined(QT_NO_CURSOR) && !defined(Q_OS_WINCE_WM)
     void setOpaqueResizeAndMove_data();
     void setOpaqueResizeAndMove();
+#endif
     void setWindowFlags_data();
     void setWindowFlags();
     void mouseDoubleClick();
@@ -694,6 +696,8 @@ private:
     int _count;
 };
 
+// This test requires cursor support, which is absent on WinCE
+#if !defined(QT_NO_CURSOR) && !defined(Q_OS_WINCE_WM)
 void tst_QMdiSubWindow::setOpaqueResizeAndMove_data()
 {
     QTest::addColumn<bool>("opaqueMode");
@@ -708,9 +712,6 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove_data()
 
 void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 {
-#if defined (QT_NO_CURSOR) || defined (Q_OS_WINCE_WM) //For Windows CE we will set QT_NO_CURSOR if there is no cursor support
-     QSKIP("No cursor available", SkipAll);
-#endif
     QFETCH(bool, opaqueMode);
     QFETCH(int, geometryCount);
     QFETCH(int, expectedGeometryCount);
@@ -816,6 +817,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     QCOMPARE(window->size(), windowSize + QSize(geometryCount, geometryCount));
     }
 }
+#endif
 
 void tst_QMdiSubWindow::setWindowFlags_data()
 {

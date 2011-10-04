@@ -452,10 +452,16 @@ private slots:
 
     void slotWithException() throw(MyStruct);
     void dontStripNamespaces();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void oldStyleCasts();
     void warnOnExtraSignalSlotQualifiaction();
+#endif
+#ifndef NOLONGLONG
     void uLongLong();
+#endif
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void inputFileNameWithDotsButNoExtension();
+#endif
     void userProperties();
     void supportConstSignals();
     void task87883();
@@ -472,31 +478,47 @@ private slots:
     void slotsWithVoidTemplate();
     void structQObject();
     void namespacedFlags();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void warnOnMultipleInheritance();
     void forgottenQInterface();
+#endif
     void os9Newline();
     void winNewline();
     void escapesInStringLiterals();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     void frameworkSearchPath();
+#endif
     void cstyleEnums();
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void defineMacroViaCmdline();
+#endif
     void invokable();
     void singleFunctionKeywordSignalAndSlot();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void templateGtGt();
+#endif
     void qprivateslots();
     void qprivateproperties();
     void inlineSlotsWithThrowDeclaration();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void warnOnPropertyWithoutREAD();
+#endif
     void constructors();
     void typenameWithUnsigned();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void warnOnVirtualSignal();
+#endif
     void QTBUG5590_dummyProperty();
     void QTBUG12260_defaultTemplate();
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void notifyError();
+#endif
     void QTBUG17635_invokableAndProperty();
     void revisions();
+#ifndef MOC_CROSS_COMPILED
     void warnings_data();
     void warnings();
+#endif
     void privateClass();
 
 signals:
@@ -561,13 +583,10 @@ void tst_Moc::dontStripNamespaces()
     QCOMPARE(receiver.intCallCount, 1);
 }
 
-
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::oldStyleCasts()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
@@ -587,17 +606,13 @@ void tst_Moc::oldStyleCasts()
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("extraqualification.h")));
     QVERIFY(proc.waitForFinished());
@@ -608,14 +623,13 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QCOMPARE(mocWarning, QString(SRCDIR) +
                 QString("/extraqualification.h:53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
                 QString(SRCDIR) + QString("/extraqualification.h:56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
+// long long doesn't work on MSVC6 & .NET 2002, also skipped on 2003 due to compiler version issue with moc
+#ifndef NOLONGLONG
 void tst_Moc::uLongLong()
 {
-#ifndef NOLONGLONG
     TestClass tst;
     const QMetaObject *mobj = tst.metaObject();
     int idx = mobj->indexOfSlot("slotWithULong(ulong)");
@@ -629,17 +643,13 @@ void tst_Moc::uLongLong()
     QVERIFY(idx != -1);
     idx = mobj->indexOfSlot("slotWithLongLong(long long)");
     QVERIFY(idx != -1);
-#else
-    QSKIP("long long doesn't work on MSVC6 & .NET 2002, also skipped on 2003 due to compiler version issue with moc", SkipAll);
-#endif
 }
+#endif
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::inputFileNameWithDotsButNoExtension()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
     proc.start("moc", QStringList("../Header"));
@@ -660,10 +670,8 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
     QVERIFY(proc.waitForFinished());
     QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()), QString());
     QCOMPARE(proc.exitCode(), 0);
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
 void tst_Moc::userProperties()
 {
@@ -850,12 +858,10 @@ void tst_Moc::namespacedFlags()
     QCOMPARE(l, qvariant_cast<QList<Foo::Bar::Flags> >(baz.property("flagsList")));
 }
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::warnOnMultipleInheritance()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
     args << "-I" << qtIncludePath + "/QtGui"
@@ -868,17 +874,13 @@ void tst_Moc::warnOnMultipleInheritance()
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
                 QString("/warn-on-multiple-qobject-subclasses.h:53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::forgottenQInterface()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
     args << "-I" << qtIncludePath + "/QtCore"
@@ -891,10 +893,8 @@ void tst_Moc::forgottenQInterface()
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
                 QString("/forgotten-qinterface.h:55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
 void tst_Moc::os9Newline()
 {
@@ -955,12 +955,10 @@ void tst_Moc::escapesInStringLiterals()
              QByteArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nb"));
 }
 
+// Only tested on unix. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
 void tst_Moc::frameworkSearchPath()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QStringList args;
     args << "-F" << srcify(".")
          << srcify("interface-from-framework.h")
@@ -977,10 +975,8 @@ void tst_Moc::frameworkSearchPath()
     }
     QCOMPARE(proc.exitCode(), 0);
     QCOMPARE(proc.readAllStandardError(), QByteArray());
-#else
-    QSKIP("Only tested/relevant on unixy platforms", SkipAll);
-#endif
 }
+#endif
 
 void tst_Moc::cstyleEnums()
 {
@@ -993,12 +989,10 @@ void tst_Moc::cstyleEnums()
     QCOMPARE(metaEnum.key(1), "Bar");
 }
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::templateGtGt()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
@@ -1007,14 +1001,13 @@ void tst_Moc::templateGtGt()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QVERIFY(mocWarning.isEmpty());
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
+// Only tested on linux/gcc.
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::defineMacroViaCmdline()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
 
     QStringList args;
@@ -1027,10 +1020,8 @@ void tst_Moc::defineMacroViaCmdline()
     QCOMPARE(proc.readAllStandardError(), QByteArray());
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
 void tst_Moc::invokable()
 {
@@ -1147,12 +1138,10 @@ void tst_Moc::inlineSlotsWithThrowDeclaration()
     QVERIFY(mobj->indexOfSlot("e()") != -1);
 }
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::warnOnPropertyWithoutREAD()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
     QVERIFY(proc.waitForFinished());
@@ -1162,10 +1151,8 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) +
                 QString("/warn-on-property-without-read.h:46: Warning: Property declaration foo has no READ accessor function. The property will be invalid.\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
 void tst_Moc::constructors()
 {
@@ -1257,13 +1244,10 @@ void tst_Moc::typenameWithUnsigned()
     QVERIFY(mobj->indexOfSlot("l(unsignedQImage)") != -1);
 }
 
-
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::warnOnVirtualSignal()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("pure-virtual-signals.h")));
     QVERIFY(proc.waitForFinished());
@@ -1273,11 +1257,8 @@ void tst_Moc::warnOnVirtualSignal()
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, QString(SRCDIR) + QString("/pure-virtual-signals.h:48: Warning: Signals cannot be declared virtual\n") +
                          QString(SRCDIR) + QString("/pure-virtual-signals.h:50: Warning: Signals cannot be declared virtual\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
-
+#endif
 
 class QTBUG5590_DummyObject: public QObject
 {
@@ -1371,12 +1352,10 @@ void tst_Moc::QTBUG12260_defaultTemplate()
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
 }
 
+// Only tested on linux/gcc. Not tested when cross-compiled.
+#if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
 void tst_Moc::notifyError()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("moc", QStringList(srcify("error-on-wrong-notify.h")));
     QVERIFY(proc.waitForFinished());
@@ -1387,10 +1366,8 @@ void tst_Moc::notifyError()
     QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocError, QString(SRCDIR) +
         QString("/error-on-wrong-notify.h:52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
-#else
-    QSKIP("Only tested on linux/gcc", SkipAll);
-#endif
 }
+#endif
 
 class QTBUG_17635_InvokableAndProperty : public QObject
 {
@@ -1529,6 +1506,8 @@ void tst_Moc::revisions()
     revisions_T<VersionTestNotify>();
 }
 
+// Not tested when cross-compiled.
+#ifndef MOC_CROSS_COMPILED
 void tst_Moc::warnings_data()
 {
     QTest::addColumn<QByteArray>("input");
@@ -1612,10 +1591,6 @@ void tst_Moc::warnings_data()
 
 void tst_Moc::warnings()
 {
-#ifdef MOC_CROSS_COMPILED
-    QSKIP("Not tested when cross-compiled", SkipAll);
-#endif
-
     QFETCH(QByteArray, input);
     QFETCH(QStringList, args);
     QFETCH(int, exitCode);
@@ -1646,8 +1621,8 @@ void tst_Moc::warnings()
     if (expectedStdOut != "IGNORE_ALL_STDOUT")
         QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardOutput()).trimmed(), expectedStdOut);
     QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed(), expectedStdErr);
-
-    }
+}
+#endif
 
 class tst_Moc::PrivateClass : public QObject {
     Q_PROPERTY(int someProperty READ someSlot WRITE someSlot2)

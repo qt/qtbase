@@ -1081,7 +1081,6 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
 {
     QFETCH(qreal, totalSize);
     QFETCH(IntList, stretches);
-    //QSKIP("Seems to be some problems with stretch factors. Talk with Jasmin", SkipAll);
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);

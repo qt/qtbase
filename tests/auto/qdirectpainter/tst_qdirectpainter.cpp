@@ -66,7 +66,9 @@ private slots:
     void initTestCase();
     void setGeometry_data();
     void setGeometry();
+#ifndef QT_NO_PROCESS
     void regionSynchronization();
+#endif
     void reservedSynchronous();
 
 private:
@@ -173,11 +175,9 @@ void tst_QDirectPainter::setGeometry()
     VERIFY_COLOR(rect, bgColor);
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QDirectPainter::regionSynchronization()
 {
-#ifdef QT_NO_PROCESS
-    QSKIP("Test requires QProcess", SkipAll);
-#else
     QRect dpRect(10, 10, 50, 50);
 
     // Start the direct painter in a different process
@@ -214,8 +214,8 @@ void tst_QDirectPainter::regionSynchronization()
     QVERIFY(i > 100); // sanity check
 
     proc.kill();
-#endif
 }
+#endif
 
 class MyObject : public QObject
 {

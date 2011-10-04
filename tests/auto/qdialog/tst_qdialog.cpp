@@ -77,11 +77,17 @@ private slots:
     void showMaximized();
     void showMinimized();
     void showFullScreen();
+#if !defined(Q_WS_X11) && !defined(Q_OS_WINCE)
     void showAsTool();
+#endif
+#ifndef Q_OS_WINCE
     void toolDialogPosition();
+#endif
     void deleteMainDefault();
     void deleteInExec();
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_MAC) && !(defined(Q_OS_WINCE) && defined(_ARM_))
     void throwInExec();
+#endif
     void showSizeGrip();
     void setVisible();
     void reject();
@@ -274,7 +280,7 @@ void tst_QDialog::showMaximized()
     dialog.showMaximized();
     QVERIFY(dialog.isMaximized());
     QVERIFY(dialog.isVisible());
-#if !defined(Q_WS_MAC) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
     QVERIFY(!sizeGrip->isVisible());
 #endif
 
@@ -387,13 +393,11 @@ void tst_QDialog::showFullScreen()
     QVERIFY(!dialog.isVisible());
 }
 
+// Qt/X11: Skipped since activeWindow() is not respected by all window managers.
+// Qt/WinCE: No real support for Qt::Tool on WinCE.
+#if !defined(Q_WS_X11) && !defined(Q_OS_WINCE)
 void tst_QDialog::showAsTool()
 {
-#if defined(Q_WS_X11)
-    QSKIP("Qt/X11: Skipped since activeWindow() is not respected by all window managers", SkipAll);
-#elif defined(Q_OS_WINCE)
-    QSKIP("No real support for Qt::Tool on WinCE", SkipAll);
-#endif
     ToolDialog dialog(testWidget);
     testWidget->activateWindow();
     dialog.exec();
@@ -404,14 +408,14 @@ void tst_QDialog::showAsTool()
         QCOMPARE(dialog.wasActive(), false);
     }
 }
+#endif
 
 // Verify that pos() returns the same before and after show()
 // for a dialog with the Tool window type.
+// No real support for Qt::Tool on WinCE, so skip this test.
+#ifndef Q_OS_WINCE
 void tst_QDialog::toolDialogPosition()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("No real support for Qt::Tool on WinCE", SkipAll);
-#endif
     QDialog dialog(0, Qt::Tool);
     dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();
@@ -419,6 +423,7 @@ void tst_QDialog::toolDialogPosition()
     const QPoint afterShowPosition = dialog.pos();
     QCOMPARE(afterShowPosition, beforeShowPosition);
 }
+#endif
 
 class Dialog : public QDialog
 {
@@ -446,7 +451,8 @@ void tst_QDialog::deleteInExec()
     QCOMPARE(dialog->exec(), int(QDialog::Rejected));
 }
 
-#ifndef QT_NO_EXCEPTIONS
+// Throwing exceptions in exec() is not supported on Mac or on WinCE/ARM.
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_MAC) && !(defined(Q_OS_WINCE) && defined(_ARM_))
 class QDialogTestException : public std::exception { };
 
 class ExceptionDialog : public QDialog
@@ -464,10 +470,6 @@ public slots:
 
 void tst_QDialog::throwInExec()
 {
-#if defined(Q_WS_MAC) || (defined(Q_WS_WINCE) && defined(_ARM_))
-    QSKIP("Throwing exceptions in exec() is not supported on this platform.", SkipAll);
-#endif
-
 #if defined(Q_OS_LINUX)
     // C++ exceptions can't be passed through glib callbacks.  Skip the test if
     // we're using the glib event loop.
@@ -494,12 +496,7 @@ void tst_QDialog::throwInExec()
     }
     QCOMPARE(caughtExceptions, 1);
 }
-#else
-void tst_QDialog::throwInExec()
-{
-    QSKIP("Exceptions are disabled", SkipAll);
-}
-#endif //QT_NO_EXCEPTIONS
+#endif
 
 // From Task 124269
 void tst_QDialog::showSizeGrip()

@@ -137,8 +137,10 @@ private slots:
     void itemListPosition();
     void separatorItem_data();
     void separatorItem();
+#ifndef QT_NO_STYLE_CLEANLOOKS
     void task190351_layout();
     void task191329_size();
+#endif
     void task166349_setEditableOnReturn();
     void task190205_setModelAdjustToContents();
     void task248169_popupWithMinimalSize();
@@ -151,7 +153,9 @@ private slots:
     void task253944_itemDelegateIsReset();
     void subControlRectsWithOffset_data();
     void subControlRectsWithOffset();
+#ifndef QT_NO_STYLE_WINDOWS
     void task260974_menuItemRectangleForComboBoxPopup();
+#endif
     void removeItem();
     void resetModel();
     void keyBoardNavigationWithMouse();
@@ -751,7 +755,7 @@ void tst_QComboBox::insertPolicy()
     }
 }
 
-
+// Apps running with valgrind are not fast enough.
 void tst_QComboBox::virtualAutocompletion()
 {
     testWidget->clear();
@@ -783,10 +787,6 @@ void tst_QComboBox::virtualAutocompletion()
 
     qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_VERIFY(testWidget->currentIndex() == 1);
-
-#ifdef QTEST_RUNNING_USING_VALGRIND
-    QSKIP("App running with valgrind are not fast enough", SkipAll);
-#endif
 
     QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, 0, "o");
     QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, 0, "o");
@@ -1976,9 +1976,10 @@ void tst_QComboBox::separatorItem()
     }
 }
 
+// This test requires the Cleanlooks style
+#ifndef QT_NO_STYLE_CLEANLOOKS
 void tst_QComboBox::task190351_layout()
 {
-#ifndef QT_NO_STYLE_CLEANLOOKS
     const QString oldStyle = QApplication::style()->objectName();
     QApplication::setStyle(new QCleanlooksStyle);
 
@@ -2010,10 +2011,8 @@ void tst_QComboBox::task190351_layout()
 #endif
 
     QApplication::setStyle(oldStyle);
-#else
-    QSKIP("Qt configured without cleanlooks style", SkipAll);
-#endif
 }
+#endif
 
 class task166349_ComboBox : public QComboBox
 {
@@ -2042,9 +2041,10 @@ void tst_QComboBox::task166349_setEditableOnReturn()
     QCOMPARE(QLatin1String("two1"), comboBox.itemText(comboBox.count() - 1));
 }
 
+// This test requires the Cleanlooks style.
+#ifndef QT_NO_STYLE_CLEANLOOKS
 void tst_QComboBox::task191329_size()
 {
-#ifndef QT_NO_STYLE_CLEANLOOKS
     const QString oldStyle = QApplication::style()->objectName();
     QApplication::setStyle(new QCleanlooksStyle);
 
@@ -2085,10 +2085,8 @@ void tst_QComboBox::task191329_size()
 #endif
 
     QApplication::setStyle(oldStyle);
-#else
-    QSKIP("Qt configured without cleanlooks style", SkipAll);
-#endif
 }
+#endif
 
 void tst_QComboBox::task190205_setModelAdjustToContents()
 {
@@ -2360,11 +2358,10 @@ void tst_QComboBox::subControlRectsWithOffset()
 
 }
 
+// This test depends on Windows style.
+#ifndef QT_NO_STYLE_WINDOWS
 void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
 {
-#ifdef QT_NO_STYLE_WINDOWS
-    QSKIP("test depends on windows style", QTest::SkipAll);
-#else
     class TestStyle: public QWindowsStyle
     {
     public:
@@ -2397,8 +2394,8 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
 
         QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
     }
-#endif
 }
+#endif
 
 void tst_QComboBox::removeItem()
 {
@@ -2472,10 +2469,8 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
-#ifdef Q_OS_WINCE
-    QSKIP("When calling cursor function, Windows CE responds with: This function is not supported on this system.", SkipAll);
-#endif
-
+    // When calling cursor function, Windows CE responds with: This function is not supported on this system.
+#ifndef Q_OS_WINCE
     // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
     const QPoint target(combo.view()->mapToGlobal(combo.view()->rect().center()));
     QCursor::setPos(QPoint(target.x() + 1, target.y()));
@@ -2505,6 +2500,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     QTest::keyClick(combo.view(), Qt::Key_Enter);
     QTRY_COMPARE(combo.currentText(), QString::number(final));
+#endif
 }
 
 void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()

@@ -81,7 +81,9 @@ private slots:
     void httpServerFiles();
     void httpServerCGI_data();
     void httpServerCGI();
+#ifndef QT_NO_OPENSSL
     void httpsServer();
+#endif
     void httpProxy();
     void httpProxyBasicAuth();
     void httpProxyNtlmAuth();
@@ -768,9 +770,9 @@ void tst_NetworkSelfTest::httpServerCGI()
     netChat(80, chat);
 }
 
+#ifndef QT_NO_OPENSSL
 void tst_NetworkSelfTest::httpsServer()
 {
-#ifndef QT_NO_OPENSSL
     netChat(443, QList<Chat>()
             << Chat::StartEncryption
             << Chat::send("GET / HTTP/1.0\r\n"
@@ -781,10 +783,8 @@ void tst_NetworkSelfTest::httpsServer()
             << Chat::discardUntil(" ")
             << Chat::expect("200 ")
             << Chat::DiscardUntilDisconnect);
-#else
-    QSKIP("SSL not enabled, cannot test", SkipAll);
-#endif
 }
+#endif
 
 void tst_NetworkSelfTest::httpProxy()
 {

@@ -105,12 +105,16 @@ private slots:
     void saveRestore();
     void saveRestore_data();
     void isSeparator();
+#ifndef QT_NO_CURSOR
     void setCursor();
+#endif
     void addToolbarAfterShow();
     void centralWidgetSize();
     void dockWidgetSize();
     void QTBUG2774_stylechange();
+#ifdef Q_OS_MAC
     void toggleUnifiedTitleAndToolBarOnMac();
+#endif
 };
 
 // Testing get/set functions
@@ -1639,11 +1643,9 @@ class MainWindow : public QMainWindow {
         using QMainWindow::event;
 };
 
+#ifndef QT_NO_CURSOR
 void tst_QMainWindow::setCursor()
 {
-#ifdef QT_NO_CURSOR
-    QSKIP("Qt compiled without cursor support(QT_NO_CURSOR)", SkipAll);
-#else
     MainWindow mw;
     QCursor cur = Qt::WaitCursor;
     mw.setCursor(cur);
@@ -1662,8 +1664,8 @@ void tst_QMainWindow::setCursor()
     mw.event(&leaveE);
     QTest::qWait(50);
     QCOMPARE(cur.shape(), mw.cursor().shape());
-#endif
 }
+#endif
 
 void tst_QMainWindow::addToolbarAfterShow()
 {
@@ -1754,9 +1756,9 @@ void tst_QMainWindow::QTBUG2774_stylechange()
     }
 }
 
+#ifdef Q_OS_MAC
 void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
 {
-#ifdef Q_OS_MAC
     QMainWindow mw;
     QToolBar *tb = new QToolBar;
     tb->addAction("Test");
@@ -1768,11 +1770,8 @@ void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
     mw.setUnifiedTitleAndToolBarOnMac(true);
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
-#else
-    QSKIP("Mac specific test", SkipAll);
-#endif
 }
-
+#endif
 
 QTEST_MAIN(tst_QMainWindow)
 #include "tst_qmainwindow.moc"

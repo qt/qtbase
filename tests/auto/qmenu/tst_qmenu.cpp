@@ -86,7 +86,9 @@ private slots:
     void overrideMenuAction();
     void statusTip();
     void widgetActionFocus();
+#ifndef Q_OS_WINCE_WM
     void mouseActivation();
+#endif
     void tearOff();
     void layoutDirection();
 
@@ -97,7 +99,9 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
+#ifndef Q_OS_WINCE_WM
     void task258920_mouseBorder();
+#endif
     void setFixedWidth();
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
@@ -289,11 +293,10 @@ tst_QMenu::addActionsAndClear()
     QCOMPARE(menus[0]->actions().count(), 0);
 }
 
+// We have a separate mouseActivation test for Windows mobile.
+#ifndef Q_OS_WINCE_WM
 void tst_QMenu::mouseActivation()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("We have a separate mouseActivation test for Windows mobile.", SkipAll);
-#endif
     QWidget topLevel;
     QMenu menu(&topLevel);
     topLevel.show();
@@ -326,7 +329,7 @@ void tst_QMenu::mouseActivation()
     QVERIFY(submenu.isVisible());
 #endif
 }
-
+#endif
 
 void
 tst_QMenu::keyboardNavigation_data()
@@ -667,12 +670,10 @@ void tst_QMenu::activeSubMenuPosition()
     QVERIFY(sub->pos() != QPoint(0,0));
     // well, it's enough to check the pos is not (0,0) but it's more safe
     // to check that submenu is to the right of the main menu too.
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Not true for Windows Mobile Soft Keys", SkipSingle);
-#endif
-
+#ifndef Q_OS_WINCE_WM
     QVERIFY(sub->pos().x() > main->pos().x());
     QCOMPARE(sub->activeAction(), subAction);
+#endif
 }
 
 void tst_QMenu::task242454_sizeHint()
@@ -811,11 +812,11 @@ public:
     bool painted;
 };
 
+
+// Mouse move related signals for Windows Mobile unavailable.
+#ifndef Q_OS_WINCE_WM
 void tst_QMenu::task258920_mouseBorder()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Mouse move related signals for Windows Mobile unavailable", SkipAll);
-#endif
 #ifdef Q_WS_QPA
     QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa", SkipAll);
 #endif
@@ -839,6 +840,7 @@ void tst_QMenu::task258920_mouseBorder()
     QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
     QVERIFY(menu.painted);
 }
+#endif
 
 void tst_QMenu::setFixedWidth()
 {

@@ -256,7 +256,9 @@ private slots:
 
     void noTextEditedOnClear();
 
+#ifndef QT_NO_CURSOR
     void cursor();
+#endif
 
     void textMargin_data();
     void textMargin();
@@ -280,7 +282,9 @@ private slots:
     void taskQTBUG_7902_contextMenuCrash();
 #endif
     void taskQTBUG_7395_readOnlyShortcut();
+#ifdef Q_WS_X11
     void QTBUG697_paletteCurrentColorGroup();
+#endif
     void QTBUG13520_textNotVisible();
 
     void bidiVisualMovement_data();
@@ -3331,19 +3335,17 @@ void tst_QLineEdit::textMargin()
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
 }
 
+#ifndef QT_NO_CURSOR
 void tst_QLineEdit::cursor()
 {
-#ifdef QT_NO_CURSOR
-    QSKIP("Qt compiled without cursor support", SkipAll);
-#else
     testWidget->setReadOnly(false);
     QCOMPARE(testWidget->cursor().shape(), Qt::IBeamCursor);
     testWidget->setReadOnly(true);
     QCOMPARE(testWidget->cursor().shape(), Qt::ArrowCursor);
     testWidget->setReadOnly(false);
     QCOMPARE(testWidget->cursor().shape(), Qt::IBeamCursor);
-#endif
 }
+#endif
 
 class task180999_Widget : public QWidget
 {
@@ -3708,11 +3710,9 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     QCOMPARE(spy.count(), 1);
 }
 
+#ifdef Q_WS_X11
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
-#ifndef Q_WS_X11
-    QSKIP("Only tested on X11", SkipAll);
-#endif
     QLineEdit le;
     le.setText("               ");
     QPalette p = le.palette();
@@ -3734,6 +3734,7 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.render(&img);
     QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
+#endif
 
 void tst_QLineEdit::QTBUG13520_textNotVisible()
 {

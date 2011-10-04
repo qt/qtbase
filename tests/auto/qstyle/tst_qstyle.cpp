@@ -127,13 +127,23 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
+#ifndef QT_NO_STYLE_MOTIF
     void testMotifStyle();
+#endif
+#ifndef QT_NO_STYLE_PLASTIQUE
     void testPlastiqueStyle();
+#endif
     void testWindowsStyle();
+#ifndef QT_NO_STYLE_CDE
     void testCDEStyle();
+#endif
+#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
     void testWindowsXPStyle();
+#endif
     void testWindowsVistaStyle();
+#ifndef QT_NO_STYLE_CLEANLOOKS
     void testCleanlooksStyle();
+#endif
     void testMacStyle();
     void testWindowsCEStyle();
     void testWindowsMobileStyle();
@@ -378,27 +388,23 @@ void tst_QStyle::testScrollBarSubControls(QStyle* style)
     }
 }
 
+#ifndef QT_NO_STYLE_PLASTIQUE
 void tst_QStyle::testPlastiqueStyle()
 {
-#if !defined(QT_NO_STYLE_PLASTIQUE)
     QPlastiqueStyle pstyle;
     testAllFunctions(&pstyle);
     lineUpLayoutTest(&pstyle);
-#else
-    QSKIP("No Plastique style", SkipAll);
-#endif
 }
+#endif
 
+#ifndef QT_NO_STYLE_CLEANLOOKS
 void tst_QStyle::testCleanlooksStyle()
 {
-#if !defined(QT_NO_STYLE_CLEANLOOKS)
     QCleanlooksStyle cstyle;
     testAllFunctions(&cstyle);
     lineUpLayoutTest(&cstyle);
-#else
-    QSKIP("No Cleanlooks style", SkipAll);
-#endif
 }
+#endif
 
 void tst_QStyle::testWindowsStyle()
 {
@@ -414,16 +420,14 @@ void tst_QStyle::testWindowsStyle()
     wstyle.drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
 }
 
+#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
 void tst_QStyle::testWindowsXPStyle()
 {
-#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
     QWindowsXPStyle xpstyle;
     testAllFunctions(&xpstyle);
     lineUpLayoutTest(&xpstyle);
-#else
-    QSKIP("No WindowsXP style", SkipAll);
-#endif
 }
+#endif
 
 void writeImage(const QString &fileName, QImage image)
 {
@@ -566,25 +570,21 @@ void tst_QStyle::testMacStyle()
 #endif
 }
 
+#ifndef QT_NO_STYLE_MOTIF
 void tst_QStyle::testMotifStyle()
 {
-#if !defined(QT_NO_STYLE_MOTIF)
     QMotifStyle mstyle;
     testAllFunctions(&mstyle);
-#else
-    QSKIP("No Motif style", SkipAll);
-#endif
 }
+#endif
 
+#ifndef QT_NO_STYLE_CDE
 void tst_QStyle::testCDEStyle()
 {
-#if !defined(QT_NO_STYLE_CDE)
     QCDEStyle cstyle;
     testAllFunctions(&cstyle);
-#else
-    QSKIP("No CDE style", SkipAll);
-#endif
 }
+#endif
 
 void tst_QStyle::testWindowsCEStyle()
 {

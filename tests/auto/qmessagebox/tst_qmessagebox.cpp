@@ -124,7 +124,9 @@ private slots:
     void detailsText();
     void detailsButtonText();
 
+#ifndef Q_WS_MAC
     void shortcut();
+#endif
 
     void staticSourceCompat();
     void instanceSourceCompat();
@@ -366,17 +368,17 @@ void tst_QMessageBox::statics()
     }
 }
 
+// Shortcuts are not used on Mac OS X.
+#ifndef Q_WS_MAC
 void tst_QMessageBox::shortcut()
 {
-#ifdef Q_WS_MAC
-    QSKIP("shortcuts are not used on MAC OS X", SkipAll);
-#endif
     QMessageBox msgBox;
     msgBox.addButton("O&k", QMessageBox::YesRole);
     msgBox.addButton("&No", QMessageBox::YesRole);
     msgBox.addButton("&Maybe", QMessageBox::YesRole);
     QCOMPARE(exec(&msgBox, Qt::Key_M), 2);
 }
+#endif
 
 void tst_QMessageBox::about()
 {
@@ -486,11 +488,11 @@ void tst_QMessageBox::instanceSourceCompat()
 
     QCOMPARE(exec(&mb, Qt::Key_Enter), int(QMessageBox::Yes));
     QCOMPARE(exec(&mb, Qt::Key_Escape), int(QMessageBox::Cancel));
-#ifdef Q_WS_MAC
-    QSKIP("mnemonics are not used on the MAC OS X", SkipAll);
-#endif
+#ifndef Q_WS_MAC
+    // mnemonics are not used on Mac OS X
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_R), 0);
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_Z), 1);
+#endif
 }
 
 void tst_QMessageBox::testSymbols()

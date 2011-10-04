@@ -92,7 +92,9 @@ private slots:
 
     void filePath();
 
+#ifdef Q_OS_UNIX
     void hidden();
+#endif
 
     void fileName();
     void fileName_data();
@@ -511,9 +513,9 @@ void tst_QDirModel::rowsAboutToBeRemoved()
     QVERIFY(rowsAboutToBeRemoved_cleanup(test_path));
 }
 
+#ifdef Q_OS_UNIX
 void tst_QDirModel::hidden()
 {
-#ifdef Q_OS_UNIX
     QDir current;
     current.mkdir(".qtest_hidden");
 
@@ -529,10 +531,8 @@ void tst_QDirModel::hidden()
     model2.setFilter(model2.filter() | QDir::Hidden);
     index = model2.index(QDir::currentPath() + "/.qtest_hidden");
     QVERIFY(index.isValid());
-#else
-    QSKIP("Test not implemented on non-Unixes", SkipAll);
-#endif
 }
+#endif
 
 void tst_QDirModel::fileName_data()
 {
@@ -555,9 +555,9 @@ void tst_QDirModel::fileName()
 }
 
 #if 0
+#ifdef Q_OS_UNIX
 void tst_QDirModel::unreadable()
 {
-#ifdef Q_OS_UNIX
     //QFile current("qtest_unreadable");
     //QVERIFY(current.setPermissions(QFile::WriteOwner));
 
@@ -569,10 +569,8 @@ void tst_QDirModel::unreadable()
     model2.setFilter(model2.filter() | QDir::Hidden);
     index = model2.index(QDir::currentPath() + "/qtest_unreadable");
     QVERIFY(index.isValid());
-#else
-    QSKIP("Test not implemented on non-Unixes", SkipAll);
-#endif
 }
+#endif
 #endif
 
 void tst_QDirModel::filePath()

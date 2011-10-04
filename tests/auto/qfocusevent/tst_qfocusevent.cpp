@@ -108,7 +108,9 @@ public slots:
 private slots:
     void checkReason_Tab();
     void checkReason_ShiftTab();
+#ifndef Q_OS_WIN32
     void checkReason_BackTab();
+#endif
     void checkReason_Popup();
     void checkReason_focusWidget();
     void checkReason_Shortcut();
@@ -230,11 +232,10 @@ void tst_QFocusEvent::checkReason_ShiftTab()
 /*!
     In this test we verify that the Qt::KeyBacktab key is handled in a qfocusevent
 */
+// Backtab is not supported on Windows.
+#ifndef Q_OS_WIN32
 void tst_QFocusEvent::checkReason_BackTab()
 {
-#ifdef Q_OS_WIN32 // key is not supported on Windows
-    QSKIP( "Backtab is not supported on Windows", SkipAll );
-#else
     initWidget();
     QVERIFY( childFocusWidgetOne->hasFocus() );
 
@@ -250,8 +251,8 @@ void tst_QFocusEvent::checkReason_BackTab()
     QVERIFY( childFocusWidgetTwo->hasFocus() );
     QCOMPARE( childFocusWidgetOne->focusOutEventReason, int(Qt::BacktabFocusReason) );
     QCOMPARE( childFocusWidgetTwo->focusInEventReason, int(Qt::BacktabFocusReason) );
-#endif
 }
+#endif
 
 void tst_QFocusEvent::checkReason_Popup()
 {
