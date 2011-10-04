@@ -45,7 +45,7 @@
 #include <QPalette>
 #include <QWindowsStyle>
 
-#if !defined(Q_WS_MAC) && QT_VERSION < 0x050000 // Fixme Qt 5
+#if QT_VERSION < 0x050000 // Fixme Qt 5
 
 #include <private/qwindowsurface_p.h>
 #include <QDesktopWidget>
@@ -283,8 +283,9 @@ void tst_QWindowSurface::grabWidget()
 
 QTEST_MAIN(tst_QWindowSurface)
 
-#else // Q_WS_MAC
+#else
 
+// Temporarily skip the entire test until it is fixed for Qt5
 QTEST_NOOP_MAIN
 
 #endif

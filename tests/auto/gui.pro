@@ -135,6 +135,9 @@ SUBDIRS=\
     qwswindowsystem \
     qx11info \
 
+# This test cannot be run on Mac OS
+mac*:SUBDIRS -= qwindowsurface
+
 # This test takes too long to run on IRIX, so skip it on that platform
 irix-*:SUBDIRS -= qitemview
 
