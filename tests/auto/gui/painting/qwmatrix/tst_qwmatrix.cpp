@@ -64,10 +64,8 @@ public slots:
     void cleanup();
 private slots:
     void mapRect_data();
-    void operator_star_qrect_data();
     void mapToPolygon_data();
     void mapRect();
-    void operator_star_qrect();
     void operator_star_qwmatrix();
     void assignments();
     void mapToPolygon();
@@ -101,11 +99,6 @@ void tst_QWMatrix::cleanup()
 }
 
 void tst_QWMatrix::mapRect_data()
-{
-    mapping_data();
-}
-
-void tst_QWMatrix::operator_star_qrect_data()
 {
     mapping_data();
 }
@@ -306,20 +299,6 @@ void tst_QWMatrix::mapRect()
 //         matrix.m11(), matrix.m12(), matrix.m21(), matrix.m22(), matrix.dx(), matrix.dy() );
     QTEST( QPolygon( matrix.mapRect(src) ), "res" );
 }
-
-void tst_QWMatrix::operator_star_qrect()
-{
-#if 0 // QT_VERSION >= 0x030100
-    QFETCH( QMatrix, matrix );
-    QFETCH( QRect, src );
-    QFETCH( QPolygon, res );
-
-    QCOMPARE( (matrix * src), QRegion(res) );
-#else
-    QSKIP( "Not tested with Qt versions < 3.1", SkipAll);
-#endif
-}
-
 
 void tst_QWMatrix::operator_star_qwmatrix()
 {
