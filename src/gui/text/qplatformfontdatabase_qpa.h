@@ -99,6 +99,7 @@ public:
 
     virtual QFont defaultFont() const;
     virtual QHash<QByteArray, QFont> defaultFonts() const;
+    virtual QString resolveFontFamilyAlias(const QString &family) const;
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);

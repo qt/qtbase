@@ -373,6 +373,17 @@ QHash<QByteArray, QFont> QPlatformFontDatabase::defaultFonts() const
 }
 
 /*!
+    Resolve alias to actual font family names.
+
+    \since 5.0
+ */
+
+QString QPlatformFontDatabase::resolveFontFamilyAlias(const QString &family) const
+{
+    return family;
+}
+
+/*!
     \class QPlatformFontDatabase
     \brief The QPlatformFontDatabase class makes it possible to customize how fonts
     are discovered and how they are rendered

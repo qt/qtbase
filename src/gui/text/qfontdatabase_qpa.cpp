@@ -377,4 +377,9 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
 }
 
+QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
+{
+    return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->resolveFontFamilyAlias(family);
+}
+
 QT_END_NAMESPACE

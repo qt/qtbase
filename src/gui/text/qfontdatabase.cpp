@@ -1131,7 +1131,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qfontdatabase_s60.cpp"
 #endif
 QT_END_INCLUDE_NAMESPACE
-#if !defined(Q_WS_X11)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QPA)
 QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 {
     return family;
