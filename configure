@@ -6293,6 +6293,12 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 QT_CONFIG="$QT_CONFIG xcb-xlib"
             fi
         else
+            if [ "$CFG_XCB" = "yes" ]; then
+                echo "The XCB test failed!"
+                echo " You might need to install dependency packages."
+                echo " See src/plugins/platforms/xcb/README."
+                exit 1
+            fi
             CFG_XCB=no
         fi
     fi
