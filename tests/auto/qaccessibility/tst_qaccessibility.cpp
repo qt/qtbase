@@ -1658,21 +1658,32 @@ void tst_QAccessibility::menuTest()
 void tst_QAccessibility::spinBoxTest()
 {
     QSpinBox * const spinBox = new QSpinBox();
+    spinBox->setValue(3);
     spinBox->show();
 
     QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(spinBox);
     QVERIFY(interface);
+    QCOMPARE(interface->role(), QAccessible::SpinBox);
 
     const QRect widgetRect = spinBox->geometry();
-    const QRect accessibleRect = interface->rect(0);
+    const QRect accessibleRect = interface->rect();
     QCOMPARE(accessibleRect, widgetRect);
+    QCOMPARE(interface->text(QAccessible::Value, 0), QLatin1String("3"));
 
-    // Test that we get valid rects for all the spinbox child interfaces.
+    // one child, the line edit
     const int numChildren = interface->childCount();
-    for (int i = 1; i <= numChildren; ++i) {
-        const QRect childRect = interface->rect(i);
-        QVERIFY(childRect.isNull() == false);
-    }
+    QCOMPARE(numChildren, 1);
+    QAccessibleInterface *lineEdit = interface->child(0);
+
+    QCOMPARE(lineEdit->role(), QAccessible::EditableText);
+    QCOMPARE(lineEdit->text(QAccessible::Value, 0), QLatin1String("3"));
+    delete lineEdit;
+
+    QVERIFY(interface->valueInterface());
+    QCOMPARE(interface->valueInterface()->currentValue().toInt(), 3);
+    interface->valueInterface()->setCurrentValue(23);
+    QCOMPARE(interface->valueInterface()->currentValue().toInt(), 23);
+    QCOMPARE(spinBox->value(), 23);
 
     spinBox->setFocus();
     QTestAccessibility::clearEvents();
