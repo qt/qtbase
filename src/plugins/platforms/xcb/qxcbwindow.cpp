@@ -118,6 +118,18 @@ static inline bool isTransient(const QWindow *w)
            || w->windowType() == Qt::Popup;
 }
 
+static inline QImage::Format imageFormatForDepth(int depth)
+{
+    switch (depth) {
+        case 32: return QImage::Format_ARGB32_Premultiplied;
+        case 24: return QImage::Format_RGB32;
+        case 16: return QImage::Format_RGB16;
+        default: break;
+    }
+    qFatal("Unsupported display depth %d", depth);
+    return QImage::Format_Invalid;
+}
+
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_window(0)
@@ -147,7 +159,7 @@ void QXcbWindow::create()
     if (type == Qt::Desktop) {
         m_window = m_screen->root();
         m_depth = m_screen->screen()->root_depth;
-        m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        m_imageFormat = imageFormatForDepth(m_depth);
         connection()->addWindow(m_window, this);
         return;
     }
@@ -209,7 +221,7 @@ void QXcbWindow::create()
 #endif //XCB_USE_GLX
         if (visualInfo) {
             m_depth = visualInfo->depth;
-            m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            m_imageFormat = imageFormatForDepth(m_depth);
             Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
@@ -227,7 +239,7 @@ void QXcbWindow::create()
     {
         m_window = xcb_generate_id(xcb_connection());
         m_depth = m_screen->screen()->root_depth;
-        m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        m_imageFormat = imageFormatForDepth(m_depth);
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
