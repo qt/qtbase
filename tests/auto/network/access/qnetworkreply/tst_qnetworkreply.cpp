@@ -262,8 +262,10 @@ private Q_SLOTS:
     void ioPutToFileFromSocket();
     void ioPutToFileFromLocalSocket_data();
     void ioPutToFileFromLocalSocket();
+#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
     void ioPutToFileFromProcess_data();
     void ioPutToFileFromProcess();
+#endif
     void ioPutToFtpFromFile_data();
     void ioPutToFtpFromFile();
     void ioPutToHttpFromFile_data();
@@ -3744,6 +3746,8 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QCOMPARE(contents, data);
 }
 
+// Currently no stdin/out supported for Windows CE.
+#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
 void tst_QNetworkReply::ioPutToFileFromProcess_data()
 {
     putToFile_data();
@@ -3751,19 +3755,12 @@ void tst_QNetworkReply::ioPutToFileFromProcess_data()
 
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
-#else
-
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
         QSKIP("When passing a CR-LF-LF sequence through Windows stdio, it gets converted, "
               "so this test fails. Disabled on Windows", SkipSingle);
 #endif
 
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
     QFile file(testFileName);
 
     QUrl url = QUrl::fromLocalFile(file.fileName());
@@ -3790,9 +3787,8 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
-#endif
-#endif
 }
+#endif
 
 void tst_QNetworkReply::ioPutToFtpFromFile_data()
 {

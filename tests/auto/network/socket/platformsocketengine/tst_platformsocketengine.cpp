@@ -85,7 +85,9 @@ private slots:
     void simpleConnectToIMAP();
     void udpLoopbackTest();
     void udpIPv6LoopbackTest();
+#ifndef Q_OS_AIX
     void broadcastTest();
+#endif
     void serverTest();
     void udpLoopbackPerformance();
     void tcpLoopbackPerformance();
@@ -95,7 +97,9 @@ private slots:
     void setSocketDescriptor();
     void invalidSend();
     void receiveUrgentData();
+#ifndef Q_OS_WIN
     void tooManySockets();
+#endif
 };
 
 tst_PlatformSocketEngine::tst_PlatformSocketEngine()
@@ -296,11 +300,10 @@ void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
 }
 
 //---------------------------------------------------------------------------
+
+#ifndef Q_OS_AIX
 void tst_PlatformSocketEngine::broadcastTest()
 {
-#ifdef Q_OS_AIX
-    QSKIP("Broadcast does not work on darko", SkipAll);
-#endif
     PLATFORMSOCKETENGINE broadcastSocket;
 
     // Initialize a regular Udp socket
@@ -335,8 +338,8 @@ void tst_PlatformSocketEngine::broadcastTest()
     QVERIFY(broadcastSocket.readDatagram(response.data(), response.size())
            == response.size());
     QCOMPARE(response, trollMessage);
-
 }
+#endif
 
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::serverTest()
@@ -529,11 +532,11 @@ void tst_PlatformSocketEngine::readWriteBufferSize()
 }
 
 //---------------------------------------------------------------------------
+
+// Certain windows machines suffocate and spend too much time in this test.
+#ifndef Q_OS_WIN
 void tst_PlatformSocketEngine::tooManySockets()
 {
-#if defined Q_OS_WIN
-    QSKIP("Certain windows machines suffocate and spend too much time in this test.", SkipAll);
-#endif
     QList<PLATFORMSOCKETENGINE *> sockets;
     PLATFORMSOCKETENGINE *socketLayer = 0;
     for (;;) {
@@ -548,6 +551,7 @@ void tst_PlatformSocketEngine::tooManySockets()
 
     qDeleteAll(sockets);
 }
+#endif
 
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::bind()

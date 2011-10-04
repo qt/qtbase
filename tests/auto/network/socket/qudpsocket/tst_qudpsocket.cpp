@@ -85,7 +85,9 @@ public slots:
 private slots:
     void constructing();
     void unconnectedServerAndClientTest();
+#ifndef Q_OS_AIX
     void broadcasting();
+#endif
     void loop_data();
     void loop();
     void ipv6Loop_data();
@@ -100,8 +102,10 @@ private slots:
     void writeDatagramToNonExistingPeer();
     void writeToNonExistingPeer_data();
     void writeToNonExistingPeer();
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void outOfProcessConnectedClientServerTest();
     void outOfProcessUnconnectedClientServerTest();
+#endif
     void zeroLengthDatagram();
     void multicastTtlOption_data();
     void multicastTtlOption();
@@ -236,6 +240,7 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
 //----------------------------------------------------------------------------------
 
+#ifndef Q_OS_AIX
 void tst_QUdpSocket::broadcasting()
 {
     QFETCH_GLOBAL(bool, setProxy);
@@ -245,9 +250,6 @@ void tst_QUdpSocket::broadcasting()
             QSKIP("With socks5 Broadcast is not supported.", SkipSingle);
         }
     }
-#ifdef Q_OS_AIX
-    QSKIP("Broadcast does not work on darko", SkipAll);
-#endif
     const char *message[] = {"Yo mista", "", "Yo", "Wassap"};
 
     QList<QHostAddress> broadcastAddresses;
@@ -308,6 +310,7 @@ void tst_QUdpSocket::broadcasting()
         }
     }
 }
+#endif
 
 //----------------------------------------------------------------------------------
 
@@ -790,15 +793,10 @@ void tst_QUdpSocket::writeToNonExistingPeer()
     QCOMPARE(int(sConnected.state()), int(QUdpSocket::ConnectedState));
 }
 
+// This test depends on reading data from QProcess (not supported on Qt/WinCE).
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).", SkipAll);
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
-
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
@@ -852,18 +850,13 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     QVERIFY(clientProcess.waitForFinished());
     serverProcess.kill();
     QVERIFY(serverProcess.waitForFinished());
-#endif
 }
+#endif
 
+// This test depends on reading data from QProcess (not supported on Qt/WinCE).
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE).", SkipAll);
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
-
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
@@ -918,8 +911,8 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     QVERIFY(clientProcess.waitForFinished());
     serverProcess.kill();
     QVERIFY(serverProcess.waitForFinished());
-#endif
 }
+#endif
 
 void tst_QUdpSocket::zeroLengthDatagram()
 {

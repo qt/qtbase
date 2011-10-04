@@ -92,8 +92,10 @@ private slots:
     void threadedConnection_data();
     void threadedConnection();
 
+#ifndef QT_NO_PROCESS
     void processConnection_data();
     void processConnection();
+#endif
 
     void longPath();
     void waitForDisconnect();
@@ -739,6 +741,7 @@ void tst_QLocalSocket::threadedConnection()
     }
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QLocalSocket::processConnection_data()
 {
     QTest::addColumn<int>("processes");
@@ -755,9 +758,6 @@ void tst_QLocalSocket::processConnection_data()
  */
 void tst_QLocalSocket::processConnection()
 {
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
     QFETCH(int, processes);
     QStringList serverArguments = QStringList() << SRCDIR "lackey/scripts/server.js" << QString::number(processes);
     QProcess producer;
@@ -789,8 +789,8 @@ void tst_QLocalSocket::processConnection()
         delete consumer;
     }
     producer.waitForFinished(15000);
-#endif
 }
+#endif
 
 void tst_QLocalSocket::longPath()
 {

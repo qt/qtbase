@@ -97,8 +97,10 @@ private slots:
     void proxy2();
     void proxy3();
     void postAuthNtlm();
+#ifndef QT_NO_OPENSSL
     void proxyAndSsl();
     void cachingProxyAndSsl();
+#endif
     void reconnect();
     void setSocket();
     void unexpectedRemoteClose();
@@ -1357,11 +1359,9 @@ void tst_QHttp::postAuthNtlm()
     QVERIFY(!QTestEventLoop::instance().timeout());
 };
 
+#ifndef QT_NO_OPENSSL
 void tst_QHttp::proxyAndSsl()
 {
-#ifdef QT_NO_OPENSSL
-    QSKIP("No OpenSSL support in this platform", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -1388,14 +1388,12 @@ void tst_QHttp::proxyAndSsl()
     QHttpResponseHeader header = http.lastResponse();
     QVERIFY(header.isValid());
     QVERIFY(header.statusCode() < 400); // Should be 200, but as long as it's not an error, we're happy
-#endif
 }
+#endif
 
+#ifndef QT_NO_OPENSSL
 void tst_QHttp::cachingProxyAndSsl()
 {
-#ifdef QT_NO_OPENSSL
-    QSKIP("No OpenSSL support in this platform", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -1420,8 +1418,8 @@ void tst_QHttp::cachingProxyAndSsl()
 
     QHttpResponseHeader header = http.lastResponse();
     QVERIFY(!header.isValid());
-#endif
 }
+#endif
 
 void tst_QHttp::emptyBodyInReply()
 {

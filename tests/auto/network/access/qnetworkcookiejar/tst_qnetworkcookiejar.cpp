@@ -54,8 +54,10 @@ private slots:
     void setCookiesFromUrl();
     void cookiesForUrl_data();
     void cookiesForUrl();
+#ifdef QT_BUILD_INTERNAL
     void effectiveTLDs_data();
     void effectiveTLDs();
+#endif
 };
 
 QT_BEGIN_NAMESPACE
@@ -362,6 +364,8 @@ void tst_QNetworkCookieJar::cookiesForUrl()
     QCOMPARE(result, expectedResult);
 }
 
+// This test requires private API.
+#ifdef QT_BUILD_INTERNAL
 void tst_QNetworkCookieJar::effectiveTLDs_data()
 {
     QTest::addColumn<QString>("domain");
@@ -433,13 +437,11 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
 
 void tst_QNetworkCookieJar::effectiveTLDs()
 {
-#ifndef QT_BUILD_INTERNAL
-    QSKIP("Test requires private API", SkipAll);
-#endif
     QFETCH(QString, domain);
     QFETCH(bool, isTLD);
     QCOMPARE(qIsEffectiveTLD(domain), isTLD);
 }
+#endif
 
 QTEST_MAIN(tst_QNetworkCookieJar)
 #include "tst_qnetworkcookiejar.moc"

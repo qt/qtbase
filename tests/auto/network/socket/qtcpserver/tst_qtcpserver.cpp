@@ -105,7 +105,9 @@ private slots:
     void waitForConnectionTest();
     void setSocketDescriptor();
     void listenWhileListening();
+#ifndef QT_NO_PROCESS
     void addressReusable();
+#endif
     void setNewSocketDescriptorBlocking();
     void invalidProxy_data();
     void invalidProxy();
@@ -525,12 +527,9 @@ protected:
     }
 };
 
+#ifndef QT_NO_PROCESS
 void tst_QTcpServer::addressReusable()
 {
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
-#else
-
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
@@ -567,8 +566,8 @@ void tst_QTcpServer::addressReusable()
 
     QTcpServer server;
     QVERIFY(server.listen(QHostAddress::LocalHost, 49199));
-#endif
 }
+#endif
 
 void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
