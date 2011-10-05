@@ -808,7 +808,6 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
 
 void QXmlStreamReaderPrivate::init()
 {
-    tos = 0;
     scanDtd = false;
     token = -1;
     token_char = 0;
