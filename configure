@@ -3714,11 +3714,11 @@ if [ "$OPT_HELP" = "yes" ]; then
     fi
 
     if [ "$CFG_XCB" = "no" ]; then
-        XCY=" "
-        XCN="*"
+        XCBY=" "
+        XCBN="*"
     else
-        XCY="*"
-        XCN=" "
+        XCBY="*"
+        XCBN=" "
     fi
 
     if [ "$CFG_WAYLAND" = "no" ]; then
@@ -4074,8 +4074,8 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
  $SBN  -no-separate-debug-info . Do not store debug information in a separate file.
  $SBY  -separate-debug-info .... Strip debug information into a separate .debug file.
 
- $XKN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
- $XKY  -xcb ............... Compile Xcb support.
+ $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
+ $XCBY  -xcb ............... Compile Xcb support.
 
  $XWN  -no-wayland......... Do not compile Wayland support.
  $XWY  -wayland  .......... Compile Wayland support.
