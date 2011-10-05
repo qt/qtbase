@@ -79,7 +79,9 @@ private slots:
     void fontPropagation();
     void onWidgetDestroyed();
     void fontPrecedence();
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC) || (defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
     void focusColors();
+#endif
     void hoverColors();
     void background();
     void tabAlignement();
@@ -724,6 +726,9 @@ static bool testForColors(const QImage& image, const QColor& color, bool ensureP
     return false;
 }
 
+// This is a fragile test which fails on many esoteric platforms
+// because of focus problems.  Test only on Windows, Mac, and Linux/gcc.
+#if defined(Q_OS_WIN32) || defined(Q_OS_MAC) || (defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
 void tst_QStyleSheetStyle::focusColors()
 {
     // Tests if colors can be changed by altering the focus of the widget.
@@ -731,92 +736,64 @@ void tst_QStyleSheetStyle::focusColors()
     // is reached if at least ten pixels of the right color can be found in
     // the image.
     // For this reason, we use unusual and extremely ugly colors! :-)
-
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_MAC) && !(defined(Q_OS_LINUX) && defined(Q_CC_GNU) \
-    && !defined(Q_CC_INTEL))
-    QSKIP("This is a fragile test which fails on many esoteric platforms "
-            "because of focus problems. "
-            "That doesn't mean that the feature doesn't work in practice.", SkipAll);
-#endif
-/*  Disabled changing style in order not to mess with the application style
-#ifdef Q_OS_MAC
-    int styleCount = 3;
-    QStyle *styles[3];
-#else
-    int styleCount = 2;
-    QStyle *styles[2];
-#endif
-
-    styles[0] = new QPlastiqueStyle;
-    styles[1] = new QWindowsStyle;
-
-#ifdef Q_OS_MAC
-    styles[2] = new QMacStyle;
-#endif
-
-
-    for (int i = 0; i < styleCount; ++i) {
-        qApp->setStyle(styles[i]);
-*/
-        QList<QWidget *> widgets;
-        widgets << new QPushButton("TESTING");
-        widgets << new QLineEdit("TESTING");
-        widgets << new QLabel("TESTING");
-        QSpinBox *spinbox = new QSpinBox;
-        spinbox->setValue(8888);
-        widgets << spinbox;
-        QComboBox *combobox = new QComboBox;
-        combobox->setEditable(true);
-        combobox->addItems(QStringList() << "TESTING");
-        widgets << combobox;
-        widgets << new QLabel("TESTING");
+    QList<QWidget *> widgets;
+    widgets << new QPushButton("TESTING");
+    widgets << new QLineEdit("TESTING");
+    widgets << new QLabel("TESTING");
+    QSpinBox *spinbox = new QSpinBox;
+    spinbox->setValue(8888);
+    widgets << spinbox;
+    QComboBox *combobox = new QComboBox;
+    combobox->setEditable(true);
+    combobox->addItems(QStringList() << "TESTING");
+    widgets << combobox;
+    widgets << new QLabel("TESTING");
 
 #ifdef Q_WS_QWS
-        // QWS has its own special focus logic which is slightly different
-        // and I don't dare change it at this point, because someone will
-        // be relying on it. It means that setFocus() on a NoFocus widget (i.e.
-        // a QLabel) will not work before the window is activated.
-        widgets[2]->setFocusPolicy(Qt::StrongFocus);
+    // QWS has its own special focus logic which is slightly different
+    // and I don't dare change it at this point, because someone will
+    // be relying on it. It means that setFocus() on a NoFocus widget (i.e.
+    // a QLabel) will not work before the window is activated.
+    widgets[2]->setFocusPolicy(Qt::StrongFocus);
 #endif
 
-        foreach (QWidget *widget, widgets) {
-            QDialog frame;
-            QLayout* layout = new QGridLayout;
+    foreach (QWidget *widget, widgets) {
+        QDialog frame;
+        QLayout* layout = new QGridLayout;
 
-            QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
+        QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
 
-            widget->setStyleSheet("*:focus { border:none; background: #e8ff66; color: #ff0084 }");
+        widget->setStyleSheet("*:focus { border:none; background: #e8ff66; color: #ff0084 }");
 
-            layout->addWidget(dummy);
-            layout->addWidget(widget);
-            frame.setLayout(layout);
+        layout->addWidget(dummy);
+        layout->addWidget(widget);
+        frame.setLayout(layout);
 
-            frame.show();
-            QTest::qWaitForWindowShown(&frame);
-            QApplication::setActiveWindow(&frame);
-            widget->setFocus();
-            QApplication::processEvents();
+        frame.show();
+        QTest::qWaitForWindowShown(&frame);
+        QApplication::setActiveWindow(&frame);
+        widget->setFocus();
+        QApplication::processEvents();
 
-            QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
-            frame.render(&image);
-            if (image.depth() < 24) {
-                QSKIP("Test doesn't support color depth < 24", SkipAll);
-            }
-
-            QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
-                    (QString::fromLatin1(widget->metaObject()->className())
-                    + " did not contain background color #e8ff66, using style "
-                    + QString::fromLatin1(qApp->style()->metaObject()->className()))
-                    .toLocal8Bit().constData());
-            QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
-                    (QString::fromLatin1(widget->metaObject()->className())
-                    + " did not contain text color #ff0084, using style "
-                    + QString::fromLatin1(qApp->style()->metaObject()->className()))
-                    .toLocal8Bit().constData());
+        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
+        frame.render(&image);
+        if (image.depth() < 24) {
+            QSKIP("Test doesn't support color depth < 24", SkipAll);
         }
-  //  }
-}
 
+        QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain background color #e8ff66, using style "
+                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                .toLocal8Bit().constData());
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain text color #ff0084, using style "
+                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                .toLocal8Bit().constData());
+    }
+}
+#endif
 
 void tst_QStyleSheetStyle::hoverColors()
 {
