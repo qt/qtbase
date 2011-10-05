@@ -49,32 +49,6 @@
 #include "baseclass.h"
 #include "derivedclass.h"
 
-QT_USE_NAMESPACE
-
-class tst_Compiler : public QObject
-{
-Q_OBJECT
-
-private slots:
-    void template_methods();
-    void template_constructors();
-    void template_subclasses();
-    void methodSpecialization();
-    void constructorSpecialization();
-    void staticTemplateMethods();
-    void staticTemplateMethodSpecialization();
-    void detectDataStream();
-    void detectEnums();
-    void overrideCFunction();
-    void stdSortQList();
-    void stdSortQVector();
-    void templateCallOrder();
-    void virtualFunctionNoLongerPureVirtual();
-    void charSignedness() const;
-    void privateStaticTemplateMember() const;
-    void staticConstUnionWithInitializerList() const;
-};
-
 #if defined(Q_CC_MSVC) && _MSC_VER < 1300
 #define MSVC6
 #endif
@@ -113,6 +87,52 @@ private slots:
 # define DONT_TEST_STL_SORTING
 #endif
 
+QT_USE_NAMESPACE
+
+class tst_Compiler : public QObject
+{
+Q_OBJECT
+
+private slots:
+#ifndef DONT_TEST_TEMPLATE_METHODS
+    void template_methods();
+#endif
+#ifndef DONT_TEST_TEMPLATE_CONSTRUCTORS
+    void template_constructors();
+#endif
+    void template_subclasses();
+#ifndef DONT_TEST_METHOD_SPECIALIZATION
+    void methodSpecialization();
+#endif
+#ifndef DONT_TEST_CONSTRUCTOR_SPECIALIZATION
+    void constructorSpecialization();
+#endif
+#ifndef DONT_TEST_STATIC_TEMPLATE_METHODS
+    void staticTemplateMethods();
+#endif
+#ifndef DONT_TEST_STATIC_TEMPLATE_METHOD_SPECIALIZATION
+    void staticTemplateMethodSpecialization();
+#endif
+#ifndef DONT_TEST_DATASTREAM_DETECTION
+    void detectDataStream();
+#endif
+#ifndef DONT_TEST_DETECT_ENUMS
+    void detectEnums();
+#endif
+    void overrideCFunction();
+#ifndef DONT_TEST_STL_SORTING
+    void stdSortQList();
+    void stdSortQVector();
+#endif
+    void templateCallOrder();
+    void virtualFunctionNoLongerPureVirtual();
+#ifndef DONT_TEST_SIGNEDNESS
+    void charSignedness() const;
+#endif
+    void privateStaticTemplateMember() const;
+    void staticConstUnionWithInitializerList() const;
+};
+
 #ifndef DONT_TEST_TEMPLATE_METHODS
 class TemplateMethodClass
 {
@@ -129,9 +149,6 @@ void tst_Compiler::template_methods()
     QCOMPARE(t.foo<long>(), 42l);
     QCOMPARE(t.foo<double>(), 42.0);
 }
-#else
-void tst_Compiler::template_methods()
-{ QSKIP("Compiler doesn't do template methods", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_TEMPLATE_CONSTRUCTORS
@@ -154,9 +171,6 @@ void tst_Compiler::template_constructors()
     QCOMPARE(t2.i, 42);
     QCOMPARE(t3.i, 42);
 }
-#else
-void tst_Compiler::template_constructors()
-{ QSKIP("Compiler doesn't do template constructors", SkipAll); }
 #endif
 
 template <typename T>
@@ -198,9 +212,6 @@ void tst_Compiler::methodSpecialization()
     QCOMPARE(t.foo<long>(), 42l);
     QCOMPARE(t.foo<double>(), 42.0);
 }
-#else
-void tst_Compiler::methodSpecialization()
-{ QSKIP("Compiler doesn't do template specialization", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_CONSTRUCTOR_SPECIALIZATION
@@ -226,9 +237,6 @@ void tst_Compiler::constructorSpecialization()
     QCOMPARE(t2.i, 42);
     QCOMPARE(t3.i, 42);
 }
-#else
-void tst_Compiler::constructorSpecialization()
-{ QSKIP("Compiler doesn't do constructor specialization", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_STATIC_TEMPLATE_METHODS
@@ -244,9 +252,6 @@ void tst_Compiler::staticTemplateMethods()
     QCOMPARE(StaticTemplateClass::foo<int>(), 42);
     QCOMPARE(StaticTemplateClass::foo<uint>(), 42u);
 }
-#else
-void tst_Compiler::staticTemplateMethods()
-{ QSKIP("Compiler doesn't do static template methods", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_STATIC_TEMPLATE_METHOD_SPECIALIZATION
@@ -266,9 +271,6 @@ void tst_Compiler::staticTemplateMethodSpecialization()
     QCOMPARE(StaticTemplateClass2::foo<uint>(), 42u);
     QCOMPARE(StaticTemplateClass2::foo<double>(), 18.5);
 }
-#else
-void tst_Compiler::staticTemplateMethodSpecialization()
-{ QSKIP("Compiler doesn't do static template method specialization", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_DATASTREAM_DETECTION
@@ -359,9 +361,6 @@ void tst_Compiler::detectDataStream()
     QVERIFY(QtTestInternal::getSaveOperator<MyString>() != 0);
     QVERIFY(QtTestInternal::getSaveOperator<Qxxx>() == 0);
 }
-#else
-void tst_Compiler::detectDataStream()
-{ QSKIP("Compiler doesn't evaluate templates correctly", SkipAll); }
 #endif
 
 #ifndef DONT_TEST_DETECT_ENUMS
@@ -419,9 +418,6 @@ void tst_Compiler::detectEnums()
     QVERIFY(QTestTypeInfo<Qt::MatchFlag>::IsEnum);
     QVERIFY(!QTestTypeInfo<Qt::MatchFlags>::IsEnum);
 }
-#else
-void tst_Compiler::detectEnums()
-{ QSKIP("Compiler doesn't evaluate templates correctly", SkipAll); }
 #endif
 
 static int indicator = 0;
@@ -472,11 +468,6 @@ void tst_Compiler::stdSortQVector()
     QCOMPARE(strvec.value(0), QString("a"));
     QCOMPARE(strvec.value(1), QString("b"));
 }
-#else
-void tst_Compiler::stdSortQList()
-{ QSKIP("Compiler's STL broken", SkipAll); }
-void tst_Compiler::stdSortQVector()
-{ QSKIP("Compiler's STL broken", SkipAll); }
 #endif
 
 // the C func will set it to 1, the template to 2
@@ -550,6 +541,8 @@ void tst_Compiler::virtualFunctionNoLongerPureVirtual()
     derivedClass.wasAPureVirtualFunction();
 }
 
+// MS VC 6.0 instantiates the char function for type unsigned char.
+#ifndef DONT_TEST_SIGNEDNESS
 template<typename T> const char *resolveCharSignedness();
 
 template<>
@@ -572,14 +565,11 @@ const char *resolveCharSignedness<signed char>()
 
 void tst_Compiler::charSignedness() const
 {
-#ifdef DONT_TEST_SIGNEDNESS
-    QSKIP("MS VC 6.0 instantiates the char function for type unsigned char.", SkipSingle);
-#else
     QCOMPARE("char",            resolveCharSignedness<char>());
     QCOMPARE("unsigned char",   resolveCharSignedness<unsigned char>());
     QCOMPARE("signed char",     resolveCharSignedness<signed char>());
-#endif
 }
+#endif
 
 class PrivateStaticTemplateMember
 {
