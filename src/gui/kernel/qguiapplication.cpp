@@ -47,6 +47,7 @@
 #include "qfont.h"
 #include "qplatformfontdatabase_qpa.h"
 #include "qplatformwindow_qpa.h"
+#include "qplatformnativeinterface_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -218,8 +219,19 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 }
 
 
-static void init_platform(QString name, const QString &platformPluginPath)
+static void init_platform(const QString &pluginArgument, const QString &platformPluginPath)
 {
+    // Split into platform name and arguments
+    QString name;
+    QStringList arguments;
+    foreach (const QString &token, pluginArgument.split(QLatin1Char(':'))) {
+        if (name.isEmpty()) {
+            name = token;
+        } else {
+            arguments.push_back(token);
+        }
+    }
+
     if (name.isEmpty()) {
         const QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 #if defined(Q_OS_MAC)
@@ -248,6 +260,20 @@ static void init_platform(QString name, const QString &platformPluginPath)
             fatalMessage.append(key + QLatin1Char('\n'));
         }
         qFatal("%s", fatalMessage.toLocal8Bit().constData());
+        return;
+    }
+    // Set arguments as dynamic properties on the native interface as
+    // boolean 'foo' or strings: 'foo=bar'
+    if (!arguments.isEmpty()) {
+        QObject *nativeInterface = QGuiApplicationPrivate::platform_integration->nativeInterface();
+        foreach (const QString &argument, arguments) {
+            const int equalsPos = argument.indexOf(QLatin1Char('='));
+            const QByteArray name =
+                equalsPos != -1 ? argument.left(equalsPos).toAscii() : argument.toAscii();
+            const QVariant value =
+                equalsPos != -1 ? QVariant(argument.mid(equalsPos + 1)) : QVariant(true);
+            nativeInterface->setProperty(name.constData(), value);
+        }
     }
 }
 
