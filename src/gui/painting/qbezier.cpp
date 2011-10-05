@@ -319,7 +319,7 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
     QRectF b = orig->bounds();
     if (np == 4 && b.width() < .1*offset && b.height() < .1*offset) {
         qreal l = (orig->x1 - orig->x2)*(orig->x1 - orig->x2) +
-                  (orig->y1 - orig->y2)*(orig->y1 - orig->y1) *
+                  (orig->y1 - orig->y2)*(orig->y1 - orig->y2) *
                   (orig->x3 - orig->x4)*(orig->x3 - orig->x4) +
                   (orig->y3 - orig->y4)*(orig->y3 - orig->y4);
         qreal dot = (orig->x1 - orig->x2)*(orig->x3 - orig->x4) +
