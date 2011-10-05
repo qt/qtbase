@@ -150,6 +150,8 @@ namespace QTest
     { keyEvent(Click, window, key, modifier, delay); }
     inline static void keyRelease(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Release, window, key, modifier, delay); }
+    inline static void keyRelease(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    { keyEvent(Release, window, key, modifier, delay); }
     inline static void keyPress(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Press, window, key, modifier, delay); }
     inline static void keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
