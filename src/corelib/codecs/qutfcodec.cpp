@@ -468,20 +468,18 @@ QString QUtf32::convertToUnicode(const char *chars, int len, QTextCodec::Convert
         if (num == 4) {
             if (!headerdone) {
                 if (endian == DetectEndianness) {
-                    if (endian == DetectEndianness) {
-                        if (tuple[0] == 0xff && tuple[1] == 0xfe && tuple[2] == 0 && tuple[3] == 0 && endian != BigEndianness) {
-                            endian = LittleEndianness;
-                            num = 0;
-                            continue;
-                        } else if (tuple[0] == 0 && tuple[1] == 0 && tuple[2] == 0xfe && tuple[3] == 0xff && endian != LittleEndianness) {
-                            endian = BigEndianness;
-                            num = 0;
-                            continue;
-                        } else if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-                            endian = BigEndianness;
-                        } else {
-                            endian = LittleEndianness;
-                        }
+                    if (tuple[0] == 0xff && tuple[1] == 0xfe && tuple[2] == 0 && tuple[3] == 0 && endian != BigEndianness) {
+                        endian = LittleEndianness;
+                        num = 0;
+                        continue;
+                    } else if (tuple[0] == 0 && tuple[1] == 0 && tuple[2] == 0xfe && tuple[3] == 0xff && endian != LittleEndianness) {
+                        endian = BigEndianness;
+                        num = 0;
+                        continue;
+                    } else if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                        endian = BigEndianness;
+                    } else {
+                        endian = LittleEndianness;
                     }
                 } else if (((endian == BigEndianness) ? qFromBigEndian<quint32>(tuple) : qFromLittleEndian<quint32>(tuple)) == QChar::ByteOrderMark) {
                     num = 0;
