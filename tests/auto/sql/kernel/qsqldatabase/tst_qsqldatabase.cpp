@@ -52,8 +52,6 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
-#define NODATABASE_SKIP "No database drivers are available in this Qt configuration"
-
 #include "tst_databases.h"
 
 //TESTED_FILES=
@@ -986,10 +984,8 @@ void tst_QSqlDatabase::recordSQLServer()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!tst_Databases::isSqlServer(db)) {
-    QSKIP("SQL server specific test", SkipSingle);
-    return;
-    }
+    if (!tst_Databases::isSqlServer(db))
+        QSKIP("SQL server specific test", SkipSingle);
 
     // ### TODO: Add the rest of the fields
     static const FieldDef fieldDefs[] = {
@@ -1017,10 +1013,8 @@ void tst_QSqlDatabase::recordAccess()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!tst_Databases::isMSAccess(db)) {
-    QSKIP("MS Access specific test", SkipSingle);
-    return;
-    }
+    if (!tst_Databases::isMSAccess(db))
+        QSKIP("MS Access specific test", SkipSingle);
 
     QString memo;
     for (int i = 0; i < 32; i++)
@@ -1050,9 +1044,8 @@ void tst_QSqlDatabase::transaction()
     CHECK_DATABASE(db);
     const QString qtest(qTableName("qtest", __FILE__));
 
-    if (!db.driver()->hasFeature(QSqlDriver::Transactions)) {
-    QSKIP("DBMS not transaction capable", SkipSingle);
-    }
+    if (!db.driver()->hasFeature(QSqlDriver::Transactions))
+        QSKIP("DBMS not transaction capable", SkipSingle);
 
     QVERIFY(db.transaction());
 
@@ -1079,12 +1072,10 @@ void tst_QSqlDatabase::transaction()
     QCOMPARE(q.value(0).toInt(), 41);
     q.clear(); // for SQLite which does not allow any references on rows that shall be rolled back
     if (!db.rollback()) {
-    if (db.driverName().startsWith("QMYSQL")) {
-        qDebug("MySQL: %s", qPrintable(tst_Databases::printError(db.lastError())));
-        QSKIP("MySQL transaction failed ", SkipSingle); //non-fatal
-    } else {
-        QFAIL("Could not rollback transaction: " + tst_Databases::printError(db.lastError()));
-        }
+        if (db.driverName().startsWith("QMYSQL"))
+            QSKIP("MySQL transaction failed: " + tst_Databases::printError(db.lastError()), SkipSingle);
+        else
+            QFAIL("Could not rollback transaction: " + tst_Databases::printError(db.lastError()));
     }
 
     QVERIFY_SQL(q, exec("select * from " + qtest + " where id = 41"));
@@ -1453,10 +1444,8 @@ void tst_QSqlDatabase::mysqlOdbc_unsignedIntegers()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!db.driverName().startsWith("QODBC") || !dbName.toUpper().contains("MYSQL")) {
+    if (!db.driverName().startsWith("QODBC") || !dbName.toUpper().contains("MYSQL"))
        QSKIP("MySQL through ODBC-driver specific test", SkipSingle);
-       return;
-    }
 
     QSqlQuery q(db);
     const QString tableName(qTableName("uint", __FILE__));
@@ -1479,10 +1468,8 @@ void tst_QSqlDatabase::accessOdbc_strings()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!tst_Databases::isMSAccess(db)) {
-    QSKIP("MS Access specific test", SkipSingle);
-    return;
-    }
+    if (!tst_Databases::isMSAccess(db))
+        QSKIP("MS Access specific test", SkipSingle);
 
     QSqlQuery q(db);
     const QString tableName(qTableName("strings", __FILE__));
@@ -1641,10 +1628,8 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (!db.driverName().startsWith("QIBASE")) {
+    if (!db.driverName().startsWith("QIBASE"))
        QSKIP("InterBase specific test", SkipSingle);
-       return;
-    }
 
     const QString procName(qTableName("qtest_proc2", __FILE__));
 
@@ -1730,10 +1715,8 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if (tst_Databases::isMySQL(db)) {
+    if (tst_Databases::isMySQL(db))
         QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
-        return;
-    }
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool", __FILE__) + "(id int, boolvalue bit)"));
@@ -1944,10 +1927,8 @@ void tst_QSqlDatabase::odbc_uniqueidentifier()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (!tst_Databases::isSqlServer(db)) {
+    if (!tst_Databases::isSqlServer(db))
         QSKIP("SQL Server (ODBC) specific test", SkipSingle);
-        return;
-    }
 
     const QString tableName(qTableName("qtest_sqlguid", __FILE__));
     QString guid = QString("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE");
@@ -2108,10 +2089,8 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (db.driverName().startsWith("QSQLITE2")) { 
-        QSKIP("SQLite3 specific test", SkipSingle); 
-        return; 
-    }
+    if (db.driverName().startsWith("QSQLITE2"))
+        QSKIP("SQLite3 specific test", SkipSingle);
 
     QSqlQuery q(db);
     const QString tableName(qTableName("uint_test", __FILE__));
