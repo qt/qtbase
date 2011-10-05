@@ -362,7 +362,6 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
         glDetachShader &&
         glLinkProgram &&
         glUseProgram &&
-        glDeleteProgram &&
         glGetShaderInfoLog &&
         glGetShaderiv &&
         glGetShaderSource &&
