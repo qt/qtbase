@@ -230,7 +230,7 @@ settings.setValue("sofa", true);
 settings.setValue("tv", false);
 
 QStringList groups = settings.childGroups();
-// group: ["fridge"]
+// groups: ["fridge"]
 //! [21]
 
 
