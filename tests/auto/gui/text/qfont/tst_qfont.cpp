@@ -84,6 +84,10 @@ private slots:
 #if defined(Q_WS_MAC)
     void styleName();
 #endif
+#ifdef QT_BUILD_INTERNAL
+    void defaultFamily_data();
+    void defaultFamily();
+#endif
 };
 
 // Testing get/set functions
@@ -626,6 +630,38 @@ void tst_QFont::styleName()
     QCOMPARE(QFontInfo(font).styleName(), QString("UltraLight"));
 }
 #endif
+
+#ifdef QT_BUILD_INTERNAL
+Q_DECLARE_METATYPE(QFont::StyleHint)
+void tst_QFont::defaultFamily_data()
+{
+    QTest::addColumn<QFont::StyleHint>("styleHint");
+    QTest::addColumn<QString>("defaultFamily");
+
+    QTest::newRow("serif") << QFont::Times << "Times";
+    QTest::newRow("courier") << QFont::Courier << "Courier";
+    QTest::newRow("monospace") << QFont::Monospace << "Courier New";
+    QTest::newRow("cursive") << QFont::Cursive << "Comic Sans MS";
+    QTest::newRow("fantasy") << QFont::Fantasy << "Impact";
+    QTest::newRow("old english") << QFont::OldEnglish<< "Old English";
+    QTest::newRow("sans-serif") << QFont::Helvetica << "Helvetica";
+}
+
+void tst_QFont::defaultFamily()
+{
+    QFETCH(QFont::StyleHint, styleHint);
+    QFETCH(QString, defaultFamily);
+
+    QFontDatabase db;
+    if (!db.hasFamily(defaultFamily))
+        QSKIP("Font family is not available on the system", SkipSingle);
+
+    QFont f;
+    f.setStyleHint(styleHint);
+    QCOMPARE(QFontDatabase::resolveFontFamilyAlias(f.defaultFamily()), QFontDatabase::resolveFontFamilyAlias(defaultFamily));
+
+}
+#endif // QT_BUILD_INTERNAL
 
 QTEST_MAIN(tst_QFont)
 #include "tst_qfont.moc"

@@ -46,6 +46,8 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qfont.h>
 
+class tst_QFont;
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -167,6 +169,9 @@ private:
     friend class QFontEngineMultiQWS;
     friend class QFontEngineMultiS60;
     friend class QFontEngineMultiQPA;
+#ifdef QT_BUILD_INTERNAL
+    friend class ::tst_QFont;
+#endif
 
     QFontDatabasePrivate *d;
 };

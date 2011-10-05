@@ -78,23 +78,31 @@ QString QFont::defaultFamily() const
     QString familyName;
     switch(d->request.styleHint) {
         case QFont::Times:
-            familyName = QString::fromLatin1("times");
+            familyName = QString::fromLatin1("Times");
+            break;
         case QFont::Courier:
+            familyName = QString::fromLatin1("Courier");
+            break;
         case QFont::Monospace:
-            familyName = QString::fromLatin1("monospace");
+            familyName = QString::fromLatin1("Courier New");
+            break;
+        case QFont::Cursive:
+            familyName = QString::fromLatin1("Comic Sans MS");
+            break;
+        case QFont::Fantasy:
+            familyName = QString::fromLatin1("Impact");
+            break;
         case QFont::Decorative:
-            familyName = QString::fromLatin1("old english");
+            familyName = QString::fromLatin1("Old English");
+            break;
         case QFont::Helvetica:
         case QFont::System:
         default:
-            familyName = QString::fromLatin1("helvetica");
+            familyName = QString::fromLatin1("Helvetica");
     }
 
-    QStringList list = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(familyName,QFont::StyleNormal,QFont::StyleHint(d->request.styleHint),QUnicodeTables::Common);
-    if (list.size()) {
-        familyName = list.at(0);
-    }
-    return familyName;
+    return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->resolveFontFamilyAlias(familyName);
+
 }
 
 QString QFont::lastResortFamily() const
