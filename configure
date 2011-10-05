@@ -6254,6 +6254,10 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     fi
 
+    # Save these for a check later
+    ORIG_CFG_WAYLAND="$CFG_WAYLAND"
+    ORIG_CFG_XCB="$CFG_XCB"
+
     if [ "$CFG_WAYLAND" != "no" ]; then
         if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
             QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
@@ -6339,6 +6343,18 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG coreservices"
     else
         QMakeVar add DEFINES QT_NO_CORESERVICES
+    fi
+
+    if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ]; then
+        if [ "$CFG_XCB" = "no" ] && [ "$CFG_WAYLAND" = "no" ]; then
+            if [ "$ORIG_CFG_XCB" = "auto" ] && [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
+                echo "No QPA platform plugin enabled!"
+                echo " If you really want to build without a QPA platform plugin you must pass"
+                echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
+                echo " cannot run GUI applications."
+                exit 1
+            fi
+        fi
     fi
 
 fi
