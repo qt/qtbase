@@ -1357,7 +1357,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 p->setPen(pal.dark().color());
                 p->setBrush(fill);
                 p->drawRect(r.adjusted(0, 0, -1, -1));
-            } else if (flags & (State_Raised | State_Sunken | State_On | State_Sunken)) {
+            } else if (flags & (State_Raised | State_On | State_Sunken)) {
                 qDrawWinButton(p, r, pal, flags & (State_Sunken | State_On),
                                &fill);
             } else {
