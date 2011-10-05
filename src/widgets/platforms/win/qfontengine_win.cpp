@@ -1097,7 +1097,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
     int iw = gm.width.toInt();
     int ih = gm.height.toInt();
 
-    if (iw <= 0 || iw <= 0)
+    if (iw <= 0 || ih <= 0)
         return 0;
 
     bool has_transformation = t.type() > QTransform::TxTranslate;
