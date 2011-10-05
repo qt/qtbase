@@ -206,6 +206,7 @@ private slots:
 
     void nestedStateMachines();
     void goToState();
+    void goToStateFromSourceWithTransition();
 
     void task260403_clonedSignals();
     void postEventFromOtherThread();
@@ -4254,6 +4255,24 @@ void tst_QStateMachine::goToState()
     QCOMPARE(machine.configuration().size(), 2);
     QVERIFY(machine.configuration().contains(s2));
     QVERIFY(machine.configuration().contains(s2_1));
+}
+
+void tst_QStateMachine::goToStateFromSourceWithTransition()
+{
+    // QTBUG-21813
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    s1->addTransition(new QSignalTransition);
+    QState *s2 = new QState(&machine);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+
+    QStateMachinePrivate::get(&machine)->goToState(s2);
+    QCoreApplication::processEvents();
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
 }
 
 class CloneSignalTransition : public QSignalTransition

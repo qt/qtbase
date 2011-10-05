@@ -1396,6 +1396,7 @@ namespace _QStateMachine_Internal{
 
 class GoToStateTransition : public QAbstractTransition
 {
+    Q_OBJECT
 public:
     GoToStateTransition(QAbstractState *target)
         : QAbstractTransition()
@@ -2396,6 +2397,7 @@ QStateMachine::WrappedEvent::~WrappedEvent()
 
 QT_END_NAMESPACE
 
+#include "qstatemachine.moc"
 #include "moc_qstatemachine.cpp"
 
 #endif //QT_NO_STATEMACHINE
