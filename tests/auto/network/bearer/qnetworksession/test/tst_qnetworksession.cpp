@@ -96,8 +96,6 @@ private slots:
 
 private:
     QNetworkConfigurationManager manager;
-    QMap<QString, bool> testsToRun;
-
     int inProcessSessionManagementCount;
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
@@ -121,17 +119,6 @@ void tst_QNetworkSession::initTestCase()
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfiguration::Type>("QNetworkConfiguration::Type");
-	
-    // If you wish to skip tests, set value as false. This is often very convinient because tests are so lengthy.
-    // Better way still would be to make this readable from a file.
-    testsToRun["robustnessBombing"] = true;
-    testsToRun["sessionClosing"] = true;
-    testsToRun["outOfProcessSession"] = true;
-    testsToRun["invalidSession"] = true;
-    testsToRun["repeatedOpenClose"] = true;
-    testsToRun["sessionProperties"] = true;
-    testsToRun["userChoiceSession"] = true;
-    testsToRun["sessionOpenCloseStop"] = true;
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
     iapconf = new Maemo::IAPConf("007");
@@ -245,10 +232,6 @@ void tst_QNetworkSession::cleanupTestCase()
 // Robustness test for calling interfaces in nonsense order / with nonsense parameters
 void tst_QNetworkSession::robustnessBombing() 
 {
-    if (!testsToRun["robustnessBombing"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
-    
     QNetworkConfigurationManager mgr;
     QNetworkSession testSession(mgr.defaultConfiguration());
     // Should not reset even session is not opened
@@ -270,9 +253,6 @@ void tst_QNetworkSession::sessionClosing_data() {
 // Testcase for closing the session at unexpected times
 void tst_QNetworkSession::sessionClosing()
 {
-    if (!testsToRun["sessionClosing"]) {
-        QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);
-    }
     QFETCH(QString, bearerType);
     QFETCH(QNetworkConfiguration::Type, configurationType);
 
@@ -307,10 +287,7 @@ void tst_QNetworkSession::sessionClosing()
 }
 
 void tst_QNetworkSession::invalidSession()
-{ 
-    if (!testsToRun["invalidSession"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
+{
     // 1. Verify that session created with invalid configuration remains in invalid state
     QNetworkSession session(QNetworkConfiguration(), 0);
     QVERIFY(!session.isOpen());
@@ -385,9 +362,6 @@ void tst_QNetworkSession::sessionProperties_data()
 
 void tst_QNetworkSession::sessionProperties()
 {
-    if (!testsToRun["sessionProperties"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
     QFETCH(QNetworkConfiguration, configuration);
     QNetworkSession session(configuration);
     QVERIFY(session.configuration() == configuration);
@@ -460,12 +434,8 @@ void tst_QNetworkSession::repeatedOpenClose_data() {
 }
 
 // Tests repeated-open close.
-void tst_QNetworkSession::repeatedOpenClose() 
-{	
-    if (!testsToRun["repeatedOpenClose"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
-	
+void tst_QNetworkSession::repeatedOpenClose()
+{
     QFETCH(QString, bearerType);
     QFETCH(QNetworkConfiguration::Type, configurationType);
     QFETCH(int, repeatTimes);
@@ -503,9 +473,6 @@ void tst_QNetworkSession::userChoiceSession_data()
 
 void tst_QNetworkSession::userChoiceSession()
 {
-    if (!testsToRun["userChoiceSession"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
     QFETCH(QNetworkConfiguration, configuration);
 
     QVERIFY(configuration.type() == QNetworkConfiguration::UserChoice);
@@ -634,9 +601,6 @@ void tst_QNetworkSession::sessionOpenCloseStop_data()
 
 void tst_QNetworkSession::sessionOpenCloseStop()
 {
-    if (!testsToRun["sessionOpenCloseStop"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
     QFETCH(QNetworkConfiguration, configuration);
     QFETCH(bool, forceSessionStop);
 
@@ -1038,9 +1002,6 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
 // at Discovered -state.
 void tst_QNetworkSession::outOfProcessSession()
 {
-    if (!testsToRun["outOfProcessSession"]) {
-	QSKIP("Temporary skip due to value set false (or it is missing) in testsToRun map", SkipAll);    
-    }
     updateConfigurations();
     QTest::qWait(2000);
 
