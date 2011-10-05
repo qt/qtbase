@@ -229,9 +229,6 @@ bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
     else if (e == QKeySequence::MoveToPreviousLine) {
             op = QTextCursor::Up;
     }
-    else if (e == QKeySequence::MoveToPreviousLine) {
-            op = QTextCursor::Up;
-    }
     else if (e == QKeySequence::MoveToStartOfLine) {
             op = QTextCursor::StartOfLine;
     }
