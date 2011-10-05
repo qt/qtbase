@@ -39,47 +39,24 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
-#include <qcombobox.h>
 #include <qmainwindow.h>
-#include <qmenubar.h>
 #include <qmenu.h>
-#include <qtoolbar.h>
-
-
 #include <qaction.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=
 
 class tst_QActionGroup : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QActionGroup();
-    virtual ~tst_QActionGroup();
-
 private slots:
     void enabledPropagation();
     void visiblePropagation();
-    void dropDownDeleted();
     void exclusive();
-
     void separators();
     void testActionInTwoQActionGroup();
-	void unCheckCurrentAction();
+    void unCheckCurrentAction();
 };
-
-tst_QActionGroup::tst_QActionGroup()
-{
-}
-
-tst_QActionGroup::~tst_QActionGroup()
-{
-}
 
 void tst_QActionGroup::enabledPropagation()
 {
@@ -184,39 +161,6 @@ void tst_QActionGroup::exclusive()
     QVERIFY( !actOne->isChecked() );
     QVERIFY( actTwo->isChecked() );
     QVERIFY( !actThree->isChecked() );
-}
-
-void tst_QActionGroup::dropDownDeleted()
-{
-    QSKIP("dropDownDeleted test for Qt 4.0 not expected to work since it is not implemented yet", SkipAll);
-
-    QMainWindow mw;
-    QToolBar *tb = new QToolBar(&mw);
-    QActionGroup *actGroup = new QActionGroup(&mw);
-
-    /// ### actGroup->setUsesDropDown(true);
-    QAction *actOne = new QAction(actGroup);
-    actOne->setText("test one");
-    QAction *actTwo = new QAction(actGroup);
-    actOne->setText("test one");
-    QAction *actThree= new QAction(actGroup);
-    actOne->setText("test one");
-
-    QListIterator<QAction*> it(actGroup->actions());
-    while (it.hasNext())
-        tb->addAction(it.next());
-
-    QList<QComboBox*> comboList = qFindChildren<QComboBox*>(tb);
-    QCOMPARE(comboList[0]->count(), 3);
-
-    delete actOne;
-    QCOMPARE((int)comboList[0]->count(), 2);
-    delete actTwo;
-    QCOMPARE((int)comboList[0]->count(), 1);
-    delete actThree;
-    QCOMPARE((int)comboList[0]->count(), 0);
-
-    delete actGroup;
 }
 
 void tst_QActionGroup::separators()
