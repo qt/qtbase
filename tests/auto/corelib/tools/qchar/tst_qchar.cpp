@@ -84,6 +84,7 @@ private slots:
     void isLower();
     void isSpace_data();
     void isSpace();
+    void isSpaceSpecial();
     void isTitle();
     void category();
     void direction();
@@ -343,7 +344,7 @@ void tst_QChar::isSpace_data()
     QTest::addColumn<bool>("expected");
 
     for (ushort ucs = 0; ucs < 256; ++ucs) {
-        bool isSpace = (ucs <= 0x0D && ucs >= 0x09) || ucs == 0x20 || ucs == 0xA0;
+        bool isSpace = (ucs <= 0x0D && ucs >= 0x09) || ucs == 0x20 || ucs == 0xA0 || ucs == 0x85;
         QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
         QTest::newRow(tag.toLatin1()) << ucs << isSpace;
     }
@@ -354,6 +355,15 @@ void tst_QChar::isSpace()
     QFETCH(ushort, ucs);
     QFETCH(bool, expected);
     QCOMPARE(QChar(ucs).isSpace(), expected);
+}
+
+void tst_QChar::isSpaceSpecial()
+{
+    QVERIFY(!QChar(QChar::Null).isSpace());
+    QVERIFY(QChar(QChar::Nbsp).isSpace());
+    QVERIFY(QChar(QChar::ParagraphSeparator).isSpace());
+    QVERIFY(QChar(QChar::LineSeparator).isSpace());
+    QVERIFY(QChar(0x1680).isSpace());
 }
 
 void tst_QChar::isTitle()

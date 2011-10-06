@@ -234,7 +234,7 @@ public:
     bool isPunct() const;
     inline bool isSpace() const {
         return ucs == 0x20 || (ucs <= 0x0D && ucs >= 0x09)
-                || (ucs > 127 && isSpace(ucs));
+                || (ucs > 127 && (ucs == 0x0085 || isSpace(ucs)));
     }
     bool isMark() const;
     inline bool isLetter() const {

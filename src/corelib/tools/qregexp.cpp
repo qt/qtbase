@@ -2950,7 +2950,8 @@ int QRegExpEngine::getEscape()
                                                FLAG(QChar::Other_Control)));
         yyCharClass->addRange(0x0000, 0x0008);
         yyCharClass->addRange(0x000e, 0x001f);
-        yyCharClass->addRange(0x007f, 0x009f);
+        yyCharClass->addRange(0x007f, 0x0084);
+        yyCharClass->addRange(0x0086, 0x009f);
         return Tok_CharClass;
     case 'W':
         // see QChar::isLetterOrNumber() and QChar::isMark()
@@ -2991,6 +2992,7 @@ int QRegExpEngine::getEscape()
                                    FLAG(QChar::Separator_Line) |
                                    FLAG(QChar::Separator_Paragraph));
         yyCharClass->addRange(0x0009, 0x000d);
+        yyCharClass->addSingleton(0x0085);
         return Tok_CharClass;
     case 'w':
         // see QChar::isLetterOrNumber() and QChar::isMark()
