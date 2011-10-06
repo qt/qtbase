@@ -486,7 +486,7 @@ QAccessibleInterface *QAccessibleItemRow::parent() const
     return new QAccessibleItemView(view->viewport());
 }
 
-QAccessibleInterface *QAccessibleItemRow::child(int index) const
+QAccessibleInterface *QAccessibleItemRow::child(int) const
 {
     // FIXME? port to IA2 table2.
     return 0;
@@ -1500,47 +1500,25 @@ public:
         return QAccessible::Unrelated;
     }
 
-#ifndef QT_NO_ACTION
-    int userActionCount(int) const { return 0; }
-    QString actionText(int, Text, int) const { return QString(); }
-    bool doAction(int actionIndex, int, const QVariantList &) {
-        doAction(actionIndex);
-        return true;
-    }
-#endif
-
     // action interface
     int actionCount() {
         return 1;
     }
 
-    void doAction(int actionIndex)
+
+    QStringList actionNames() const
     {
-        if (actionIndex == Press || actionIndex == DefaultAction)
+        return QStringList() << PressAction;
+    }
+
+    void doAction(const QString &actionName)
+    {
+        if (actionName == PressAction)
             m_parent->setCurrentIndex(m_index);
     }
 
-    QString localizedDescription(int actionIndex)
+    QStringList keyBindingsForAction(const QString &) const
     {
-        if (actionIndex == 0)
-            return QTabWidget::tr("Select this tab");
-        return QString();
-    }
-
-    QString name(int actionIndex)
-    {
-        if (actionIndex == 0)
-            return QStringLiteral("Select tab");
-        return QString();
-    }
-
-    QString localizedName(int actionIndex)
-    {
-        if (actionIndex == 0)
-            return QTabWidget::tr("Select tab");
-        return QString();
-    }
-    QStringList keyBindings(int actionIndex) {
         return QStringList();
     }
 
@@ -1684,7 +1662,6 @@ QComboBox *QAccessibleComboBox::comboBox() const
 
 QAccessibleInterface* QAccessibleComboBox::child(int index) const
 {
-    QAccessibleInterface* target = 0;
     if (index == 0) {
         QAbstractItemView *view = comboBox()->view();
         //QWidget *parent = view ? view->parentWidget() : 0;
@@ -1717,7 +1694,8 @@ int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
-QString QAccessibleComboBox::text(Text t, int child) const
+/*! \reimp */
+QString QAccessibleComboBox::text(Text t, int) const
 {
     QString str;
 
@@ -1746,54 +1724,30 @@ QString QAccessibleComboBox::text(Text t, int child) const
     return str;
 }
 
-bool QAccessibleComboBox::doAction(int action, int, const QVariantList &)
+QStringList QAccessibleComboBox::actionNames() const
 {
-    if (action == DefaultAction || action == Press) {
+    return QStringList() << ShowMenuAction;
+}
+
+QString QAccessibleComboBox::localizedActionDescription(const QString &actionName) const
+{
+    if (actionName == ShowMenuAction)
+        return QComboBox::tr("Open the combo box selection popup");
+    return QString();
+}
+
+void QAccessibleComboBox::doAction(const QString &actionName)
+{
+    if (actionName == ShowMenuAction) {
         if (comboBox()->view()->isVisible()) {
             comboBox()->hidePopup();
         } else {
             comboBox()->showPopup();
         }
-        return true;
     }
-    return false;
 }
 
-QString QAccessibleComboBox::actionText(int action, Text t, int child) const
-{
-    QString text;
-    if (t == Name && (action == DefaultAction || action == Press))
-        text = comboBox()->view()->isVisible() ? QComboBox::tr("Close") : QComboBox::tr("Open");
-    return text;
-}
-
-int QAccessibleComboBox::actionCount()
-{
-    return 1;
-}
-
-void QAccessibleComboBox::doAction(int actionIndex)
-{
-    doAction(0, 0, QVariantList());
-}
-
-QString QAccessibleComboBox::localizedDescription
-(int actionIndex)
-{
-    return QComboBox::tr("Opens the selection list of this combo box.");
-}
-
-QString QAccessibleComboBox::name(int actionIndex)
-{
-    return QStringLiteral("Popup Combobox Menu");
-}
-
-QString QAccessibleComboBox::localizedName(int actionIndex)
-{
-    return QComboBox::tr("Popup Combobox Menu");
-}
-
-QStringList QAccessibleComboBox::keyBindings(int)
+QStringList QAccessibleComboBox::keyBindingsForAction(const QString &/*actionName*/) const
 {
     return QStringList();
 }

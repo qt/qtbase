@@ -110,18 +110,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \class QAccessibleActionInterface
-    \ingroup accessibility
-    \internal
-    \preliminary
-
-    \brief The QAccessibleActionInterface class implements support for
-    the IAccessibleAction interface.
-
-    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
-*/
-
-/*!
     \class QAccessibleImageInterface
     \ingroup accessibility
     \internal
@@ -132,6 +120,131 @@ QT_BEGIN_NAMESPACE
 
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
+
+/*!
+    \class QAccessibleActionInterface
+    \ingroup accessibility
+    \internal
+    \preliminary
+
+    \brief The QAccessibleActionInterface class implements support for
+    invocable actions in the interface.
+
+    Each accessible should implement the action interface if it supports any actions.
+    The supported actions should adhere to the naming scheme inside the QAccessible2 namespace.
+    Custom actions can be added.
+
+    When subclassing QAccessibleActionInterface you need to provide a list of actionNames which
+    is the primary means to discover the available actions. Action names are never localized.
+    In order to present actions to the user there are two functions that need to return localized versions
+    of the name and give a description of the action.
+
+    In order to invoke the action, doAction is called with an action name.
+
+    Most widgets will simply implement the PressAction. This is what happens when the widget is activated by
+    being clicked on, space pressed or similar.
+
+    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
+/*!
+    \fn QStringList QAccessibleActionInterface::actionNames() const
+
+    Returns a list of valid actions. The actions returned should be in preferred order,
+    i.e. the action that the user most likely wants to trigger should be returned first,
+    while the least likely action should be returned last.
+
+    The list does only contain actions that *can* be invoked. Therefore it,
+    won't return disabled actions, or actions associated with disabled UI
+    controls.
+
+    The list can also be empty.
+
+    \sa localizedActionName(), doAction()
+*/
+
+/*!
+    \fn QString QAccessibleActionInterface::localizedActionName(const QString &name) const
+
+    Returns a localized action name of \a name.
+
+    \sa actionNames(), localizedActionDescription()
+*/
+
+/*!
+    \fn QString QAccessibleActionInterface::localizedActionDescription(const QString &name) const
+
+    Returns a localized action description of \a name.
+
+    This is what should be presented to the user. The actionNames should always
+    be untranslated to make them consistent for screen readers.
+
+    \sa actionNames(), localizedActionName()
+*/
+
+/*!
+    \fn void QAccessibleActionInterface::doAction(const QString &actionName) const
+
+    Invokes the action specified by \a actionName
+
+    \sa actionNames()
+*/
+
+/*!
+    \fn QStringList QAccessibleActionInterface::keyBindingsForAction(const QString &actionName) const
+
+    Returns a list of the keyboard shortcuts available for invoking the action named \a actionName
+
+    \sa actionNames()
+*/
+
+const QString QAccessibleActionInterface::PressAction = QStringLiteral("Press");
+const QString QAccessibleActionInterface::IncreaseAction = QStringLiteral("Increase");
+const QString QAccessibleActionInterface::DecreaseAction = QStringLiteral("Decrease");
+const QString QAccessibleActionInterface::ShowMenuAction = QStringLiteral("ShowMenu");
+const QString QAccessibleActionInterface::SetFocusAction = QStringLiteral("SetFocus");
+const QString QAccessibleActionInterface::CheckAction = QStringLiteral("Check");
+const QString QAccessibleActionInterface::UncheckAction = QStringLiteral("Uncheck");
+
+QString QAccessibleActionInterface::localizedActionName(const QString &actionName) const
+{
+    if (actionName == PressAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Press");
+    else if (actionName == IncreaseAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Increase");
+    else if (actionName == DecreaseAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Decrease");
+    else if (actionName == ShowMenuAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "ShowMenu");
+    else if (actionName == SetFocusAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "SetFocus");
+    else if (actionName == CheckAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Check");
+    else if (actionName == UncheckAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Uncheck");
+
+    return QString();
+}
+
+QString QAccessibleActionInterface::localizedActionDescription(const QString &actionName) const
+{
+    if (actionName == PressAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Triggers the action");
+    else if (actionName == IncreaseAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Increase the value");
+    else if (actionName == DecreaseAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Decrease the value");
+    else if (actionName == ShowMenuAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Shows the menu");
+    else if (actionName == SetFocusAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Sets the focus");
+    else if (actionName == CheckAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Checks the checkbox");
+    else if (actionName == UncheckAction)
+        return QCoreApplication::translate("QAccessibleActionInterface", "Unchecks the checkbox");
+
+    return QString();
+}
 
 
 /*!

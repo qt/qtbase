@@ -75,12 +75,6 @@ public:
     Role role(int child = 0) const;
     State state(int child = 0) const;
 
-#ifndef QT_NO_ACTION
-    int userActionCount(int child = 0) const;
-    QString actionText(int action, Text t, int child = 0) const;
-    bool doAction(int action, int child = 0, const QVariantList &params = QVariantList());
-#endif
-
     QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
 protected:

@@ -65,16 +65,9 @@ public:
     QString text(Text t, int child = 0) const;
     State state(int child = 0) const;
 
-    QString actionText(int action, Text text, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-
-    // QAccessibleActionInterface
-    int actionCount();
-    void doAction(int actionIndex);
-    QString localizedDescription(int actionIndex);
-    QString name(int actionIndex);
-    QString localizedName(int actionIndex);
-    QStringList keyBindings(int actionIndex);
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &actionName) const;
 
 protected:
     QAbstractButton *button() const;
@@ -98,12 +91,8 @@ public:
     bool doAction(int action, int child, const QVariantList &params);
 
     // QAccessibleActionInterface
-    int actionCount();
-    void doAction(int actionIndex);
-    QString localizedDescription(int actionIndex);
-    QString name(int actionIndex);
-    QString localizedName(int actionIndex);
-    QStringList keyBindings(int actionIndex);
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
 
 protected:
     QToolButton *toolButton() const;

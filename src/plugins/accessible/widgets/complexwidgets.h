@@ -263,16 +263,11 @@ public:
 
     QString text(Text t, int child) const;
 
-    bool doAction(int action, int child, const QVariantList &params);
-    QString actionText(int action, Text t, int child) const;
-
     // QAccessibleActionInterface
-    int actionCount();
-    void doAction(int actionIndex);
-    QString localizedDescription(int actionIndex);
-    QString name(int actionIndex);
-    QString localizedName(int actionIndex);
-    QStringList keyBindings(int actionIndex);
+    QStringList actionNames() const;
+    QString localizedActionDescription(const QString &actionName) const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &actionName) const;
 
 protected:
     QComboBox *comboBox() const;

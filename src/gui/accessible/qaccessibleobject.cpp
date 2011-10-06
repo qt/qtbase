@@ -154,44 +154,6 @@ void QAccessibleObject::setText(Text, int, const QString &)
 {
 }
 
-/*! \reimp */
-int QAccessibleObject::userActionCount(int) const
-{
-    return 0;
-}
-
-/*! \reimp */
-bool QAccessibleObject::doAction(int, int, const QVariantList &)
-{
-    return false;
-}
-
-static const char * const action_text[][5] =
-{
-    // Name, Description, Value, Help, Accelerator
-    { "Press", "", "", "", "Space" },
-    { "SetFocus", "Passes focus to this widget", "", "", "" },
-    { "Increase", "", "", "", "" },
-    { "Decrease", "", "", "", "" },
-    { "Accept", "", "", "", "" },
-    { "Cancel", "", "", "", "" },
-    { "Select", "", "", "", "" },
-    { "ClearSelection", "", "", "", "" },
-    { "RemoveSelection", "", "", "", "" },
-    { "ExtendSelection", "", "", "", "" },
-    { "AddToSelection", "", "", "", "" }
-};
-
-/*! \reimp */
-QString QAccessibleObject::actionText(int action, Text t, int child) const
-{
-    if (child || action > FirstStandardAction || action < LastStandardAction || t > Accelerator)
-        return QString();
-
-    return QString::fromLatin1(action_text[-(action - FirstStandardAction)][t]);
-}
-
-
 /*!
     \class QAccessibleApplication
     \brief The QAccessibleApplication class implements the QAccessibleInterface for QApplication.
@@ -353,45 +315,6 @@ QAccessible::State QAccessibleApplication::state(int) const
     return QGuiApplication::activeWindow() ? Focused : Normal;
 }
 
-/*! \reimp */
-int QAccessibleApplication::userActionCount(int) const
-{
-    return 1;
-}
-
-/*! \reimp */
-bool QAccessibleApplication::doAction(int action, int child, const QVariantList &param)
-{
-    //###Move to IA2 action interface at some point to get rid of the ambiguity.
-    /*  //### what is action == 0 and action == 1 ?????
-    if (action == 0 || action == 1) {
-        QWindow *w = 0;
-        w = QGuiApplication::activeWindow();
-        if (!w)
-            w = topLevelWindows().at(0);
-        if (!w)
-            return false;
-        w->requestActivateWindow();
-        return true;
-    }
-    */
-    return QAccessibleObject::doAction(action, child, param);
-}
-
-/*! \reimp */
-QString QAccessibleApplication::actionText(int action, Text text, int child) const
-{
-    QString str;
-    if ((action == 0 || action == 1) && !child) switch (text) {
-    case Name:
-        return QGuiApplication::tr("Activate");
-    case Description:
-        return QGuiApplication::tr("Activates the program's main window");
-    default:
-        break;
-    }
-    return QAccessibleObject::actionText(action, text, child);
-}
 
 QT_END_NAMESPACE
 

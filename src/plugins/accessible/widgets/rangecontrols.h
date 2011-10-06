@@ -58,7 +58,7 @@ class QDoubleSpinBox;
 class QDial;
 
 #ifndef QT_NO_SPINBOX
-class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleValueInterface
+class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleValueInterface // TODO, public QAccessibleActionInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -86,7 +86,6 @@ class QAccessibleSpinBox : public QAccessibleAbstractSpinBox
 {
 public:
     explicit QAccessibleSpinBox(QWidget *w);
-    bool doAction(int action, int child, const QVariantList &params);
 
 protected:
     QSpinBox *spinBox() const;
@@ -141,9 +140,6 @@ class QAccessibleSlider : public QAccessibleAbstractSlider
 public:
     explicit QAccessibleSlider(QWidget *w);
     QString text(Text t, int child) const;
-
-    int defaultAction(int child) const;
-    QString actionText(int action, Text t, int child) const;
 
 protected:
     QSlider *slider() const;

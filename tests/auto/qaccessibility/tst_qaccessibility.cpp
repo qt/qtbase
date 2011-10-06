@@ -224,8 +224,7 @@ private slots:
     void textAttributes();
     void hideShowTest();
 
-    void userActionCount();
-    void actionText();
+    void actionTest();
 
     void applicationTest();
     void mainWindowTest();
@@ -933,41 +932,11 @@ void tst_QAccessibility::hideShowTest()
     QTestAccessibility::clearEvents();
 }
 
-void tst_QAccessibility::userActionCount()
+
+void tst_QAccessibility::actionTest()
 {
-    QWidget widget;
+    QCOMPARE(QAccessibleActionInterface::PressAction, QString("Press"));
 
-    QAccessibleInterface *test = QAccessible::queryAccessibleInterface(&widget);
-    QVERIFY(test);
-    QVERIFY(test->isValid());
-    QCOMPARE(test->userActionCount(0), 0);
-    QCOMPARE(test->userActionCount(1), 0);
-    QCOMPARE(test->userActionCount(-1), 0);
-    delete test; test = 0;
-
-    QFrame frame;
-
-    test = QAccessible::queryAccessibleInterface(&frame);
-    QVERIFY(test);
-    QVERIFY(test->isValid());
-    QCOMPARE(test->userActionCount(0), 0);
-    QCOMPARE(test->userActionCount(1), 0);
-    QCOMPARE(test->userActionCount(-1), 0);
-    delete test; test = 0;
-
-    QLineEdit lineEdit;
-
-    test = QAccessible::queryAccessibleInterface(&lineEdit);
-    QVERIFY(test);
-    QVERIFY(test->isValid());
-    QCOMPARE(test->userActionCount(0), 0);
-    QCOMPARE(test->userActionCount(1), 0);
-    QCOMPARE(test->userActionCount(-1), 0);
-    delete test; test = 0;
-}
-
-void tst_QAccessibility::actionText()
-{
     QWidget *widget = new QWidget;
     widget->show();
 
@@ -975,13 +944,13 @@ void tst_QAccessibility::actionText()
     QVERIFY(test);
     QVERIFY(test->isValid());
 
-    QCOMPARE(test->actionText(1, QAccessible::Name, 0), QString());
-    QCOMPARE(test->actionText(0, QAccessible::Name, 1), QString());
-    QCOMPARE(test->actionText(1, QAccessible::Name, 1), QString());
-    QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, -1), QString());
+//    QCOMPARE(test->actionText(1, QAccessible::Name, 0), QString());
+//    QCOMPARE(test->actionText(0, QAccessible::Name, 1), QString());
+//    QCOMPARE(test->actionText(1, QAccessible::Name, 1), QString());
+//    QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, -1), QString());
 
-    QCOMPARE(test->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("SetFocus"));
-    QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, 0), QString("SetFocus"));
+//    QCOMPARE(test->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("SetFocus"));
+//    QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, 0), QString("SetFocus"));
 
     delete test;
     delete widget;
@@ -1070,14 +1039,13 @@ void tst_QAccessibility::buttonTest()
     QAccessibleInterface* interface = QAccessible::queryAccessibleInterface(&pushButton);
     QAccessibleActionInterface* actionInterface = interface->actionInterface();
     QVERIFY(actionInterface != 0);
-
     QCOMPARE(interface->role(), QAccessible::PushButton);
 
     // currently our buttons only have click as action, press and release are missing
-    QCOMPARE(actionInterface->actionCount(), 1);
-    QCOMPARE(actionInterface->name(0), QString("Press"));
+    QCOMPARE(actionInterface->actionNames().size(), 1);
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
     QCOMPARE(pushButton.clickCount, 0);
-    actionInterface->doAction(0);
+    actionInterface->doAction(QAccessibleActionInterface::PressAction);
     QTest::qWait(500);
     QCOMPARE(pushButton.clickCount, 1);
     delete interface;
@@ -1086,63 +1054,59 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&toggleButton);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->localizedDescription(0), QString("Toggles the button."));
-    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::CheckAction);
+    QCOMPARE(actionInterface->localizedActionDescription(QAccessibleActionInterface::CheckAction), QString("Checks the checkbox"));
     QVERIFY(!toggleButton.isChecked());
     QVERIFY((interface->state() & QAccessible::Checked) == 0);
-    actionInterface->doAction(0);
+    actionInterface->doAction(QAccessibleActionInterface::CheckAction);
     QTest::qWait(500);
-    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
     QVERIFY(toggleButton.isChecked());
-    QVERIFY((interface->state() & QAccessible::Checked));
+    QCOMPARE(actionInterface->actionNames().at(0), QAccessibleActionInterface::UncheckAction);
+    QVERIFY(interface->state() & QAccessible::Checked);
     delete interface;
 
-//    // test menu push button
-//    QVERIFY(QAccessible::queryAccessibleInterface(&menuButton, &test));
-//    QCOMPARE(test->role(), QAccessible::ButtonMenu);
-//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Open"));
-//    QCOMPARE(test->state(), (int)QAccessible::HasPopup);
-//    test->release();
+    {
+    // test menu push button
+    QAction *foo = new QAction("Foo", 0);
+    foo->setShortcut(QKeySequence("Ctrl+F"));
+    QMenu *menu = new QMenu();
+    menu->addAction(foo);
+    QPushButton menuButton;
+    menuButton.setMenu(menu);
+    menuButton.show();
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&menuButton);
+    QCOMPARE(interface->role(), QAccessible::ButtonMenu);
+    QVERIFY(interface->state() & QAccessible::HasPopup);
+    QCOMPARE(interface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::ShowMenuAction);
+    // showing the menu enters a new event loop...
+//    interface->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
+//    QTest::qWait(500);
+    delete interface;
+    delete menu;
+    }
 
     // test check box
     interface = QAccessible::queryAccessibleInterface(&checkBox);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::CheckAction);
     QVERIFY((interface->state() & QAccessible::Checked) == 0);
-    actionInterface->doAction(0);
+    actionInterface->doAction(QAccessibleActionInterface::CheckAction);
     QTest::qWait(500);
-    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::UncheckAction);
     QVERIFY(interface->state() & QAccessible::Checked);
     QVERIFY(checkBox.isChecked());
     delete interface;
-
-//    // test tristate check box
-//    QVERIFY(QAccessible::queryAccessibleInterface(&tristate, &test));
-//    QCOMPARE(test->role(), QAccessible::CheckBox);
-//    QCOMPARE(test->defaultAction(0), QAccessible::Press);
-//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Toggle"));
-//    QCOMPARE(test->state(), (int)QAccessible::Normal);
-//    QVERIFY(test->doAction(QAccessible::Press, 0));
-//    QTest::qWait(500);
-//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Check"));
-//    QCOMPARE(test->state(), (int)QAccessible::Mixed);
-//    QVERIFY(test->doAction(QAccessible::Press, 0));
-//    QTest::qWait(500);
-//    QCOMPARE(test->actionText(test->defaultAction(0), QAccessible::Name, 0), QString("Uncheck"));
-//    QCOMPARE(test->state(), (int)QAccessible::Checked);
-//    test->release();
 
     // test radiobutton
     interface = QAccessible::queryAccessibleInterface(&radio);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(), QAccessible::RadioButton);
-    QCOMPARE(actionInterface->name(0), QString("Check"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::CheckAction);
     QVERIFY((interface->state() & QAccessible::Checked) == 0);
-    actionInterface->doAction(0);
+    actionInterface->doAction(QAccessibleActionInterface::CheckAction);
     QTest::qWait(500);
-    QCOMPARE(actionInterface->name(0), QString("Uncheck"));
+    QCOMPARE(actionInterface->actionNames(), QStringList() << QAccessibleActionInterface::CheckAction);
     QVERIFY(interface->state() & QAccessible::Checked);
     QVERIFY(checkBox.isChecked());
     delete interface;
@@ -1237,8 +1201,6 @@ void tst_QAccessibility::scrollBarTest()
     const QRect scrollBarRect = scrollBarInterface->rect();
     QVERIFY(scrollBarRect.isValid());
 
-    qDebug() << scrollBarRect;
-
     delete scrollBarInterface;
     delete scrollBar;
 
@@ -1253,8 +1215,6 @@ void tst_QAccessibility::tabTest()
     QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(tabBar);
     QVERIFY(interface);
     QCOMPARE(interface->childCount(), 2);
-    interface->doAction(QAccessible::Press, 1);
-    interface->doAction(QAccessible::Press, 2);
 
     // Test that the Invisible bit for the navigation buttons gets set
     // and cleared correctly.
@@ -1286,11 +1246,14 @@ void tst_QAccessibility::tabTest()
     tabBar->setCurrentIndex(0);
 
     // Test that sending a focus action to a tab does not select it.
-    child2->doAction(QAccessible::Focus, 2, QVariantList());
+//    child2->doAction(QAccessible::Focus, 2, QVariantList());
     QCOMPARE(tabBar->currentIndex(), 0);
 
     // Test that sending a press action to a tab selects it.
-    child2->doAction(QAccessible::Press, 2, QVariantList());
+    QVERIFY(child2->actionInterface());
+    QCOMPARE(child2->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
+    QCOMPARE(tabBar->currentIndex(), 0);
+    child2->actionInterface()->doAction(QAccessibleActionInterface::PressAction);
     QCOMPARE(tabBar->currentIndex(), 1);
 
     delete tabBar;
@@ -1483,36 +1446,33 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iAction->text(QAccessible::Accelerator, 0), QString());
 #endif
 
-    QCOMPARE(iFile->actionText(QAccessible::DefaultAction, QAccessible::Name), QString("Open"));
-    QCOMPARE(iEdit->actionText(QAccessible::DefaultAction, QAccessible::Name), QString("Open"));
-    QCOMPARE(iSeparator->actionText(QAccessible::DefaultAction, QAccessible::Name), QString());
-    QCOMPARE(iHelp->actionText(QAccessible::DefaultAction, QAccessible::Name), QString("Open"));
-    QCOMPARE(iAction->actionText(QAccessible::DefaultAction, QAccessible::Name), QString("Execute"));
+    QVERIFY(iFile->actionInterface());
+
+    QCOMPARE(iFile->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::ShowMenuAction);
+    QCOMPARE(iSeparator->actionInterface()->actionNames(), QStringList());
+    QCOMPARE(iHelp->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::ShowMenuAction);
+    QCOMPARE(iAction->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
 
     bool menuFade = qApp->isEffectEnabled(Qt::UI_FadeMenu);
     int menuFadeDelay = 300;
-    iFile->doAction(QAccessible::DefaultAction);
+    iFile->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
     if(menuFade)
         QTest::qWait(menuFadeDelay);
     QVERIFY(file->isVisible() && !edit->isVisible() && !help->isVisible());
-    iEdit->doAction(QAccessible::DefaultAction);
+    iEdit->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
     if(menuFade)
         QTest::qWait(menuFadeDelay);
     QVERIFY(!file->isVisible() && edit->isVisible() && !help->isVisible());
-    iSeparator->doAction(QAccessible::DefaultAction);
-    if(menuFade)
-        QTest::qWait(menuFadeDelay);
-    QVERIFY(!file->isVisible() && !edit->isVisible() && !help->isVisible());
-    iHelp->doAction(QAccessible::DefaultAction);
+    iHelp->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
     if(menuFade)
         QTest::qWait(menuFadeDelay);
     QVERIFY(!file->isVisible() && !edit->isVisible() && help->isVisible());
-    iAction->doAction(QAccessible::DefaultAction);
+    iAction->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
     if(menuFade)
         QTest::qWait(menuFadeDelay);
     QVERIFY(!file->isVisible() && !edit->isVisible() && !help->isVisible());
 
-    interface->doAction(QAccessible::DefaultAction);
+    QVERIFY(!interface->actionInterface());
     delete interface;
     interface = QAccessible::queryAccessibleInterface(file);
     QCOMPARE(interface->childCount(), 5);
@@ -1529,11 +1489,11 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iFileSave->role(), QAccessible::MenuItem);
     QCOMPARE(iFileSeparator->role(), QAccessible::Separator);
     QCOMPARE(iFileExit->role(), QAccessible::MenuItem);
-    QCOMPARE(iFileNew->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("Open"));
-    QCOMPARE(iFileOpen->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("Execute"));
-    QCOMPARE(iFileSave->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("Execute"));
-    QCOMPARE(iFileSeparator->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString());
-    QCOMPARE(iFileExit->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("Execute"));
+    QCOMPARE(iFileNew->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::ShowMenuAction);
+    QCOMPARE(iFileOpen->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
+    QCOMPARE(iFileSave->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
+    QCOMPARE(iFileSeparator->actionInterface()->actionNames(), QStringList());
+    QCOMPARE(iFileExit->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::PressAction);
 
     QAccessibleInterface *iface = 0;
     QAccessibleInterface *iface2 = 0;
@@ -1623,8 +1583,8 @@ void tst_QAccessibility::menuTest()
     if (menuFade)
         QTest::qWait(menuFadeDelay);
 
-    iFile->doAction(QAccessible::DefaultAction);
-    iFileNew->doAction(QAccessible::DefaultAction);
+    iFile->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
+    iFileNew->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
 
     QVERIFY(file->isVisible());
     QVERIFY(fileNew->isVisible());
@@ -3294,8 +3254,8 @@ void tst_QAccessibility::comboBoxTest()
 
     QVERIFY(!combo.view()->isVisible());
     QVERIFY(iface->actionInterface());
-    QCOMPARE(iface->actionInterface()->actionCount(), 1);
-    iface->actionInterface()->doAction(0);
+    QCOMPARE(iface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::ShowMenuAction);
+    iface->actionInterface()->doAction(QAccessibleActionInterface::ShowMenuAction);
     QVERIFY(combo.view()->isVisible());
 
     delete iface;

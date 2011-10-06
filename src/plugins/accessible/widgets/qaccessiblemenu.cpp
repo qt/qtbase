@@ -110,29 +110,6 @@ QAccessible::State QAccessibleMenu::state(int child) const
     return s;
 }
 
-QString QAccessibleMenu::actionText(int action, QAccessible::Text text, int child) const
-{
-    Q_ASSERT(child == 0);
-    return QAccessibleWidget::actionText(action, text, child);
-}
-
-bool QAccessibleMenu::doAction(int act, int child, const QVariantList &)
-{
-//    Q_ASSERT(child == 0);
-    if (!child || act != QAccessible::DefaultAction)
-        return false;
-
-    QAction *action = menu()->actions().value(child-1, 0);
-    if (!action || !action->isEnabled())
-        return false;
-
-    if (action->menu() && action->menu()->isVisible())
-        action->menu()->hide();
-    else
-        menu()->setActiveAction(action);
-    return true;
-}
-
 QAccessibleInterface *QAccessibleMenu::child(int index) const
 {
     if (index < childCount())
@@ -246,34 +223,11 @@ QAccessible::State QAccessibleMenuBar::state(int child) const
     return s;
 }
 
-QString QAccessibleMenuBar::actionText(int action, QAccessible::Text text, int child) const
-{
-    Q_ASSERT(child == 0);
-    return QAccessibleWidget::actionText(action, text, child);
-}
-
-bool QAccessibleMenuBar::doAction(int, int child, const QVariantList &)
-{
-//    Q_ASSERT(child == 0);
-    QAction *action = menuBar()->actions().value(child-1, 0);
-    if (!action || !action->isEnabled())
-        return false;
-    if (action->menu() && action->menu()->isVisible())
-        action->menu()->hide();
-    else {
-        menuBar()->setActiveAction(action);
-    }
-    return true;
-
-    return false;
-}
-
 #endif // QT_NO_MENUBAR
 
 QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action) : m_action(action), m_owner(owner)
 {
 }
-
 
 QAccessibleMenuItem::~QAccessibleMenuItem()
 {}
@@ -290,66 +244,6 @@ int QAccessibleMenuItem::childAt(int x, int y ) const
 int QAccessibleMenuItem::childCount() const
 {
     return m_action->menu() ? 1 : 0;
-}
-
-QString QAccessibleMenuItem::actionText(int action, Text text, int child) const
-{
-    Q_ASSERT(child == 0);
-    if (!m_action || m_action->isSeparator())
-        return QString();
-
-    if (text == Name && ((action == Press) || (action == DefaultAction))) {
-        if (m_action->menu()) {
-            return QMenu::tr("Open");
-        }
-        return QMenu::tr("Execute");
-    }
-    return QString();
-}
-
-
-//QAction *action = menuBar()->actions().value(child-1, 0);
-//if (!action || !action->isEnabled())
-//    return false;
-//if (action->menu() && action->menu()->isVisible())
-//    action->menu()->hide();
-//else
-//    menuBar()->setActiveAction(action);
-//return true;
-
-
-
-bool QAccessibleMenuItem::doAction(int action, int child, const QVariantList & /*params = QVariantList()*/ )
-{
-    Q_ASSERT(child == 0);
-    if ((action != Press) && (action != DefaultAction))
-        return false;
-    if (!m_action->isEnabled())
-        return false;
-
-    if (QMenuBar *bar = qobject_cast<QMenuBar*>(owner())) {
-        if (m_action->menu() && m_action->menu()->isVisible()) {
-            m_action->menu()->hide();
-            return true;
-        } else {
-            bar->setActiveAction(m_action);
-            return true;
-        }
-        return false;
-    } else if (QMenu *menu = qobject_cast<QMenu*>(owner())){
-        if (m_action->menu() && m_action->menu()->isVisible()) {
-            m_action->menu()->hide();
-            return true;
-        } else {
-            menu->setActiveAction(m_action);
-            return true;
-        }
-    } else {
-        // no menu
-        m_action->trigger();
-        return true;
-    }
-    return false;
 }
 
 int QAccessibleMenuItem::indexOfChild(const QAccessibleInterface * child) const
@@ -462,11 +356,8 @@ QAccessible::Relation QAccessibleMenuItem::relationTo ( int child, const QAccess
     return Unrelated;
 }
 
-QAccessible::Role QAccessibleMenuItem::role(int child) const
+QAccessible::Role QAccessibleMenuItem::role(int) const
 {
-    Q_ASSERT(child == 0);
-//    if (m_action->menu())
-//        return PopupMenu;
     return m_action->isSeparator() ? Separator : MenuItem;
 }
 
@@ -530,10 +421,65 @@ QString QAccessibleMenuItem::text ( Text t, int child ) const
     return str;
 }
 
-int QAccessibleMenuItem::userActionCount ( int /*child*/ ) const
+
+QString QAccessibleMenuItem::actionText(int action, Text text, int child) const
 {
-    return 0;
+    Q_ASSERT(child == 0);
+    if (!m_action || m_action->isSeparator())
+        return QString();
+
+    if (text == Name && ((action == Press) || (action == DefaultAction))) {
+        if (m_action->menu()) {
+            return QMenu::tr("Open");
+        }
+        return QMenu::tr("Execute");
+    }
+    return QString();
 }
+
+QStringList QAccessibleMenuItem::actionNames() const
+{
+    QStringList actions;
+    if (!m_action || m_action->isSeparator())
+        return actions;
+
+    if (m_action->menu()) {
+        actions <<  ShowMenuAction;
+    } else {
+        actions << PressAction;
+    }
+    return actions;
+}
+
+void QAccessibleMenuItem::doAction(const QString &actionName)
+{
+    if (!m_action->isEnabled())
+        return;
+
+    if (actionName == PressAction) {
+        m_action->trigger();
+    } else if (actionName == ShowMenuAction) {
+        if (QMenuBar *bar = qobject_cast<QMenuBar*>(owner())) {
+            if (m_action->menu() && m_action->menu()->isVisible()) {
+                m_action->menu()->hide();
+            } else {
+                bar->setActiveAction(m_action);
+            }
+        } else if (QMenu *menu = qobject_cast<QMenu*>(owner())){
+            if (m_action->menu() && m_action->menu()->isVisible()) {
+                m_action->menu()->hide();
+            } else {
+                menu->setActiveAction(m_action);
+            }
+        }
+    }
+}
+
+QStringList QAccessibleMenuItem::keyBindingsForAction(const QString &) const
+{
+    return QStringList();
+}
+
 
 QAction *QAccessibleMenuItem::action() const
 {

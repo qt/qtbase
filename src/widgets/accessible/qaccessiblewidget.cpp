@@ -819,67 +819,6 @@ QString QAccessibleWidget::text(Text t, int child) const
     return str;
 }
 
-#ifndef QT_NO_ACTION
-
-/*! \reimp */
-int QAccessibleWidget::userActionCount(int child) const
-{
-    if (child)
-        return 0;
-    return widget()->actions().count();
-}
-
-/*! \reimp */
-QString QAccessibleWidget::actionText(int action, Text t, int child) const
-{
-    if (action == DefaultAction)
-        action = SetFocus;
-
-    if (action > 0 && !child) {
-        QAction *act = widget()->actions().value(action - 1);
-        if (act) {
-            switch (t) {
-            case Name:
-                return act->text();
-            case Description:
-                return act->toolTip();
-#ifndef QT_NO_SHORTCUT
-            case Accelerator:
-                return act->shortcut().toString();
-#endif
-            default:
-                break;
-            }
-        }
-    }
-
-    return QAccessibleObject::actionText(action, t, child);
-}
-
-/*! \reimp */
-bool QAccessibleWidget::doAction(int action, int child, const QVariantList &params)
-{
-    if (action == SetFocus || action == DefaultAction) {
-        if (child || !widget()->isEnabled())
-            return false;
-        if (widget()->focusPolicy() != Qt::NoFocus)
-            widget()->setFocus();
-        else if (widget()->isWindow())
-            widget()->activateWindow();
-        else
-            return false;
-        return true;
-    } else if (action > 0) {
-        if (QAction *act = widget()->actions().value(action - 1)) {
-            act->trigger();
-            return true;
-        }
-    }
-    return QAccessibleObject::doAction(action, child, params);
-}
-
-#endif // QT_NO_ACTION
-
 /*! \reimp */
 QAccessible::Role QAccessibleWidget::role(int child) const
 {

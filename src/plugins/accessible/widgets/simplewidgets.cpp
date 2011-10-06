@@ -104,75 +104,23 @@ QAbstractButton *QAccessibleButton::button() const
     return qobject_cast<QAbstractButton*>(object());
 }
 
-QString QAccessibleButton::actionText(int action, Text text, int child) const
-{
-    Q_ASSERT(child == 0);
-
-    if (text == Name) switch (action) {
-    case Press:
-    case DefaultAction: // press, checking or open
-        switch (role(0)) {
-        case ButtonMenu:
-            return QPushButton::tr("Open");
-        case CheckBox:
-            {
-                if (state(0) & Checked)
-                    return QCheckBox::tr("Uncheck");
-                QCheckBox *cb = qobject_cast<QCheckBox*>(object());
-                if (!cb || !cb->isTristate() || cb->checkState() == Qt::PartiallyChecked)
-                    return QCheckBox::tr("Check");
-                return QCheckBox::tr("Toggle");
-            }
-            break;
-        case RadioButton:
-            return QRadioButton::tr("Check");
-        default:
-            break;
-        }
-        break;
-    }
-    return QAccessibleWidget::actionText(action, text, child);
-}
-
-bool QAccessibleButton::doAction(int action, int child, const QVariantList &params)
-{
-    Q_ASSERT(child == 0);
-    if (!widget()->isEnabled())
-        return false;
-
-    switch (action) {
-    case DefaultAction:
-    case Press:
-        {
-#ifndef QT_NO_MENU
-            QPushButton *pb = qobject_cast<QPushButton*>(object());
-            if (pb && pb->menu())
-                pb->showMenu();
-            else
-#endif
-                button()->animateClick();
-        }
-        return true;
-    }
-    return QAccessibleWidget::doAction(action, child, params);
-}
-
+/*! \reimp */
 QString QAccessibleButton::text(Text t, int child) const
 {
     Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Accelerator:
-        {
+    {
 #ifndef QT_NO_SHORTCUT
-            QPushButton *pb = qobject_cast<QPushButton*>(object());
-            if (pb && pb->isDefault())
-                str = (QString)QKeySequence(Qt::Key_Enter);
+        QPushButton *pb = qobject_cast<QPushButton*>(object());
+        if (pb && pb->isDefault())
+            str = (QString)QKeySequence(Qt::Key_Enter);
 #endif
-            if (str.isEmpty())
-                str = qt_accHotKey(button()->text());
-        }
-        break;
+        if (str.isEmpty())
+            str = qt_accHotKey(button()->text());
+    }
+         break;
     case Name:
         str = widget()->accessibleName();
         if (str.isEmpty())
@@ -189,7 +137,7 @@ QString QAccessibleButton::text(Text t, int child) const
 QAccessible::State QAccessibleButton::state(int child) const
 {
     Q_ASSERT(child == 0);
-    State state = QAccessibleWidget::state(0);
+    State state = QAccessibleWidget::state();
 
     QAbstractButton *b = button();
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
@@ -212,78 +160,67 @@ QAccessible::State QAccessibleButton::state(int child) const
     return state;
 }
 
-int QAccessibleButton::actionCount()
+QStringList QAccessibleButton::actionNames() const
 {
-    return 1;
-}
-
-void QAccessibleButton::doAction(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        button()->click();
-        break;
-    }
-}
-
-QString QAccessibleButton::localizedDescription(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            return QLatin1String("Toggles the button.");
-        }
-        return QLatin1String("Clicks the button.");
-    default:
-        return QString();
-    }
-}
-
-QString QAccessibleButton::name(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            if (button()->isChecked()) {
-                return QLatin1String("Uncheck");
+    QStringList names;
+    if (widget()->isEnabled()) {
+        switch (role()) {
+        case ButtonMenu:
+            names << ShowMenuAction;
+            break;
+        case RadioButton:
+            names << CheckAction;
+            break;
+        default:
+            if (button()->isCheckable()) {
+                if (state() & Checked) {
+                    names <<  UncheckAction;
+                } else {
+                    // FIXME
+    //                QCheckBox *cb = qobject_cast<QCheckBox*>(object());
+    //                if (!cb || !cb->isTristate() || cb->checkState() == Qt::PartiallyChecked)
+                    names <<  CheckAction;
+                }
             } else {
-                return QLatin1String("Check");
+                names << PressAction;
             }
+            break;
         }
-        return QLatin1String("Press");
-    default:
-        return QString();
     }
+    return names;
 }
 
-QString QAccessibleButton::localizedName(int actionIndex)
+void QAccessibleButton::doAction(const QString &actionName)
 {
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            if (button()->isChecked()) {
-                return tr("Uncheck");
-            } else {
-                return tr("Check");
-            }
-        }
-        return tr("Press");
-    default:
-        return QString();
+    if (!widget()->isEnabled())
+        return;
+    if (actionName == PressAction ||
+        actionName == ShowMenuAction) {
+#ifndef QT_NO_MENU
+        QPushButton *pb = qobject_cast<QPushButton*>(object());
+        if (pb && pb->menu())
+            pb->showMenu();
+        else
+#endif
+            button()->animateClick();
     }
+
+    if (actionName == CheckAction)
+        button()->setChecked(true);
+    if (actionName == UncheckAction)
+        button()->setChecked(false);
 }
 
-QStringList QAccessibleButton::keyBindings(int actionIndex)
+QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) const
 {
-    switch (actionIndex) {
+    if (actionName == PressAction) {
 #ifndef QT_NO_SHORTCUT
-    case 0:
         return QStringList() << button()->shortcut().toString();
 #endif
-    default:
-        return QStringList();
     }
+    return QStringList();
 }
+
 
 #ifndef QT_NO_TOOLBUTTON
 /*!
@@ -383,119 +320,43 @@ int QAccessibleToolButton::actionCount(int) const
     return 1;
 }
 
-/*!
-    \internal
-
-    If \a text is \c Name, then depending on the \a child or the \a
-    action, an action text is returned. This is a translated string
-    which in English is one of "Press", "Open", or "Set Focus". If \a
-    text is not \c Name, an empty string is returned.
+/*
+   The three different tool button types can have the following actions:
+| DelayedPopup    | ShowMenuAction + (PressedAction || CheckedAction) |
+| MenuButtonPopup | ShowMenuAction + (PressedAction || CheckedAction) |
+| InstantPopup    | ShowMenuAction |
 */
-QString QAccessibleToolButton::actionText(int action, Text text, int) const
+QStringList QAccessibleToolButton::actionNames() const
 {
-    return QString();
+    QStringList names;
+    if (widget()->isEnabled()) {
+        if (toolButton()->menu())
+            names << ShowMenuAction;
+        if (toolButton()->popupMode() != QToolButton::InstantPopup)
+            names << QAccessibleButton::actionNames();
+    }
+    return names;
 }
 
-/*!
-    \internal
-*/
-bool QAccessibleToolButton::doAction(int, int, const QVariantList &)
-{
-    return false;
-}
-
-
-int QAccessibleToolButton::actionCount()
-{
-    return isSplitButton() ? 2 : 1;
-}
-
-void QAccessibleToolButton::doAction(int actionIndex)
+void QAccessibleToolButton::doAction(const QString &actionName)
 {
     if (!widget()->isEnabled())
         return;
 
-    switch (actionIndex) {
-    case 0:
+    if (actionName == PressAction) {
         button()->click();
-        break;
-    case 1:
-        if (isSplitButton()) {
+    } else if (actionName == ShowMenuAction) {
+        if (toolButton()->popupMode() != QToolButton::InstantPopup) {
             toolButton()->setDown(true);
 #ifndef QT_NO_MENU
             toolButton()->showMenu();
 #endif
         }
-        break;
+    } else {
+        QAccessibleButton::doAction(actionName);
     }
-}
 
-QString QAccessibleToolButton::name(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            if (button()->isChecked()) {
-                return QLatin1String("Uncheck");
-            } else {
-                return QLatin1String("Check");
-            }
-        }
-        return QLatin1String("Press");
-    case 1:
-        if (isSplitButton())
-            return QLatin1String("Show popup menu");
-    default:
-        return QString();
-    }
 }
-
-QString QAccessibleToolButton::localizedName(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            if (button()->isChecked()) {
-                return tr("Uncheck");
-            } else {
-                return tr("Check");
-            }
-        }
-        return tr("Press");
-    case 1:
-        return tr("Show popup menu");
-    default:
-        return QString();
-    }
-}
-
-QString QAccessibleToolButton::localizedDescription(int actionIndex)
-{
-    switch (actionIndex) {
-    case 0:
-        if (button()->isCheckable()) {
-            return tr("Toggles the button.");
-        }
-        return tr("Clicks the button.");
-    case 1:
-        return tr("Shows the menu.");
-    default:
-        return QString();
-    }
-}
-
-QStringList QAccessibleToolButton::keyBindings(int actionIndex)
-{
-    switch (actionIndex) {
-#ifndef QT_NO_SHORTCUT
-    case 0:
-        return QStringList() << button()->shortcut().toString();
-#endif
-    default:
-        return QStringList();
-    }
-}
-
 
 #endif // QT_NO_TOOLBUTTON
 

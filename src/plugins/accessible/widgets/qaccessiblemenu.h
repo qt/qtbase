@@ -70,9 +70,6 @@ public:
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild( const QAccessibleInterface *child ) const;
 
-    QString actionText(int action, QAccessible::Text text, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-
 protected:
     QMenu *menu() const;
 };
@@ -93,18 +90,15 @@ public:
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild( const QAccessibleInterface *child ) const;
 
-    QString actionText(int action, QAccessible::Text text, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-
 protected:
     QMenuBar *menuBar() const;
 };
 #endif // QT_NO_MENUBAR
 
 
-
-class QAccessibleMenuItem : public QAccessibleInterface
+class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
@@ -112,7 +106,6 @@ public:
     virtual QString actionText ( int action, Text t, int child ) const;
     virtual int childAt ( int x, int y ) const;
     virtual int childCount () const;
-    virtual bool doAction ( int action, int child, const QVariantList & params = QVariantList() );
     virtual int indexOfChild ( const QAccessibleInterface * child ) const;
     virtual bool isValid () const;
 
@@ -126,11 +119,13 @@ public:
     virtual void setText ( Text t, int child, const QString & text );
     virtual State state ( int child ) const;
     virtual QString text ( Text t, int child ) const;
-    virtual int userActionCount ( int child ) const;
+
+    // QAccessibleActionInterface
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &actionName) const;
 
     QWidget *owner() const;
-
-
 protected:
     QAction *action() const;
 private:

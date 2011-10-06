@@ -389,11 +389,6 @@ public:
     virtual Role role(int child = 0) const = 0;
     virtual State state(int child = 0) const = 0;
 
-    // action
-    virtual int userActionCount(int child = 0) const = 0;
-    virtual QString actionText(int action, Text t, int child = 0) const = 0;
-    virtual bool doAction(int action, int child = 0, const QVariantList &params = QVariantList()) = 0;
-
     virtual QVariant invokeMethod(Method method, int child = 0,
                           const QVariantList &params = QVariantList());
 

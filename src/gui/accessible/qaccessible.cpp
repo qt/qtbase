@@ -1061,39 +1061,6 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn int QAccessibleInterface::userActionCount(int child) const
-
-    Returns the number of custom actions of the object, or of the
-    object's child if \a child is not 0.
-
-    The \c Action type enumerates predefined actions: these
-    are not included in the returned value.
-
-    \sa actionText(), doAction()
-*/
-
-/*!
-    \fn QString QAccessibleInterface::actionText(int action, Text t, int child) const
-
-    Returns the text property \a t of the action \a action supported by
-    the object, or of the object's child if \a child is not 0.
-
-    \sa text(), userActionCount()
-*/
-
-/*!
-    \fn bool QAccessibleInterface::doAction(int action, int child, const QVariantList &params)
-
-    Asks the object, or the object's \a child if \a child is not 0, to
-    execute \a action using the parameters, \a params. Returns true if
-    the action could be executed; otherwise returns false.
-
-    \a action can be a predefined or a custom action.
-
-    \sa userActionCount(), actionText()
-*/
-
-/*!
     \fn QColor QAccessibleInterface::backgroundColor()
     \internal
 */

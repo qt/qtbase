@@ -326,17 +326,24 @@ friend class QAbstractItemView;
 friend class QAbstractItemViewPrivate;
 };
 
-class Q_GUI_EXPORT QAccessibleActionInterface : public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleActionInterface: public QAccessible2Interface
 {
 public:
     inline QAccessible2Interface *qAccessibleActionCastHelper() { return this; }
 
-    virtual int actionCount() = 0;
-    virtual void doAction(int actionIndex) = 0;
-    virtual QString localizedDescription(int actionIndex) = 0;
-    virtual QString name(int actionIndex) = 0;
-    virtual QString localizedName(int actionIndex) = 0;
-    virtual QStringList keyBindings(int actionIndex) = 0;
+    virtual QStringList actionNames() const = 0;
+    virtual QString localizedActionName(const QString &name) const;
+    virtual QString localizedActionDescription(const QString &name) const;
+    virtual void doAction(const QString &actionName) = 0;
+    virtual QStringList keyBindingsForAction(const QString &actionName) const = 0;
+
+    static const QString PressAction;
+    static const QString IncreaseAction;
+    static const QString DecreaseAction;
+    static const QString ShowMenuAction;
+    static const QString SetFocusAction;
+    static const QString CheckAction;
+    static const QString UncheckAction;
 };
 
 class Q_GUI_EXPORT QAccessibleImageInterface : public QAccessible2Interface

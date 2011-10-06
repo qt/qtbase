@@ -58,7 +58,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
-
+#include <QtGui/qaccessible2.h>
 #include <OleAcc.h>
 
 //#include <uiautomationcoreapi.h>
@@ -949,27 +949,35 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispPa
 */
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accDoDefaultAction(VARIANT varID)
 {
+    Q_UNUSED(varID);
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
 
-    return accessible->doAction(DefaultAction, varID.lVal, QVariantList()) ? S_OK : S_FALSE;
+    if (QAccessibleActionInterface *actionIface = accessible->actionInterface()) {
+        const QString def = actionIface->actionNames().value(0);
+        if (!def.isEmpty()) {
+            actionIface->doAction(def);
+            return S_OK;
+        }
+    }
+    return S_FALSE;
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDefaultAction(VARIANT varID, BSTR* pszDefaultAction)
 {
+    Q_UNUSED(varID);
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString def = accessible->actionText(DefaultAction, Name, varID.lVal);
-    if (def.isEmpty()) {
-        *pszDefaultAction = 0;
-        return S_FALSE;
+    *pszDefaultAction = 0;
+    if (QAccessibleActionInterface *actionIface = accessible->actionInterface()) {
+        const QString def = actionIface->actionNames().value(0);
+        if (!def.isEmpty())
+            *pszDefaultAction = QStringToBSTR(def);
     }
-
-    *pszDefaultAction = QStringToBSTR(def);
-    return S_OK;
+    return *pszDefaultAction ? S_OK : S_FALSE;
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, BSTR* pszDescription)
@@ -1011,18 +1019,21 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelpTopic(BSTR *, VARIANT, 
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT varID, BSTR *pszKeyboardShortcut)
 {
+    Q_UNUSED(varID);
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString sc = accessible->text(Accelerator, varID.lVal);
-    if (sc.size()) {
-        *pszKeyboardShortcut = QStringToBSTR(sc);
-        return S_OK;
-    }
-
     *pszKeyboardShortcut = 0;
-    return S_FALSE;
+    if (QAccessibleActionInterface *actionIface = accessible->actionInterface()) {
+        const QString def = actionIface->actionNames().value(0);
+        if (!def.isEmpty()) {
+            const QString keyBoardShortCut = actionIface->keyBindingsForAction(def).value(0);
+            if (!keyBoardShortCut.isEmpty())
+                *pszKeyboardShortcut = QStringToBSTR(keyBoardShortCut);
+        }
+    }
+    return *pszKeyboardShortcut ? S_OK : S_FALSE;
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* pszName)
@@ -1106,6 +1117,10 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
 
     bool res = false;
 
+/*
+  ### Check for accessibleTableInterface() or accessibleTextInterface()
+
+  ### and if there are no ia2 interfaces we should do nothing??
     if (flagsSelect & SELFLAG_TAKEFOCUS)
         res = accessible->doAction(SetFocus, varID.lVal, QVariantList());
     if (flagsSelect & SELFLAG_TAKESELECTION) {
@@ -1118,7 +1133,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
         res = accessible->doAction(AddToSelection, varID.lVal, QVariantList());
     if (flagsSelect & SELFLAG_REMOVESELECTION)
         res = accessible->doAction(RemoveSelection, varID.lVal, QVariantList());
-
+*/
     return res ? S_OK : S_FALSE;
 }
 

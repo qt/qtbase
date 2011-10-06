@@ -43,6 +43,7 @@
 #define QACCESSIBLEOBJECT_H
 
 #include "qaccessible.h"
+#include "qaccessible2.h"
 
 QT_BEGIN_HEADER
 
@@ -67,11 +68,6 @@ public:
     QRect rect(int child = 0) const;
     void setText(Text t, int child, const QString &text);
 
-    // actions
-    int userActionCount(int child = 0) const;
-    bool doAction(int action, int child = 0, const QVariantList &params = QVariantList());
-    QString actionText(int action, Text t, int child = 0) const;
-
 protected:
     virtual ~QAccessibleObject();
 
@@ -82,6 +78,7 @@ private:
 
 class Q_GUI_EXPORT QAccessibleApplication : public QAccessibleObject
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     QAccessibleApplication();
 
@@ -101,11 +98,6 @@ public:
     QString text(Text t, int child = 0) const;
     Role role(int child = 0) const;
     State state(int child = 0) const;
-
-    // actions
-    int userActionCount(int child = 0) const;
-    bool doAction(int action, int child = 0, const QVariantList &params = QVariantList());
-    QString actionText(int action, Text t, int child = 0) const;
 };
 
 #endif // QT_NO_ACCESSIBILITY

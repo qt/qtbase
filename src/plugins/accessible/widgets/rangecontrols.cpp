@@ -88,14 +88,6 @@ QString QAccessibleAbstractSpinBox::text(Text t, int child) const
     return QAccessibleWidget::text(t, 0);
 }
 
-bool QAccessibleAbstractSpinBox::doAction(int action, int child, const QVariantList &params)
-{
-    Q_UNUSED(child)
-    if (!widget()->isEnabled())
-        return false;
-    return QAccessibleWidget::doAction(action, 0, params);
-}
-
 QVariant QAccessibleAbstractSpinBox::currentValue()
 {
     QVariant result = abstractSpinBox()->property("value");
@@ -166,14 +158,6 @@ QSpinBox *QAccessibleSpinBox::spinBox() const
     return qobject_cast<QSpinBox*>(object());
 }
 
-bool QAccessibleSpinBox::doAction(int action, int child, const QVariantList &params)
-{
-    Q_UNUSED(child)
-    if (!widget()->isEnabled())
-        return false;
-
-    return QAccessibleAbstractSpinBox::doAction(action, 0, params);
-}
 
 // ================================== QAccessibleDoubleSpinBox ==================================
 QAccessibleDoubleSpinBox::QAccessibleDoubleSpinBox(QWidget *widget)
@@ -274,23 +258,6 @@ QString QAccessibleSlider::text(Text t, int child) const
         return QString::number(slider()->value());
 
     return QAccessibleAbstractSlider::text(t, child);
-}
-
-/*!
-    \fn int QAccessibleSlider::defaultAction(int child) const
-
-    Returns the default action for the given \a child. The base class
-    implementation returns 0.
-*/
-int QAccessibleSlider::defaultAction(int /*child*/) const
-{
-    return 0;
-}
-
-/*! \internal */
-QString QAccessibleSlider::actionText(int /*action*/, Text /*t*/, int /*child*/) const
-{
-    return QLatin1String("");
 }
 
 QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)
