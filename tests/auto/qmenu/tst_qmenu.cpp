@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qapplication.h>
 #include <QPushButton>
@@ -68,14 +67,11 @@ class tst_QMenu : public QObject
 
 public:
     tst_QMenu();
-    virtual ~tst_QMenu();
-
 
 public slots:
     void initTestCase();
     void cleanupTestCase();
     void init();
-    void cleanup();
 private slots:
     void getSetCheck();
     void addActionsAndClear();
@@ -151,29 +147,22 @@ tst_QMenu::tst_QMenu()
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
 }
 
-tst_QMenu::~tst_QMenu()
+void tst_QMenu::initTestCase()
 {
-
-}
-
-void
-tst_QMenu::initTestCase()
-{
-    for(int i = 0; i < num_builtins; i++)
+    for (int i = 0; i < num_builtins; i++)
         builtins[i] = 0;
-    for(int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
         menus[i] = new QMenu;
         QObject::connect(menus[i], SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
         QObject::connect(menus[i], SIGNAL(hovered(QAction*)), this, SLOT(onHighlighted(QAction*)));
     }
 }
 
-void
-tst_QMenu::cleanupTestCase()
+void tst_QMenu::cleanupTestCase()
 {
-    for(int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++)
         menus[i]->clear();
-    for(int i = 0; i < num_builtins; i++) {
+    for (int i = 0; i < num_builtins; i++) {
         bool menuAction = false;
         for (int j = 0; j < 2; ++j)
             if (menus[j]->menuAction() == builtins[i])
@@ -185,32 +174,25 @@ tst_QMenu::cleanupTestCase()
     delete menus[1];
 }
 
-void
-tst_QMenu::init()
+void tst_QMenu::init()
 {
     activated = highlighted = 0;
     lastMenu = 0;
 }
 
-void
-tst_QMenu::cleanup()
+void tst_QMenu::createActions()
 {
-}
-
-void
-tst_QMenu::createActions()
-{
-    if(!builtins[0])
+    if (!builtins[0])
         builtins[0] = new QAction("New", 0);
     menus[0]->addAction(builtins[0]);
 
-    if(!builtins[1]) {
+    if (!builtins[1]) {
         builtins[1] = new QAction(0);
         builtins[1]->setSeparator(true);
     }
     menus[0]->addAction(builtins[1]);
 
-    if(!builtins[2]) {
+    if (!builtins[2]) {
         builtins[2] = menus[1]->menuAction();
         builtins[2]->setText("&Open..");
         builtins[8] = new QAction("Close", 0);
@@ -220,40 +202,38 @@ tst_QMenu::createActions()
     }
     menus[0]->addAction(builtins[2]);
 
-    if(!builtins[3])
+    if (!builtins[3])
         builtins[3] = new QAction("Open &as..", 0);
     menus[0]->addAction(builtins[3]);
 
-    if(!builtins[4]) {
+    if (!builtins[4]) {
         builtins[4] = new QAction("Save", 0);
         builtins[4]->setEnabled(false);
     }
     menus[0]->addAction(builtins[4]);
 
-    if(!builtins[5])
+    if (!builtins[5])
         builtins[5] = new QAction("Sa&ve as..", 0);
     menus[0]->addAction(builtins[5]);
 
-    if(!builtins[6]) {
+    if (!builtins[6]) {
         builtins[6] = new QAction(0);
         builtins[6]->setSeparator(true);
     }
     menus[0]->addAction(builtins[6]);
 
-    if(!builtins[7])
+    if (!builtins[7])
         builtins[7] = new QAction("Prin&t", 0);
     menus[0]->addAction(builtins[7]);
 }
 
-void
-tst_QMenu::onHighlighted(QAction *action)
+void tst_QMenu::onHighlighted(QAction *action)
 {
     highlighted = action;
     lastMenu = qobject_cast<QMenu*>(sender());
 }
 
-void
-tst_QMenu::onActivated(QAction *action)
+void tst_QMenu::onActivated(QAction *action)
 {
     activated = action;
     lastMenu = qobject_cast<QMenu*>(sender());
@@ -264,19 +244,16 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
     statustip=s;
 }
 
-void tst_QMenu::populateMenu(){
+void tst_QMenu::populateMenu()
+{
     //just adds 3 dummy actions and a separator.
-        lastMenu->addAction("Foo");
-        lastMenu->addAction("Bar");
-        lastMenu->addAction("FooBar");
-        lastMenu->addSeparator();
-
+    lastMenu->addAction("Foo");
+    lastMenu->addAction("Bar");
+    lastMenu->addAction("FooBar");
+    lastMenu->addSeparator();
 }
 
-
-//actual tests
-void
-tst_QMenu::addActionsAndClear()
+void tst_QMenu::addActionsAndClear()
 {
 #ifdef QT_SOFTKEYS_ENABLED
     // Softkeys add extra "Select" and "Back" actions to menu by default.
@@ -331,8 +308,7 @@ void tst_QMenu::mouseActivation()
 }
 #endif
 
-void
-tst_QMenu::keyboardNavigation_data()
+void tst_QMenu::keyboardNavigation_data()
 {
     QTest::addColumn<int>("key");
     QTest::addColumn<int>("expected_action");
@@ -364,8 +340,7 @@ tst_QMenu::keyboardNavigation_data()
 #endif
 }
 
-void
-tst_QMenu::keyboardNavigation()
+void tst_QMenu::keyboardNavigation()
 {
     DEPENDS_ON( "addActionsAndClear" ); //if add/clear fails...
     QFETCH(int, key);
@@ -375,7 +350,7 @@ tst_QMenu::keyboardNavigation()
     QFETCH(bool, expected_activated);
     QFETCH(bool, expected_highlighted);
 
-    if(init) {
+    if (init) {
         lastMenu = menus[0];
         lastMenu->clear();
         createActions();
@@ -383,20 +358,19 @@ tst_QMenu::keyboardNavigation()
     }
 
     QTest::keyClick(lastMenu, (Qt::Key)key);
-    if(expected_activated) {
+    if (expected_activated) {
         QCOMPARE(activated, builtins[expected_action]);
         QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
-        if(expected_highlighted)
+        if (expected_highlighted)
             QCOMPARE(menus[expected_menu]->activeAction(), highlighted);
     }
 }
 
-
 #ifdef Q_WS_MAC
 QT_BEGIN_NAMESPACE
-    extern bool qt_tab_all_widgets; // qapplication_mac.cpp
+    extern bool qt_tab_all_widgets; // from qapplication.cpp
 QT_END_NAMESPACE
 #endif
 
@@ -425,15 +399,9 @@ void tst_QMenu::focus()
     QCOMPARE(QApplication::focusWidget(), (QWidget *)&button);
     QCOMPARE(QApplication::activeWindow(), &window);
     menu.show();
-#if 0
-    QVERIFY(!button.hasFocus());
-    QCOMPARE(QApplication::focusWidget(), &menu);
-    QCOMPARE(QApplication::activeWindow(), &window);
-#else
     QVERIFY(button.hasFocus());
     QCOMPARE(QApplication::focusWidget(), (QWidget *)&button);
     QCOMPARE(QApplication::activeWindow(), &window);
-#endif
     menu.hide();
     QVERIFY(button.hasFocus());
     QCOMPARE(QApplication::focusWidget(), (QWidget *)&button);
@@ -442,16 +410,16 @@ void tst_QMenu::focus()
 
 void tst_QMenu::overrideMenuAction()
 {
-	//test the override menu action by first creating an action to which we set its menu
-	QMainWindow w;
+    //test the override menu action by first creating an action to which we set its menu
+    QMainWindow w;
 
-	QAction *aFileMenu = new QAction("&File", &w);
-	w.menuBar()->addAction(aFileMenu);
+    QAction *aFileMenu = new QAction("&File", &w);
+    w.menuBar()->addAction(aFileMenu);
 
-	QMenu *m = new QMenu(&w);
-	QAction *menuaction = m->menuAction();
-	connect(m, SIGNAL(triggered(QAction*)), SLOT(onActivated(QAction*)));
-	aFileMenu->setMenu(m); //this sets the override menu action for the QMenu
+    QMenu *m = new QMenu(&w);
+    QAction *menuaction = m->menuAction();
+    connect(m, SIGNAL(triggered(QAction*)), SLOT(onActivated(QAction*)));
+    aFileMenu->setMenu(m); //this sets the override menu action for the QMenu
     QCOMPARE(m->menuAction(), aFileMenu);
 
 #ifdef Q_WS_MAC
@@ -461,29 +429,28 @@ void tst_QMenu::overrideMenuAction()
 #endif
 
     QAction *aQuit = new QAction("Quit", &w);
-	aQuit->setShortcut(QKeySequence("Ctrl+X"));
-	m->addAction(aQuit);
+    aQuit->setShortcut(QKeySequence("Ctrl+X"));
+    m->addAction(aQuit);
 
-	w.show();
+    w.show();
     QTest::qWaitForWindowShown(&w);
     QApplication::setActiveWindow(&w);
     w.setFocus();
     QTRY_VERIFY(w.hasFocus());
 
-	//test of the action inside the menu
-	QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
+    //test of the action inside the menu
+    QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
     QTRY_COMPARE(activated, aQuit);
 
-	//test if the menu still pops out
-	QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
+    //test if the menu still pops out
+    QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
     QTRY_VERIFY(m->isVisible());
 
-	delete aFileMenu;
+    delete aFileMenu;
 
-	//after the deletion of the override menu action,
-	//the menu should have its default menu action back
-	QCOMPARE(m->menuAction(), menuaction);
-
+    //after the deletion of the override menu action,
+    //the menu should have its default menu action back
+    QCOMPARE(m->menuAction(), menuaction);
 }
 
 void tst_QMenu::statusTip()
@@ -540,7 +507,7 @@ void tst_QMenu::widgetActionFocus()
     //test if the focus is correctly handled with a QWidgetAction
     QMenu m;
     QListWidget *l = new QListWidget(&m);
-    for(int i = 1; i<3 ; i++)
+    for (int i = 1; i<3 ; i++)
         l->addItem(QString("item%1").arg(i));
     QWidgetAction *wa = new QWidgetAction(&m);
     wa->setDefaultWidget(l);
@@ -684,7 +651,6 @@ void tst_QMenu::task242454_sizeHint()
     QVERIFY(menu.sizeHint().width() > menu.fontMetrics().boundingRect(QRect(), Qt::TextSingleLine, s).width());
 }
 
-
 class Menu : public QMenu
 {
     Q_OBJECT
@@ -746,7 +712,6 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     QVERIFY((sub.geometry().left() - subMenuOffset + 5) < main.geometry().right());
 }
 
-
 void tst_QMenu::task256918_setFont()
 {
     QMenu menu;
@@ -763,18 +728,18 @@ void tst_QMenu::menuSizeHint()
     QMenu menu;
     //this is a list of arbitrary strings so that we check the geometry
     QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
-    foreach(QString str, list)
+    foreach (QString str, list)
         menu.addAction(str);
 
     int left, top, right, bottom;
     menu.getContentsMargins(&left, &top, &right, &bottom);
     const int panelWidth = menu.style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, &menu);
     const int hmargin = menu.style()->pixelMetric(QStyle::PM_MenuHMargin, 0, &menu),
-        vmargin = menu.style()->pixelMetric(QStyle::PM_MenuVMargin, 0, &menu);
+    vmargin = menu.style()->pixelMetric(QStyle::PM_MenuVMargin, 0, &menu);
 
     int maxWidth =0;
     QRect result;
-    foreach(QAction *action, menu.actions()) {
+    foreach (QAction *action, menu.actions()) {
 #ifdef QT_SOFTKEYS_ENABLED
         // Softkey actions are not widgets and have no geometry.
         if (menu.actionGeometry(action).topLeft() == QPoint(0,0))
@@ -811,7 +776,6 @@ public slots:
 public:
     bool painted;
 };
-
 
 // Mouse move related signals for Windows Mobile unavailable.
 #ifndef Q_OS_WINCE_WM
@@ -945,7 +909,6 @@ public:
             dialogActions[i] = addAction( QString("dialog %1").arg(i), dialogs + i, SLOT(exec()));
     }
 
-
     void activateAction(int index)
     {
         m_currentIndex = index;
@@ -959,7 +922,7 @@ public:
 public slots:
     void activateLastAction()
     {
-        activateAction(1); 
+        activateAction(1);
     }
 
     void checkVisibility()
@@ -969,7 +932,6 @@ public slots:
             QApplication::closeAllWindows(); //this is the end of the test
         }
     }
-
 
 private:
     QAction *dialogActions[2];
@@ -983,9 +945,7 @@ void tst_QMenu::QTBUG_10735_crashWithDialog()
 
     QTimer::singleShot(1000, &menu, SLOT(activateLastAction()));
     menu.activateAction(0);
- 
 }
-
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"
