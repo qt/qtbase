@@ -6347,7 +6347,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ]; then
         if [ "$CFG_XCB" = "no" ] && [ "$CFG_WAYLAND" = "no" ]; then
-            if [ "$ORIG_CFG_XCB" = "auto" ] && [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
+            if [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
                 echo "No QPA platform plugin enabled!"
                 echo " If you really want to build without a QPA platform plugin you must pass"
                 echo " -no-xcb and -no-wayland to configure. Doing this will produce a Qt that"
