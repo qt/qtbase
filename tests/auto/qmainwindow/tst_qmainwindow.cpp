@@ -77,8 +77,10 @@ private slots:
     void setIconSize();
     void toolButtonStyle();
     void setToolButtonStyle();
+#ifndef Q_WS_WINCE_WM
     void menuBar();
     void setMenuBar();
+#endif
     void statusBar();
     void setStatusBar();
     void centralWidget();
@@ -544,6 +546,8 @@ void tst_QMainWindow::toolButtonStyle()
 void tst_QMainWindow::setToolButtonStyle()
 { DEPENDS_ON("toolButtonStyle()"); }
 
+// With native menubar integration on Windows Mobile the menubar is not a child
+#ifndef Q_WS_WINCE_WM
 void tst_QMainWindow::menuBar()
 {
     {
@@ -559,9 +563,6 @@ void tst_QMainWindow::menuBar()
         mw.setMenuBar(mb1);
         QVERIFY(mw.menuBar() != 0);
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb1);
-#ifdef Q_WS_WINCE_WM
-        QSKIP("With native menubar integration the menubar is not a child", SkipSingle);
-#endif
         QCOMPARE(mb1->parentWidget(), (QWidget *)&mw);
 
         mw.setMenuBar(0);
@@ -633,6 +634,7 @@ void tst_QMainWindow::menuBar()
 
 void tst_QMainWindow::setMenuBar()
 { DEPENDS_ON("menuBar()"); }
+#endif
 
 void tst_QMainWindow::statusBar()
 {

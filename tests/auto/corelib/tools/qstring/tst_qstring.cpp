@@ -873,10 +873,8 @@ void tst_QString::STL()
     QVERIFY( !stdstr3.length() );
 #endif
 
-//skip test if glibc is not compiled with wide character support
-#if (defined Q_CC_GNU && !defined _GLIBCPP_USE_WCHAR_T) || defined QT_NO_STL_WCHAR
-    QSKIP( "Not tested without wide character support", SkipAll);
-#else
+// Skip the rest of the test if glibc is not compiled with wide character support
+#if !(defined Q_CC_GNU && !defined _GLIBCPP_USE_WCHAR_T) && !defined QT_NO_STL_WCHAR
     const wchar_t arr[] = {'h', 'e', 'l', 'l', 'o', 0};
     QStdWString stlStr = arr;
 

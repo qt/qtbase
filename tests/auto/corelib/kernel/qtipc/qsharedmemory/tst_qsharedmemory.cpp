@@ -325,7 +325,11 @@ void tst_QSharedMemory::attach_data()
 
     QTest::newRow("null key") << QString() << false << QSharedMemory::KeyError;
     QTest::newRow("doesn't exists") << QString("doesntexists") << false << QSharedMemory::NotFound;
+
+    // HPUX doesn't allow for multiple attaches per process.
+#ifndef Q_OS_HPUX
     QTest::newRow("already exists") << QString(EXISTING_SHARE) << true << QSharedMemory::NoError;
+#endif
 }
 
 /*!
@@ -336,11 +340,7 @@ void tst_QSharedMemory::attach()
     QFETCH(QString, key);
     QFETCH(bool, exists);
     QFETCH(QSharedMemory::SharedMemoryError, error);
-#ifdef Q_OS_HPUX
-    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("already exists")) {
-        QSKIP("HPUX doesn't allow for multiple attaches per process", SkipSingle);
-    }
-#endif
+
     QSharedMemory sm(key);
     QCOMPARE(sm.attach(), exists);
     QCOMPARE(sm.isAttached(), exists);

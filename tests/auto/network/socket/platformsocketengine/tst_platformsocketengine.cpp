@@ -656,12 +656,8 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     int available;
     QByteArray response;
 
-#if defined Q_OS_HPUX
-    QSKIP("Native OOB data test doesn't work on HP-UX.", SkipAll);
-#elif defined (Q_OS_WINCE)
-    QSKIP("Native OOB data test doesn't work on WinCE.", SkipAll);
-#endif
-
+    // Native OOB data test doesn't work on HP-UX or WinCE
+#if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
     // The server sends an urgent message
     msg = 'Q';
     QCOMPARE(int(::send(socketDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
@@ -686,6 +682,7 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     response.resize(available);
     QCOMPARE(serverSocket.read(response.data(), response.size()), qint64(1));
     QCOMPARE(response.at(0), msg);
+#endif
 }
 
 QTEST_MAIN(tst_PlatformSocketEngine)

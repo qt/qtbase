@@ -67,7 +67,9 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
+#ifndef Q_WS_WIN
     void exactMatch();
+#endif
     void compare();
     void resolve();
     void resetFont();
@@ -148,6 +150,8 @@ void tst_QFont::cleanup()
 // This will be executed immediately after each test is run.
 }
 
+// Exact matching on windows misses a lot because of the sample chars.
+#ifndef Q_WS_WIN
 void tst_QFont::exactMatch()
 {
     QFont font;
@@ -155,11 +159,6 @@ void tst_QFont::exactMatch()
     // Check if a non-existing font hasn't an exact match
     font = QFont( "BogusFont", 33 );
     QVERIFY( !font.exactMatch() );
-
-#ifdef Q_WS_WIN
-    QSKIP("Exact matching on windows misses a lot because of the sample chars", SkipAll);
-    return;
-#endif
 
 #ifdef Q_WS_X11
     QVERIFY(QFont("sans").exactMatch());
@@ -309,6 +308,7 @@ void tst_QFont::exactMatch()
         }
     }
 }
+#endif
 
 void tst_QFont::italicOblique()
 {

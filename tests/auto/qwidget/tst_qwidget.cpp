@@ -181,7 +181,9 @@ private slots:
     void palettePropagation();
     void palettePropagation2();
     void enabledPropagation();
+#ifndef QT_NO_DRAGANDDROP
     void acceptDropsPropagation();
+#endif
     void isEnabledTo();
     void visible();
     void visible_setWindowOpacity();
@@ -193,26 +195,39 @@ private slots:
     void focusChainOnHide();
     void focusChainOnReparent();
     void setTabOrder();
+#ifdef Q_WS_WIN
     void activation();
+#endif
     void reparent();
+#ifndef Q_WS_X11
     void windowState();
+#endif
     void showMaximized();
     void showFullScreen();
     void showMinimized();
     void showMinimizedKeepsFocus();
+#ifndef Q_WS_QWS
     void icon();
+#endif
     void hideWhenFocusWidgetIsChild();
+#ifndef Q_OS_IRIX
     void normalGeometry();
+#endif
     void setGeometry();
+#ifndef Q_OS_WINCE
     void windowOpacity();
+#endif
     void raise();
     void lower();
+#ifndef QT_MAC_USE_COCOA
     void stackUnder();
+#endif
     void testContentsPropagation();
+#ifndef Q_OS_IRIX
     void saveRestoreGeometry();
-
     void restoreVersion1Geometry_data();
     void restoreVersion1Geometry();
+#endif
 
     void widgetAt();
 #ifdef Q_WS_MAC
@@ -251,19 +266,25 @@ private slots:
     void scroll();
 #endif
 
-    // tests QWidget::setGeometry() on windows only
+#ifndef Q_WS_X11
+    // tests QWidget::setGeometry()
     void setWindowGeometry_data();
     void setWindowGeometry();
+#endif
 
-    // tests QWidget::move() and resize() on windows only
+#if !defined(Q_WS_X11) && !defined(Q_OS_IRIX)
+    // tests QWidget::move() and resize()
     void windowMoveResize_data();
     void windowMoveResize();
+#endif
 
     void moveChild_data();
     void moveChild();
     void showAndMoveChild();
 
+#ifndef QT_MAC_USE_COCOA
     void subtractOpaqueSiblings();
+#endif
 
 #ifdef Q_WS_WIN
     void getDC();
@@ -292,7 +313,9 @@ private slots:
     void render_task188133();
     void render_task211796();
     void render_task217815();
+#ifndef Q_OS_WINCE
     void render_windowOpacity();
+#endif
     void render_systemClip();
     void render_systemClip2_data();
     void render_systemClip2();
@@ -303,12 +326,16 @@ private slots:
 
     void setContentsMargins();
 
+#ifndef Q_OS_IRIX
     void moveWindowInShowEvent_data();
     void moveWindowInShowEvent();
+#endif
 
     void repaintWhenChildDeleted();
     void hideOpaqueChildWhileHidden();
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
     void updateWhileMinimized();
+#endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     void alienWidgets();
 #endif
@@ -317,7 +344,9 @@ private slots:
     void updateGeometry();
     void updateGeometry_data();
     void sendUpdateRequestImmediately();
+#ifndef Q_OS_IRIX
     void doubleRepaint();
+#endif
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
     void opaqueChildren();
@@ -353,7 +382,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
@@ -367,17 +396,23 @@ private slots:
     void inputFocus_task257832();
 
     void focusWidget_task254563();
+#ifndef Q_OS_WINCE_WM
     void rectOutsideCoordinatesLimit_task144779();
+#endif
     void setGraphicsEffect();
 
+#ifdef QT_BUILD_INTERNAL
     void destroyBackingStore();
+#endif
 
     void activateWindow();
 
     void openModal_taskQTBUG_5804();
 
     void focusProxyAndInputMethods();
+#ifdef QT_BUILD_INTERNAL
     void scrollWithoutBackingStore();
+#endif
 
     void taskQTBUG_7532_tabOrderWithFocusProxy();
     void movedAndResizedAttributes();
@@ -1077,11 +1112,10 @@ void tst_QWidget::enabledPropagation()
     QVERIFY( !grandChildWidget->isEnabled() );
 }
 
+// Drag'n drop disabled in this build.
+#ifndef QT_NO_DRAGANDDROP
 void tst_QWidget::acceptDropsPropagation()
 {
-#ifdef QT_NO_DRAGANDDROP
-    QSKIP("Drag'n drop disabled in this build", SkipAll);
-#else
     QWidget *childWidget = new QWidget(testWidget);
     childWidget->show();
     QVERIFY(!testWidget->acceptDrops());
@@ -1115,7 +1149,6 @@ void tst_QWidget::acceptDropsPropagation()
     QVERIFY(grandChildWidget->acceptDrops());
     QVERIFY(grandChildWidget->testAttribute(Qt::WA_DropSiteRegistered));
 
-
     grandChildWidget->setAcceptDrops(false);
     QVERIFY(!grandChildWidget->testAttribute(Qt::WA_DropSiteRegistered));
     testWidget->setAcceptDrops(true);
@@ -1125,8 +1158,8 @@ void tst_QWidget::acceptDropsPropagation()
     QVERIFY(childWidget->acceptDrops());
     QVERIFY(!grandChildWidget->acceptDrops());
     QVERIFY(grandChildWidget->testAttribute(Qt::WA_DropSiteRegistered));
-#endif
 }
+#endif
 
 void tst_QWidget::isEnabledTo()
 {
@@ -1702,11 +1735,9 @@ void tst_QWidget::setTabOrder()
     QVERIFY(firstEdit->hasFocus());
 }
 
+#ifdef Q_WS_WIN
 void tst_QWidget::activation()
 {
-#if !defined(Q_WS_WIN)
-    QSKIP("This test is Windows-only.", SkipAll);
-#endif
     Q_CHECK_PAINTEVENTS
 
 #if defined(Q_OS_WINCE)
@@ -1751,13 +1782,12 @@ void tst_QWidget::activation()
     QTest::qWait(waitTime);
     QVERIFY(qApp->activeWindow() == &widget1);
 }
+#endif
 
+// Many window managers do not support window state properly, which causes this test to fail.
+#ifndef Q_WS_X11
 void tst_QWidget::windowState()
 {
-#ifdef Q_WS_X11
-    QSKIP("Many window managers do not support window state properly, which causes this "
-         "test to fail.", SkipAll);
-#else
 #ifdef Q_OS_WINCE_WM
     QPoint pos(500, 500);
     QSize size(200, 200);
@@ -1874,8 +1904,8 @@ void tst_QWidget::windowState()
 
     QTRY_COMPARE(widget1.pos(), pos);
     QTRY_COMPARE(widget1.size(), size);
-#endif
 }
+#endif
 
 void tst_QWidget::showMaximized()
 {
@@ -2291,6 +2321,7 @@ void tst_QWidget::reparent()
 #endif
     QTRY_COMPARE(childTLW.pos(), tlwPos);
 
+    // This following part of the test only makes sense on Windows.
 #ifdef Q_WS_WIN
     QWidget childTLWChild(&childTLW);
     childTLWChild.setObjectName("childTLWChild");
@@ -2338,16 +2369,13 @@ void tst_QWidget::reparent()
 
     QVERIFY(IsWindow(grandChildTLW.winId()));
     QVERIFY(IsWindow(grandChildTLWChild.winId()));
-#else
-    QSKIP("This test makes only sense on Windows", SkipAll);
 #endif
 }
 
+// Qt/Embedded does it differently.
+#ifndef Q_WS_QWS
 void tst_QWidget::icon()
 {
-#if defined(Q_WS_QWS)
-    QSKIP("Qt/Embedded does it differently", SkipAll);
-#else
     QPixmap p(20,20);
     p.fill(Qt::red);
     testWidget->setWindowIcon(p);
@@ -2359,8 +2387,8 @@ void tst_QWidget::icon()
     QVERIFY(!testWidget->windowIcon().isNull());
     testWidget->showNormal();
     QVERIFY(!testWidget->windowIcon().isNull());
-#endif
 }
+#endif
 
 void tst_QWidget::hideWhenFocusWidgetIsChild()
 {
@@ -2400,11 +2428,10 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     delete parentWidget;
 }
 
+// 4DWM issues on IRIX makes this test fail.
+#ifndef Q_OS_IRIX
 void tst_QWidget::normalGeometry()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#endif
     QWidget parent;
     parent.setWindowTitle("NormalGeometry parent");
     QWidget *child = new QWidget(&parent);
@@ -2504,7 +2531,7 @@ void tst_QWidget::normalGeometry()
     QTest::qWait(10);
     QTRY_COMPARE(parent.normalGeometry(), geom);
 }
-
+#endif
 
 void tst_QWidget::setGeometry()
 {
@@ -2533,11 +2560,10 @@ void tst_QWidget::setGeometry()
 
 }
 
+// Windows CE does not support windowOpacity.
+#ifndef Q_OS_WINCE
 void tst_QWidget::windowOpacity()
 {
-#ifdef Q_OS_WINCE
-    QSKIP( "Windows CE does not support windowOpacity", SkipAll);
-#endif
     QWidget widget;
     QWidget child(&widget);
 
@@ -2566,6 +2592,7 @@ void tst_QWidget::windowOpacity()
     child.setWindowOpacity(-1.0);
     QCOMPARE(child.windowOpacity(), 1.0);
 }
+#endif
 
 class UpdateWidget : public QWidget
 {
@@ -2747,11 +2774,10 @@ void tst_QWidget::raise()
     }
 }
 
+// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
+#ifndef QT_MAC_USE_COCOA
 void tst_QWidget::lower()
 {
-#ifdef QT_MAC_USE_COCOA
-    QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.", SkipAll);
-#endif
     QWidget *parent = new QWidget(0);
     QList<UpdateWidget *> allChildren;
 
@@ -2811,12 +2837,12 @@ void tst_QWidget::lower()
 
     delete parent;
 }
+#endif
 
+// Cocoa has no Z-Order for views, we hack it, but it results in paint events.
+#ifndef QT_MAC_USE_COCOA
 void tst_QWidget::stackUnder()
 {
-#ifdef QT_MAC_USE_COCOA
-    QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.", SkipAll);
-#endif
     QTest::qWait(10);
     QWidget *parent = new QWidget(0);
     QList<UpdateWidget *> allChildren;
@@ -2902,6 +2928,7 @@ void tst_QWidget::stackUnder()
 
     delete parent;
 }
+#endif
 
 void drawPolygon(QPaintDevice *dev, int w, int h)
 {
@@ -2974,11 +3001,10 @@ void tst_QWidget::testContentsPropagation()
     Test that saving and restoring window geometry with
     saveGeometry() and restoreGeometry() works.
 */
+// 4DWM issues on IRIX makes this test fail.
+#ifndef Q_OS_IRIX
 void tst_QWidget::saveRestoreGeometry()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#endif
     const QPoint position(100, 100);
     const QSize size(200, 200);
 
@@ -3105,7 +3131,10 @@ void tst_QWidget::saveRestoreGeometry()
         QTRY_COMPARE(widget.geometry(), geom);
     }
 }
+#endif
 
+// 4DWM issues on IRIX makes this test fail.
+#ifndef Q_OS_IRIX
 void tst_QWidget::restoreVersion1Geometry_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -3128,10 +3157,6 @@ void tst_QWidget::restoreVersion1Geometry_data()
 */
 void tst_QWidget::restoreVersion1Geometry()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#endif
-
     QFETCH(QString, fileName);
     QFETCH(uint, expectedWindowState);
     QFETCH(QPoint, expectedPosition);
@@ -3200,8 +3225,8 @@ void tst_QWidget::restoreVersion1Geometry()
         f.close();
     }
 #endif
-
 }
+#endif
 
 void tst_QWidget::widgetAt()
 {
@@ -3844,15 +3869,16 @@ void tst_QWidget::setMinimumSize()
     QCOMPARE(w.size(), defaultSize + QSize(200, 200));
     QVERIFY(!w.testAttribute(Qt::WA_Resized));
 
-#ifdef Q_OS_WINCE
-    QSKIP("Setting a minimum size larger than the desktop does not work", SkipAll);
-#endif
+    // Setting a minimum size larger than the desktop does not work on WinCE,
+    // so skip this part of the test.
+#ifndef Q_OS_WINCE
     QSize nonDefaultSize = defaultSize + QSize(5,5);
     w.setMinimumSize(nonDefaultSize);
     w.show();
     QTest::qWait(50);
     QVERIFY(w.height() >= nonDefaultSize.height());
     QVERIFY(w.width() >= nonDefaultSize.width());
+#endif
 }
 
 void tst_QWidget::setMaximumSize()
@@ -4541,6 +4567,9 @@ void tst_QWidget::qobject_castInDestroyedSlot()
 
 Q_DECLARE_METATYPE(QList<QRect>)
 
+// Since X11 WindowManager operations are all async, and we have no way to know if the window
+// manager has finished playing with the window geometry, this test can't be reliable on X11.
+#ifndef Q_WS_X11
 void tst_QWidget::setWindowGeometry_data()
 {
     QTest::addColumn<QList<QRect> >("rects");
@@ -4579,12 +4608,7 @@ void tst_QWidget::setWindowGeometry_data()
               << QRect(100, 50, 200, 0));
 
     QList<int> windowFlags;
-    windowFlags << 0
-                << Qt::FramelessWindowHint
-#ifdef Q_WS_X11
-                << Qt::X11BypassWindowManagerHint
-#endif
-                ;
+    windowFlags << 0 << Qt::FramelessWindowHint;
 
     foreach (QList<QRect> l, rects) {
         QRect rect = l.first();
@@ -4603,11 +4627,6 @@ void tst_QWidget::setWindowGeometry_data()
 
 void tst_QWidget::setWindowGeometry()
 {
-#ifdef Q_WS_X11
-    //Since WindowManager operation are all assync, and we have no way to know if the window
-    // manager has finished playing with the window geometry, this test can't be reliable.
-    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
-#endif
     QFETCH(QList<QRect>, rects);
     QFETCH(int, windowFlags);
     QRect rect = rects.takeFirst();
@@ -4728,6 +4747,7 @@ void tst_QWidget::setWindowGeometry()
         QTRY_COMPARE(widget.geometry(), rect);
     }
 }
+#endif
 
 #if defined (Q_WS_WIN) && !defined(Q_OS_WINCE)
 void tst_QWidget::setGeometry_win()
@@ -4748,6 +4768,10 @@ void tst_QWidget::setGeometry_win()
 }
 #endif
 
+// Since X11 WindowManager operation are all async, and we have no way to know if the window
+// manager has finished playing with the window geometry, this test can't be reliable on X11.
+// 4DWM issues on IRIX also makes this test fail.
+#if !defined(Q_WS_X11) && !defined(Q_OS_IRIX)
 void tst_QWidget::windowMoveResize_data()
 {
     setWindowGeometry_data();
@@ -4755,14 +4779,6 @@ void tst_QWidget::windowMoveResize_data()
 
 void tst_QWidget::windowMoveResize()
 {
-#ifdef Q_WS_X11
-    //Since WindowManager operation are all assync, and we have no way to know if the window
-    // manager has finished playing with the window geometry, this test can't be reliable.
-    QSKIP("Window Manager behaviour are too random for this test", SkipAll);
-#endif
-#ifdef Q_OS_IRIX
-    QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#endif
     QFETCH(QList<QRect>, rects);
     QFETCH(int, windowFlags);
 
@@ -4945,6 +4961,7 @@ void tst_QWidget::windowMoveResize()
         QTRY_COMPARE(widget.size(), rect.size());
     }
 }
+#endif
 
 class ColorWidget : public QWidget
 {
@@ -5088,11 +5105,10 @@ void tst_QWidget::showAndMoveChild()
     VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
+// Cocoa only has rect granularity.
+#ifndef QT_MAC_USE_COCOA
 void tst_QWidget::subtractOpaqueSiblings()
 {
-#ifdef QT_MAC_USE_COCOA
-    QSKIP("Cocoa only has rect granularity.", SkipAll);
-#else
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
@@ -5124,8 +5140,8 @@ void tst_QWidget::subtractOpaqueSiblings()
     QTRY_COMPARE(medium->r.translated(medium->mapTo(&w, QPoint())),
              QRegion(medium->geometry().translated(large->pos()))
              - tall->geometry());
-#endif
 }
+#endif
 
 void tst_QWidget::deleteStyle()
 {
@@ -5568,10 +5584,8 @@ void tst_QWidget::setToolTip()
     QCOMPARE(widget.toolTip(), QString());
     QCOMPARE(spy.count(), 2);
 
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Mouse over doesn't work on Windows mobile.", SkipAll);
-#endif
-
+    // Mouse over doesn't work on Windows mobile, so skip the rest of the test for that platform.
+#ifndef Q_OS_WINCE_WM
     for (int pass = 0; pass < 2; ++pass) {
         QWidget *popup = new QWidget(0, Qt::Popup);
         popup->resize(150, 50);
@@ -5596,6 +5610,7 @@ void tst_QWidget::setToolTip()
         QTest::mouseMove(popup);
         delete popup;
     }
+#endif
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
@@ -6564,12 +6579,10 @@ void tst_QWidget::render_task217815()
     QCOMPARE(widget.size(), explicitSize);
 }
 
+// Window Opacity is not supported on Windows CE.
+#ifndef Q_OS_WINCE
 void tst_QWidget::render_windowOpacity()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Window Opacity is not supported on Windows CE", SkipAll);
-#endif
-
     const qreal opacity = 0.5;
 
     { // Check that the painter opacity effects the widget drawing.
@@ -6641,6 +6654,7 @@ void tst_QWidget::render_windowOpacity()
     QCOMPARE(result, expected);
     }
 }
+#endif
 
 void tst_QWidget::render_systemClip()
 {
@@ -7047,6 +7061,8 @@ void tst_QWidget::setContentsMargins()
     QCOMPARE(newSize, label3.sizeHint());
 }
 
+// 4DWM issues on IRIX makes this test fail.
+#ifndef Q_OS_IRIX
 void tst_QWidget::moveWindowInShowEvent_data()
 {
     QTest::addColumn<QPoint>("initial");
@@ -7060,9 +7076,6 @@ void tst_QWidget::moveWindowInShowEvent_data()
 
 void tst_QWidget::moveWindowInShowEvent()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#endif
     QFETCH(QPoint, initial);
     QFETCH(QPoint, position);
 
@@ -7094,6 +7107,7 @@ void tst_QWidget::moveWindowInShowEvent()
     // it should have moved
     QCOMPARE(widget.pos(), position);
 }
+#endif
 
 void tst_QWidget::repaintWhenChildDeleted()
 {
@@ -7170,12 +7184,10 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
     QCOMPARE(child2.r, QRegion());
 }
 
+// This test doesn't make sense without support for showMinimized().
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
 void tst_QWidget::updateWhileMinimized()
 {
-#if defined(Q_OS_WINCE) || defined(Q_WS_QWS)
-   QSKIP("This test doesn't make sense without support for showMinimized()", SkipAll);
-#endif
-
     UpdateWidget widget;
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
@@ -7204,6 +7216,7 @@ void tst_QWidget::updateWhileMinimized()
     QTRY_COMPARE(widget.numPaintEvents, 1);
     QCOMPARE(widget.paintedRegion, QRegion(0, 0, 50, 50));
 }
+#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
 class PaintOnScreenWidget: public QWidget
@@ -7687,11 +7700,11 @@ void tst_QWidget::sendUpdateRequestImmediately()
     QCOMPARE(updateWidget.numUpdateRequestEvents, 1);
 }
 
+// 4DWM issues on IRIX makes this test fail.
+#ifndef Q_OS_IRIX
 void tst_QWidget::doubleRepaint()
 {
-#ifdef Q_OS_IRIX
-   QSKIP("4DWM issues on IRIX makes this test fail", SkipAll);
-#elif defined(Q_WS_MAC)
+#if defined(Q_WS_MAC)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues", SkipAll);
 #endif
@@ -7720,6 +7733,7 @@ void tst_QWidget::doubleRepaint()
    QTest::qWait(10);
    QCOMPARE(widget.numPaintEvents, 0);
 }
+#endif
 
 #ifndef Q_WS_MAC
 // This test only makes sense on the Mac when passing -graphicssystem.
@@ -8637,7 +8651,8 @@ void tst_QWidget::maskedUpdate()
     QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+// Windows Mobile has no proper cursor support, so skip this test on that platform.
+#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -8693,10 +8708,6 @@ void tst_QWidget::syntheticEnterLeave()
     QCursor::setPos(globalPos); // Enter child2 and grandChild.
     QTest::qWait(300);
 
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Windows Mobile has no proper cursor support", SkipAll);
-#endif
-
     QCOMPARE(window.numLeaveEvents, 0);
     QCOMPARE(child2->numLeaveEvents, 0);
     QCOMPARE(grandChild->numLeaveEvents, 0);
@@ -8743,12 +8754,12 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(window.numEnterEvents, 0);
     QCOMPARE(child1->numEnterEvents, 1);
 }
+#endif
 
+// Windows Mobile has no proper cursor support, so skip this test on that platform.
+#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Windows Mobile has no proper cursor support", SkipAll);
-#endif
     class SELParent : public QWidget
     {
     public:
@@ -8958,9 +8969,10 @@ void tst_QWidget::focusWidget_task254563()
     QVERIFY(top.focusWidget() != widget); //dangling pointer
 }
 
+// This test case relies on developer build (AUTOTEST_EXPORT).
+#ifdef QT_BUILD_INTERNAL
 void tst_QWidget::destroyBackingStore()
 {
-#ifdef QT_BUILD_INTERNAL
     UpdateWidget w;
     w.reset();
     w.show();
@@ -8983,10 +8995,8 @@ void tst_QWidget::destroyBackingStore()
     w.update();
     QApplication::processEvents();
     QCOMPARE(w.numPaintEvents, 2);
-#else
-    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
-#endif
 }
+#endif
 
 // Helper function
 QWidgetBackingStore* backingStore(QWidget &widget)
@@ -8999,11 +9009,10 @@ QWidgetBackingStore* backingStore(QWidget &widget)
     return backingStore;
 }
 
+// Tables of 5000 elements do not make sense on Windows Mobile.
+#ifndef Q_OS_WINCE_WM
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP( "Tables of 5000 elements do not make sense on Windows Mobile.", SkipAll);
-#endif
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
@@ -9038,6 +9047,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
     QApplication::restoreOverrideCursor();
 }
+#endif
 
 void tst_QWidget::inputFocus_task257832()
 {
@@ -9235,9 +9245,10 @@ public:
 };
 #endif
 
+// Test case relies on developer build (AUTOTEST_EXPORT).
+#ifdef QT_BUILD_INTERNAL
 void tst_QWidget::scrollWithoutBackingStore()
 {
-#ifdef QT_BUILD_INTERNAL
     scrollWidgetWBS scrollable;
     scrollable.resize(100,100);
     QLabel child(QString("@"),&scrollable);
@@ -9251,10 +9262,8 @@ void tst_QWidget::scrollWithoutBackingStore()
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
     QCOMPARE(child.pos(),QPoint(25,25));
-#else
-    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
-#endif
 }
+#endif
 
 void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
 {

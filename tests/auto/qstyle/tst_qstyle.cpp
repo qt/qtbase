@@ -141,8 +141,12 @@ private slots:
     void testCleanlooksStyle();
 #endif
     void testMacStyle();
+#ifdef Q_OS_WINCE
     void testWindowsCEStyle();
+#endif
+#ifdef Q_OS_WINCE_WM
     void testWindowsMobileStyle();
+#endif
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
@@ -577,25 +581,21 @@ void tst_QStyle::testCDEStyle()
 }
 #endif
 
+#ifdef Q_OS_WINCE
 void tst_QStyle::testWindowsCEStyle()
 {
-#if defined(Q_OS_WINCE)
     QWindowsCEStyle cstyle;
     testAllFunctions(&cstyle);
-#else
-    QSKIP("No WindowsCEStyle style", SkipAll);
-#endif
 }
+#endif
 
+#ifdef Q_OS_WINCE_WM
 void tst_QStyle::testWindowsMobileStyle()
 {
-#if defined(Q_OS_WINCE_WM)
     QWindowsMobileStyle cstyle;
     testAllFunctions(&cstyle);
-#else
-    QSKIP("No WindowsMobileStyle style", SkipAll);
-#endif
 }
+#endif
 
 // Helper class...
 

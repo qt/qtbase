@@ -150,7 +150,7 @@ private slots:
 
     void achromaticHslHue();
 
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && !defined(Q_OS_IRIX)
     void allowX11ColorNames();
     void setallowX11ColorNames();
 #endif
@@ -1469,7 +1469,8 @@ void tst_QColor::achromaticHslHue()
     QCOMPARE(hsl.hslHue(), -1);
 }
 
-#ifdef Q_WS_X11
+// This test fails on IRIX due to the gamma settings in the SGI X server.
+#if defined(Q_WS_X11) && !defined(Q_OS_IRIX)
 void tst_QColor::allowX11ColorNames()
 {
     DEPENDS_ON(setallowX11ColorNames());
@@ -1477,9 +1478,6 @@ void tst_QColor::allowX11ColorNames()
 
 void tst_QColor::setallowX11ColorNames()
 {
-#if defined(Q_OS_IRIX)
-    QSKIP("This fails due to the gamma settings in the SGI X server", SkipAll);
-#else
     RGBData x11RgbTbl[] = {
         // a few standard X11 color names
         { "DodgerBlue1", qRgb(30, 144, 255) },
@@ -1530,9 +1528,8 @@ void tst_QColor::setallowX11ColorNames()
         color.setNamedColor(colorName);
         QVERIFY(!color.isValid());
     }
-#endif // Q_OS_IRIX
 }
-#endif // Q_WS_X11
+#endif
 
 QTEST_MAIN(tst_QColor)
 #include "tst_qcolor.moc"

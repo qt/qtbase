@@ -419,12 +419,9 @@ void tst_QMenu::overrideMenuAction()
     aFileMenu->setMenu(m); //this sets the override menu action for the QMenu
     QCOMPARE(m->menuAction(), aFileMenu);
 
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, we need to create native key events to test menu action activation", SkipAll);
-#elif defined(Q_OS_WINCE)
-    QSKIP("On Windows CE, we need to create native key events to test menu action activation", SkipAll);
-#endif
-
+    // On Mac and Windows CE, we need to create native key events to test menu
+    // action activation, so skip this part of the test.
+#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
     QAction *aQuit = new QAction("Quit", &w);
     aQuit->setShortcut(QKeySequence("Ctrl+X"));
     m->addAction(aQuit);
@@ -448,6 +445,7 @@ void tst_QMenu::overrideMenuAction()
     //after the deletion of the override menu action,
     //the menu should have its default menu action back
     QCOMPARE(m->menuAction(), menuaction);
+#endif
 }
 
 void tst_QMenu::statusTip()

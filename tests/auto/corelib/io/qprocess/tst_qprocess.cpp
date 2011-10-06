@@ -170,6 +170,8 @@ private slots:
     void detachedWorkingDirectoryAndPid();
 #ifndef Q_OS_WINCE
     void switchReadChannels();
+#endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void setWorkingDirectory();
 #endif
     void startFinishStartFinish();
@@ -2188,8 +2190,9 @@ void tst_QProcess::switchReadChannels()
 
 //-----------------------------------------------------------------------------
 
-// Windows CE does not support working directory logic.
-#ifndef Q_OS_WINCE
+// Windows CE does not support working directory logic, and
+// setWorkingDirectory will chdir before starting the process on unices.
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 void tst_QProcess::setWorkingDirectory()
 {
     process = new QProcess;
@@ -2198,9 +2201,6 @@ void tst_QProcess::setWorkingDirectory()
     process->start("testSetWorkingDirectory/testSetWorkingDirectory.app");
 #else
     process->start("testSetWorkingDirectory/testSetWorkingDirectory");
-#endif
-#ifndef Q_OS_WIN
-    QSKIP("setWorkingDirectory will chdir before starting the process on unices", SkipAll);
 #endif
     QVERIFY(process->waitForFinished());
 

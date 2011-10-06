@@ -609,10 +609,10 @@ void tst_QFile::size()
         fclose(stream);
     }
 
+    // Currently low level file I/O is not well supported on Windows CE, so
+    // skip this part of the test.
+#ifndef Q_OS_WINCE
     {
-#ifdef Q_OS_WINCE
-        QSKIP("Currently low level file I/O not well supported on Windows CE", SkipSingle);
-#endif
         QFile f;
 
         int fd = QT_OPEN(filename.toLocal8Bit().constData(), QT_OPEN_RDONLY);
@@ -624,6 +624,7 @@ void tst_QFile::size()
         f.close();
         QT_CLOSE(fd);
     }
+#endif
 }
 
 void tst_QFile::sizeNoExist()

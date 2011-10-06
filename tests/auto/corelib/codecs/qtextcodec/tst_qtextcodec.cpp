@@ -55,8 +55,9 @@ class tst_QTextCodec : public QObject
     Q_OBJECT
 
 private slots:
-
+#ifndef QT_NO_CONCURRENT
     void threadSafety();
+#endif
 
     void toUnicode_data();
     void toUnicode();
@@ -1976,24 +1977,21 @@ static int loadAndConvertMIB(int mib)
 }
 
 
+#ifndef QT_NO_CONCURRENT
 void tst_QTextCodec::threadSafety()
 {
     QList<QByteArray> codecList = QTextCodec::availableCodecs();
     QList<int> mibList = QTextCodec::availableMibs();
-#ifndef QT_NO_CONCURRENT
     QThreadPool::globalInstance()->setMaxThreadCount(12);
 
     QFuture<QByteArray> res = QtConcurrent::mapped(codecList, loadAndConvert);
-
 
     QFuture<int> res2 = QtConcurrent::mapped(mibList, loadAndConvertMIB);
 
     QCOMPARE(res.results(), codecList);
     QCOMPARE(res2.results(), mibList);
-#else
-    QSKIP("This function is not yet supported with QT_NO_CONCURRENT defined.", SkipAll);
-#endif
 }
+#endif
 
 void tst_QTextCodec::invalidNames()
 {
