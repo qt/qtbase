@@ -164,6 +164,9 @@ public:
     virtual bool isSelected() const = 0;
 
     //            Gets the row and column indexes and extents of this cell accessible and whether or not it is selected.
+    //          ### Is this really needed??
+    //
+    //          ### Maybe change to QSize cellSize(), we already have accessors for the row, column and selected
     virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const = 0;
     //            Returns a reference to the accessbile of the containing table.
     virtual QAccessibleInterface* table() const = 0;

@@ -38,30 +38,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef COMUTILS_H
+#define COMUTILS_H
 
-#ifndef QWINDOWSACCESSIBILITY_H
-#define QWINDOWSACCESSIBILITY_H
+#if !defined(_WINDOWS_) && !defined(_WINDOWS_H) && !defined(__WINDOWS__)
+#error Must include windows.h first!
+#endif
 
-#include "qtwindowsglobal.h"
-#include <QtGui/QPlatformAccessibility>
+#include <ocidl.h>
+#include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
+class QVariant;
 
-class QWindowsAccessibility : public QPlatformAccessibility
+bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
+
+inline BSTR QStringToBSTR(const QString &str)
 {
-public:
-    QWindowsAccessibility();
-    static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
-    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event);
-    /*
-    virtual void setRootObject(QObject *o);
-    virtual void initialize();
-    virtual void cleanup();
-    */
-};
+    return SysAllocStringLen((OLECHAR*)str.unicode(), str.length());
+}
 
-QT_END_NAMESPACE
-QT_END_HEADER
+#endif // COMUTILS_H
 
-#endif // QWINDOWSACCESSIBILITY_H

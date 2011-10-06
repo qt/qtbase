@@ -42,104 +42,44 @@
 #include <QtCore/QtConfig>
 #ifndef QT_NO_ACCESSIBILITY
 
-
+#include "qwindowsmsaaaccessible.h"
 #include "qwindowsaccessibility.h"
-#include "qwindowscontext.h"
+#include <oleacc.h>
+#include <servprov.h>
+#include <winuser.h>
+#include "comutils.h"
 
-#include <private/qsystemlibrary_p.h>
-
+#include <QtCore/qdebug.h>
 #include <QtCore/qmap.h>
-#include <QtCore/qsettings.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qpair.h>
-#include <QtWidgets/qapplication.h>
-#include <QtWidgets/qmessagebox.h>
-#include <QtWidgets/qgraphicsitem.h>
-#include <QtWidgets/qgraphicsview.h>
+#include <QtCore/qsettings.h>
 #include <QtGui/qaccessible.h>
+#include <QtGui/qaccessible2.h>
+#include <QtGui/qguiapplication.h>
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
-#include <QtGui/qaccessible2.h>
-#include <oleacc.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qmessagebox.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId
 #define UiaRootObjectId        -25
 #endif
 
-#include <winuser.h>
-#if !defined(WINABLEAPI)
-#  if defined(Q_OS_WINCE)
-#    include <bldver.h>
-#  endif
-#  include <winable.h>
-#endif
-
-#include <oleacc.h>
 #if !defined(Q_CC_BOR) && !defined (Q_CC_GNU)
 #include <comdef.h>
 #endif
 
 #ifdef Q_OS_WINCE
-#include "qguifunctions_wince.h"
+#include "../qguifunctions_wince.h"
 #endif
 
-#include "qtwindows_additional.h"
+#include "../qtwindows_additional.h"
+
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_DEBUG
-QT_BEGIN_INCLUDE_NAMESPACE
-# include <qdebug.h>
-QT_END_INCLUDE_NAMESPACE
-static inline bool debug_accessibility()
-{
-    static signed int debugging = -1;
-    if (debugging == -1)
-        debugging = qgetenv("QT_DEBUG_ACCESSIBILITY").toInt();
-    return !!debugging;
-}
-# define accessibleDebug !debug_accessibility() ? (void)0 : qDebug
-#else
-# define accessibleDebug()
-#endif
-
-//#define DEBUG_SHOW_ATCLIENT_COMMANDS
-#if defined(DEBUG_SHOW_ATCLIENT_COMMANDS)
-void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleInterface *iface)
-{
-    QString str;
-    QDebug dbg(&str);
-    dbg << iface << QLatin1String(funcName);
-    accessibleDebug("%s", qPrintable(str));
-}
-# define accessibleDebugClientCalls(iface) accessibleDebugClientCalls_helper(Q_FUNC_INFO, iface)
-#else
-# define accessibleDebugClientCalls(iface)
-#endif
-
-
-typedef QSharedPointer<QAccessibleInterface> QAIPointer;
-
-static bool compareAccessible(QAccessibleInterface *one, QAccessibleInterface *other)
-{
-    if (one == other) return true;
-    if (!one || !other) return false;
-
-    if (one->object() && other->object() && (one->object() == other->object()))
-        return true;
-    QAIPointer onePar(one->parent());
-    QAIPointer otherPar(other->parent());
-
-    if (compareAccessible(onePar.data(), otherPar.data()))
-        return onePar->indexOfChild(one) == otherPar->indexOfChild(other);
-    return false;
-}
-
-// This stuff is used for widgets/items with no window handle:
-typedef QMap<int, QPair<QObject*,int> > NotifyMap;
-Q_GLOBAL_STATIC(NotifyMap, qAccessibleRecentSentEvents)
-static int eventNum = 0;
 
 class QWindowsEnumerate : public IEnumVARIANT
 {
@@ -249,140 +189,60 @@ HRESULT STDMETHODCALLTYPE QWindowsEnumerate::Skip(unsigned long celt)
     return S_OK;
 }
 
-/*
-*/
-class QWindowsAccessible : public IAccessible, IOleWindow
+static bool compareAccessible(QAccessibleInterface *one, QAccessibleInterface *other)
 {
-public:
-    QWindowsAccessible(QAccessibleInterface *a)
-        : ref(0), accessible(a)
-    {
-    }
+    if (one == other) return true;
+    if (!one || !other) return false;
 
-    virtual ~QWindowsAccessible()
-    {
-        delete accessible;
-    }
+    if (one->object() && other->object() && (one->object() == other->object()))
+        return true;
+    QAIPointer onePar(one->parent());
+    QAIPointer otherPar(other->parent());
 
-    /* IUnknown */
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID *);
-    ULONG STDMETHODCALLTYPE AddRef();
-    ULONG STDMETHODCALLTYPE Release();
-
-    /* IDispatch */
-    HRESULT STDMETHODCALLTYPE GetTypeInfoCount(unsigned int *);
-    HRESULT STDMETHODCALLTYPE GetTypeInfo(unsigned int, unsigned long, ITypeInfo **);
-    HRESULT STDMETHODCALLTYPE GetIDsOfNames(const _GUID &, wchar_t **, unsigned int, unsigned long, long *);
-    HRESULT STDMETHODCALLTYPE Invoke(long, const _GUID &, unsigned long, unsigned short, tagDISPPARAMS *, tagVARIANT *, tagEXCEPINFO *, unsigned int *);
-
-    /* IAccessible */
-    HRESULT STDMETHODCALLTYPE accHitTest(long xLeft, long yTop, VARIANT *pvarID);
-    HRESULT STDMETHODCALLTYPE accLocation(long *pxLeft, long *pyTop, long *pcxWidth, long *pcyHeight, VARIANT varID);
-    HRESULT STDMETHODCALLTYPE accNavigate(long navDir, VARIANT varStart, VARIANT *pvarEnd);
-    HRESULT STDMETHODCALLTYPE get_accChild(VARIANT varChildID, IDispatch** ppdispChild);
-    HRESULT STDMETHODCALLTYPE get_accChildCount(long* pcountChildren);
-    HRESULT STDMETHODCALLTYPE get_accParent(IDispatch** ppdispParent);
-
-    HRESULT STDMETHODCALLTYPE accDoDefaultAction(VARIANT varID);
-    HRESULT STDMETHODCALLTYPE get_accDefaultAction(VARIANT varID, BSTR* pszDefaultAction);
-    HRESULT STDMETHODCALLTYPE get_accDescription(VARIANT varID, BSTR* pszDescription);
-    HRESULT STDMETHODCALLTYPE get_accHelp(VARIANT varID, BSTR *pszHelp);
-    HRESULT STDMETHODCALLTYPE get_accHelpTopic(BSTR *pszHelpFile, VARIANT varChild, long *pidTopic);
-    HRESULT STDMETHODCALLTYPE get_accKeyboardShortcut(VARIANT varID, BSTR *pszKeyboardShortcut);
-    HRESULT STDMETHODCALLTYPE get_accName(VARIANT varID, BSTR* pszName);
-    HRESULT STDMETHODCALLTYPE put_accName(VARIANT varChild, BSTR szName);
-    HRESULT STDMETHODCALLTYPE get_accRole(VARIANT varID, VARIANT *pvarRole);
-    HRESULT STDMETHODCALLTYPE get_accState(VARIANT varID, VARIANT *pvarState);
-    HRESULT STDMETHODCALLTYPE get_accValue(VARIANT varID, BSTR* pszValue);
-    HRESULT STDMETHODCALLTYPE put_accValue(VARIANT varChild, BSTR szValue);
-
-    HRESULT STDMETHODCALLTYPE accSelect(long flagsSelect, VARIANT varID);
-    HRESULT STDMETHODCALLTYPE get_accFocus(VARIANT *pvarID);
-    HRESULT STDMETHODCALLTYPE get_accSelection(VARIANT *pvarChildren);
-
-    /* IOleWindow */
-    HRESULT STDMETHODCALLTYPE GetWindow(HWND *phwnd);
-    HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode);
-
-private:
-    ULONG ref;
-    QAccessibleInterface *accessible;
-
-    QAIPointer childPointer(VARIANT varID)
-    {
-        return QAIPointer(accessible->child(varID.lVal - 1));
-    }
-};
-
-static inline BSTR QStringToBSTR(const QString &str)
-{
-    BSTR bstrVal;
-
-    int wlen = str.length()+1;
-    bstrVal = SysAllocStringByteLen(0, wlen*2);
-    memcpy(bstrVal, str.unicode(), sizeof(QChar)*(wlen));
-    bstrVal[wlen] = 0;
-
-    return bstrVal;
+    if (compareAccessible(onePar.data(), otherPar.data()))
+        return onePar->indexOfChild(one) == otherPar->indexOfChild(other);
+    return false;
 }
 
-/*
-*/
-
-/*
-  IUnknown
-*/
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::QueryInterface(REFIID id, LPVOID *iface)
+#ifndef QT_NO_DEBUG
+bool debug_accessibility()
 {
-    *iface = 0;
-    if (id == IID_IUnknown)
-        *iface = (IUnknown*)(IDispatch*)this;
-    else if (id == IID_IDispatch)
-        *iface = (IDispatch*)this;
-    else if (id == IID_IAccessible)
-        *iface = (IAccessible*)this;
-    else if (id == IID_IOleWindow)
-        *iface = (IOleWindow*)this;
-    else
-        return E_NOINTERFACE;
-
-    AddRef();
-    return S_OK;
+    static int debugging = -1;
+    if (debugging == -1)
+        debugging = qgetenv("QT_DEBUG_ACCESSIBILITY").toInt();
+    return !!debugging;
 }
+#endif
 
-ULONG STDMETHODCALLTYPE QWindowsAccessible::AddRef()
+#if defined(DEBUG_SHOW_ATCLIENT_COMMANDS)
+void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleInterface *iface)
 {
-    return ++ref;
+    QString str;
+    QDebug dbg(&str);
+    dbg << iface << QLatin1String(funcName);
+    accessibleDebug("%s", qPrintable(str));
 }
-
-ULONG STDMETHODCALLTYPE QWindowsAccessible::Release()
-{
-    if (!--ref) {
-        delete this;
-        return 0;
-    }
-    return ref;
-}
+#endif
 
 /*
   IDispatch
 */
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetTypeInfoCount(unsigned int * pctinfo)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetTypeInfoCount(unsigned int * pctinfo)
 {
     // We don't use a type library
     *pctinfo = 0;
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetTypeInfo(unsigned int, unsigned long, ITypeInfo **pptinfo)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetTypeInfo(unsigned int, unsigned long, ITypeInfo **pptinfo)
 {
     // We don't use a type library
     *pptinfo = 0;
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetIDsOfNames(const _GUID &, wchar_t **rgszNames, unsigned int, unsigned long, long *rgdispid)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetIDsOfNames(const _GUID &, wchar_t **rgszNames, unsigned int, unsigned long, long *rgdispid)
 {
 #if !defined(Q_CC_BOR) && !defined(Q_CC_GNU)
     // PROPERTIES:  Hierarchical
@@ -440,7 +300,13 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetIDsOfNames(const _GUID &, wchar
 #endif
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::Invoke(long dispIdMember, const _GUID &, unsigned long, unsigned short wFlags, tagDISPPARAMS *pDispParams, tagVARIANT *pVarResult, tagEXCEPINFO *, unsigned int *)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::Invoke(long dispIdMember,
+                                                     const _GUID &,
+                                                     unsigned long,
+                                                     unsigned short wFlags,
+                                                     tagDISPPARAMS *pDispParams,
+                                                     tagVARIANT *pVarResult,
+                                                     tagEXCEPINFO *, unsigned int *)
 {
     HRESULT hr = DISP_E_MEMBERNOTFOUND;
 
@@ -621,9 +487,8 @@ IAccessible::accHitTest documents the value returned in pvarID like this:
 |                                                        |             | interface pointer       |
 +--------------------------------------------------------+-------------+-------------------------+
 */
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, VARIANT *pvarID)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accHitTest(long xLeft, long yTop, VARIANT *pvarID)
 {
-
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
         return E_FAIL;
@@ -637,9 +502,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
             return S_OK;
         }
     } else {
-        QWindowsAccessible* wacc = new QWindowsAccessible(child);
-        IDispatch *iface = 0;
-        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
+        IAccessible *iface = QWindowsAccessibility::wrap(child);
         if (iface) {
             (*pvarID).vt = VT_DISPATCH;
             (*pvarID).pdispVal = iface;
@@ -662,7 +525,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
  can be ignored. All stuff prefixed with "moz" are information from that page.
 */
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *pyTop, long *pcxWidth, long *pcyHeight, VARIANT varID)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long *pyTop, long *pcxWidth, long *pcyHeight, VARIANT varID)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -686,7 +549,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *py
 }
 
 // moz: [important, but no need to implement up/down/left/right]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT varStart, VARIANT *pvarEnd)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accNavigate(long navDir, VARIANT varStart, VARIANT *pvarEnd)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -809,16 +672,14 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
         (*pvarEnd).vt = VT_EMPTY;
         return S_FALSE;
     }
-    QWindowsAccessible* wacc = new QWindowsAccessible(acc);
 
-    IDispatch *iface = 0;
-    wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-    if (iface) {
+    if (IAccessible *iface = QWindowsAccessibility::wrap(acc)) {
         (*pvarEnd).vt = VT_DISPATCH;
         (*pvarEnd).pdispVal = iface;
         return S_OK;
     } else {
-        delete wacc;
+        if (acc != accessible)
+            delete acc;
     }
 
     (*pvarEnd).vt = VT_EMPTY;
@@ -826,13 +687,13 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, IDispatch** ppdispChild)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildID, IDispatch** ppdispChild)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
         return E_FAIL;
 
-    if (varChildID.vt == VT_EMPTY)
+    if (varChildID.vt != VT_I4)
         return E_INVALIDARG;
 
 
@@ -841,7 +702,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
 
     if (childIndex < 0) {
         const int entry = childIndex;
-        QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entry);
+        QPair<QObject*, int> ref = QWindowsAccessibility::getCachedObject(entry);
         if (ref.first) {
             acc = QAccessible::queryAccessibleInterface(ref.first);
             if (acc && ref.second >= 0) {
@@ -851,6 +712,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
                     return E_INVALIDARG;
                 acc = res;
             }
+        } else {
+            qWarning("get_accChild got a negative varChildID, but did not find it in cache");
         }
     } else {
         if (childIndex) {
@@ -868,17 +731,15 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
     }
 
     if (acc) {
-        QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-        wacc->QueryInterface(IID_IDispatch, (void**)ppdispChild);
+        *ppdispChild = QWindowsAccessibility::wrap(acc);
         return S_OK;
     }
 
-    *ppdispChild = 0;
-    return S_FALSE;
+    return E_FAIL;
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChildCount(long* pcountChildren)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChildCount(long* pcountChildren)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -889,7 +750,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChildCount(long* pcountChil
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispParent)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accParent(IDispatch** ppdispParent)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -897,11 +758,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispPa
 
     QAccessibleInterface *acc = accessible->parent();
     if (acc) {
-        QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-        wacc->QueryInterface(IID_IDispatch, (void**)ppdispParent);
-
-        if (*ppdispParent)
+        if (IAccessible *iface = QWindowsAccessibility::wrap(acc)) {
+            *ppdispParent = iface;
             return S_OK;
+        } else {
+            delete acc;
+        }
     }
 
     *ppdispParent = 0;
@@ -911,7 +773,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispPa
 /*
   Properties and methods
 */
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::accDoDefaultAction(VARIANT varID)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accDoDefaultAction(VARIANT varID)
 {
     Q_UNUSED(varID);
     accessibleDebugClientCalls(accessible);
@@ -928,7 +790,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accDoDefaultAction(VARIANT varID)
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDefaultAction(VARIANT varID, BSTR* pszDefaultAction)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accDefaultAction(VARIANT varID, BSTR* pszDefaultAction)
 {
     Q_UNUSED(varID);
     accessibleDebugClientCalls(accessible);
@@ -944,7 +806,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDefaultAction(VARIANT varID
     return *pszDefaultAction ? S_OK : S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, BSTR* pszDescription)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accDescription(VARIANT varID, BSTR* pszDescription)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -969,7 +831,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, 
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelp(VARIANT varID, BSTR *pszHelp)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accHelp(VARIANT varID, BSTR *pszHelp)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -993,12 +855,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelp(VARIANT varID, BSTR *p
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelpTopic(BSTR *, VARIANT, long *)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accHelpTopic(BSTR *, VARIANT, long *)
 {
     return DISP_E_MEMBERNOTFOUND;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT varID, BSTR *pszKeyboardShortcut)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accKeyboardShortcut(VARIANT varID, BSTR *pszKeyboardShortcut)
 {
     Q_UNUSED(varID);
     accessibleDebugClientCalls(accessible);
@@ -1029,7 +891,7 @@ static QAccessibleInterface *relatedInterface(QAccessibleInterface *iface, QAcce
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* pszName)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accName(VARIANT varID, BSTR* pszName)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -1065,14 +927,14 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accName(VARIANT, BSTR)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::put_accName(VARIANT, BSTR)
 {
     accessibleDebugClientCalls(accessible);
     return DISP_E_MEMBERNOTFOUND;
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT *pvarRole)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accRole(VARIANT varID, VARIANT *pvarRole)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -1100,7 +962,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIANT *pvarState)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accState(VARIANT varID, VARIANT *pvarState)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -1176,11 +1038,15 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* pszValue)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accValue(VARIANT varID, BSTR* pszValue)
 {
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid() || varID.lVal)
+    if (varID.vt != VT_I4)
+        return E_INVALIDARG;
+
+    if (!accessible->isValid() || varID.lVal) {
         return E_FAIL;
+    }
 
     QString value;
     if (accessible->valueInterface()) {
@@ -1194,17 +1060,18 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* 
     }
 
     *pszValue = 0;
+    accessibleDebug("return S_FALSE");
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accValue(VARIANT, BSTR)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::put_accValue(VARIANT, BSTR)
 {
     accessibleDebugClientCalls(accessible);
     return DISP_E_MEMBERNOTFOUND;
 }
 
 // moz: [important]
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIANT varID)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accSelect(long flagsSelect, VARIANT varID)
 {
     Q_UNUSED(flagsSelect);
     Q_UNUSED(varID);
@@ -1250,7 +1117,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
   +-------------+------------------------------------------------------------------------------+
     moz: [important]
 */
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accFocus(VARIANT *pvarID)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -1263,12 +1130,11 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
             delete acc;
             return S_OK;
         } else {
-            QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-            IDispatch *iface = 0;
-            wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-            (*pvarID).vt = VT_DISPATCH;
-            (*pvarID).pdispVal = iface;
-            return S_OK;
+            if (IAccessible *iface = QWindowsAccessibility::wrap(acc)) {
+                (*pvarID).vt = VT_DISPATCH;
+                (*pvarID).pdispVal = iface;
+                return S_OK;
+            }
         }
         delete acc;
     }
@@ -1276,7 +1142,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
     return S_FALSE;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChildren)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accSelection(VARIANT *pvarChildren)
 {
     accessibleDebugClientCalls(accessible);
     if (!accessible->isValid())
@@ -1314,7 +1180,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
     return S_OK;
 }
 
-static QWindow *window_helper(const QAccessibleInterface *iface)
+QWindow *window_helper(const QAccessibleInterface *iface)
 {
     QWindow *window = iface->window();
     if (!window) {
@@ -1329,9 +1195,15 @@ static QWindow *window_helper(const QAccessibleInterface *iface)
     return window;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
+/**************************************************************\
+ *                         IOleWindow                          *
+ **************************************************************/
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::GetWindow(HWND *phwnd)
 {
     *phwnd = 0;
+    accessibleDebugClientCalls(accessible);
+    if (!accessible->isValid())
+        return E_FAIL;
     if (!accessible->isValid())
         return E_UNEXPECTED;
 
@@ -1342,182 +1214,13 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     Q_ASSERT(platform);
     *phwnd = (HWND)platform->nativeResourceForWindow("handle", window);
+    accessibleDebug("QWindowsAccessible::GetWindow(): %p", *phwnd);
     return S_OK;
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsAccessible::ContextSensitiveHelp(BOOL)
+HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::ContextSensitiveHelp(BOOL)
 {
     return S_OK;
-}
-
-
-QWindowsAccessibility::QWindowsAccessibility()
-{
-}
-
-
-void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &event)
-{
-    QString soundName;
-    switch (event.type()) {
-    case QAccessible::PopupMenuStart:
-        soundName = QLatin1String("MenuPopup");
-        break;
-
-    case QAccessible::MenuCommand:
-        soundName = QLatin1String("MenuCommand");
-        break;
-
-    case QAccessible::Alert:
-        {
-        /*      ### FIXME
-#ifndef QT_NO_MESSAGEBOX
-            QMessageBox *mb = qobject_cast<QMessageBox*>(o);
-            if (mb) {
-                switch (mb->icon()) {
-                case QMessageBox::Warning:
-                    soundName = QLatin1String("SystemExclamation");
-                    break;
-                case QMessageBox::Critical:
-                    soundName = QLatin1String("SystemHand");
-                    break;
-                case QMessageBox::Information:
-                    soundName = QLatin1String("SystemAsterisk");
-                    break;
-                default:
-                    break;
-                }
-            } else
-#endif // QT_NO_MESSAGEBOX
-*/
-            {
-                soundName = QLatin1String("SystemAsterisk");
-            }
-
-        }
-        break;
-    default:
-        break;
-    }
-
-    if (!soundName.isEmpty()) {
-#ifndef QT_NO_SETTINGS
-        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") + soundName,
-                           QSettings::NativeFormat);
-        QString file = settings.value(QLatin1String(".Current/.")).toString();
-#else
-        QString file;
-#endif
-        if (!file.isEmpty()) {
-            PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
-        }
-    }
-
-    typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
-
-#if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
-    // There is no user32.lib nor NotifyWinEvent for CE
-    return;
-#else
-    static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
-    static bool resolvedNWE = false;
-    if (!resolvedNWE) {
-        resolvedNWE = true;
-        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
-    }
-    if (!ptrNotifyWinEvent)
-        return;
-
-    // An event has to be associated with a window,
-    // so find the first parent that is a widget and that has a WId
-    QAccessibleInterface *iface = event.accessibleInterface();
-    QWindow *window = iface ? window_helper(iface) : 0;
-    delete iface;
-
-    if (!window) {
-        window = QGuiApplication::activeWindow();
-        if (!window)
-            return;
-    }
-
-    QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
-    HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
-
-    if (event.type() != QAccessible::MenuCommand) { // MenuCommand is faked
-        // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
-        eventNum %= 50;              //[0..49]
-        int eventId = - eventNum - 1;
-
-        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(event.object(), event.child()));
-        ptrNotifyWinEvent(event.type(), hWnd, OBJID_CLIENT, eventId );
-
-        ++eventNum;
-    }
-#endif // Q_OS_WINCE
-}
-
-/*
-void QWindowsAccessibility::setRootObject(QObject *o)
-{
-
-}
-
-void QWindowsAccessibility::initialize()
-{
-
-}
-
-void QWindowsAccessibility::cleanup()
-{
-
-}
-
-*/
-
-bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
-{
-    if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
-        /* For UI Automation
-      */
-    } else if ((DWORD)lParam == OBJID_CLIENT) {
-#if 1
-        // Ignoring all requests while starting up
-        // ### Maybe QPA takes care of this???
-        if (QApplication::startingUp() || QApplication::closingDown())
-            return false;
-#endif
-
-        typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
-        static PtrLresultFromObject ptrLresultFromObject = 0;
-        static bool oleaccChecked = false;
-
-        if (!oleaccChecked) {
-            oleaccChecked = true;
-#if !defined(Q_OS_WINCE)
-            ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
-#endif
-        }
-
-        if (ptrLresultFromObject) {
-            QWindow *window = QWindowsContext::instance()->findWindow(hwnd);
-            if (window) {
-                QAccessibleInterface *acc = window->accessibleRoot();
-                if (acc) {
-                    QWindowsAccessible *winacc = new QWindowsAccessible(acc);
-                    IAccessible *iface;
-                    HRESULT hr = winacc->QueryInterface(IID_IAccessible, (void**)&iface);
-                    if (SUCCEEDED(hr)) {
-                        *lResult = ptrLresultFromObject(IID_IAccessible, wParam, iface);  // ref == 2
-                        if (*lResult) {
-                            iface->Release(); // the client will release the object again, and then it will destroy itself
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
 }
 
 QT_END_NAMESPACE

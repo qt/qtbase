@@ -47,7 +47,7 @@
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
-#include "qwindowsaccessibility.h"
+#include "accessible/qwindowsaccessibility.h"
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 

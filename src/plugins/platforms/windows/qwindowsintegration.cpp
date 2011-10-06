@@ -55,8 +55,8 @@
 #include "qwindowsclipboard.h"
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
-#include "qwindowsaccessibility.h"
 #include "qwindowskeymapper.h"
+#include "accessible/qwindowsaccessibility.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
