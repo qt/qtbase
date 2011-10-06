@@ -180,7 +180,7 @@ static void construct(QVariant::Private *x, const void *copy)
     case QVariant::UserType:
         break;
     default:
-        void *ptr = QMetaType::construct(x->type, copy);
+        void *ptr = QMetaType::create(x->type, copy);
         if (!ptr) {
             x->type = QVariant::Invalid;
         } else {

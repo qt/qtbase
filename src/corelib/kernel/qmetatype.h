@@ -103,8 +103,8 @@ public:
         User = 256
     };
 
-    typedef void (*Destructor)(void *);
-    typedef void *(*Constructor)(const void *);
+    typedef void (*Deleter)(void *);
+    typedef void *(*Creator)(const void *);
 
 #ifndef QT_NO_DATASTREAM
     typedef void (*SaveOperator)(QDataStream &, const void *);
@@ -114,13 +114,17 @@ public:
     static void registerStreamOperators(int type, SaveOperator saveOp,
                                         LoadOperator loadOp);
 #endif
-    static int registerType(const char *typeName, Destructor destructor,
-                            Constructor constructor);
+    static int registerType(const char *typeName, Deleter deleter,
+                            Creator creator);
     static int registerTypedef(const char *typeName, int aliasId);
     static int type(const char *typeName);
     static const char *typeName(int type);
     static bool isRegistered(int type);
-    static void *construct(int type, const void *copy = 0);
+    static void *create(int type, const void *copy = 0);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED static void *construct(int type, const void *copy = 0)
+    { return create(type, copy); }
+#endif
     static void destroy(int type, void *data);
     static void unregisterType(const char *typeName);
 
@@ -137,7 +141,7 @@ void qMetaTypeDeleteHelper(T *t)
 }
 
 template <typename T>
-void *qMetaTypeConstructHelper(const T *t)
+void *qMetaTypeCreateHelper(const T *t)
 {
     if (!t)
         return new T();
@@ -194,13 +198,13 @@ int qRegisterMetaType(const char *typeName
     if (typedefOf != -1)
         return QMetaType::registerTypedef(typeName, typedefOf);
 
-    typedef void*(*ConstructPtr)(const T*);
-    ConstructPtr cptr = qMetaTypeConstructHelper<T>;
+    typedef void*(*CreatePtr)(const T*);
+    CreatePtr cptr = qMetaTypeCreateHelper<T>;
     typedef void(*DeletePtr)(T*);
     DeletePtr dptr = qMetaTypeDeleteHelper<T>;
 
-    return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Destructor>(dptr),
-                                   reinterpret_cast<QMetaType::Constructor>(cptr));
+    return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
+                                   reinterpret_cast<QMetaType::Creator>(cptr));
 }
 
 #ifndef QT_NO_DATASTREAM

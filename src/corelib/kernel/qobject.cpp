@@ -3242,7 +3242,7 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     types[0] = 0; // return type
     args[0] = 0; // return value
     for (int n = 1; n < nargs; ++n)
-        args[n] = QMetaType::construct((types[n] = c->argumentTypes[n-1]), argv[n]);
+        args[n] = QMetaType::create((types[n] = c->argumentTypes[n-1]), argv[n]);
     QCoreApplication::postEvent(c->receiver, new QMetaCallEvent(c->method_offset,
                                                                 c->method_relative,
                                                                 c->callFunction,

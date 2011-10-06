@@ -74,7 +74,7 @@ MyStruct s2 = var.value<MyStruct>();
 //! [3]
 int id = QMetaType::type("MyClass");
 if (id == 0) {
-    void *myClassPtr = QMetaType::construct(id);
+    void *myClassPtr = QMetaType::create(id);
     ...
     QMetaType::destroy(id, myClassPtr);
     myClassPtr = 0;

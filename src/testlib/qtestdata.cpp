@@ -93,7 +93,7 @@ void QTestData::append(int type, const void *data)
                 d->dataCount, d->tag);
         QTEST_ASSERT(false);
     }
-    d->data[d->dataCount] = QMetaType::construct(type, data);
+    d->data[d->dataCount] = QMetaType::create(type, data);
     ++d->dataCount;
 }
 

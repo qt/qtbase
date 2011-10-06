@@ -1298,7 +1298,7 @@ void tst_QVariant::matrix()
     qVariantSetValue(variant, QMatrix().rotate(90));
     QCOMPARE(QMatrix().rotate(90), qVariantValue<QMatrix>(variant));
 
-    void *mmatrix = QMetaType::construct(QVariant::Matrix, 0);
+    void *mmatrix = QMetaType::create(QVariant::Matrix, 0);
     QVERIFY(mmatrix);
     QMetaType::destroy(QVariant::Matrix, mmatrix);
 }
@@ -1313,7 +1313,7 @@ void tst_QVariant::matrix4x4()
     qVariantSetValue(variant, m);
     QCOMPARE(m, qVariantValue<QMatrix4x4>(variant));
 
-    void *mmatrix = QMetaType::construct(QVariant::Matrix4x4, 0);
+    void *mmatrix = QMetaType::create(QVariant::Matrix4x4, 0);
     QVERIFY(mmatrix);
     QMetaType::destroy(QVariant::Matrix4x4, mmatrix);
 }
@@ -1326,7 +1326,7 @@ void tst_QVariant::transform()
     qVariantSetValue(variant, QTransform().rotate(90));
     QCOMPARE(QTransform().rotate(90), qVariantValue<QTransform>(variant));
 
-    void *mmatrix = QMetaType::construct(QVariant::Transform, 0);
+    void *mmatrix = QMetaType::create(QVariant::Transform, 0);
     QVERIFY(mmatrix);
     QMetaType::destroy(QVariant::Transform, mmatrix);
 }
@@ -1340,7 +1340,7 @@ void tst_QVariant::vector2D()
     qVariantSetValue(variant, QVector2D(0.1, 0.2));
     QCOMPARE(QVector2D(0.1, 0.2), qVariantValue<QVector2D>(variant));
 
-    void *pvector = QMetaType::construct(QVariant::Vector2D, 0);
+    void *pvector = QMetaType::create(QVariant::Vector2D, 0);
     QVERIFY(pvector);
     QMetaType::destroy(QVariant::Vector2D, pvector);
 }
@@ -1353,7 +1353,7 @@ void tst_QVariant::vector3D()
     qVariantSetValue(variant, QVector3D(0.1, 0.2, 0.3));
     QCOMPARE(QVector3D(0.1, 0.2, 0.3), qVariantValue<QVector3D>(variant));
 
-    void *pvector = QMetaType::construct(QVariant::Vector3D, 0);
+    void *pvector = QMetaType::create(QVariant::Vector3D, 0);
     QVERIFY(pvector);
     QMetaType::destroy(QVariant::Vector3D, pvector);
 }
@@ -1366,7 +1366,7 @@ void tst_QVariant::vector4D()
     qVariantSetValue(variant, QVector4D(0.1, 0.2, 0.3, 0.4));
     QCOMPARE(QVector4D(0.1, 0.2, 0.3, 0.4), qVariantValue<QVector4D>(variant));
 
-    void *pvector = QMetaType::construct(QVariant::Vector4D, 0);
+    void *pvector = QMetaType::create(QVariant::Vector4D, 0);
     QVERIFY(pvector);
     QMetaType::destroy(QVariant::Vector4D, pvector);
 }
@@ -1379,7 +1379,7 @@ void tst_QVariant::quaternion()
     qVariantSetValue(variant, QQuaternion(0.1, 0.2, 0.3, 0.4));
     QCOMPARE(QQuaternion(0.1, 0.2, 0.3, 0.4), qVariantValue<QQuaternion>(variant));
 
-    void *pquaternion = QMetaType::construct(QVariant::Quaternion, 0);
+    void *pquaternion = QMetaType::create(QVariant::Quaternion, 0);
     QVERIFY(pquaternion);
     QMetaType::destroy(QVariant::Quaternion, pquaternion);
 }

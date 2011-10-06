@@ -34,6 +34,8 @@ information about a particular change.
 - Qt::escape() is deprecated (but can be enabled via
   QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
+- QMetaType::construct() has been renamed to QMetaType::create().
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

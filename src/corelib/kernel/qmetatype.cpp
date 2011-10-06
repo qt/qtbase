@@ -331,8 +331,8 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
 
 struct QMetaTypeGuiHelper
 {
-    QMetaType::Constructor constr;
-    QMetaType::Destructor destr;
+    QMetaType::Creator creator;
+    QMetaType::Deleter deleter;
 #ifndef QT_NO_DATASTREAM
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
@@ -344,15 +344,15 @@ Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper = 0;
 class QCustomTypeInfo
 {
 public:
-    QCustomTypeInfo() : typeName(), constr(0), destr(0)
+    QCustomTypeInfo() : typeName(), creator(0), deleter(0)
 #ifndef QT_NO_DATASTREAM
     , saveOp(0), loadOp(0)
 #endif
     {}
 
     QByteArray typeName;
-    QMetaType::Constructor constr;
-    QMetaType::Destructor destr;
+    QMetaType::Creator creator;
+    QMetaType::Deleter deleter;
 #ifndef QT_NO_DATASTREAM
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
@@ -464,11 +464,11 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
     destructor, and a \a constructor. Returns the type's handle,
     or -1 if the type could not be registered.
  */
-int QMetaType::registerType(const char *typeName, Destructor destructor,
-                            Constructor constructor)
+int QMetaType::registerType(const char *typeName, Deleter deleter,
+                            Creator creator)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
-    if (!ct || !typeName || !destructor || !constructor)
+    if (!ct || !typeName || !deleter || !creator)
         return -1;
 
 #ifdef QT_NO_QOBJECT
@@ -487,8 +487,8 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
         if (!idx) {
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
-            inf.constr = constructor;
-            inf.destr = destructor;
+            inf.creator = creator;
+            inf.deleter = deleter;
             inf.alias = -1;
             idx = ct->size() + User;
             ct->append(inf);
@@ -532,8 +532,8 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     QCustomTypeInfo inf;
     inf.typeName = normalizedTypeName;
     inf.alias = aliasId;
-    inf.constr = 0;
-    inf.destr = 0;
+    inf.creator = 0;
+    inf.deleter = 0;
     ct->append(inf);
     return aliasId;
 }
@@ -561,8 +561,8 @@ void QMetaType::unregisterType(const char *typeName)
         if (ct->at(v).typeName == typeName) {
             QCustomTypeInfo &inf = (*ct)[v];
             inf.typeName.clear();
-            inf.constr = 0;
-            inf.destr = 0;
+            inf.creator = 0;
+            inf.deleter = 0;
             inf.alias = -1;
         }
     }
@@ -1028,7 +1028,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
 
     \sa destroy(), isRegistered(), Type
 */
-void *QMetaType::construct(int type, const void *copy)
+void *QMetaType::create(int type, const void *copy)
 {
     if (copy) {
         switch(type) {
@@ -1226,15 +1226,15 @@ void *QMetaType::construct(int type, const void *copy)
         }
     }
 
-    Constructor constr = 0;
+    Creator creator = 0;
     if (type >= FirstGuiType && type <= LastGuiType) {
         if (!qMetaTypeGuiHelper)
             return 0;
-        constr = qMetaTypeGuiHelper[type - FirstGuiType].constr;
+        creator = qMetaTypeGuiHelper[type - FirstGuiType].creator;
     } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
         if (!qMetaTypeWidgetsHelper)
             return 0;
-        constr = qMetaTypeWidgetsHelper[type - FirstWidgetsType].constr;
+        creator = qMetaTypeWidgetsHelper[type - FirstWidgetsType].creator;
     } else {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         QReadLocker locker(customTypesLock());
@@ -1242,16 +1242,16 @@ void *QMetaType::construct(int type, const void *copy)
             return 0;
         if (ct->at(type - User).typeName.isEmpty())
             return 0;
-        constr = ct->at(type - User).constr;
+        creator = ct->at(type - User).creator;
     }
 
-    return constr(copy);
+    return creator(copy);
 }
 
 /*!
     Destroys the \a data, assuming it is of the \a type given.
 
-    \sa construct(), isRegistered(), Type
+    \sa create(), isRegistered(), Type
 */
 void QMetaType::destroy(int type, void *data)
 {
@@ -1390,28 +1390,28 @@ void QMetaType::destroy(int type, void *data)
         break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        Destructor destr = 0;
+        Deleter deleter = 0;
         if (type >= FirstGuiType && type <= LastGuiType) {
             Q_ASSERT(qMetaTypeGuiHelper);
 
             if (!qMetaTypeGuiHelper)
                 return;
-            destr = qMetaTypeGuiHelper[type - FirstGuiType].destr;
+            deleter = qMetaTypeGuiHelper[type - FirstGuiType].deleter;
         } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
             Q_ASSERT(qMetaTypeWidgetsHelper);
 
             if (!qMetaTypeWidgetsHelper)
                 return;
-            destr = qMetaTypeWidgetsHelper[type - FirstWidgetsType].destr;
+            deleter = qMetaTypeWidgetsHelper[type - FirstWidgetsType].deleter;
         } else {
             QReadLocker locker(customTypesLock());
             if (type < User || !ct || ct->count() <= type - User)
                 break;
             if (ct->at(type - User).typeName.isEmpty())
                 break;
-            destr = ct->at(type - User).destr;
+            deleter = ct->at(type - User).deleter;
         }
-        destr(data);
+        deleter(data);
         break; }
     }
 }
@@ -1463,10 +1463,10 @@ void QMetaType::destroy(int type, void *data)
     \sa qRegisterMetaType(), QMetaType::isRegistered(), Q_DECLARE_METATYPE()
 */
 
-/*! \typedef QMetaType::Destructor
+/*! \typedef QMetaType::Deleter
     \internal
 */
-/*! \typedef QMetaType::Constructor
+/*! \typedef QMetaType::Creator
     \internal
 */
 /*! \typedef QMetaType::SaveOperator

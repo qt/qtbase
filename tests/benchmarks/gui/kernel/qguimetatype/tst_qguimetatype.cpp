@@ -81,7 +81,7 @@ void tst_QGuiMetaType::constructGuiType()
     QFETCH(int, typeId);
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::construct(typeId, (void *)0);
+            void *data = QMetaType::create(typeId, (void *)0);
             QMetaType::destroy(typeId, data);
         }
     }
@@ -103,7 +103,7 @@ void tst_QGuiMetaType::constructGuiTypeCopy()
     const void *copy = other.constData();
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i) {
-            void *data = QMetaType::construct(typeId, copy);
+            void *data = QMetaType::create(typeId, copy);
             QMetaType::destroy(typeId, data);
         }
     }

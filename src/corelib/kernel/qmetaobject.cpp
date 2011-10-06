@@ -1667,7 +1667,7 @@ bool QMetaMethod::invoke(QObject *object,
         for (int i = 1; i < paramCount; ++i) {
             types[i] = QMetaType::type(typeNames[i]);
             if (types[i]) {
-                args[i] = QMetaType::construct(types[i], param[i]);
+                args[i] = QMetaType::create(types[i], param[i]);
                 ++nargs;
             } else if (param[i]) {
                 qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",

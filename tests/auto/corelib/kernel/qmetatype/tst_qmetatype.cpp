@@ -72,7 +72,7 @@ private slots:
     void normalizedTypes();
     void typeName_data();
     void typeName();
-    void construct();
+    void create();
     void typedefs();
     void isRegistered_data();
     void isRegistered();
@@ -133,15 +133,15 @@ protected:
                 ++failureCount;
                 qWarning() << "Wrong typeName returned for" << tp;
             }
-            void *buf = QMetaType::construct(tp, 0);
-            void *buf2 = QMetaType::construct(tp, buf);
+            void *buf = QMetaType::create(tp, 0);
+            void *buf2 = QMetaType::create(tp, buf);
             if (!buf) {
                 ++failureCount;
-                qWarning() << "Null buffer returned by QMetaType::construct(tp, 0)";
+                qWarning() << "Null buffer returned by QMetaType::create(tp, 0)";
             }
             if (!buf2) {
                 ++failureCount;
-                qWarning() << "Null buffer returned by QMetaType::construct(tp, buf)";
+                qWarning() << "Null buffer returned by QMetaType::create(tp, buf)";
             }
             QMetaType::destroy(tp, buf);
             QMetaType::destroy(tp, buf2);
@@ -268,10 +268,10 @@ void tst_QMetaType::typeName()
     QCOMPARE(QString::fromLatin1(QMetaType::typeName(aType)), aTypeName);
 }
 
-void tst_QMetaType::construct()
+void tst_QMetaType::create()
 {
     QSize x(1, 1);
-    void *size = QMetaType::construct(QMetaType::QSize, &x);
+    void *size = QMetaType::create(QMetaType::QSize, &x);
     QVERIFY(size);
     QCOMPARE(static_cast<QSize *>(size)->width(), 1);
     QMetaType::destroy(QMetaType::QSize, size);
