@@ -121,10 +121,6 @@ private slots:
     void standaloneDayName_data();
     void standaloneDayName();
     void underflowOverflow();
-    void measurementSystems_data();
-    void measurementSystems();
-    void systemMeasurementSystems_data();
-    void systemMeasurementSystems();
 
     void dateFormat();
     void timeFormat();
@@ -134,8 +130,6 @@ private slots:
 
     // QSystemLocale tests
     void queryDateTime();
-    void queryMeasureSystem_data();
-    void queryMeasureSystem();
 
     void ampm();
     void currency();
@@ -1789,118 +1783,6 @@ a(QLatin1String("0.0000000000000000000000000000000000000000000000000000000000000
     QVERIFY(!ok);
 }
 
-void tst_QLocale::measurementSystems_data()
-{
-    QTest::addColumn<QString>("localeName");
-    QTest::addColumn<int>("mSystem");
-
-    QTest::newRow("no_NO") << QString("no_NO") << (int)QLocale::MetricSystem; // Norwegian/Norway
-    QTest::newRow("sv_SE") << QString("sv_SE") << (int)QLocale::MetricSystem; // Swedish/Sweden
-    QTest::newRow("en_US") << QString("en_US") << (int)QLocale::ImperialSystem; // English/United States
-    QTest::newRow("en_GB") << QString("en_GB") << (int)QLocale::MetricSystem; // English/Great Britain
-    QTest::newRow("no")    << QString("no")    << (int)QLocale::MetricSystem; // Norwegian
-    QTest::newRow("en")    << QString("en")    << (int)QLocale::ImperialSystem; // English
-    QTest::newRow("es_US") << QString("es_US") << (int)QLocale::ImperialSystem; // Spanish/United States
-    QTest::newRow("es_ES") << QString("es_ES") << (int)QLocale::MetricSystem; // Spanish/Spain
-    QTest::newRow("es")    << QString("es")    << (int)QLocale::MetricSystem; // Spanish
-}
-
-void tst_QLocale::measurementSystems()
-{
-    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
-    QFETCH(QString, localeName);
-    QFETCH(int, mSystem);
-
-    // Method should be const.
-    const QLocale locale(localeName);
-    QCOMPARE((int)locale.measurementSystem(), mSystem);
-}
-
-void tst_QLocale::systemMeasurementSystems_data()
-{
-    QTest::addColumn<QString>("lcAllLocale");
-    QTest::addColumn<QString>("lcMeasurementLocale");
-    QTest::addColumn<QString>("langLocale");
-    QTest::addColumn<int>("mSystem");
-
-    QTest::newRow("row0") << QString("no_NO") << QString("no_NO") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row1") << QString("no_NO") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row2") << QString("no_NO") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row3") << QString("no_NO") << QString("en_US") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row4") << QString("en_US") << QString("no_NO") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row5") << QString("en_US") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row6") << QString("en_US") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row7") << QString("en_US") << QString("en_US") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row8") << QString("") << QString("") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row9") << QString("") << QString("") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row10") << QString("") << QString("") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row11") << QString("") << QString("no_NO") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row12") << QString("") << QString("en_US") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row13") << QString("") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row14") << QString("") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row15") << QString("no_NO") << QString("") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row16") << QString("en_US") << QString("") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row17") << QString("no_NO") << QString("en_US") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row18") << QString("en_US") << QString("no_NO") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row19") << QString("no_NO") << QString("") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row20") << QString("en_US") << QString("") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-}
-
-void tst_QLocale::systemMeasurementSystems()
-{
-    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
-    // Theoretically, we could include HPUX in this test, but its setenv implementation
-    // stinks. It's called putenv, and it requires you to keep the variable you pass
-    // to it around forever.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    QFETCH(QString, lcAllLocale);
-    QFETCH(QString, lcMeasurementLocale);
-    QFETCH(QString, langLocale);
-    QFETCH(int, mSystem);
-
-    // Save any old environment variables.
-    QString oldLcAll = QString::fromLocal8Bit(getenv("LC_ALL"));
-    QString oldLcMeasurement = QString::fromLocal8Bit(getenv("LC_MEASUREMENT"));
-    QString oldLang = QString::fromLocal8Bit(getenv("LANG"));
-
-    qputenv("LC_ALL", lcAllLocale.toLocal8Bit());
-    qputenv("LC_MEASUREMENT", lcMeasurementLocale.toLocal8Bit());
-    qputenv("LANG", langLocale.toLocal8Bit());
-
-    // Method should be const.
-    const QLocale locale(QLocale::system());
-    QCOMPARE((int)locale.measurementSystem(), mSystem);
-
-    // Restore environment.
-    qputenv("LC_ALL", oldLcAll.toLocal8Bit());
-    qputenv("LC_MEASUREMENT", oldLcMeasurement.toLocal8Bit());
-    qputenv("LANG", oldLang.toLocal8Bit());
-#else
-    QSKIP("Test doesn't work on Mac or Windows", SkipAll);
-#endif
-}
-
 class SystemLocale : public QSystemLocale
 {
 public:
@@ -1937,93 +1819,6 @@ void tst_QLocale::queryDateTime()
     QCOMPARE(QLocale::system().toString(QDateTime(QDate(1974, 12, 1), QTime(1, 2, 3, 4)), QLocale::LongFormat),
              QString("01121974010203004"));
 }
-
-#ifndef QT_NO_SYSTEMLOCALE
-void tst_QLocale::queryMeasureSystem_data()
-{
-    QTest::addColumn<QString>("lcAllLocale");
-    QTest::addColumn<QString>("lcMeasurementLocale");
-    QTest::addColumn<QString>("langLocale");
-    QTest::addColumn<int>("mSystem");
-
-    QTest::newRow("row0") << QString("no_NO") << QString("no_NO") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row1") << QString("no_NO") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row2") << QString("no_NO") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row3") << QString("no_NO") << QString("en_US") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row4") << QString("en_US") << QString("no_NO") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row5") << QString("en_US") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row6") << QString("en_US") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row7") << QString("en_US") << QString("en_US") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row8") << QString("") << QString("") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row9") << QString("") << QString("") << QString("no_NO")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row10") << QString("") << QString("") << QString("en_US")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row11") << QString("") << QString("no_NO") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row12") << QString("") << QString("en_US") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row13") << QString("") << QString("no_NO") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row14") << QString("") << QString("en_US") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row15") << QString("no_NO") << QString("") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row16") << QString("en_US") << QString("") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row17") << QString("no_NO") << QString("en_US") << QString("")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row18") << QString("en_US") << QString("no_NO") << QString("")
-            << (int)QLocale::ImperialSystem;
-    QTest::newRow("row19") << QString("no_NO") << QString("") << QString("en_US")
-            << (int)QLocale::MetricSystem;
-    QTest::newRow("row20") << QString("en_US") << QString("") << QString("no_NO")
-            << (int)QLocale::ImperialSystem;
-}
-
-void tst_QLocale::queryMeasureSystem()
-{
-    QSKIP("Meh, skip the test as we do not reread the environment variables anymore", SkipAll);
-    // Theoretically, we could include HPUX in this test, but its setenv implementation
-    // stinks. It's called putenv, and it requires you to keep the variable you pass
-    // to it around forever.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    QFETCH(QString, lcAllLocale);
-    QFETCH(QString, lcMeasurementLocale);
-    QFETCH(QString, langLocale);
-    QFETCH(int, mSystem);
-
-    // Save any old environment variables.
-    QString oldLcAll = QString::fromLocal8Bit(getenv("LC_ALL"));
-    QString oldLcMeasurement = QString::fromLocal8Bit(getenv("LC_MEASUREMENT"));
-    QString oldLang = QString::fromLocal8Bit(getenv("LANG"));
-
-    qputenv("LC_ALL", lcAllLocale.toLocal8Bit());
-    qputenv("LC_MEASUREMENT", lcMeasurementLocale.toLocal8Bit());
-    qputenv("LANG", langLocale.toLocal8Bit());
-
-    // Method should be const.
-    const QSystemLocale locale;
-    QCOMPARE(locale.query(QSystemLocale::MeasurementSystem, QVariant()).toInt(), mSystem);
-
-    // Restore environment.
-    qputenv("LC_ALL", oldLcAll.toLocal8Bit());
-    qputenv("LC_MEASUREMENT", oldLcMeasurement.toLocal8Bit());
-    qputenv("LANG", oldLang.toLocal8Bit());
-#else
-    QSKIP("Test doesn't work on Mac or Windows", SkipAll);
-#endif
-}
-#endif // QT_NO_SYSTEMLOCALE
 
 void tst_QLocale::ampm()
 {
