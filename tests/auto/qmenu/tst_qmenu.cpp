@@ -380,15 +380,12 @@ void tst_QMenu::focus()
     menu.addAction("One");
     menu.addAction("Two");
     menu.addAction("Three");
-    bool fullKeyboardControl = true;
 
 #ifdef Q_WS_MAC
-    fullKeyboardControl = qt_tab_all_widgets;
-#endif
-
-    if (!fullKeyboardControl)
+    if (!qt_tab_all_widgets)
         QSKIP("Computer is currently set up to NOT tab to all widgets,"
              " this test assumes you can tab to all widgets", SkipAll);
+#endif
 
     QWidget window;
     QPushButton button("Push me", &window);
