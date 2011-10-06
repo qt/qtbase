@@ -119,7 +119,8 @@ QWidgetTextControlPrivate::QWidgetTextControlPrivate()
 #ifndef QT_NO_DRAGANDDROP
       mousePressed(false), mightStartDrag(false),
 #endif
-      lastSelectionState(false), ignoreAutomaticScrollbarAdjustement(false),
+      lastSelectionPosition(0), lastSelectionAnchor(0),
+      ignoreAutomaticScrollbarAdjustement(false),
       overwriteMode(false),
       acceptRichText(true),
       preeditCursor(0), hideCursor(false),
@@ -577,15 +578,25 @@ void QWidgetTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged 
     if (forceEmitSelectionChanged)
         emit q->selectionChanged();
 
-    bool current = cursor.hasSelection();
-    if (current == lastSelectionState)
+    if (cursor.position() == lastSelectionPosition
+        && cursor.anchor() == lastSelectionAnchor)
         return;
 
-    lastSelectionState = current;
-    emit q->copyAvailable(current);
-    if (!forceEmitSelectionChanged)
+    bool selectionStateChange = (cursor.hasSelection()
+                                 != (lastSelectionPosition != lastSelectionAnchor));
+    if (selectionStateChange)
+        emit q->copyAvailable(cursor.hasSelection());
+
+    if (!forceEmitSelectionChanged
+        && (selectionStateChange
+            || (cursor.hasSelection()
+                && (cursor.position() != lastSelectionPosition
+                    || cursor.anchor() != lastSelectionAnchor))))
         emit q->selectionChanged();
+
     emit q->microFocusChanged();
+    lastSelectionPosition = cursor.position();
+    lastSelectionAnchor = cursor.anchor();
 }
 
 void QWidgetTextControlPrivate::_q_updateCurrentCharFormatAndSelection()

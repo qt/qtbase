@@ -193,7 +193,8 @@ public:
     QPoint dragStartPos;
     QPointer<QWidget> contextWidget;
 
-    bool lastSelectionState;
+    int lastSelectionPosition;
+    int lastSelectionAnchor;
 
     bool ignoreAutomaticScrollbarAdjustement;
 
