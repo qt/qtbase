@@ -83,7 +83,6 @@
 #endif
 
 #if defined(Q_WS_QWS)
-#include "QtWidgets/qinputcontext.h"
 #include "QtGui/qscreen_qws.h"
 #endif
 
@@ -569,7 +568,6 @@ public:
     // sub-classes that their internals are about to be released.
     virtual void aboutToDestroy() {}
 
-    QInputContext *inputContext() const;
     inline QWidget *effectiveFocusWidget() {
         QWidget *w = q_func();
         while (w->focusProxy())
@@ -699,7 +697,6 @@ public:
     static QWidgetMapper *mapper;
     static QWidgetSet *allWidgets;
 #if !defined(QT_NO_IM)
-    QPointer<QInputContext> ic;
     Qt::InputMethodHints imHints;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION

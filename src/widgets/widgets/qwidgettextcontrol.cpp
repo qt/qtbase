@@ -1658,7 +1658,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
         _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
         if (contextWidget) {
-            if (QInputContext *ic = inputContext()) {
+            if (QInputContext *ic = qApp->inputContext()) {
                 ic->update();
             }
         }
@@ -1789,7 +1789,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 
     QTextLayout *layout = cursor.block().layout();
     if (contextWidget && layout && !layout->preeditAreaText().isEmpty()) {
-        QInputContext *ctx = inputContext();
+        QInputContext *ctx = qApp->inputContext();
         int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
 
         if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length()) {
@@ -2140,7 +2140,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
 
 #if !defined(QT_NO_IM)
     if (d->contextWidget) {
-        QInputContext *qic = d->inputContext();
+        QInputContext *qic = qApp->inputContext();
         if (qic) {
             QList<QAction *> imActions = qic->actions();
             for (int i = 0; i < imActions.size(); ++i)
@@ -3026,14 +3026,6 @@ void QWidgetTextControlPrivate::_q_copyLink()
     md->setText(linkToCopy);
     QApplication::clipboard()->setMimeData(md);
 #endif
-}
-
-QInputContext *QWidgetTextControlPrivate::inputContext()
-{
-    QInputContext *ctx = contextWidget->inputContext();
-    if (!ctx && contextWidget->parentWidget())
-        ctx = contextWidget->parentWidget()->inputContext();
-    return ctx;
 }
 
 int QWidgetTextControl::hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const

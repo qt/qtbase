@@ -372,15 +372,6 @@ void QWidgetPrivate::updateWidgetTransform()
     }
 }
 
-QInputContext *QWidgetPrivate::inputContext() const
-{
-#ifndef QT_NO_IM
-    return qApp->inputContext();
-#else
-    return 0;
-#endif
-}
-
 /*!
     This function returns the QInputContext for this widget. By
     default the input context is inherited from the widgets
@@ -397,7 +388,7 @@ QInputContext *QWidget::inputContext()
     if (!testAttribute(Qt::WA_InputMethodEnabled))
         return 0;
 
-    return d->inputContext();
+    return qApp->inputContext();
 }
 
 #ifdef QT_KEYPAD_NAVIGATION
