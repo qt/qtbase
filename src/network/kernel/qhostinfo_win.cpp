@@ -97,14 +97,15 @@ static void resolveLibrary()
 
 #if defined(Q_OS_WINCE)
 #include <qmutex.h>
-QMutex qPrivCEMutex;
+Q_GLOBAL_STATIC(QMutex, qPrivCEMutex)
 #endif
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
 #if defined(Q_OS_WINCE)
-    QMutexLocker locker(&qPrivCEMutex);
+    QMutexLocker locker(qPrivCEMutex());
 #endif
+
     QWindowsSockInit winSock;
 
     // Load res_init on demand.
