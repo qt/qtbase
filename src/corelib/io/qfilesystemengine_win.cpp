@@ -692,7 +692,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
         if (what & QFileSystemMetaData::UserWritePermission) {
             if (::_waccess((wchar_t*)entry.nativeFilePath().utf16(), W_OK) == 0)
                 data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-            data.knownFlagsMask |= QFileSystemMetaData::UserReadPermission;
+            data.knownFlagsMask |= QFileSystemMetaData::UserWritePermission;
         }
     }
 
