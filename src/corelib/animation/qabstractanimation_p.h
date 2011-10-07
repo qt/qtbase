@@ -189,6 +189,7 @@ public:
 
     //useful for profiling/debugging
     int runningAnimationCount() { return animations.count(); }
+    void registerProfilerCallback(void (*cb)(qint64));
 
 protected:
     void timerEvent(QTimerEvent *);
@@ -231,6 +232,8 @@ private:
     void unregisterRunningAnimation(QAbstractAnimation *animation);
 
     int closestPauseAnimationTimeToFinish();
+
+    void (*profilerCallback)(qint64);
 };
 
 QT_END_NAMESPACE

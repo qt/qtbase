@@ -168,7 +168,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), consistentTiming(false), slowMode(false),
-    slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0)
+    slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0), profilerCallback(0)
 {
     time.invalidate();
     driver = &defaultDriver;
@@ -234,10 +234,18 @@ void QUnifiedTimer::updateAnimationsTime(qint64 timeStep)
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
+
+            if (profilerCallback)
+                profilerCallback(delta);
         }
         insideTick = false;
         currentAnimationIdx = 0;
     }
+}
+
+void QUnifiedTimer::registerProfilerCallback(void (*cb)(qint64))
+{
+    profilerCallback = cb;
 }
 
 void QUnifiedTimer::updateAnimationTimer()
