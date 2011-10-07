@@ -134,52 +134,60 @@ public:
         unsigned long timestamp;
     };
 
-    class MouseEvent : public UserEvent {
+    class InputEvent: public UserEvent {
     public:
-        MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
-            : UserEvent(w, time, Mouse), localPos(local), globalPos(global), buttons(b) { }
+        InputEvent(QWindow * w, ulong time, EventType t, Qt::KeyboardModifiers mods)
+            : UserEvent(w, time, t), modifiers(mods) {}
+        Qt::KeyboardModifiers modifiers;
+    };
+
+    class MouseEvent : public InputEvent {
+    public:
+        MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global,
+                   Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+            : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b) { }
         QPointF localPos;
         QPointF globalPos;
         Qt::MouseButtons buttons;
     };
 
-    class WheelEvent : public UserEvent {
+    class WheelEvent : public InputEvent {
     public:
-        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
-            : UserEvent(w, time, Wheel), delta(d), localPos(local), globalPos(global), orient(o) { }
+        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, int d,
+                   Qt::Orientation o, Qt::KeyboardModifiers mods)
+            : InputEvent(w, time, Wheel, mods), delta(d), localPos(local), globalPos(global), orient(o) { }
         int delta;
         QPointF localPos;
         QPointF globalPos;
         Qt::Orientation orient;
     };
 
-    class KeyEvent : public UserEvent {
+    class KeyEvent : public InputEvent {
     public:
         KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
-            :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
-             repeatCount(count), modifiers(mods), keyType(t),
+            :InputEvent(w, time, Key, mods), key(k), unicode(text), repeat(autorep),
+             repeatCount(count), keyType(t),
              nativeScanCode(0), nativeVirtualKey(0), nativeModifiers(0) { }
         KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
                  quint32 nativeSC, quint32 nativeVK, quint32 nativeMods,
                  const QString & text = QString(), bool autorep = false, ushort count = 1)
-            :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
-             repeatCount(count), modifiers(mods), keyType(t),
+            :InputEvent(w, time, Key, mods), key(k), unicode(text), repeat(autorep),
+             repeatCount(count), keyType(t),
              nativeScanCode(nativeSC), nativeVirtualKey(nativeVK), nativeModifiers(nativeMods) { }
         int key;
         QString unicode;
         bool repeat;
         ushort repeatCount;
-        Qt::KeyboardModifiers modifiers;
         QEvent::Type keyType;
         quint32 nativeScanCode;
         quint32 nativeVirtualKey;
         quint32 nativeModifiers;
     };
 
-    class TouchEvent : public UserEvent {
+    class TouchEvent : public InputEvent {
     public:
-        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p)
-            :UserEvent(w, time, Touch), devType(d), points(p), touchType(t) { }
+        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p, Qt::KeyboardModifiers mods)
+            :InputEvent(w, time, Touch, mods), devType(d), points(p), touchType(t) { }
         QTouchEvent::DeviceType devType;
         QList<QTouchEvent::TouchPoint> points;
         QEvent::Type touchType;

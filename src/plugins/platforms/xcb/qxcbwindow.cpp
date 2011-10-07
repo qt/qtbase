@@ -47,6 +47,7 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
+#include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 
 #ifdef XCB_USE_DRI2
@@ -1256,7 +1257,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
 
-    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     if (event->detail >= 4 && event->detail <= 7) {
         //logic borrowed from qapplication_x11.cpp
@@ -1266,30 +1267,32 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
                     || (event->detail == 6 || event->detail == 7));
 
         QWindowSystemInterface::handleWheelEvent(window(), event->time,
-                                                 local, global, delta, hor ? Qt::Horizontal : Qt::Vertical);
+                                                 local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
         return;
     }
 
-    handleMouseEvent(event->detail, event->state, event->time, local, global);
+    handleMouseEvent(event->detail, event->state, event->time, local, global, modifiers);
 }
 
 void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
+    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
-    handleMouseEvent(event->detail, event->state, event->time, local, global);
+    handleMouseEvent(event->detail, event->state, event->time, local, global, modifiers);
 }
 
 void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
+    Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
-    handleMouseEvent(event->detail, event->state, event->time, local, global);
+    handleMouseEvent(event->detail, event->state, event->time, local, global, modifiers);
 }
 
-void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global)
+void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers)
 {
     connection()->setTime(time);
 
@@ -1298,7 +1301,7 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QWindowSystemInterface::handleMouseEvent(window(), time, local, global, buttons);
+    QWindowSystemInterface::handleMouseEvent(window(), time, local, global, buttons, modifiers);
 }
 
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)

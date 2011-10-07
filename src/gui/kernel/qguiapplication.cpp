@@ -567,7 +567,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
     if (e->globalPos != QGuiApplicationPrivate::lastCursorPosition && (stateChange != Qt::NoButton)) {
         QWindowSystemInterfacePrivate::MouseEvent * newMouseEvent =
-                new QWindowSystemInterfacePrivate::MouseEvent(e->window.data(), e->timestamp, e->localPos, e->globalPos, e->buttons);
+                new QWindowSystemInterfacePrivate::MouseEvent(e->window.data(), e->timestamp, e->localPos, e->globalPos, e->buttons, e->modifiers);
         QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
         stateChange = Qt::NoButton;
     }
@@ -624,7 +624,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
 
     if (window) {
-        QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
+        QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
         ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
         QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
@@ -651,7 +651,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     QWindow *window = e->window.data();
 
     if (window) {
-         QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, QGuiApplication::keyboardModifiers(),
+         QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, e->modifiers,
                         e->orient);
          ev.setTimestamp(e->timestamp);
          QGuiApplication::sendSpontaneousEvent(window, &ev);
@@ -894,7 +894,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         QTouchEvent touchEvent(eventType,
                                e->devType,
-                               QGuiApplication::keyboardModifiers(),
+                               e->modifiers,
                                it.value().first,
                                it.value().second);
         touchEvent.setTimestamp(e->timestamp);

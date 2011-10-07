@@ -114,15 +114,15 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
 
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b) {
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleMouseEvent(w, time, local, global, b);
+    handleMouseEvent(w, time, local, global, b, mods);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
+void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-            new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b);
+            new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
@@ -162,15 +162,15 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o) {
+void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleWheelEvent(w, time, local, global, d, o);
+    handleWheelEvent(w, time, local, global, d, o, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
+void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
 {
     QWindowSystemInterfacePrivate::WheelEvent *e =
-            new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o);
+            new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
@@ -205,12 +205,12 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
         dispatcher->wakeUp();
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points) {
+void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent(w, time, type, devType, points);
+    handleTouchEvent(w, time, type, devType, points, mods);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points)
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
         return;
@@ -245,7 +245,7 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
     }
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
-            new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, devType, touchPoints);
+            new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, devType, touchPoints, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
