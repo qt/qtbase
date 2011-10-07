@@ -439,13 +439,13 @@ void tst_QMenu::overrideMenuAction()
     //test if the menu still pops out
     QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
     QTRY_VERIFY(m->isVisible());
+#endif
 
     delete aFileMenu;
 
     //after the deletion of the override menu action,
     //the menu should have its default menu action back
     QCOMPARE(m->menuAction(), menuaction);
-#endif
 }
 
 void tst_QMenu::statusTip()
