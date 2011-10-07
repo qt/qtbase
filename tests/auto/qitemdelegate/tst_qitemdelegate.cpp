@@ -842,16 +842,16 @@ void tst_QItemDelegate::decoration_data()
         << QSize(30, 30)
         << QSize(pm, pm);
 
-    QTest::newRow("pixmap 30x30 big")
-        << (int)QVariant::Pixmap
-        << QSize(1024, 1024)        // Over 1M
-        << QSize(1024, 1024);
+    // This demands too much memory and potentially hangs. Feel free to uncomment
+    // for your own testing.
+//    QTest::newRow("pixmap 30x30 big")
+//        << (int)QVariant::Pixmap
+//        << QSize(1024, 1024)        // Over 1M
+//        << QSize(1024, 1024);
 }
 
 void tst_QItemDelegate::decoration()
 {
-    if (QByteArray(QTest::currentDataTag()) == QByteArray("pixmap 30x30 big"))
-        QSKIP("Skipping this as it demands too much memory and potential hangs", SkipSingle);
     Q_CHECK_PAINTEVENTS
 
     QFETCH(int, type);
