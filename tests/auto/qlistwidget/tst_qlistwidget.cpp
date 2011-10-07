@@ -1511,10 +1511,6 @@ public:
 
 void tst_QListWidget::fastScroll()
 {
-    if (qstrcmp(QApplication::style()->metaObject()->className(), "QS60Style") == 0) {
-        QSKIP("S60 style doesn't support fast scrolling", SkipAll);
-    }
-
     QWidget topLevel;
     MyListWidget widget(&topLevel);
     for (int i = 0; i < 50; ++i)

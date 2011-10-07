@@ -88,9 +88,6 @@ private slots:
     void clicked();
     void toggled();
     void stateChanged();
-    void accel();
-    void setAccel();
-    void group();
     void foregroundRole();
     void minimumSizeHint();
 
@@ -404,21 +401,6 @@ void tst_QCheckBox::stateChanged()
 void tst_QCheckBox::isToggleButton()
 {
     QVERIFY( testWidget->isCheckable() );
-}
-
-void tst_QCheckBox::accel()
-{
-    QSKIP("This test is empty for now", SkipAll);
-}
-
-void tst_QCheckBox::setAccel()
-{
-    QSKIP("This test is empty for now", SkipAll);
-}
-
-void tst_QCheckBox::group()
-{
-    QSKIP("This test is empty for now", SkipAll);
 }
 
 void tst_QCheckBox::foregroundRole()

@@ -111,9 +111,6 @@ void tst_Lancelot::initTestCase()
     // (e.g. script files not found) as just warnings, and not QFAILs, to avoid false negatives
     // caused by environment or server instability
 
-#if defined(Q_OS_SOMEPLATFORM)
-    QSKIP("This test is not supported on this platform.", SkipAll);
-#endif
     if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode, clientInfo))
         QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 

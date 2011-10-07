@@ -785,10 +785,6 @@ void tst_QGraphicsLinearLayout::orientation()
         else
             QCOMPARE(item->pos().x(), positions.at(i));
     }
-
-    //QSKIP("LayoutdirectionChange should only posted when QGraphicsWidget::setLayoutDirection() is called, right?", SkipAll);
-
-    //QCOMPARE(layout.layoutDirectionChange, 1);
 }
 
 void tst_QGraphicsLinearLayout::removeAt_data()
