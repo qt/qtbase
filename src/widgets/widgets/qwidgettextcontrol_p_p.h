@@ -169,6 +169,8 @@ public:
     void showToolTip(const QPoint &globalPos, const QPointF &pos, QWidget *contextWidget);
 #endif
 
+    bool isPreediting() const;
+
     void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
 
     QTextDocument *doc;
@@ -190,7 +192,7 @@ public:
     bool mousePressed;
 
     bool mightStartDrag;
-    QPoint dragStartPos;
+    QPoint mousePressPos;
     QPointer<QWidget> contextWidget;
 
     int lastSelectionPosition;

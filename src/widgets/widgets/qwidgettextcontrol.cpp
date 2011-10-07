@@ -1506,6 +1506,13 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
 {
     Q_Q(QWidgetTextControl);
 
+    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
+    mousePressPos = pos.toPoint();
+
+#ifndef QT_NO_DRAGANDDROP
+    mightStartDrag = false;
+#endif
+
     if (sendMouseEventToInputContext(
             e, QEvent::MouseButtonPress, button, pos, modifiers, buttons, globalPos)) {
         return;
@@ -1530,10 +1537,8 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
-    mousePressed = (interactionFlags & Qt::TextSelectableByMouse);
-#ifndef QT_NO_DRAGANDDROP
-    mightStartDrag = false;
-#endif
+    if (isPreediting())
+        qApp->inputPanel()->commit();
 
     if (trippleClickTimer.isActive()
         && ((pos - trippleClickPoint).toPoint().manhattanLength() < QApplication::startDragDistance())) {
@@ -1575,7 +1580,6 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
                 && q->hitTest(pos, Qt::ExactHit) != -1) {
 #ifndef QT_NO_DRAGANDDROP
                 mightStartDrag = true;
-                dragStartPos = pos.toPoint();
 #endif
                 return;
             }
@@ -1605,11 +1609,6 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
 {
     Q_Q(QWidgetTextControl);
 
-    if (sendMouseEventToInputContext(
-            e, QEvent::MouseMove, button, mousePos, modifiers, buttons, globalPos)) {
-        return;
-    }
-
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         QString anchor = q->anchorAt(mousePos);
         if (anchor != highlightedAnchor) {
@@ -1618,69 +1617,84 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
         }
     }
 
-    if (!(buttons & Qt::LeftButton))
-        return;
+    if (buttons & Qt::LeftButton) {
+        const bool editable = interactionFlags & Qt::TextEditable;
 
-    const bool editable = interactionFlags & Qt::TextEditable;
+        if (!(mousePressed
+              || editable
+              || mightStartDrag
+              || selectedWordOnDoubleClick.hasSelection()
+              || selectedBlockOnTrippleClick.hasSelection()))
+            return;
 
-    if (!(mousePressed
-          || editable
-          || mightStartDrag
-          || selectedWordOnDoubleClick.hasSelection()
-          || selectedBlockOnTrippleClick.hasSelection()))
-        return;
+        const QTextCursor oldSelection = cursor;
+        const int oldCursorPos = cursor.position();
 
-    const QTextCursor oldSelection = cursor;
-    const int oldCursorPos = cursor.position();
+        if (mightStartDrag) {
+            if ((mousePos.toPoint() - mousePressPos).manhattanLength() > QApplication::startDragDistance())
+                startDrag();
+            return;
+        }
 
-    if (mightStartDrag) {
-        if ((mousePos.toPoint() - dragStartPos).manhattanLength() > QApplication::startDragDistance())
-            startDrag();
-        return;
-    }
+        if (!mousePressed)
+            return;
 
-    if (!mousePressed)
-        return;
+        const qreal mouseX = qreal(mousePos.x());
 
-    const qreal mouseX = qreal(mousePos.x());
+        int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
 
-    int newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
-    if (newCursorPos == -1)
-        return;
+        if (isPreediting()) {
+            // note: oldCursorPos not including preedit
+            int selectionStartPos = q->hitTest(mousePressPos, Qt::FuzzyHit);
 
-    if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
-        selectedWordOnDoubleClick = cursor;
-        selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
-    }
-
-    if (selectedBlockOnTrippleClick.hasSelection())
-        extendBlockwiseSelection(newCursorPos);
-    else if (selectedWordOnDoubleClick.hasSelection())
-        extendWordwiseSelection(newCursorPos, mouseX);
-    else
-        setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
-
-    if (interactionFlags & Qt::TextEditable) {
-        // don't call ensureVisible for the visible cursor to avoid jumping
-        // scrollbars. the autoscrolling ensures smooth scrolling if necessary.
-        //q->ensureCursorVisible();
-        if (cursor.position() != oldCursorPos)
-            emit q->cursorPositionChanged();
-        _q_updateCurrentCharFormatAndSelection();
-#ifndef QT_NO_IM
-        if (contextWidget) {
-            if (QInputContext *ic = qApp->inputContext()) {
-                ic->update();
+            if (newCursorPos != selectionStartPos) {
+                qApp->inputPanel()->commit();
+                // commit invalidates positions
+                newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
+                selectionStartPos = q->hitTest(mousePressPos, Qt::FuzzyHit);
+                setCursorPosition(selectionStartPos);
             }
         }
+
+        if (newCursorPos == -1)
+            return;
+
+        if (wordSelectionEnabled && !selectedWordOnDoubleClick.hasSelection()) {
+            selectedWordOnDoubleClick = cursor;
+            selectedWordOnDoubleClick.select(QTextCursor::WordUnderCursor);
+        }
+
+        if (selectedBlockOnTrippleClick.hasSelection())
+            extendBlockwiseSelection(newCursorPos);
+        else if (selectedWordOnDoubleClick.hasSelection())
+            extendWordwiseSelection(newCursorPos, mouseX);
+        else if (!isPreediting())
+            setCursorPosition(newCursorPos, QTextCursor::KeepAnchor);
+
+        if (interactionFlags & Qt::TextEditable) {
+            // don't call ensureVisible for the visible cursor to avoid jumping
+            // scrollbars. the autoscrolling ensures smooth scrolling if necessary.
+            //q->ensureCursorVisible();
+            if (cursor.position() != oldCursorPos)
+                emit q->cursorPositionChanged();
+            _q_updateCurrentCharFormatAndSelection();
+#ifndef QT_NO_IM
+            if (contextWidget) {
+                if (QInputContext *ic = qApp->inputContext()) {
+                    ic->update();
+                }
+            }
 #endif //QT_NO_IM
-    } else {
-        //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
-        if (cursor.position() != oldCursorPos)
-            emit q->cursorPositionChanged();
+        } else {
+            //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
+            if (cursor.position() != oldCursorPos)
+                emit q->cursorPositionChanged();
+        }
+        selectionChanged(true);
+        repaintOldAndNewSelection(oldSelection);
     }
-    selectionChanged(true);
-    repaintOldAndNewSelection(oldSelection);
+
+    sendMouseEventToInputContext(e, QEvent::MouseMove, button, mousePos, modifiers, buttons, globalPos);
 }
 
 void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
@@ -1748,46 +1762,46 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
     }
 }
 
-void QWidgetTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
-                                                Qt::MouseButtons buttons, const QPoint &globalPos)
+void QWidgetTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos,
+                                                      Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons,
+                                                      const QPoint &globalPos)
 {
     Q_Q(QWidgetTextControl);
 
-    if (sendMouseEventToInputContext(
-            e, QEvent::MouseButtonDblClick, button, pos, modifiers, buttons, globalPos)) {
-        return;
-    }
-
-    if (button != Qt::LeftButton
-        || !(interactionFlags & Qt::TextSelectableByMouse)) {
-        e->ignore();
-        return;
-    }
+    if (button == Qt::LeftButton
+        && (interactionFlags & Qt::TextSelectableByMouse)) {
 
 #ifndef QT_NO_DRAGANDDROP
-    mightStartDrag = false;
+        mightStartDrag = false;
 #endif
-    const QTextCursor oldSelection = cursor;
-    setCursorPosition(pos);
-    QTextLine line = currentTextLine(cursor);
-    bool doEmit = false;
-    if (line.isValid() && line.textLength()) {
-        cursor.select(QTextCursor::WordUnderCursor);
-        doEmit = true;
-    }
-    repaintOldAndNewSelection(oldSelection);
+        if (isPreediting())
+            qApp->inputPanel()->commit();
 
-    cursorIsFocusIndicator = false;
-    selectedWordOnDoubleClick = cursor;
+        const QTextCursor oldSelection = cursor;
+        setCursorPosition(pos);
+        QTextLine line = currentTextLine(cursor);
+        bool doEmit = false;
+        if (line.isValid() && line.textLength()) {
+            cursor.select(QTextCursor::WordUnderCursor);
+            doEmit = true;
+        }
+        repaintOldAndNewSelection(oldSelection);
 
-    trippleClickPoint = pos;
-    trippleClickTimer.start(QApplication::doubleClickInterval(), q);
-    if (doEmit) {
-        selectionChanged();
+        cursorIsFocusIndicator = false;
+        selectedWordOnDoubleClick = cursor;
+
+        trippleClickPoint = pos;
+        trippleClickTimer.start(QApplication::doubleClickInterval(), q);
+        if (doEmit) {
+            selectionChanged();
 #ifndef QT_NO_CLIPBOARD
-        setClipboardSelection();
+            setClipboardSelection();
 #endif
-        emit q->cursorPositionChanged();
+            emit q->cursorPositionChanged();
+        }
+    } else if (!sendMouseEventToInputContext(e, QEvent::MouseButtonDblClick, button, pos,
+                                             modifiers, buttons, globalPos)) {
+        e->ignore();
     }
 }
 
@@ -1798,26 +1812,22 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 #if !defined(QT_NO_IM)
     Q_Q(QWidgetTextControl);
 
-    QTextLayout *layout = cursor.block().layout();
-    if (contextWidget && layout && !layout->preeditAreaText().isEmpty()) {
+    if (contextWidget && isPreediting()) {
+        QTextLayout *layout = cursor.block().layout();
         QInputContext *ctx = qApp->inputContext();
         int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
 
-        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length()) {
+        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
             cursorPos = -1;
-            // don't send move events outside the preedit area
-            if (eventType == QEvent::MouseMove)
-                return true;
-        }
-        if (ctx) {
+
+        if (ctx && cursorPos >= 0) {
             QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos),
                            contextWidget->topLevelWidget()->mapFromGlobal(globalPos), globalPos,
                            button, buttons, modifiers);
             ctx->mouseHandler(cursorPos, &ev);
             e->setAccepted(ev.isAccepted());
-        }
-        if (!layout->preeditAreaText().isEmpty())
             return true;
+        }
     }
 #else
     Q_UNUSED(e);
@@ -2729,6 +2739,15 @@ void QWidgetTextControlPrivate::showToolTip(const QPoint &globalPos, const QPoin
     QToolTip::showText(globalPos, toolTip, contextWidget);
 }
 #endif // QT_NO_TOOLTIP
+
+bool QWidgetTextControlPrivate::isPreediting() const
+{
+    QTextLayout *layout = cursor.block().layout();
+    if (layout && !layout->preeditAreaText().isEmpty())
+        return true;
+
+    return false;
+}
 
 bool QWidgetTextControl::setFocusToNextOrPreviousAnchor(bool next)
 {
