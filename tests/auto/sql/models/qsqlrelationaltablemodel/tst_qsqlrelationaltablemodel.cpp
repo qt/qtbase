@@ -102,10 +102,8 @@ private:
 void tst_QSqlRelationalTableModel::initTestCase_data()
 {
     dbs.open();
-    if (dbs.fillTestTable() == 0) {
-        qWarning("NO DATABASES");
+    if (dbs.fillTestTable() == 0)
         QSKIP("No database drivers are available in this Qt configuration", SkipAll);
-    }
 }
 
 void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
