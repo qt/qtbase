@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBASICUNIXFONTDATABASE_H
-#define QBASICUNIXFONTDATABASE_H
+#ifndef QBASICFONTDATABASE_H
+#define QBASICFONTDATABASE_H
 
 #include <QPlatformFontDatabase>
 #include <QtCore/QByteArray>
@@ -53,7 +53,7 @@ struct FontFile
     int hintStyle;
 };
 
-class QBasicUnixFontDatabase : public QPlatformFontDatabase
+class QBasicFontDatabase : public QPlatformFontDatabase
 {
 public:
     void populateFontDatabase();
@@ -64,6 +64,7 @@ public:
     void releaseHandle(void *handle);
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
+    static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
 };
 
-#endif // QBASICUNIXFONTDATABASE_H
+#endif // QBASICFONTDATABASE_H

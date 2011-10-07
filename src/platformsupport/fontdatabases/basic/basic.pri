@@ -2,11 +2,11 @@ DEFINES += QT_NO_FONTCONFIG
 QT += gui-private core-private
 
 HEADERS += \
-        $$PWD/qbasicunixfontdatabase_p.h \
+        $$PWD/qbasicfontdatabase_p.h \
         $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft_p.h
 
 SOURCES += \
-        $$PWD/qbasicunixfontdatabase.cpp \
+        $$PWD/qbasicfontdatabase.cpp \
         $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp
 
 CONFIG += opentype
@@ -58,7 +58,7 @@ contains(QT_CONFIG, freetype) {
                $$QT_FREETYPE_DIR/src/autofit/afloader.c\
                $$QT_FREETYPE_DIR/src/autofit/autofit.c
 
-   symbian {
+   symbian|win32 {
        SOURCES += \
                   $$QT_FREETYPE_DIR/src/base/ftsystem.c
    } else {

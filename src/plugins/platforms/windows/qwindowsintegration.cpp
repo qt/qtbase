@@ -45,6 +45,9 @@
 #include "qwindowscontext.h"
 #include "qwindowsglcontext.h"
 #include "qwindowsscreen.h"
+#ifndef QT_NO_FREETYPE
+#include "qwindowsfontdatabase_ft.h"
+#endif
 #include "qwindowsfontdatabase.h"
 #include "qwindowsguieventdispatcher.h"
 #include "qwindowsclipboard.h"
@@ -129,10 +132,11 @@ struct QWindowsIntegrationPrivate
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 
     explicit QWindowsIntegrationPrivate(bool openGL);
+    ~QWindowsIntegrationPrivate();
 
     const bool m_openGL;
     QWindowsContext m_context;
-    QWindowsFontDatabase m_fontDatabase;
+    QPlatformFontDatabase *m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
     QWindowsClipboard m_clipboard;
     QWindowsDrag m_drag;
@@ -146,7 +150,14 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(bool openGL)
     : m_openGL(openGL)
     , m_context(openGL)
     , m_eventDispatcher(new QWindowsGuiEventDispatcher)
+    , m_fontDatabase(0)
 {
+}
+
+QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
+{
+    if (m_fontDatabase)
+        delete m_fontDatabase;
 }
 
 QWindowsIntegration::QWindowsIntegration(bool openGL) :
@@ -235,7 +246,18 @@ QPlatformOpenGLContext
 
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
-    return &d->m_fontDatabase;
+    if (!d->m_fontDatabase) {
+#ifndef QT_NO_FREETYPE
+        if (d->m_nativeInterface.property("fontengine").toString() == QLatin1String("native"))
+            d->m_fontDatabase = new QWindowsFontDatabase();
+        else
+            d->m_fontDatabase = new QWindowsFontDatabaseFT();
+#else
+        d->m_fontDatabase = new QWindowsFontDatabase();
+#endif
+    }
+    return d->m_fontDatabase;
+
 }
 
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const

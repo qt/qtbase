@@ -62,7 +62,9 @@
 #include <private/qt_x11_p.h>
 #endif
 
+#ifndef Q_OS_WIN
 #include <unistd.h>
+#endif
 
 #ifndef QT_NO_FONTCONFIG
 #include <fontconfig/fontconfig.h>
@@ -123,7 +125,7 @@ struct QFreetypeFace
 
 private:
     friend class QFontEngineFT;
-    friend class QScopedPointerDeleter<QFreetypeFace>;
+    friend struct QScopedPointerDeleter<QFreetypeFace>;
     QFreetypeFace() : _lock(QMutex::Recursive) {}
     ~QFreetypeFace() {}
     QAtomicInt ref;
@@ -131,7 +133,13 @@ private:
     QByteArray fontData;
 };
 
+// If this is exported this breaks compilation of the windows
+// plugin as qfontengine_ft_p.h/.cpp are also compiled there
+#ifndef Q_OS_WIN
 class Q_GUI_EXPORT QFontEngineFT : public QFontEngine
+#else
+class QFontEngineFT : public QFontEngine
+#endif
 {
 public:
 

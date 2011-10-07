@@ -39,20 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTCONFIGDATABASE_H
-#define QFONTCONFIGDATABASE_H
+#ifndef QWINDOWSFONTDATABASEFT_H
+#define QWINDOWSFONTDATABASEFT_H
 
-#include <QPlatformFontDatabase>
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtCore/QSharedPointer>
+#include "qtwindows_additional.h"
 
-class QFontconfigDatabase : public QBasicFontDatabase
+class QWindowsFontDatabaseFT : public QBasicFontDatabase
 {
 public:
     void populateFontDatabase();
     QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+
     QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
-    QString resolveFontFamilyAlias(const QString &family) const;
+
+    virtual QString fontDir() const;
+    virtual QFont defaultFont() const;
+    virtual QHash<QByteArray, QFont> defaultFonts() const;
+    static HFONT systemFont();
+    static QFont LOGFONT_to_QFont(const LOGFONT& lf, int verticalDPI = 0);
+
+private:
+    void populate(const QString &family = QString());
+
+    QSet<QString> m_families;
 };
 
-#endif // QFONTCONFIGDATABASE_H
+#endif // QWINDOWSFONTDATABASEFT_H

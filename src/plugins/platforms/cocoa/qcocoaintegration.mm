@@ -53,7 +53,7 @@
 
 #include <QtCore/qcoreapplication.h>
 
-#include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,7 +78,7 @@ QCocoaScreen::~QCocoaScreen()
 }
 
 QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QBasicUnixFontDatabase())
+    : mFontDb(new QBasicFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
 {
     mPool = new QCocoaAutoReleasePool;

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qbasicunixfontdatabase_p.h"
+#include "qbasicfontdatabase_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPlatformScreen>
@@ -132,7 +132,7 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
     { 14, 127 },
 };
 
-static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2])
+QSupportedWritingSystems QBasicFontDatabase::determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2])
 {
     QSupportedWritingSystems writingSystems;
     bool hasScript = false;
@@ -186,7 +186,7 @@ static inline bool scriptRequiresOpenType(int script)
             || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
 }
 
-void QBasicUnixFontDatabase::populateFontDatabase()
+void QBasicFontDatabase::populateFontDatabase()
 {
     QPlatformFontDatabase::populateFontDatabase();
     QString fontpath = fontDir();
@@ -208,7 +208,7 @@ void QBasicUnixFontDatabase::populateFontDatabase()
     }
 }
 
-QFontEngine *QBasicUnixFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *usrPtr)
+QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *usrPtr)
 {
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
@@ -271,7 +271,7 @@ namespace {
 
 }
 
-QFontEngine *QBasicUnixFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
+QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
                                                 QFont::HintingPreference hintingPreference)
 {
     QFontDef fontDef;
@@ -303,7 +303,7 @@ QFontEngine *QBasicUnixFontDatabase::fontEngine(const QByteArray &fontData, qrea
     return fe;
 }
 
-QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QBasicFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
@@ -312,18 +312,18 @@ QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, con
     return QStringList();
 }
 
-QStringList QBasicUnixFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QBasicFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     return addTTFile(fontData,fileName.toLocal8Bit());
 }
 
-void QBasicUnixFontDatabase::releaseHandle(void *handle)
+void QBasicFontDatabase::releaseHandle(void *handle)
 {
     FontFile *file = static_cast<FontFile *>(handle);
     delete file;
 }
 
-QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
+QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     extern FT_Library qt_getFreetype();
     FT_Library library = qt_getFreetype();

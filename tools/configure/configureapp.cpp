@@ -342,7 +342,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "LIBMNG" ]          = "auto";
-    dictionary[ "FREETYPE" ]        = "no";
+    dictionary[ "FREETYPE" ]        = "yes";
 
     dictionary[ "QT3SUPPORT" ]      = "no";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
