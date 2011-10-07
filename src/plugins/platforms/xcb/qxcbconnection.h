@@ -229,11 +229,12 @@ namespace QXcbAtom {
     };
 }
 
+class QXcbConnection;
 class QXcbEventReader : public QThread
 {
     Q_OBJECT
 public:
-    QXcbEventReader(xcb_connection_t *connection)
+    QXcbEventReader(QXcbConnection *connection)
         : m_connection(connection)
     {
     }
@@ -253,7 +254,7 @@ private:
 
     QMutex m_mutex;
     QList<xcb_generic_event_t *> m_events;
-    xcb_connection_t *m_connection;
+    QXcbConnection *m_connection;
 };
 
 class QAbstractEventDispatcher;

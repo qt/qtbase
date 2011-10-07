@@ -117,7 +117,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     if (m_connection)
         qDebug("Successfully connected to display %s", m_displayName.constData());
 
-    m_reader = new QXcbEventReader(m_connection);
+    m_reader = new QXcbEventReader(this);
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
     connect(m_reader, SIGNAL(eventPending()), this, SLOT(processXcbEvents()), Qt::QueuedConnection);
     m_reader->start();
@@ -559,10 +559,10 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
 void QXcbEventReader::run()
 {
     xcb_generic_event_t *event;
-    while (m_connection && (event = xcb_wait_for_event(m_connection))) {
+    while (m_connection && (event = xcb_wait_for_event(m_connection->xcb_connection()))) {
         m_mutex.lock();
         addEvent(event);
-        while (m_connection && (event = xcb_poll_for_queued_event(m_connection)))
+        while (m_connection && (event = xcb_poll_for_queued_event(m_connection->xcb_connection())))
             addEvent(event);
         m_mutex.unlock();
         emit eventPending();
@@ -576,7 +576,7 @@ void QXcbEventReader::run()
 void QXcbEventReader::addEvent(xcb_generic_event_t *event)
 {
     if ((event->response_type & ~0x80) == XCB_CLIENT_MESSAGE
-        && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
+        && ((xcb_client_message_event_t *)event)->type == m_connection->atom(QXcbAtom::_QT_CLOSE_CONNECTION))
         m_connection = 0;
     m_events << event;
 }
@@ -585,7 +585,7 @@ QList<xcb_generic_event_t *> *QXcbEventReader::lock()
 {
     m_mutex.lock();
 #ifndef XCB_POLL_FOR_QUEUED_EVENT
-    while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection))
+    while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection->xcb_connection()))
         m_events << event;
 #endif
     return &m_events;
@@ -596,7 +596,7 @@ void QXcbEventReader::unlock()
     m_mutex.unlock();
 }
 
-void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom, uint id)
+void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
 {
     xcb_client_message_event_t event;
     memset(&event, 0, sizeof(event));
@@ -605,7 +605,7 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom, uint id)
     event.format = 32;
     event.sequence = 0;
     event.window = m_connectionEventListener;
-    event.type = atom;
+    event.type = atom(a);
     event.data.data32[0] = id;
 
     Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
