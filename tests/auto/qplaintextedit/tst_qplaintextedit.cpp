@@ -339,10 +339,8 @@ void tst_QPlainTextEdit::paragSeparatorOnPlaintextAppend()
 #ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::selectAllSetsNotSelection()
 {
-    if (!QApplication::clipboard()->supportsSelection()) {
+    if (!QApplication::clipboard()->supportsSelection())
         QSKIP("Test only relevant for systems with selection", SkipAll);
-        return;
-    }
 
     QApplication::clipboard()->setText(QString("foobar"), QClipboard::Selection);
     QVERIFY(QApplication::clipboard()->text(QClipboard::Selection) == QString("foobar"));

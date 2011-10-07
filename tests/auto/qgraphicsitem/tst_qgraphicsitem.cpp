@@ -10519,7 +10519,6 @@ void tst_QGraphicsItem::updateMicroFocus()
 {
 #if defined Q_OS_WIN || defined Q_OS_MAC
     QSKIP("QTBUG-9578", SkipAll);
-    return;
 #endif
     QGraphicsScene scene;
     QWidget parent;

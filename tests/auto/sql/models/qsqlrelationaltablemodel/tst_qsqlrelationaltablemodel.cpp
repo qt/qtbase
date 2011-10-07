@@ -1449,10 +1449,9 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    if(!tst_Databases::isPostgreSQL(db)) {
+    if(!tst_Databases::isPostgreSQL(db))
         QSKIP("Postgresql specific test", SkipSingle);
-        return;
-    }
+
     QSqlRelationalTableModel model(0, db);
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373", __FILE__)));

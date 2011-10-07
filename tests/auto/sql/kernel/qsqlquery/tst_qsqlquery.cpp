@@ -571,10 +571,8 @@ void tst_QSqlQuery::oraOutValues()
     CHECK_DATABASE( db );
     const QString tst_outValues(qTableName("tst_outValues", __FILE__));
 
-    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) ) {
+    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
         QSKIP( "Test requires prepared query support", SkipSingle );
-        return;
-    }
 
     QSqlQuery q( db );
 
@@ -755,10 +753,8 @@ void tst_QSqlQuery::outValuesDB2()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) ) {
+    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
         QSKIP( "Test requires prepared query support", SkipSingle );
-        return;
-    }
 
     QSqlQuery q( db );
 
@@ -794,10 +790,8 @@ void tst_QSqlQuery::outValues()
     CHECK_DATABASE( db );
     const QString tst_outValues(qTableName("tst_outValues", __FILE__));
 
-    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) ) {
+    if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
         QSKIP( "Test requires prepared query support", SkipSingle );
-        return;
-    }
 
     QSqlQuery q( db );
 
@@ -824,10 +818,8 @@ void tst_QSqlQuery::outValues()
                                 "    set @x = 42\n"
                                 "end\n" ) );
         QVERIFY( q.prepare( "{call " + tst_outValues + "(?)}" ) );
-    } else {
+    } else
         QSKIP( "Don't know how to create a stored procedure for this database server, please fix this test", SkipSingle );
-        return;
-    }
 
     q.addBindValue( 0, QSql::Out );
 
@@ -1600,12 +1592,10 @@ void tst_QSqlQuery::joins()
     if ( db.driverName().startsWith( "QOCI" )
             || db.driverName().startsWith( "QTDS" )
             || db.driverName().startsWith( "QODBC" )
-            || db.driverName().startsWith( "QIBASE" ) ) {
+            || db.driverName().startsWith( "QIBASE" ) )
         // Oracle broken beyond recognition - cannot outer join on more than
         // one table.
         QSKIP( "DBMS cannot understand standard SQL", SkipSingle );
-        return;
-    }
 
     QSqlQuery q( db );
 
@@ -2222,10 +2212,8 @@ void tst_QSqlQuery::bindWithDoubleColonCastOperator()
 
     // Only PostgreSQL support the double-colon cast operator
 
-    if ( !db.driverName().startsWith( "QPSQL" ) ) {
+    if ( !db.driverName().startsWith( "QPSQL" ) )
         QSKIP( "Test requires PostgreSQL", SkipSingle );
-        return;
-    }
 
     const QString tablename(qTableName( "bindtest", __FILE__ ));
 
@@ -2292,10 +2280,8 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
     if ( !db.driverName().startsWith( "QPSQL" )
             && !db.driverName().startsWith( "QOCI" )
             && !db.driverName().startsWith( "QMYSQL" )
-            && !db.driverName().startsWith( "QDB2" ) ) {
+            && !db.driverName().startsWith( "QDB2" ) )
         QSKIP( "Test is specific for PostgreSQL, Oracle, MySql and DB2", SkipSingle );
-        return;
-    }
 
     db.close();
 
@@ -2380,10 +2366,8 @@ void tst_QSqlQuery::sqlite_finish()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    if (db.driverName() != QLatin1String("QSQLITE")) {
+    if (db.driverName() != QLatin1String("QSQLITE"))
         QSKIP("Sqlite3 specific test", SkipSingle);
-        return;
-    }
 
     if ( db.databaseName().startsWith( ':' ) )
         QSKIP( "This test requires a database on the filesystem, not in-memory", SkipAll );
@@ -3214,10 +3198,8 @@ void tst_QSqlQuery::sqlite_constraint()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    if (db.driverName() != QLatin1String("QSQLITE")) {
+    if (db.driverName() != QLatin1String("QSQLITE"))
         QSKIP("Sqlite3 specific test", SkipSingle);
-        return;
-    }
 
     QSqlQuery q(db);
     const QString trigger(qTableName("test_constraint", __FILE__));

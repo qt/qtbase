@@ -253,10 +253,8 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(fontDbChangedSpy.count(), 1);
 // addApplicationFont is supported on Mac, don't skip the test if it breaks.
 #ifndef Q_WS_MAC
-    if (id == -1) {
+    if (id == -1)
         QSKIP("Skip the test since app fonts are not supported on this system", SkipSingle);
-        return;
-    }
 #endif
 
     const QStringList addedFamilies = QFontDatabase::applicationFontFamilies(id);
