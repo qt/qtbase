@@ -817,10 +817,8 @@ void tst_QSharedPointer::differentPointers()
 
         // ensure that this compiler isn't broken
         if (*reinterpret_cast<quintptr *>(&aData) == *reinterpret_cast<quintptr *>(&aBase))
-            qFatal("Something went very wrong -- we couldn't create two different pointers to the same object");
-        if (aData != aBase)
-            QSKIP("Broken compiler", SkipAll);
-        if (aBase != aData)
+            QFAIL("Something went very wrong -- we couldn't create two different pointers to the same object");
+        if (aData != aBase || aBase != aData)
             QSKIP("Broken compiler", SkipAll);
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
