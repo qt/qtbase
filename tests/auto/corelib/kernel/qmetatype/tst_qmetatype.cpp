@@ -72,7 +72,10 @@ private slots:
     void normalizedTypes();
     void typeName_data();
     void typeName();
+    void create_data();
     void create();
+    void createCopy_data();
+    void createCopy();
     void typedefs();
     void isRegistered_data();
     void isRegistered();
@@ -268,13 +271,285 @@ void tst_QMetaType::typeName()
     QCOMPARE(QString::fromLatin1(QMetaType::typeName(aType)), aTypeName);
 }
 
+#define FOR_EACH_PRIMITIVE_METATYPE(F) \
+    F(int, Int) \
+    F(uint, UInt) \
+    F(bool, Bool) \
+    F(double, Double) \
+    F(long, Long) \
+    F(short, Short) \
+    F(char, Char) \
+    F(ulong, ULong) \
+    F(ushort, UShort) \
+    F(uchar, UChar) \
+    F(float, Float) \
+    F(QObject *, QObjectStar) \
+    F(QWidget *, QWidgetStar) \
+    F(void *, VoidStar) \
+    F(qlonglong, LongLong) \
+    F(qulonglong, ULongLong)
+
+#define FOR_EACH_COMPLEX_CORE_METATYPE(F) \
+    F(QString, QString) \
+    F(QByteArray, QByteArray) \
+    F(QChar, QChar) \
+    F(QStringList, QStringList) \
+    F(QBitArray, QBitArray) \
+    F(QDate, QDate) \
+    F(QTime, QTime) \
+    F(QDateTime, QDateTime) \
+    F(QUrl, QUrl) \
+    F(QLocale, QLocale) \
+    F(QRect, QRect) \
+    F(QRectF, QRectF) \
+    F(QSize, QSize) \
+    F(QSizeF, QSizeF) \
+    F(QLine, QLine) \
+    F(QLineF, QLineF) \
+    F(QPoint, QPoint) \
+    F(QPointF, QPointF) \
+    F(QEasingCurve, QEasingCurve)
+
+#ifndef QT_NO_REGEXP
+#  define FOR_EACH_COMPLEX_CORE_METATYPE2(F) \
+    F(QRegExp, QRegExp)
+#else
+#  define FOR_EACH_COMPLEX_CORE_METATYPE2(F)
+#endif
+
+#define FOR_EACH_CORE_METATYPE(F) \
+    FOR_EACH_PRIMITIVE_METATYPE(F) \
+    FOR_EACH_COMPLEX_CORE_METATYPE(F) \
+    FOR_EACH_COMPLEX_CORE_METATYPE2(F)
+
+template <int ID>
+struct MetaEnumToType {};
+
+#define DEFINE_META_ENUM_TO_TYPE(TYPE, ID) \
+template<> \
+struct MetaEnumToType<QMetaType::ID> { \
+    typedef TYPE Type; \
+};
+FOR_EACH_CORE_METATYPE(DEFINE_META_ENUM_TO_TYPE)
+#undef DEFINE_META_ENUM_TO_TYPE
+
+template <int ID>
+struct DefaultValueFactory
+{
+    typedef typename MetaEnumToType<ID>::Type Type;
+    static Type *create() { return new Type; }
+};
+
+template <int ID>
+struct DefaultValueTraits
+{
+    // By default we assume that a default-constructed value (new T) is
+    // initialized; e.g. QCOMPARE(*(new T), *(new T)) should succeed
+    enum { IsInitialized = true };
+};
+
+#define DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS(TYPE, ID) \
+template<> struct DefaultValueTraits<QMetaType::ID> { \
+    enum { IsInitialized = false }; \
+};
+// Primitive types (int et al) aren't initialized
+FOR_EACH_PRIMITIVE_METATYPE(DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS)
+#undef DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS
+
+template <int ID>
+struct TestValueFactory {};
+
+template<> struct TestValueFactory<QMetaType::QString> {
+    static QString *create() { return new QString(QString::fromLatin1("QString")); }
+};
+template<> struct TestValueFactory<QMetaType::Int> {
+    static int *create() { return new int(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::UInt> {
+    static uint *create() { return new uint(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::Bool> {
+    static bool *create() { return new bool(true); }
+};
+template<> struct TestValueFactory<QMetaType::Double> {
+    static double *create() { return new double(3.14); }
+};
+template<> struct TestValueFactory<QMetaType::QByteArray> {
+    static QByteArray *create() { return new QByteArray(QByteArray("QByteArray")); }
+};
+template<> struct TestValueFactory<QMetaType::QChar> {
+    static QChar *create() { return new QChar(QChar('q')); }
+};
+template<> struct TestValueFactory<QMetaType::Long> {
+    static long *create() { return new long(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::Short> {
+    static short *create() { return new short(0x1234); }
+};
+template<> struct TestValueFactory<QMetaType::Char> {
+    static char *create() { return new char('c'); }
+};
+template<> struct TestValueFactory<QMetaType::ULong> {
+    static ulong *create() { return new ulong(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::UShort> {
+    static ushort *create() { return new ushort(0x1234); }
+};
+template<> struct TestValueFactory<QMetaType::UChar> {
+    static uchar *create() { return new uchar('u'); }
+};
+template<> struct TestValueFactory<QMetaType::Float> {
+    static float *create() { return new float(3.14); }
+};
+template<> struct TestValueFactory<QMetaType::QObjectStar> {
+    static QObject * *create() { return new QObject *(0); }
+};
+template<> struct TestValueFactory<QMetaType::QWidgetStar> {
+    static QWidget * *create() { return new QWidget *(0); }
+};
+template<> struct TestValueFactory<QMetaType::VoidStar> {
+    static void * *create() { return new void *(0); }
+};
+template<> struct TestValueFactory<QMetaType::LongLong> {
+    static qlonglong *create() { return new qlonglong(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::ULongLong> {
+    static qulonglong *create() { return new qulonglong(0x12345678); }
+};
+template<> struct TestValueFactory<QMetaType::QStringList> {
+    static QStringList *create() { return new QStringList(QStringList() << "Q" << "t"); }
+};
+template<> struct TestValueFactory<QMetaType::QBitArray> {
+    static QBitArray *create() { return new QBitArray(QBitArray(256, true)); }
+};
+template<> struct TestValueFactory<QMetaType::QDate> {
+    static QDate *create() { return new QDate(QDate::currentDate()); }
+};
+template<> struct TestValueFactory<QMetaType::QTime> {
+    static QTime *create() { return new QTime(QTime::currentTime()); }
+};
+template<> struct TestValueFactory<QMetaType::QDateTime> {
+    static QDateTime *create() { return new QDateTime(QDateTime::currentDateTime()); }
+};
+template<> struct TestValueFactory<QMetaType::QUrl> {
+    static QUrl *create() { return new QUrl("http://www.example.org"); }
+};
+template<> struct TestValueFactory<QMetaType::QLocale> {
+    static QLocale *create() { return new QLocale(QLocale::c()); }
+};
+template<> struct TestValueFactory<QMetaType::QRect> {
+    static QRect *create() { return new QRect(10, 20, 30, 40); }
+};
+template<> struct TestValueFactory<QMetaType::QRectF> {
+    static QRectF *create() { return new QRectF(10, 20, 30, 40); }
+};
+template<> struct TestValueFactory<QMetaType::QSize> {
+    static QSize *create() { return new QSize(10, 20); }
+};
+template<> struct TestValueFactory<QMetaType::QSizeF> {
+    static QSizeF *create() { return new QSizeF(10, 20); }
+};
+template<> struct TestValueFactory<QMetaType::QLine> {
+    static QLine *create() { return new QLine(10, 20, 30, 40); }
+};
+template<> struct TestValueFactory<QMetaType::QLineF> {
+    static QLineF *create() { return new QLineF(10, 20, 30, 40); }
+};
+template<> struct TestValueFactory<QMetaType::QPoint> {
+    static QPoint *create() { return new QPoint(10, 20); }
+};
+template<> struct TestValueFactory<QMetaType::QPointF> {
+    static QPointF *create() { return new QPointF(10, 20); }
+};
+template<> struct TestValueFactory<QMetaType::QEasingCurve> {
+    static QEasingCurve *create() { return new QEasingCurve(QEasingCurve::InOutElastic); }
+};
+#ifndef QT_NO_REGEXP
+template<> struct TestValueFactory<QMetaType::QRegExp> {
+    static QRegExp *create() { return new QRegExp("A*"); }
+};
+#endif
+
+void tst_QMetaType::create_data()
+{
+    QTest::addColumn<QMetaType::Type>("type");
+#define ADD_METATYPE_TEST_ROW(TYPE, ID) \
+    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID;
+FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+template<int ID>
+static void testCreateHelper()
+{
+    typedef typename MetaEnumToType<ID>::Type Type;
+    void *actual = QMetaType::create(ID);
+    if (DefaultValueTraits<ID>::IsInitialized) {
+        Type *expected = DefaultValueFactory<ID>::create();
+        QCOMPARE(*static_cast<Type *>(actual), *expected);
+        delete expected;
+    }
+    QMetaType::destroy(ID, actual);
+}
+
+typedef void (*TypeTestFunction)();
+
 void tst_QMetaType::create()
 {
-    QSize x(1, 1);
-    void *size = QMetaType::create(QMetaType::QSize, &x);
-    QVERIFY(size);
-    QCOMPARE(static_cast<QSize *>(size)->width(), 1);
-    QMetaType::destroy(QMetaType::QSize, size);
+    struct TypeTestFunctionGetter
+    {
+        static TypeTestFunction get(int type)
+        {
+            switch (type) {
+#define RETURN_CREATE_FUNCTION(TYPE, ID) \
+            case QMetaType::ID: \
+            return testCreateHelper<QMetaType::ID>;
+FOR_EACH_CORE_METATYPE(RETURN_CREATE_FUNCTION)
+#undef RETURN_CREATE_FUNCTION
+            }
+            return 0;
+        }
+    };
+
+    QFETCH(QMetaType::Type, type);
+    TypeTestFunctionGetter::get(type)();
+}
+
+template<int ID>
+static void testCreateCopyHelper()
+{
+    typedef typename MetaEnumToType<ID>::Type Type;
+    Type *expected = TestValueFactory<ID>::create();
+    void *actual = QMetaType::create(ID, expected);
+    QCOMPARE(*static_cast<Type *>(actual), *expected);
+    QMetaType::destroy(ID, actual);
+    delete expected;
+}
+
+void tst_QMetaType::createCopy_data()
+{
+    create_data();
+}
+
+void tst_QMetaType::createCopy()
+{
+    struct TypeTestFunctionGetter
+    {
+        static TypeTestFunction get(int type)
+        {
+            switch (type) {
+#define RETURN_CREATE_COPY_FUNCTION(TYPE, ID) \
+            case QMetaType::ID: \
+            return testCreateCopyHelper<QMetaType::ID>;
+FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
+#undef RETURN_CREATE_COPY_FUNCTION
+            }
+            return 0;
+        }
+    };
+
+    QFETCH(QMetaType::Type, type);
+    TypeTestFunctionGetter::get(type)();
 }
 
 typedef QString CustomString;
