@@ -103,6 +103,7 @@ public:
     void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event);
     void handleFocusInEvent(const xcb_focus_in_event_t *event);
     void handleFocusOutEvent(const xcb_focus_out_event_t *event);
+    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);
 
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
 

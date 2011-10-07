@@ -1331,6 +1331,53 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
     QWindowSystemInterface::handleLeaveEvent(window());
 }
 
+void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
+{
+    connection()->setTime(event->time);
+
+    bool propertyDeleted = event->state == XCB_PROPERTY_DELETE;
+
+    if (event->atom == atom(QXcbAtom::_NET_WM_STATE) || event->atom == atom(QXcbAtom::WM_STATE)) {
+        if (propertyDeleted)
+            return;
+
+        xcb_get_property_cookie_t get_cookie =
+            xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::WM_STATE),
+                             XCB_ATOM_ANY, 0, 1024);
+
+        xcb_generic_error_t *error;
+
+        xcb_get_property_reply_t *reply =
+            xcb_get_property_reply(xcb_connection(), get_cookie, &error);
+
+        xcb_atom_t wm_state = XCB_WM_STATE_WITHDRAWN;
+        if (reply && reply->format == 32 && reply->type == atom(QXcbAtom::WM_STATE)) {
+            if (reply->length != 0)
+                wm_state = ((long *)xcb_get_property_value(reply))[0];
+            free(reply);
+        } else if (error) {
+            connection()->handleXcbError(error);
+            free(error);
+        }
+
+        QVector<xcb_atom_t> netWmState = getNetWmState();
+
+        bool maximized = netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ))
+            && netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+        bool fullscreen = netWmState.contains(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
+
+        Qt::WindowState state = Qt::WindowNoState;
+        if (wm_state == XCB_WM_STATE_ICONIC)
+            state = Qt::WindowMinimized;
+        else if (maximized)
+            state = Qt::WindowMaximized;
+        else if (fullscreen)
+            state = Qt::WindowFullScreen;
+
+        QWindowSystemInterface::handleWindowStateChanged(window(), state);
+    }
+}
+
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
 {
     QWindowSystemInterface::handleWindowActivated(window());

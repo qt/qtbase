@@ -527,9 +527,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         handled = false;
         break;
     case XCB_PROPERTY_NOTIFY:
-        setTime(((xcb_property_notify_event_t *)event)->time);
-//        qDebug() << "XCB_PROPERTY_NOTIFY";
-        handled = false;
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
         break;
     default:
         handled = false;
