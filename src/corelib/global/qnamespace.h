@@ -86,8 +86,10 @@ Qt {
     Q_FLAGS(MatchFlags)
     Q_FLAGS(KeyboardModifiers MouseButtons)
     Q_ENUMS(WindowType WindowState WindowModality WidgetAttribute ApplicationAttribute)
+    Q_ENUMS(ScreenOrientation)
     Q_ENUMS(InputMethodHint)
     Q_FLAGS(WindowFlags WindowStates InputMethodHints)
+    Q_FLAGS(ScreenOrientations)
     Q_ENUMS(ConnectionType)
 #ifndef QT_NO_GESTURES
     Q_ENUMS(GestureState)
@@ -284,12 +286,14 @@ public:
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
     enum ScreenOrientation {
-        UnknownOrientation,
-        LandscapeOrientation,
-        PortraitOrientation,
-        InvertedLandscapeOrientation,
-        InvertedPortraitOrientation
+        UnknownOrientation           = 0x00000000,
+        PortraitOrientation          = 0x00000001,
+        LandscapeOrientation         = 0x00000002,
+        InvertedPortraitOrientation  = 0x00000004,
+        InvertedLandscapeOrientation = 0x00000008
     };
+
+    Q_DECLARE_FLAGS(ScreenOrientations, ScreenOrientation)
 
     enum WidgetAttribute {
         WA_Disabled = 0,
@@ -1529,6 +1533,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ImageConversionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DockWidgetAreas)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ToolBarAreas)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::WindowStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ScreenOrientations)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
