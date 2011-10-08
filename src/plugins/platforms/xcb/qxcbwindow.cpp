@@ -77,6 +77,7 @@
 #define xcb_wm_hints_set_normal xcb_icccm_wm_hints_set_normal
 #define xcb_wm_hints_t xcb_icccm_wm_hints_t
 #define XCB_WM_STATE_ICONIC XCB_ICCCM_WM_STATE_ICONIC
+#define XCB_WM_STATE_WITHDRAWN XCB_ICCCM_WM_STATE_WITHDRAWN
 #endif
 
 #include <private/qguiapplication_p.h>
