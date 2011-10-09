@@ -213,17 +213,17 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
     GLuint shader = shaderGuard ? shaderGuard->id() : 0;
     if (!shader)
         return false;
+
+    // Try to compile shader
     glfuncs->glCompileShader(shader);
     GLint value = 0;
+
+    // Get compilation status
     glfuncs->glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
     compiled = (value != 0);
-    value = 0;
-    glfuncs->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
-    if (!compiled && value > 1) {
-        char *logbuf = new char [value];
-        GLint len;
-        glfuncs->glGetShaderInfoLog(shader, value, &len, logbuf);
-        log = QString::fromLatin1(logbuf);
+
+    if (!compiled) {
+        // Compilation failed, try to provide some information about the failure
         QString name = q->objectName();
 
         const char *types[] = {
@@ -241,13 +241,53 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
         else if (shaderType == QOpenGLShader::Geometry)
             type = types[2];
 
+        // Get info and source code lengths
+        GLint infoLogLength = 0;
+        GLint sourceCodeLength = 0;
+        char *logBuffer = 0;
+        char *sourceCodeBuffer = 0;
+
+        // Get the compilation info log
+        glfuncs->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        if (infoLogLength > 1) {
+            GLint temp;
+            logBuffer = new char [infoLogLength];
+            glfuncs->glGetShaderInfoLog(shader, infoLogLength, &temp, logBuffer);
+        }
+
+        // Get the source code
+        glfuncs->glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &sourceCodeLength);
+
+        if (sourceCodeLength > 1) {
+            GLint temp;
+            sourceCodeBuffer = new char [sourceCodeLength];
+            glfuncs->glGetShaderSource(shader, sourceCodeLength, &temp, sourceCodeBuffer);
+        }
+
+        QString log;
+        if (logBuffer)
+            log = QString::fromLatin1(logBuffer);
+        else
+            log = QLatin1String("failed");
+
         if (name.isEmpty())
             qWarning("QOpenGLShader::compile(%s): %s", type, qPrintable(log));
         else
             qWarning("QOpenGLShader::compile(%s)[%s]: %s", type, qPrintable(name), qPrintable(log));
 
-        delete [] logbuf;
+        // Dump the source code if we got it
+        if (sourceCodeBuffer) {
+            qWarning("*** Problematic %s shader source code ***", type);
+            qWarning() << qPrintable(QString::fromLatin1(sourceCodeBuffer));
+            qWarning("***");
+        }
+
+        // Cleanup
+        delete [] logBuffer;
+        delete [] sourceCodeBuffer;
     }
+
     return compiled;
 }
 
