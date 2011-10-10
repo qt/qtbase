@@ -76,6 +76,11 @@ private slots:
     void constructCoreType();
     void constructCoreTypeCopy_data();
     void constructCoreTypeCopy();
+
+    void constructInPlace_data();
+    void constructInPlace();
+    void constructInPlaceCopy_data();
+    void constructInPlaceCopy();
 };
 
 tst_QMetaType::tst_QMetaType()
@@ -279,6 +284,50 @@ void tst_QMetaType::constructCoreTypeCopy()
             QMetaType::destroy(typeId, data);
         }
     }
+}
+
+void tst_QMetaType::constructInPlace_data()
+{
+    constructCoreType_data();
+}
+
+void tst_QMetaType::constructInPlace()
+{
+    QFETCH(int, typeId);
+    int size = QMetaType::sizeOf(typeId);
+    void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
+    QCOMPARE(QMetaType::construct(typeId, storage, /*copy=*/0), storage);
+    QMetaType::destruct(typeId, storage);
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i) {
+            QMetaType::construct(typeId, storage, /*copy=*/0);
+            QMetaType::destruct(typeId, storage);
+        }
+    }
+    qFreeAligned(storage);
+}
+
+void tst_QMetaType::constructInPlaceCopy_data()
+{
+    constructCoreType_data();
+}
+
+void tst_QMetaType::constructInPlaceCopy()
+{
+    QFETCH(int, typeId);
+    int size = QMetaType::sizeOf(typeId);
+    void *storage = qMallocAligned(size, 2 * sizeof(qlonglong));
+    void *other = QMetaType::create(typeId);
+    QCOMPARE(QMetaType::construct(typeId, storage, other), storage);
+    QMetaType::destruct(typeId, storage);
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i) {
+            QMetaType::construct(typeId, storage, other);
+            QMetaType::destruct(typeId, storage);
+        }
+    }
+    QMetaType::destroy(typeId, other);
+    qFreeAligned(storage);
 }
 
 QTEST_MAIN(tst_QMetaType)
