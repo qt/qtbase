@@ -218,7 +218,8 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
                 d->bars << bar;
                 if (d->bars.size() == 1) {
                     Q_ASSERT(d->animationFps> 0);
-                    d->animateTimer = startTimer(1000 / d->animationFps);
+                    if (d->animateTimer == 0)
+                        d->animateTimer = startTimer(1000 / d->animationFps);
                 }
             }
         }
