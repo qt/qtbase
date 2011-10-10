@@ -100,7 +100,6 @@ public:
     QImage toImage() const;
     Attachment attachment() const;
 
-    QPaintEngine *paintEngine() const;
     GLuint handle() const;
 
     static bool bindDefault();

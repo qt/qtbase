@@ -628,32 +628,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     \bold{It is important to have a current GL context when creating a
     QOpenGLFramebufferObject, otherwise initialization will fail.}
 
-    OpenGL framebuffer objects and pbuffers (see
-    \l{QOpenGLPixelBuffer}{QOpenGLPixelBuffer}) can both be used to render to
-    offscreen surfaces, but there are a number of advantages with
-    using framebuffer objects instead of pbuffers:
-
-    \list 1
-    \o A framebuffer object does not require a separate rendering
-    context, so no context switching will occur when switching
-    rendering targets. There is an overhead involved in switching
-    targets, but in general it is cheaper than a context switch to a
-    pbuffer.
-
-    \o Rendering to dynamic textures (i.e. render-to-texture
-    functionality) works on all platforms. No need to do explicit copy
-    calls from a render buffer into a texture, as was necessary on
-    systems that did not support the \c{render_texture} extension.
-
-    \o It is possible to attach several rendering buffers (or texture
-    objects) to the same framebuffer object, and render to all of them
-    without doing a context switch.
-
-    \o The OpenGL framebuffer extension is a pure GL extension with no
-    system dependant WGL, CGL, or GLX parts. This makes using
-    framebuffer objects more portable.
-    \endlist
-
     When using a QPainter to paint to a QOpenGLFramebufferObject you should take
     care that the QOpenGLFramebufferObject is created with the CombinedDepthStencil
     attachment for QPainter to be able to render correctly.
@@ -678,8 +652,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     As of Qt 4.8, it's possible to draw into a QOpenGLFramebufferObject
     using a QPainter in a separate thread. Note that OpenGL 2.0 or
     OpenGL ES 2.0 is required for this to work.
-
-    \sa {Framebuffer Object Example}
 */
 
 
@@ -953,6 +925,18 @@ QSize QOpenGLFramebufferObject::size() const
 }
 
 /*!
+    \fn int QOpenGLFramebufferObject::width() const
+
+    Returns the width of the framebuffer object attachments.
+*/
+
+/*!
+    \fn int QOpenGLFramebufferObject::height() const
+
+    Returns the height of the framebuffer object attachments.
+*/
+
+/*!
     Returns the format of this framebuffer object.
 */
 QOpenGLFramebufferObjectFormat QOpenGLFramebufferObject::format() const
@@ -1148,9 +1132,9 @@ bool QOpenGLFramebufferObject::hasOpenGLFramebufferBlit()
 
 /*!
     \overload
-    \sa blitFramebuffer
-*/
 
+    Convenience overload to blit between two framebuffer objects.
+*/
 void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                                QOpenGLFramebufferObject *source,
                                                GLbitfield buffers, GLenum filter)
