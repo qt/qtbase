@@ -24,7 +24,6 @@ HEADERS += opengl/qopengl.h \
            opengl/qopengltextureglyphcache_p.h \
            opengl/qopenglshadercache_p.h \
            opengl/qopenglshadercache_meego_p.h \
-           opengl/qopenglcolormap.h \
            opengl/qtriangulator_p.h \
            opengl/qrbtree_p.h
 
@@ -42,7 +41,6 @@ SOURCES += opengl/qopengl.cpp \
            opengl/qopenglcustomshaderstage.cpp \
            opengl/qopengltriangulatingstroker.cpp \
            opengl/qopengltextureglyphcache.cpp \
-           opengl/qopenglcolormap.cpp \
            opengl/qtriangulator.cpp
 
 #INCLUDEPATH += ../3rdparty/harfbuzz/src
