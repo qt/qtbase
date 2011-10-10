@@ -19,7 +19,8 @@ SUBDIRS=\
            qtoolbutton \
            qwidget \
            qworkspace \
-           windowsmobile
+           windowsmobile \
+           qmetaobjectbuilder
 
 contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
 

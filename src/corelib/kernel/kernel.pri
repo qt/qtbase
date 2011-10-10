@@ -26,6 +26,7 @@ HEADERS += \
         kernel/qobjectcleanuphandler.h \
         kernel/qvariant_p.h \
         kernel/qmetaobject_p.h \
+        kernel/qmetaobjectbuilder_p.h \
         kernel/qobject_p.h \
         kernel/qcoreglobaldata_p.h \
         kernel/qsharedmemory.h \
@@ -45,6 +46,7 @@ SOURCES += \
         kernel/qcoreevent.cpp \
         kernel/qmetaobject.cpp \
         kernel/qmetatype.cpp \
+        kernel/qmetaobjectbuilder.cpp \
         kernel/qmimedata.cpp \
         kernel/qobject.cpp \
         kernel/qobjectcleanuphandler.cpp \
