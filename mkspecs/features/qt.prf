@@ -38,7 +38,6 @@ plugin { #Qt plugins
 
 #handle includes
 INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
-win32:INCLUDEPATH += $$QMAKE_INCDIR_QT/ActiveQt
 
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {

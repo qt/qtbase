@@ -11,8 +11,6 @@ src_tools_rcc.subdir = $$QT_SOURCE_TREE/src/tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_uic.subdir = $$QT_SOURCE_TREE/src/tools/uic
 src_tools_uic.target = sub-uic
-src_tools_idc.subdir = $$QT_SOURCE_TREE/src/tools/idc
-src_tools_idc.target = sub-idc
 
 !wince*:!ordered {
     # Set dependencies for each subdir
@@ -36,7 +34,7 @@ EXTRA_RELEASE_TARGETS =
         subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
         subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
         SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
-        !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc)):!separate_debug_info {
+        !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs)):!separate_debug_info {
             #debug
             debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
             debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)

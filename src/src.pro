@@ -6,10 +6,6 @@ win32:SRC_SUBDIRS += src_winmain
 symbian:SRC_SUBDIRS += src_s60main
 !wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
 SRC_SUBDIRS += src_corelib
-# TODO: Move idc to ActiveQt
-!cross_compile {
-    win32:!wince*: SRC_SUBDIRS += src_tools_idc
-}
 SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
@@ -71,7 +67,6 @@ src_platformsupport.target = sub-platformsupport
    src_opengl.depends = src_gui src_widgets
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib src_gui src_widgets
-   src_tools_idc.depends = src_corelib             # target defined in tools.pro
    src_plugins.depends = src_gui src_sql src_xml
    qpa: src_plugins.depends = src_platformsupport
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
@@ -103,7 +98,7 @@ for(subname, SRC_SUBDIRS) {
    subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
    subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
    SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
-   !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc) | isEqual(subname, src_tools_uic3)):!separate_debug_info {
+   !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs)):!separate_debug_info {
        #debug
        debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
        debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)
