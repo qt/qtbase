@@ -1083,7 +1083,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 printf ("\n"
                         " QmlTest options:\n"
                         " -import             : Specify an import directory.\n"
-                        " -input              : Specify the root directory for test cases.\n"
+                        " -input              : Specify the root directory for test cases or a single test case file.\n"
                         " -qtquick1           : Run with QtQuick 1 rather than QtQuick 2.\n"
                         );
             }
