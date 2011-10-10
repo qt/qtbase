@@ -49,6 +49,8 @@
 #include <QtCore/qdatastream.h>
 #endif
 
+#include <new>
+
 #ifdef Bool
 #error qmetatype.h must be included before any header file that defines Bool
 #endif
@@ -106,6 +108,9 @@ public:
     typedef void (*Deleter)(void *);
     typedef void *(*Creator)(const void *);
 
+    typedef void (*Destructor)(void *);
+    typedef void *(*Constructor)(void *, const void *);
+
 #ifndef QT_NO_DATASTREAM
     typedef void (*SaveOperator)(QDataStream &, const void *);
     typedef void (*LoadOperator)(QDataStream &, void *);
@@ -116,16 +121,20 @@ public:
 #endif
     static int registerType(const char *typeName, Deleter deleter,
                             Creator creator);
+    static int registerType(const char *typeName, Deleter deleter,
+                            Creator creator,
+                            Destructor destructor,
+                            Constructor constructor,
+                            int size);
     static int registerTypedef(const char *typeName, int aliasId);
     static int type(const char *typeName);
     static const char *typeName(int type);
+    static int sizeOf(int type);
     static bool isRegistered(int type);
     static void *create(int type, const void *copy = 0);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED static void *construct(int type, const void *copy = 0)
-    { return create(type, copy); }
-#endif
     static void destroy(int type, void *data);
+    static void *construct(int type, void *where, const void *copy);
+    static void destruct(int type, void *where);
     static void unregisterType(const char *typeName);
 
 #ifndef QT_NO_DATASTREAM
@@ -146,6 +155,21 @@ void *qMetaTypeCreateHelper(const T *t)
     if (!t)
         return new T();
     return new T(*static_cast<const T*>(t));
+}
+
+template <typename T>
+void qMetaTypeDestructHelper(T *t)
+{
+    t->~T();
+}
+
+template <typename T>
+void *qMetaTypeConstructHelper(void *where, const T *t)
+{
+    if (!t)
+        return new (where) T;
+    else
+        return new (where) T(*static_cast<const T*>(t));
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -202,9 +226,16 @@ int qRegisterMetaType(const char *typeName
     CreatePtr cptr = qMetaTypeCreateHelper<T>;
     typedef void(*DeletePtr)(T*);
     DeletePtr dptr = qMetaTypeDeleteHelper<T>;
+    typedef void*(*ConstructPtr)(void *, const T*);
+    ConstructPtr ipcptr = qMetaTypeConstructHelper<T>;
+    typedef void(*DestructPtr)(T*);
+    DestructPtr ipdptr = qMetaTypeDestructHelper<T>;
 
     return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
-                                   reinterpret_cast<QMetaType::Creator>(cptr));
+                                   reinterpret_cast<QMetaType::Creator>(cptr),
+                                   reinterpret_cast<QMetaType::Destructor>(ipdptr),
+                                   reinterpret_cast<QMetaType::Constructor>(ipcptr),
+                                   sizeof(T));
 }
 
 #ifndef QT_NO_DATASTREAM

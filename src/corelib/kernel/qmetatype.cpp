@@ -337,6 +337,9 @@ struct QMetaTypeGuiHelper
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
 #endif
+    QMetaType::Constructor constructor;
+    QMetaType::Destructor destructor;
+    int size;
 };
 Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper = 0;
 Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper = 0;
@@ -348,6 +351,7 @@ public:
 #ifndef QT_NO_DATASTREAM
     , saveOp(0), loadOp(0)
 #endif
+    , constructor(0), destructor(0), size(0)
     {}
 
     QByteArray typeName;
@@ -358,6 +362,9 @@ public:
     QMetaType::LoadOperator loadOp;
 #endif
     int alias;
+    QMetaType::Constructor constructor;
+    QMetaType::Destructor destructor;
+    int size;
 };
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
@@ -460,12 +467,28 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 
 /*! \internal
 
-    Registers a user type for marshalling, with \a typeName, a \a
-    destructor, and a \a constructor. Returns the type's handle,
-    or -1 if the type could not be registered.
+    This function is needed until existing code outside of qtbase
+    has been changed to call the new version of registerType().
  */
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
+{
+    return registerType(typeName, deleter, creator, 0, 0, 0);
+}
+
+/*! \internal
+    \since 5.0
+
+    Registers a user type for marshalling, with \a typeName, a \a
+    deleter, a \a creator, a \a destructor, a \a constructor, and
+    a \a size. Returns the type's handle, or -1 if the type could
+    not be registered.
+ */
+int QMetaType::registerType(const char *typeName, Deleter deleter,
+                            Creator creator,
+                            Destructor destructor,
+                            Constructor constructor,
+                            int size)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct || !typeName || !deleter || !creator)
@@ -490,6 +513,9 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.creator = creator;
             inf.deleter = deleter;
             inf.alias = -1;
+            inf.constructor = constructor;
+            inf.destructor = destructor;
+            inf.size = size;
             idx = ct->size() + User;
             ct->append(inf);
         }
@@ -1417,6 +1443,443 @@ void QMetaType::destroy(int type, void *data)
 }
 
 /*!
+    \since 5.0
+
+    Constructs a value of the given \a type in the existing memory
+    addressed by \a where, that is a copy of \a copy, and returns
+    \a where. If \a copy is zero, the value is default constructed.
+
+    This is a low-level function for explicitly managing the memory
+    used to store the type. Consider calling create() if you don't
+    need this level of control (that is, use "new" rather than
+    "placement new").
+
+    You must ensure that \a where points to a location that can store
+    a value of type \a type, and that \a where is suitably aligned.
+    The type's size can be queried by calling sizeOf().
+
+    The rule of thumb for alignment is that a type is aligned to its
+    natural boundary, which is the smallest power of 2 that is bigger
+    than the type, unless that alignment is larger than the maximum
+    useful alignment for the platform. For practical purposes,
+    alignment larger than 2 * sizeof(void*) is only necessary for
+    special hardware instructions (e.g., aligned SSE loads and stores
+    on x86).
+
+    \sa destruct(), sizeOf()
+*/
+void *QMetaType::construct(int type, void *where, const void *copy)
+{
+    if (!where)
+        return 0;
+    switch (type) {
+    case QMetaType::VoidStar:
+    case QMetaType::QObjectStar:
+    case QMetaType::QWidgetStar:
+        return qMetaTypeConstructHelper<void*>(where, static_cast<void* const *>(copy));
+    case QMetaType::Long:
+        return qMetaTypeConstructHelper<long>(where, static_cast<const long *>(copy));
+    case QMetaType::Int:
+        return qMetaTypeConstructHelper<int>(where, static_cast<const int *>(copy));
+    case QMetaType::Short:
+        return qMetaTypeConstructHelper<short>(where, static_cast<const short *>(copy));
+    case QMetaType::Char:
+        return qMetaTypeConstructHelper<char>(where, static_cast<const char *>(copy));
+    case QMetaType::ULong:
+        return qMetaTypeConstructHelper<ulong>(where, static_cast<const ulong *>(copy));
+    case QMetaType::UInt:
+        return qMetaTypeConstructHelper<uint>(where, static_cast<const uint *>(copy));
+    case QMetaType::LongLong:
+        return qMetaTypeConstructHelper<qlonglong>(where, static_cast<const qlonglong *>(copy));
+    case QMetaType::ULongLong:
+        return qMetaTypeConstructHelper<qulonglong>(where, static_cast<const qulonglong *>(copy));
+    case QMetaType::UShort:
+        return qMetaTypeConstructHelper<ushort>(where, static_cast<const ushort *>(copy));
+    case QMetaType::UChar:
+        return qMetaTypeConstructHelper<uchar>(where, static_cast<const uchar *>(copy));
+    case QMetaType::Bool:
+        return qMetaTypeConstructHelper<bool>(where, static_cast<const bool *>(copy));
+    case QMetaType::Float:
+        return qMetaTypeConstructHelper<float>(where, static_cast<const float *>(copy));
+    case QMetaType::Double:
+        return qMetaTypeConstructHelper<double>(where, static_cast<const double *>(copy));
+    case QMetaType::QChar:
+        return qMetaTypeConstructHelper<NS(QChar)>(where, static_cast<const NS(QChar) *>(copy));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QVariantMap:
+        return qMetaTypeConstructHelper<NS(QVariantMap)>(where, static_cast<const NS(QVariantMap) *>(copy));
+    case QMetaType::QVariantHash:
+        return qMetaTypeConstructHelper<NS(QVariantHash)>(where, static_cast<const NS(QVariantHash) *>(copy));
+    case QMetaType::QVariantList:
+        return qMetaTypeConstructHelper<NS(QVariantList)>(where, static_cast<const NS(QVariantList) *>(copy));
+    case QMetaType::QVariant:
+        return qMetaTypeConstructHelper<NS(QVariant)>(where, static_cast<const NS(QVariant) *>(copy));
+#endif
+    case QMetaType::QByteArray:
+        return qMetaTypeConstructHelper<NS(QByteArray)>(where, static_cast<const NS(QByteArray) *>(copy));
+    case QMetaType::QString:
+        return qMetaTypeConstructHelper<NS(QString)>(where, static_cast<const NS(QString) *>(copy));
+    case QMetaType::QStringList:
+        return qMetaTypeConstructHelper<NS(QStringList)>(where, static_cast<const NS(QStringList) *>(copy));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QBitArray:
+        return qMetaTypeConstructHelper<NS(QBitArray)>(where, static_cast<const NS(QBitArray) *>(copy));
+#endif
+    case QMetaType::QDate:
+        return qMetaTypeConstructHelper<NS(QDate)>(where, static_cast<const NS(QDate) *>(copy));
+    case QMetaType::QTime:
+        return qMetaTypeConstructHelper<NS(QTime)>(where, static_cast<const NS(QTime) *>(copy));
+    case QMetaType::QDateTime:
+        return qMetaTypeConstructHelper<NS(QDateTime)>(where, static_cast<const NS(QDateTime) *>(copy));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QUrl:
+        return qMetaTypeConstructHelper<NS(QUrl)>(where, static_cast<const NS(QUrl) *>(copy));
+#endif
+    case QMetaType::QLocale:
+        return qMetaTypeConstructHelper<NS(QLocale)>(where, static_cast<const NS(QLocale) *>(copy));
+#ifndef QT_NO_GEOM_VARIANT
+    case QMetaType::QRect:
+        return qMetaTypeConstructHelper<NS(QRect)>(where, static_cast<const NS(QRect) *>(copy));
+    case QMetaType::QRectF:
+        return qMetaTypeConstructHelper<NS(QRectF)>(where, static_cast<const NS(QRectF) *>(copy));
+    case QMetaType::QSize:
+        return qMetaTypeConstructHelper<NS(QSize)>(where, static_cast<const NS(QSize) *>(copy));
+    case QMetaType::QSizeF:
+        return qMetaTypeConstructHelper<NS(QSizeF)>(where, static_cast<const NS(QSizeF) *>(copy));
+    case QMetaType::QLine:
+        return qMetaTypeConstructHelper<NS(QLine)>(where, static_cast<const NS(QLine) *>(copy));
+    case QMetaType::QLineF:
+        return qMetaTypeConstructHelper<NS(QLineF)>(where, static_cast<const NS(QLineF) *>(copy));
+    case QMetaType::QPoint:
+        return qMetaTypeConstructHelper<NS(QPoint)>(where, static_cast<const NS(QPoint) *>(copy));
+    case QMetaType::QPointF:
+        return qMetaTypeConstructHelper<NS(QPointF)>(where, static_cast<const NS(QPointF) *>(copy));
+#endif
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegExp:
+        return qMetaTypeConstructHelper<NS(QRegExp)>(where, static_cast<const NS(QRegExp) *>(copy));
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        return qMetaTypeConstructHelper<NS(QEasingCurve)>(where, static_cast<const NS(QEasingCurve) *>(copy));
+#endif
+    case QMetaType::Void:
+        return where;
+    default:
+        ;
+    }
+
+    Constructor ctor = 0;
+    if (type >= FirstGuiType && type <= LastGuiType) {
+        Q_ASSERT(qMetaTypeGuiHelper);
+        if (!qMetaTypeGuiHelper)
+            return 0;
+        ctor = qMetaTypeGuiHelper[type - FirstGuiType].constructor;
+    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+        Q_ASSERT(qMetaTypeWidgetsHelper);
+        if (!qMetaTypeWidgetsHelper)
+            return 0;
+        ctor = qMetaTypeWidgetsHelper[type - FirstWidgetsType].constructor;
+    } else {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        QReadLocker locker(customTypesLock());
+        if (type < User || !ct || ct->count() <= type - User)
+            return 0;
+        ctor = ct->at(type - User).constructor;
+        if (!ctor)
+            return 0;
+    }
+
+    return ctor(where, copy);
+}
+
+/*!
+    \since 5.0
+
+    Destructs the value of the given \a type, located at \a where.
+
+    Unlike destroy(), this function only invokes the type's
+    destructor, it doesn't invoke the delete operator.
+
+    \sa construct()
+*/
+void QMetaType::destruct(int type, void *where)
+{
+    if (!where)
+        return;
+    switch (type) {
+    case QMetaType::VoidStar:
+    case QMetaType::QObjectStar:
+    case QMetaType::QWidgetStar:
+        break;
+    case QMetaType::Long:
+        break;
+    case QMetaType::Int:
+        break;
+    case QMetaType::Short:
+        break;
+    case QMetaType::Char:
+        break;
+    case QMetaType::ULong:
+        break;
+    case QMetaType::LongLong:
+        break;
+    case QMetaType::ULongLong:
+        break;
+    case QMetaType::UInt:
+        break;
+    case QMetaType::UShort:
+        break;
+    case QMetaType::UChar:
+        break;
+    case QMetaType::Bool:
+        break;
+    case QMetaType::Float:
+        break;
+    case QMetaType::Double:
+        break;
+    case QMetaType::QChar:
+        static_cast< NS(QChar)* >(where)->NS(QChar)::~QChar();
+        break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QVariantMap:
+        static_cast< NS(QVariantMap)* >(where)->NS(QVariantMap)::~QVariantMap();
+        break;
+    case QMetaType::QVariantHash:
+        static_cast< NS(QVariantHash)* >(where)->NS(QVariantHash)::~QVariantHash();
+        break;
+    case QMetaType::QVariantList:
+        static_cast< NS(QVariantList)* >(where)->NS(QVariantList)::~QVariantList();
+        break;
+    case QMetaType::QVariant:
+        static_cast< NS(QVariant)* >(where)->NS(QVariant)::~QVariant();
+        break;
+#endif
+    case QMetaType::QByteArray:
+        static_cast< NS(QByteArray)* >(where)->NS(QByteArray)::~QByteArray();
+        break;
+    case QMetaType::QString:
+        static_cast< NS(QString)* >(where)->NS(QString)::~QString();
+        break;
+    case QMetaType::QStringList:
+        static_cast< NS(QStringList)* >(where)->NS(QStringList)::~QStringList();
+        break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QBitArray:
+        static_cast< NS(QBitArray)* >(where)->NS(QBitArray)::~QBitArray();
+        break;
+#endif
+    case QMetaType::QDate:
+        static_cast< NS(QDate)* >(where)->NS(QDate)::~QDate();
+        break;
+    case QMetaType::QTime:
+        static_cast< NS(QTime)* >(where)->NS(QTime)::~QTime();
+        break;
+    case QMetaType::QDateTime:
+        static_cast< NS(QDateTime)* >(where)->NS(QDateTime)::~QDateTime();
+        break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QUrl:
+        static_cast< NS(QUrl)* >(where)->NS(QUrl)::~QUrl();
+#endif
+        break;
+    case QMetaType::QLocale:
+        static_cast< NS(QLocale)* >(where)->NS(QLocale)::~QLocale();
+        break;
+#ifndef QT_NO_GEOM_VARIANT
+    case QMetaType::QRect:
+        static_cast< NS(QRect)* >(where)->NS(QRect)::~QRect();
+        break;
+    case QMetaType::QRectF:
+        static_cast< NS(QRectF)* >(where)->NS(QRectF)::~QRectF();
+        break;
+    case QMetaType::QSize:
+        static_cast< NS(QSize)* >(where)->NS(QSize)::~QSize();
+        break;
+    case QMetaType::QSizeF:
+        static_cast< NS(QSizeF)* >(where)->NS(QSizeF)::~QSizeF();
+        break;
+    case QMetaType::QLine:
+        static_cast< NS(QLine)* >(where)->NS(QLine)::~QLine();
+        break;
+    case QMetaType::QLineF:
+        static_cast< NS(QLineF)* >(where)->NS(QLineF)::~QLineF();
+        break;
+    case QMetaType::QPoint:
+        static_cast< NS(QPoint)* >(where)->NS(QPoint)::~QPoint();
+        break;
+    case QMetaType::QPointF:
+        static_cast< NS(QPointF)* >(where)->NS(QPointF)::~QPointF();
+        break;
+#endif
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegExp:
+        static_cast< NS(QRegExp)* >(where)->NS(QRegExp)::~QRegExp();
+        break;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        static_cast< NS(QEasingCurve)* >(where)->NS(QEasingCurve)::~QEasingCurve();
+        break;
+#endif
+    case QMetaType::Void:
+        break;
+    default: {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        Destructor dtor = 0;
+        if (type >= FirstGuiType && type <= LastGuiType) {
+            Q_ASSERT(qMetaTypeGuiHelper);
+            if (!qMetaTypeGuiHelper)
+                return;
+            dtor = qMetaTypeGuiHelper[type - FirstGuiType].destructor;
+        } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+            Q_ASSERT(qMetaTypeWidgetsHelper);
+            if (!qMetaTypeWidgetsHelper)
+                return;
+            dtor = qMetaTypeWidgetsHelper[type - FirstWidgetsType].destructor;
+        } else {
+            QReadLocker locker(customTypesLock());
+            if (type < User || !ct || ct->count() <= type - User)
+                break;
+            dtor = ct->at(type - User).destructor;
+            if (!dtor)
+                break;
+        }
+        dtor(where);
+        break; }
+    }
+}
+
+/*!
+    \since 5.0
+
+    Returns the size of the given \a type in bytes (i.e., sizeof(T),
+    where T is the actual type identified by the \a type argument).
+
+    This function is typically used together with construct()
+    to perform low-level management of the memory used by a type.
+
+    \sa construct()
+*/
+int QMetaType::sizeOf(int type)
+{
+    switch (type) {
+    case QMetaType::VoidStar:
+    case QMetaType::QObjectStar:
+    case QMetaType::QWidgetStar:
+        return sizeof(void *);
+    case QMetaType::Long:
+        return sizeof(long);
+    case QMetaType::Int:
+        return sizeof(int);
+    case QMetaType::Short:
+        return sizeof(short);
+    case QMetaType::Char:
+        return sizeof(char);
+    case QMetaType::ULong:
+        return sizeof(ulong);
+    case QMetaType::UInt:
+        return sizeof(uint);
+    case QMetaType::LongLong:
+        return sizeof(qlonglong);
+    case QMetaType::ULongLong:
+        return sizeof(qulonglong);
+    case QMetaType::UShort:
+        return sizeof(ushort);
+    case QMetaType::UChar:
+        return sizeof(uchar);
+    case QMetaType::Bool:
+        return sizeof(bool);
+    case QMetaType::Float:
+        return sizeof(float);
+    case QMetaType::Double:
+        return sizeof(double);
+    case QMetaType::QChar:
+        return sizeof(NS(QChar));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QVariantMap:
+        return sizeof(NS(QVariantMap));
+    case QMetaType::QVariantHash:
+        return sizeof(NS(QVariantHash));
+    case QMetaType::QVariantList:
+        return sizeof(NS(QVariantList));
+    case QMetaType::QVariant:
+        return sizeof(NS(QVariant));
+#endif
+    case QMetaType::QByteArray:
+        return sizeof(NS(QByteArray));
+    case QMetaType::QString:
+        return sizeof(NS(QString));
+    case QMetaType::QStringList:
+        return sizeof(NS(QStringList));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QBitArray:
+        return sizeof(NS(QBitArray));
+#endif
+    case QMetaType::QDate:
+        return sizeof(NS(QDate));
+    case QMetaType::QTime:
+        return sizeof(NS(QTime));
+    case QMetaType::QDateTime:
+        return sizeof(NS(QDateTime));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QUrl:
+        return sizeof(NS(QUrl));
+#endif
+    case QMetaType::QLocale:
+        return sizeof(NS(QLocale));
+#ifndef QT_NO_GEOM_VARIANT
+    case QMetaType::QRect:
+        return sizeof(NS(QRect));
+    case QMetaType::QRectF:
+        return sizeof(NS(QRectF));
+    case QMetaType::QSize:
+        return sizeof(NS(QSize));
+    case QMetaType::QSizeF:
+        return sizeof(NS(QSizeF));
+    case QMetaType::QLine:
+        return sizeof(NS(QLine));
+    case QMetaType::QLineF:
+        return sizeof(NS(QLineF));
+    case QMetaType::QPoint:
+        return sizeof(NS(QPoint));
+    case QMetaType::QPointF:
+        return sizeof(NS(QPointF));
+#endif
+#ifndef QT_NO_REGEXP
+    case QMetaType::QRegExp:
+        return sizeof(NS(QRegExp));
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        return sizeof(NS(QEasingCurve));
+#endif
+    case QMetaType::Void:
+        return 0;
+    default:
+        ;
+    }
+
+    if (type >= FirstGuiType && type <= LastGuiType) {
+        Q_ASSERT(qMetaTypeGuiHelper);
+        if (!qMetaTypeGuiHelper)
+            return 0;
+        return qMetaTypeGuiHelper[type - FirstGuiType].size;
+    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+        Q_ASSERT(qMetaTypeWidgetsHelper);
+        if (!qMetaTypeWidgetsHelper)
+            return 0;
+        return qMetaTypeWidgetsHelper[type - FirstWidgetsType].size;
+    }
+
+    const QVector<QCustomTypeInfo> * const ct = customTypes();
+    QReadLocker locker(customTypesLock());
+    if (type < User || !ct || ct->count() <= type - User)
+        return 0;
+    return ct->at(type - User).size;
+}
+
+/*!
     \fn int qRegisterMetaType(const char *typeName)
     \relates QMetaType
     \threadsafe
@@ -1473,6 +1936,12 @@ void QMetaType::destroy(int type, void *data)
     \internal
 */
 /*! \typedef QMetaType::LoadOperator
+    \internal
+*/
+/*! \typedef QMetaType::Destructor
+    \internal
+*/
+/*! \typedef QMetaType::Constructor
     \internal
 */
 

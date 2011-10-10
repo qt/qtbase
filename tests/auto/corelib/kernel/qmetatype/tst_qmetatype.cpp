@@ -76,6 +76,12 @@ private slots:
     void create();
     void createCopy_data();
     void createCopy();
+    void sizeOf_data();
+    void sizeOf();
+    void construct_data();
+    void construct();
+    void constructCopy_data();
+    void constructCopy();
     void typedefs();
     void isRegistered_data();
     void isRegistered();
@@ -543,6 +549,139 @@ void tst_QMetaType::createCopy()
             return testCreateCopyHelper<QMetaType::ID>;
 FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
 #undef RETURN_CREATE_COPY_FUNCTION
+            }
+            return 0;
+        }
+    };
+
+    QFETCH(QMetaType::Type, type);
+    TypeTestFunctionGetter::get(type)();
+}
+
+void tst_QMetaType::sizeOf_data()
+{
+    QTest::addColumn<QMetaType::Type>("type");
+    QTest::addColumn<int>("size");
+#define ADD_METATYPE_TEST_ROW(TYPE, ID) \
+    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID << int(sizeof(TYPE));
+FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+void tst_QMetaType::sizeOf()
+{
+    QFETCH(QMetaType::Type, type);
+    QFETCH(int, size);
+    QCOMPARE(QMetaType::sizeOf(type), size);
+}
+
+void tst_QMetaType::construct_data()
+{
+    create_data();
+}
+
+#ifndef Q_ALIGNOF
+template<uint N>
+struct RoundToNextHighestPowerOfTwo
+{
+private:
+    enum { V1 = N-1 };
+    enum { V2 = V1 | (V1 >> 1) };
+    enum { V3 = V2 | (V2 >> 2) };
+    enum { V4 = V3 | (V3 >> 4) };
+    enum { V5 = V4 | (V4 >> 8) };
+    enum { V6 = V5 | (V5 >> 16) };
+public:
+    enum { Value = V6 + 1 };
+};
+#endif
+
+template<class T>
+struct TypeAlignment
+{
+#ifdef Q_ALIGNOF
+    enum { Value = Q_ALIGNOF(T) };
+#else
+    enum { Value = RoundToNextHighestPowerOfTwo<sizeof(T)>::Value };
+#endif
+};
+
+template<int ID>
+static void testConstructHelper()
+{
+    typedef typename MetaEnumToType<ID>::Type Type;
+    int size = QMetaType::sizeOf(ID);
+    void *storage = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *actual = QMetaType::construct(ID, storage, /*copy=*/0);
+    QCOMPARE(actual, storage);
+    if (DefaultValueTraits<ID>::IsInitialized) {
+        Type *expected = DefaultValueFactory<ID>::create();
+        QCOMPARE(*static_cast<Type *>(actual), *expected);
+        delete expected;
+    }
+    QMetaType::destruct(ID, actual);
+    qFreeAligned(storage);
+
+    QVERIFY(QMetaType::construct(ID, 0, /*copy=*/0) == 0);
+    QMetaType::destruct(ID, 0);
+}
+
+void tst_QMetaType::construct()
+{
+    struct TypeTestFunctionGetter
+    {
+        static TypeTestFunction get(int type)
+        {
+            switch (type) {
+#define RETURN_CONSTRUCT_FUNCTION(TYPE, ID) \
+            case QMetaType::ID: \
+            return testConstructHelper<QMetaType::ID>;
+FOR_EACH_CORE_METATYPE(RETURN_CONSTRUCT_FUNCTION)
+#undef RETURN_CONSTRUCT_FUNCTION
+            }
+            return 0;
+        }
+    };
+
+    QFETCH(QMetaType::Type, type);
+    TypeTestFunctionGetter::get(type)();
+}
+
+template<int ID>
+static void testConstructCopyHelper()
+{
+    typedef typename MetaEnumToType<ID>::Type Type;
+    Type *expected = TestValueFactory<ID>::create();
+    int size = QMetaType::sizeOf(ID);
+    void *storage = qMallocAligned(size, TypeAlignment<Type>::Value);
+    void *actual = QMetaType::construct(ID, storage, expected);
+    QCOMPARE(actual, storage);
+    QCOMPARE(*static_cast<Type *>(actual), *expected);
+    QMetaType::destruct(ID, actual);
+    qFreeAligned(storage);
+
+    QVERIFY(QMetaType::construct(ID, 0, expected) == 0);
+
+    delete expected;
+}
+
+void tst_QMetaType::constructCopy_data()
+{
+    create_data();
+}
+
+void tst_QMetaType::constructCopy()
+{
+    struct TypeTestFunctionGetter
+    {
+        static TypeTestFunction get(int type)
+        {
+            switch (type) {
+#define RETURN_CONSTRUCT_COPY_FUNCTION(TYPE, ID) \
+            case QMetaType::ID: \
+            return testConstructCopyHelper<QMetaType::ID>;
+FOR_EACH_CORE_METATYPE(RETURN_CONSTRUCT_COPY_FUNCTION)
+#undef RETURN_CONSTRUCT_COPY_FUNCTION
             }
             return 0;
         }

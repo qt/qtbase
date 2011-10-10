@@ -141,6 +141,9 @@ struct QMetaTypeGuiHelper
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
 #endif
+    QMetaType::Constructor constructor;
+    QMetaType::Destructor destructor;
+    int size;
 };
 
 extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper;
@@ -151,13 +154,21 @@ extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper;
      typedef void *(*QCreate##TYPE)(const TYPE *); \
      static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
      typedef void (*QDelete##TYPE)(TYPE *); \
-     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>;
+     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
+     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
+     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
+     typedef void (*QDestruct##TYPE)(TYPE *); \
+     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>;
 #else
 #  define Q_DECL_METATYPE_HELPER(TYPE) \
      typedef void *(*QCreate##TYPE)(const TYPE *); \
      static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
      typedef void (*QDelete##TYPE)(TYPE *); \
      static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
+     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
+     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
+     typedef void (*QDestruct##TYPE)(TYPE *); \
+     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>; \
      typedef void (*QSave##TYPE)(QDataStream &, const TYPE *); \
      static const QSave##TYPE qSave##TYPE = qMetaTypeSaveHelper<TYPE>; \
      typedef void (*QLoad##TYPE)(QDataStream &, TYPE *); \
@@ -172,13 +183,20 @@ Q_DECL_METATYPE_HELPER(QSizePolicy)
 #ifdef QT_NO_DATASTREAM
 #  define Q_IMPL_METATYPE_HELPER(TYPE) \
      { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
-       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE) }
+       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
+       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
+       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
+       sizeof(TYPE) \
+     }
 #else
 #  define Q_IMPL_METATYPE_HELPER(TYPE) \
      { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
        reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
        reinterpret_cast<QMetaType::SaveOperator>(qSave##TYPE), \
-       reinterpret_cast<QMetaType::LoadOperator>(qLoad##TYPE) \
+       reinterpret_cast<QMetaType::LoadOperator>(qLoad##TYPE), \
+       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
+       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
+       sizeof(TYPE) \
      }
 #endif
 
