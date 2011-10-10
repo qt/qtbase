@@ -381,7 +381,7 @@ bool QBasicMutex::lockInternal(int timeout)
                 // we try to aquire the mutex by changing to dummyLocked()
                 if (this->d.testAndSetAcquire(d, dummyLocked())) {
                     // Mutex aquired
-                    Q_ASSERT(d->waiters == -QMutexPrivate::BigNumber || d->waiters == 0);
+                    Q_ASSERT(d->waiters.load() == -QMutexPrivate::BigNumber || d->waiters.load() == 0);
                     d->waiters = 0;
                     d->deref();
                     return true;
@@ -399,7 +399,7 @@ bool QBasicMutex::lockInternal(int timeout)
             // Mutex was unlocked.
             if (old_waiters != QMutexPrivate::BigNumber) {
                 //we did not break the previous loop
-                Q_ASSERT(d->waiters >= 1);
+                Q_ASSERT(d->waiters.load() >= 1);
                 d->waiters.deref();
             }
             d->deref();
@@ -411,7 +411,7 @@ bool QBasicMutex::lockInternal(int timeout)
                 d->deref();
             d->derefWaiters(1);
             //we got the lock. (do not deref)
-            Q_ASSERT(d == this->d);
+            Q_ASSERT(d == this->d.load());
             return true;
         } else {
             Q_ASSERT(timeout >= 0);
@@ -424,7 +424,7 @@ bool QBasicMutex::lockInternal(int timeout)
             return false;
         }
     }
-    Q_ASSERT(this->d);
+    Q_ASSERT(this->d.load() != 0);
     return true;
 }
 
