@@ -866,6 +866,16 @@ QAccessible::State QAccessibleWidget::state(int child) const
     return state;
 }
 
+QColor QAccessibleWidget::foregroundColor() const
+{
+    return widget()->palette().color(widget()->foregroundRole());
+}
+
+QColor QAccessibleWidget::backgroundColor() const
+{
+    return widget()->palette().color(widget()->backgroundRole());
+}
+
 QVariant QAccessibleWidget::invokeMethod(Method method, int child, const QVariantList & /*params*/)
 {
     if (child)
@@ -877,10 +887,6 @@ QVariant QAccessibleWidget::invokeMethod(Method method, int child, const QVarian
         set << ListSupportedMethods << ForegroundColor << BackgroundColor;
         return QVariant::fromValue(set);
     }
-    case ForegroundColor:
-        return widget()->palette().color(widget()->foregroundRole());
-    case BackgroundColor:
-        return widget()->palette().color(widget()->backgroundRole());
     default:
         return QVariant();
     }

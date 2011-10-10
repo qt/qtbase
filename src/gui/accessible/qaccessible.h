@@ -389,17 +389,14 @@ public:
     virtual Role role(int child = 0) const = 0;
     virtual State state(int child = 0) const = 0;
 
+    virtual QColor foregroundColor() const;
+    virtual QColor backgroundColor() const;
+
     virtual QVariant invokeMethod(Method method, int child = 0,
                           const QVariantList &params = QVariantList());
 
     inline QSet<Method> supportedMethods()
     { return qvariant_cast<QSet<Method> >(invokeMethod(ListSupportedMethods)); }
-
-    inline QColor foregroundColor()
-    { return qvariant_cast<QColor>(invokeMethod(ForegroundColor)); }
-
-    inline QColor backgroundColor()
-    { return qvariant_cast<QColor>(invokeMethod(BackgroundColor)); }
 
     inline QAccessibleTextInterface *textInterface()
     { return reinterpret_cast<QAccessibleTextInterface *>(cast_helper(QAccessible2::TextInterface)); }

@@ -75,6 +75,9 @@ public:
     Role role(int child = 0) const;
     State state(int child = 0) const;
 
+    QColor foregroundColor() const;
+    QColor backgroundColor() const;
+
     QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
 protected:

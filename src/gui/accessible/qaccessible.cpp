@@ -1060,10 +1060,6 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
     \sa text(), role()
 */
 
-/*!
-    \fn QColor QAccessibleInterface::backgroundColor()
-    \internal
-*/
 
 /*!
     \fn QAccessibleEditableTextInterface *QAccessibleInterface::editableTextInterface()
@@ -1071,9 +1067,24 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QColor QAccessibleInterface::foregroundColor()
-    \internal
+    Returns the accessible's foreground color if applicable or an invalid QColor.
+
+    \sa backgroundColor()
 */
+QColor QAccessibleInterface::foregroundColor() const
+{
+    return QColor();
+}
+
+/*!
+    Returns the accessible's background color if applicable or an invalid QColor.
+
+    \sa foregroundColor()
+*/
+QColor QAccessibleInterface::backgroundColor() const
+{
+    return QColor();
+}
 
 /*!
     \fn QAccessibleTextInterface *QAccessibleInterface::textInterface()
