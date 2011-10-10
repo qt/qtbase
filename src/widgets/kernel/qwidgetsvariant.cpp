@@ -191,7 +191,7 @@ static const QMetaTypeGuiHelper qVariantWidgetsHelper[] = {
     Q_IMPL_METATYPE_HELPER(QSizePolicy),
 };
 
-Q_WIDGETS_EXPORT const QVariant::Handler *qt_widgets_variant_handler;
+extern Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler;
 
 int qRegisterWidgetsVariant()
 {
