@@ -1197,7 +1197,7 @@ QFontEngineBox::~QFontEngineBox()
 {
 }
 
-bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags) const
+bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;
@@ -1206,8 +1206,10 @@ bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, 
 
     for (int i = 0; i < len; i++) {
         glyphs->glyphs[i] = 0;
-        glyphs->advances_x[i] = _size;
-        glyphs->advances_y[i] = 0;
+        if (!(flags & QTextEngine::GlyphIndicesOnly)) {
+            glyphs->advances_x[i] = _size;
+            glyphs->advances_y[i] = 0;
+        }
     }
 
     *nglyphs = len;
