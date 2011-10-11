@@ -282,14 +282,17 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         QString odir;
         if(!project->values("OBJECTS_DIR").isEmpty())
             odir = project->first("OBJECTS_DIR");
+
+        QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
+
         t << "###### Dependencies" << endl << endl;
-        t << odir << ".deps/%.d: %.cpp\n\t";
+        t << odir << ".deps/%.d: " << pwd << "/%.cpp\n\t";
         if(project->isActiveConfig("echo_depend_creation"))
             t << "@echo Creating depend for $<" << "\n\t";
         t << mkdir_p_asstring("$(@D)") << "\n\t"
           << "@$(CXX) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
 
-        t << odir << ".deps/%.d: %.c\n\t";
+        t << odir << ".deps/%.d: " << pwd << "/%.c\n\t";
         if(project->isActiveConfig("echo_depend_creation"))
             t << "@echo Creating depend for $<" << "\n\t";
         t << mkdir_p_asstring("$(@D)") << "\n\t"
@@ -317,8 +320,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             }
                         }
                     }
+
                     if(!d_file.isEmpty()) {
-                        d_file = odir + ".deps/" + d_file + ".d";
+                        d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
                         QStringList deps = findDependencies((*it)).filter(QRegExp(Option::cpp_moc_ext + "$"));
                         if(!deps.isEmpty())
                             t << d_file << ": " << deps.join(" ") << endl;
