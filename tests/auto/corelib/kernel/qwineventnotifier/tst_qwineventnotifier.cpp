@@ -41,11 +41,7 @@
 
 
 #include <QtTest/QtTest>
-
-#ifdef Q_OS_WIN
 #include <private/qwineventnotifier_p.h>
-
-
 #include <qtimer.h>
 
 //TESTED_CLASS=
@@ -140,7 +136,3 @@ void tst_QWinEventNotifier::simple()
 QTEST_MAIN(tst_QWinEventNotifier)
 
 #include "tst_qwineventnotifier.moc"
-#else // non-windows systems
-QTEST_NOOP_MAIN
-#endif
-
