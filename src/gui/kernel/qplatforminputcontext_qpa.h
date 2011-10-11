@@ -68,10 +68,18 @@ public:
     virtual void invokeAction(QInputPanel::Action, int cursorPosition);
     virtual bool filterEvent(const QEvent *event);
     virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
+    void emitKeyboardRectChanged();
 
-    virtual bool isAnimating();
+    virtual bool isAnimating() const;
     void emitAnimatingChanged();
+
+    virtual void showInputPanel();
+    virtual void hideInputPanel();
+    virtual bool isInputPanelVisible() const;
+    void emitInputPanelVisibleChanged();
+
+    // temporary function added to retain compatibility to old functionality, will be deprecated
+    virtual bool handlesInputPanelVisibility() const;
 };
 
 QT_END_NAMESPACE

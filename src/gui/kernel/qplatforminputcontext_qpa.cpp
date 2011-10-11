@@ -90,12 +90,12 @@ QRectF QPlatformInputContext::keyboardRect() const
     return QRectF();
 }
 
-void QPlatformInputContext::emitKeyboardRectChanged() const
+void QPlatformInputContext::emitKeyboardRectChanged()
 {
     emit qApp->inputPanel()->keyboardRectangleChanged();
 }
 
-bool QPlatformInputContext::isAnimating()
+bool QPlatformInputContext::isAnimating() const
 {
     return false;
 }
@@ -105,5 +105,28 @@ void QPlatformInputContext::emitAnimatingChanged()
     emit qApp->inputPanel()->animatingChanged();
 }
 
+void QPlatformInputContext::showInputPanel()
+{
+}
+
+void QPlatformInputContext::hideInputPanel()
+{
+}
+
+bool QPlatformInputContext::isInputPanelVisible() const
+{
+    return false;
+}
+
+void QPlatformInputContext::emitInputPanelVisibleChanged()
+{
+    emit qApp->inputPanel()->visibleChanged();
+}
+
+//  temporary function added to retain compatibility to old functionality, will be deprecated
+bool QPlatformInputContext::handlesInputPanelVisibility() const
+{
+    return false;
+}
 
 QT_END_NAMESPACE

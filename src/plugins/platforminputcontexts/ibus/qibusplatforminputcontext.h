@@ -63,6 +63,8 @@ public:
 
     Q_INVOKABLE bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
 
+    virtual bool handlesInputPanelVisibility() const;
+
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
     void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);

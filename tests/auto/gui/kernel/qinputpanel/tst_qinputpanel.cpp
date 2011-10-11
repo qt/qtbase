@@ -50,6 +50,8 @@ class PlatformInputContext : public QPlatformInputContext
 public:
     PlatformInputContext() :
         m_animating(false),
+        m_visible(false),
+        m_handlesInputPanelVisibility(false),
         m_updateCallCount(0),
         m_resetCallCount(0),
         m_commitCallCount(0),
@@ -60,7 +62,7 @@ public:
     {}
 
     virtual QRectF keyboardRect() const { return m_keyboardRect; }
-    virtual bool isAnimating() { return m_animating; }
+    virtual bool isAnimating() const { return m_animating; }
     virtual void reset() { m_resetCallCount++; }
     virtual void commit() { m_commitCallCount++; }
 
@@ -78,8 +80,26 @@ public:
     {
         m_lastEventType = event->type(); return false;
     }
+    virtual void showInputPanel()
+    {
+        m_visible = true;
+    }
+    virtual void hideInputPanel()
+    {
+        m_visible = false;
+    }
+    virtual bool isInputPanelVisible() const
+    {
+        return m_visible;
+    }
+    virtual bool handlesInputPanelVisibility() const
+    {
+        return m_handlesInputPanelVisibility;
+    }
 
     bool m_animating;
+    bool m_visible;
+    bool m_handlesInputPanelVisibility;
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
@@ -143,17 +163,22 @@ void tst_qinputpanel::initTestCase()
 
 void tst_qinputpanel::visible()
 {
-    qApp->inputPanel()->show();
-    QCOMPARE(qApp->inputPanel()->visible(), true);
+    QCOMPARE(m_platformInputContext.m_handlesInputPanelVisibility, false);
+    for (int index = 0; index < 2; index++) {
+        m_platformInputContext.m_handlesInputPanelVisibility = index;
+        QCOMPARE(qApp->inputPanel()->visible(), false);
+        qApp->inputPanel()->show();
+        QCOMPARE(qApp->inputPanel()->visible(), true);
 
-    qApp->inputPanel()->hide();
-    QCOMPARE(qApp->inputPanel()->visible(), false);
+        qApp->inputPanel()->hide();
+        QCOMPARE(qApp->inputPanel()->visible(), false);
 
-    qApp->inputPanel()->setVisible(true);
-    QCOMPARE(qApp->inputPanel()->visible(), true);
+        qApp->inputPanel()->setVisible(true);
+        QCOMPARE(qApp->inputPanel()->visible(), true);
 
-    qApp->inputPanel()->setVisible(false);
-    QCOMPARE(qApp->inputPanel()->visible(), false);
+        qApp->inputPanel()->setVisible(false);
+        QCOMPARE(qApp->inputPanel()->visible(), false);
+    }
 }
 
 void tst_qinputpanel::animating()

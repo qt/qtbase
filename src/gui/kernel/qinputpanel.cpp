@@ -118,29 +118,42 @@ QRectF QInputPanel::keyboardRectangle()
 
 void QInputPanel::show()
 {
-    setVisible(true);
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
+    if (ic && ic->handlesInputPanelVisibility())
+        ic->showInputPanel();
+    else if (!d->visible) {
+        d->visible = true;
+        emit visibleChanged();
+    }
 }
 
 void QInputPanel::hide()
 {
-    setVisible(false);
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
+    if (ic && ic->handlesInputPanelVisibility())
+        ic->hideInputPanel();
+    else if (d->visible) {
+        d->visible = false;
+        emit visibleChanged();
+    }
 }
 
 bool QInputPanel::visible() const
 {
     Q_D(const QInputPanel);
-
-    return d->visible;
+    QPlatformInputContext *ic = d->platformInputContext();
+    if (ic && ic->handlesInputPanelVisibility())
+        return ic->isInputPanelVisible();
+    else
+        return d->visible;
+    return false;
 }
 
 void QInputPanel::setVisible(bool visible)
 {
-    Q_D(QInputPanel);
-    if (d->visible == visible)
-        return;
-
-    d->visible = visible;
-    emit visibleChanged();
+    visible ? show() : hide();
 }
 
 bool QInputPanel::isAnimating() const
@@ -151,7 +164,6 @@ bool QInputPanel::isAnimating() const
         return ic->isAnimating();
     return false;
 }
-
 
 void QInputPanel::update(Qt::InputMethodQueries queries)
 {
