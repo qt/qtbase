@@ -1,7 +1,7 @@
-From 5f3e5dd6901b54707ea4f868d8fa7317c4ab3852 Mon Sep 17 00:00:00 2001
+From 3c304e3712ebf9f0df0b544032f0f83945d08028 Mon Sep 17 00:00:00 2001
 From: Jedrzej Nowacki <jedrzej.nowacki@nokia.com>
 Date: Tue, 7 Dec 2010 11:56:42 +0100
-Subject: [PATCH 11/16] QtScript/V8: Add new v8 api to check if a value is an
+Subject: [PATCH 08/11] QtScript/V8: Add new v8 api to check if a value is an
  error.
 
 New function v8::Value::IsError was created.
@@ -15,10 +15,10 @@ research.
  3 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 18527e1..43e00f5 100644
+index 229ddbd..d995e54 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -937,6 +937,11 @@ class Value : public Data {
+@@ -967,6 +967,11 @@ class Value : public Data {
     */
    V8EXPORT bool IsRegExp() const;
  
@@ -31,10 +31,10 @@ index 18527e1..43e00f5 100644
    V8EXPORT Local<Number> ToNumber() const;
    V8EXPORT Local<String> ToString() const;
 diff --git a/src/api.cc b/src/api.cc
-index 1a585d6..bd435eb 100644
+index 6f6297d..c21af67 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -2108,6 +2108,12 @@ bool Value::IsRegExp() const {
+@@ -2316,6 +2316,12 @@ bool Value::IsRegExp() const {
    return obj->IsJSRegExp();
  }
  
@@ -48,10 +48,10 @@ index 1a585d6..bd435eb 100644
  Local<String> Value::ToString() const {
    i::Handle<i::Object> obj = Utils::OpenHandle(this);
 diff --git a/src/heap.h b/src/heap.h
-index 8cbf378..db90bb9 100644
+index bab4c63..ad83b70 100644
 --- a/src/heap.h
 +++ b/src/heap.h
-@@ -169,6 +169,7 @@ inline Heap* _inline_get_heap_();
+@@ -188,6 +188,7 @@ inline Heap* _inline_get_heap_();
    V(string_symbol, "string")                                             \
    V(String_symbol, "String")                                             \
    V(Date_symbol, "Date")                                                 \

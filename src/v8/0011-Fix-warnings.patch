@@ -1,18 +1,18 @@
-From 2a5cf85d7fd7912e516138db03e4cda47cc2a1ab Mon Sep 17 00:00:00 2001
+From 9c0d93bfae724e29ef63456942d9ddca10ca5825 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 27 May 2011 13:04:15 +1000
-Subject: [PATCH 07/16] Fix warnings
+Subject: [PATCH 11/11] Fix warnings
 
 ---
  include/v8.h |   16 ++++++++--------
  1 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 2bc0ed1..99f4b9a 100644
+index d995e54..a7b5c8a 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -2416,7 +2416,7 @@ class V8EXPORT Extension {  // NOLINT
-             const char** deps = 0);
+@@ -2579,7 +2579,7 @@ class V8EXPORT Extension {  // NOLINT
+             int source_length = -1);
    virtual ~Extension() { }
    virtual v8::Handle<v8::FunctionTemplate>
 -      GetNativeFunction(v8::Handle<v8::String> name) {
@@ -20,7 +20,7 @@ index 2bc0ed1..99f4b9a 100644
      return v8::Handle<v8::FunctionTemplate>();
    }
  
-@@ -3722,13 +3722,13 @@ class Internals {
+@@ -3946,13 +3946,13 @@ class Internals {
      return *reinterpret_cast<T*>(addr);
    }
  

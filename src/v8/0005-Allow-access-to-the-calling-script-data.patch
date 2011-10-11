@@ -1,7 +1,7 @@
-From 1209b88e96f253cdc19aa4c95e011c84597844f0 Mon Sep 17 00:00:00 2001
+From 2608243d70a8fcb0335f3520d5de1ac3cd854e87 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
-Date: Wed, 25 May 2011 10:36:13 +1000
-Subject: [PATCH 06/16] Allow access to the calling script data
+Date: Fri, 14 Oct 2011 17:03:06 +1000
+Subject: [PATCH 05/11] Allow access to the calling script data
 
 ---
  include/v8.h |    1 +
@@ -9,10 +9,10 @@ Subject: [PATCH 06/16] Allow access to the calling script data
  2 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index d78ab1f..2bc0ed1 100644
+index 193e2fe..c094d08 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -3337,6 +3337,7 @@ class V8EXPORT Context {
+@@ -3517,6 +3517,7 @@ class V8EXPORT Context {
     */
    static Local<Context> GetCalling();
    static Local<Object> GetCallingQmlGlobal();
@@ -21,10 +21,10 @@ index d78ab1f..2bc0ed1 100644
    /**
     * Sets the security token for the context.  To access an object in
 diff --git a/src/api.cc b/src/api.cc
-index 39767f4..ff74efb 100644
+index fd718c8..526aa02 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -3976,6 +3976,18 @@ v8::Local<v8::Object> Context::GetCallingQmlGlobal() {
+@@ -4361,6 +4361,18 @@ v8::Local<v8::Object> Context::GetCallingQmlGlobal() {
    }
  }
  

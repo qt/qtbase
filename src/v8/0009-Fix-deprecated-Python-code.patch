@@ -1,7 +1,7 @@
-From ed5cc903d70f73780e5985e7d2de33f6b8d86402 Mon Sep 17 00:00:00 2001
+From 234a7bf490c4870f2d015221bb5158de4933519c Mon Sep 17 00:00:00 2001
 From: Kent Hansen <kent.hansen@nokia.com>
 Date: Fri, 2 Sep 2011 12:03:09 +0200
-Subject: [PATCH 14/16] Fix deprecated Python code
+Subject: [PATCH 09/11] Fix deprecated Python code
 
 Needed to make the scripts run on Python 3, which is the
 default python interpreter on some newer distros.
@@ -13,10 +13,10 @@ Patch from http://code.google.com/p/v8/issues/detail?id=1391
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/tools/js2c.py b/tools/js2c.py
-index 2da132f..d13d53d 100755
+index a2ea8ea..fe6a72e 100644
 --- a/tools/js2c.py
 +++ b/tools/js2c.py
-@@ -187,14 +187,14 @@ def ReadMacros(lines):
+@@ -194,14 +194,14 @@ def ReadMacros(lines):
        macro_match = MACRO_PATTERN.match(line)
        if macro_match:
          name = macro_match.group(1)
