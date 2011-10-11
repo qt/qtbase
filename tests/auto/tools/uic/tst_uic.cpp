@@ -47,8 +47,6 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QLibraryInfo>
 
-#ifndef Q_OS_WINCE
-
 class tst_uic : public QObject
 {
     Q_OBJECT
@@ -221,6 +219,3 @@ QString tst_uic::workingDir() const
 
 QTEST_APPLESS_MAIN(tst_uic)
 #include "tst_uic.moc"
-#else
-QTEST_NOOP_MAIN
-#endif

@@ -41,8 +41,6 @@
 
 #include <QtTest/QtTest>
 
-#if !defined(QMAKE_CROSS_COMPILED)
-
 #include "testcompiler.h"
 
 #include <QObject>
@@ -512,7 +510,3 @@ void tst_qmake::substitutes()
 
 QTEST_MAIN(tst_qmake)
 #include "tst_qmake.moc"
-
-#else // QMAKE_CROSS_COMPILED
-QTEST_NOOP_MAIN
-#endif
