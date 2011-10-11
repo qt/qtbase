@@ -926,8 +926,16 @@ void QHttpNetworkConnectionPrivate::startHostInfoLookup()
     networkLayerState = InProgress;
 
     // check if we already now can descide if this is IPv4 or IPv6
+    QString lookupHost = hostName;
+#ifndef QT_NO_NETWORKPROXY
+    if (networkProxy.capabilities() & QNetworkProxy::HostNameLookupCapability) {
+        lookupHost = networkProxy.hostName();
+    } else if (channels[0].socket->proxy().capabilities() & QNetworkProxy::HostNameLookupCapability) {
+        lookupHost = channels[0].socket->proxy().hostName();
+    }
+#endif
     QHostAddress temp;
-    if (temp.setAddress(hostName)) {
+    if (temp.setAddress(lookupHost)) {
         if (temp.protocol() == QAbstractSocket::IPv4Protocol) {
             networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
             QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
@@ -940,7 +948,7 @@ void QHttpNetworkConnectionPrivate::startHostInfoLookup()
     } else {
         int hostLookupId;
         bool immediateResultValid = false;
-        QHostInfo hostInfo = qt_qhostinfo_lookup(hostName,
+        QHostInfo hostInfo = qt_qhostinfo_lookup(lookupHost,
                                                  this->q_func(),
                                                  SLOT(_q_hostLookupFinished(QHostInfo)),
                                                  &immediateResultValid,
