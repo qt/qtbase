@@ -217,7 +217,7 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
 */
 QPlatformAccessibility *QPlatformIntegration::accessibility() const
 {
-    return new QPlatformAccessibility;
+    return 0;
 }
 
 QVariant QPlatformIntegration::styleHint(StyleHint hint) const

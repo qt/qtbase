@@ -86,11 +86,13 @@ public:
     QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
     QPlatformNativeInterface *nativeInterface() const;
+    QPlatformAccessibility *accessibility() const;
 private:
     QPlatformFontDatabase *mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
     QCocoaAutoReleasePool *mPool;
+    QPlatformAccessibility *mAccessibility;
 };
 
 QT_END_NAMESPACE

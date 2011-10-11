@@ -78,6 +78,7 @@
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QPlatformAccessibility>
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher())
@@ -104,11 +105,14 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_nativeInterface = new QXcbNativeInterface;
 
     m_inputContext = QPlatformInputContextFactory::create();
+
+    m_accessibility = new QPlatformAccessibility();
 }
 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
+    delete m_accessibility;
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -227,4 +231,9 @@ QPlatformDrag *QXcbIntegration::drag() const
 QPlatformInputContext *QXcbIntegration::inputContext() const
 {
     return m_inputContext;
+}
+
+QPlatformAccessibility *QXcbIntegration::accessibility() const
+{
+    return m_accessibility;
 }

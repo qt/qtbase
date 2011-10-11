@@ -51,6 +51,7 @@
 #include "qcocoaapplicationdelegate.h"
 #include "qmenu_mac.h"
 
+#include <QtGui/qplatformaccessibility_qpa.h>
 #include <QtCore/qcoreapplication.h>
 
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
@@ -124,10 +125,13 @@ QCocoaIntegration::QCocoaIntegration()
         QCocoaScreen *screen = new QCocoaScreen(i);
         screenAdded(screen);
     }
+
+    mAccessibility = new QPlatformAccessibility;
 }
 
 QCocoaIntegration::~QCocoaIntegration()
 {
+    delete mAccessibility;
     delete mPool;
 }
 
@@ -181,6 +185,11 @@ QPlatformMenuBar *QCocoaIntegration::createPlatformMenuBar(QMenuBar *menuBar) co
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 {
     return new QCocoaNativeInterface();
+}
+
+QPlatformAccessibility *QCocoaIntegration::accessibility() const
+{
+    return mAccessibility;
 }
 
 QT_END_NAMESPACE

@@ -74,6 +74,8 @@ public:
 
     QPlatformInputContext *inputContext() const;
 
+    QPlatformAccessibility *accessibility() const;
+
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -82,6 +84,8 @@ private:
 
     QPlatformInputContext *m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
+
+    QPlatformAccessibility *m_accessibility;
 };
 
 QT_END_NAMESPACE
