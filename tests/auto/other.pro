@@ -6,6 +6,7 @@ SUBDIRS=\
            other \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
+           qaccessibility \
            qcombobox \
            qfocusevent \
            qlayout \
@@ -22,7 +23,7 @@ SUBDIRS=\
            windowsmobile \
            qmetaobjectbuilder
 
-contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
+wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
 
 mac:!qpa {
     SUBDIRS += macgui \

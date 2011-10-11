@@ -41,7 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#ifndef Q_OS_WINCE
 #include "../../shared/util.h"
 #include <QtGui>
 #include <QtWidgets>
@@ -3410,13 +3409,5 @@ void tst_QAccessibility::accelerators()
     QTestAccessibility::clearEvents();
 }
 
-
 QTEST_MAIN(tst_QAccessibility)
-
-#else // Q_OS_WINCE
-
-QTEST_NOOP_MAIN
-
-#endif  // Q_OS_WINCE
-
 #include "tst_qaccessibility.moc"
