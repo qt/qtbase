@@ -1,7 +1,7 @@
 From a338d96fe138fbffd4b45c7d13a54e068daa6e12 Mon Sep 17 00:00:00 2001
 From: ager@chromium.org <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
 Date: Mon, 9 May 2011 15:24:48 +0000
-Subject: [PATCH 12/15] Add IsCallable method for Object in the API
+Subject: [PATCH 12/16] Add IsCallable method for Object in the API
 
 Patch by Peter Varga.
 

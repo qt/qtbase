@@ -1,7 +1,7 @@
 From 523f03f03b1ac16d272a13389f8a5654d9ff12e6 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 9 Sep 2011 14:16:12 +1000
-Subject: [PATCH 15/15] Allow a script to be flagged as "native"
+Subject: [PATCH 15/16] Allow a script to be flagged as "native"
 
 Native scripts do not appear in backtraces, or in the source and
 line number when exceptions are thrown from within them.  This is

@@ -1,7 +1,7 @@
 From a7c491e6e533110a17fe9f7d47cf92a1b2263180 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 27 Jun 2011 14:57:28 +1000
-Subject: [PATCH 08/15] Add custom object compare callback
+Subject: [PATCH 08/16] Add custom object compare callback
 
 A global custom object comparison callback can be set with:
     V8::SetUserObjectComparisonCallbackFunction()

@@ -1,7 +1,7 @@
 From 3dff2e903674d8ab5310d44281b57de36db659c9 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:47:20 +1000
-Subject: [PATCH 01/15] Add hashing and comparison methods to v8::String
+Subject: [PATCH 01/16] Add hashing and comparison methods to v8::String
 
 This allows us to more rapidly search for a v8::String inside
 a hash of QStrings.

@@ -1,7 +1,7 @@
 From 5f3e5dd6901b54707ea4f868d8fa7317c4ab3852 Mon Sep 17 00:00:00 2001
 From: Jedrzej Nowacki <jedrzej.nowacki@nokia.com>
 Date: Tue, 7 Dec 2010 11:56:42 +0100
-Subject: [PATCH 11/15] QtScript/V8: Add new v8 api to check if a value is an
+Subject: [PATCH 11/16] QtScript/V8: Add new v8 api to check if a value is an
  error.
 
 New function v8::Value::IsError was created.

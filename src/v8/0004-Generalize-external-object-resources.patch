@@ -1,7 +1,7 @@
 From f9368b52060c31e9532ef26f6cca1a2cb0283f51 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 16:55:35 +1000
-Subject: [PATCH 04/15] Generalize external object resources
+Subject: [PATCH 04/16] Generalize external object resources
 
 V8 was already able to manage and finalize an external string
 resource.  This change generalizes that mechanism to handle a

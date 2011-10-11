@@ -1,7 +1,7 @@
 From 60c1a26bf89d3b06bcdd8408fcee89a018120f32 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 18:26:19 +1000
-Subject: [PATCH 05/15] Introduce a QML compilation mode
+Subject: [PATCH 05/16] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
