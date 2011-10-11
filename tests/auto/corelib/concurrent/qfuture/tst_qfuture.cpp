@@ -45,12 +45,9 @@
 
 #include <QtTest/QtTest>
 #include <qfuture.h>
-#include "versioncheck.h"
 #include <qfuturewatcher.h>
 #include <qtconcurrentresultstore.h>
 #include <qtconcurrentexception.h>
-
-#ifndef QT_NO_CONCURRENT_TEST
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;
@@ -89,8 +86,6 @@ private slots:
     void exceptions_QTBUG18149();
 #endif
 };
-
-QTEST_MAIN(tst_QFuture)
 
 void tst_QFuture::resultStore()
 {
@@ -1467,8 +1462,5 @@ void tst_QFuture::exceptions_QTBUG18149()
 
 #endif // QT_NO_EXCEPTIONS
 
+QTEST_MAIN(tst_QFuture)
 #include "tst_qfuture.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

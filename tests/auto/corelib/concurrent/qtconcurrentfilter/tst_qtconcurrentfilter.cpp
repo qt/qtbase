@@ -45,7 +45,8 @@
 #include <QtTest/QtTest>
 
 #include "../qtconcurrentmap/functions.h"
-#include "../qfuture/versioncheck.h"
+
+#if !defined(QT_NO_CONCURRENT_FILTER)
 
 class tst_QtConcurrentFilter : public QObject
 {
@@ -62,8 +63,6 @@ private slots:
     void stlContainers();
 #endif
 };
-
-#if !defined (QT_NO_CONCURRENT_TEST) && !defined(QT_NO_CONCURRENT_FILTER)
 
 void tst_QtConcurrentFilter::filter()
 {
@@ -1536,15 +1535,8 @@ QTEST_MAIN(tst_QtConcurrentFilter)
 
 #else
 
-void tst_QtConcurrentFilter::filter() {}
-void tst_QtConcurrentFilter::filtered() {}
-void tst_QtConcurrentFilter::filteredReduced() {}
-void tst_QtConcurrentFilter::resultAt() {}
-void tst_QtConcurrentFilter::incrementalResults() {}
-void tst_QtConcurrentFilter::stlContainers() {}
-void tst_QtConcurrentFilter::noDetatch() {}
-
 QTEST_NOOP_MAIN
+
 #endif
 
 #include "tst_qtconcurrentfilter.moc"

@@ -43,13 +43,10 @@
 #include <QtTest/QtTest>
 
 #include <qfuture.h>
-#include "../qfuture/versioncheck.h"
 #include <qfuturewatcher.h>
 #include <qtconcurrentrun.h>
 #include <qtconcurrentmap.h>
 #include "../../../../shared/util.h"
-
-#ifndef QT_NO_CONCURRENT_TEST
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;
@@ -84,8 +81,6 @@ private slots:
     void qfutureSynchornizer();
     void warnRace();
 };
-
-QTEST_MAIN(tst_QFutureWatcher)
 
 void sleeper()
 {
@@ -923,8 +918,5 @@ void tst_QFutureWatcher::warnRace()
     future.waitForFinished();
 }
 
+QTEST_MAIN(tst_QFutureWatcher)
 #include "tst_qfuturewatcher.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

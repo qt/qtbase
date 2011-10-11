@@ -7543,6 +7543,8 @@ CFG_CONCURRENT="yes"
 if [ "$canBuildQtConcurrent" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT"
     CFG_CONCURRENT="no"
+else
+    QT_CONFIG="$QT_CONFIG concurrent"
 fi
 
 if [ "$CFG_XMLPATTERNS" = "yes" -a "$CFG_EXCEPTIONS" = "no" ]; then

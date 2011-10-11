@@ -42,9 +42,6 @@
 #include <qtconcurrentexception.h>
 #include <QThread>
 #include <QtTest/QtTest>
-#include "../qfuture/versioncheck.h"
-
-#ifndef QT_NO_CONCURRENT_TEST
 
 using namespace QtConcurrent;
 
@@ -530,7 +527,3 @@ void tst_QtConcurrentThreadEngine::exceptions()
 QTEST_MAIN(tst_QtConcurrentThreadEngine)
 
 #include "tst_qtconcurrentthreadengine.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

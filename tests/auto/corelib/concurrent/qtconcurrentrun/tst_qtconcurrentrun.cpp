@@ -43,9 +43,6 @@
 #include <qfuture.h>
 #include <QString>
 #include <QtTest/QtTest>
-#include "../qfuture/versioncheck.h"
-
-#ifndef QT_NO_CONCURRENT_TEST
 
 using namespace QtConcurrent;
 
@@ -80,9 +77,6 @@ private slots:
 #else
 # define F(X) X
 #endif
-
-
-QTEST_MAIN(tst_QtConcurrentRun)
 
 void light()
 {
@@ -507,8 +501,5 @@ void tst_QtConcurrentRun::lambda()
 }
 #endif
 
+QTEST_MAIN(tst_QtConcurrentRun)
 #include "tst_qtconcurrentrun.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

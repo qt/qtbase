@@ -47,7 +47,8 @@
 #include <QtTest/QtTest>
 
 #include "functions.h"
-#include "../qfuture/versioncheck.h"
+
+#if !defined(QT_NO_CONCURRENT_MAP)
 
 Q_DECLARE_METATYPE(QVector<int>);
 Q_DECLARE_METATYPE(QVector<double>);
@@ -81,8 +82,6 @@ private slots:
 public slots:
     void throttling();
 };
-
-#if !defined (QT_NO_CONCURRENT_TEST) && !defined(QT_NO_CONCURRENT_MAP)
 
 using namespace QtConcurrent;
 
@@ -2419,23 +2418,6 @@ void tst_QtConcurrentMap::stressTest()
 QTEST_MAIN(tst_QtConcurrentMap)
 
 #else
-
-void tst_QtConcurrentMap::map() {}
-void tst_QtConcurrentMap::blocking_map() {}
-void tst_QtConcurrentMap::mapped() {}
-void tst_QtConcurrentMap::blocking_mapped() {}
-void tst_QtConcurrentMap::mappedReduced() {}
-void tst_QtConcurrentMap::blocking_mappedReduced() {}
-void tst_QtConcurrentMap::assignResult() {}
-void tst_QtConcurrentMap::functionOverloads() {}
-#ifndef QT_NO_EXCEPTIONS
-void tst_QtConcurrentMap::exceptions() {}
-#endif
-void tst_QtConcurrentMap::incrementalResults() {}
-void tst_QtConcurrentMap::stressTest() {}
-void tst_QtConcurrentMap::throttling() {}
-void tst_QtConcurrentMap::stlContainers() {}
-void tst_QtConcurrentMap::noDetatch() {}
 
 QTEST_NOOP_MAIN
 

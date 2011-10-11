@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 #include <QThread>
-#include "../qfuture/versioncheck.h"
 
 struct TestIterator
 {
@@ -82,11 +81,8 @@ int distance(TestIterator &a, TestIterator &b)
 }
 #endif
 
-
 #include <qtconcurrentiteratekernel.h>
 #include <QtTest/QtTest>
-
-#ifndef QT_NO_CONCURRENT_TEST
 
 using namespace QtConcurrent;
 
@@ -355,7 +351,3 @@ void tst_QtConcurrentIterateKernel::stresstestWhile()
 QTEST_MAIN(tst_QtConcurrentIterateKernel)
 
 #include "tst_qtconcurrentiteratekernel.moc"
-
-#else
-QTEST_NOOP_MAIN
-#endif

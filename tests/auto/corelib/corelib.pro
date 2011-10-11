@@ -11,3 +11,5 @@ SUBDIRS=\
    thread \
    tools \
    xml
+
+!contains(QT_CONFIG, concurrent): SUBDIRS -= concurrent
