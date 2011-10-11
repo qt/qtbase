@@ -72,10 +72,10 @@ SOURCES += \
     $$V8SRC/disassembler.cc \
     $$V8SRC/diy-fp.cc \
     $$V8SRC/dtoa.cc \
+    $$V8SRC/elements.cc \
     $$V8SRC/execution.cc \
     $$V8SRC/factory.cc \
     $$V8SRC/flags.cc \
-    $$V8SRC/frame-element.cc \
     $$V8SRC/frames.cc \
     $$V8SRC/full-codegen.cc \
     $$V8SRC/func-name-inferrer.cc \
@@ -90,6 +90,7 @@ SOURCES += \
     $$V8SRC/hydrogen.cc \
     $$V8SRC/hydrogen-instructions.cc \
     $$V8SRC/ic.cc \
+    $$V8SRC/incremental-marking.cc \
     $$V8SRC/inspector.cc \
     $$V8SRC/interpreter-irregexp.cc \
     $$V8SRC/isolate.cc \
@@ -117,8 +118,8 @@ SOURCES += \
     $$V8SRC/runtime.cc \
     $$V8SRC/runtime-profiler.cc \
     $$V8SRC/safepoint-table.cc \
-    $$V8SRC/scanner-base.cc \
     $$V8SRC/scanner.cc \
+    $$V8SRC/scanner-character-streams.cc \
     $$V8SRC/scopeinfo.cc \
     $$V8SRC/scopes.cc \
     $$V8SRC/serialize.cc \
@@ -129,15 +130,17 @@ SOURCES += \
     $$V8SRC/strtod.cc \
     $$V8SRC/stub-cache.cc \
     $$V8SRC/token.cc \
-    $$V8SRC/top.cc \
     $$V8SRC/type-info.cc \
     $$V8SRC/unicode.cc \
     $$V8SRC/utils.cc \
     $$V8SRC/v8-counters.cc \
     $$V8SRC/v8.cc \
+    $$V8SRC/v8conversions.cc \
     $$V8SRC/v8threads.cc \
+    $$V8SRC/v8utils.cc \
     $$V8SRC/variables.cc \
     $$V8SRC/version.cc \
+    $$V8SRC/store-buffer.cc \
     $$V8SRC/zone.cc \
     $$V8SRC/extensions/gc-extension.cc \
     $$V8SRC/extensions/externalize-string-extension.cc
@@ -258,7 +261,10 @@ V8_LIBRARY_FILES = \
     $$V8SRC/mirror-debugger.js \
     $$V8SRC/debug-debugger.js
 
-v8_js2c.commands = python $$V8DIR/tools/js2c.py $$V8_GENERATED_SOURCES_DIR/libraries.cpp $$V8_GENERATED_SOURCES_DIR/libraries-empty.cpp CORE
+V8_EXPERIMENTAL_LIBRARY_FILES = \
+    $$V8SRC/proxy.js \
+
+v8_js2c.commands = python $$V8DIR/tools/js2c.py $$V8_GENERATED_SOURCES_DIR/libraries.cpp CORE off
 v8_js2c.commands += $$V8SRC/macros.py ${QMAKE_FILE_IN}
 v8_js2c.output = $$V8_GENERATED_SOURCES_DIR/libraries.cpp
 v8_js2c.input = V8_LIBRARY_FILES
@@ -268,4 +274,15 @@ v8_js2c.depends = $$V8DIR/tools/js2c.py $$V8SRC/macros.py
 v8_js2c.CONFIG += combine
 v8_js2c.name = generating[v8] ${QMAKE_FILE_IN}
 silent:v8_js2c.commands = @echo generating[v8] ${QMAKE_FILE_IN} && $$v8_js2c.commands
-QMAKE_EXTRA_COMPILERS += v8_js2c
+
+v8_js2c_experimental.commands = python $$V8DIR/tools/js2c.py $$V8_GENERATED_SOURCES_DIR/experimental-libraries.cpp EXPERIMENTAL off
+v8_js2c_experimental.commands += $$V8SRC/macros.py ${QMAKE_FILE_IN}
+v8_js2c_experimental.output = $$V8_GENERATED_SOURCES_DIR/experimental-libraries.cpp
+v8_js2c_experimental.input = V8_EXPERIMENTAL_LIBRARY_FILES
+v8_js2c_experimental.variable_out = SOURCES
+v8_js2c_experimental.dependency_type = TYPE_C
+v8_js2c_experimental.depends = $$V8DIR/tools/js2c.py $$V8SRC/macros.py
+v8_js2c_experimental.CONFIG += combine
+v8_js2c_experimental.name = generating[v8] ${QMAKE_FILE_IN}
+
+QMAKE_EXTRA_COMPILERS += v8_js2c v8_js2c_experimental

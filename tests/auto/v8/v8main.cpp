@@ -41,10 +41,15 @@
 
 #include "v8test.h"
 #include <stdio.h>
+#include <strings.h>
 
 #define RUN_TEST(testname) { \
-    if (!v8test_ ## testname()) \
-        printf ("Test %s FAILED\n", # testname); \
+    if (argc == 1 || 0 == ::strcmp(argv[1], # testname)) { \
+        if (!v8test_ ## testname()) \
+            printf ("Test %s FAILED\n", # testname); \
+        else \
+            printf ("Test %s PASS\n", # testname); \
+    } \
 }
 
 int main(int argc, char *argv[])
@@ -54,6 +59,8 @@ int main(int argc, char *argv[])
     RUN_TEST(eval);
     RUN_TEST(evalwithinwith);
     RUN_TEST(userobjectcompare);
+    RUN_TEST(externalteardown);
+    RUN_TEST(globalcall);
 
     return -1;
 }

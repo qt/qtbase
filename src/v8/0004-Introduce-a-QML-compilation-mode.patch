@@ -1,7 +1,7 @@
-From 60c1a26bf89d3b06bcdd8408fcee89a018120f32 Mon Sep 17 00:00:00 2001
+From 6f97385cf3cb17d245e7f3d61ba975183a786220 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
-Date: Mon, 23 May 2011 18:26:19 +1000
-Subject: [PATCH 05/16] Introduce a QML compilation mode
+Date: Thu, 27 Oct 2011 13:34:16 +0100
+Subject: [PATCH 04/11] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
@@ -15,58 +15,60 @@ closures etc. created during the run will retain a reference to this
 object, so different objects can be passed in different script
 runs.
 ---
- include/v8.h                     |   18 +++++++--
- src/api.cc                       |   52 ++++++++++++++++++++++-----
+ include/v8.h                     |   19 ++++++++--
+ src/api.cc                       |   52 ++++++++++++++++++++++++-----
  src/arm/code-stubs-arm.cc        |    4 ++
- src/arm/full-codegen-arm.cc      |   26 ++++++++------
- src/arm/lithium-arm.cc           |    2 +-
- src/arm/lithium-arm.h            |    6 +++-
- src/arm/lithium-codegen-arm.cc   |    7 ++--
+ src/arm/full-codegen-arm.cc      |   28 +++++++++-------
+ src/arm/lithium-arm.cc           |    4 +-
+ src/arm/lithium-arm.h            |   12 ++++++-
+ src/arm/lithium-codegen-arm.cc   |    9 +++--
  src/arm/macro-assembler-arm.h    |    5 +++
  src/ast-inl.h                    |    5 +++
+ src/ast.cc                       |    5 +++
  src/ast.h                        |    1 +
  src/code-stubs.h                 |    2 +-
  src/compiler.cc                  |   15 +++++++-
- src/compiler.h                   |   22 +++++++++--
- src/contexts.cc                  |   35 ++++++++++++++++++
+ src/compiler.h                   |   16 +++++++--
+ src/contexts.cc                  |   35 +++++++++++++++++++
  src/contexts.h                   |    4 ++
- src/execution.cc                 |   28 ++++++++++++--
- src/execution.h                  |    6 +++
+ src/execution.cc                 |   31 ++++++++++++++---
+ src/execution.h                  |    8 ++++
  src/full-codegen.cc              |    3 +-
  src/full-codegen.h               |    1 +
- src/heap.cc                      |    2 +
- src/hydrogen-instructions.h      |   10 ++++-
- src/hydrogen.cc                  |    2 +
- src/ia32/code-stubs-ia32.cc      |    7 ++++
- src/ia32/full-codegen-ia32.cc    |   26 ++++++++------
- src/ia32/lithium-codegen-ia32.cc |    7 ++--
- src/ia32/lithium-ia32.cc         |    2 +-
- src/ia32/lithium-ia32.h          |    6 +++-
- src/ia32/macro-assembler-ia32.h  |    5 +++
- src/objects-inl.h                |   12 ++++++
- src/objects.h                    |    5 +++
- src/parser.cc                    |   27 ++++++++++++--
+ src/heap.cc                      |    4 ++
+ src/hydrogen-instructions.cc     |    5 +++
+ src/hydrogen-instructions.h      |   16 ++++++++-
+ src/hydrogen.cc                  |    4 ++
+ src/ia32/code-stubs-ia32.cc      |    5 +++
+ src/ia32/full-codegen-ia32.cc    |   28 +++++++++-------
+ src/ia32/lithium-codegen-ia32.cc |    9 +++--
+ src/ia32/lithium-ia32.cc         |    4 +-
+ src/ia32/lithium-ia32.h          |   12 +++++-
+ src/ia32/macro-assembler-ia32.h  |    3 ++
+ src/objects-inl.h                |    2 +
+ src/objects.h                    |    4 ++
+ src/parser.cc                    |   28 +++++++++++++--
  src/parser.h                     |    4 ++-
  src/prettyprinter.cc             |    3 ++
- src/runtime.cc                   |   72 ++++++++++++++++++++++++-------------
+ src/runtime.cc                   |   68 +++++++++++++++++++++++++-------------
  src/runtime.h                    |    8 ++--
- src/scopes.cc                    |   59 +++++++++++++++++++++++++++++++
- src/scopes.h                     |    7 ++++
+ src/scopes.cc                    |   63 +++++++++++++++++++++++++++++++++++
+ src/scopes.h                     |    8 ++++
  src/variables.cc                 |    3 +-
  src/variables.h                  |    5 +++
  src/x64/code-stubs-x64.cc        |    4 ++
- src/x64/full-codegen-x64.cc      |   26 ++++++++------
- src/x64/lithium-codegen-x64.cc   |    7 ++--
- src/x64/lithium-x64.cc           |    2 +-
- src/x64/lithium-x64.h            |    6 +++
+ src/x64/full-codegen-x64.cc      |   28 +++++++++-------
+ src/x64/lithium-codegen-x64.cc   |    9 +++--
+ src/x64/lithium-x64.cc           |    4 +-
+ src/x64/lithium-x64.h            |   12 +++++++
  src/x64/macro-assembler-x64.h    |    5 +++
- 45 files changed, 455 insertions(+), 109 deletions(-)
+ 47 files changed, 490 insertions(+), 117 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 205e856..d78ab1f 100644
+index 3ef4dd6..193e2fe 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -577,6 +577,10 @@ class ScriptOrigin {
+@@ -587,6 +587,11 @@ class ScriptOrigin {
   */
  class V8EXPORT Script {
   public:
@@ -74,10 +76,11 @@ index 205e856..d78ab1f 100644
 +      Default = 0x00,
 +      QmlMode = 0x01
 +  };
- 
++
    /**
     * Compiles the specified script (context-independent).
-@@ -596,7 +600,8 @@ class V8EXPORT Script {
+    *
+@@ -605,7 +610,8 @@ class V8EXPORT Script {
    static Local<Script> New(Handle<String> source,
                             ScriptOrigin* origin = NULL,
                             ScriptData* pre_data = NULL,
@@ -87,7 +90,7 @@ index 205e856..d78ab1f 100644
  
    /**
     * Compiles the specified script using the specified file name
-@@ -609,7 +614,8 @@ class V8EXPORT Script {
+@@ -618,7 +624,8 @@ class V8EXPORT Script {
     *   will use the currently entered context).
     */
    static Local<Script> New(Handle<String> source,
@@ -97,7 +100,7 @@ index 205e856..d78ab1f 100644
  
    /**
     * Compiles the specified script (bound to current context).
-@@ -630,7 +636,8 @@ class V8EXPORT Script {
+@@ -639,7 +646,8 @@ class V8EXPORT Script {
    static Local<Script> Compile(Handle<String> source,
                                 ScriptOrigin* origin = NULL,
                                 ScriptData* pre_data = NULL,
@@ -107,7 +110,7 @@ index 205e856..d78ab1f 100644
  
    /**
     * Compiles the specified script using the specified file name
-@@ -647,7 +654,8 @@ class V8EXPORT Script {
+@@ -656,7 +664,8 @@ class V8EXPORT Script {
     */
    static Local<Script> Compile(Handle<String> source,
                                 Handle<Value> file_name,
@@ -117,7 +120,7 @@ index 205e856..d78ab1f 100644
  
    /**
     * Runs the script returning the resulting value.  If the script is
-@@ -657,6 +665,7 @@ class V8EXPORT Script {
+@@ -666,6 +675,7 @@ class V8EXPORT Script {
     * compiled.
     */
    Local<Value> Run();
@@ -125,7 +128,7 @@ index 205e856..d78ab1f 100644
  
    /**
     * Returns the script id value.
-@@ -3327,6 +3336,7 @@ class V8EXPORT Context {
+@@ -3506,6 +3516,7 @@ class V8EXPORT Context {
     * JavaScript frames an empty handle is returned.
     */
    static Local<Context> GetCalling();
@@ -134,10 +137,10 @@ index 205e856..d78ab1f 100644
    /**
     * Sets the security token for the context.  To access an object in
 diff --git a/src/api.cc b/src/api.cc
-index 1a6fbbb..39767f4 100644
+index 7d54252..2d3d97a 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -1372,7 +1372,8 @@ ScriptData* ScriptData::New(const char* data, int length) {
+@@ -1514,7 +1514,8 @@ ScriptData* ScriptData::New(const char* data, int length) {
  Local<Script> Script::New(v8::Handle<String> source,
                            v8::ScriptOrigin* origin,
                            v8::ScriptData* pre_data,
@@ -147,7 +150,7 @@ index 1a6fbbb..39767f4 100644
    i::Isolate* isolate = i::Isolate::Current();
    ON_BAILOUT(isolate, "v8::Script::New()", return Local<Script>());
    LOG_API(isolate, "Script::New");
-@@ -1409,7 +1410,8 @@ Local<Script> Script::New(v8::Handle<String> source,
+@@ -1551,7 +1552,8 @@ Local<Script> Script::New(v8::Handle<String> source,
                             NULL,
                             pre_data_impl,
                             Utils::OpenHandle(*script_data),
@@ -157,12 +160,12 @@ index 1a6fbbb..39767f4 100644
    has_pending_exception = result.is_null();
    EXCEPTION_BAILOUT_CHECK(isolate, Local<Script>());
    return Local<Script>(ToApi<Script>(result));
-@@ -1417,21 +1419,23 @@ Local<Script> Script::New(v8::Handle<String> source,
+@@ -1559,21 +1561,23 @@ Local<Script> Script::New(v8::Handle<String> source,
  
  
  Local<Script> Script::New(v8::Handle<String> source,
 -                          v8::Handle<Value> file_name) {
-+                          v8::Handle<Value> file_name, 
++                          v8::Handle<Value> file_name,
 +                          v8::Script::CompileFlags compile_flags) {
    ScriptOrigin origin(file_name);
 -  return New(source, &origin);
@@ -185,7 +188,7 @@ index 1a6fbbb..39767f4 100644
    if (generic.IsEmpty())
      return generic;
    i::Handle<i::Object> obj = Utils::OpenHandle(*generic);
-@@ -1447,13 +1451,18 @@ Local<Script> Script::Compile(v8::Handle<String> source,
+@@ -1589,13 +1593,18 @@ Local<Script> Script::Compile(v8::Handle<String> source,
  
  Local<Script> Script::Compile(v8::Handle<String> source,
                                v8::Handle<Value> file_name,
@@ -206,7 +209,7 @@ index 1a6fbbb..39767f4 100644
    i::Isolate* isolate = i::Isolate::Current();
    ON_BAILOUT(isolate, "v8::Script::Run()", return Local<Value>());
    LOG_API(isolate, "Script::Run");
-@@ -1472,10 +1481,11 @@ Local<Value> Script::Run() {
+@@ -1614,10 +1623,11 @@ Local<Value> Script::Run() {
        fun = i::Handle<i::JSFunction>(i::JSFunction::cast(*obj), isolate);
      }
      EXCEPTION_PREAMBLE(isolate);
@@ -215,11 +218,11 @@ index 1a6fbbb..39767f4 100644
          isolate->context()->global_proxy(), isolate);
      i::Handle<i::Object> result =
 -        i::Execution::Call(fun, receiver, 0, NULL, &has_pending_exception);
-+        i::Execution::Call(fun, receiver, 0, NULL, &has_pending_exception, qmlglobal);
++        i::Execution::Call(fun, receiver, 0, NULL, &has_pending_exception, false, qmlglobal);
      EXCEPTION_BAILOUT_CHECK(isolate, Local<Value>());
      raw_result = *result;
    }
-@@ -3943,6 +3953,30 @@ v8::Local<v8::Context> Context::GetCalling() {
+@@ -4337,6 +4347,30 @@ v8::Local<v8::Context> Context::GetCalling() {
  }
  
  
@@ -251,10 +254,10 @@ index 1a6fbbb..39767f4 100644
    if (IsDeadCheck(i::Isolate::Current(), "v8::Context::Global()")) {
      return Local<v8::Object>();
 diff --git a/src/arm/code-stubs-arm.cc b/src/arm/code-stubs-arm.cc
-index 8c147f9..a2626bf 100644
+index cb3bc88..f5be938 100644
 --- a/src/arm/code-stubs-arm.cc
 +++ b/src/arm/code-stubs-arm.cc
-@@ -166,6 +166,10 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
+@@ -172,6 +172,10 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
    __ ldr(r1, MemOperand(cp, Context::SlotOffset(Context::GLOBAL_INDEX)));
    __ str(r1, MemOperand(r0, Context::SlotOffset(Context::GLOBAL_INDEX)));
  
@@ -266,13 +269,13 @@ index 8c147f9..a2626bf 100644
    __ LoadRoot(r1, Heap::kUndefinedValueRootIndex);
    for (int i = Context::MIN_CONTEXT_SLOTS; i < length; i++) {
 diff --git a/src/arm/full-codegen-arm.cc b/src/arm/full-codegen-arm.cc
-index 871b453..a69f10d 100644
+index 497a295..b8e3f30 100644
 --- a/src/arm/full-codegen-arm.cc
 +++ b/src/arm/full-codegen-arm.cc
-@@ -154,12 +154,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
+@@ -182,12 +182,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
  
    // Possibly allocate a local context.
-   int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
+   int heap_slots = info->scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
 -  if (heap_slots > 0) {
 +  if (heap_slots > 0 ||
 +      (scope()->is_qml_mode() && scope()->is_global_scope())) {
@@ -284,49 +287,44 @@ index 871b453..a69f10d 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -1247,9 +1248,9 @@ void FullCodeGenerator::EmitLoadGlobalSlotCheckExtensions(
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -1193,9 +1194,9 @@ void FullCodeGenerator::EmitLoadGlobalCheckExtensions(Variable* var,
      __ bind(&fast);
    }
  
 -  __ ldr(r0, GlobalObjectOperand());
-+  __ ldr(r0, slot->var()->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
-   __ mov(r2, Operand(slot->var()->name()));
++  __ ldr(r0, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+   __ mov(r2, Operand(var->name()));
 -  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF)
-+  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || slot->var()->is_qml_global())
++  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || var->is_qml_global())
        ? RelocInfo::CODE_TARGET
        : RelocInfo::CODE_TARGET_CONTEXT;
    Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
-@@ -1268,10 +1269,10 @@ void FullCodeGenerator::EmitVariableLoad(Variable* var) {
-     Comment cmnt(masm_, "Global variable");
-     // Use inline caching. Variable name is passed in r2 and the global
-     // object (receiver) in r0.
--    __ ldr(r0, GlobalObjectOperand());
-+    __ ldr(r0, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
-     __ mov(r2, Operand(var->name()));
-     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
-     context()->Plug(r0);
- 
-   } else if (slot != NULL && slot->type() == Slot::LOOKUP) {
-@@ -1893,11 +1894,11 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
-     // assignment.  Right-hand-side value is passed in r0, variable name in
-     // r2, and the global object in r1.
+@@ -1280,10 +1281,10 @@ void FullCodeGenerator::EmitVariableLoad(VariableProxy* proxy) {
+       Comment cmnt(masm_, "Global variable");
+       // Use inline caching. Variable name is passed in r2 and the global
+       // object (receiver) in r0.
+-      __ ldr(r0, GlobalObjectOperand());
++      __ ldr(r0, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+       __ mov(r2, Operand(var->name()));
+       Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+-      __ Call(ic, RelocInfo::CODE_TARGET_CONTEXT);
++      __ Call(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+       context()->Plug(r0);
+       break;
+     }
+@@ -1920,7 +1921,7 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
+   if (var->IsUnallocated()) {
+     // Global var, const, or let.
      __ mov(r2, Operand(var->name()));
 -    __ ldr(r1, GlobalObjectOperand());
 +    __ ldr(r1, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
      Handle<Code> ic = is_strict_mode()
          ? isolate()->builtins()->StoreIC_Initialize_Strict()
          : isolate()->builtins()->StoreIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
- 
-   } else if (op == Token::INIT_CONST) {
-     // Like var declarations, const declarations are hoisted to function
-@@ -2184,10 +2185,13 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
-   // Push the strict mode flag.
-   __ mov(r1, Operand(Smi::FromInt(strict_mode_flag())));
+@@ -2220,10 +2221,13 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
+       FLAG_harmony_scoping ? kStrictMode : strict_mode_flag();
+   __ mov(r1, Operand(Smi::FromInt(strict_mode)));
    __ push(r1);
 +  // Push the qml mode flag.
 +  __ mov(r1, Operand(Smi::FromInt(is_qml_mode())));
@@ -339,23 +337,41 @@ index 871b453..a69f10d 100644
  }
  
  
-@@ -2263,9 +2267,9 @@ void FullCodeGenerator::VisitCall(Call* expr) {
+@@ -2296,9 +2300,9 @@ void FullCodeGenerator::VisitCall(Call* expr) {
      context()->DropAndPlug(1, r0);
-   } else if (var != NULL && !var->is_this() && var->is_global()) {
+   } else if (proxy != NULL && proxy->var()->IsUnallocated()) {
      // Push global object as receiver for the call IC.
 -    __ ldr(r0, GlobalObjectOperand());
-+    __ ldr(r0, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
++    __ ldr(r0, proxy->var()->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
      __ push(r0);
--    EmitCallWithIC(expr, var->name(), RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallWithIC(expr, var->name(), var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
-   } else if (var != NULL && var->AsSlot() != NULL &&
-              var->AsSlot()->type() == Slot::LOOKUP) {
+-    EmitCallWithIC(expr, proxy->name(), RelocInfo::CODE_TARGET_CONTEXT);
++    EmitCallWithIC(expr, proxy->name(), proxy->var()->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+   } else if (proxy != NULL && proxy->var()->IsLookupSlot()) {
      // Call to a lookup slot (dynamically introduced variable).
+     Label slow, done;
+@@ -3711,7 +3715,7 @@ void FullCodeGenerator::VisitUnaryOperation(UnaryOperation* expr) {
+         // but "delete this" is allowed.
+         ASSERT(strict_mode_flag() == kNonStrictMode || var->is_this());
+         if (var->IsUnallocated()) {
+-          __ ldr(r2, GlobalObjectOperand());
++          __ ldr(r2, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+           __ mov(r1, Operand(var->name()));
+           __ mov(r0, Operand(Smi::FromInt(kNonStrictMode)));
+           __ Push(r2, r1, r0);
+@@ -3997,7 +4001,7 @@ void FullCodeGenerator::VisitForTypeofValue(Expression* expr) {
+   VariableProxy* proxy = expr->AsVariableProxy();
+   if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     Comment cmnt(masm_, "Global variable");
+-    __ ldr(r0, GlobalObjectOperand());
++    __ ldr(r0, proxy->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+     __ mov(r2, Operand(proxy->name()));
+     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+     // Use a regular load, not a contextual load, to avoid a reference
 diff --git a/src/arm/lithium-arm.cc b/src/arm/lithium-arm.cc
-index 3f1d15b..8406a96 100644
+index 5197842..943bc82 100644
 --- a/src/arm/lithium-arm.cc
 +++ b/src/arm/lithium-arm.cc
-@@ -1195,7 +1195,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
+@@ -1128,7 +1128,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
  
  LInstruction* LChunkBuilder::DoGlobalObject(HGlobalObject* instr) {
    LOperand* context = UseRegisterAtStart(instr->value());
@@ -364,11 +380,20 @@ index 3f1d15b..8406a96 100644
  }
  
  
+@@ -1198,7 +1198,7 @@ LInstruction* LChunkBuilder::DoCallNamed(HCallNamed* instr) {
+ 
+ LInstruction* LChunkBuilder::DoCallGlobal(HCallGlobal* instr) {
+   argument_count_ -= instr->argument_count();
+-  return MarkAsCall(DefineFixed(new LCallGlobal, r0), instr);
++  return MarkAsCall(DefineFixed(new LCallGlobal(instr->qml_global()), r0), instr);
+ }
+ 
+ 
 diff --git a/src/arm/lithium-arm.h b/src/arm/lithium-arm.h
-index 6da7c86..10b901f 100644
+index 5733bd0..a7e1704 100644
 --- a/src/arm/lithium-arm.h
 +++ b/src/arm/lithium-arm.h
-@@ -1378,13 +1378,17 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
+@@ -1303,13 +1303,17 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
  
  class LGlobalObject: public LTemplateInstruction<1, 1, 0> {
   public:
@@ -387,11 +412,28 @@ index 6da7c86..10b901f 100644
  };
  
  
+@@ -1396,10 +1400,16 @@ class LCallGlobal: public LTemplateInstruction<1, 0, 0> {
+   DECLARE_CONCRETE_INSTRUCTION(CallGlobal, "call-global")
+   DECLARE_HYDROGEN_ACCESSOR(CallGlobal)
+ 
++  explicit LCallGlobal(bool qml_global) : qml_global_(qml_global) {}
++
+   virtual void PrintDataTo(StringStream* stream);
+ 
+   Handle<String> name() const {return hydrogen()->name(); }
+   int arity() const { return hydrogen()->argument_count() - 1; }
++
++  bool qml_global() { return qml_global_; }
++ private:
++  bool qml_global_;
+ };
+ 
+ 
 diff --git a/src/arm/lithium-codegen-arm.cc b/src/arm/lithium-codegen-arm.cc
-index 4912449..db114ea 100644
+index 4cf7df4..2e1e6fa 100644
 --- a/src/arm/lithium-codegen-arm.cc
 +++ b/src/arm/lithium-codegen-arm.cc
-@@ -166,12 +166,13 @@ bool LCodeGen::GeneratePrologue() {
+@@ -190,12 +190,13 @@ bool LCodeGen::GeneratePrologue() {
  
    // Possibly allocate a local context.
    int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
@@ -406,21 +448,30 @@ index 4912449..db114ea 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -2664,7 +2665,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -2826,7 +2827,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
+ 
  void LCodeGen::DoGlobalObject(LGlobalObject* instr) {
-   Register context = ToRegister(instr->context());
    Register result = ToRegister(instr->result());
 -  __ ldr(result, ContextOperand(cp, Context::GLOBAL_INDEX));
 +  __ ldr(result, ContextOperand(cp, instr->qml_global()?Context::QML_GLOBAL_INDEX:Context::GLOBAL_INDEX));
  }
  
  
+@@ -3280,7 +3281,7 @@ void LCodeGen::DoCallGlobal(LCallGlobal* instr) {
+   ASSERT(ToRegister(instr->result()).is(r0));
+ 
+   int arity = instr->arity();
+-  RelocInfo::Mode mode = RelocInfo::CODE_TARGET_CONTEXT;
++  RelocInfo::Mode mode = instr->qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT;
+   Handle<Code> ic =
+       isolate()->stub_cache()->ComputeCallInitialize(arity, mode);
+   __ mov(r2, Operand(instr->name()));
 diff --git a/src/arm/macro-assembler-arm.h b/src/arm/macro-assembler-arm.h
-index ab5efb0..d40cdbc 100644
+index 90c4b37..5947e6a 100644
 --- a/src/arm/macro-assembler-arm.h
 +++ b/src/arm/macro-assembler-arm.h
-@@ -1056,6 +1056,11 @@ static inline MemOperand GlobalObjectOperand()  {
+@@ -1326,6 +1326,11 @@ static inline MemOperand GlobalObjectOperand()  {
  }
  
  
@@ -433,10 +484,10 @@ index ab5efb0..d40cdbc 100644
  #define CODE_COVERAGE_STRINGIFY(x) #x
  #define CODE_COVERAGE_TOSTRING(x) CODE_COVERAGE_STRINGIFY(x)
 diff --git a/src/ast-inl.h b/src/ast-inl.h
-index d80684a..adc5a1f 100644
+index f8b460d..217c71f 100644
 --- a/src/ast-inl.h
 +++ b/src/ast-inl.h
-@@ -106,6 +106,11 @@ bool FunctionLiteral::strict_mode() const {
+@@ -126,6 +126,11 @@ StrictModeFlag FunctionLiteral::strict_mode_flag() const {
  }
  
  
@@ -448,36 +499,52 @@ index d80684a..adc5a1f 100644
  } }  // namespace v8::internal
  
  #endif  // V8_AST_INL_H_
+diff --git a/src/ast.cc b/src/ast.cc
+index 9e34bc0..0dc3c1c 100644
+--- a/src/ast.cc
++++ b/src/ast.cc
+@@ -764,6 +764,11 @@ void Call::RecordTypeFeedback(TypeFeedbackOracle* oracle,
+   is_monomorphic_ = oracle->CallIsMonomorphic(this);
+   Property* property = expression()->AsProperty();
+   if (property == NULL) {
++    if (VariableProxy *proxy = expression()->AsVariableProxy()) {
++        if (proxy->var()->is_qml_global())
++            return;
++    }
++
+     // Function call.  Specialize for monomorphic calls.
+     if (is_monomorphic_) target_ = oracle->GetCallTarget(this);
+   } else {
 diff --git a/src/ast.h b/src/ast.h
-index 65a25a9..f790dc0 100644
+index 3de00ef..8920b50 100644
 --- a/src/ast.h
 +++ b/src/ast.h
-@@ -1712,6 +1712,7 @@ class FunctionLiteral: public Expression {
-   int end_position() const { return end_position_; }
-   bool is_expression() const { return is_expression_; }
-   bool strict_mode() const;
+@@ -1653,6 +1653,7 @@ class FunctionLiteral: public Expression {
+   bool is_anonymous() const { return is_anonymous_; }
+   bool strict_mode() const { return strict_mode_flag() == kStrictMode; }
+   StrictModeFlag strict_mode_flag() const;
 +  bool qml_mode() const;
  
    int materialized_literal_count() { return materialized_literal_count_; }
    int expected_property_count() { return expected_property_count_; }
 diff --git a/src/code-stubs.h b/src/code-stubs.h
-index 56ef072..37e5383 100644
+index fc7000b..4380764 100644
 --- a/src/code-stubs.h
 +++ b/src/code-stubs.h
-@@ -303,7 +303,7 @@ class FastNewContextStub : public CodeStub {
+@@ -326,7 +326,7 @@ class FastNewContextStub : public CodeStub {
    static const int kMaximumSlots = 64;
  
    explicit FastNewContextStub(int slots) : slots_(slots) {
--    ASSERT(slots_ > 0 && slots <= kMaximumSlots);
+-    ASSERT(slots_ > 0 && slots_ <= kMaximumSlots);
 +    ASSERT(slots_ >= 0 && slots <= kMaximumSlots);
    }
  
    void Generate(MacroAssembler* masm);
 diff --git a/src/compiler.cc b/src/compiler.cc
-index 86d5de3..d2191b9 100755
+index 88db467..4902e72 100644
 --- a/src/compiler.cc
 +++ b/src/compiler.cc
-@@ -462,7 +462,8 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
+@@ -447,7 +447,8 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
                                               v8::Extension* extension,
                                               ScriptDataImpl* input_pre_data,
                                               Handle<Object> script_data,
@@ -487,15 +554,15 @@ index 86d5de3..d2191b9 100755
    Isolate* isolate = source->GetIsolate();
    int source_length = source->length();
    isolate->counters()->total_load_size()->Increment(source_length);
-@@ -523,6 +524,7 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
+@@ -515,6 +516,7 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
      info.MarkAsGlobal();
      info.SetExtension(extension);
      info.SetPreParseData(pre_data);
 +    if (compile_flags & v8::Script::QmlMode) info.MarkAsQmlMode();
-     if (natives == NATIVES_CODE) info.MarkAsAllowingNativesSyntax();
      result = MakeFunctionInfo(&info);
      if (extension == NULL && !result.is_null()) {
-@@ -543,7 +545,8 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
+       compilation_cache->PutScript(source, result);
+@@ -534,7 +536,8 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
  Handle<SharedFunctionInfo> Compiler::CompileEval(Handle<String> source,
                                                   Handle<Context> context,
                                                   bool is_global,
@@ -505,17 +572,17 @@ index 86d5de3..d2191b9 100755
    Isolate* isolate = source->GetIsolate();
    int source_length = source->length();
    isolate->counters()->total_eval_size()->Increment(source_length);
-@@ -567,6 +570,7 @@ Handle<SharedFunctionInfo> Compiler::CompileEval(Handle<String> source,
-     CompilationInfo info(script);
+@@ -559,6 +562,7 @@ Handle<SharedFunctionInfo> Compiler::CompileEval(Handle<String> source,
      info.MarkAsEval();
      if (is_global) info.MarkAsGlobal();
+     info.SetStrictModeFlag(strict_mode);
 +    if (qml_mode) info.MarkAsQmlMode();
-     if (strict_mode == kStrictMode) info.MarkAsStrictMode();
      info.SetCallingContext(context);
      result = MakeFunctionInfo(&info);
-@@ -610,6 +614,12 @@ bool Compiler::CompileLazy(CompilationInfo* info) {
-       info->MarkAsStrictMode();
-     }
+     if (!result.is_null()) {
+@@ -606,6 +610,12 @@ bool Compiler::CompileLazy(CompilationInfo* info) {
+     info->SetStrictModeFlag(strict_mode);
+     shared->set_strict_mode_flag(strict_mode);
  
 +    // After parsing we know function's qml mode. Remember it.
 +    if (info->function()->qml_mode()) {
@@ -526,76 +593,63 @@ index 86d5de3..d2191b9 100755
      // Compile the code.
      if (!MakeCode(info)) {
        if (!isolate->has_pending_exception()) {
-@@ -755,6 +765,7 @@ void Compiler::SetFunctionInfo(Handle<SharedFunctionInfo> function_info,
+@@ -751,6 +761,7 @@ void Compiler::SetFunctionInfo(Handle<SharedFunctionInfo> function_info,
        *lit->this_property_assignments());
    function_info->set_allows_lazy_compilation(lit->AllowsLazyCompilation());
-   function_info->set_strict_mode(lit->strict_mode());
+   function_info->set_strict_mode_flag(lit->strict_mode_flag());
 +  function_info->set_qml_mode(lit->qml_mode());
+   function_info->set_uses_arguments(lit->scope()->arguments() != NULL);
+   function_info->set_has_duplicate_parameters(lit->has_duplicate_parameters());
  }
- 
- 
 diff --git a/src/compiler.h b/src/compiler.h
-index e75e869..17cd369 100644
+index bedf5ee..054e3b9 100644
 --- a/src/compiler.h
 +++ b/src/compiler.h
-@@ -54,6 +54,7 @@ class CompilationInfo BASE_EMBEDDED {
-   bool is_global() const { return (flags_ & IsGlobal::mask()) != 0; }
-   bool is_strict_mode() const { return (flags_ & IsStrictMode::mask()) != 0; }
-   bool is_in_loop() const { return (flags_ & IsInLoop::mask()) != 0; }
-+  bool is_qml_mode() const { return (flags_ & IsQmlMode::mask()) != 0; }
+@@ -57,6 +57,7 @@ class CompilationInfo BASE_EMBEDDED {
+     return StrictModeFlagField::decode(flags_);
+   }
+   bool is_in_loop() const { return IsInLoop::decode(flags_); }
++  bool is_qml_mode() const { return IsQmlMode::decode(flags_); }
    FunctionLiteral* function() const { return function_; }
    Scope* scope() const { return scope_; }
    Handle<Code> code() const { return code_; }
-@@ -83,6 +84,9 @@ class CompilationInfo BASE_EMBEDDED {
+@@ -85,6 +86,9 @@ class CompilationInfo BASE_EMBEDDED {
      ASSERT(is_lazy());
      flags_ |= IsInLoop::encode(true);
    }
 +  void MarkAsQmlMode() {
 +    flags_ |= IsQmlMode::encode(true);
 +  }
-   void MarkAsAllowingNativesSyntax() {
-     flags_ |= IsNativesSyntaxAllowed::encode(true);
+   void MarkAsNative() {
+     flags_ |= IsNative::encode(true);
    }
-@@ -141,6 +145,7 @@ class CompilationInfo BASE_EMBEDDED {
- 
-   // Determine whether or not we can adaptively optimize.
-   bool AllowOptimize() {
-+    // XXX - fix qml mode optimizations
-     return V8::UseCrankshaft() && !closure_.is_null();
-   }
- 
-@@ -163,8 +168,13 @@ class CompilationInfo BASE_EMBEDDED {
- 
-   void Initialize(Mode mode) {
-     mode_ = V8::UseCrankshaft() ? mode : NONOPT;
--    if (!shared_info_.is_null() && shared_info_->strict_mode()) {
--      MarkAsStrictMode();
-+    if (!shared_info_.is_null()) {
-+      if (shared_info_->strict_mode()) {
-+        MarkAsStrictMode();
-+      }
-+      if (shared_info_->qml_mode()) {
-+        MarkAsQmlMode();
-+      }
+@@ -192,6 +196,9 @@ class CompilationInfo BASE_EMBEDDED {
+       ASSERT(strict_mode_flag() == kNonStrictMode);
+       SetStrictModeFlag(shared_info_->strict_mode_flag());
      }
++    if (!shared_info_.is_null() && shared_info_->qml_mode()) {
++      MarkAsQmlMode();
++    }
    }
  
-@@ -187,6 +197,8 @@ class CompilationInfo BASE_EMBEDDED {
-   class IsStrictMode: public BitField<bool, 4, 1> {};
-   // Native syntax (%-stuff) allowed?
-   class IsNativesSyntaxAllowed: public BitField<bool, 5, 1> {};
+   void SetMode(Mode mode) {
+@@ -218,7 +225,8 @@ class CompilationInfo BASE_EMBEDDED {
+   // If compiling for debugging produce just full code matching the
+   // initial mode setting.
+   class IsCompilingForDebugging: public BitField<bool, 8, 1> {};
+-
 +  // Qml mode
-+  class IsQmlMode: public BitField<bool, 6, 1> {};
++  class IsQmlMode: public BitField<bool, 9, 1> {};
  
    unsigned flags_;
  
-@@ -252,13 +264,15 @@ class Compiler : public AllStatic {
+@@ -283,13 +291,15 @@ class Compiler : public AllStatic {
                                              v8::Extension* extension,
                                              ScriptDataImpl* pre_data,
                                              Handle<Object> script_data,
 -                                            NativesFlag is_natives_code);
 +                                            NativesFlag is_natives_code,
-+                                            v8::Script::CompileFlags compile_flags = v8::Script::Default);
++                                            v8::Script::CompileFlags = v8::Script::Default);
  
    // Compile a String source within a context for Eval.
    static Handle<SharedFunctionInfo> CompileEval(Handle<String> source,
@@ -608,10 +662,10 @@ index e75e869..17cd369 100644
    // Compile from function info (used for lazy compilation). Returns true on
    // success and false if the compilation resulted in a stack overflow.
 diff --git a/src/contexts.cc b/src/contexts.cc
-index 520f3dd..035ac3b 100644
+index b25ffac..3129af0 100644
 --- a/src/contexts.cc
 +++ b/src/contexts.cc
-@@ -89,6 +89,9 @@ Handle<Object> Context::Lookup(Handle<String> name, ContextLookupFlags flags,
+@@ -103,6 +103,9 @@ Handle<Object> Context::Lookup(Handle<String> name,
      PrintF(")\n");
    }
  
@@ -621,8 +675,8 @@ index 520f3dd..035ac3b 100644
    do {
      if (FLAG_trace_contexts) {
        PrintF(" - looking in context %p", reinterpret_cast<void*>(*context));
-@@ -119,6 +122,11 @@ Handle<Object> Context::Lookup(Handle<String> name, ContextLookupFlags flags,
-       }
+@@ -110,6 +113,11 @@ Handle<Object> Context::Lookup(Handle<String> name,
+       PrintF("\n");
      }
  
 +    if (qml_global.is_null() && !context->qml_global()->IsUndefined()) {
@@ -630,10 +684,10 @@ index 520f3dd..035ac3b 100644
 +      qml_global_global = Handle<JSObject>(context->global(), isolate);
 +    }
 +
-     if (context->is_function_context()) {
-       // we have context-local slots
- 
-@@ -198,6 +206,33 @@ Handle<Object> Context::Lookup(Handle<String> name, ContextLookupFlags flags,
+     // 1. Check global objects, subjects of with, and extension objects.
+     if (context->IsGlobalContext() ||
+         context->IsWithContext() ||
+@@ -228,6 +236,33 @@ Handle<Object> Context::Lookup(Handle<String> name,
      }
    } while (follow_context_chain);
  
@@ -664,22 +718,22 @@ index 520f3dd..035ac3b 100644
 +    }
 +  }
 +
-   // slot not found
    if (FLAG_trace_contexts) {
      PrintF("=> no property/slot found\n");
+   }
 diff --git a/src/contexts.h b/src/contexts.h
-index e46619e..57d8e7b 100644
+index 7021ff8..c3cfeee 100644
 --- a/src/contexts.h
 +++ b/src/contexts.h
-@@ -182,6 +182,7 @@ class Context: public FixedArray {
-     FCONTEXT_INDEX,
-     PREVIOUS_INDEX,
+@@ -218,6 +218,7 @@ class Context: public FixedArray {
+     // (with contexts), or the variable name (catch contexts), the serialized
+     // scope info (block contexts).
      EXTENSION_INDEX,
 +    QML_GLOBAL_INDEX,
      GLOBAL_INDEX,
      MIN_CONTEXT_SLOTS,
  
-@@ -273,6 +274,9 @@ class Context: public FixedArray {
+@@ -321,6 +322,9 @@ class Context: public FixedArray {
    }
    void set_global(GlobalObject* global) { set(GLOBAL_INDEX, global); }
  
@@ -690,71 +744,82 @@ index e46619e..57d8e7b 100644
    JSObject* global_proxy();
    void set_global_proxy(JSObject* global);
 diff --git a/src/execution.cc b/src/execution.cc
-index eb26438..1632076 100644
+index 29955fa..4261ac2 100644
 --- a/src/execution.cc
 +++ b/src/execution.cc
-@@ -70,7 +70,8 @@ static Handle<Object> Invoke(bool construct,
+@@ -71,7 +71,8 @@ static Handle<Object> Invoke(bool is_construct,
                               Handle<Object> receiver,
                               int argc,
-                              Object*** args,
+                              Handle<Object> args[],
 -                             bool* has_pending_exception) {
 +                             bool* has_pending_exception,
 +                             Handle<Object> qml) {
-   Isolate* isolate = func->GetIsolate();
+   Isolate* isolate = function->GetIsolate();
  
    // Entering JavaScript.
-@@ -107,6 +108,12 @@ static Handle<Object> Invoke(bool construct,
+@@ -102,6 +103,12 @@ static Handle<Object> Invoke(bool is_construct,
    // make the current one is indeed a global object.
-   ASSERT(func->context()->global()->IsGlobalObject());
+   ASSERT(function->context()->global()->IsGlobalObject());
  
 +  Handle<JSObject> oldqml;
 +  if (!qml.is_null()) {
-+    oldqml = Handle<JSObject>(func->context()->qml_global());
-+    func->context()->set_qml_global(JSObject::cast(*qml));
++    oldqml = Handle<JSObject>(function->context()->qml_global());
++    function->context()->set_qml_global(JSObject::cast(*qml));
 +  }
 +
    {
      // Save and restore context around invocation and block the
      // allocation of handles without explicit handle scopes.
-@@ -122,6 +129,9 @@ static Handle<Object> Invoke(bool construct,
-                                 receiver_pointer, argc, args);
+@@ -118,6 +125,9 @@ static Handle<Object> Invoke(bool is_construct,
+         CALL_GENERATED_CODE(stub_entry, function_entry, func, recv, argc, argv);
    }
  
 +  if (!qml.is_null()) 
-+    func->context()->set_qml_global(*oldqml);
++    function->context()->set_qml_global(*oldqml);
 +
  #ifdef DEBUG
    value->Verify();
  #endif
-@@ -150,14 +160,24 @@ Handle<Object> Execution::Call(Handle<JSFunction> func,
+@@ -146,7 +156,18 @@ Handle<Object> Execution::Call(Handle<Object> callable,
                                 int argc,
-                                Object*** args,
-                                bool* pending_exception) {
--  return Invoke(false, func, receiver, argc, args, pending_exception);
-+  return Invoke(false, func, receiver, argc, args, pending_exception, Handle<Object>());
+                                Handle<Object> argv[],
+                                bool* pending_exception,
+-                               bool convert_receiver) {
++                               bool convert_receiver)
++{
++    return Call(callable, receiver, argc, argv, pending_exception, convert_receiver, Handle<Object>());
 +}
 +
-+
-+Handle<Object> Execution::Call(Handle<JSFunction> func,
++Handle<Object> Execution::Call(Handle<Object> callable,
 +                               Handle<Object> receiver,
 +                               int argc,
-+                               Object*** args,
++                               Handle<Object> argv[],
 +                               bool* pending_exception,
++                               bool convert_receiver,
 +                               Handle<Object> qml) {
-+  return Invoke(false, func, receiver, argc, args, pending_exception, qml);
+   *pending_exception = false;
+ 
+   if (!callable->IsJSFunction()) {
+@@ -170,7 +191,7 @@ Handle<Object> Execution::Call(Handle<Object> callable,
+     if (*pending_exception) return callable;
+   }
+ 
+-  return Invoke(false, func, receiver, argc, argv, pending_exception);
++  return Invoke(false, func, receiver, argc, argv, pending_exception, qml);
  }
  
  
- Handle<Object> Execution::New(Handle<JSFunction> func, int argc,
-                               Object*** args, bool* pending_exception) {
-   return Invoke(true, func, Isolate::Current()->global(), argc, args,
+@@ -179,7 +200,7 @@ Handle<Object> Execution::New(Handle<JSFunction> func,
+                               Handle<Object> argv[],
+                               bool* pending_exception) {
+   return Invoke(true, func, Isolate::Current()->global(), argc, argv,
 -                pending_exception);
 +                pending_exception, Handle<Object>());
  }
  
  
-@@ -175,7 +195,7 @@ Handle<Object> Execution::TryCall(Handle<JSFunction> func,
-   catcher.SetCaptureMessage(false);
+@@ -198,7 +219,7 @@ Handle<Object> Execution::TryCall(Handle<JSFunction> func,
+   *caught_exception = false;
  
    Handle<Object> result = Invoke(false, func, receiver, argc, args,
 -                                 caught_exception);
@@ -763,36 +828,38 @@ index eb26438..1632076 100644
    if (*caught_exception) {
      ASSERT(catcher.HasCaught());
 diff --git a/src/execution.h b/src/execution.h
-index d4b80d2..a476eb4 100644
+index f2d17d0..532e5d8 100644
 --- a/src/execution.h
 +++ b/src/execution.h
-@@ -56,6 +56,12 @@ class Execution : public AllStatic {
-                              int argc,
-                              Object*** args,
-                              bool* pending_exception);
-+  static Handle<Object> Call(Handle<JSFunction> func,
+@@ -65,6 +65,14 @@ class Execution : public AllStatic {
+                              bool* pending_exception,
+                              bool convert_receiver = false);
+ 
++  static Handle<Object> Call(Handle<Object> callable,
 +                             Handle<Object> receiver,
 +                             int argc,
-+                             Object*** args,
++                             Handle<Object> argv[],
 +                             bool* pending_exception,
++                             bool convert_receiver,
 +                             Handle<Object> qml);
- 
++
    // Construct object from function, the caller supplies an array of
    // arguments. Arguments are Object* type. After function returns,
+   // pointers in 'args' might be invalid.
 diff --git a/src/full-codegen.cc b/src/full-codegen.cc
-index d6ba56e..2eaef0f 100644
+index 27c509f..f099d25 100644
 --- a/src/full-codegen.cc
 +++ b/src/full-codegen.cc
-@@ -542,7 +542,7 @@ void FullCodeGenerator::VisitDeclarations(
-   // Do nothing in case of no declared global functions or variables.
-   if (globals > 0) {
+@@ -513,7 +513,7 @@ void FullCodeGenerator::VisitDeclarations(
+   // Batch declare global functions and variables.
+   if (global_count > 0) {
      Handle<FixedArray> array =
--        isolate()->factory()->NewFixedArray(2 * globals, TENURED);
-+        isolate()->factory()->NewFixedArray(3 * globals, TENURED);
+-        isolate()->factory()->NewFixedArray(2 * global_count, TENURED);
++        isolate()->factory()->NewFixedArray(3 * global_count, TENURED);
      for (int j = 0, i = 0; i < length; i++) {
        Declaration* decl = declarations->at(i);
        Variable* var = decl->proxy()->var();
-@@ -567,6 +567,7 @@ void FullCodeGenerator::VisitDeclarations(
+@@ -537,6 +537,7 @@ void FullCodeGenerator::VisitDeclarations(
            }
            array->set(j++, *function);
          }
@@ -801,42 +868,74 @@ index d6ba56e..2eaef0f 100644
      }
      // Invoke the platform-dependent code generator to do the actual
 diff --git a/src/full-codegen.h b/src/full-codegen.h
-index d6ed1b9..e3241aa 100644
+index 9132502..78e6089 100644
 --- a/src/full-codegen.h
 +++ b/src/full-codegen.h
-@@ -505,6 +505,7 @@ class FullCodeGenerator: public AstVisitor {
+@@ -583,6 +583,7 @@ class FullCodeGenerator: public AstVisitor {
    StrictModeFlag strict_mode_flag() {
-     return is_strict_mode() ? kStrictMode : kNonStrictMode;
+     return function()->strict_mode_flag();
    }
 +  bool is_qml_mode() { return function()->qml_mode(); }
    FunctionLiteral* function() { return info_->function(); }
-   Scope* scope() { return info_->scope(); }
+   Scope* scope() { return scope_; }
  
 diff --git a/src/heap.cc b/src/heap.cc
-index bf2940e..da958c2 100644
+index 53a0f27..881a876 100644
 --- a/src/heap.cc
 +++ b/src/heap.cc
-@@ -3795,6 +3795,7 @@ MaybeObject* Heap::AllocateFunctionContext(int length, JSFunction* function) {
-   context->set_previous(NULL);
+@@ -4355,6 +4355,7 @@ MaybeObject* Heap::AllocateFunctionContext(int length, JSFunction* function) {
+   context->set_previous(function->context());
    context->set_extension(NULL);
    context->set_global(function->context()->global());
 +  context->set_qml_global(function->context()->qml_global());
-   ASSERT(!context->IsGlobalContext());
-   ASSERT(context->is_function_context());
-   ASSERT(result->IsContext());
-@@ -3817,6 +3818,7 @@ MaybeObject* Heap::AllocateWithContext(Context* previous,
+   return context;
+ }
+ 
+@@ -4375,6 +4376,7 @@ MaybeObject* Heap::AllocateCatchContext(JSFunction* function,
+   context->set_previous(previous);
+   context->set_extension(name);
+   context->set_global(previous->global());
++  context->set_qml_global(previous->qml_global());
+   context->set(Context::THROWN_OBJECT_INDEX, thrown_object);
+   return context;
+ }
+@@ -4393,6 +4395,7 @@ MaybeObject* Heap::AllocateWithContext(JSFunction* function,
    context->set_previous(previous);
    context->set_extension(extension);
    context->set_global(previous->global());
 +  context->set_qml_global(previous->qml_global());
-   ASSERT(!context->IsGlobalContext());
-   ASSERT(!context->is_function_context());
-   ASSERT(result->IsContext());
+   return context;
+ }
+ 
+@@ -4411,6 +4414,7 @@ MaybeObject* Heap::AllocateBlockContext(JSFunction* function,
+   context->set_previous(previous);
+   context->set_extension(scope_info);
+   context->set_global(previous->global());
++  context->set_qml_global(previous->qml_global());
+   return context;
+ }
+ 
+diff --git a/src/hydrogen-instructions.cc b/src/hydrogen-instructions.cc
+index 6f46509..ac9728c 100644
+--- a/src/hydrogen-instructions.cc
++++ b/src/hydrogen-instructions.cc
+@@ -655,6 +655,11 @@ void HCallNamed::PrintDataTo(StringStream* stream) {
+ }
+ 
+ 
++void HGlobalObject::PrintDataTo(StringStream* stream) {
++  stream->Add("qml_global: %s ", qml_global()?"true":"false");
++  HUnaryOperation::PrintDataTo(stream);
++}
++
+ void HCallGlobal::PrintDataTo(StringStream* stream) {
+   stream->Add("%o ", *name());
+   HUnaryCall::PrintDataTo(stream);
 diff --git a/src/hydrogen-instructions.h b/src/hydrogen-instructions.h
-index a623775..52455bc 100644
+index 65fc4df..c29d781 100644
 --- a/src/hydrogen-instructions.h
 +++ b/src/hydrogen-instructions.h
-@@ -1148,7 +1148,7 @@ class HOuterContext: public HUnaryOperation {
+@@ -1410,19 +1410,27 @@ class HOuterContext: public HUnaryOperation {
  
  class HGlobalObject: public HUnaryOperation {
   public:
@@ -845,7 +944,12 @@ index a623775..52455bc 100644
      set_representation(Representation::Tagged());
      SetFlag(kUseGVN);
    }
-@@ -1159,8 +1159,14 @@ class HGlobalObject: public HUnaryOperation {
+ 
++  virtual void PrintDataTo(StringStream* stream);
++
+   DECLARE_CONCRETE_INSTRUCTION(GlobalObject)
+ 
+   virtual Representation RequiredInputRepresentation(int index) {
      return Representation::Tagged();
    }
  
@@ -860,61 +964,88 @@ index a623775..52455bc 100644
  };
  
  
-@@ -1177,7 +1183,7 @@ class HGlobalReceiver: public HUnaryOperation {
-   virtual Representation RequiredInputRepresentation(int index) const {
+@@ -1601,7 +1609,7 @@ class HCallFunction: public HUnaryCall {
+ class HCallGlobal: public HUnaryCall {
+  public:
+   HCallGlobal(HValue* context, Handle<String> name, int argument_count)
+-      : HUnaryCall(context, argument_count), name_(name) {
++      : HUnaryCall(context, argument_count), name_(name), qml_global_(false) {
+   }
+ 
+   virtual void PrintDataTo(StringStream* stream);
+@@ -1613,10 +1621,14 @@ class HCallGlobal: public HUnaryCall {
      return Representation::Tagged();
    }
--
-+  
-  protected:
-   virtual bool DataEquals(HValue* other) { return true; }
+ 
++  bool qml_global() { return qml_global_; }
++  void set_qml_global(bool v) { qml_global_ = v; }
++
+   DECLARE_CONCRETE_INSTRUCTION(CallGlobal)
+ 
+  private:
+   Handle<String> name_;
++  bool qml_global_;
  };
+ 
+ 
 diff --git a/src/hydrogen.cc b/src/hydrogen.cc
-index 73ea97d..d17e304 100644
+index 3a4d172..0a7fad1 100644
 --- a/src/hydrogen.cc
 +++ b/src/hydrogen.cc
-@@ -2918,6 +2918,7 @@ void HGraphBuilder::VisitVariableProxy(VariableProxy* expr) {
-       HContext* context = new(zone()) HContext;
-       AddInstruction(context);
-       HGlobalObject* global_object = new(zone()) HGlobalObject(context);
-+      if (variable->is_qml_global()) global_object->set_qml_global(true);
-       AddInstruction(global_object);
-       HLoadGlobalGeneric* instr =
-           new(zone()) HLoadGlobalGeneric(context,
-@@ -3307,6 +3308,7 @@ void HGraphBuilder::HandleGlobalVariableAssignment(Variable* var,
-     HContext* context = new(zone()) HContext;
-     AddInstruction(context);
+@@ -3185,6 +3185,7 @@ void HGraphBuilder::VisitVariableProxy(VariableProxy* expr) {
+       } else {
+         HValue* context = environment()->LookupContext();
+         HGlobalObject* global_object = new(zone()) HGlobalObject(context);
++        if (variable->is_qml_global()) global_object->set_qml_global(true);
+         AddInstruction(global_object);
+         HLoadGlobalGeneric* instr =
+             new(zone()) HLoadGlobalGeneric(context,
+@@ -3644,6 +3645,7 @@ void HGraphBuilder::HandleGlobalVariableAssignment(Variable* var,
+   } else {
+     HValue* context =  environment()->LookupContext();
      HGlobalObject* global_object = new(zone()) HGlobalObject(context);
 +    if (var->is_qml_global()) global_object->set_qml_global(true);
      AddInstruction(global_object);
      HStoreGlobalGeneric* instr =
          new(zone()) HStoreGlobalGeneric(context,
+@@ -5106,11 +5108,13 @@ void HGraphBuilder::VisitCall(Call* expr) {
+       } else {
+         HValue* context = environment()->LookupContext();
+         HGlobalObject* receiver = new(zone()) HGlobalObject(context);
++        if (var->is_qml_global()) receiver->set_qml_global(true);
+         AddInstruction(receiver);
+         PushAndAdd(new(zone()) HPushArgument(receiver));
+         CHECK_ALIVE(VisitArgumentList(expr->arguments()));
+ 
+         call = new(zone()) HCallGlobal(context, var->name(), argument_count);
++        if (var->is_qml_global()) static_cast<HCallGlobal*>(call)->set_qml_global(true);
+         Drop(argument_count);
+       }
+ 
 diff --git a/src/ia32/code-stubs-ia32.cc b/src/ia32/code-stubs-ia32.cc
-index 5d32095..afa599e 100644
+index 37b519a..8a94a06 100644
 --- a/src/ia32/code-stubs-ia32.cc
 +++ b/src/ia32/code-stubs-ia32.cc
-@@ -147,6 +147,13 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
-   __ mov(ebx, Operand(ebx, Context::SlotOffset(Context::GLOBAL_INDEX)));
+@@ -144,6 +144,11 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
+   __ mov(ebx, Operand(esi, Context::SlotOffset(Context::GLOBAL_INDEX)));
    __ mov(Operand(eax, Context::SlotOffset(Context::GLOBAL_INDEX)), ebx);
  
-+  // Copy the qml global object from the surrounding context. We go through the
-+  // context in the function (ecx) to match the allocation behavior we have
-+  // in the runtime system (see Heap::AllocateFunctionContext).
-+  __ mov(ebx, FieldOperand(ecx, JSFunction::kContextOffset));
-+  __ mov(ebx, Operand(ebx, Context::SlotOffset(Context::QML_GLOBAL_INDEX)));
++  // Copy the qml global object from the previous context.
++  __ mov(ebx, Operand(esi, Context::SlotOffset(Context::QML_GLOBAL_INDEX)));
 +  __ mov(Operand(eax, Context::SlotOffset(Context::QML_GLOBAL_INDEX)), ebx);
++
 +
    // Initialize the rest of the slots to undefined.
    __ mov(ebx, factory->undefined_value());
    for (int i = Context::MIN_CONTEXT_SLOTS; i < length; i++) {
 diff --git a/src/ia32/full-codegen-ia32.cc b/src/ia32/full-codegen-ia32.cc
-index 5d153a8..0ddcde2 100644
+index 25588c8..9cee4a3 100644
 --- a/src/ia32/full-codegen-ia32.cc
 +++ b/src/ia32/full-codegen-ia32.cc
-@@ -142,12 +142,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
+@@ -178,12 +178,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
  
    // Possibly allocate a local context.
-   int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
+   int heap_slots = info->scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
 -  if (heap_slots > 0) {
 +  if (heap_slots > 0 ||
 +      (scope()->is_qml_mode() && scope()->is_global_scope())) {
@@ -926,50 +1057,45 @@ index 5d153a8..0ddcde2 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -1107,10 +1108,10 @@ void FullCodeGenerator::EmitLoadGlobalSlotCheckExtensions(
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -1179,10 +1180,10 @@ void FullCodeGenerator::EmitLoadGlobalCheckExtensions(Variable* var,
  
    // All extension objects were empty and it is safe to use a global
    // load IC call.
 -  __ mov(eax, GlobalObjectOperand());
-+  __ mov(eax, slot->var()->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
-   __ mov(ecx, slot->var()->name());
++  __ mov(eax, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+   __ mov(ecx, var->name());
    Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
 -  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF)
-+  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || slot->var()->is_qml_global())
++  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || var->is_qml_global())
        ? RelocInfo::CODE_TARGET
        : RelocInfo::CODE_TARGET_CONTEXT;
-   EmitCallIC(ic, mode);
-@@ -1214,10 +1215,10 @@ void FullCodeGenerator::EmitVariableLoad(Variable* var) {
-     Comment cmnt(masm_, "Global variable");
-     // Use inline caching. Variable name is passed in ecx and the global
-     // object on the stack.
--    __ mov(eax, GlobalObjectOperand());
-+    __ mov(eax, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
-     __ mov(ecx, var->name());
-     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
-     context()->Plug(eax);
- 
-   } else if (slot != NULL && slot->type() == Slot::LOOKUP) {
-@@ -1837,11 +1838,11 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
-     // assignment.  Right-hand-side value is passed in eax, variable name in
-     // ecx, and the global object on the stack.
+   __ call(ic, mode);
+@@ -1263,10 +1264,10 @@ void FullCodeGenerator::EmitVariableLoad(VariableProxy* proxy) {
+       Comment cmnt(masm_, "Global variable");
+       // Use inline caching. Variable name is passed in ecx and the global
+       // object in eax.
+-      __ mov(eax, GlobalObjectOperand());
++      __ mov(eax, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+       __ mov(ecx, var->name());
+       Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+-      __ call(ic, RelocInfo::CODE_TARGET_CONTEXT);
++      __ call(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+       context()->Plug(eax);
+       break;
+     }
+@@ -1920,7 +1921,7 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
+   if (var->IsUnallocated()) {
+     // Global var, const, or let.
      __ mov(ecx, var->name());
 -    __ mov(edx, GlobalObjectOperand());
 +    __ mov(edx, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
      Handle<Code> ic = is_strict_mode()
          ? isolate()->builtins()->StoreIC_Initialize_Strict()
          : isolate()->builtins()->StoreIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
- 
-   } else if (op == Token::INIT_CONST) {
-     // Like var declarations, const declarations are hoisted to function
-@@ -2113,9 +2114,12 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
-   // Push the strict mode flag.
-   __ push(Immediate(Smi::FromInt(strict_mode_flag())));
+@@ -2235,9 +2236,12 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
+       FLAG_harmony_scoping ? kStrictMode : strict_mode_flag();
+   __ push(Immediate(Smi::FromInt(strict_mode)));
  
 +  // Push the qml mode flag
 +  __ push(Immediate(Smi::FromInt(is_qml_mode())));
@@ -981,22 +1107,41 @@ index 5d153a8..0ddcde2 100644
  }
  
  
-@@ -2188,8 +2192,8 @@ void FullCodeGenerator::VisitCall(Call* expr) {
-     context()->DropAndPlug(1, eax);
-   } else if (var != NULL && !var->is_this() && var->is_global()) {
+@@ -2308,9 +2312,9 @@ void FullCodeGenerator::VisitCall(Call* expr) {
+ 
+   } else if (proxy != NULL && proxy->var()->IsUnallocated()) {
      // Push global object as receiver for the call IC.
 -    __ push(GlobalObjectOperand());
--    EmitCallWithIC(expr, var->name(), RelocInfo::CODE_TARGET_CONTEXT);
-+    __ push(var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
-+    EmitCallWithIC(expr, var->name(), var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
-   } else if (var != NULL && var->AsSlot() != NULL &&
-              var->AsSlot()->type() == Slot::LOOKUP) {
++    __ push(proxy->var()->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+     increment_stack_height();
+-    EmitCallWithIC(expr, proxy->name(), RelocInfo::CODE_TARGET_CONTEXT);
++    EmitCallWithIC(expr, proxy->name(), proxy->var()->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+ 
+   } else if (proxy != NULL && proxy->var()->IsLookupSlot()) {
      // Call to a lookup slot (dynamically introduced variable).
+@@ -3777,7 +3781,7 @@ void FullCodeGenerator::VisitUnaryOperation(UnaryOperation* expr) {
+         // but "delete this" is allowed.
+         ASSERT(strict_mode_flag() == kNonStrictMode || var->is_this());
+         if (var->IsUnallocated()) {
+-          __ push(GlobalObjectOperand());
++          __ push(var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+           __ push(Immediate(var->name()));
+           __ push(Immediate(Smi::FromInt(kNonStrictMode)));
+           __ InvokeBuiltin(Builtins::DELETE, CALL_FUNCTION);
+@@ -4085,7 +4089,7 @@ void FullCodeGenerator::VisitForTypeofValue(Expression* expr) {
+ 
+   if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     Comment cmnt(masm_, "Global variable");
+-    __ mov(eax, GlobalObjectOperand());
++    __ mov(eax, proxy->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+     __ mov(ecx, Immediate(proxy->name()));
+     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+     // Use a regular load, not a contextual load, to avoid a reference
 diff --git a/src/ia32/lithium-codegen-ia32.cc b/src/ia32/lithium-codegen-ia32.cc
-index 0f96f78..c1da075 100644
+index d4cbbce..b381227 100644
 --- a/src/ia32/lithium-codegen-ia32.cc
 +++ b/src/ia32/lithium-codegen-ia32.cc
-@@ -159,12 +159,13 @@ bool LCodeGen::GeneratePrologue() {
+@@ -211,12 +211,13 @@ bool LCodeGen::GeneratePrologue() {
  
    // Possibly allocate a local context.
    int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
@@ -1011,8 +1156,8 @@ index 0f96f78..c1da075 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -2525,7 +2526,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -2661,7 +2662,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
  void LCodeGen::DoGlobalObject(LGlobalObject* instr) {
    Register context = ToRegister(instr->context());
    Register result = ToRegister(instr->result());
@@ -1021,11 +1166,20 @@ index 0f96f78..c1da075 100644
  }
  
  
+@@ -3131,7 +3132,7 @@ void LCodeGen::DoCallGlobal(LCallGlobal* instr) {
+   ASSERT(ToRegister(instr->result()).is(eax));
+ 
+   int arity = instr->arity();
+-  RelocInfo::Mode mode = RelocInfo::CODE_TARGET_CONTEXT;
++  RelocInfo::Mode mode = instr->qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT;
+   Handle<Code> ic =
+       isolate()->stub_cache()->ComputeCallInitialize(arity, mode);
+   __ mov(ecx, instr->name());
 diff --git a/src/ia32/lithium-ia32.cc b/src/ia32/lithium-ia32.cc
-index 9ccd189..8e98b73 100644
+index 626f899..d09d55f 100644
 --- a/src/ia32/lithium-ia32.cc
 +++ b/src/ia32/lithium-ia32.cc
-@@ -1205,7 +1205,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
+@@ -1144,7 +1144,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
  
  LInstruction* LChunkBuilder::DoGlobalObject(HGlobalObject* instr) {
    LOperand* context = UseRegisterAtStart(instr->value());
@@ -1034,11 +1188,20 @@ index 9ccd189..8e98b73 100644
  }
  
  
+@@ -1228,7 +1228,7 @@ LInstruction* LChunkBuilder::DoCallNamed(HCallNamed* instr) {
+ LInstruction* LChunkBuilder::DoCallGlobal(HCallGlobal* instr) {
+   LOperand* context = UseFixed(instr->context(), esi);
+   argument_count_ -= instr->argument_count();
+-  LCallGlobal* result = new LCallGlobal(context);
++  LCallGlobal* result = new LCallGlobal(context, instr->qml_global());
+   return MarkAsCall(DefineFixed(result, eax), instr);
+ }
+ 
 diff --git a/src/ia32/lithium-ia32.h b/src/ia32/lithium-ia32.h
-index 9ace8f8..95ed001 100644
+index 5f23afa..22541c8 100644
 --- a/src/ia32/lithium-ia32.h
 +++ b/src/ia32/lithium-ia32.h
-@@ -1416,13 +1416,17 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
+@@ -1338,13 +1338,17 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
  
  class LGlobalObject: public LTemplateInstruction<1, 1, 0> {
   public:
@@ -1057,83 +1220,90 @@ index 9ace8f8..95ed001 100644
  };
  
  
+@@ -1443,7 +1447,7 @@ class LCallFunction: public LTemplateInstruction<1, 1, 0> {
+ 
+ class LCallGlobal: public LTemplateInstruction<1, 1, 0> {
+  public:
+-  explicit LCallGlobal(LOperand* context) {
++  explicit LCallGlobal(LOperand* context, bool qml_global) : qml_global_(qml_global) {
+     inputs_[0] = context;
+   }
+ 
+@@ -1455,6 +1459,10 @@ class LCallGlobal: public LTemplateInstruction<1, 1, 0> {
+   LOperand* context() { return inputs_[0]; }
+   Handle<String> name() const {return hydrogen()->name(); }
+   int arity() const { return hydrogen()->argument_count() - 1; }
++
++  bool qml_global() { return qml_global_; }
++ private:
++  bool qml_global_;
+ };
+ 
+ 
 diff --git a/src/ia32/macro-assembler-ia32.h b/src/ia32/macro-assembler-ia32.h
-index b986264..f8479ae 100644
+index 8528c55..de3c3a0 100644
 --- a/src/ia32/macro-assembler-ia32.h
 +++ b/src/ia32/macro-assembler-ia32.h
-@@ -778,6 +778,11 @@ static inline Operand GlobalObjectOperand() {
+@@ -935,6 +935,9 @@ static inline Operand GlobalObjectOperand() {
+   return ContextOperand(esi, Context::GLOBAL_INDEX);
  }
- 
  
 +static inline Operand QmlGlobalObjectOperand() {
 +  return ContextOperand(esi, Context::QML_GLOBAL_INDEX);
 +}
-+
-+
+ 
  // Generates an Operand for saving parameters after PrepareCallApiFunction.
  Operand ApiParameterOperand(int index);
- 
 diff --git a/src/objects-inl.h b/src/objects-inl.h
-index 231b835..1c7f83e 100644
+index 6a80c9c..2e83fb7 100644
 --- a/src/objects-inl.h
 +++ b/src/objects-inl.h
-@@ -3242,6 +3242,18 @@ void SharedFunctionInfo::set_strict_mode(bool value) {
- }
+@@ -3535,6 +3535,8 @@ void SharedFunctionInfo::set_strict_mode_flag(StrictModeFlag strict_mode_flag) {
  
- 
-+bool SharedFunctionInfo::qml_mode() {
-+  return BooleanBit::get(compiler_hints(), kQmlModeFunction);
-+}
-+
-+
-+void SharedFunctionInfo::set_qml_mode(bool value) {
-+  set_compiler_hints(BooleanBit::set(compiler_hints(),
-+                                     kQmlModeFunction,
-+                                     value));
-+}
-+
-+
- ACCESSORS(CodeCache, default_cache, FixedArray, kDefaultCacheOffset)
- ACCESSORS(CodeCache, normal_type_cache, Object, kNormalTypeCacheOffset)
- 
+ BOOL_GETTER(SharedFunctionInfo, compiler_hints, strict_mode,
+             kStrictModeFunction)
++BOOL_ACCESSORS(SharedFunctionInfo, compiler_hints, qml_mode,
++               kQmlModeFunction)
+ BOOL_ACCESSORS(SharedFunctionInfo, compiler_hints, native, kNative)
+ BOOL_ACCESSORS(SharedFunctionInfo, compiler_hints,
+                name_should_print_as_anonymous,
 diff --git a/src/objects.h b/src/objects.h
-index 1bdb5c7..edbc47a 100644
+index c38d461..73e7f8b 100644
 --- a/src/objects.h
 +++ b/src/objects.h
-@@ -4331,6 +4331,10 @@ class SharedFunctionInfo: public HeapObject {
-   inline bool strict_mode();
-   inline void set_strict_mode(bool value);
+@@ -4929,6 +4929,9 @@ class SharedFunctionInfo: public HeapObject {
+   inline StrictModeFlag strict_mode_flag();
+   inline void set_strict_mode_flag(StrictModeFlag strict_mode_flag);
  
-+  // Indicates whether the function is a qml mode function
-+  inline bool qml_mode();
-+  inline void set_qml_mode(bool value);
++  // Indicates whether the function is a qml mode function.
++  DECL_BOOLEAN_ACCESSORS(qml_mode)
 +
-   // Indicates whether or not the code in the shared function support
-   // deoptimization.
-   inline bool has_deoptimization_support();
-@@ -4511,6 +4515,7 @@ class SharedFunctionInfo: public HeapObject {
-   static const int kCodeAgeMask = 0x7;
-   static const int kOptimizationDisabled = 6;
-   static const int kStrictModeFunction = 7;
-+  static const int kQmlModeFunction = 8;
+   // False if the function definitely does not allocate an arguments object.
+   DECL_BOOLEAN_ACCESSORS(uses_arguments)
  
-  private:
- #if V8_HOST_ARCH_32_BIT
+@@ -5150,6 +5153,7 @@ class SharedFunctionInfo: public HeapObject {
+     kCodeAgeShift,
+     kOptimizationDisabled = kCodeAgeShift + kCodeAgeSize,
+     kStrictModeFunction,
++    kQmlModeFunction,
+     kUsesArguments,
+     kHasDuplicateParameters,
+     kNative,
 diff --git a/src/parser.cc b/src/parser.cc
-index a84ec6f..7f5c361 100644
+index 37204c9..357d340 100644
 --- a/src/parser.cc
 +++ b/src/parser.cc
-@@ -593,7 +593,8 @@ Parser::Parser(Handle<Script> script,
+@@ -607,7 +607,8 @@ Parser::Parser(Handle<Script> script,
  
  FunctionLiteral* Parser::ParseProgram(Handle<String> source,
                                        bool in_global_context,
 -                                      StrictModeFlag strict_mode) {
 +                                      StrictModeFlag strict_mode,
 +                                      bool qml_mode) {
-   CompilationZoneScope zone_scope(DONT_DELETE_ON_EXIT);
+   ZoneScope zone_scope(isolate(), DONT_DELETE_ON_EXIT);
  
    HistogramTimerScope timer(isolate()->counters()->parse());
-@@ -609,11 +610,11 @@ FunctionLiteral* Parser::ParseProgram(Handle<String> source,
+@@ -623,11 +624,11 @@ FunctionLiteral* Parser::ParseProgram(Handle<String> source,
      ExternalTwoByteStringUC16CharacterStream stream(
          Handle<ExternalTwoByteString>::cast(source), 0, source->length());
      scanner_.Initialize(&stream);
@@ -1147,35 +1317,36 @@ index a84ec6f..7f5c361 100644
    }
  }
  
-@@ -621,6 +622,7 @@ FunctionLiteral* Parser::ParseProgram(Handle<String> source,
+@@ -635,6 +636,7 @@ FunctionLiteral* Parser::ParseProgram(Handle<String> source,
  FunctionLiteral* Parser::DoParseProgram(Handle<String> source,
                                          bool in_global_context,
                                          StrictModeFlag strict_mode,
 +                                        bool qml_mode,
                                          ZoneScope* zone_scope) {
+   ASSERT(top_scope_ == NULL);
    ASSERT(target_stack_ == NULL);
-   if (pre_data_ != NULL) pre_data_->Initialize();
-@@ -641,6 +643,9 @@ FunctionLiteral* Parser::DoParseProgram(Handle<String> source,
-     if (strict_mode == kStrictMode) {
-       top_scope_->EnableStrictMode();
-     }
+@@ -654,6 +656,9 @@ FunctionLiteral* Parser::DoParseProgram(Handle<String> source,
+     LexicalScope lexical_scope(this, scope, isolate());
+     ASSERT(top_scope_->strict_mode_flag() == kNonStrictMode);
+     top_scope_->SetStrictModeFlag(strict_mode);
 +    if (qml_mode) {
 +      scope->EnableQmlMode();
 +    }
-     ZoneList<Statement*>* body = new ZoneList<Statement*>(16);
+     ZoneList<Statement*>* body = new(zone()) ZoneList<Statement*>(16);
      bool ok = true;
      int beg_loc = scanner().location().beg_pos;
-@@ -729,6 +734,9 @@ FunctionLiteral* Parser::ParseLazy(CompilationInfo* info,
-     if (shared_info->strict_mode()) {
-       top_scope_->EnableStrictMode();
-     }
+@@ -747,6 +752,10 @@ FunctionLiteral* Parser::ParseLazy(CompilationInfo* info,
+            scope->strict_mode_flag() == info->strict_mode_flag());
+     ASSERT(info->strict_mode_flag() == shared_info->strict_mode_flag());
+     scope->SetStrictModeFlag(shared_info->strict_mode_flag());
 +    if (shared_info->qml_mode()) {
 +      top_scope_->EnableQmlMode();
 +    }
- 
-     FunctionLiteralType type =
-         shared_info->is_expression() ? EXPRESSION : DECLARATION;
-@@ -1661,6 +1669,11 @@ Block* Parser::ParseVariableDeclarations(bool accept_IN,
++
+     FunctionLiteral::Type type = shared_info->is_expression()
+         ? (shared_info->is_anonymous()
+               ? FunctionLiteral::ANONYMOUS_EXPRESSION
+@@ -1856,6 +1865,11 @@ Block* Parser::ParseVariableDeclarations(
          arguments->Add(value);
          value = NULL;  // zap the value to avoid the unnecessary assignment
  
@@ -1187,9 +1358,9 @@ index a84ec6f..7f5c361 100644
          // Construct the call to Runtime_InitializeConstGlobal
          // and add it to the initialization statement block.
          // Note that the function does different things depending on
-@@ -1676,6 +1689,11 @@ Block* Parser::ParseVariableDeclarations(bool accept_IN,
-         arguments->Add(NewNumberLiteral(
-             top_scope_->is_strict_mode() ? kStrictMode : kNonStrictMode));
+@@ -1872,6 +1886,11 @@ Block* Parser::ParseVariableDeclarations(
+         StrictModeFlag flag = initialization_scope->strict_mode_flag();
+         arguments->Add(NewNumberLiteral(flag));
  
 +        int qml_mode = 0;
 +        if (top_scope_->is_qml_mode() && !Isolate::Current()->global()->HasProperty(*name)) 
@@ -1199,31 +1370,31 @@ index a84ec6f..7f5c361 100644
          // Be careful not to assign a value to the global variable if
          // we're in a with. The initialization value should not
          // necessarily be stored in the global object in that case,
-@@ -5157,7 +5175,8 @@ bool ParserApi::Parse(CompilationInfo* info) {
+@@ -5418,7 +5437,8 @@ bool ParserApi::Parse(CompilationInfo* info) {
        Handle<String> source = Handle<String>(String::cast(script->source()));
        result = parser.ParseProgram(source,
                                     info->is_global(),
--                                   info->StrictMode());
-+                                   info->StrictMode(),
+-                                   info->strict_mode_flag());
++                                   info->strict_mode_flag(),
 +                                   info->is_qml_mode());
      }
    }
- 
+   info->SetFunction(result);
 diff --git a/src/parser.h b/src/parser.h
-index 64f1303..4d45e45 100644
+index eaae6f7..a60951d 100644
 --- a/src/parser.h
 +++ b/src/parser.h
-@@ -431,7 +431,8 @@ class Parser {
+@@ -430,7 +430,8 @@ class Parser {
    // Returns NULL if parsing failed.
    FunctionLiteral* ParseProgram(Handle<String> source,
                                  bool in_global_context,
 -                                StrictModeFlag strict_mode);
 +                                StrictModeFlag strict_mode,
-+                                bool qml_mode);
++                                bool qml_mode = false);
  
    FunctionLiteral* ParseLazy(CompilationInfo* info);
  
-@@ -464,6 +465,7 @@ class Parser {
+@@ -476,6 +477,7 @@ class Parser {
    FunctionLiteral* DoParseProgram(Handle<String> source,
                                    bool in_global_context,
                                    StrictModeFlag strict_mode,
@@ -1232,10 +1403,10 @@ index 64f1303..4d45e45 100644
  
    // Report syntax error
 diff --git a/src/prettyprinter.cc b/src/prettyprinter.cc
-index c777ab4..1964e02 100644
+index 37c76ce..73812fd 100644
 --- a/src/prettyprinter.cc
 +++ b/src/prettyprinter.cc
-@@ -656,6 +656,9 @@ void AstPrinter::PrintLiteralWithModeIndented(const char* info,
+@@ -618,6 +618,9 @@ void AstPrinter::PrintLiteralWithModeIndented(const char* info,
      EmbeddedVector<char, 256> buf;
      int pos = OS::SNPrintF(buf, "%s (mode = %s", info,
                             Variable::Mode2String(var->mode()));
@@ -1246,30 +1417,23 @@ index c777ab4..1964e02 100644
      PrintLiteralIndented(buf.start(), value, true);
    }
 diff --git a/src/runtime.cc b/src/runtime.cc
-index 660352c..c13f92d 100644
+index 0e256c1..5746c20 100644
 --- a/src/runtime.cc
 +++ b/src/runtime.cc
-@@ -1065,8 +1065,6 @@ static Failure* ThrowRedeclarationError(Isolate* isolate,
+@@ -1307,19 +1307,23 @@ static Failure* ThrowRedeclarationError(Isolate* isolate,
  RUNTIME_FUNCTION(MaybeObject*, Runtime_DeclareGlobals) {
-   ASSERT(args.length() == 4);
+   ASSERT(args.length() == 3);
    HandleScope scope(isolate);
 -  Handle<GlobalObject> global = Handle<GlobalObject>(
 -      isolate->context()->global());
  
    Handle<Context> context = args.at<Context>(0);
    CONVERT_ARG_CHECKED(FixedArray, pairs, 1);
-@@ -1075,6 +1073,9 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DeclareGlobals) {
-       static_cast<StrictModeFlag>(Smi::cast(args[3])->value());
-   ASSERT(strict_mode == kStrictMode || strict_mode == kNonStrictMode);
+   CONVERT_SMI_ARG_CHECKED(flags, 2);
  
 +  Handle<JSObject> js_global = Handle<JSObject>(isolate->context()->global());
 +  Handle<JSObject> qml_global = Handle<JSObject>(isolate->context()->qml_global());
 +
-   // Compute the property attributes. According to ECMA-262, section
-   // 13, page 71, the property must be read-only and
-   // non-deletable. However, neither SpiderMonkey nor KJS creates the
-@@ -1083,10 +1084,13 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DeclareGlobals) {
- 
    // Traverse the name/value pairs and set the properties.
    int length = pairs->length();
 -  for (int i = 0; i < length; i += 2) {
@@ -1283,7 +1447,7 @@ index 660352c..c13f92d 100644
  
      // We have to declare a global const property. To capture we only
      // assign to it when evaluating the assignment for "const x =
-@@ -1316,20 +1320,25 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
+@@ -1506,19 +1510,24 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
    NoHandleAllocation nha;
    // args[0] == name
    // args[1] == strict_mode
@@ -1301,8 +1465,7 @@ index 660352c..c13f92d 100644
    CONVERT_ARG_CHECKED(String, name, 0);
 -  GlobalObject* global = isolate->context()->global();
    RUNTIME_ASSERT(args[1]->IsSmi());
-   StrictModeFlag strict_mode =
-       static_cast<StrictModeFlag>(Smi::cast(args[1])->value());
+   StrictModeFlag strict_mode = static_cast<StrictModeFlag>(args.smi_at(1));
    ASSERT(strict_mode == kStrictMode || strict_mode == kNonStrictMode);
  
 +  RUNTIME_ASSERT(args[2]->IsSmi());
@@ -1313,37 +1476,19 @@ index 660352c..c13f92d 100644
    // According to ECMA-262, section 12.2, page 62, the property must
    // not be deletable.
    PropertyAttributes attributes = DONT_DELETE;
-@@ -1350,7 +1359,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
-       if (lookup.IsReadOnly()) {
-         // If we found readonly property on one of hidden prototypes,
-         // just shadow it.
--        if (real_holder != isolate->context()->global()) break;
-+        if (real_holder != global) break;
-         return ThrowRedeclarationError(isolate, "const", name);
-       }
- 
-@@ -1372,7 +1381,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
-           // overwrite it with a variable declaration we must throw a
-           // re-declaration error.  However if we found readonly property
-           // on one of hidden prototypes, just shadow it.
--          if (real_holder != isolate->context()->global()) break;
-+          if (real_holder != global) break;
-           return ThrowRedeclarationError(isolate, "const", name);
+@@ -1546,7 +1555,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
+         // Found an interceptor that's not read only.
+         if (assign) {
+           return raw_holder->SetProperty(
+-              &lookup, *name, args[2], attributes, strict_mode);
++              &lookup, *name, args[3], attributes, strict_mode);
+         } else {
+           return isolate->heap()->undefined_value();
          }
-       }
-@@ -1384,7 +1393,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
-       }
- 
-       // Assign the value (or undefined) to the property.
--      Object* value = (assign) ? args[2] : isolate->heap()->undefined_value();
-+      Object* value = (assign) ? args[3] : isolate->heap()->undefined_value();
-       return real_holder->SetProperty(
-           &lookup, *name, value, attributes, strict_mode);
-     }
-@@ -1399,9 +1408,9 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
-     real_holder = JSObject::cast(proto);
+@@ -1556,9 +1565,9 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
    }
  
+   // Reload global in case the loop above performed a GC.
 -  global = isolate->context()->global();
 +  global = qml_mode?isolate->context()->qml_global():isolate->context()->global();
    if (assign) {
@@ -1352,7 +1497,7 @@ index 660352c..c13f92d 100644
    }
    return isolate->heap()->undefined_value();
  }
-@@ -1411,12 +1420,15 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeConstGlobal) {
+@@ -1568,12 +1577,15 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeConstGlobal) {
    // All constants are declared with an initial value. The name
    // of the constant is the first argument and the initial value
    // is the second.
@@ -1370,16 +1515,16 @@ index 660352c..c13f92d 100644
  
    // According to ECMA-262, section 12.2, page 62, the property must
    // not be deletable. Since it's a const, it must be READ_ONLY too.
-@@ -1456,7 +1468,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeConstGlobal) {
-     // with setting the value because the property is either absent or
-     // read-only. We also have to do redo the lookup.
+@@ -1597,7 +1609,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeConstGlobal) {
+     // Restore global object from context (in case of GC) and continue
+     // with setting the value.
      HandleScope handle_scope(isolate);
 -    Handle<GlobalObject> global(isolate->context()->global());
 +    Handle<JSObject> global(qml_mode?isolate->context()->qml_global():isolate->context()->global());
  
      // BUG 1213575: Handle the case where we have to set a read-only
      // property through an interceptor and only do it if it's
-@@ -8160,7 +8172,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_CompileString) {
+@@ -9386,7 +9398,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_CompileString) {
    Handle<SharedFunctionInfo> shared = Compiler::CompileEval(source,
                                                              context,
                                                              true,
@@ -1389,26 +1534,27 @@ index 660352c..c13f92d 100644
    if (shared.is_null()) return Failure::Exception();
    Handle<JSFunction> fun =
        isolate->factory()->NewFunctionFromSharedFunctionInfo(shared,
-@@ -8173,14 +8186,16 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_CompileString) {
+@@ -9399,7 +9412,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_CompileString) {
  static ObjectPair CompileGlobalEval(Isolate* isolate,
                                      Handle<String> source,
                                      Handle<Object> receiver,
 -                                    StrictModeFlag strict_mode) {
-+                                    StrictModeFlag strict_mode,
++                                    StrictModeFlag strict_mode, 
 +                                    bool qml_mode) {
-   // Deal with a normal eval call with a string argument. Compile it
-   // and return the compiled function bound in the local context.
-   Handle<SharedFunctionInfo> shared = Compiler::CompileEval(
+   Handle<Context> context = Handle<Context>(isolate->context());
+   Handle<Context> global_context = Handle<Context>(context->global_context());
+ 
+@@ -9417,7 +9431,8 @@ static ObjectPair CompileGlobalEval(Isolate* isolate,
        source,
        Handle<Context>(isolate->context()),
-       isolate->context()->IsGlobalContext(),
+       context->IsGlobalContext(),
 -      strict_mode);
 +      strict_mode,
-+      qml_mode); 
++      qml_mode);
    if (shared.is_null()) return MakePair(Failure::Exception(), NULL);
    Handle<JSFunction> compiled =
        isolate->factory()->NewFunctionFromSharedFunctionInfo(
-@@ -8190,7 +8205,7 @@ static ObjectPair CompileGlobalEval(Isolate* isolate,
+@@ -9427,7 +9442,7 @@ static ObjectPair CompileGlobalEval(Isolate* isolate,
  
  
  RUNTIME_FUNCTION(ObjectPair, Runtime_ResolvePossiblyDirectEval) {
@@ -1417,7 +1563,7 @@ index 660352c..c13f92d 100644
  
    HandleScope scope(isolate);
    Handle<Object> callee = args.at<Object>(0);
-@@ -8257,16 +8272,18 @@ RUNTIME_FUNCTION(ObjectPair, Runtime_ResolvePossiblyDirectEval) {
+@@ -9490,15 +9505,17 @@ RUNTIME_FUNCTION(ObjectPair, Runtime_ResolvePossiblyDirectEval) {
    }
  
    ASSERT(args[3]->IsSmi());
@@ -1425,9 +1571,8 @@ index 660352c..c13f92d 100644
    return CompileGlobalEval(isolate,
                             args.at<String>(1),
                             args.at<Object>(2),
-                            static_cast<StrictModeFlag>(
--                                Smi::cast(args[3])->value()));
-+                                Smi::cast(args[3])->value()),
+-                           static_cast<StrictModeFlag>(args.smi_at(3)));
++                           static_cast<StrictModeFlag>(args.smi_at(3)),
 +                           Smi::cast(args[4])->value());
  }
  
@@ -1438,7 +1583,7 @@ index 660352c..c13f92d 100644
  
    HandleScope scope(isolate);
    Handle<Object> callee = args.at<Object>(0);
-@@ -8280,11 +8297,13 @@ RUNTIME_FUNCTION(ObjectPair, Runtime_ResolvePossiblyDirectEvalNoLookup) {
+@@ -9511,10 +9528,12 @@ RUNTIME_FUNCTION(ObjectPair, Runtime_ResolvePossiblyDirectEvalNoLookup) {
    }
  
    ASSERT(args[3]->IsSmi());
@@ -1446,14 +1591,13 @@ index 660352c..c13f92d 100644
    return CompileGlobalEval(isolate,
                             args.at<String>(1),
                             args.at<Object>(2),
-                            static_cast<StrictModeFlag>(
--                                Smi::cast(args[3])->value()));
-+                                Smi::cast(args[3])->value()),
+-                           static_cast<StrictModeFlag>(args.smi_at(3)));
++                           static_cast<StrictModeFlag>(args.smi_at(3)),
 +                           Smi::cast(args[4])->value());
  }
  
  
-@@ -10570,6 +10589,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+@@ -12034,6 +12053,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
    Handle<JSFunction> function(JSFunction::cast(frame->function()));
    Handle<SerializedScopeInfo> scope_info(function->shared()->scope_info());
    ScopeInfo<> sinfo(*scope_info);
@@ -1461,7 +1605,7 @@ index 660352c..c13f92d 100644
  
    // Traverse the saved contexts chain to find the active context for the
    // selected frame.
-@@ -10633,7 +10653,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+@@ -12107,7 +12127,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
        Compiler::CompileEval(function_source,
                              context,
                              context->IsGlobalContext(),
@@ -1471,17 +1615,17 @@ index 660352c..c13f92d 100644
    if (shared.is_null()) return Failure::Exception();
    Handle<JSFunction> compiled_function =
        isolate->factory()->NewFunctionFromSharedFunctionInfo(shared, context);
-@@ -10656,7 +10677,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
-                           Handle<Object>::cast(source).location() };
-   Handle<Object> result =
-       Execution::Call(Handle<JSFunction>::cast(evaluation_function), receiver,
--                      argc, argv, &has_pending_exception);
-+                      argc, argv, &has_pending_exception,
+@@ -12117,7 +12138,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+   Handle<Object> receiver(frame->receiver(), isolate);
+   Handle<Object> evaluation_function =
+       Execution::Call(compiled_function, receiver, 0, NULL,
+-                      &has_pending_exception);
++                      &has_pending_exception, false,
 +                      Handle<Object>(function->context()->qml_global()));
    if (has_pending_exception) return Failure::Exception();
  
-   // Skip the global proxy as it has no properties and always delegates to the
-@@ -10722,7 +10744,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluateGlobal) {
+   Handle<Object> arguments = GetArgumentsObject(isolate,
+@@ -12198,7 +12220,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluateGlobal) {
    // Currently, the eval code will be executed in non-strict mode,
    // even in the strict code context.
    Handle<SharedFunctionInfo> shared =
@@ -1491,10 +1635,10 @@ index 660352c..c13f92d 100644
    Handle<JSFunction> compiled_function =
        Handle<JSFunction>(
 diff --git a/src/runtime.h b/src/runtime.h
-index bf1ba68..5e97173 100644
+index 67fc628..aada06d 100644
 --- a/src/runtime.h
 +++ b/src/runtime.h
-@@ -241,8 +241,8 @@ namespace internal {
+@@ -257,8 +257,8 @@ namespace internal {
    \
    /* Eval */ \
    F(GlobalReceiver, 1, 1) \
@@ -1505,9 +1649,9 @@ index bf1ba68..5e97173 100644
    \
    F(SetProperty, -1 /* 4 or 5 */, 1) \
    F(DefineOrRedefineDataProperty, 4, 1) \
-@@ -296,8 +296,8 @@ namespace internal {
+@@ -336,8 +336,8 @@ namespace internal {
    /* Declarations and initialization */ \
-   F(DeclareGlobals, 4, 1) \
+   F(DeclareGlobals, 3, 1) \
    F(DeclareContextSlot, 4, 1) \
 -  F(InitializeVarGlobal, -1 /* 2 or 3 */, 1) \
 -  F(InitializeConstGlobal, 2, 1) \
@@ -1517,82 +1661,39 @@ index bf1ba68..5e97173 100644
    F(OptimizeObjectForAddingMultipleProperties, 2, 1) \
    \
 diff --git a/src/scopes.cc b/src/scopes.cc
-index 8df93c5..b5d7ff3 100644
+index 3167c4d..6503d07 100644
 --- a/src/scopes.cc
 +++ b/src/scopes.cc
-@@ -198,6 +198,7 @@ void Scope::SetDefaults(Type type,
-   scope_calls_eval_ = false;
+@@ -35,6 +35,8 @@
+ 
+ #include "allocation-inl.h"
+ 
++#include "debug.h"
++
+ namespace v8 {
+ namespace internal {
+ 
+@@ -202,6 +204,7 @@ void Scope::SetDefaults(ScopeType type,
    // Inherit the strict mode from the parent scope.
-   strict_mode_ = (outer_scope != NULL) && outer_scope->strict_mode_;
+   strict_mode_flag_ = (outer_scope != NULL)
+       ? outer_scope->strict_mode_flag_ : kNonStrictMode;
 +  qml_mode_ = (outer_scope != NULL) && outer_scope->qml_mode_;
-   outer_scope_calls_eval_ = false;
+   outer_scope_calls_non_strict_eval_ = false;
    inner_scope_calls_eval_ = false;
-   outer_scope_is_eval_scope_ = false;
-@@ -796,6 +797,25 @@ void Scope::ResolveVariable(Scope* global_scope,
-         ASSERT(global_scope != NULL);
-         var = global_scope->DeclareGlobal(proxy->name());
- 
-+        if (qml_mode_) {
-+          Handle<GlobalObject> global = Isolate::Current()->global();
-+
-+#ifdef ENABLE_DEBUGGER_SUPPORT
-+          if (Isolate::Current()->debug()->IsLoaded() && Isolate::Current()->debug()->InDebugger()) {
-+            //Get the context before the debugger was entered.
-+            SaveContext *save = Isolate::Current()->save_context();
-+            while (save != NULL && *save->context() == *Isolate::Current()->debug()->debug_context())
-+              save = save->prev();
-+
-+            global = Handle<GlobalObject>(save->context()->global());
-+          }
-+#endif
-+
-+          if (!global->HasProperty(*(proxy->name()))) {
-+            var->set_is_qml_global(true);
-+          }
-+        }
-+
-       } else if (scope_inside_with_) {
-         // If we are inside a with statement we give up and look up
-         // the variable at runtime.
-@@ -817,6 +837,25 @@ void Scope::ResolveVariable(Scope* global_scope,
-         if (context->GlobalIfNotShadowedByEval(proxy->name())) {
-           var = NonLocal(proxy->name(), Variable::DYNAMIC_GLOBAL);
- 
-+          if (qml_mode_) {
-+            Handle<GlobalObject> global = Isolate::Current()->global();
-+
-+#ifdef ENABLE_DEBUGGER_SUPPORT
-+            if (Isolate::Current()->debug()->IsLoaded() && Isolate::Current()->debug()->InDebugger()) {
-+              //Get the context before the debugger was entered.
-+              SaveContext *save = Isolate::Current()->save_context();
-+              while (save != NULL && *save->context() == *Isolate::Current()->debug()->debug_context())
-+                save = save->prev();
-+
-+              global = Handle<GlobalObject>(save->context()->global());
-+            }
-+#endif
-+
-+            if (qml_mode_ && !global->HasProperty(*(proxy->name()))) {
-+              var->set_is_qml_global(true);
-+            }
-+          }
-+
-         } else {
-           var = NonLocal(proxy->name(), Variable::DYNAMIC);
-         }
-@@ -827,6 +866,26 @@ void Scope::ResolveVariable(Scope* global_scope,
-         // variable is global unless it is shadowed by eval-introduced
-         // variables.
-         var = NonLocal(proxy->name(), Variable::DYNAMIC_GLOBAL);
+   force_eager_compilation_ = false;
+@@ -907,6 +910,26 @@ void Scope::ResolveVariable(Scope* global_scope,
+       // by 'eval' introduced variable bindings.
+       if (var->is_global()) {
+         var = NonLocal(proxy->name(), DYNAMIC_GLOBAL);
 +
 +        if (qml_mode_) {
-+          Handle<GlobalObject> global = Isolate::Current()->global();
++          Handle<GlobalObject> global = isolate_->global();
 +
 +#ifdef ENABLE_DEBUGGER_SUPPORT
-+          if (Isolate::Current()->debug()->IsLoaded() && Isolate::Current()->debug()->InDebugger()) {
++          if (isolate_->debug()->IsLoaded() && isolate_->debug()->InDebugger()) {
 +            //Get the context before the debugger was entered.
-+            SaveContext *save = Isolate::Current()->save_context();
-+            while (save != NULL && *save->context() == *Isolate::Current()->debug()->debug_context())
++            SaveContext *save = isolate_->save_context();
++            while (save != NULL && *save->context() == *isolate_->debug()->debug_context())
 +              save = save->prev();
 +
 +            global = Handle<GlobalObject>(save->context()->global());
@@ -1604,15 +1705,68 @@ index 8df93c5..b5d7ff3 100644
 +          }
 +        }
 +
-       }
-     }
-   }
+       } else {
+         Variable* invalidated = var;
+         var = NonLocal(proxy->name(), DYNAMIC_LOCAL);
+@@ -918,12 +941,52 @@ void Scope::ResolveVariable(Scope* global_scope,
+       // No binding has been found. Declare a variable in global scope.
+       ASSERT(global_scope != NULL);
+       var = global_scope->DeclareGlobal(proxy->name());
++
++      if (qml_mode_) {
++        Handle<GlobalObject> global = isolate_->global();
++
++#ifdef ENABLE_DEBUGGER_SUPPORT
++        if (isolate_->debug()->IsLoaded() && isolate_->debug()->InDebugger()) {
++          //Get the context before the debugger was entered.
++          SaveContext *save = isolate_->save_context();
++          while (save != NULL && *save->context() == *isolate_->debug()->debug_context())
++            save = save->prev();
++
++          global = Handle<GlobalObject>(save->context()->global());
++        }
++#endif
++
++        if (!global->HasProperty(*(proxy->name()))) {
++          var->set_is_qml_global(true);
++        }
++      }
++
+       break;
+ 
+     case UNBOUND_EVAL_SHADOWED:
+       // No binding has been found. But some scope makes a
+       // non-strict 'eval' call.
+       var = NonLocal(proxy->name(), DYNAMIC_GLOBAL);
++
++      if (qml_mode_) {
++        Handle<GlobalObject> global = isolate_->global();
++
++#ifdef ENABLE_DEBUGGER_SUPPORT
++        if (isolate_->debug()->IsLoaded() && isolate_->debug()->InDebugger()) {
++          //Get the context before the debugger was entered.
++          SaveContext *save = isolate_->save_context();
++          while (save != NULL && *save->context() == *isolate_->debug()->debug_context())
++            save = save->prev();
++
++          global = Handle<GlobalObject>(save->context()->global());
++        }
++#endif
++
++        if (qml_mode_ && !global->HasProperty(*(proxy->name()))) {
++          var->set_is_qml_global(true);
++        }
++      }
++
+       break;
+ 
+     case DYNAMIC_LOOKUP:
 diff --git a/src/scopes.h b/src/scopes.h
-index a0e56a4..6dd3f65 100644
+index a141887..41e5f5c 100644
 --- a/src/scopes.h
 +++ b/src/scopes.h
-@@ -210,6 +210,11 @@ class Scope: public ZoneObject {
-     strict_mode_ = FLAG_strict_mode;
+@@ -228,6 +228,11 @@ class Scope: public ZoneObject {
+     end_position_ = statement_pos;
    }
  
 +  // Enable qml mode for this scope
@@ -1623,28 +1777,29 @@ index a0e56a4..6dd3f65 100644
    // ---------------------------------------------------------------------------
    // Predicates.
  
-@@ -218,6 +223,7 @@ class Scope: public ZoneObject {
-   bool is_function_scope() const { return type_ == FUNCTION_SCOPE; }
-   bool is_global_scope() const { return type_ == GLOBAL_SCOPE; }
-   bool is_strict_mode() const { return strict_mode_; }
+@@ -242,6 +247,7 @@ class Scope: public ZoneObject {
+     return is_eval_scope() || is_function_scope() || is_global_scope();
+   }
+   bool is_strict_mode() const { return strict_mode_flag() == kStrictMode; }
 +  bool is_qml_mode() const { return qml_mode_; }
- 
-   // Information about which scopes calls eval.
-   bool calls_eval() const { return scope_calls_eval_; }
-@@ -376,6 +382,7 @@ class Scope: public ZoneObject {
-   bool scope_contains_with_;  // this scope contains a 'with' statement
-   bool scope_calls_eval_;  // this scope contains an 'eval' call
-   bool strict_mode_;  // this scope is a strict mode scope
-+  bool qml_mode_; // this scope is a qml mode scope
+   bool is_strict_mode_eval_scope() const {
+     return is_eval_scope() && is_strict_mode();
+   }
+@@ -427,6 +433,8 @@ class Scope: public ZoneObject {
+   // Source positions.
+   int start_position_;
+   int end_position_;
++  // This scope is a qml mode scope.
++  bool qml_mode_;
  
    // Computed via PropagateScopeInfo.
-   bool outer_scope_calls_eval_;
+   bool outer_scope_calls_non_strict_eval_;
 diff --git a/src/variables.cc b/src/variables.cc
-index 0502722..190baf6 100644
+index d85e1b2..1887935 100644
 --- a/src/variables.cc
 +++ b/src/variables.cc
-@@ -99,7 +99,8 @@ Variable::Variable(Scope* scope,
-     rewrite_(NULL),
+@@ -68,7 +68,8 @@ Variable::Variable(Scope* scope,
+     local_if_not_shadowed_(NULL),
      is_valid_LHS_(is_valid_LHS),
      is_accessed_from_inner_scope_(false),
 -    is_used_(false) {
@@ -1654,19 +1809,19 @@ index 0502722..190baf6 100644
    ASSERT(name->IsSymbol());
  }
 diff --git a/src/variables.h b/src/variables.h
-index b1ff0db..0b31d1a 100644
+index 8b2d869..33561b0 100644
 --- a/src/variables.h
 +++ b/src/variables.h
-@@ -141,6 +141,8 @@ class Variable: public ZoneObject {
-   Expression* rewrite() const { return rewrite_; }
-   void set_rewrite(Expression* expr) { rewrite_ = expr; }
+@@ -155,6 +155,8 @@ class Variable: public ZoneObject {
+     index_ = index;
+   }
  
 +  bool is_qml_global() const { return is_qml_global_; }
 +  void set_is_qml_global(bool is_qml_global) { is_qml_global_ = is_qml_global; }
   private:
    Scope* scope_;
    Handle<String> name_;
-@@ -159,6 +161,9 @@ class Variable: public ZoneObject {
+@@ -175,6 +177,9 @@ class Variable: public ZoneObject {
    // Usage info.
    bool is_accessed_from_inner_scope_;  // set by variable resolver
    bool is_used_;
@@ -1677,14 +1832,14 @@ index b1ff0db..0b31d1a 100644
  
  
 diff --git a/src/x64/code-stubs-x64.cc b/src/x64/code-stubs-x64.cc
-index c365385..d923494 100644
+index f62c517..f30221f 100644
 --- a/src/x64/code-stubs-x64.cc
 +++ b/src/x64/code-stubs-x64.cc
-@@ -140,6 +140,10 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
+@@ -139,6 +139,10 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
    __ movq(rbx, Operand(rsi, Context::SlotOffset(Context::GLOBAL_INDEX)));
    __ movq(Operand(rax, Context::SlotOffset(Context::GLOBAL_INDEX)), rbx);
  
-+  // Copy the qml global object from the surrounding context.
++  // Copy the qmlglobal object from the previous context.
 +  __ movq(rbx, Operand(rsi, Context::SlotOffset(Context::QML_GLOBAL_INDEX)));
 +  __ movq(Operand(rax, Context::SlotOffset(Context::QML_GLOBAL_INDEX)), rbx);
 +
@@ -1692,15 +1847,15 @@ index c365385..d923494 100644
    __ LoadRoot(rbx, Heap::kUndefinedValueRootIndex);
    for (int i = Context::MIN_CONTEXT_SLOTS; i < length; i++) {
 diff --git a/src/x64/full-codegen-x64.cc b/src/x64/full-codegen-x64.cc
-index 97168cd..c45cdb6 100644
+index bf640db..b1e5d35 100644
 --- a/src/x64/full-codegen-x64.cc
 +++ b/src/x64/full-codegen-x64.cc
-@@ -141,12 +141,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
+@@ -173,12 +173,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
  
    // Possibly allocate a local context.
-   int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
+   int heap_slots = info->scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
 -  if (heap_slots > 0) {
-+  if (heap_slots > 0 || 
++  if (heap_slots > 0 ||
 +      (scope()->is_qml_mode() && scope()->is_global_scope())) {
      Comment cmnt(masm_, "[ Allocate local context");
      // Argument to NewContext is the function, which is still in rdi.
@@ -1710,49 +1865,44 @@ index 97168cd..c45cdb6 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -1119,10 +1120,10 @@ void FullCodeGenerator::EmitLoadGlobalSlotCheckExtensions(
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -1155,10 +1156,10 @@ void FullCodeGenerator::EmitLoadGlobalCheckExtensions(Variable* var,
  
    // All extension objects were empty and it is safe to use a global
    // load IC call.
 -  __ movq(rax, GlobalObjectOperand());
-+  __ movq(rax, slot->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
-   __ Move(rcx, slot->var()->name());
++  __ movq(rax, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+   __ Move(rcx, var->name());
    Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
 -  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF)
-+  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || slot->var()->is_qml_global())
++  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || var->is_qml_global())
        ? RelocInfo::CODE_TARGET
        : RelocInfo::CODE_TARGET_CONTEXT;
-   EmitCallIC(ic, mode);
-@@ -1227,9 +1228,9 @@ void FullCodeGenerator::EmitVariableLoad(Variable* var) {
-     // Use inline caching. Variable name is passed in rcx and the global
-     // object on the stack.
-     __ Move(rcx, var->name());
--    __ movq(rax, GlobalObjectOperand());
-+    __ movq(rax, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
-     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global() ? RelocInfo::CODE_TARGET : RelocInfo::CODE_TARGET_CONTEXT);
-     context()->Plug(rax);
- 
-   } else if (slot != NULL && slot->type() == Slot::LOOKUP) {
-@@ -1806,11 +1807,11 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
-     // assignment.  Right-hand-side value is passed in rax, variable name in
-     // rcx, and the global object on the stack.
+   __ call(ic, mode);
+@@ -1240,9 +1241,9 @@ void FullCodeGenerator::EmitVariableLoad(VariableProxy* proxy) {
+       // Use inline caching. Variable name is passed in rcx and the global
+       // object on the stack.
+       __ Move(rcx, var->name());
+-      __ movq(rax, GlobalObjectOperand());
++      __ movq(rax, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+       Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+-      __ call(ic, RelocInfo::CODE_TARGET_CONTEXT);
++      __ call(ic, var->is_qml_global() ? RelocInfo::CODE_TARGET : RelocInfo::CODE_TARGET_CONTEXT);
+       context()->Plug(rax);
+       break;
+     }
+@@ -1834,7 +1835,7 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
+   if (var->IsUnallocated()) {
+     // Global var, const, or let.
      __ Move(rcx, var->name());
 -    __ movq(rdx, GlobalObjectOperand());
 +    __ movq(rdx, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
      Handle<Code> ic = is_strict_mode()
          ? isolate()->builtins()->StoreIC_Initialize_Strict()
          : isolate()->builtins()->StoreIC_Initialize();
--    EmitCallIC(ic, RelocInfo::CODE_TARGET_CONTEXT);
-+    EmitCallIC(ic, var->is_qml_global() ? RelocInfo::CODE_TARGET : RelocInfo::CODE_TARGET_CONTEXT);
- 
-   } else if (op == Token::INIT_CONST) {
-     // Like var declarations, const declarations are hoisted to function
-@@ -2085,9 +2086,12 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
-   // Push the strict mode flag.
-   __ Push(Smi::FromInt(strict_mode_flag()));
+@@ -2117,9 +2118,12 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
+       FLAG_harmony_scoping ? kStrictMode : strict_mode_flag();
+   __ Push(Smi::FromInt(strict_mode));
  
 +  // Push the qml mode flag
 +  __ Push(Smi::FromInt(is_qml_mode()));
@@ -1764,22 +1914,40 @@ index 97168cd..c45cdb6 100644
  }
  
  
-@@ -2160,8 +2164,8 @@ void FullCodeGenerator::VisitCall(Call* expr) {
-   } else if (var != NULL && !var->is_this() && var->is_global()) {
-     // Call to a global variable.
-     // Push global object as receiver for the call IC lookup.
+@@ -2188,8 +2192,8 @@ void FullCodeGenerator::VisitCall(Call* expr) {
+   } else if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     // Call to a global variable.  Push global object as receiver for the
+     // call IC lookup.
 -    __ push(GlobalObjectOperand());
--    EmitCallWithIC(expr, var->name(), RelocInfo::CODE_TARGET_CONTEXT);
-+    __ push(var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
-+    EmitCallWithIC(expr, var->name(), var->is_qml_global() ? RelocInfo::CODE_TARGET : RelocInfo::CODE_TARGET_CONTEXT);
-   } else if (var != NULL && var->AsSlot() != NULL &&
-              var->AsSlot()->type() == Slot::LOOKUP) {
+-    EmitCallWithIC(expr, proxy->name(), RelocInfo::CODE_TARGET_CONTEXT);
++    __ push(proxy->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
++    EmitCallWithIC(expr, proxy->name(), proxy->var()->is_qml_global() ? RelocInfo::CODE_TARGET : RelocInfo::CODE_TARGET_CONTEXT);
+   } else if (proxy != NULL && proxy->var()->IsLookupSlot()) {
      // Call to a lookup slot (dynamically introduced variable).
+     Label slow, done;
+@@ -3638,7 +3642,7 @@ void FullCodeGenerator::VisitUnaryOperation(UnaryOperation* expr) {
+         // but "delete this" is allowed.
+         ASSERT(strict_mode_flag() == kNonStrictMode || var->is_this());
+         if (var->IsUnallocated()) {
+-          __ push(GlobalObjectOperand());
++          __ push(var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+           __ Push(var->name());
+           __ Push(Smi::FromInt(kNonStrictMode));
+           __ InvokeBuiltin(Builtins::DELETE, CALL_FUNCTION);
+@@ -3936,7 +3940,7 @@ void FullCodeGenerator::VisitForTypeofValue(Expression* expr) {
+   if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     Comment cmnt(masm_, "Global variable");
+     __ Move(rcx, proxy->name());
+-    __ movq(rax, GlobalObjectOperand());
++    __ movq(rax, proxy->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+     // Use a regular load, not a contextual load, to avoid a reference
+     // error.
 diff --git a/src/x64/lithium-codegen-x64.cc b/src/x64/lithium-codegen-x64.cc
-index 202e7a2..45acbdf 100644
+index 38a8c18..2a95fee 100644
 --- a/src/x64/lithium-codegen-x64.cc
 +++ b/src/x64/lithium-codegen-x64.cc
-@@ -174,12 +174,13 @@ bool LCodeGen::GeneratePrologue() {
+@@ -196,12 +196,13 @@ bool LCodeGen::GeneratePrologue() {
  
    // Possibly allocate a local context.
    int heap_slots = scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
@@ -1794,8 +1962,8 @@ index 202e7a2..45acbdf 100644
 +      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
        __ CallStub(&stub);
      } else {
-       __ CallRuntime(Runtime::kNewContext, 1);
-@@ -2540,7 +2541,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -2610,7 +2611,7 @@ void LCodeGen::DoOuterContext(LOuterContext* instr) {
  
  void LCodeGen::DoGlobalObject(LGlobalObject* instr) {
    Register result = ToRegister(instr->result());
@@ -1804,11 +1972,20 @@ index 202e7a2..45acbdf 100644
  }
  
  
+@@ -3049,7 +3050,7 @@ void LCodeGen::DoCallFunction(LCallFunction* instr) {
+ void LCodeGen::DoCallGlobal(LCallGlobal* instr) {
+   ASSERT(ToRegister(instr->result()).is(rax));
+   int arity = instr->arity();
+-  RelocInfo::Mode mode = RelocInfo::CODE_TARGET_CONTEXT;
++  RelocInfo::Mode mode = instr->qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT;
+   Handle<Code> ic =
+       isolate()->stub_cache()->ComputeCallInitialize(arity, mode);
+   __ Move(rcx, instr->name());
 diff --git a/src/x64/lithium-x64.cc b/src/x64/lithium-x64.cc
-index 07ca3a5..00feeac 100644
+index 0af2ce4..9e2731f 100644
 --- a/src/x64/lithium-x64.cc
 +++ b/src/x64/lithium-x64.cc
-@@ -1194,7 +1194,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
+@@ -1123,7 +1123,7 @@ LInstruction* LChunkBuilder::DoOuterContext(HOuterContext* instr) {
  
  
  LInstruction* LChunkBuilder::DoGlobalObject(HGlobalObject* instr) {
@@ -1817,11 +1994,20 @@ index 07ca3a5..00feeac 100644
  }
  
  
+@@ -1193,7 +1193,7 @@ LInstruction* LChunkBuilder::DoCallNamed(HCallNamed* instr) {
+ 
+ LInstruction* LChunkBuilder::DoCallGlobal(HCallGlobal* instr) {
+   argument_count_ -= instr->argument_count();
+-  return MarkAsCall(DefineFixed(new LCallGlobal, rax), instr);
++  return MarkAsCall(DefineFixed(new LCallGlobal(instr->qml_global()), rax), instr);
+ }
+ 
+ 
 diff --git a/src/x64/lithium-x64.h b/src/x64/lithium-x64.h
-index 15bb894..16f754c 100644
+index 20a6937..8f1a3d8 100644
 --- a/src/x64/lithium-x64.h
 +++ b/src/x64/lithium-x64.h
-@@ -1365,7 +1365,13 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
+@@ -1303,7 +1303,13 @@ class LOuterContext: public LTemplateInstruction<1, 1, 0> {
  
  class LGlobalObject: public LTemplateInstruction<1, 0, 0> {
   public:
@@ -1835,11 +2021,28 @@ index 15bb894..16f754c 100644
  };
  
  
+@@ -1393,10 +1399,16 @@ class LCallGlobal: public LTemplateInstruction<1, 0, 0> {
+   DECLARE_CONCRETE_INSTRUCTION(CallGlobal, "call-global")
+   DECLARE_HYDROGEN_ACCESSOR(CallGlobal)
+ 
++  explicit LCallGlobal(bool qml_global) : qml_global_(qml_global) {}
++
+   virtual void PrintDataTo(StringStream* stream);
+ 
+   Handle<String> name() const {return hydrogen()->name(); }
+   int arity() const { return hydrogen()->argument_count() - 1; }
++
++  bool qml_global() { return qml_global_; }
++ private:
++  bool qml_global_;
+ };
+ 
+ 
 diff --git a/src/x64/macro-assembler-x64.h b/src/x64/macro-assembler-x64.h
-index 4c17720..aa284ed 100644
+index f5f81b1..5caa6cf 100644
 --- a/src/x64/macro-assembler-x64.h
 +++ b/src/x64/macro-assembler-x64.h
-@@ -1233,6 +1233,11 @@ static inline Operand GlobalObjectOperand() {
+@@ -1418,6 +1418,11 @@ static inline Operand GlobalObjectOperand() {
  }
  
  

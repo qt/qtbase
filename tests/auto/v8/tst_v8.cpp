@@ -57,6 +57,8 @@ private slots:
     void eval();
     void evalwithinwith();
     void userobjectcompare();
+    void externalteardown();
+    void globalcall();
 };
 
 void tst_v8::eval()
@@ -72,6 +74,16 @@ void tst_v8::evalwithinwith()
 void tst_v8::userobjectcompare()
 {
     QVERIFY(v8test_userobjectcompare());
+}
+
+void tst_v8::externalteardown()
+{
+    QVERIFY(v8test_externalteardown());
+}
+
+void tst_v8::globalcall()
+{
+    QVERIFY(v8test_globalcall());
 }
 
 int main(int argc, char *argv[])

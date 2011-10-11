@@ -54,6 +54,59 @@ using namespace v8;
     }  \
 }
 
+struct MyStringResource : public String::ExternalAsciiStringResource
+{
+    static bool wasDestroyed;
+    virtual ~MyStringResource() { wasDestroyed = true; }
+    virtual const char* data() const { return "v8test"; }
+    virtual size_t length() const { return 6; }
+};
+bool MyStringResource::wasDestroyed = false;
+
+struct MyResource : public Object::ExternalResource
+{
+    static bool wasDestroyed;
+    virtual ~MyResource() { wasDestroyed = true; }
+};
+bool MyResource::wasDestroyed = false;
+
+bool v8test_externalteardown()
+{
+    BEGINTEST();
+
+    Isolate *isolate = v8::Isolate::New();
+    isolate->Enter();
+
+    {
+        HandleScope handle_scope;
+        Persistent<Context> context = Context::New();
+        Context::Scope context_scope(context);
+
+        Local<String> str = String::NewExternal(new MyStringResource);
+
+        Local<FunctionTemplate> ft = FunctionTemplate::New();
+        ft->InstanceTemplate()->SetHasExternalResource(true);
+
+        Local<Object> obj = ft->GetFunction()->NewInstance();
+        obj->SetExternalResource(new MyResource);
+
+        context.Dispose();
+    }
+
+    // while (!v8::V8::IdleNotification()) ;
+    isolate->Exit();
+    isolate->Dispose();
+
+    // ExternalString resources aren't guaranteed to be freed by v8 at this
+    // point. Uncommenting the IdleNotification() line above helps.
+//    VERIFY(MyStringResource::wasDestroyed);
+
+    VERIFY(MyResource::wasDestroyed);
+
+cleanup:
+
+    ENDTEST();
+}
 
 bool v8test_eval()
 {
@@ -74,6 +127,35 @@ bool v8test_eval()
 
     VERIFY(!tc.HasCaught());
     VERIFY(result->Int32Value() == 1922);
+
+cleanup:
+    context.Dispose();
+
+    ENDTEST();
+}
+
+bool v8test_globalcall()
+{
+    BEGINTEST();
+
+    HandleScope handle_scope;
+    Persistent<Context> context = Context::New();
+    Context::Scope context_scope(context);
+
+    Local<Object> qmlglobal = Object::New();
+
+#define SOURCE "function func1() { return 1; }\n" \
+               "function func2() { var sum = 0; for (var ii = 0; ii < 10000000; ++ii) { sum += func1(); } return sum; }\n" \
+               "func2();"
+
+    Local<Script> script = Script::Compile(String::New(SOURCE), NULL, NULL,
+                                           Handle<String>(), Script::QmlMode);
+    Local<Value> result = script->Run(qmlglobal);
+    VERIFY(!result.IsEmpty());
+    VERIFY(result->IsInt32());
+    VERIFY(result->Int32Value() == 10000000);
+
+#undef SOURCE
 
 cleanup:
     context.Dispose();

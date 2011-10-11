@@ -51,6 +51,8 @@
 bool v8test_eval();
 bool v8test_evalwithinwith();
 bool v8test_userobjectcompare();
+bool v8test_externalteardown();
+bool v8test_globalcall();
 
 #endif // V8TEST_H
 
