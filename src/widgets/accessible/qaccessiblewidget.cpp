@@ -819,6 +819,33 @@ QString QAccessibleWidget::text(Text t, int child) const
     return str;
 }
 
+QStringList QAccessibleWidget::actionNames() const
+{
+    QStringList names;
+    if (widget()->isEnabled()) {
+        if (widget()->focusPolicy() != Qt::NoFocus)
+            names << SetFocusAction;
+    }
+    return names;
+}
+
+void QAccessibleWidget::doAction(const QString &actionName)
+{
+    if (!widget()->isEnabled())
+        return;
+
+    if (actionName == SetFocusAction) {
+        if (widget()->isWindow())
+            widget()->activateWindow();
+        widget()->setFocus();
+    }
+}
+
+QStringList QAccessibleWidget::keyBindingsForAction(const QString &actionName) const
+{
+    return QStringList();
+}
+
 /*! \reimp */
 QAccessible::Role QAccessibleWidget::role(int child) const
 {

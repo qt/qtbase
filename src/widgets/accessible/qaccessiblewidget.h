@@ -54,8 +54,9 @@ QT_MODULE(Gui)
 
 class QAccessibleWidgetPrivate;
 
-class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject
+class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAccessibleActionInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleWidget(QWidget *o, Role r = Client, const QString& name = QString());
 
@@ -79,6 +80,11 @@ public:
     QColor backgroundColor() const;
 
     QVariant invokeMethod(Method method, int child, const QVariantList &params);
+
+    // QAccessibleActionInterface
+    QStringList actionNames() const;
+    void doAction(const QString &actionName);
+    QStringList keyBindingsForAction(const QString &actionName) const;
 
 protected:
     ~QAccessibleWidget();

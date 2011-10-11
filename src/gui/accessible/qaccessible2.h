@@ -43,6 +43,7 @@
 #define QACCESSIBLE2_H
 
 #include <QtGui/qaccessible.h>
+#include <QtCore/qcoreapplication.h>
 
 QT_BEGIN_HEADER
 
@@ -328,6 +329,7 @@ friend class QAbstractItemViewPrivate;
 
 class Q_GUI_EXPORT QAccessibleActionInterface: public QAccessible2Interface
 {
+    Q_DECLARE_TR_FUNCTIONS(QAccessibleActionInterface)
 public:
     inline QAccessible2Interface *qAccessibleActionCastHelper() { return this; }
 

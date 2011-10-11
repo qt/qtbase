@@ -187,6 +187,7 @@ QStringList QAccessibleButton::actionNames() const
             break;
         }
     }
+    names << QAccessibleWidget::actionNames();
     return names;
 }
 
@@ -203,12 +204,13 @@ void QAccessibleButton::doAction(const QString &actionName)
         else
 #endif
             button()->animateClick();
-    }
-
-    if (actionName == CheckAction)
+    } else if (actionName == CheckAction) {
         button()->setChecked(true);
-    if (actionName == UncheckAction)
+    } else if (actionName == UncheckAction) {
         button()->setChecked(false);
+    } else {
+        QAccessibleWidget::doAction(actionName);
+    }
 }
 
 QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) const
@@ -456,10 +458,10 @@ QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibl
 #endif
 #ifndef QT_NO_GROUPBOX
     } else {
-	QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-	if (groupbox && !groupbox->title().isEmpty())
-	    if (groupbox->children().contains(o))
-		relation |= Label;
+        QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
+        if (groupbox && !groupbox->title().isEmpty())
+            if (groupbox->children().contains(o))
+                relation |= Label;
 #endif
     }
     return relation;
@@ -478,9 +480,9 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
 #endif
 #ifndef QT_NO_GROUPBOX
         } else {
-	    QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
-	    if (groupbox && !groupbox->title().isEmpty())
-		rel = Child;
+            QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
+            if (groupbox && !groupbox->title().isEmpty())
+                rel = Child;
 #endif
         }
         *target = QAccessible::queryAccessibleInterface(targetObject);

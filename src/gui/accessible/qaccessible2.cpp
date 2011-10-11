@@ -198,32 +198,17 @@ QT_BEGIN_NAMESPACE
     \sa actionNames()
 */
 
-const QString QAccessibleActionInterface::PressAction = QStringLiteral("Press");
-const QString QAccessibleActionInterface::IncreaseAction = QStringLiteral("Increase");
-const QString QAccessibleActionInterface::DecreaseAction = QStringLiteral("Decrease");
-const QString QAccessibleActionInterface::ShowMenuAction = QStringLiteral("ShowMenu");
-const QString QAccessibleActionInterface::SetFocusAction = QStringLiteral("SetFocus");
-const QString QAccessibleActionInterface::CheckAction = QStringLiteral("Check");
-const QString QAccessibleActionInterface::UncheckAction = QStringLiteral("Uncheck");
+const QString QAccessibleActionInterface::PressAction = QStringLiteral(QT_TR_NOOP("Press"));
+const QString QAccessibleActionInterface::IncreaseAction = QStringLiteral(QT_TR_NOOP("Increase"));
+const QString QAccessibleActionInterface::DecreaseAction = QStringLiteral(QT_TR_NOOP("Decrease"));
+const QString QAccessibleActionInterface::ShowMenuAction = QStringLiteral(QT_TR_NOOP("ShowMenu"));
+const QString QAccessibleActionInterface::SetFocusAction = QStringLiteral(QT_TR_NOOP("SetFocus"));
+const QString QAccessibleActionInterface::CheckAction = QStringLiteral(QT_TR_NOOP("Check"));
+const QString QAccessibleActionInterface::UncheckAction = QStringLiteral(QT_TR_NOOP("Uncheck"));
 
 QString QAccessibleActionInterface::localizedActionName(const QString &actionName) const
 {
-    if (actionName == PressAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Press");
-    else if (actionName == IncreaseAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Increase");
-    else if (actionName == DecreaseAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Decrease");
-    else if (actionName == ShowMenuAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "ShowMenu");
-    else if (actionName == SetFocusAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "SetFocus");
-    else if (actionName == CheckAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Check");
-    else if (actionName == UncheckAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Uncheck");
-
-    return QString();
+    return QAccessibleActionInterface::tr(qPrintable(actionName));
 }
 
 QString QAccessibleActionInterface::localizedActionDescription(const QString &actionName) const

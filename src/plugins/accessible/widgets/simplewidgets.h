@@ -55,7 +55,7 @@ class QLineEdit;
 class QToolButton;
 class QProgressBar;
 
-class QAccessibleButton : public QAccessibleWidget, public QAccessibleActionInterface
+class QAccessibleButton : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)

@@ -250,7 +250,7 @@ protected:
 #endif // QT_NO_TABBAR
 
 #ifndef QT_NO_COMBOBOX
-class QAccessibleComboBox : public QAccessibleWidget, public QAccessibleActionInterface
+class QAccessibleComboBox : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:
