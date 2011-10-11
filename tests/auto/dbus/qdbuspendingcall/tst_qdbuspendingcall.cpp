@@ -44,7 +44,6 @@
 #include <QtCore/QThread>
 #include <QtCore/QVector>
 #include <QtTest/QtTest>
-#ifndef QT_NO_DBUS
 #include <QtDBus>
 
 #define TEST_INTERFACE_NAME "com.trolltech.QtDBus.MyObject"
@@ -551,6 +550,3 @@ void tst_QDBusPendingCall::callInsideWaitForFinished()
 
 QTEST_MAIN(tst_QDBusPendingCall)
 #include "tst_qdbuspendingcall.moc"
-#else
-QTEST_NOOP_MAIN
-#endif

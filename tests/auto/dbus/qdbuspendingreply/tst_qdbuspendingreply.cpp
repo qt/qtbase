@@ -43,7 +43,6 @@
 #include <QtCore/QList>
 #include <QtCore/QVector>
 #include <QtTest/QtTest>
-#ifndef QT_NO_DBUS
 #include <QtDBus>
 
 typedef QMap<int,QString> IntStringMap;
@@ -592,6 +591,3 @@ void tst_QDBusPendingReply::errors()
 QTEST_MAIN(tst_QDBusPendingReply)
 
 #include "tst_qdbuspendingreply.moc"
-#else
-QTEST_NOOP_MAIN
-#endif
