@@ -1,2 +1,0 @@
-  </suite>
-</testdefinition>
