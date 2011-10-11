@@ -38,51 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
+#ifndef QCOCOAACCESIBILITY_H
+#define QCOCOAACCESIBILITY_H
 
 #include <Cocoa/Cocoa.h>
 
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+#include <QtGui>
 
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-}
+/*
+    Qt Cocoa Accessibility Overview
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window;
+    Cocoa accessibility is implemented in the following files:
 
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
+    - qnsviewaccessibility            : Root accessibility implementation for QNSView
+    - qcocoaaccessibilityelement      : Cocoa accessibility protocol wrapper for QAccessibleInterface
+    - qcocoaaccessibility (this file) : Conversion and helper functions.
 
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
+    The accessibility implementation wraps QAccessibleInterfaces in QCocoaAccessibleElements, which
+    implements the cocoa accessibility protocol. The root QAccessibleInterface (the one returned
+    by QWindow::accessibleRoot), is anchored to the QNSView in qnsviewaccessibility.mm.
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
+    Cocoa explores the accessibility tree by walking the tree using the parent/child
+    relationships or hit testing. When this happens we create QCocoaAccessibleElements on
+    demand.
+*/
 
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
+NSString *macRole(QAccessible::Role);
 
-@end
-
-#endif //QNSVIEW_H
+#endif

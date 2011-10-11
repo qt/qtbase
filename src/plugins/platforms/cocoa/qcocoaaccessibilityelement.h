@@ -38,51 +38,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QCOCOAACCESIBILITYELEMENT_H
+#define QCOCOAACCESIBILITYELEMENT_H
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
 
-#include <Cocoa/Cocoa.h>
+#import <Cocoa/Cocoa.h>
+#import <AppKit/NSAccessibility.h>
 
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+@class QCocoaAccessibleElement;
 
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
+@interface QCocoaAccessibleElement : NSObject {
+    NSUInteger index;
+    NSString *role;
+    NSObject * parent;
+    void *accessibleInterface;
+
 }
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window;
-
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
-
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
-
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
-
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
+- (id)initWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
++ (QCocoaAccessibleElement *)elementWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
+- (NSUInteger)index;
 
 @end
 
-#endif //QNSVIEW_H
+#endif
+

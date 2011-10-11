@@ -1,0 +1,117 @@
+/****************************************************************************
+ **
+ ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** All rights reserved.
+ ** Contact: Nokia Corporation (qt-info@nokia.com)
+ **
+ ** This file is part of the tools applications of the Qt Toolkit.
+ **
+ ** $QT_BEGIN_LICENSE:LGPL$
+ ** GNU Lesser General Public License Usage
+ ** This file may be used under the terms of the GNU Lesser General Public
+ ** License version 2.1 as published by the Free Software Foundation and
+ ** appearing in the file LICENSE.LGPL included in the packaging of this
+ ** file. Please review the following information to ensure the GNU Lesser
+ ** General Public License version 2.1 requirements will be met:
+ ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+ **
+ ** In addition, as a special exception, Nokia gives you certain additional
+ ** rights. These rights are described in the Nokia Qt LGPL Exception
+ ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+ **
+ ** GNU General Public License Usage
+ ** Alternatively, this file may be used under the terms of the GNU General
+ ** Public License version 3.0 as published by the Free Software Foundation
+ ** and appearing in the file LICENSE.GPL included in the packaging of this
+ ** file. Please review the following information to ensure the GNU General
+ ** Public License version 3.0 requirements will be met:
+ ** http://www.gnu.org/copyleft/gpl.html.
+ **
+ ** Other Usage
+ ** Alternatively, this file may be used in accordance with the terms and
+ ** conditions contained in a signed written agreement between you and Nokia.
+ **
+ **
+ **
+ **
+ **
+ ** $QT_END_LICENSE$
+ **
+ ****************************************************************************/
+
+#ifndef ACCESSIBILITYSCENEMANAGER_H
+#define ACCESSIBILITYSCENEMANAGER_H
+
+#include <QtGui>
+
+#include "optionswidget.h"
+
+QString translateRole(QAccessible::Role role);
+class AccessibilitySceneManager : public QObject
+{
+Q_OBJECT
+public:
+    AccessibilitySceneManager();
+    void setRootWindow(QWindow * window) { m_window = window; }
+    void setView(QGraphicsView *view) { m_view = view; }
+    void setScene(QGraphicsScene *scene) { m_scene = scene; }
+    void setTreeView(QGraphicsView *treeView) { m_treeView = treeView; }
+    void setTreeScene(QGraphicsScene *treeScene) { m_treeScene = treeScene; }
+
+    void setOptionsWidget(OptionsWidget *optionsWidget) { m_optionsWidget = optionsWidget; }
+public slots:
+    void populateAccessibilityScene();
+    void updateAccessibilitySceneItemFlags();
+    void populateAccessibilityTreeScene();
+    void handleUpdate(QObject *object, QAccessible::Event reason);
+    void setSelected(QObject *object);
+
+    void changeScale(int scale);
+private:
+    void updateItems(QObject *root);
+    void updateItem(QObject *object);
+    void updateItem(QGraphicsRectItem *item, QAccessibleInterface *interface);
+    void updateItemFlags(QGraphicsRectItem *item, QAccessibleInterface *interface);
+
+    void populateAccessibilityScene(QAccessibleInterface * interface, int child, QGraphicsScene *scene);
+    QGraphicsRectItem * processInterface(QAccessibleInterface * interface, int child, QGraphicsScene *scene);
+
+    struct TreeItem;
+    TreeItem computeLevels(QAccessibleInterface * interface, int level);
+    void populateAccessibilityTreeScene(QAccessibleInterface * interface, int child);
+    void addGraphicsItems(TreeItem item, int row, int xPos);
+
+    bool isHidden(QAccessibleInterface *interface);
+
+    QWindow *m_window;
+    QGraphicsView *m_view;
+    QGraphicsScene *m_scene;
+    QGraphicsView *m_treeView;
+    QGraphicsScene *m_treeScene;
+    QGraphicsItem *m_rootItem;
+    OptionsWidget *m_optionsWidget;
+    QObject *m_selectedObject;
+
+    QHash<QObject *, QGraphicsRectItem*> m_graphicsItems;
+    QSet<QObject *> m_animatedObjects;
+
+    struct TreeItem {
+        QList<TreeItem> children;
+        int width;
+        QString name;
+        QString role;
+        QString description;
+        QRect rect;
+        QAccessible::State state;
+        QObject *object;
+        TreeItem() : width(0) {}
+    };
+
+    TreeItem m_rootTreeItem;
+    int m_treeItemWidth;
+    int m_treeItemHorizontalPadding;
+    int m_treeItemHeight;
+    int m_treeItemVerticalPadding;
+};
+
+#endif // ACCESSIBILITYSCENEMANAGER_H

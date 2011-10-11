@@ -48,6 +48,10 @@
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QDebug>
 
+#ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
+#include <accessibilityinspector.h>
+#endif
+
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
@@ -58,7 +62,7 @@
 
 - (id) init
 {
-    self = [super init];
+    self = [super initWithFrame : NSMakeRect(0,0, 300,300)];
     if (self) {
         m_cgImage = 0;
         m_window = 0;
@@ -67,11 +71,31 @@
     return self;
 }
 
-- (id)initWithQWindow:(QWindow *)widget {
+- (id)initWithQWindow:(QWindow *)window {
     self = [self init];
-    if (self) {
-        m_window = widget;
+    if (!self)
+        return 0;
+
+    m_window = window;
+    m_accessibleRoot = 0;
+
+#ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
+    // prevent rift in space-time continuum, disable
+    // accessibility for the accessibility inspector's windows.
+    static bool skipAccessibilityForInspectorWindows = false;
+    if (!skipAccessibilityForInspectorWindows) {
+
+        m_accessibleRoot = window->accessibleRoot();
+
+        AccessibilityInspector *inspector = new AccessibilityInspector(window);
+        skipAccessibilityForInspectorWindows = true;
+        inspector->inspectWindow(window);
+        skipAccessibilityForInspectorWindows = false;
     }
+#else
+    m_accessibleRoot = window->accessibleRoot();
+#endif
+
     return self;
 }
 

@@ -7,6 +7,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoabackingstore.mm \
     qcocoawindow.mm \
     qnsview.mm \
+    qnsviewaccessibility.mm \
     qcocoaautoreleasepool.mm \
     qnswindowdelegate.mm \
     qcocoaglcontext.mm \
@@ -19,6 +20,8 @@ OBJECTIVE_SOURCES += main.mm \
     qmenu_mac.mm \
     qcocoahelpers.mm \
     qmultitouch_mac.mm \
+    qcocoaaccessibilityelement.mm \
+    qcocoaaccessibility.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -36,6 +39,8 @@ HEADERS += qcocoaintegration.h \
     qmenu_mac.h \
     qcocoahelpers.h \
     qmultitouch_mac_p.h \
+    qcocoaaccessibilityelement.h \
+    qcocoaaccessibility.h \
 
 RESOURCES += qcocoaresources.qrc
 
@@ -47,3 +52,7 @@ QT += core-private gui-private widgets-private platformsupport-private
 CONFIG += qpa/basicunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
+# Acccessibility debug support
+# DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
+# include ($$PWD/../../../../tools/accessibilityinspector/accessibilityinspector.pri)
