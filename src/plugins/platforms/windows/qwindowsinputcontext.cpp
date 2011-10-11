@@ -48,6 +48,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QObject>
 #include <QtCore/QRect>
+#include <QtCore/QRectF>
 #include <QtCore/QTextBoundaryFinder>
 
 #include <QtGui/QInputMethodEvent>
@@ -155,6 +156,8 @@ template <class T>
     \ingroup qt-lighthouse-win
 */
 
+
+
 QWindowsInputContext::CompositionContext::CompositionContext() :
     hwnd(0), haveCaret(false), position(0), isComposing(false)
 {
@@ -164,6 +167,8 @@ QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
     m_endCompositionRecursionGuard(false)
 {
+    connect(qApp->inputPanel(), SIGNAL(cursorRectangleChanged()),
+            this, SLOT(cursorRectChanged()));
 }
 
 QWindowsInputContext::~QWindowsInputContext()
@@ -202,66 +207,65 @@ void QWindowsInputContext::reset()
 void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 {
     QPlatformInputContext::update(queries);
+}
+
+void QWindowsInputContext::cursorRectChanged()
+{
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = qApp->inputPanel()->inputItem();
-    if (!fo)
+    const QInputPanel *inputPanel = qApp->inputPanel();
+    QRect cursorRectangle = inputPanel->cursorRectangle().toRect();
+    if (!cursorRectangle.isValid())
         return;
+
+    if (QWindowsContext::verboseInputMethods)
+        qDebug() << __FUNCTION__<< cursorRectangle;
+
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
     if (!himc)
         return;
     // Move candidate list window to the microfocus position.
-    QRect globalMicroFocusRect;
-    if (!inputMethodQuery(fo, Qt::ImCursorRectangle, &globalMicroFocusRect) || !globalMicroFocusRect.isValid())
-        return;
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << himc << globalMicroFocusRect;
+    COMPOSITIONFORM cf;
+    // ### need X-like inputStyle config settings
+    cf.dwStyle = CFS_FORCE_POSITION;
+    cf.ptCurrentPos.x = cursorRectangle.x();
+    cf.ptCurrentPos.y = cursorRectangle.y();
 
-    if (globalMicroFocusRect.isValid()) {
-        const QRect microFocusRect(QWindowsGeometryHint::mapFromGlobal(m_compositionContext.hwnd,
-                                                                   globalMicroFocusRect.topLeft()),
-                                   globalMicroFocusRect.size());
-        COMPOSITIONFORM cf;
-        // ### need X-like inputStyle config settings
-        cf.dwStyle = CFS_FORCE_POSITION;
-        cf.ptCurrentPos.x = microFocusRect.x();
-        cf.ptCurrentPos.y = microFocusRect.y();
+    CANDIDATEFORM candf;
+    candf.dwIndex = 0;
+    candf.dwStyle = CFS_EXCLUDE;
+    candf.ptCurrentPos.x = cursorRectangle.x();
+    candf.ptCurrentPos.y = cursorRectangle.y() + cursorRectangle.height();
+    candf.rcArea.left = cursorRectangle.x();
+    candf.rcArea.top = cursorRectangle.y();
+    candf.rcArea.right = cursorRectangle.x() + cursorRectangle.width();
+    candf.rcArea.bottom = cursorRectangle.y() + cursorRectangle.height();
 
-        CANDIDATEFORM candf;
-        candf.dwIndex = 0;
-        candf.dwStyle = CFS_EXCLUDE;
-        candf.ptCurrentPos.x = microFocusRect.x();
-        candf.ptCurrentPos.y = microFocusRect.y() + microFocusRect.height();
-        candf.rcArea.left = microFocusRect.x();
-        candf.rcArea.top = microFocusRect.y();
-        candf.rcArea.right = microFocusRect.x() + microFocusRect.width();
-        candf.rcArea.bottom = microFocusRect.y() + microFocusRect.height();
+    if (m_compositionContext.haveCaret)
+        SetCaretPos(cursorRectangle.x(), cursorRectangle.y());
 
-        if (m_compositionContext.haveCaret)
-            SetCaretPos(microFocusRect.x(), microFocusRect.y());
-
-        ImmSetCompositionWindow(himc, &cf);
-        ImmSetCandidateWindow(himc, &candf);
-    }
+    ImmSetCompositionWindow(himc, &cf);
+    ImmSetCandidateWindow(himc, &candf);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
 }
 
-void QWindowsInputContext::mouseHandler(int pos, QMouseEvent *event)
+void QWindowsInputContext::invokeAction(QInputPanel::Action action, int cursorPosition)
 {
-    if (event->type() != QEvent::MouseButtonPress || !m_compositionContext.hwnd)
+    if (action != QInputPanel::Click || !m_compositionContext.hwnd) {
+        QPlatformInputContext::invokeAction(action, cursorPosition);
         return;
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << pos << event;
+    }
 
-    if (pos < 0 || pos > m_compositionContext.composition.size())
+    if (QWindowsContext::verboseInputMethods)
+        qDebug() << __FUNCTION__ << cursorPosition << action;
+    if (cursorPosition < 0 || cursorPosition > m_compositionContext.composition.size())
         reset();
 
     // Magic code that notifies Japanese IME about the cursor
     // position.
-    const DWORD button = QWindowsMouseHandler::mouseButtonsToKeyState(event->buttons());
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
     const HWND imeWindow = ImmGetDefaultIMEWnd(m_compositionContext.hwnd);
-    SendMessage(imeWindow, m_WM_MSIME_MOUSE, MAKELONG(MAKEWORD(button, pos == 0 ? 2 : 1), pos), (LPARAM)himc);
+    SendMessage(imeWindow, m_WM_MSIME_MOUSE, MAKELONG(MAKEWORD(MK_LBUTTON, cursorPosition == 0 ? 2 : 1), cursorPosition), (LPARAM)himc);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
 }
 

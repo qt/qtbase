@@ -52,6 +52,8 @@ class QInputMethodEvent;
 
 class QWindowsInputContext : public QPlatformInputContext
 {
+    Q_OBJECT
+
     struct CompositionContext
     {
         CompositionContext();
@@ -68,8 +70,7 @@ public:
 
     virtual void reset();
     virtual void update(Qt::InputMethodQueries);
-
-    virtual void mouseHandler(int x, QMouseEvent *event);
+    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
 
     static QWindowsInputContext *instance();
 
@@ -80,6 +81,9 @@ public:
     int reconvertString(RECONVERTSTRING *reconv);
 
     bool handleIME_Request(WPARAM wparam, LPARAM lparam, LRESULT *result);
+
+private slots:
+    void cursorRectChanged();
 
 private:
     void initContext(HWND hwnd);

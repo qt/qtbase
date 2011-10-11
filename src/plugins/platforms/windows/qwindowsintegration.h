@@ -69,6 +69,7 @@ public:
     virtual QPlatformAccessibility *accessibility() const;
     virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
+    virtual QVariant styleHint(StyleHint hint) const;
 
     static QWindowsIntegration *instance();
 

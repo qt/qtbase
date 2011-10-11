@@ -83,6 +83,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsNativeInterface : public QPlatformNativeInterface
 {
 public:
+    virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
 };
@@ -117,6 +118,20 @@ void *QWindowsNativeInterface::nativeResourceForBackingStore(const QByteArray &r
     QWindowsBackingStore *wbs = static_cast<QWindowsBackingStore *>(bs->handle());
     if (resource == "getDC")
         return wbs->getDC();
+    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
+    return 0;
+}
+
+void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
+{
+    if (!context || !context->handle()) {
+        qWarning("%s: '%s' requested for null context or context without handle.", __FUNCTION__, resource.constData());
+        return 0;
+    }
+    QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
+    if (resource == "renderingContext")
+        return windowsContext->renderingContext();
+
     qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
 }
@@ -257,7 +272,23 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 #endif
     }
     return d->m_fontDatabase;
+}
 
+QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    switch (hint) {
+    case QPlatformIntegration::CursorFlashTime:
+        if (const unsigned timeMS = GetCaretBlinkTime())
+            return QVariant(int(timeMS));
+        break;
+
+    case QPlatformIntegration::StartDragTime:
+    case QPlatformIntegration::StartDragDistance:
+    case QPlatformIntegration::MouseDoubleClickInterval:
+    case QPlatformIntegration::KeyboardInputInterval:
+        break; // Not implemented
+    }
+    return QPlatformIntegration::styleHint(hint);
 }
 
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const
@@ -272,8 +303,6 @@ QPlatformClipboard * QWindowsIntegration::clipboard() const
 
 QPlatformDrag *QWindowsIntegration::drag() const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug("%s", __FUNCTION__ );
     return &d->m_drag;
 }
 

@@ -58,8 +58,7 @@ enum QWindowsGLFormatFlags
     QWindowsGLDirectRendering = 0x1,
     QWindowsGLOverlay = 0x2,
     QWindowsGLRenderToPixmap = 0x4,
-    QWindowsGLAccumBuffer = 0x8,
-    QWindowsGLDeprecatedFunctions = 0x10
+    QWindowsGLAccumBuffer = 0x8
 };
 
 // Additional format information for Windows.

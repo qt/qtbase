@@ -511,9 +511,10 @@ static QSurfaceFormat
     iAttributes[i++] = WGL_STEREO_ARB; // 9
     iAttributes[i++] = WGL_ACCELERATION_ARB; // 10
     iAttributes[i++] = WGL_NUMBER_OVERLAYS_ARB; // 11
+    iAttributes[i++] = WGL_CONTEXT_FLAGS_ARB; // 12
     if (hasSampleBuffers) {
-        iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB; // 12
-        iAttributes[i++] = WGL_SAMPLES_ARB; // 13
+        iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB; // 13
+        iAttributes[i++] = WGL_SAMPLES_ARB; // 14
     }
     if (!staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
                                         iAttributes, iValues))
@@ -526,9 +527,14 @@ static QSurfaceFormat
     result.setBlueBufferSize(iValues[5]);
     result.setAlphaBufferSize(iValues[6]);
     result.setStencilBufferSize(iValues[8]);
-    result.setStereo(iValues[9]);
+    if (iValues[9])
+        result.setOption(QSurfaceFormat::StereoBuffers);
+    if (iValues[12] & WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB)
+        result.setOption(QSurfaceFormat::DeprecatedFunctions);
+    if (iValues[12] & WGL_CONTEXT_DEBUG_BIT_ARB)
+        result.setOption(QSurfaceFormat::DebugContext);
     if (hasSampleBuffers)
-        result.setSamples(iValues[13]);
+        result.setSamples(iValues[14]);
     if (additionalIn) {
         if (iValues[7])
             additionalIn->formatFlags |= QWindowsGLAccumBuffer;
@@ -543,7 +549,7 @@ static QSurfaceFormat
 static HGLRC createContext(const QOpenGLStaticContext &staticContext,
                            HDC hdc,
                            const QSurfaceFormat &format,
-                           const QWindowsOpenGLAdditionalFormat &additional,
+                           const QWindowsOpenGLAdditionalFormat &,
                            int majorVersion = 0,
                            int minorVersion = 0,
                            HGLRC shared = 0)
@@ -562,9 +568,14 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
         attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
         attributes[attribIndex++] = minorVersion;
     }
-    if (majorVersion >= 3 && additional.formatFlags & QWindowsGLDeprecatedFunctions) {
+    if (majorVersion >= 3) {
         attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
-        attributes[attribIndex++] = WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        attributes[attribIndex] = 0;
+        if (format.testOption(QSurfaceFormat::DeprecatedFunctions))
+             attributes[attribIndex] |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+        if (format.testOption(QSurfaceFormat::DebugContext))
+            attributes[attribIndex++] |= WGL_CONTEXT_DEBUG_BIT_ARB;
+        attribIndex++;
     }
     if ((staticContext.majorVersion == 3 && staticContext.minorVersion >= 2)
          || staticContext.majorVersion > 3) {
@@ -806,7 +817,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
             describeFormats(hdc);
         // Preferably use direct rendering and ARB extensions (unless pixmap)
         const QWindowsOpenGLAdditionalFormat
-            requestedAdditional(QWindowsGLDirectRendering|QWindowsGLDeprecatedFunctions);
+            requestedAdditional(QWindowsGLDirectRendering);
         const bool tryExtensions = m_staticContext->hasExtensions()
                 && !testFlag(requestedAdditional.formatFlags, QWindowsGLRenderToPixmap);
         QWindowsOpenGLAdditionalFormat obtainedAdditional;
