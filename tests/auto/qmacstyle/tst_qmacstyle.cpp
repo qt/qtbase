@@ -45,8 +45,6 @@
 
 #include <qmacstyle_mac.h>
 
-#ifdef Q_WS_MAC
-
 const int N = 1;
 
 //TESTED_CLASS=
@@ -411,12 +409,5 @@ void tst_QMacStyle::smallMiniNormalExclusivity()
 }
 
 QTEST_MAIN(tst_QMacStyle)
-
-#else
-
-QTEST_NOOP_MAIN
-
-#endif
-
 #include "tst_qmacstyle.moc"
 

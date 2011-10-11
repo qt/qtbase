@@ -50,8 +50,6 @@
 
 #include <guitest.h>
 
-#ifdef Q_OS_MAC
-
 class tst_MacGui : public GuiTester
 {
 Q_OBJECT
@@ -240,12 +238,5 @@ void tst_MacGui::spinBoxArrowButtons()
 }
 
 QTEST_MAIN(tst_MacGui)
-
-#else
-
-QTEST_NOOP_MAIN
-
-#endif
-
 #include "tst_macgui.moc"
 

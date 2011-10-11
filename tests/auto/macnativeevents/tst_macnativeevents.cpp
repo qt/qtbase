@@ -50,8 +50,6 @@
 #include "expectedeventlist.h"
 #include <Carbon/Carbon.h>
 
-#ifdef Q_OS_MAC
-
 QT_USE_NAMESPACE
 
 class tst_MacNativeEvents : public QObject
@@ -520,12 +518,5 @@ void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
     QCoreApplication::setAttribute(Qt::AA_MacDontSwapCtrlAndMeta, false);
 }
 
-#include "tst_macnativeevents.moc"
-
 QTEST_MAIN(tst_MacNativeEvents)
-
-#else
-
-QTEST_NOOP_MAIN
-
-#endif
+#include "tst_macnativeevents.moc"
