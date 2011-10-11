@@ -5,14 +5,22 @@ TEMPLATE=subdirs
 SUBDIRS=\
            other \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
+           exceptionsafety_objects \
            lancelot \
+           macgui \
+           macnativeevents \
+           macplist \
            qaccessibility \
+           qaccessibility_mac \
            qcombobox \
+           qcopchannel \
+           qdirectpainter \
            qfocusevent \
            qlayout \
            qmdiarea \
            qmenu \
            qmenubar \
+           qmultiscreen \
            qsplitter \
            qtabwidget \
            qtextbrowser \
@@ -25,20 +33,18 @@ SUBDIRS=\
 
 wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
 
-mac:!qpa {
-    SUBDIRS += macgui \
-               macnativeevents \
-               macplist \
-               qaccessibility_mac
-}
+!mac|qpa: SUBDIRS -= \
+           macgui \
+           macnativeevents \
+           macplist \
+           qaccessibility_mac \
 
-embedded:!wince* {
-    SUBDIRS += qcopchannel \
-               qdirectpainter \
-               qmultiscreen
-}
+!embedded|wince*: SUBDIRS -= \
+           qcopchannel \
+           qdirectpainter \
+           qmultiscreen \
 
-!win32-msvc*:!wince*:SUBDIRS += exceptionsafety_objects
+win32-msvc*|wince*:SUBDIRS -= exceptionsafety_objects
 
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

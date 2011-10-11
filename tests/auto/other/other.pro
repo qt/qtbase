@@ -1,10 +1,13 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qtmd5 \
-   qtokenautomaton \
+   # atwrapper \ # QTBUG-19452
    baselineexample \
-
-!cross_compile: SUBDIRS += \
    compiler \
    headersclean \
-   # atwrapper \ # QTBUG-19452
+   qtmd5 \
+   qtokenautomaton \
+
+cross_compile: SUBDIRS -= \
+   atwrapper \
+   compiler \
+   headersclean \
