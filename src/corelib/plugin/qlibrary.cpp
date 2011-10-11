@@ -1121,18 +1121,6 @@ QFunctionPointer QLibrary::resolve(const QString &fileName, const QString &versi
 }
 
 /*!
-    \fn QString QLibrary::library() const
-
-    Use fileName() instead.
-*/
-
-/*!
-    \fn void QLibrary::setAutoUnload( bool b )
-
-    Use load(), isLoaded(), and unload() as necessary instead.
-*/
-
-/*!
     \since 4.2
 
     Returns a text string with the description of the last error that occurred.

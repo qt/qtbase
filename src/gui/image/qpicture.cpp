@@ -1978,12 +1978,6 @@ bool QPictureIO::write()
 }
 #endif //QT_NO_PICTUREIO
 
-/*!
-    \fn QPicture QPicture::copy() const
-
-    Use simple assignment instead.
-*/
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_PICTURE

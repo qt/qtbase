@@ -1154,11 +1154,23 @@ Q_DECL_CONSTEXPR inline int qRound(double d)
 { return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1); }
 Q_DECL_CONSTEXPR inline int qRound(float d)
 { return d >= 0.0f ? int(d + 0.5f) : int(d - int(d-1) + 0.5f) + int(d-1); }
+#ifdef Q_QDOC
+/*
+    Just for documentation generation
+*/
+int qRound(qreal d);
+#endif
 
 Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - double(qint64(d-1)) + 0.5) + qint64(d-1); }
 Q_DECL_CONSTEXPR inline qint64 qRound64(float d)
 { return d >= 0.0f ? qint64(d + 0.5f) : qint64(d - float(qint64(d-1)) + 0.5f) + qint64(d-1); }
+#ifdef Q_QDOC
+/*
+    Just for documentation generation
+*/
+qint64 qRound64(qreal d);
+#endif
 
 template <typename T>
 Q_DECL_CONSTEXPR inline const T &qMin(const T &a, const T &b) { return (a < b) ? a : b; }

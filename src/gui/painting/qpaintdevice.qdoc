@@ -205,18 +205,6 @@
 */
 
 /*!
-    \fn int QPaintDevice::numColors() const
-    \deprecated
-
-    Use colorCount() instead.
-
-    Returns the number of different colors available for the paint
-    device. Since this value is an int, it will not be sufficient to
-    represent the number of colors on 32 bit displays, in this case
-    INT_MAX is returned instead.
- */
-
-/*!
     \fn int QPaintDevice::colorCount() const
 
     Returns the number of different colors available for the paint

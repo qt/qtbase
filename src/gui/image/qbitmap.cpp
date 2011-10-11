@@ -153,14 +153,6 @@ QBitmap::QBitmap(const QPixmap &pixmap)
 }
 
 /*!
-    \fn QBitmap::QBitmap(const QImage &image)
-
-    Constructs a bitmap that is a copy of the given \a image.
-
-    Use the static fromImage() function instead.
-*/
-
-/*!
     Constructs a bitmap from the file specified by the given \a
     fileName. If the file does not exist, or has an unknown format,
     the bitmap becomes a null bitmap.
@@ -227,16 +219,6 @@ QBitmap::operator QVariant() const
 {
     return QVariant(QVariant::Bitmap, this);
 }
-
-/*!
-    \fn QBitmap &QBitmap::operator=(const QImage &image)
-    \overload
-
-    Converts the given \a image to a bitmap, and assigns the result to
-    this bitmap. Returns a reference to the bitmap.
-
-    Use the static fromImage() function instead.
-*/
 
 /*!
     Returns a copy of the given \a image converted to a bitmap using

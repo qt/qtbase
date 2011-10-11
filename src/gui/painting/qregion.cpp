@@ -622,13 +622,6 @@ QRegion::operator QVariant() const
 */
 
 /*!
-    \fn bool QRegion::isNull() const
-
-    Use isEmpty() instead.
-*/
-
-
-/*!
     \fn void QRegion::translate(int dx, int dy)
 
     Translates (moves) the region \a dx along the X axis and \a dy

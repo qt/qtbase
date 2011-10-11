@@ -1081,11 +1081,4 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &foreground, const QBru
     setBrush(cg, ToolTipText, toolTipText);
 }
 
-/*!
-    \fn QPalette QPalette::copy() const
-
-    Use simple assignment instead.
-*/
-
-
 QT_END_NAMESPACE

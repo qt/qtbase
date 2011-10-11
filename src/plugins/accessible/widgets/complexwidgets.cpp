@@ -1367,7 +1367,6 @@ QHeaderView *QAccessibleHeader::header() const
     return qobject_cast<QHeaderView*>(object());
 }
 
-/*! \reimp */
 QRect QAccessibleHeader::rect(int child) const
 {
     if (!child)
@@ -1382,13 +1381,11 @@ QRect QAccessibleHeader::rect(int child) const
         : QRect(zero.x(), zero.y() + sectionPos, h->width(), sectionSize);
 }
 
-/*! \reimp */
 int QAccessibleHeader::childCount() const
 {
     return header()->count();
 }
 
-/*! \reimp */
 QString QAccessibleHeader::text(Text t, int child) const
 {
     QString str;
@@ -1417,13 +1414,11 @@ QString QAccessibleHeader::text(Text t, int child) const
     return str;
 }
 
-/*! \reimp */
 QAccessible::Role QAccessibleHeader::role(int) const
 {
     return (header()->orientation() == Qt::Horizontal) ? ColumnHeader : RowHeader;
 }
 
-/*! \reimp */
 QAccessible::State QAccessibleHeader::state(int child) const
 {
     State state = QAccessibleWidget::state(child);
@@ -1453,10 +1448,6 @@ QAccessible::State QAccessibleHeader::state(int child) const
   \ingroup accessibility
 */
 
-/*!
-  \brief Implements a tab button
-  \internal
-  */
 class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActionInterface
 {
     Q_ACCESSIBLE_OBJECT
@@ -1613,14 +1604,12 @@ int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
     return 0;
 }
 
-/*! \reimp */
 int QAccessibleTabBar::childCount() const
 {
     // tabs + scroll buttons
     return tabBar()->count() + 2;
 }
 
-/*! \reimp */
 QString QAccessibleTabBar::text(Text t, int child) const
 {
     Q_ASSERT(child == 0);
@@ -1677,17 +1666,6 @@ QVector<int> QAccessibleTabBar::selection() const
 */
 
 /*!
-    \enum QAccessibleComboBox::ComboBoxElements
-
-    \internal
-
-    \value ComboBoxSelf
-    \value CurrentText
-    \value OpenList
-    \value PopupList
-*/
-
-/*!
   Constructs a QAccessibleComboBox object for \a w.
 */
 QAccessibleComboBox::QAccessibleComboBox(QWidget *w)
@@ -1717,14 +1695,12 @@ QAccessibleInterface* QAccessibleComboBox::child(int index) const
     return 0;
 }
 
-/*! \reimp */
 int QAccessibleComboBox::childCount() const
 {
     // list and text edit
     return comboBox()->isEditable() ? 2 : 1;
 }
 
-/*! \reimp */
 int QAccessibleComboBox::childAt(int x, int y) const
 {
     if (comboBox()->isEditable() && comboBox()->lineEdit()->rect().contains(x, y))
@@ -1732,7 +1708,6 @@ int QAccessibleComboBox::childAt(int x, int y) const
     return 0;
 }
 
-/*! \reimp */
 int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
 {
     if (comboBox()->view() == child->object())
@@ -1742,7 +1717,6 @@ int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
-/*! \reimp */
 QString QAccessibleComboBox::text(Text t, int child) const
 {
     QString str;
@@ -1772,7 +1746,6 @@ QString QAccessibleComboBox::text(Text t, int child) const
     return str;
 }
 
-/*! \reimp */
 bool QAccessibleComboBox::doAction(int action, int, const QVariantList &)
 {
     if (action == DefaultAction || action == Press) {

@@ -104,7 +104,6 @@ QAbstractButton *QAccessibleButton::button() const
     return qobject_cast<QAbstractButton*>(object());
 }
 
-/*! \reimp */
 QString QAccessibleButton::actionText(int action, Text text, int child) const
 {
     Q_ASSERT(child == 0);
@@ -135,7 +134,6 @@ QString QAccessibleButton::actionText(int action, Text text, int child) const
     return QAccessibleWidget::actionText(action, text, child);
 }
 
-/*! \reimp */
 bool QAccessibleButton::doAction(int action, int child, const QVariantList &params)
 {
     Q_ASSERT(child == 0);
@@ -159,7 +157,6 @@ bool QAccessibleButton::doAction(int action, int child, const QVariantList &para
     return QAccessibleWidget::doAction(action, child, params);
 }
 
-/*! \reimp */
 QString QAccessibleButton::text(Text t, int child) const
 {
     Q_ASSERT(child == 0);
@@ -189,7 +186,6 @@ QString QAccessibleButton::text(Text t, int child) const
     return qt_accStripAmp(str);
 }
 
-/*! \reimp */
 QAccessible::State QAccessibleButton::state(int child) const
 {
     Q_ASSERT(child == 0);
@@ -299,16 +295,6 @@ QStringList QAccessibleButton::keyBindings(int actionIndex)
 */
 
 /*!
-    \enum QAccessibleToolButton::ToolButtonElements
-
-    This enum identifies the components of the tool button.
-
-    \value ToolButtonSelf The tool button as a whole.
-    \value ButtonExecute The button.
-    \value ButtonDropMenu The drop down menu.
-*/
-
-/*!
   Creates a QAccessibleToolButton object for \a w.
   \a role is propagated to the QAccessibleWidget constructor.
 */
@@ -336,7 +322,6 @@ bool QAccessibleToolButton::isSplitButton() const
 #endif
 }
 
-/*! \reimp */
 QAccessible::State QAccessibleToolButton::state(int) const
 {
     QAccessible::State st = QAccessibleButton::state();
@@ -349,7 +334,6 @@ QAccessible::State QAccessibleToolButton::state(int) const
     return st;
 }
 
-/*! \reimp */
 int QAccessibleToolButton::childCount() const
 {
     return isSplitButton() ? 1 : 0;
@@ -532,7 +516,6 @@ QAccessibleDisplay::QAccessibleDisplay(QWidget *w, Role role)
 {
 }
 
-/*! \reimp */
 QAccessible::Role QAccessibleDisplay::role(int child) const
 {
     Q_ASSERT(child == 0);
@@ -556,7 +539,6 @@ QAccessible::Role QAccessibleDisplay::role(int child) const
     return QAccessibleWidget::role(child);
 }
 
-/*! \reimp */
 QString QAccessibleDisplay::text(Text t, int child) const
 {
     Q_ASSERT(child == 0);
@@ -596,7 +578,6 @@ QString QAccessibleDisplay::text(Text t, int child) const
     return qt_accStripAmp(str);
 }
 
-/*! \reimp */
 QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibleInterface *other,
                                                      int otherChild) const
 {
@@ -623,7 +604,6 @@ QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibl
     return relation;
 }
 
-/*! \reimp */
 int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
 {
     *target = 0;
@@ -717,7 +697,6 @@ QLineEdit *QAccessibleLineEdit::lineEdit() const
     return qobject_cast<QLineEdit*>(object());
 }
 
-/*! \reimp */
 QString QAccessibleLineEdit::text(Text t, int child) const
 {
     Q_ASSERT(child == 0);
@@ -735,7 +714,6 @@ QString QAccessibleLineEdit::text(Text t, int child) const
     return qt_accStripAmp(str);
 }
 
-/*! \reimp */
 void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
 {
     if (t != Value || control) {
@@ -752,7 +730,6 @@ void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
     lineEdit()->setText(newText);
 }
 
-/*! \reimp */
 QAccessible::State QAccessibleLineEdit::state(int child) const
 {
     Q_ASSERT(child == 0);

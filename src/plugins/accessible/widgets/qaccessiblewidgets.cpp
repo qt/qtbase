@@ -262,7 +262,6 @@ QTextEdit *QAccessibleTextEdit::textEdit() const
     return static_cast<QTextEdit *>(widget());
 }
 
-/*! \reimp */
 QString QAccessibleTextEdit::text(Text t, int) const
 {
     if (t == Value)
@@ -271,7 +270,6 @@ QString QAccessibleTextEdit::text(Text t, int) const
     return QAccessibleWidget::text(t, 0);
 }
 
-/*! \reimp */
 void QAccessibleTextEdit::setText(Text t, int, const QString &text)
 {
     if (t != Value) {

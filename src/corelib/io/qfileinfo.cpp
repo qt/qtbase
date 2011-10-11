@@ -375,11 +375,6 @@ QFileInfo::~QFileInfo()
 */
 
 /*!
-    \overload
-    \fn bool QFileInfo::operator!=(const QFileInfo &fileinfo) const
-*/
-
-/*!
     Returns true if this QFileInfo object refers to a file in the same
     location as \a fileinfo; otherwise returns false.
 

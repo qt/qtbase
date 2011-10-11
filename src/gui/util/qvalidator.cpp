@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QDoubleValidator::topChanged(int top)
+    \fn void QDoubleValidator::topChanged(double top)
 
     This signal is emitted after the top property changed.
 
@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QDoubleValidator::bottomChanged(int bottom)
+    \fn void QDoubleValidator::bottomChanged(double bottom)
 
     This signal is emitted after the bottom property changed.
 

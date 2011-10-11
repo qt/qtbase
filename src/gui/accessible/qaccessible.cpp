@@ -905,7 +905,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessibleInterface *parent() const
+    \fn QAccessibleInterface* QAccessibleInterface::parent() const
 
     Returns the QAccessibleInterface of the parent in the accessible object hierarchy.
 
@@ -915,7 +915,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessibleInterface *child(int index) const
+    \fn QAccessibleInterface* QAccessibleInterface::child(int index) const
 
     Returns the accessible child with index \a index.
     0-based index. The number of children of an object can be checked with childCount.

@@ -939,12 +939,6 @@ bool QTranslator::isEmpty() const
            !d->offsetArray && !d->contextArray;
 }
 
-/*!
-    \fn QString QTranslator::find(const char *context, const char *sourceText, const char * comment = 0) const
-
-    Use translate(\a context, \a sourceText, \a comment) instead.
-*/
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_TRANSLATION

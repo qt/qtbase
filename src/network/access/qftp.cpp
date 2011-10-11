@@ -2010,11 +2010,6 @@ qint64 QFtp::bytesAvailable() const
     return d_func()->pi.dtp.bytesAvailable();
 }
 
-/*! \fn qint64 QFtp::readBlock(char *data, quint64 maxlen)
-
-    Use read() instead.
-*/
-
 /*!
     Reads \a maxlen bytes from the data socket into \a data and
     returns the number of bytes read. Returns -1 if an error occurred.

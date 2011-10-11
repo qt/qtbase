@@ -353,28 +353,6 @@ QMouseEvent::~QMouseEvent()
     \sa button() Qt::MouseButton
 */
 
-
-/*!
-    \fn Qt::ButtonState QMouseEvent::state() const
-
-    Returns the button state immediately before the event was
-    generated. The button state is a combination of mouse buttons
-    (see Qt::ButtonState) and keyboard modifiers (Qt::MouseButtons).
-
-    Use buttons() and/or modifiers() instead. Be aware that buttons()
-    return the state immediately \e after the event was generated.
-*/
-
-/*!
-    \fn Qt::ButtonState QMouseEvent::stateAfter() const
-
-    Returns the button state immediately after the event was
-    generated. The button state is a combination of mouse buttons
-    (see Qt::ButtonState) and keyboard modifiers (Qt::MouseButtons).
-
-    Use buttons() and/or modifiers() instead.
-*/
-
 /*!
     \class QHoverEvent
     \ingroup events
@@ -640,18 +618,6 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
 
     \sa globalX() globalPos()
 */
-
-
-/*! \obsolete
-    \fn Qt::ButtonState QWheelEvent::state() const
-
-    Returns the keyboard modifier flags at the time of the event.
-
-    The returned value is a selection of the following values,
-    combined using the OR operator: Qt::ShiftButton,
-    Qt::ControlButton, and Qt::AltButton.
-*/
-
 
 /*!
     \class QKeyEvent
@@ -1051,26 +1017,6 @@ Qt::FocusReason QFocusEvent::reason() const
 */
 
 /*!
-    \fn bool QPaintEvent::erased() const
-    \compat
-
-    Returns true if the paint event region (or rectangle) has been
-    erased with the widget's background; otherwise returns false.
-
-    Qt 4 \e always erases regions that require painting. The exception
-    to this rule is if the widget sets the Qt::WA_OpaquePaintEvent or
-    Qt::WA_NoSystemBackground attributes. If either one of those
-    attributes is set \e and the window system does not make use of
-    subwidget alpha composition (currently X11 and Windows, but this
-    may change), then the region is not erased.
-*/
-
-/*!
-    \fn void QPaintEvent::setErased(bool b) { m_erased = b; }
-    \internal
-*/
-
-/*!
     Constructs a paint event object with the region that needs to
     be updated. The region is specified by \a paintRegion.
 */
@@ -1457,19 +1403,6 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
 #endif // QT_NO_CONTEXTMENU
 
 /*!
-    \fn Qt::ButtonState QContextMenuEvent::state() const
-
-    Returns the button state (a combination of mouse buttons
-    and keyboard modifiers) immediately before the event was
-    generated.
-
-    The returned value is a selection of the following values,
-    combined with the OR operator:
-    Qt::LeftButton, Qt::RightButton, Qt::MidButton,
-    Qt::ShiftButton, Qt::ControlButton, and Qt::AltButton.
-*/
-
-/*!
     \enum QContextMenuEvent::Reason
 
     This enum describes the reason why the event was sent.
@@ -1818,28 +1751,6 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery q) const
     return QVariant();
 }
 
-/*!
-    \fn Qt::InputMethodQuery QInputMethodQueryEvent::query() const
-
-    returns the type of data queried.
-*/
-
-/*!
-    \fn QVariant QInputMethodQueryEvent::value() const
-
-    returns the value set by the receiving object. Mainly used by the input method.
-
-    \sa setValue()
-*/
-
-/*!
-    \fn QVariant QInputMethodQueryEvent::setValue()
-
-    Used by the receiving object to set the value requested by query().
-
-    \sa setValue()
-*/
-
 #ifndef QT_NO_TABLETEVENT
 
 /*!
@@ -2185,12 +2096,6 @@ QDragMoveEvent::~QDragMoveEvent()
 }
 
 /*!
-    \fn void QDragMoveEvent::accept(bool y)
-
-    Calls setAccepted(\a y) instead.
-*/
-
-/*!
     \fn void QDragMoveEvent::accept(const QRect &rectangle)
 
     The same as accept(), but also notifies that future moves will
@@ -2349,51 +2254,6 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 */
 
 /*!
-    \fn void QDropEvent::accept()
-    \internal
-*/
-
-/*!
-    \fn void QDropEvent::accept(bool accept)
-
-    Call setAccepted(\a accept) instead.
-*/
-
-/*!
-    \fn void QDropEvent::acceptAction(bool accept = true)
-
-    Call this to indicate that the action described by action() is
-    accepted (i.e. if \a accept is true, which is the default), not merely
-    the default copy action. If you call acceptAction(true), there is
-    no need to also call accept(true).
-*/
-
-/*!
-    \enum QDropEvent::Action
-    \compat
-
-    When a drag and drop action is completed, the target is expected
-    to perform an action on the data provided by the source. This
-    will be one of the following:
-
-    \value Copy The default action. The source simply uses the data
-                provided in the operation.
-    \value Link The source should somehow create a link to the
-                location specified by the data.
-    \value Move The source should somehow move the object from the
-                location specified by the data to a new location.
-    \value Private  The target has special knowledge of the MIME type,
-                which the source should respond to in a similar way to
-                a Copy.
-    \value UserAction  The source and target can co-operate using
-                special actions. This feature is not currently
-                supported.
-
-    The Link and Move actions only makes sense if the data is a
-    reference, for example, text/uri-list file lists (see QUriDrag).
-*/
-
-/*!
     \fn void QDropEvent::setDropAction(Qt::DropAction action)
 
     Sets the \a action to be performed on the data by the target.
@@ -2442,16 +2302,6 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 
     \sa setDropAction(), proposedAction(), {QEvent::accept()}{accept()}
 */
-
-/*!
-    \fn void QDropEvent::setPoint(const QPoint &point)
-    \compat
-
-    Sets the drop to happen at the given \a point. You do not normally
-    need to use this as it will be set internally before your widget
-    receives the drop event.
-*/ // ### here too - what coordinate system?
-
 
 /*!
     \class QDragEnterEvent
