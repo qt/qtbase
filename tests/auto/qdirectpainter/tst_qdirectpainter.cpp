@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#ifdef Q_WS_QWS
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -245,7 +243,3 @@ void tst_QDirectPainter::reservedSynchronous()
 QTEST_MAIN(tst_QDirectPainter)
 
 #include "tst_qdirectpainter.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif

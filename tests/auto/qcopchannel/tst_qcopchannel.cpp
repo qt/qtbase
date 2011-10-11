@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 
-#if defined(Q_WS_QWS) && !defined(QT_NO_PROCESS)
+#if !defined(QT_NO_PROCESS)
 
 //TESTED_CLASS=
 //TESTED_FILES=

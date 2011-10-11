@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#if defined(Q_WS_QWS)
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -188,7 +186,3 @@ void tst_QTransformedScreen::qwsDisplay_setTransformation()
 QTEST_MAIN(tst_QTransformedScreen)
 
 #include "tst_qtransformedscreen.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif

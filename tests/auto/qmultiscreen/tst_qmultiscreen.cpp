@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#ifdef Q_WS_QWS
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -166,7 +164,3 @@ void tst_QMultiScreen::grabWindow()
 QTEST_MAIN(tst_QMultiScreen)
 
 #include "tst_qmultiscreen.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif

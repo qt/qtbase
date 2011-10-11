@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#ifdef Q_WS_QWS
-
 //TESTED_CLASS=
 //TESTED_FILES=gui/embedded/qwindowsystem_qws.h gui/embedded/qwindowsystem_qws.cpp
 
@@ -648,7 +646,3 @@ void tst_QWSWindowSystem::task188025()
 QTEST_MAIN(tst_QWSWindowSystem)
 
 #include "tst_qwswindowsystem.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif

@@ -141,6 +141,13 @@ mac*:SUBDIRS -= qwindowsurface
 # This test takes too long to run on IRIX, so skip it on that platform
 irix-*:SUBDIRS -= qitemview
 
+# These tests are only valid for QWS
+!embedded|wince*:SUBDIRS -= \
+    qtransformedscreen \
+    qwsembedwidget \
+    qwsinputmethod \
+    qwswindowsystem \
+
 win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

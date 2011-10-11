@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#ifdef Q_WS_QWS
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -100,7 +98,3 @@ void tst_QWSEmbedWidget::embedWidget()
 QTEST_MAIN(tst_QWSEmbedWidget)
 
 #include "tst_qwsembedwidget.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif

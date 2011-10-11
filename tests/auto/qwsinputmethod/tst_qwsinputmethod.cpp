@@ -42,8 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#ifdef Q_WS_QWS
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -86,7 +84,3 @@ void tst_QWSInputMethod::createSubClass()
 QTEST_MAIN(tst_QWSInputMethod)
 
 #include "tst_qwsinputmethod.moc"
-
-#else // Q_WS_QWS
-QTEST_NOOP_MAIN
-#endif
