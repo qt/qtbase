@@ -40,8 +40,9 @@
 ****************************************************************************/
 
 #include "qtoucheventsenderqpa.h"
-#include <QApplication>
-#include <QDesktopWidget>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QStringList>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -66,12 +67,12 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
-        QWidget *win = QApplication::activeWindow(); // ### migrate to QWindow later on
+        QWindow *win = QGuiApplication::activeWindow();
         if (!win)
             return;
         winRect = win->geometry();
     } else {
-        winRect = QApplication::desktop()->screenGeometry();
+        winRect = QGuiApplication::primaryScreen()->geometry();
     }
 
 #ifdef POINT_DEBUG
