@@ -60,10 +60,11 @@ class Q_GUI_EXPORT QGlyphRun
 {
 public:
     enum GlyphRunFlag {
-        Overline    = 0x1,
-        Underline   = 0x2,
-        StrikeOut   = 0x4,
-        RightToLeft = 0x8
+        Overline        = 0x01,
+        Underline       = 0x02,
+        StrikeOut       = 0x04,
+        RightToLeft     = 0x08,
+        SplitLigature   = 0x10,
     };
     Q_DECLARE_FLAGS(GlyphRunFlags, GlyphRunFlag)
 

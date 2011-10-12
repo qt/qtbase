@@ -100,6 +100,14 @@ QT_BEGIN_NAMESPACE
   \value RightToLeft Indicates that the glyphs are ordered right to left. This can affect the
   positioning of other screen elements that are relative to the glyph run, such as an inline
   text object.
+  \value SplitLigature Indicates that the glyph run splits a ligature glyph. This means
+  that a ligature glyph is included in the run, but the characters represented by it corresponds
+  only to part of that ligature. The glyph run's boundingRect() function can in this case be used
+  to retrieve the area covered by glyphs that correspond to the characters represented by the
+  glyph run. When visualizing the glyphs, care needs to be taken to clip to this bounding rect to
+  ensure that only the corresponding part of the ligature is painted. In particular, this can be
+  the case when retrieving a glyph run from a QTextLayout for a specific character range, e.g.
+  when retrieving the selected area of a QTextLayout.
 */
 
 /*!

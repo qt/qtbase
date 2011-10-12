@@ -1015,15 +1015,7 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
                 QRawFont rawFont = glyphRun.rawFont();
 
                 QFontEngine *fontEngine = rawFont.d->fontEngine;
-                QTextItem::RenderFlags flags;
-                if (glyphRun.underline())
-                    flags |= QTextItem::Underline;
-                if (glyphRun.overline())
-                    flags |= QTextItem::Overline;
-                if (glyphRun.strikeOut())
-                    flags |= QTextItem::StrikeOut;
-                if (glyphRun.isRightToLeft())
-                    flags |= QTextItem::RightToLeft;
+                QGlyphRun::GlyphRunFlags flags = glyphRun.flags();
                 QPair<QFontEngine *, int> key(fontEngine, int(flags));
                 // merge the glyph runs using the same font
                 if (glyphRunHash.contains(key)) {
@@ -2106,7 +2098,7 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 
 #if !defined(QT_NO_RAWFONT)
 static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &glyphLayout,
-                                  const QPointF &pos, const QTextItem::RenderFlags &flags,
+                                  const QPointF &pos, const QGlyphRun::GlyphRunFlags &flags,
                                   const QFixed &selectionX, const QFixed &selectionWidth)
 {
     QGlyphRun glyphRun;
@@ -2137,7 +2129,17 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     QVarLengthArray<glyph_t> glyphsArray;
     QVarLengthArray<QFixedPoint> positionsArray;
 
-    fontEngine->getGlyphPositions(glyphLayout, QTransform(), flags, glyphsArray,
+    QTextItem::RenderFlags renderFlags;
+    if (flags.testFlag(QGlyphRun::Overline))
+        renderFlags |= QTextItem::Overline;
+    if (flags.testFlag(QGlyphRun::Underline))
+        renderFlags |= QTextItem::Underline;
+    if (flags.testFlag(QGlyphRun::StrikeOut))
+        renderFlags |= QTextItem::StrikeOut;
+    if (flags.testFlag(QGlyphRun::RightToLeft))
+        renderFlags |= QTextItem::RightToLeft;
+
+    fontEngine->getGlyphPositions(glyphLayout, QTransform(), renderFlags, glyphsArray,
                                   positionsArray);
     Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
@@ -2164,12 +2166,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
 
     glyphRun.setGlyphIndexes(glyphs);
     glyphRun.setPositions(positions);
-
-    glyphRun.setOverline(flags.testFlag(QTextItem::Overline));
-    glyphRun.setUnderline(flags.testFlag(QTextItem::Underline));
-    glyphRun.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
-    if (flags.testFlag(QTextItem::RightToLeft))
-        glyphRun.setRightToLeft(true);
+    glyphRun.setFlags(flags);
     glyphRun.setRawFont(font);
 
     glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY, selectionWidth.toReal(), height));
@@ -2229,17 +2226,17 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
         QFont font = eng->font(si);
 
-        QTextItem::RenderFlags flags;
+        QGlyphRun::GlyphRunFlags flags;
         if (font.overline())
-            flags |= QTextItem::Overline;
+            flags |= QGlyphRun::Overline;
         if (font.underline())
-            flags |= QTextItem::Underline;
+            flags |= QGlyphRun::Underline;
         if (font.strikeOut())
-            flags |= QTextItem::StrikeOut;
+            flags |= QGlyphRun::StrikeOut;
 
         bool rtl = false;
         if (si.analysis.bidiLevel % 2) {
-            flags |= QTextItem::RightToLeft;
+            flags |= QGlyphRun::RightToLeft;
             rtl = true;
         }
 
@@ -2251,6 +2248,9 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         int glyphsEnd = (relativeTo == eng->length(&si))
                          ? si.num_glyphs - 1
                          : logClusters[relativeTo];
+        bool startsInsideLigature = relativeFrom > 0 && logClusters[relativeFrom - 1] == glyphsStart;
+        bool endsInsideLigature = relativeTo < eng->length(&si) - 1
+                               && logClusters[relativeTo + 1] == glyphsEnd;
 
         int itemGlyphsStart = logClusters[iterator.itemStart - si.position];
         int itemGlyphsEnd = logClusters[iterator.itemEnd - 1 - si.position];
@@ -2294,8 +2294,13 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                     multiFontEngine->ensureEngineAt(which);
+
+                    QGlyphRun::GlyphRunFlags subFlags = flags;
+                    if (start == 0 && startsInsideLigature)
+                        subFlags |= QGlyphRun::SplitLigature;
+
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      subLayout, pos, flags, x, width));
+                                                      subLayout, pos, subFlags, x, width));
                     for (int i = 0; i < subLayout.numGlyphs; i++) {
                         pos += QPointF(subLayout.advances_x[i].toReal(),
                                        subLayout.advances_y[i].toReal());
@@ -2307,11 +2312,18 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
                 QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                 multiFontEngine->ensureEngineAt(which);
+
+                QGlyphRun::GlyphRunFlags subFlags = flags;
+                if ((start == 0 && startsInsideLigature) || endsInsideLigature)
+                    subFlags |= QGlyphRun::SplitLigature;
+
                 QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      subLayout, pos, flags, x, width);
+                                                      subLayout, pos, subFlags, x, width);
                 if (!glyphRun.isEmpty())
                     glyphRuns.append(glyphRun);
             } else {
+                if (startsInsideLigature || endsInsideLigature)
+                    flags |= QGlyphRun::SplitLigature;
                 QGlyphRun glyphRun = glyphRunWithInfo(mainFontEngine, glyphLayout, pos, flags, x,
                                                       width);
                 if (!glyphRun.isEmpty())
