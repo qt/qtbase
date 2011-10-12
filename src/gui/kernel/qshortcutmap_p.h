@@ -69,7 +69,7 @@ struct QShortcutEntry;
 class QShortcutMapPrivate;
 class QObject;
 
-class QShortcutMap
+class Q_GUI_EXPORT QShortcutMap
 {
     Q_DECLARE_PRIVATE(QShortcutMap)
 public:

@@ -26,6 +26,7 @@ HEADERS += \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
 	kernel/qlayoutitem.h \
+        kernel/qshortcut.h \
 	kernel/qsizepolicy.h \
         kernel/qstackedlayout.h \
 	kernel/qtooltip.h \
@@ -59,6 +60,7 @@ SOURCES += \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
+        kernel/qshortcut.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
 	kernel/qwhatsthis.cpp \

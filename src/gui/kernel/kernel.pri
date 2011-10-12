@@ -19,6 +19,7 @@ HEADERS += \
         kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
         kernel/qpalette.h \
+        kernel/qshortcutmap_p.h \
         kernel/qsessionmanager.h \
         kernel/qwindowdefs.h \
         kernel/qscreen.h \
@@ -37,6 +38,7 @@ SOURCES += \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
+        kernel/qshortcutmap.cpp \
         kernel/qstylehints.cpp
 
 qpa {

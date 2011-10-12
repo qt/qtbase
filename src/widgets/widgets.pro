@@ -30,9 +30,6 @@ symbian {
     include(s60framework/s60framework.pri)
 }
 
-# to be moved into QtGui
-include(to_be_moved/to_be_moved.pri)
-
 #modules
 include(animation/animation.pri)
 include(kernel/kernel.pri)
