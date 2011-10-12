@@ -67,12 +67,7 @@ QT_BEGIN_NAMESPACE
 class QKeyEvent;
 struct QShortcutEntry;
 class QShortcutMapPrivate;
-class QGraphicsWidget;
-class QWidget;
-class QAction;
 class QObject;
-
-bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context);
 
 class QShortcutMap
 {

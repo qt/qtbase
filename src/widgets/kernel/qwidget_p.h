@@ -115,6 +115,10 @@ class QStyle;
 
 class QUnifiedToolbarSurface;
 
+// implemented in qshortcut.cpp
+bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context);
+
+
 class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
 
