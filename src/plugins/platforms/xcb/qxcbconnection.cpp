@@ -62,6 +62,7 @@
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
+#include <X11/Xlibint.h>
 #endif
 
 #ifdef XCB_USE_RENDER
@@ -541,6 +542,19 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handled = true;
         }
     }
+
+#ifdef XCB_USE_XLIB
+    if (!handled) {
+        // Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
+        // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
+        Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent((Display*)m_xlib_display, response_type, 0);
+        if (proc) {
+            XESetWireToEvent((Display*)m_xlib_display, response_type, proc);
+            XEvent dummy;
+            proc((Display*)m_xlib_display, &dummy, (xEvent*)event);
+        }
+    }
+#endif
 
     if (handled)
         printXcbEvent("Handled XCB event", event);
