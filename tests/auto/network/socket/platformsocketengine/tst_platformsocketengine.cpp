@@ -307,7 +307,7 @@ void tst_PlatformSocketEngine::broadcastTest()
     PLATFORMSOCKETENGINE broadcastSocket;
 
     // Initialize a regular Udp socket
-    QVERIFY(broadcastSocket.initialize(QAbstractSocket::UdpSocket));
+    QVERIFY(broadcastSocket.initialize(QAbstractSocket::UdpSocket, QAbstractSocket::AnyIPProtocol));
 
     // Bind to any port on all interfaces
     QVERIFY(broadcastSocket.bind(QHostAddress::Any, 0));
@@ -559,18 +559,31 @@ void tst_PlatformSocketEngine::bind()
 #if !defined Q_OS_WIN
     PLATFORMSOCKETENGINE binder;
     QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
-    QVERIFY(!binder.bind(QHostAddress::Any, 82));
+    QVERIFY(!binder.bind(QHostAddress::AnyIPv4, 82));
     QVERIFY(binder.error() == QAbstractSocket::SocketAccessError);
 #endif
 
     PLATFORMSOCKETENGINE binder2;
     QVERIFY(binder2.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
-    QVERIFY(binder2.bind(QHostAddress::Any, 31180));
+    QVERIFY(binder2.bind(QHostAddress::AnyIPv4, 31180));
 
     PLATFORMSOCKETENGINE binder3;
     QVERIFY(binder3.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
-    QVERIFY(!binder3.bind(QHostAddress::Any, 31180));
+    QVERIFY(!binder3.bind(QHostAddress::AnyIPv4, 31180));
     QVERIFY(binder3.error() == QAbstractSocket::AddressInUseError);
+
+    PLATFORMSOCKETENGINE binder4;
+    QVERIFY(binder4.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
+    QVERIFY(binder4.bind(QHostAddress::AnyIPv6, 31180));
+
+    PLATFORMSOCKETENGINE binder5;
+    QVERIFY(binder5.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv6Protocol));
+    QVERIFY(!binder5.bind(QHostAddress::AnyIPv6, 31180));
+    QVERIFY(binder5.error() == QAbstractSocket::AddressInUseError);
+
+    PLATFORMSOCKETENGINE binder6;
+    QVERIFY(binder6.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::AnyIPProtocol));
+    QVERIFY(binder6.bind(QHostAddress::Any, 31181));
 }
 
 //---------------------------------------------------------------------------
