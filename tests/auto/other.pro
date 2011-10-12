@@ -11,7 +11,6 @@ SUBDIRS=\
            macnativeevents \
            macplist \
            qaccessibility \
-           qaccessibility_mac \
            qcombobox \
            qcopchannel \
            qdirectpainter \
@@ -37,7 +36,6 @@ wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
            macgui \
            macnativeevents \
            macplist \
-           qaccessibility_mac \
 
 !embedded|wince*: SUBDIRS -= \
            qcopchannel \
