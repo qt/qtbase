@@ -398,6 +398,7 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
             filepath.remove(0, 1);
         }
         s += "\n\t:preexecShellSafe='${QT_BUILD_DIR}/bin/moc ";
+        s += "-nn ";
         s += varGlue("DEFINES", "-D", " -D", " ");
         s += varGlue("INCLUDEPATH", "-I", " -I", " ");
         s += filepath;
