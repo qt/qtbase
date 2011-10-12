@@ -392,19 +392,12 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
         s += "\n";
     } else if (filename.endsWith(Option::cpp_ext.first())) {
         QString tmpstr(filename.section("/", -1));
-//        QString moctool(project->values("QMAKE_MOC").first());
         QString filepath(pathtoremove);
         if (!project->values("QT_SOURCE_TREE").isEmpty()) {
             filepath.remove(project->values("QT_SOURCE_TREE").first());
             filepath.remove(0, 1);
         }
-//        if (!project->values("QT_BUILD_TREE").isEmpty()) {
-//            moctool.remove(project->values("QT_BUILD_TREE").first());
-//            moctool.remove(0, 1);
-//        }
         s += "\n\t:preexecShellSafe='${QT_BUILD_DIR}/bin/moc ";
-//        s += moctool;
-//        s += " ";
         s += varGlue("DEFINES", "-D", " -D", " ");
         s += varGlue("INCLUDEPATH", "-I", " -I", " ");
         s += filepath;
