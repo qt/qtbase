@@ -3298,6 +3298,10 @@ if [ "$QT_CROSS_COMPILE" = "yes" ]; then
     fi
 fi
 
+if [ ! -n "$PKG_CONFIG" ]; then
+    QT_CONFIG="$QT_CONFIG no-pkg-config"
+fi
+
 # process CFG_MAC_ARCHS
 if [ "$PLATFORM_MAC" = "yes" ]; then
 #   check -arch arguments for validity.
