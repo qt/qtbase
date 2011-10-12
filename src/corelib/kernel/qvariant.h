@@ -317,8 +317,13 @@ class Q_CORE_EXPORT QVariant
         union Data
         {
             char c;
+            uchar uc;
+            short s;
+            ushort us;
             int i;
             uint u;
+            long l;
+            ulong ul;
             bool b;
             double d;
             float f;

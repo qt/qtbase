@@ -41,6 +41,7 @@
 
 #include "qvariant.h"
 
+// Gui types
 #include "qbitmap.h"
 #include "qbrush.h"
 #include "qcolor.h"
@@ -64,7 +65,32 @@
 #include "qvector4d.h"
 #include "qquaternion.h"
 
+// Core types
+#include "qvariant.h"
+#include "qbitarray.h"
+#include "qbytearray.h"
+#include "qdatastream.h"
+#include "qdebug.h"
+#include "qmap.h"
+#include "qdatetime.h"
+#include "qeasingcurve.h"
+#include "qlist.h"
+#include "qstring.h"
+#include "qstringlist.h"
+#include "qurl.h"
+#include "qlocale.h"
+
+#ifndef QT_NO_GEOM_VARIANT
+#include "qsize.h"
+#include "qpoint.h"
+#include "qrect.h"
+#include "qline.h"
+#endif
+
+#include <float.h>
+
 #include "private/qvariant_p.h"
+#include <private/qmetatype_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,339 +98,150 @@ Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler = 0;
 
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
+template<typename T>
+struct TypeDefiniton {
+    static const bool IsAvailable = true;
+};
+// Ignore these types, as incomplete
+#ifdef QT_NO_GEOM_VARIANT
+template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_SHORTCUT
+template<> struct TypeDefiniton<QKeySequence> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_CURSOR
+template<> struct TypeDefiniton<QCursor> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_MATRIX4X4
+template<> struct TypeDefiniton<QMatrix4x4> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_VECTOR2D
+template<> struct TypeDefiniton<QVector2D> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_VECTOR3D
+template<> struct TypeDefiniton<QVector3D> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_VECTOR4D
+template<> struct TypeDefiniton<QVector4D> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_QUATERNION
+template<> struct TypeDefiniton<QQuaternion> { static const bool IsAvailable = false; };
+#endif
+
+struct CoreAndGuiTypesFilter {
+    template<typename T>
+    struct Acceptor {
+        static const bool IsAccepted = (QTypeModuleInfo<T>::IsCore || QTypeModuleInfo<T>::IsGui) && TypeDefiniton<T>::IsAvailable;
+    };
+};
+
 static void construct(QVariant::Private *x, const void *copy)
 {
-    switch (x->type) {
-    case QVariant::Bitmap:
-        v_construct<QBitmap>(x, copy);
-        break;
-    case QVariant::Region:
-        v_construct<QRegion>(x, copy);
-        break;
-    case QVariant::Polygon:
-        v_construct<QPolygon>(x, copy);
-        break;
-    case QVariant::Font:
-        v_construct<QFont>(x, copy);
-        break;
-    case QVariant::Pixmap:
-        v_construct<QPixmap>(x, copy);
-        break;
-    case QVariant::Image:
-        v_construct<QImage>(x, copy);
-        break;
-    case QVariant::Brush:
-        v_construct<QBrush>(x, copy);
-        break;
-    case QVariant::Color:
-        v_construct<QColor>(x, copy);
-        break;
-    case QVariant::Palette:
-        v_construct<QPalette>(x, copy);
-        break;
-    case QVariant::Matrix:
-        v_construct<QMatrix>(x, copy);
-        break;
-    case QVariant::Transform:
-        v_construct<QTransform>(x, copy);
-        break;
-    case QVariant::TextFormat:
-        v_construct<QTextFormat>(x, copy);
-        break;
-    case QVariant::TextLength:
-        v_construct<QTextLength>(x, copy);
-        break;
-#ifndef QT_NO_SHORTCUT
-    case QVariant::KeySequence:
-        v_construct<QKeySequence>(x, copy);
-        break;
-#endif
-    case QVariant::Pen:
-        v_construct<QPen>(x, copy);
-        break;
-#ifndef QT_NO_CURSOR
-    case QVariant::Cursor:
-        v_construct<QCursor>(x, copy);
-        break;
-#endif
-    case 62: {
-        // small 'trick' to let a QVariant(Qt::blue) create a variant
-        // of type QColor
-        x->type = QVariant::Color;
-        QColor color(*reinterpret_cast<const Qt::GlobalColor *>(copy));
-        v_construct<QColor>(x, &color);
-        break;
-    }
-#ifndef QT_NO_MATRIX4X4
-    case QVariant::Matrix4x4:
-        v_construct<QMatrix4x4>(x, copy);
-        break;
-#endif
-#ifndef QT_NO_VECTOR2D
-    case QVariant::Vector2D:
-        v_construct<QVector2D>(x, copy);
-        break;
-#endif
-#ifndef QT_NO_VECTOR3D
-    case QVariant::Vector3D:
-        v_construct<QVector3D>(x, copy);
-        break;
-#endif
-#ifndef QT_NO_VECTOR4D
-    case QVariant::Vector4D:
-        v_construct<QVector4D>(x, copy);
-        break;
-#endif
-#ifndef QT_NO_QUATERNION
-    case QVariant::Quaternion:
-        v_construct<QQuaternion>(x, copy);
-        break;
-#endif
-    case QVariant::SizePolicy:
-    case QVariant::Icon:
-        if (qt_widgets_variant_handler) {
-            qt_widgets_variant_handler->construct(x, copy);
+    const int type = x->type;
+    QVariantConstructor<CoreAndGuiTypesFilter> constructor(x, copy);
+    QMetaTypeSwitcher::switcher<void>(constructor, type, 0);
+
+    // FIXME This is an ugly hack if QVariantConstructor fails to build a value it constructs an invalid type
+    if (Q_UNLIKELY(x->type == QVariant::Invalid)) {
+        if (type == 62) {
+            // small 'trick' to let a QVariant(Qt::blue) create a variant
+            // of type QColor
+            // TODO Get rid of this hack.
+            x->type = QVariant::Color;
+            QColor color(*reinterpret_cast<const Qt::GlobalColor *>(copy));
+            v_construct<QColor>(x, &color);
             return;
         }
-        break;
-    default:
-        qcoreVariantHandler()->construct(x, copy);
-        return;
+        if (type == QVariant::Icon || type == QVariant::SizePolicy) {
+            // TODO we need to clean up variant handlers, so they are replacament, not extension
+            x->type = type;
+            if (qt_widgets_variant_handler) {
+                qt_widgets_variant_handler->construct(x, copy);
+            }
+        }
     }
-    x->is_null = !copy;
 }
 
 static void clear(QVariant::Private *d)
 {
-    switch (d->type) {
-    case QVariant::Bitmap:
-        v_clear<QBitmap>(d);
-        break;
-    case QVariant::Cursor:
-        v_clear<QCursor>(d);
-        break;
-    case QVariant::Region:
-        v_clear<QRegion>(d);
-        break;
-    case QVariant::Polygon:
-        v_clear<QPolygon>(d);
-        break;
-    case QVariant::Font:
-        v_clear<QFont>(d);
-        break;
-    case QVariant::Pixmap:
-        v_clear<QPixmap>(d);
-        break;
-    case QVariant::Image:
-        v_clear<QImage>(d);
-        break;
-    case QVariant::Brush:
-        v_clear<QBrush>(d);
-        break;
-    case QVariant::Color:
-        v_clear<QColor>(d);
-        break;
-    case QVariant::Palette:
-        v_clear<QPalette>(d);
-        break;
-    case QVariant::Matrix:
-        v_clear<QMatrix>(d);
-        break;
-    case QVariant::Transform:
-        v_clear<QTransform>(d);
-        break;
-    case QVariant::TextFormat:
-        v_clear<QTextFormat>(d);
-        break;
-    case QVariant::TextLength:
-        v_clear<QTextLength>(d);
-        break;
-#ifndef QT_NO_SHORTCUT
-    case QVariant::KeySequence:
-        v_clear<QKeySequence>(d);
-        break;
-#endif
-    case QVariant::Pen:
-        v_clear<QPen>(d);
-        break;
-#ifndef QT_NO_MATRIX4X4
-    case QVariant::Matrix4x4:
-        v_clear<QMatrix4x4>(d);
-        break;
-#endif
-#ifndef QT_NO_VECTOR2D
-    case QVariant::Vector2D:
-        v_clear<QVector2D>(d);
-        break;
-#endif
-#ifndef QT_NO_VECTOR3D
-    case QVariant::Vector3D:
-        v_clear<QVector3D>(d);
-        break;
-#endif
-#ifndef QT_NO_VECTOR4D
-    case QVariant::Vector4D:
-        v_clear<QVector4D>(d);
-        break;
-#endif
-#ifndef QT_NO_QUATERNION
-    case QVariant::Quaternion:
-        v_clear<QVector4D>(d);
-        break;
-#endif
-    case QVariant::SizePolicy:
-    case QVariant::Icon:
+    const int type = d->type;
+    if (type == QVariant::Icon || type == QVariant::SizePolicy) {
+        // TODO we need to clean up variant handlers, so they are replacament, not extension
         if (qt_widgets_variant_handler) {
             qt_widgets_variant_handler->clear(d);
             return;
         }
-        break;
-    default:
-        qcoreVariantHandler()->clear(d);
-        return;
     }
-
-    d->type = QVariant::Invalid;
-    d->is_null = true;
-    d->is_shared = false;
+    QVariantDestructor<CoreAndGuiTypesFilter> destructor(d);
+    QMetaTypeSwitcher::switcher<void>(destructor, type, 0);
 }
 
-
+// This class is a hack that customizes access to QPolygon
+template<class Filter>
+class QGuiVariantIsNull : public QVariantIsNull<Filter> {
+    typedef QVariantIsNull<Filter> Base;
+public:
+    QGuiVariantIsNull(const QVariant::Private *d)
+        : QVariantIsNull<Filter>(d)
+    {}
+    template<typename T>
+    bool delegate(const T *p) { return Base::delegate(p); }
+    bool delegate(const QPolygon*) { return v_cast<QPolygon>(Base::m_d)->isEmpty(); }
+    bool delegate(const void *p) { return Base::delegate(p); }
+};
 static bool isNull(const QVariant::Private *d)
 {
-    switch(d->type) {
-    case QVariant::Bitmap:
-        return v_cast<QBitmap>(d)->isNull();
-    case QVariant::Region:
-        return v_cast<QRegion>(d)->isEmpty();
-    case QVariant::Polygon:
-        return v_cast<QPolygon>(d)->isEmpty();
-    case QVariant::Pixmap:
-        return v_cast<QPixmap>(d)->isNull();
-    case QVariant::Image:
-        return v_cast<QImage>(d)->isNull();
-    case QVariant::Matrix:
-    case QVariant::TextFormat:
-    case QVariant::TextLength:
-    case QVariant::Cursor:
-    case QVariant::StringList:
-    case QVariant::Font:
-    case QVariant::Brush:
-    case QVariant::Color:
-    case QVariant::Palette:
-    case QVariant::SizePolicy:
-#ifndef QT_NO_SHORTCUT
-    case QVariant::KeySequence:
-#endif
-    case QVariant::Pen:
-#ifndef QT_NO_MATRIX4X4
-    case QVariant::Matrix4x4:
-#endif
-        break;
-#ifndef QT_NO_VECTOR2D
-    case QVariant::Vector2D:
-        return v_cast<QVector2D>(d)->isNull();
-#endif
-#ifndef QT_NO_VECTOR3D
-    case QVariant::Vector3D:
-        return v_cast<QVector3D>(d)->isNull();
-#endif
-#ifndef QT_NO_VECTOR4D
-    case QVariant::Vector4D:
-        return v_cast<QVector4D>(d)->isNull();
-#endif
-#ifndef QT_NO_QUATERNION
-    case QVariant::Quaternion:
-        return v_cast<QQuaternion>(d)->isNull();
-#endif
-    case QVariant::Icon:
-        if (qt_widgets_variant_handler)
-            return qt_widgets_variant_handler->isNull(d);
-        break;
-    default:
-        return qcoreVariantHandler()->isNull(d);
-    }
-    return d->is_null;
+    QGuiVariantIsNull<CoreAndGuiTypesFilter> isNull(d);
+    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
 }
+
+// This class is a hack that customizes access to QPixmap, QBitmap and QCursor
+template<class Filter>
+class QGuiVariantComparator : public QVariantComparator<Filter> {
+    typedef QVariantComparator<Filter> Base;
+public:
+    QGuiVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
+        : QVariantComparator<Filter>(a, b)
+    {}
+    template<typename T>
+    bool delegate(const T *p)
+    {
+        if (Q_UNLIKELY(Base::m_a->type == QVariant::Icon || Base::m_a->type == QVariant::SizePolicy)) {
+            // TODO we need to clean up variant handlers, so they are replacament, not extension
+            if (Q_LIKELY(qt_widgets_variant_handler))
+                return qt_widgets_variant_handler->compare(Base::m_a, Base::m_b);
+        }
+        return Base::delegate(p);
+    }
+    bool delegate(const QPixmap*)
+    {
+        return v_cast<QPixmap>(Base::m_a)->cacheKey() == v_cast<QPixmap>(Base::m_b)->cacheKey();
+    }
+    bool delegate(const QBitmap*)
+    {
+        return v_cast<QBitmap>(Base::m_a)->cacheKey() == v_cast<QBitmap>(Base::m_b)->cacheKey();
+    }
+#ifndef QT_NO_CURSOR
+    bool delegate(const QCursor*)
+    {
+        return v_cast<QCursor>(Base::m_a)->shape() == v_cast<QCursor>(Base::m_b)->shape();
+    }
+#endif
+    bool delegate(const void *p) { return Base::delegate(p); }
+};
 
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
-    Q_ASSERT(a->type == b->type);
-    switch(a->type) {
-    case QVariant::Cursor:
-#ifndef QT_NO_CURSOR
-        return v_cast<QCursor>(a)->shape() == v_cast<QCursor>(b)->shape();
-#endif
-    case QVariant::Bitmap:
-        return v_cast<QBitmap>(a)->cacheKey()
-            == v_cast<QBitmap>(b)->cacheKey();
-    case QVariant::Polygon:
-        return *v_cast<QPolygon>(a) == *v_cast<QPolygon>(b);
-    case QVariant::Region:
-        return *v_cast<QRegion>(a) == *v_cast<QRegion>(b);
-    case QVariant::Font:
-        return *v_cast<QFont>(a) == *v_cast<QFont>(b);
-    case QVariant::Pixmap:
-        return v_cast<QPixmap>(a)->cacheKey() == v_cast<QPixmap>(b)->cacheKey();
-    case QVariant::Image:
-        return *v_cast<QImage>(a) == *v_cast<QImage>(b);
-    case QVariant::Brush:
-        return *v_cast<QBrush>(a) == *v_cast<QBrush>(b);
-    case QVariant::Color:
-        return *v_cast<QColor>(a) == *v_cast<QColor>(b);
-    case QVariant::Palette:
-        return *v_cast<QPalette>(a) == *v_cast<QPalette>(b);
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        /* QIcon::operator==() cannot be reasonably implemented for QIcon,
-         * so we always return false. */
-        return false;
-#endif
-    case QVariant::Matrix:
-        return *v_cast<QMatrix>(a) == *v_cast<QMatrix>(b);
-    case QVariant::Transform:
-        return *v_cast<QTransform>(a) == *v_cast<QTransform>(b);
-    case QVariant::TextFormat:
-        return *v_cast<QTextFormat>(a) == *v_cast<QTextFormat>(b);
-    case QVariant::TextLength:
-        return *v_cast<QTextLength>(a) == *v_cast<QTextLength>(b);
-#ifndef QT_NO_SHORTCUT
-    case QVariant::KeySequence:
-        return *v_cast<QKeySequence>(a) == *v_cast<QKeySequence>(b);
-#endif
-    case QVariant::Pen:
-        return *v_cast<QPen>(a) == *v_cast<QPen>(b);
-#ifndef QT_NO_MATRIX4X4
-    case QVariant::Matrix4x4:
-        return *v_cast<QMatrix4x4>(a) == *v_cast<QMatrix4x4>(b);
-#endif
-#ifndef QT_NO_VECTOR2D
-    case QVariant::Vector2D:
-        return *v_cast<QVector2D>(a) == *v_cast<QVector2D>(b);
-#endif
-#ifndef QT_NO_VECTOR3D
-    case QVariant::Vector3D:
-        return *v_cast<QVector3D>(a) == *v_cast<QVector3D>(b);
-#endif
-#ifndef QT_NO_VECTOR4D
-    case QVariant::Vector4D:
-        return *v_cast<QVector4D>(a) == *v_cast<QVector4D>(b);
-#endif
-#ifndef QT_NO_QUATERNION
-    case QVariant::Quaternion:
-        return *v_cast<QQuaternion>(a) == *v_cast<QQuaternion>(b);
-#endif
-    case QVariant::SizePolicy:
-        if (qt_widgets_variant_handler)
-            return qt_widgets_variant_handler->compare(a, b);
-        break;
-    default:
-        break;
-    }
-    return qcoreVariantHandler()->compare(a, b);
+    QGuiVariantComparator<CoreAndGuiTypesFilter> comparator(a, b);
+    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
 }
-
-
 
 static bool convert(const QVariant::Private *d, QVariant::Type t,
                  void *result, bool *ok)

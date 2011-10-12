@@ -106,6 +106,10 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     Q_ASSERT(a->type == b->type);
     switch(a->type) {
+#ifndef QT_NO_ICON
+    case QVariant::Icon:
+        return false;
+#endif
     case QVariant::SizePolicy:
         return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
     default:

@@ -53,6 +53,7 @@
 #include "qurl.h"
 #include "qlocale.h"
 #include "private/qvariant_p.h"
+#include "qmetatype_p.h"
 
 #ifndef QT_NO_GEOM_VARIANT
 #include "qsize.h"
@@ -72,299 +73,49 @@ QT_BEGIN_NAMESPACE
 #  define FLT_DIG 6
 #endif
 
+template<typename T>
+struct TypeDefiniton {
+    static const bool IsAvailable = true;
+};
+
+// Ignore these types, as incomplete
+#ifdef QT_BOOTSTRAPPED
+template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
+#endif
+#ifdef QT_NO_GEOM_VARIANT
+template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+#endif
+
+struct CoreTypesFilter {
+    template<typename T>
+    struct Acceptor {
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefiniton<T>::IsAvailable;
+    };
+};
+
 static void construct(QVariant::Private *x, const void *copy)
 {
-    x->is_shared = false;
-
-    switch (x->type) {
-    case QVariant::String:
-        v_construct<QString>(x, copy);
-        break;
-    case QVariant::Char:
-        v_construct<QChar>(x, copy);
-        break;
-    case QVariant::StringList:
-        v_construct<QStringList>(x, copy);
-        break;
-    case QVariant::Map:
-        v_construct<QVariantMap>(x, copy);
-        break;
-    case QVariant::Hash:
-        v_construct<QVariantHash>(x, copy);
-        break;
-    case QVariant::List:
-        v_construct<QVariantList>(x, copy);
-        break;
-    case QVariant::Date:
-        v_construct<QDate>(x, copy);
-        break;
-    case QVariant::Time:
-        v_construct<QTime>(x, copy);
-        break;
-    case QVariant::DateTime:
-        v_construct<QDateTime>(x, copy);
-        break;
-    case QVariant::ByteArray:
-        v_construct<QByteArray>(x, copy);
-        break;
-    case QVariant::BitArray:
-        v_construct<QBitArray>(x, copy);
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Size:
-        v_construct<QSize>(x, copy);
-        break;
-    case QVariant::SizeF:
-        v_construct<QSizeF>(x, copy);
-        break;
-    case QVariant::Rect:
-        v_construct<QRect>(x, copy);
-        break;
-    case QVariant::LineF:
-        v_construct<QLineF>(x, copy);
-        break;
-    case QVariant::Line:
-        v_construct<QLine>(x, copy);
-        break;
-    case QVariant::RectF:
-        v_construct<QRectF>(x, copy);
-        break;
-    case QVariant::Point:
-        v_construct<QPoint>(x, copy);
-        break;
-    case QVariant::PointF:
-        v_construct<QPointF>(x, copy);
-        break;
-#endif
-    case QVariant::Url:
-        v_construct<QUrl>(x, copy);
-        break;
-    case QVariant::Locale:
-        v_construct<QLocale>(x, copy);
-        break;
-#ifndef QT_NO_REGEXP
-    case QVariant::RegExp:
-        v_construct<QRegExp>(x, copy);
-        break;
-#endif
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-        v_construct<QEasingCurve>(x, copy);
-        break;
-#endif
-    case QVariant::Int:
-        x->data.i = copy ? *static_cast<const int *>(copy) : 0;
-        break;
-    case QVariant::UInt:
-        x->data.u = copy ? *static_cast<const uint *>(copy) : 0u;
-        break;
-    case QVariant::Bool:
-        x->data.b = copy ? *static_cast<const bool *>(copy) : false;
-        break;
-    case QVariant::Double:
-        x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
-        break;
-    case QMetaType::Float:
-        x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
-        break;
-    case QMetaType::QObjectStar:
-        x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
-        break;
-    case QVariant::LongLong:
-        x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
-        break;
-    case QVariant::ULongLong:
-        x->data.ull = copy ? *static_cast<const qulonglong *>(copy) : Q_UINT64_C(0);
-        break;
-    case QVariant::Invalid:
-    case QVariant::UserType:
-        break;
-    default:
-        void *ptr = QMetaType::create(x->type, copy);
-        if (!ptr) {
-            x->type = QVariant::Invalid;
-        } else {
-            x->is_shared = true;
-            x->data.shared = new QVariant::PrivateShared(ptr);
-        }
-        break;
-    }
-    x->is_null = !copy;
+    QVariantConstructor<CoreTypesFilter> constructor(x, copy);
+    QMetaTypeSwitcher::switcher<void>(constructor, x->type, 0);
 }
 
 static void clear(QVariant::Private *d)
 {
-    switch (d->type) {
-    case QVariant::String:
-        v_clear<QString>(d);
-        break;
-    case QVariant::Char:
-        v_clear<QChar>(d);
-        break;
-    case QVariant::StringList:
-        v_clear<QStringList>(d);
-        break;
-    case QVariant::Map:
-        v_clear<QVariantMap>(d);
-        break;
-    case QVariant::Hash:
-        v_clear<QVariantHash>(d);
-        break;
-    case QVariant::List:
-        v_clear<QVariantList>(d);
-        break;
-    case QVariant::Date:
-        v_clear<QDate>(d);
-        break;
-    case QVariant::Time:
-        v_clear<QTime>(d);
-        break;
-    case QVariant::DateTime:
-        v_clear<QDateTime>(d);
-        break;
-    case QVariant::ByteArray:
-        v_clear<QByteArray>(d);
-        break;
-    case QVariant::BitArray:
-        v_clear<QBitArray>(d);
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Point:
-        v_clear<QPoint>(d);
-        break;
-    case QVariant::PointF:
-        v_clear<QPointF>(d);
-        break;
-    case QVariant::Size:
-        v_clear<QSize>(d);
-        break;
-    case QVariant::SizeF:
-        v_clear<QSizeF>(d);
-        break;
-    case QVariant::Rect:
-        v_clear<QRect>(d);
-        break;
-    case QVariant::LineF:
-        v_clear<QLineF>(d);
-        break;
-    case QVariant::Line:
-        v_clear<QLine>(d);
-        break;
-    case QVariant::RectF:
-        v_clear<QRectF>(d);
-        break;
-#endif
-    case QVariant::Url:
-        v_clear<QUrl>(d);
-        break;
-    case QVariant::Locale:
-        v_clear<QLocale>(d);
-        break;
-#ifndef QT_NO_REGEXP
-    case QVariant::RegExp:
-        v_clear<QRegExp>(d);
-        break;
-#endif
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-        v_clear<QEasingCurve>(d);
-        break;
-#endif
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::Double:
-    case QMetaType::Float:
-    case QMetaType::QObjectStar:
-        break;
-    case QVariant::Invalid:
-    case QVariant::UserType:
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::Bool:
-        break;
-    default:
-        QMetaType::destroy(d->type, d->data.shared->ptr);
-        delete d->data.shared;
-        break;
-    }
-
-    d->type = QVariant::Invalid;
-    d->is_null = true;
-    d->is_shared = false;
+    QVariantDestructor<CoreTypesFilter> cleaner(d);
+    QMetaTypeSwitcher::switcher<void>(cleaner, d->type, 0);
 }
 
 static bool isNull(const QVariant::Private *d)
 {
-    switch(d->type) {
-    case QVariant::String:
-        return v_cast<QString>(d)->isNull();
-    case QVariant::Char:
-        return v_cast<QChar>(d)->isNull();
-    case QVariant::Date:
-        return v_cast<QDate>(d)->isNull();
-    case QVariant::Time:
-        return v_cast<QTime>(d)->isNull();
-    case QVariant::DateTime:
-        return v_cast<QDateTime>(d)->isNull();
-    case QVariant::ByteArray:
-        return v_cast<QByteArray>(d)->isNull();
-    case QVariant::BitArray:
-        return v_cast<QBitArray>(d)->isNull();
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Size:
-        return v_cast<QSize>(d)->isNull();
-    case QVariant::SizeF:
-        return v_cast<QSizeF>(d)->isNull();
-    case QVariant::Rect:
-        return v_cast<QRect>(d)->isNull();
-    case QVariant::Line:
-        return v_cast<QLine>(d)->isNull();
-    case QVariant::LineF:
-        return v_cast<QLineF>(d)->isNull();
-    case QVariant::RectF:
-        return v_cast<QRectF>(d)->isNull();
-    case QVariant::Point:
-        return v_cast<QPoint>(d)->isNull();
-    case QVariant::PointF:
-        return v_cast<QPointF>(d)->isNull();
-#endif
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-#endif
-    case QVariant::Url:
-    case QVariant::Locale:
-    case QVariant::RegExp:
-    case QVariant::StringList:
-    case QVariant::Map:
-    case QVariant::Hash:
-    case QVariant::List:
-    case QVariant::Invalid:
-    case QVariant::UserType:
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::Bool:
-    case QVariant::Double:
-    case QMetaType::Float:
-    case QMetaType::QObjectStar:
-        break;
-    }
-    return d->is_null;
-}
-
-/*
-  \internal
-  \since 4.4
-
-  We cannot use v_cast() for QMetaType's numeric types because they're smaller than QVariant::Private::Data,
-  which in turns makes v_cast() believe the value is stored in d->data.c. But
-  it's not, since we're a QMetaType type.
- */
-template<typename T>
-inline bool compareNumericMetaType(const QVariant::Private *const a, const QVariant::Private *const b)
-{
-    return *static_cast<const T *>(a->data.shared->ptr) == *static_cast<const T *>(b->data.shared->ptr);
+    QVariantIsNull<CoreTypesFilter> isNull(d);
+    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
 }
 
 /*!
@@ -375,123 +126,8 @@ inline bool compareNumericMetaType(const QVariant::Private *const a, const QVari
  */
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
-    switch(a->type) {
-    case QVariant::List:
-        return *v_cast<QVariantList>(a) == *v_cast<QVariantList>(b);
-    case QVariant::Map: {
-        const QVariantMap *m1 = v_cast<QVariantMap>(a);
-        const QVariantMap *m2 = v_cast<QVariantMap>(b);
-        if (m1->count() != m2->count())
-            return false;
-        QVariantMap::ConstIterator it = m1->constBegin();
-        QVariantMap::ConstIterator it2 = m2->constBegin();
-        while (it != m1->constEnd()) {
-            if (*it != *it2 || it.key() != it2.key())
-                return false;
-            ++it;
-            ++it2;
-        }
-        return true;
-    }
-    case QVariant::Hash:
-        return *v_cast<QVariantHash>(a) == *v_cast<QVariantHash>(b);
-    case QVariant::String:
-        return *v_cast<QString>(a) == *v_cast<QString>(b);
-    case QVariant::Char:
-        return *v_cast<QChar>(a) == *v_cast<QChar>(b);
-    case QVariant::StringList:
-        return *v_cast<QStringList>(a) == *v_cast<QStringList>(b);
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Size:
-        return *v_cast<QSize>(a) == *v_cast<QSize>(b);
-    case QVariant::SizeF:
-        return *v_cast<QSizeF>(a) == *v_cast<QSizeF>(b);
-    case QVariant::Rect:
-        return *v_cast<QRect>(a) == *v_cast<QRect>(b);
-    case QVariant::Line:
-        return *v_cast<QLine>(a) == *v_cast<QLine>(b);
-    case QVariant::LineF:
-        return *v_cast<QLineF>(a) == *v_cast<QLineF>(b);
-    case QVariant::RectF:
-        return *v_cast<QRectF>(a) == *v_cast<QRectF>(b);
-    case QVariant::Point:
-        return *v_cast<QPoint>(a) == *v_cast<QPoint>(b);
-    case QVariant::PointF:
-        return *v_cast<QPointF>(a) == *v_cast<QPointF>(b);
-#endif
-    case QVariant::Url:
-        return *v_cast<QUrl>(a) == *v_cast<QUrl>(b);
-    case QVariant::Locale:
-        return *v_cast<QLocale>(a) == *v_cast<QLocale>(b);
-#ifndef QT_NO_REGEXP
-    case QVariant::RegExp:
-        return *v_cast<QRegExp>(a) == *v_cast<QRegExp>(b);
-#endif
-    case QVariant::Int:
-        return a->data.i == b->data.i;
-    case QVariant::UInt:
-        return a->data.u == b->data.u;
-    case QVariant::LongLong:
-        return a->data.ll == b->data.ll;
-    case QVariant::ULongLong:
-        return a->data.ull == b->data.ull;
-    case QVariant::Bool:
-        return a->data.b == b->data.b;
-    case QVariant::Double:
-        return a->data.d == b->data.d;
-    case QMetaType::Float:
-        return a->data.f == b->data.f;
-    case QMetaType::QObjectStar:
-        return a->data.o == b->data.o;
-    case QVariant::Date:
-        return *v_cast<QDate>(a) == *v_cast<QDate>(b);
-    case QVariant::Time:
-        return *v_cast<QTime>(a) == *v_cast<QTime>(b);
-    case QVariant::DateTime:
-        return *v_cast<QDateTime>(a) == *v_cast<QDateTime>(b);
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-        return *v_cast<QEasingCurve>(a) == *v_cast<QEasingCurve>(b);
-#endif
-    case QVariant::ByteArray:
-        return *v_cast<QByteArray>(a) == *v_cast<QByteArray>(b);
-    case QVariant::BitArray:
-        return *v_cast<QBitArray>(a) == *v_cast<QBitArray>(b);
-    case QVariant::Invalid:
-        return true;
-    case QMetaType::Long:
-        return compareNumericMetaType<long>(a, b);
-    case QMetaType::ULong:
-        return compareNumericMetaType<ulong>(a, b);
-    case QMetaType::Short:
-        return compareNumericMetaType<short>(a, b);
-    case QMetaType::UShort:
-        return compareNumericMetaType<ushort>(a, b);
-    case QMetaType::UChar:
-        return compareNumericMetaType<uchar>(a, b);
-    case QMetaType::Char:
-        return compareNumericMetaType<char>(a, b);
-    default:
-        break;
-    }
-    if (!QMetaType::isRegistered(a->type))
-        qFatal("QVariant::compare: type %d unknown to QVariant.", a->type);
-
-    const void *a_ptr = a->is_shared ? a->data.shared->ptr : &(a->data.ptr);
-    const void *b_ptr = b->is_shared ? b->data.shared->ptr : &(b->data.ptr);
-
-    /* The reason we cannot place this test in a case branch above for the types
-     * QMetaType::VoidStar, QMetaType::QObjectStar and so forth, is that it wouldn't include
-     * user defined pointer types. */
-    const char *const typeName = QMetaType::typeName(a->type);
-    uint typeNameLen = qstrlen(typeName);
-    if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
-        return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
-
-    if (a->is_null && b->is_null)
-        return true;
-
-    return a_ptr == b_ptr;
+    QVariantComparator<CoreTypesFilter> comparator(a, b);
+    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
 }
 
 /*!
@@ -505,11 +141,11 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
     case QMetaType::LongLong:
         return d->data.ll;
     case QMetaType::Char:
-        return qlonglong(*static_cast<signed char *>(d->data.shared->ptr));
+        return qlonglong(d->data.c);
     case QMetaType::Short:
-        return qlonglong(*static_cast<short *>(d->data.shared->ptr));
+        return qlonglong(d->data.s);
     case QMetaType::Long:
-        return qlonglong(*static_cast<long *>(d->data.shared->ptr));
+        return qlonglong(d->data.l);
     case QMetaType::Float:
         return qRound64(d->data.f);
     case QVariant::Double:
@@ -527,11 +163,11 @@ static qulonglong qMetaTypeUNumber(const QVariant::Private *d)
     case QVariant::ULongLong:
         return d->data.ull;
     case QMetaType::UChar:
-        return qulonglong(*static_cast<unsigned char *>(d->data.shared->ptr));
+        return d->data.uc;
     case QMetaType::UShort:
-        return qulonglong(*static_cast<ushort *>(d->data.shared->ptr));
+        return d->data.us;
     case QMetaType::ULong:
-        return qulonglong(*static_cast<ulong *>(d->data.shared->ptr));
+        return d->data.ul;
     }
     Q_ASSERT(false);
     return 0;
@@ -642,7 +278,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QMetaType::Char:
         case QMetaType::UChar:
-            *str = QChar::fromAscii(*static_cast<char *>(d->data.shared->ptr));
+            *str = QChar::fromAscii(d->data.c);
             break;
         case QMetaType::Short:
         case QMetaType::Long:
@@ -835,7 +471,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QMetaType::Char:
         case QMetaType::UChar:
-            *ba = QByteArray(1, *static_cast<char *>(d->data.shared->ptr));
+            *ba = QByteArray(1, d->data.c);
             break;
         case QVariant::Int:
         case QVariant::LongLong:
@@ -1396,7 +1032,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char && d.type < UserType))
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char))
         handler->clear(&d);
 }
 
@@ -1412,7 +1048,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char && p.d.type < QVariant::UserType) {
+    } else if (p.d.type > Char) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1669,11 +1305,10 @@ QVariant::QVariant(int typeOrUserType, const void *copy, uint flags)
     if (flags) { //type is a pointer type
         d.type = typeOrUserType;
         d.data.ptr = *reinterpret_cast<void *const*>(copy);
-        d.is_null = false;
     } else {
         create(typeOrUserType, copy);
-        d.is_null = false;
     }
+    d.is_null = false;
 }
 
 QVariant::QVariant(int val)
@@ -1796,7 +1431,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char && variant.d.type < UserType) {
+    } else if (variant.d.type > Char) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
@@ -1858,7 +1493,7 @@ const char *QVariant::typeName() const
 */
 void QVariant::clear()
 {
-    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type < UserType && d.type > Char))
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char))
         handler->clear(&d);
     d.type = Invalid;
     d.is_null = true;

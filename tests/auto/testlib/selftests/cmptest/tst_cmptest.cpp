@@ -80,8 +80,10 @@ void tst_Cmptest::compare_pointerfuncs()
 
 Q_DECLARE_METATYPE(QVariant)
 
-class PhonyClass
-{};
+struct PhonyClass
+{
+    int i;
+};
 
 void tst_Cmptest::compare_tostring_data()
 {
@@ -108,9 +110,11 @@ void tst_Cmptest::compare_tostring_data()
         << QVariant(QVariant::Type(qRegisterMetaType<PhonyClass>("PhonyClass")))
     ;
 
+    PhonyClass fake1 = {1};
+    PhonyClass fake2 = {2};
     QTest::newRow("both non-null user type")
-        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)0)
-        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)0)
+        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)&fake1)
+        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)&fake2)
     ;
 }
 

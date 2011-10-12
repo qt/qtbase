@@ -325,6 +325,10 @@ void tst_QVariant::isNull()
     QVariant var;
     QVERIFY( var.isNull() );
 
+    QString str1;
+    QVariant var1( str1 );
+    QVERIFY( var1.isNull() );
+
     QVariant var2( QString::null );
     QVERIFY( var2.isNull() );
 
@@ -2017,10 +2021,12 @@ void tst_QVariant::userType()
 
             QVariant userVar3;
             qVariantSetValue(userVar3, data2);
-            QVERIFY(userVar2 != userVar3);
+            QVERIFY(userVar2 == userVar3);
             userVar3 = userVar2;
             QVERIFY(userVar2 == userVar3);
         }
+        // At this point all QVariants got destroyed but we have 2 MyType instances.
+        QCOMPARE(instanceCount, 2);
         {
             QVariant userVar;
             qVariantSetValue(userVar, &data);
@@ -2056,10 +2062,9 @@ void tst_QVariant::userType()
         QVariant myCarrier;
         qVariantSetValue(myCarrier, data);
         QCOMPARE(instanceCount, 3);
-
         {
             QVariant second = myCarrier;
-            QCOMPARE(instanceCount, 3);
+            QCOMPARE(instanceCount, 4);
             second.detach();
             QCOMPARE(instanceCount, 4);
         }
@@ -2103,6 +2108,7 @@ void tst_QVariant::userType()
         QCOMPARE(qvariant_cast<int>(myCarrier), 42);
     }
 
+    // At this point all QVariants got destroyed and MyType objects too.
     QCOMPARE(instanceCount, 0);
 }
 
@@ -2701,7 +2707,7 @@ void tst_QVariant::task172061_invalidDate() const
 
 struct WontCompare
 {
-    int x;
+    int x,y,z,q,w,e,r,t;
 };
 Q_DECLARE_METATYPE(WontCompare);
 
@@ -2952,7 +2958,12 @@ template<class T> void playWithVariant(const T &orig, bool isNull, const QString
 
     {
         QVariant v2 = v;
-        QCOMPARE(v2, v);
+        if (!(QTypeInfo<T>::isStatic && QTypeInfo<T>::isComplex)) {
+            // Type is movable so standard comparison algorithm in QVariant should work
+            // In a custom type QVariant is not aware of ==operator so it won't be called,
+            // which may cause problems especially visible when using a not-movable type
+            QCOMPARE(v2, v);
+        }
         QVERIFY(v2.isValid());
         QCOMPARE(v2.isNull(), isNull);
         QCOMPARE(v2.toString(), toString);
@@ -2964,7 +2975,12 @@ template<class T> void playWithVariant(const T &orig, bool isNull, const QString
         v = QVariant();
         QCOMPARE(v3, v);
         v = v2;
-        QCOMPARE(v, v2);
+        if (!(QTypeInfo<T>::isStatic && QTypeInfo<T>::isComplex)) {
+            // Type is movable so standard comparison algorithm in QVariant should work
+            // In a custom type QVariant is not aware of ==operator so it won't be called,
+            // which may cause problems especially visible when using a not-movable type
+            QCOMPARE(v2, v);
+        }
         QCOMPARE(qvariant_cast<T>(v2), qvariant_cast<T>(v));
         QCOMPARE(v2.toString(), toString);
         v3 = qVariantFromValue(orig);
