@@ -42,7 +42,7 @@ wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
            qdirectpainter \
            qmultiscreen \
 
-win32-msvc*|wince*:SUBDIRS -= exceptionsafety_objects
+!linux*-g++*:SUBDIRS -= exceptionsafety_objects
 
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

@@ -48,10 +48,9 @@
 
 QT_USE_NAMESPACE
 
-// this test only works with
-//   * GLIBC
-//   * MSVC - only debug builds (we need the crtdbg.h helpers)
-#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC))) && !defined(Q_MOC_RUN)
+// this test only works with GLIBC
+
+#if defined(QT_NO_EXCEPTIONS)
     QTEST_NOOP_MAIN
 #else
 
