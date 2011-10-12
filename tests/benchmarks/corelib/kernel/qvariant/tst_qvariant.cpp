@@ -56,16 +56,23 @@ private slots:
     void rectVariantCreation();
     void stringVariantCreation();
     void pixmapVariantCreation();
+    void stringListVariantCreation();
+    void bigClassVariantCreation();
+    void smallClassVariantCreation();
 
     void doubleVariantSetValue();
     void floatVariantSetValue();
     void rectVariantSetValue();
     void stringVariantSetValue();
+    void stringListVariantSetValue();
+    void bigClassVariantSetValue();
+    void smallClassVariantSetValue();
 
     void doubleVariantAssignment();
     void floatVariantAssignment();
     void rectVariantAssignment();
     void stringVariantAssignment();
+    void stringListVariantAssignment();
 
     void doubleVariantValue();
     void floatVariantValue();
@@ -77,6 +84,20 @@ private slots:
     void createCoreTypeCopy_data();
     void createCoreTypeCopy();
 };
+
+struct BigClass
+{
+    double n,i,e,r,o,b;
+};
+Q_STATIC_ASSERT(sizeof(BigClass) > sizeof(QVariant::Private::Data));
+Q_DECLARE_METATYPE(BigClass);
+
+struct SmallClass
+{
+    char s;
+};
+Q_STATIC_ASSERT(sizeof(SmallClass) <= sizeof(QVariant::Private::Data));
+Q_DECLARE_METATYPE(SmallClass);
 
 void tst_qvariant::testBound()
 {
@@ -97,6 +118,27 @@ static void variantCreation(T val)
         }
     }
 }
+
+template <>
+void variantCreation<BigClass>(BigClass val)
+{
+    QBENCHMARK {
+        for (int i = 0; i < ITERATION_COUNT; ++i) {
+            QVariant::fromValue(val);
+        }
+    }
+}
+
+template <>
+void variantCreation<SmallClass>(SmallClass val)
+{
+    QBENCHMARK {
+        for (int i = 0; i < ITERATION_COUNT; ++i) {
+            QVariant::fromValue(val);
+        }
+    }
+}
+
 
 void tst_qvariant::doubleVariantCreation()
 {
@@ -121,6 +163,21 @@ void tst_qvariant::stringVariantCreation()
 void tst_qvariant::pixmapVariantCreation()
 {
     variantCreation<QPixmap>(QPixmap());
+}
+
+void tst_qvariant::stringListVariantCreation()
+{
+    variantCreation<QStringList>(QStringList());
+}
+
+void tst_qvariant::bigClassVariantCreation()
+{
+    variantCreation<BigClass>(BigClass());
+}
+
+void tst_qvariant::smallClassVariantCreation()
+{
+    variantCreation<SmallClass>(SmallClass());
 }
 
 template <typename T>
@@ -154,6 +211,21 @@ void tst_qvariant::stringVariantSetValue()
     variantSetValue<QString>(QString());
 }
 
+void tst_qvariant::stringListVariantSetValue()
+{
+    variantSetValue<QStringList>(QStringList());
+}
+
+void tst_qvariant::bigClassVariantSetValue()
+{
+    variantSetValue<BigClass>(BigClass());
+}
+
+void tst_qvariant::smallClassVariantSetValue()
+{
+    variantSetValue<SmallClass>(SmallClass());
+}
+
 template <typename T>
 static void variantAssignment(T d)
 {
@@ -183,6 +255,11 @@ void tst_qvariant::rectVariantAssignment()
 void tst_qvariant::stringVariantAssignment()
 {
     variantAssignment<QString>(QString());
+}
+
+void tst_qvariant::stringListVariantAssignment()
+{
+    variantAssignment<QStringList>(QStringList());
 }
 
 void tst_qvariant::doubleVariantValue()
