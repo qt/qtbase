@@ -153,6 +153,11 @@ irix-*:SUBDIRS -= qitemview
     qwsinputmethod \
     qwswindowsystem \
 
+# These tests require the cleanlooks style
+!contains(styles, cleanlooks):SUBDIRS -= \
+    qgraphicswidget \
+    qgraphicsproxywidget \
+
 win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \

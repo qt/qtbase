@@ -59,8 +59,6 @@ static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton 
     QApplication::sendEvent(widget, &event);
 }
 
-
-#ifndef QT_NO_STYLE_CLEANLOOKS
 /*
     Notes:
 
@@ -3650,7 +3648,3 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)
 #include "tst_qgraphicsproxywidget.moc"
-
-#else // QT_NO_STYLE_CLEANLOOKS
-QTEST_NOOP_MAIN
-#endif

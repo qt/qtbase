@@ -81,7 +81,6 @@ protected:
     QEvent::Type spied;
 };
 
-#ifndef QT_NO_STYLE_CLEANLOOKS
 class tst_QGraphicsWidget : public QObject {
 Q_OBJECT
 
@@ -3361,8 +3360,3 @@ void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"
-
-#else // QT_NO_STYLE_CLEANLOOKS
-QTEST_NOOP_MAIN
-#endif
-
