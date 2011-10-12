@@ -4,7 +4,6 @@ SUBDIRS=\
    baselineexample \
    compiler \
    headersclean \
-   qtmd5 \
    qtokenautomaton \
 
 cross_compile: SUBDIRS -= \
