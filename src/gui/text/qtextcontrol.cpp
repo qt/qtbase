@@ -76,15 +76,6 @@
 const int textCursorWidth = 1;
 const bool fullWidthSelection = true;
 
-//#ifndef QT_NO_SHORTCUT
-//#include "private/QGuiApplication_p.h"
-//#include "private/qshortcutmap_p.h"
-//#include <qkeysequence.h>
-//#define ACCEL_KEY(k) (!qApp->d_func()->shortcutMap.hasShortcutForKeySequence(k) ? QLatin1Char('\t') + QString(QKeySequence(k)) : QString())
-//#else
-//#define ACCEL_KEY(k) QString()
-//#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CONTEXTMENU
