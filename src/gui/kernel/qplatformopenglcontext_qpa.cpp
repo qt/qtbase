@@ -65,23 +65,16 @@ QT_BEGIN_NAMESPACE
     which maps to the QPlatformOpenGLContext.
 */
 
-/*! \fn void QPlatformOpenGLContext::swapBuffers()
+/*! \fn void QPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
     Reimplement in subclass to native swap buffers calls
 
     The implementation must support being called in a thread different than the gui-thread.
 */
 
-/*! \fn void *QPlatformOpenGLContext::getProcAddress(const QString &procName)
+/*! \fn QFunctionPointer QPlatformOpenGLContext::getProcAddress(const QByteArray &procName)
     Reimplement in subclass to native getProcAddr calls.
 
     Note: its convenient to use qPrintable(const QString &str) to get the const char * pointer
-*/
-
-/*! \fn QPlatformWindowFormat QPlatformOpenGLContext::platformWindowFormat() const
-    QWidget has the function qplatformWindowFormat(). That function is for the application
-    programmer to request the format of the window and the context that he wants.
-
-    Reimplement this function in a subclass to indicate what format the glContext actually has.
 */
 
 class QPlatformOpenGLContextPrivate

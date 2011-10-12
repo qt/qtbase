@@ -68,7 +68,7 @@ public:
     virtual bool makeCurrent(QPlatformSurface *surface) = 0;
     virtual void doneCurrent() = 0;
 
-    virtual void (*getProcAddress(const QByteArray &procName)) () = 0;
+    virtual QFunctionPointer getProcAddress(const QByteArray &procName) = 0;
 
     QOpenGLContext *context() const;
 
