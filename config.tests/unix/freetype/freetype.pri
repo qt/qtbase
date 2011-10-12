@@ -6,4 +6,9 @@
         p = $$join(p, "", "", "/freetype2")
         exists($$p):INCLUDEPATH *= $$p
     }
+} else {
+   # If we are cross-compiling, then there is still a remote possibility that
+   # configure detected font-config & freetype,  stored in these variables.
+   QMAKE_CFLAGS += $$QMAKE_CFLAGS_FONTCONFIG
+   QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_FONTCONFIG
 }
