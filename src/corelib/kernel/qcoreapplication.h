@@ -192,8 +192,6 @@ private:
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
     friend class QETWidget;
-    friend class Q3AccelManager;
-    friend class QShortcutMap;
     friend class QWidget;
     friend class QWidgetWindow;
     friend class QWidgetPrivate;
