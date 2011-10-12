@@ -83,29 +83,27 @@ public:
     int setShortcutEnabled(bool enable, int id, QObject *owner, const QKeySequence &key = QKeySequence());
     int setShortcutAutoRepeat(bool on, int id, QObject *owner, const QKeySequence &key = QKeySequence());
 
-    void resetState();
-    QKeySequence::SequenceMatch nextState(QKeyEvent *e);
-    QKeySequence::SequenceMatch state();
-    void dispatchEvent(QKeyEvent *e);
     bool tryShortcutEvent(QObject *o, QKeyEvent *e);
+    bool hasShortcutForKeySequence(const QKeySequence &seq) const;
 
 #ifdef Dump_QShortcutMap
     void dumpMap() const;
 #endif
 
-    bool hasShortcutForKeySequence(const QKeySequence &seq) const;
-
-
 private:
-    QScopedPointer<QShortcutMapPrivate> d_ptr;
+    void resetState();
+    QKeySequence::SequenceMatch nextState(QKeyEvent *e);
+    QKeySequence::SequenceMatch state();
+    void dispatchEvent(QKeyEvent *e);
 
     QKeySequence::SequenceMatch find(QKeyEvent *e);
     QKeySequence::SequenceMatch matches(const QKeySequence &seq1, const QKeySequence &seq2) const;
     QVector<const QShortcutEntry *> matches() const;
     void createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl);
     void clearSequence(QVector<QKeySequence> &ksl);
-    bool correctContext(const QShortcutEntry &item) const;
     int translateModifiers(Qt::KeyboardModifiers modifiers);
+
+    QScopedPointer<QShortcutMapPrivate> d_ptr;
 };
 
 #endif // QT_NO_SHORTCUT
