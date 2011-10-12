@@ -2995,6 +2995,10 @@ template<class T> void playWithVariant(const T &orig, bool isNull, const QString
     }
 }
 
+#define PLAY_WITH_VARIANT(Orig, IsNull, ToString, ToDouble, ToBool) \
+    playWithVariant(Orig, IsNull, ToString, ToDouble, ToBool);\
+    if (QTest::currentTestFailed())\
+        QFAIL("playWithVariant failed");
 
 struct MyPrimitive
 {
@@ -3072,83 +3076,83 @@ void tst_QVariant::moreCustomTypes()
 {
     {
         QList<QSize> listSize;
-        playWithVariant(listSize, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(listSize, false, QString(), 0, false);
         listSize << QSize(4,5) << QSize(89,23) << QSize(5,6);
-        playWithVariant(listSize, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(listSize, false, QString(), 0, false);
     }
 
     {
         QString str;
-        playWithVariant(str, true, QString(), 0, false);
+        PLAY_WITH_VARIANT(str, true, QString(), 0, false);
         str = QString::fromLatin1("123456789.123");
-        playWithVariant(str, false, str, 123456789.123, true);
+        PLAY_WITH_VARIANT(str, false, str, 123456789.123, true);
     }
 
     {
         QSize size;
-        playWithVariant(size, false, QString(), 0, false);
-        playWithVariant(QSize(45,78), false, QString(), 0, false);
+        PLAY_WITH_VARIANT(size, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(QSize(45,78), false, QString(), 0, false);
     }
 
     {
         MyData d;
-        playWithVariant(d, false, QString(), 0, false);
-        playWithVariant(&d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(&d, false, QString(), 0, false);
         QList<MyData> l;
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
         l << MyData() << MyData();
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
     }
 
     {
         MyPrimitive d = { 4, 5 };
-        playWithVariant(d, false, QString(), 0, false);
-        playWithVariant(&d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(&d, false, QString(), 0, false);
         QList<MyPrimitive> l;
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
         l << d;
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
     }
 
     {
         MyMovable d;
-        playWithVariant(d, false, QString(), 0, false);
-        playWithVariant(&d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(&d, false, QString(), 0, false);
         QList<MyMovable> l;
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
         l << MyMovable() << d;
-        playWithVariant(l, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
     }
     QCOMPARE(MyMovable::count, 0);
 
     {
-        playWithVariant(12.12, false, "12.12", 12.12, true);
-        playWithVariant(12.12f, false, "12.12", 12.12f, true);
-        playWithVariant('a', false, "a", 'a', true);
-        playWithVariant((unsigned char)('a'), false, "a", 'a', true);
-        playWithVariant( quint8(12), false, "\xc", 12, true);
-        playWithVariant(  qint8(13), false, "\xd", 13, true);
-        playWithVariant(quint16(14), false, "14", 14, true);
-        playWithVariant( qint16(15), false, "15", 15, true);
-        playWithVariant(quint32(16), false, "16", 16, true);
-        playWithVariant( qint32(17), false, "17", 17, true);
-        playWithVariant(quint64(18), false, "18", 18, true);
-        playWithVariant( qint64(19), false, "19", 19, true);
-        playWithVariant(  qint8(-12), false, "\xf4", -12, true);
-        playWithVariant( qint16(-13), false, "-13", -13, true);
-        playWithVariant( qint32(-14), false, "-14", -14, true);
-        playWithVariant( qint64(-15), false, "-15", -15, true);
-        playWithVariant(quint64(0), false, "0", 0, false);
-        playWithVariant( true, false, "true", 1, true);
-        playWithVariant( false, false, "false", 0, false);
+        PLAY_WITH_VARIANT(12.12, false, "12.12", 12.12, true);
+        PLAY_WITH_VARIANT(12.12f, false, "12.12", 12.12f, true);
+        PLAY_WITH_VARIANT('a', false, "a", 'a', true);
+        PLAY_WITH_VARIANT((unsigned char)('a'), false, "a", 'a', true);
+        PLAY_WITH_VARIANT( quint8(12), false, "\xc", 12, true);
+        PLAY_WITH_VARIANT(  qint8(13), false, "\xd", 13, true);
+        PLAY_WITH_VARIANT(quint16(14), false, "14", 14, true);
+        PLAY_WITH_VARIANT( qint16(15), false, "15", 15, true);
+        PLAY_WITH_VARIANT(quint32(16), false, "16", 16, true);
+        PLAY_WITH_VARIANT( qint32(17), false, "17", 17, true);
+        PLAY_WITH_VARIANT(quint64(18), false, "18", 18, true);
+        PLAY_WITH_VARIANT( qint64(19), false, "19", 19, true);
+        PLAY_WITH_VARIANT(  qint8(-12), false, "\xf4", -12, true);
+        PLAY_WITH_VARIANT( qint16(-13), false, "-13", -13, true);
+        PLAY_WITH_VARIANT( qint32(-14), false, "-14", -14, true);
+        PLAY_WITH_VARIANT( qint64(-15), false, "-15", -15, true);
+        PLAY_WITH_VARIANT(quint64(0), false, "0", 0, false);
+        PLAY_WITH_VARIANT( true, false, "true", 1, true);
+        PLAY_WITH_VARIANT( false, false, "false", 0, false);
 
-        playWithVariant(QString("hello\n"), false, "hello\n", 0, true);
+        PLAY_WITH_VARIANT(QString("hello\n"), false, "hello\n", 0, true);
     }
 
     {
         int i = 5;
-        playWithVariant((void *)(&i), false, QString(), 0, false);
-        playWithVariant((void *)(0), false, QString(), 0, false);
+        PLAY_WITH_VARIANT((void *)(&i), false, QString(), 0, false);
+        PLAY_WITH_VARIANT((void *)(0), false, QString(), 0, false);
     }
 
     {
@@ -3159,12 +3163,12 @@ void tst_QVariant::moreCustomTypes()
         QVariant v5 = QVariant::fromValue(MyPrimitive());
         QVariant v6 = QVariant::fromValue(MyMovable());
         QVariant v7 = QVariant::fromValue(MyData());
-        playWithVariant(v1, false, "5", 5, true);
-        playWithVariant(v2, false, "5", 5, true);
-        playWithVariant(v3, false, "5", 5, true);
-        playWithVariant(v4, false, "5", 5, true);
+        PLAY_WITH_VARIANT(v1, false, "5", 5, true);
+        PLAY_WITH_VARIANT(v2, false, "5", 5, true);
+        PLAY_WITH_VARIANT(v3, false, "5", 5, true);
+        PLAY_WITH_VARIANT(v4, false, "5", 5, true);
 
-        playWithVariant(v5, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(v5, false, QString(), 0, false);
     }
 }
 
