@@ -1644,6 +1644,17 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
 }
 
 /*!
+    Sets the tentative commit string to \a tentativeCommitString.
+
+    The tentative commit string is what the preedit string is expected to be committed as.
+    The string can be used within the editor to trigger code that reacts on text changes such as validators.
+*/
+void QInputMethodEvent::setTentativeCommitString(const QString &tentativeCommitString)
+{
+    tentativeCommit = tentativeCommitString;
+}
+
+/*!
     \fn const QList<Attribute> &QInputMethodEvent::attributes() const
 
     Returns the list of attributes passed to the QInputMethodEvent
@@ -1692,6 +1703,14 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
     \sa replacementStart(), setCommitString()
 */
 
+/*!
+    \fn const QString &tentativeCommitString() const
+
+    Returns the text as which preedit string is expected to be committed as.
+    The string can be used within the editor to trigger code that reacts on text changes such as validators.
+
+    \sa setTentativeCommitString()
+*/
 
 /*! \class QInputMethodQueryEvent
 

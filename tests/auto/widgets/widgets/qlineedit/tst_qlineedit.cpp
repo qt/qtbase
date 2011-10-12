@@ -279,6 +279,7 @@ private slots:
 
     void selectAndCursorPosition();
     void inputMethodSelection();
+    void inputMethodTentativeCommit();
 
 protected slots:
     void editingFinished();
@@ -3830,6 +3831,31 @@ void tst_QLineEdit::inputMethodSelection()
     QCOMPARE(selectionSpy.count(), 2);
     QCOMPARE(testWidget->selectionStart(), 12);
 }
+
+void tst_QLineEdit::inputMethodTentativeCommit()
+{
+    // test that basic tentative commit gets to text property on preedit state
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event("test", attributes);
+    event.setTentativeCommitString("test");
+    QApplication::sendEvent(testWidget, &event);
+    QCOMPARE(testWidget->text(), QString("test"));
+
+    // tentative commit not allowed present in surrounding text
+    QInputMethodQueryEvent queryEvent(Qt::ImSurroundingText);
+    QApplication::sendEvent(testWidget, &queryEvent);
+    QCOMPARE(queryEvent.value(Qt::ImSurroundingText).toString(), QString(""));
+
+    // if text with tentative commit does not validate, not allowed to be part of text property
+    testWidget->setText(""); // ensure input state is reset
+    QValidator *validator = new QIntValidator(0, 100);
+    testWidget->setValidator(validator);
+    QApplication::sendEvent(testWidget, &event);
+    QCOMPARE(testWidget->text(), QString(""));
+    testWidget->setValidator(0);
+    delete validator;
+}
+
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"

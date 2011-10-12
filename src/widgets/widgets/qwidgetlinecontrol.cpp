@@ -429,7 +429,7 @@ void QWidgetLineControl::moveCursor(int pos, bool mark)
 */
 void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
-    int priorState = 0;
+    int priorState = -1;
     bool isGettingInput = !event->commitString().isEmpty()
             || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
@@ -514,8 +514,16 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
         emitCursorPositionChanged();
     else if (m_preeditCursor != oldPreeditCursor)
         emit updateMicroFocus();
-    if (isGettingInput)
+
+    bool tentativeCommitChanged = (m_tentativeCommit != event->tentativeCommitString());
+    if (tentativeCommitChanged) {
+        m_textDirty = true;
+        m_tentativeCommit = event->tentativeCommitString();
+    }
+
+    if (isGettingInput || tentativeCommitChanged)
         finishChange(priorState);
+
     if (selectionChange)
         emit selectionChanged();
 }
@@ -612,7 +620,6 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
         m_validInput = true;
 #ifndef QT_NO_VALIDATOR
         if (m_validator) {
-            m_validInput = false;
             QString textCopy = m_text;
             int cursorCopy = m_cursor;
             m_validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
@@ -622,6 +629,15 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
                     return true;
                 }
                 m_cursor = cursorCopy;
+
+                if (!m_tentativeCommit.isEmpty()) {
+                    textCopy.insert(m_cursor, m_tentativeCommit);
+                    bool validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
+                    if (!validInput)
+                        m_tentativeCommit.clear();
+                }
+            } else {
+                m_tentativeCommit.clear();
             }
         }
 #endif
