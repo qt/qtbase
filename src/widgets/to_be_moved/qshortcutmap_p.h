@@ -72,6 +72,8 @@ class QWidget;
 class QAction;
 class QObject;
 
+bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context);
+
 class QShortcutMap
 {
     Q_DECLARE_PRIVATE(QShortcutMap)
@@ -79,7 +81,9 @@ public:
     QShortcutMap();
     ~QShortcutMap();
 
-    int addShortcut(QObject *owner, const QKeySequence &key, Qt::ShortcutContext context);
+    typedef bool (*ContextMatcher)(QObject *object, Qt::ShortcutContext context);
+
+    int addShortcut(QObject *owner, const QKeySequence &key, Qt::ShortcutContext context, ContextMatcher matcher);
     int removeShortcut(int id, QObject *owner, const QKeySequence &key = QKeySequence());
     int setShortcutEnabled(bool enable, int id, QObject *owner, const QKeySequence &key = QKeySequence());
     int setShortcutAutoRepeat(bool on, int id, QObject *owner, const QKeySequence &key = QKeySequence());
@@ -98,13 +102,6 @@ public:
 
 
 private:
-    bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window) const;
-#ifndef QT_NO_GRAPHICSVIEW
-    bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window) const;
-#endif
-#ifndef QT_NO_ACTION
-    bool correctContext(Qt::ShortcutContext context,QAction *a, QWidget *active_window) const;
-#endif
     QScopedPointer<QShortcutMapPrivate> d_ptr;
 
     QKeySequence::SequenceMatch find(QKeyEvent *e);

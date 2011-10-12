@@ -70,23 +70,22 @@ QT_BEGIN_NAMESPACE
         Keysequence for entry
         Pointer to parent owning the sequence
 */
+
 struct QShortcutEntry
 {
     QShortcutEntry()
-        : keyseq(0), context(Qt::WindowShortcut), enabled(false), autorepeat(1), id(0), owner(0)
+        : keyseq(0), context(Qt::WindowShortcut), enabled(false), autorepeat(1), id(0), owner(0), contextMatcher(0)
     {}
 
     QShortcutEntry(const QKeySequence &k)
-        : keyseq(k), context(Qt::WindowShortcut), enabled(false), autorepeat(1), id(0), owner(0)
+        : keyseq(k), context(Qt::WindowShortcut), enabled(false), autorepeat(1), id(0), owner(0), contextMatcher(0)
     {}
 
-    QShortcutEntry(QObject *o, const QKeySequence &k, Qt::ShortcutContext c, int i)
-        : keyseq(k), context(c), enabled(true), autorepeat(1), id(i), owner(o)
+    QShortcutEntry(QObject *o, const QKeySequence &k, Qt::ShortcutContext c, int i, bool a, QShortcutMap::ContextMatcher m)
+        : keyseq(k), context(c), enabled(true), autorepeat(a), id(i), owner(o), contextMatcher(m)
     {}
 
-    QShortcutEntry(QObject *o, const QKeySequence &k, Qt::ShortcutContext c, int i, bool a)
-        : keyseq(k), context(c), enabled(true), autorepeat(a), id(i), owner(o)
-    {}
+    bool correctContext() const { return contextMatcher(owner, context); }
 
     bool operator<(const QShortcutEntry &f) const
     { return keyseq < f.keyseq; }
@@ -97,6 +96,7 @@ struct QShortcutEntry
     bool autorepeat : 1;
     signed int id;
     QObject *owner;
+    QShortcutMap::ContextMatcher contextMatcher;
 };
 
 #if 0 //ndef QT_NO_DEBUG_STREAM
@@ -162,13 +162,13 @@ QShortcutMap::~QShortcutMap()
     Adds a shortcut to the global map.
     Returns the id of the newly added shortcut.
 */
-int QShortcutMap::addShortcut(QObject *owner, const QKeySequence &key, Qt::ShortcutContext context)
+int QShortcutMap::addShortcut(QObject *owner, const QKeySequence &key, Qt::ShortcutContext context, ContextMatcher matcher)
 {
     Q_ASSERT_X(owner, "QShortcutMap::addShortcut", "All shortcuts need an owner");
     Q_ASSERT_X(!key.isEmpty(), "QShortcutMap::addShortcut", "Cannot add keyless shortcuts to map");
     Q_D(QShortcutMap);
 
-    QShortcutEntry newEntry(owner, key, context, --(d->currentId), true);
+    QShortcutEntry newEntry(owner, key, context, --(d->currentId), true, matcher);
     QList<QShortcutEntry>::iterator it = qUpperBound(d->sequences.begin(), d->sequences.end(), newEntry);
     d->sequences.insert(it, newEntry); // Insert sorted
 #if defined(DEBUG_QSHORTCUTMAP)
@@ -425,7 +425,7 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
     QList<QShortcutEntry>::ConstIterator it = qLowerBound(d->sequences.constBegin(), itEnd, entry);
 
     for (;it != itEnd; ++it) {
-        if (matches(entry.keyseq, (*it).keyseq) == QKeySequence::ExactMatch && correctContext(*it) && (*it).enabled) {
+        if (matches(entry.keyseq, (*it).keyseq) == QKeySequence::ExactMatch && (*it).correctContext() && (*it).enabled) {
             return true;
         }
     }
@@ -479,7 +479,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e)
                 break;
             tempRes = matches(entry.keyseq, (*it).keyseq);
             oneKSResult = qMax(oneKSResult, tempRes);
-            if (tempRes != QKeySequence::NoMatch && correctContext(*it)) {
+            if (tempRes != QKeySequence::NoMatch && (*it).correctContext()) {
                 if (tempRes == QKeySequence::ExactMatch) {
                     if ((*it).enabled)
                         d->identicals.append(&*it);
@@ -618,12 +618,23 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
     return match;
 }
 
+
+static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window);
+#ifndef QT_NO_GRAPHICSVIEW
+static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window);
+#endif
+#ifndef QT_NO_ACTION
+static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window);
+#endif
+
+
 /*! \internal
     Returns true if the widget \a w is a logical sub window of the current
     top-level widget.
 */
-bool QShortcutMap::correctContext(const QShortcutEntry &item) const {
-    Q_ASSERT_X(item.owner, "QShortcutMap", "Shortcut has no owner. Illegal map state!");
+bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
+{
+    Q_ASSERT_X(object, "QShortcutMap", "Shortcut has no owner. Illegal map state!");
 
     QWidget *active_window = QApplication::activeWindow();
 
@@ -635,23 +646,31 @@ bool QShortcutMap::correctContext(const QShortcutEntry &item) const {
 
     if (!active_window)
         return false;
+
 #ifndef QT_NO_ACTION
-    if (QAction *a = qobject_cast<QAction *>(item.owner))
-        return correctContext(item.context, a, active_window);
+    if (QAction *a = qobject_cast<QAction *>(object))
+        return correctActionContext(context, a, active_window);
 #endif
+
 #ifndef QT_NO_GRAPHICSVIEW
-    if (QGraphicsWidget *gw = qobject_cast<QGraphicsWidget *>(item.owner))
-        return correctGraphicsWidgetContext(item.context, gw, active_window);
+    if (QGraphicsWidget *gw = qobject_cast<QGraphicsWidget *>(object))
+        return correctGraphicsWidgetContext(context, gw, active_window);
 #endif
-    QWidget *w = qobject_cast<QWidget *>(item.owner);
+
+    QWidget *w = qobject_cast<QWidget *>(object);
     if (!w) {
-        QShortcut *s = qobject_cast<QShortcut *>(item.owner);
-        w = s->parentWidget();
+        QShortcut *s = qobject_cast<QShortcut *>(object);
+        if (s)
+            w = s->parentWidget();
     }
-    return correctWidgetContext(item.context, w, active_window);
+
+    if (!w)
+        return false;
+
+    return correctWidgetContext(context, w, active_window);
 }
 
-bool QShortcutMap::correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window) const
+static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();    
 #ifdef Q_WS_MAC
@@ -678,7 +697,7 @@ bool QShortcutMap::correctWidgetContext(Qt::ShortcutContext context, QWidget *w,
     // Below is Qt::WindowShortcut context
     QWidget *tlw = w->window();
 #ifndef QT_NO_GRAPHICSVIEW
-    if (QWExtra *topData = tlw->d_func()->extra) {
+    if (QWExtra *topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra) {
         if (topData->proxyWidget) {
             bool res = correctGraphicsWidgetContext(context, (QGraphicsWidget *)topData->proxyWidget, active_window);
             return res;
@@ -714,7 +733,7 @@ bool QShortcutMap::correctWidgetContext(Qt::ShortcutContext context, QWidget *w,
 }
 
 #ifndef QT_NO_GRAPHICSVIEW
-bool QShortcutMap::correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window) const
+static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
 #ifdef Q_WS_MAC
@@ -774,9 +793,9 @@ bool QShortcutMap::correctGraphicsWidgetContext(Qt::ShortcutContext context, QGr
 #endif
 
 #ifndef QT_NO_ACTION
-bool QShortcutMap::correctContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window) const
+static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window)
 {
-    const QList<QWidget *> &widgets = a->d_func()->widgets;
+    const QList<QWidget *> &widgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->widgets;
 #if defined(DEBUG_QSHORTCUTMAP)
     if (widgets.isEmpty())
         qDebug() << a << "not connected to any widgets; won't trigger";
@@ -786,7 +805,7 @@ bool QShortcutMap::correctContext(Qt::ShortcutContext context, QAction *a, QWidg
 #ifndef QT_NO_MENU
         if (QMenu *menu = qobject_cast<QMenu *>(w)) {
             QAction *a = menu->menuAction();
-            if (correctContext(context, a, active_window))
+            if (correctActionContext(context, a, active_window))
                 return true;
         } else
 #endif
@@ -795,7 +814,7 @@ bool QShortcutMap::correctContext(Qt::ShortcutContext context, QAction *a, QWidg
     }
 
 #ifndef QT_NO_GRAPHICSVIEW
-    const QList<QGraphicsWidget *> &graphicsWidgets = a->d_func()->graphicsWidgets;
+    const QList<QGraphicsWidget *> &graphicsWidgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->graphicsWidgets;
 #if defined(DEBUG_QSHORTCUTMAP)
     if (graphicsWidgets.isEmpty())
         qDebug() << a << "not connected to any widgets; won't trigger";

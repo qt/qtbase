@@ -750,7 +750,6 @@ private:
     friend class QX11PaintEngine;
     friend class QWin32PaintEngine;
     friend class QShortcutPrivate;
-    friend class QShortcutMap;
     friend class QWindowSurface;
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;

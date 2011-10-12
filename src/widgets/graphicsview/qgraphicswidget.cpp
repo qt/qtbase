@@ -1898,7 +1898,7 @@ int QGraphicsWidget::grabShortcut(const QKeySequence &sequence, Qt::ShortcutCont
     if (sequence.isEmpty())
         return 0;
     // ### setAttribute(Qt::WA_GrabbedShortcut);
-    return qApp->d_func()->shortcutMap.addShortcut(this, sequence, context);
+    return qApp->d_func()->shortcutMap.addShortcut(this, sequence, context, qWidgetShortcutContextMatcher);
 }
 
 /*!

@@ -10713,7 +10713,7 @@ int QWidget::grabShortcut(const QKeySequence &key, Qt::ShortcutContext context)
     if (key.isEmpty())
         return 0;
     setAttribute(Qt::WA_GrabbedShortcut);
-    return qApp->d_func()->shortcutMap.addShortcut(this, key, context);
+    return qApp->d_func()->shortcutMap.addShortcut(this, key, context, qWidgetShortcutContextMatcher);
 }
 
 /*!

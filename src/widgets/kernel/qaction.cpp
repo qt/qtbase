@@ -139,7 +139,7 @@ void QActionPrivate::redoGrab(QShortcutMap &map)
         map.removeShortcut(shortcutId, q);
     if (shortcut.isEmpty())
         return;
-    shortcutId = map.addShortcut(q, shortcut, shortcutContext);
+    shortcutId = map.addShortcut(q, shortcut, shortcutContext, qWidgetShortcutContextMatcher);
     if (!enabled)
         map.setShortcutEnabled(false, shortcutId, q);
     if (!autorepeat)
@@ -159,7 +159,7 @@ void QActionPrivate::redoGrabAlternate(QShortcutMap &map)
     for(int i = 0; i < alternateShortcuts.count(); ++i) {
         const QKeySequence& alternate = alternateShortcuts.at(i);
         if (!alternate.isEmpty())
-            alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext));
+            alternateShortcutIds.append(map.addShortcut(q, alternate, shortcutContext, qWidgetShortcutContextMatcher));
         else
             alternateShortcutIds.append(0);
     }

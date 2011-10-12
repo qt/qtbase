@@ -172,7 +172,7 @@ void QShortcutPrivate::redoGrab(QShortcutMap &map)
         map.removeShortcut(sc_id, q);
     if (sc_sequence.isEmpty())
         return;
-    sc_id = map.addShortcut(q, sc_sequence, sc_context);
+    sc_id = map.addShortcut(q, sc_sequence, sc_context, qWidgetShortcutContextMatcher);
     if (!sc_enabled)
         map.setShortcutEnabled(false, sc_id, q);
     if (!sc_autorepeat)
