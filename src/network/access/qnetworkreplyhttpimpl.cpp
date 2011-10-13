@@ -1039,7 +1039,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
         QByteArray header = q->rawHeader("location");
-        QUrl url = QUrl::fromEncoded(header);
+        QUrl url = QUrl(QString::fromUtf8(header));
         if (!url.isValid())
             url = QUrl(QLatin1String(header));
         // FIXME?

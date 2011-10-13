@@ -105,12 +105,12 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
 
 static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
 {
-    QByteArray result;
+    QString result;
     QUrl copy = url;
     bool isEncrypted = copy.scheme().toLower() == QLatin1String("https");
     copy.setPort(copy.port(isEncrypted ? 443 : 80));
-    result = copy.toEncoded(QUrl::RemoveUserInfo | QUrl::RemovePath |
-                            QUrl::RemoveQuery | QUrl::RemoveFragment);
+    result = copy.toString(QUrl::RemoveUserInfo | QUrl::RemovePath |
+                           QUrl::RemoveQuery | QUrl::RemoveFragment | QUrl::FullyEncoded);
 
 #ifndef QT_NO_NETWORKPROXY
     if (proxy && proxy->type() != QNetworkProxy::NoProxy) {
@@ -134,15 +134,15 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy)
             key.setUserName(proxy->user());
             key.setHost(proxy->hostName());
             key.setPort(proxy->port());
-            key.setEncodedQuery(result);
-            result = key.toEncoded();
+            key.setQuery(result);
+            result = key.toString(QUrl::FullyEncoded);
         }
     }
 #else
     Q_UNUSED(proxy)
 #endif
 
-    return "http-connection:" + result;
+    return "http-connection:" + result.toLatin1();
 }
 
 class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
@@ -386,7 +386,7 @@ void QHttpThreadDelegate::finishedSlot()
             // it's an error reply
             QString msg = QLatin1String(QT_TRANSLATE_NOOP("QNetworkReply",
                                                           "Error downloading %1 - server replied: %2"));
-            msg = msg.arg(QString::fromAscii(httpRequest.url().toEncoded()), httpReply->reasonPhrase());
+            msg = msg.arg(httpRequest.url().toString(), httpReply->reasonPhrase());
             emit error(statusCodeFromHttp(httpReply->statusCode(), httpRequest.url()), msg);
         }
 
@@ -406,7 +406,7 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
             // it's an error reply
             QString msg = QLatin1String(QT_TRANSLATE_NOOP("QNetworkReply",
                                                           "Error downloading %1 - server replied: %2"));
-            incomingErrorDetail = msg.arg(QString::fromAscii(httpRequest.url().toEncoded()), httpReply->reasonPhrase());
+            incomingErrorDetail = msg.arg(httpRequest.url().toString(), httpReply->reasonPhrase());
             incomingErrorCode = statusCodeFromHttp(httpReply->statusCode(), httpRequest.url());
     }
 

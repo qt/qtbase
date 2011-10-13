@@ -56,8 +56,6 @@ private slots:
     void toLocalFile();
     void toString_data();
     void toString();
-    void toEncoded_data();
-    void toEncoded();
     void resolved_data();
     void resolved();
     void equality_data();
@@ -158,27 +156,6 @@ void tst_qurl::toString()
             url.toString();
         }
     }
-}
-
-void tst_qurl::toEncoded_data()
-{
-   generateFirstRunData();
-}
-
-void tst_qurl::toEncoded()
-{
-   QFETCH(bool, firstRun);
-   if(firstRun) {
-       QBENCHMARK {
-           QUrl url("pics/avatar.png");
-           url.toEncoded(QUrl::FormattingOption(0x100));
-       }
-   } else {
-       QUrl url("pics/avatar.png");
-       QBENCHMARK {
-           url.toEncoded(QUrl::FormattingOption(0x100));
-       }
-   }
 }
 
 void tst_qurl::resolved_data()

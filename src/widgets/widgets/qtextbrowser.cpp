@@ -139,7 +139,7 @@ public:
     // re-imlemented from QTextEditPrivate
     virtual QUrl resolveUrl(const QUrl &url) const;
     inline QUrl resolveUrl(const QString &url) const
-    { return resolveUrl(QUrl::fromEncoded(url.toUtf8())); }
+    { return resolveUrl(QUrl(url)); }
 
 #ifdef QT_KEYPAD_NAVIGATION
     void keypadMove(bool next);

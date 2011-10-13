@@ -42,6 +42,7 @@
 #include "qnetworkaccessdebugpipebackend_p.h"
 #include "QtCore/qdatastream.h"
 #include <QCoreApplication>
+#include <QUrlQuery>
 #include "private/qnoncontiguousbytedevice_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -99,7 +100,7 @@ void QNetworkAccessDebugPipeBackend::open()
     // socket bytes written -> we can push more from upstream to socket
     connect(&socket, SIGNAL(bytesWritten(qint64)), SLOT(socketBytesWritten(qint64)));
 
-    bareProtocol = url().queryItemValue(QLatin1String("bare")) == QLatin1String("1");
+    bareProtocol = QUrlQuery(url()).queryItemValue(QLatin1String("bare")) == QLatin1String("1");
 
     if (operation() == QNetworkAccessManager::PutOperation) {
         uploadByteDevice = createUploadByteDevice();

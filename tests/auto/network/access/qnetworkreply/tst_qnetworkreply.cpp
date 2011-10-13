@@ -6742,7 +6742,7 @@ void tst_QNetworkReply::pipeliningHelperSlot() {
         pipeliningWasUsed = true;
 
     // check that the contents match (the response to echo.cgi?3 should return 3 etc.)
-    QString urlQueryString = reply->url().queryItems().at(0).first;
+    QString urlQueryString = reply->url().query();
     QString content = reply->readAll();
     QVERIFY2(urlQueryString == content, "data corruption with pipelining detected");
 

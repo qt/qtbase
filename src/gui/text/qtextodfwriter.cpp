@@ -366,7 +366,7 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
         QString name = imageFormat.name();
         if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
             name.prepend(QLatin1String("qrc"));
-        QUrl url = QUrl::fromEncoded(name.toUtf8());
+        QUrl url = QUrl(name);
         const QVariant data = m_document->resource(QTextDocument::ImageResource, url);
         if (data.type() == QVariant::Image) {
             image = qvariant_cast<QImage>(data);

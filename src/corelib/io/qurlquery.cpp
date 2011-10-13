@@ -337,7 +337,7 @@ QUrlQuery::QUrlQuery(const QUrl &url)
     // use internals to avoid unnecessary recoding
     // ### FIXME: actually do it
     if (url.hasQuery())
-        d = new QUrlQueryPrivate(QString::fromUtf8(url.encodedQuery()));
+        d = new QUrlQueryPrivate(url.query());
 }
 
 /*!
