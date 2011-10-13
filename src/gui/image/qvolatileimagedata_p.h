@@ -56,9 +56,6 @@
 #include <QtGui/qimage.h>
 #include <QtCore/qshareddata.h>
 
-#ifdef Q_OS_SYMBIAN
-class CFbsBitmap;
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -78,16 +75,6 @@ public:
     void *duplicateNativeImage() const;
     void ensureImage();
 
-#ifdef Q_OS_SYMBIAN
-    void updateImage();
-    void initWithBitmap(CFbsBitmap *source);
-    void applyMask(CFbsBitmap *mask);
-    void ensureBitmap();
-    void release();
-    QVolatileImageData *next;
-    QVolatileImageData *prev;
-    CFbsBitmap *bitmap;
-#endif
     QImage image;
     QPaintEngine *pengine;
 };

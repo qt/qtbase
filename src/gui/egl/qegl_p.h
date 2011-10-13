@@ -87,25 +87,6 @@ typedef int EGLClientBuffer;
 
 #endif
 
-#if defined(Q_WS_X11)
-// If <EGL/egl.h> included <X11/Xlib.h>, then the global namespace
-// may have been polluted with X #define's.  The following makes sure
-// the X11 headers were included properly and then cleans things up.
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#undef Bool
-#undef Status
-#undef None
-#undef KeyPress
-#undef KeyRelease
-#undef FocusIn
-#undef FocusOut
-#undef Type
-#undef FontChange
-#undef CursorShape
-#undef Unsorted
-#undef GrayScale
-#endif
 
 // Internally we use the EGL-prefixed native types which are used in EGL >= 1.3.
 // For older versions of EGL, we have to define these types ourselves here:
@@ -133,37 +114,11 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // Try to get some info to debug the symbian build failues:
-#ifdef Q_OS_SYMBIAN
-
-#ifdef EGL_KHR_image
-#warning "EGL_KHR_image is defined"
-#else
-#warning "EGL_KHR_image is NOT defined"
-#endif
-
-#ifdef EGL_KHR_image_base
-#warning "EGL_KHR_image_base is defined"
-#else
-#warning "EGL_KHR_image_base is NOT defined"
-#endif
-
-#ifdef EGL_EGLEXT_PROTOTYPES
-#warning "EGL_EGLEXT_PROTOTYPES is defined"
-#else
-#warning "EGL_EGLEXT_PROTOTYPES NOT not defined"
-#endif
-
-#endif
 
 
 // Declare/define the bits of EGL_KHR_image_base we need:
 #if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
-#ifdef Q_OS_SYMBIAN
-//symbian version of eglext.h differs from the khronos reference
-typedef int EGLImageKHR;
-#else
 typedef void *EGLImageKHR;
-#endif
 
 #define EGL_NO_IMAGE_KHR            ((EGLImageKHR)0)
 #define EGL_IMAGE_PRESERVED_KHR     0x30D2
@@ -230,9 +185,6 @@ namespace QEgl {
     Q_GUI_EXPORT EGLBoolean  eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img);
     Q_GUI_EXPORT EGLBoolean eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EGLint count, const EGLint *rects);
 
-#ifdef Q_WS_X11
-    Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
-#endif
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions)

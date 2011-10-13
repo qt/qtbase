@@ -646,23 +646,6 @@ extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSyst
 QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writingSystem)
 {
     QRawFont rawFont;
-#if defined(Q_WS_MAC)
-    QTextLayout layout(QFontDatabase::writingSystemSample(writingSystem), font);
-    layout.beginLayout();
-    QTextLine line = layout.createLine();
-    layout.endLayout();
-    QList<QGlyphRun> list = layout.glyphRuns();
-    if (list.size()) {
-        // Pick the one matches the family name we originally requested,
-        // if none of them match, just pick the first one
-        for (int i = 0; i < list.size(); i++) {
-            rawfont = list.at(i).rawFont();
-            if (rawfont.familyName() == font.family())
-                return rawfont;
-        }
-        return list.at(0).rawFont();
-    }
-#else
     QFontPrivate *font_d = QFontPrivate::get(font);
     int script = qt_script_for_writing_system(writingSystem);
     QFontEngine *fe = font_d->engineForScript(script);
@@ -681,7 +664,6 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
         rawFont.d.data()->fontEngine->ref.ref();
         rawFont.d.data()->hintingPreference = font.hintingPreference();
     }
-#endif
     return rawFont;
 }
 

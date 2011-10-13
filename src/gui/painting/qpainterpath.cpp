@@ -2970,9 +2970,6 @@ qreal QPainterPath::angleAtPercent(qreal t) const
     return QLineF(0, 0, m1, m2).angle();
 }
 
-#if defined(Q_WS_WINCE)
-#pragma warning( disable : 4056 4756 )
-#endif
 
 /*!
     Returns the slope of the path at the percentage \a t. The

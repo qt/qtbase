@@ -191,10 +191,6 @@ public:
     void setSystemRect(const QRect &rect);
     QRect systemRect() const;
 
-#ifdef Q_WS_WIN
-    virtual HDC getDC() const;
-    virtual void releaseDC(HDC hdc) const;
-#endif
 
     virtual QPoint coordinateOffset() const;
 
@@ -266,14 +262,7 @@ private:
     friend class QPSPrintEngine;
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;
-#ifdef Q_WS_QWS
-    friend class QtopiaPrintEngine;
-    friend class QtopiaPrintEnginePrivate;
-    friend class QProxyFontEngine;
-#endif
-#ifdef Q_WS_QPA
     friend class QFontEngineQPA;
-#endif
     friend class QPainter;
     friend class QPainterPrivate;
     friend class QWidget;

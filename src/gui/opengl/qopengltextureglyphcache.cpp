@@ -45,9 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_WIN
-extern Q_GUI_EXPORT bool qt_cleartype_enabled;
-#endif
 
 QBasicAtomicInt qopengltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 

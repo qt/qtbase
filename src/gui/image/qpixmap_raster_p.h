@@ -55,9 +55,6 @@
 
 #include <QtGui/qplatformpixmap_qpa.h>
 
-#ifdef Q_WS_WIN
-# include "qt_windows.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -274,36 +274,12 @@ bool QVolatileImagePaintEngine::end()
 
 void QVolatileImagePaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 {
-#ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.handle()->toNativeType(QPlatformPixmap::VolatileImage);
-    if (nativeData) {
-        QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-        img->beginDataAccess();
-        QRasterPaintEngine::drawImage(p, img->imageRef());
-        img->endDataAccess(true);
-    } else {
-        QRasterPaintEngine::drawPixmap(p, pm);
-    }
-#else
     QRasterPaintEngine::drawPixmap(p, pm);
-#endif
 }
 
 void QVolatileImagePaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
-#ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.handle()->toNativeType(QPlatformPixmap::VolatileImage);
-    if (nativeData) {
-        QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
-        img->beginDataAccess();
-        QRasterPaintEngine::drawImage(r, img->imageRef(), sr);
-        img->endDataAccess(true);
-    } else {
-        QRasterPaintEngine::drawPixmap(r, pm, sr);
-    }
-#else
     QRasterPaintEngine::drawPixmap(r, pm, sr);
-#endif
 }
 
 QT_END_NAMESPACE

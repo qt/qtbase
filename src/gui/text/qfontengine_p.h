@@ -60,16 +60,7 @@
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
-#ifdef Q_WS_WIN
-#   include "QtCore/qt_windows.h"
-#endif
 
-#ifdef Q_WS_MAC
-#   include "private/qt_mac_p.h"
-#   include "QtCore/qmap.h"
-#   include "QtCore/qcache.h"
-#   include "private/qcore_mac_p.h"
-#endif
 
 #include <private/qfontengineglyphcache_p.h>
 
@@ -181,9 +172,6 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(Q_WS_QPA)
-    virtual void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si) = 0;
-#endif
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                                  QPainterPath *path, QTextItem::RenderFlags flags);
 
@@ -275,7 +263,6 @@ public:
     bool symbol;
     mutable HB_FontRec hbFont;
     mutable HB_Face hbFace;
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
     struct KernPair {
         uint left_right;
         QFixed adjust;
@@ -287,7 +274,6 @@ public:
     };
     QVector<KernPair> kerning_pairs;
     void loadKerningPairs(QFixed scalingFactor);
-#endif
 
     int glyphFormat;
     QImage currentlyLockedAlphaMap;
@@ -319,48 +305,6 @@ inline uint qHash(const QFontEngine::FaceId &f)
 
 class QGlyph;
 
-#if defined(Q_WS_QWS)
-
-#ifndef QT_NO_QWS_QPF
-
-class QFontEngineQPF1Data;
-
-class QFontEngineQPF1 : public QFontEngine
-{
-public:
-    QFontEngineQPF1(const QFontDef&, const QString &fn);
-   ~QFontEngineQPF1();
-
-    virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
-    virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
-
-    virtual void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
-    virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
-
-    virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
-    virtual glyph_metrics_t boundingBox(glyph_t glyph);
-
-    virtual QFixed ascent() const;
-    virtual QFixed descent() const;
-    virtual QFixed leading() const;
-    virtual qreal maxCharWidth() const;
-    virtual qreal minLeftBearing() const;
-    virtual qreal minRightBearing() const;
-    virtual QFixed underlinePosition() const;
-    virtual QFixed lineThickness() const;
-
-    virtual Type type() const;
-
-    virtual bool canRender(const QChar *string, int len);
-    inline const char *name() const { return 0; }
-    virtual QImage alphaMapForGlyph(glyph_t);
-
-
-    QFontEngineQPF1Data *d;
-};
-#endif // QT_NO_QWS_QPF
-
-#endif // QWS
 
 
 class QFontEngineBox : public QFontEngine
@@ -372,9 +316,7 @@ public:
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
-#endif
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
@@ -389,9 +331,6 @@ public:
     virtual qreal minRightBearing() const { return 0; }
     virtual QImage alphaMapForGlyph(glyph_t);
 
-#ifdef Q_WS_X11
-    int cmap() const;
-#endif
     virtual const char *name() const;
 
     virtual bool canRender(const QChar *string, int len);
@@ -471,12 +410,6 @@ public:
 
 QT_END_NAMESPACE
 
-#ifdef Q_WS_WIN
-#   include "private/qfontengine_win_p.h"
-#endif
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
-#   include "private/qfontengine_ft_p.h"
-#endif
 
 #endif // QFONTENGINE_P_H

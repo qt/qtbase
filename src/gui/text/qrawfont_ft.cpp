@@ -47,28 +47,17 @@
 #include "qfontengine_ft_p.h"
 #include "quuid.h"
 
-#if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
-#  include "qfontengine_x11_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont
 
-#if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
-        : public QFontEngineX11FT
-#else
         : public QFontEngineFT
-#endif
 
 {
 public:
     QFontEngineFTRawFont(const QFontDef &fontDef)
-#if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
-        : QFontEngineX11FT(fontDef)
-#else
         : QFontEngineFT(fontDef)
-#endif
     {
     }
 

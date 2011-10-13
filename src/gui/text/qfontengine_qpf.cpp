@@ -70,11 +70,6 @@ QT_BEGIN_NAMESPACE
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
-#if defined(Q_WS_QWS)
-#   include "private/qwscommand_qws_p.h"
-#   include "qwsdisplay_qws.h"
-#   include "qabstractfontengine_p.h"
-#endif
 #include "qplatformdefs.h"
 QT_END_INCLUDE_NAMESPACE
 
@@ -231,12 +226,7 @@ QVariant QFontEngineQPF::extractHeaderField(const uchar *data, HeaderTag request
 QString qws_fontCacheDir()
 {
     QString dir;
-#if defined(Q_WS_QWS)
-    extern QString qws_dataDir();
-    dir = qws_dataDir();
-#else
     dir = QDir::tempPath();
-#endif
     dir.append(QLatin1String("/fonts/"));
     QDir qd(dir);
     if (!qd.exists() && !qd.mkpath(dir))
@@ -504,24 +494,10 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                  << "glyphMapOffset" << glyphMapOffset << "glyphDataOffset" << glyphDataOffset
                  << "fd" << fd << "glyphDataSize" << glyphDataSize;
 #endif
-#if defined(Q_WS_QWS)
-    if (isValid() && renderingFontEngine)
-        qt_fbdpy->sendFontCommand(QWSFontCommand::StartedUsingFont, encodedFileName);
-#endif
 }
 
 QFontEngineQPF::~QFontEngineQPF()
 {
-#if defined(Q_WS_QWS)
-    if (isValid() && renderingFontEngine) {
-        QT_TRY {
-            qt_fbdpy->sendFontCommand(QWSFontCommand::StoppedUsingFont, encodedFileName);
-        } QT_CATCH(...) {
-            qDebug("QFontEngineQPF::~QFontEngineQPF: Out of memory");
-            // ignore.
-        }
-    }
-#endif
     delete renderingFontEngine;
     if (fontData) {
         if (munmap((void *)fontData, dataSize) == -1) {
@@ -982,14 +958,7 @@ bool QFontEngineQPF::lockFile()
             perror("unlocking possibly corrupt qpf");
         return false;
     }
-#if defined(Q_WS_QWS)
-    extern int qws_client_id;
-    // qws_client_id == 0 means we're the server. in this case we just
-    // set the id to 1
-    header->lock = qws_client_id ? qws_client_id : 1;
-#else
     header->lock = 1;
-#endif
     return true;
 }
 

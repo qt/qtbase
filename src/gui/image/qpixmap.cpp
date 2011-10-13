@@ -63,9 +63,7 @@
 #include "qthread.h"
 #include "qdebug.h"
 
-#ifdef Q_WS_QPA
 # include "qplatformintegration_qpa.h"
-#endif
 
 #include "qpixmap_raster_p.h"
 #include "private/qhexstring_p.h"

@@ -46,9 +46,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qsharedpointer.h>
 
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-typedef struct FT_FaceRec_* FT_Face;
-#endif
 
 QT_BEGIN_HEADER
 
@@ -246,17 +243,7 @@ public:
     { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
 #endif
 
-#ifdef Q_WS_WIN
-    HFONT handle() const;
-#else // !Q_WS_WIN
     Qt::HANDLE handle() const;
-#endif // Q_WS_WIN
-#ifdef Q_WS_MAC
-    quint32 macFontID() const;
-#endif
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-    FT_Face freetypeFace() const;
-#endif
 
     // needed for X11
     void setRawName(const QString &);
@@ -275,9 +262,7 @@ public:
     static void removeSubstitution(const QString &);
     static void initialize();
     static void cleanup();
-#ifndef Q_WS_QWS
     static void cacheStatistics();
-#endif
 
     QString defaultFamily() const;
     QString lastResortFamily() const;
@@ -292,12 +277,6 @@ private:
 
     void detach();
 
-#if defined(Q_WS_MAC)
-    void macSetFont(QPaintDevice *);
-#elif defined(Q_WS_X11)
-    void x11SetScreen(int screen = -1);
-    int x11Screen() const;
-#endif
 
     friend class QFontPrivate;
     friend class QFontDialogPrivate;

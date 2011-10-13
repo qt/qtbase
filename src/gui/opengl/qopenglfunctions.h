@@ -77,11 +77,7 @@ QT_MODULE(Gui)
 typedef ptrdiff_t qopengl_GLintptr;
 typedef ptrdiff_t qopengl_GLsizeiptr;
 
-#ifdef Q_WS_WIN
-#    define QOPENGLF_APIENTRY APIENTRY
-#endif
 
-#ifndef Q_WS_MAC
 # ifndef QOPENGLF_APIENTRYP
 #   ifdef QOPENGLF_APIENTRY
 #     define QOPENGLF_APIENTRYP QOPENGLF_APIENTRY *
@@ -90,10 +86,6 @@ typedef ptrdiff_t qopengl_GLsizeiptr;
 #     define QOPENGLF_APIENTRYP *
 #   endif
 # endif
-#else
-# define QOPENGLF_APIENTRY
-# define QOPENGLF_APIENTRYP *
-#endif
 
 struct QOpenGLFunctionsPrivate;
 

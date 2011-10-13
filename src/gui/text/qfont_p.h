@@ -73,18 +73,12 @@ struct QFontDef
           styleStrategy(QFont::PreferDefault), styleHint(QFont::AnyStyle),
           weight(50), fixedPitch(false), style(QFont::StyleNormal), stretch(100),
           ignorePitch(true), hintingPreference(QFont::PreferDefaultHinting)
-#ifdef Q_WS_MAC
-          ,fixedPitchComputed(false)
-#endif
     {
     }
 
     QString family;
     QString styleName;
 
-#ifdef Q_WS_X11
-    QString addStyle;
-#endif // Q_WS_X11
 
     qreal pointSize;
     qreal pixelSize;
@@ -115,9 +109,6 @@ struct QFontDef
                     && family == other.family
                     && (styleName.isEmpty() || other.styleName.isEmpty() || styleName == other.styleName)
                     && hintingPreference == other.hintingPreference
-#ifdef Q_WS_X11
-                    && addStyle == other.addStyle
-#endif
                           ;
     }
     inline bool operator<(const QFontDef &other) const
@@ -133,9 +124,6 @@ struct QFontDef
             return styleName < other.styleName;
         if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
 
-#ifdef Q_WS_X11
-        if (addStyle != other.addStyle) return addStyle < other.addStyle;
-#endif // Q_WS_X11
 
         if (ignorePitch != other.ignorePitch) return ignorePitch < other.ignorePitch;
         if (fixedPitch != other.fixedPitch) return fixedPitch < other.fixedPitch;
@@ -152,20 +140,13 @@ public:
     QAtomicInt ref;
     QFontCache *fontCache;
 
-#if !defined(Q_WS_MAC)
     QFontEngine *engines[QUnicodeTables::ScriptCount];
-#else
-    QFontEngine *engine;
-#endif
 };
 
 
 class Q_GUI_EXPORT QFontPrivate
 {
 public:
-#ifdef Q_WS_X11
-    static int defaultEncodingID;
-#endif // Q_WS_X11
 
     QFontPrivate();
     QFontPrivate(const QFontPrivate &other);
@@ -180,9 +161,6 @@ public:
     int dpi;
     int screen;
 
-#ifdef Q_WS_WIN
-    HDC hdc;
-#endif
 
     uint rawMode    :  1;
     uint underline  :  1;
@@ -222,9 +200,6 @@ public:
     ~QFontCache();
 
     void clear();
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_QPF2)
-    void removeEngineForFont(const QByteArray &fontName);
-#endif
     // universal key structure.  QFontEngineDatas and QFontEngines are cached using
     // the same keys
     struct Key {
@@ -269,9 +244,6 @@ public:
     QFontEngine *findEngine(const Key &key);
     void insertEngine(const Key &key, QFontEngine *engine);
 
-#if defined(Q_WS_WIN) || defined(Q_WS_QWS)
-    void cleanupPrinterFonts();
-#endif
 
     private:
     void increaseCost(uint cost);

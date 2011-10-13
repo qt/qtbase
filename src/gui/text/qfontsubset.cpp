@@ -45,14 +45,8 @@
 #include "private/qpdf_p.h"
 #include "private/qfunctions_p.h"
 
-#ifdef Q_WS_X11
-#include "private/qfontengine_x11_p.h"
-#endif
 
 #ifndef QT_NO_FREETYPE
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-#    include "private/qfontengine_ft_p.h"
-#endif
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #endif
@@ -285,24 +279,6 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
 #ifndef QT_NO_FREETYPE
 static FT_Face ft_face(const QFontEngine *engine)
 {
-#ifdef Q_WS_X11
-#ifndef QT_NO_FONTCONFIG
-    if (engine->type() == QFontEngine::Freetype) {
-        const QFontEngineFT *ft = static_cast<const QFontEngineFT *>(engine);
-        return ft->non_locked_face();
-    } else
-#endif
-    if (engine->type() == QFontEngine::XLFD) {
-        const QFontEngineXLFD *xlfd = static_cast<const QFontEngineXLFD *>(engine);
-        return xlfd->non_locked_face();
-    }
-#endif
-#ifdef Q_WS_QWS
-    if (engine->type() == QFontEngine::Freetype) {
-        const QFontEngineFT *ft = static_cast<const QFontEngineFT *>(engine);
-        return ft->non_locked_face();
-    }
-#endif
     return 0;
 }
 #endif
@@ -322,22 +298,12 @@ QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> reverse
     char name[32];
     name[0] = 0;
     if (face && FT_HAS_GLYPH_NAMES(face)) {
-#if defined(Q_WS_X11)
-        if (fontEngine->type() == QFontEngine::XLFD)
-            glyphIndex = static_cast<QFontEngineXLFD *>(fontEngine)->glyphIndexToFreetypeGlyphIndex(glyphIndex);
-#endif
         FT_Get_Glyph_Name(face, glyphIndex, &name, 32);
         if (name[0] == '.') // fix broken PS fonts returning .notdef for many glyphs
             name[0] = 0;
     }
     if (name[0]) {
         s << '/' << name;
-    } else
-#endif
-#if defined(Q_WS_X11)
-    if (fontEngine->type() == QFontEngine::XLFD) {
-        uint uc = static_cast<QFontEngineXLFD *>(fontEngine)->toUnicode(glyphIndex);
-        s << '/' << glyphName(uc, false /* ### */);
     } else
 #endif
     if (reverseMap[glyphIndex] && reverseMap[glyphIndex] < 0x10000) {

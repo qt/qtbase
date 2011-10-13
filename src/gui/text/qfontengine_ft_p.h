@@ -58,9 +58,6 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#if defined(Q_WS_X11)
-#include <private/qt_x11_p.h>
-#endif
 
 #ifndef Q_OS_WIN
 #include <unistd.h>
@@ -165,9 +162,6 @@ public:
         Subpixel_VBGR
     };
 
-#if defined(Q_WS_X11) && !defined(QT_NO_XRENDER)
-    typedef XGlyphInfo GlyphInfo;
-#else
     struct GlyphInfo {
         unsigned short  width;
         unsigned short  height;
@@ -176,7 +170,6 @@ public:
         short           xOff;
         short           yOff;
     };
-#endif
 
     struct GlyphAndSubPixelPosition
     {
@@ -310,9 +303,6 @@ private:
                     const QFixedPoint *positions,
                     GlyphFormat format = Format_Render);
 
-#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-    virtual void draw(QPaintEngine * /*p*/, qreal /*x*/, qreal /*y*/, const QTextItemInt & /*si*/) {}
-#endif
 
     QFontEngineFT(const QFontDef &fd);
     virtual ~QFontEngineFT();

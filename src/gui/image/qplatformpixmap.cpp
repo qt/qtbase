@@ -174,16 +174,5 @@ QImage* QPlatformPixmap::buffer()
     return 0;
 }
 
-#if defined(Q_OS_SYMBIAN)
-void* QPlatformPixmap::toNativeType(NativeType /* type */)
-{
-    return 0;
-}
-
-void QPlatformPixmap::fromNativeType(void* /* pixmap */, NativeType /* typre */)
-{
-    return;
-}
-#endif
 
 QT_END_NAMESPACE

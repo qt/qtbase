@@ -59,9 +59,7 @@ QT_MODULE(Gui)
 template <class T> class QVector;
 class QVariant;
 
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 struct QRegionPrivate;
-#endif
 
 class QBitmap;
 
@@ -142,23 +140,7 @@ public:
     Handle handle() const;
 #endif
 #ifndef qdoc
-#if defined(Q_WS_WIN)
-    inline HRGN    handle() const { ensureHandle(); return d->rgn; }
-#elif defined(Q_WS_X11)
-    inline Region handle() const { if(!d->rgn) updateX11Region(); return d->rgn; }
-#elif defined(Q_WS_MAC)
-#if defined Q_WS_MAC32
-    RgnHandle toQDRgn() const;
-    RgnHandle toQDRgnForUpdate_sys() const;
-    static QRegion fromQDRgn(RgnHandle shape);
-#endif
-    inline HIMutableShapeRef handle(bool unused = false) const
-    { Q_UNUSED(unused); return toHIMutableShape(); }
-    HIMutableShapeRef toHIMutableShape() const;
-    static QRegion fromHIShapeRef(HIShapeRef shape);
-#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     inline void *handle() const { return d->qt_rgn; }
-#endif
 #endif
 
 #ifndef QT_NO_DATASTREAM
@@ -168,20 +150,7 @@ public:
 private:
     QRegion copy() const;   // helper of detach.
     void detach();
-#if defined(Q_WS_WIN)
-    void ensureHandle() const;
-    QRegion winCombine(const QRegion &r, int num) const;
-#elif defined(Q_WS_X11)
-    void updateX11Region() const;
-    void *clipRectangles(int &num) const;
-    friend void *qt_getClipRects(const QRegion &r, int &num);
-#elif defined(Q_WS_MAC)
-    static OSStatus shape2QRegionHelper(int inMessage, HIShapeRef inShape,
-                                        const CGRect *inRect, void *inRefcon);
-#endif
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GUI_EXPORT
-#endif
     friend bool qt_region_strictContains(const QRegion &region,
                                          const QRect &rect);
     friend struct QRegionPrivate;
@@ -191,19 +160,8 @@ Q_GUI_EXPORT
 #endif
     struct QRegionData {
         QBasicAtomicInt ref;
-#if defined(Q_WS_WIN)
-        HRGN   rgn;
-#elif defined(Q_WS_X11)
-        Region rgn;
-        void *xrectangles;
-#endif
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
         QRegionPrivate *qt_rgn;
-#endif
     };
-#if defined(Q_WS_WIN)
-    friend class QETWidget;
-#endif
     struct QRegionData *d;
     static struct QRegionData shared_empty;
     static void cleanUp(QRegionData *x);

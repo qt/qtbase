@@ -636,7 +636,6 @@ EGLBoolean QEgl::eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EG
     return 0;
 }
 
-#ifndef Q_WS_X11
 EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
@@ -674,7 +673,6 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglPr
     }
     return surf;
 }
-#endif
 
 
 // Return the error string associated with a specific code.

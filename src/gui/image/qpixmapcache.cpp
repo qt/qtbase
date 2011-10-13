@@ -91,11 +91,7 @@ QT_BEGIN_NAMESPACE
     \sa QCache, QPixmap
 */
 
-#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
-static int cache_limit = 2048; // 2048 KB cache limit for embedded
-#else
 static int cache_limit = 10240; // 10 MB cache limit for desktop
-#endif
 
 /*!
     \class QPixmapCache::Key

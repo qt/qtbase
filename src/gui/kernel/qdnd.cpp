@@ -132,18 +132,12 @@ QDragManager::QDragManager()
 {
     Q_ASSERT(!instance);
 
-#ifdef Q_WS_QWS
-    currentActionForOverrideCursor = Qt::IgnoreAction;
-#endif
     object = 0;
     beingCancelled = false;
     restoreCursor = false;
     willDrop = false;
     eventLoop = 0;
     currentDropTarget = 0;
-#ifdef Q_WS_X11
-    xdndMimeTransferedPixmapIndex = 0;
-#endif
     shapedPixmapWindow = 0;
 
     possible_actions = Qt::IgnoreAction;
@@ -211,21 +205,9 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
     if (defaultAction == Qt::IgnoreAction) {
         //This means that the drag was initiated by QDrag::start and we need to
         //preserve the old behavior
-#ifdef Q_WS_MAC
-        defaultAction = Qt::MoveAction;
-#else
         defaultAction = Qt::CopyAction;
-#endif
     }
 
-#ifdef Q_WS_MAC
-    if (modifiers & Qt::ControlModifier && modifiers & Qt::AltModifier)
-        defaultAction = Qt::LinkAction;
-    else if (modifiers & Qt::AltModifier)
-        defaultAction = Qt::CopyAction;
-    else if (modifiers & Qt::ControlModifier)
-        defaultAction = Qt::MoveAction;
-#else
     if (modifiers & Qt::ControlModifier && modifiers & Qt::ShiftModifier)
         defaultAction = Qt::LinkAction;
     else if (modifiers & Qt::ControlModifier)
@@ -234,7 +216,6 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
         defaultAction = Qt::MoveAction;
     else if (modifiers & Qt::AltModifier)
         defaultAction = Qt::LinkAction;
-#endif
 
 #ifdef QDND_DEBUG
     qDebug("possible actions : %s", dragActionsToString(possibleActions).latin1());

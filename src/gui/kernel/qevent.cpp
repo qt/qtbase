@@ -50,9 +50,6 @@
 #include "qevent_p.h"
 #include "qmath.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "private/qcore_symbian_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -838,16 +835,6 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
     uint platform = QGuiApplicationPrivate::currentKeyPlatform();
 
-#ifdef Q_WS_MAC
-    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-        uint oldSearchKey = searchkey;
-        searchkey &= ~(Qt::ControlModifier | Qt::MetaModifier);
-        if (oldSearchKey & Qt::ControlModifier)
-            searchkey |= Qt::MetaModifier;
-        if (oldSearchKey & Qt::MetaModifier)
-            searchkey |= Qt::ControlModifier;
-    }
-#endif
 
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     int first = 0;
@@ -2733,9 +2720,6 @@ QShowEvent::~QShowEvent()
 
 QFileOpenEventPrivate::~QFileOpenEventPrivate()
 {
-#ifdef Q_OS_SYMBIAN
-    file.Close();
-#endif
 }
 
 /*!
@@ -2761,21 +2745,6 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
     f = url.toLocalFile();
 }
 
-#ifdef Q_OS_SYMBIAN
-/*! \internal
-*/
-QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
-    : QEvent(FileOpen)
-{
-    TFileName fullName;
-    fileHandle.FullName(fullName);
-    f = qt_TDesC2QString(fullName);
-    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(f)));
-    // Duplicate here allows the file handle to be valid after S60 app construction is complete.
-    qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
-    d = reinterpret_cast<QEventPrivate *>(priv.take());
-}
-#endif
 
 /*! \internal
 */
@@ -2818,20 +2787,6 @@ QUrl QFileOpenEvent::url() const
 bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 {
     file.setFileName(f);
-#ifdef Q_OS_SYMBIAN
-    const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
-    if (priv->file.SubSessionHandle()) {
-        RFile dup;
-        // Duplicate here means that the opened QFile will continue to be valid beyond the lifetime of this QFileOpenEvent.
-        // It also allows openFile to be used in threads other than the thread in which the QFileOpenEvent was created.
-        if (dup.Duplicate(priv->file) == KErrNone) {
-            QScopedPointer<RFile, QScopedPointerRCloser<RFile> > dupCloser(&dup);
-            bool open = file.open(dup, flags, QFile::AutoCloseHandle);
-            dupCloser.take();
-            return open;
-        }
-    }
-#endif
     return file.open(flags);
 }
 

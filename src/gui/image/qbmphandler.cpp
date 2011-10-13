@@ -580,12 +580,6 @@ bool qt_write_dib(QDataStream &s, QImage image)
     } else if (image.depth() == 32) {
         bpl_bmp = ((image.width()*24+31)/32)*4;
         nbits = 24;
-#ifdef Q_WS_QWS
-    } else if (image.depth() == 1 || image.depth() == 8) {
-        // Qt for Embedded Linux doesn't word align.
-        bpl_bmp = ((image.width()*image.depth()+31)/32)*4;
-        nbits = image.depth();
-#endif
     } else {
         bpl_bmp = bpl;
         nbits = image.depth();
@@ -631,18 +625,9 @@ bool qt_write_dib(QDataStream &s, QImage image)
     int y;
 
     if (nbits == 1 || nbits == 8) {                // direct output
-#ifdef Q_WS_QWS
-        // Qt for Embedded Linux doesn't word align.
-        int pad = bpl_bmp - bpl;
-        char padding[4];
-#endif
         for (y=image.height()-1; y>=0; y--) {
             if (d->write((char*)image.scanLine(y), bpl) == -1)
                 return false;
-#ifdef Q_WS_QWS
-            if (d->write(padding, pad) == -1)
-                return false;
-#endif
         }
         return true;
     }

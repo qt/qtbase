@@ -79,9 +79,6 @@ public:
     const int *properties() const { return props.constData(); }
 
     void setPixelFormat(QImage::Format pixelFormat);
-#ifdef Q_WS_X11
-    void setVisualFormat(const QX11Info *xinfo);
-#endif
     void setDeviceType(int devType);
     void setPaintDeviceFormat(QPaintDevice *dev);
     void setRenderableType(QEgl::API api);

@@ -88,9 +88,6 @@ const bool fullWidthSelection = true;
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_CONTEXTMENU
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
-extern bool qt_use_rtl_extensions;
-#endif
 #endif
 
 // could go into QTextCursor...
@@ -1171,10 +1168,6 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
     }
     else if (e == QKeySequence::Paste) {
         QClipboard::Mode mode = QClipboard::Clipboard;
-#ifdef Q_WS_X11
-        if (e->modifiers() == (Qt::CTRL | Qt::SHIFT) && e->key() == Qt::Key_Insert)
-            mode = QClipboard::Selection;
-#endif
         q->paste(mode);
     }
 #endif
@@ -1932,9 +1925,6 @@ void QTextControlPrivate::focusEvent(QFocusEvent *e)
     if (e->gotFocus()) {
 #ifdef QT_KEYPAD_NAVIGATION
         if (!QGuiApplication::keypadNavigationEnabled() || (hasEditFocus && (e->reason() == Qt::PopupFocusReason
-#ifdef Q_OS_SYMBIAN
-            || e->reason() == Qt::ActiveWindowFocusReason
-#endif
             ))) {
 #endif
         cursorOn = (interactionFlags & Qt::TextSelectableByKeyboard);

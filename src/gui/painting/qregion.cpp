@@ -46,14 +46,10 @@
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qvarlengtharray.h"
-
-#include <qdebug.h>
-
-#if defined(Q_OS_UNIX) || defined(Q_WS_WIN)
 #include "qimage.h"
 #include "qbitmap.h"
-#include <stdlib.h>
-#endif
+
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -263,12 +259,6 @@ void QRegion::detach()
 {
     if (d->ref.load() != 1)
         *this = copy();
-#if defined(Q_WS_X11)
-    else if (d->xrectangles) {
-        free(d->xrectangles);
-        d->xrectangles = 0;
-    }
-#endif
 }
 
 // duplicates in qregion_win.cpp and qregion_wce.cpp
@@ -1598,22 +1588,8 @@ void QRegionPrivate::selfTest() const
 }
 #endif // QT_REGION_DEBUG
 
-#if defined(Q_WS_X11)
-QT_BEGIN_INCLUDE_NAMESPACE
-# include "qregion_x11.cpp"
-QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_MAC)
-QT_BEGIN_INCLUDE_NAMESPACE
-# include "qregion_mac.cpp"
-QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_WIN)
-QT_BEGIN_INCLUDE_NAMESPACE
-# include "qregion_win.cpp"
-QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
 static QRegionPrivate qrp;
 QRegion::QRegionData QRegion::shared_empty = {Q_BASIC_ATOMIC_INITIALIZER(1), &qrp};
-#endif
 
 typedef void (*OverlapFunc)(register QRegionPrivate &dest, register const QRect *r1, const QRect *r1End,
                             register const QRect *r2, const QRect *r2End, register int y1, register int y2);
@@ -3822,12 +3798,6 @@ QRegion::QRegion(const QRect &r, RegionType t)
     } else {
         d = new QRegionData;
         d->ref.store(1);
-#if defined(Q_WS_X11)
-        d->rgn = 0;
-        d->xrectangles = 0;
-#elif defined(Q_WS_WIN)
-        d->rgn = 0;
-#endif
         if (t == Rectangle) {
             d->qt_rgn = new QRegionPrivate(r);
         } else if (t == Ellipse) {
@@ -3847,12 +3817,6 @@ QRegion::QRegion(const QPolygon &a, Qt::FillRule fillRule)
         if (qt_rgn) {
             d =  new QRegionData;
             d->ref.store(1);
-#if defined(Q_WS_X11)
-            d->rgn = 0;
-            d->xrectangles = 0;
-#elif defined(Q_WS_WIN)
-            d->rgn = 0;
-#endif
             d->qt_rgn = qt_rgn;
         } else {
             d = &shared_empty;
@@ -3879,12 +3843,6 @@ QRegion::QRegion(const QBitmap &bm)
     } else {
         d = new QRegionData;
         d->ref.store(1);
-#if defined(Q_WS_X11)
-        d->rgn = 0;
-        d->xrectangles = 0;
-#elif defined(Q_WS_WIN)
-        d->rgn = 0;
-#endif
         d->qt_rgn = qt_bitmapToRegion(bm);
     }
 }
@@ -3892,15 +3850,6 @@ QRegion::QRegion(const QBitmap &bm)
 void QRegion::cleanUp(QRegion::QRegionData *x)
 {
     delete x->qt_rgn;
-#if defined(Q_WS_X11)
-    if (x->rgn)
-        XDestroyRegion(x->rgn);
-    if (x->xrectangles)
-        free(x->xrectangles);
-#elif defined(Q_WS_WIN)
-    if (x->rgn)
-        qt_win_dispose_rgn(x->rgn);
-#endif
     delete x;
 }
 
@@ -3929,12 +3878,6 @@ QRegion QRegion::copy() const
     QRegion r;
     QScopedPointer<QRegionData> x(new QRegionData);
     x->ref.store(1);
-#if defined(Q_WS_X11)
-    x->rgn = 0;
-    x->xrectangles = 0;
-#elif defined(Q_WS_WIN)
-    x->rgn = 0;
-#endif
     if (d->qt_rgn)
         x->qt_rgn = new QRegionPrivate(*d->qt_rgn);
     else
@@ -4221,9 +4164,7 @@ QRect QRegion::boundingRect() const
     Returns true if \a rect is guaranteed to be fully contained in \a region.
     A false return value does not guarantee the opposite.
 */
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GUI_EXPORT
-#endif
 bool qt_region_strictContains(const QRegion &region, const QRect &rect)
 {
     if (isEmptyHelper(region.d->qt_rgn) || !rect.isValid())

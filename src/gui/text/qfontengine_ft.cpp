@@ -754,7 +754,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
     metrics = face->size->metrics;
 
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     /*
        TrueType fonts with embedded bitmaps may have a bitmap font specific
        ascent/descent in the EBLC table. There is no direct public API
@@ -777,7 +776,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
             }
         }
     }
-#endif
 
     fontDef.styleName = QString::fromUtf8(face->style_name);
 
@@ -862,10 +860,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     int vfactor = 1;
     int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
 
-#ifndef Q_WS_QWS
     if (format != Format_Mono && !embeddedbitmap)
         load_flags |= FT_LOAD_NO_BITMAP;
-#endif
 
     FT_Matrix matrix = freetype->matrix;
     bool transform = matrix.xx != 0x10000

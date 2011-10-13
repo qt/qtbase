@@ -1290,10 +1290,6 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
                               && (p->transform().type() > QTransform::TxTranslate);
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing);
-#ifdef Q_WS_MAC
-    // Always draw the cursor aligned to pixel boundary.
-    x = qRound(x);
-#endif
     p->fillRect(QRectF(x, y, qreal(width), (base + descent + 1).toReal()), p->pen().brush());
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing, false);
@@ -1899,9 +1895,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
                 QFixed rightBearing = lbh.rightBearing; // store previous right bearing
-#if !defined(Q_WS_MAC)
                 if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
-#endif
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
                     // we are too wide, fix right bearing
@@ -2123,15 +2117,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     fontD->fontEngine = fontEngine;
     fontD->thread = QThread::currentThread();
     fontD->fontEngine->ref.ref();
-
-#if defined(Q_WS_WIN)
-    if (fontEngine->supportsSubPixelPositions())
-        fontD->hintingPreference = QFont::PreferVerticalHinting;
-    else
-        fontD->hintingPreference = QFont::PreferFullHinting;
-#elif defined(Q_WS_MAC)
-    fontD->hintingPreference = QFont::PreferNoHinting;
-#elif !defined(QT_NO_FREETYPE)
+#if !defined(QT_NO_FREETYPE)
     if (fontEngine->type() == QFontEngine::Freetype) {
         QFontEngineFT *freeTypeEngine = static_cast<QFontEngineFT *>(fontEngine);
         switch (freeTypeEngine->defaultHintStyle()) {
@@ -2148,7 +2134,6 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
         };
     }
 #endif
-
     QVarLengthArray<glyph_t> glyphsArray;
     QVarLengthArray<QFixedPoint> positionsArray;
 

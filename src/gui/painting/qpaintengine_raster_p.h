@@ -219,10 +219,6 @@ public:
     void saveBuffer(const QString &s) const;
 #endif
 
-#ifdef Q_WS_MAC
-    void setCGContext(CGContextRef ref);
-    CGContextRef getCGContext() const;
-#endif
 
 #ifdef Q_OS_WIN
     void setDC(HDC hdc);
@@ -254,9 +250,6 @@ private:
     bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
                           QFontEngine *fontEngine);
 
-#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-    void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);
-#endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
     bool setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op);
 

@@ -45,17 +45,7 @@
 
 #include <qdebug.h>
 
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 #include "qdesktopservices_qpa.cpp"
-#elif defined(Q_WS_X11)
-#include "qdesktopservices_x11.cpp"
-#elif defined(Q_WS_WIN)
-#include "qdesktopservices_win.cpp"
-#elif defined(Q_WS_MAC)
-#include "qdesktopservices_mac.cpp"
-#elif defined(Q_OS_SYMBIAN)
-#include "qdesktopservices_s60.cpp"
-#endif
 
 #include <qhash.h>
 #include <qobject.h>

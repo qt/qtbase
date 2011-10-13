@@ -55,13 +55,6 @@
 
 #include "qimage.h"
 
-#ifdef Q_WS_WIN
-#include "qt_windows.h"
-
-#elif defined(Q_WS_MAC)
-#include <private/qt_mac_p.h>
-
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -80,14 +73,6 @@ public:
 
     static QImage::Format systemFormat();
 
-#ifdef Q_WS_WIN
-    HDC hdc;
-    HBITMAP bitmap;
-    HBITMAP null_bitmap;
-
-#elif defined(Q_WS_MAC)
-    CGContextRef cg;
-#endif
 
 private:
     Q_DISABLE_COPY(QNativeImage)

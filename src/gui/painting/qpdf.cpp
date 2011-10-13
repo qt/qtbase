@@ -2438,12 +2438,6 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
     if (ti.charFormat.isAnchor()) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
-#ifdef Q_WS_WIN
-        if (ti.fontEngine->type() == QFontEngine::Win) {
-            QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-            size = fe->tm.tmHeight;
-        }
-#endif
         int synthesized = ti.fontEngine->synthesized();
         qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;
 
@@ -2507,12 +2501,6 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         currentPage->fonts.append(font->object_id);
 
     qreal size = ti.fontEngine->fontDef.pixelSize;
-#ifdef Q_WS_WIN
-    if (ti.fontEngine->type() == QFontEngine::Win) {
-        QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
-        size = fe->tm.tmHeight;
-    }
-#endif
 
     QVarLengthArray<glyph_t> glyphs;
     QVarLengthArray<QFixedPoint> positions;

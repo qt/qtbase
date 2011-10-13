@@ -75,15 +75,6 @@
 #  include <qt_windows.h>
 #  include <qvarlengtharray.h>
 #  include <private/qfontengine_p.h>
-#  if defined(Q_OS_WINCE)
-#    include "qguifunctions_wince.h"
-#  endif
-#elif defined(Q_WS_MAC)
-#  include <private/qt_mac_p.h>
-#  include <private/qpixmap_mac_p.h>
-#  include <private/qpaintengine_mac_p.h>
-#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-#  include <private/qfontengine_s60_p.h>
 #endif
 
 #if defined(Q_OS_WIN64)
@@ -135,9 +126,6 @@ bool QRasterPaintEngine::clearTypeFontsEnabled()
 
 #endif // Q_OS_WIN
 
-#ifdef Q_WS_MAC
-extern bool qt_applefontsmoothing_enabled;
-#endif
 
 
 /********************************************************************************
@@ -482,8 +470,6 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
 #if defined(Q_OS_WIN)
     else if (clearTypeFontsEnabled())
-#elif defined (Q_WS_MAC)
-    else if (qt_applefontsmoothing_enabled)
 #else
     else if (false)
 #endif
@@ -2789,46 +2775,6 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     return true;
 }
 
-#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
-{
-    Q_D(QRasterPaintEngine);
-    QRasterPaintEngineState *s = state();
-
-    QFontEngine *fontEngine = ti.fontEngine;
-    if (fontEngine->type() != QFontEngine::S60FontEngine) {
-        QPaintEngineEx::drawTextItem(p, ti);
-        return;
-    }
-
-    QFontEngineS60 *fe = static_cast<QFontEngineS60 *>(fontEngine);
-
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = s->matrix;
-    matrix.translate(p.x(), p.y());
-    if (matrix.type() == QTransform::TxScale)
-        fe->setFontScale(matrix.m11());
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
-    const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
-
-    for (int i=0; i<glyphs.size(); ++i) {
-        TOpenFontCharMetrics tmetrics;
-        const TUint8 *glyphBitmapBytes;
-        TSize glyphBitmapSize;
-        fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
-        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX() + aliasDelta);
-        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY() + aliasDelta);
-        alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
-    }
-
-    if (matrix.type() == QTransform::TxScale)
-        fe->setFontScale(1.0);
-
-    return;
-}
-#endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
 /*!
  * Returns true if the rectangle is completely within the current clip
@@ -2967,7 +2913,6 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
@@ -2982,36 +2927,6 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_OS_WIN || Q_WS_MAC || Q_WS_QPA
-    if (s->matrix.type() <= QTransform::TxTranslate
-        || (s->matrix.type() == QTransform::TxScale
-                && (qFuzzyCompare(s->matrix.m11(), s->matrix.m22())))) {
-        drawGlyphsS60(p, ti);
-        return;
-    }
-#else // Q_OS_WIN || Q_WS_MAC || Q_WS_QPA
-
-    QFontEngine *fontEngine = ti.fontEngine;
-
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-
-    if (fontEngine->type() == QFontEngine::Freetype) {
-        QTransform matrix = s->matrix;
-        matrix.translate(p.x(), p.y());
-
-        QVarLengthArray<QFixedPoint> positions;
-        QVarLengthArray<glyph_t> glyphs;
-        fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-        if (glyphs.size() == 0)
-            return;
-
-        if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), fontEngine))
-            QPaintEngine::drawTextItem(p, ti);
-
-        return;
-    }
-#endif
-#endif
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
@@ -3189,22 +3104,6 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
 /*!
     \internal
 */
-#ifdef Q_WS_MAC
-void QRasterPaintEngine::setCGContext(CGContextRef ctx)
-{
-    Q_D(QRasterPaintEngine);
-    d->cgContext = ctx;
-}
-
-/*!
-    \internal
-*/
-CGContextRef QRasterPaintEngine::getCGContext() const
-{
-    Q_D(const QRasterPaintEngine);
-    return d->cgContext;
-}
-#endif
 
 #ifdef Q_OS_WIN
 /*!
@@ -3236,26 +3135,12 @@ void QRasterPaintEngine::releaseDC(HDC) const
 bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) const
 {
     const QTransform &m = state()->matrix;
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    QFontEngine::Type fontEngineType = fontEngine->type();
-    if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) fontEngine)->ttf && m.type() > QTransform::TxTranslate)
-        || (m.type() <= QTransform::TxTranslate
-            && (fontEngineType == QFontEngine::TestFontEngine
-                || fontEngineType == QFontEngine::Box))) {
-            return true;
-    }
-#endif
     return supportsTransformations(fontEngine->fontDef.pixelSize, m);
 }
 
 bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransform &m) const
 {
-#if defined(Q_WS_MAC)
-    // Mac font engines don't support scaling and rotation
-    if (m.type() > QTransform::TxTranslate)
-#else
     if (m.type() >= QTransform::TxProject)
-#endif
         return true;
 
     return !shouldDrawCachedGlyphs(pixelSize, m);

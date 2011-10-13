@@ -819,11 +819,6 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
-#if defined(Q_WS_X11) || defined (Q_WS_QWS)
-#   include "qfontengine_ft_p.h"
-#elif defined(Q_WS_MAC)
-# include "qtextengine_mac.cpp"
-#endif
 
 #include <private/qharfbuzz_p.h>
 
@@ -874,20 +869,6 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC) && defined(Q_WS_MAC)
-static bool enableHarfBuzz()
-{
-    static enum { Yes, No, Unknown } status = Unknown;
-
-    if (status == Unknown) {
-        QByteArray v = qgetenv("QT_ENABLE_HARFBUZZ");
-        bool value = !v.isEmpty() && v != "0" && v != "false";
-        if (value) status = Yes;
-        else status = No;
-    }
-    return status == Yes;
-}
-#endif
 
 void QTextEngine::shapeText(int item) const
 {
@@ -897,30 +878,7 @@ void QTextEngine::shapeText(int item) const
     if (si.num_glyphs)
         return;
 
-#if defined(Q_WS_MAC)
-#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
-    if (enableHarfBuzz()) {
-#endif
-        QFontEngine *actualFontEngine = fontEngine(si, &si.ascent, &si.descent, &si.leading);
-        if (actualFontEngine->type() == QFontEngine::Multi)
-            actualFontEngine = static_cast<QFontEngineMulti *>(actualFontEngine)->engine(0);
-
-        HB_Face face = actualFontEngine->harfbuzzFace();
-        HB_Script script = (HB_Script) si.analysis.script;
-        if (face->supported_scripts[script])
-            shapeTextWithHarfbuzz(item);
-        else
-            shapeTextMac(item);
-#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
-    } else {
-        shapeTextMac(item);
-    }
-#endif
-#elif defined(Q_WS_WINCE)
-    shapeTextWithCE(item);
-#else
     shapeTextWithHarfbuzz(item);
-#endif
 
     si.width = 0;
 
@@ -978,186 +936,6 @@ static inline bool hasCaseChange(const QScriptItem &si)
            si.analysis.flags == QScriptAnalysis::Lowercase;
 }
 
-#if defined(Q_WS_WINCE) //TODO
-// set the glyph attributes heuristically. Assumes a 1 to 1 relationship between chars and glyphs
-// and no reordering.
-// also computes logClusters heuristically
-static void heuristicSetGlyphAttributes(const QChar *uc, int length, QGlyphLayout *glyphs, unsigned short *logClusters, int num_glyphs)
-{
-    // ### zeroWidth and justification are missing here!!!!!
-
-    Q_UNUSED(num_glyphs);
-    Q_ASSERT(num_glyphs <= length);
-
-//     qDebug("QScriptEngine::heuristicSetGlyphAttributes, num_glyphs=%d", item->num_glyphs);
-
-    int glyph_pos = 0;
-    for (int i = 0; i < length; i++) {
-        if (uc[i].isHighSurrogate() && i < length-1 && uc[i+1].isLowSurrogate()) {
-            logClusters[i] = glyph_pos;
-            logClusters[++i] = glyph_pos;
-        } else {
-            logClusters[i] = glyph_pos;
-        }
-        ++glyph_pos;
-    }
-
-    // first char in a run is never (treated as) a mark
-    int cStart = 0;
-
-    const bool symbolFont = false; // ####
-    glyphs->attributes[0].mark = false;
-    glyphs->attributes[0].clusterStart = true;
-    glyphs->attributes[0].dontPrint = (!symbolFont && uc[0].unicode() == 0x00ad) || qIsControlChar(uc[0].unicode());
-
-    int pos = 0;
-    int lastCat = QChar::category(uc[0].unicode());
-    for (int i = 1; i < length; ++i) {
-        if (logClusters[i] == pos)
-            // same glyph
-            continue;
-        ++pos;
-        while (pos < logClusters[i]) {
-            glyphs[pos].attributes = glyphs[pos-1].attributes;
-            ++pos;
-        }
-        // hide soft-hyphens by default
-        if ((!symbolFont && uc[i].unicode() == 0x00ad) || qIsControlChar(uc[i].unicode()))
-            glyphs->attributes[pos].dontPrint = true;
-        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(uc[i].unicode());
-        int cat = prop->category;
-        if (cat != QChar::Mark_NonSpacing) {
-            glyphs->attributes[pos].mark = false;
-            glyphs->attributes[pos].clusterStart = true;
-            glyphs->attributes[pos].combiningClass = 0;
-            cStart = logClusters[i];
-        } else {
-            int cmb = prop->combiningClass;
-
-            if (cmb == 0) {
-                // Fix 0 combining classes
-                if ((uc[pos].unicode() & 0xff00) == 0x0e00) {
-                    // thai or lao
-                    unsigned char col = uc[pos].cell();
-                    if (col == 0x31 ||
-                         col == 0x34 ||
-                         col == 0x35 ||
-                         col == 0x36 ||
-                         col == 0x37 ||
-                         col == 0x47 ||
-                         col == 0x4c ||
-                         col == 0x4d ||
-                         col == 0x4e) {
-                        cmb = QChar::Combining_AboveRight;
-                    } else if (col == 0xb1 ||
-                                col == 0xb4 ||
-                                col == 0xb5 ||
-                                col == 0xb6 ||
-                                col == 0xb7 ||
-                                col == 0xbb ||
-                                col == 0xcc ||
-                                col == 0xcd) {
-                        cmb = QChar::Combining_Above;
-                    } else if (col == 0xbc) {
-                        cmb = QChar::Combining_Below;
-                    }
-                }
-            }
-
-            glyphs->attributes[pos].mark = true;
-            glyphs->attributes[pos].clusterStart = false;
-            glyphs->attributes[pos].combiningClass = cmb;
-            logClusters[i] = cStart;
-            glyphs->advances_x[pos] = 0;
-            glyphs->advances_y[pos] = 0;
-        }
-
-        // one gets an inter character justification point if the current char is not a non spacing mark.
-        // as then the current char belongs to the last one and one gets a space justification point
-        // after the space char.
-        if (lastCat == QChar::Separator_Space)
-            glyphs->attributes[pos-1].justification = HB_Space;
-        else if (cat != QChar::Mark_NonSpacing)
-            glyphs->attributes[pos-1].justification = HB_Character;
-        else
-            glyphs->attributes[pos-1].justification = HB_NoJustification;
-
-        lastCat = cat;
-    }
-    pos = logClusters[length-1];
-    if (lastCat == QChar::Separator_Space)
-        glyphs->attributes[pos].justification = HB_Space;
-    else
-        glyphs->attributes[pos].justification = HB_Character;
-}
-
-void QTextEngine::shapeTextWithCE(int item) const
-{
-    QScriptItem &si = layoutData->items[item];
-    si.glyph_data_offset = layoutData->used;
-
-    QFontEngine *fe = fontEngine(si, &si.ascent, &si.descent, &si.leading);
-
-    QTextEngine::ShaperFlags flags;
-    if (si.analysis.bidiLevel % 2)
-        flags |= RightToLeft;
-    if (option.useDesignMetrics())
-	flags |= DesignMetrics;
-
-    // pre-initialize char attributes
-    if (! attributes())
-        return;
-
-    const int len = length(item);
-    int num_glyphs = length(item);
-    const QChar *str = layoutData->string.unicode() + si.position;
-    ushort upperCased[256];
-    if (hasCaseChange(si)) {
-        ushort *uc = upperCased;
-        if (len > 256)
-            uc = new ushort[len];
-        for (int i = 0; i < len; ++i) {
-            if(si.analysis.flags == QScriptAnalysis::Lowercase)
-                uc[i] = str[i].toLower().unicode();
-            else
-                uc[i] = str[i].toUpper().unicode();
-        }
-        str = reinterpret_cast<const QChar *>(uc);
-    }
-
-    while (true) {
-        if (! ensureSpace(num_glyphs)) {
-            // If str is converted to uppercase/lowercase form with a new buffer,
-            // we need to delete that buffer before return for error
-            const ushort *uc = reinterpret_cast<const ushort *>(str);
-            if (hasCaseChange(si) && uc != upperCased)
-                delete [] uc;
-            return;
-        }
-        num_glyphs = layoutData->glyphLayout.numGlyphs - layoutData->used;
-
-        QGlyphLayout g = availableGlyphs(&si);
-        unsigned short *log_clusters = logClusters(&si);
-
-        if (fe->stringToCMap(str,
-                             len,
-                             &g,
-                             &num_glyphs,
-                             flags)) {
-            heuristicSetGlyphAttributes(str, len, &g, log_clusters, num_glyphs);
-		    break;
-        }
-    }
-
-    si.num_glyphs = num_glyphs;
-
-    layoutData->used += si.num_glyphs;
-
-    const ushort *uc = reinterpret_cast<const ushort *>(str);
-    if (hasCaseChange(si) && uc != upperCased)
-        delete [] uc;
-}
-#endif
 
 static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
 {

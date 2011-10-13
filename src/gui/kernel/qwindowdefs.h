@@ -92,53 +92,17 @@ QT_END_HEADER
 
 // Window system dependent definitions
 
-#if defined(Q_WS_MAC) && !defined(Q_WS_QWS)
-
-#include <QtGui/qmacdefines_mac.h>
-
-#ifdef Q_WS_MAC32
-typedef int WId;
-#else
-typedef long WId;
-#endif
-
-#endif // Q_WS_MAC
 
 #if defined(Q_OS_WIN)
 #  include <QtGui/qwindowdefs_win.h>
 #endif // Q_OS_WIN
 
-#if defined(Q_WS_X11)
 
-typedef struct _XDisplay Display;
-typedef union  _XEvent XEvent;
-typedef struct _XGC *GC;
-typedef struct _XRegion *Region;
-typedef unsigned long  WId;
 
-#endif // Q_WS_X11
-
-#if defined(Q_WS_QWS)
-
-typedef unsigned long  WId;
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
-struct QWSEvent;
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif // Q_WS_QWS
-
-#if defined(Q_WS_QPA)
 
 typedef unsigned long  WId;
 
-#endif // Q_WS_QPA
 
-#if defined(Q_OS_SYMBIAN)
-class CCoeControl;
-typedef CCoeControl * WId;
-#endif // Q_OS_SYMBIAN
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

@@ -127,9 +127,6 @@ public:
     inline bool operator!=(const QBrush &b) const { return !(operator==(b)); }
 
 private:
-#if defined(Q_WS_X11)
-    friend class QX11PaintEngine;
-#endif
     friend class QRasterPaintEngine;
     friend class QRasterPaintEnginePrivate;
     friend struct QSpanData;

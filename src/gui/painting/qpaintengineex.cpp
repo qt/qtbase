@@ -925,15 +925,8 @@ void QPaintEngineEx::drawPolygon(const QPoint *points, int pointCount, PolygonDr
     int count = pointCount<<1;
     QVarLengthArray<qreal> pts(count);
 
-#ifdef Q_WS_MAC
-    for (int i=0; i<count; i+=2) {
-        pts[i] = ((int *) points)[i+1];
-        pts[i+1] = ((int *) points)[i];
-    }
-#else
     for (int i=0; i<count; ++i)
         pts[i] = ((int *) points)[i];
-#endif
 
     QVectorPath path(pts.data(), pointCount, 0, QVectorPath::polygonFlags(mode));
 
@@ -1059,9 +1052,7 @@ Q_GUI_EXPORT QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path)
 void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
     QPainterPath path;
-#ifndef Q_WS_MAC
     path.setFillRule(Qt::WindingFill);
-#endif
 
     if (staticTextItem->numGlyphs == 0)
         return;

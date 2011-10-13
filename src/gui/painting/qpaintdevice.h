@@ -51,9 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#if defined(Q_WS_QWS)
-class QWSDisplay;
-#endif
 
 class QPaintEngine;
 

@@ -91,9 +91,7 @@ public:
     virtual Type type() const { return Proxy; }
     virtual const char *name() const { return "proxy engine"; }
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     virtual void draw(QPaintEngine *, qreal, qreal, const QTextItemInt &);
-#endif
 
     inline QAbstractFontEngine::Capabilities capabilities() const
     { return engineCapabilities; }

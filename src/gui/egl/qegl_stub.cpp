@@ -226,7 +226,6 @@ EGLBoolean QEgl::eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EG
     return 0;
 }
 
-#ifndef Q_WS_X11
 EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {
     Q_UNUSED(device)
@@ -235,7 +234,6 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglPr
     NOEGL
     return 0;
 }
-#endif
 
 
 // Return the error string associated with a specific code.

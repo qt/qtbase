@@ -60,9 +60,6 @@
 #include <qevent.h>
 #include <qhash.h>
 
-#if defined (Q_WS_MAC64)
-# include <private/qt_mac_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -76,13 +73,6 @@ public:
 
     static QKeyMapper *instance();
     static void changeKeyboard();
-#ifndef Q_WS_QPA
-    static bool sendKeyEvent(QWidget *widget, bool grab,
-                             QEvent::Type type, int code, Qt::KeyboardModifiers modifiers,
-                             const QString &text, bool autorepeat, int count,
-                             quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                             bool *unusedExceptForCocoa = 0);
-#endif
     static QList<int> possibleKeys(QKeyEvent *e);
 
 private:
@@ -166,57 +156,7 @@ public:
     void deleteLayouts();
 
     KeyboardLayoutItem *keyLayout[256];
-
-#elif defined(Q_WS_X11)
-
-    QList<int> possibleKeysXKB(QKeyEvent *event);
-    QList<int> possibleKeysCore(QKeyEvent *event);
-
-    bool translateKeyEventInternal(QWidget *keywidget,
-                                   const XEvent *,
-                                   KeySym &keysym,
-                                   int& count,
-                                   QString& text,
-                                   Qt::KeyboardModifiers& modifiers,
-                                   int &code,
-                                   QEvent::Type &type,
-                                   bool statefulTranslation = true);
-    bool translateKeyEvent(QWidget *keywidget,
-                           const XEvent *,
-                           bool grab);
-
-    int xkb_currentGroup;
-    QXCoreDesc coreDesc;
-
-#elif defined(Q_WS_MAC)
-    bool updateKeyboard();
-    void updateKeyMap(EventHandlerCallRef, EventRef, void *);
-    bool translateKeyEvent(QWidget *, EventHandlerCallRef, EventRef, void *, bool);
-    void deleteLayouts();
-
-    enum { NullMode, UnicodeMode, OtherMode } keyboard_mode;
-    union {
-        const UCKeyboardLayout *unicode;
-        void *other;
-    } keyboard_layout_format;
-#ifdef Q_WS_MAC64
-    QCFType<TISInputSourceRef> currentInputSource;
-#else
-    KeyboardLayoutRef currentKeyboardLayout;
-#endif
-    KeyboardLayoutKind keyboard_kind;
-    UInt32 keyboard_dead;
-    KeyboardLayoutItem *keyLayout[256];
-#elif defined(Q_WS_QWS)
-#elif defined(Q_OS_SYMBIAN)
-public:
-    QString translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers);
-    int mapS60KeyToQt(TUint s60key);
-    int mapS60ScanCodesToQt(TUint s60key);
-    int mapQtToS60Key(int qtKey);
-    int mapQtToS60ScanCodes(int qtKey);
-    void updateInputLanguage();
-#endif
+#endif // defined(Q_OS_WIN)
 };
 
 QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp

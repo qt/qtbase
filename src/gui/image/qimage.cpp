@@ -5392,21 +5392,6 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                         dptr++;
                     }
                     break;
-#  if defined(Q_WS_WIN)
-                case QT_XFORM_TYPE_WINDOWSPIXMAP:
-                    while (dptr < maxp) {
-                        IWX_PIX(128);
-                        IWX_PIX(64);
-                        IWX_PIX(32);
-                        IWX_PIX(16);
-                        IWX_PIX(8);
-                        IWX_PIX(4);
-                        IWX_PIX(2);
-                        IWX_PIX(1);
-                        dptr++;
-                    }
-                    break;
-#  endif
             }
         }
         m21ydx += m21;

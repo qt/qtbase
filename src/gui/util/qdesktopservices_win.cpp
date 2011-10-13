@@ -191,11 +191,7 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 
     switch (type) {
     case DataLocation:
-#if defined Q_WS_WINCE
-        if (SHGetSpecialFolderPath(0, path, CSIDL_APPDATA, FALSE))
-#else
         if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
-#endif
             result = QString::fromWCharArray(path);
         if (!QCoreApplication::organizationName().isEmpty())
             result = result + QLatin1String("\\") + QCoreApplication::organizationName();

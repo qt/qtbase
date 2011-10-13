@@ -49,11 +49,6 @@
 #include <pathinfo.h>               // PathInfo
 
 #ifndef USE_SCHEMEHANDLER
-#ifdef Q_WS_S60
-// This flag changes the implementation to use S60 CDcoumentHandler
-// instead of apparc when opening the files
-#define USE_DOCUMENTHANDLER
-#endif
 
 #include <txtrich.h>                // CRichText
 #include <eikenv.h>                 // CEikonEnv

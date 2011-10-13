@@ -49,15 +49,9 @@
 
 #include <math.h>
 
-#ifdef Q_WS_X11
-#include "qx11info_x11.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_X11
-extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
-#endif
 
 extern void qt_format_text(const QFont& font, const QRectF &_r,
                            int tf, const QString &text, QRectF *brect,
@@ -182,12 +176,7 @@ QFontMetrics::QFontMetrics(const QFont &font)
 QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
 {
     int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
-#ifdef Q_WS_X11
-    const QX11Info *info = qt_x11Info(paintdevice);
-    int screen = info ? info->screen() : 0;
-#else
     const int screen = 0;
-#endif
     if (font.d->dpi != dpi || font.d->screen != screen ) {
         d = new QFontPrivate(*font.d);
         d->dpi = dpi;
@@ -1060,12 +1049,7 @@ QFontMetricsF::QFontMetricsF(const QFont &font)
 QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
 {
     int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
-#ifdef Q_WS_X11
-    const QX11Info *info = qt_x11Info(paintdevice);
-    int screen = info ? info->screen() : 0;
-#else
     const int screen = 0;
-#endif
     if (font.d->dpi != dpi || font.d->screen != screen ) {
         d = new QFontPrivate(*font.d);
         d->dpi = dpi;

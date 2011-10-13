@@ -157,15 +157,9 @@ static bool qt_painter_thread_test(int devType, const char *what, bool extraCond
     case QInternal::Printer:
     case QInternal::Picture:
         // can be drawn onto these devices safely from any thread
-#ifndef Q_WS_WIN
         if (extraCondition)
-#endif
             break;
     default:
-#ifdef Q_WS_X11
-        if (QApplication::testAttribute(Qt::AA_X11InitThreads))
-            return true;
-#endif
         if (!extraCondition && QThread::currentThread() != qApp->thread()) {
             qWarning("QPainter: It is not safe to use %s outside the GUI thread", what);
             return false;
