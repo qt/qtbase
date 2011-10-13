@@ -15,6 +15,7 @@ HEADERS +=  \
         io/qfiledevice_p.h \
         io/qfileinfo.h \
         io/qfileinfo_p.h \
+        io/qipaddress_p.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
         io/qnoncontiguousbytedevice_p.h \
@@ -53,6 +54,7 @@ SOURCES += \
         io/qfile.cpp \
         io/qfiledevice.cpp \
         io/qfileinfo.cpp \
+        io/qipaddress.cpp \
         io/qiodevice.cpp \
         io/qnoncontiguousbytedevice.cpp \
         io/qprocess.cpp \

@@ -12,6 +12,7 @@ SUBDIRS=\
     qfilesystementry \
     qfilesystemwatcher \
     qiodevice \
+    qipaddress \
     qnodebug \
     qprocess \
     qprocessenvironment \
@@ -31,7 +32,8 @@ SUBDIRS=\
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qabstractfileengine \
-    qfileinfo
+    qfileinfo \
+    qipaddress
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfilesystementry
