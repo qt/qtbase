@@ -72,9 +72,10 @@ public:
         int trackingId;
         int x;
         int y;
+        int maj;
         Qt::TouchPointState state;
         bool primary;
-        Slot() : trackingId(0), x(0), y(0), state(Qt::TouchPointPressed), primary(false) { }
+        Slot() : trackingId(0), x(0), y(0), maj(1), state(Qt::TouchPointPressed), primary(false) { }
     };
     QMap<int, Slot> m_slots;
     QMap<int, QPoint> m_lastReport;
@@ -254,6 +255,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
                 m_slots[m_currentSlot].primary = m_slots.count() == 1;
              }
          } else if (data->code == ABS_MT_TOUCH_MAJOR) {
+             m_slots[m_currentSlot].maj = data->value;
              if (data->value == 0)
                  m_slots[m_currentSlot].state = Qt::TouchPointReleased;
          }
@@ -273,7 +275,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
             tp.id = slot.trackingId;
             tp.isPrimary = slot.primary;
             tp.pressure = slot.state == Qt::TouchPointReleased ? 0 : 1;
-            tp.area = QRectF(slot.x, slot.y, 1, 1);
+            tp.area = QRectF(slot.x, slot.y, slot.maj, slot.maj);
             tp.state = slot.state;
             if (slot.state == Qt::TouchPointMoved && m_lastReport.contains(slot.trackingId)) {
                 QPoint lastPos = m_lastReport.value(slot.trackingId);

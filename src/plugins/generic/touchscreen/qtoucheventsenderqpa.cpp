@@ -102,7 +102,8 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
         // Generate a screen position that is always inside the active window or the default screen.
         const int wx = winRect.left() + int(nx * winRect.width());
         const int wy = winRect.top() + int(ny * winRect.height());
-        tp.area.moveTopLeft(QPoint(wx, wy));
+        const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
+        tp.area = QRect(wx, wy, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
 
 #ifdef POINT_DEBUG
         qDebug() << "    " << i << tp.area << tp.state << tp.id << tp.isPrimary << tp.pressure;
