@@ -53,6 +53,7 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include <QtGui/qplatformintegration_qpa.h>
 #include <QtGui/qplatformtheme_qpa.h>
+#include "private/qshortcutmap_p.h"
 
 QT_BEGIN_HEADER
 
@@ -183,6 +184,9 @@ public:
     static bool quitOnLastWindowClosed;
 
     static QList<QObject *> generic_plugin_list;
+#ifndef QT_NO_SHORTCUT
+    QShortcutMap shortcutMap;
+#endif
 
 private:
     void init();

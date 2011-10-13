@@ -68,7 +68,6 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qpointer.h"
 #include "private/qcoreapplication_p.h"
-#include "private/qshortcutmap_p.h"
 #include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
 #include <QTime>
@@ -367,9 +366,6 @@ public:
     QBasicTimer toolTipWakeUp, toolTipFallAsleep;
     QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
     QPointer<QWidget> toolTipWidget;
-#ifndef QT_NO_SHORTCUT
-    QShortcutMap shortcutMap;
-#endif
 
     static QInputContext *inputContext;
 

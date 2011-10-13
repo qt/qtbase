@@ -512,6 +512,18 @@ int QGuiApplication::exec()
 
 bool QGuiApplication::notify(QObject *object, QEvent *event)
 {
+#ifndef QT_NO_SHORTCUT
+    if (event->type() == QEvent::KeyPress) {
+        // Try looking for a Shortcut before sending key events
+        QWindow *w = qobject_cast<QWindow *>(object);
+        QObject *focus = w ? w->focusObject() : 0;
+        if (!focus)
+            focus = object;
+        if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcutEvent(focus, static_cast<QKeyEvent *>(event)))
+            return true;
+    }
+#endif
+
     return QCoreApplication::notify(object, event);
 }
 
@@ -700,18 +712,10 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (!window)
         return;
 
-    QObject *target = window;
-
-    if (e->nativeScanCode || e->nativeVirtualKey || e->nativeModifiers) {
-        QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
-                       e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
-        ev.setTimestamp(e->timestamp);
-        QGuiApplication::sendSpontaneousEvent(target, &ev);
-    } else {
-        QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
-        ev.setTimestamp(e->timestamp);
-        QGuiApplication::sendSpontaneousEvent(target, &ev);
-    }
+    QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
+                   e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(window, &ev);
 }
 
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
