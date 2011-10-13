@@ -84,16 +84,17 @@ QT_BEGIN_NAMESPACE
     Reimplement this function in a subclass to indicate what format the glContext actually has.
 */
 
-struct QPlatformOpenGLContextPrivate
+class QPlatformOpenGLContextPrivate
 {
+public:
+    QPlatformOpenGLContextPrivate() : context(0) {}
+
     QOpenGLContext *context;
 };
 
 QPlatformOpenGLContext::QPlatformOpenGLContext()
     : d_ptr(new QPlatformOpenGLContextPrivate)
 {
-    Q_D(QPlatformOpenGLContext);
-    d->context = 0;
 }
 
 QPlatformOpenGLContext::~QPlatformOpenGLContext()
