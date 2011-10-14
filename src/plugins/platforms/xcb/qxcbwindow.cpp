@@ -93,6 +93,10 @@
 #include <X11/Xutil.h>
 #endif
 
+#ifdef XCB_USE_XINPUT2_MAEMO
+#include <X11/extensions/XInput2.h>
+#endif
+
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
 #include <QtPlatformSupport/private/qglxconvenience_p.h>
@@ -321,6 +325,23 @@ void QXcbWindow::create()
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
                                    1, &leader));
+
+#ifdef XCB_USE_XINPUT2_MAEMO
+    if (connection()->isUsingXInput2()) {
+        XIEventMask xieventmask;
+        uchar bitmask[2] = { 0, 0 };
+
+        xieventmask.deviceid = XIAllMasterDevices;
+        xieventmask.mask = bitmask;
+        xieventmask.mask_len = sizeof(bitmask);
+
+        XISetMask(bitmask, XI_ButtonPress);
+        XISetMask(bitmask, XI_ButtonRelease);
+        XISetMask(bitmask, XI_Motion);
+
+        XISelectEvents(DISPLAY_FROM_XCB(this), m_window, &xieventmask, 1);
+    }
+#endif
 
     setWindowFlags(window()->windowFlags());
     setWindowTitle(window()->windowTitle());

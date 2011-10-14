@@ -51,6 +51,10 @@
 #include <QThread>
 #include <QVector>
 
+#ifdef XCB_USE_XINPUT2_MAEMO
+struct XInput2Data;
+#endif
+
 #define Q_XCB_DEBUG
 
 QT_BEGIN_NAMESPACE
@@ -222,6 +226,22 @@ namespace QXcbAtom {
         XTabletStylus,
         XTabletEraser,
 
+        // XInput2
+        ButtonLeft,
+        ButtonMiddle,
+        ButtonRight,
+        ButtonWheelUp,
+        ButtonWheelDown,
+        ButtonHorizWheelLeft,
+        ButtonHorizWheelRight,
+        AbsMTPositionX,
+        AbsMTPositionY,
+        AbsMTTouchMajor,
+        AbsMTTouchMinor,
+        AbsMTPressure,
+        AbsMTTrackingID,
+        MaxContacts,
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,
@@ -301,6 +321,9 @@ public:
 #if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
     void *egl_display() const { return m_egl_display; }
 #endif
+#ifdef XCB_USE_XINPUT2_MAEMO
+    bool isUsingXInput2();
+#endif
 
     void sync();
     void flush() { xcb_flush(m_connection); }
@@ -335,6 +358,11 @@ private:
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
+#ifdef XCB_USE_XINPUT2_MAEMO
+    void initializeXInput2();
+    void finalizeXInput2();
+    void handleGenericEvent(xcb_ge_event_t *event);
+#endif
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
 
     xcb_connection_t *m_connection;
@@ -360,6 +388,9 @@ private:
     void *m_xlib_display;
 #endif
     QXcbEventReader *m_reader;
+#ifdef XCB_USE_XINPUT2_MAEMO
+    XInput2Data *m_xinputData;
+#endif
 #ifdef XCB_USE_DRI2
     uint32_t m_dri2_major;
     uint32_t m_dri2_minor;

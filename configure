@@ -748,6 +748,7 @@ CFG_DECORATION_AVAILABLE="styled windows default"
 CFG_DECORATION_ON="${CFG_DECORATION_AVAILABLE}" # all on by default
 CFG_DECORATION_PLUGIN_AVAILABLE=
 CFG_DECORATION_PLUGIN=
+CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
@@ -819,6 +820,7 @@ XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "s
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_SYMBIAN=no    # Whether target platform is SYMBIAN (*symbian*)
 XPLATFORM_SYMBIAN_SBSV2=no # Whether target platform is SYMBIAN_SBSV2 (symbian-sbsv2)
+XPLATFORM_MAEMO=no
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -1042,7 +1044,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1592,6 +1594,7 @@ while [ "$#" -gt 0 ]; do
         case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
         case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
         case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
+        case "$XPLATFORM" in linux-g++-maemo) XPLATFORM_MAEMO=yes;; esac
         ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1708,6 +1711,13 @@ while [ "$#" -gt 0 ]; do
     xsync)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSYNC="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+     xinput2)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XINPUT2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2913,6 +2923,7 @@ fi
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
 case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
 case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
+case "$XPLATFORM" in linux-g++-maemo) XPLATFORM_MAEMO=yes;; esac
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -3732,6 +3743,13 @@ if [ "$OPT_HELP" = "yes" ]; then
         XWY="*"
         XWN=" "
     fi
+    if [ "$CFG_XINPUT2" = "no" ]; then
+        X2Y=" "
+        X2N="*"
+    else
+        X2Y="*"
+        X2N=" "
+    fi
 
     cat <<EOF
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
@@ -4087,6 +4105,17 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 EOF
 
 fi # X11/QWS
+
+if [ "$XPLATFORM_MAEMO" = "yes" ]; then
+
+    cat << EOF
+
+ $X2N  -no-xinput2......... Do not compile XInput2 support.
+ $X2Y  -xinput2............ Compile XInput2 support.
+
+EOF
+
+fi
 
 if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_SM" = "no" ]; then
@@ -6301,6 +6330,26 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
             if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
                 QT_CONFIG="$QT_CONFIG xcb-xlib"
             fi
+
+            if [ "$XPLATFORM_MAEMO" = "yes" ]; then
+                # auto-detect XInput2/Xinput support
+                if [ "$CFG_XINPUT2" != "no" ]; then
+                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xinput2 "XInput2" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+                    CFG_XINPUT2=yes
+                    CFG_XINPUT=no
+                    else
+                        if [ "$CFG_XINPUT2" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                            echo "XInput2 support cannot be enabled due to functionality tests!"
+                            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                            echo " If you believe this message is in error you may use the continue"
+                            echo " switch (-continue) to $0 to continue."
+                            exit 101
+                        else
+                            CFG_XINPUT2=no
+                        fi
+                    fi
+                fi
+            fi
         else
             if [ "$CFG_XCB" = "yes" ]; then
                 echo "The XCB test failed!"
@@ -7271,6 +7320,7 @@ fi
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 [ "$CFG_XCB" = "yes" ] && QT_CONFIG="$QT_CONFIG xcb"
+[ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 
 if [ "$PLATFORM_X11" = "yes" ]; then
     [ "$CFG_SM" = "yes" ] && QT_CONFIG="$QT_CONFIG x11sm"
@@ -8632,6 +8682,9 @@ if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "Xcb support ............ limited (old version)"
 else
     echo "Xcb support ............ $CFG_XCB"
+fi
+if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
+    echo "XInput2 support ........ $CFG_XINPUT2"
 fi
 echo
 

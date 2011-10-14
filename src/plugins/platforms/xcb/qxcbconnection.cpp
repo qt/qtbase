@@ -88,6 +88,9 @@ QT_BEGIN_NAMESPACE
 
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+#ifdef XCB_USE_XINPUT2_MAEMO
+    , m_xinputData(0)
+#endif
 #ifdef XCB_USE_DRI2
     , m_dri2_major(0)
     , m_dri2_minor(0)
@@ -155,6 +158,9 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
     initializeXFixes();
     initializeXRender();
+#ifdef XCB_USE_XINPUT2_MAEMO
+    initializeXInput2();
+#endif
 
     m_wmSupport = new QXcbWMSupport(this);
     m_keyboard = new QXcbKeyboard(this);
@@ -172,6 +178,10 @@ QXcbConnection::~QXcbConnection()
     delete m_clipboard;
 
     qDeleteAll(m_screens);
+
+#ifdef XCB_USE_XINPUT2_MAEMO
+    finalizeXInput2();
+#endif
 
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
     sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
@@ -530,6 +540,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     case XCB_PROPERTY_NOTIFY:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
         break;
+#ifdef XCB_USE_XINPUT2_MAEMO
+    case GenericEvent:
+        handleGenericEvent((xcb_ge_event_t*)event);
+        break;
+#endif
     default:
         handled = false;
         break;
@@ -862,6 +877,22 @@ static const char * xcb_atomnames = {
     // Tablet
     "STYLUS\0"
     "ERASER\0"
+
+    // XInput2
+    "Button Left\0"
+    "Button Middle\0"
+    "Button Right\0"
+    "Button Wheel Up\0"
+    "Button Wheel Down\0"
+    "Button Horiz Wheel Left\0"
+    "Button Horiz Wheel Right\0"
+    "Abs MT Position X\0"
+    "Abs MT Position Y\0"
+    "Abs MT Touch Major\0"
+    "Abs MT Touch Minor\0"
+    "Abs MT Pressure\0"
+    "Abs MT Tracking ID\0"
+    "Max Contacts\0"
 };
 
 xcb_atom_t QXcbConnection::atom(QXcbAtom::Atom atom)
