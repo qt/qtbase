@@ -81,7 +81,9 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const
 {
     Q_UNUSED(window);
-    return new QPlatformWindow(window);
+    QPlatformWindow *w = new QPlatformWindow(window);
+    w->requestActivateWindow();
+    return w;
 }
 
 QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *window) const

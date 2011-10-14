@@ -81,7 +81,9 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createPlatformWindow %p\n",window);
 #endif
-    return new QEglFSWindow(window);
+    QPlatformWindow *w = new QEglFSWindow(window);
+    w->requestActivateWindow();
+    return w;
 }
 
 
