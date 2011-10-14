@@ -166,7 +166,14 @@ Qt::WindowState QPlatformWindow::setWindowState(Qt::WindowState)
 /*!
   Reimplement in subclasses to return a handle to the native window
 */
-WId QPlatformWindow::winId() const { return WId(0); }
+WId QPlatformWindow::winId() const
+{
+    // Return anything but 0. Returning 0 would cause havoc with QWidgets on
+    // very basic platform plugins that do not reimplement this function,
+    // because the top-level widget's internalWinId() would always be 0 which
+    // would mean top-levels are never treated as native.
+    return WId(1);
+}
 
 /*!
     This function is called to enable native child window in QPA. It is common not to support this
