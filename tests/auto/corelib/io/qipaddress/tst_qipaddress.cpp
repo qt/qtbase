@@ -60,7 +60,65 @@ private Q_SLOTS:
     void invalidParseIp4();
     void ip4ToString_data();
     void ip4ToString();
+
+    void parseIp6_data();
+    void parseIp6();
+    void invalidParseIp6_data();
+    void invalidParseIp6();
+    void ip6ToString_data();
+    void ip6ToString();
 };
+
+struct Ip6
+{
+    QIPAddressUtils::IPv6Address u8;
+    Ip6() { *this = Ip6(0,0,0,0, 0,0,0,0); }
+    Ip6(quint16 p1, quint16 p2, quint16 p3, quint16 p4,
+         quint16 p5, quint16 p6, quint16 p7, quint16 p8)
+    {
+        u8[0] = p1 >> 8;
+        u8[2] = p2 >> 8;
+        u8[4] = p3 >> 8;
+        u8[6] = p4 >> 8;
+        u8[8] = p5 >> 8;
+        u8[10] = p6 >> 8;
+        u8[12] = p7 >> 8;
+        u8[14] = p8 >> 8;
+
+        u8[1] = p1 & 0xff;
+        u8[3] = p2 & 0xff;
+        u8[5] = p3 & 0xff;
+        u8[7] = p4 & 0xff;
+        u8[9] = p5 & 0xff;
+        u8[11] = p6 & 0xff;
+        u8[13] = p7 & 0xff;
+        u8[15] = p8 & 0xff;
+    }
+
+    bool operator==(const Ip6 &other) const
+    { return memcmp(u8, other.u8, sizeof u8) == 0; }
+};
+Q_DECLARE_METATYPE(Ip6)
+
+QT_BEGIN_NAMESPACE
+namespace QTest {
+    template<>
+    char *toString(const Ip6 &ip6)
+    {
+        char buf[sizeof "1111:2222:3333:4444:5555:6666:7777:8888" + 2];
+        sprintf(buf, "%x:%x:%x:%x:%x:%x:%x:%x",
+                ip6.u8[0] << 8 | ip6.u8[1],
+                ip6.u8[2] << 8 | ip6.u8[3],
+                ip6.u8[4] << 8 | ip6.u8[5],
+                ip6.u8[6] << 8 | ip6.u8[7],
+                ip6.u8[8] << 8 | ip6.u8[9],
+                ip6.u8[10] << 8 | ip6.u8[11],
+                ip6.u8[12] << 8 | ip6.u8[13],
+                ip6.u8[14] << 8 | ip6.u8[15]);
+        return strdup(buf);
+    }
+}
+QT_END_NAMESPACE
 
 void tst_QIpAddress::parseIp4_data()
 {
@@ -210,6 +268,233 @@ void tst_QIpAddress::ip4ToString()
 
     QString result;
     QIPAddressUtils::toString(result, ip);
+    QCOMPARE(result, expected);
+}
+
+void tst_QIpAddress::parseIp6_data()
+{
+    qRegisterMetaType<Ip6>();
+    QTest::addColumn<QString>("address");
+    QTest::addColumn<Ip6>("expected");
+
+    // 7 colons, no ::
+    QTest::newRow("0:0:0:0:0:0:0:0") << "0:0:0:0:0:0:0:0" << Ip6(0,0,0,0,0,0,0,0);
+    QTest::newRow("0:0:0:0:0:0:0:1") << "0:0:0:0:0:0:0:1" << Ip6(0,0,0,0,0,0,0,1);
+    QTest::newRow("0:0:0:0:0:0:1:1") << "0:0:0:0:0:0:1:1" << Ip6(0,0,0,0,0,0,1,1);
+    QTest::newRow("0:0:0:0:0:0:0:103") << "0:0:0:0:0:0:0:103" << Ip6(0,0,0,0,0,0,0,0x103);
+    QTest::newRow("1:2:3:4:5:6:7:8") << "1:2:3:4:5:6:7:8" << Ip6(1,2,3,4,5,6,7,8);
+    QTest::newRow("ffee:ddcc:bbaa:9988:7766:5544:3322:1100")
+            << "ffee:ddcc:bbaa:9988:7766:5544:3322:1100"
+            << Ip6(0xffee, 0xddcc, 0xbbaa, 0x9988, 0x7766, 0x5544, 0x3322, 0x1100);
+
+    // too many zeroes
+    QTest::newRow("0:0:0:0:0:0:0:00103") << "0:0:0:0:0:0:0:00103" << Ip6(0,0,0,0,0,0,0,0x103);
+
+    // double-colon
+    QTest::newRow("::1:2:3:4:5:6:7") << "::1:2:3:4:5:6:7" << Ip6(0,1,2,3,4,5,6,7);
+    QTest::newRow("1:2:3:4:5:6:7::") << "1:2:3:4:5:6:7::" << Ip6(1,2,3,4,5,6,7,0);
+
+    QTest::newRow("1::2:3:4:5:6:7") << "1::2:3:4:5:6:7" << Ip6(1,0,2,3,4,5,6,7);
+    QTest::newRow("1:2::3:4:5:6:7") << "1:2::3:4:5:6:7" << Ip6(1,2,0,3,4,5,6,7);
+    QTest::newRow("1:2:3::4:5:6:7") << "1:2:3::4:5:6:7" << Ip6(1,2,3,0,4,5,6,7);
+    QTest::newRow("1:2:3:4::5:6:7") << "1:2:3:4::5:6:7" << Ip6(1,2,3,4,0,5,6,7);
+    QTest::newRow("1:2:3:4:5::6:7") << "1:2:3:4:5::6:7" << Ip6(1,2,3,4,5,0,6,7);
+    QTest::newRow("1:2:3:4:5:6::7") << "1:2:3:4:5:6::7" << Ip6(1,2,3,4,5,6,0,7);
+
+    QTest::newRow("::1:2:3:4:5:6") << "::1:2:3:4:5:6" << Ip6(0,0,1,2,3,4,5,6);
+    QTest::newRow("1:2:3:4:5:6::") << "1:2:3:4:5:6::" << Ip6(1,2,3,4,5,6,0,0);
+
+    QTest::newRow("1::2:3:4:5:6") << "1::2:3:4:5:6" << Ip6(1,0,0,2,3,4,5,6);
+    QTest::newRow("1:2::3:4:5:6") << "1:2::3:4:5:6" << Ip6(1,2,0,0,3,4,5,6);
+    QTest::newRow("1:2:3::4:5:6") << "1:2:3::4:5:6" << Ip6(1,2,3,0,0,4,5,6);
+    QTest::newRow("1:2:3:4::5:6") << "1:2:3:4::5:6" << Ip6(1,2,3,4,0,0,5,6);
+    QTest::newRow("1:2:3:4:5::6") << "1:2:3:4:5::6" << Ip6(1,2,3,4,5,0,0,6);
+
+    QTest::newRow("::1:2:3:4:5") << "::1:2:3:4:5" << Ip6(0,0,0,1,2,3,4,5);
+    QTest::newRow("1:2:3:4:5::") << "1:2:3:4:5::" << Ip6(1,2,3,4,5,0,0,0);
+
+    QTest::newRow("1::2:3:4:5") << "1::2:3:4:5" << Ip6(1,0,0,0,2,3,4,5);
+    QTest::newRow("1:2::3:4:5") << "1:2::3:4:5" << Ip6(1,2,0,0,0,3,4,5);
+    QTest::newRow("1:2:3::4:5") << "1:2:3::4:5" << Ip6(1,2,3,0,0,0,4,5);
+    QTest::newRow("1:2:3:4::5") << "1:2:3:4::5" << Ip6(1,2,3,4,0,0,0,5);
+
+    QTest::newRow("::1:2:3:4") << "::1:2:3:4" << Ip6(0,0,0,0,1,2,3,4);
+    QTest::newRow("1:2:3:4::") << "1:2:3:4::" << Ip6(1,2,3,4,0,0,0,0);
+
+    QTest::newRow("1::2:3:4") << "1::2:3:4" << Ip6(1,0,0,0,0,2,3,4);
+    QTest::newRow("1:2::3:4") << "1:2::3:4" << Ip6(1,2,0,0,0,0,3,4);
+    QTest::newRow("1:2:3::4") << "1:2:3::4" << Ip6(1,2,3,0,0,0,0,4);
+
+    QTest::newRow("::1:2:3") << "::1:2:3" << Ip6(0,0,0,0,0,1,2,3);
+    QTest::newRow("1:2:3::") << "1:2:3::" << Ip6(1,2,3,0,0,0,0,0);
+
+    QTest::newRow("1::2:3") << "1::2:3" << Ip6(1,0,0,0,0,0,2,3);
+    QTest::newRow("1:2::3") << "1:2::3" << Ip6(1,2,0,0,0,0,0,3);
+
+    QTest::newRow("::1:2") << "::1:2" << Ip6(0,0,0,0,0,0,1,2);
+    QTest::newRow("1:2::") << "1:2::" << Ip6(1,2,0,0,0,0,0,0);
+
+    QTest::newRow("1::2") << "1::2" << Ip6(1,0,0,0,0,0,0,2);
+
+    QTest::newRow("::1") << "::1" << Ip6(0,0,0,0,0,0,0,1);
+    QTest::newRow("1::") << "1::" << Ip6(1,0,0,0,0,0,0,0);
+
+    QTest::newRow("::") << "::" << Ip6(0,0,0,0,0,0,0,0);
+
+    // embedded IPv4
+    QTest::newRow("1:2:3:4:5:6:10.0.16.1") << "1:2:3:4:5:6:10.0.16.1" << Ip6(1,2,3,4,5,6,0xa00,0x1001);
+    QTest::newRow("1::10.0.16.1") << "1::10.0.16.1" << Ip6(1,0,0,0,0,0,0xa00,0x1001);
+    QTest::newRow("::10.0.16.1") << "::10.0.16.1" << Ip6(0,0,0,0,0,0,0xa00,0x1001);
+    QTest::newRow("::0.0.0.0") << "::0.0.0.0" << Ip6(0,0,0,0,0,0,0,0);
+}
+
+void tst_QIpAddress::parseIp6()
+{
+    QFETCH(QString, address);
+    QFETCH(Ip6, expected);
+
+#if defined(__GLIBC__) && defined(AF_INET6)
+    Ip6 inet_result;
+    bool inet_ok = inet_pton(AF_INET6, address.toLatin1(), &inet_result.u8);
+    QVERIFY(inet_ok);
+    QCOMPARE(inet_result, expected);
+#endif
+
+    Ip6 result;
+    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd());
+    QVERIFY(ok);
+    QCOMPARE(result, expected);
+}
+
+void tst_QIpAddress::invalidParseIp6_data()
+{
+    QTest::addColumn<QString>("address");
+
+    // too many colons
+    QTest::newRow("0:0:0:0::0:0:0:0") << "0:0:0:0::0:0:0:0";
+    QTest::newRow("0:::") << "0:::"; QTest::newRow(":::0") << ":::0";
+    QTest::newRow("16:::::::::::::::::::::::") << "16:::::::::::::::::::::::";
+
+    // non-hex
+    QTest::newRow("a:b:c:d:e:f:g:h") << "a:b:c:d:e:f:g:h";
+
+    // too big number
+    QTest::newRow("0:0:0:0:0:0:0:10103") << "0:0:0:0:0:0:0:10103";
+
+    // too short
+    QTest::newRow("0:0:0:0:0:0:0:") << "0:0:0:0:0:0:0:";
+    QTest::newRow("0:0:0:0:0:0:0") << "0:0:0:0:0:0:0";
+    QTest::newRow("0:0:0:0:0:0:") << "0:0:0:0:0:0:";
+    QTest::newRow("0:0:0:0:0:0") << "0:0:0:0:0:0";
+    QTest::newRow("0:0:0:0:0:") << "0:0:0:0:0:";
+    QTest::newRow("0:0:0:0:0") << "0:0:0:0:0";
+    QTest::newRow("0:0:0:0:") << "0:0:0:0:";
+    QTest::newRow("0:0:0:0") << "0:0:0:0";
+    QTest::newRow("0:0:0:") << "0:0:0:";
+    QTest::newRow("0:0:0") << "0:0:0";
+    QTest::newRow("0:0:") << "0:0:";
+    QTest::newRow("0:0") << "0:0";
+    QTest::newRow("0:") << "0:";
+    QTest::newRow("0") << "0";
+    QTest::newRow(":0") << ":0";
+    QTest::newRow(":0:0") << ":0:0";
+    QTest::newRow(":0:0:0") << ":0:0:0";
+    QTest::newRow(":0:0:0:0") << ":0:0:0:0";
+    QTest::newRow(":0:0:0:0:0") << ":0:0:0:0:0";
+    QTest::newRow(":0:0:0:0:0:0") << ":0:0:0:0:0:0";
+    QTest::newRow(":0:0:0:0:0:0:0") << ":0:0:0:0:0:0:0";
+
+    // IPv4
+    QTest::newRow("1.2.3.4") << "1.2.3.4";
+
+    // embedded IPv4 in the wrong position
+    QTest::newRow("1.2.3.4::") << "1.2.3.4::";
+    QTest::newRow("f:1.2.3.4::") << "f:1.2.3.4::";
+    QTest::newRow("f:e:d:c:b:1.2.3.4:0") << "f:e:d:c:b:1.2.3.4:0";
+
+    // bad embedded IPv4
+    QTest::newRow("::1.2.3") << "::1.2.3";
+    QTest::newRow("::1.2.257") << "::1.2.257";
+    QTest::newRow("::1.2") << "::1.2";
+    QTest::newRow("::0250.0x10101") << "::0250.0x10101";
+    QTest::newRow("::1.2.3.0250") << "::1.2.3.0250";
+    QTest::newRow("::1.2.3.0xff") << "::1.2.3.0xff";
+    QTest::newRow("::1.2.3.07") << "::1.2.3.07";
+    QTest::newRow("::1.2.3.010") << "::1.2.3.010";
+
+    // separated by something else
+    QTest::newRow("1.2.3.4.5.6.7.8") << "1.2.3.4.5.6.7.8";
+    QTest::newRow("1,2,3,4,5,6,7,8") << "1,2,3,4,5,6,7,8";
+    QTest::newRow("1..2") << "1..2";
+    QTest::newRow("1:.2") << "1:.2";
+    QTest::newRow("1.:2") << "1.:2";
+}
+
+void tst_QIpAddress::invalidParseIp6()
+{
+    QFETCH(QString, address);
+
+#if defined(__GLIBC__) && defined(AF_INET6)
+    Ip6 inet_result;
+    bool inet_ok = inet_pton(AF_INET6, address.toLatin1(), &inet_result.u8);
+    QVERIFY(!inet_ok);
+#endif
+
+    Ip6 result;
+    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd());
+    QVERIFY(!ok);
+}
+
+void tst_QIpAddress::ip6ToString_data()
+{
+    qRegisterMetaType<Ip6>();
+    QTest::addColumn<Ip6>("ip");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("1:2:3:4:5:6:7:8") << Ip6(1,2,3,4,5,6,7,8) << "1:2:3:4:5:6:7:8";
+    QTest::newRow("1:2:3:4:5:6:7:88") << Ip6(1,2,3,4,5,6,7,0x88) << "1:2:3:4:5:6:7:88";
+    QTest::newRow("1:2:3:4:5:6:7:888") << Ip6(1,2,3,4,5,6,7,0x888) << "1:2:3:4:5:6:7:888";
+    QTest::newRow("1:2:3:4:5:6:7:8888") << Ip6(1,2,3,4,5,6,7,0x8888) << "1:2:3:4:5:6:7:8888";
+    QTest::newRow("1:2:3:4:5:6:7:8880") << Ip6(1,2,3,4,5,6,7,0x8880) << "1:2:3:4:5:6:7:8880";
+    QTest::newRow("1:2:3:4:5:6:7:8808") << Ip6(1,2,3,4,5,6,7,0x8808) << "1:2:3:4:5:6:7:8808";
+    QTest::newRow("1:2:3:4:5:6:7:8088") << Ip6(1,2,3,4,5,6,7,0x8088) << "1:2:3:4:5:6:7:8088";
+
+    QTest::newRow("1:2:3:4:5:6:7:0") << Ip6(1,2,3,4,5,6,7,0) << "1:2:3:4:5:6:7:0";
+    QTest::newRow("0:1:2:3:4:5:6:7") << Ip6(0,1,2,3,4,5,6,7) << "0:1:2:3:4:5:6:7";
+
+    QTest::newRow("1:2:3:4:5:6::") << Ip6(1,2,3,4,5,6,0,0) << "1:2:3:4:5:6::";
+    QTest::newRow("::1:2:3:4:5:6") << Ip6(0,0,1,2,3,4,5,6) << "::1:2:3:4:5:6";
+    QTest::newRow("1:0:0:2::3") << Ip6(1,0,0,2,0,0,0,3) << "1:0:0:2::3";
+    QTest::newRow("1:::2:0:0:3") << Ip6(1,0,0,0,2,0,0,3) << "1::2:0:0:3";
+    QTest::newRow("1::2:0:0:0") << Ip6(1,0,0,0,2,0,0,0) << "1::2:0:0:0";
+    QTest::newRow("0:0:0:1::") << Ip6(0,0,0,1,0,0,0,0) << "0:0:0:1::";
+    QTest::newRow("::1:0:0:0") << Ip6(0,0,0,0,1,0,0,0) << "::1:0:0:0";
+    QTest::newRow("ff02::1") << Ip6(0xff02,0,0,0,0,0,0,1) << "ff02::1";
+    QTest::newRow("1::1") << Ip6(1,0,0,0,0,0,0,1) << "1::1";
+    QTest::newRow("::1") << Ip6(0,0,0,0,0,0,0,1) << "::1";
+    QTest::newRow("1::") << Ip6(1,0,0,0,0,0,0,0) << "1::";
+    QTest::newRow("::") << Ip6(0,0,0,0,0,0,0,0) << "::";
+
+    QTest::newRow("::1.2.3.4") << Ip6(0,0,0,0,0,0,0x102,0x304) << "::1.2.3.4";
+    QTest::newRow("::ffff:1.2.3.4") << Ip6(0,0,0,0,0,0xffff,0x102,0x304) << "::ffff:1.2.3.4";
+}
+
+void tst_QIpAddress::ip6ToString()
+{
+    QFETCH(Ip6, ip);
+    QFETCH(QString, expected);
+
+#if defined(__GLIBC__) && defined(AF_INET6)
+    {
+        char buf[INET6_ADDRSTRLEN];
+        bool ok = inet_ntop(AF_INET6, ip.u8, buf, sizeof buf) != 0;
+        QVERIFY(ok);
+        QCOMPARE(QString(buf), expected);
+    }
+#endif
+
+    QString result;
+    QIPAddressUtils::toString(result, ip.u8);
     QCOMPARE(result, expected);
 }
 
