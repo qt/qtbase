@@ -254,19 +254,19 @@ void tst_QMetaType::normalizedTypes()
     QCOMPARE(qRegisterMetaType<Whity<double> >("Whity<double > "), WhityDoubleId);
 }
 
+#define TYPENAME_DATA(MetaTypeName, MetaTypeId, RealType)\
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << #RealType;
+
+#define TYPENAME_DATA_ALIAS(MetaTypeName, MetaTypeId, AliasType, RealTypeString)\
+    QTest::newRow(RealTypeString) << QMetaType::MetaTypeName << #AliasType;
+
 void tst_QMetaType::typeName_data()
 {
     QTest::addColumn<QMetaType::Type>("aType");
     QTest::addColumn<QString>("aTypeName");
 
-    QTest::newRow("void") << QMetaType::Void << "void";
-    QTest::newRow("int") << QMetaType::Int << "int";
-    QTest::newRow("double") << QMetaType::Double << "double";
-    QTest::newRow("qlonglong") << QMetaType::LongLong << "qlonglong";
-    QTest::newRow("QRegExp") << QMetaType::QRegExp << "QRegExp";
-    QTest::newRow("void*") << QMetaType::VoidStar << "void*";
-    QTest::newRow("ulong") << QMetaType::ULong << "ulong";
-    QTest::newRow("QWidget*") << QMetaType::QWidgetStar << "QWidget*";
+    QT_FOR_EACH_STATIC_TYPE(TYPENAME_DATA)
+    QT_FOR_EACH_STATIC_ALIAS_TYPE(TYPENAME_DATA_ALIAS)
 }
 
 void tst_QMetaType::typeName()
@@ -278,63 +278,23 @@ void tst_QMetaType::typeName()
 }
 
 #define FOR_EACH_PRIMITIVE_METATYPE(F) \
-    F(int, Int) \
-    F(uint, UInt) \
-    F(bool, Bool) \
-    F(double, Double) \
-    F(long, Long) \
-    F(short, Short) \
-    F(char, Char) \
-    F(ulong, ULong) \
-    F(ushort, UShort) \
-    F(uchar, UChar) \
-    F(float, Float) \
-    F(QObject *, QObjectStar) \
-    F(QWidget *, QWidgetStar) \
-    F(void *, VoidStar) \
-    F(qlonglong, LongLong) \
-    F(qulonglong, ULongLong)
+    QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F) \
+    QT_FOR_EACH_STATIC_CORE_POINTER(F) \
 
 #define FOR_EACH_COMPLEX_CORE_METATYPE(F) \
-    F(QString, QString) \
-    F(QByteArray, QByteArray) \
-    F(QChar, QChar) \
-    F(QStringList, QStringList) \
-    F(QBitArray, QBitArray) \
-    F(QDate, QDate) \
-    F(QTime, QTime) \
-    F(QDateTime, QDateTime) \
-    F(QUrl, QUrl) \
-    F(QLocale, QLocale) \
-    F(QRect, QRect) \
-    F(QRectF, QRectF) \
-    F(QSize, QSize) \
-    F(QSizeF, QSizeF) \
-    F(QLine, QLine) \
-    F(QLineF, QLineF) \
-    F(QPoint, QPoint) \
-    F(QPointF, QPointF) \
-    F(QEasingCurve, QEasingCurve)
-
-#ifndef QT_NO_REGEXP
-#  define FOR_EACH_COMPLEX_CORE_METATYPE2(F) \
-    F(QRegExp, QRegExp)
-#else
-#  define FOR_EACH_COMPLEX_CORE_METATYPE2(F)
-#endif
+    QT_FOR_EACH_STATIC_CORE_CLASS(F)
 
 #define FOR_EACH_CORE_METATYPE(F) \
     FOR_EACH_PRIMITIVE_METATYPE(F) \
     FOR_EACH_COMPLEX_CORE_METATYPE(F) \
-    FOR_EACH_COMPLEX_CORE_METATYPE2(F)
 
 template <int ID>
 struct MetaEnumToType {};
 
-#define DEFINE_META_ENUM_TO_TYPE(TYPE, ID) \
+#define DEFINE_META_ENUM_TO_TYPE(MetaTypeName, MetaTypeId, RealType) \
 template<> \
-struct MetaEnumToType<QMetaType::ID> { \
-    typedef TYPE Type; \
+struct MetaEnumToType<QMetaType::MetaTypeName> { \
+    typedef RealType Type; \
 };
 FOR_EACH_CORE_METATYPE(DEFINE_META_ENUM_TO_TYPE)
 #undef DEFINE_META_ENUM_TO_TYPE
@@ -346,6 +306,13 @@ struct DefaultValueFactory
     static Type *create() { return new Type; }
 };
 
+template <>
+struct DefaultValueFactory<QMetaType::Void>
+{
+    typedef MetaEnumToType<QMetaType::Void>::Type Type;
+    static Type *create() { return 0; }
+};
+
 template <int ID>
 struct DefaultValueTraits
 {
@@ -354,8 +321,8 @@ struct DefaultValueTraits
     enum { IsInitialized = true };
 };
 
-#define DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS(TYPE, ID) \
-template<> struct DefaultValueTraits<QMetaType::ID> { \
+#define DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS(MetaTypeName, MetaTypeId, RealType) \
+template<> struct DefaultValueTraits<QMetaType::MetaTypeName> { \
     enum { IsInitialized = false }; \
 };
 // Primitive types (int et al) aren't initialized
@@ -364,6 +331,10 @@ FOR_EACH_PRIMITIVE_METATYPE(DEFINE_NON_INITIALIZED_DEFAULT_VALUE_TRAITS)
 
 template <int ID>
 struct TestValueFactory {};
+
+template<> struct TestValueFactory<QMetaType::Void> {
+    static void *create() { return 0; }
+};
 
 template<> struct TestValueFactory<QMetaType::QString> {
     static QString *create() { return new QString(QString::fromLatin1("QString")); }
@@ -470,17 +441,25 @@ template<> struct TestValueFactory<QMetaType::QPointF> {
 template<> struct TestValueFactory<QMetaType::QEasingCurve> {
     static QEasingCurve *create() { return new QEasingCurve(QEasingCurve::InOutElastic); }
 };
-#ifndef QT_NO_REGEXP
 template<> struct TestValueFactory<QMetaType::QRegExp> {
-    static QRegExp *create() { return new QRegExp("A*"); }
-};
+    static QRegExp *create()
+    {
+#ifndef QT_NO_REGEXP
+        return new QRegExp("A*");
+#else
+        return 0;
 #endif
+    }
+};
+template<> struct TestValueFactory<QMetaType::QVariant> {
+    static QVariant *create() { return new QVariant(QStringList(QStringList() << "Q" << "t")); }
+};
 
 void tst_QMetaType::create_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
-#define ADD_METATYPE_TEST_ROW(TYPE, ID) \
-    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID;
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(QMetaType::typeName(QMetaType::MetaTypeName)) << QMetaType::MetaTypeName;
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -498,6 +477,18 @@ static void testCreateHelper()
     QMetaType::destroy(ID, actual);
 }
 
+template<>
+void testCreateHelper<QMetaType::Void>()
+{
+    typedef MetaEnumToType<QMetaType::Void>::Type Type;
+    void *actual = QMetaType::create(QMetaType::Void);
+    if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
+        QVERIFY(DefaultValueFactory<QMetaType::Void>::create());
+    }
+    QMetaType::destroy(QMetaType::Void, actual);
+}
+
+
 typedef void (*TypeTestFunction)();
 
 void tst_QMetaType::create()
@@ -507,9 +498,9 @@ void tst_QMetaType::create()
         static TypeTestFunction get(int type)
         {
             switch (type) {
-#define RETURN_CREATE_FUNCTION(TYPE, ID) \
-            case QMetaType::ID: \
-            return testCreateHelper<QMetaType::ID>;
+#define RETURN_CREATE_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
+            case QMetaType::MetaTypeName: \
+            return testCreateHelper<QMetaType::MetaTypeName>;
 FOR_EACH_CORE_METATYPE(RETURN_CREATE_FUNCTION)
 #undef RETURN_CREATE_FUNCTION
             }
@@ -532,6 +523,16 @@ static void testCreateCopyHelper()
     delete expected;
 }
 
+template<>
+void testCreateCopyHelper<QMetaType::Void>()
+{
+    typedef MetaEnumToType<QMetaType::Void>::Type Type;
+    Type *expected = TestValueFactory<QMetaType::Void>::create();
+    void *actual = QMetaType::create(QMetaType::Void, expected);
+    QCOMPARE(static_cast<Type *>(actual), expected);
+    QMetaType::destroy(QMetaType::Void, actual);
+}
+
 void tst_QMetaType::createCopy_data()
 {
     create_data();
@@ -544,9 +545,9 @@ void tst_QMetaType::createCopy()
         static TypeTestFunction get(int type)
         {
             switch (type) {
-#define RETURN_CREATE_COPY_FUNCTION(TYPE, ID) \
-            case QMetaType::ID: \
-            return testCreateCopyHelper<QMetaType::ID>;
+#define RETURN_CREATE_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
+            case QMetaType::MetaTypeName: \
+            return testCreateCopyHelper<QMetaType::MetaTypeName>;
 FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
 #undef RETURN_CREATE_COPY_FUNCTION
             }
@@ -558,12 +559,15 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
     TypeTestFunctionGetter::get(type)();
 }
 
+template<typename T> struct SafeSizeOf { enum {Size = sizeof(T)}; };
+template<> struct SafeSizeOf<void> { enum {Size = 0}; };
+
 void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<int>("size");
-#define ADD_METATYPE_TEST_ROW(TYPE, ID) \
-    QTest::newRow(QMetaType::typeName(QMetaType::ID)) << QMetaType::ID << int(sizeof(TYPE));
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(SafeSizeOf<RealType>::Size);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }
@@ -626,6 +630,24 @@ static void testConstructHelper()
     QMetaType::destruct(ID, 0);
 }
 
+template<>
+void testConstructHelper<QMetaType::Void>()
+{
+    typedef MetaEnumToType<QMetaType::Void>::Type Type;
+    /*int size = */ QMetaType::sizeOf(QMetaType::Void);
+    void *storage = 0;
+    void *actual = QMetaType::construct(QMetaType::Void, storage, /*copy=*/0);
+    QCOMPARE(actual, storage);
+    if (DefaultValueTraits<QMetaType::Void>::IsInitialized) {
+        /*Type *expected = */ DefaultValueFactory<QMetaType::Void>::create();
+    }
+    QMetaType::destruct(QMetaType::Void, actual);
+    qFreeAligned(storage);
+
+    QVERIFY(QMetaType::construct(QMetaType::Void, 0, /*copy=*/0) == 0);
+    QMetaType::destruct(QMetaType::Void, 0);
+}
+
 void tst_QMetaType::construct()
 {
     struct TypeTestFunctionGetter
@@ -633,9 +655,9 @@ void tst_QMetaType::construct()
         static TypeTestFunction get(int type)
         {
             switch (type) {
-#define RETURN_CONSTRUCT_FUNCTION(TYPE, ID) \
-            case QMetaType::ID: \
-            return testConstructHelper<QMetaType::ID>;
+#define RETURN_CONSTRUCT_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
+            case QMetaType::MetaTypeName: \
+            return testConstructHelper<QMetaType::MetaTypeName>;
 FOR_EACH_CORE_METATYPE(RETURN_CONSTRUCT_FUNCTION)
 #undef RETURN_CONSTRUCT_FUNCTION
             }
@@ -665,6 +687,21 @@ static void testConstructCopyHelper()
     delete expected;
 }
 
+template<>
+void testConstructCopyHelper<QMetaType::Void>()
+{
+    typedef MetaEnumToType<QMetaType::Void>::Type Type;
+    Type *expected = TestValueFactory<QMetaType::Void>::create();
+    /* int size = */QMetaType::sizeOf(QMetaType::Void);
+    void *storage = 0;
+    void *actual = QMetaType::construct(QMetaType::Void, storage, expected);
+    QCOMPARE(actual, storage);
+    QMetaType::destruct(QMetaType::Void, actual);
+    qFreeAligned(storage);
+
+    QVERIFY(QMetaType::construct(QMetaType::Void, 0, expected) == 0);
+}
+
 void tst_QMetaType::constructCopy_data()
 {
     create_data();
@@ -677,9 +714,9 @@ void tst_QMetaType::constructCopy()
         static TypeTestFunction get(int type)
         {
             switch (type) {
-#define RETURN_CONSTRUCT_COPY_FUNCTION(TYPE, ID) \
-            case QMetaType::ID: \
-            return testConstructCopyHelper<QMetaType::ID>;
+#define RETURN_CONSTRUCT_COPY_FUNCTION(MetaTypeName, MetaTypeId, RealType) \
+            case QMetaType::MetaTypeName: \
+            return testConstructCopyHelper<QMetaType::MetaTypeName>;
 FOR_EACH_CORE_METATYPE(RETURN_CONSTRUCT_COPY_FUNCTION)
 #undef RETURN_CONSTRUCT_COPY_FUNCTION
             }

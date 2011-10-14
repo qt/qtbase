@@ -392,10 +392,6 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-typedef QList<QVariant> QVariantList;
-typedef QMap<QString, QVariant> QVariantMap;
-typedef QHash<QString, QVariant> QVariantHash;
-
 inline bool qvariant_cast_helper(const QVariant &v, QVariant::Type tp, void *ptr)
 { return QVariant::handler->convert(&v.d, tp, ptr, 0); }
 
@@ -521,10 +517,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
 QT_END_NAMESPACE
-
-Q_DECLARE_BUILTIN_METATYPE(QVariantList, QVariantList)
-Q_DECLARE_BUILTIN_METATYPE(QVariantMap, QVariantMap)
-Q_DECLARE_BUILTIN_METATYPE(QVariantHash, QVariantHash)
 
 QT_END_HEADER
 

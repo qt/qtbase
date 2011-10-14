@@ -231,9 +231,14 @@ QT_BEGIN_NAMESPACE
 #define QT_ADD_STATIC_METATYPE(STR, TP) \
     { STR, sizeof(STR) - 1, TP }
 
+#define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, TypeId, AliasingName, RealNameStr) \
+    QT_ADD_STATIC_METATYPE(RealNameStr, QMetaType::MetaTypeName),
+
+#define QT_ADD_STATIC_METATYPE_HACKS_ITER(MetaTypeName, TypeId, Name) \
+    QT_ADD_STATIC_METATYPE(#Name, MetaTypeName),
+
 /* Note: these MUST be in the order of the enums */
 static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
-
     /* All Core types */
     QT_ADD_STATIC_METATYPE("void", QMetaType::Void),
     QT_ADD_STATIC_METATYPE("bool", QMetaType::Bool),
@@ -307,27 +312,8 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("QVariant", QMetaType::QVariant),
 
     /* Type aliases - order doesn't matter */
-    QT_ADD_STATIC_METATYPE("unsigned long", QMetaType::ULong),
-    QT_ADD_STATIC_METATYPE("unsigned int", QMetaType::UInt),
-    QT_ADD_STATIC_METATYPE("unsigned short", QMetaType::UShort),
-    QT_ADD_STATIC_METATYPE("unsigned char", QMetaType::UChar),
-    QT_ADD_STATIC_METATYPE("long long", QMetaType::LongLong),
-    QT_ADD_STATIC_METATYPE("unsigned long long", QMetaType::ULongLong),
-    QT_ADD_STATIC_METATYPE("qint8", QMetaType::Char),
-    QT_ADD_STATIC_METATYPE("signed char", QMetaType::Char),
-    QT_ADD_STATIC_METATYPE("quint8", QMetaType::UChar),
-    QT_ADD_STATIC_METATYPE("qint16", QMetaType::Short),
-    QT_ADD_STATIC_METATYPE("quint16", QMetaType::UShort),
-    QT_ADD_STATIC_METATYPE("qint32", QMetaType::Int),
-    QT_ADD_STATIC_METATYPE("quint32", QMetaType::UInt),
-    QT_ADD_STATIC_METATYPE("qint64", QMetaType::LongLong),
-    QT_ADD_STATIC_METATYPE("quint64", QMetaType::ULongLong),
-    QT_ADD_STATIC_METATYPE("QList<QVariant>", QMetaType::QVariantList),
-    QT_ADD_STATIC_METATYPE("QMap<QString,QVariant>", QMetaType::QVariantMap),
-    QT_ADD_STATIC_METATYPE("QHash<QString,QVariant>", QMetaType::QVariantHash),
-    // let QMetaTypeId2 figure out the type at compile time
-    QT_ADD_STATIC_METATYPE("qreal", QMetaTypeId2<qreal>::MetaType),
-
+    QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
+    QT_FOR_EACH_STATIC_HACKS_TYPE(QT_ADD_STATIC_METATYPE_HACKS_ITER)
     {0, 0, QMetaType::Void}
 };
 
