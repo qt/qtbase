@@ -1785,6 +1785,15 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #  endif
 #endif
 
+// Intentionally undefined
+template <bool Test> class QStaticAssertFailure;
+template <> class QStaticAssertFailure<true> {};
+
+#define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
+#define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
+#define Q_STATIC_ASSERT(...) \
+    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<bool(__VA_ARGS__)>)}
+
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
 Q_CORE_EXPORT void qBadAlloc();
 

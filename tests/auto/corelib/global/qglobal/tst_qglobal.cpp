@@ -52,6 +52,7 @@ private slots:
     void qassert();
     void qtry();
     void checkptr();
+    void qstaticassert();
 };
 
 void tst_QGlobal::qIsNull()
@@ -265,6 +266,73 @@ void tst_QGlobal::checkptr()
 
     const char *c = "hello";
     QCOMPARE(q_check_ptr(c), c);
+}
+
+// Check Q_STATIC_ASSERT, It should compile
+// note that, we are not able to test Q_STATIC_ASSERT(false), to do it manually someone has
+// to replace expressions (in the asserts) one by one to false, and check if it breaks build.
+class MyTrue
+{
+public:
+    MyTrue()
+    {
+        Q_STATIC_ASSERT(true);
+        Q_STATIC_ASSERT(!false);
+    }
+    ~MyTrue()
+    {
+        Q_STATIC_ASSERT(true);
+        Q_STATIC_ASSERT(!false);
+    }
+    Q_STATIC_ASSERT(true);
+    Q_STATIC_ASSERT(!false);
+};
+
+struct MyExpresion
+{
+    void foo()
+    {
+        Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+        Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+    }
+private:
+    Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+    Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+};
+
+struct TypeDef
+{
+    typedef int T;
+    Q_STATIC_ASSERT(sizeof(T));
+};
+
+template<typename T1, typename T2>
+struct Template
+{
+    static const bool True = true;
+    typedef typename T1::T DependentType;
+    Q_STATIC_ASSERT(True);
+    Q_STATIC_ASSERT(!!True);
+    Q_STATIC_ASSERT(sizeof(DependentType));
+    Q_STATIC_ASSERT(!!sizeof(DependentType));
+};
+
+struct MyTemplate
+{
+    Q_STATIC_ASSERT(Template<TypeDef, int>::True);
+    Q_STATIC_ASSERT(!!Template<TypeDef, int>::True);
+};
+
+void tst_QGlobal::qstaticassert()
+{
+    // Force compilation of these classes
+    MyTrue tmp1;
+    MyExpresion tmp2;
+    MyTemplate tmp3;
+    Q_UNUSED(tmp1);
+    Q_UNUSED(tmp2);
+    Q_UNUSED(tmp3);
+    QVERIFY(true); // if the test compiles it has passed.
 }
 
 QTEST_MAIN(tst_QGlobal)
