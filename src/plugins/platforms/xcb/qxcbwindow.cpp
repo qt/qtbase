@@ -230,6 +230,9 @@ void QXcbWindow::create()
             a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
             a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
             a.colormap = cmap;
+
+            m_visualId = visualInfo->visualid;
+
             m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWBackPixel|CWBorderPixel|CWColormap, &a);
@@ -242,6 +245,7 @@ void QXcbWindow::create()
         m_window = xcb_generate_id(xcb_connection());
         m_depth = m_screen->screen()->root_depth;
         m_imageFormat = imageFormatForDepth(m_depth);
+        m_visualId = m_screen->screen()->root_visual;
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
@@ -253,7 +257,7 @@ void QXcbWindow::create()
                                      rect.height(),
                                      0,                               // border width
                                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                     m_screen->screen()->root_visual, // visual
+                                     m_visualId,                      // visual
                                      0,                               // value mask
                                      0));                             // value list
     }
@@ -982,7 +986,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
                                          -1, -1, 1, 1,
                                          0,                               // border width
                                          XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                         m_screen->screen()->root_visual, // visual
+                                         m_visualId,                      // visual
                                          0,                               // value mask
                                          0));                             // value list
             wid = m_netWmUserTimeWindow;

@@ -161,6 +161,8 @@ private:
 #endif
 
     QRegion m_exposeRegion;
+
+    xcb_visualid_t m_visualId;
 };
 
 QT_END_NAMESPACE
