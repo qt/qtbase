@@ -568,7 +568,8 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 keyword_len++;
             }
 
-            if(keyword_len == 7 && !strncmp(keyword, "include", keyword_len)) {
+            if((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
+               || (keyword_len == 6 && !strncmp(keyword, "import", 6))) { // Obj-C
                 char term = *(buffer + x);
                 if(term == '<') {
                     try_local = false;
