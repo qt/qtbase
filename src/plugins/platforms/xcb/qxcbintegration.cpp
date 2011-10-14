@@ -175,6 +175,8 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 #elif defined(XCB_USE_DRI2)
     return new QDri2Context(context->format(), context->shareHandle());
 #endif
+    qWarning("Cannot create platform GL context, none of GLX, EGL, DRI2 is enabled");
+    return 0;
 }
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
