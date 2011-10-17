@@ -1790,15 +1790,6 @@ QString QDir::currentPath()
 }
 
 /*!
-  \fn QString QDir::currentDirPath()
-    Returns the absolute path of the application's current directory.
-
-    Use currentPath() instead.
-
-    \sa currentPath(), setCurrent()
-*/
-
-/*!
     \fn QDir QDir::home()
 
     Returns the user's home directory.
@@ -1846,16 +1837,6 @@ QString QDir::homePath()
 {
     return QFileSystemEngine::homePath();
 }
-
-/*!
-    \fn QString QDir::homeDirPath()
-
-    Returns the absolute path of the user's home directory.
-
-    Use homePath() instead.
-
-    \sa homePath()
-*/
 
 /*!
     \fn QDir QDir::temp()
@@ -1912,16 +1893,6 @@ QString QDir::rootPath()
 {
     return QFileSystemEngine::rootPath();
 }
-
-/*!
-    \fn QString QDir::rootDirPath()
-
-    Returns the absolute path of the root directory.
-
-    Use rootPath() instead.
-
-    \sa rootPath()
-*/
 
 #ifndef QT_NO_REGEXP
 /*!

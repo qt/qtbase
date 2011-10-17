@@ -74,15 +74,15 @@ QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
 */
 
 /*!
-    \fn virtual void QPlatformCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
+    \fn virtual void QPlatformCursor::changeCursor(QCursor * windowCursor, QWindow * window)
 
     \brief This method is called by Qt whenever the cursor graphic should be changed.
 
     Implementation of this method is mandatory for a subclass of QPlatformCursor.
 
-    \a widgetCursor is a pointer to the QCursor that should be displayed.
+    \a windowCursor is a pointer to the QCursor that should be displayed.
 
-    \a widget is a pointer to the widget currently displayed at QCursor::pos(). Note
+    \a window is a pointer to the window currently displayed at QCursor::pos(). Note
     that this may be 0 if the current position is not occupied by a displayed widget.
 
     \sa QCursor::pos()

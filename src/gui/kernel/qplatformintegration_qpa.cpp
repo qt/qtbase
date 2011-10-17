@@ -172,7 +172,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 
 /*!
 
-    \fn QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0
+    \fn QAbstractEventDispatcher *QPlatformIntegration::guiThreadEventDispatcher() const = 0
 
     Accessor function for the event dispatcher. The platform plugin should create
     an instance of the QAbstractEventDispatcher in its constructor and set it

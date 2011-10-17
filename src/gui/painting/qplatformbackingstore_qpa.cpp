@@ -69,25 +69,6 @@ public:
     windows.
 */
 
-
-/*!
-    \fn void QPlatformBackingStore::beginPaint(const QRegion &region)
-
-    This function is called before painting onto the surface begins,
-    with the \a region in which the painting will occur.
-
-    \sa endPaint(), paintDevice()
-*/
-
-/*!
-    \fn void QPlatformBackingStore::endPaint(const QRegion &region)
-
-    This function is called after painting onto the surface has ended,
-    with the \a region in which the painting was performed.
-
-    \sa beginPaint(), paintDevice()
-*/
-
 /*!
     \fn void QPlatformBackingStore::flush(QWindow *window, const QRegion &region,
                                   const QPoint &offset)
@@ -129,9 +110,22 @@ QWindow* QPlatformBackingStore::window() const
     return d_ptr->window;
 }
 
+/*!
+    This function is called before painting onto the surface begins,
+    with the \a region in which the painting will occur.
+
+    \sa endPaint(), paintDevice()
+*/
+
 void QPlatformBackingStore::beginPaint(const QRegion &)
 {
 }
+
+/*!
+    This function is called after painting onto the surface has ended.
+
+    \sa beginPaint(), paintDevice()
+*/
 
 void QPlatformBackingStore::endPaint()
 {

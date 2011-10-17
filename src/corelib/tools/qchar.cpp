@@ -1283,13 +1283,6 @@ char QChar::toAscii() const
 }
 
 /*!
-    Converts the Latin-1 character \a c to it's equivalent QChar. This
-    is mainly useful for non-internationalized software.
-
-    \sa fromAscii(), unicode(), QTextCodec::codecForCStrings()
-*/
-
-/*!
     Converts the ASCII character \a c to it's equivalent QChar. This
     is mainly useful for non-internationalized software.
 

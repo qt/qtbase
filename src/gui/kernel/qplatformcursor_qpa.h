@@ -85,7 +85,7 @@ public:
 
     // input methods
     virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
-    virtual void changeCursor(QCursor * widgetCursor, QWindow * widget) = 0;
+    virtual void changeCursor(QCursor * windowCursor, QWindow * window) = 0;
     virtual QPoint pos() const;
     virtual void setPos(const QPoint &pos);
 

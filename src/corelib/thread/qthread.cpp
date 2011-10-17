@@ -589,18 +589,6 @@ void QThread::cleanup()
     qt_global_mutexpool = 0;
 }
 
-/*!
-    \fn bool QThread::finished() const
-
-    Use isFinished() instead.
-*/
-
-/*!
-    \fn bool QThread::running() const
-
-    Use isRunning() instead.
-*/
-
 /*! \fn void QThread::setPriority(Priority priority)
     \since 4.1
 

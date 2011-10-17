@@ -951,14 +951,6 @@ bool QBrush::operator==(const QBrush &b) const
     }
 }
 
-/*!
-    \fn QBrush::operator const QColor&() const
-
-    Returns the brush's color.
-
-    Use color() instead.
-*/
-
 #ifndef QT_NO_DEBUG_STREAM
 /*!
   \internal

@@ -754,21 +754,6 @@ QRect QMovie::frameRect() const
     return d->frameRect;
 }
 
-/*! \fn QImage QMovie::framePixmap() const
-
-    Use currentPixmap() instead.
-*/
-
-/*! \fn void QMovie::pause()
-
-    Use setPaused(true) instead.
-*/
-
-/*! \fn void QMovie::unpause()
-
-    Use setPaused(false) instead.
-*/
-
 /*!
     Returns the current frame as a QPixmap.
 
@@ -779,11 +764,6 @@ QPixmap QMovie::currentPixmap() const
     Q_D(const QMovie);
     return d->currentPixmap;
 }
-
-/*! \fn QImage QMovie::frameImage() const
-
-    Use currentImage() instead.
-*/
 
 /*!
     Returns the current frame as a QImage.
@@ -805,42 +785,6 @@ bool QMovie::isValid() const
     Q_D(const QMovie);
     return d->isValid();
 }
-
-/*! \fn bool QMovie::running() const
-
-    Use state() instead.
-*/
-
-/*! \fn bool QMovie::isNull() const
-
-    Use isValid() instead.
-*/
-
-/*! \fn int QMovie::frameNumber() const
-
-    Use currentFrameNumber() instead.
-*/
-
-/*! \fn bool QMovie::paused() const
-
-    Use state() instead.
-*/
-
-/*! \fn bool QMovie::finished() const
-
-    Use state() instead.
-*/
-
-/*! \fn void QMovie::restart()
-
-    Use stop() and start() instead.
-*/
-
-/*!
-    \fn void QMovie::step()
-
-    Use jumpToNextFrame() instead.
-*/
 
 /*!
     Returns the number of frames in the movie.

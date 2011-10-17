@@ -71,29 +71,7 @@ public:
     \brief The QBackingStore class provides the drawing area for top-level windows.
 */
 
-
 /*!
-    \fn void QBackingStore::beginPaint(const QRegion &region)
-
-    This function is called before painting onto the surface begins,
-    with the \a region in which the painting will occur.
-
-    \sa endPaint(), paintDevice()
-*/
-
-/*!
-    \fn void QBackingStore::endPaint(const QRegion &region)
-
-    This function is called after painting onto the surface has ended,
-    with the \a region in which the painting was performed.
-
-    \sa beginPaint(), paintDevice()
-*/
-
-/*!
-    \fn void QBackingStore::flush(QWindow *window, const QRegion &region,
-                                  const QPoint &offset)
-
     Flushes the given \a region from the specified \a window onto the
     screen.
 
@@ -142,11 +120,23 @@ QWindow* QBackingStore::window() const
     return d_ptr->window;
 }
 
+/*!
+    This function is called before painting onto the surface begins,
+    with the \a region in which the painting will occur.
+
+    \sa endPaint(), paintDevice()
+*/
+
 void QBackingStore::beginPaint(const QRegion &region)
 {
     d_ptr->platformBackingStore->beginPaint(region);
 }
 
+/*!
+    This function is called after painting onto the surface has ended.
+
+    \sa beginPaint(), paintDevice()
+*/
 void QBackingStore::endPaint()
 {
     d_ptr->platformBackingStore->endPaint();

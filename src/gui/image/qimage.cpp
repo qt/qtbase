@@ -628,23 +628,6 @@ bool QImageData::checkForAlphaPixels() const
 */
 
 /*!
-    \enum QImage::Endian
-    \compat
-
-    This enum type is used to describe the endianness of the CPU and
-    graphics hardware. It is provided here for compatibility with earlier versions of Qt.
-
-    Use the \l Format enum instead. The \l Format enum specify the
-    endianess for monchrome formats, but for other formats the
-    endianess is not relevant.
-
-    \value IgnoreEndian  Endianness does not matter. Useful for some
-                         operations that are independent of endianness.
-    \value BigEndian     Most significant bit first or network byte order, as on SPARC, PowerPC, and Motorola CPUs.
-    \value LittleEndian  Least significant bit first or little endian byte order, as on Intel x86.
-*/
-
-/*!
     \enum QImage::InvertMode
 
     This enum type is used to describe how pixel values should be
@@ -997,23 +980,6 @@ QImage::QImage(const char * const xpm[])
         qWarning("QImage::QImage(), XPM is not supported");
 }
 #endif // QT_NO_IMAGEFORMAT_XPM
-
-/*!
-    \fn QImage::QImage(const QByteArray &data)
-
-    Use the static fromData() function instead.
-
-    \oldcode
-        QByteArray data;
-        ...
-        QImage image(data);
-    \newcode
-        QByteArray data;
-        ...
-        QImage image = QImage::fromData(data);
-    \endcode
-*/
-
 
 /*!
     Constructs a shallow copy of the given \a image.
@@ -1419,14 +1385,6 @@ QVector<QRgb> QImage::colorTable() const
     return d ? d->colortable : QVector<QRgb>();
 }
 
-
-/*!
-    \obsolete
-    Returns the number of bytes occupied by the image data.
-
-    \sa byteCount()
-*/
-
 /*!
     \since 4.6
     Returns the number of bytes occupied by the image data.
@@ -1619,22 +1577,6 @@ const uchar *QImage::constBits() const
 }
 
 /*!
-    \fn void QImage::reset()
-
-    Resets all image parameters and deallocates the image data.
-
-    Assign a null image instead.
-
-    \oldcode
-        QImage image;
-        image.reset();
-    \newcode
-        QImage image;
-        image = QImage();
-    \endcode
-*/
-
-/*!
     \fn void QImage::fill(uint pixelValue)
 
     Fills the entire image with the given \a pixelValue.
@@ -1825,22 +1767,6 @@ void QImage::invertPixels(InvertMode mode)
     }
 }
 
-/*!
-    \fn void QImage::invertPixels(bool invertAlpha)
-
-    Use the invertPixels() function that takes a QImage::InvertMode
-    parameter instead.
-*/
-
-/*! \fn QImage::Endian QImage::systemByteOrder()
-
-    Determines the host computer byte order. Returns
-    QImage::LittleEndian (LSB first) or QImage::BigEndian (MSB first).
-
-    This function is no longer relevant for QImage. Use QSysInfo
-    instead.
-*/
-
 // Windows defines these
 #if defined(write)
 # undef write
@@ -1851,14 +1777,6 @@ void QImage::invertPixels(InvertMode mode)
 #if defined(read)
 # undef read
 #endif
-
-/*!
-    \obsolete
-    Resizes the color table to contain \a numColors entries.
-
-    \sa setColorCount()
-*/
-
 
 /*!
     \since 4.6
@@ -3889,36 +3807,6 @@ bool QImage::isGrayscale() const
     return false;
 }
 
-
-/*!
-    \fn QImage QImage::smoothScale(int width, int height, Qt::AspectRatioMode mode) const
-
-    Use scaled() instead.
-
-    \oldcode
-        QImage image;
-        image.smoothScale(width, height, mode);
-    \newcode
-        QImage image;
-        image.scaled(width, height, mode, Qt::SmoothTransformation);
-    \endcode
-*/
-
-/*!
-    \fn QImage QImage::smoothScale(const QSize &size, Qt::AspectRatioMode mode) const
-    \overload
-
-    Use scaled() instead.
-
-    \oldcode
-        QImage image;
-        image.smoothScale(size, mode);
-    \newcode
-        QImage image;
-        image.scaled(size, mode, Qt::SmoothTransformation);
-    \endcode
-*/
-
 /*!
     \fn QImage QImage::scaled(int width, int height, Qt::AspectRatioMode aspectRatioMode,
                              Qt::TransformationMode transformMode) const
@@ -4276,12 +4164,6 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 */
 
 /*!
-    \fn QImage QImage::mirror(bool horizontal, bool vertical) const
-
-    Use mirrored() instead.
-*/
-
-/*!
     Returns a mirror of the image, mirrored in the horizontal and/or
     the vertical direction depending on whether \a horizontal and \a
     vertical are set to true or false.
@@ -4395,18 +4277,6 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
 
     return result;
 }
-
-/*!
-    \fn QImage QImage::swapRGB() const
-
-    Use rgbSwapped() instead.
-
-    \omit
-    Returns a QImage in which the values of the red and blue
-    components of all pixels have been swapped, effectively converting
-    an RGB image to an BGR image. The original QImage is not changed.
-    \endomit
-*/
 
 /*!
     Returns a QImage in which the values of the red and blue
@@ -5092,29 +4962,6 @@ void QImage::setText(const QString &key, const QString &value)
 */
 
 /*!
-    \obsolete
-
-    Returns the language identifiers for which some texts are
-    recorded. Note that if you want to iterate over the list, you
-    should iterate over a copy.
-
-    The language the text is recorded in is no longer relevant since
-    the text is always set using QString and UTF-8 representation.
-*/
-
-/*!
-    \obsolete
-
-    Returns a list of QImageTextKeyLang objects that enumerate all the
-    texts key/language pairs set for this image.
-
-    Use textKeys() instead.
-
-    The language the text is recorded in is no longer relevant since
-    the text is always set using QString and UTF-8 representation.
-*/
-
-/*!
     \fn void QImage::setText(const char* key, const char* language, const QString& text)
     \obsolete
 
@@ -5149,16 +4996,6 @@ void QImage::setText(const QString &key, const QString &value)
 
     Makes a call to QPixmap::convertToImage().
 */
-
-/*! \fn QImage::Endian QImage::systemBitOrder()
-
-    Determines the bit order of the display hardware. Returns
-    QImage::LittleEndian (LSB first) or QImage::BigEndian (MSB first).
-
-    This function is no longer relevant for QImage. Use QSysInfo
-    instead.
-*/
-
 
 /*!
     \internal
@@ -5403,22 +5240,6 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
 #undef IWX_MSB
 #undef IWX_LSB
 #undef IWX_PIX
-
-/*!
-    \fn QImage QImage::xForm(const QMatrix &matrix) const
-
-    Use transformed() instead.
-
-    \oldcode
-        QImage image;
-        ...
-        image.xForm(matrix);
-    \newcode
-        QImage image;
-        ...
-        image.transformed(matrix);
-    \endcode
-*/
 
 /*! \obsolete
     Returns a number that identifies the contents of this
@@ -5702,34 +5523,6 @@ int QImage::bitPlaneCount() const
     }
     return bpc;
 }
-
-/*!
-    \fn QImage QImage::copy(const QRect &rect, Qt::ImageConversionFlags flags) const
-    \compat
-
-    Use copy() instead.
-*/
-
-/*!
-    \fn QImage QImage::copy(int x, int y, int w, int h, Qt::ImageConversionFlags flags) const
-    \compat
-
-    Use copy() instead.
-*/
-
-/*!
-    \fn QImage QImage::scaleWidth(int w) const
-    \compat
-
-    Use scaledToWidth() instead.
-*/
-
-/*!
-    \fn QImage QImage::scaleHeight(int h) const
-    \compat
-
-    Use scaledToHeight() instead.
-*/
 
 static QImage smoothScaled(const QImage &source, int w, int h) {
     QImage src = source;

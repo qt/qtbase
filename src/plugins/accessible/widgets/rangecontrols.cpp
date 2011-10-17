@@ -80,7 +80,6 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
     return qobject_cast<QAbstractSpinBox*>(object());
 }
 
-/*! \reimp */
 QString QAccessibleAbstractSpinBox::text(Text t, int child) const
 {
     Q_UNUSED(child)
@@ -89,7 +88,6 @@ QString QAccessibleAbstractSpinBox::text(Text t, int child) const
     return QAccessibleWidget::text(t, 0);
 }
 
-/*! \reimp */
 bool QAccessibleAbstractSpinBox::doAction(int action, int child, const QVariantList &params)
 {
     Q_UNUSED(child)
@@ -150,17 +148,6 @@ QVariant QAccessibleAbstractSpinBox::invokeMethod(Method method, int child, cons
 */
 
 /*!
-    \enum QAccessibleAbstractSpinBox::SpinBoxElements
-
-    This enum identifies the components of the spin box.
-
-    \value SpinBoxSelf The spin box as a whole
-    \value Editor The line edit sub-widget.
-    \value ValueUp The up sub-widget (i.e. the up arrow or + button)
-    \value ValueDown The down sub-widget (i.e. the down arrow or - button)
-*/
-
-/*!
   Constructs a QAccessibleSpinWidget object for \a w.
 */
 QAccessibleSpinBox::QAccessibleSpinBox(QWidget *w)
@@ -179,7 +166,6 @@ QSpinBox *QAccessibleSpinBox::spinBox() const
     return qobject_cast<QSpinBox*>(object());
 }
 
-/*! \reimp */
 bool QAccessibleSpinBox::doAction(int action, int child, const QVariantList &params)
 {
     Q_UNUSED(child)
@@ -211,7 +197,6 @@ QVariant QAccessibleDoubleSpinBox::invokeMethod(QAccessible::Method, int, const 
     return QVariant();
 }
 
-/*! \reimp */
 QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
 {
     Q_UNUSED(child)
@@ -232,19 +217,6 @@ QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
 */
 
 /*!
-    \enum QAccessibleScrollBar::ScrollBarElements
-
-    This enum identifies the components of the scroll bar.
-
-    \value ScrollBarSelf The scroll bar as a whole.
-    \value LineUp The up arrow button.
-    \value PageUp The area between the position and the up arrow button.
-    \value Position The position marking rectangle.
-    \value PageDown The area between the position and the down arrow button.
-    \value LineDown The down arrow button.
-*/
-
-/*!
   Constructs a QAccessibleScrollBar object for \a w.
   \a name is propagated to the QAccessibleWidget constructor.
 */
@@ -261,7 +233,6 @@ QScrollBar *QAccessibleScrollBar::scrollBar() const
     return qobject_cast<QScrollBar*>(object());
 }
 
-/*! \reimp */
 QString QAccessibleScrollBar::text(Text t, int child) const
 {
     if (t == Value)
@@ -281,17 +252,6 @@ QString QAccessibleScrollBar::text(Text t, int child) const
 */
 
 /*!
-    \enum QAccessibleSlider::SliderElements
-
-    This enum identifies the components of the slider.
-
-    \value SliderSelf The slider as a whole.
-    \value PageLeft The area to the left of the position.
-    \value Position The position indicator.
-    \value PageRight The area to the right of the position.
-*/
-
-/*!
   Constructs a QAccessibleScrollBar object for \a w.
   \a name is propagated to the QAccessibleWidget constructor.
 */
@@ -308,7 +268,6 @@ QSlider *QAccessibleSlider::slider() const
     return qobject_cast<QSlider*>(object());
 }
 
-/*! \reimp */
 QString QAccessibleSlider::text(Text t, int child) const
 {
     if (t == Value)

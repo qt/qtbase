@@ -216,15 +216,3 @@
 
     \sa remove()
 */
-
-/*!
-    \fn QCache::QCache(int maxCost, int dummy)
-
-    Use QCache(int) instead.
-*/
-
-/*!
-    \fn T *QCache::find(const Key &key) const
-
-    Use object() instead.
-*/

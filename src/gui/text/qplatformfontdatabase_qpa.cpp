@@ -97,11 +97,6 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
 }
 
 /*!
-    \fn void QPlatformFontDatabase::registerFont(const QString &familyName,
-        const QString &foundryName, QFont::Weight weight, QFont::Style style,
-        QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
-        const QSupportedWritingSystems &writingSystems, void *usrPtr)
-
     Registers a font with the given set of attributes describing the font's
     foundry, family name, style and stretch information, pixel size, and
     supported writing systems. Additional information about whether the font

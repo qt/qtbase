@@ -365,9 +365,4 @@ void QTimer::setInterval(int msec)
     }
 }
 
-/*! \fn void QTimer::changeInterval(int msec)
-
-   Use setInterval(msec) or start(msec) instead.
-*/
-
 QT_END_NAMESPACE

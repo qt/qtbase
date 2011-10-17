@@ -863,13 +863,6 @@ void QColor::getRgb(int *r, int *g, int *b, int *a) const
 }
 
 /*!
-    \obsolete
-    \fn void QColor::getRgba(int *r, int *g, int *b, int *a) const
-
-    Use getRgb() instead.
-*/
-
-/*!
     \fn void QColor::setRgbF(qreal r, qreal g, qreal b, qreal a)
 
     Sets the color channels of this color to \a r (red), \a g (green),
@@ -920,13 +913,6 @@ void QColor::setRgb(int r, int g, int b, int a)
     ct.argb.blue  = b * 0x101;
     ct.argb.pad   = 0;
 }
-
-/*!
-    \obsolete
-    \fn void QColor::setRgba(int r, int g, int b, int a)
-
-    Use setRgb() instead.
-*/
 
 /*!
     \fn QRgb QColor::rgba() const
@@ -2594,25 +2580,6 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
 
     The gray value is calculated using the formula (R * 11 + G * 16 + B * 5)/32;
     the alpha-channel is ignored.
-*/
-
-/*!
-    \fn QColor::QColor(int x, int y, int z, Spec colorSpec)
-
-    Use one of the other QColor constructors, or one of the static convenience
-    functions, instead.
-*/
-
-/*!
-    \fn QColor::rgb(int *r, int *g, int *b) const
-
-    Use getRgb() instead.
-*/
-
-/*!
-    \fn QColor::hsv(int *h, int *s, int *v) const
-
-    Use getHsv() instead.
 */
 
 /*!

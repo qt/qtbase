@@ -386,7 +386,7 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
 }
 
 /*!
-    \fn QScreen::currentOrientationChanged()
+    \fn QScreen::currentOrientationChanged(Qt::ScreenOrientation orientation)
 
     This signal is emitted when the current orientation of the screen
     changes. The current orientation is a hint to the application saying

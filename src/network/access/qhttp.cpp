@@ -1853,11 +1853,6 @@ qint64 QHttp::bytesAvailable() const
     return qint64(d->rba.size());
 }
 
-/*! \fn qint64 QHttp::readBlock(char *data, quint64 maxlen)
-
-    Use read() instead.
-*/
-
 /*!
     Reads \a maxlen bytes from the response content into \a data and
     returns the number of bytes read. Returns -1 if an error occurred.

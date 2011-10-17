@@ -939,14 +939,6 @@ QMatrix &QMatrix::rotate(qreal a)
 */
 
 /*!
-    \fn QMatrix QMatrix::invert(bool *invertible) const
-
-    Returns an inverted copy of this matrix.
-
-    Use the inverted() function instead.
-*/
-
-/*!
     Returns an inverted copy of this matrix.
 
     If the matrix is singular (not invertible), the returned matrix is
@@ -1164,18 +1156,6 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     return dbg.space();
 }
 #endif
-
-/*!
-    \fn QRect QMatrix::map(const QRect &rect) const
-    \compat
-
-    Creates and returns a QRect object that is a copy of the given
-    rectangle, mapped into the coordinate system defined by this
-    matrix.
-
-    Use the mapRect() function instead.
-*/
-
 
 /*!
     \fn bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)

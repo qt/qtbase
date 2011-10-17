@@ -1307,11 +1307,6 @@ void QHashData::checkSanity()
     \sa QHash::const_iterator, QMutableHashIterator
 */
 
-/*! \fn QHash::iterator::operator Node *() const
-
-    \internal
-*/
-
 /*! \fn QHash::iterator::iterator()
 
     Constructs an uninitialized iterator.
@@ -1506,11 +1501,6 @@ void QHashData::checkSanity()
     period of time, we recommend that you use QMap rather than QHash.
 
     \sa QHash::iterator, QHashIterator
-*/
-
-/*! \fn QHash::const_iterator::operator Node *() const
-
-    \internal
 */
 
 /*! \fn QHash::const_iterator::const_iterator()
