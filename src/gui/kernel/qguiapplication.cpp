@@ -850,7 +850,11 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
                 touchPoint.d->pressure = qreal(1.);
-            d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
+
+            // Stationary points might not be delivered down to the receiving item
+            // and get their position transformed, keep the old values instead.
+            if (touchPoint.state() != Qt::TouchPointStationary)
+                d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
 
