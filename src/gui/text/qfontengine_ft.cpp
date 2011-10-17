@@ -1823,6 +1823,13 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
             gset = 0;
     }
 
+    if (gset) {
+        FT_Matrix m = matrix;
+        FT_Matrix_Multiply(&gset->transformationMatrix, &m);
+        FT_Set_Transform(freetype->face, &m, 0);
+        freetype->matrix = m;
+    }
+
     if (!gset || gset->outline_drawing || !loadGlyph(gset, glyphIndex, subPixelPosition,
                                                      neededFormat)) {
         unlockFace();
