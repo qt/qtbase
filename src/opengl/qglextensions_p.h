@@ -54,7 +54,6 @@
 //
 
 // extension prototypes
-#ifndef Q_WS_MAC
 # ifndef APIENTRYP
 #   ifdef APIENTRY
 #     define APIENTRYP APIENTRY *
@@ -63,10 +62,6 @@
 #     define APIENTRYP *
 #   endif
 # endif
-#else
-# define APIENTRY
-# define APIENTRYP *
-#endif
 
 #include <QtCore/qglobal.h>
 

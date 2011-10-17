@@ -72,20 +72,6 @@ QT_BEGIN_NAMESPACE
 class QGLContext;
 class QGLOverlayWidget;
 class QPixmap;
-#ifdef Q_WS_MAC
-# ifdef qDebug
-#   define old_qDebug qDebug
-#   undef qDebug
-# endif
-QT_BEGIN_INCLUDE_NAMESPACE
-QT_END_INCLUDE_NAMESPACE
-# ifdef old_qDebug
-#   undef qDebug
-#   define qDebug QT_NO_QDEBUG_MACRO
-#   undef old_qDebug
-# endif
-class QMacWindowChangeEvent;
-#endif
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtOpenGL/private/qglextensions_p.h>

@@ -83,9 +83,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(OpenGL)
 
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-class QGLCmap;
-#endif
 
 class QPixmap;
 class QGLWidgetPrivate;
@@ -371,13 +368,6 @@ private:
     friend class QGLExtensions;
     friend class QGLTexture;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
-#ifdef Q_WS_MAC
-public:
-    void updatePaintDevice();
-private:
-    friend class QMacGLWindowChangeEvent;
-    friend QGLContextPrivate *qt_phonon_get_dptr(const QGLContext *);
-#endif
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
     friend class QGLFBOGLPaintDevice;
@@ -493,9 +483,6 @@ protected:
 private:
     Q_DISABLE_COPY(QGLWidget)
 
-#ifdef Q_WS_MAC
-    friend class QMacGLWindowChangeEvent;
-#endif
     friend class QGLDrawable;
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
