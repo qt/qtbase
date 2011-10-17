@@ -927,7 +927,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()
-#if defined (Q_WS_WIN)
+#if defined (Q_OS_WIN)
     if (ret > 0) {
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
@@ -980,7 +980,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
     // On Windows, the socket is in connected state if a call to
     // select(writable) is successful. In this case we should not
     // issue a second call to WSAConnect()
-#if defined (Q_WS_WIN)
+#if defined (Q_OS_WIN)
     if (checkWrite && ((readyToWrite && *readyToWrite) || !readyToWrite) && ret > 0) {
         setState(QAbstractSocket::ConnectedState);
         d_func()->fetchConnectionParameters();
