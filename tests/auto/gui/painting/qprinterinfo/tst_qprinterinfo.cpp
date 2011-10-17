@@ -44,8 +44,6 @@
 #include <QtGlobal>
 #include <QtAlgorithms>
 #include <QtNetwork/QHostInfo>
-
-#ifndef QT_NO_PRINTER
 #include <qprinterinfo.h>
 
 #ifdef Q_OS_UNIX
@@ -63,16 +61,10 @@ class tst_QPrinterInfo : public QObject
 {
     Q_OBJECT
 
-public:
-    //tst_QPrinterInfo();
-    //virtual ~tst_QPrinterInfo();
-
-
+#ifdef QT_NO_PRINTER
 public slots:
-    //void initTestCase();
-    //void cleanupTestCase();
-    //void init();
-    //void cleanup();
+    void initTestCase();
+#else
 private slots:
 #if defined(Q_OS_UNIX) || defined(Q_OS_WIN32)
     void testForDefaultPrinter();
@@ -88,7 +80,16 @@ private:
     QStringList getPrintersFromSystem();
 
     QString getOutputFromCommand(const QStringList& command);
+#endif
 };
+
+#ifdef QT_NO_PRINTER
+void tst_QPrinterInfo::initTestCase()
+{
+    QSKIP("This test requires printing support", SkipAll);
+}
+
+#else
 
 void tst_QPrinterInfo::macFixNameFormat(QString *printerName)
 {
@@ -386,8 +387,7 @@ void tst_QPrinterInfo::testAssignment()
     }
 }
 
+#endif
+
 QTEST_MAIN(tst_QPrinterInfo)
 #include "tst_qprinterinfo.moc"
-#else
-QTEST_NOOP_MAIN
-#endif

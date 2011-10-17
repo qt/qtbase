@@ -63,22 +63,14 @@ QT_FORWARD_DECLARE_CLASS(QPrinter)
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#ifndef QT_NO_PRINTER
-
 class tst_QPrinter : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QPrinter();
-    virtual ~tst_QPrinter();
-
-
+#ifdef QT_NO_PRINTER
 public slots:
     void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
+#else
 private slots:
     void getSetCheck();
 // Add your testfunctions and testdata create functions here
@@ -113,7 +105,16 @@ private slots:
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
+#endif
 };
+
+#ifdef QT_NO_PRINTER
+void tst_QPrinter::initTestCase()
+{
+    QSKIP("This test requires printing support", SkipAll);
+}
+
+#else
 
 // Testing get/set functions
 void tst_QPrinter::getSetCheck()
@@ -209,47 +210,6 @@ void tst_QPrinter::getSetCheck()
     QCOMPARE(QPrinter::PrintRange(QPrinter::Selection), obj1.printRange());
     obj1.setPrintRange(QPrinter::PrintRange(QPrinter::PageRange));
     QCOMPARE(QPrinter::PrintRange(QPrinter::PageRange), obj1.printRange());
-}
-
-tst_QPrinter::tst_QPrinter()
-{
-}
-
-tst_QPrinter::~tst_QPrinter()
-{
-}
-
-// initTestCase will be executed once before the first testfunction is executed.
-void tst_QPrinter::initTestCase()
-{
-// TODO: Add testcase generic initialization code here.
-// suggestion:
-//    testWidget = new QPrinter(0,"testWidget");
-//    testWidget->setFixedSize(200, 200);
-//    qApp->setMainWidget(testWidget);
-//    testWidget->show();
-}
-
-// cleanupTestCase will be executed once after the last testfunction is executed.
-void tst_QPrinter::cleanupTestCase()
-{
-// TODO: Add testcase generic cleanup code here.
-// suggestion:
-//    testWidget->hide();
-//    qApp->setMainWidget(0);
-//    delete testWidget;
-}
-
-// init() will be executed immediately before each testfunction is run.
-void tst_QPrinter::init()
-{
-// TODO: Add testfunction specific initialization code here.
-}
-
-// cleanup() will be executed immediately after each testfunction is run.
-void tst_QPrinter::cleanup()
-{
-// TODO: Add testfunction specific cleanup code here.
 }
 
 #define MYCOMPARE(a, b) QCOMPARE(QVariant((int)a), QVariant((int)b))
@@ -1033,11 +993,7 @@ void tst_QPrinter::testPdfTitle()
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
 
+#endif
+
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
-
-#else //QT_NO_PRINTER
-
-QTEST_NOOP_MAIN
-
-#endif //QT_NO_PRINTER

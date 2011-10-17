@@ -50,21 +50,28 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
-
 class tst_QAbstractPrintDialog : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QAbstractPrintDialog();
-    virtual ~tst_QAbstractPrintDialog();
-
+#if defined(QT_NO_PRINTER) || defined(QT_NO_PRINTDIALOG)
+public slots:
+    void initTestCase();
+#else
 private slots:
     void getSetCheck();
     void setMinMax();
     void setFromTo();
+#endif
 };
+
+#if defined(QT_NO_PRINTER) || defined(QT_NO_PRINTDIALOG)
+void tst_QAbstractPrintDialog::initTestCase()
+{
+    QSKIP("This test requires printing and print dialog support", SkipAll);
+}
+
+#else
 
 class MyAbstractPrintDialog : public QAbstractPrintDialog
 {
@@ -72,14 +79,6 @@ public:
     MyAbstractPrintDialog(QPrinter *p) : QAbstractPrintDialog(p) {}
     int exec() { return 0; }
 };
-
-tst_QAbstractPrintDialog::tst_QAbstractPrintDialog()
-{
-}
-
-tst_QAbstractPrintDialog::~tst_QAbstractPrintDialog()
-{
-}
 
 // Testing get/set functions
 void tst_QAbstractPrintDialog::getSetCheck()
@@ -141,11 +140,7 @@ void tst_QAbstractPrintDialog::setFromTo()
     QCOMPARE(obj1.maxPage(), 50);
 }
 
+#endif
+
 QTEST_MAIN(tst_QAbstractPrintDialog)
 #include "tst_qabstractprintdialog.moc"
-
-#else
-
-QTEST_NOOP_MAIN
-
-#endif
