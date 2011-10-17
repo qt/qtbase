@@ -50,10 +50,6 @@ QT_USE_NAMESPACE
 
 // this test only works with GLIBC
 
-#if defined(QT_NO_EXCEPTIONS)
-    QTEST_NOOP_MAIN
-#else
-
 #include "oomsimulator.h"
 #include "3rdparty/memcheck.h"
 
@@ -63,6 +59,7 @@ class tst_ExceptionSafety_Objects: public QObject
 
 public slots:
     void initTestCase();
+#ifndef QT_NO_EXCEPTIONS
     void cleanupTestCase();
 
 private slots:
@@ -84,8 +81,16 @@ private slots:
 private:
     static QtMsgHandler testMessageHandler;
     static void safeMessageHandler(QtMsgType, const char *);
+#endif
 };
 
+#ifdef QT_NO_EXCEPTIONS
+void tst_ExceptionSafety_Objects::initTestCase()
+{
+    QSKIP("This test requires exception support", SkipAll);
+}
+
+#else
 // helper structs to create an arbitrary widget
 struct AbstractTester
 {
@@ -790,6 +795,7 @@ void tst_ExceptionSafety_Objects::linkedList()
     doOOMTest(testFunction, 0);
 }
 
+#endif
+
 QTEST_MAIN(tst_ExceptionSafety_Objects)
 #include "tst_exceptionsafety_objects.moc"
-#endif // QT_NO_EXCEPTIONS

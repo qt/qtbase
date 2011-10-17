@@ -44,13 +44,13 @@
 
 QT_USE_NAMESPACE
 
-#if defined(QT_NO_EXCEPTIONS)
-    QTEST_NOOP_MAIN
-#else
 class tst_ExceptionSafety: public QObject
 {
     Q_OBJECT
 private slots:
+#ifdef QT_NO_EXCEPTIONS
+    void initTestCase();
+#else
     void exceptionInSlot();
     void exceptionVector();
     void exceptionHash();
@@ -59,7 +59,16 @@ private slots:
     void exceptionLinkedList();
 //    void exceptionEventLoop();
 //    void exceptionSignalSlot();
+#endif
 };
+
+#ifdef QT_NO_EXCEPTIONS
+void tst_ExceptionSafety::initTestCase()
+{
+    QSKIP("This test requires exception support", SkipAll);
+}
+
+#else
 
 class Emitter : public QObject
 {
@@ -719,6 +728,7 @@ void tst_ExceptionSafety::exceptionSignalSlot()
 }
 #endif
 
+#endif
+
 QTEST_MAIN(tst_ExceptionSafety)
 #include "tst_exceptionsafety.moc"
-#endif // QT_NO_EXCEPTIONS
