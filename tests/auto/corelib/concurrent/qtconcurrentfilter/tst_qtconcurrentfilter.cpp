@@ -46,13 +46,14 @@
 
 #include "../qtconcurrentmap/functions.h"
 
-#if !defined(QT_NO_CONCURRENT_FILTER)
-
 class tst_QtConcurrentFilter : public QObject
 {
     Q_OBJECT
 
 private slots:
+#ifdef QT_NO_CONCURRENT_FILTER
+    void initTestCase();
+#else
     void filter();
     void filtered();
     void filteredReduced();
@@ -62,7 +63,16 @@ private slots:
 #ifndef QT_NO_STL
     void stlContainers();
 #endif
+#endif
 };
+
+#ifdef QT_NO_CONCURRENT_FILTER
+void tst_QtConcurrentFilter::initTestCase()
+{
+    QSKIP("This test is skipped for gcc 3.x", SkipAll);
+}
+
+#else
 
 void tst_QtConcurrentFilter::filter()
 {
@@ -1531,12 +1541,7 @@ void tst_QtConcurrentFilter::stlContainers()
 }
 #endif
 
-QTEST_MAIN(tst_QtConcurrentFilter)
-
-#else
-
-QTEST_NOOP_MAIN
-
 #endif
 
+QTEST_MAIN(tst_QtConcurrentFilter)
 #include "tst_qtconcurrentfilter.moc"

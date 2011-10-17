@@ -48,8 +48,6 @@
 
 #include "functions.h"
 
-#if !defined(QT_NO_CONCURRENT_MAP)
-
 Q_DECLARE_METATYPE(QVector<int>);
 Q_DECLARE_METATYPE(QVector<double>);
 Q_DECLARE_METATYPE(QVector<QString>);
@@ -61,6 +59,9 @@ class tst_QtConcurrentMap: public QObject
 {
     Q_OBJECT
 private slots:
+#ifdef QT_NO_CONCURRENT_MAP
+    void initTestCase()
+#else
     void map();
     void blocking_map();
     void mapped();
@@ -81,7 +82,16 @@ private slots:
     void stressTest();
 public slots:
     void throttling();
+#endif
 };
+
+#ifdef QT_NO_CONCURRENT_FILTER
+void tst_QtConcurrentFilter::initTestCase()
+{
+    QSKIP("This test is skipped for gcc 3.x", SkipAll);
+}
+
+#else
 
 using namespace QtConcurrent;
 
@@ -2415,12 +2425,7 @@ void tst_QtConcurrentMap::stressTest()
     }
 }
 
-QTEST_MAIN(tst_QtConcurrentMap)
-
-#else
-
-QTEST_NOOP_MAIN
-
 #endif
 
+QTEST_MAIN(tst_QtConcurrentMap)
 #include "tst_qtconcurrentmap.moc"
