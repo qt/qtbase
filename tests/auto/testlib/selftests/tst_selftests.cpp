@@ -395,6 +395,12 @@ void tst_Selftests::runSubTest_data()
                 if (subtest == "float") {
                     continue;
                 }
+                // these tests are quite slow, and running them for all the loggers significantly
+                // increases the overall test time.  They do not really relate to logging, so it
+                // should be safe to run them just for the stdout loggers.
+                if (subtest == "benchlibcallgrind" || subtest == "sleep") {
+                    continue;
+                }
             }
 
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
