@@ -123,16 +123,6 @@ QTEST_MAIN(TestQString)
 //! [11]
 
 
-//! [12]
-#ifdef Q_WS_X11
-    QTEST_MAIN(MyX11Test)
-#else
-    // do nothing on non-X11 platforms
-    QTEST_NOOP_MAIN
-#endif
-//! [12]
-
-
 //! [13]
 QTest::keyClick(myWidget, 'a');
 //! [13]

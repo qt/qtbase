@@ -326,19 +326,6 @@ QT_BEGIN_NAMESPACE
     \sa QTEST_MAIN()
 */
 
-/*! \macro QTEST_NOOP_MAIN()
-
-    \relates QTest
-
-    Implements a main() function with a test class that does absolutely nothing.
-    Use this macro to create a test that produces valid test output but just
-    doesn't execute any test, for example in conditional compilations:
-
-    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 12
-
-    \sa QTEST_MAIN()
-*/
-
 /*! \macro QTEST_GUILESS_MAIN(TestClass)
 
     \relates QTest

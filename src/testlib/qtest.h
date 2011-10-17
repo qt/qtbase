@@ -238,13 +238,6 @@ int main(int argc, char *argv[]) \
     return QTest::qExec(&tc, argc, argv); \
 }
 
-#define QTEST_NOOP_MAIN \
-int main(int argc, char *argv[]) \
-{ \
-    QObject tc; \
-    return QTest::qExec(&tc, argc, argv); \
-}
-
 #include <QtTest/qtestsystem.h>
 
 #if defined(QT_WIDGETS_LIB)
