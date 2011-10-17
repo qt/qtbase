@@ -98,7 +98,7 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 
 class QFontGb2312Codec : public QTextCodec
 {
@@ -150,7 +150,7 @@ public:
     QString convertToUnicode(const char *, int, ConverterState *) const;
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
-#endif // Q_WS_X11
+#endif // Q_OS_UNIX
 
 #endif // QT_NO_TEXTCODEC
 

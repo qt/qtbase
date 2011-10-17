@@ -68,7 +68,7 @@ QList<QByteArray> CNTextCodecs::names() const
     list += QGb18030Codec::_name();
     list += QGbkCodec::_name();
     list += QGb2312Codec::_name();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontGb2312Codec::_name();
     list += QFontGbkCodec::_name();
 #endif
@@ -81,7 +81,7 @@ QList<QByteArray> CNTextCodecs::aliases() const
     list += QGb18030Codec::_aliases();
     list += QGbkCodec::_aliases();
     list += QGb2312Codec::_aliases();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontGb2312Codec::_aliases();
     list += QFontGbkCodec::_aliases();
 #endif
@@ -94,7 +94,7 @@ QList<int> CNTextCodecs::mibEnums() const
     list += QGb18030Codec::_mibEnum();
     list += QGbkCodec::_mibEnum();
     list += QGb2312Codec::_mibEnum();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontGb2312Codec::_mibEnum();
     list += QFontGbkCodec::_mibEnum();
 #endif
@@ -109,7 +109,7 @@ QTextCodec *CNTextCodecs::createForMib(int mib)
         return new QGbkCodec;
     if (mib == QGb2312Codec::_mibEnum())
         return new QGb2312Codec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (mib == QFontGbkCodec::_mibEnum())
         return new QFontGbkCodec;
     if (mib == QFontGb2312Codec::_mibEnum())
@@ -127,7 +127,7 @@ QTextCodec *CNTextCodecs::createForName(const QByteArray &name)
         return new QGbkCodec;
     if (name == QGb2312Codec::_name() || QGb2312Codec::_aliases().contains(name))
         return new QGb2312Codec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (name == QFontGbkCodec::_name() || QFontGbkCodec::_aliases().contains(name))
         return new QFontGbkCodec;
     if (name == QFontGb2312Codec::_name() || QFontGb2312Codec::_aliases().contains(name))

@@ -580,7 +580,7 @@ QByteArray QGb2312Codec::convertFromUnicode(const QChar *uc, int len, ConverterS
 }
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 
 QFontGb2312Codec::QFontGb2312Codec()
 {
@@ -724,7 +724,7 @@ QByteArray QFontGb18030_0Codec::convertFromUnicode(const QChar *uc, int len, Con
     return result;
 }
 
-#endif // Q_WS_X11
+#endif // Q_OS_UNIX
 
 
 static const indexTbl_t gb18030_to_ucs_index[154] = {

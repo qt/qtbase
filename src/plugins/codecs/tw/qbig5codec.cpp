@@ -1933,7 +1933,7 @@ QByteArray QBig5hkscsCodec::convertFromUnicode(const QChar *uc, int len, Convert
 
 
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 QFontBig5Codec::QFontBig5Codec()
 {
     //qDebug("QFontBig5Codec::QFontBig5Codec()");
@@ -2051,7 +2051,7 @@ QByteArray QFontBig5hkscsCodec::convertFromUnicode(const QChar *uc, int len, Con
 }
 
 
-#endif // Q_WS_X11
+#endif // Q_OS_UNIX
 
 /* ====================================================================== */
 

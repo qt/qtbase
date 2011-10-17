@@ -102,7 +102,7 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 class QFontKsc5601Codec : public QTextCodec
 {
 public:

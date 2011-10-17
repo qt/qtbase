@@ -66,7 +66,7 @@ QList<QByteArray> KRTextCodecs::names() const
 {
     QList<QByteArray> list;
     list += QEucKrCodec::_name();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontKsc5601Codec::_name();
 #endif
     list += QCP949Codec::_name();
@@ -77,7 +77,7 @@ QList<QByteArray> KRTextCodecs::aliases() const
 {
     QList<QByteArray> list;
     list += QEucKrCodec::_aliases();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontKsc5601Codec::_aliases();
 #endif
     list += QCP949Codec::_aliases();
@@ -88,7 +88,7 @@ QList<int> KRTextCodecs::mibEnums() const
 {
     QList<int> list;
     list += QEucKrCodec::_mibEnum();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontKsc5601Codec::_mibEnum();
 #endif
     list += QCP949Codec::_mibEnum();
@@ -99,7 +99,7 @@ QTextCodec *KRTextCodecs::createForMib(int mib)
 {
     if (mib == QEucKrCodec::_mibEnum())
         return new QEucKrCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (mib == QFontKsc5601Codec::_mibEnum())
         return new QFontKsc5601Codec;
 #endif
@@ -113,7 +113,7 @@ QTextCodec *KRTextCodecs::createForName(const QByteArray &name)
 {
     if (name == QEucKrCodec::_name() || QEucKrCodec::_aliases().contains(name))
         return new QEucKrCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (name == QFontKsc5601Codec::_name() || QFontKsc5601Codec::_aliases().contains(name))
         return new QFontKsc5601Codec;
 #endif

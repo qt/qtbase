@@ -67,7 +67,7 @@ QList<QByteArray> TWTextCodecs::names() const
     QList<QByteArray> list;
     list += QBig5Codec::_name();
     list += QBig5hkscsCodec::_name();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontBig5Codec::_name();
     list += QFontBig5hkscsCodec::_name();
 #endif
@@ -79,7 +79,7 @@ QList<QByteArray> TWTextCodecs::aliases() const
     QList<QByteArray> list;
     list += QBig5Codec::_aliases();
     list += QBig5hkscsCodec::_aliases();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontBig5Codec::_aliases();
     list += QFontBig5hkscsCodec::_aliases();
 #endif
@@ -91,7 +91,7 @@ QList<int> TWTextCodecs::mibEnums() const
     QList<int> list;
     list += QBig5Codec::_mibEnum();
     list += QBig5hkscsCodec::_mibEnum();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontBig5Codec::_mibEnum();
     list += QFontBig5hkscsCodec::_mibEnum();
 #endif
@@ -104,7 +104,7 @@ QTextCodec *TWTextCodecs::createForMib(int mib)
         return new QBig5Codec;
     if (mib == QBig5hkscsCodec::_mibEnum())
         return new QBig5hkscsCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (mib == QFontBig5hkscsCodec::_mibEnum())
         return new QFontBig5hkscsCodec;
     if (mib == QFontBig5Codec::_mibEnum())
@@ -120,7 +120,7 @@ QTextCodec *TWTextCodecs::createForName(const QByteArray &name)
         return new QBig5Codec;
     if (name == QBig5hkscsCodec::_name() || QBig5hkscsCodec::_aliases().contains(name))
         return new QBig5hkscsCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (name == QFontBig5hkscsCodec::_name() || QFontBig5hkscsCodec::_aliases().contains(name))
         return new QFontBig5hkscsCodec;
     if (name == QFontBig5Codec::_name() || QFontBig5Codec::_aliases().contains(name))

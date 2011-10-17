@@ -48,7 +48,7 @@
 #include "qeucjpcodec.h"
 #include "qjiscodec.h"
 #include "qsjiscodec.h"
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 #include "qfontjpcodec.h"
 #endif
 
@@ -73,7 +73,7 @@ QList<QByteArray> JPTextCodecs::names() const
     list += QEucJpCodec::_name();
     list += QJisCodec::_name();
     list += QSjisCodec::_name();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontJis0201Codec::_name();
     list += QFontJis0208Codec::_name();
 #endif
@@ -86,7 +86,7 @@ QList<QByteArray> JPTextCodecs::aliases() const
     list += QEucJpCodec::_aliases();
     list += QJisCodec::_aliases();
     list += QSjisCodec::_aliases();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontJis0201Codec::_aliases();
     list += QFontJis0208Codec::_aliases();
 #endif
@@ -99,7 +99,7 @@ QList<int> JPTextCodecs::mibEnums() const
     list += QEucJpCodec::_mibEnum();
     list += QJisCodec::_mibEnum();
     list += QSjisCodec::_mibEnum();
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     list += QFontJis0201Codec::_mibEnum();
     list += QFontJis0208Codec::_mibEnum();
 #endif
@@ -114,7 +114,7 @@ QTextCodec *JPTextCodecs::createForMib(int mib)
         return new QJisCodec;
     if (mib == QSjisCodec::_mibEnum())
         return new QSjisCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (mib == QFontJis0208Codec::_mibEnum())
         return new QFontJis0208Codec;
     if (mib == QFontJis0201Codec::_mibEnum())
@@ -132,7 +132,7 @@ QTextCodec *JPTextCodecs::createForName(const QByteArray &name)
         return new QJisCodec;
     if (name == QSjisCodec::_name() || QSjisCodec::_aliases().contains(name))
         return new QSjisCodec;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     if (name == QFontJis0208Codec::_name() || QFontJis0208Codec::_aliases().contains(name))
         return new QFontJis0208Codec;
     if (name == QFontJis0201Codec::_name() || QFontJis0201Codec::_aliases().contains(name))

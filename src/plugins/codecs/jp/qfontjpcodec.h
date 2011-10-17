@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QJpUnicodeConv;
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 class QFontJis0201Codec : public QTextCodec
 {
 public:

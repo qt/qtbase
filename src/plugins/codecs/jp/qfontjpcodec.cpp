@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
 // JIS X 0201
 
 QFontJis0201Codec::QFontJis0201Codec()
