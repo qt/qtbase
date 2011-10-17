@@ -52,20 +52,15 @@
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
-#ifdef QT_NO_PROCESS
-QTEST_NOOP_MAIN
-#else
-
-#if defined(Q_OS_WIN)
-#include <windows.h>
-#endif
-
-//TESTED_CLASS=
-//TESTED_FILES=
+#ifndef QT_NO_PROCESS
+# if defined(Q_OS_WIN)
+#  include <windows.h>
+# endif
 
 Q_DECLARE_METATYPE(QList<QProcess::ExitStatus>);
 Q_DECLARE_METATYPE(QProcess::ExitStatus);
 Q_DECLARE_METATYPE(QProcess::ProcessState);
+#endif
 
 #define QPROCESS_VERIFY(Process, Fn) \
 { \
@@ -79,14 +74,10 @@ class tst_QProcess : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QProcess();
-    virtual ~tst_QProcess();
-
+#ifdef QT_NO_PROCESS
 public slots:
-    void init();
-    void cleanup();
-
+    void initTestCase();
+#else
 private slots:
     void getSetCheck();
     void constructing();
@@ -197,7 +188,16 @@ protected slots:
 private:
     QProcess *process;
     qint64 bytesAvailable;
+#endif
 };
+
+#ifdef QT_NO_PROCESS
+void tst_QProcess::initTestCase()
+{
+    QSKIP("This test requires QProcess support", SkipAll);
+}
+
+#else
 
 // Testing get/set functions
 void tst_QProcess::getSetCheck()
@@ -218,22 +218,6 @@ void tst_QProcess::getSetCheck()
     QCOMPARE(QProcess::ProcessChannel(QProcess::StandardOutput), obj1.readChannel());
     obj1.setReadChannel(QProcess::ProcessChannel(QProcess::StandardError));
     QCOMPARE(QProcess::ProcessChannel(QProcess::StandardError), obj1.readChannel());
-}
-
-tst_QProcess::tst_QProcess()
-{
-}
-
-tst_QProcess::~tst_QProcess()
-{
-}
-
-void tst_QProcess::init()
-{
-}
-
-void tst_QProcess::cleanup()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -2282,7 +2266,7 @@ void tst_QProcess::onlyOneStartedSignal()
     QCOMPARE(spyFinished.count(), 1);
 }
 
-QTEST_MAIN(tst_QProcess)
-#include "tst_qprocess.moc"
 #endif
 
+QTEST_MAIN(tst_QProcess)
+#include "tst_qprocess.moc"
