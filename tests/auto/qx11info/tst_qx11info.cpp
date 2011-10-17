@@ -41,9 +41,6 @@
 
 
 #include <QtTest/QtTest>
-
-#ifdef Q_WS_X11
-
 #include <QApplication>
 #include <QX11Info>
 
@@ -51,9 +48,22 @@ class tst_QX11Info : public QObject
 {
     Q_OBJECT
 
+#ifndef Q_WS_X11
+public slots:
+    void initTestCase();
+#else
 private slots:
     void staticFunctionsBeforeQApplication();
+#endif
 };
+
+#ifndef Q_WS_X11
+void tst_QX11Info::initTestCase()
+{
+    QSKIP("This test is only valid for X11", SkipAll);
+}
+
+#else
 
 void tst_QX11Info::staticFunctionsBeforeQApplication()
 {
@@ -111,12 +121,7 @@ void tst_QX11Info::staticFunctionsBeforeQApplication()
     QCOMPARE(appTime, 0ul);
 }
 
-QTEST_APPLESS_MAIN(tst_QX11Info)
-
-#include "tst_qx11info.moc"
-
-#else // !Q_WS_X11
-
-QTEST_NOOP_MAIN
-
 #endif
+
+QTEST_APPLESS_MAIN(tst_QX11Info)
+#include "tst_qx11info.moc"
