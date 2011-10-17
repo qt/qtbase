@@ -275,6 +275,9 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                 if (!(active & (1 << i)) && touchPoints.at(i).state != Qt::TouchPointReleased)
                     touchPoints[i].state = Qt::TouchPointReleased;
 
+            if (QXcbWindow *platformWindow = platformWindowFromId(xideviceevent->event))
+                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, QTouchEvent::TouchScreen, touchPoints);
+
             if (xideviceevent->evtype == XI_ButtonRelease) {
                 // final event, forget touch state
                 m_xinputData->allTouchPoints.clear();
@@ -283,8 +286,6 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                 m_xinputData->allTouchPoints = touchPoints;
             }
 
-            if (QXcbWindow *platformWindow = platformWindowFromId(xideviceevent->event))
-                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, QTouchEvent::TouchScreen, m_xinputData->allTouchPoints);
         }
     }
 }
