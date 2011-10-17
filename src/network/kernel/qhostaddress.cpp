@@ -107,13 +107,14 @@ public:
     bool parse();
     void clear();
 
+    QString ipString;
+    QString scopeId;
+
     quint32 a;    // IPv4 address
     Q_IPV6ADDR a6; // IPv6 address
     QAbstractSocket::NetworkLayerProtocol protocol;
 
-    QString ipString;
     bool isParsed;
-    QString scopeId;
 
     friend class QHostAddress;
 };
@@ -556,23 +557,27 @@ QHostAddress::QHostAddress(const QHostAddress &address)
 QHostAddress::QHostAddress(SpecialAddress address)
     : d(new QHostAddressPrivate)
 {
+    Q_IPV6ADDR ip6;
+    memset(&ip6, 0, sizeof ip6);
+
     switch (address) {
     case Null:
         break;
     case Broadcast:
-        setAddress(QLatin1String("255.255.255.255"));
+        d->setAddress(quint32(-1));
         break;
     case LocalHost:
-        setAddress(QLatin1String("127.0.0.1"));
+        d->setAddress(0x7f000001);
         break;
     case LocalHostIPv6:
-        setAddress(QLatin1String("::1"));
+        ip6[15] = 1;
+        d->setAddress(ip6);
         break;
     case AnyIPv4:
-        setAddress(QLatin1String("0.0.0.0"));
+        setAddress(0u);
         break;
     case AnyIPv6:
-        setAddress(QLatin1String("::"));
+        d->setAddress(ip6);
         break;
     case Any:
         d->clear();
