@@ -774,6 +774,16 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
     return S_FALSE;
 }
 
+/*
+ It is recommended to read
+    "Implementing a Microsoft Active Accessibility (MSAA) Server.
+    Practical Tips for Developers and How Mozilla Does It"
+    (https://developer.mozilla.org/En/Accessibility/Implementing_an_MSAA_Server)
+
+ to get an overview of what's important to implement and what parts of MSAA
+ can be ignored. All stuff prefixed with "moz" are information from that page.
+*/
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *pyTop, long *pcxWidth, long *pcyHeight, VARIANT varID)
 {
     showDebug(__FUNCTION__, accessible);
@@ -795,6 +805,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *py
     return S_OK;
 }
 
+// moz: [important, but no need to implement up/down/left/right]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT varStart, VARIANT *pvarEnd)
 {
     showDebug(__FUNCTION__, accessible);
@@ -870,6 +881,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
     return S_FALSE;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, IDispatch** ppdispChild)
 {
     showDebug(__FUNCTION__, accessible);
@@ -914,6 +926,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
     return S_FALSE;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChildCount(long* pcountChildren)
 {
     showDebug(__FUNCTION__, accessible);
@@ -924,6 +937,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChildCount(long* pcountChil
     return S_OK;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispParent)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1036,6 +1050,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
     return *pszKeyboardShortcut ? S_OK : S_FALSE;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* pszName)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1058,6 +1073,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accName(VARIANT, BSTR)
     return DISP_E_MEMBERNOTFOUND;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT *pvarRole)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1076,6 +1092,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
     return S_OK;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIANT *pvarState)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1087,6 +1104,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
     return S_OK;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* pszValue)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1109,6 +1127,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accValue(VARIANT, BSTR)
     return DISP_E_MEMBERNOTFOUND;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIANT varID)
 {
     showDebug(__FUNCTION__, accessible);
@@ -1137,6 +1156,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIAN
     return res ? S_OK : S_FALSE;
 }
 
+// moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
 {
     showDebug(__FUNCTION__, accessible);
