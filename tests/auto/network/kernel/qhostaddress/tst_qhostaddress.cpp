@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -38,7 +39,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 
 #include <qcoreapplication.h>
 #include <QtTest/QtTest>
@@ -165,24 +165,25 @@ void tst_QHostAddress::setAddress_QString_data()
     QTest::newRow("ip4_03")  << QString(" 255.3.2.1") << true << QString("255.3.2.1") << 4;
     QTest::newRow("ip4_04")  << QString("255.3.2.1\r ") << true << QString("255.3.2.1") << 4;
     QTest::newRow("ip4_05")  << QString("0.0.0.0") << true << QString("0.0.0.0") << 4;
+    QTest::newRow("ip4_06")  << QString("123.0.0") << true << QString("123.0.0.0") << 4;
 
     // for the format of IPv6 addresses see also RFC 5952
-    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << true << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << 6;
-    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_04")  << QString("FF01::43") << true << QString("FF01::43") << 6;
+    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << true << QString("fedc:ba98:7654:3210:fedc:ba98:7654:3210") << 6;
+    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
+    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
+    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << true << QString("1080::8:800:200c:417a") << 6;
+    QTest::newRow("ip6_04")  << QString("FF01::43") << true << QString("ff01::43") << 6;
     QTest::newRow("ip6_05")  << QString("::1") << true << QString("::1") << 6;
     QTest::newRow("ip6_06")  << QString("1::") << true << QString("1::") << 6;
     QTest::newRow("ip6_07")  << QString("::") << true << QString("::") << 6;
-    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << true << QString("::D01:4403") << 6;
-    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << true <<  QString("::D01:4403") << 6;
-    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << true << QString("::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << true << QString("::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << true << QString("1::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_13")  << QString("A:B::D:E") << true << QString("A:B::D:E") << 6;
-    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << true << QString("1080:0:1:0:8:800:200C:417A") << 6;
-    QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << true << QString("1080:0:1:0:8:800:200C:0") << 6;
+    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << true << QString("::13.1.68.3") << 6;
+    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << true <<  QString("::13.1.68.3") << 6;
+    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << true << QString("::ffff:129.144.52.38") << 6;
+    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << true << QString("::ffff:129.144.52.38") << 6;
+    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << true << QString("1::ffff:8190:3426") << 6;
+    QTest::newRow("ip6_13")  << QString("A:B::D:E") << true << QString("a:b::d:e") << 6;
+    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << true << QString("1080:0:1:0:8:800:200c:417a") << 6;
+    QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << true << QString("1080:0:1:0:8:800:200c:0") << 6;
     QTest::newRow("ip6_16")  << QString("1080:0:1:0:8:800:0:0") << true << QString("1080:0:1:0:8:800::") << 6;
     QTest::newRow("ip6_17")  << QString("1080:0:0:0:8:800:0:0") << true << QString("1080::8:800:0:0") << 6;
     QTest::newRow("ip6_18")  << QString("0:1:1:1:8:800:0:0") << true << QString("0:1:1:1:8:800::") << 6;
@@ -196,7 +197,8 @@ void tst_QHostAddress::setAddress_QString_data()
 
     QTest::newRow("error_ip4_00")  << QString("256.9.9.9") << false << QString() << 0;
     QTest::newRow("error_ip4_01")  << QString("-1.9.9.9") << false << QString() << 0;
-    QTest::newRow("error_ip4_02")  << QString("123.0.0") << false << QString() << 0;
+    //QTest::newRow("error_ip4_02")  << QString("123.0.0") << false << QString() << 0; // no longer invalid in Qt5
+    QTest::newRow("error_ip4_02")  << QString("123.0.0.") << false << QString() << 0;
     QTest::newRow("error_ip4_03")  << QString("123.0.0.0.0") << false << QString() << 0;
     QTest::newRow("error_ip4_04")  << QString("255.2 3.2.1") << false << QString() << 0;
 
