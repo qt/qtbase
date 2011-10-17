@@ -48,7 +48,6 @@
 #include <QFileIconProvider>
 #include <QTreeView>
 #include <QHeaderView>
-#include "../../shared/util.h"
 #include <QTime>
 #include <QStyle>
 #include <QtGlobal>

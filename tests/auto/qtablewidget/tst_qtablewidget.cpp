@@ -41,7 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
 #include <qeventloop.h>
 #include <qlist.h>
 #include <qpair.h>

@@ -52,7 +52,6 @@
 #include <qitemdelegate.h>
 #include <qscrollbar.h>
 #include <private/qcolumnview_p.h>
-#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

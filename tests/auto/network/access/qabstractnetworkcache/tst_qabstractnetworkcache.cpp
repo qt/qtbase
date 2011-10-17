@@ -42,7 +42,6 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
-#include "../../../../shared/util.h"
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT

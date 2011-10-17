@@ -67,8 +67,6 @@
 #include <QGraphicsLinearLayout>
 #include <float.h>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

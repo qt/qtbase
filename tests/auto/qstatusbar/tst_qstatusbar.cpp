@@ -48,8 +48,6 @@
 #include <QMainWindow>
 #include <QSizeGrip>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

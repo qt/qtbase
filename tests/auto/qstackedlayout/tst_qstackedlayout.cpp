@@ -47,8 +47,6 @@
 #include <qwidget.h>
 #include <QPushButton>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
 

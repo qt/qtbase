@@ -50,8 +50,6 @@
 #include <QVBoxLayout>
 #include <QSizeGrip>
 
-#include "../../shared/util.h"
-
 Q_DECLARE_METATYPE(QSize)
 
 

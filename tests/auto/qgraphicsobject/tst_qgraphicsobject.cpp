@@ -47,7 +47,6 @@
 #include <qgraphicsview.h>
 #include <qstyleoption.h>
 #include <private/qobject_p.h>
-#include "../../shared/util.h"
 
 class tst_QGraphicsObject : public QObject {
     Q_OBJECT

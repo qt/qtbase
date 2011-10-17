@@ -73,8 +73,6 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
 
-#include "../../shared/util.h"
-
 #ifdef Q_WS_QWS
 # include <qscreen_qws.h>
 #endif

@@ -41,8 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
-
 #include "qlineedit.h"
 #include "qapplication.h"
 #include "qstringlist.h"

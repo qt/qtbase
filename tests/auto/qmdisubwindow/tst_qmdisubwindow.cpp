@@ -63,9 +63,6 @@
 #include <QMacStyle>
 #endif
 
-#include "../../shared/util.h"
-
-
 QT_BEGIN_NAMESPACE
 #if defined(Q_WS_X11)
 extern void qt_x11_wait_for_window_manager(QWidget *w);

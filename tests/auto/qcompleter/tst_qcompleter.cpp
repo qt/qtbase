@@ -47,7 +47,6 @@
 #include <QList>
 #include <QPointer>
 
-#include "../../shared/util.h"
 #include "../../shared/filesystem.h"
 
 //TESTED_CLASS=

@@ -39,14 +39,10 @@
 **
 ****************************************************************************/
 
-
-
 #include <qabstractitemview.h>
-
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
-#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

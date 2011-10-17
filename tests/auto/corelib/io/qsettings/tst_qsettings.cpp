@@ -51,7 +51,6 @@
 #include <QtCore/QtDebug>
 #include <QtCore/QString>
 #include <QtGui/QKeySequence>
-#include "../../../../shared/util.h"
 
 #include <cctype>
 #if defined(Q_OS_WIN) && defined(Q_CC_GNU)

@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <qgraphicsitem.h>
 #include <qgraphicstransform.h>
-#include "../../shared/util.h"
 
 class tst_QGraphicsTransform : public QObject {
     Q_OBJECT

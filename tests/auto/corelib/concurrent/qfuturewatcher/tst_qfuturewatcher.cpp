@@ -46,7 +46,6 @@
 #include <qfuturewatcher.h>
 #include <qtconcurrentrun.h>
 #include <qtconcurrentmap.h>
-#include "../../../../shared/util.h"
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;

@@ -55,7 +55,6 @@
 #include <qtreeview.h>
 #include <qlabel.h>
 #include <qdebug.h> // for file error messages
-#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

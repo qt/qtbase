@@ -76,7 +76,6 @@
 #include <qcleanlooksstyle.h>
 #endif
 #include <qabstractitemview.h>
-#include "../../shared/util.h"
 #include <qstyleditemdelegate.h>
 #ifndef QT_NO_STYLE_WINDOWS
 #include <qwindowsstyle.h>

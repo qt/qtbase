@@ -43,8 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
 #include <qnetworkdiskcache.h>
-#include "../../../../shared/util.h"
-
 #define EXAMPLE_URL "http://user:pass@www.example.com/#foo"
 //cached objects are organized into these many subdirs
 #define NUM_SUBDIRECTORIES 16

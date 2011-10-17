@@ -46,7 +46,6 @@
 #include <QWindowsStyle>
 #include <QDesktopWidget>
 #include <QX11Info>
-#include "../../shared/util.h"
 
 #if QT_VERSION < 0x050000
 #include <private/qwindowsurface_p.h>

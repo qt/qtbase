@@ -54,7 +54,6 @@
 #include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 
-#include "../../shared/util.h"
 #include "../platformquirks.h"
 
 //TESTED_CLASS=

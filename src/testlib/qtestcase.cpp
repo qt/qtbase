@@ -109,7 +109,7 @@ QT_BEGIN_NAMESPACE
    Example:
    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 0
 
-   \sa QCOMPARE()
+   \sa QCOMPARE(), QTRY_VERIFY()
 */
 
 /*! \macro QVERIFY2(condition, message)
@@ -159,7 +159,43 @@ QT_BEGIN_NAMESPACE
    Example:
    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 2
 
-   \sa QVERIFY(), QTest::toString()
+   \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
+*/
+
+/*! \macro QTRY_VERIFY(condition)
+
+   \relates QTest
+
+   The QTRY_VERIFY() macro is similar to QVERIFY(), but checks the \a condition
+   repeatedly, until either the condition becomes true or a maximum timeout is
+   reached.  Between each evaluation, events will be processed.  If the timeout
+   is reached, a failure is recorded in the test log and the test won't be
+   executed further.
+
+   The timeout is fixed at five seconds.
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+*/
+
+/*! \macro QTRY_COMPARE(actual, expected)
+
+   \relates QTest
+
+   The QTRY_COMPARE() macro is similar to QCOMPARE(), but performs the comparison
+   of the \a actual and \a expected values repeatedly, until either the two values
+   are equal or a maximum timeout is reached.  Between each comparison, events
+   will be processed.  If the timeout is reached, a failure is recorded in the
+   test log and the test won't be executed further.
+
+   The timeout is fixed at five seconds.
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QCOMPARE(), QVERIFY(), QTRY_VERIFY()
 */
 
 /*! \macro QFETCH(type, name)

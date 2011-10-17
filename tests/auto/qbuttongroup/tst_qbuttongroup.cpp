@@ -57,8 +57,6 @@
 #include <qsettings.h>
 #endif
 
-#include "../../shared/util.h"
-
 class SpecialRadioButton: public QRadioButton
 {
 public:

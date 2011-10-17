@@ -51,9 +51,6 @@
 #include <QScrollBar>
 #include <QStyledItemDelegate>
 
-#include "../../shared/util.h"
-
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

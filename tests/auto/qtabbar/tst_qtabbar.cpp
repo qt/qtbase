@@ -46,7 +46,6 @@
 
 #include <qpushbutton.h>
 #include <qstyle.h>
-#include "../../shared/util.h"
 
 class tst_QTabBar : public QObject
 {

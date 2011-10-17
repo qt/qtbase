@@ -56,8 +56,6 @@
 #include <qstyle.h>
 #include <qdebug.h>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

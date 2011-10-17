@@ -48,8 +48,6 @@
 
 #include <private/qgraphicseffect_p.h>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

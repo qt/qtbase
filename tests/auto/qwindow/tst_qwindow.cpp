@@ -43,8 +43,6 @@
 
 #include <QtTest/QtTest>
 
-#include "../../shared/util.h"
-
 class tst_QWindow: public QObject
 {
     Q_OBJECT

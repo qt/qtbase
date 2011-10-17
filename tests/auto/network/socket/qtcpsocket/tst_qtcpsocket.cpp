@@ -93,7 +93,6 @@
 #include "private/qhostinfo_p.h"
 
 #include "../../../network-settings.h"
-#include "../../../../shared/util.h"
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)

@@ -62,7 +62,6 @@
 #endif
 #include <QMacStyle>
 
-#include "../../shared/util.h"
 #include "../platformquirks.h"
 
 static const Qt::WindowFlags DefaultWindowFlags

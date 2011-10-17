@@ -71,7 +71,6 @@
 #include <QtWidgets/QInputContext>
 #include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsview_p.h>
-#include "../../shared/util.h"
 #include "../platformquirks.h"
 
 //TESTED_CLASS=

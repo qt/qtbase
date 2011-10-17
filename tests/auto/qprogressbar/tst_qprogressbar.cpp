@@ -48,8 +48,6 @@
 #include <qtimer.h>
 #include <QStyleFactory>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

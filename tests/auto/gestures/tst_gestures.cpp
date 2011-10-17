@@ -42,7 +42,6 @@
 
 #include <QtTest/QtTest>
 #include <QtTest/qtesttouch.h>
-#include "../../shared/util.h"
 
 #include <qevent.h>
 #include <qwidget.h>

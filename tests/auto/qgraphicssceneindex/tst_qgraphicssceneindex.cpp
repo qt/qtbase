@@ -45,8 +45,6 @@
 #include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
-#include "../../shared/util.h"
-
 
 //TESTED_CLASS=
 //TESTED_FILES=

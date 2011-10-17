@@ -58,7 +58,6 @@
 #include <qscrollbar.h>
 #include <qboxlayout.h>
 #include <qlineedit.h>
-#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

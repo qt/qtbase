@@ -41,8 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
-
 #include <QtCore>
 #include <QtGui>
 #include <QtWidgets>

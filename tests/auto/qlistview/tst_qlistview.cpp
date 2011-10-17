@@ -60,8 +60,6 @@
 #  include <QtGui/QPlatformNativeInterface>
 #endif // Q_OS_WIN
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

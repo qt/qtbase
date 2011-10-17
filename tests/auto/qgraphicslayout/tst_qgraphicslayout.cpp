@@ -45,8 +45,6 @@
 #include <QtWidgets>
 #include <math.h>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=QGraphicsLayout
 //TESTED_FILES=
 

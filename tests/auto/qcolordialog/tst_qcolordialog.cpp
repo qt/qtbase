@@ -44,8 +44,6 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QColorDialog>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

@@ -56,8 +56,6 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-#include "../../shared/util.h"
-
 class Widget : public QWidget
 {
 public:

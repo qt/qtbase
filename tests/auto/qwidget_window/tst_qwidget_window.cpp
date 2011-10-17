@@ -52,9 +52,6 @@
 #include <QX11Info>
 #endif // Q_WS_X11
 
-#include "../../shared/util.h"
-
-
 class tst_QWidget_window : public QWidget
 {
     Q_OBJECT

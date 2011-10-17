@@ -95,7 +95,6 @@
 #endif
 
 #include "../../../network-settings.h"
-#include "../../../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

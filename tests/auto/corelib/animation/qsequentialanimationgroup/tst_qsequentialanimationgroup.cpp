@@ -40,8 +40,6 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include "../../../../shared/util.h"
-
 #include <QtCore/qanimationgroup.h>
 #include <QtCore/qsequentialanimationgroup.h>
 

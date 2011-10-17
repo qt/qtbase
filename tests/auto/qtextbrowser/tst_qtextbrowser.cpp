@@ -49,8 +49,6 @@
 #include <qtextbrowser.h>
 #include <qtextobject.h>
 
-#include "../../shared/util.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

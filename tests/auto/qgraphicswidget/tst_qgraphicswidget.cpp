@@ -52,7 +52,6 @@
 #include <qboxlayout.h>
 #include <qaction.h>
 #include <qwidgetaction.h>
-#include "../../shared/util.h"
 #include "../platformquirks.h"
 
 

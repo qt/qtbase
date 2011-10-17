@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 #include <QtWidgets>
-#include "../../shared/util.h"
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)

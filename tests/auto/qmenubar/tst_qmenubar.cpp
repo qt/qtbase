@@ -56,8 +56,6 @@
 
 #include <qobject.h>
 
-#include "../../shared/util.h"
-
 QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>

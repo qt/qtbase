@@ -45,7 +45,6 @@
 #include <qtextstream.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
-#include "../../../../shared/util.h"
 
 //TESTED_CLASS=QLocalServer, QLocalSocket
 //TESTED_FILES=network/socket/qlocalserver.cpp network/socket/qlocalsocket.cpp

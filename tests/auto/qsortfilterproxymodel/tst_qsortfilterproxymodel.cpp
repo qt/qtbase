@@ -41,8 +41,6 @@
 
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
-
 #include "dynamictreemodel.h"
 #include "modeltest.h"
 
