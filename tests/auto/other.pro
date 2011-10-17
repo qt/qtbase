@@ -12,7 +12,6 @@ SUBDIRS=\
            macplist \
            qaccessibility \
            qcombobox \
-           qcopchannel \
            qdirectpainter \
            qfocusevent \
            qlayout \
@@ -38,7 +37,6 @@ wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
            macplist \
 
 !embedded|wince*: SUBDIRS -= \
-           qcopchannel \
            qdirectpainter \
            qmultiscreen \
 
