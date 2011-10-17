@@ -44,29 +44,36 @@
 #include <QPainter>
 #include <QPalette>
 #include <QWindowsStyle>
-
-#if QT_VERSION < 0x050000 // Fixme Qt 5
-
-#include <private/qwindowsurface_p.h>
 #include <QDesktopWidget>
 #include <QX11Info>
-
-
 #include "../../shared/util.h"
+
+#if QT_VERSION < 0x050000
+#include <private/qwindowsurface_p.h>
+#endif
 
 class tst_QWindowSurface : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QWindowSurface() {}
-    ~tst_QWindowSurface() {}
-
+#if QT_VERSION >= 0x050000
+public slots:
+    void initTestCase();
+#else
 private slots:
     void getSetWindowSurface();
     void flushOutsidePaintEvent();
     void grabWidget();
+#endif
 };
+
+#if QT_VERSION >= 0x050000
+void tst_QWindowSurface::initTestCase()
+{
+    QSKIP("This test is temporarily skipped until it is fixed for Qt5", SkipAll);
+}
+
+#else
 
 class MyWindowSurface : public QWindowSurface
 {
@@ -281,13 +288,7 @@ void tst_QWindowSurface::grabWidget()
     QVERIFY(QColor(childInvalidSubImage.pixel(0, 0)) == QColor(Qt::white));
 }
 
-QTEST_MAIN(tst_QWindowSurface)
-
-#else
-
-// Temporarily skip the entire test until it is fixed for Qt5
-QTEST_NOOP_MAIN
-
 #endif
 
+QTEST_MAIN(tst_QWindowSurface)
 #include "tst_qwindowsurface.moc"
