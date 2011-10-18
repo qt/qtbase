@@ -1,0 +1,98 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+#ifndef QMEEGOPLATFORMINPUTCONTEXT_H
+#define QMEEGOPLATFORMINPUTCONTEXT_H
+
+#include <QPlatformInputContext>
+#include <QDBusArgument>
+
+QT_BEGIN_NAMESPACE
+
+class QMeeGoPlatformInputContextPrivate;
+class QDBusVariant;
+class QDBusMessage;
+
+class QMeeGoPlatformInputContext : public QPlatformInputContext
+{
+    Q_OBJECT
+public:
+    QMeeGoPlatformInputContext();
+    ~QMeeGoPlatformInputContext();
+
+    bool isValid() const;
+
+    void invokeAction(QInputPanel::Action action, int x);
+    void reset(void);
+    void update(Qt::InputMethodQueries);
+    virtual QRectF keyboardRect() const;
+
+    virtual bool handlesInputPanelVisibility() const;
+
+    virtual void showInputPanel();
+    virtual void hideInputPanel();
+    virtual bool isInputPanelVisible() const;
+
+public Q_SLOTS:
+    void inputItemChanged();
+
+    void activationLostEvent();
+    void commitString(const QString &in0, int in1, int in2, int in3);
+    void updatePreedit(const QDBusMessage &message);
+    void copy();
+    void imInitiatedHide();
+    void keyEvent(int , int , int , const QString &, bool , int , uchar );
+    void paste();
+    bool preeditRectangle(int &x, int &y, int &width, int &height);
+    bool selection(QString &selection);
+    void setDetectableAutoRepeat(bool in0);
+    void setGlobalCorrectionEnabled(bool enable);
+    void setLanguage(const QString &);
+    void setRedirectKeys(bool );
+    void setSelection(int start, int length);
+    void updateInputMethodArea(int x, int y, int width, int height);
+
+private:
+    QMeeGoPlatformInputContextPrivate *d;
+};
+
+QT_END_NAMESPACE
+
+#endif
