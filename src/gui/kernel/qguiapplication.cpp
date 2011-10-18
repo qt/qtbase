@@ -90,6 +90,8 @@ QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 
+QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
+
 bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
@@ -294,6 +296,8 @@ static void init_plugins(const QList<QByteArray> &pluginList)
             plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
         qDebug() << "	created" << plugin;
+        if (plugin)
+            QGuiApplicationPrivate::generic_plugin_list.append(plugin);
     }
 }
 
@@ -423,6 +427,10 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
     is_app_closing = true;
     is_app_running = false;
+
+    for (int i = 0; i < generic_plugin_list.count(); ++i)
+        delete generic_plugin_list.at(i);
+    generic_plugin_list.clear();
 
     QFont::cleanup();
 

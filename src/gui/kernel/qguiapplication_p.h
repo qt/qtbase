@@ -175,6 +175,7 @@ public:
 
     static bool quitOnLastWindowClosed;
 
+    static QList<QObject *> generic_plugin_list;
 
 private:
     void init();
