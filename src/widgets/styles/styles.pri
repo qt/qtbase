@@ -29,8 +29,6 @@ SOURCES += \
 
 wince* {
     RESOURCES += styles/qstyle_wince.qrc
-} else:symbian {
-    RESOURCES += styles/qstyle_s60.qrc
 } else {
     RESOURCES += styles/qstyle.qrc
 }
@@ -166,29 +164,4 @@ contains( styles, windowsmobile ) {
 	SOURCES += styles/qwindowsmobilestyle.cpp
 } else {
 	DEFINES += QT_NO_STYLE_WINDOWSMOBILE
-}
-
-contains( styles, s60 ):contains(QT_CONFIG, s60) {
-    HEADERS += \
-        styles/qs60style.h \
-        styles/qs60style_p.h
-    SOURCES += styles/qs60style.cpp
-    symbian {
-        SOURCES += styles/qs60style_s60.cpp
-        LIBS += -legul -lbmpanim
-        contains(CONFIG, is_using_gnupoc) {
-            LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
-        } else {
-            LIBS += -lAknIcon -lAKNSKINS -lAKNSKINSRV -lFontUtils
-        }
-    } else {
-        SOURCES += styles/qs60style_simulated.cpp
-        RESOURCES += styles/qstyle_s60_simulated.qrc
-    }
-} else {
-    symbian {
-        HEADERS += styles/qs60style.h
-        SOURCES += styles/qs60style_stub.cpp
-    }
-    DEFINES += QT_NO_STYLE_S60
 }

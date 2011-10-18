@@ -97,36 +97,6 @@ win32:!qpa {
     !contains(DEFINES, QT_NO_DIRECTDRAW):LIBS += ddraw.lib
 }
 
-symbian {
-    exists($${EPOCROOT}epoc32/include/platform/mw/akntranseffect.h): DEFINES += QT_SYMBIAN_HAVE_AKNTRANSEFFECT_H
-
-    SOURCES += \
-        kernel/qapplication_s60.cpp \
-        kernel/qeventdispatcher_s60.cpp \
-        kernel/qwidget_s60.cpp \
-        kernel/qcursor_s60.cpp \
-        kernel/qdesktopwidget_s60.cpp \
-        kernel/qkeymapper_s60.cpp\
-        kernel/qclipboard_s60.cpp\
-        kernel/qdnd_s60.cpp \
-        kernel/qsound_s60.cpp
-
-    HEADERS += \
-        kernel/qt_s60_p.h \
-        kernel/qeventdispatcher_s60_p.h
-
-    LIBS += -lbafl -lestor
-
-    INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
-    INCLUDEPATH += ../3rdparty/s60
-
-    contains(QT_CONFIG, s60) {
-        SOURCES += kernel/qsoftkeymanager_s60.cpp
-        HEADERS += kernel/qsoftkeymanager_s60_p.h
-    }
-}
-
-
 unix:x11 {
 	INCLUDEPATH += ../3rdparty/xorg
 	HEADERS += \

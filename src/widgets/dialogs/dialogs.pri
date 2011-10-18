@@ -52,7 +52,7 @@ win32 {
     !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
 }
 
-wince*|symbian: FORMS += dialogs/qfiledialog_embedded.ui
+wince*: FORMS += dialogs/qfiledialog_embedded.ui
 else: FORMS += dialogs/qfiledialog.ui
 
 INCLUDEPATH += $$PWD
@@ -70,13 +70,4 @@ SOURCES += \
         dialogs/qfileinfogatherer.cpp \
 	dialogs/qwizard.cpp \
 
-symbian:contains(QT_CONFIG, s60) {
-    LIBS += -lCommonDialogs
-    SOURCES += dialogs/qfiledialog_symbian.cpp \
-               dialogs/qcolordialog_symbian.cpp
-}
-
 RESOURCES += dialogs/qmessagebox.qrc
-
-# Compensate for lack of platform defines in Symbian3
-symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))
