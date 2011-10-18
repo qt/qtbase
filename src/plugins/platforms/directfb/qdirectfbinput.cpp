@@ -140,11 +140,6 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
 
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
 
-    if (event.window.type == DWET_BUTTONDOWN) {
-        window->GrabPointer(window.data());
-    } else if (event.window.type == DWET_BUTTONUP) {
-        window->UngrabPointer(window.data());
-    }
     QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons);
 }
