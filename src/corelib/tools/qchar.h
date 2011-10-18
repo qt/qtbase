@@ -361,7 +361,7 @@ inline bool operator<(QChar c1, QChar c2) { return c1.unicode() < c2.unicode(); 
 inline bool operator>(QChar c1, QChar c2) { return c1.unicode() > c2.unicode(); }
 
 #ifndef QT_NO_DATASTREAM
-Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QChar &);
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QChar);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QChar &);
 #endif
 

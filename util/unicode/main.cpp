@@ -398,11 +398,11 @@ static const char *property_string =
 
 static const char *methods =
     "    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
-    "    inline int lineBreakClass(const QChar &ch)\n"
+    "    inline int lineBreakClass(QChar ch)\n"
     "    { return lineBreakClass(ch.unicode()); }\n"
     "\n"
     "    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);\n"
-    "    inline int script(const QChar &ch)\n"
+    "    inline int script(QChar ch)\n"
     "    { return script(ch.unicode()); }\n\n";
 
 static const int SizeOfPropertiesStruct = 20;

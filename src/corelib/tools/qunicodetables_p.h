@@ -218,11 +218,11 @@ namespace QUnicodeTables {
 
 
     Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
-    inline int lineBreakClass(const QChar &ch)
+    inline int lineBreakClass(QChar ch)
     { return lineBreakClass(ch.unicode()); }
 
     Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);
-    inline int script(const QChar &ch)
+    inline int script(QChar ch)
     { return script(ch.unicode()); }
 
 } // namespace QUnicodeTables

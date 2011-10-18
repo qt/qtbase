@@ -1308,7 +1308,7 @@ QChar QChar::fromAscii(char c)
 
     \sa {Serializing Qt Data Types}
 */
-QDataStream &operator<<(QDataStream &out, const QChar &chr)
+QDataStream &operator<<(QDataStream &out, QChar chr)
 {
     out << quint16(chr.unicode());
     return out;

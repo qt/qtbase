@@ -113,13 +113,13 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
 int qFindStringBoyerMoore(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
                                    int from, Qt::CaseSensitivity cs);
 static inline int qt_string_count(const QChar *haystack, int haystackLen,
                                   const QChar *needle, int needleLen,
                                   Qt::CaseSensitivity cs);
 static inline int qt_string_count(const QChar *haystack, int haystackLen,
-                                  const QChar &needle, Qt::CaseSensitivity cs);
+                                  QChar needle, Qt::CaseSensitivity cs);
 static inline int qt_find_latin1_string(const QChar *hay, int size, const QLatin1String &needle,
                                         int from, Qt::CaseSensitivity cs);
 static inline bool qt_starts_with(const QChar *haystack, int haystackLen,
@@ -3435,7 +3435,7 @@ bool QString::startsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
   Returns true if the string starts with \a c; otherwise returns
   false.
 */
-bool QString::startsWith(const QChar &c, Qt::CaseSensitivity cs) const
+bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
 {
     return d->size
            && (cs == Qt::CaseSensitive
@@ -3509,7 +3509,7 @@ bool QString::endsWith(const QLatin1String& s, Qt::CaseSensitivity cs) const
 
   \overload endsWith()
  */
-bool QString::endsWith(const QChar &c, Qt::CaseSensitivity cs) const
+bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 {
     return d->size
            && (cs == Qt::CaseSensitive
@@ -6036,7 +6036,7 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 /*!
     \overload
 */
-QStringList QString::split(const QChar &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
+QStringList QString::split(QChar sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
 {
     QStringList list;
     int start = 0;
@@ -6315,7 +6315,7 @@ static ArgEscapeData findArgEscapes(const QString &s)
 }
 
 static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int field_width,
-                                 const QString &arg, const QString &larg, const QChar &fillChar = QLatin1Char(' '))
+                                 const QString &arg, const QString &larg, QChar fillChar = QLatin1Char(' '))
 {
     const QChar *uc_begin = s.unicode();
     const QChar *uc_end = uc_begin + s.length();
@@ -6437,7 +6437,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
   is output and the result is undefined. Place marker numbers must be
   in the range 1 to 99.
 */
-QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(const QString &a, int fieldWidth, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6526,7 +6526,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   a7, \a a8, and \a a9 are replaced in one pass.
 */
 
-/*! \fn QString QString::arg(int a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(int a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a a argument is expressed in base \a base, which is 10 by
@@ -6552,7 +6552,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(uint a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(uint a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   The \a base argument specifies the base to use when converting the
@@ -6563,7 +6563,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(long a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(long a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6589,7 +6589,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   minus sign.
 */
 
-/*! \fn QString QString::arg(ulong a, int fieldWidth, int base, const QChar &fillChar) const
+/*! \fn QString QString::arg(ulong a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6622,7 +6622,7 @@ QString QString::arg(const QString &a, int fieldWidth, const QChar &fillChar) co
   used. For negative numbers, zero padding might appear before the
   minus sign.
 */
-QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillChar) const
+QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6666,7 +6666,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillCha
   used. For negative numbers, zero padding might appear before the
   minus sign.
 */
-QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillChar) const
+QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -6697,7 +6697,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 /*!
   \overload arg()
 
-  \fn QString QString::arg(short a, int fieldWidth, int base, const QChar &fillChar) const
+  \fn QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) const
 
   \a fieldWidth specifies the minimum amount of space that \a a is
   padded to and filled with the character \a fillChar. A positive
@@ -6714,7 +6714,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 */
 
 /*!
-  \fn QString QString::arg(ushort a, int fieldWidth, int base, const QChar &fillChar) const
+  \fn QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
   \a fieldWidth specifies the minimum amount of space that \a a is
@@ -6734,7 +6734,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
 /*!
     \overload arg()
 */
-QString QString::arg(QChar a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(QChar a, int fieldWidth, QChar fillChar) const
 {
     QString c;
     c += a;
@@ -6746,7 +6746,7 @@ QString QString::arg(QChar a, int fieldWidth, const QChar &fillChar) const
 
   The \a a argument is interpreted as a Latin-1 character.
 */
-QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
+QString QString::arg(char a, int fieldWidth, QChar fillChar) const
 {
     QString c;
     c += QLatin1Char(a);
@@ -6754,7 +6754,7 @@ QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
 }
 
 /*!
-  \fn QString QString::arg(double a, int fieldWidth, char format, int precision, const QChar &fillChar) const
+  \fn QString QString::arg(double a, int fieldWidth, char format, int precision, QChar fillChar) const
   \overload arg()
 
   Argument \a a is formatted according to the specified \a format and
@@ -6778,7 +6778,7 @@ QString QString::arg(char a, int fieldWidth, const QChar &fillChar) const
 
   \sa QLocale::toString()
 */
-QString QString::arg(double a, int fieldWidth, char fmt, int prec, const QChar &fillChar) const
+QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillChar) const
 {
     ArgEscapeData d = findArgEscapes(*this);
 
@@ -8482,7 +8482,7 @@ bool QStringRef::endsWith(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
-static inline int qt_last_index_of(const QChar *haystack, int haystackLen, const QChar &needle,
+static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar needle,
                                    int from, Qt::CaseSensitivity cs)
 {
     ushort c = needle.unicode();
@@ -8526,7 +8526,7 @@ static inline int qt_string_count(const QChar *haystack, int haystackLen,
     return num;
 }
 
-static inline int qt_string_count(const QChar *unicode, int size, const QChar &ch,
+static inline int qt_string_count(const QChar *unicode, int size, QChar ch,
                                   Qt::CaseSensitivity cs)
 {
     ushort c = ch.unicode();
