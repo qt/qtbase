@@ -53,6 +53,17 @@ QT_BEGIN_NAMESPACE
 
     \brief Class documentation of the  Qt Lighthouse plugin for Windows.
 
+    \section1 Supported parameters
+
+    The following parameters can be passed on to the -platform argument
+    of QGuiApplication:
+
+    \list
+    \o \c fontengine=native Indicates that the freetype font
+       engine should not be used.
+    \o \c gl=gdi Indicates that ARB Open GL functionality should not be used
+    \endlist
+
     \section1 Tips
 
     \list

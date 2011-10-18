@@ -45,6 +45,8 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QSysInfo>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QPlatformNativeInterface>
 
 #include <WinGDI.h>
 #include <GL/Gl.h>
@@ -511,14 +513,15 @@ static QSurfaceFormat
     iAttributes[i++] = WGL_STEREO_ARB; // 9
     iAttributes[i++] = WGL_ACCELERATION_ARB; // 10
     iAttributes[i++] = WGL_NUMBER_OVERLAYS_ARB; // 11
-    iAttributes[i++] = WGL_CONTEXT_FLAGS_ARB; // 12
     if (hasSampleBuffers) {
-        iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB; // 13
-        iAttributes[i++] = WGL_SAMPLES_ARB; // 14
+        iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB; // 12
+        iAttributes[i++] = WGL_SAMPLES_ARB; // 13
     }
     if (!staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
-                                        iAttributes, iValues))
+                                        iAttributes, iValues)) {
+        qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for basic parameters.", __FUNCTION__);
         return result;
+    }
     if (iValues[0])
         result.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     result.setDepthBufferSize(iValues[1]);
@@ -529,12 +532,9 @@ static QSurfaceFormat
     result.setStencilBufferSize(iValues[8]);
     if (iValues[9])
         result.setOption(QSurfaceFormat::StereoBuffers);
-    if (iValues[12] & WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB)
-        result.setOption(QSurfaceFormat::DeprecatedFunctions);
-    if (iValues[12] & WGL_CONTEXT_DEBUG_BIT_ARB)
-        result.setOption(QSurfaceFormat::DebugContext);
+
     if (hasSampleBuffers)
-        result.setSamples(iValues[14]);
+        result.setSamples(iValues[13]);
     if (additionalIn) {
         if (iValues[7])
             additionalIn->formatFlags |= QWindowsGLAccumBuffer;
@@ -543,6 +543,49 @@ static QSurfaceFormat
         if (iValues[11])
             additionalIn->formatFlags |= QWindowsGLOverlay;
     }
+    // Check version. Known to fail for some drivers
+    if (staticContext.majorVersion > 1) {
+        i = 0;
+        iAttributes[i++] = WGL_CONTEXT_MAJOR_VERSION_ARB; // 0
+        iAttributes[i++] = WGL_CONTEXT_MINOR_VERSION_ARB; // 1
+        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
+                                                       iAttributes, iValues)) {
+            result.setMajorVersion(iValues[0]);
+            result.setMinorVersion(iValues[1]);
+        } else {
+            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for version.", __FUNCTION__);
+        }
+    }
+    // Query flags from 3.2 onwards
+    if (staticContext.majorVersion > 3) {
+        i = 0;
+        iAttributes[i++] = WGL_CONTEXT_FLAGS_ARB; // 0
+        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
+                                                       iAttributes, iValues)) {
+            if (iValues[0] & WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB)
+                result.setOption(QSurfaceFormat::DeprecatedFunctions);
+            if (iValues[0] & WGL_CONTEXT_DEBUG_BIT_ARB)
+                result.setOption(QSurfaceFormat::DebugContext);
+        } else {
+            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for context flags.", __FUNCTION__);
+        }
+    }
+    // Query profile from 3.2 onwards. Known to fail for some drivers
+    if ((staticContext.majorVersion == 3 && staticContext.minorVersion >= 2)
+        || staticContext.majorVersion > 3) {
+        i = 0;
+        iAttributes[i++] = WGL_CONTEXT_PROFILE_MASK_ARB; // 0
+        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
+                                                       iAttributes, iValues)) {
+            if (iValues[0] & WGL_CONTEXT_CORE_PROFILE_BIT_ARB) {
+                result.setProfile(QSurfaceFormat::CoreProfile);
+            } else if (iValues[0] & WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB) {
+                result.setProfile(QSurfaceFormat::CompatibilityProfile);
+            }
+        } else {
+            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for profile mask.", __FUNCTION__);
+        }
+    }
     return result;
 }
 
@@ -550,8 +593,6 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
                            HDC hdc,
                            const QSurfaceFormat &format,
                            const QWindowsOpenGLAdditionalFormat &,
-                           int majorVersion = 0,
-                           int minorVersion = 0,
                            HGLRC shared = 0)
 {
     enum { attribSize = 11 };
@@ -562,7 +603,15 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     int attribIndex = 0;
     qFill(attributes, attributes + attribSize, int(0));
 
-    if (majorVersion) {
+    const int formatMajorVersion = format.majorVersion();
+    const int formatMinorVersion = format.minorVersion();
+    const bool versionRequested = formatMajorVersion != 1 || formatMinorVersion != 1;
+    const int majorVersion = versionRequested ?
+        formatMajorVersion : staticContext.majorVersion;
+    const int minorVersion = versionRequested ?
+        formatMinorVersion : staticContext.minorVersion;
+
+    if (majorVersion > 1) {
         attributes[attribIndex++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
         attributes[attribIndex++] = majorVersion;
         attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
@@ -577,8 +626,8 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
             attributes[attribIndex++] |= WGL_CONTEXT_DEBUG_BIT_ARB;
         attribIndex++;
     }
-    if ((staticContext.majorVersion == 3 && staticContext.minorVersion >= 2)
-         || staticContext.majorVersion > 3) {
+    if ((majorVersion == 3 && minorVersion >= 2)
+        || majorVersion > 3) {
         switch (format.profile()) {
         case QSurfaceFormat::NoProfile:
             break;
@@ -592,6 +641,10 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
             break;
         }
     }
+    if (QWindowsContext::verboseGL)
+        qDebug("%s: Creating context version %d.%d with %d attributes",
+               __FUNCTION__,  majorVersion, minorVersion, attribIndex / 2);
+
     const HGLRC result =
         staticContext.wglCreateContextAttribsARB(hdc, shared, attributes);
     if (!result)
@@ -770,6 +823,16 @@ QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
     return d;
 }
 
+// Use ARB unless explicitly turned off on command line.
+static inline bool useARB()
+{
+    const QVariant glExtension = qApp->platformNativeInterface()->property("gl");
+    if (glExtension.type() == QVariant::String
+        && !glExtension.toString().compare(QStringLiteral("gdi"), Qt::CaseInsensitive))
+        return false;
+    return true;
+}
+
 /*!
     \class QWindowsGLContext
     \brief Open GL context.
@@ -788,6 +851,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
                                      QOpenGLContext *context) :
     m_staticContext(staticContext),
     m_context(context),
+    m_renderingContext(0),
     m_pixelFormat(0), m_extensionsUsed(false)
 {
     // workaround for matrox driver:
@@ -805,6 +869,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     // (default to GDI) and store that.
     HWND dummyWindow = 0;
     HDC hdc = 0;
+    bool tryExtensions = false;
     do {
         dummyWindow = createDummyGLWindow();
         if (!dummyWindow)
@@ -818,8 +883,9 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         // Preferably use direct rendering and ARB extensions (unless pixmap)
         const QWindowsOpenGLAdditionalFormat
             requestedAdditional(QWindowsGLDirectRendering);
-        const bool tryExtensions = m_staticContext->hasExtensions()
-                && !testFlag(requestedAdditional.formatFlags, QWindowsGLRenderToPixmap);
+        tryExtensions = m_staticContext->hasExtensions()
+                && !testFlag(requestedAdditional.formatFlags, QWindowsGLRenderToPixmap)
+                && useARB();
         QWindowsOpenGLAdditionalFormat obtainedAdditional;
         if (tryExtensions) {
             m_pixelFormat =
@@ -855,8 +921,10 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
 
         if (m_extensionsUsed)
             m_renderingContext =
-                ARB::createContext(*m_staticContext, hdc, context->format(),
-                                   requestedAdditional, 0, 0, sharingRenderingContext);
+                ARB::createContext(*m_staticContext, hdc,
+                                   context->format(),
+                                   requestedAdditional,
+                                   sharingRenderingContext);
         if (!m_renderingContext)
             m_renderingContext = GDI::createContext(hdc, sharingRenderingContext);
 
@@ -871,8 +939,8 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         DestroyWindow(dummyWindow);
 
     if (QWindowsContext::verboseGL)
-        qDebug()
-            << __FUNCTION__ << this << " requested: " << context->format()
+        qDebug() << __FUNCTION__ << this << (tryExtensions ? "ARB" : "GDI")
+            << " requested: " << context->format()
             << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI")
             << m_obtainedFormat << "\n    " << m_obtainedPixelFormatDescriptor
             << "\n    HGLRC=" << m_renderingContext;
@@ -968,10 +1036,12 @@ QWindowsGLContext::GL_Proc QWindowsGLContext::getProcAddress(const QByteArray &p
 {
     // TODO: Will that work with the calling conventions?
     GL_Proc procAddress = reinterpret_cast<GL_Proc>(wglGetProcAddress(procName.constData()));
-    if (QWindowsContext::verboseGL)
+    if (QWindowsContext::verboseGL > 1)
         qDebug("%s('%s') with current_hglrc=%p returns %p",
                __FUNCTION__, procName.constData(),
                wglGetCurrentContext(), procAddress);
+    if (!procAddress)
+        qWarning("%s: Unable to resolve '%s'", __FUNCTION__, procName.constData());
     return procAddress;
 }
 

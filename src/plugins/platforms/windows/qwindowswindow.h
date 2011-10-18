@@ -112,8 +112,7 @@ public:
 
         static WindowData create(const QWindow *w,
                                  const WindowData &parameters,
-                                 const QString &title,
-                                 bool isGL);
+                                 const QString &title);
     };
 
     QWindowsWindow(QWindow *window, const WindowData &data);
@@ -193,7 +192,7 @@ private:
     inline void hide_sys() const;
     inline void setGeometry_sys(const QRect &rect) const;
     inline QRect geometry_sys() const;
-    inline WindowData setWindowFlags_sys(Qt::WindowFlags wt) const;
+    inline WindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
     inline void setOpacity_sys(qreal level) const;

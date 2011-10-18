@@ -353,7 +353,7 @@ QWindowsWindowCursor QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
 {
 
-    if (QWindowsContext::verboseWindows)
+    if (QWindowsContext::verboseWindows > 1)
         qDebug() << __FUNCTION__ <<  cursorIn << window;
     if (!cursorIn || !window)
         return;

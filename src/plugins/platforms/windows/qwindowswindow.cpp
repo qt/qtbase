@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
 
 static QByteArray debugWinStyle(DWORD style)
 {
-
     QByteArray rc = "0x";
     rc += QByteArray::number(qulonglong(style), 16);
     if (style & WS_POPUP)
@@ -80,6 +79,19 @@ static QByteArray debugWinStyle(DWORD style)
         rc += " WS_MINIMIZEBOX";
     if (style & WS_MAXIMIZEBOX)
         rc += " WS_MAXIMIZEBOX";
+    return rc;
+}
+
+static QByteArray debugWinExStyle(DWORD exStyle)
+{
+    QByteArray rc = "0x";
+    rc += QByteArray::number(qulonglong(exStyle), 16);
+    if (exStyle & WS_EX_TOOLWINDOW)
+        rc += " WS_EX_TOOLWINDOW";
+    if (exStyle & WS_EX_CONTEXTHELP)
+        rc += " WS_EX_CONTEXTHELP";
+    if (exStyle & WS_EX_LAYERED)
+        rc += " WS_EX_LAYERED";
     return rc;
 }
 
@@ -194,12 +206,13 @@ static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
 struct WindowCreationData
 {
     typedef QWindowsWindow::WindowData WindowData;
+    enum Flags { ForceChild = 0x1 };
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
         topLevel(false), popup(false), dialog(false), desktop(false),
         tool(false) {}
 
-    void fromWindow(const QWindow *w, const Qt::WindowFlags flags, bool isGL);
+    void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
     inline void applyWindowFlags(HWND hwnd) const;
     void initialize(HWND h, bool frameChange) const;
@@ -220,20 +233,20 @@ struct WindowCreationData
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
 {
     debug.nospace() << QWindowsWindow::debugWindowFlags(d.flags)
-        << " gs=" << d.isGL << " topLevel=" << d.topLevel << " popup="
+        << " GL=" << d.isGL << " topLevel=" << d.topLevel << " popup="
         << d.popup << " dialog=" << d.dialog << " desktop=" << d.desktop
         << " tool=" << d.tool << " style=" << debugWinStyle(d.style)
-        << " exStyle=0x" << QString::number(d.exStyle, 16)
+        << " exStyle=" << debugWinExStyle(d.exStyle)
         << " parent=" << d.parentHandle;
     return debug;
 }
 
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,
-                                    bool isGLin)
+                                    unsigned creationFlags)
 {
-    isGL = isGLin;
+    isGL = w->surfaceType() == QWindow::OpenGLSurface;
     flags = flagsIn;
-    topLevel = w->isTopLevel();
+    topLevel = (creationFlags & ForceChild) ? false : w->isTopLevel();
 
     if (topLevel && flags == 1) {
         qWarning("Remove me: fixing toplevel window flags");
@@ -397,9 +410,9 @@ void WindowCreationData::applyWindowFlags(HWND hwnd) const
     if (QWindowsContext::verboseWindows)
         qDebug().nospace() << __FUNCTION__ << hwnd << *this
         << "\n    Style from " << debugWinStyle(oldStyle) << "\n    to "
-        << debugWinStyle(newStyle) << "\n    ExStyle from 0x"
-        << QByteArray::number(qulonglong(oldExStyle), 16) << " to 0x"
-        << QByteArray::number(qulonglong(newExStyle), 16);
+        << debugWinStyle(newStyle) << "\n    ExStyle from "
+        << debugWinExStyle(oldExStyle) << " to "
+        << debugWinExStyle(newExStyle);
 }
 
 void WindowCreationData::initialize(HWND hwnd, bool frameChange) const
@@ -651,12 +664,11 @@ QWindow *QWindowsWindow::topLevelOf(QWindow *w)
 
 QWindowsWindow::WindowData
     QWindowsWindow::WindowData::create(const QWindow *w,
-                                           const WindowData &parameters,
-                                           const QString &title,
-                                           bool isGL)
+                                       const WindowData &parameters,
+                                       const QString &title)
 {
     WindowCreationData creationData;
-    creationData.fromWindow(w, parameters.flags, isGL);
+    creationData.fromWindow(w, parameters.flags);
     WindowData result = creationData.create(w, parameters.geometry, title);
     creationData.initialize(result.hwnd, false);
     return result;
@@ -748,8 +760,17 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
     if (parent) {
         const QWindowsWindow *parentW = static_cast<const QWindowsWindow *>(parent);
         parentHWND = parentW->handle();
+
     }
+    const bool wasTopLevel = window()->isTopLevel();
+    const bool isTopLevel = parentHWND == 0;
     SetParent(m_data.hwnd, parentHWND);
+    // WS_CHILD/WS_POPUP must be manually set/cleared in addition
+    // to dialog frames, etc (see  SetParent() ) if the top level state changes.
+    if (wasTopLevel != isTopLevel) {
+        const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
+        setWindowFlags_sys(window()->windowFlags(), flags);
+    }
 }
 
 void QWindowsWindow::handleShown()
@@ -934,11 +955,12 @@ Qt::WindowFlags QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
     return m_data.flags;
 }
 
-QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt) const
+QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,
+                                                              unsigned flags) const
 {
     // Geometry changes have not been observed here. Frames change, though.
     WindowCreationData creationData;
-    creationData.fromWindow(window(), wt, window()->surfaceType() == QWindow::OpenGLSurface);
+    creationData.fromWindow(window(), wt, flags);
     creationData.applyWindowFlags(m_data.hwnd);
     creationData.initialize(m_data.hwnd, true);
     WindowData result = m_data;

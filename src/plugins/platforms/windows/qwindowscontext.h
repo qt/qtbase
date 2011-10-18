@@ -108,10 +108,8 @@ public:
     static int verboseOLE;
     static int verboseInputMethods;
 
-    explicit QWindowsContext(bool isOpenGL);
+    explicit QWindowsContext();
     ~QWindowsContext();
-
-    bool isOpenGL() const;
 
     int defaultDPI() const;
 

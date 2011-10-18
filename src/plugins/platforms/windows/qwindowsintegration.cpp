@@ -146,10 +146,9 @@ struct QWindowsIntegrationPrivate
 {
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 
-    explicit QWindowsIntegrationPrivate(bool openGL);
+    QWindowsIntegrationPrivate();
     ~QWindowsIntegrationPrivate();
 
-    const bool m_openGL;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
@@ -161,10 +160,8 @@ struct QWindowsIntegrationPrivate
     QWindowsAccessibility m_accessibility;
 };
 
-QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(bool openGL)
-    : m_openGL(openGL)
-    , m_context(openGL)
-    , m_eventDispatcher(new QWindowsGuiEventDispatcher)
+QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
+    : m_eventDispatcher(new QWindowsGuiEventDispatcher)
     , m_fontDatabase(0)
 {
 }
@@ -175,8 +172,8 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
-QWindowsIntegration::QWindowsIntegration(bool openGL) :
-    d(new QWindowsIntegrationPrivate(openGL))
+QWindowsIntegration::QWindowsIntegration() :
+    d(new QWindowsIntegrationPrivate)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
     d->m_clipboard.registerViewer();
@@ -214,12 +211,11 @@ QPlatformPixmap *QWindowsIntegration::createPlatformPixmap(QPlatformPixmap::Pixe
 
 QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
-    const bool isGL = window->surfaceType() == QWindow::OpenGLSurface;
     QWindowsWindow::WindowData requested;
     requested.flags = window->windowFlags();
     requested.geometry = window->geometry();
     const QWindowsWindow::WindowData obtained
-            = QWindowsWindow::WindowData::create(window, requested, window->windowTitle(), isGL);
+            = QWindowsWindow::WindowData::create(window, requested, window->windowTitle());
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug().nospace()
             << __FUNCTION__ << ' ' << window << '\n'

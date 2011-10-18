@@ -52,7 +52,7 @@ struct QWindowsIntegrationPrivate;
 class QWindowsIntegration : public QPlatformIntegration
 {
 public:
-    QWindowsIntegration(bool openGL = false);
+    QWindowsIntegration();
     virtual ~QWindowsIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;

@@ -193,9 +193,8 @@ QWindowsContext *QWindowsContext::m_instance = 0;
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
 
 struct QWindowsContextPrivate {
-    explicit QWindowsContextPrivate(bool isOpenGL);
+    QWindowsContextPrivate();
 
-    const bool m_isOpenGL;
     unsigned m_systemInfo;
     QSet<QString> m_registeredWindowClassNames;
     HandleBaseWindowHash m_windows;
@@ -208,8 +207,7 @@ struct QWindowsContextPrivate {
     const HRESULT m_oleInitializeResult;
 };
 
-QWindowsContextPrivate::QWindowsContextPrivate(bool isOpenGL) :
-    m_isOpenGL(isOpenGL),
+QWindowsContextPrivate::QWindowsContextPrivate() :
     m_systemInfo(0),
     m_displayContext(GetDC(0)),
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
@@ -228,8 +226,8 @@ QWindowsContextPrivate::QWindowsContextPrivate(bool isOpenGL) :
     }
 }
 
-QWindowsContext::QWindowsContext(bool isOpenGL) :
-    d(new QWindowsContextPrivate(isOpenGL))
+QWindowsContext::QWindowsContext() :
+    d(new QWindowsContextPrivate)
 {
 #ifdef Q_CC_MSVC
 #    pragma warning( disable : 4996 )
@@ -269,11 +267,6 @@ unsigned QWindowsContext::systemInfo() const
 void QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)
 {
     d->m_creationContext = ctx;
-}
-
-bool QWindowsContext::isOpenGL() const
-{
-    return d->m_isOpenGL;
 }
 
 int QWindowsContext::defaultDPI() const
@@ -344,11 +337,6 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
         style = CS_DBLCLKS;
         icon  = true;
     }
-
-    // force CS_OWNDC when the GL graphics system is
-    // used as the default renderer
-    if (d->m_isOpenGL)
-        style |= CS_OWNDC;
 
     HBRUSH brush = 0;
     if (w && !isGL)
