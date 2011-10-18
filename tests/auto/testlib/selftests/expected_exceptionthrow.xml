@@ -8,7 +8,7 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="throwException">
-<Incident type="fail" file="/local/user_builds/qt/4.6/src/testlib/qtestcase.cpp" line="1691">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/src/testlib/qtestcase.cpp" line="1691">
     <Description><![CDATA[Caught unhandled exception]]></Description>
 </Incident>
 </TestFunction>

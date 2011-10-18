@@ -11,23 +11,23 @@ PASS   : tst_Alive::addMouseDClick()
 FAIL!  : tst_Alive::compareQStringLists() Compared QStringLists differ at index 2.
    Actual (opA) : 'string3'
    Expected (opB) : 'DIFFERS'
-   Loc: [/home/fenglich/dev/qt-45/tests/auto/selftests/alive/tst_alive.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 FAIL!  : tst_Alive::compareQStringLists() Compared QStringLists differ at index 2.
    Actual (opA) : 'string3'
    Expected (opB) : 'DIFFERS'
-   Loc: [/home/fenglich/dev/qt-45/tests/auto/selftests/alive/tst_alive.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 FAIL!  : tst_Alive::compareQStringLists() Compared QStringLists have different sizes.
    Actual (opA) size  : '2'
    Expected (opB) size: '1'
-   Loc: [/home/fenglich/dev/qt-45/tests/auto/selftests/alive/tst_alive.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 FAIL!  : tst_Alive::compareQStringLists() Compared QStringLists have different sizes.
    Actual (opA) size  : '12'
    Expected (opB) size: '1'
-   Loc: [/home/fenglich/dev/qt-45/tests/auto/selftests/alive/tst_alive.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 FAIL!  : tst_Alive::compareQStringLists() Compared QStringLists have different sizes.
    Actual (opA) size  : '1'
    Expected (opB) size: '12'
-   Loc: [/home/fenglich/dev/qt-45/tests/auto/selftests/alive/tst_alive.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 PASS   : tst_Alive::cleanupTestCase()
 Totals: 4 passed, 5 failed, 0 skipped
 ********* Finished testing of tst_Alive *********

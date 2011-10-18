@@ -8,17 +8,17 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="test">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="68">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="68">
     <Description><![CDATA[skipping all]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="emptytest">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="78">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="78">
     <Description><![CDATA[skipping all]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="singleSkip">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="97">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp" line="97">
     <DataTag><![CDATA[local 1]]></DataTag>
     <Description><![CDATA[skipping one]]></Description>
 </Message>

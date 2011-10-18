@@ -2,11 +2,11 @@
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Skip::initTestCase()
 SKIP   : tst_Skip::test() skipping all
-   Loc: [/home/user/depot/qt-git/mainline/tests/auto/selftests/skip/tst_skip.cpp(68)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp(68)]
 SKIP   : tst_Skip::emptytest() skipping all
-   Loc: [/home/user/depot/qt-git/mainline/tests/auto/selftests/skip/tst_skip.cpp(78)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp(78)]
 SKIP   : tst_Skip::singleSkip(local 1) skipping one
-   Loc: [/home/user/depot/qt-git/mainline/tests/auto/selftests/skip/tst_skip.cpp(97)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skip/tst_skip.cpp(97)]
 QDEBUG : tst_Skip::singleSkip(local 2) this line should only be reached once (true)
 PASS   : tst_Skip::singleSkip()
 PASS   : tst_Skip::cleanupTestCase()

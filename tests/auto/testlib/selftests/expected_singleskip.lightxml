@@ -6,7 +6,7 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="myTest">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/singleskip/tst_singleskip.cpp" line="56">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/singleskip/tst_singleskip.cpp" line="56">
     <Description><![CDATA[skipping test]]></Description>
 </Message>
 </TestFunction>

@@ -5,7 +5,7 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skipinitdata/tst_skipinitdata.cpp" line="56">
+<Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skipinitdata/tst_skipinitdata.cpp" line="56">
     <Description><![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]></Description>
 </Message>
 </TestFunction>

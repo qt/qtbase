@@ -6,30 +6,30 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="fiveTablePasses">
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data2]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data3]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data4]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data5]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="fiveTablePasses">
-<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+<Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
