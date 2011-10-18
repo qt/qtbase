@@ -4920,11 +4920,12 @@ QString QString::toLower() const
                     prop = qGetProp(*p);
                 }
                 if (prop->lowerCaseSpecial) {
-                    int pos = pp - s.d->data();
-                    s.resize(s.d->size + SPECIAL_CASE_MAX_LEN);
-                    pp = s.d->data() + pos;
                     const ushort *specialCase = specialCaseMap + prop->lowerCaseDiff;
-                    while (*specialCase)
+                    ushort length = *specialCase++;
+                    int pos = pp - s.d->data();
+                    s.resize(s.d->size + length - 1);
+                    pp = s.d->data() + pos;
+                    while (length--)
                         *pp++ = *specialCase++;
                 } else {
                     *pp++ = *p + prop->lowerCaseDiff;
@@ -4936,7 +4937,6 @@ QString QString::toLower() const
             while (e != d->data() + d->size)
                 *pp++ = *e++;
 
-            s.truncate(pp - s.d->data());
             return s;
         }
         ++p;
@@ -5042,11 +5042,12 @@ QString QString::toUpper() const
                     prop = qGetProp(*p);
                 }
                 if (prop->upperCaseSpecial) {
-                    int pos = pp - s.d->data();
-                    s.resize(s.d->size + SPECIAL_CASE_MAX_LEN);
-                    pp = s.d->data() + pos;
                     const ushort *specialCase = specialCaseMap + prop->upperCaseDiff;
-                    while (*specialCase)
+                    ushort length = *specialCase++;
+                    int pos = pp - s.d->data();
+                    s.resize(s.d->size + length - 1);
+                    pp = s.d->data() + pos;
+                    while (length--)
                         *pp++ = *specialCase++;
                 } else {
                     *pp++ = *p + prop->upperCaseDiff;
@@ -5058,7 +5059,6 @@ QString QString::toUpper() const
             while (e != d->data() + d->size)
                 *pp++ = *e++;
 
-            s.truncate(pp - s.d->data());
             return s;
         }
         ++p;
