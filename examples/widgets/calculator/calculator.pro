@@ -10,10 +10,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS calculator.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/calculator
 INSTALLS += target sources
 
-symbian {
-    TARGET.UID3 = 0xA000C602
-    CONFIG += qt_example
-}
 QT += widgets
-maemo5: CONFIG += qt_example
 

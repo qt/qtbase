@@ -44,11 +44,7 @@
 #include <stdlib.h>
 
 //! [0]
-#ifdef Q_WS_S60
-const int DataSize = 300;
-#else
 const int DataSize = 100000;
-#endif
 
 const int BufferSize = 8192;
 char buffer[BufferSize];
@@ -84,14 +80,8 @@ public:
     {
         for (int i = 0; i < DataSize; ++i) {
             usedBytes.acquire();
-    #ifdef Q_WS_S60
-            QString text(buffer[i % BufferSize]);
-            freeBytes.release();
-            emit stringConsumed(text);
-    #else
             fprintf(stderr, "%c", buffer[i % BufferSize]);
             freeBytes.release();
-    #endif
         }
         fprintf(stderr, "\n");
     }
@@ -108,24 +98,6 @@ protected:
 int main(int argc, char *argv[])
 //! [5] //! [6]
 {
-#ifdef Q_WS_S60
-    // Self made console for Symbian
-    QApplication app(argc, argv);
-    QPlainTextEdit console;
-    console.setReadOnly(true);
-    console.setTextInteractionFlags(Qt::NoTextInteraction);
-    console.showMaximized();
-
-    Producer producer;
-    Consumer consumer;
-
-    QObject::connect(&consumer, SIGNAL(stringConsumed(const QString&)), &console, SLOT(insertPlainText(QString)), Qt::BlockingQueuedConnection);
-
-    producer.start();
-    consumer.start();
-
-    app.exec();
-#else
     QCoreApplication app(argc, argv);
     Producer producer;
     Consumer consumer;
@@ -134,7 +106,6 @@ int main(int argc, char *argv[])
     producer.wait();
     consumer.wait();
     return 0;
-#endif
 }
 //! [6]
 

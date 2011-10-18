@@ -32,4 +32,3 @@ sources.files = $$SOURCES $$RESOURCES *.pro images $$HEADERS
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/spreadsheet
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example

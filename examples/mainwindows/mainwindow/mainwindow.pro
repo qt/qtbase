@@ -15,4 +15,3 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mainwindow
 INSTALLS += target sources
 
 QT += widgets
-symbian: CONFIG += qt_example

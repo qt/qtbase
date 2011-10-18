@@ -380,12 +380,8 @@ int main(int argc, char **argv)
 
     Raycasting w;
     w.setWindowTitle("Raycasting");
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-    w.showMaximized();
-#else
     w.resize(640, 480);
     w.show();
-#endif
 
     return app.exec();
 }

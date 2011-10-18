@@ -18,13 +18,3 @@ wince*: {
      addFiles.path = "\\My Documents"
      DEPLOYMENT += addFiles
 }
-
-symbian: {
-     TARGET.UID3 = 0xA000C60A
-     CONFIG += qt_example
-     addFiles.files = frank.xbel jennifer.xbel
-     addFiles.path = /data/qt/saxbookmarks
-     DEPLOYMENT += addFiles
-}
-maemo5: CONFIG += qt_example
-

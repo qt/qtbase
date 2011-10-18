@@ -100,11 +100,7 @@ int main(int argc, char *argv[])
 
     tableWidget.resizeColumnsToContents();
     tableWidget.resize(500, 300);
-#if defined(Q_OS_SYMBIAN)
-    tableWidget.showMaximized();
-#else
     tableWidget.show();
-#endif
 
     return app.exec();
 }

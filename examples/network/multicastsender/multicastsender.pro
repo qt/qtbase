@@ -9,4 +9,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS multicastsender.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/multicastsender
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example

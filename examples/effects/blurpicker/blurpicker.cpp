@@ -139,9 +139,6 @@ void BlurPicker::keyPressEvent(QKeyEvent *event)
 
 void BlurPicker::resizeEvent(QResizeEvent */*event*/)
 {
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    fitInView(sceneRect(), Qt::KeepAspectRatio);
-#endif
 }
 
 void BlurPicker::mousePressEvent(QMouseEvent *event)

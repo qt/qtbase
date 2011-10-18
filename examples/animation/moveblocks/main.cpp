@@ -310,13 +310,8 @@ int main(int argc, char **argv)
     machine.start();
 //![9]
 
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
-    window.showMaximized();
-    window.fitInView(scene.sceneRect() );
-#else
     window.resize(300, 300);
     window.show();
-#endif
 
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 

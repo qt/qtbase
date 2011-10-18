@@ -20,4 +20,3 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/textedit
 INSTALLS += target sources
 
 QT += widgets printsupport
-symbian: CONFIG += qt_example

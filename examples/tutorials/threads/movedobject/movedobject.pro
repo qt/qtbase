@@ -15,5 +15,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS movedobject.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/threads/movedobject
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 QT += widgets

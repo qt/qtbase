@@ -18,7 +18,6 @@ sources.files = $$SOURCES $$HEADERS $$FORMS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/sqlbrowser
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 wince*: {
     DEPLOYMENT_PLUGIN += qsqlite

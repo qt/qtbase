@@ -53,11 +53,7 @@ int main(int argc, char *argv[])
         fileName = ".";
 
     TabDialog tabdialog(fileName);
-#ifdef Q_OS_SYMBIAN
-    tabdialog.showMaximized();
-#else
     tabdialog.show();
-#endif
 
     return app.exec();
 }

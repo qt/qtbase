@@ -49,13 +49,7 @@ Receiver::Receiver(QWidget *parent)
     statusLabel = new QLabel(tr("Listening for broadcasted messages"));
     statusLabel->setWordWrap(true);
 
-#ifdef Q_OS_SYMBIAN
-    quitAction = new QAction(tr("Exit"), this);
-    quitAction->setSoftKeyRole(QAction::NegativeSoftKey);
-    addAction(quitAction);
-#else
     quitButton = new QPushButton(tr("&Quit"));
-#endif
 
 //! [0]
     udpSocket = new QUdpSocket(this);
@@ -66,13 +60,6 @@ Receiver::Receiver(QWidget *parent)
     connect(udpSocket, SIGNAL(readyRead()),
             this, SLOT(processPendingDatagrams()));
 //! [1]
-#ifdef Q_OS_SYMBIAN
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(statusLabel);
-    setLayout(mainLayout);
-#else
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -84,7 +71,6 @@ Receiver::Receiver(QWidget *parent)
     mainLayout->addWidget(statusLabel);
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
-#endif
 
     setWindowTitle(tr("Broadcast Receiver"));
 }

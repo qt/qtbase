@@ -130,14 +130,12 @@ Window::Window()
 //! [9]
 
 //! [10]
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
     renderAreas.push_back(new RenderArea(rectPath));
     renderAreas.push_back(new RenderArea(roundRectPath));
     renderAreas.push_back(new RenderArea(ellipsePath));
     renderAreas.push_back(new RenderArea(piePath));
     renderAreas.push_back(new RenderArea(polygonPath));
     renderAreas.push_back(new RenderArea(groupPath));
-#endif
     renderAreas.push_back(new RenderArea(textPath));
     renderAreas.push_back(new RenderArea(bezierPath));
     renderAreas.push_back(new RenderArea(starPath));
@@ -211,18 +209,12 @@ Window::Window()
 
 //! [16] //! [17]
     QGridLayout *topLayout = new QGridLayout;
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    topLayout->setSizeConstraint(QLayout::SetNoConstraint);
-#endif
 
     int i=0;
     for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++, i++)
         topLayout->addWidget(*it, i / 3, i % 3);
 
     QGridLayout *mainLayout = new QGridLayout;
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-#endif
     mainLayout->addLayout(topLayout, 0, 0, 1, 4);
     mainLayout->addWidget(fillRuleLabel, 1, 0);
     mainLayout->addWidget(fillRuleComboBox, 1, 1, 1, 3);
@@ -234,10 +226,8 @@ Window::Window()
     mainLayout->addWidget(penWidthSpinBox, 3, 1, 1, 3);
     mainLayout->addWidget(penColorLabel, 4, 0);
     mainLayout->addWidget(penColorComboBox, 4, 1, 1, 3);
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
     mainLayout->addWidget(rotationAngleLabel, 5, 0);
     mainLayout->addWidget(rotationAngleSpinBox, 5, 1, 1, 3);
-#endif
     setLayout(mainLayout);
 //! [17]
 

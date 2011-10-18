@@ -128,11 +128,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     ValidatorWidget w;
-#if defined(Q_OS_SYMBIAN)
-    w.showMaximized();
-#else
     w.show();
-#endif
 
     return app.exec();
 }

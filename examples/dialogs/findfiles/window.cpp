@@ -77,9 +77,7 @@ Window::Window(QWidget *parent)
     setLayout(mainLayout);
 
     setWindowTitle(tr("Find Files"));
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
     resize(700, 300);
-#endif
 }
 //! [1]
 
@@ -193,11 +191,7 @@ void Window::showFiles(const QStringList &files)
         filesTable->setItem(row, 1, sizeItem);
     }
     filesFoundLabel->setText(tr("%1 file(s) found").arg(files.size()) +
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-                             (" (Select file to open it)"));
-#else
                              (" (Double click on a file to open it)"));
-#endif
     filesFoundLabel->setWordWrap(true);
 }
 //! [8]
@@ -218,9 +212,6 @@ QComboBox *Window::createComboBox(const QString &text)
     comboBox->setEditable(true);
     comboBox->addItem(text);
     comboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    comboBox->setMinimumContentsLength(3);
-#endif
     return comboBox;
 }
 //! [10]

@@ -50,9 +50,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-#if defined(Q_OS_SYMBIAN)
-    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
-#endif
 
     sampleSizes << 32 << 24 << 16 << 14 << 12 << 8 << 4 << 2 << 1;
     markedCount = 0;
@@ -147,11 +144,7 @@ void MainWindow::showFont(QTreeWidgetItem *item)
     QString oldText = textEdit->toPlainText().trimmed();
     bool modified = textEdit->document()->isModified();
     textEdit->clear();
-#if defined(Q_OS_SYMBIAN)
-    textEdit->document()->setDefaultFont(QFont(family, 10, weight, italic));
-#else
     textEdit->document()->setDefaultFont(QFont(family, 32, weight, italic));
-#endif
 
     QTextCursor cursor = textEdit->textCursor();
     QTextBlockFormat blockFormat;

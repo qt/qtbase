@@ -67,7 +67,7 @@
 #include <QPrintPreviewDialog>
 #include <QMimeData>
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 const QString rsrcPath = ":/images/mac";
 #else
 const QString rsrcPath = ":/images/win";

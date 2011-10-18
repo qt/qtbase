@@ -17,7 +17,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.jpg *.pro *.html
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 win32-msvc* {
     QMAKE_CXXFLAGS += /Zm500

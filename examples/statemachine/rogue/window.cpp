@@ -63,11 +63,7 @@ Window::Window()
             }
         }
     }
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
-    font.setPointSize(5);
-#else
     font.setPointSize(12);
-#endif
     setFont(font);
 
 //![1]

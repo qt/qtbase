@@ -54,10 +54,6 @@ int main(int argc, char *argv[])
 
     QFile *albumDetails = new QFile("albumdetails.xml");
     MainWindow window("artists", "albums", albumDetails);
-#if defined(Q_OS_SYMBIAN)
-    window.showMaximized();
-#else
     window.show();
-#endif
     return app.exec();
 }

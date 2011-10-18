@@ -141,16 +141,9 @@ bool Node::advance()
 //! [8]
 QRectF Node::boundingRect() const
 {
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    // Add some extra space around the circle for easier touching with finger
-    qreal adjust = 30;
-    return QRectF( -10 - adjust, -10 - adjust,
-                  20 + adjust * 2, 20 + adjust * 2);
-#else
     qreal adjust = 2;
     return QRectF( -10 - adjust, -10 - adjust,
                   23 + adjust, 23 + adjust);
-#endif
 }
 //! [8]
 
@@ -158,12 +151,7 @@ QRectF Node::boundingRect() const
 QPainterPath Node::shape() const
 {
     QPainterPath path;
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    // Add some extra space around the circle for easier touching with finger
-    path.addEllipse( -40, -40, 80, 80);
-#else
     path.addEllipse(-10, -10, 20, 20);
-#endif
     return path;
 }
 //! [9]

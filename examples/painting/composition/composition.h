@@ -161,15 +161,9 @@ private:
 
     QPainter::CompositionMode m_composition_mode;
 
-#ifdef Q_WS_QWS
-    QPixmap m_image;
-    QPixmap m_buffer;
-    QPixmap m_base_buffer;
-#else
     QImage m_image;
     QImage m_buffer;
     QImage m_base_buffer;
-#endif
 
     int m_circle_alpha;
     int m_circle_hue;

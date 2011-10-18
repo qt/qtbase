@@ -118,9 +118,6 @@ TestWidget::TestWidget(QWidget *parent):
     //! [4]
 
     //! [5]
-#ifdef Q_WS_MAEMO_5
-    setAttribute(Qt::WA_Maemo5AutoOrientation, true);
-#endif
 }
 //! [5]
 

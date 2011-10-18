@@ -11,6 +11,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS tooltips.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tooltips
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

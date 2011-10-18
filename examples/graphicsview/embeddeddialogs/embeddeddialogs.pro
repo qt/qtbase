@@ -17,4 +17,3 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/embeddeddialogs
 INSTALLS += target sources
 
 QT += widgets
-symbian: CONFIG += qt_example

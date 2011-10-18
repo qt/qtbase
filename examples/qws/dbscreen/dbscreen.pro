@@ -10,7 +10,4 @@ SOURCES     = dbscreendriverplugin.cpp \
               dbscreen.cpp 
 
 QT += widgets
-symbian: CONFIG += qt_example
-maemo5: CONFIG += qt_example
-symbian: warning(This example does not work on Symbian platform)
 simulator: warning(This example does not work on Simulator platform)

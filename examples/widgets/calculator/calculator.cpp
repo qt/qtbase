@@ -98,11 +98,7 @@ Calculator::Calculator(QWidget *parent)
 //! [5]
     QGridLayout *mainLayout = new QGridLayout;
 //! [5] //! [6]
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-#else
     mainLayout->setSizeConstraint(QLayout::SetFixedSize);
-#endif
     mainLayout->addWidget(display, 0, 0, 1, 6);
     mainLayout->addWidget(backspaceButton, 1, 0, 1, 2);
     mainLayout->addWidget(clearButton, 1, 2, 1, 2);

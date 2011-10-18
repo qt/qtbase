@@ -138,11 +138,7 @@ void MainWindow::setupWidgets()
 {
     QFrame *frame = new QFrame;
     QHBoxLayout *frameLayout = new QHBoxLayout(frame);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
-    puzzleWidget = new PuzzleWidget(260);
-#else
     puzzleWidget = new PuzzleWidget(400);
-#endif
 
     piecesList = new PiecesList(puzzleWidget->pieceSize(), this);
 

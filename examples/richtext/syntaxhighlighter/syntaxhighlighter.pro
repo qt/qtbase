@@ -10,7 +10,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS syntaxhighlighter.pro ex
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/syntaxhighlighter
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 wince*: {
    addFiles.files = main.cpp mainwindow.cpp
@@ -18,5 +17,4 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 QT += widgets
-maemo5: CONFIG += qt_example
 

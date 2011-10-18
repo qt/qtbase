@@ -16,4 +16,3 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/undo
 INSTALLS += target sources
 
 QT += widgets 
-symbian: CONFIG += qt_example

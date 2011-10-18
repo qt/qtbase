@@ -48,11 +48,7 @@ int main(int argv, char **args)
 
     CodeEditor editor;
     editor.setWindowTitle(QObject::tr("Code Editor Example"));
-#if defined(Q_OS_SYMBIAN)
-    editor.showMaximized();
-#else
     editor.show();
-#endif
 
     return app.exec();
 }

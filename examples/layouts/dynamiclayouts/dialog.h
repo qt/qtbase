@@ -54,11 +54,7 @@ class QLabel;
 class QPushButton;
 QT_END_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-class Dialog : public QWidget
-#else
 class Dialog : public QDialog
-#endif
 {
     Q_OBJECT
 

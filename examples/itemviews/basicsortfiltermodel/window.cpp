@@ -89,38 +89,6 @@ Window::Window()
     connect(sortCaseSensitivityCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(sortChanged()));
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    sourceWidget = new QWidget;
-    filterWidget = new QWidget;
-    proxyWidget = new QWidget;
-
-    QHBoxLayout *sourceLayout = new QHBoxLayout;
-    sourceLayout->addWidget(sourceView);
-    sourceWidget->setLayout(sourceLayout);
-
-    QGridLayout *filterLayout = new QGridLayout;
-    filterLayout->addWidget(filterPatternLabel, 1, 0);
-    filterLayout->addWidget(filterPatternLineEdit, 1, 1, 1, 2);
-    filterLayout->addWidget(filterSyntaxLabel, 2, 0);
-    filterLayout->addWidget(filterSyntaxComboBox, 2, 1, 1, 2);
-    filterLayout->addWidget(filterColumnLabel, 3, 0);
-    filterLayout->addWidget(filterColumnComboBox, 3, 1, 1, 2);
-    filterLayout->addWidget(filterCaseSensitivityCheckBox, 4, 0, 1, 2);
-    filterLayout->addWidget(sortCaseSensitivityCheckBox, 4, 2);
-    filterWidget->setLayout(filterLayout);
-
-    QHBoxLayout *proxyLayout = new QHBoxLayout;
-    proxyLayout->addWidget(proxyView);
-    proxyWidget->setLayout(proxyLayout);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(sourceWidget, "Source");
-    tabWidget->addTab(filterWidget, "Filters");
-    tabWidget->addTab(proxyWidget, "Proxy");
-    mainLayout->addWidget(tabWidget);
-#else
     sourceGroupBox = new QGroupBox(tr("Original Model"));
     proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
 
@@ -144,7 +112,6 @@ Window::Window()
 
     mainLayout->addWidget(sourceGroupBox);
     mainLayout->addWidget(proxyGroupBox);
-#endif
 
     setLayout(mainLayout);
 

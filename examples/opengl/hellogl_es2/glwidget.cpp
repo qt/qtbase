@@ -57,9 +57,7 @@ GLWidget::GLWidget(QWidget *parent)
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoBufferSwap(false);
     m_showBubbles = true;
-#ifndef Q_WS_QWS
     setMinimumSize(300, 250);
-#endif
 }
 
 GLWidget::~GLWidget()

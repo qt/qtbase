@@ -23,20 +23,7 @@ SUBDIRS       = analogclock \
                 tooltips \
                 validators \
                 wiggly \
-                windowflags \
-
-symbian: SUBDIRS = \
-                analogclock \
-                calculator \
-                calendarwidget \
-                lineedits \
-                shapedclock \
-		symbianvibration \
-                tetrix \
-                wiggly \
-                softkeys
-
-MAEMO5: SUBDIRS += maemovibration
+                windowflags
 
 contains(styles, motif): SUBDIRS += styles
 
@@ -46,6 +33,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

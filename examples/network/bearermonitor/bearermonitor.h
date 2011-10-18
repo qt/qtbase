@@ -43,13 +43,7 @@
 
 #include <qnetworkconfigmanager.h>
 #include <qnetworksession.h>
-#if defined (Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(Q_WS_SIMULATOR)
-#include "ui_bearermonitor_240_320.h"
-#elif defined(MAEMO_UI)
-#include "ui_bearermonitor_maemo.h"
-#else
 #include "ui_bearermonitor_640_480.h"
-#endif
 
 QT_USE_NAMESPACE
 
@@ -72,7 +66,7 @@ private slots:
 
     void onlineStateChanged(bool isOnline);
 
-#if defined(Q_OS_WIN) || defined(Q_WS_SIMULATOR)
+#if defined(Q_OS_WIN)
     void registerNetwork();
     void unregisterNetwork();
 #endif
@@ -81,9 +75,7 @@ private slots:
 
     void createSessionFor(QTreeWidgetItem *item);
     void createNewSession();
-#ifndef MAEMO_UI
     void deleteSession();
-#endif
     void performScan();
 
 private:

@@ -62,12 +62,8 @@ View::View(const QString &offices, const QString &images, QWidget *parent)
     QGraphicsPixmapItem *logo = scene->addPixmap(QPixmap(":/logo.png"));
     logo->setPos(30, 515);
 
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     setMinimumSize(470, 620);
     setMaximumSize(470, 620);
-#else
-    setDragMode(QGraphicsView::ScrollHandDrag);
-#endif
 
    setWindowTitle(tr("Offices World Wide"));
 }
@@ -130,11 +126,7 @@ void View::showInformation(ImageItem *image)
         window->raise();
         window->activateWindow();
     } else if (window && !window->isVisible()) {
-#ifndef Q_OS_SYMBIAN
         window->show();
-#else
-        window->showMaximized();
-#endif
     } else {
         InformationWindow *window;
         window = new InformationWindow(id, officeTable, this);
@@ -142,12 +134,8 @@ void View::showInformation(ImageItem *image)
         connect(window, SIGNAL(imageChanged(int,QString)),
                 this, SLOT(updateImage(int,QString)));
 
-#ifndef Q_OS_SYMBIAN
         window->move(pos() + QPoint(20, 40));
         window->show();
-#else
-        window->showMaximized();
-#endif
         informationWindows.append(window);
     }
 }

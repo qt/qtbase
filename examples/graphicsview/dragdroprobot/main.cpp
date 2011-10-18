@@ -55,9 +55,6 @@ public:
 protected:
     virtual void resizeEvent(QResizeEvent *)
     {
-#if defined(Q_OS_SYMBIAN)
-        fitInView(sceneRect(), Qt::KeepAspectRatio);
-#endif
     }
 };
 
@@ -90,11 +87,7 @@ int main(int argc, char **argv)
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setBackgroundBrush(QColor(230, 200, 167));
     view.setWindowTitle("Drag and Drop Robot");
-#if defined(Q_OS_SYMBIAN)
-    view.showMaximized();
-#else
      view.show();
-#endif
 
     return app.exec();
 }

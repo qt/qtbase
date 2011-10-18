@@ -51,15 +51,11 @@ int main(int argc, char *argv[])
 #endif
     DragWidget window;
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    window.showMaximized();
-#else
     bool smallScreen = QApplication::arguments().contains("-small-screen");
     if (smallScreen)
         window.showFullScreen();
     else
         window.show();
-#endif
 
     return app.exec();
 }

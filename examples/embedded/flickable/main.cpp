@@ -222,12 +222,8 @@ int main(int argc, char *argv[])
 
     ColorList list;
     list.setWindowTitle("Kinetic Scrolling");
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-    list.showMaximized();
-#else
     list.resize(320, 320);
     list.show();
-#endif
 
     return app.exec();
 }

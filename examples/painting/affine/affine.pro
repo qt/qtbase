@@ -18,12 +18,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/affine
 INSTALLS += target sources
 
-symbian {
-    CONFIG += qt_example
-}
-
-maemo5: CONFIG += qt_example
-
 wince*: {
     DEPLOYMENT_PLUGIN += qjpeg
 }

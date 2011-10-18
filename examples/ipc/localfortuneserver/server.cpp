@@ -48,11 +48,7 @@
 #include <qlocalsocket.h>
 
 Server::Server(QWidget *parent)
-#ifdef Q_WS_MAEMO_5
-    : QWidget(parent)
-#else
     : QDialog(parent)
-#endif
 {
     statusLabel = new QLabel;
     statusLabel->setWordWrap(true);

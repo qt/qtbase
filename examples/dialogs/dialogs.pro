@@ -5,7 +5,7 @@ SUBDIRS       = classwizard \
                 tabdialog \
                 trivialwizard
 
-!symbian:!wince*: SUBDIRS += licensewizard \
+!wince*: SUBDIRS += licensewizard \
                     extension \
                     findfiles
 
@@ -16,6 +16,4 @@ sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs
 INSTALLS += sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

@@ -18,4 +18,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.pro *.html *.doc images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/chip
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example

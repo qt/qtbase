@@ -117,10 +117,6 @@ protected:
     QPixmap drawDigits(int n, const QRect &rect) {
 
         int scaleFactor = 2;
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-        if (rect.height() > 240)
-            scaleFactor = 1;
-#endif
 
         QString str = QString::number(n);
         if (str.length() == 1)
@@ -192,10 +188,8 @@ protected:
 
     void paintFlip() {
         QPainter p(this);
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WINCE_WM)
         p.setRenderHint(QPainter::SmoothPixmapTransform, true);
         p.setRenderHint(QPainter::Antialiasing, true);
-#endif
         p.fillRect(rect(), Qt::black);
 
         int hw = width() / 2;
@@ -319,16 +313,10 @@ public:
         connect(slideAction, SIGNAL(triggered()), SLOT(chooseSlide()));
         connect(flipAction, SIGNAL(triggered()), SLOT(chooseFlip()));
         connect(rotateAction, SIGNAL(triggered()), SLOT(chooseRotate()));
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-        menuBar()->addAction(slideAction);
-        menuBar()->addAction(flipAction);
-        menuBar()->addAction(rotateAction);
-#else
         addAction(slideAction);
         addAction(flipAction);
         addAction(rotateAction);
         setContextMenuPolicy(Qt::ActionsContextMenu);
-#endif
     }
 
     void updateTime() {
@@ -414,12 +402,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     DigiFlip time;
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-    time.showMaximized();
-#else
     time.resize(320, 240);
     time.show();
-#endif
 
     return app.exec();
 }

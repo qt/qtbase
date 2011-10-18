@@ -32,8 +32,3 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/shared
 INSTALLS += sources
 
 !cross_compile:INSTALLS += target
-
-symbian {
-    TARGET.UID3 = 0xA000A63C
-    CONFIG += qt_demo
-}

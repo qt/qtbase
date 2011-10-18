@@ -98,11 +98,7 @@ int main(int argc, char *argv[])
     QLabel *label = new QLabel(text);
     label->setWordWrap(true);
 
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
-    label->showMaximized();
-#else
     label->show();
-#endif
     qDebug() << text;
 
     app.exec();

@@ -122,11 +122,6 @@ void LightMaps::paintEvent(QPaintEvent *event)
     p.begin(this);
     m_normalMap->render(&p, event->rect());
     p.setPen(Qt::black);
-#if defined(Q_OS_SYMBIAN)
-    QFont font = p.font();
-    font.setPixelSize(13);
-    p.setFont(font);
-#endif
     p.drawText(rect(),  Qt::AlignBottom | Qt::TextWordWrap,
                 "Map data CCBYSA 2009 OpenStreetMap.org contributors");
     p.end();

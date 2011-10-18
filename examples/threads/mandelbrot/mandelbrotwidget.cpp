@@ -74,20 +74,6 @@ MandelbrotWidget::MandelbrotWidget(QWidget *parent)
 #endif
     resize(550, 400);
 
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    ZoomButton *zoomIn = new ZoomButton(tr("Zoom In"), ZoomInFactor, this);
-    ZoomButton *zoomOut = new ZoomButton(tr("Zoom Out"), ZoomOutFactor, this);
-
-    QGridLayout *layout = new QGridLayout(this);
-    layout->addWidget(zoomIn, 0, 1);
-    layout->addWidget(zoomOut, 1, 1);
-    layout->setColumnStretch(0, 10);
-    layout->setRowStretch(2, 10);
-    setLayout(layout);
-
-    connect(zoomIn, SIGNAL(zoom(double)), this, SLOT(zoom(double)));
-    connect(zoomOut, SIGNAL(zoom(double)), this, SLOT(zoom(double)));
-#endif
 }
 //! [1]
 
@@ -129,7 +115,6 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     }
 //! [8] //! [9]
 
-#if !defined(Q_WS_S60) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
     QString text = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
                       "Press and hold left mouse button to scroll.");
     QFontMetrics metrics = painter.fontMetrics();
@@ -142,7 +127,6 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     painter.setPen(Qt::white);
     painter.drawText((width() - textWidth) / 2,
                      metrics.leading() + metrics.ascent(), text);
-#endif
 }
 //! [9]
 

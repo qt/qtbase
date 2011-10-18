@@ -239,13 +239,8 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
 {
     m_animation_enabled = true;
     m_animationTimer = startTimer(animationInterval);
-#ifdef Q_WS_QWS
-    m_image = QPixmap(":res/composition/flower.jpg");
-    m_image.setAlphaChannel(QPixmap(":res/composition/flower_alpha.jpg"));
-#else
     m_image = QImage(":res/composition/flower.jpg");
     m_image.setAlphaChannel(QImage(":res/composition/flower_alpha.jpg"));
-#endif
     m_circle_alpha = 127;
     m_circle_hue = 255;
     m_current_object = NoObject;
@@ -324,11 +319,7 @@ void CompositionRenderer::drawBase(QPainter &p)
 
     p.setPen(Qt::NoPen);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
-#ifdef Q_WS_QWS
-    p.drawPixmap(rect(), m_image);
-#else
     p.drawImage(rect(), m_image);
-#endif
 }
 
 void CompositionRenderer::drawSource(QPainter &p)
@@ -456,37 +447,24 @@ void CompositionRenderer::paint(QPainter *painter)
     {
         // using a QImage
         if (m_buffer.size() != size()) {
-#ifdef Q_WS_QWS
-            m_base_buffer = QPixmap(size());
-            m_base_buffer.fill(Qt::transparent);
-#else
             m_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
             m_base_buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
 
             m_base_buffer.fill(0);
-#endif
 
             QPainter p(&m_base_buffer);
 
             drawBase(p);
         }
 
-#ifdef Q_WS_QWS
-        m_buffer = m_base_buffer;
-#else
         memcpy(m_buffer.bits(), m_base_buffer.bits(), m_buffer.byteCount());
-#endif
 
         {
             QPainter p(&m_buffer);
             drawSource(p);
         }
 
-#ifdef Q_WS_QWS
-        painter->drawPixmap(0, 0, m_buffer);
-#else
         painter->drawImage(0, 0, m_buffer);
-#endif
     }
 }
 

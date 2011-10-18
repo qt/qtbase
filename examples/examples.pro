@@ -31,22 +31,9 @@ SUBDIRS       = \
                 gestures
 }
 
-symbian: SUBDIRS = \
-                graphicsview \
-                itemviews \
-                network \
-                painting \
-                widgets \
-                draganddrop \
-                mainwindows \
-                sql \
-                animation \
-                gestures \
-                xml
-
 qpa:SUBDIRS += qpa
 
-wince*|symbian|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
+wince*|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
 
 embedded:SUBDIRS += qws
 contains(QT_BUILD_PARTS, tools):!contains(QT_CONFIG, no-gui):SUBDIRS += qtestlib
@@ -60,6 +47,4 @@ sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]
 INSTALLS += sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

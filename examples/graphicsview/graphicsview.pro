@@ -5,9 +5,7 @@ SUBDIRS       = \
               embeddeddialogs \
               collidingmice \
               padnavigator \
-	      basicgraphicslayouts
-
-!symbian: SUBDIRS += \
+              basicgraphicslayouts \
               diagramscene \
               dragdroprobot \
               flowlayout \
@@ -27,6 +25,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS graphicsview.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

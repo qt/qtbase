@@ -126,16 +126,10 @@ public:
         connect(randomAction, SIGNAL(triggered()), SLOT(randomFlight()));
         connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
                 this, SLOT(handleNetworkData(QNetworkReply*)));
-#if defined(Q_OS_SYMBIAN)
-        menuBar()->addAction(searchTodayAction);
-        menuBar()->addAction(searchYesterdayAction);
-        menuBar()->addAction(randomAction);
-#else
         addAction(searchTodayAction);
         addAction(searchYesterdayAction);
         addAction(randomAction);
         setContextMenuPolicy(Qt::ActionsContextMenu);
-#endif
     }
 
 private slots:
@@ -388,12 +382,8 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     FlightInfo w;
-#if defined(Q_OS_SYMBIAN)
-    w.showMaximized();
-#else
     w.resize(360, 504);
     w.show();
-#endif
 
     return app.exec();
 }

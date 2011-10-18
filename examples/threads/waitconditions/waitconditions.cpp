@@ -44,11 +44,7 @@
 #include <stdlib.h>
 
 //! [0]
-#ifdef Q_WS_S60
-const int DataSize = 300;
-#else
 const int DataSize = 100000;
-#endif
 
 const int BufferSize = 8192;
 char buffer[BufferSize];
@@ -107,11 +103,7 @@ public:
                 bufferNotEmpty.wait(&mutex);
             mutex.unlock();
 
-    #ifdef Q_WS_S60
-            emit stringConsumed(QString(buffer[i % BufferSize]));
-    #else
             fprintf(stderr, "%c", buffer[i % BufferSize]);
-    #endif
 
             mutex.lock();
             --numUsedBytes;
@@ -126,48 +118,11 @@ signals:
 };
 //! [4]
 
-#ifdef Q_WS_S60
-class PlainTextEdit : public QPlainTextEdit
-{
-    Q_OBJECT
-public:
-    PlainTextEdit(QWidget *parent = NULL) : QPlainTextEdit(parent), producer(NULL), consumer(NULL)
-    {
-        setTextInteractionFlags(Qt::NoTextInteraction);
-
-        producer = new Producer(this);
-        consumer = new Consumer(this);
-
-        QObject::connect(consumer, SIGNAL(stringConsumed(const QString &)), SLOT(insertPlainText(const QString &)), Qt::BlockingQueuedConnection);
-
-        QTimer::singleShot(0, this, SLOT(startThreads()));
-    }
-
-protected:
-    Producer *producer;
-    Consumer *consumer;
-
-protected slots:
-    void startThreads()
-    {
-        producer->start();
-        consumer->start();
-    }
-};
-#endif
 
 //! [5]
 int main(int argc, char *argv[])
 //! [5] //! [6]
 {
-#ifdef Q_WS_S60
-    QApplication app(argc, argv);
-
-    PlainTextEdit console;
-    console.showMaximized();
-
-    return app.exec();
-#else
     QCoreApplication app(argc, argv);
     Producer producer;
     Consumer consumer;
@@ -176,7 +131,6 @@ int main(int argc, char *argv[])
     producer.wait();
     consumer.wait();
     return 0;
-#endif
 }
 //! [6]
 

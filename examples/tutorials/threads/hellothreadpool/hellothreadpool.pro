@@ -11,7 +11,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellothreadpool.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/threads/hellothreadpool
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 
 

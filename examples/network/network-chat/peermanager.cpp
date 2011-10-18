@@ -69,11 +69,7 @@ PeerManager::PeerManager(Client *client)
     }
 
     if (username.isEmpty())
-#ifndef Q_OS_SYMBIAN
         username = "unknown";
-#else
-        username = "QtS60";
-#endif
 
     updateAddresses();
     serverPort = 0;

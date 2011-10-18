@@ -27,13 +27,10 @@ SUBDIRS       = \
     contains(QT_CONFIG, openssl-linked):SUBDIRS += securesocketclient
 }
 
-symbian: SUBDIRS = qftp
 
 # install
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network
 INSTALLS += sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

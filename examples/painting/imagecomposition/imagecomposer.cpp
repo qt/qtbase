@@ -43,11 +43,7 @@
 #include "imagecomposer.h"
 
 //! [0]
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
-static const QSize resultSize(50, 50);
-#else
 static const QSize resultSize(200, 200);
-#endif
 //! [0]
 
 //! [1]
@@ -108,10 +104,7 @@ ImageComposer::ImageComposer()
     mainLayout->addWidget(destinationButton, 0, 2, 3, 1);
     mainLayout->addWidget(equalLabel, 1, 3);
     mainLayout->addWidget(resultLabel, 0, 4, 3, 1);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-#else
     mainLayout->setSizeConstraint(QLayout::SetFixedSize);
-#endif
     setLayout(mainLayout);
 //! [4]
 

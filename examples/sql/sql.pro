@@ -1,14 +1,14 @@
 TEMPLATE      = subdirs
 
 SUBDIRS             =   books \
-                        drilldown
-!symbian: SUBDIRS   +=  cachedtable \
+                        drilldown \
+                         cachedtable \
                         relationaltablemodel \
                         sqlwidgetmapper
 
 !wince*:  SUBDIRS   +=  masterdetail
 
-!wince*:!symbian: SUBDIRS += \
+!wince*:  SUBDIRS += \
                         querymodel \
                         tablemodel
 
@@ -23,6 +23,4 @@ sources.files = connection.h sql.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql
 INSTALLS += sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

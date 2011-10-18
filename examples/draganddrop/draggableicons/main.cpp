@@ -55,11 +55,7 @@ int main(int argc, char *argv[])
 
     mainWidget.setLayout(horizontalLayout);
     mainWidget.setWindowTitle(QObject::tr("Draggable Icons"));
-#ifdef Q_OS_SYMBIAN
-    mainWidget.showMaximized();
-#else
     mainWidget.show();
-#endif
 
     return app.exec();
 }

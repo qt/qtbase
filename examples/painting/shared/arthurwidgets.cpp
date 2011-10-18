@@ -108,11 +108,7 @@ void ArthurFrame::enableOpenGL(bool use_opengl)
 
 void ArthurFrame::paintEvent(QPaintEvent *e)
 {
-#ifdef Q_WS_QWS
-    static QPixmap *static_image = 0;
-#else
     static QImage *static_image = 0;
-#endif
     QPainter painter;
     if (preferImage()
 #ifdef QT_OPENGL_SUPPORT
@@ -121,11 +117,7 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         ) {
         if (!static_image || static_image->size() != size()) {
             delete static_image;
-#ifdef Q_WS_QWS
-            static_image = new QPixmap(size());
-#else
             static_image = new QImage(size(), QImage::Format_RGB32);
-#endif
         }
         painter.begin(static_image);
 
@@ -197,11 +189,7 @@ void ArthurFrame::paintEvent(QPaintEvent *e)
         ) {
         painter.end();
         painter.begin(this);
-#ifdef Q_WS_QWS
-        painter.drawPixmap(e->rect(), *static_image, e->rect());
-#else
         painter.drawImage(e->rect(), *static_image, e->rect());
-#endif
     }
 
 #ifdef QT_OPENGL_SUPPORT

@@ -22,9 +22,5 @@ FORMS += \
 RESOURCES += \
     images.qrc
 
-symbian: CONFIG += qt_example
-maemo5: CONFIG += qt_example
 
-symbian: warning(This example might not fully work on Symbian platform)
-maemo5: warning(This example might not fully work on Maemo platform)
 simulator: warning(This example might not fully work on Simulator platform)

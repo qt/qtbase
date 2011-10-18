@@ -11,6 +11,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS helloconcurrent.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/threads/helloconcurrent
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 

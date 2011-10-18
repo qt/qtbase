@@ -17,8 +17,3 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
 INSTALLS += target sources
-
-symbian {
-    TARGET.UID3 = 0xA000A63D
-    CONFIG += qt_example
-}

@@ -11,9 +11,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mdi.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mdi
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example
 
-symbian: warning(This example might not fully work on Symbian platform)
 simulator: warning(This example might not fully work on Simulator platform)

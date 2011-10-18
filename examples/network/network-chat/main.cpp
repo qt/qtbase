@@ -88,11 +88,6 @@ int main(int argc, char *argv[])
     }
 
     ChatDialog dialog;
-#ifdef Q_OS_SYMBIAN
-    // Make application better looking and more usable on small screen
-    dialog.showMaximized();
-#else
     dialog.show();
-#endif
     return app.exec();
 }

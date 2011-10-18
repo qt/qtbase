@@ -13,7 +13,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/books
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 wince*: {
     CONFIG(debug, debug|release):sqlPlugins.files = $$QT_BUILD_TREE/plugins/sqldrivers/*d4.dll

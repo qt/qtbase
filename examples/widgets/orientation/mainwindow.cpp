@@ -69,9 +69,6 @@ MainWindow::MainWindow(QWidget *parent) :
 //! [1]
 
 //! [2]
-#ifdef Q_WS_MAEMO_5
-    setAttribute(Qt::WA_Maemo5AutoOrientation, true);
-#endif
 }
 //! [2]
 

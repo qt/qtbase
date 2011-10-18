@@ -64,13 +64,6 @@ MapZoom::MapZoom()
     connect(nightModeAction, SIGNAL(triggered()), map, SLOT(toggleNightMode()));
     connect(osmAction, SIGNAL(triggered()), SLOT(aboutOsm()));
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
-    menuBar()->addAction(osloAction);
-    menuBar()->addAction(berlinAction);
-    menuBar()->addAction(jakartaAction);
-    menuBar()->addAction(nightModeAction);
-    menuBar()->addAction(osmAction);
-#else
     QMenu *menu = menuBar()->addMenu(tr("&Options"));
     menu->addAction(osloAction);
     menu->addAction(berlinAction);
@@ -78,7 +71,6 @@ MapZoom::MapZoom()
     menu->addSeparator();
     menu->addAction(nightModeAction);
     menu->addAction(osmAction);
-#endif
 
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {

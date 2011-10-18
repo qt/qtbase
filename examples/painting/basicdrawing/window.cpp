@@ -74,11 +74,7 @@ Window::Window()
 //! [2]
     penWidthSpinBox = new QSpinBox;
     penWidthSpinBox->setRange(0, 20);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    penWidthSpinBox->setSpecialValueText(tr("0"));
-#else
     penWidthSpinBox->setSpecialValueText(tr("0 (cosmetic pen)"));
-#endif
 
     penWidthLabel = new QLabel(tr("Pen &Width:"));
     penWidthLabel->setBuddy(penWidthSpinBox);
@@ -172,9 +168,6 @@ Window::Window()
 //! [9]
     QGridLayout *mainLayout = new QGridLayout;
 //! [9] //! [10]
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-#endif
     mainLayout->setColumnStretch(0, 1);
     mainLayout->setColumnStretch(3, 1);
     mainLayout->addWidget(renderArea, 0, 0, 1, 4);

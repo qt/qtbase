@@ -277,11 +277,7 @@ int main(int argc, char *argv[])
 
     GraphicsView view(&scene);
 
-#if defined(Q_OS_SYMBIAN)
-    view.showMaximized();
-#else
     view.show();
-#endif
 
     return app.exec();
 }

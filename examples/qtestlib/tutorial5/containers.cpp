@@ -132,11 +132,7 @@ struct Large { // A "large" item type
 };
 
 // Symbian devices typically have limited memory
-#ifdef Q_OS_SYMBIAN
-#  define LARGE_MAX_SIZE 2000
-#else
 #  define LARGE_MAX_SIZE 20000
-#endif
 
 class tst_vector_vs_std : public QObject
 {

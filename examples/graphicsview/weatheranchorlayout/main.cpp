@@ -190,10 +190,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     QGraphicsScene scene;
-#if defined(Q_OS_SYMBIAN)
-#else
     scene.setSceneRect(0, 0, 800, 480);
-#endif
 
     // pixmaps widgets
     PixmapWidget *title = new PixmapWidget(QPixmap(":/images/title.jpg"));
@@ -268,13 +265,8 @@ int main(int argc, char **argv)
     // QGV setup
     scene.addItem(w);
     scene.setBackgroundBrush(Qt::white);
-#if defined(Q_OS_SYMBIAN)
-    GraphicsView *view = new GraphicsView(&scene, w);
-    view->showMaximized();
-#else
     QGraphicsView *view = new QGraphicsView(&scene);
     view->show();
-#endif
 
     return app.exec();
 }

@@ -43,11 +43,7 @@
 
 #include "dialog.h"
 
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 static const int TotalBytes = 50 * 1024 * 1024;
-#else
-static const int TotalBytes = 5 * 1024 * 1024;
-#endif
 static const int PayloadSize = 64 * 1024; // 64 KB
 
 Dialog::Dialog(QWidget *parent)
@@ -58,22 +54,6 @@ Dialog::Dialog(QWidget *parent)
     serverProgressBar = new QProgressBar;
     serverStatusLabel = new QLabel(tr("Server ready"));
 
-#ifdef Q_OS_SYMBIAN
-    QMenu *menu = new QMenu(this);
-
-    QAction *optionsAction = new QAction(tr("Options"), this);
-    optionsAction->setSoftKeyRole(QAction::PositiveSoftKey);
-    optionsAction->setMenu(menu);
-    addAction(optionsAction);
-
-    startAction = menu->addAction(tr("Start"), this, SLOT(start()));
-
-    quitAction = new QAction(tr("Exit"), this);
-    quitAction->setSoftKeyRole(QAction::NegativeSoftKey);
-    addAction(quitAction);
-
-    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
-#else
     startButton = new QPushButton(tr("&Start"));
     quitButton = new QPushButton(tr("&Quit"));
 
@@ -83,7 +63,6 @@ Dialog::Dialog(QWidget *parent)
 
     connect(startButton, SIGNAL(clicked()), this, SLOT(start()));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-#endif
     connect(&tcpServer, SIGNAL(newConnection()),
             this, SLOT(acceptConnection()));
     connect(&tcpClient, SIGNAL(connected()), this, SLOT(startTransfer()));
@@ -99,9 +78,7 @@ Dialog::Dialog(QWidget *parent)
     mainLayout->addWidget(serverStatusLabel);
     mainLayout->addStretch(1);
     mainLayout->addSpacing(10);
-#ifndef Q_OS_SYMBIAN
     mainLayout->addWidget(buttonBox);
-#endif
     setLayout(mainLayout);
 
     setWindowTitle(tr("Loopback"));
@@ -109,11 +86,7 @@ Dialog::Dialog(QWidget *parent)
 
 void Dialog::start()
 {
-#ifdef Q_OS_SYMBIAN
-    startAction->setVisible(false);
-#else
     startButton->setEnabled(false);
-#endif
 
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -169,11 +142,7 @@ void Dialog::updateServerProgress()
 
     if (bytesReceived == TotalBytes) {
         tcpServerConnection->close();
-#ifdef Q_OS_SYMBIAN
-        startAction->setVisible(true);
-#else
         startButton->setEnabled(true);
-#endif
 #ifndef QT_NO_CURSOR
         QApplication::restoreOverrideCursor();
 #endif
@@ -210,11 +179,7 @@ void Dialog::displayError(QAbstractSocket::SocketError socketError)
     serverProgressBar->reset();
     clientStatusLabel->setText(tr("Client ready"));
     serverStatusLabel->setText(tr("Server ready"));
-#ifdef Q_OS_SYMBIAN
-    startAction->setVisible(true);
-#else
     startButton->setEnabled(true);
-#endif
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif

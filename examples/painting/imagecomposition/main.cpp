@@ -49,11 +49,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     ImageComposer composer;
-#if defined(Q_OS_SYMBIAN)
-    composer.showMaximized();
-#else
     composer.show();
-#endif
     return app.exec();
 }
 //! [0]

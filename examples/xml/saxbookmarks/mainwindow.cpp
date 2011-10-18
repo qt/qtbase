@@ -65,15 +65,6 @@ MainWindow::MainWindow()
 
 void MainWindow::open()
 {
-#if defined(Q_OS_SYMBIAN)
-    // Look for bookmarks on the same drive where the application is installed to,
-    // if drive is not read only. QDesktopServices::DataLocation does this check,
-    // and returns writable drive.
-    QString bookmarksFolder =
-            QDesktopServices::storageLocation(QDesktopServices::DataLocation).left(1);
-    bookmarksFolder.append(":/Data/qt/saxbookmarks");
-    QDir::setCurrent(bookmarksFolder);
-#endif
     QString fileName =
             QFileDialog::getOpenFileName(this, tr("Open Bookmark File"),
                                          QDir::currentPath(),

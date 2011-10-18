@@ -44,11 +44,7 @@
 #include "client.h"
 
 Client::Client(QWidget *parent)
-#ifdef Q_WS_MAEMO_5
-    : QWidget(parent)
-#else
     : QDialog(parent)
-#endif
 {
     hostLabel = new QLabel(tr("&Server name:"));
     hostLineEdit = new QLineEdit("fortune");

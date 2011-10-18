@@ -11,6 +11,4 @@ INSTALLS += target sources
 
 wince*: DEPLOYMENT_PLUGIN += qsqlite
 
-symbian: CONFIG += qt_example
-maemo5: CONFIG += qt_example
 

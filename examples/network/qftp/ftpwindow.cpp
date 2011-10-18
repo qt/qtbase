@@ -51,10 +51,6 @@ FtpWindow::FtpWindow(QWidget *parent)
     ftpServerLabel->setBuddy(ftpServerLineEdit);
 
     statusLabel = new QLabel(tr("Please enter the name of an FTP server."));
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    // Use word wrapping to fit the text on screen
-    statusLabel->setWordWrap( true );
-#endif
 
     fileList = new QTreeWidget;
     fileList->setEnabled(false);
@@ -93,22 +89,11 @@ FtpWindow::FtpWindow(QWidget *parent)
     QHBoxLayout *topLayout = new QHBoxLayout;
     topLayout->addWidget(ftpServerLabel);
     topLayout->addWidget(ftpServerLineEdit);
-#ifndef Q_OS_SYMBIAN
     topLayout->addWidget(cdToParentButton);
     topLayout->addWidget(connectButton);
-#else
-    // Make app better lookin on small screen
-    QHBoxLayout *topLayout2 = new QHBoxLayout;
-    topLayout2->addWidget(cdToParentButton);
-    topLayout2->addWidget(connectButton);
-#endif
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
-#ifdef Q_OS_SYMBIAN
-    // Make app better lookin on small screen
-    mainLayout->addLayout(topLayout2);
-#endif
     mainLayout->addWidget(fileList);
     mainLayout->addWidget(statusLabel);
     mainLayout->addWidget(buttonBox);

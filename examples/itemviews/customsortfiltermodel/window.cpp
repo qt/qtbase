@@ -59,13 +59,8 @@ Window::Window()
     QHBoxLayout *sourceLayout = new QHBoxLayout;
     //! [2]
     sourceLayout->addWidget(sourceView);
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    sourceWidget = new QWidget;
-    sourceWidget->setLayout(sourceLayout);
-#else
     sourceGroupBox = new QGroupBox(tr("Original Model"));
     sourceGroupBox->setLayout(sourceLayout);
-#endif
     //! [2]
 
     //! [3]
@@ -114,26 +109,6 @@ Window::Window()
     proxyView->setSortingEnabled(true);
     proxyView->sortByColumn(1, Qt::AscendingOrder);
 
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    QGridLayout *filterLayout = new QGridLayout;
-    filterLayout->addWidget(filterPatternLabel, 0, 0);
-    filterLayout->addWidget(filterPatternLineEdit, 0, 1);
-    filterLayout->addWidget(filterSyntaxComboBox, 0, 2);
-    filterLayout->addWidget(filterCaseSensitivityCheckBox, 1, 0, 1, 3);
-    filterLayout->addWidget(fromLabel, 2, 0);
-    filterLayout->addWidget(fromDateEdit, 2, 1, 1, 2);
-    filterLayout->addWidget(toLabel, 3, 0);
-    filterLayout->addWidget(toDateEdit, 3, 1, 1, 2);
-
-    filterWidget = new QWidget;
-    filterWidget->setLayout(filterLayout);
-
-    QHBoxLayout *proxyLayout = new QHBoxLayout;
-    proxyLayout->addWidget(proxyView);
-
-    proxyWidget = new QWidget;
-    proxyWidget->setLayout(proxyLayout);
-#else
     QGridLayout *proxyLayout = new QGridLayout;
     proxyLayout->addWidget(proxyView, 0, 0, 1, 3);
     proxyLayout->addWidget(filterPatternLabel, 1, 0);
@@ -147,21 +122,9 @@ Window::Window()
 
     proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
     proxyGroupBox->setLayout(proxyLayout);
-#endif
     //! [5]
 
     //! [6]
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(sourceWidget, "Original");
-    tabWidget->addTab(filterWidget, "Filters");
-    tabWidget->addTab(proxyWidget, "Sorted");
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(tabWidget);
-    setLayout(mainLayout);
-    setWindowTitle(tr("Custom Model"));
-#else
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(sourceGroupBox);
     mainLayout->addWidget(proxyGroupBox);
@@ -169,7 +132,6 @@ Window::Window()
 
     setWindowTitle(tr("Custom Sort/Filter Model"));
     resize(500, 450);
-#endif
 }
 //! [6]
 

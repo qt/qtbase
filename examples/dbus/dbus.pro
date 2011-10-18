@@ -14,6 +14,4 @@ sources.files = *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus
 INSTALLS += sources
 
-symbian: CONFIG += qt_example
 QT += widgets
-maemo5: CONFIG += qt_example

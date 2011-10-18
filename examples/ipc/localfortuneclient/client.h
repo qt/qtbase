@@ -41,11 +41,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#ifdef Q_WS_MAEMO_5
-#include <QWidget>
-#else
 #include <QDialog>
-#endif
 
 #include <qlocalsocket.h>
 
@@ -57,11 +53,7 @@ class QPushButton;
 class QLocalSocket;
 QT_END_NAMESPACE
 
-#ifdef Q_WS_MAEMO_5
-class Client : public QWidget
-#else
 class Client : public QDialog
-#endif
 {
     Q_OBJECT
 

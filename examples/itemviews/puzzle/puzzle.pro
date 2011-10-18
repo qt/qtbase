@@ -13,12 +13,10 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/puzzle
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
 wince* {
    DEPLOYMENT_PLUGIN += qjpeg qgif qtiff
 }
 
 QT += widgets
-maemo5: CONFIG += qt_example
 

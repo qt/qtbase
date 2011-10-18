@@ -62,11 +62,7 @@ private slots:
 
 private:
     QLabel *statusLabel;
-#ifdef Q_OS_SYMBIAN
-    QAction *quitAction;
-#else
     QPushButton *quitButton;
-#endif
     QUdpSocket *udpSocket;
 };
 

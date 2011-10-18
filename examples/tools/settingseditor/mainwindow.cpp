@@ -170,10 +170,10 @@ void MainWindow::createActions()
     aboutQtAct = new QAction(tr("About &Qt"), this);
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     openPropertyListAct->setEnabled(false);
 #endif
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     openRegistryPathAct->setEnabled(false);
 #endif
 }

@@ -15,17 +15,9 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/draganddrop/puzzle
 INSTALLS += target sources
 
-symbian:{
-   TARGET.UID3 = 0xA000CF65
-   CONFIG += qt_example
-   addFile.files = example.jpg
-   addFile.path = .
-   DEPLOYMENT += addFile
-}
 wince*: {
    addFile.files = example.jpg
    addFile.path = .
    DEPLOYMENT += addFile
 }
 QT += widgets
-maemo5: CONFIG += qt_example

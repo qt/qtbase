@@ -76,14 +76,9 @@ private:
     QLabel *clientStatusLabel;
     QLabel *serverStatusLabel;
 
-#ifdef Q_OS_SYMBIAN
-    QAction *startAction;
-    QAction *quitAction;
-#else
     QPushButton *startButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
-#endif
 
     QTcpServer tcpServer;
     QTcpSocket tcpClient;

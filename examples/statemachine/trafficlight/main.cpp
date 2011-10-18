@@ -88,9 +88,6 @@ public:
         : QWidget(parent)
     {
         QVBoxLayout *vbox = new QVBoxLayout(this);
-#ifdef Q_WS_MAEMO_5
-        vbox->setContentsMargins(320, 0, 320, 0);
-#endif
         m_red = new LightWidget(Qt::red);
         vbox->addWidget(m_red);
         m_yellow = new LightWidget(Qt::yellow);
@@ -177,14 +174,8 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     TrafficLight widget;
-#if defined(Q_OS_SYMBIAN)
-    widget.showMaximized();
-#elif defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
-    widget.show();
-#else
     widget.resize(110, 300);
     widget.show();
-#endif
 
     return app.exec();
 }

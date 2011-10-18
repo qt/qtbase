@@ -164,12 +164,8 @@ int main(int argc, char **argv)
     machine.setInitialState(group);
     machine.start();
 
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
-    window.showMaximized();
-#else
     window.resize(300, 300);
     window.show();
-#endif
 
     return app.exec();
 }

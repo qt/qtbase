@@ -18,8 +18,6 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/downloadmanager
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
-maemo5: CONFIG += qt_example
 
 OTHER_FILES += \
     debian/changelog \
@@ -28,5 +26,4 @@ OTHER_FILES += \
     debian/copyright \
     debian/README \
     debian/rules
-symbian: warning(This example might not fully work on Symbian platform)
 simulator: warning(This example might not fully work on Simulator platform)

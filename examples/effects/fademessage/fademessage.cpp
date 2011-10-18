@@ -124,9 +124,5 @@ void FadeMessage::setupScene()
     connect(press, SIGNAL(clicked()), SLOT(togglePopup()));
     m_scene.addWidget(press);
 
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
-    press->move(200, 210);
-#else
     press->move(300, 500);
-#endif
 }

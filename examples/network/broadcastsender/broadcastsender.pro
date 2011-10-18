@@ -10,9 +10,3 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/broadcastsender
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS broadcastsender.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/broadcastsender
 INSTALLS += target sources
-
-symbian: {
-    CONFIG += qt_example
-    TARGET.CAPABILITY = NetworkServices
-}
-maemo5: CONFIG += qt_example

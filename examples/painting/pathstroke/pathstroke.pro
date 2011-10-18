@@ -18,7 +18,3 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/pathstroke
 INSTALLS += target sources
 
-symbian {
-    TARGET.UID3 = 0xA000A63E
-    CONFIG += qt_example
-}

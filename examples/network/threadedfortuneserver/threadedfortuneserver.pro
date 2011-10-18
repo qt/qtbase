@@ -15,11 +15,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS threadedfortuneserver.pr
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/threadedfortuneserver
 INSTALLS += target sources
 
-symbian: {
-    CONFIG += qt_example
-    TARGET.CAPABILITY = NetworkServices
-}
-maemo5: CONFIG += qt_example
 
-symbian: warning(This example might not fully work on Symbian platform)
-maemo5: warning(This example might not fully work on Maemo platform)

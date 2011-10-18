@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=com.nokia.maemovibration
-Exec=/usr/bin/maemovibration

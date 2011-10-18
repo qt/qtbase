@@ -20,8 +20,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugin.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/styleplugin/plugin
 INSTALLS += target sources
 
-symbian: CONFIG += qt_example
 
-symbian:TARGET.EPOCALLOWDLLDATA = 1
 QT += widgets
-maemo5: CONFIG += qt_example
