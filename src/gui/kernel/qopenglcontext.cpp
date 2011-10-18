@@ -290,7 +290,9 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
     }
 
-    d->platformGLContext->swapBuffers(surface->surfaceHandle());
+    QPlatformSurface *surfaceHandle = surface->surfaceHandle();
+    if (surfaceHandle)
+        d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
 void (*QOpenGLContext::getProcAddress(const QByteArray &procName)) ()
