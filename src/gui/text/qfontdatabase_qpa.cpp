@@ -178,6 +178,11 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
             fallbacks = family->fallbackFamilies;
 
         engine = new QFontEngineMultiQPA(engine, script, fallbacks);
+
+        // Cache Multi font engine as well in case we got the FT single
+        // font engine when we are actually looking for a Multi one
+        QFontCache::Key key(request, script, 1);
+        QFontCache::instance()->instance()->insertEngine(key, engine);
     }
 
     return engine;
@@ -230,7 +235,7 @@ bool QFontDatabase::supportsThreadedFontRendering()
 */
 QFontEngine *
 QFontDatabase::findFont(int script, const QFontPrivate *fp,
-                        const QFontDef &request)
+                        const QFontDef &request, bool multi)
 {
     QMutexLocker locker(fontDatabaseMutex());
 
@@ -240,7 +245,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
         initializeDb();
 
     QFontEngine *engine;
-    QFontCache::Key key(request, script);
+    QFontCache::Key key(request, script, multi ? 1 : 0);
     engine = QFontCache::instance()->findEngine(key);
     if (engine) {
         qDebug() << "Cache hit level 1";
@@ -282,7 +287,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
             for (int i = 0; !engine && i < fallbacks.size(); i++) {
                 QFontDef def = request;
                 def.family = fallbacks.at(i);
-                QFontCache::Key key(def,script);
+                QFontCache::Key key(def, script, multi ? 1 : 0);
                 engine = QFontCache::instance()->findEngine(key);
                 if (!engine) {
                     QtFontDesc desc;
@@ -328,7 +333,11 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (req.stretch == 0)
         req.stretch = 100;
 
-    QFontCache::Key key(req, script);
+    // Until we specifically asked not to, try looking for Multi font engine
+    // first, the last '1' indicates that we want Multi font engine instead
+    // of single ones
+    bool multi = !(req.styleStrategy & QFont::NoFontMerging);
+    QFontCache::Key key(req, script, multi ? 1 : 0);
 
     if (!d->engineData)
         getEngineData(d, key);
@@ -359,7 +368,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     for (; !fe && it != end; ++it) {
         req.family = *it;
 
-        fe = QFontDatabase::findFont(script, d, req);
+        fe = QFontDatabase::findFont(script, d, req, multi);
         if (fe && (fe->type()==QFontEngine::Box) && !req.family.isEmpty())
             fe = 0;
     }
