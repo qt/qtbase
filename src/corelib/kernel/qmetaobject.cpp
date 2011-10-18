@@ -1890,12 +1890,17 @@ const char *QMetaEnum::scope() const
     Returns the integer value of the given enumeration \a key, or -1
     if \a key is not defined.
 
+    If \a key is not defined, *\a{ok} is set to false; otherwise
+    *\a{ok} is set to true.
+
     For flag types, use keysToValue().
 
     \sa valueToKey(), isFlag(), keysToValue()
 */
-int QMetaEnum::keyToValue(const char *key) const
+int QMetaEnum::keyToValue(const char *key, bool *ok) const
 {
+    if (ok != 0)
+        *ok = false;
     if (!mobj || !key)
         return -1;
     uint scope = 0;
@@ -1909,10 +1914,14 @@ int QMetaEnum::keyToValue(const char *key) const
     }
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < count; ++i) {
         if ((!scope || (qstrlen(mobj->d.stringdata) == scope && strncmp(qualified_key, mobj->d.stringdata, scope) == 0))
-             && strcmp(key, mobj->d.stringdata + mobj->d.data[data + 2*i]) == 0)
+             && strcmp(key, mobj->d.stringdata + mobj->d.data[data + 2*i]) == 0) {
+            if (ok != 0)
+                *ok = true;
             return mobj->d.data[data + 2*i + 1];
+        }
+    }
     return -1;
 }
 
@@ -1941,13 +1950,22 @@ const char* QMetaEnum::valueToKey(int value) const
     the \a keys using the OR operator, or -1 if \a keys is not
     defined. Note that the strings in \a keys must be '|'-separated.
 
+    If \a key is not defined, *\a{ok} is set to false; otherwise
+    *\a{ok} is set to true.
+
     \sa isFlag(), valueToKey(), valueToKeys()
 */
-int QMetaEnum::keysToValue(const char *keys) const
+int QMetaEnum::keysToValue(const char *keys, bool *ok) const
 {
-    if (!mobj)
+    if (ok != 0)
+        *ok = false;
+    if (!mobj || !keys)
         return -1;
+    if (ok != 0)
+        *ok = true;
     QStringList l = QString::fromLatin1(keys).split(QLatin1Char('|'));
+    if (l.isEmpty())
+        return 0;
     //#### TODO write proper code, do not use QStringList
     int value = 0;
     int count = mobj->d.data[handle + 2];
@@ -1971,8 +1989,11 @@ int QMetaEnum::keysToValue(const char *keys) const
                 value |= mobj->d.data[data + 2*i + 1];
                 break;
             }
-        if (i < 0)
+        if (i < 0) {
+            if (ok != 0)
+                *ok = false;
             value |= -1;
+        }
     }
     return value;
 }
@@ -2295,10 +2316,13 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     uint t = QVariant::Invalid;
     if (isEnumType()) {
         if (v.type() == QVariant::String) {
+            bool ok;
             if (isFlagType())
-                v = QVariant(menum.keysToValue(value.toByteArray()));
+                v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
             else
-                v = QVariant(menum.keyToValue(value.toByteArray()));
+                v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
+            if (!ok)
+                return false;
         } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
             int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
             if ((enumMetaTypeId == 0) || (v.userType() != enumMetaTypeId) || !v.constData())

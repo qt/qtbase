@@ -158,9 +158,9 @@ public:
 
     const char *scope() const;
 
-    int keyToValue(const char *key) const;
+    int keyToValue(const char *key, bool *ok = 0) const;
     const char* valueToKey(int value) const;
-    int keysToValue(const char * keys) const;
+    int keysToValue(const char * keys, bool *ok = 0) const;
     QByteArray valueToKeys(int value) const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
