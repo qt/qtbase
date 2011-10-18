@@ -415,8 +415,8 @@ public:
     static QString fromUcs4(const uint *, int size = -1);
     static QString fromRawData(const QChar *, int size);
 
-    int toWCharArray(wchar_t *array) const;
-    static QString fromWCharArray(const wchar_t *, int size = -1);
+    inline int toWCharArray(wchar_t *array) const;
+    static inline QString fromWCharArray(const wchar_t *string, int size = -1) Q_REQUIRED_RESULT;
 
     QString &setRawData(const QChar *unicode, int size);
     QString &setUnicode(const QChar *unicode, int size);
@@ -625,6 +625,7 @@ private:
                                          const QChar *data2, int length2);
     static Data *fromLatin1_helper(const char *str, int size = -1);
     static Data *fromAscii_helper(const char *str, int size = -1);
+    static int toUcs4_helper(const ushort *uc, int length, uint *out);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QCharRef;
     friend class QTextCodec;
@@ -770,6 +771,20 @@ inline QString QString::arg(const QString &a1, const QString &a2, const QString 
 
 inline QString QString::section(QChar asep, int astart, int aend, SectionFlags aflags) const
 { return section(QString(asep), astart, aend, aflags); }
+
+inline int QString::toWCharArray(wchar_t *array) const
+{
+    if (sizeof(wchar_t) == sizeof(QChar)) {
+        qMemCopy(array, d->data(), sizeof(QChar) * size());
+        return size();
+    }
+    return toUcs4_helper(d->data(), size(), reinterpret_cast<uint *>(array));
+}
+inline QString QString::fromWCharArray(const wchar_t *string, int size)
+{
+    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16((const ushort *)string, size)
+                                            : fromUcs4((uint *)string, size);
+}
 
 
 class Q_CORE_EXPORT QCharRef {

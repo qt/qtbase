@@ -939,7 +939,7 @@ int QString::grow(int size)
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4()
 */
 
-/*!
+/*! \fn QString QString::fromWCharArray(const wchar_t *string, int size)
     \since 4.2
 
     Returns a copy of the \a string, where the encoding of \a string depends on
@@ -950,14 +950,6 @@ int QString::grow(int size)
 
     \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(), fromStdWString()
 */
-QString QString::fromWCharArray(const wchar_t *string, int size)
-{
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        return fromUtf16((const ushort *)string, size);
-    } else {
-        return fromUcs4((uint *)string, size);
-    }
-}
 
 /*! \fn std::wstring QString::toStdWString() const
 
@@ -975,25 +967,25 @@ QString QString::fromWCharArray(const wchar_t *string, int size)
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
 
-template<typename T> int toUcs4_helper(const unsigned short *uc, int length, T *out)
+// ### replace with QCharIterator
+int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 {
     int i = 0;
     for (; i < length; ++i) {
         uint u = uc[i];
-        if (QChar::isHighSurrogate(u) && i < length-1) {
+        if (QChar::isHighSurrogate(u) && i + 1 < length) {
             ushort low = uc[i+1];
             if (QChar::isLowSurrogate(low)) {
                 ++i;
                 u = QChar::surrogateToUcs4(u, low);
             }
         }
-        *out = T(u);
-        ++out;
+        *out++ = u;
     }
     return i;
 }
 
-/*!
+/*! \fn int QString::toWCharArray(wchar_t *array) const
   \since 4.2
 
   Fills the \a array with the data contained in this QString object.
@@ -1011,15 +1003,6 @@ template<typename T> int toUcs4_helper(const unsigned short *uc, int length, T *
 
   \sa utf16(), toUcs4(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit(), toStdWString()
 */
-int QString::toWCharArray(wchar_t *array) const
-{
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        memcpy(array, utf16(), sizeof(wchar_t)*length());
-        return length();
-    } else {
-        return toUcs4_helper<wchar_t>(utf16(), length(), array);
-    }
-}
 
 /*! \fn QString::QString(const QString &other)
 
@@ -3758,7 +3741,7 @@ QVector<uint> QString::toUcs4() const
 {
     QVector<uint> v(length());
     uint *a = v.data();
-    int len = toUcs4_helper<uint>(utf16(), length(), a);
+    int len = toUcs4_helper(d->data(), length(), a);
     v.resize(len);
     return v;
 }
@@ -8783,7 +8766,7 @@ QVector<uint> QStringRef::toUcs4() const
 {
     QVector<uint> v(length());
     uint *a = v.data();
-    int len = toUcs4_helper<uint>(reinterpret_cast<const unsigned short *>(unicode()), length(), a);
+    int len = QString::toUcs4_helper(reinterpret_cast<const ushort *>(unicode()), length(), a);
     v.resize(len);
     return v;
 }
