@@ -102,10 +102,6 @@
         <file>expected_skip.txt</file>
         <file>expected_skip.xml</file>
         <file>expected_skip.xunitxml</file>
-        <file>expected_skipglobal.lightxml</file>
-        <file>expected_skipglobal.txt</file>
-        <file>expected_skipglobal.xml</file>
-        <file>expected_skipglobal.xunitxml</file>
         <file>expected_skipinit.lightxml</file>
         <file>expected_skipinit.txt</file>
         <file>expected_skipinit.xml</file>

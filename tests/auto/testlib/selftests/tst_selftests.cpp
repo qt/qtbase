@@ -335,7 +335,6 @@ void tst_Selftests::runSubTest_data()
         << "qexecstringlist"
         << "singleskip"
         << "skip"
-        << "skipglobal"
         << "skipinit"
         << "skipinitdata"
         << "sleep"

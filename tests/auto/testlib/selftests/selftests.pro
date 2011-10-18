@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-SUBDIRS = subtest test warnings maxwarnings cmptest globaldata skipglobal skip \
+SUBDIRS = subtest test warnings maxwarnings cmptest globaldata skip \
           strcmp expectfail sleep fetchbogus crashes multiexec failinit failinitdata \
           skipinit skipinitdata datetime singleskip assert differentexec \
           exceptionthrow qexecstringlist datatable commandlinedata\

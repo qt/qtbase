@@ -1,6 +1,0 @@
-********* Start testing of tst_SkipGlobal *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
-SKIP   : tst_SkipGlobal::initTestCase() Skippy Skippy
-   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/skipglobal/tst_skipglobal.cpp(39)]
-Totals: 0 passed, 0 failed, 1 skipped
-********* Finished testing of tst_SkipGlobal *********
