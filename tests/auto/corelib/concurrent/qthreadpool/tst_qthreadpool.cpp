@@ -77,11 +77,9 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
-    void maxThreadCount();
     void setMaxThreadCount_data();
     void setMaxThreadCount();
     void setMaxThreadCountStartsAndStopsThreads();
-    void activeThreadCount();
     void reserveThread_data();
     void reserveThread();
     void releaseThread_data();
@@ -368,11 +366,6 @@ void tst_QThreadPool::exceptions()
 }
 #endif
 
-void tst_QThreadPool::maxThreadCount()
-{
-    DEPENDS_ON("setMaxThreadCount()");
-}
-
 void tst_QThreadPool::setMaxThreadCount_data()
 {
     QTest::addColumn<int>("limit");
@@ -488,14 +481,6 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
 
     task->waitToFinish.release(10);
 //    delete task;
-}
-
-
-void tst_QThreadPool::activeThreadCount()
-{
-    DEPENDS_ON("tryReserveThread()");
-    DEPENDS_ON("reserveThread()");
-    DEPENDS_ON("releaseThread()");
 }
 
 void tst_QThreadPool::reserveThread_data()

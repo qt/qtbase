@@ -151,11 +151,9 @@ private slots:
 
     void redo_data();
     void redo();
-    void isRedoAvailable();
 
     void undo_data();
     void undo();
-    void isUndoAvailable();
 
     void undo_keypressevents_data();
     void undo_keypressevents();
@@ -176,8 +174,6 @@ private slots:
 
     void displayText_data();
     void displayText();
-    void setEchoMode();
-    void echoMode();
     void passwordEchoOnEdit();
 
 #ifdef QT_GUI_PASSWORD_ECHO_DELAY
@@ -189,10 +185,8 @@ private slots:
 
     void maxLength_data();
     void maxLength();
-    void setMaxLength();
 
     void isReadOnly();
-    void setReadOnly();
 
     void cursorPosition();
 
@@ -200,7 +194,6 @@ private slots:
     void cursorPositionChanged();
 
     void selectedText();
-    void hasSelectedText();
     void deleteSelectedText();
 
     void textChangedAndTextEdited();
@@ -209,9 +202,6 @@ private slots:
     void returnPressed_maskvalidator();
 
     void setValidator();
-    void validator();
-    void clearValidator();
-
     void setValidator_QIntValidator_data();
     void setValidator_QIntValidator();
 
@@ -222,11 +212,9 @@ private slots:
 
     void setAlignment_data();
     void setAlignment();
-    void alignment();
 
     void isModified();
     void edited();
-    void setEdited();
 
     void insert();
     void setSelection_data();
@@ -234,8 +222,6 @@ private slots:
 
 #ifndef QT_NO_CLIPBOARD
     void cut();
-    void copy();
-    void paste();
 #endif
     void maxLengthAndInputMask();
     void returnPressedKeyEvent();
@@ -1110,11 +1096,6 @@ void tst_QLineEdit::undo()
 #endif
 }
 
-void tst_QLineEdit::isUndoAvailable()
-{
-    DEPENDS_ON("undo");
-}
-
 void tst_QLineEdit::redo_data()
 {
     QTest::addColumn<QStringList>("insertString");
@@ -1190,11 +1171,6 @@ void tst_QLineEdit::redo()
 
     QVERIFY(!testWidget->isRedoAvailable());
 #endif
-}
-
-void tst_QLineEdit::isRedoAvailable()
-{
-    DEPENDS_ON("redo");
 }
 
 void tst_QLineEdit::undo_keypressevents_data()
@@ -1650,16 +1626,6 @@ void tst_QLineEdit::displayText()
     QVERIFY(testWidget->echoMode() == mode);
 }
 
-void tst_QLineEdit::setEchoMode()
-{
-    DEPENDS_ON("displayText");
-}
-
-void tst_QLineEdit::echoMode()
-{
-    DEPENDS_ON("displayText");
-}
-
 void tst_QLineEdit::passwordEchoOnEdit()
 {
     QStyleOptionFrameV2 opt;
@@ -1819,11 +1785,6 @@ void tst_QLineEdit::maxLength()
     QCOMPARE(testWidget->text(), expectedString);
 }
 
-void tst_QLineEdit::setMaxLength()
-{
-    DEPENDS_ON("maxLength");
-}
-
 void tst_QLineEdit::isReadOnly()
 {
     QVERIFY(!testWidget->isReadOnly());
@@ -1849,11 +1810,6 @@ void tst_QLineEdit::isReadOnly()
     testWidget->cursorForward(false, 10);
     QTest::keyClicks(testWidget, "this should not have any effect!! ");
     QCOMPARE(testWidget->text(), QString("the quick dark brown fox"));
-}
-
-void tst_QLineEdit::setReadOnly()
-{
-    DEPENDS_ON("isReadOnly");
 }
 
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
@@ -2169,11 +2125,6 @@ void tst_QLineEdit::onSelectionChanged()
     selection_count++;
 }
 
-void tst_QLineEdit::hasSelectedText()
-{
-    DEPENDS_ON("selectedText");
-}
-
 void tst_QLineEdit::deleteSelectedText()
 {
     const QString text = QString::fromLatin1("bar");
@@ -2448,16 +2399,6 @@ void tst_QLineEdit::setValidator()
     QVERIFY(testWidget->validator() == 0);
 }
 
-void tst_QLineEdit::validator()
-{
-    DEPENDS_ON("setValidator");
-}
-
-void tst_QLineEdit::clearValidator()
-{
-    DEPENDS_ON("setValidator");
-}
-
 void tst_QLineEdit::setValidator_QIntValidator_data()
 {
     QTest::addColumn<int>("mini");
@@ -2646,11 +2587,6 @@ void tst_QLineEdit::frame()
     QVERIFY(testWidget->hasFrame());
 }
 
-void tst_QLineEdit::alignment()
-{
-    DEPENDS_ON("setAlignment");
-}
-
 void tst_QLineEdit::setAlignment_data()
 {
 #ifndef NO_PIXMAP_TESTS
@@ -2769,15 +2705,6 @@ void tst_QLineEdit::edited()
 
     testWidget->setModified(true);
     QVERIFY(testWidget->isModified());
-}
-
-/*
-    Obsolete function but as long as we provide it, it needs to work.
-*/
-
-void tst_QLineEdit::setEdited()
-{
-    DEPENDS_ON("edited");
 }
 
 void tst_QLineEdit::insert()
@@ -2937,17 +2864,8 @@ void tst_QLineEdit::cut()
     testWidget->cut();
     QCOMPARE(testWidget->text(), QString("Abcdefg defg hijklmno"));
 }
-
-void tst_QLineEdit::copy()
-{
-    DEPENDS_ON("cut");
-}
-
-void tst_QLineEdit::paste()
-{
-    DEPENDS_ON("cut");
-}
 #endif
+
 class InputMaskValidator : public QValidator
 {
 public:

@@ -64,8 +64,6 @@ private slots:
     void tryAcquireWithTimeout_data();
     void tryAcquireWithTimeout();
     void tryAcquireWithTimeoutStarvation();
-    void release();
-    void available();
     void producerConsumer();
 };
 
@@ -362,12 +360,6 @@ void tst_QSemaphore::tryAcquireWithTimeoutStarvation()
     semaphore.acquire();
     QVERIFY(consumer.wait());
 }
-
-void tst_QSemaphore::release()
-{ DEPENDS_ON("acquire"); }
-
-void tst_QSemaphore::available()
-{ DEPENDS_ON("acquire"); }
 
 const char alphabet[] = "ACGTH";
 const int AlphabetSize = sizeof(alphabet) - 1;

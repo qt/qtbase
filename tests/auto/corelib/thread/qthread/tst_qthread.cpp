@@ -79,20 +79,15 @@ private slots:
     void isFinished();
     void isRunning();
     void setPriority();
-    void priority();
     void setStackSize();
-    void stackSize();
     void exit();
     void start();
     void terminate();
     void quit();
-    void wait();
     void started();
     void finished();
     void terminated();
-    void run();
     void exec();
-    void setTerminationEnabled();
     void sleep();
     void msleep();
     void usleep();
@@ -415,9 +410,6 @@ void tst_QThread::setPriority()
     QCOMPARE(thread.priority(), QThread::InheritPriority);
 }
 
-void tst_QThread::priority()
-{ DEPENDS_ON("setPriority"); }
-
 void tst_QThread::setStackSize()
 {
     Simple_Thread thread;
@@ -426,11 +418,6 @@ void tst_QThread::setStackSize()
     QCOMPARE(thread.stackSize(), 8192u);
     thread.setStackSize(0u);
     QCOMPARE(thread.stackSize(), 0u);
-}
-
-void tst_QThread::stackSize()
-{
-    DEPENDS_ON("setStackSize");
 }
 
 void tst_QThread::exit()
@@ -537,12 +524,6 @@ void tst_QThread::quit()
     QCOMPARE(thread2.result, 0);
 }
 
-void tst_QThread::wait()
-{
-    DEPENDS_ON("isRunning");
-    DEPENDS_ON("isFinished");
-}
-
 void tst_QThread::started()
 {
     SignalRecorder recorder;
@@ -579,14 +560,8 @@ void tst_QThread::terminated()
     QVERIFY(recorder.wasActivated());
 }
 
-void tst_QThread::run()
-{ DEPENDS_ON("wait()"); }
-
 void tst_QThread::exec()
 {
-    DEPENDS_ON("exit()");
-    DEPENDS_ON("quit()");
-
     class MultipleExecThread : public QThread
     {
     public:
@@ -620,9 +595,6 @@ void tst_QThread::exec()
     QCOMPARE(thread.res1, 1);
     QCOMPARE(thread.res2, 2);
 }
-
-void tst_QThread::setTerminationEnabled()
-{ DEPENDS_ON("terminate"); }
 
 void tst_QThread::sleep()
 {

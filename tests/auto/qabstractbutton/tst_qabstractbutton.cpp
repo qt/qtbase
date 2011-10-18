@@ -78,32 +78,18 @@ private slots:
 
     void pressed();
     void released();
-    void text();
     void setText();
-    void icon();
     void setIcon();
 
-    void shortcut();
     void setShortcut();
 
     void animateClick();
 
     void isCheckable();
-    void isDown();
     void setDown();
     void isChecked();
-    void autoRepeat();
-    void toggle();
-    void clicked();
     void toggled();
-    void isEnabled();
     void setEnabled();
-/*
-    void state();
-    void group();
-    void stateChanged();
-*/
-
     void shortcutEvents();
     void stopRepeatTimer();
 
@@ -244,11 +230,6 @@ void tst_QAbstractButton::onPressed()
 void tst_QAbstractButton::onReleased()
 {
     release_count++;
-}
-
-void tst_QAbstractButton::autoRepeat()
-{
-    DEPENDS_ON(" setAutoRepeat" );
 }
 
 void tst_QAbstractButton::setAutoRepeat_data()
@@ -401,11 +382,6 @@ void tst_QAbstractButton::setText()
 #endif
 }
 
-void tst_QAbstractButton::text()
-{
-    DEPENDS_ON( "setText" );
-}
-
 void tst_QAbstractButton::setIcon()
 {
     const char *test1_xpm[] = {
@@ -455,16 +431,6 @@ void tst_QAbstractButton::setIcon()
     QCOMPARE( testWidget->width(), currentWidth );
 }
 
-void tst_QAbstractButton::icon()
-{
-    DEPENDS_ON( "setIcon" );
-}
-
-void tst_QAbstractButton::isEnabled()
-{
-    DEPENDS_ON( "setEnabled" );
-}
-
 void tst_QAbstractButton::setEnabled()
 {
     testWidget->setEnabled( FALSE );
@@ -479,12 +445,6 @@ void tst_QAbstractButton::setEnabled()
 void tst_QAbstractButton::isCheckable()
 {
     QVERIFY( !testWidget->isCheckable() );
-}
-
-
-void tst_QAbstractButton::isDown()
-{
-    DEPENDS_ON( "setDown" );
 }
 
 void tst_QAbstractButton::setDown()
@@ -523,11 +483,6 @@ void tst_QAbstractButton::isChecked()
     QVERIFY( testWidget->isChecked() == testWidget->isCheckable() );
 }
 
-void tst_QAbstractButton::toggle()
-{
-    DEPENDS_ON( "toggled" );
-}
-
 void tst_QAbstractButton::toggled()
 {
     testWidget->toggle();
@@ -539,11 +494,6 @@ void tst_QAbstractButton::toggled()
 
     QTest::mouseRelease( testWidget, Qt::LeftButton );
     QVERIFY( click_count == 1 );
-}
-
-void tst_QAbstractButton::shortcut()
-{
-    DEPENDS_ON( "setShortcut" );
 }
 
 void tst_QAbstractButton::setShortcut()
@@ -590,25 +540,6 @@ void tst_QAbstractButton::animateClick()
     qApp->processEvents();
     QVERIFY( !testWidget->isDown() );
 }
-
-void tst_QAbstractButton::clicked()
-{
-    DEPENDS_ON( "toggled" );
-}
-
-/*
-void tst_QAbstractButton::group()
-{
-}
-
-void tst_QAbstractButton::state()
-{
-}
-
-void tst_QAbstractButton::stateChanged()
-{
-}
-*/
 
 void tst_QAbstractButton::shortcutEvents()
 {

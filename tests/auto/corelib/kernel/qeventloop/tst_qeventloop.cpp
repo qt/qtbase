@@ -197,7 +197,6 @@ private slots:
     void throwInExec();
 #endif
     void reexec();
-    void exit();
     void execAfterExit();
     void wakeUp();
     void quit();
@@ -397,9 +396,6 @@ void tst_QEventLoop::reexec()
     QMetaObject::invokeMethod(&loop, "quit", Qt::QueuedConnection);
     QCOMPARE(loop.exec(), 0);
 }
-
-void tst_QEventLoop::exit()
-{ DEPENDS_ON(exec()); }
 
 void tst_QEventLoop::execAfterExit()
 {

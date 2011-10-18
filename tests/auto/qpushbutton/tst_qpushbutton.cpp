@@ -74,23 +74,17 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-    void setAutoRepeat();
+    void autoRepeat();
     void pressed();
-    void released();
-    void text();
-    void accel();
     void setAccel();
     void isCheckable();
-    void isDown();
     void setDown();
     void popupCrash();
     void isChecked();
-    void autoRepeat();
     void animateClick();
     void toggle();
     void clicked();
     void toggled();
-    void isEnabled();
     void defaultAndAutoDefault();
     void sizeHint_data();
     void sizeHint();
@@ -204,7 +198,7 @@ void tst_QPushButton::onReleased()
     release_count++;
 }
 
-void tst_QPushButton::setAutoRepeat()
+void tst_QPushButton::autoRepeat()
 {
     // If this changes, this test must be completely revised.
     QVERIFY( !testWidget->isCheckable() );
@@ -283,11 +277,6 @@ void tst_QPushButton::setAutoRepeat()
     QVERIFY( click_count == 0 );
 }
 
-void tst_QPushButton::autoRepeat()
-{
-    DEPENDS_ON(" setAutoRepeat" );
-}
-
 void tst_QPushButton::pressed()
 {
     QTest::keyPress( testWidget, ' ' );
@@ -314,29 +303,9 @@ void tst_QPushButton::pressed()
 
 }
 
-void tst_QPushButton::released()
-{
-    DEPENDS_ON( "pressed" );
-}
-
-void tst_QPushButton::text()
-{
-    DEPENDS_ON( "setText" );
-}
-
-void tst_QPushButton::isEnabled()
-{
-    DEPENDS_ON( "setEnabled" );
-}
-
 void tst_QPushButton::isCheckable()
 {
     QVERIFY( !testWidget->isCheckable() );
-}
-
-void tst_QPushButton::isDown()
-{
-    DEPENDS_ON( "setDown" );
 }
 
 void tst_QPushButton::setDown()
@@ -393,11 +362,6 @@ void tst_QPushButton::toggled()
 
     QTest::mouseRelease( testWidget, Qt::LeftButton );
     QVERIFY( click_count == 1 );
-}
-
-void tst_QPushButton::accel()
-{
-    DEPENDS_ON( "setAccel" );
 }
 
 /*

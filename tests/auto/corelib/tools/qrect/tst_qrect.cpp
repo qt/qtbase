@@ -126,8 +126,6 @@ private slots:
     void setRight();
     void setBottom_data();
     void setBottom();
-    void setX();
-    void setY();
     void newSetTopLeft_data();
     void newSetTopLeft();
     void newSetBottomRight_data();
@@ -1501,16 +1499,6 @@ void tst_QRect::setBottom()
     r.setBottom( bottom );
 
     QCOMPARE( r, nr );
-}
-
-void tst_QRect::setX()
-{
-    DEPENDS_ON( "setLeft" );
-}
-
-void tst_QRect::setY()
-{
-    DEPENDS_ON( "setTop" );
 }
 
 void tst_QRect::newSetTopLeft_data()

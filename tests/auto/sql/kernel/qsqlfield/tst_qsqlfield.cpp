@@ -64,7 +64,6 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-    void value();
     void type();
     void setValue_data();
     void setValue();
@@ -349,11 +348,6 @@ void tst_QSqlField::type()
     QVERIFY( field1.type() == QVariant::String );
     QVERIFY( field2.type() == QVariant::Bool );
     QVERIFY( field3.type() == QVariant::Double );
-}
-
-void tst_QSqlField::value()
-{
-    DEPENDS_ON( "setValue" );
 }
 
 QTEST_MAIN(tst_QSqlField)

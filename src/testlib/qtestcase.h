@@ -128,8 +128,6 @@ do {\
 #define QFETCH_GLOBAL(type, name)\
     type name = *static_cast<type *>(QTest::qGlobalData(#name, ::qMetaTypeId<type >()))
 
-#define DEPENDS_ON(funcName)
-
 #define QTEST(actual, testElement)\
 do {\
     if (!QTest::qTest(actual, testElement, #actual, #testElement, __FILE__, __LINE__))\

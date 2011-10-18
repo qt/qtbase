@@ -87,16 +87,12 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-    void text();
     void setText_data();
     void setText();
-    void textFormat();
     void setTextFormat();
-    void buddy();
 #ifndef Q_WS_MAC
     void setBuddy();
 #endif
-    void setFont();
     void setNum();
     void clear();
     void wordWrap();
@@ -202,11 +198,6 @@ void tst_QLabel::cleanup()
     }
 }
 
-void tst_QLabel::buddy()
-{
-    DEPENDS_ON( "setBuddy" );
-}
-
 // Set buddy doesn't make much sense on Mac OS X.
 #ifndef Q_WS_MAC
 void tst_QLabel::setBuddy()
@@ -232,11 +223,6 @@ void tst_QLabel::setBuddy()
     delete test_box;
 }
 #endif
-
-void tst_QLabel::text()
-{
-    DEPENDS_ON( "setText" );
-}
 
 void tst_QLabel::setText_data()
 {
@@ -265,12 +251,6 @@ void tst_QLabel::setText()
     QCOMPARE( testWidget->text(), txt );
 }
 
-
-void tst_QLabel::textFormat()
-{
-    DEPENDS_ON( "setTextFormat" );
-}
-
 void tst_QLabel::setTextFormat()
 {
     // lets' start with the simple stuff...
@@ -285,12 +265,6 @@ void tst_QLabel::setTextFormat()
 
     testWidget->setTextFormat( Qt::AutoText );
     QVERIFY( testWidget->textFormat() == Qt::AutoText );
-}
-
-
-void tst_QLabel::setFont()
-{
-    DEPENDS_ON( "setText" );
 }
 
 void tst_QLabel::setNum()

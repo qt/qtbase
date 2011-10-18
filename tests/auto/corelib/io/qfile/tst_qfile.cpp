@@ -651,8 +651,6 @@ void tst_QFile::seek()
 
 void tst_QFile::setSize()
 {
-    DEPENDS_ON( "size" );
-
     if ( QFile::exists( "createme.txt" ) )
         QFile::remove( "createme.txt" );
     QVERIFY( !QFile::exists( "createme.txt" ) );
@@ -1120,8 +1118,6 @@ void tst_QFile::permissions()
 
 void tst_QFile::setPermissions()
 {
-    DEPENDS_ON( "permissions" ); //if that doesn't work...
-
     if ( QFile::exists( "createme.txt" ) )
         QFile::remove( "createme.txt" );
     QVERIFY( !QFile::exists( "createme.txt" ) );

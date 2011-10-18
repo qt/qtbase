@@ -73,17 +73,10 @@ public:
 private slots:
     void getSetCheck();
     void widget();
-    void setWidget();
-    void setFeatures();
     void features();
     void setFloating();
-    void setAllowedAreas();
     void allowedAreas();
-    void isAreaAllowed();
     void toggleViewAction();
-    void featuresChanged();
-    void topLevelChanged();
-    void allowedAreasChanged();
     void visibilityChanged();
     void dockLocationChanged();
     void setTitleBarWidget();
@@ -216,12 +209,6 @@ void tst_QDockWidget::widget()
         delete w2;
     }
 }
-
-void tst_QDockWidget::setWidget()
-{ DEPENDS_ON("setWidget()"); }
-
-void tst_QDockWidget::setFeatures()
-{ DEPENDS_ON("features()"); }
 
 void tst_QDockWidget::features()
 {
@@ -394,9 +381,6 @@ void tst_QDockWidget::setFloating()
     spy.clear();
 }
 
-void tst_QDockWidget::setAllowedAreas()
-{ DEPENDS_ON("allowedAreas()"); }
-
 void tst_QDockWidget::allowedAreas()
 {
     QDockWidget dw;
@@ -516,9 +500,6 @@ void tst_QDockWidget::allowedAreas()
     dw.setAllowedAreas(dw.allowedAreas());
     QCOMPARE(spy.count(), 0);
 }
-
-void tst_QDockWidget::isAreaAllowed()
-{ DEPENDS_ON("allowedAreas()"); }
 
 void tst_QDockWidget::toggleViewAction()
 {
@@ -670,15 +651,6 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
 }
-
-void tst_QDockWidget::featuresChanged()
-{ DEPENDS_ON("features()"); }
-
-void tst_QDockWidget::topLevelChanged()
-{ DEPENDS_ON("setFloating()"); }
-
-void tst_QDockWidget::allowedAreasChanged()
-{ DEPENDS_ON("allowedAreas()"); }
 
 void tst_QDockWidget::setTitleBarWidget()
 {

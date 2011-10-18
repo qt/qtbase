@@ -96,11 +96,9 @@ private slots:
     void get();
     void put_data();
     void put();
-    void remove();
     void mkdir_data();
     void mkdir();
     void mkdir2();
-    void rmdir();
     void rename_data();
     void rename();
 
@@ -857,11 +855,6 @@ void tst_QFtp::put()
     QVERIFY( !fileExists( host, port, user, password, file ) );
 }
 
-void tst_QFtp::remove()
-{
-    DEPENDS_ON( "put" );
-}
-
 void tst_QFtp::mkdir_data()
 {
     QTest::addColumn<QString>("host");
@@ -1007,11 +1000,6 @@ void tst_QFtp::mkdir2Slot(int id, bool)
 {
     if (id == current_id)
         ftp->mkdir("kake/test");
-}
-
-void tst_QFtp::rmdir()
-{
-    DEPENDS_ON( "mkdir" );
 }
 
 void tst_QFtp::rename_data()

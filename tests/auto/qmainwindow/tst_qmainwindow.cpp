@@ -74,19 +74,13 @@ private slots:
     void getSetCheck();
     void constructor();
     void iconSize();
-    void setIconSize();
     void toolButtonStyle();
-    void setToolButtonStyle();
 #ifndef Q_WS_WINCE_WM
     void menuBar();
-    void setMenuBar();
 #endif
     void statusBar();
-    void setStatusBar();
     void centralWidget();
-    void setCentralWidget();
     void corner();
-    void setCorner();
     void addToolBarBreak();
     void insertToolBarBreak();
     void addToolBar();
@@ -97,12 +91,9 @@ private slots:
     void splitDockWidget();
     void removeDockWidget();
     void dockWidgetArea();
-    void saveState();
     void restoreState();
     void restoreStateFromPreviousVersion();
     void createPopupMenu();
-    void iconSizeChanged();
-    void toolButtonStyleChanged();
     void hideBeforeLayout();
     void saveRestore();
     void saveRestore_data();
@@ -343,10 +334,6 @@ void tst_QMainWindow::iconSize()
     }
 }
 
-void tst_QMainWindow::setIconSize()
-{ DEPENDS_ON("iconSize()");
-}
-
 void tst_QMainWindow::toolButtonStyle()
 {
     {
@@ -543,9 +530,6 @@ void tst_QMainWindow::toolButtonStyle()
     }
 }
 
-void tst_QMainWindow::setToolButtonStyle()
-{ DEPENDS_ON("toolButtonStyle()"); }
-
 // With native menubar integration on Windows Mobile the menubar is not a child
 #ifndef Q_WS_WINCE_WM
 void tst_QMainWindow::menuBar()
@@ -631,9 +615,6 @@ void tst_QMainWindow::menuBar()
         QVERIFY(!topRightCornerWidget);
     }
 }
-
-void tst_QMainWindow::setMenuBar()
-{ DEPENDS_ON("menuBar()"); }
 #endif
 
 void tst_QMainWindow::statusBar()
@@ -718,9 +699,6 @@ void tst_QMainWindow::statusBar()
     }
 }
 
-void tst_QMainWindow::setStatusBar()
-{ DEPENDS_ON("statusBar()"); }
-
 void tst_QMainWindow::centralWidget()
 {
     {
@@ -787,9 +765,6 @@ void tst_QMainWindow::centralWidget()
     }
 }
 
-void tst_QMainWindow::setCentralWidget()
-{ DEPENDS_ON("centralwidget()"); }
-
 void tst_QMainWindow::corner()
 {
     {
@@ -825,9 +800,6 @@ void tst_QMainWindow::corner()
         QCOMPARE(mw.corner(Qt::BottomRightCorner), Qt::BottomDockWidgetArea);
     }
 }
-
-void tst_QMainWindow::setCorner()
-{ DEPENDS_ON("corner()"); }
 
 void tst_QMainWindow::addToolBarBreak()
 {
@@ -1227,9 +1199,6 @@ void tst_QMainWindow::dockWidgetArea()
     }
 }
 
-void tst_QMainWindow::saveState()
-{ DEPENDS_ON("restoreState()"); }
-
 void tst_QMainWindow::restoreState()
 {
     QMainWindow mw;
@@ -1614,12 +1583,6 @@ void tst_QMainWindow::saveRestore()
     }
 #endif
 }
-
-void tst_QMainWindow::iconSizeChanged()
-{ DEPENDS_ON("iconSize()"); }
-
-void tst_QMainWindow::toolButtonStyleChanged()
-{ DEPENDS_ON("toolButtonStyle()"); }
 
 void tst_QMainWindow::isSeparator()
 {

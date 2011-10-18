@@ -73,14 +73,9 @@ public slots:
     void slot(QAction *action);
 
 private slots:
-    void setMovable();
     void isMovable();
-    void setAllowedAreas();
     void allowedAreas();
-    void isAreaAllowed();
-    void setOrientation();
     void orientation();
-    void clear();
     void addAction();
     void insertAction();
     void addSeparator();
@@ -88,18 +83,10 @@ private slots:
     void addWidget();
     void insertWidget();
     void actionGeometry();
-    void actionAt();
     void toggleViewAction();
     void iconSize();
-    void setIconSize();
     void toolButtonStyle();
-    void setToolButtonStyle();
     void actionTriggered();
-    void movableChanged();
-    void allowedAreasChanged();
-    void orientationChanged();
-    void iconSizeChanged();
-    void toolButtonStyleChanged();
     void visibilityChanged();
     void actionOwnership();
     void widgetAction();
@@ -125,9 +112,6 @@ void tst_QToolBar::slot()
 
 void tst_QToolBar::slot(QAction *action)
 { ::triggered = action; }
-
-void tst_QToolBar::setMovable()
-{ DEPENDS_ON("isMovable()"); }
 
 void tst_QToolBar::isMovable()
 {
@@ -167,9 +151,6 @@ void tst_QToolBar::isMovable()
     mw.removeToolBar(&tb);
     DO_TEST;
 }
-
-void tst_QToolBar::setAllowedAreas()
-{ DEPENDS_ON("allowedAreas()"); }
 
 void tst_QToolBar::allowedAreas()
 {
@@ -291,12 +272,6 @@ void tst_QToolBar::allowedAreas()
     QCOMPARE(spy.count(), 0);
 }
 
-void tst_QToolBar::isAreaAllowed()
-{ DEPENDS_ON("allowedAreas()"); }
-
-void tst_QToolBar::setOrientation()
-{ DEPENDS_ON("orientation()"); }
-
 void tst_QToolBar::orientation()
 {
     QToolBar tb;
@@ -348,16 +323,6 @@ void tst_QToolBar::orientation()
     spy.clear();
     tb.setOrientation(tb.orientation());
     QCOMPARE(spy.count(), 0);
-}
-
-void tst_QToolBar::clear()
-{
-    DEPENDS_ON("addAction()");
-    DEPENDS_ON("insertAction()");
-    DEPENDS_ON("addSeparator()");
-    DEPENDS_ON("insertSeparator()");
-    DEPENDS_ON("addWidget()");
-    DEPENDS_ON("insertWidget()");
 }
 
 void tst_QToolBar::addAction()
@@ -635,9 +600,6 @@ void tst_QToolBar::actionGeometry()
         QCOMPARE(tb.actionAt(rect4.center()), &action4);
 }
 
-void tst_QToolBar::actionAt()
-{ DEPENDS_ON("actionGeometry()"); }
-
 void tst_QToolBar::toggleViewAction()
 {
     {
@@ -665,9 +627,6 @@ void tst_QToolBar::toggleViewAction()
         QVERIFY(tb.isHidden());
     }
 }
-
-void tst_QToolBar::setIconSize()
-{ DEPENDS_ON("iconSize()"); }
 
 void tst_QToolBar::iconSize()
 {
@@ -781,9 +740,6 @@ void tst_QToolBar::iconSize()
         tbSpy.clear();
     }
 }
-
-void tst_QToolBar::setToolButtonStyle()
-{ DEPENDS_ON("toolButtonStyle()"); }
 
 void tst_QToolBar::toolButtonStyle()
 {
@@ -981,21 +937,6 @@ void tst_QToolBar::actionTriggered()
         QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect04.center(), -1 );
     QCOMPARE(::triggered, &action4);
 }
-
-void tst_QToolBar::movableChanged()
-{ DEPENDS_ON("isMovable()"); }
-
-void tst_QToolBar::allowedAreasChanged()
-{ DEPENDS_ON("allowedAreas()"); }
-
-void tst_QToolBar::orientationChanged()
-{ DEPENDS_ON("orientation()"); }
-
-void tst_QToolBar::iconSizeChanged()
-{ DEPENDS_ON("iconSize()"); }
-
-void tst_QToolBar::toolButtonStyleChanged()
-{ DEPENDS_ON("toolButtonStyle()"); }
 
 void tst_QToolBar::visibilityChanged()
 {

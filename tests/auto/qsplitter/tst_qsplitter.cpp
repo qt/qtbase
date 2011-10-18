@@ -75,7 +75,6 @@ public slots:
     void init();
 private slots:
     void getSetCheck();
-    void sizes(); // bare (as in empty)
     void setSizes();
     void setSizes_data();
     void saveAndRestoreState();
@@ -126,11 +125,6 @@ tst_QSplitter::tst_QSplitter()
 
 tst_QSplitter::~tst_QSplitter()
 {
-}
-
-void tst_QSplitter::sizes()
-{
-    DEPENDS_ON("setSizes");
 }
 
 void tst_QSplitter::initTestCase()

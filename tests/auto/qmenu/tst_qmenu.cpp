@@ -340,7 +340,6 @@ void tst_QMenu::keyboardNavigation_data()
 
 void tst_QMenu::keyboardNavigation()
 {
-    DEPENDS_ON( "addActionsAndClear" ); //if add/clear fails...
     QFETCH(int, key);
     QFETCH(int, expected_action);
     QFETCH(int, expected_menu);

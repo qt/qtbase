@@ -69,9 +69,6 @@ private slots:
     void secsTo();
     void setHMS_data();
     void setHMS();
-    void msec();
-    void second();
-    void minute();
     void hour_data();
     void hour();
     void isValid();
@@ -305,21 +302,6 @@ void tst_QTime::hour()
     QCOMPARE( t1.minute(), minute );
     QCOMPARE( t1.second(), sec );
     QCOMPARE( t1.msec(), msec );
-}
-
-void tst_QTime::minute()
-{
-    DEPENDS_ON( "hour" );
-}
-
-void tst_QTime::second()
-{
-    DEPENDS_ON( "hour" );
-}
-
-void tst_QTime::msec()
-{
-    DEPENDS_ON( "hour" );
 }
 
 void tst_QTime::setHMS_data()

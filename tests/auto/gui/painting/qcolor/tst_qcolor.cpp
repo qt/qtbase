@@ -75,45 +75,14 @@ private slots:
     void globalColors_data();
     void globalColors();
 
-    void alpha();
-    void setAlpha();
-
-    void red();
-    void green();
-    void blue();
-
     void setRed();
     void setGreen();
     void setBlue();
 
-    void getRgb();
     void setRgb();
-
-    void rgba();
     void setRgba();
-
-    void rgb();
-
-    void hue();
-    void saturation();
-    void value();
-
-    void getHsv();
     void setHsv();
-
-    void cyan();
-    void magenta();
-    void yellow();
-    void black();
-
-    void getCmyk();
     void setCmyk();
-
-    void hueHsl();
-    void saturationHsl();
-    void lightness();
-
-    void getHsl();
     void setHsl();
 
     void toRgb_data();
@@ -134,16 +103,8 @@ private slots:
 
     void convertTo();
 
-    void fromRgb();
-    void fromHsv();
-    void fromCmyk();
-    void fromHsl();
-
     void light();
     void dark();
-
-    void assignmentOoperator();
-    void equalityOperator();
 
     void specConstructor_data();
     void specConstructor();
@@ -151,7 +112,6 @@ private slots:
     void achromaticHslHue();
 
 #if defined(Q_WS_X11) && !defined(Q_OS_IRIX)
-    void allowX11ColorNames();
     void setallowX11ColorNames();
 #endif
 };
@@ -549,8 +509,6 @@ void tst_QColor::constructNamedColorWithSpace()
 
 void tst_QColor::colorNames()
 {
-    DEPENDS_ON("setNamedColor()");
-
     QStringList all = QColor::colorNames();
     QCOMPARE(all.size(), rgbTblSize);
     for (int i = 0; i < all.size(); ++i)
@@ -576,24 +534,6 @@ void tst_QColor::spec()
 
 }
 
-void tst_QColor::alpha()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::red()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::green()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::blue()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::getRgb()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::setAlpha()
-{ DEPENDS_ON(setRgb()); }
-
 bool veryFuzzyCompare(double a, double b)
 {
     return qAbs(a - b) < 0.01;
@@ -601,8 +541,6 @@ bool veryFuzzyCompare(double a, double b)
 
 void tst_QColor::setRed()
 {
-    DEPENDS_ON(setRgb());
-
     QColor c = QColor(Qt::blue).toHsv();
     c.setRed(127);
     QCOMPARE(c.red(), 127);
@@ -618,8 +556,6 @@ void tst_QColor::setRed()
 
 void tst_QColor::setGreen()
 {
-    DEPENDS_ON(setRgb());
-
     QColor c = QColor(Qt::blue).toHsv();
     c.setGreen(127);
     QCOMPARE(c.red(), 0);
@@ -635,8 +571,6 @@ void tst_QColor::setGreen()
 
 void tst_QColor::setBlue()
 {
-    DEPENDS_ON(setRgb());
-
     QColor c = QColor(Qt::red).toHsv();
     c.setBlue(127);
     QCOMPARE(c.red(), 255);
@@ -790,9 +724,6 @@ void tst_QColor::setRgb()
     }
 }
 
-void tst_QColor::rgba()
-{ DEPENDS_ON("setRgba()"); }
-
 void tst_QColor::setRgba()
 {
     for (int a = 0; a < 255; ++a) {
@@ -805,21 +736,6 @@ void tst_QColor::setRgba()
         QCOMPARE(qAlpha(rgba2), a);
     }
 }
-
-void tst_QColor::rgb()
-{ DEPENDS_ON(setRgb()); }
-
-void tst_QColor::hue()
-{ DEPENDS_ON(setHsv()); }
-
-void tst_QColor::saturation()
-{ DEPENDS_ON(setHsv()); }
-
-void tst_QColor::value()
-{ DEPENDS_ON(setHsv()); }
-
-void tst_QColor::getHsv()
-{ DEPENDS_ON(setHsv()); }
 
 void tst_QColor::setHsv()
 {
@@ -921,21 +837,6 @@ void tst_QColor::setHsv()
         }
     }
 }
-
-void tst_QColor::cyan()
-{ DEPENDS_ON(setCmyk()); }
-
-void tst_QColor::magenta()
-{ DEPENDS_ON(setCmyk()); }
-
-void tst_QColor::yellow()
-{ DEPENDS_ON(setCmyk()); }
-
-void tst_QColor::black()
-{ DEPENDS_ON(setCmyk()); }
-
-void tst_QColor::getCmyk()
-{ DEPENDS_ON(setCmyk()); }
 
 void tst_QColor::setCmyk()
 {
@@ -1061,18 +962,6 @@ void tst_QColor::setCmyk()
         }
     }
 }
-
-void tst_QColor::hueHsl()
-{ DEPENDS_ON(setHsl()); }
-
-void tst_QColor::saturationHsl()
-{ DEPENDS_ON(setHsl()); }
-
-void tst_QColor::lightness()
-{ DEPENDS_ON(setHsl()); }
-
-void tst_QColor::getHsl()
-{ DEPENDS_ON(setHsl()); }
 
 void tst_QColor::setHsl()
 {
@@ -1403,24 +1292,7 @@ void tst_QColor::convertTo()
 
     QColor invalid = color.convertTo(QColor::Invalid);
     QVERIFY(invalid.spec() == QColor::Invalid);
-
-    DEPENDS_ON(toRgb());
-    DEPENDS_ON(toHsv());
-    DEPENDS_ON(toCmyk());
-    DEPENDS_ON(toHsl());
 }
-
-void tst_QColor::fromRgb()
-{ DEPENDS_ON(convertTo()); }
-
-void tst_QColor::fromHsv()
-{ DEPENDS_ON(convertTo()); }
-
-void tst_QColor::fromCmyk()
-{ DEPENDS_ON(convertTo()); }
-
-void tst_QColor::fromHsl()
-{ DEPENDS_ON(convertTo()); }
 
 void tst_QColor::light()
 {
@@ -1435,12 +1307,6 @@ void tst_QColor::dark()
     QColor darker = gray.dark();
     QVERIFY(darker.value() < gray.value());
 }
-
-void tst_QColor::assignmentOoperator()
-{ DEPENDS_ON(convertTo()); }
-
-void tst_QColor::equalityOperator()
-{ DEPENDS_ON(convertTo()); }
 
 Q_DECLARE_METATYPE(QColor::Spec);
 
@@ -1471,11 +1337,6 @@ void tst_QColor::achromaticHslHue()
 
 // This test fails on IRIX due to the gamma settings in the SGI X server.
 #if defined(Q_WS_X11) && !defined(Q_OS_IRIX)
-void tst_QColor::allowX11ColorNames()
-{
-    DEPENDS_ON(setallowX11ColorNames());
-}
-
 void tst_QColor::setallowX11ColorNames()
 {
     RGBData x11RgbTbl[] = {

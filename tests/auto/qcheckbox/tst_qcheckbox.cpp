@@ -67,25 +67,15 @@ public slots:
     void cleanup();
 
 private slots:
-    void isChecked();
     void setChecked();
-    void setNoChange();
     void setTriState();
-    void isTriState();
-    void text();
     void setText_data();
     void setText();
     void isToggleButton();
     void setDown();
-    void isDown();
-    void isOn();
-    void checkState();
-    void autoRepeat();
     void setAutoRepeat();
     void toggle();
     void pressed();
-    void released();
-    void clicked();
     void toggled();
     void stateChanged();
     void foregroundRole();
@@ -169,11 +159,6 @@ void tst_QCheckBox::onToggled( bool /*on*/ )
 
 // ***************************************************
 
-void tst_QCheckBox::isChecked()
-{
-    DEPENDS_ON( "setChecked" );
-}
-
 void tst_QCheckBox::setChecked()
 {
     testWidget->setChecked( TRUE );
@@ -227,21 +212,6 @@ void tst_QCheckBox::setTriState()
     QVERIFY( testWidget->checkState() == Qt::Unchecked );
 }
 
-void tst_QCheckBox::isTriState()
-{
-    DEPENDS_ON( "setTriState" );
-}
-
-void tst_QCheckBox::setNoChange()
-{
-    DEPENDS_ON( "setTriState" );
-}
-
-void tst_QCheckBox::text()
-{
-    DEPENDS_ON( "setText" );
-}
-
 void tst_QCheckBox::setText_data()
 {
     QTest::addColumn<QString>("s1");
@@ -275,26 +245,6 @@ void tst_QCheckBox::setDown()
 
     testWidget->setDown( FALSE );
     QVERIFY( !testWidget->isDown() );
-}
-
-void tst_QCheckBox::isDown()
-{
-    DEPENDS_ON( "setDown" );
-}
-
-void tst_QCheckBox::isOn()
-{
-    DEPENDS_ON( "setChecked" );
-}
-
-void tst_QCheckBox::checkState()
-{
-    DEPENDS_ON( "setChecked" );
-}
-
-void tst_QCheckBox::autoRepeat()
-{
-    DEPENDS_ON( "setAutoRepeat" );
 }
 
 void tst_QCheckBox::setAutoRepeat()
@@ -339,16 +289,6 @@ void tst_QCheckBox::pressed()
     QVERIFY( press_count == 1 );
     QVERIFY( release_count == 1 );
     QVERIFY( testWidget->isChecked() );
-}
-
-void tst_QCheckBox::released()
-{
-    DEPENDS_ON( "pressed" );
-}
-
-void tst_QCheckBox::clicked()
-{
-    DEPENDS_ON( "pressed" );
 }
 
 void tst_QCheckBox::toggled()
