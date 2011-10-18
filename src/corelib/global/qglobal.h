@@ -1350,16 +1350,6 @@ class QDataStream;
 #    else
 #      define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    endif
-#    if defined(QT_BUILD_LOCATION_LIB)
-#      define Q_LOCATION_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_LOCATION_EXPORT Q_DECL_IMPORT
-#    endif
-#    if defined(QT_BUILD_SENSORS_LIB)
-#      define Q_SENSORS_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_SENSORS_EXPORT Q_DECL_IMPORT
-#    endif
 #    define Q_TEMPLATEDLL
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
@@ -1382,8 +1372,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    define Q_COMPAT_EXPORT Q_DECL_IMPORT
 #    define Q_DBUS_EXPORT Q_DECL_IMPORT
-#    define Q_LOCATION_EXPORT Q_DECL_IMPORT
-#    define Q_SENSORS_EXPORT Q_DECL_IMPORT
 #    define Q_TEMPLATEDLL
 #  endif
 #  define Q_NO_DECLARED_NOT_DEFINED
@@ -1417,8 +1405,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
 #    define Q_COMPAT_EXPORT Q_DECL_EXPORT
 #    define Q_DBUS_EXPORT Q_DECL_EXPORT
-#    define Q_LOCATION_EXPORT Q_DECL_EXPORT
-#    define Q_SENSORS_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
@@ -1439,8 +1425,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT
 #    define Q_COMPAT_EXPORT
 #    define Q_DBUS_EXPORT
-#    define Q_LOCATION_EXPORT
-#    define Q_SENSORS_EXPORT
 #  endif
 #endif
 
@@ -2600,8 +2584,6 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 #define QT_MODULE_OPENVG               0x020000
 #define QT_MODULE_MULTIMEDIA           0x040000
 #define QT_MODULE_DECLARATIVE          0x080000
-#define QT_MODULE_LOCATION             0x100000
-#define QT_MODULE_SENSORS              0x200000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2634,8 +2616,6 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
                                  | QT_MODULE_DBUS \
-                                 | QT_MODULE_LOCATION \
-                                 | QT_MODULE_SENSORS \
                                  | QT_MODULE_ACTIVEQT)
 #define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
 #define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
@@ -2708,12 +2688,6 @@ QT_LICENSED_MODULE(Test)
 #endif
 #if (QT_EDITION & QT_MODULE_DBUS)
 QT_LICENSED_MODULE(DBus)
-#endif
-#if (QT_EDITION & QT_MODULE_LOCATION)
-QT_LICENSED_MODULE(Location)
-#endif
-#if (QT_EDITION & QT_MODULE_SENSORS)
-QT_LICENSED_MODULE(Sensors)
 #endif
 
 #define QT_MODULE(x) \
