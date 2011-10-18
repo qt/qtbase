@@ -313,7 +313,7 @@ public:
     }
 
     QChar passwordCharacter() const { return m_passwordCharacter; }
-    void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
+    void setPasswordCharacter(QChar character) { m_passwordCharacter = character; updateDisplayText(); }
 
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {

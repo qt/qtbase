@@ -1343,7 +1343,7 @@ QVariant::QVariant(const char *val)
 */
 
 /*!
-  \fn QVariant::QVariant(const QChar &c)
+  \fn QVariant::QVariant(QChar c)
 
   Constructs a new variant with a char value, \a c.
 */
@@ -1411,7 +1411,7 @@ QVariant::QVariant(const QBitArray &val)
 { d.is_null = false; d.type = BitArray; v_construct<QBitArray>(&d, val);  }
 QVariant::QVariant(const QString &val)
 { d.is_null = false; d.type = String; v_construct<QString>(&d, val);  }
-QVariant::QVariant(const QChar &val)
+QVariant::QVariant(QChar val)
 { d.is_null = false; d.type = Char; v_construct<QChar>(&d, val);  }
 QVariant::QVariant(const QLatin1String &val)
 { QString str(val); d.is_null = false; d.type = String; v_construct<QString>(&d, str); }

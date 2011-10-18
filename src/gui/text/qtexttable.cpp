@@ -397,7 +397,7 @@ int QTextTablePrivate::findCellIndex(int fragment) const
     return it - cells.begin();
 }
 
-void QTextTablePrivate::fragmentAdded(const QChar &type, uint fragment)
+void QTextTablePrivate::fragmentAdded(QChar type, uint fragment)
 {
     dirty = true;
     if (blockFragmentUpdates)
@@ -415,7 +415,7 @@ void QTextTablePrivate::fragmentAdded(const QChar &type, uint fragment)
     QTextFramePrivate::fragmentAdded(type, fragment);
 }
 
-void QTextTablePrivate::fragmentRemoved(const QChar &type, uint fragment)
+void QTextTablePrivate::fragmentRemoved(QChar type, uint fragment)
 {
     dirty = true;
     if (blockFragmentUpdates)

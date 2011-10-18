@@ -208,7 +208,7 @@ QString Driver::qtify(const QString &name)
     return qname;
 }
 
-static bool isAnsiCCharacter(const QChar& c)
+static bool isAnsiCCharacter(QChar c)
 {
     return (c.toUpper() >= QLatin1Char('A') && c.toUpper() <= QLatin1Char('Z'))
            || c.isDigit() || c == QLatin1Char('_');
