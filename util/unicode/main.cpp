@@ -476,7 +476,10 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     utf16map.prepend(length);
     specialCaseMaxLen = qMax(specialCaseMaxLen, length);
 
-    int i = 0;
+    if (specialCaseMap.isEmpty())
+        specialCaseMap << 0; // placeholder
+
+    int i = 1;
     while (i < specialCaseMap.size()) {
         int n = specialCaseMap.at(i);
         if (n == length) {
@@ -2251,8 +2254,9 @@ static QByteArray createPropertyInfo()
            "}\n\n";
 
 
-    out += "static const ushort specialCaseMap[] = {";
-    int i = 0;
+    out += "static const ushort specialCaseMap[] = {\n";
+    out += "    0x0, // placeholder";
+    int i = 1;
     while (i < specialCaseMap.size()) {
         out += "\n   ";
         int n = specialCaseMap.at(i);

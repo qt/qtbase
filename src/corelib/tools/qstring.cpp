@@ -4906,7 +4906,7 @@ QString QString::toLower() const
         } else {
             prop = qGetProp(*p);
         }
-        if (prop->lowerCaseDiff || prop->lowerCaseSpecial) {
+        if (prop->lowerCaseDiff) {
             if (QChar::isLowSurrogate(*p))
                 --p; // safe; diff is 0 for surrogates
             QString s(d->size, Qt::Uninitialized);
@@ -4967,7 +4967,7 @@ QString QString::toCaseFolded() const
         } else {
             prop = qGetProp(*p);
         }
-        if (prop->caseFoldDiff || prop->caseFoldSpecial) {
+        if (prop->caseFoldDiff) {
             if (QChar::isLowSurrogate(*p))
                 --p; // safe; diff is 0 for surrogates
             QString s(d->size, Qt::Uninitialized);
@@ -5028,7 +5028,7 @@ QString QString::toUpper() const
         } else {
             prop = qGetProp(*p);
         }
-        if (prop->upperCaseDiff || prop->upperCaseSpecial) {
+        if (prop->upperCaseDiff) {
             if (QChar::isLowSurrogate(*p))
                 --p; // safe; diff is 0 for surrogates
             QString s(d->size, Qt::Uninitialized);
