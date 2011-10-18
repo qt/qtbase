@@ -1821,11 +1821,11 @@ int QFtp::cd(const QString &dir)
 int QFtp::get(const QString &file, QIODevice *dev, TransferType type)
 {
     QStringList cmds;
-    cmds << QLatin1String("SIZE ") + file + QLatin1String("\r\n");
     if (type == Binary)
         cmds << QLatin1String("TYPE I\r\n");
     else
         cmds << QLatin1String("TYPE A\r\n");
+    cmds << QLatin1String("SIZE ") + file + QLatin1String("\r\n");
     cmds << QLatin1String(d_func()->transferMode == Passive ? "PASV\r\n" : "PORT\r\n");
     cmds << QLatin1String("RETR ") + file + QLatin1String("\r\n");
     return d_func()->addCommand(new QFtpCommand(Get, cmds, dev));
@@ -2301,7 +2301,7 @@ void QFtpPrivate::_q_piError(int errorCode, const QString &text)
 
     // non-fatal errors
     if (c->command == QFtp::Get && pi.currentCommand().startsWith(QLatin1String("SIZE "))) {
-        pi.dtp.setBytesTotal(-1);
+        pi.dtp.setBytesTotal(0);
         return;
     } else if (c->command==QFtp::Put && pi.currentCommand().startsWith(QLatin1String("ALLO "))) {
         return;
