@@ -61,6 +61,8 @@ public:
     void setVisible(bool visible);
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
     void raise();
     void lower();
     WId winId() const;

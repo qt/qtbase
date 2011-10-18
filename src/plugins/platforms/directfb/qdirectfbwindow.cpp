@@ -169,3 +169,27 @@ WId QDirectFbWindow::winId() const
     m_dfbWindow->GetID(m_dfbWindow.data(), &id);
     return WId(id);
 }
+
+bool QDirectFbWindow::setKeyboardGrabEnabled(bool grab)
+{
+    DFBResult res;
+
+    if (grab)
+        res = m_dfbWindow->GrabKeyboard(m_dfbWindow.data());
+    else
+        res = m_dfbWindow->UngrabKeyboard(m_dfbWindow.data());
+
+    return res == DFB_OK;
+}
+
+bool QDirectFbWindow::setMouseGrabEnabled(bool grab)
+{
+    DFBResult res;
+
+    if (grab)
+        res = m_dfbWindow->GrabPointer(m_dfbWindow.data());
+    else
+        res = m_dfbWindow->UngrabPointer(m_dfbWindow.data());
+
+    return res == DFB_OK;
+}
