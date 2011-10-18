@@ -391,7 +391,10 @@ QSurfaceFormat::OpenGLContextProfile QSurfaceFormat::profile() const
 */
 void QSurfaceFormat::setMajorVersion(int major)
 {
-    d->major = major;
+    if (d->major != major) {
+        detach();
+        d->major = major;
+    }
 }
 
 /*!
@@ -407,7 +410,10 @@ int QSurfaceFormat::majorVersion() const
 */
 void QSurfaceFormat::setMinorVersion(int minor)
 {
-    d->minor = minor;
+    if (d->minor != minor) {
+        detach();
+        d->minor = minor;
+    }
 }
 
 /*!
@@ -429,9 +435,10 @@ bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
         && a.d->depthSize == b.d->depthSize
         && a.d->numSamples == b.d->numSamples
         && a.d->swapBehavior == b.d->swapBehavior
-        && a.d->profile == b.d->profile);
+        && a.d->profile == b.d->profile
+        && a.d->major == b.d->major
+        && a.d->minor == b.d->minor);
 }
-
 
 /*!
     Returns false if all the options of the two QSurfaceFormat objects
@@ -451,7 +458,8 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
     const QSurfaceFormatPrivate * const d = f.d;
 
     dbg.nospace() << "QSurfaceFormat("
-                  << "options " << d->opts
+                  << "version " << d->major << '.' << d->minor
+                  << ", options " << d->opts
                   << ", depthBufferSize " << d->depthSize
                   << ", redBufferSize " << d->redBufferSize
                   << ", greenBufferSize " << d->greenBufferSize
