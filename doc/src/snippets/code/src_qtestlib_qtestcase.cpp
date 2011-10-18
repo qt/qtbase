@@ -100,7 +100,7 @@ QTEST(QString("hello").toUpper(), "myString");
 
 //! [8]
 if (!QSqlDatabase::drivers().contains("SQLITE"))
-    QSKIP("This test requires the SQLITE database driver", SkipAll);
+    QSKIP("This test requires the SQLITE database driver");
 //! [8]
 
 

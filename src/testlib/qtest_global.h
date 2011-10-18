@@ -77,7 +77,6 @@ QT_MODULE(Test)
 
 namespace QTest
 {
-    enum SkipMode { SkipSingle = 1, SkipAll = 2 };
     enum TestFailMode { Abort = 1, Continue = 2 };
 
     int Q_TESTLIB_EXPORT qt_snprintf(char *str, int size, const char *format, ...);

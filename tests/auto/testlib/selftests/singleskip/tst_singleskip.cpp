@@ -53,7 +53,7 @@ private slots:
 
 void tst_SingleSkip::myTest() const
 {
-    QSKIP("skipping test", SkipAll);
+    QSKIP("skipping test");
 }
 
 QTEST_MAIN(tst_SingleSkip)

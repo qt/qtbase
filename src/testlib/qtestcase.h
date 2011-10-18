@@ -47,6 +47,8 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmetatype.h>
 
+#include <string.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -110,9 +112,12 @@ do { \
     QCOMPARE(__expr, __expected); \
 } while (0)
 
-#define QSKIP(statement, mode) \
+#define QSKIP(statement, ...) \
 do {\
-    QTest::qSkip(statement, QTest::mode, __FILE__, __LINE__);\
+    if (strcmp(#__VA_ARGS__, "") != 0)\
+        QTest::qWarn("The two argument version of QSKIP is deprecated and will be removed soon. "\
+                     "Please update this test by removing the second parameter.", __FILE__, __LINE__);\
+    QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
 
@@ -162,7 +167,7 @@ namespace QTest
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
     Q_TESTLIB_EXPORT void qFail(const char *statementStr, const char *file, int line);
-    Q_TESTLIB_EXPORT void qSkip(const char *message, SkipMode mode, const char *file, int line);
+    Q_TESTLIB_EXPORT void qSkip(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = 0, int line = 0);

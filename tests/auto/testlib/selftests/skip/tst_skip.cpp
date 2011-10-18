@@ -65,7 +65,7 @@ void tst_Skip::test_data()
     QTest::newRow("local 1") << false;
     QTest::newRow("local 2") << true;
 
-    QSKIP("skipping all", SkipAll);
+    QSKIP("skipping all");
 }
 
 void tst_Skip::test()
@@ -75,7 +75,7 @@ void tst_Skip::test()
 
 void tst_Skip::emptytest_data()
 {
-    QSKIP("skipping all", SkipAll);
+    QSKIP("skipping all");
 }
 
 void tst_Skip::emptytest()
@@ -94,7 +94,7 @@ void tst_Skip::singleSkip()
 {
     QFETCH(bool, booll);
     if (!booll)
-        QSKIP("skipping one", SkipSingle);
+        QSKIP("skipping one");
     qDebug("this line should only be reached once (%s)", booll ? "true" : "false");
 }
 

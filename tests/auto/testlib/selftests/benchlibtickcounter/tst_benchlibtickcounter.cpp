@@ -56,7 +56,7 @@ private slots:
 void tst_BenchlibTickCounter::threeBillionTicks()
 {
 #ifndef HAVE_TICK_COUNTER
-    QSKIP("Tick counter not available on this platform", SkipAll);
+    QSKIP("Tick counter not available on this platform");
 #else
     QBENCHMARK {
         CycleCounterTicks start = getticks();

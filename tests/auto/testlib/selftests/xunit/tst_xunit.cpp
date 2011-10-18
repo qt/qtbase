@@ -76,7 +76,7 @@ void tst_Xunit::testFunc2()
 
 void tst_Xunit::testFunc3()
 {
-    QSKIP("skipping this function!", SkipAll);
+    QSKIP("skipping this function!");
 }
 
 void tst_Xunit::testFunc4()

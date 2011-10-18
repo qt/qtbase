@@ -76,7 +76,7 @@ void tst_BenchlibCallgrind::failInChildProcess()
 void tst_BenchlibCallgrind::twoHundredMillionInstructions()
 {
 #if !defined(__GNUC__) || !defined(__i386)
-    QSKIP("This test is only defined for gcc and x86.", SkipAll);
+    QSKIP("This test is only defined for gcc and x86.");
 #else
     QBENCHMARK {
         __asm__ __volatile__(

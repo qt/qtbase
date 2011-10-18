@@ -6,7 +6,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/skipinitdata/tst_skipinitdata.cpp" line="56">
-    <Description><![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]></Description>
+    <Description><![CDATA[Skip inside initTestCase_data. This should skip all tests in the class.]]></Description>
 </Message>
 </TestFunction>
 </TestCase>

@@ -267,23 +267,24 @@ QT_BEGIN_NAMESPACE
    \sa QCOMPARE()
 */
 
-/*! \macro QSKIP(description, mode)
+/*! \macro QSKIP(description)
 
    \relates QTest
 
    The QSKIP() macro stops execution of the test without adding a failure to the
    test log. You can use it to skip tests that wouldn't make sense in the current
    configuration. The text \a description is appended to the test log and should
-   contain an explanation why the test couldn't be executed. \a mode is a QTest::SkipMode
-   and describes whether to proceed with the rest of the test data or not.
+   contain an explanation of why the test couldn't be executed.
+
+   If the test is data-driven, each call to QSKIP() will skip only the current row,
+   so an unconditional call to QSKIP will produce one skip message in the test log
+   for each row of test data.
 
    \bold {Note:} This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example:
    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 8
-
-   \sa QTest::SkipMode
 */
 
 /*! \macro QEXPECT_FAIL(dataIndex, comment, mode)
@@ -413,22 +414,6 @@ QT_BEGIN_NAMESPACE
 
     \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
     {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
-*/
-
-
-
-/*! \enum QTest::SkipMode
-
-    This enum describes the modes for skipping tests during execution
-    of the test data.
-
-    \value SkipSingle Skips the current entry in the test table; continues
-           execution of all the other entries in the table.
-
-    \value SkipAll Skips all the entries in the test table; the test won't
-           be executed further.
-
-    \sa QSKIP()
 */
 
 /*! \enum QTest::TestFailMode
@@ -1469,20 +1454,12 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
             QTest::qt_snprintf(member, 512, "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member);
-
-            // if we encounter a SkipAll in the _data slot, we skip the whole
-            // testfunction, no matter how much global data exists
-            if (QTestResult::skipCurrentTest()) {
-                QTestResult::setCurrentGlobalTestData(0);
-                break;
-            }
         }
 
         bool foundFunction = false;
         if (!QTestResult::skipCurrentTest()) {
             int curDataIndex = 0;
             const int dataCount = table.dataCount();
-            QTestResult::setSkipCurrentTest(false);
 
             // Data tag requested but none available?
             if (data && !dataCount) {
@@ -1498,6 +1475,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
             /* For each entry in the data table, do: */
             do {
+                QTestResult::setSkipCurrentTest(false);
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
@@ -1505,9 +1483,6 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
                     qInvokeTestMethodDataEntry(slot);
 
-                    if (QTestResult::skipCurrentTest())
-                        // check whether SkipAll was requested
-                        break;
                     if (data)
                         break;
                 }
@@ -1954,15 +1929,13 @@ bool QTest::qVerify(bool statement, const char *statementStr, const char *descri
     return QTestResult::verify(statement, statementStr, description, file, line);
 }
 
-/*! \fn void QTest::qSkip(const char *message, SkipMode mode, const char *file, int line)
+/*! \fn void QTest::qSkip(const char *message, const char *file, int line)
 \internal
  */
-void QTest::qSkip(const char *message, QTest::SkipMode mode,
-                 const char *file, int line)
+void QTest::qSkip(const char *message, const char *file, int line)
 {
     QTestResult::addSkip(message, file, line);
-    if (mode == QTest::SkipAll)
-        QTestResult::setSkipCurrentTest(true);
+    QTestResult::setSkipCurrentTest(true);
 }
 
 /*! \fn bool QTest::qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode, const char *file, int line)

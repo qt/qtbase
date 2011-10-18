@@ -5,9 +5,9 @@
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
   </properties>
   <testcase name="initTestCase">
-    <!-- message="Skip inside initTestCase. This should skip all tests in the class." type="skip" -->
+    <!-- message="Skip inside initTestCase_data. This should skip all tests in the class." type="skip" -->
   </testcase>
   <system-err>
-<![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]>
+<![CDATA[Skip inside initTestCase_data. This should skip all tests in the class.]]>
   </system-err>
 </testsuite>

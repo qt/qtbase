@@ -126,7 +126,7 @@ void tst_globaldata::skip_data()
     QTest::newRow("local 1") << false;
     QTest::newRow("local 2") << true;
 
-    QSKIP("skipping", SkipAll);
+    QSKIP("skipping");
 }
 
 void tst_globaldata::skip()
@@ -140,13 +140,13 @@ void tst_globaldata::skipSingle()
     QFETCH(bool, booll);
 
     if (booli && !booll)
-        QSKIP("skipping", SkipSingle);
+        QSKIP("skipping");
     qDebug() << "global:" << booli << "local:" << booll;
 }
 
 void tst_globaldata::skipLocal()
 {
-    QSKIP("skipping", SkipAll);
+    QSKIP("skipping");
 }
 
 QTEST_MAIN(tst_globaldata)

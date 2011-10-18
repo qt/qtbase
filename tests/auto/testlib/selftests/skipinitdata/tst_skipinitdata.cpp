@@ -53,7 +53,7 @@ private slots:
 
 void tst_SkipInitData::initTestCase_data() const
 {
-    QSKIP("Skip inside initTestCase. This should skip all tests in the class.", SkipAll);
+    QSKIP("Skip inside initTestCase_data. This should skip all tests in the class.");
 }
 
 void tst_SkipInitData::initTestCase() const
