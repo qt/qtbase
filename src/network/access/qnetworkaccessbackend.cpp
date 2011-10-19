@@ -72,10 +72,10 @@ public:
 
     QMutex mutex;
     //this is used to avoid (re)constructing factory data from destructors of other global classes
-    static QAtomicInt valid;
+    static QBasicAtomicInt valid;
 };
 Q_GLOBAL_STATIC(QNetworkAccessBackendFactoryData, factoryData)
-QAtomicInt QNetworkAccessBackendFactoryData::valid;
+QBasicAtomicInt QNetworkAccessBackendFactoryData::valid = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 {
@@ -85,7 +85,7 @@ QNetworkAccessBackendFactory::QNetworkAccessBackendFactory()
 
 QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 {
-    if (QNetworkAccessBackendFactoryData::valid) {
+    if (QNetworkAccessBackendFactoryData::valid.load()) {
         QMutexLocker locker(&factoryData()->mutex);
         factoryData()->removeAll(this);
     }
@@ -94,7 +94,7 @@ QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessManager::Operation op,
                                                                  const QNetworkRequest &request)
 {
-    if (QNetworkAccessBackendFactoryData::valid) {
+    if (QNetworkAccessBackendFactoryData::valid.load()) {
         QMutexLocker locker(&factoryData()->mutex);
         QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin(),
                                                            end = factoryData()->constEnd();
