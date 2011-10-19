@@ -1,0 +1,16 @@
+Valgrind on Mac instructions.
+
+As of Sept 16 2011, a patched version of valgrind can be used on OS X 10.7  Lion.
+
+1) Check out valgrind rev 12025 from source:
+svn co svn://svn.valgrind.org/valgrind/trunk@12025 valgrind
+
+2) Download patch: https://bugs.kde.org/show_bug.cgi?id=275168#c20
+
+3) Apply patch and build valgrind (see http://valgrind.org/downloads/repository.html)
+Important: Use gcc-4.2 for building (export CC=gcc-4.2 before running configure)
+
+Supression file : suppressions_mac
+Tested with valgrind command line: valgrind  --log-file=log --show-reachable=yes --num-callers=50 --error-limit=no --leak-check=full --suppressions=suppressions_mac  /Volumes/Build/qt5/qtbase/examples/widgets/calculator/calculator.app/Contents/MacOS/calculator
+
+
