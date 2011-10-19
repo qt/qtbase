@@ -106,7 +106,7 @@ void tst_QFlags::constExpr()
     switch (btn) {
         case Qt::LeftButton: QVERIFY(false); break;
         case Qt::RightButton: QVERIFY(false); break;
-        case Qt::LeftButton | Qt::RightButton: QVERIFY(true); break;
+        case int(Qt::LeftButton | Qt::RightButton): QVERIFY(true); break;
         default: QVERIFY(false);
     }
 
