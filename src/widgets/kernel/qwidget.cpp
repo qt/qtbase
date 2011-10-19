@@ -1180,8 +1180,9 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     }
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
-        int screen = desktopWidget->d_func()->topData()->screenIndex;
-        q->windowHandle()->setScreen(QGuiApplication::screens().value(screen, 0));
+        const int screen = desktopWidget->d_func()->topData()->screenIndex;
+        if (QWindow *window = q->windowHandle())
+            window->setScreen(QGuiApplication::screens().value(screen, 0));
     }
 #else
     Q_UNUSED(desktopWidget);
