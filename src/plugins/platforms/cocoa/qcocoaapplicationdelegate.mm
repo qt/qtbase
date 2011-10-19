@@ -215,6 +215,8 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
+    Q_UNUSED(filenames);
+    Q_UNUSED(sender);
 /*
     for (NSString *fileName in filenames) {
         QString qtFileName = qt_mac_NSStringToQString(fileName);
@@ -249,6 +251,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
+    Q_UNUSED(notification);
 /*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
@@ -272,6 +275,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
+    Q_UNUSED(notification);
 /*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
@@ -328,6 +332,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
+    Q_UNUSED(event);
     Q_UNUSED(replyEvent);
 /*
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
@@ -348,6 +353,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)qtDispatcherToQAction:(id)sender
 {
+    Q_UNUSED(sender);
     //[[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
 }
 

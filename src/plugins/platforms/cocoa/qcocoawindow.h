@@ -52,12 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-@interface QNSWindow : NSWindow {
-
-}
-
-@end
-
 class QCocoaWindow : public QPlatformWindow
 {
 public:
@@ -82,14 +76,14 @@ public:
 
 protected:
     void determineWindowClass();
-    QNSWindow *createWindow();
+    NSWindow *createWindow();
     NSRect globalGeometry(const QRect localWindowGeometry) const;
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
 
 private:
     friend class QCocoaBackingStore;
-    QNSWindow *m_nsWindow;
+    NSWindow *m_nsWindow;
     QNSView *m_contentView;
     quint32 m_windowAttributes;
     quint32 m_windowClass;

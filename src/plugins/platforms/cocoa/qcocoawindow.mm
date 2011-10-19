@@ -54,20 +54,6 @@
 
 #include <QDebug>
 
-@implementation QNSWindow
-
-- (BOOL)canBecomeKeyWindow
-{
-    return YES;
-}
-
-- (BOOL)canBecomeMainWindow
-{
-    return YES;
-}
-
-@end
-
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_windowAttributes(0)
@@ -285,7 +271,7 @@ void QCocoaWindow::determineWindowClass()
 /*
 
 */
-QNSWindow * QCocoaWindow::createWindow()
+NSWindow * QCocoaWindow::createWindow()
 {
     // Determine if we need to add in our "custom window" attribute. Cocoa is rather clever
     // in deciding if we need the maximize button or not (i.e., it's resizable, so you
@@ -306,7 +292,7 @@ QNSWindow * QCocoaWindow::createWindow()
 */
     NSRect frame = globalGeometry(window()->geometry());
     QCocoaAutoReleasePool pool;
-    QNSWindow *window;
+    NSWindow *window;
 
     switch (m_windowClass) {
     case kMovableModalWindowClass:
@@ -318,7 +304,7 @@ QNSWindow * QCocoaWindow::createWindow()
         NSPanel *panel;
 
         BOOL needFloating = NO;
-        BOOL worksWhenModal = (this->window()->windowType() == Qt::Popup);
+        //BOOL worksWhenModal = (this->window()->windowType() == Qt::Popup);
 
         // Add in the extra flags if necessary.
         switch (m_windowClass) {
@@ -345,7 +331,7 @@ QNSWindow * QCocoaWindow::createWindow()
         break;
     }
     default:
-        window  = [[QNSWindow alloc] initWithContentRect:frame
+        window  = [[NSWindow alloc] initWithContentRect:frame
                                             styleMask:(NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask)
                                             backing:NSBackingStoreBuffered
                                             defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up

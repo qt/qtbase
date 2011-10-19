@@ -105,14 +105,6 @@ bool qt_mac_watchingAboutToShow(QMenu *menu)
     return menu; /* && menu->receivers(SIGNAL(aboutToShow()));*/
 }
 
-static int qt_mac_CountMenuItems(OSMenuRef menu)
-{
-    if (menu) {
-        return [menu numberOfItems];
-    }
-    return 0;
-}
-
 void qt_mac_menu_collapseSeparators(NSMenu * theMenu, bool collapse)
 {
     QCocoaAutoReleasePool pool;
@@ -201,6 +193,7 @@ static void cancelAllMenuTracking()
 static bool actualMenuItemVisibility(const QCocoaMenuBar *mbp,
                                      const QCocoaMenuAction *action)
 {
+    Q_UNUSED(mbp);
     bool visible = action->action->isVisible();
     if (visible && action->action->text() == QString(QChar(0x14)))
         return false;

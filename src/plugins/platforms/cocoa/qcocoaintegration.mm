@@ -86,7 +86,7 @@ QCocoaIntegration::QCocoaIntegration()
 
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
-    QNSApplication *cocoaApplication = [QNSApplication sharedApplication];
+    NSApplication *cocoaApplication = [NSApplication sharedApplication];
 
     if (qgetenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM").isEmpty()) {
         // Applications launched from plain executables (without an app

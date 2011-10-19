@@ -112,6 +112,7 @@ QT_USE_NAMESPACE
 
 - (void)qt_sendPostedMessage:(NSEvent *)event
 {
+    Q_UNUSED(event);
 /*
     // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
@@ -140,6 +141,7 @@ QT_USE_NAMESPACE
 
 - (BOOL)qt_filterEvent:(NSEvent *)event
 {
+    Q_UNUSED(event);
 /*
     if (qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
         return true;
