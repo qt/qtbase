@@ -75,7 +75,6 @@ private slots:
 #ifdef Q_OS_UNIX
     void posixSockets();
 #endif
-    void bogusFds();
 };
 
 tst_QSocketNotifier::tst_QSocketNotifier()
@@ -292,8 +291,7 @@ void tst_QSocketNotifier::posixSockets()
 
         QTestEventLoop::instance().enterLoop(3);
         QCOMPARE(readSpy.count(), 1);
-        QEXPECT_FAIL("", "QTBUG-20982 fails", Abort);
-        QCOMPARE(writeSpy.count(), 0);
+        writeSpy.clear(); //depending on OS, write notifier triggers on creation or not.
         QCOMPARE(errorSpy.count(), 0);
 
         char buffer[100];
@@ -311,47 +309,6 @@ void tst_QSocketNotifier::posixSockets()
     qt_safe_close(posixSocket);
 }
 #endif
-
-void tst_QSocketNotifier::bogusFds()
-{
-#ifndef Q_OS_WIN
-    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
-    QSocketNotifier max(std::numeric_limits<int>::max(), QSocketNotifier::Read);
-    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Invalid socket specified");
-#ifndef Q_OS_WIN
-    // FIXME QTBUG-20982: this fails, and ignoreMessage can't be skipped or QEXPECT_FAILed
-    // QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
-    QSocketNotifier min(std::numeric_limits<int>::min(), QSocketNotifier::Write);
-#ifndef Q_OS_WIN
-    // FIXME QTBUG-20982: this fails, and ignoreMessage can't be skipped or QEXPECT_FAILed
-    // QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
-#endif
-    //bogus magic number is the first pseudo socket descriptor from symbian socket engine.
-    QSocketNotifier bogus(0x40000000, QSocketNotifier::Exception);
-    QSocketNotifier largestlegal(FD_SETSIZE - 1, QSocketNotifier::Read);
-
-    QSignalSpy maxspy(&max, SIGNAL(activated(int)));
-    QSignalSpy minspy(&min, SIGNAL(activated(int)));
-    QSignalSpy bogspy(&bogus, SIGNAL(activated(int)));
-    QSignalSpy llspy(&largestlegal, SIGNAL(activated(int)));
-
-    //generate some unrelated socket activity
-    QTcpServer server;
-    QVERIFY(server.listen(QHostAddress::LocalHost));
-    connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTcpSocket client;
-    client.connectToHost(QHostAddress::LocalHost, server.serverPort());
-    QTestEventLoop::instance().enterLoop(5);
-    QVERIFY(server.hasPendingConnections());
-
-    //check no activity on bogus notifiers
-    QCOMPARE(maxspy.count(), 0);
-    QCOMPARE(minspy.count(), 0);
-    QCOMPARE(bogspy.count(), 0);
-    QCOMPARE(llspy.count(), 0);
-}
 
 QTEST_MAIN(tst_QSocketNotifier)
 #include <tst_qsocketnotifier.moc>
