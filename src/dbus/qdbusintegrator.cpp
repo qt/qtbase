@@ -911,10 +911,8 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
         }
     }
 
-    bool takesMessage = false;
     if (metaTypes.count() > i && metaTypes[i] == QDBusMetaTypeId::message) {
         params.append(const_cast<void*>(static_cast<const void*>(&msg)));
-        takesMessage = true;
         ++i;
     }
 
