@@ -99,29 +99,6 @@ FtpWindow::FtpWindow(QWidget *parent)
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
 
-    QNetworkConfigurationManager manager;
-    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
-        // Get saved network configuration
-        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
-        settings.endGroup();
-
-        // If the saved network configuration is not currently discovered use the system default
-        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
-        if ((config.state() & QNetworkConfiguration::Discovered) !=
-            QNetworkConfiguration::Discovered) {
-            config = manager.defaultConfiguration();
-        }
-
-        networkSession = new QNetworkSession(config, this);
-        connect(networkSession, SIGNAL(opened()), this, SLOT(enableConnectButton()));
-
-        connectButton->setEnabled(false);
-        statusLabel->setText(tr("Opening network session."));
-        networkSession->open();
-    }
-
     setWindowTitle(tr("FTP"));
 }
 
@@ -154,6 +131,37 @@ void FtpWindow::connectOrDisconnect()
     setCursor(Qt::WaitCursor);
 #endif
 
+    if (!networkSession || !networkSession->isOpen()) {
+        if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+            if (!networkSession) {
+                // Get saved network configuration
+                QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+                settings.beginGroup(QLatin1String("QtNetwork"));
+                const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+                settings.endGroup();
+
+                // If the saved network configuration is not currently discovered use the system default
+                QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+                if ((config.state() & QNetworkConfiguration::Discovered) !=
+                    QNetworkConfiguration::Discovered) {
+                    config = manager.defaultConfiguration();
+                }
+
+                networkSession = new QNetworkSession(config, this);
+                connect(networkSession, SIGNAL(opened()), this, SLOT(connectToFtp()));
+                connect(networkSession, SIGNAL(error(QNetworkSession::SessionError)), this, SLOT(enableConnectButton()));
+            }
+            connectButton->setEnabled(false);
+            statusLabel->setText(tr("Opening network session."));
+            networkSession->open();
+            return;
+        }
+    }
+    connectToFtp();
+}
+
+void FtpWindow::connectToFtp()
+{
 //![1]
     ftp = new QFtp(this);
     connect(ftp, SIGNAL(commandFinished(int,bool)),
@@ -392,7 +400,7 @@ void FtpWindow::enableConnectButton()
     settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
     settings.endGroup();
 
-    connectButton->setEnabled(networkSession->isOpen());
+    connectButton->setEnabled(true);
     statusLabel->setText(tr("Please enter the name of an FTP server."));
 }
 

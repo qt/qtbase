@@ -43,6 +43,7 @@
 
 #include <QDialog>
 #include <QHash>
+#include <QNetworkConfigurationManager>
 
 QT_BEGIN_NAMESPACE
 class QDialogButtonBox;
@@ -71,6 +72,7 @@ private slots:
     void connectOrDisconnect();
     void downloadFile();
     void cancelDownload();
+    void connectToFtp();
 
     void ftpCommandFinished(int commandId, bool error);
     void addToList(const QUrlInfo &urlInfo);
@@ -101,6 +103,7 @@ private:
     QFile *file;
 
     QNetworkSession *networkSession;
+    QNetworkConfigurationManager manager;
 //![1]
 };
 
