@@ -55,4 +55,4 @@ INSTALLS += target
 
 # Acccessibility debug support
 # DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
-# include ($$PWD/../../../../tools/accessibilityinspector/accessibilityinspector.pri)
+# include ($$PWD/../../../../util/accessibilityinspector/accessibilityinspector.pri)
