@@ -155,6 +155,7 @@ private slots:
     void toEncodedNotUsingUninitializedPath();
     void emptyAuthorityRemovesExistingAuthority();
     void acceptEmptyAuthoritySegments();
+    void lowercasesScheme();
 };
 
 // Testing get/set functions
@@ -320,9 +321,9 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QUrl url("hTTp://www.foo.bar:80");
+        QUrl url("http://www.foo.bar:80");
         QVERIFY(url.isValid());
-        QCOMPARE(url.scheme(), QString::fromLatin1("hTTp"));
+        QCOMPARE(url.scheme(), QString::fromLatin1("http"));
         QCOMPARE(url.path(), QString());
         QVERIFY(url.encodedQuery().isEmpty());
         QVERIFY(url.userInfo().isEmpty());
@@ -330,12 +331,12 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.host(), QString::fromLatin1("www.foo.bar"));
         QCOMPARE(url.authority(), QString::fromLatin1("www.foo.bar:80"));
         QCOMPARE(url.port(), 80);
-        QCOMPARE(url.toString(), QString::fromLatin1("hTTp://www.foo.bar:80"));
-        QCOMPARE(url.toDisplayString(), QString::fromLatin1("hTTp://www.foo.bar:80"));
-        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("hTTp://www.foo.bar:80"));
+        QCOMPARE(url.toString(), QString::fromLatin1("http://www.foo.bar:80"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://www.foo.bar:80"));
+        QCOMPARE(url.toDisplayString(QUrl::PreferLocalFile), QString::fromLatin1("http://www.foo.bar:80"));
 
         QUrl url2("//www1.foo.bar");
-        QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("hTTp://www1.foo.bar"));
+        QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("http://www1.foo.bar"));
     }
 
     {
@@ -2479,6 +2480,13 @@ void tst_QUrl::effectiveTLDs()
     QFETCH(QUrl, domain);
     QFETCH(QString, TLD);
     QCOMPARE(domain.topLevelDomain(), TLD);
+}
+
+void tst_QUrl::lowercasesScheme()
+{
+    QUrl url;
+    url.setScheme("HELLO");
+    QCOMPARE(url.scheme(), QString("hello"));
 }
 
 QTEST_MAIN(tst_QUrl)

@@ -514,6 +514,7 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
     //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
     // but we need to decode any percent-encoding sequences that fall on
     // those characters
+    // we also lowercase the scheme
 
     scheme.clear();
     sectionIsPresent |= Scheme;
@@ -522,12 +523,15 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
         return false;
 
     // validate it:
+    int needsLowercasing = -1;
     const ushort *p = reinterpret_cast<const ushort *>(value.constData());
     for (int i = 0; i < len; ++i) {
         if (p[i] >= 'a' && p[i] <= 'z')
             continue;
-        if (p[i] >= 'A' && p[i] <= 'Z')
+        if (p[i] >= 'A' && p[i] <= 'Z') {
+            needsLowercasing = i;
             continue;
+        }
         if (p[i] >= '0' && p[i] <= '9' && i > 0)
             continue;
         if (p[i] == '+' || p[i] == '-' || p[i] == '.')
@@ -551,6 +555,16 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
 
     scheme = value.left(len);
     sectionHasError &= ~Scheme;
+
+    if (needsLowercasing != -1) {
+        // schemes are ASCII only, so we don't need the full Unicode toLower
+        QChar *schemeData = scheme.data(); // force detaching here
+        for (int i = needsLowercasing; i >= 0; --i) {
+            register ushort c = schemeData[i].unicode();
+            if (c >= 'A' && c <= 'Z')
+                schemeData[i] = c + 0x20;
+        }
+    }
     return true;
 }
 
@@ -2308,7 +2322,7 @@ bool QUrl::isLocalFile() const
 {
     if (!d) return false;
 
-    if (d->scheme.compare(fileScheme(), Qt::CaseInsensitive) != 0)
+    if (d->scheme != fileScheme())
         return false;   // not file
     return true;
 }
