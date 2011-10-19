@@ -152,24 +152,24 @@ void qMetaTypeDeleteHelper(T *t)
 template <typename T>
 void *qMetaTypeCreateHelper(const T *t)
 {
-    if (!t)
-        return new T();
-    return new T(*static_cast<const T*>(t));
+    if (t)
+        return new T(*static_cast<const T*>(t));
+    return new T();
 }
 
 template <typename T>
 void qMetaTypeDestructHelper(T *t)
 {
+    Q_UNUSED(t) // Silence MSVC that warns for POD types.
     t->~T();
 }
 
 template <typename T>
 void *qMetaTypeConstructHelper(void *where, const T *t)
 {
-    if (!t)
-        return new (where) T;
-    else
+    if (t)
         return new (where) T(*static_cast<const T*>(t));
+    return new (where) T;
 }
 
 #ifndef QT_NO_DATASTREAM
