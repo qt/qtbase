@@ -1587,12 +1587,13 @@ QString QUrl::password(ComponentFormattingOptions options) const
 void QUrl::setHost(const QString &host)
 {
     detach();
-    if (host.contains(QLatin1Char(':')) || host.contains(QLatin1String("%3a"), Qt::CaseInsensitive))
+    if (d->setHost(host, 0, host.length())) {
+        if (host.isNull())
+            d->sectionIsPresent &= ~QUrlPrivate::Host;
+    } else {
+        // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
         d->setHost(QLatin1Char('[') + host + QLatin1Char(']'), 0, host.length() + 2);
-    else
-        d->setHost(host, 0, host.length());
-    if (host.isNull())
-        d->sectionIsPresent &= ~QUrlPrivate::Host;
+    }
 }
 
 /*!
