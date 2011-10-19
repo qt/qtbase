@@ -848,8 +848,8 @@ QList<QPrinter::PaperSize> qt_getCupsPrinterPaperSizes(int cupsPrinterIndex)
         for (int j = 0; j < size->num_choices; ++j)
             result.append(string2PaperSize(size->choices[j].choice));
     }
-    return result;
 #endif
+    return result;
 }
 
 #endif // QT_NO_PRINTER
