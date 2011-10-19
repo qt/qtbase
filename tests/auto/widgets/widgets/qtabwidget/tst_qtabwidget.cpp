@@ -54,7 +54,7 @@
 #  include <qt_windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
-        QSKIP("desktop is not visible, this test would fail", SkipSingle);
+        QSKIP("desktop is not visible, this test would fail");
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif

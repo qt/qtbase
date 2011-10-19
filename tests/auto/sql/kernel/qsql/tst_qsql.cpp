@@ -220,7 +220,7 @@ void tst_QSql::openErrorRecovery()
 
     dbs.addDbs();
     if (dbs.dbNames.isEmpty())
-        QSKIP("No database drivers installed", SkipAll);
+        QSKIP("No database drivers installed");
     foreach ( const QString& dbName, dbs.dbNames ) {
 	QSqlDatabase db = QSqlDatabase::database( dbName, false );
 	CHECK_DATABASE( db );

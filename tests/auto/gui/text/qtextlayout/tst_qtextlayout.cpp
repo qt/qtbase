@@ -1472,7 +1472,7 @@ void tst_QTextLayout::textWidthWithLineSeparator()
 void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 {
 #if !defined(Q_WS_MAC)
-    QSKIP("This test can not be run on Mac", SkipAll);
+    QSKIP("This test can not be run on Mac");
 #endif
     QTextLayout layout("first line finish", QFont("Times", 20));
     layout.beginLayout();
@@ -1488,7 +1488,7 @@ void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 void tst_QTextLayout::xToCursorForLigatures()
 {
 #if !defined(Q_WS_MAC)
-    QSKIP("This test can not be run on Mac", SkipAll);
+    QSKIP("This test can not be run on Mac");
 #endif
     QTextLayout layout("fi", QFont("Times", 20));
     layout.beginLayout();

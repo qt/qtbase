@@ -69,7 +69,7 @@ private slots:
 #ifdef QT_NO_CONCURRENT_FILTER
 void tst_QtConcurrentFilter::initTestCase()
 {
-    QSKIP("This test is skipped for gcc 3.x", SkipAll);
+    QSKIP("This test is skipped for gcc 3.x");
 }
 
 #else
@@ -1512,7 +1512,7 @@ void tst_QtConcurrentFilter::noDetatch()
 void tst_QtConcurrentFilter::stlContainers()
 {
 #if defined(_MSC_VER) && _MSC_VER >= 1600
-    QSKIP("Test does not compile with MSVC 2010 (see QTBUG-18996)", SkipAll);
+    QSKIP("Test does not compile with MSVC 2010 (see QTBUG-18996)");
 #else
     std::vector<int> vector;
     vector.push_back(1);

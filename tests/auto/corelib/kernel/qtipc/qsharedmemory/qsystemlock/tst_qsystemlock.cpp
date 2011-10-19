@@ -190,7 +190,7 @@ void tst_QSystemLock::processes_data()
  */
 void tst_QSystemLock::processes()
 {
-    QSKIP("This test takes about 15 minutes and needs to be trimmed down before we can re-enable it", SkipAll);
+    QSKIP("This test takes about 15 minutes and needs to be trimmed down before we can re-enable it");
     QFETCH(int, readOnly);
     QFETCH(int, readWrite);
 

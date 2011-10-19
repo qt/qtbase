@@ -110,7 +110,7 @@ void tst_uic::initTestCase()
 void tst_uic::run()
 {
     if (!uicExists)
-        QSKIP("uic not found in the path...", SkipAll);
+        QSKIP("uic not found in the path...");
 
     QFETCH(QString, originalFile);
     QFETCH(QString, generatedFile);

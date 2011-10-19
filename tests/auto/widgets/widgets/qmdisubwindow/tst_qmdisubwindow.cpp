@@ -598,7 +598,7 @@ void tst_QMdiSubWindow::showShaded()
     QTest::qWait(250);
 
 #ifdef Q_OS_WINCE
-    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip", SkipAll);
+    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip");
 #endif
 
     const QSize minimumSizeHint = window->minimumSizeHint();
@@ -907,7 +907,7 @@ void tst_QMdiSubWindow::setWindowFlags_data()
 
 void tst_QMdiSubWindow::setWindowFlags()
 {
-    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip", SkipAll);
+    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip");
     QFETCH(Qt::WindowType, windowType);
     QFETCH(Qt::WindowType, expectedWindowType);
     QFETCH(Qt::WindowFlags, customFlags);
@@ -968,7 +968,7 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     QCOMPARE(window->geometry(), originalGeometry);
 
     // With Qt::WindowShadeButtonHint flag set
-    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip", SkipAll);
+    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip");
     window->setWindowFlags(window->windowFlags() | Qt::WindowShadeButtonHint);
     QVERIFY(window->windowFlags() & Qt::WindowShadeButtonHint);
     originalGeometry = window->geometry();

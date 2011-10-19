@@ -450,7 +450,7 @@ void tst_QFileSystemModel::rowsInserted_data()
 void tst_QFileSystemModel::rowsInserted()
 {
 #if defined(Q_OS_WINCE)
-    QSKIP("Watching directories does not work on CE(see #137910)", SkipAll);
+    QSKIP("Watching directories does not work on CE(see #137910)");
 #endif
     QString tmp = flatDirTestPath;
     rowCount();
@@ -505,7 +505,7 @@ void tst_QFileSystemModel::rowsRemoved_data()
 void tst_QFileSystemModel::rowsRemoved()
 {
 #if defined(Q_OS_WINCE)
-    QSKIP("Watching directories does not work on CE(see #137910)", SkipAll);
+    QSKIP("Watching directories does not work on CE(see #137910)");
 #endif
     QString tmp = flatDirTestPath;
     rowCount();

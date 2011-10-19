@@ -842,7 +842,7 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
     QDockWidgetLayout *l = qobject_cast<QDockWidgetLayout*>(dock.layout());
 
     if (l && !l->nativeWindowDeco())
-        QSKIP("this machine doesn't support native dock widget", SkipAll);
+        QSKIP("this machine doesn't support native dock widget");
 
     QVERIFY(dock.windowFlags() & Qt::WindowCloseButtonHint);
 

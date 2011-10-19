@@ -421,7 +421,7 @@ void tst_QPathClipper::testComparePaths()
 void tst_QPathClipper::clip()
 {
     if (sizeof(double) != sizeof(qreal)) {
-        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors", SkipAll);
+        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors");
     }
     QFETCH( QPainterPath, subject );
     QFETCH( QPainterPath, clip );
@@ -542,7 +542,7 @@ void tst_QPathClipper::clipTest(int subjectIndex, int clipIndex, QPathClipper::O
 void tst_QPathClipper::clip2()
 {
     if (sizeof(double) != sizeof(qreal))
-        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors", SkipAll);
+        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors");
 
     int operation = 0;
 
@@ -1301,7 +1301,7 @@ void tst_QPathClipper::task251909()
 void tst_QPathClipper::qtbug3778()
 {
     if (sizeof(double) != sizeof(qreal)) {
-        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors", SkipAll);
+        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors");
     }
     QPainterPath path1;
     path1.moveTo(200, 3.22409e-5);

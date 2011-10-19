@@ -80,7 +80,7 @@ Q_DECLARE_METATYPE(QRectF)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
-        QSKIP("The Graphics View doesn't get the paint events", SkipSingle);
+        QSKIP("The Graphics View doesn't get the paint events");
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif
@@ -2393,9 +2393,8 @@ void tst_QGraphicsItem::shape()
 
 void tst_QGraphicsItem::contains()
 {
-    if (sizeof(qreal) != sizeof(double)) {
-        QSKIP("Skipped due to rounding errors", SkipAll);
-    }
+    if (sizeof(qreal) != sizeof(double))
+        QSKIP("Skipped due to rounding errors");
 
     // Rect
     QGraphicsRectItem rect(QRectF(-10, -10, 20, 20));
@@ -2673,9 +2672,8 @@ protected:
 
 void tst_QGraphicsItem::isObscured()
 {
-    if (sizeof(qreal) != sizeof(double)) {
-        QSKIP("Skipped due to rounding errors", SkipAll);
-    }
+    if (sizeof(qreal) != sizeof(double))
+        QSKIP("Skipped due to rounding errors");
 
     OpaqueItem *item1 = new OpaqueItem;
     item1->setRect(0, 0, 100, 100);
@@ -5086,7 +5084,7 @@ void tst_QGraphicsItem::paint()
 #ifdef Q_OS_WIN32
     //we try to switch the desktop: if it fails, we skip the test
     if (::SwitchDesktop( ::GetThreadDesktop( ::GetCurrentThreadId() ) ) == 0) {
-        QSKIP("The Graphics View doesn't get the paint events", SkipSingle);
+        QSKIP("The Graphics View doesn't get the paint events");
     }
 #endif
 
@@ -5827,7 +5825,7 @@ void tst_QGraphicsItem::itemClippingDiscovery()
     // The rect items are no longer visible at these points.
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
     if (sizeof(qreal) != sizeof(double))
-        QSKIP("This fails due to internal rounding errors", SkipSingle);
+        QSKIP("This fails due to internal rounding errors");
     QCOMPARE(scene.itemAt(90, 90), (QGraphicsItem *)0);
 }
 
@@ -8112,7 +8110,7 @@ void tst_QGraphicsItem::sorting_data()
 void tst_QGraphicsItem::sorting()
 {
     if (PlatformQuirks::isAutoMaximizing())
-        QSKIP("Skipped because Platform is auto maximizing", SkipAll);
+        QSKIP("Skipped because Platform is auto maximizing");
 
     _paintedItems.clear();
 
@@ -10516,7 +10514,7 @@ public:
 void tst_QGraphicsItem::updateMicroFocus()
 {
 #if defined Q_OS_WIN || defined Q_OS_MAC
-    QSKIP("QTBUG-9578", SkipAll);
+    QSKIP("QTBUG-9578");
 #endif
     QGraphicsScene scene;
     QWidget parent;

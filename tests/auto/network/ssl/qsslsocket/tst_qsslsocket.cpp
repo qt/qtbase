@@ -1269,7 +1269,7 @@ void tst_QSslSocket::wildcardCertificateNames()
 
 void tst_QSslSocket::wildcard()
 {
-    QSKIP("TODO: solve wildcard problem", SkipAll);
+    QSKIP("TODO: solve wildcard problem");
 
     if (!QSslSocket::supportsSsl())
         return;

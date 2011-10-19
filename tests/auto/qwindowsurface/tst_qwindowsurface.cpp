@@ -69,7 +69,7 @@ private slots:
 #if QT_VERSION >= 0x050000
 void tst_QWindowSurface::initTestCase()
 {
-    QSKIP("This test is temporarily skipped until it is fixed for Qt5", SkipAll);
+    QSKIP("This test is temporarily skipped until it is fixed for Qt5");
 }
 
 #else
@@ -162,7 +162,7 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
 {
 #ifdef Q_WS_X11
     if (QX11Info::isCompositingManagerRunning())
-        QSKIP("Test is unreliable with composition manager", SkipAll);
+        QSKIP("Test is unreliable with composition manager");
 #endif
 
 #ifdef Q_WS_WIN
@@ -208,7 +208,7 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
     QApplication::processEvents();
 
 #if defined(Q_WS_QWS)
-    QSKIP("task 176755", SkipAll);
+    QSKIP("task 176755");
 #endif
     VERIFY_COLOR(w.geometry(), w.color);
     QCOMPARE(QRegion(w.rect()), w.r);

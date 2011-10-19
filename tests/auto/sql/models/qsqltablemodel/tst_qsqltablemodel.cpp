@@ -233,9 +233,9 @@ void tst_QSqlTableModel::generic_data(const QString &engine)
 {
     if ( dbs.fillTestTable(engine) == 0 ) {
         if (engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -243,9 +243,9 @@ void tst_QSqlTableModel::generic_data_with_strategies(const QString &engine)
 {
     if ( dbs.fillTestTableWithStrategies(engine) == 0 ) {
         if (engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -961,7 +961,7 @@ void tst_QSqlTableModel::whitespaceInIdentifiers()
     CHECK_DATABASE(db);
 
     if (!testWhiteSpaceNames(db.driverName()))
-        QSKIP("DBMS doesn't support whitespaces in identifiers", SkipSingle);
+        QSKIP("DBMS doesn't support whitespaces in identifiers");
 
     QString tableName = qTableName("qtestw hitespace", db.driver());
 
@@ -1221,7 +1221,7 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     if(db.databaseName() == ":memory:")
-        QSKIP(":memory: database, skipping test", SkipSingle);
+        QSKIP(":memory: database, skipping test");
 
     QSqlDatabase attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
     attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));

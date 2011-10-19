@@ -515,7 +515,7 @@ void tst_QMdiArea::subWindowActivated2()
     spy.clear();
 
     if (PlatformQuirks::isAutoMaximizing())
-        QSKIP("Platform is auto maximizing, so no showMinimized()", SkipAll);
+        QSKIP("Platform is auto maximizing, so no showMinimized()");
 
     // Check that we only emit _one_ signal and the active window
     // is unchanged after showMinimized/showNormal.
@@ -531,7 +531,7 @@ void tst_QMdiArea::subWindowActivated2()
     QEXPECT_FAIL("", "task 168682", Abort);
 #endif
 #ifdef Q_OS_WINCE
-    QSKIP("Not fixed yet. See Task 197453", SkipAll);
+    QSKIP("Not fixed yet. See Task 197453");
 #endif
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
@@ -1757,7 +1757,7 @@ void tst_QMdiArea::tileSubWindows()
     const int spacing = 2 * frameWidth + 2;
     const QSize expectedViewportSize(3 * minSize.width() + spacing, 3 * minSize.height() + spacing);
 #ifdef Q_OS_WINCE
-    QSKIP("Not fixed yet! See task 197453", SkipAll);
+    QSKIP("Not fixed yet! See task 197453");
 #endif
     QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
 
@@ -2714,7 +2714,7 @@ void tst_QMdiArea::nativeSubWindows()
 #ifndef QT_NO_OPENGL
     {
     if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform", SkipAll);
+        QSKIP("QGL not supported on this platform");
 
     QMdiArea mdiArea;
     QGLWidget *glViewport = new QGLWidget;
@@ -2728,7 +2728,7 @@ void tst_QMdiArea::nativeSubWindows()
 
     const QGLContext *context = glViewport->context();
     if (!context || !context->isValid())
-        QSKIP("QGL is broken, cannot continue test", SkipAll);
+        QSKIP("QGL is broken, cannot continue test");
 
     // The viewport and all the sub-windows must be native.
     QVERIFY(mdiArea.viewport()->internalWinId());

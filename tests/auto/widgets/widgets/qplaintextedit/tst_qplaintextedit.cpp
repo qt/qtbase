@@ -307,7 +307,7 @@ void tst_QPlainTextEdit::createSelection()
 void tst_QPlainTextEdit::clearMustNotChangeClipboard()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
     ed->textCursor().insertText("Hello World");
     QString txt("This is different text");
     QApplication::clipboard()->setText(txt);
@@ -340,7 +340,7 @@ void tst_QPlainTextEdit::paragSeparatorOnPlaintextAppend()
 void tst_QPlainTextEdit::selectAllSetsNotSelection()
 {
     if (!QApplication::clipboard()->supportsSelection())
-        QSKIP("Test only relevant for systems with selection", SkipAll);
+        QSKIP("Test only relevant for systems with selection");
 
     QApplication::clipboard()->setText(QString("foobar"), QClipboard::Selection);
     QVERIFY(QApplication::clipboard()->text(QClipboard::Selection) == QString("foobar"));
@@ -484,7 +484,7 @@ void tst_QPlainTextEdit::setTextCursor()
 void tst_QPlainTextEdit::undoAvailableAfterPaste()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     QSignalSpy spy(ed->document(), SIGNAL(undoAvailable(bool)));
 
@@ -677,7 +677,7 @@ void tst_QPlainTextEdit::preserveCharFormatInAppend()
 void tst_QPlainTextEdit::copyAndSelectAllInReadonly()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     ed->setReadOnly(true);
     ed->setPlainText("Hello World");
@@ -1012,7 +1012,7 @@ void tst_QPlainTextEdit::copyAvailable()
     QFETCH(QString, function);
 
 #ifdef Q_WS_MAC
-    QSKIP("copyAvailable has never passed on Mac, task to fix is 132482", SkipAll);
+    QSKIP("copyAvailable has never passed on Mac, task to fix is 132482");
 #endif
     ed->clear();
     QApplication::clipboard()->clear();
@@ -1194,7 +1194,7 @@ void tst_QPlainTextEdit::selectWordsFromStringsContainingSeparators()
 void tst_QPlainTextEdit::canPaste()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     QApplication::clipboard()->setText(QString());
     QVERIFY(!ed->canPaste());

@@ -735,7 +735,7 @@ void tst_QAbstractItemView::persistentEditorFocus()
                                Qt::LeftButton, Qt::NoModifier);
         qApp->sendEvent(list.at(i), &mouseEvent);
         if (!qApp->focusWidget())
-            QSKIP("Some window managers don't handle focus that well", SkipAll);
+            QSKIP("Some window managers don't handle focus that well");
         QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget *>(list.at(i)));
     }
 }
@@ -890,7 +890,7 @@ void tst_QAbstractItemView::dragAndDrop()
     // From Task 137729
 
 #ifdef Q_WS_QWS
-    QSKIP("Embedded drag-and-drop not good enough yet...", SkipAll);
+    QSKIP("Embedded drag-and-drop not good enough yet...");
 #endif
 
     const int attempts = 10;
@@ -933,7 +933,7 @@ void tst_QAbstractItemView::dragAndDrop()
 void tst_QAbstractItemView::dragAndDropOnChild()
 {
 #ifdef Q_WS_QWS
-    QSKIP("Embedded drag-and-drop not good enough yet...", SkipAll);
+    QSKIP("Embedded drag-and-drop not good enough yet...");
 #endif
 
     const int attempts = 10;
@@ -1230,7 +1230,7 @@ void tst_QAbstractItemView::task250754_fontChange()
 void tst_QAbstractItemView::task200665_itemEntered()
 {
 #ifdef Q_OS_WINCE_WM
-    QSKIP("On Windows Mobile the mouse tracking is unavailable at the moment", SkipAll);
+    QSKIP("On Windows Mobile the mouse tracking is unavailable at the moment");
 #endif
     //we test that view will emit entered
     //when the scrollbar move but not the mouse itself

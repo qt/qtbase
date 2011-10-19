@@ -622,7 +622,7 @@ void tst_QFileInfo::canonicalFilePath()
             (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLinkW");
 
     if (!ptrCreateSymbolicLink) {
-        QSKIP("Symbolic links aren't supported by FS", SkipAll);
+        QSKIP("Symbolic links aren't supported by FS");
     } else {
         // CreateSymbolicLink can return TRUE & still fail to create the link,
         // the error code in that case is ERROR_PRIVILEGE_NOT_HELD (1314)
@@ -630,11 +630,11 @@ void tst_QFileInfo::canonicalFilePath()
         BOOL ret = ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1);
         DWORD dwErr = GetLastError();
         if (!ret)
-            QSKIP("Symbolic links aren't supported by FS", SkipAll);
+            QSKIP("Symbolic links aren't supported by FS");
         QString currentPath = QDir::currentPath();
         bool is_res_Current = QDir::setCurrent("res");
         if (!is_res_Current && dwErr == 1314)
-            QSKIP("Not enough privilages to create Symbolic links", SkipAll);
+            QSKIP("Not enough privilages to create Symbolic links");
         QCOMPARE(is_res_Current, true);
 
         QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
@@ -1001,7 +1001,7 @@ void tst_QFileInfo::fileTimes()
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
 #ifdef Q_OS_UNIX
         if (qIsLikelyToBeNfs(file.handle()))
-            QSKIP("This Test doesn't work on NFS", SkipAll);
+            QSKIP("This Test doesn't work on NFS");
 #endif
         QTextStream ts(&file);
         ts << fileName << endl;
@@ -1313,7 +1313,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         //we need at least one data set for the test not to fail when skipping _data function
         QDir target("target");
         QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
-        QSKIP("symbolic links not supported by operating system",SkipSingle);
+        QSKIP("symbolic links not supported by operating system");
     }
     {
         //Directory symlinks
@@ -1348,7 +1348,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
             //we need at least one data set for the test not to assert fail when skipping _data function
             QDir target("target");
             QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
-            QSKIP("link not supported by FS or insufficient privilege", SkipSingle);
+            QSKIP("link not supported by FS or insufficient privilege");
         }
         QVERIFY(file.exists());
 
@@ -1655,7 +1655,7 @@ void tst_QFileInfo::owner()
     qt_ntfs_permission_lookup = 1;
 #endif
     if (userName.isEmpty())
-        QSKIP("Can't retrieve the user name", SkipAll);
+        QSKIP("Can't retrieve the user name");
     QString fileName("ownertest.txt");
     QVERIFY(!QFile::exists(fileName) || QFile::remove(fileName));
     {

@@ -749,7 +749,7 @@ void tst_QTransform::inverted_data()
 void tst_QTransform::inverted()
 {
     if (sizeof(qreal) != sizeof(double))
-        QSKIP("precision error if qreal is not double", SkipAll);
+        QSKIP("precision error if qreal is not double");
 
     QFETCH(QTransform, matrix);
 

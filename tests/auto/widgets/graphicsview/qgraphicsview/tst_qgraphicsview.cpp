@@ -1624,9 +1624,9 @@ void tst_QGraphicsView::itemAt2()
     QVERIFY(view.itemAt(itemViewPoint + QPoint(0, -1)));
     QVERIFY(!view.items(itemViewPoint + QPoint(0, -1)).isEmpty());
 
-    if (sizeof(qreal) != sizeof(double)) {
-        QSKIP("Skipped due to rounding errors", SkipAll);
-    }
+    if (sizeof(qreal) != sizeof(double))
+        QSKIP("Skipped due to rounding errors");
+
     // Not here
     QVERIFY(!view.itemAt(itemViewPoint + QPoint(-1, 0)));
     QVERIFY(view.items(itemViewPoint + QPoint(-1, 0)).isEmpty());
@@ -2062,7 +2062,7 @@ void tst_QGraphicsView::wheelEvent()
 void tst_QGraphicsView::cursor()
 {
     if (PlatformQuirks::haveMouseCursor())
-        QSKIP("The Platform does not have regular cursor support", SkipAll);
+        QSKIP("The Platform does not have regular cursor support");
 
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
@@ -2090,7 +2090,7 @@ void tst_QGraphicsView::cursor()
 void tst_QGraphicsView::cursor2()
 {
     if (PlatformQuirks::haveMouseCursor())
-        QSKIP("The Platform does not have regular cursor support", SkipAll);
+        QSKIP("The Platform does not have regular cursor support");
 
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
@@ -2710,7 +2710,7 @@ void tst_QGraphicsView::scrollBarRanges()
 #if !defined(QT_NO_STYLE_MOTIF)
         view.setStyle(new QMotifStyle);
 #else
-        QSKIP("No Motif style compiled.", SkipSingle);
+        QSKIP("No Motif style compiled.");
 #endif
     } else {
 #if defined(Q_OS_WINCE)

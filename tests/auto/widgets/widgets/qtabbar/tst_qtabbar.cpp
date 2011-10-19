@@ -283,7 +283,7 @@ void tst_QTabBar::setElideMode()
 void tst_QTabBar::sizeHints()
 {
     QTabBar tabBar;
-	QSKIP("To be fixed on Mac (font size below not large enough) and Linux QWS (probably too large for the screen).", SkipSingle);
+	QSKIP("To be fixed on Mac (font size below not large enough) and Linux QWS (probably too large for the screen).");
     tabBar.setFont(QFont("Arial", 10));
     tabBar.addTab("tab 01");
     tabBar.addTab("tab 02");

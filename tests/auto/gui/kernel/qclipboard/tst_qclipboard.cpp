@@ -107,7 +107,7 @@ void tst_QClipboard::modes()
     QClipboard * const clipboard =  QApplication::clipboard();
 
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
 
     const QString defaultMode = "default mode text;";
     clipboard->setText(defaultMode);
@@ -137,7 +137,7 @@ void tst_QClipboard::testSignals()
     qRegisterMetaType<QClipboard::Mode>("QClipboard::Mode");
 
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
 
     QClipboard * const clipboard =  QApplication::clipboard();
 
@@ -195,7 +195,7 @@ void tst_QClipboard::testSignals()
 void tst_QClipboard::copy_exit_paste()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
     const QStringList stringArgument = QStringList() << "Test string.";
     QCOMPARE(QProcess::execute("copier/copier", stringArgument), 0);
 #ifdef Q_WS_MAC
@@ -209,7 +209,7 @@ void tst_QClipboard::copy_exit_paste()
 void tst_QClipboard::setMimeData()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
     QMimeData *mimeData = new QMimeData;
     const QString TestName(QLatin1String("tst_QClipboard::setMimeData() mimeData"));
     mimeData->setObjectName(TestName);
@@ -299,7 +299,7 @@ void tst_QClipboard::clearBeforeSetText()
     QApplication::processEvents();
 
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
 
     const QString text = "tst_QClipboard::clearBeforeSetText()";
 

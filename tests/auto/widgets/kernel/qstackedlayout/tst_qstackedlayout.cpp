@@ -291,7 +291,7 @@ void tst_QStackedLayout::removeWidget()
         if (QApplication::focusWidget() == top)
             break;
         else if (i >= 5)
-            QSKIP("Can't get focus", SkipSingle);
+            QSKIP("Can't get focus");
         QTest::qWait(100);
         ++i;
     }

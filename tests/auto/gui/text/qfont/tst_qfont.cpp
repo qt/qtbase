@@ -167,8 +167,7 @@ void tst_QFont::exactMatch()
     QVERIFY(QFont("monospace").exactMatch());
 #endif
 
-    QSKIP("This test is bogus on Unix with support for font aliases in fontconfig", SkipAll);
-    return;
+    QSKIP("This test is bogus on Unix with support for font aliases in fontconfig");
 
     QFontDatabase fdb;
 
@@ -538,9 +537,8 @@ void tst_QFont::setFontRaw()
         if (str.toLower() == "fixed")
             found = true;
     }
-    if (!found) {
-        QSKIP("Fixed font not available.", SkipSingle);
-    }
+    if (!found)
+        QSKIP("Fixed font not available.");
     QCOMPARE(QFontInfo(f).family().left(5).toLower(), QString("fixed"));
 }
 #endif
@@ -654,7 +652,7 @@ void tst_QFont::defaultFamily()
 
     QFontDatabase db;
     if (!db.hasFamily(defaultFamily))
-        QSKIP("Font family is not available on the system", SkipSingle);
+        QSKIP("Font family is not available on the system");
 
     QFont f;
     f.setStyleHint(styleHint);

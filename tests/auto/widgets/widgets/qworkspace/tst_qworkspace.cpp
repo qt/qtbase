@@ -369,7 +369,7 @@ void tst_QWorkspace::showWindows()
 void tst_QWorkspace::changeWindowTitle()
 {
 #ifdef Q_OS_WINCE
-    QSKIP( "Test fails on Windows CE due to QWorkspace state handling", SkipAll);
+    QSKIP( "Test fails on Windows CE due to QWorkspace state handling");
 #endif
     const QString mwc( "MainWindow's Caption" );
     const QString mwc2( "MainWindow's New Caption" );

@@ -2537,7 +2537,7 @@ void tst_QDateTimeEdit::newCase()
 {
     if (QDate::shortMonthName(6) != "Jun" || QDate::shortMonthName(7) != "Jul" ||
         QDate::longMonthName(6) != "June" || QDate::longMonthName(7) != "July")
-        QSKIP("This test only works in English", SkipAll);
+        QSKIP("This test only works in English");
 
     testWidget->setDisplayFormat("MMMM'a'MbMMMcMM");
     testWidget->setDate(QDate(2005, 6, 1));
@@ -2584,7 +2584,7 @@ void tst_QDateTimeEdit::newCase2()
 void tst_QDateTimeEdit::newCase3()
 {
     if (!QDate::longMonthName(1).startsWith("Januar"))
-        QSKIP("This test does not work in this locale", SkipAll);
+        QSKIP("This test does not work in this locale");
 
     testWidget->setDisplayFormat("dd MMMM yyyy");
     testWidget->setDate(QDate(2000, 1, 1));
@@ -2605,7 +2605,7 @@ void tst_QDateTimeEdit::newCase3()
 void tst_QDateTimeEdit::cursorPos()
 {
     if (QDate::longMonthName(1) != "January")
-        QSKIP("This test only works in English", SkipAll);
+        QSKIP("This test only works in English");
 
     testWidget->setDisplayFormat("dd MMMM yyyy");
     //testWidget->setGeometry(0, 0, 200, 200);
@@ -3210,7 +3210,7 @@ void tst_QDateTimeEdit::timeSpec()
         QVERIFY(edit.minimumDateTime().timeSpec() != min.timeSpec());
         QCOMPARE(edit.minimumDateTime().toTime_t(), min.toTime_t());
     } else {
-        QSKIP("Not tested in the GMT timezone", SkipAll);
+        QSKIP("Not tested in the GMT timezone");
     }
 }
 

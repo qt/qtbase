@@ -56,7 +56,7 @@
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
-        QSKIP("The Graphics View doesn't get the paint events", SkipSingle);
+        QSKIP("The Graphics View doesn't get the paint events");
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif

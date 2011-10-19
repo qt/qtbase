@@ -110,7 +110,7 @@ void tst_QGLBuffer::testBuffer(QGLBuffer::Type type)
     // Create the buffer - if this fails, then assume that the
     // GL implementation does not support buffers at all.
     if (!buffer.create())
-        QSKIP("Buffers are not supported on this platform", SkipAll);
+        QSKIP("Buffers are not supported on this platform");
 
     // Should now have a buffer id.
     QVERIFY(buffer.bufferId() != 0);
@@ -209,13 +209,13 @@ void tst_QGLBuffer::bufferSharing()
     if (!w2->isSharing()) {
         delete w2;
         delete w1;
-        QSKIP("Context sharing is not supported on this platform", SkipSingle);
+        QSKIP("Context sharing is not supported on this platform");
     }
 
     // Bind the buffer in the first context and write some data to it.
     QGLBuffer buffer(QGLBuffer::VertexBuffer);
     if (!buffer.create())
-        QSKIP("Buffers are not supported on this platform", SkipSingle);
+        QSKIP("Buffers are not supported on this platform");
     QVERIFY(buffer.isCreated());
     QVERIFY(buffer.bind());
     static GLfloat const data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};

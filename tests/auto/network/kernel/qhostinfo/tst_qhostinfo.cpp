@@ -328,7 +328,7 @@ void tst_QHostInfo::lookupIPv6()
     QFETCH(QString, addresses);
 
     if (!ipv6LookupsAvailable)
-        QSKIP("This platform does not support IPv6 lookups", SkipAll);
+        QSKIP("This platform does not support IPv6 lookups");
 
     lookupDone = false;
     QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(const QHostInfo&)));
@@ -371,11 +371,11 @@ void tst_QHostInfo::reverseLookup()
     QFETCH(int, err);
 
     if (!ipv6LookupsAvailable && hostNames.contains("classical.hexago.com")) {
-        QSKIP("IPv6 lookups are not supported on this platform", SkipSingle);
+        QSKIP("IPv6 lookups are not supported on this platform");
     }
 #if defined(Q_OS_HPUX) && defined(__ia64)
     if (hostNames.contains("classical.hexago.com"))
-        QSKIP("HP-UX 11i does not support IPv6 reverse lookups.", SkipSingle);
+        QSKIP("HP-UX 11i does not support IPv6 reverse lookups.");
 #endif
 
     QHostInfo info = QHostInfo::fromName(address);

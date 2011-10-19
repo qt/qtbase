@@ -297,7 +297,7 @@ void tst_QOpenGL::fboSimpleRendering()
     ctx.makeCurrent(&window);
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QOpenGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
     // No multisample with combined depth/stencil attachment:
     QOpenGLFramebufferObjectFormat fboFormat;
@@ -336,7 +336,7 @@ void tst_QOpenGL::fboRendering()
     ctx.makeCurrent(&window);
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QOpenGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
     // No multisample with combined depth/stencil attachment:
     QOpenGLFramebufferObjectFormat fboFormat;
@@ -346,7 +346,7 @@ void tst_QOpenGL::fboRendering()
     QOpenGLFramebufferObject fbo(256, 128, fboFormat);
 
     if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
-        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+        QSKIP("FBOs missing combined depth~stencil support");
 
     fbo.bind();
 
@@ -378,9 +378,8 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 
         ctx.makeCurrent(&window);
 
-        if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()) {
-            QSKIP("QOpenGLFramebufferObject not supported on this platform", SkipSingle);
-        }
+        if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+            QSKIP("QOpenGLFramebufferObject not supported on this platform");
 
         fbo = new QOpenGLFramebufferObject(128, 128);
 

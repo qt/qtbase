@@ -1040,7 +1040,7 @@ void tst_QTcpSocket::disconnectWhileConnecting()
     if (!data.isEmpty())
         socket->write(data);
     if (socket->state() == QAbstractSocket::ConnectedState)
-        QSKIP("localhost connections are immediate, test case is invalid", SkipSingle);
+        QSKIP("localhost connections are immediate, test case is invalid");
 
     QFETCH(bool, closeDirectly);
     if (closeDirectly) {
@@ -1156,9 +1156,8 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
     socket->connectToHost("127.0.0.1", thread->serverPort);
     if (!data.isEmpty())
         socket->write(data);
-    if (socket->state() == QAbstractSocket::ConnectedState) {
-        QSKIP("localhost connections are immediate, test case is invalid", SkipSingle);
-    }
+    if (socket->state() == QAbstractSocket::ConnectedState)
+        QSKIP("localhost connections are immediate, test case is invalid");
 
     QFETCH(bool, closeDirectly);
     if (closeDirectly) {
@@ -2224,14 +2223,14 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 #ifndef Q_OS_VXWORKS
 void tst_QTcpSocket::connectToMultiIP()
 {
-	QSKIP("TODO: setup DNS in the new network", SkipAll);
+    QSKIP("TODO: setup DNS in the new network");
 
     QFETCH_GLOBAL(bool, ssl);
     if (ssl)
         return;
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
-        QSKIP("This test takes too long if we also add the proxies.", SkipSingle);
+        QSKIP("This test takes too long if we also add the proxies.");
 
     qDebug("Please wait, this test can take a while...");
 

@@ -819,7 +819,7 @@ void tst_QSharedPointer::differentPointers()
         if (*reinterpret_cast<quintptr *>(&aData) == *reinterpret_cast<quintptr *>(&aBase))
             QFAIL("Something went very wrong -- we couldn't create two different pointers to the same object");
         if (aData != aBase || aBase != aData)
-            QSKIP("Broken compiler", SkipAll);
+            QSKIP("Broken compiler");
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
@@ -1803,7 +1803,7 @@ void tst_QSharedPointer::invalidConstructs_data()
 void tst_QSharedPointer::invalidConstructs()
 {
 #ifdef Q_CC_MINGW
-    QSKIP("The maintainer of QSharedPointer: 'We don't know what the problem is so skip the tests.'", SkipAll);
+    QSKIP("The maintainer of QSharedPointer: 'We don't know what the problem is so skip the tests.'");
 #endif
 
     QTest::QExternalTest test;

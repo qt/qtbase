@@ -840,7 +840,7 @@ void tst_QDateTime::toTimeSpec()
         QCOMPARE(utc.toTimeSpec(Qt::UTC), local.toTimeSpec(Qt::UTC));
         QCOMPARE(utc.toTimeSpec(Qt::LocalTime), local.toTimeSpec(Qt::LocalTime));
     } else {
-        QSKIP("Not tested with timezone other than Central European (CET/CST)", SkipAll);
+        QSKIP("Not tested with timezone other than Central European (CET/CST)");
     }
 }
 
@@ -862,7 +862,7 @@ void tst_QDateTime::toLocalTime()
         QCOMPARE(utc.toLocalTime(), local);
         QCOMPARE(utc.toLocalTime(), local.toLocalTime());
     } else {
-        QSKIP("Not tested with timezone other than Central European (CET/CST)", SkipAll);
+        QSKIP("Not tested with timezone other than Central European (CET/CST)");
     }
 }
 
@@ -884,7 +884,7 @@ void tst_QDateTime::toUTC()
         QCOMPARE(local.toUTC(), utc);
         QCOMPARE(utc.toUTC(), local.toUTC());
     } else {
-        QSKIP("Not tested with timezone other than Central European (CET/CST)", SkipAll);
+        QSKIP("Not tested with timezone other than Central European (CET/CST)");
     }
 
     // To make sure bug 72713 never happens again
@@ -1093,7 +1093,7 @@ void tst_QDateTime::currentDateTimeUtc2()
     } while (--i && !ok);
 
     if (!i)
-        QSKIP("Failed to get the dates within 1 ms of each other", SkipAll);
+        QSKIP("Failed to get the dates within 1 ms of each other");
 
     // seconds and milliseconds should be the same:
     QCOMPARE(utc.time().second(), local.time().second());
@@ -1162,7 +1162,7 @@ void tst_QDateTime::task_137698()
     // This is true for Central European Time
 
     if (!europeanTimeZone)
-        QSKIP("Not tested with timezone other than Central European (CET/CEST)", SkipAll);
+        QSKIP("Not tested with timezone other than Central European (CET/CEST)");
 
     QDateTime dt = QDateTime(QDate(2006, 11, 6), QTime(0, 0, 0), Qt::LocalTime);
     dt.setDate(QDate(2006, 10, 16));

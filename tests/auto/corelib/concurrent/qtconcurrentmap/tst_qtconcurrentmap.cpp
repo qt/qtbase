@@ -88,7 +88,7 @@ public slots:
 #ifdef QT_NO_CONCURRENT_FILTER
 void tst_QtConcurrentFilter::initTestCase()
 {
-    QSKIP("This test is skipped for gcc 3.x", SkipAll);
+    QSKIP("This test is skipped for gcc 3.x");
 }
 
 #else

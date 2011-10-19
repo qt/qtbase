@@ -94,7 +94,7 @@ void tst_QScrollBar::scrollSingleStep()
                                                    QStyle::SC_ScrollBarAddLine, testWidget);
 
     if (!sr.isValid())
-        QSKIP("SC_ScrollBarAddLine not valid",  SkipAll);
+        QSKIP("SC_ScrollBarAddLine not valid");
 
     QTest::mouseClick(testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
     QTest::qWait(510); // initial delay is 500 for setRepeatAction

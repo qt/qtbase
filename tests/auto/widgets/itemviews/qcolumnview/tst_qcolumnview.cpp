@@ -597,9 +597,8 @@ void tst_QColumnView::clicked()
     QCOMPARE(clickedSpy.count(), 1);
     qApp->processEvents();
 
-    if (sizeof(qreal) != sizeof(double)) {
-        QSKIP("Skipped due to rounding errors", SkipAll);
-    }
+    if (sizeof(qreal) != sizeof(double))
+        QSKIP("Skipped due to rounding errors");
 
     for (int i = 0; i < view.createdColumns.count(); ++i) {
         QAbstractItemView *column = view.createdColumns.at(i);

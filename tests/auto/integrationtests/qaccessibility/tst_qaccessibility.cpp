@@ -1417,9 +1417,8 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
 #ifndef Q_WS_MAC
 #ifdef Q_OS_WINCE
-    if (!IsValidCEPlatform()) {
-        QSKIP("Tests do not work on Mobile platforms due to native menus", SkipAll);
-    }
+    if (!IsValidCEPlatform())
+        QSKIP("Tests do not work on Mobile platforms due to native menus");
 #endif
     QCOMPARE(mw.mapFromGlobal(interface->rect().topLeft()), mw.menuBar()->geometry().topLeft());
     QCOMPARE(interface->rect().size(), mw.menuBar()->size());
@@ -3224,9 +3223,8 @@ void tst_QAccessibility::dockWidgetTest()
 void tst_QAccessibility::comboBoxTest()
 {
 #if defined(Q_OS_WINCE)
-    if (!IsValidCEPlatform()) {
-        QSKIP("Test skipped on Windows Mobile test hardware", SkipAll);
-    }
+    if (!IsValidCEPlatform())
+        QSKIP("Test skipped on Windows Mobile test hardware");
 #endif
     { // not editable combobox
     QComboBox combo;

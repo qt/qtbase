@@ -294,9 +294,9 @@ void tst_QSqlQuery::generic_data(const QString& engine)
 {
     if ( dbs.fillTestTable(engine) == 0 ) {
         if(engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -428,14 +428,14 @@ void tst_QSqlQuery::char1SelectUnicode()
     CHECK_DATABASE( db );
 
     if(db.driverName().startsWith("QDB2"))
-        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix");
 
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
         QString uniStr( QChar(0x0915) ); // DEVANAGARI LETTER KA
         QSqlQuery q( db );
 
         if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-            QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+            QSKIP( "Test requires MySQL >= 5.0");
 
         QString createQuery;
         const QString char1SelectUnicode(qTableName( "char1SU", __FILE__ ));
@@ -475,7 +475,7 @@ void tst_QSqlQuery::char1SelectUnicode()
         QVERIFY( !q.next() );
     }
     else
-        QSKIP( "Database not unicode capable", SkipSingle );
+        QSKIP( "Database not unicode capable");
 }
 
 void tst_QSqlQuery::oraRowId()
@@ -523,7 +523,7 @@ void tst_QSqlQuery::mysqlOutValues()
     QSqlQuery q( db );
 
     if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+        QSKIP( "Test requires MySQL >= 5.0");
 
     q.exec( "drop function " + hello );
 
@@ -572,7 +572,7 @@ void tst_QSqlQuery::oraOutValues()
     const QString tst_outValues(qTableName("tst_outValues", __FILE__));
 
     if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
-        QSKIP( "Test requires prepared query support", SkipSingle );
+        QSKIP( "Test requires prepared query support");
 
     QSqlQuery q( db );
 
@@ -754,7 +754,7 @@ void tst_QSqlQuery::outValuesDB2()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
-        QSKIP( "Test requires prepared query support", SkipSingle );
+        QSKIP( "Test requires prepared query support");
 
     QSqlQuery q( db );
 
@@ -791,7 +791,7 @@ void tst_QSqlQuery::outValues()
     const QString tst_outValues(qTableName("tst_outValues", __FILE__));
 
     if ( !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
-        QSKIP( "Test requires prepared query support", SkipSingle );
+        QSKIP( "Test requires prepared query support");
 
     QSqlQuery q( db );
 
@@ -819,7 +819,7 @@ void tst_QSqlQuery::outValues()
                                 "end\n" ) );
         QVERIFY( q.prepare( "{call " + tst_outValues + "(?)}" ) );
     } else
-        QSKIP( "Don't know how to create a stored procedure for this database server, please fix this test", SkipSingle );
+        QSKIP( "Don't know how to create a stored procedure for this database server, please fix this test");
 
     q.addBindValue( 0, QSql::Out );
 
@@ -838,7 +838,7 @@ void tst_QSqlQuery::blob()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::BLOB ) )
-        QSKIP( "DBMS not BLOB capable", SkipSingle );
+        QSKIP( "DBMS not BLOB capable");
 
     //don' make it too big otherwise sybase and mysql will complain
     QByteArray ba( BLOBSIZE, 0 );
@@ -994,7 +994,7 @@ void tst_QSqlQuery::numRowsAffected()
         ++i;
 
     if ( q.numRowsAffected() == -1 || q.numRowsAffected() == 0 )
-        QSKIP("Database doesn't support numRowsAffected", SkipSingle);
+        QSKIP("Database doesn't support numRowsAffected");
 
     if ( q.numRowsAffected() != -1 && q.numRowsAffected() != 0 && q.numRowsAffected() != i ) {
         // the value is undefined for SELECT, this check is just here for curiosity
@@ -1346,7 +1346,7 @@ void tst_QSqlQuery::bitField()
     CHECK_DATABASE( db );
 
     if ( !db.driverName().startsWith( "QTDS" ) )
-        QSKIP( "TDS specific test", SkipSingle );
+        QSKIP( "TDS specific test");
 
     QSqlQuery q( db );
 
@@ -1434,7 +1434,7 @@ void tst_QSqlQuery::precision()
     static const char* precStr = "1.2345678901234567891";
 
     if ( db.driverName().startsWith( "QIBASE" ) )
-        QSKIP( "DB unable to store high precision", SkipSingle );
+        QSKIP( "DB unable to store high precision");
 
     {
         // need a new scope for SQLITE
@@ -1499,14 +1499,14 @@ void tst_QSqlQuery::nullResult()
 void tst_QSqlQuery::transaction()
 {
     // query based transaction is not really possible with Qt
-    QSKIP( "only tested manually by trained staff", SkipAll );
+    QSKIP( "only tested manually by trained staff");
 
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::Transactions ) )
-        QSKIP( "DBMS not transaction capable", SkipSingle );
+        QSKIP( "DBMS not transaction capable");
 
     // this is the standard SQL
     QString startTransactionStr( "start transaction" );
@@ -1551,7 +1551,7 @@ void tst_QSqlQuery::transaction()
     if ( !q.exec( "rollback" ) ) {
         if ( db.driverName().startsWith( "QMYSQL" ) ) {
             qDebug( "MySQL: %s", qPrintable(tst_Databases::printError( q.lastError() ) ));
-            QSKIP( "MySQL transaction failed ", SkipSingle ); //non-fatal
+            QSKIP( "MySQL transaction failed "); //non-fatal
         } else
             QFAIL( "Could not rollback transaction: " + tst_Databases::printError( q.lastError() ) );
     }
@@ -1595,7 +1595,7 @@ void tst_QSqlQuery::joins()
             || db.driverName().startsWith( "QIBASE" ) )
         // Oracle broken beyond recognition - cannot outer join on more than
         // one table.
-        QSKIP( "DBMS cannot understand standard SQL", SkipSingle );
+        QSKIP( "DBMS cannot understand standard SQL");
 
     QSqlQuery q( db );
 
@@ -1657,9 +1657,9 @@ void tst_QSqlQuery::prepare_bind_exec()
     const QString qtest_prepare(qTableName("qtest_prepare", __FILE__));
 
     if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
-        QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
+        QSKIP("Can't transliterate extended unicode to ascii");
     if(db.driverName().startsWith("QDB2"))
-        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix");
 
     {
         // new scope for SQLITE
@@ -1878,7 +1878,7 @@ void tst_QSqlQuery::sqlServerLongStrings()
     CHECK_DATABASE( db );
 
     if ( !tst_Databases::isSqlServer( db ) )
-        QSKIP( "SQL Server specific test", SkipSingle );
+        QSKIP( "SQL Server specific test");
 
     QSqlQuery q( db );
 
@@ -1963,7 +1963,7 @@ void tst_QSqlQuery::batchExec()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::BatchOperations ) )
-        QSKIP( "Database can't do BatchOperations", SkipSingle );
+        QSKIP( "Database can't do BatchOperations");
 
     QSqlQuery q( db );
     const QString tableName = qTableName( "qtest_batch", __FILE__ );
@@ -2018,7 +2018,7 @@ void tst_QSqlQuery::oraArrayBind()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::BatchOperations ) )
-        QSKIP( "Database can't do BatchOperations", SkipSingle );
+        QSKIP( "Database can't do BatchOperations");
 
     QSqlQuery q( db );
 
@@ -2180,7 +2180,7 @@ void tst_QSqlQuery::lastInsertId()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::LastInsertId ) )
-        QSKIP( "Database doesn't support lastInsertId", SkipSingle );
+        QSKIP( "Database doesn't support lastInsertId");
 
     QSqlQuery q( db );
 
@@ -2213,7 +2213,7 @@ void tst_QSqlQuery::bindWithDoubleColonCastOperator()
     // Only PostgreSQL support the double-colon cast operator
 
     if ( !db.driverName().startsWith( "QPSQL" ) )
-        QSKIP( "Test requires PostgreSQL", SkipSingle );
+        QSKIP( "Test requires PostgreSQL");
 
     const QString tablename(qTableName( "bindtest", __FILE__ ));
 
@@ -2281,7 +2281,7 @@ void tst_QSqlQuery::createQueryOnClosedDatabase()
             && !db.driverName().startsWith( "QOCI" )
             && !db.driverName().startsWith( "QMYSQL" )
             && !db.driverName().startsWith( "QDB2" ) )
-        QSKIP( "Test is specific for PostgreSQL, Oracle, MySql and DB2", SkipSingle );
+        QSKIP( "Test is specific for PostgreSQL, Oracle, MySql and DB2");
 
     db.close();
 
@@ -2367,10 +2367,10 @@ void tst_QSqlQuery::sqlite_finish()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (db.driverName() != QLatin1String("QSQLITE"))
-        QSKIP("Sqlite3 specific test", SkipSingle);
+        QSKIP("Sqlite3 specific test");
 
     if ( db.databaseName().startsWith( ':' ) )
-        QSKIP( "This test requires a database on the filesystem, not in-memory", SkipAll );
+        QSKIP( "This test requires a database on the filesystem, not in-memory");
 
     {
         QSqlDatabase db2 = QSqlDatabase::addDatabase( "QSQLITE", "sqlite_finish_sqlite" );
@@ -2412,12 +2412,12 @@ void tst_QSqlQuery::nextResult()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::MultipleResultSets ) || !db.driver()->hasFeature( QSqlDriver::BatchOperations ) )
-        QSKIP( "DBMS does not support multiple result sets or batch operations", SkipSingle );
+        QSKIP( "DBMS does not support multiple result sets or batch operations");
 
     QSqlQuery q( db );
 
     if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+        QSKIP( "Test requires MySQL >= 5.0");
 
     enum DriverType { ODBC, MYSQL, DB2 };
     DriverType driverType = ODBC;
@@ -2607,7 +2607,7 @@ void tst_QSqlQuery::blobsPreparedQuery()
     CHECK_DATABASE( db );
 
     if ( !db.driver()->hasFeature( QSqlDriver::BLOB ) || !db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
-        QSKIP( "DBMS does not support BLOBs or prepared queries", SkipSingle );
+        QSKIP( "DBMS does not support BLOBs or prepared queries");
 
     const QString tableName(qTableName( "blobstest", __FILE__ ));
 
@@ -2712,7 +2712,7 @@ void tst_QSqlQuery::task_250026()
 
     if ( !q.exec( "create table " + tableName + " (longfield varchar(1100))" ) ) {
         qDebug() << "Error" << q.lastError();
-        QSKIP( "Db doesn't support \"1100\" as a size for fields", SkipSingle );
+        QSKIP( "Db doesn't support \"1100\" as a size for fields");
     }
 
     data258.fill( 'A', 258 );
@@ -2853,7 +2853,7 @@ void tst_QSqlQuery::sqlServerReturn0()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (!tst_Databases::isSqlServer( db ))
-        QSKIP("SQL Server specific test", SkipSingle);
+        QSKIP("SQL Server specific test");
 
     const QString tableName(qTableName("test141895", __FILE__)), procName(qTableName("test141895_proc", __FILE__));
     QSqlQuery q( db );
@@ -3001,7 +3001,7 @@ void tst_QSqlQuery::QTBUG_6618()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if (!tst_Databases::isSqlServer( db ))
-        QSKIP("SQL Server specific test", SkipSingle);
+        QSKIP("SQL Server specific test");
 
     QSqlQuery q(db);
     q.exec( "drop procedure " + qTableName( "tst_raiseError", __FILE__ ) );  //non-fatal
@@ -3023,7 +3023,7 @@ void tst_QSqlQuery::QTBUG_6852()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+        QSKIP( "Test requires MySQL >= 5.0");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("bug6852", __FILE__)), procName(qTableName("bug6852_proc", __FILE__));
@@ -3057,7 +3057,7 @@ void tst_QSqlQuery::QTBUG_5765()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toFloat()<4.1 )
-        QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
+        QSKIP( "Test requires MySQL >= 4.1");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("bug5765", __FILE__));
@@ -3199,7 +3199,7 @@ void tst_QSqlQuery::sqlite_constraint()
     CHECK_DATABASE( db );
 
     if (db.driverName() != QLatin1String("QSQLITE"))
-        QSKIP("Sqlite3 specific test", SkipSingle);
+        QSKIP("Sqlite3 specific test");
 
     QSqlQuery q(db);
     const QString trigger(qTableName("test_constraint", __FILE__));
@@ -3222,7 +3222,7 @@ void tst_QSqlQuery::benchmark()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+        QSKIP( "Test requires MySQL >= 5.0");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("benchmark", __FILE__));

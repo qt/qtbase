@@ -458,8 +458,7 @@ void tst_QDialog::throwInExec()
             qPrintable(QString(
                 "Throwing exceptions in exec() won't work if %1 event dispatcher is used.\n"
                 "Try running with QT_NO_GLIB=1 in environment."
-            ).arg(QString::fromLatin1(dispatcher))),
-            SkipAll
+            ).arg(QString::fromLatin1(dispatcher)))
         );
     }
 #endif

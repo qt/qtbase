@@ -291,9 +291,9 @@ void tst_QSqlThread::generic_data(const QString& engine)
 {
     if ( dbs.fillTestTable(engine) == 0 ) {
         if(engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -380,7 +380,7 @@ void tst_QSqlThread::simpleThreading()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
 
     QtTestSqlThread t1(db);
     QtTestSqlThread t2(db);
@@ -404,9 +404,9 @@ void tst_QSqlThread::readWriteThreading()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
     else if (tst_Databases::isMSAccess(db))
-        QSKIP("does not work with MS Access databases", SkipSingle);
+        QSKIP("does not work with MS Access databases");
 
     SqlProducer producer(db);
     SqlConsumer consumer(db);
@@ -432,7 +432,7 @@ void tst_QSqlThread::readFromSingleConnection()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
 
     QObject cleanupHelper; // make sure the threads die when we exit the scope
     for (int i = 0; i < maxThreadCount; ++i) {
@@ -454,7 +454,7 @@ void tst_QSqlThread::readWriteFromSingleConnection()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
 
     QObject cleanupHelper;
     for (int i = 0; i < maxThreadCount; ++i) {
@@ -480,7 +480,7 @@ void tst_QSqlThread::preparedReadWriteFromSingleConnection()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
 
     QObject cleanupHelper;
     for (int i = 0; i < maxThreadCount; ++i) {
@@ -506,7 +506,7 @@ void tst_QSqlThread::transactionsFromSingleConnection()
     CHECK_DATABASE(db);
 
     if (db.databaseName() == ":memory:")
-        QSKIP("does not work with in-memory databases", SkipSingle);
+        QSKIP("does not work with in-memory databases");
 
     // start and commit a transaction
     QVERIFY_SQL(db, db.transaction());

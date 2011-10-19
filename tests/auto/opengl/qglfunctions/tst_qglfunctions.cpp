@@ -91,7 +91,7 @@ void tst_QGLFunctions::features()
     // Make a context current.
     QGLWidget glw;
     if (!glw.isValid())
-        QSKIP("Could not create a GL context", SkipAll);
+        QSKIP("Could not create a GL context");
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
@@ -195,12 +195,12 @@ void tst_QGLFunctions::multitexture()
     QGLFunctions funcs;
     QGLWidget glw;
     if (!glw.isValid())
-        QSKIP("Could not create a GL context", SkipAll);
+        QSKIP("Could not create a GL context");
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
     if (!funcs.hasOpenGLFeature(QGLFunctions::Multitexture))
-        QSKIP("Multitexture functions are not supported", SkipSingle);
+        QSKIP("Multitexture functions are not supported");
 
     funcs.glActiveTexture(GL_TEXTURE1);
 
@@ -221,12 +221,12 @@ void tst_QGLFunctions::blendColor()
     QGLFunctions funcs;
     QGLWidget glw;
     if (!glw.isValid())
-        QSKIP("Could not create a GL context", SkipAll);
+        QSKIP("Could not create a GL context");
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
     if (!funcs.hasOpenGLFeature(QGLFunctions::BlendColor))
-        QSKIP("glBlendColor() is not supported", SkipSingle);
+        QSKIP("glBlendColor() is not supported");
 
     funcs.glBlendColor(0.0f, 1.0f, 0.0f, 1.0f);
 

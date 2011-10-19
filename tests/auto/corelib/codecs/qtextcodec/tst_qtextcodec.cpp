@@ -341,14 +341,14 @@ void tst_QTextCodec::codecForLocale()
                      "%A%a%B%b%Z",
                      localtime(&t));
     if (r == 0)
-        QSKIP("strftime() failed", SkipAll);
+        QSKIP("strftime() failed");
     originalLocaleEncodedTimeString.resize(r);
 
     QString unicodeTimeString = codec->toUnicode(originalLocaleEncodedTimeString);
     QByteArray localeEncodedTimeString = codec->fromUnicode(unicodeTimeString);
     QCOMPARE(localeEncodedTimeString, originalLocaleEncodedTimeString);
 #else
-    QSKIP("This test is not implemented on Windows", SkipAll);
+    QSKIP("This test is not implemented on Windows");
 #endif
 
     // find a codec that is not the codecForLocale()
@@ -361,7 +361,7 @@ void tst_QTextCodec::codecForLocale()
         }
     }
     if (!codec2) {
-        QSKIP("Could not find a codec that is not already the codecForLocale()", SkipAll);
+        QSKIP("Could not find a codec that is not already the codecForLocale()");
     }
 
     // set it, codecForLocale() should return it now

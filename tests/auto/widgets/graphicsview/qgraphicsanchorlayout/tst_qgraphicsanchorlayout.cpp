@@ -1675,9 +1675,8 @@ void tst_QGraphicsAnchorLayout::floatConflict()
 
 void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
 {
-    if (sizeof(qreal) <= 4) {
-        QSKIP("qreal has too little precision, result will be wrong", SkipAll);
-    }
+    if (sizeof(qreal) <= 4)
+        QSKIP("qreal has too little precision, result will be wrong");
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(0);

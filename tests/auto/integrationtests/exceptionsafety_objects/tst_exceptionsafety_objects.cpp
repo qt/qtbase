@@ -87,7 +87,7 @@ private:
 #ifdef QT_NO_EXCEPTIONS
 void tst_ExceptionSafety_Objects::initTestCase()
 {
-    QSKIP("This test requires exception support", SkipAll);
+    QSKIP("This test requires exception support");
 }
 
 #else
@@ -353,7 +353,7 @@ void tst_ExceptionSafety_Objects::objects()
         || tag == QLatin1String("QSettings")
         || tag == QLatin1String("QThread")
         || tag == QLatin1String("QThreadPool"))
-        QSKIP("This type of object is not currently strongly exception safe", SkipSingle);
+        QSKIP("This type of object is not currently strongly exception safe");
 
     QFETCH(AbstractTester *, objectCreator);
 
@@ -488,7 +488,7 @@ void tst_ExceptionSafety_Objects::widgets()
         || tag == QLatin1String("QTreeView")
         || tag == QLatin1String("QTreeWidget")
         || tag == QLatin1String("QWorkspace"))
-        QSKIP("This type of widget is not currently strongly exception safe", SkipSingle);
+        QSKIP("This type of widget is not currently strongly exception safe");
 
     QFETCH(AbstractTester *, widgetCreator);
 
@@ -766,7 +766,7 @@ void tst_ExceptionSafety_Objects::vector()
 
     if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert static")
         || QLatin1String(QTest::currentDataTag()) == QLatin1String("insert moveable"))
-        QSKIP("QVector::insert is currently not strongly exception safe", SkipSingle);
+        QSKIP("QVector::insert is currently not strongly exception safe");
 
     doOOMTest(testFunction, 0);
 }

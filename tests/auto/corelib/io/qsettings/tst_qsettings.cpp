@@ -684,7 +684,7 @@ void tst_QSettings::testErrorHandling()
 {
 #if defined(Q_OS_UNIX)
     if (::getuid() == 0)
-        QSKIP("Running this test as root doesn't work, since file perms do not bother him", SkipAll);
+        QSKIP("Running this test as root doesn't work, since file perms do not bother him");
 #else
     QFETCH(int, filePerms);
     QFETCH(int, dirPerms);
@@ -2632,7 +2632,7 @@ void tst_QSettings::fileName()
     QSettings s21(QSettings::SystemScope, QLatin1String("   ") + QChar(0xbd) + QLatin1String("Foo//:/Bar,,,  Baz!()#"), "Console");
     QCOMPARE(s21.fileName(), QString("/Library/Preferences/com.foo-bar-baz.Console.plist"));
 #else
-    QSKIP("Please write a fileName() test for the other platforms", SkipAll);
+    QSKIP("Please write a fileName() test for the other platforms");
 #endif
 }
 

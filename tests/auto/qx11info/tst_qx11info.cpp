@@ -60,7 +60,7 @@ private slots:
 #ifndef Q_WS_X11
 void tst_QX11Info::initTestCase()
 {
-    QSKIP("This test is only valid for X11", SkipAll);
+    QSKIP("This test is only valid for X11");
 }
 
 #else

@@ -460,7 +460,7 @@ void tst_QComboBox::setPalette()
 {
 #ifdef Q_WS_MAC
     if (qobject_cast<QMacStyle *>(testWidget->style())) {
-        QSKIP("This test doesn't make sense for pixmap-based styles", SkipAll);
+        QSKIP("This test doesn't make sense for pixmap-based styles");
     }
 #endif
     QPalette pal = testWidget->palette();

@@ -261,15 +261,12 @@ void tst_QNetworkSession::sessionClosing()
 
     // First check that opening once succeeds and determine if test is doable
     QNetworkConfiguration config = suitableConfiguration(bearerType, configurationType);
-    if (!config.isValid()) {
-        QSKIP("No suitable configurations, skipping this round of repeated open-close test.", SkipSingle);
-    }
+    if (!config.isValid())
+        QSKIP("No suitable configurations, skipping this round of repeated open-close test.");
     qDebug() << "Using following configuration to bomb with close(): " << config.name();
     QNetworkSession session(config);
-    if (!openSession(&session) ||
-        !closeSession(&session)) {
-        QSKIP("Unable to open/close session, skipping this round of close() bombing.", SkipSingle);
-    }
+    if (!openSession(&session) || !closeSession(&session))
+        QSKIP("Unable to open/close session, skipping this round of close() bombing.");
 
     qDebug() << "Closing without issuing open()";
     session.close();
@@ -442,15 +439,12 @@ void tst_QNetworkSession::repeatedOpenClose()
 
     // First check that opening once succeeds and determine if repeatable testing is doable
     QNetworkConfiguration config = suitableConfiguration(bearerType, configurationType);
-    if (!config.isValid()) {
-        QSKIP("No suitable configurations, skipping this round of repeated open-close test.", SkipSingle);
-    }
+    if (!config.isValid())
+        QSKIP("No suitable configurations, skipping this round of repeated open-close test.");
     qDebug() << "Using following configuratio to repeatedly open and close: " << config.name();
     QNetworkSession permanentSession(config);
-    if (!openSession(&permanentSession) || 
-        !closeSession(&permanentSession)) {
-        QSKIP("Unable to open/close session, skipping this round of repeated open-close test.", SkipSingle); 
-    }
+    if (!openSession(&permanentSession) || !closeSession(&permanentSession))
+        QSKIP("Unable to open/close session, skipping this round of repeated open-close test.");
     for (int i = 0; i < repeatTimes; i++) { 
        qDebug() << "Opening, loop number " << i;
        QVERIFY(openSession(&permanentSession));
@@ -468,7 +462,7 @@ void tst_QNetworkSession::userChoiceSession_data()
     if (config.type() == QNetworkConfiguration::UserChoice)
         QTest::newRow("UserChoice") << config;
     else
-        QSKIP("Default configuration is not a UserChoice configuration.", SkipAll);
+        QSKIP("Default configuration is not a UserChoice configuration.");
 }
 
 void tst_QNetworkSession::userChoiceSession()
@@ -489,7 +483,7 @@ void tst_QNetworkSession::userChoiceSession()
 
     // The remaining tests require the session to be not NotAvailable.
     if (session.state() == QNetworkSession::NotAvailable)
-        QSKIP("Network is not available.", SkipSingle);
+        QSKIP("Network is not available.");
 
     QSignalSpy sessionOpenedSpy(&session, SIGNAL(opened()));
     QSignalSpy sessionClosedSpy(&session, SIGNAL(closed()));
@@ -511,7 +505,7 @@ void tst_QNetworkSession::userChoiceSession()
             if (error == QNetworkSession::OperationNotSupportedError) {
                 // The session needed to bring up the interface,
                 // but the operation is not supported.
-                QSKIP("Configuration does not support open().", SkipSingle);
+                QSKIP("Configuration does not support open().");
             } else if (error == QNetworkSession::InvalidConfigurationError) {
                 // The session needed to bring up the interface, but it is not possible for the
                 // specified configuration.
@@ -519,10 +513,10 @@ void tst_QNetworkSession::userChoiceSession()
                     QNetworkConfiguration::Discovered) {
                     QFAIL("Failed to open session for Discovered configuration.");
                 } else {
-                    QSKIP("Cannot test session for non-Discovered configuration.", SkipSingle);
+                    QSKIP("Cannot test session for non-Discovered configuration.");
                 }
             } else if (error == QNetworkSession::UnknownSessionError) {
-                    QSKIP("Unknown session error.", SkipSingle);
+                QSKIP("Unknown session error.");
             } else {
                 QFAIL("Error opening session.");
             }
@@ -619,7 +613,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
     // The remaining tests require the session to be not NotAvailable.
     if (session.state() == QNetworkSession::NotAvailable)
-        QSKIP("Network is not available.", SkipSingle);
+        QSKIP("Network is not available.");
 
     QSignalSpy sessionOpenedSpy(&session, SIGNAL(opened()));
     QSignalSpy sessionClosedSpy(&session, SIGNAL(closed()));
@@ -649,7 +643,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             if (error == QNetworkSession::OperationNotSupportedError) {
                 // The session needed to bring up the interface,
                 // but the operation is not supported.
-                QSKIP("Configuration does not support open().", SkipSingle);
+                QSKIP("Configuration does not support open().");
             } else if (error == QNetworkSession::InvalidConfigurationError) {
                 // The session needed to bring up the interface, but it is not possible for the
                 // specified configuration.
@@ -657,10 +651,10 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     QNetworkConfiguration::Discovered) {
                     QFAIL("Failed to open session for Discovered configuration.");
                 } else {
-                    QSKIP("Cannot test session for non-Discovered configuration.", SkipSingle);
+                    QSKIP("Cannot test session for non-Discovered configuration.");
                 }
             } else if (error == QNetworkSession::UnknownSessionError) {
-                    QSKIP("Unknown Session error.", SkipSingle);
+                QSKIP("Unknown Session error.");
             } else {
                 QFAIL("Error opening session.");
             }
@@ -779,7 +773,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             if (error == QNetworkSession::OperationNotSupportedError) {
                 // The session needed to bring down the interface,
                 // but the operation is not supported.
-                QSKIP("Configuration does not support stop().", SkipSingle);
+                QSKIP("Configuration does not support stop().");
             } else if (error == QNetworkSession::InvalidConfigurationError) {
                 // The session needed to bring down the interface, but it is not possible for the
                 // specified configuration.
@@ -787,7 +781,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     QNetworkConfiguration::Discovered) {
                     QFAIL("Failed to stop session for Discovered configuration.");
                 } else {
-                    QSKIP("Cannot test session for non-Discovered configuration.", SkipSingle);
+                    QSKIP("Cannot test session for non-Discovered configuration.");
                 }
             } else {
                 QFAIL("Error stopping session.");
@@ -958,7 +952,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                 if (error == QNetworkSession::OperationNotSupportedError) {
                     // The session needed to bring down the interface,
                     // but the operation is not supported.
-                    QSKIP("Configuration does not support close().", SkipSingle);
+                    QSKIP("Configuration does not support close().");
                 } else if (error == QNetworkSession::InvalidConfigurationError) {
                     // The session needed to bring down the interface, but it is not possible for the
                     // specified configuration.
@@ -966,7 +960,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         QNetworkConfiguration::Discovered) {
                         QFAIL("Failed to close session for Discovered configuration.");
                     } else {
-                        QSKIP("Cannot test session for non-Discovered configuration.", SkipSingle);
+                        QSKIP("Cannot test session for non-Discovered configuration.");
                     }
                 } else {
                     QFAIL("Error closing session.");
@@ -1090,11 +1084,11 @@ void tst_QNetworkSession::outOfProcessSession()
         qDebug("Lackey returned exit success (0)");
         break;
     case 1:
-        QSKIP("No discovered configurations found.", SkipAll);
+        QSKIP("No discovered configurations found.");
     case 2:
-        QSKIP("Lackey could not start session.", SkipAll);
+        QSKIP("Lackey could not start session.");
     default:
-        QSKIP("Lackey failed", SkipAll);
+        QSKIP("Lackey failed");
     }
 }
 
@@ -1319,7 +1313,7 @@ void tst_QNetworkSession::sessionAutoClose_data()
     }
 
     if (!testData)
-        QSKIP("No applicable configurations to test", SkipAll);
+        QSKIP("No applicable configurations to test");
 }
 
 void tst_QNetworkSession::sessionAutoClose()
@@ -1343,7 +1337,7 @@ void tst_QNetworkSession::sessionAutoClose()
     session.waitForOpened();
 
     if (!session.isOpen())
-        QSKIP("Session not open", SkipSingle);
+        QSKIP("Session not open");
 
     // set session to auto close at next polling interval.
     session.setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 0);

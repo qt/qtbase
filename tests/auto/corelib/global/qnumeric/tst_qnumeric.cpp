@@ -93,7 +93,7 @@ void tst_QNumeric::qNan()
 #if defined( __INTEL_COMPILER)
     QCOMPARE((0 > nan), false);
     QCOMPARE((0 < nan), false);
-    QSKIP("This fails due to a bug in the Intel Compiler", SkipAll);
+    QSKIP("This fails due to a bug in the Intel Compiler");
 #else
     if (0 > nan)
         QFAIL("compiler thinks 0 > nan");

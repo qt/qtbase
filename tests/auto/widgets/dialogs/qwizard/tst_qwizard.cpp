@@ -989,7 +989,7 @@ void tst_QWizard::setOption_IndependentPages()
 void tst_QWizard::setOption_IgnoreSubTitles()
 {
 #if defined(Q_OS_WINCE)
-    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)", SkipAll);
+    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)");
 #endif
     QWizard wizard1;
     wizard1.setButtonLayout(QList<QWizard::WizardButton>() << QWizard::CancelButton);
@@ -1087,7 +1087,7 @@ void tst_QWizard::setOption_IgnoreSubTitles()
 void tst_QWizard::setOption_ExtendedWatermarkPixmap()
 {
 #if defined(Q_OS_WINCE)
-    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)", SkipAll);
+    QSKIP("Skipped because of limited resources and potential crash. (Task: 166824)");
 #endif
     QPixmap watermarkPixmap(200, 400);
     watermarkPixmap.fill(Qt::black);

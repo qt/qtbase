@@ -68,7 +68,7 @@ private slots:
 #if defined(QT_NO_PRINTER) || defined(QT_NO_PRINTDIALOG)
 void tst_QAbstractPrintDialog::initTestCase()
 {
-    QSKIP("This test requires printing and print dialog support", SkipAll);
+    QSKIP("This test requires printing and print dialog support");
 }
 
 #else

@@ -60,7 +60,7 @@ private slots:
 void tst_QSound::checkFinished()
 {
 #if defined(Q_WS_QPA)
-    QSKIP("QSound is not implemented on Lighthouse", SkipAll);
+    QSKIP("QSound is not implemented on Lighthouse");
 #else
     QSound sound(SRCDIR"4.wav");
     sound.setLoops(3);
@@ -76,7 +76,7 @@ void tst_QSound::checkFinished()
 
 void tst_QSound::staticPlay()
 {
-    QSKIP("Test disabled -- only for manual purposes", SkipAll);
+    QSKIP("Test disabled -- only for manual purposes");
 #if !defined(Q_WS_QPA)
     // Check that you hear sound with static play also.
     QSound::play(SRCDIR"4.wav");

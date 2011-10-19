@@ -72,7 +72,7 @@ Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
-        QSKIP("The widgets don't get the paint events", SkipSingle);
+        QSKIP("The widgets don't get the paint events");
 #else
 #define Q_CHECK_PAINTEVENTS
 #endif

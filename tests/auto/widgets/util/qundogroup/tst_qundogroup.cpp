@@ -609,9 +609,8 @@ void tst_QUndoGroup::commandTextFormat()
 {
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 
-    if (QProcess::execute(binDir + "/lrelease -version") != 0) {
-        QSKIP("lrelease is missing or broken", SkipAll);
-    }
+    if (QProcess::execute(binDir + "/lrelease -version") != 0)
+        QSKIP("lrelease is missing or broken");
 
     QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundogroup.ts"));
 
@@ -654,11 +653,11 @@ public:
     tst_QUndoGroup() {}
 
 private slots:
-    void setActive() { QSKIP( "Not tested on irix-g++", SkipAll); }
-    void addRemoveStack() { QSKIP( "Not tested on irix-g++", SkipAll); }
-    void deleteStack() { QSKIP( "Not tested on irix-g++", SkipAll); }
-    void checkSignals() { QSKIP( "Not tested on irix-g++", SkipAll); }
-    void addStackAndDie() { QSKIP( "Not tested on irix-g++", SkipAll); }
+    void setActive() { QSKIP( "Not tested on irix-g++"); }
+    void addRemoveStack() { QSKIP( "Not tested on irix-g++"); }
+    void deleteStack() { QSKIP( "Not tested on irix-g++"); }
+    void checkSignals() { QSKIP( "Not tested on irix-g++"); }
+    void addStackAndDie() { QSKIP( "Not tested on irix-g++"); }
 };
 #endif
 

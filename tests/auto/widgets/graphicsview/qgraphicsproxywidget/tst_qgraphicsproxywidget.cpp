@@ -1039,7 +1039,7 @@ void tst_QGraphicsProxyWidget::hoverMoveEvent()
     QFETCH(bool, mouseTracking);
     QFETCH(bool, mouseDown);
 
-    QSKIP("Ambiguous test...", SkipAll);
+    QSKIP("Ambiguous test...");
 
     // proxy should translate the move events to what the widget would expect
 
@@ -1362,7 +1362,7 @@ void tst_QGraphicsProxyWidget::sizeHint()
     QFETCH(QSizeF, constraint);
     QFETCH(QSizeF, sizeHint);
     QFETCH(bool, hasWidget);
-    QSKIP("Broken test", SkipAll);
+    QSKIP("Broken test");
     SubQGraphicsProxyWidget proxy;
     QWidget *widget = new QWidget;
     if (hasWidget)
@@ -2486,7 +2486,7 @@ void tst_QGraphicsProxyWidget::popup_basic()
     opt.initFrom(box);
     opt.editable = box->isEditable();
     if (box->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
-        QSKIP("Does not work due to SH_Combobox_Popup", SkipAll);
+        QSKIP("Does not work due to SH_Combobox_Popup");
     QCOMPARE(child->widget()->parent(), static_cast<QObject*>(box));
 
     QTRY_COMPARE(proxy->pos(), QPointF(box->pos()));
@@ -2539,7 +2539,7 @@ void tst_QGraphicsProxyWidget::popup_subwidget()
     opt.initFrom(box);
     opt.editable = box->isEditable();
     if (box->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt))
-        QSKIP("Does not work due to SH_Combobox_Popup", SkipAll);
+        QSKIP("Does not work due to SH_Combobox_Popup");
     QGraphicsProxyWidget *child = (QGraphicsProxyWidget*)(groupBoxProxy->childItems())[0];
     QWidget *popup = child->widget();
     QCOMPARE(popup->parent(), static_cast<QObject*>(box));
@@ -2675,7 +2675,7 @@ void tst_QGraphicsProxyWidget::childPos_data()
 void tst_QGraphicsProxyWidget::childPos()
 {
 #ifdef Q_OS_IRIX
-    QSKIP("This test is not reliable on IRIX.", SkipAll);
+    QSKIP("This test is not reliable on IRIX.");
 #endif
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
@@ -3630,7 +3630,7 @@ public slots:
 void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
 {
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(QT_NO_CURSOR)
-    QSKIP("Test case unstable on this platform", SkipAll);
+    QSKIP("Test case unstable on this platform");
 #endif
     QGraphicsView view;
     Scene scene;

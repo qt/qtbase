@@ -65,7 +65,7 @@ private slots:
 #ifdef QT_NO_EXCEPTIONS
 void tst_ExceptionSafety::initTestCase()
 {
-    QSKIP("This test requires exception support", SkipAll);
+    QSKIP("This test requires exception support");
 }
 
 #else

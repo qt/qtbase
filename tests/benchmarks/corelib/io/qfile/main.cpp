@@ -237,7 +237,7 @@ void tst_qfile::readBigFile()
 
 #ifndef Q_OS_WIN
     if (testType == Win32Benchmark)
-        QSKIP("This is Windows only benchmark.", SkipSingle);
+        QSKIP("This is Windows only benchmark.");
 #endif
 
     char *buffer = new char[BUFSIZE];
@@ -575,7 +575,7 @@ void tst_qfile::readSmallFiles()
 
 #ifndef Q_OS_WIN
     if (testType == Win32Benchmark)
-        QSKIP("This is Windows only benchmark.", SkipSingle);
+        QSKIP("This is Windows only benchmark.");
 #endif
 
     createSmallFiles();

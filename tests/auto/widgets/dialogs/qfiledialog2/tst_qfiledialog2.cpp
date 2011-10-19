@@ -565,7 +565,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     fd.setDirectory("/");
     QDir etc("/etc");
     if (!etc.exists())
-        QSKIP("This test requires to have an etc directory under /", SkipAll);
+        QSKIP("This test requires to have an etc directory under /");
 #endif
     fd.show();
     QLineEdit *edit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");

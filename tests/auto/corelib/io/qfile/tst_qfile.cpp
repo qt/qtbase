@@ -525,7 +525,7 @@ void tst_QFile::open()
 #if defined(Q_OS_UNIX)
     if (::getuid() == 0)
         // root and Chuck Norris don't care for file permissions. Skip.
-        QSKIP("Running this test as root doesn't make sense", SkipAll);
+        QSKIP("Running this test as root doesn't make sense");
 #endif
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -1469,7 +1469,7 @@ void tst_QFile::largeUncFileSupport()
     {
         // 2) stdlib file handling.
 #if _MSC_VER <= 1310
-        QSKIP("platform SDK for MSVC 2003 does not support large files", SkipAll);
+        QSKIP("platform SDK for MSVC 2003 does not support large files");
 #endif
         QFile file;
         FILE *fh = fopen(QFile::encodeName(largeFile).data(), "rb");
@@ -1495,7 +1495,7 @@ void tst_QFile::largeUncFileSupport()
 
 void tst_QFile::tailFile()
 {
-    QSKIP("File change notifications are so far unsupported.", SkipAll);
+    QSKIP("File change notifications are so far unsupported.");
 
     QFile file("tail.txt");
     QVERIFY(file.open(QFile::WriteOnly | QFile::Append));
@@ -1838,7 +1838,7 @@ void tst_QFile::largeFileSupport()
                 QFAIL("Could not open file");
             }
         } else {
-            QSKIP("Not enough space to run test", SkipSingle);
+            QSKIP("Not enough space to run test");
         }
     } else {
         QFAIL("Could not determin disk space");
@@ -2134,7 +2134,7 @@ void tst_QFile::fullDisk()
 {
     QFile file("/dev/full");
     if (!file.exists())
-        QSKIP("/dev/full doesn't exist on this system", SkipAll);
+        QSKIP("/dev/full doesn't exist on this system");
 
     QVERIFY(file.open(QIODevice::WriteOnly));
     file.write("foobar", 6);
@@ -2268,7 +2268,7 @@ void tst_QFile::virtualFile()
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
     fname = "/proc/curproc/map";
 #else
-    QSKIP("This platform does not have 0-sized virtual files", SkipAll);
+    QSKIP("This platform does not have 0-sized virtual files");
 #endif
 
     // consistency check

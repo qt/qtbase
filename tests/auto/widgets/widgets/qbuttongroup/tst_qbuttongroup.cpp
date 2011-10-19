@@ -131,7 +131,7 @@ QT_END_NAMESPACE
 void tst_QButtonGroup::arrowKeyNavigation()
 {
     if (!qt_tab_all_widgets)
-        QSKIP("This test requires full keyboard control to be enabled.", SkipAll);
+        QSKIP("This test requires full keyboard control to be enabled.");
 
     QDialog dlg(0);
     QHBoxLayout layout(&dlg);

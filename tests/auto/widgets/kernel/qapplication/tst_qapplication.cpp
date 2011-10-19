@@ -339,7 +339,7 @@ void tst_QApplication::nonGui()
 {
 #ifdef Q_OS_HPUX
     // ### This is only to allow us to generate a test report for now.
-    QSKIP("This test shuts down the window manager on HP-UX.", SkipAll);
+    QSKIP("This test shuts down the window manager on HP-UX.");
 #endif
 
     int argc = 0;

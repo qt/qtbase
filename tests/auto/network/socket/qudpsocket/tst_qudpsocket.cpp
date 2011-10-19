@@ -246,9 +246,8 @@ void tst_QUdpSocket::broadcasting()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QSKIP("With socks5 Broadcast is not supported.", SkipSingle);
-        }
+        if (proxyType == QNetworkProxy::Socks5Proxy)
+            QSKIP("With socks5 Broadcast is not supported.");
     }
     const char *message[] = {"Yo mista", "", "Yo", "Wassap"};
 
@@ -261,7 +260,7 @@ void tst_QUdpSocket::broadcasting()
         }
     }
     if (broadcastAddresses.isEmpty())
-        QSKIP("No interface can broadcast", SkipAll);
+        QSKIP("No interface can broadcast");
     for (int i = 0; i < 4; ++i) {
         QUdpSocket serverSocket;
 #ifdef FORCE_SESSION
@@ -432,7 +431,7 @@ void tst_QUdpSocket::dualStack()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
-        QSKIP("test server SOCKS proxy doesn't support IPv6", SkipSingle);
+        QSKIP("test server SOCKS proxy doesn't support IPv6");
     QUdpSocket dualSock;
     QByteArray dualData("dual");
     QVERIFY(dualSock.bind(QHostAddress(QHostAddress::Any), 0));
@@ -545,26 +544,23 @@ void tst_QUdpSocket::pendingDatagramSize()
         QCOMPARE(server.readDatagram(&c, 1), qint64(1));
         QCOMPARE(c, 't');
         c = '\0';
-    } else {
-        QSKIP("does not have the 1st datagram", SkipSingle);
-    }
+    } else
+        QSKIP("does not have the 1st datagram");
 
     if (server.hasPendingDatagrams()) {
         QCOMPARE(server.pendingDatagramSize(), qint64(0));
         QCOMPARE(server.readDatagram(&c, 1), qint64(0));
         QCOMPARE(c, '\0'); // untouched
-    c = '\0';
-    } else {
-        QSKIP("does not have the 2nd datagram", SkipSingle);
-    }
+        c = '\0';
+    } else
+        QSKIP("does not have the 2nd datagram");
 
     if (server.hasPendingDatagrams()) {
         QCOMPARE(server.pendingDatagramSize(), qint64(10));
         QCOMPARE(server.readDatagram(&c, 1), qint64(1));
         QCOMPARE(c, '3');
-    } else {
-        QSKIP("does not have the 3rd datagram", SkipSingle);
-    }
+    } else
+        QSKIP("does not have the 3rd datagram");
 }
 
 
@@ -597,7 +593,7 @@ void tst_QUdpSocket::writeDatagram()
 
         if (written != i * 1024) {
 #if defined (Q_OS_HPUX)
-            QSKIP("HP-UX 11.11 on hai (PA-RISC 64) truncates too long datagrams.", SkipSingle);
+            QSKIP("HP-UX 11.11 on hai (PA-RISC 64) truncates too long datagrams.");
 #endif
             QCOMPARE(bytesspy.count(), 0);
             QCOMPARE(errorspy.count(), 1);
@@ -610,9 +606,8 @@ void tst_QUdpSocket::writeDatagram()
         QCOMPARE(*static_cast<const qint64 *>(bytesspy.at(0).at(0).constData()),
                 qint64(i * 1024));
         QCOMPARE(errorspy.count(), 0);
-        if (!server.waitForReadyRead(5000)) {
-            QSKIP(QString("UDP packet lost at size %1, unable to complete the test.").arg(i * 1024).toLatin1().data(), SkipSingle);
-        }
+        if (!server.waitForReadyRead(5000))
+            QSKIP(QString("UDP packet lost at size %1, unable to complete the test.").arg(i * 1024).toLatin1().data());
         QCOMPARE(server.pendingDatagramSize(), qint64(i * 1024));
         QCOMPARE(server.readDatagram(0, 0), qint64(0));
     }
@@ -663,9 +658,8 @@ void tst_QUdpSocket::bindMode()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QSKIP("With socks5 explicit port binding is not supported.", SkipAll);
-        }
+        if (proxyType == QNetworkProxy::Socks5Proxy)
+            QSKIP("With socks5 explicit port binding is not supported.");
     }
 
     QUdpSocket socket;
@@ -745,7 +739,7 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 
 void tst_QUdpSocket::writeToNonExistingPeer()
 {
-    QSKIP("Connected-mode UDP sockets and their behaviour are erratic", SkipAll);
+    QSKIP("Connected-mode UDP sockets and their behaviour are erratic");
     QFETCH(QHostAddress, peerAddress);
     quint16 peerPort = 34534;
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
@@ -1058,9 +1052,8 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
 {
     QFETCH_GLOBAL(bool, setProxy);
     QFETCH(QHostAddress, groupAddress);
-    if (setProxy) {
-        QSKIP("UDP Multicast does not work with proxies", SkipAll);
-    }
+    if (setProxy)
+        QSKIP("UDP Multicast does not work with proxies");
 
     QUdpSocket udpSocket;
 #ifdef FORCE_SESSION

@@ -777,9 +777,8 @@ void tst_QStyleSheetStyle::focusColors()
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
-        if (image.depth() < 24) {
-            QSKIP("Test doesn't support color depth < 24", SkipAll);
-        }
+        if (image.depth() < 24)
+            QSKIP("Test doesn't support color depth < 24");
 
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                 (QString::fromLatin1(widget->metaObject()->className())
@@ -798,7 +797,7 @@ void tst_QStyleSheetStyle::focusColors()
 void tst_QStyleSheetStyle::hoverColors()
 {
     if (!PlatformQuirks::haveMouseCursor())
-        QSKIP("No mouse Cursor on this platform",SkipAll);
+        QSKIP("No mouse Cursor on this platform");
     QList<QWidget *> widgets;
     widgets << new QPushButton("TESTING");
     widgets << new QLineEdit("TESTING");
@@ -937,9 +936,8 @@ void tst_QStyleSheetStyle::background()
 
         QImage image(widget->width(), widget->height(), QImage::Format_ARGB32);
         widget->render(&image);
-        if (image.depth() < 24) {
-            QSKIP("Test doesn't support color depth < 24", SkipAll);
-        }
+        if (image.depth() < 24)
+            QSKIP("Test doesn't support color depth < 24");
 
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                 (QString::fromLatin1(widget->metaObject()->className())
@@ -1470,9 +1468,8 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
-        if (image.depth() < 24) {
-            QSKIP("Test doesn't support color depth < 24", SkipAll);
-        }
+        if (image.depth() < 24)
+            QSKIP("Test doesn't support color depth < 24");
 
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
@@ -1547,9 +1544,8 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
 
     QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
     frame.render(&image);
-    if (image.depth() < 24) {
-        QSKIP("Test doesn't support color depth < 24", SkipAll);
-    }
+    if (image.depth() < 24)
+        QSKIP("Test doesn't support color depth < 24");
 
     QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
             (QString::fromLatin1(spinbox->metaObject()->className())

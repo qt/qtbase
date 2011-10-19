@@ -1424,7 +1424,7 @@ static bool nativeClipboardWorking()
 void tst_QLineEdit::QTBUG5786_undoPaste()
 {
     if (!nativeClipboardWorking())
-	   QSKIP("this machine doesn't support the clipboard", SkipAll);
+	   QSKIP("this machine doesn't support the clipboard");
     QString initial("initial");
     QString string("test");
     QString additional("add");
@@ -2803,7 +2803,7 @@ void tst_QLineEdit::cut()
         if (status == noErr)
             CFRelease(pasteboard);
         else
-            QSKIP("Autotests run from cron and pasteboard don't get along quite ATM", SkipAll);
+            QSKIP("Autotests run from cron and pasteboard don't get along quite ATM");
     }
 #endif
     // test newlines in cut'n'paste

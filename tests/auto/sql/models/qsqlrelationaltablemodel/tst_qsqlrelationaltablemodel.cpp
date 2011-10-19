@@ -103,7 +103,7 @@ void tst_QSqlRelationalTableModel::initTestCase_data()
 {
     dbs.open();
     if (dbs.fillTestTable() == 0)
-        QSKIP("No database drivers are available in this Qt configuration", SkipAll);
+        QSKIP("No database drivers are available in this Qt configuration");
 }
 
 void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
@@ -1086,7 +1086,7 @@ void tst_QSqlRelationalTableModel::casing()
     CHECK_DATABASE(db);
 
     if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QIBASE") || tst_Databases::isSqlServer(db))
-        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities", SkipAll);
+        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("create table " + qTableName("CASETEST1", db.driver()).toUpper()  +
@@ -1094,7 +1094,7 @@ void tst_QSqlRelationalTableModel::casing()
 
     if( !q.exec("create table " + qTableName("casetest1", db.driver())  +
                 " (ident int not null primary key, name varchar(20), title_key int)"))
-        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities", SkipAll);
+        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities");
 
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(1, 'harry', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(2, 'trond', 2, 1)"));
@@ -1364,7 +1364,7 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
     CHECK_DATABASE(db);
 
     if (!testWhiteSpaceNames(db.driverName()))
-        QSKIP("White space test irrelevant for driver", SkipAll);
+        QSKIP("White space test irrelevant for driver");
     QSqlRelationalTableModel model(0, db);
     model.setTable(db.driver()->escapeIdentifier(qTableName("rel", __FILE__)+" test6", QSqlDriver::TableName));
     model.setSort(0, Qt::DescendingOrder);
@@ -1448,7 +1448,7 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     CHECK_DATABASE(db);
 
     if(!tst_Databases::isPostgreSQL(db))
-        QSKIP("Postgresql specific test", SkipSingle);
+        QSKIP("Postgresql specific test");
 
     QSqlRelationalTableModel model(0, db);
     QSqlQuery q(db);

@@ -213,9 +213,9 @@ void tst_QSqlQueryModel::generic_data(const QString& engine)
 {
     if ( dbs.fillTestTable(engine) == 0 ) {
         if(engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -512,7 +512,7 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
     CHECK_DATABASE(db);
 
     if (db.driver()->hasFeature(QSqlDriver::QuerySize))
-        QSKIP("Test applies only for drivers not reporting the query size.", SkipSingle);
+        QSKIP("Test applies only for drivers not reporting the query size.");
 
     QSqlQueryModel model;
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3", __FILE__), db));

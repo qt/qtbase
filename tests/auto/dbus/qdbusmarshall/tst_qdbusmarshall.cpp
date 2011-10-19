@@ -1060,7 +1060,7 @@ public:
 void tst_QDBusMarshall::receiveUnknownType()
 {
 #ifndef DBUS_TYPE_UNIX_FD
-    QSKIP("Your system's D-Bus library is too old for this test", SkipAll);
+    QSKIP("Your system's D-Bus library is too old for this test");
 #else
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
@@ -1074,7 +1074,7 @@ void tst_QDBusMarshall::receiveUnknownType()
 
     // check if this bus supports passing file descriptors
     if (!dbus_connection_can_send_type(rawcon.data(), DBUS_TYPE_UNIX_FD))
-        QSKIP("Your session bus does not allow sending Unix file descriptors", SkipAll);
+        QSKIP("Your session bus does not allow sending Unix file descriptors");
 
     // make sure this QDBusConnection won't handle Unix file descriptors
     QDBusConnection::ConnectionCapabilities &capabRef = QDBusConnectionPrivate::d(con)->capabilities;

@@ -316,8 +316,7 @@ void tst_QWMatrix::operator_star_qwmatrix()
     QVERIFY( product12==result1x2 );
     QVERIFY( product21==result2x1 );
 #else
-    QSKIP( "Not tested with Qt versions since the operator is broken..",
-	  SkipAll );
+    QSKIP( "Not tested with Qt versions since the operator is broken.." );
 #endif
 }
 

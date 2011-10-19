@@ -853,7 +853,7 @@ void tst_QMenuBar::check_escKey()
 // void tst_QMenuBar::check_mouse1()
 // {
 //     if (QSystem::curStyle() == "Motif")
-// 	QSKIP("This fails in Motif due to a bug in the testing framework", SkipAll);
+// 	QSKIP("This fails in Motif due to a bug in the testing framework");
 //     QFETCH( QString, popup_item );
 //     QFETCH( int, itemA_count );
 //     QFETCH( int, itemB_count );
@@ -914,7 +914,7 @@ void tst_QMenuBar::check_escKey()
 // void tst_QMenuBar::check_mouse2()
 // {
 //     if (QSystem::curStyle() == "Motif")
-// 	QSKIP("This fails in Motif due to a bug in the testing framework", SkipAll);
+// 	QSKIP("This fails in Motif due to a bug in the testing framework");
 //     QFETCH( QString, label );
 //     QFETCH( int, itemA_count );
 //     QFETCH( int, itemB_count );
@@ -991,7 +991,7 @@ void tst_QMenuBar::check_altPress()
 {
     if ( !qApp->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
 	QSKIP( QString( "this is not supposed to work in the %1 style. Skipping." ).
-	      arg( qApp->style()->objectName() ).toAscii(), SkipAll );
+	      arg( qApp->style()->objectName() ).toAscii());
     }
 
     initSimpleMenubar();

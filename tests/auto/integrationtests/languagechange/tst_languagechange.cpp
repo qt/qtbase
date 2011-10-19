@@ -217,14 +217,14 @@ void tst_languageChange::retranslatability()
 
     case ColorDialog:
 #ifdef Q_WS_MAC
-        QSKIP("The native color dialog is used on Mac OS", SkipSingle);
+        QSKIP("The native color dialog is used on Mac OS");
 #else
         (void)QColorDialog::getColor();
 #endif
         break;
     case FileDialog: {
 #ifdef Q_WS_MAC
-        QSKIP("The native file dialog is used on Mac OS", SkipSingle);
+        QSKIP("The native file dialog is used on Mac OS");
 #endif
         QFileDialog dlg;
         dlg.setOption(QFileDialog::DontUseNativeDialog);

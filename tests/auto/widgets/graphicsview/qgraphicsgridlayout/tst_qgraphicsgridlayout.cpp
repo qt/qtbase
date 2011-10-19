@@ -1059,7 +1059,7 @@ void tst_QGraphicsGridLayout::horizontalSpacing()
         qreal new_w = layout->sizeHint(Qt::PreferredSize, QSizeF()).width();
         QCOMPARE(new_w, w - (3-1)*(oldSpacing - horizontalSpacing));
     } else {
-        QSKIP("The current style uses non-uniform layout spacing", SkipAll);
+        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }
@@ -1645,7 +1645,7 @@ void tst_QGraphicsGridLayout::setSpacing()
         QCOMPARE(newSH.height(), sh.height() - (2-1)*(oldVSpacing - spacing));
         QCOMPARE(newSH.width(), sh.width() - (3-1)*(oldHSpacing - spacing));
     } else {
-        QSKIP("The current style uses non-uniform layout spacing", SkipAll);
+        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }
@@ -1759,7 +1759,7 @@ void tst_QGraphicsGridLayout::verticalSpacing()
         qreal new_h = layout->sizeHint(Qt::PreferredSize, QSizeF()).height();
         QCOMPARE(new_h, h - (2-1)*(oldSpacing - verticalSpacing));
     } else {
-        QSKIP("The current style uses non-uniform layout spacing", SkipAll);
+        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }

@@ -1648,7 +1648,7 @@ void tst_QMainWindow::addToolbarAfterShow()
 void tst_QMainWindow::centralWidgetSize()
 {
     if(PlatformQuirks::isAutoMaximizing())
-        QSKIP("The platform is auto maximizing, so the test makes no sense", SkipAll);;
+        QSKIP("The platform is auto maximizing, so the test makes no sense");;
 
     QMainWindow mainWindow;
     mainWindow.menuBar()->addMenu("menu");

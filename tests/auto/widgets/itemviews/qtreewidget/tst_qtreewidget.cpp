@@ -2953,7 +2953,7 @@ void tst_QTreeWidget::defaultRowSizes()
         }
         QPixmap icon = tw->style()->standardPixmap((QStyle::StandardPixmap)(i + QStyle::SP_TitleBarMenuButton));
         if (icon.isNull())
-            QSKIP("No pixmap found on current style, skipping this test.", SkipSingle);
+            QSKIP("No pixmap found on current style, skipping this test.");
         it->setIcon(tw->columnCount() - 1,
                     icon.scaled(tw->iconSize()));
     }

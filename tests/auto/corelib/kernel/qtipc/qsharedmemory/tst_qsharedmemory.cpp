@@ -503,7 +503,7 @@ void tst_QSharedMemory::useTooMuchMemory()
 #if !defined(Q_OS_HPUX) && !defined(Q_OS_WINCE)
 void tst_QSharedMemory::attachTooMuch()
 {
-    QSKIP("disabled", SkipAll);
+    QSKIP("disabled");
 
     QSharedMemory government(rememberKey("government"));
     QVERIFY(government.create(1024));
@@ -690,7 +690,7 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
     rememberKey(QLatin1String("market"));
 
 #if defined Q_OS_HPUX && defined __ia64
-    QSKIP("This test locks up on gravlaks.troll.no", SkipSingle);
+    QSKIP("This test locks up on gravlaks.troll.no");
 #endif
 
     Producer p;

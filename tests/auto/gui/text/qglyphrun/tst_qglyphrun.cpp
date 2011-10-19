@@ -104,9 +104,8 @@ void tst_QGlyphRun::initTestCase()
 
 void tst_QGlyphRun::init()
 {
-    if (!m_testFont_ok) {
-        QSKIP("Test font is not working correctly", SkipAll);
-    }
+    if (!m_testFont_ok)
+        QSKIP("Test font is not working correctly");
 }
 
 void tst_QGlyphRun::cleanupTestCase()

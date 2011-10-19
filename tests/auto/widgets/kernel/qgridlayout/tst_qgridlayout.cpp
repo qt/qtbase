@@ -724,7 +724,7 @@ void tst_QGridLayout::spacingsAndMargins()
     QSize minimumsize = vbox.totalMinimumSize();
 
     if (topsize.width() < minimumsize.width() || topsize.height() < minimumsize.height())
-        QSKIP("The screen is too small to run this test case", SkipSingle);
+        QSKIP("The screen is too small to run this test case");
 
 // We are relying on the order here...
     for (int pi = 0; pi < sizehinters.count(); ++pi) {
@@ -869,7 +869,7 @@ void tst_QGridLayout::minMaxSize()
     }else{
         style = QStyleFactory::create(stylename);
         if (!style) {
-            QSKIP( qPrintable(QString::fromLatin1("Qt has been compiled without style: %1").arg(stylename)), SkipSingle);
+            QSKIP( qPrintable(QString::fromLatin1("Qt has been compiled without style: %1").arg(stylename)));
         }
     }
     QApplication::setStyle(style);

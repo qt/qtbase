@@ -302,7 +302,7 @@ void tst_QImage::formatHandlersInput()
 	QCOMPARE(testFormat.toLatin1().toLower(), QImageReader::imageFormat(testFile));
     } else {
 	QString msg = "Format not supported : ";
-	QSKIP(QString(msg + testFormat).toLatin1(), SkipSingle);
+	QSKIP(QString(msg + testFormat).toLatin1());
     }
 }
 

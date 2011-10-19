@@ -145,7 +145,7 @@ static int appDefaultDepth()
 void tst_QGL::getSetCheck()
 {
     if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform", SkipAll);
+        QSKIP("QGL not supported on this platform");
 
     QGLFormat obj1;
     // int QGLFormat::depthBufferSize()
@@ -656,7 +656,7 @@ void tst_QGL::openGLVersionCheck()
 {
 #ifdef QT_BUILD_INTERNAL
     if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform", SkipAll);
+        QSKIP("QGL not supported on this platform");
 
     QString versionString;
     QGLFormat::OpenGLVersionFlags expectedFlag;
@@ -895,7 +895,7 @@ void tst_QGL::partialGLWidgetUpdates_data()
 void tst_QGL::partialGLWidgetUpdates()
 {
     if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform", SkipAll);
+        QSKIP("QGL not supported on this platform");
 
     QFETCH(bool, doubleBufferedContext);
     QFETCH(bool, autoFillBackground);
@@ -923,7 +923,7 @@ void tst_QGL::partialGLWidgetUpdates()
     QTest::qWait(200);
 
     if (widget.format().doubleBuffer() != doubleBufferedContext)
-        QSKIP("Platform does not support requested format", SkipAll);
+        QSKIP("Platform does not support requested format");
 
     widget.paintEventRegion = QRegion();
     widget.repaint(50, 50, 50, 50);
@@ -939,7 +939,7 @@ void tst_QGL::partialGLWidgetUpdates()
 void tst_QGL::glPBufferRendering()
 {
     if (!QGLPixelBuffer::hasOpenGLPbuffers())
-        QSKIP("QGLPixelBuffer not supported on this platform", SkipSingle);
+        QSKIP("QGLPixelBuffer not supported on this platform");
 
     QGLPixelBuffer* pbuf = new QGLPixelBuffer(128, 128);
 
@@ -1063,7 +1063,7 @@ void tst_QGL::glWidgetRendering()
 void tst_QGL::glFBOSimpleRendering()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     QGLWidget glw;
     glw.makeCurrent();
@@ -1097,7 +1097,7 @@ void tst_QGL::glFBOSimpleRendering()
 void tst_QGL::glFBORendering()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     QGLWidget glw;
     glw.makeCurrent();
@@ -1111,7 +1111,7 @@ void tst_QGL::glFBORendering()
 
     if (fbo->attachment() != QGLFramebufferObject::CombinedDepthStencil) {
         delete fbo;
-        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+        QSKIP("FBOs missing combined depth~stencil support");
     }
 
     QPainter fboPainter;
@@ -1135,7 +1135,7 @@ void tst_QGL::glFBORendering()
 void tst_QGL::multipleFBOInterleavedRendering()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     QGLWidget glw;
     glw.makeCurrent();
@@ -1155,7 +1155,7 @@ void tst_QGL::multipleFBOInterleavedRendering()
         delete fbo1;
         delete fbo2;
         delete fbo3;
-        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+        QSKIP("FBOs missing combined depth~stencil support");
     }
 
     QPainter fbo1Painter;
@@ -1169,7 +1169,7 @@ void tst_QGL::multipleFBOInterleavedRendering()
     // Confirm we're using the GL2 engine, as interleaved rendering isn't supported
     // on the GL1 engine:
     if (fbo1Painter.paintEngine()->type() != QPaintEngine::OpenGL2)
-        QSKIP("Interleaved GL rendering requires OpenGL 2.0 or higher", SkipSingle);
+        QSKIP("Interleaved GL rendering requires OpenGL 2.0 or higher");
 
     QPainterPath intersectingPath;
     intersectingPath.moveTo(0, 0);
@@ -1282,7 +1282,7 @@ protected:
 void tst_QGL::glFBOUseInGLWidget()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     FBOUseInGLWidget w;
 #ifdef Q_WS_QWS
@@ -1401,7 +1401,7 @@ void tst_QGL::glWidgetRenderPixmap()
     reference.fill(0xffff0000);
 
 #if defined(QGL_EGL) && !defined(Q_WS_X11)
-    QSKIP("renderPixmap() not yet supported under EGL on your platform", SkipAll);
+    QSKIP("renderPixmap() not yet supported under EGL on your platform");
 #endif
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
@@ -1825,7 +1825,7 @@ void tst_QGL::clipTest()
 void tst_QGL::destroyFBOAfterContext()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     QGLWidget *glw = new QGLWidget();
     glw->makeCurrent();
@@ -1896,7 +1896,7 @@ void tst_QGL::shareRegister()
     if (!glw2->isSharing()) {
         delete glw2;
         delete glw1;
-        QSKIP("Context sharing is not supported", SkipSingle);
+        QSKIP("Context sharing is not supported");
     }
     QVERIFY(glw1->isSharing());
     QVERIFY(glw1->context() != glw2->context());
@@ -2352,7 +2352,7 @@ void tst_QGL::threadImages()
 void tst_QGL::nullRectCrash()
 {
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+        QSKIP("QGLFramebufferObject not supported on this platform");
 
     QGLWidget glw;
     glw.makeCurrent();
@@ -2380,7 +2380,7 @@ public:
 
 private slots:
     void qglSkipTests() {
-	QSKIP("QGL not supported on this system.", SkipAll);
+	QSKIP("QGL not supported on this system.");
     }
 };
 

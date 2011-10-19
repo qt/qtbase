@@ -1337,7 +1337,7 @@ void tst_QHttp::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticato
 
 void tst_QHttp::postAuthNtlm()
 {
-	QSKIP("NTLM not working", SkipAll);
+    QSKIP("NTLM not working");
 
     QHostInfo info = QHostInfo::fromName(QHostInfo::localHostName());
     QByteArray postData("Hello World");

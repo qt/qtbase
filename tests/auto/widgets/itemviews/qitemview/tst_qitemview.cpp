@@ -511,7 +511,7 @@ void tst_QItemView::resize_data()
   */
 void tst_QItemView::resize()
 {
-    QSKIP("This test needs to be re-thought out, it takes too long and doesn't really catch the problem.", SkipAll);
+    QSKIP("This test needs to be re-thought out, it takes too long and doesn't really catch the problem.");
 
     QFETCH(QString, viewType);
     QFETCH(int, vscroll);

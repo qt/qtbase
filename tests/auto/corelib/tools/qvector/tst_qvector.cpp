@@ -701,7 +701,7 @@ void tst_QVector::outOfMemory()
     {
         QVector<Foo> a;
 
-        QSKIP("This test crashes on many of our machines.", SkipSingle);
+        QSKIP("This test crashes on many of our machines.");
         a.resize(N);
         if (a.size() == N) {
             QVERIFY(a.capacity() >= N);

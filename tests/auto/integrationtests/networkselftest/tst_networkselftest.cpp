@@ -990,16 +990,16 @@ void tst_NetworkSelfTest::smbServer()
     QProcess smbclient;
     smbclient.start(progname, QIODevice::ReadOnly);
     if (!smbclient.waitForStarted(2000))
-        QSKIP("Could not find smbclient (from Samba), cannot continue testing", SkipAll);
+        QSKIP("Could not find smbclient (from Samba), cannot continue testing");
     if (!smbclient.waitForFinished(2000) || smbclient.exitStatus() != QProcess::NormalExit)
-        QSKIP("smbclient isn't working, cannot continue testing", SkipAll);
+        QSKIP("smbclient isn't working, cannot continue testing");
     smbclient.close();
 
     // try listing the server
     smbclient.start(progname, QStringList() << "-g" << "-N" << "-L" << QtNetworkSettings::winServerName(), QIODevice::ReadOnly);
     QVERIFY(smbclient.waitForFinished(5000));
     if (smbclient.exitStatus() != QProcess::NormalExit)
-        QSKIP("smbclient crashed", SkipAll);
+        QSKIP("smbclient crashed");
     QVERIFY2(smbclient.exitCode() == 0, "Test server not found");
 
     QByteArray output = smbclient.readAll();
@@ -1016,7 +1016,7 @@ void tst_NetworkSelfTest::smbServer()
                     << QString("\\\\%1\\testshare").arg(QtNetworkSettings::winServerName()), QIODevice::ReadOnly);
     QVERIFY(smbclient.waitForFinished(5000));
     if (smbclient.exitStatus() != QProcess::NormalExit)
-        QSKIP("smbclient crashed", SkipAll);
+        QSKIP("smbclient crashed");
     QVERIFY2(smbclient.exitCode() == 0, "File //qt-test-server/testshare/test.pri not found");
 
     output = smbclient.readAll();

@@ -209,7 +209,7 @@ void tst_QIcon::actualSize2()
 void tst_QIcon::svgActualSize()
 {
     if (!haveImageFormat("svg")) {
-        QSKIP("SVG support is not available", SkipAll);
+        QSKIP("SVG support is not available");
     }
 
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
@@ -423,7 +423,7 @@ void tst_QIcon::detach()
 void tst_QIcon::svg()
 {
     if (!haveImageFormat("svg")) {
-        QSKIP("SVG support is not available", SkipAll);
+        QSKIP("SVG support is not available");
     }
     QIcon icon1("heart.svg");
 

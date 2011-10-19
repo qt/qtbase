@@ -70,7 +70,7 @@ void atWrapperAutotest::runTest()
 
     atWrapper wrapper;
     if (!wrapper.runAutoTests())
-	QSKIP("Arthur not tested on this machine", SkipAll);
+	QSKIP("Arthur not tested on this machine");
     QVERIFY(true);
 }
 

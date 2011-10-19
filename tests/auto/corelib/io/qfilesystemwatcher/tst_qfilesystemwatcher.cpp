@@ -329,7 +329,7 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     // recreate the file, we should not get any notification
     if (!QDir().mkdir("testDir"))
-        QSKIP("Failed to recreate directory, skipping final test.", SkipSingle);
+        QSKIP("Failed to recreate directory, skipping final test.");
 
     // qDebug() << "waiting max 5 seconds for notification for dir recreation to trigger";
     timer.start(5000);
@@ -467,7 +467,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QVERIFY(dirChangedSpy.count() < 2);
 
     if (backend == "dnotify")
-        QSKIP("dnotify is broken, skipping the rest of the test.", SkipSingle);
+        QSKIP("dnotify is broken, skipping the rest of the test.");
 
     fileChangedSpy.clear();
     dirChangedSpy.clear();

@@ -495,7 +495,7 @@ void tst_QTextEdit::createSelection()
 void tst_QTextEdit::clearMustNotChangeClipboard()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
     ed->textCursor().insertText("Hello World");
     QString txt("This is different text");
     QApplication::clipboard()->setText(txt);
@@ -570,7 +570,7 @@ void tst_QTextEdit::layoutingLoop()
 void tst_QTextEdit::selectAllSetsNotSelection()
 {
     if (!QApplication::clipboard()->supportsSelection()) {
-        QSKIP("Test only relevant for systems with selection", SkipAll);
+        QSKIP("Test only relevant for systems with selection");
         return;
     }
 
@@ -784,7 +784,7 @@ void tst_QTextEdit::setTextCursor()
 void tst_QTextEdit::undoAvailableAfterPaste()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     QSignalSpy spy(ed->document(), SIGNAL(undoAvailable(bool)));
 
@@ -1005,7 +1005,7 @@ void tst_QTextEdit::preserveCharFormatInAppend()
 void tst_QTextEdit::copyAndSelectAllInReadonly()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     ed->setReadOnly(true);
     ed->setPlainText("Hello World");
@@ -1357,7 +1357,7 @@ void tst_QTextEdit::copyAvailable()
     QFETCH(QString, function);
 
 #ifdef Q_WS_MAC
-    QSKIP("copyAvailable has never passed on Mac, task to fix is 132482", SkipAll);
+    QSKIP("copyAvailable has never passed on Mac, task to fix is 132482");
 #endif
     ed->clear();
     QApplication::clipboard()->clear();
@@ -1551,7 +1551,7 @@ void tst_QTextEdit::selectWordsFromStringsContainingSeparators()
 void tst_QTextEdit::canPaste()
 {
     if (!nativeClipboardWorking())
-        QSKIP("Clipboard not working with cron-started unit tests", SkipAll);
+        QSKIP("Clipboard not working with cron-started unit tests");
 
     QApplication::clipboard()->setText(QString());
     QVERIFY(!ed->canPaste());
@@ -1853,7 +1853,7 @@ void tst_QTextEdit::copyPasteBackgroundImage()
 {
 #ifndef QT_NO_CLIPBOARD
     if (!nativeClipboardWorking())
-        QSKIP("Native clipboard not working in this setup", SkipAll);
+        QSKIP("Native clipboard not working in this setup");
 
     QImage foo(16, 16, QImage::Format_ARGB32_Premultiplied);
     foo.save("foo.png");

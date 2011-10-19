@@ -351,7 +351,7 @@ public:
 void tst_QNetworkConfigurationManager::usedInThread()
 {
 #if defined Q_OS_MAC && !defined (QT_NO_COREWLAN)
-    QSKIP("QTBUG-19070 Mac CoreWlan plugin is broken", SkipAll);
+    QSKIP("QTBUG-19070 Mac CoreWlan plugin is broken");
 #else
     QNCMTestThread thread;
     connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));

@@ -341,7 +341,7 @@ void tst_QAbstractNetworkCache::check()
 
 void tst_QAbstractNetworkCache::checkSynchronous()
 {
-    QSKIP("not working yet, see QTBUG-15221", SkipAll);
+    QSKIP("not working yet, see QTBUG-15221");
 
     QFETCH(QNetworkRequest::CacheLoadControl, cacheLoadControl);
     QFETCH(QString, url);

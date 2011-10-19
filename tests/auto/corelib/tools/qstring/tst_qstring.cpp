@@ -4217,8 +4217,7 @@ void tst_QString::tortureSprintfDouble()
 	s.sprintf(data->fmt, d);
 #ifdef QT_NO_FPU // reduced precision when running with hardfloats in qemu
 	if (d - 0.1 < 1e12)
-	  QSKIP("clib sprintf doesn't fill with 0's on this platform",
-		SkipSingle);
+            QSKIP("clib sprintf doesn't fill with 0's on this platform");
 	QCOMPARE(s.left(16), QString(data->expected).left(16));
 #else
 	QCOMPARE(s, QString(data->expected));
@@ -4360,8 +4359,7 @@ void tst_QString::localeAwareCompare()
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
         if (!newLocale) {
             setlocale(LC_ALL, "");
-            QSKIP("Please install the proper locale on this machine to test properly", SkipSingle);
-            return;
+            QSKIP("Please install the proper locale on this machine to test properly");
         }
     }
 #endif

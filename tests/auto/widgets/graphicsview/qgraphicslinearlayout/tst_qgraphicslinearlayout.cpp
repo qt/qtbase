@@ -952,7 +952,7 @@ void tst_QGraphicsLinearLayout::setSpacing()
 
         QCOMPARE(oldSizeHint.width() - oldSpacing * 2, newSizeHint.width() - spacing * 2);
     } else {
-        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)", SkipAll);
+        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)");
     }
     delete widget;
 }
@@ -998,7 +998,7 @@ void tst_QGraphicsLinearLayout::setItemSpacing()
     if (oldSpacing >= 0) {
         QCOMPARE(newSizeHint.width() - spacing, oldSizeHint.width() - oldSpacing);
     } else {
-        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)", SkipAll);
+        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)");
     }
     delete widget;
 }

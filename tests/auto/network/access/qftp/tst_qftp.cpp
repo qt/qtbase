@@ -350,7 +350,7 @@ void tst_QFtp::connectToUnresponsiveHost()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
-        QSKIP( "This test takes too long if we test with proxies too", SkipSingle );
+        QSKIP( "This test takes too long if we test with proxies too");
 
     QString host = "192.0.2.42"; // IP out of TEST-NET, should be unreachable
     uint port = 21;
@@ -759,9 +759,8 @@ void tst_QFtp::put()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
-        if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QSKIP("With socks5 the put() test takes too long time on Windows.", SkipAll);
-        }
+        if (proxyType == QNetworkProxy::Socks5Proxy)
+            QSKIP("With socks5 the put() test takes too long time on Windows.");
     }
 #endif
 
@@ -2075,7 +2074,7 @@ void tst_QFtp::doneSignal()
 
 void tst_QFtp::queueMoreCommandsInDoneSlot()
 {
-    QSKIP("Task 127050 && 113966", SkipSingle);
+    QSKIP("Task 127050 && 113966");
 
     QFtp ftp;
     QSignalSpy doneSpy(&ftp, SIGNAL(done(bool)));

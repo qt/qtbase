@@ -157,7 +157,7 @@ void tst_QFontDatabase::fixedPitch()
 
     QFontDatabase fdb;
     if (!fdb.families().contains(font))
-	QSKIP( "Font not installed", SkipSingle);
+	QSKIP( "Font not installed");
 
     QCOMPARE(fdb.isFixedPitch(font), fixedPitch);
 
@@ -181,7 +181,7 @@ void tst_QFontDatabase::trickyFonts()
 
     QFontDatabase fdb;
     if (!fdb.families().contains(font))
-        QSKIP( "Font not installed", SkipSingle);
+        QSKIP( "Font not installed");
 
     QFont qfont(font);
     QFontInfo fi(qfont);
@@ -254,7 +254,7 @@ void tst_QFontDatabase::addAppFont()
 // addApplicationFont is supported on Mac, don't skip the test if it breaks.
 #ifndef Q_WS_MAC
     if (id == -1)
-        QSKIP("Skip the test since app fonts are not supported on this system", SkipSingle);
+        QSKIP("Skip the test since app fonts are not supported on this system");
 #endif
 
     const QStringList addedFamilies = QFontDatabase::applicationFontFamilies(id);

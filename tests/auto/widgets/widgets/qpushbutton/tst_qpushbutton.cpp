@@ -580,8 +580,7 @@ void tst_QPushButton::sizeHint()
 
     QStyle *style = QStyleFactory::create(stylename);
     if (!style)
-        QSKIP(qPrintable(QString::fromLatin1("Qt has been compiled without style: %1")
-                         .arg(stylename)), SkipSingle);
+        QSKIP(qPrintable(QString::fromLatin1("Qt has been compiled without style: %1").arg(stylename)));
     QApplication::setStyle(style);
 
 // Test 1

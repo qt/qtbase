@@ -133,7 +133,7 @@ struct FileSystem
         GetVolumeInformationW( (wchar_t*)linkName.left(3).utf16(), NULL, 0, NULL, NULL, NULL,
                                fileSystem, sizeof(fileSystem)/sizeof(WCHAR));
         if(QString().fromWCharArray(fileSystem) != "NTFS")
-            QSKIP("This seems not to be an NTFS volume. Junctions are not allowed.",SkipSingle);
+            QSKIP("This seems not to be an NTFS volume. Junctions are not allowed.");
 
         if (!target.startsWith("\\??\\") && !target.startsWith("\\\\?\\")) {
             QFileInfo targetInfo(target);

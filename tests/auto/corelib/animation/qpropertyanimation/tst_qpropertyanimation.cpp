@@ -261,7 +261,7 @@ void tst_QPropertyAnimation::statesAndSignals()
     anim->setCurrentTime(101);
 
     if (uncontrolled)
-        QSKIP("Uncontrolled animations don't handle looping", SkipSingle);
+        QSKIP("Uncontrolled animations don't handle looping");
 
     QCOMPARE(currentLoopSpy.count(), 1);
     QCOMPARE(anim->currentLoop(), 1);

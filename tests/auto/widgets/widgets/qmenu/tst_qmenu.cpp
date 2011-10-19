@@ -381,7 +381,7 @@ void tst_QMenu::focus()
 #ifdef Q_WS_MAC
     if (!qt_tab_all_widgets)
         QSKIP("Computer is currently set up to NOT tab to all widgets,"
-             " this test assumes you can tab to all widgets", SkipAll);
+             " this test assumes you can tab to all widgets");
 #endif
 
     QWidget window;
@@ -675,7 +675,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
 
     if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
         //the style prevents the menus from getting columns
-        QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
+        QSKIP("the style doesn't support multiple columns, it makes the menu scrollable");
     }
 
     sub.addAction("Sub-Item1");
@@ -774,7 +774,7 @@ public:
 void tst_QMenu::task258920_mouseBorder()
 {
 #ifdef Q_WS_QPA
-    QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa", SkipAll);
+    QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa");
 #endif
     Menu258920 menu;
     // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
@@ -842,7 +842,7 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
         // (kwin in kde4 does, for example, since the button would probably appear behind
         // or partially behind the taskbar).
         // Your best bet is to run this test _without_ a WM.
-        QSKIP("Your window manager won't allow a window against the bottom of the screen", SkipAll);
+        QSKIP("Your window manager won't allow a window against the bottom of the screen");
     }
 
     QTimer::singleShot(300,lastMenu, SLOT(hide()));

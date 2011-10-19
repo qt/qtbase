@@ -138,7 +138,7 @@ void tst_NetworkStressTest::init()
     // clear the internal cache
 #ifndef QT_BUILD_INTERNAL
     if (strncmp(QTest::currentTestFunction(), "nam") == 0)
-        QSKIP("QNetworkAccessManager tests disabled", SkipAll);
+        QSKIP("QNetworkAccessManager tests disabled");
 #endif
 }
 
@@ -630,7 +630,7 @@ void tst_NetworkStressTest::parallelConnectDisconnect()
     if (parallelAttempts > 100) {
         QFETCH_GLOBAL(bool, isLocalhost);
         if (!isLocalhost)
-            QSKIP("Localhost-only test", SkipSingle);
+            QSKIP("Localhost-only test");
     }
 
     qint64 totalBytes = 0;
@@ -714,7 +714,7 @@ void tst_NetworkStressTest::namGet()
     if (parallelAttempts > 100) {
         QFETCH_GLOBAL(bool, isLocalhost);
         if (!isLocalhost)
-            QSKIP("Localhost-only test", SkipSingle);
+            QSKIP("Localhost-only test");
     }
 
     qint64 totalBytes = 0;

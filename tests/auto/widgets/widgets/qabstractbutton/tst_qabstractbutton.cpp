@@ -593,7 +593,7 @@ void tst_QAbstractButton::stopRepeatTimer()
 
 void tst_QAbstractButton::keyNavigation()
 {
-    QSKIP("Key navigation in QAbstractButton will be fixed/improved as part of task 194373", SkipSingle);
+    QSKIP("Key navigation in QAbstractButton will be fixed/improved as part of task 194373");
 
     QWidget widget;
     QGridLayout *layout = new QGridLayout(&widget);

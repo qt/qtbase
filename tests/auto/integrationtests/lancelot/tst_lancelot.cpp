@@ -112,7 +112,7 @@ void tst_Lancelot::initTestCase()
     // caused by environment or server instability
 
     if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode, clientInfo))
-        QSKIP(qPrintable(proto.errorMessage()), SkipAll);
+        QSKIP(qPrintable(proto.errorMessage()));
 
 #if defined(USE_RUNTIME_DIR)
     scriptsDir = QCoreApplication::applicationDirPath() + "/scripts/";
@@ -123,7 +123,7 @@ void tst_Lancelot::initTestCase()
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
     if (files.isEmpty()) {
         QWARN("No qps script files found in " + qpsDir.path().toLatin1());
-        QSKIP("Aborted due to errors.", SkipAll);
+        QSKIP("Aborted due to errors.");
     }
 
     baseList.resize(files.count());
@@ -144,7 +144,7 @@ void tst_Lancelot::testRasterARGB32PM_data()
 {
     QStringList localBlacklist;
     if (!setupTestSuite(localBlacklist))
-        QSKIP("Communication with baseline image server failed.", SkipAll);
+        QSKIP("Communication with baseline image server failed.");
 }
 
 
@@ -158,7 +158,7 @@ void tst_Lancelot::testRasterRGB32_data()
 {
     QStringList localBlacklist;
     if (!setupTestSuite(localBlacklist))
-        QSKIP("Communication with baseline image server failed.", SkipAll);
+        QSKIP("Communication with baseline image server failed.");
 }
 
 
@@ -172,7 +172,7 @@ void tst_Lancelot::testRasterRGB16_data()
 {
     QStringList localBlacklist;
     if (!setupTestSuite(localBlacklist))
-        QSKIP("Communication with baseline image server failed.", SkipAll);
+        QSKIP("Communication with baseline image server failed.");
 }
 
 
@@ -187,7 +187,7 @@ void tst_Lancelot::testOpenGL_data()
 {
     QStringList localBlacklist = QStringList() << QLatin1String("rasterops.qps");
     if (!setupTestSuite(localBlacklist))
-        QSKIP("Communication with baseline image server failed.", SkipAll);
+        QSKIP("Communication with baseline image server failed.");
 }
 
 
@@ -207,7 +207,7 @@ void tst_Lancelot::testOpenGL()
     if (ok)
         runTestSuite(OpenGL, QImage::Format_RGB32);
     else
-        QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
+        QSKIP("System under test does not meet preconditions for GL testing. Skipping.");
 }
 #endif
 
@@ -235,17 +235,17 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
     QFETCH(ImageItem, baseline);
 
     if (baseline.status == ImageItem::IgnoreItem)
-        QSKIP("Blacklisted by baseline server.", SkipSingle);
+        QSKIP("Blacklisted by baseline server.");
 
     ImageItem rendered = render(baseline, engine, format);
     static int consecutiveErrs = 0;
     if (rendered.image.isNull()) {    // Assume an error in the test environment, not Qt
         QWARN("Error: Failed to render image.");
         if (++consecutiveErrs < 3) {
-            QSKIP("Aborted due to errors.", SkipSingle);
+            QSKIP("Aborted due to errors.");
         } else {
             consecutiveErrs = 0;
-            QSKIP("Too many errors, skipping rest of testfunction.", SkipAll);
+            QSKIP("Too many errors, skipping rest of testfunction.");
         }
     } else {
         consecutiveErrs = 0;
@@ -255,7 +255,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
     if (baseline.status == ImageItem::BaselineNotFound) {
         if (!proto.submitNewBaseline(rendered, 0))
             QWARN("Failed to submit new baseline: " + proto.errorMessage().toLatin1());
-        QSKIP("Baseline not found; new baseline created.", SkipSingle);
+        QSKIP("Baseline not found; new baseline created.");
     }
 
     if (!baseline.imageChecksums.contains(rendered.imageChecksums.at(0))) {

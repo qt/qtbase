@@ -76,7 +76,7 @@ void tst_QSqlDriver::initTestCase_data()
 {
     dbs.open();
     if (dbs.fillTestTable() == 0)
-        QSKIP("No database drivers are available in this Qt configuration", SkipAll);
+        QSKIP("No database drivers are available in this Qt configuration");
 }
 
 void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)

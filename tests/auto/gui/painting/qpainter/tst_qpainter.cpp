@@ -379,7 +379,7 @@ void tst_QPainter::cleanup()
 void tst_QPainter::qt_format_text_clip()
 {
     QVERIFY(1);
-    QSKIP( "Needs fixing...", SkipAll);
+    QSKIP("Needs fixing...");
 
     QWidget *w = new QWidget( 0 );
 
@@ -513,7 +513,7 @@ void tst_QPainter::qt_format_text_clip()
 void tst_QPainter::qt_format_text_boundingRect()
 {
     QVERIFY(1);
-    QSKIP( "Needs fixing...", SkipAll);
+    QSKIP("Needs fixing...");
 
     {
 	const char * strings[] = {
@@ -568,11 +568,8 @@ void tst_QPainter::qt_format_text_boundingRect()
 #if !defined(QT_NO_PRINTER) && !defined(Q_OS_WINCE)
 		    {
 			QPrinter printer(QPrinter::HighResolution);
-			if (printer.printerName().isEmpty()) {
-			    QSKIP( "No printers installed, skipping bounding rect test",
-				  SkipSingle );
-			    break;
-			}
+			if (printer.printerName().isEmpty())
+			    QSKIP("No printers installed, skipping bounding rect test");
 
 			printer.setOutputFileName("tmp.prn");
 			QPainter p(&printer);
@@ -694,10 +691,8 @@ static const char* const maskResult_data[] = {
 #ifndef Q_WS_MAC
 void tst_QPainter::drawPixmap_comp_data()
 {
-    if (qApp->desktop()->depth() < 24) {
-        QSKIP("Test only works on 32 bit displays", SkipAll);
-        return;
-    }
+    if (qApp->desktop()->depth() < 24)
+        QSKIP("Test only works on 32 bit displays");
 
     QTest::addColumn<uint>("dest");
     QTest::addColumn<uint>("source");
@@ -752,7 +747,7 @@ void tst_QPainter::drawPixmap_comp()
 
 #if defined(Q_WS_X11)
     if (!destPm.x11PictureHandle())
-        QSKIP("Requires XRender support", SkipAll);
+        QSKIP("Requires XRender support");
 #endif
 
     QPainter p(&destPm);
@@ -1621,7 +1616,7 @@ void tst_QPainter::drawClippedEllipse()
 {
     QFETCH(QRect, rect);
     if (sizeof(qreal) != sizeof(double))
-        QSKIP("Test only works for qreal==double", SkipAll);
+        QSKIP("Test only works for qreal==double");
     QImage image(rect.width() + 1, rect.height() + 1,
                  QImage::Format_ARGB32_Premultiplied);
     QRect expected = QRect(rect.x(), rect.y(), rect.width()+1, rect.height()+1)
@@ -1657,7 +1652,7 @@ void tst_QPainter::drawRoundRect()
         QTest::currentDataTag() == QByteArray("rect(13, 50, 17, 91) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(17, 6, 24, 3) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(24, 12, 38, 14) with pen"))
-        QSKIP("The Mac paint engine is off-by-one on certain rect sizes", SkipSingle);
+        QSKIP("The Mac paint engine is off-by-one on certain rect sizes");
 #endif
     QPixmap pixmap(rect.x() + rect.width() + 10,
                    rect.y() + rect.height() + 10);
@@ -3127,7 +3122,7 @@ void tst_QPainter::x() \
 #define FPE_TEST(x) \
 void tst_QPainter::x() \
 { \
-    QSKIP("Floating point exception checking (fenv.h) not available", SkipAll); \
+    QSKIP("Floating point exception checking (fenv.h) not available"); \
 }
 #endif
 
@@ -3434,8 +3429,7 @@ bool verifyOutlineFillConsistency(const QImage &img, QRgb outside, QRgb inside, 
 
 void tst_QPainter::outlineFillConsistency()
 {
-    QSKIP("currently broken...", SkipAll);
-    return;
+    QSKIP("currently broken...");
 
     QImage dst(256, 256, QImage::Format_ARGB32_Premultiplied);
 
@@ -4674,7 +4668,7 @@ void TextDrawerThread::run()
 void tst_QPainter::drawTextOutsideGuiThread()
 {
     if (!QFontDatabase::supportsThreadedFontRendering())
-        QSKIP("No threaded font rendering", SkipAll);
+        QSKIP("No threaded font rendering");
 
     QImage referenceRendering(100, 100, QImage::Format_ARGB32_Premultiplied);
     referenceRendering.fill(0);

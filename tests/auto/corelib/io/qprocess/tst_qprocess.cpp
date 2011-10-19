@@ -194,7 +194,7 @@ private:
 #ifdef QT_NO_PROCESS
 void tst_QProcess::initTestCase()
 {
-    QSKIP("This test requires QProcess support", SkipAll);
+    QSKIP("This test requires QProcess support");
 }
 
 #else
@@ -646,7 +646,7 @@ void tst_QProcess::exitStatus()
 
 #ifdef Q_OS_WIN
     if (exitStatus.contains(QProcess::CrashExit))
-        QSKIP("This test opens a crash dialog on Windows", SkipSingle);
+        QSKIP("This test opens a crash dialog on Windows");
 #endif
 
     QCOMPARE(exitStatus.count(), processList.count());

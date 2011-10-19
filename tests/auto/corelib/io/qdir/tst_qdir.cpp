@@ -786,7 +786,7 @@ void tst_QDir::canonicalPath()
     else
         srcPath = QDir(".");
     if (srcPath.absolutePath() != srcPath.canonicalPath())
-        QSKIP("This test does not work if this directory path consists of symlinks.", SkipAll);
+        QSKIP("This test does not work if this directory path consists of symlinks.");
 
     QString oldpwd = QDir::currentPath();
     QDir::setCurrent(srcPath.absolutePath());
@@ -1435,7 +1435,7 @@ void tst_QDir::longFileName()
 
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly))
-        QSKIP("Cannot create long file names", SkipAll);
+        QSKIP("Cannot create long file names");
 
     QFile file2(fileName);
     QVERIFY(file2.open(QFile::ReadOnly));

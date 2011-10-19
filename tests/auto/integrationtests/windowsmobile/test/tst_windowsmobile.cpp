@@ -155,7 +155,7 @@ void takeScreenShot(const QString filename)
 void tst_WindowsMobile::testMainWindowAndMenuBar()
 {
     if (qt_wince_is_smartphone())
-        QSKIP("This test is only for Windows Mobile", SkipAll);
+        QSKIP("This test is only for Windows Mobile");
 
     QProcess process;
     process.start("testQMenuBar.exe");
@@ -171,7 +171,7 @@ void tst_WindowsMobile::testMainWindowAndMenuBar()
 void tst_WindowsMobile::testSimpleWidget()
 {
     if (qt_wince_is_smartphone())
-        QSKIP("This test is only for Windows Mobile", SkipAll);
+        QSKIP("This test is only for Windows Mobile");
 
     QMenuBar menubar;
     menubar.show();

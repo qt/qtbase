@@ -421,9 +421,9 @@ void tst_QSqlDatabase::generic_data(const QString& engine)
 {
     if ( dbs.fillTestTable(engine) == 0 ) {
         if(engine.isEmpty())
-           QSKIP( "No database drivers are available in this Qt configuration", SkipAll );
+           QSKIP( "No database drivers are available in this Qt configuration");
         else
-           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit(), SkipAll );
+           QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
 }
 
@@ -476,7 +476,7 @@ void tst_QSqlDatabase::tables()
 
     QSqlQuery q(db);
     if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+        QSKIP( "Test requires MySQL >= 5.0");
 
 
     if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + qtest)) {
@@ -553,7 +553,7 @@ void tst_QSqlDatabase::whitespaceInIdentifiers()
         else
             QCOMPARE(idx.field(0).type(), QVariant::Int);
     } else {
-        QSKIP("DBMS does not support whitespaces in identifiers", SkipSingle);
+        QSKIP("DBMS does not support whitespaces in identifiers");
     }
 }
 
@@ -576,7 +576,7 @@ void tst_QSqlDatabase::alterTable()
     }
 
     if (!q.exec("alter table " + qtestalter + " drop column F2")) {
-        QSKIP("DBMS doesn't support dropping columns in ALTER TABLE statement", SkipSingle);
+        QSKIP("DBMS doesn't support dropping columns in ALTER TABLE statement");
     }
 
     rec = db.record(qtestalter);
@@ -985,7 +985,7 @@ void tst_QSqlDatabase::recordSQLServer()
     CHECK_DATABASE(db);
 
     if (!tst_Databases::isSqlServer(db))
-        QSKIP("SQL server specific test", SkipSingle);
+        QSKIP("SQL server specific test");
 
     // ### TODO: Add the rest of the fields
     static const FieldDef fieldDefs[] = {
@@ -1014,7 +1014,7 @@ void tst_QSqlDatabase::recordAccess()
     CHECK_DATABASE(db);
 
     if (!tst_Databases::isMSAccess(db))
-        QSKIP("MS Access specific test", SkipSingle);
+        QSKIP("MS Access specific test");
 
     QString memo;
     for (int i = 0; i < 32; i++)
@@ -1045,7 +1045,7 @@ void tst_QSqlDatabase::transaction()
     const QString qtest(qTableName("qtest", __FILE__));
 
     if (!db.driver()->hasFeature(QSqlDriver::Transactions))
-        QSKIP("DBMS not transaction capable", SkipSingle);
+        QSKIP("DBMS not transaction capable");
 
     QVERIFY(db.transaction());
 
@@ -1073,7 +1073,7 @@ void tst_QSqlDatabase::transaction()
     q.clear(); // for SQLite which does not allow any references on rows that shall be rolled back
     if (!db.rollback()) {
         if (db.driverName().startsWith("QMYSQL"))
-            QSKIP("MySQL transaction failed: " + tst_Databases::printError(db.lastError()), SkipSingle);
+            QSKIP("MySQL transaction failed: " + tst_Databases::printError(db.lastError()));
         else
             QFAIL("Could not rollback transaction: " + tst_Databases::printError(db.lastError()));
     }
@@ -1110,7 +1110,7 @@ void tst_QSqlDatabase::bigIntField()
     //} else if (drvName.startsWith("QIBASE")) {
     //    QVERIFY_SQL(q, exec("create table " + qtest_bigint + " (id int, t_s64bit int64, t_u64bit int64)"));
     } else {
-        QSKIP("no 64 bit integer support", SkipAll);
+        QSKIP("no 64 bit integer support");
     }
     QVERIFY(q.prepare("insert into " + qtest_bigint + " values (?, ?, ?)"));
     qlonglong ll = Q_INT64_C(9223372036854775807);
@@ -1205,7 +1205,7 @@ void tst_QSqlDatabase::psql_schemas()
     CHECK_DATABASE(db);
 
     if (!db.tables(QSql::SystemTables).contains("pg_namespace"))
-        QSKIP("server does not support schemas", SkipSingle);
+        QSKIP("server does not support schemas");
 
     QSqlQuery q(db);
 
@@ -1238,7 +1238,7 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
     CHECK_DATABASE(db);
 
     if (!db.tables(QSql::SystemTables).contains("pg_namespace"))
-        QSKIP("server does not support schemas", SkipSingle);
+        QSKIP("server does not support schemas");
 
     QSqlQuery q(db);
 
@@ -1315,7 +1315,7 @@ void tst_QSqlDatabase::bug_249059()
     QString version=tst_Databases::getPSQLVersion( db );
     double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
     if (ver < 7.3)
-        QSKIP("Test requires PostgreSQL >= 7.3", SkipSingle);
+        QSKIP("Test requires PostgreSQL >= 7.3");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("bug_249059", __FILE__));
@@ -1355,7 +1355,7 @@ void tst_QSqlDatabase::precisionPolicy()
     QSqlQuery q(db);
     const QString tableName(qTableName("qtest_prec", __FILE__));
     if(!db.driver()->hasFeature(QSqlDriver::LowPrecisionNumbers))
-        QSKIP("Driver or database doesn't support setting precision policy", SkipSingle);
+        QSKIP("Driver or database doesn't support setting precision policy");
 
     // Create a test table with some data
     if(tst_Databases::isMSAccess(db))
@@ -1445,7 +1445,7 @@ void tst_QSqlDatabase::mysqlOdbc_unsignedIntegers()
     CHECK_DATABASE(db);
 
     if (!db.driverName().startsWith("QODBC") || !dbName.toUpper().contains("MYSQL"))
-       QSKIP("MySQL through ODBC-driver specific test", SkipSingle);
+       QSKIP("MySQL through ODBC-driver specific test");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("uint", __FILE__));
@@ -1469,7 +1469,7 @@ void tst_QSqlDatabase::accessOdbc_strings()
     CHECK_DATABASE(db);
 
     if (!tst_Databases::isMSAccess(db))
-        QSKIP("MS Access specific test", SkipSingle);
+        QSKIP("MS Access specific test");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("strings", __FILE__));
@@ -1629,7 +1629,7 @@ void tst_QSqlDatabase::ibase_procWithReturnValues()
     CHECK_DATABASE(db);
 
     if (!db.driverName().startsWith("QIBASE"))
-       QSKIP("InterBase specific test", SkipSingle);
+       QSKIP("InterBase specific test");
 
     const QString procName(qTableName("qtest_proc2", __FILE__));
 
@@ -1716,7 +1716,7 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     CHECK_DATABASE(db);
 
     if (tst_Databases::isMySQL(db))
-        QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
+        QSKIP("MySql has inconsistent behaviour of bit field type across versions.");
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool", __FILE__) + "(id int, boolvalue bit)"));
@@ -1795,7 +1795,7 @@ void tst_QSqlDatabase::mysql_multiselect()
     QString version=tst_Databases::getMySqlVersion( db );
     double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
     if (ver < 4.1)
-        QSKIP("Test requires MySQL >= 4.1", SkipSingle);
+        QSKIP("Test requires MySQL >= 4.1");
 
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
     QVERIFY_SQL(q, next());
@@ -1859,7 +1859,7 @@ void tst_QSqlDatabase::oci_xmltypeSupport()
 
     // Embedding the XML in the statement
     if(!q.exec(QString("CREATE TABLE %1(xmldata xmltype)").arg(tableName)))
-        QSKIP("This test requries xml type support", SkipSingle);
+        QSKIP("This test requries xml type support");
     QVERIFY_SQL(q, exec(QString("INSERT INTO %1 values('%2')").arg(tableName).arg(xml)));
     QVERIFY_SQL(q, exec(QString("SELECT a.xmldata.getStringVal() FROM %1 a").arg(tableName)));
     QVERIFY_SQL(q, last());
@@ -1928,7 +1928,7 @@ void tst_QSqlDatabase::odbc_uniqueidentifier()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     if (!tst_Databases::isSqlServer(db))
-        QSKIP("SQL Server (ODBC) specific test", SkipSingle);
+        QSKIP("SQL Server (ODBC) specific test");
 
     const QString tableName(qTableName("qtest_sqlguid", __FILE__));
     QString guid = QString("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE");
@@ -1998,7 +1998,7 @@ void tst_QSqlDatabase::eventNotification()
 
     QSqlDriver *driver = db.driver();
     if (!driver->hasFeature(QSqlDriver::EventNotifications))
-        QSKIP("DBMS doesn't support event notifications", SkipSingle);
+        QSKIP("DBMS doesn't support event notifications");
 
     // Not subscribed to any events yet
     QCOMPARE(driver->subscribedToNotifications().size(), 0);
@@ -2067,7 +2067,7 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     CHECK_DATABASE(db);
 
 #if defined(Q_OS_LINUX)
-    QSKIP( "Event support doesn't work on linux", SkipAll );
+    QSKIP( "Event support doesn't work on linux");
 #endif
 
     QSqlQuery query(db);
@@ -2090,7 +2090,7 @@ void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     if (db.driverName().startsWith("QSQLITE2"))
-        QSKIP("SQLite3 specific test", SkipSingle);
+        QSKIP("SQLite3 specific test");
 
     QSqlQuery q(db);
     const QString tableName(qTableName("uint_test", __FILE__));
@@ -2155,7 +2155,7 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toDouble()<4.1 )
-        QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
+        QSKIP( "Test requires MySQL >= 4.1");
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("begin"));
@@ -2179,7 +2179,7 @@ void tst_QSqlDatabase::sqlite_enable_cache_mode()
 {
     QFETCH(QString, dbName);
     if(dbName.endsWith(":memory:"))
-        QSKIP( "cache mode is meaningless for :memory: databases", SkipSingle );
+        QSKIP( "cache mode is meaningless for :memory: databases");
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     db.close();

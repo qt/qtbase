@@ -86,7 +86,7 @@ private:
 #ifdef QT_NO_PRINTER
 void tst_QPrinterInfo::initTestCase()
 {
-    QSKIP("This test requires printing support", SkipAll);
+    QSKIP("This test requires printing support");
 }
 
 #else
@@ -215,7 +215,7 @@ void tst_QPrinterInfo::testForDefaultPrinter()
     if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
         QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
     } else {
-        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows", SkipAll);
+        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows");
     }
     QString defSysPrinter;
     if (QHostInfo::localHostName() == "fantomet") {
@@ -252,7 +252,7 @@ void tst_QPrinterInfo::testForPrinters()
     if (QHostInfo::localHostName() == "fantomet" || QHostInfo::localHostName() == "bobo") {
         QWARN("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows and may fail");
     } else {
-        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows", SkipAll);
+        QSKIP("Test is hardcoded to \"fantomet\" and \"bobo\" on Windows");
     }
     QStringList sysPrinters;
     if (QHostInfo::localHostName() == "fantomet") {
@@ -296,7 +296,7 @@ void tst_QPrinterInfo::testForPrinters()
 
 void tst_QPrinterInfo::testForPaperSizes()
 {
-QSKIP("PaperSize feature doesn't work on Windows, fails on Mac, and is unstable on Linux", SkipAll);
+QSKIP("PaperSize feature doesn't work on Windows, fails on Mac, and is unstable on Linux");
     // This test is based on common printers found at the Oslo
     // office. It is likely to be skipped or fail for other locations.
     QStringList hardPrinters;

@@ -57,7 +57,7 @@ do {\
     if (!QBaselineTest::checkImage((image), (name), (checksum), &_msg, &_err)) {\
         QFAIL(_msg.constData());\
     } else if (_err) {\
-        QSKIP(_msg.constData(), SkipSingle);\
+        QSKIP(_msg.constData());\
     }\
 } while (0)
 
@@ -70,7 +70,7 @@ do {\
     if (!QBaselineTest::testImage((image), &_msg, &_err)) {\
         QFAIL(_msg.constData());\
     } else if (_err) {\
-        QSKIP(_msg.constData(), SkipSingle);\
+        QSKIP(_msg.constData());\
     }\
 } while (0)
 

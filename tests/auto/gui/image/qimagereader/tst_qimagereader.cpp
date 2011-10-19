@@ -187,7 +187,7 @@ static const QLatin1String prefix(SRCDIR "/images/");
 // helper to skip an autotest when the given image format is not supported
 #define SKIP_IF_UNSUPPORTED(format) do {                                                          \
     if (!QByteArray(format).isEmpty() && !QImageReader::supportedImageFormats().contains(format)) \
-        QSKIP("\"" + QByteArray(format) + "\" images are not supported", SkipSingle);             \
+        QSKIP("\"" + QByteArray(format) + "\" images are not supported");             \
 } while (0)
 
 // Testing get/set functions

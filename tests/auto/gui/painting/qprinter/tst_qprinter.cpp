@@ -111,7 +111,7 @@ private slots:
 #ifdef QT_NO_PRINTER
 void tst_QPrinter::initTestCase()
 {
-    QSKIP("This test requires printing support", SkipAll);
+    QSKIP("This test requires printing support");
 }
 
 #else
@@ -469,7 +469,7 @@ void tst_QPrinter::testMulitpleSets()
     printer.setPageSize(printerPageSize);
 
     if (printer.pageSize() != printerPageSize) {
-        QSKIP("Current page size is not supported on this printer", SkipSingle);
+        QSKIP("Current page size is not supported on this printer");
         return;
     }
 
@@ -506,7 +506,7 @@ void tst_QPrinter::changingOutputFormat()
 void tst_QPrinter::outputFormatFromSuffix()
 {
     if (QPrinterInfo::availablePrinters().size() == 0)
-        QSKIP("No printers available.", SkipAll);
+        QSKIP("No printers available.");
     QPrinter p;
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
     p.setOutputFileName("test.pdf");

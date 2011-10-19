@@ -1074,9 +1074,8 @@ void tst_QLocale::toDateTime()
 void tst_QLocale::macDefaultLocale()
 {
     QLocale locale = QLocale::system();
-    if (locale.name() != QLatin1String("en_US")) {
-        QSKIP("This test only tests for en_US", SkipAll);
-    }
+    if (locale.name() != QLatin1String("en_US"))
+        QSKIP("This test only tests for en_US");
 
     QTime invalidTime;
     QDate invalidDate;

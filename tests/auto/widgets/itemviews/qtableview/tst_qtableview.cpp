@@ -3347,7 +3347,7 @@ QT_END_NAMESPACE
 void tst_QTableView::tabFocus()
 {
     if (!qt_tab_all_widgets)
-        QSKIP("This test requires full keyboard control to be enabled.", SkipAll);
+        QSKIP("This test requires full keyboard control to be enabled.");
 
     // QTableView enables tabKeyNavigation by default, but you should be able
     // to change focus on an empty table view, or on a table view that doesn't

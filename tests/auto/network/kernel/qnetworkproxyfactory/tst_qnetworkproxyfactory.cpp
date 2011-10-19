@@ -226,7 +226,7 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     if (count == factory->requestCounter) {
         //RND phones are preconfigured with several test access points which won't work without a matching SIM
         //If the network fails to start, QNAM won't ask the factory for proxies so we can't test.
-        QSKIP("network configuration didn't start", SkipSingle);
+        QSKIP("network configuration didn't start");
     }
 
     qDebug() << "testing network configuration for" << config.name();

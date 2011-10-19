@@ -257,7 +257,7 @@ void tst_QDBusLocalCalls::asyncReplySignal()
     callMsg << "Hello World";
     QDBusPendingCall ac = conn.asyncCall(callMsg);
     if (ac.isFinished())
-        QSKIP("Test ignored: the local-loop async call is already finished", SkipAll);
+        QSKIP("Test ignored: the local-loop async call is already finished");
 
     QDBusPendingCallWatcher watch(ac);
     connect(&watch, SIGNAL(finished(QDBusPendingCallWatcher*)),

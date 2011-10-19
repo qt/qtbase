@@ -108,7 +108,7 @@ static HWND winHandleOf(const QWidget *w)
 #  if !defined(Q_OS_WINCE)
 #define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
-        QSKIP("desktop is not visible, this test would fail", SkipSingle);
+        QSKIP("desktop is not visible, this test would fail");
 #  else
 #    define Q_CHECK_PAINTEVENTS
 #  endif
@@ -2407,7 +2407,7 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     QString actualFocusWidget, expectedFocusWidget;
 #ifdef Q_WS_X11
     if (!qApp->focusWidget())
-        QSKIP("Your window manager is too broken for this test", SkipAll);
+        QSKIP("Your window manager is too broken for this test");
 #endif
     QVERIFY(qApp->focusWidget());
     actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
@@ -2551,7 +2551,7 @@ void tst_QWidget::setGeometry()
     tlw.show();
     QTest::qWait(50);
     if (tlw.frameGeometry() != tlw.geometry())
-        QSKIP("Your window manager is too broken for this test", SkipAll);
+        QSKIP("Your window manager is too broken for this test");
     QCOMPARE(tlw.geometry(), tr);
 
 }
@@ -2689,7 +2689,7 @@ void tst_QWidget::raise()
 
 #ifdef Q_OS_MAC
     if (child1->internalWinId()) {
-        QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.", SkipAll);
+        QSKIP("Cocoa has no Z-Order for views, we hack it, but it results in paint events.");
     }
 #endif
 
@@ -2718,7 +2718,7 @@ void tst_QWidget::raise()
         int expectedPaintEvents = child == child2 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child2 ? 1 : 0;
 #ifdef Q_OS_MAC
-        QSKIP("Not yet sure why this fails.", SkipSingle);
+        QSKIP("Not yet sure why this fails.");
 #endif
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
         QCOMPARE(child->numZOrderChangeEvents, expectedZOrderChangeEvents);
@@ -3766,7 +3766,7 @@ void tst_QWidget::optimizedResizeMove()
 void tst_QWidget::optimizedResize_topLevel()
 {
 #if defined(Q_WS_MAC) || defined(Q_WS_QWS)
-    QSKIP("We do not yet have static contents support for *top-levels* on this platform", SkipAll);
+    QSKIP("We do not yet have static contents support for *top-levels* on this platform");
 #endif
 
     StaticWidget topLevel;
@@ -3835,7 +3835,7 @@ void tst_QWidget::childDeletesItsSibling()
     do { \
         QSize safeSize(qt_screen->width() - 250, qt_screen->height() - 250);      \
          if (!safeSize.isValid()) \
-             QSKIP("Screen size too small", SkipAll); \
+             QSKIP("Screen size too small"); \
          if (defaultSize.width() > safeSize.width() || defaultSize.height() > safeSize.height()) { \
              defaultSize = safeSize; \
              w.resize(defaultSize); \
@@ -6575,9 +6575,8 @@ void tst_QWidget::render_windowOpacity()
 
     QPixmap expected(child.size());
 #ifdef Q_WS_X11
-    if (expected.depth() < 24) {
-        QSKIP("This test won't give correct results with dithered pixmaps", SkipAll);
-    }
+    if (expected.depth() < 24)
+        QSKIP("This test won't give correct results with dithered pixmaps");
 #endif
     expected.fill(Qt::green);
     QPainter painter(&expected);
@@ -7661,7 +7660,7 @@ void tst_QWidget::sendUpdateRequestImmediately()
 {
 #ifdef Q_WS_MAC
     if (!QApplicationPrivate::graphicsSystem())
-        QSKIP("We only send update requests on the Mac when passing -graphicssystem", SkipAll);
+        QSKIP("We only send update requests on the Mac when passing -graphicssystem");
 #endif
 
     UpdateWidget updateWidget;
@@ -7687,7 +7686,7 @@ void tst_QWidget::doubleRepaint()
 {
 #if defined(Q_WS_MAC)
     if (!macHasAccessToWindowsServer())
-        QSKIP("Not having window server access causes the wrong number of repaints to be issues", SkipAll);
+        QSKIP("Not having window server access causes the wrong number of repaints to be issues");
 #endif
    UpdateWidget widget;
    widget.setFocusPolicy(Qt::StrongFocus);
@@ -9035,7 +9034,7 @@ void tst_QWidget::inputFocus_task257832()
       QLineEdit *widget = new QLineEdit;
       QInputContext *context = widget->inputContext();
       if (!context)
-            QSKIP("No input context", SkipSingle);
+            QSKIP("No input context");
       widget->setFocus();
       widget->winId();    // make sure, widget has been created
       context->setFocusWidget(widget);

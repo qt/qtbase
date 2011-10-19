@@ -297,7 +297,7 @@ void tst_QProcessEnvironment::putenv()
     qputenv(envname, "Hello, World");
     QByteArray valAfter = qgetenv(envname);
     if (valAfter != "Hello, World")
-        QSKIP("Could not test: qputenv did not do its job", SkipAll);
+        QSKIP("Could not test: qputenv did not do its job");
 
     QProcessEnvironment eAfter = QProcessEnvironment::systemEnvironment();
 

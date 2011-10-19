@@ -2254,7 +2254,7 @@ void tst_QNetworkReply::putToHttpMultipart_data()
 
 void tst_QNetworkReply::putToHttpMultipart()
 {
-    QSKIP("test server script cannot handle PUT data yet", SkipAll);
+    QSKIP("test server script cannot handle PUT data yet");
     QFETCH(QUrl, url);
 
     static QSet<QByteArray> boundaries;
@@ -3819,7 +3819,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
         QSKIP("When passing a CR-LF-LF sequence through Windows stdio, it gets converted, "
-              "so this test fails. Disabled on Windows", SkipSingle);
+              "so this test fails. Disabled on Windows");
 #endif
 
     QFile file(testFileName);
@@ -4373,7 +4373,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp_data()
 
 void tst_QNetworkReply::ioGetFromBuiltinHttp()
 {
-    QSKIP("Limiting is broken right now, check QTBUG-15065", SkipAll);
+    QSKIP("Limiting is broken right now, check QTBUG-15065");
     QFETCH(bool, https);
     QFETCH(int, bufferSize);
 
@@ -4620,7 +4620,7 @@ void tst_QNetworkReply::rateControl_data()
 
 void tst_QNetworkReply::rateControl()
 {
-    QSKIP("Test disabled -- only for manual purposes", SkipAll);
+    QSKIP("Test disabled -- only for manual purposes");
     // this function tests that we aren't reading from the network
     // faster than the data is being consumed.
     QFETCH(int, rate);

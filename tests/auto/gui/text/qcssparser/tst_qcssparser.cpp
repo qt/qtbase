@@ -1551,7 +1551,7 @@ void tst_QCssParser::gradient()
 void tst_QCssParser::extractFontFamily_data()
 {
     if (QFontInfo(QFont("Times New Roman")).family() != "Times New Roman")
-        QSKIP("'Times New Roman' font not found ", SkipAll);
+        QSKIP("'Times New Roman' font not found");
 
     QTest::addColumn<QString>("css");
     QTest::addColumn<QString>("expectedFamily");
@@ -1597,7 +1597,7 @@ void tst_QCssParser::extractFontFamily()
     // Note, we have to QSKIP rather than QEXPECT_FAIL because font lookup is broken
     // such that it may work or not work depending on the order in which fonts were
     // loaded from disk
-    QSKIP("QTBUG-20986 may fail on qpa", SkipSingle);
+    QSKIP("QTBUG-20986 may fail on qpa");
 #endif
 
     QTEST(info.family(), "expectedFamily");

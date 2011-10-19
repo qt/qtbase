@@ -277,7 +277,7 @@ void tst_QPixmap::fromImage()
     const QPixmap pixmap = QPixmap::fromImage(image);
 #ifdef Q_WS_X11
     if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
-        QSKIP("Requires XRender support", SkipAll);
+        QSKIP("Requires XRender support");
 #endif
     const QImage result = pixmap.toImage();
     image = image.convertToFormat(result.format());
@@ -505,12 +505,12 @@ void tst_QPixmap::fill()
 
 #if defined(Q_WS_X11)
     if (!bitmap && pm.handle()->classId() == QPlatformPixmap::X11Class && !pm.x11PictureHandle())
-        QSKIP("Requires XRender support", SkipSingle);
+        QSKIP("Requires XRender support");
 #endif
 
     pm.fill(color);
     if (syscolor && !bitmap && pm.depth() < 24) {
-        QSKIP("Test does not work on displays without true color", SkipSingle);
+        QSKIP("Test does not work on displays without true color");
     }
 
     QImage image = pm.toImage();
@@ -535,7 +535,7 @@ void tst_QPixmap::fill_transparent()
     QPixmap pixmap(10, 10);
 #ifdef Q_WS_X11
     if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
-        QSKIP("Requires XRender support", SkipAll);
+        QSKIP("Requires XRender support");
 #endif
     pixmap.fill(Qt::transparent);
     QVERIFY(pixmap.hasAlphaChannel());
@@ -775,7 +775,7 @@ void tst_QPixmap::grabWidget()
 void tst_QPixmap::grabWindow()
 {
 #ifdef Q_WS_QPA
-    QSKIP("QTBUG-20863 grabWindow is broken on most qpa backends", SkipAll);
+    QSKIP("QTBUG-20863 grabWindow is broken on most qpa backends");
 #endif
 #ifdef Q_OS_WINCE
     // We get out of memory, if the desktop itself is too big.
@@ -839,7 +839,7 @@ void tst_QPixmap::convertFromImageNoDetach()
 {
     QPixmap randomPixmap(10, 10);
     if (randomPixmap.handle()->classId() != QPlatformPixmap::RasterClass)
-        QSKIP("Test only valid for raster pixmaps", SkipAll);
+        QSKIP("Test only valid for raster pixmaps");
 
     //first get the screen format
     QImage::Format screenFormat = randomPixmap.toImage().format();
@@ -1013,7 +1013,7 @@ void tst_QPixmap::toWinHICON_data()
 void tst_QPixmap::toWinHICON()
 {
 #ifdef Q_OS_WINCE
-    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+    QSKIP("Test shall be enabled for Windows CE shortly.");
 #endif
 
     QFETCH(int, width);
@@ -1057,7 +1057,7 @@ void tst_QPixmap::fromWinHICON_data()
 void tst_QPixmap::fromWinHICON()
 {
 #ifdef Q_OS_WINCE
-    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+    QSKIP("Test shall be enabled for Windows CE shortly.");
 
 #else
     QFETCH(int, width);
@@ -1084,7 +1084,7 @@ void tst_QPixmap::fromWinHICON()
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {
 #ifdef Q_WS_QPA
-    QSKIP("QTBUG-20864 can't determine if threaded pixmaps are available for qpa", SkipAll);
+    QSKIP("QTBUG-20864 can't determine if threaded pixmaps are available for qpa");
 #endif
 #if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
     class Thread : public QThread
