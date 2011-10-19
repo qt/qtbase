@@ -53,6 +53,11 @@ CONFIG += qpa/basicunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 
+# Build the release libqcocoa.dylib only, skip the debug version.
+# The Qt plugin loader will dlopen both if found, causing duplicate
+# Objective-c class definitions for the classes defined in the plugin.
+contains(QT_CONFIG,release):CONFIG -= debug
+
 # Acccessibility debug support
 # DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 # include ($$PWD/../../../../util/accessibilityinspector/accessibilityinspector.pri)
