@@ -1,5 +1,4 @@
-# handle pkg-config files
-isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config # keep consistent with qt_functions.prf too!
+PKG_CONFIG = $$pkgConfigExecutable()
 
 for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
     # don't proceed if the .pro asks for a package we don't have!

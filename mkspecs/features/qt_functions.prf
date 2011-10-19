@@ -192,14 +192,33 @@ defineTest(qtPrepareTool) {
     export($$1)
 }
 
+defineReplace(pkgConfigExecutable) {
+    isEmpty(PKG_CONFIG) {
+        PKG_CONFIG = pkg-config
+
+        !isEmpty(PKG_CONFIG_SYSROOT_DIR) {
+            win32:isEmpty(MINGW_IN_SHELL):PKG_CONFIG = set PKG_CONFIG_SYSROOT_DIR=$$PKG_CONFIG_SYSROOT_DIR& $$PKG_CONFIG
+            else:PKG_CONFIG = PKG_CONFIG_SYSROOT_DIR=\"$$PKG_CONFIG_SYSROOT_DIR\" $$PKG_CONFIG
+        }
+
+        !isEmpty(PKG_CONFIG_LIBDIR) {
+            win32:isEmpty(MINGW_IN_SHELL):PKG_CONFIG = set PKG_CONFIG_LIBDIR=$$PKG_CONFIG_LIBDIR& $$PKG_CONFIG
+            else:PKG_CONFIG = PKG_CONFIG_LIBDIR=\"$$PKG_CONFIG_LIBDIR\" $$PKG_CONFIG
+        }
+    }
+
+    return($$PKG_CONFIG)
+}
+
 defineTest(packagesExist) {
     # this can't be done in global scope here because qt_functions is loaded
     # before the .pro is parsed, so if the .pro set PKG_CONFIG, we wouldn't know it
     # yet. oops.
-    isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config # keep consistent with link_pkgconfig.prf! too
+
+    pkg_config = $$pkgConfigExecutable()
 
     for(package, ARGS) {
-        !system($$PKG_CONFIG --exists $$package):return(false)
+        !system($$pkg_config --exists $$package):return(false)
     }
 
     return(true)
