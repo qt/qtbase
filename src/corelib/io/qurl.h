@@ -53,6 +53,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
+class QUrlQuery;
 class QUrlPrivate;
 class QDataStream;
 
@@ -213,6 +214,7 @@ public:
 
     bool hasQuery() const;
     void setQuery(const QString &query);
+    void setQuery(const QUrlQuery &query);
     QString query(ComponentFormattingOptions = PrettyDecoded) const;
 
     bool hasFragment() const;

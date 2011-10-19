@@ -199,6 +199,7 @@
 #include "qdir.h"         // for QDir::fromNativeSeparators
 #include "qtldurl_p.h"
 #include "private/qipaddress_p.h"
+#include "qurlquery.h"
 #if defined(Q_OS_WINCE_WM)
 #pragma optimize("g", off)
 #endif
@@ -1723,6 +1724,18 @@ void QUrl::setQuery(const QString &query)
     d->setQuery(query, 0, query.length());
     if (query.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Query;
+}
+
+void QUrl::setQuery(const QUrlQuery &query)
+{
+    detach();
+
+    // we know the data is in the right format
+    d->query = query.toString();
+    if (query.isEmpty())
+        d->sectionIsPresent &= ~QUrlPrivate::Query;
+    else
+        d->sectionIsPresent |= QUrlPrivate::Query;
 }
 
 /*!
