@@ -857,7 +857,7 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
                                                                             uint *ahp) const
 {
     Node **node;
-    uint h;
+    uint h = 0;
 
     if (d->numBuckets || ahp) {
         h = qHash(akey);
