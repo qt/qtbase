@@ -132,6 +132,14 @@ static inline QRect qrectFromRECT(const RECT &rect)
     return QRect(QPoint(rect.left, rect.top), qSizeOfRect(rect));
 }
 
+static inline RECT RECTfromQRect(const QRect &rect)
+{
+    const int x = rect.left();
+    const int y = rect.top();
+    RECT result = { x, y, x + rect.width(), y + rect.height() };
+    return result;
+}
+
 QDebug operator<<(QDebug d, const RECT &r)
 {
     d.nospace() << "RECT: left/top=" << r.left << ',' << r.top
@@ -148,14 +156,23 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
     return d;
 }
 
+// Return the frame geometry relative to the parent
+// if there is one.
+// Note: This has been observed to return invalid sizes for child windows.
 static inline QRect frameGeometry(HWND hwnd)
 {
     RECT rect = { 0, 0, 0, 0 };
-    GetWindowRect(hwnd, &rect);
+    GetWindowRect(hwnd, &rect); // Screen coordinates.
+    if (const HWND parent = GetParent(hwnd)) {
+        POINT leftTop = { rect.left, rect.top };
+        ScreenToClient(parent, &leftTop);
+        rect.left = leftTop.x;
+        rect.top = leftTop.y;
+    }
     return qrectFromRECT(rect);
 }
 
-QSize clientSize(HWND hwnd)
+static inline QSize clientSize(HWND hwnd)
 {
     RECT rect = { 0, 0, 0, 0 };
     GetClientRect(hwnd, &rect); // Always returns point 0,0, thus unusable for geometry.
@@ -807,12 +824,15 @@ void QWindowsWindow::setGeometry(const QRect &rect)
         setGeometry_sys(rect);
         if (m_data.geometry != rect) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on '%s'."
-                     " Resulting geometry:  %dx%d+%d+%d.",
+                     " Resulting geometry:  %dx%d+%d+%d "
+                     "(frame: %d, %d, %d, %d).",
                      __FUNCTION__,
                      rect.width(), rect.height(), rect.x(), rect.y(),
                      qPrintable(window()->objectName()),
                      m_data.geometry.width(), m_data.geometry.height(),
-                     m_data.geometry.x(), m_data.geometry.y());
+                     m_data.geometry.x(), m_data.geometry.y(),
+                     m_data.frame.left(), m_data.frame.top(),
+                     m_data.frame.right(), m_data.frame.bottom());
         }
     } else {
         QPlatformWindow::setGeometry(rect);
@@ -858,11 +878,13 @@ void QWindowsWindow::handleGeometryChange()
 
 void QWindowsWindow::setGeometry_sys(const QRect &rect) const
 {
-    const QRect frameGeometry = rect + frameMargins();
+    const QMargins margins = frameMargins();
+    const QRect frameGeometry = rect + margins;
 
     if (QWindowsContext::verboseWindows)
         qDebug() << '>' << __FUNCTION__ << this << window()
-                 << "    \n from " << geometry_sys() << " to " <<rect
+                 << "    \n from " << geometry_sys() << " frame: "
+                 << margins << " to " <<rect
                  << " new frame: " << frameGeometry;
 
     const bool rc = MoveWindow(m_data.hwnd, frameGeometry.x(), frameGeometry.y(),
@@ -875,7 +897,14 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
 QRect QWindowsWindow::geometry_sys() const
 {
     // Warning: Returns bogus values when minimized.
-    return frameGeometry(m_data.hwnd) - frameMargins();
+    // Note: Using frameGeometry (based on GetWindowRect)
+    // has been observed to return a size based on a standard top level
+    // frame for WS_CHILD windows (whose frame is zero), thus, use the real
+    // client size instead.
+    QRect result = frameGeometry(m_data.hwnd) - frameMargins();
+    if (result.isValid() && !window()->isTopLevel())
+        result.setSize(clientSize(m_data.hwnd));
+    return result;
 }
 
 /*!

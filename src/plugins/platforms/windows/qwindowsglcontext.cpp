@@ -429,17 +429,19 @@ static int choosePixelFormat(HDC hdc,
         iAttributes[i++] = WGL_NUMBER_OVERLAYS_ARB;
         iAttributes[i++] = 1;
     }
-    const bool sampleBuffersRequested = format.samples() > 1
+    const int samples = format.samples();
+    const bool sampleBuffersRequested = samples > 1
             && testFlag(staticContext.extensions, QOpenGLStaticContext::SampleBuffers);
     int samplesValuePosition = 0;
-    int samplesEnabledPosition = 0;
     if (sampleBuffersRequested) {
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
-        samplesEnabledPosition = i;
         iAttributes[i++] = TRUE;
         iAttributes[i++] = WGL_SAMPLES_ARB;
         samplesValuePosition = i;
         iAttributes[i++] = format.samples();
+    } else if (samples == 0 || samples == 1 ) {
+        iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
+        iAttributes[i++] = FALSE;
     }
     // If sample buffer request cannot be satisfied, reduce request.
     int pixelFormat = 0;
