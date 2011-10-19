@@ -120,4 +120,34 @@ QT_BEGIN_NAMESPACE
     the correct setting for your protocol.
 */
 
+/*!
+    \enum QSsl::SslOption
+
+    Describes the options that can be used to control the details of
+    SSL behaviour. These options are generally used to turn features off
+    to work around buggy servers.
+
+    \value SslOptionDisableEmptyFragments Disables the insertion of empty
+    fragments into the data when using block ciphers. When enabled, this
+    prevents some attacks (such as the BEAST attack), however it is
+    incompatible with some servers.
+    \value SslOptionDisableTickets Disables the SSL session ticket
+    extension. This can cause slower connection setup, however some servers
+    are not compatible with the extension.
+    \value SslOptionDisableCompression Disables the SSL compression
+    extension. When enabled, this allows the data being passed over SSL to
+    be compressed, however some servers are not compatible with this
+    extension.
+    \value SslOptionDisableServerNameIndication Disables the SSL server
+    name indication extension. When enabled, this tells the server the virtual
+    host being accessed allowing it to respond with the correct certificate.
+
+    By default, SslOptionDisableEmptyFragments is turned on since this causes
+    problems with a large number of servers, but the other options are disabled.
+
+    Note: Availability of above options depends on the version of the SSL
+    backend in use.
+*/
+
+
 QT_END_NAMESPACE

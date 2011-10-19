@@ -167,7 +167,8 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->caCertificates == other.d->caCertificates &&
         d->protocol == other.d->protocol &&
         d->peerVerifyMode == other.d->peerVerifyMode &&
-        d->peerVerifyDepth == other.d->peerVerifyDepth;
+        d->peerVerifyDepth == other.d->peerVerifyDepth &&
+        d->sslOptions == other.d->sslOptions;
 }
 
 /*!
@@ -199,7 +200,8 @@ bool QSslConfiguration::isNull() const
             d->localCertificate.isNull() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
-            d->peerCertificateChain.count() == 0);
+            d->peerCertificateChain.count() == 0 &&
+            d->sslOptions == 0);
 }
 
 /*!
@@ -504,6 +506,29 @@ QList<QSslCertificate> QSslConfiguration::caCertificates() const
 void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certificates)
 {
     d->caCertificates = certificates;
+}
+
+/*!
+  Enables or disables an SSL compatibility option.
+
+  \sa testSSlOption()
+*/
+void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
+{
+    if (on)
+        d->sslOptions |= option;
+    else
+        d->sslOptions &= ~option;
+}
+
+/*!
+  Returns true if the specified SSL compatibility option is enabled.
+
+  \sa testSSlOption()
+*/
+bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
+{
+    return d->sslOptions & option;
 }
 
 /*!

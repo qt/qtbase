@@ -44,6 +44,7 @@
 #define QSSL_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/QFlags>
 
 QT_BEGIN_HEADER
 
@@ -86,7 +87,17 @@ namespace QSsl {
         SecureProtocols,
         UnknownProtocol = -1
     };
+
+    enum SslOption {
+        SslOptionDisableEmptyFragments = 0x01,
+        SslOptionDisableSessionTickets = 0x02,
+        SslOptionDisableCompression = 0x04,
+        SslOptionDisableServerNameIndication = 0x08
+    };
+    Q_DECLARE_FLAGS(SslOptions, SslOption)
 }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSsl::SslOptions)
 
 QT_END_NAMESPACE
 
