@@ -49,6 +49,7 @@
 #include "qvector.h"
 #include "qlocale.h"
 #include "qeasingcurve.h"
+#include "qvariant.h"
 
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
@@ -1643,14 +1644,14 @@ void QMetaType::destruct(int type, void *where)
         break;
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QVariantMap:
-        static_cast< NS(QVariantMap)* >(where)->NS(QVariantMap)::~QVariantMap();
+        static_cast< NS(QVariantMap)* >(where)->NS(QVariantMap)::~QMap<class QString, class QVariant>();
         break;
     case QMetaType::QVariantHash:
-        static_cast< NS(QVariantHash)* >(where)->NS(QVariantHash)::~QVariantHash();
+        static_cast< NS(QVariantHash)* >(where)->NS(QVariantHash)::~QHash<class QString, class QVariant>();
         break;
-    case QMetaType::QVariantList:
-        static_cast< NS(QVariantList)* >(where)->NS(QVariantList)::~QVariantList();
-        break;
+    case QMetaType::QVariantList: {
+        static_cast< NS(QVariantList)* >(where)->NS(QVariantList)::~QList<class QVariant>();
+        break; }
     case QMetaType::QVariant:
         static_cast< NS(QVariant)* >(where)->NS(QVariant)::~QVariant();
         break;
