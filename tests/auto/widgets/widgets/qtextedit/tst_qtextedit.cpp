@@ -203,6 +203,7 @@ private slots:
     void bidiLogicalMovement();
 
     void inputMethodSelection();
+    void inputMethodQuery();
 
 private:
     void createSelection();
@@ -2386,6 +2387,18 @@ void tst_QTextEdit::inputMethodSelection()
     QCOMPARE(ed->textCursor().selectionEnd(), 17);
 }
 
+void tst_QTextEdit::inputMethodQuery()
+{
+    QString text("first line of text\nsecond line of text");
+    ed->setText(text);
+    ed->selectAll();
+
+    QInputMethodQueryEvent event(Qt::ImQueryInput);
+    QGuiApplication::sendEvent(ed, &event);
+    int anchor = event.value(Qt::ImAnchorPosition).toInt();
+    int position = event.value(Qt::ImCursorPosition).toInt();
+    QCOMPARE(qAbs(position - anchor), text.length());
+}
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

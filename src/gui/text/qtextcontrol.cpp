@@ -1896,7 +1896,7 @@ QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImMaximumTextLength:
         return QVariant(); // No limit.
     case Qt::ImAnchorPosition:
-        return QVariant(qBound(0, d->cursor.anchor() - block.position(), block.length()));
+        return QVariant(d->cursor.anchor() - block.position());
     default:
         return QVariant();
     }
