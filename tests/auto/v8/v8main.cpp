@@ -45,8 +45,6 @@
 #define RUN_TEST(testname) { \
     if (!v8test_ ## testname()) \
         printf ("Test %s FAILED\n", # testname); \
-    else \
-        printf ("Test %s PASS\n", # testname); \
 }
 
 int main(int argc, char *argv[])
@@ -56,7 +54,6 @@ int main(int argc, char *argv[])
     RUN_TEST(eval);
     RUN_TEST(evalwithinwith);
     RUN_TEST(userobjectcompare);
-    RUN_TEST(externalteardown);
 
     return -1;
 }

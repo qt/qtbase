@@ -1,7 +1,7 @@
-From a1572a979803dda787be4a7095d5c37e926443a7 Mon Sep 17 00:00:00 2001
+From 523f03f03b1ac16d272a13389f8a5654d9ff12e6 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 9 Sep 2011 14:16:12 +1000
-Subject: [PATCH 07/11] Allow a script to be flagged as "native"
+Subject: [PATCH 15/16] Allow a script to be flagged as "native"
 
 Native scripts do not appear in backtraces, or in the source and
 line number when exceptions are thrown from within them.  This is
@@ -13,10 +13,10 @@ still have it appear sensibly to the user.
  2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 6baf2b2..229ddbd 100644
+index 5e1ce50..a2d61d1 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -588,8 +588,9 @@ class ScriptOrigin {
+@@ -578,8 +578,9 @@ class ScriptOrigin {
  class V8EXPORT Script {
   public:
    enum CompileFlags {
@@ -29,10 +29,10 @@ index 6baf2b2..229ddbd 100644
  
    /**
 diff --git a/src/compiler.cc b/src/compiler.cc
-index 596df4a..b760b71 100644
+index d2191b9..873018c 100755
 --- a/src/compiler.cc
 +++ b/src/compiler.cc
-@@ -501,7 +501,7 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
+@@ -507,7 +507,7 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
  
      // Create a script object describing the script to be compiled.
      Handle<Script> script = FACTORY->NewScript(source);

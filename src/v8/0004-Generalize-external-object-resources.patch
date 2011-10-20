@@ -1,0 +1,894 @@
+From f9368b52060c31e9532ef26f6cca1a2cb0283f51 Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Mon, 23 May 2011 16:55:35 +1000
+Subject: [PATCH 04/16] Generalize external object resources
+
+V8 was already able to manage and finalize an external string
+resource.  This change generalizes that mechanism to handle a
+single generic external resource - a v8::Object::ExternalResource
+derived instance - on normal JSObject's.
+
+This is useful for mapping C++ objects to JS objects where the
+C++ object's memory is effectively owned by the JS Object, and
+thus needs to destroyed when the JS Object is garbage collected.
+The V8 mailing list suggests using a weak persistent handle for
+this purpose, but that seems to incur a fairly massive performance
+penalty for short lived objects as weak persistent handle callbacks
+are not called until the object has been promoted into the old
+object space.
+---
+ include/v8.h                                   |   25 ++++++
+ src/api.cc                                     |   64 ++++++++++++++-
+ src/extensions/externalize-string-extension.cc |    4 +-
+ src/factory.cc                                 |   11 +++
+ src/heap-inl.h                                 |  101 +++++++++++++++---------
+ src/heap.cc                                    |   68 ++++++++--------
+ src/heap.h                                     |   42 +++++-----
+ src/liveobjectlist.cc                          |    4 +-
+ src/mark-compact.cc                            |   21 +++---
+ src/objects-inl.h                              |   41 +++++++++-
+ src/objects.h                                  |   14 +++-
+ 11 files changed, 280 insertions(+), 115 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index bb31ea0..205e856 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -1631,6 +1631,25 @@ class Object : public Value {
+   /** Sets a native pointer in an internal field. */
+   V8EXPORT void SetPointerInInternalField(int index, void* value);
+ 
++  class V8EXPORT ExternalResource { // NOLINT
++   public:
++    ExternalResource() {}
++    virtual ~ExternalResource() {}
++
++   protected:
++    virtual void Dispose() { delete this; }
++
++   private:
++    // Disallow copying and assigning.
++    ExternalResource(const ExternalResource&);
++    void operator=(const ExternalResource&);
++
++    friend class v8::internal::Heap;
++  };
++
++  V8EXPORT void SetExternalResource(ExternalResource *);
++  V8EXPORT ExternalResource *GetExternalResource();
++
+   // Testers for local properties.
+   V8EXPORT bool HasRealNamedProperty(Handle<String> key);
+   V8EXPORT bool HasRealIndexedProperty(uint32_t index);
+@@ -2332,6 +2351,12 @@ class V8EXPORT ObjectTemplate : public Template {
+    */
+   void SetInternalFieldCount(int value);
+ 
++  /**
++   * Sets whether the object can store an "external resource" object.
++   */
++  bool HasExternalResource();
++  void SetHasExternalResource(bool value);
++
+  private:
+   ObjectTemplate();
+   static Local<ObjectTemplate> New(Handle<FunctionTemplate> constructor);
+diff --git a/src/api.cc b/src/api.cc
+index 8b0b32a..1a6fbbb 100644
+--- a/src/api.cc
++++ b/src/api.cc
+@@ -1294,6 +1294,34 @@ void ObjectTemplate::SetInternalFieldCount(int value) {
+ }
+ 
+ 
++bool ObjectTemplate::HasExternalResource()
++{
++  if (IsDeadCheck(Utils::OpenHandle(this)->GetIsolate(),
++                  "v8::ObjectTemplate::HasExternalResource()")) {
++    return 0;
++  }
++  return !Utils::OpenHandle(this)->has_external_resource()->IsUndefined();
++}
++
++
++void ObjectTemplate::SetHasExternalResource(bool value)
++{
++  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
++  if (IsDeadCheck(isolate, "v8::ObjectTemplate::SetHasExternalResource()")) {
++    return;
++  }
++  ENTER_V8(isolate);
++  if (value) {
++    EnsureConstructor(this);
++  }
++  if (value) {
++      Utils::OpenHandle(this)->set_has_external_resource(i::Smi::FromInt(1));
++  } else {
++      Utils::OpenHandle(this)->set_has_external_resource(Utils::OpenHandle(this)->GetHeap()->undefined_value());
++  }
++}
++
++
+ // --- S c r i p t D a t a ---
+ 
+ 
+@@ -3652,6 +3680,34 @@ void v8::Object::SetPointerInInternalField(int index, void* value) {
+ }
+ 
+ 
++void v8::Object::SetExternalResource(v8::Object::ExternalResource *resource) {
++  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
++  ENTER_V8(isolate);
++  i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
++  if (CanBeEncodedAsSmi(resource)) {
++    obj->SetExternalResourceObject(EncodeAsSmi(resource));
++  } else {
++    obj->SetExternalResourceObject(*isolate->factory()->NewProxy(static_cast<i::Address>((void *)resource)));
++  }
++  if (!obj->IsSymbol()) {
++    isolate->heap()->external_resource_table()->AddObject(*obj);
++  }
++}
++
++
++v8::Object::ExternalResource *v8::Object::GetExternalResource() {
++  i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
++  i::Object* value = obj->GetExternalResourceObject();
++  if (value->IsSmi()) {
++    return reinterpret_cast<v8::Object::ExternalResource*>(i::Internals::GetExternalPointerFromSmi(value));
++  } else if (value->IsProxy()) {
++    return reinterpret_cast<v8::Object::ExternalResource*>(i::Proxy::cast(value)->proxy());
++  } else {
++    return NULL;
++  }
++}
++
++
+ // --- E n v i r o n m e n t ---
+ 
+ 
+@@ -4144,7 +4200,7 @@ Local<String> v8::String::NewExternal(
+   LOG_API(isolate, "String::NewExternal");
+   ENTER_V8(isolate);
+   i::Handle<i::String> result = NewExternalStringHandle(isolate, resource);
+-  isolate->heap()->external_string_table()->AddString(*result);
++  isolate->heap()->external_resource_table()->AddString(*result);
+   return Utils::ToLocal(result);
+ }
+ 
+@@ -4162,7 +4218,7 @@ bool v8::String::MakeExternal(v8::String::ExternalStringResource* resource) {
+   }
+   bool result = obj->MakeExternal(resource);
+   if (result && !obj->IsSymbol()) {
+-    isolate->heap()->external_string_table()->AddString(*obj);
++    isolate->heap()->external_resource_table()->AddString(*obj);
+   }
+   return result;
+ }
+@@ -4175,7 +4231,7 @@ Local<String> v8::String::NewExternal(
+   LOG_API(isolate, "String::NewExternal");
+   ENTER_V8(isolate);
+   i::Handle<i::String> result = NewExternalAsciiStringHandle(isolate, resource);
+-  isolate->heap()->external_string_table()->AddString(*result);
++  isolate->heap()->external_resource_table()->AddString(*result);
+   return Utils::ToLocal(result);
+ }
+ 
+@@ -4194,7 +4250,7 @@ bool v8::String::MakeExternal(
+   }
+   bool result = obj->MakeExternal(resource);
+   if (result && !obj->IsSymbol()) {
+-    isolate->heap()->external_string_table()->AddString(*obj);
++    isolate->heap()->external_resource_table()->AddString(*obj);
+   }
+   return result;
+ }
+diff --git a/src/extensions/externalize-string-extension.cc b/src/extensions/externalize-string-extension.cc
+index b3f83fe..8e50904 100644
+--- a/src/extensions/externalize-string-extension.cc
++++ b/src/extensions/externalize-string-extension.cc
+@@ -100,7 +100,7 @@ v8::Handle<v8::Value> ExternalizeStringExtension::Externalize(
+         data, string->length());
+     result = string->MakeExternal(resource);
+     if (result && !string->IsSymbol()) {
+-      HEAP->external_string_table()->AddString(*string);
++      HEAP->external_resource_table()->AddString(*string);
+     }
+     if (!result) delete resource;
+   } else {
+@@ -110,7 +110,7 @@ v8::Handle<v8::Value> ExternalizeStringExtension::Externalize(
+         data, string->length());
+     result = string->MakeExternal(resource);
+     if (result && !string->IsSymbol()) {
+-      HEAP->external_string_table()->AddString(*string);
++      HEAP->external_resource_table()->AddString(*string);
+     }
+     if (!result) delete resource;
+   }
+diff --git a/src/factory.cc b/src/factory.cc
+index dcdc645..d530a75 100644
+--- a/src/factory.cc
++++ b/src/factory.cc
+@@ -997,15 +997,21 @@ Handle<JSFunction> Factory::CreateApiFunction(
+   Handle<Code> construct_stub = isolate()->builtins()->JSConstructStubApi();
+ 
+   int internal_field_count = 0;
++  bool has_external_resource = false;
++
+   if (!obj->instance_template()->IsUndefined()) {
+     Handle<ObjectTemplateInfo> instance_template =
+         Handle<ObjectTemplateInfo>(
+             ObjectTemplateInfo::cast(obj->instance_template()));
+     internal_field_count =
+         Smi::cast(instance_template->internal_field_count())->value();
++    has_external_resource =
++        !instance_template->has_external_resource()->IsUndefined();
+   }
+ 
+   int instance_size = kPointerSize * internal_field_count;
++  if (has_external_resource) instance_size += kPointerSize;
++
+   InstanceType type = INVALID_TYPE;
+   switch (instance_type) {
+     case JavaScriptObject:
+@@ -1040,6 +1046,11 @@ Handle<JSFunction> Factory::CreateApiFunction(
+ 
+   Handle<Map> map = Handle<Map>(result->initial_map());
+ 
++  // Mark as having external data object if needed
++  if (has_external_resource) {
++    map->set_has_external_resource(true);
++  }
++
+   // Mark as undetectable if needed.
+   if (obj->undetectable()) {
+     map->set_is_undetectable();
+diff --git a/src/heap-inl.h b/src/heap-inl.h
+index f4fce7b..58e7adf 100644
+--- a/src/heap-inl.h
++++ b/src/heap-inl.h
+@@ -205,21 +205,36 @@ MaybeObject* Heap::NumberFromUint32(uint32_t value) {
+ }
+ 
+ 
+-void Heap::FinalizeExternalString(String* string) {
+-  ASSERT(string->IsExternalString());
+-  v8::String::ExternalStringResourceBase** resource_addr =
+-      reinterpret_cast<v8::String::ExternalStringResourceBase**>(
+-          reinterpret_cast<byte*>(string) +
+-          ExternalString::kResourceOffset -
+-          kHeapObjectTag);
+-
+-  // Dispose of the C++ object if it has not already been disposed.
+-  if (*resource_addr != NULL) {
+-    (*resource_addr)->Dispose();
+-  }
++void Heap::FinalizeExternalString(HeapObject* string) {
++  ASSERT(string->IsExternalString() || string->map()->has_external_resource());
++
++  if (string->IsExternalString()) {
++    v8::String::ExternalStringResourceBase** resource_addr =
++        reinterpret_cast<v8::String::ExternalStringResourceBase**>(
++            reinterpret_cast<byte*>(string) +
++            ExternalString::kResourceOffset -
++            kHeapObjectTag);
++
++    // Dispose of the C++ object if it has not already been disposed.
++    if (*resource_addr != NULL) {
++      (*resource_addr)->Dispose();
++    }
+ 
+-  // Clear the resource pointer in the string.
+-  *resource_addr = NULL;
++    // Clear the resource pointer in the string.
++    *resource_addr = NULL;
++  } else {
++    JSObject *object = JSObject::cast(string);
++    Object *value = object->GetExternalResourceObject();
++    v8::Object::ExternalResource *resource = 0;
++    if (value->IsSmi()) {
++        resource = reinterpret_cast<v8::Object::ExternalResource*>(Internals::GetExternalPointerFromSmi(value));
++    } else if (value->IsProxy()) {
++        resource = reinterpret_cast<v8::Object::ExternalResource*>(Proxy::cast(value)->proxy());
++    } 
++    if (resource) {
++        resource->Dispose();
++    }
++  }
+ }
+ 
+ 
+@@ -556,53 +571,63 @@ inline bool Heap::allow_allocation(bool new_state) {
+ #endif
+ 
+ 
+-void ExternalStringTable::AddString(String* string) {
+-  ASSERT(string->IsExternalString());
++void ExternalResourceTable::AddString(String* string) {
++  ASSERT(string->IsExternalString() );
+   if (heap_->InNewSpace(string)) {
+-    new_space_strings_.Add(string);
++    new_space_objects_.Add(string);
++  } else {
++    old_space_objects_.Add(string);
++  }
++}
++
++
++void ExternalResourceTable::AddObject(HeapObject* object) {
++  ASSERT(object->map()->has_external_resource());
++  if (heap_->InNewSpace(object)) {
++    new_space_objects_.Add(object);
+   } else {
+-    old_space_strings_.Add(string);
++    old_space_objects_.Add(object);
+   }
+ }
+ 
+ 
+-void ExternalStringTable::Iterate(ObjectVisitor* v) {
+-  if (!new_space_strings_.is_empty()) {
+-    Object** start = &new_space_strings_[0];
+-    v->VisitPointers(start, start + new_space_strings_.length());
++void ExternalResourceTable::Iterate(ObjectVisitor* v) {
++  if (!new_space_objects_.is_empty()) {
++    Object** start = &new_space_objects_[0];
++    v->VisitPointers(start, start + new_space_objects_.length());
+   }
+-  if (!old_space_strings_.is_empty()) {
+-    Object** start = &old_space_strings_[0];
+-    v->VisitPointers(start, start + old_space_strings_.length());
++  if (!old_space_objects_.is_empty()) {
++    Object** start = &old_space_objects_[0];
++    v->VisitPointers(start, start + old_space_objects_.length());
+   }
+ }
+ 
+ 
+ // Verify() is inline to avoid ifdef-s around its calls in release
+ // mode.
+-void ExternalStringTable::Verify() {
++void ExternalResourceTable::Verify() {
+ #ifdef DEBUG
+-  for (int i = 0; i < new_space_strings_.length(); ++i) {
+-    ASSERT(heap_->InNewSpace(new_space_strings_[i]));
+-    ASSERT(new_space_strings_[i] != HEAP->raw_unchecked_null_value());
++  for (int i = 0; i < new_space_objects_.length(); ++i) {
++    ASSERT(heap_->InNewSpace(new_space_objects_[i]));
++    ASSERT(new_space_objects_[i] != HEAP->raw_unchecked_null_value());
+   }
+-  for (int i = 0; i < old_space_strings_.length(); ++i) {
+-    ASSERT(!heap_->InNewSpace(old_space_strings_[i]));
+-    ASSERT(old_space_strings_[i] != HEAP->raw_unchecked_null_value());
++  for (int i = 0; i < old_space_objects_.length(); ++i) {
++    ASSERT(!heap_->InNewSpace(old_space_objects_[i]));
++    ASSERT(old_space_objects_[i] != HEAP->raw_unchecked_null_value());
+   }
+ #endif
+ }
+ 
+ 
+-void ExternalStringTable::AddOldString(String* string) {
+-  ASSERT(string->IsExternalString());
+-  ASSERT(!heap_->InNewSpace(string));
+-  old_space_strings_.Add(string);
++void ExternalResourceTable::AddOldObject(HeapObject* object) {
++  ASSERT(object->IsExternalString() || object->map()->has_external_resource());
++  ASSERT(!heap_->InNewSpace(object));
++  old_space_objects_.Add(object);
+ }
+ 
+ 
+-void ExternalStringTable::ShrinkNewStrings(int position) {
+-  new_space_strings_.Rewind(position);
++void ExternalResourceTable::ShrinkNewObjects(int position) {
++  new_space_objects_.Rewind(position);
+   Verify();
+ }
+ 
+diff --git a/src/heap.cc b/src/heap.cc
+index 900f462..bf2940e 100644
+--- a/src/heap.cc
++++ b/src/heap.cc
+@@ -155,7 +155,7 @@ Heap::Heap()
+   memset(roots_, 0, sizeof(roots_[0]) * kRootListLength);
+   global_contexts_list_ = NULL;
+   mark_compact_collector_.heap_ = this;
+-  external_string_table_.heap_ = this;
++  external_resource_table_.heap_ = this;
+ }
+ 
+ 
+@@ -1030,8 +1030,8 @@ void Heap::Scavenge() {
+ 
+   new_space_front = DoScavenge(&scavenge_visitor, new_space_front);
+ 
+-  UpdateNewSpaceReferencesInExternalStringTable(
+-      &UpdateNewSpaceReferenceInExternalStringTableEntry);
++  UpdateNewSpaceReferencesInExternalResourceTable(
++      &UpdateNewSpaceReferenceInExternalResourceTableEntry);
+ 
+   LiveObjectList::UpdateReferencesForScavengeGC();
+   isolate()->runtime_profiler()->UpdateSamplesAfterScavenge();
+@@ -1053,38 +1053,38 @@ void Heap::Scavenge() {
+ }
+ 
+ 
+-String* Heap::UpdateNewSpaceReferenceInExternalStringTableEntry(Heap* heap,
+-                                                                Object** p) {
++HeapObject* Heap::UpdateNewSpaceReferenceInExternalResourceTableEntry(Heap* heap,
++                                                                      Object** p) {
+   MapWord first_word = HeapObject::cast(*p)->map_word();
+ 
+   if (!first_word.IsForwardingAddress()) {
+     // Unreachable external string can be finalized.
+-    heap->FinalizeExternalString(String::cast(*p));
++    heap->FinalizeExternalString(HeapObject::cast(*p));
+     return NULL;
+   }
+ 
+   // String is still reachable.
+-  return String::cast(first_word.ToForwardingAddress());
++  return HeapObject::cast(first_word.ToForwardingAddress());
+ }
+ 
+ 
+-void Heap::UpdateNewSpaceReferencesInExternalStringTable(
+-    ExternalStringTableUpdaterCallback updater_func) {
+-  external_string_table_.Verify();
++void Heap::UpdateNewSpaceReferencesInExternalResourceTable(
++    ExternalResourceTableUpdaterCallback updater_func) {
++  external_resource_table_.Verify();
+ 
+-  if (external_string_table_.new_space_strings_.is_empty()) return;
++  if (external_resource_table_.new_space_objects_.is_empty()) return;
+ 
+-  Object** start = &external_string_table_.new_space_strings_[0];
+-  Object** end = start + external_string_table_.new_space_strings_.length();
++  Object** start = &external_resource_table_.new_space_objects_[0];
++  Object** end = start + external_resource_table_.new_space_objects_.length();
+   Object** last = start;
+ 
+   for (Object** p = start; p < end; ++p) {
+     ASSERT(InFromSpace(*p));
+-    String* target = updater_func(this, p);
++    HeapObject* target = updater_func(this, p);
+ 
+     if (target == NULL) continue;
+ 
+-    ASSERT(target->IsExternalString());
++    ASSERT(target->IsExternalString() || target->map()->has_external_resource());
+ 
+     if (InNewSpace(target)) {
+       // String is still in new space.  Update the table entry.
+@@ -1092,12 +1092,12 @@ void Heap::UpdateNewSpaceReferencesInExternalStringTable(
+       ++last;
+     } else {
+       // String got promoted.  Move it to the old string list.
+-      external_string_table_.AddOldString(target);
++      external_resource_table_.AddOldObject(target);
+     }
+   }
+ 
+   ASSERT(last <= end);
+-  external_string_table_.ShrinkNewStrings(static_cast<int>(last - start));
++  external_resource_table_.ShrinkNewObjects(static_cast<int>(last - start));
+ }
+ 
+ 
+@@ -4468,7 +4468,7 @@ void Heap::IterateWeakRoots(ObjectVisitor* v, VisitMode mode) {
+   v->Synchronize("symbol_table");
+   if (mode != VISIT_ALL_IN_SCAVENGE) {
+     // Scavenge collections have special processing for this.
+-    external_string_table_.Iterate(v);
++    external_resource_table_.Iterate(v);
+   }
+   v->Synchronize("external_string_table");
+ }
+@@ -4970,7 +4970,7 @@ void Heap::TearDown() {
+ 
+   isolate_->global_handles()->TearDown();
+ 
+-  external_string_table_.TearDown();
++  external_resource_table_.TearDown();
+ 
+   new_space_.TearDown();
+ 
+@@ -5835,31 +5835,31 @@ void TranscendentalCache::Clear() {
+ }
+ 
+ 
+-void ExternalStringTable::CleanUp() {
++void ExternalResourceTable::CleanUp() {
+   int last = 0;
+-  for (int i = 0; i < new_space_strings_.length(); ++i) {
+-    if (new_space_strings_[i] == heap_->raw_unchecked_null_value()) continue;
+-    if (heap_->InNewSpace(new_space_strings_[i])) {
+-      new_space_strings_[last++] = new_space_strings_[i];
++  for (int i = 0; i < new_space_objects_.length(); ++i) {
++    if (new_space_objects_[i] == heap_->raw_unchecked_null_value()) continue;
++    if (heap_->InNewSpace(new_space_objects_[i])) {
++      new_space_objects_[last++] = new_space_objects_[i];
+     } else {
+-      old_space_strings_.Add(new_space_strings_[i]);
++      old_space_objects_.Add(new_space_objects_[i]);
+     }
+   }
+-  new_space_strings_.Rewind(last);
++  new_space_objects_.Rewind(last);
+   last = 0;
+-  for (int i = 0; i < old_space_strings_.length(); ++i) {
+-    if (old_space_strings_[i] == heap_->raw_unchecked_null_value()) continue;
+-    ASSERT(!heap_->InNewSpace(old_space_strings_[i]));
+-    old_space_strings_[last++] = old_space_strings_[i];
++  for (int i = 0; i < old_space_objects_.length(); ++i) {
++    if (old_space_objects_[i] == heap_->raw_unchecked_null_value()) continue;
++    ASSERT(!heap_->InNewSpace(old_space_objects_[i]));
++    old_space_objects_[last++] = old_space_objects_[i];
+   }
+-  old_space_strings_.Rewind(last);
++  old_space_objects_.Rewind(last);
+   Verify();
+ }
+ 
+ 
+-void ExternalStringTable::TearDown() {
+-  new_space_strings_.Free();
+-  old_space_strings_.Free();
++void ExternalResourceTable::TearDown() {
++  new_space_objects_.Free();
++  old_space_objects_.Free();
+ }
+ 
+ 
+diff --git a/src/heap.h b/src/heap.h
+index ae4e9e7..8cbf378 100644
+--- a/src/heap.h
++++ b/src/heap.h
+@@ -237,8 +237,8 @@ class Isolate;
+ class WeakObjectRetainer;
+ 
+ 
+-typedef String* (*ExternalStringTableUpdaterCallback)(Heap* heap,
+-                                                      Object** pointer);
++typedef HeapObject* (*ExternalResourceTableUpdaterCallback)(Heap* heap,
++                                                            Object** pointer);
+ 
+ typedef bool (*DirtyRegionCallback)(Heap* heap,
+                                     Address start,
+@@ -284,43 +284,45 @@ class PromotionQueue {
+ };
+ 
+ 
+-// External strings table is a place where all external strings are
+-// registered.  We need to keep track of such strings to properly
+-// finalize them.
+-class ExternalStringTable {
++// External resource table is a place where all external strings and
++// objects with an external resource are registered.  We need to keep 
++// track of such strings to properly finalize them.
++class ExternalResourceTable {
+  public:
+   // Registers an external string.
+   inline void AddString(String* string);
++  // Registers an external object.
++  inline void AddObject(HeapObject* object);
+ 
+   inline void Iterate(ObjectVisitor* v);
+ 
+   // Restores internal invariant and gets rid of collected strings.
+-  // Must be called after each Iterate() that modified the strings.
++  // Must be called after each Iterate() that modified the objects.
+   void CleanUp();
+ 
+   // Destroys all allocated memory.
+   void TearDown();
+ 
+  private:
+-  ExternalStringTable() { }
++  ExternalResourceTable() { }
+ 
+   friend class Heap;
+ 
+   inline void Verify();
+ 
+-  inline void AddOldString(String* string);
++  inline void AddOldObject(HeapObject* object);
+ 
+   // Notifies the table that only a prefix of the new list is valid.
+-  inline void ShrinkNewStrings(int position);
++  inline void ShrinkNewObjects(int position);
+ 
+   // To speed up scavenge collections new space string are kept
+   // separate from old space strings.
+-  List<Object*> new_space_strings_;
+-  List<Object*> old_space_strings_;
++  List<Object*> new_space_objects_;
++  List<Object*> old_space_objects_;
+ 
+   Heap* heap_;
+ 
+-  DISALLOW_COPY_AND_ASSIGN(ExternalStringTable);
++  DISALLOW_COPY_AND_ASSIGN(ExternalResourceTable);
+ };
+ 
+ 
+@@ -753,7 +755,7 @@ class Heap {
+ 
+   // Finalizes an external string by deleting the associated external
+   // data and clearing the resource pointer.
+-  inline void FinalizeExternalString(String* string);
++  inline void FinalizeExternalString(HeapObject* string);
+ 
+   // Allocates an uninitialized object.  The memory is non-executable if the
+   // hardware and OS allow.
+@@ -1191,8 +1193,8 @@ class Heap {
+     survived_since_last_expansion_ += survived;
+   }
+ 
+-  void UpdateNewSpaceReferencesInExternalStringTable(
+-      ExternalStringTableUpdaterCallback updater_func);
++  void UpdateNewSpaceReferencesInExternalResourceTable(
++      ExternalResourceTableUpdaterCallback updater_func);
+ 
+   void ProcessWeakReferences(WeakObjectRetainer* retainer);
+ 
+@@ -1228,8 +1230,8 @@ class Heap {
+     return &mark_compact_collector_;
+   }
+ 
+-  ExternalStringTable* external_string_table() {
+-    return &external_string_table_;
++  ExternalResourceTable* external_resource_table() {
++    return &external_resource_table_;
+   }
+ 
+   inline Isolate* isolate();
+@@ -1462,7 +1464,7 @@ class Heap {
+   // Performs a minor collection in new generation.
+   void Scavenge();
+ 
+-  static String* UpdateNewSpaceReferenceInExternalStringTableEntry(
++  static HeapObject* UpdateNewSpaceReferenceInExternalResourceTableEntry(
+       Heap* heap,
+       Object** pointer);
+ 
+@@ -1593,7 +1595,7 @@ class Heap {
+   // configured through the API until it is setup.
+   bool configured_;
+ 
+-  ExternalStringTable external_string_table_;
++  ExternalResourceTable external_resource_table_;
+ 
+   bool is_safe_to_read_maps_;
+ 
+diff --git a/src/liveobjectlist.cc b/src/liveobjectlist.cc
+index 5795a6b..8866e58 100644
+--- a/src/liveobjectlist.cc
++++ b/src/liveobjectlist.cc
+@@ -1989,7 +1989,7 @@ Object* LiveObjectList::PrintObj(int obj_id) {
+     ASSERT(resource->IsAscii());
+     Handle<String> dump_string =
+         Factory::NewExternalStringFromAscii(resource);
+-    ExternalStringTable::AddString(*dump_string);
++    ExternalResourceTable::AddString(*dump_string);
+     return *dump_string;
+   } else {
+     delete resource;
+@@ -2193,7 +2193,7 @@ Object* LiveObjectList::GetPathPrivate(HeapObject* obj1, HeapObject* obj2) {
+     ASSERT(resource->IsAscii());
+     Handle<String> path_string =
+         Factory::NewExternalStringFromAscii(resource);
+-    ExternalStringTable::AddString(*path_string);
++    ExternalResourceTable::AddString(*path_string);
+     return *path_string;
+   } else {
+     delete resource;
+diff --git a/src/mark-compact.cc b/src/mark-compact.cc
+index 68a5062..775f787 100644
+--- a/src/mark-compact.cc
++++ b/src/mark-compact.cc
+@@ -163,7 +163,7 @@ void MarkCompactCollector::Finish() {
+   // objects (empty string, illegal builtin).
+   heap()->isolate()->stub_cache()->Clear();
+ 
+-  heap()->external_string_table_.CleanUp();
++  heap()->external_resource_table_.CleanUp();
+ 
+   // If we've just compacted old space there's no reason to check the
+   // fragmentation limit. Just return.
+@@ -1019,8 +1019,9 @@ class SymbolTableCleaner : public ObjectVisitor {
+ 
+         // Since no objects have yet been moved we can safely access the map of
+         // the object.
+-        if ((*p)->IsExternalString()) {
+-          heap_->FinalizeExternalString(String::cast(*p));
++        if ((*p)->IsExternalString() ||
++            ((*p)->IsHeapObject() && HeapObject::cast(*p)->map()->has_external_resource())) {
++          heap_->FinalizeExternalString(HeapObject::cast(*p));
+         }
+         // Set the entry to null_value (as deleted).
+         *p = heap_->raw_unchecked_null_value();
+@@ -1433,8 +1434,8 @@ void MarkCompactCollector::MarkLiveObjects() {
+   SymbolTableCleaner v(heap());
+   symbol_table->IterateElements(&v);
+   symbol_table->ElementsRemoved(v.PointersRemoved());
+-  heap()->external_string_table_.Iterate(&v);
+-  heap()->external_string_table_.CleanUp();
++  heap()->external_resource_table_.Iterate(&v);
++  heap()->external_resource_table_.CleanUp();
+ 
+   // Process the weak references.
+   MarkCompactWeakObjectRetainer mark_compact_object_retainer;
+@@ -1948,11 +1949,11 @@ static void UpdatePointerToNewGen(HeapObject** p) {
+ }
+ 
+ 
+-static String* UpdateNewSpaceReferenceInExternalStringTableEntry(Heap* heap,
+-                                                                 Object** p) {
++static HeapObject* UpdateNewSpaceReferenceInExternalResourceTableEntry(Heap* heap,
++                                                                       Object** p) {
+   Address old_addr = HeapObject::cast(*p)->address();
+   Address new_addr = Memory::Address_at(old_addr);
+-  return String::cast(HeapObject::FromAddress(new_addr));
++  return HeapObject::FromAddress(new_addr);
+ }
+ 
+ 
+@@ -2083,8 +2084,8 @@ static void SweepNewSpace(Heap* heap, NewSpace* space) {
+   updating_visitor.VisitPointer(heap->global_contexts_list_address());
+ 
+   // Update pointers from external string table.
+-  heap->UpdateNewSpaceReferencesInExternalStringTable(
+-      &UpdateNewSpaceReferenceInExternalStringTableEntry);
++  heap->UpdateNewSpaceReferencesInExternalResourceTable(
++      &UpdateNewSpaceReferenceInExternalResourceTableEntry);
+ 
+   // All pointers were updated. Update auxiliary allocation info.
+   heap->IncrementYoungSurvivorsCounter(survivors_size);
+diff --git a/src/objects-inl.h b/src/objects-inl.h
+index 6aaca2f..231b835 100644
+--- a/src/objects-inl.h
++++ b/src/objects-inl.h
+@@ -1392,13 +1392,13 @@ int JSObject::GetInternalFieldCount() {
+   // Make sure to adjust for the number of in-object properties. These
+   // properties do contribute to the size, but are not internal fields.
+   return ((Size() - GetHeaderSize()) >> kPointerSizeLog2) -
+-         map()->inobject_properties();
++         map()->inobject_properties() - map()->has_external_resource()?1:0;
+ }
+ 
+ 
+ int JSObject::GetInternalFieldOffset(int index) {
+   ASSERT(index < GetInternalFieldCount() && index >= 0);
+-  return GetHeaderSize() + (kPointerSize * index);
++  return GetHeaderSize() + (kPointerSize * (index + map()->has_external_resource()?1:0));
+ }
+ 
+ 
+@@ -1407,7 +1407,7 @@ Object* JSObject::GetInternalField(int index) {
+   // Internal objects do follow immediately after the header, whereas in-object
+   // properties are at the end of the object. Therefore there is no need
+   // to adjust the index here.
+-  return READ_FIELD(this, GetHeaderSize() + (kPointerSize * index));
++  return READ_FIELD(this, GetHeaderSize() + (kPointerSize * (index + map()->has_external_resource()?1:0)));
+ }
+ 
+ 
+@@ -1416,12 +1416,29 @@ void JSObject::SetInternalField(int index, Object* value) {
+   // Internal objects do follow immediately after the header, whereas in-object
+   // properties are at the end of the object. Therefore there is no need
+   // to adjust the index here.
+-  int offset = GetHeaderSize() + (kPointerSize * index);
++  int offset = GetHeaderSize() + (kPointerSize * (index + map()->has_external_resource()?1:0));
+   WRITE_FIELD(this, offset, value);
+   WRITE_BARRIER(this, offset);
+ }
+ 
+ 
++void JSObject::SetExternalResourceObject(Object *value) {
++  ASSERT(map()->has_external_resource());
++  int offset = GetHeaderSize();
++  WRITE_FIELD(this, offset, value);
++  WRITE_BARRIER(this, offset);
++}
++
++
++Object *JSObject::GetExternalResourceObject() { 
++  if (map()->has_external_resource()) {
++    return READ_FIELD(this, GetHeaderSize());
++  } else {
++    return GetHeap()->undefined_value();
++  }
++}
++
++
+ // Access fast-case object properties at index. The use of these routines
+ // is needed to correctly distinguish between properties stored in-object and
+ // properties stored in the properties array.
+@@ -2521,6 +2538,20 @@ bool Map::is_shared() {
+ }
+ 
+ 
++void Map::set_has_external_resource(bool value) {
++  if (value) {
++    set_bit_field3(bit_field3() | (1 << kHasExternalResource));
++  } else {
++    set_bit_field3(bit_field3() & ~(1 << kHasExternalResource));
++  }
++}
++
++bool Map::has_external_resource()
++{
++    return ((1 << kHasExternalResource) & bit_field3()) != 0;
++}
++ 
++
+ void Map::set_named_interceptor_is_fallback(bool value)
+ {
+   if (value) {
+@@ -3017,6 +3048,8 @@ ACCESSORS(FunctionTemplateInfo, flag, Smi, kFlagOffset)
+ ACCESSORS(ObjectTemplateInfo, constructor, Object, kConstructorOffset)
+ ACCESSORS(ObjectTemplateInfo, internal_field_count, Object,
+           kInternalFieldCountOffset)
++ACCESSORS(ObjectTemplateInfo, has_external_resource, Object, 
++          kHasExternalResourceOffset)
+ 
+ ACCESSORS(SignatureInfo, receiver, Object, kReceiverOffset)
+ ACCESSORS(SignatureInfo, args, Object, kArgsOffset)
+diff --git a/src/objects.h b/src/objects.h
+index a209cd0..1bdb5c7 100644
+--- a/src/objects.h
++++ b/src/objects.h
+@@ -1636,6 +1636,9 @@ class JSObject: public HeapObject {
+   inline Object* GetInternalField(int index);
+   inline void SetInternalField(int index, Object* value);
+ 
++  inline void SetExternalResourceObject(Object *);
++  inline Object *GetExternalResourceObject();
++
+   // Lookup a property.  If found, the result is valid and has
+   // detailed information.
+   void LocalLookup(String* name, LookupResult* result, bool skip_fallback_interceptor = false);
+@@ -3715,6 +3718,12 @@ class Map: public HeapObject {
+   inline void set_is_access_check_needed(bool access_check_needed);
+   inline bool is_access_check_needed();
+ 
++
++  // Tells whether the instance has the space for an external resource
++  // object
++  inline void set_has_external_resource(bool value);
++  inline bool has_external_resource();
++
+  
+   // Whether the named interceptor is a fallback interceptor or not
+   inline void set_named_interceptor_is_fallback(bool value);
+@@ -3912,6 +3921,7 @@ class Map: public HeapObject {
+ 
+   // Bit positions for bit field 3
+   static const int kNamedInterceptorIsFallback = 0;
++  static const int kHasExternalResource = 1;
+ 
+   // Layout of the default cache. It holds alternating name and code objects.
+   static const int kCodeCacheEntrySize = 2;
+@@ -6426,6 +6436,7 @@ class ObjectTemplateInfo: public TemplateInfo {
+  public:
+   DECL_ACCESSORS(constructor, Object)
+   DECL_ACCESSORS(internal_field_count, Object)
++  DECL_ACCESSORS(has_external_resource, Object)
+ 
+   static inline ObjectTemplateInfo* cast(Object* obj);
+ 
+@@ -6442,7 +6453,8 @@ class ObjectTemplateInfo: public TemplateInfo {
+   static const int kConstructorOffset = TemplateInfo::kHeaderSize;
+   static const int kInternalFieldCountOffset =
+       kConstructorOffset + kPointerSize;
+-  static const int kSize = kInternalFieldCountOffset + kPointerSize;
++  static const int kHasExternalResourceOffset = kInternalFieldCountOffset + kPointerSize;
++  static const int kSize = kHasExternalResourceOffset + kPointerSize;
+ };
+ 
+ 
+-- 
+1.7.4.4
+

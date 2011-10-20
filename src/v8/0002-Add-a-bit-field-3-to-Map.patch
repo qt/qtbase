@@ -1,0 +1,118 @@
+From 01f7bd262fb1be893fe4bdc6b98a1b43c5a0bb7d Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Mon, 23 May 2011 15:55:26 +1000
+Subject: [PATCH 02/16] Add a bit field 3 to Map
+
+Bit field 3 will be used to add QML specific map flags.
+---
+ src/heap.cc       |    2 ++
+ src/objects-inl.h |   10 ++++++++++
+ src/objects.cc    |    2 ++
+ src/objects.h     |    9 ++++++++-
+ 4 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/src/heap.cc b/src/heap.cc
+index 930c97b..900f462 100644
+--- a/src/heap.cc
++++ b/src/heap.cc
+@@ -1573,6 +1573,7 @@ MaybeObject* Heap::AllocatePartialMap(InstanceType instance_type,
+   reinterpret_cast<Map*>(result)->set_unused_property_fields(0);
+   reinterpret_cast<Map*>(result)->set_bit_field(0);
+   reinterpret_cast<Map*>(result)->set_bit_field2(0);
++  reinterpret_cast<Map*>(result)->set_bit_field3(0);
+   return result;
+ }
+ 
+@@ -1599,6 +1600,7 @@ MaybeObject* Heap::AllocateMap(InstanceType instance_type, int instance_size) {
+   map->set_unused_property_fields(0);
+   map->set_bit_field(0);
+   map->set_bit_field2((1 << Map::kIsExtensible) | (1 << Map::kHasFastElements));
++  map->set_bit_field3(0);
+ 
+   // If the map object is aligned fill the padding area with Smi 0 objects.
+   if (Map::kPadStart < Map::kSize) {
+diff --git a/src/objects-inl.h b/src/objects-inl.h
+index c82080d..cce3edd 100644
+--- a/src/objects-inl.h
++++ b/src/objects-inl.h
+@@ -2430,6 +2430,16 @@ void Map::set_bit_field2(byte value) {
+ }
+ 
+ 
++byte Map::bit_field3() {
++  return READ_BYTE_FIELD(this, kBitField3Offset);
++}
++
++
++void Map::set_bit_field3(byte value) {
++  WRITE_BYTE_FIELD(this, kBitField3Offset, value);
++}
++
++
+ void Map::set_non_instance_prototype(bool value) {
+   if (value) {
+     set_bit_field(bit_field() | (1 << kHasNonInstancePrototype));
+diff --git a/src/objects.cc b/src/objects.cc
+index dc4b260..79d7240 100644
+--- a/src/objects.cc
++++ b/src/objects.cc
+@@ -3614,6 +3614,7 @@ MaybeObject* Map::CopyDropDescriptors() {
+   }
+   Map::cast(result)->set_bit_field(bit_field());
+   Map::cast(result)->set_bit_field2(bit_field2());
++  Map::cast(result)->set_bit_field3(bit_field3());
+   Map::cast(result)->set_is_shared(false);
+   Map::cast(result)->ClearCodeCache(heap);
+   return result;
+@@ -3642,6 +3643,7 @@ MaybeObject* Map::CopyNormalized(PropertyNormalizationMode mode,
+ 
+   Map::cast(result)->set_bit_field(bit_field());
+   Map::cast(result)->set_bit_field2(bit_field2());
++  Map::cast(result)->set_bit_field3(bit_field3());
+ 
+   Map::cast(result)->set_is_shared(sharing == SHARED_NORMALIZED_MAP);
+ 
+diff --git a/src/objects.h b/src/objects.h
+index 6e26f57..07e1089 100644
+--- a/src/objects.h
++++ b/src/objects.h
+@@ -3597,6 +3597,10 @@ class Map: public HeapObject {
+   inline byte bit_field2();
+   inline void set_bit_field2(byte value);
+ 
++  // Bit field 3.
++  inline byte bit_field3();
++  inline void set_bit_field3(byte value);
++
+   // Tells whether the object in the prototype property will be used
+   // for instances created from this function.  If the prototype
+   // property is set to a value that is not a JSObject, the prototype
+@@ -3844,7 +3848,7 @@ class Map: public HeapObject {
+   // Layout description.
+   static const int kInstanceSizesOffset = HeapObject::kHeaderSize;
+   static const int kInstanceAttributesOffset = kInstanceSizesOffset + kIntSize;
+-  static const int kPrototypeOffset = kInstanceAttributesOffset + kIntSize;
++  static const int kPrototypeOffset = POINTER_SIZE_ALIGN(kInstanceAttributesOffset + 2 * kIntSize);
+   static const int kConstructorOffset = kPrototypeOffset + kPointerSize;
+   static const int kInstanceDescriptorsOffset =
+       kConstructorOffset + kPointerSize;
+@@ -3876,6 +3880,7 @@ class Map: public HeapObject {
+   static const int kUnusedPropertyFieldsOffset = kInstanceAttributesOffset + 1;
+   static const int kBitFieldOffset = kInstanceAttributesOffset + 2;
+   static const int kBitField2Offset = kInstanceAttributesOffset + 3;
++  static const int kBitField3Offset = kInstanceAttributesOffset + 4;
+ 
+   STATIC_CHECK(kInstanceTypeOffset == Internals::kMapInstanceTypeOffset);
+ 
+@@ -3898,6 +3903,8 @@ class Map: public HeapObject {
+   static const int kIsShared = 5;
+   static const int kHasExternalArrayElements = 6;
+ 
++  // Bit positions for bit field 3
++
+   // Layout of the default cache. It holds alternating name and code objects.
+   static const int kCodeCacheEntrySize = 2;
+   static const int kCodeCacheEntryNameOffset = 0;
+-- 
+1.7.4.4
+

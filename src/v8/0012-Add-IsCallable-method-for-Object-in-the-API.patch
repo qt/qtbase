@@ -1,0 +1,116 @@
+From a338d96fe138fbffd4b45c7d13a54e068daa6e12 Mon Sep 17 00:00:00 2001
+From: ager@chromium.org <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
+Date: Mon, 9 May 2011 15:24:48 +0000
+Subject: [PATCH 12/16] Add IsCallable method for Object in the API
+
+Patch by Peter Varga.
+
+BUG=none
+TEST=cctest/test-api/CallableObject
+
+Review URL: http://codereview.chromium.org/6964005
+
+git-svn-id: https://v8.googlecode.com/svn/branches/bleeding_edge@7828 ce2b1a6d-e550-0410-aec6-3dcde31c8c00
+---
+ include/v8.h            |    7 +++++++
+ src/api.cc              |   11 +++++++++++
+ test/cctest/test-api.cc |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 61 insertions(+), 0 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index 43e00f5..5e1ce50 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -1764,6 +1764,13 @@ class Object : public Value {
+   V8EXPORT int GetIndexedPropertiesExternalArrayDataLength();
+ 
+   /**
++   * Checks whether a callback is set by the
++   * ObjectTemplate::SetCallAsFunctionHandler method.
++   * When an Object is callable this method returns true.
++   */
++  V8EXPORT bool IsCallable();
++
++  /**
+    * Call an Object as a function if a callback is set by the 
+    * ObjectTemplate::SetCallAsFunctionHandler method.
+    */
+diff --git a/src/api.cc b/src/api.cc
+index bd435eb..a5a637f 100644
+--- a/src/api.cc
++++ b/src/api.cc
+@@ -3265,6 +3265,17 @@ int v8::Object::GetIndexedPropertiesExternalArrayDataLength() {
+ }
+ 
+ 
++bool v8::Object::IsCallable() {
++  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
++  ON_BAILOUT(isolate, "v8::Object::IsCallable()", return false);
++  ENTER_V8(isolate);
++  i::HandleScope scope(isolate);
++  i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
++  if (obj->IsJSFunction()) return true;
++  return i::Execution::GetFunctionDelegate(obj)->IsJSFunction();
++}
++
++
+ Local<v8::Value> Object::CallAsFunction(v8::Handle<v8::Object> recv, int argc,
+                                         v8::Handle<v8::Value> argv[]) {
+   i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
+diff --git a/test/cctest/test-api.cc b/test/cctest/test-api.cc
+index 1334f63..45db5a1 100644
+--- a/test/cctest/test-api.cc
++++ b/test/cctest/test-api.cc
+@@ -7263,6 +7263,49 @@ THREADED_TEST(CallAsFunction) {
+ }
+ 
+ 
++// Check whether a non-function object is callable.
++THREADED_TEST(CallableObject) {
++  v8::HandleScope scope;
++  LocalContext context;
++
++  { Local<ObjectTemplate> instance_template = ObjectTemplate::New();
++    instance_template->SetCallAsFunctionHandler(call_as_function);
++    Local<Object> instance = instance_template->NewInstance();
++    v8::TryCatch try_catch;
++
++    CHECK(instance->IsCallable());
++    CHECK(!try_catch.HasCaught());
++  }
++
++  { Local<ObjectTemplate> instance_template = ObjectTemplate::New();
++    Local<Object> instance = instance_template->NewInstance();
++    v8::TryCatch try_catch;
++
++    CHECK(!instance->IsCallable());
++    CHECK(!try_catch.HasCaught());
++  }
++
++  { Local<FunctionTemplate> function_template =
++        FunctionTemplate::New(call_as_function);
++    Local<Function> function = function_template->GetFunction();
++    Local<Object> instance = function;
++    v8::TryCatch try_catch;
++
++    CHECK(instance->IsCallable());
++    CHECK(!try_catch.HasCaught());
++  }
++
++  { Local<FunctionTemplate> function_template = FunctionTemplate::New();
++    Local<Function> function = function_template->GetFunction();
++    Local<Object> instance = function;
++    v8::TryCatch try_catch;
++
++    CHECK(instance->IsCallable());
++    CHECK(!try_catch.HasCaught());
++  }
++}
++
++
+ static int CountHandles() {
+   return v8::HandleScope::NumberOfHandles();
+ }
+-- 
+1.7.4.4
+
