@@ -5,6 +5,7 @@ SUBDIRS += \
     dbus \
     host.pro \
     gui.pro \
+    integrationtests \
     network.pro \
     opengl \
     sql \
@@ -13,6 +14,7 @@ SUBDIRS += \
     v8.pro \
     xml \
     other.pro \
+    widgets \
 
 cross_compile:                              SUBDIRS -= host.pro
 cross_compile:                              SUBDIRS -= tools

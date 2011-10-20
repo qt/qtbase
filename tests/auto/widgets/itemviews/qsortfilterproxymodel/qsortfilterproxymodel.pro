@@ -1,7 +1,8 @@
 load(qttest_p4)
 
+QT += gui widgets
 mtdir = ../../../integrationtests/modeltest
+
 INCLUDEPATH += $$PWD/$${mtdir}
-QT += widgets
-SOURCES         += tst_qabstractitemmodel.cpp $${mtdir}/dynamictreemodel.cpp $${mtdir}/modeltest.cpp
+SOURCES         += tst_qsortfilterproxymodel.cpp $${mtdir}/dynamictreemodel.cpp $${mtdir}/modeltest.cpp
 HEADERS         += $${mtdir}/dynamictreemodel.h $${mtdir}/modeltest.h
