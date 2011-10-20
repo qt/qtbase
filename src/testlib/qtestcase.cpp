@@ -1427,7 +1427,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
 /*!
     \internal
 
-    Call init(), slot_data(), slot(), slot(), slot()..., cleanup()
+    Call slot_data(), init(), slot(), cleanup(), init(), slot(), cleanup(), ...
     If data is set then it is the only test that is performed
 
     If the function was successfully called, true is returned, otherwise
