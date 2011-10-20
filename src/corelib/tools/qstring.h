@@ -113,13 +113,14 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 # if defined(Q_COMPILER_LAMBDA)
 
 #  define QStringLiteral(str) \
-    ([]() -> QStringDataPtr { \
+    ([]() -> QString { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
-        return holder; \
+        const QString s(holder); \
+        return s; \
     }()) \
     /**/
 
@@ -129,14 +130,14 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 // To do that, we need the __extension__ {( )} trick which only GCC supports
 
 #  define QStringLiteral(str) \
-    __extension__ ({ \
+    QString(__extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QStaticStringData<Size> qstring_literal = { \
             Q_STATIC_STRING_DATA_HEADER_INITIALIZER(Size), \
             QT_UNICODE_LITERAL(str) }; \
         QStringDataPtr holder = { qstring_literal.data_ptr() }; \
         holder; \
-    }) \
+    })) \
     /**/
 
 # endif
@@ -144,9 +145,10 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 
 #ifndef QStringLiteral
 // no lambdas, not GCC, or GCC in C++98 mode with 4-byte wchar_t
-// fallback, uses QLatin1String as next best options
+// fallback, return a temporary QString
+// source code is assumed to be encoded in UTF-8
 
-# define QStringLiteral(str) QLatin1String(str)
+# define QStringLiteral(str) QString::fromUtf8(str, sizeof(str) - 1)
 #endif
 
 #define Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset) \
