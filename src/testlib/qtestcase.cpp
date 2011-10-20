@@ -271,17 +271,25 @@ QT_BEGIN_NAMESPACE
 
    \relates QTest
 
-   The QSKIP() macro stops execution of the test without adding a failure to the
-   test log. You can use it to skip tests that wouldn't make sense in the current
-   configuration. The text \a description is appended to the test log and should
-   contain an explanation of why the test couldn't be executed.
+   If called from a test function, the QSKIP() macro stops execution of the test
+   without adding a failure to the test log. You can use it to skip tests that
+   wouldn't make sense in the current configuration. The text \a description is
+   appended to the test log and should contain an explanation of why the test
+   couldn't be executed.
 
-   If the test is data-driven, each call to QSKIP() will skip only the current row,
-   so an unconditional call to QSKIP will produce one skip message in the test log
-   for each row of test data.
+   If the test is data-driven, each call to QSKIP() will skip only the current
+   row of test data, so an unconditional call to QSKIP will produce one skip
+   message in the test log for each row of test data.
 
-   \bold {Note:} This macro can only be used in a test function that is invoked
-   by the test framework.
+   If called from an _data function, the QSKIP() macro will stop execution of
+   the _data function and will prevent execution of the associated test
+   function.
+
+   If called from initTestCase() or initTestCase_data(), the QSKIP() macro will
+   skip all test and _data functions.
+
+   \bold {Note:} This macro can only be used in a test function or _data
+   function that is invoked by the test framework.
 
    Example:
    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 8
