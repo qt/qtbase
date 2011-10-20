@@ -234,6 +234,7 @@ static inline QString fileScheme()
 
 QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
+      errorCode(NoError), errorSupplement(0),
       sectionIsPresent(0), sectionHasError(0)
 {
 }
@@ -247,6 +248,8 @@ QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
       path(copy.path),
       query(copy.query),
       fragment(copy.fragment),
+      errorCode(copy.errorCode),
+      errorSupplement(copy.errorSupplement),
       sectionIsPresent(copy.sectionIsPresent),
       sectionHasError(copy.sectionHasError)
 {
@@ -263,6 +266,8 @@ void QUrlPrivate::clear()
     query.clear();
     fragment.clear();
 
+    errorCode = NoError;
+    errorSupplement = 0;
     sectionIsPresent = 0;
     sectionHasError = 0;
 }
@@ -520,10 +525,12 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
     scheme.clear();
     sectionIsPresent |= Scheme;
     sectionHasError |= Scheme; // assume it has errors, we'll clear before returning true
+    errorCode = SchemeEmptyError;
     if (len == 0)
         return false;
 
     // validate it:
+    errorCode = InvalidSchemeError;
     int needsLowercasing = -1;
     const ushort *p = reinterpret_cast<const ushort *>(value.constData());
     for (int i = 0; i < len; ++i) {
@@ -541,6 +548,7 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
         if (p[i] == '%') {
             // found a percent-encoded sign
             // if we haven't decoded yet, decode and try again
+            errorSupplement = '%';
             if (decoded)
                 return false;
 
@@ -551,11 +559,13 @@ bool QUrlPrivate::setScheme(const QString &value, int len, bool decoded)
         }
 
         // found something else
+        errorSupplement = p[i];
         return false;
     }
 
     scheme = value.left(len);
     sectionHasError &= ~Scheme;
+    errorCode = NoError;
 
     if (needsLowercasing != -1) {
         // schemes are ASCII only, so we don't need the full Unicode toLower
@@ -588,11 +598,6 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
         from = userInfoIndex + 1;
     }
 
-    if (userInfoIndex == end - 1) {
-        // authority without a hostname is invalid
-        return false;
-    }
-
     int colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
     if (colonIndex < from)
         colonIndex = -1;
@@ -609,6 +614,7 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
     if (colonIndex == end - 1) {
         // found a colon but no digits after it
         sectionHasError |= Port;
+        errorCode = PortEmptyError;
     } else if (uint(colonIndex) < uint(end)) {
         unsigned long x = 0;
         for (int i = colonIndex + 1; i < end; ++i) {
@@ -618,6 +624,7 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
                 x += c - '0';
             } else {
                 sectionHasError |= Port;
+                errorCode = InvalidPortError;
                 x = ulong(-1); // x != ushort(x)
                 break;
             }
@@ -757,7 +764,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
 }
 
 // the whole IPvFuture is passed and parsed here, including brackets
-static bool parseIpFuture(QString &host, const QChar *begin, const QChar *end)
+static int parseIpFuture(QString &host, const QChar *begin, const QChar *end)
 {
     //    IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
     static const char acceptable[] =
@@ -767,7 +774,7 @@ static bool parseIpFuture(QString &host, const QChar *begin, const QChar *end)
 
     // the brackets and the "v" have been checked
     if (begin[3].unicode() != '.')
-        return false;
+        return begin[3].unicode();
     if ((begin[2].unicode() >= 'A' && begin[2].unicode() >= 'F') ||
             (begin[2].unicode() >= 'a' && begin[2].unicode() <= 'f') ||
             (begin[2].unicode() >= '0' && begin[2].unicode() <= '9')) {
@@ -793,12 +800,12 @@ static bool parseIpFuture(QString &host, const QChar *begin, const QChar *end)
             else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != 0)
                 host += *begin;
             else
-                return false;
+                return begin->unicode();
         }
         host += QLatin1Char(']');
-        return true;
+        return -1;
     }
-    return false;
+    return begin[2].unicode();
 }
 
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
@@ -834,30 +841,36 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
     const int len = end - begin;
     host.clear();
     sectionIsPresent |= Host;
-    if (len == 0) {
-        sectionHasError &= ~Host;
+    sectionHasError &= ~Host;
+    if (len == 0)
         return true;
-    }
-
-    // we'll clear just before returning true
-    sectionHasError |= Host;
 
     if (begin[0].unicode() == '[') {
         // IPv6Address or IPvFuture
         // smallest IPv6 address is      "[::]"   (len = 4)
         // smallest IPvFuture address is "[v7.X]" (len = 6)
-        if (end[-1].unicode() != ']')
+        if (end[-1].unicode() != ']') {
+            sectionHasError |= Host;
+            errorCode = HostMissingEndBracket;
             return false;
+        }
 
-        bool ok;
-        if (len > 5 && begin[1].unicode() == 'v')
-            ok = parseIpFuture(host, begin, end);
-        else
-            ok = parseIp6(host, begin + 1, end - 1);
+        if (len > 5 && begin[1].unicode() == 'v') {
+            int c = parseIpFuture(host, begin, end);
+            if (c != -1) {
+                sectionHasError |= Host;
+                errorCode = InvalidIPvFutureError;
+                errorSupplement = short(c);
+            }
+            return c == -1;
+        }
 
-        if (ok)
-            sectionHasError &= ~Host;
-        return ok;
+        if (parseIp6(host, begin + 1, end - 1))
+            return true;
+
+        sectionHasError |= Host;
+        errorCode = InvalidIPv6AddressError;
+        return false;
     }
 
     // check if it's an IPv4 address
@@ -887,16 +900,22 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
     if (maybePercentEncoded && qt_urlRecode(s, begin, end, QUrl::MostDecoded, 0)) {
         // something was decoded
         // anything encoded left?
-        if (s.contains(QChar(0x25))) // '%'
+        if (s.contains(QChar(0x25))) { // '%'
+            sectionHasError |= Host;
+            errorCode = InvalidRegNameError;
             return false;
+        }
 
         // recurse
         return setHost(s, 0, s.length(), false);
     }
 
     s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce);
-    if (s.isEmpty())
+    if (s.isEmpty()) {
+        sectionHasError |= Host;
+        errorCode = InvalidRegNameError;
         return false;
+    }
 
     // check IPv4 again
     if (QIPAddressUtils::parseIp4(ip4, s.constBegin(), s.constEnd())) {
@@ -904,7 +923,6 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
     } else {
         host = s;
     }
-    sectionHasError &= ~Host;
     return true;
 }
 
@@ -1216,45 +1234,6 @@ const QByteArray &QUrlPrivate::normalized() const
     encodedNormalized = tmp.toEncoded();
 
     return encodedNormalized;
-}
-
-QString QUrlPrivate::createErrorString()
-{
-    if (isValid && isHostValid)
-        return QString();
-
-    QString errorString(QLatin1String(QT_TRANSLATE_NOOP(QUrl, "Invalid URL \"")));
-    errorString += QLatin1String(encodedOriginal.constData());
-    errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "\""));
-
-    if (errorInfo._source) {
-        int position = encodedOriginal.indexOf(errorInfo._source) - 1;
-        if (position > 0) {
-            errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": error at position "));
-            errorString += QString::number(position);
-        } else {
-            errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": "));
-            errorString += QLatin1String(errorInfo._source);
-        }
-    }
-
-    if (errorInfo._expected) {
-        errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": expected \'"));
-        errorString += QLatin1Char(errorInfo._expected);
-        errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "\'"));
-    } else {
-        errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": "));
-        if (isHostValid)
-            errorString += QLatin1String(errorInfo._message);
-        else
-            errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "invalid hostname"));
-    }
-    if (errorInfo._found) {
-        errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ", but found \'"));
-        errorString += QLatin1Char(errorInfo._found);
-        errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "\'"));
-    }
-    return errorString;
 }
 #endif
 
@@ -1591,9 +1570,17 @@ void QUrl::setHost(const QString &host)
     if (d->setHost(host, 0, host.length())) {
         if (host.isNull())
             d->sectionIsPresent &= ~QUrlPrivate::Host;
-    } else {
+    } else if (!host.startsWith(QLatin1Char('['))) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
-        d->setHost(QLatin1Char('[') + host + QLatin1Char(']'), 0, host.length() + 2);
+        ushort oldCode = d->errorCode;
+        ushort oldSupplement = d->errorSupplement;
+        if (!d->setHost(QLatin1Char('[') + host + QLatin1Char(']'), 0, host.length() + 2)) {
+            // failed again: choose if this was an IPv6 error or not
+            if (!host.contains(QLatin1Char(':'))) {
+                d->errorCode = oldCode;
+                d->errorSupplement = oldSupplement;
+            }
+        }
     }
 }
 
@@ -1627,6 +1614,7 @@ void QUrl::setPort(int port)
         qWarning("QUrl::setPort: Out of range");
         port = -1;
         d->sectionHasError |= QUrlPrivate::Port;
+        d->errorCode = QUrlPrivate::InvalidPortError;
     } else {
         d->sectionHasError &= ~QUrlPrivate::Port;
     }
@@ -2413,7 +2401,47 @@ QDebug operator<<(QDebug d, const QUrl &url)
 */
 QString QUrl::errorString() const
 {
-    return QString();
+    if (!d)
+        return QString();
+
+    if (d->sectionHasError == 0)
+        return QString();
+
+    // check if the error code matches a section with error
+    if ((d->sectionHasError & (d->errorCode >> 8)) == 0)
+        return QString();
+
+    QChar c = d->errorSupplement;
+    switch (QUrlPrivate::ErrorCode(d->errorCode)) {
+    case QUrlPrivate::NoError:
+        return QString();
+
+    case QUrlPrivate::InvalidSchemeError: {
+        QString msg = QStringLiteral("Invalid scheme (character '%1' not permitted)");
+        return msg.arg(c);
+    }
+    case QUrlPrivate::SchemeEmptyError:
+        return QStringLiteral("Empty scheme");
+
+    case QUrlPrivate::InvalidRegNameError:
+        return QStringLiteral("Hostname contains invalid characters");
+    case QUrlPrivate::InvalidIPv4AddressError:
+        return QString(); // doesn't happen yet
+    case QUrlPrivate::InvalidIPv6AddressError:
+        return QStringLiteral("Invalid IPv6 address");
+    case QUrlPrivate::InvalidIPvFutureError:
+        return QStringLiteral("Invalid IPvFuture address");
+    case QUrlPrivate::HostMissingEndBracket:
+        return QStringLiteral("Expected '[' to match ']' in hostname");
+
+    case QUrlPrivate::InvalidPortError:
+    case QUrlPrivate::PortEmptyError:
+        return QStringLiteral("Invalid port or port number out of range");
+
+    case QUrlPrivate::PathContainsColonBeforeSlash:
+        return QStringLiteral("Path component contains ':' before any '/'");
+    }
+    return QStringLiteral("<unknown error>");
 }
 
 /*!

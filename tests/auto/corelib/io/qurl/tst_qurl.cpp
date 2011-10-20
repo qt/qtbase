@@ -1615,8 +1615,7 @@ void tst_QUrl::isValid()
         QVERIFY(url.isValid());
         url.setAuthority("strange;hostname");
         QVERIFY(!url.isValid());
-        QEXPECT_FAIL("", "QUrl::errorString not reimplemented", Continue);
-        QVERIFY(url.errorString().contains("invalid hostname"));
+        QVERIFY(url.errorString().contains("Hostname contains invalid characters"));
     }
 
     {
@@ -1629,8 +1628,8 @@ void tst_QUrl::isValid()
         QVERIFY(url.isValid());
         url.setHost("stuff;1");
         QVERIFY(!url.isValid());
-        QEXPECT_FAIL("", "QUrl::errorString not reimplemented", Continue);
-        QVERIFY(url.errorString().contains("invalid hostname"));
+        QVERIFY2(url.errorString().contains("Hostname contains invalid characters"),
+                 qPrintable(url.errorString()));
     }
 
 }
@@ -2164,6 +2163,7 @@ void tst_QUrl::setPort()
         QTest::ignoreMessage(QtWarningMsg, "QUrl::setPort: Out of range");
         url.setPort(65536);
         QCOMPARE(url.port(), -1);
+        QVERIFY(url.errorString().contains("out of range"));
     }
 }
 
@@ -2219,7 +2219,6 @@ void tst_QUrl::errorString()
     QVERIFY(!u.isValid());
     QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
                           "error at position 14: expected end of URL, but found '<'";
-    QEXPECT_FAIL("", "errorString not implemented yet", Abort);
     QCOMPARE(u.errorString(), errorString);
 }
 

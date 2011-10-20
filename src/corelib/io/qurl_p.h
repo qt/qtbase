@@ -57,24 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QUrlErrorInfo {
-    inline QUrlErrorInfo() : _source(0), _message(0), _expected(0), _found(0)
-    { }
-
-    const char *_source;
-    const char *_message;
-    char _expected;
-    char _found;
-
-    inline void setParams(const char *source, const char *message, char expected, char found)
-    {
-        _source = source;
-        _message = message;
-        _expected = expected;
-        _found = found;
-    }
-};
-
 class QUrlPrivate
 {
 public:
@@ -90,6 +72,24 @@ public:
         Hierarchy = Authority | Path,
         Query = 0x40,
         Fragment = 0x80
+    };
+
+    enum ErrorCode {
+        InvalidSchemeError = 0x000,
+        SchemeEmptyError,
+
+        InvalidRegNameError = 0x800,
+        InvalidIPv4AddressError,
+        InvalidIPv6AddressError,
+        InvalidIPvFutureError,
+        HostMissingEndBracket,
+
+        InvalidPortError = 0x1000,
+        PortEmptyError,
+
+        PathContainsColonBeforeSlash = 0x2000,
+
+        NoError = 0xffff
     };
 
     QUrlPrivate();
@@ -143,6 +143,9 @@ public:
     QString query;
     QString fragment;
 
+    ushort errorCode;
+    ushort errorSupplement;
+
     // not used for:
     //  - Port (port == -1 means absence)
     //  - Path (there's no path delimiter, so we optimize its use out of existence)
@@ -152,9 +155,6 @@ public:
     // UserName, Password, Path, Query, and Fragment never contain errors in TolerantMode.
     // Those flags are set only by the strict parser.
     uchar sectionHasError;
-
-    mutable QUrlErrorInfo errorInfo;
-    QString createErrorString();
 };
 
 
