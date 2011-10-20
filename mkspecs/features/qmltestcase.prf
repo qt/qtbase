@@ -8,4 +8,4 @@ QT += declarative qmltest
     load(testcase)
     for(import, IMPORTPATH): check.commands += -import \"$$import\"
 }
-DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$OUT_PWD\\\"\"
+DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$_PRO_FILE_PWD_\\\"\"
