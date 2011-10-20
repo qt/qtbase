@@ -64,7 +64,7 @@ public:
         Underline       = 0x02,
         StrikeOut       = 0x04,
         RightToLeft     = 0x08,
-        SplitLigature   = 0x10,
+        SplitLigature   = 0x10
     };
     Q_DECLARE_FLAGS(GlyphRunFlags, GlyphRunFlag)
 
