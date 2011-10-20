@@ -65,11 +65,6 @@
 #include <limits.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <w32std.h>
-#include <private/qt_s60_p.h>
-#endif
-
 //#define QABSTRACTSPINBOX_QSBDEBUG
 #ifdef QABSTRACTSPINBOX_QSBDEBUG
 #  define QASBDEBUG qDebug
@@ -1176,12 +1171,7 @@ void QAbstractSpinBox::hideEvent(QHideEvent *event)
 */
 static int getKeyboardAutoRepeatRate() {
     int ret = 30;
-#if defined(Q_OS_SYMBIAN)
-    TTimeIntervalMicroSeconds32 initialTime;
-    TTimeIntervalMicroSeconds32 time;
-    S60->wsSession().GetKeyboardRepeatRate(initialTime, time);
-    ret = time.Int() / 1000; // msecs
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     DWORD time;
     if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0) != FALSE)
         ret = static_cast<int>(1000 / static_cast<int>(time)); // msecs

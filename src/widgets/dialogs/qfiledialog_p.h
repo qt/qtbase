@@ -182,10 +182,9 @@ public:
 
     static inline QString toInternal(const QString &path)
     {
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
         QString n(path);
-        for (int i = 0; i < (int)n.length(); ++i)
-            if (n[i] == QLatin1Char('\\')) n[i] = QLatin1Char('/');
+        n.replace(QLatin1Char('\\'), QLatin1Char('/'));
 #if defined(Q_OS_WINCE)
         if ((n.size() > 1) && (n.startsWith(QLatin1String("//"))))
             n = n.mid(1);

@@ -69,42 +69,12 @@
 #include "QtWidgets/qgraphicsview.h"
 #include <private/qgesture_p.h>
 
-#ifdef Q_WS_WIN
-#include "QtCore/qt_windows.h"
-#include <private/qdnd_p.h>
-#endif // Q_WS_WIN
-
-#ifdef Q_WS_X11
-#include "QtGui/qx11info_x11.h"
-#endif
-
-#ifdef Q_WS_MAC
-#include <private/qt_mac_p.h>
-#endif
-
-#if defined(Q_WS_QWS)
-#include "QtGui/qscreen_qws.h"
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-class RDrawableWindow;
-class CCoeControl;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // Extra QWidget data
 //  - to minimize memory usage for members that are seldom used.
 //  - top-level widgets have extra extra data to reduce cost further
-#if defined(Q_WS_QWS)
-class QWSManager;
-#endif
-#if defined(Q_WS_MAC)
-class QCoreGraphicsPaintEnginePrivate;
-#endif
-#if defined(Q_WS_QPA)
 class QWidgetWindow;
-#endif
 class QPaintEngine;
 class QPixmap;
 class QWidgetBackingStore;
@@ -226,18 +196,9 @@ struct QTLWExtra {
     // The name is misleading, since this is set when maximizing the window. It is a hint to saveGeometry(..) to record the
     // starting position as 0,0 instead of the normal starting position.
     bool wasMaximized;
-
-#elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
-#ifndef QT_NO_QWS_MANAGER
-    QWSManager *qwsManager;
 #endif
-#elif defined(Q_OS_SYMBIAN)
-    uint inExpose : 1; // Prevents drawing recursion
-    uint nativeWindowTransparencyEnabled : 1; // Tracks native window transparency
-#elif defined(Q_WS_QPA)
     QWidgetWindow *window;
     quint32 screenIndex; // index in qplatformscreenlist
-#endif
 };
 
 struct QWExtra {
@@ -289,50 +250,6 @@ struct QWExtra {
     // Cocoa Mask stuff
     QImage maskBits;
     CGImageRef imageMask;
-#elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
-    uint activated : 1; // RWindowBase::Activated has been called
-
-    /**
-     * If this bit is set, each native widget receives the signals from the
-     * Symbian control immediately before and immediately after draw ops are
-     * sent to the window server for this control:
-     *      void beginNativePaintEvent(const QRect &paintRect);
-     *      void endNativePaintEvent(const QRect &paintRect);
-     */
-    uint receiveNativePaintEvents : 1;
-
-    /**
-     * Defines the behaviour of QSymbianControl::Draw.
-     */
-    enum NativePaintMode {
-        /**
-         * Normal drawing mode: blits the required region of the backing store
-         * via WSERV.
-         */
-        Blit,
-
-        /**
-         * Disable drawing for this widget.
-         */
-        Disable,
-
-        /**
-         * Paint zeros into the WSERV framebuffer, using BitGDI APIs.  For windows
-         * with an EColor16MU display mode, zero is written only into the R, G and B
-         * channels of the pixel.
-         */
-        ZeroFill,
-
-        /**
-         * Blit backing store, propagating alpha channel into the framebuffer.
-         */
-        BlitWriteAlpha,
-
-        Default = Blit
-    };
-
-    NativePaintMode nativePaintMode;
-
 #endif
 };
 
@@ -414,11 +331,6 @@ public:
     QPalette naturalWidgetPalette(uint inheritedMask) const;
 
     void setMask_sys(const QRegion &);
-#ifdef Q_OS_SYMBIAN
-    void setSoftKeys_sys(const QList<QAction*> &softkeys);
-    void activateSymbianWindow(WId wid = 0);
-    void _q_delayedDestroy(WId winId);
-#endif
 
     void raise_sys();
     void lower_sys();
@@ -666,7 +578,6 @@ public:
         }
     }
 
-#ifndef Q_WS_QWS // Almost cross-platform :-)
     void setWSGeometry(bool dontShow=false, const QRect &oldRect = QRect());
 
     inline QPoint mapToWS(const QPoint &p) const
@@ -680,7 +591,6 @@ public:
 
     inline QRect mapFromWS(const QRect &r) const
     { QRect rr(r); rr.translate(data.wrect.topLeft()); return rr; }
-#endif
 
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
@@ -873,21 +783,11 @@ public:
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
     void registerTouchWindow(bool enable = true);
-#elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
+#endif
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
-#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
-    static QWidget *mouseGrabber;
-    static QWidget *keyboardGrabber;
-    int symbianScreenNumber; // only valid for desktop widget and top-levels
-    bool fixNativeOrientationCalled;
-    void s60UpdateIsOpaque();
-    void reparentChildren();
-    void registerTouchWindow();
-#endif
-
 };
 
 struct QWidgetPaintContext

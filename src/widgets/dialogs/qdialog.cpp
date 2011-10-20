@@ -64,15 +64,6 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_X11)
 #  include "../kernel/qt_x11_p.h"
-#elif defined(Q_OS_SYMBIAN)
-#   include "qfiledialog.h"
-#   include "qfontdialog.h"
-#   include "qwizard.h"
-#   include "private/qt_s60_p.h"
-#endif
-
-#if defined(Q_WS_S60)
-#include <AknUtils.h>               // AknLayoutUtils
 #endif
 
 #ifndef SPI_GETSNAPTODEFBUTTON
@@ -378,7 +369,7 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WINCE)
 #ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
@@ -514,13 +505,6 @@ int QDialog::exec()
 #endif //Q_WS_WINCE_WM
 
     bool showSystemDialogFullScreen = false;
-#ifdef Q_OS_SYMBIAN
-    if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
-        qobject_cast<QWizard *>(this)) {
-        showSystemDialogFullScreen = true;
-    }
-#endif // Q_OS_SYMBIAN
-
     if (showSystemDialogFullScreen) {
         setWindowFlags(windowFlags() | Qt::WindowSoftkeysVisibleHint);
         setWindowState(Qt::WindowFullScreen);
@@ -808,13 +792,6 @@ void QDialog::adjustPosition(QWidget* w)
     if (X11->isSupportedByWM(ATOM(_NET_WM_FULL_PLACEMENT)))
         return;
 #endif
-
-#ifdef Q_OS_SYMBIAN
-    if (symbianAdjustedPosition())
-        //dialog has already been positioned
-        return;
-#endif
-
     QPoint p(0, 0);
     int extraw = 0, extrah = 0, scrn = 0;
     if (w)
@@ -877,73 +854,6 @@ void QDialog::adjustPosition(QWidget* w)
 
     move(p);
 }
-
-#if defined(Q_OS_SYMBIAN)
-/*! \internal */
-bool QDialog::symbianAdjustedPosition()
-{
-#if defined(Q_WS_S60)
-    QPoint p;
-    QPoint oldPos = pos();
-    if (isFullScreen()) {
-        p.setX(0);
-        p.setY(0);
-    } else if (isMaximized()) {
-        TRect statusPaneRect = TRect();
-        if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
-        } else {
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, statusPaneRect);
-        }
-
-        p.setX(0);
-        p.setY(statusPaneRect.Height());
-    } else {
-        // naive way to deduce screen orientation
-        if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
-            int cbaHeight;
-            TRect rect;
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, rect);
-            cbaHeight = rect.Height();
-            p.setY(S60->screenHeightInPixels - height() - cbaHeight);
-            p.setX(0);
-        } else {
-            const int scrollbarWidth = style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-            TRect staConTopRect = TRect();
-            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
-            if (staConTopRect.IsEmpty()) {
-                TRect cbaRect = TRect();
-                AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, cbaRect);
-                AknLayoutUtils::TAknCbaLocation cbaLocation = AknLayoutUtils::CbaLocation();
-                switch (cbaLocation) {
-                case AknLayoutUtils::EAknCbaLocationBottom:
-                    p.setY(S60->screenHeightInPixels - height() - cbaRect.Height());
-                    p.setX((S60->screenWidthInPixels - width()) >> 1);
-                    break;
-                case AknLayoutUtils::EAknCbaLocationRight:
-                    p.setY((S60->screenHeightInPixels - height()) >> 1);
-                    p.setX(qMax(0,S60->screenWidthInPixels - width() - scrollbarWidth - cbaRect.Width()));
-                    break;
-                case AknLayoutUtils::EAknCbaLocationLeft:
-                    p.setY((S60->screenHeightInPixels - height()) >> 1);
-                    p.setX(qMax(0,scrollbarWidth + cbaRect.Width()));
-                    break;
-                }
-            } else {
-                p.setY((S60->screenHeightInPixels - height()) >> 1);
-                p.setX(qMax(0,S60->screenWidthInPixels - width()));
-            }
-        }
-    }
-    if (oldPos != p || p.y() < 0)
-        move(p);
-    return true;
-#else
-    // TODO - check positioning requirement for Symbian, non-s60
-    return false;
-#endif
-}
-#endif
 
 /*!
     \obsolete

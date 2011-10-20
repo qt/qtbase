@@ -510,13 +510,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         }
         break;
     case QEvent::MouseMove:
-#ifdef Q_OS_SYMBIAN
-        // Qt on Symbian tracks the button state internally, while Qt on Win/Mac/Unix
-        // relies on the windowing system to report the current buttons state.
-        if (me && (me->buttons() == button || !me->buttons())) {
-#else
         if (me && me->buttons() == button) {
-#endif
             point = me->globalPos();
             inputType = QScroller::InputMove;
         }
@@ -539,13 +533,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         }
         break;
     case QEvent::GraphicsSceneMouseMove:
-#ifdef Q_OS_SYMBIAN
-        // Qt on Symbian tracks the button state internally, while Qt on Win/Mac/Unix
-        // relies on the windowing system to report the current buttons state.
-        if (gsme && (gsme->buttons() == button || !me->buttons())) {
-#else
         if (gsme && gsme->buttons() == button) {
-#endif
             point = gsme->scenePos();
             inputType = QScroller::InputMove;
         }

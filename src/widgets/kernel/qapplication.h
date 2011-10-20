@@ -50,19 +50,9 @@
 #ifdef QT_INCLUDE_COMPAT
 # include <QtWidgets/qdesktopwidget.h>
 #endif
-#ifdef Q_WS_QWS
-# include <QtGui/qrgb.h>
-# include <QtGui/qtransportauth_qws.h>
-#endif
-#ifdef Q_WS_QPA
-# include <QtGui/qguiapplication.h>
-#endif
+#include <QtGui/qguiapplication.h>
 
 QT_BEGIN_HEADER
-
-#if defined(Q_OS_SYMBIAN)
-class CApaApplication;
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -76,14 +66,7 @@ class QIcon;
 class QInputContext;
 template <typename T> class QList;
 class QLocale;
-#if defined(Q_WS_QWS)
-class QDecoration;
-#elif defined(Q_WS_QPA)
 class QPlatformNativeInterface;
-#endif
-#if defined(Q_OS_SYMBIAN)
-class QSymbianEvent;
-#endif
 
 class QApplication;
 class QApplicationPrivate;
@@ -92,11 +75,7 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
-#ifdef Q_WS_QPA
 #define QApplicationBase QGuiApplication
-#else
-#define QApplicationBase QCoreApplication
-#endif
 
 class Q_WIDGETS_EXPORT QApplication : public QApplicationBase
 {
@@ -123,10 +102,6 @@ class Q_WIDGETS_EXPORT QApplication : public QApplicationBase
 public:
     enum Type { Tty, GuiClient, GuiServer };
 
-#ifdef Q_OS_SYMBIAN
-    typedef CApaApplication * (*QS60MainApplicationFactory)();
-#endif
-
 #ifndef qdoc
     QApplication(int &argc, char **argv, int = ApplicationFlags);
     QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
@@ -134,9 +109,6 @@ public:
 #if defined(Q_WS_X11)
     QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0, int = ApplicationFlags);
     QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0, int = ApplicationFlags);
-#endif
-#if defined(Q_OS_SYMBIAN)
-    QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int = ApplicationFlags);
 #endif
 #endif
     virtual ~QApplication();
@@ -174,9 +146,6 @@ public:
 
     static QWidget *activePopupWidget();
     static QWidget *activeModalWidget();
-#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
-    static QClipboard *clipboard();
-#endif
     static QWidget *focusWidget();
 
     static QWidget *activeWindow();
@@ -230,10 +199,6 @@ public:
     virtual int x11ClientMessage(QWidget*, XEvent*, bool passive_only);
     int x11ProcessEvent(XEvent*);
 #endif
-#if defined(Q_OS_SYMBIAN)
-    int symbianProcessEvent(const QSymbianEvent *event);
-    virtual bool symbianEventFilter(const QSymbianEvent *event);
-#endif
 #if defined(Q_WS_QWS)
     virtual bool qwsEventFilter(QWSEvent *);
     int qwsProcessEvent(QWSEvent*);
@@ -245,10 +210,7 @@ public:
 #endif
 #endif
 
-#if defined(Q_WS_QPA)
     static QPlatformNativeInterface *platformNativeInterface();
-#endif
-
 
 #if defined(Q_WS_WIN)
     void winFocus(QWidget *, bool);
@@ -321,9 +283,6 @@ protected:
     QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
     QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0);
 #endif
-#if defined(Q_OS_SYMBIAN) || defined(qdoc)
-    QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv);
-#endif
 #endif
 
 private:
@@ -363,9 +322,6 @@ private:
 #endif
 #if defined(QT_RX71_MULTITOUCH)
     Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
-#endif
-#if defined(Q_OS_SYMBIAN)
-    Q_PRIVATE_SLOT(d_func(), void _q_aboutToQuit())
 #endif
 };
 

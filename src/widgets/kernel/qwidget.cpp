@@ -70,10 +70,8 @@
 # include "qtoolbar.h"
 # include <private/qmainwindowlayout_p.h>
 #endif
-#if defined(Q_WS_QPA)
 #include "qplatformwindow_qpa.h"
 #include "private/qwidgetwindow_qpa_p.h"
-#endif
 #include "qpainter.h"
 #include "qtooltip.h"
 #include "qwhatsthis.h"
@@ -92,10 +90,6 @@
 # include <private/qpaintengine_mac_p.h>
 #endif
 #include <private/qpaintengine_raster_p.h>
-
-#if defined(Q_OS_SYMBIAN)
-#include "private/qt_s60_p.h"
-#endif
 
 #include "qwidget_p.h"
 #include "qaction_p.h"
@@ -291,9 +285,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , needWindowChange(0)
       , window_event(0)
       , qd_hd(0)
-#elif defined(Q_OS_SYMBIAN)
-      , symbianScreenNumber(0)
-      , fixNativeOrientationCalled(false)
 #endif
 {
     if (!qApp) {
@@ -1174,19 +1165,12 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         // programmer specified desktop widget
         xinfo = desktopWidget->d_func()->xinfo;
     }
-#elif defined(Q_OS_SYMBIAN)
-    if (desktopWidget) {
-        symbianScreenNumber = qt_widget_private(desktopWidget)->symbianScreenNumber;
-    }
-#elif defined(Q_WS_QPA)
+#endif
     if (desktopWidget) {
         const int screen = desktopWidget->d_func()->topData()->screenIndex;
         if (QWindow *window = q->windowHandle())
             window->setScreen(QGuiApplication::screens().value(screen, 0));
     }
-#else
-    Q_UNUSED(desktopWidget);
-#endif
 
     data.fstrut_dirty = true;
 
@@ -1218,17 +1202,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Hidden);
 
     //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
-#ifdef Q_OS_SYMBIAN
-    if (isGLWidget) {
-        // Don't waste GPU mem for unnecessary large egl surface until resized by application
-        data.crect = QRect(0,0,1,1);
-    } else {
-        data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,360,640);
-    }
-#else
     data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,640,480);
-#endif
-
     focus_next = focus_prev = q;
 
     if ((f & Qt::WindowType_Mask) == Qt::Desktop)
@@ -1484,23 +1458,11 @@ QWidget::~QWidget()
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
     }
-#elif defined(Q_WS_QPA)
+#endif
     else if (isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
     }
-#endif
 
-#ifdef Q_OS_SYMBIAN
-    if (d->extra && d->extra->topextra && d->extra->topextra->backingStore) {
-        // Okay, we are about to destroy the top-level window that owns
-        // the backing store. Make sure we delete the backing store right away
-        // before the window handle is invalid. This is important because
-        // the backing store will delete its window surface, which may or may
-        // not have a reference to this widget that will be used later to
-        // notify the window it no longer has a surface.
-        d->extra->topextra->backingStore.destroy();
-    }
-#endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
@@ -2144,9 +2106,6 @@ void QWidgetPrivate::setOpaque(bool opaque)
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
 #endif
-#ifdef Q_OS_SYMBIAN
-    s60UpdateIsOpaque();
-#endif
 }
 
 void QWidgetPrivate::updateIsTranslucent()
@@ -2159,9 +2118,6 @@ void QWidgetPrivate::updateIsTranslucent()
 #endif
 #ifdef Q_WS_WIN
     winUpdateIsOpaque();
-#endif
-#ifdef Q_OS_SYMBIAN
-    s60UpdateIsOpaque();
 #endif
 }
 
@@ -3161,13 +3117,12 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
         // disabled widgets
         qt_x11_enforce_cursor(q);
     }
-#elif defined(Q_WS_QPA)
+#endif
     if (q->testAttribute(Qt::WA_SetCursor) || q->isWindow()) {
         // enforce the windows behavior of clearing the cursor on
         // disabled widgets
         qt_qpa_set_cursor(q, false);
     }
-#endif
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
@@ -5202,10 +5157,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             //actually send the paint event
             QPaintEvent e(toBePainted);
             QCoreApplication::sendSpontaneousEvent(q, &e);
-#if !defined(Q_WS_QPA)
-            if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
-                backingStore->markDirtyOnScreen(toBePainted, q, offset);
-#endif
 
             //restore
             if (paintEngine) {
@@ -7121,7 +7072,7 @@ void QWidgetPrivate::show_helper()
     // On Windows, show the popup now so that our own focus handling
     // stores the correct old focus widget even if it's stolen in the
     // showevent
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (!isEmbedded && q->windowType() == Qt::Popup)
         qApp->d_func()->openPopup(q);
 #endif
@@ -7138,10 +7089,8 @@ void QWidgetPrivate::show_helper()
 
     show_sys();
 
-#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     if (!isEmbedded && q->windowType() == Qt::Popup)
         qApp->d_func()->openPopup(q);
-#endif
 
 #ifndef QT_NO_ACCESSIBILITY
     if (q->windowType() != Qt::ToolTip)     // Tooltips are read aloud twice in MS narrator.
@@ -7220,10 +7169,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
         qApp->d_func()->sendSyntheticEnterLeave(q);
-#endif
-
         QWidget *fw = QApplication::focusWidget();
         while (fw &&  !fw->isWindow()) {
             if (fw == q) {
@@ -7346,9 +7292,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
             qApp->d_func()->sendSyntheticEnterLeave(this);
-#endif
         }
 
         QEvent showToParentEvent(QEvent::ShowToParent);
@@ -7473,9 +7417,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
-#endif
 #ifndef QT_NO_ACCESSIBILITY
         if (!spontaneous)
             QAccessible::updateAccessibility(widget, 0, QAccessible::ObjectHide);
@@ -7691,7 +7633,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_WS_WINCE) || defined (Q_OS_SYMBIAN)
+#if defined (Q_WS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else
@@ -9232,18 +9174,16 @@ void QWidget::ensurePolished() const
         QChildEvent e(QEvent::ChildPolished, const_cast<QWidget *>(this));
         QCoreApplication::sendEvent(d->parent, &e);
     }
-#ifdef Q_WS_QPA
     if (d->extra && d->extra->topextra && d->extra->topextra->window
         && d->extra->topextra->window->objectName().isEmpty()) {
         QString on = objectName();
         if (on.isEmpty()) {
             on = QString::fromUtf8(metaObject()->className());
-            on += QLatin1String("Class");
+            on += QStringLiteral("Class");
         }
-        on += QLatin1String("Window");
+        on += QStringLiteral("Window");
         d->extra->topextra->window->setObjectName(on);
     }
-#endif
 }
 
 /*!
@@ -9684,7 +9624,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         desktopWidget = parent;
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (newParent && parent && !desktopWidget) {
         if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)
 #ifdef Q_WS_MAC
@@ -10250,9 +10190,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {
-#if defined(Q_WS_QPA)
         d->createTLExtra();
-#endif
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
@@ -10279,7 +10217,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
         // Recreate the widget if it's already created as an alien widget and
         // WA_PaintOnScreen is enabled. Paint on screen widgets must have win id.
         // So must their children.
@@ -10381,7 +10319,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 
         break;
     case Qt::WA_AcceptTouchEvents:
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         if (on)
             d->registerTouchWindow();
 #endif
@@ -10791,56 +10729,6 @@ void QWidget::updateMicroFocus()
     }
 #endif
 }
-
-
-#if defined (Q_WS_WIN)
-/*!
-    Returns the window system handle of the widget, for low-level
-    access. Using this function is not portable.
-
-    An HDC acquired with getDC() has to be released with releaseDC().
-
-    \warning Using this function is not portable.
-*/
-HDC QWidget::getDC() const
-{
-    Q_D(const QWidget);
-    if (d->hd)
-        return (HDC) d->hd;
-    return GetDC(winId());
-}
-
-/*!
-    Releases the HDC \a hdc acquired by a previous call to getDC().
-
-    \warning Using this function is not portable.
-*/
-void QWidget::releaseDC(HDC hdc) const
-{
-    Q_D(const QWidget);
-    // If its the widgets own dc, it will be released elsewhere. If
-    // its a different HDC we release it and issue a warning if it
-    // fails.
-    if (hdc != d->hd && !ReleaseDC(winId(), hdc))
-        qErrnoWarning("QWidget::releaseDC(): failed to release HDC");
-}
-#else
-/*!
-    Returns the window system handle of the widget, for low-level
-    access. Using this function is not portable.
-
-    The HANDLE type varies with platform; see \c qwindowdefs.h for
-    details.
-*/
-Qt::HANDLE QWidget::handle() const
-{
-    Q_D(const QWidget);
-    if (!internalWinId() && testAttribute(Qt::WA_WState_Created))
-        (void)winId(); // enforce native window
-    return d->hd;
-}
-#endif
-
 
 /*!
     Raises this widget to the top of the parent widget's stack.
@@ -12079,13 +11967,6 @@ void QWidget::clearMask()
     XRender extension is not supported on the X11 display, or if the
     handle could not be created.
 */
-
-#ifdef Q_OS_SYMBIAN
-void QWidgetPrivate::_q_delayedDestroy(WId winId)
-{
-    delete winId;
-}
-#endif
 
 #ifdef Q_WS_MAC
 void QWidgetPrivate::syncUnifiedMode() {

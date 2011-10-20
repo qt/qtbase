@@ -121,18 +121,11 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 //#define ALIEN_DEBUG
 
-#if defined(Q_OS_SYMBIAN)
-#include "qt_s60_p.h"
-#endif
-
 static void initResources()
 {
 #if defined(Q_WS_WINCE)
     Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
-#elif defined(Q_OS_SYMBIAN)
-    Q_INIT_RESOURCE_EXTERN(qstyle_s60)
-    Q_INIT_RESOURCE(qstyle_s60);
 #else
     Q_INIT_RESOURCE_EXTERN(qstyle)
     Q_INIT_RESOURCE(qstyle);
@@ -436,10 +429,6 @@ int QApplicationPrivate::app_cspec = QApplication::NormalColor;
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
-#ifndef Q_WS_QPA
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
-QFont *QApplicationPrivate::app_font = 0;        // default application font
-#endif
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
 
@@ -467,11 +456,7 @@ bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
 #ifdef QT_KEYPAD_NAVIGATION
-#  ifdef Q_OS_SYMBIAN
-Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
-#  else
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
-#  endif
 QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
 
@@ -504,9 +489,6 @@ FontHash *qt_app_fonts_hash()
 QWidgetList *QApplicationPrivate::popupWidgets = 0;        // has keyboard input focus
 
 QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
-#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
-QClipboard              *qt_clipboard = 0;        // global clipboard object
-#endif
 QWidgetList * qt_modal_stack = 0;                // stack of modal widgets
 bool app_do_modal = false;
 
@@ -778,22 +760,12 @@ void QApplicationPrivate::construct(
     qt_gui_eval_init(application_type);
 #endif
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-    symbianInit();
-#endif
-
 #ifndef QT_NO_LIBRARY
     if(load_testability) {
         QLibrary testLib(QLatin1String("qttestability"));
         if (testLib.load()) {
             typedef void (*TasInitialize)(void);
             TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
-#ifdef Q_OS_SYMBIAN
-            // resolving method by name does not work on Symbian OS so need to use ordinal
-            if(!initFunction) {
-                initFunction = (TasInitialize)testLib.resolve("1");            
-            }
-#endif
             if (initFunction) {
                 initFunction();
             } else {
@@ -1002,14 +974,6 @@ QApplication::~QApplication()
 {
     Q_D(QApplication);
 
-#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
-    // flush clipboard contents
-    if (qt_clipboard) {
-        QEvent event(QEvent::Clipboard);
-        QApplication::sendEvent(qt_clipboard, &event);
-    }
-#endif
-
     //### this should probable be done even later
     qt_call_post_routines();
 
@@ -1017,10 +981,6 @@ QApplication::~QApplication()
     d->toolTipWakeUp.stop();
     d->toolTipFallAsleep.stop();
 
-#if !defined(Q_WS_QPA)
-    d->eventDispatcher->closingDown();
-    d->eventDispatcher = 0;
-#endif
     QApplicationPrivate::is_app_closing = true;
     QApplicationPrivate::is_app_running = false;
 
@@ -1042,11 +1002,6 @@ QApplication::~QApplication()
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
 
-#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
-    delete qt_clipboard;
-    qt_clipboard = 0;
-#endif
-
 #if defined(Q_WS_X11) || defined(Q_WS_WIN)
     delete d->move_cursor; d->move_cursor = 0;
     delete d->copy_cursor; d->copy_cursor = 0;
@@ -1063,14 +1018,6 @@ QApplication::~QApplication()
     delete QApplicationPrivate::set_pal;
     QApplicationPrivate::set_pal = 0;
     app_palettes()->clear();
-
-#ifndef Q_WS_QPA
-    {
-        QMutexLocker locker(applicationFontMutex());
-        delete QApplicationPrivate::app_font;
-        QApplicationPrivate::app_font = 0;
-    }
-#endif
 
     delete QApplicationPrivate::sys_font;
     QApplicationPrivate::sys_font = 0;
@@ -1787,14 +1734,7 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 */
 QFont QApplication::font()
 {
-#ifndef Q_WS_QPA
-    QMutexLocker locker(applicationFontMutex());
-    if (!QApplicationPrivate::app_font)
-        QApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
-    return *QApplicationPrivate::app_font;
-#else
     return QGuiApplication::font();
-#endif
 }
 
 /*!
@@ -1873,15 +1813,7 @@ void QApplication::setFont(const QFont &font, const char *className)
     bool all = false;
     FontHash *hash = app_fonts();
     if (!className) {
-#ifndef Q_WS_QPA
-        QMutexLocker locker(applicationFontMutex());
-        if (!QApplicationPrivate::app_font)
-            QApplicationPrivate::app_font = new QFont(font);
-        else
-            *QApplicationPrivate::app_font = font;
-#else
         QGuiApplication::setFont(font);
-#endif
         if (hash && hash->size()) {
             all = true;
             hash->clear();
@@ -2071,11 +2003,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
             if (prev) {
 #ifdef QT_KEYPAD_NAVIGATION
                 if (QApplication::keypadNavigationEnabled()) {
-                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason
-#ifdef Q_OS_SYMBIAN
-                            && reason != Qt::ActiveWindowFocusReason
-#endif
-                            )
+                    if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
                         prev->setEditFocus(false);
                 }
 #endif
@@ -2238,11 +2166,6 @@ bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
     if(e->type() == QEvent::Close) {
-#if defined(Q_OS_SYMBIAN)
-        // In order to have proper application-exit effects on Symbian, certain
-        // native APIs have to be called _before_ closing/destroying the widgets.
-        bool effectStarted = qt_beginFullScreenEffect();
-#endif
         QCloseEvent *ce = static_cast<QCloseEvent*>(e);
         ce->accept();
         closeAllWindows();
@@ -2258,11 +2181,6 @@ bool QApplication::event(QEvent *e)
         }
         if (ce->isAccepted()) {
             return true;
-        } else {
-#if defined(Q_OS_SYMBIAN)
-            if (effectStarted)
-                qt_abortFullScreenEffect();
-#endif
         }
 #ifndef Q_OS_WIN
     } else if (e->type() == QEvent::LocaleChange) {
@@ -2627,8 +2545,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     // Update cursor for alien/graphics widgets.
 
     const bool enterOnAlien = (enter && (isAlien(enter) || enter->testAttribute(Qt::WA_DontShowOnScreen)));
-#if defined(Q_WS_X11) || defined(Q_WS_QPA)
-    //Whenever we leave an alien widget on X11, we need to reset its nativeParentWidget()'s cursor.
+    // Whenever we leave an alien widget on X11/QPA, we need to reset its nativeParentWidget()'s cursor.
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = 0;
     for (int i = 0; i < leaveList.size(); ++i) {
@@ -2653,16 +2570,14 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         {
 #if defined(Q_WS_X11)
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
-#elif defined(Q_WS_QPA)
+#endif
             if (enter == QApplication::desktop()) {
                 qt_qpa_set_cursor(enter, true);
             } else {
                 qt_qpa_set_cursor(parentOfLeavingCursor, true);
             }
-#endif
         }
     }
-#endif
     if (enterOnAlien) {
         QWidget *cursorWidget = enter;
         while (!cursorWidget->isWindow() && !cursorWidget->isEnabled())
@@ -2681,9 +2596,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_win_set_cursor(cursorWidget, true);
 #elif defined(Q_WS_X11)
             qt_x11_enforce_cursor(cursorWidget, true);
-#elif defined(Q_OS_SYMBIAN)
-            qt_symbian_set_cursor(cursorWidget, true);
-#elif defined(Q_WS_QPA)
+#else
             qt_qpa_set_cursor(cursorWidget, true);
 #endif
         }
@@ -2987,7 +2900,6 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -2999,13 +2911,8 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     if (!widget || widget->isWindow())
         return;
-#else
-    if (!widget || widget->internalWinId() || widget->isWindow())
-        return;
-#endif
     const bool widgetInShow = widget->isVisible() && !widget->data->in_destructor;
     if (!widgetInShow && widget != qt_last_mouse_receiver)
         return; // Widget was not under the cursor when it was hidden/deleted.
@@ -3046,7 +2953,6 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
-#endif // Q_WS_WIN || Q_WS_X11 || Q_WS_MAC
 
 /*!
     Returns the desktop widget (also called the root window).
@@ -3068,25 +2974,6 @@ QDesktopWidget *QApplication::desktop()
     return qt_desktopWidget;
 }
 
-#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
-/*!
-    Returns a pointer to the application global clipboard.
-
-    \note The QApplication object should already be constructed before
-    accessing the clipboard.
-*/
-QClipboard *QApplication::clipboard()
-{
-    if (qt_clipboard == 0) {
-        if (!qApp) {
-            qWarning("QApplication: Must construct a QApplication before accessing a QClipboard");
-            return 0;
-        }
-        qt_clipboard = new QClipboard(0);
-    }
-    return qt_clipboard;
-}
-#endif // Q_WS_QPA && QT_NO_CLIPBOARD
 /*!
     Sets whether Qt should use the system's standard colors, fonts, etc., to
     \a on. By default, this is true.
@@ -4824,11 +4711,7 @@ void QApplicationPrivate::emitLastWindowClosed()
 */
 void QApplication::setNavigationMode(Qt::NavigationMode mode)
 {
-#ifdef Q_OS_SYMBIAN
-    QApplicationPrivate::setNavigationMode(mode);
-#else
     QApplicationPrivate::navigationMode = mode;
-#endif
 }
 
 /*!
@@ -4871,13 +4754,8 @@ Qt::NavigationMode QApplication::navigationMode()
 void QApplication::setKeypadNavigationEnabled(bool enable)
 {
     if (enable) {
-#ifdef Q_OS_SYMBIAN
-        QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
-#else
         QApplication::setNavigationMode(Qt::NavigationModeKeypadTabOrder);
-#endif
-    }
-    else {
+    } else {
         QApplication::setNavigationMode(Qt::NavigationModeNone);
     }
 }

@@ -75,9 +75,6 @@ class QWidget;
 class QFont;
 class QPopupMenu;
 class QInputContextPrivate;
-#ifdef Q_OS_SYMBIAN
-class QSymbianEvent;
-#endif
 
 class Q_WIDGETS_EXPORT QInputContext : public QObject
 {

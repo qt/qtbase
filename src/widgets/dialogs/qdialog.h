@@ -103,7 +103,7 @@ public Q_SLOTS:
 protected:
     QDialog(QDialogPrivate &, QWidget *parent, Qt::WindowFlags f = 0);
 
-#if defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WINCE)
     bool event(QEvent *e);
 #endif
     void keyPressEvent(QKeyEvent *);
@@ -118,10 +118,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QDialog)
     Q_DISABLE_COPY(QDialog)
-
-#if defined(Q_OS_SYMBIAN)
-    bool symbianAdjustedPosition();
-#endif
 
 
 #ifdef Q_WS_WINCE_WM

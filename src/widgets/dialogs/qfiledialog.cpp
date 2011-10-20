@@ -58,7 +58,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#if !defined(Q_WS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_WS_WINCE)
 #include "ui_qfiledialog.h"
 #else
 #define Q_EMBEDDED_SMALLSCREEN
@@ -3422,7 +3422,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         parts[0] = sep[0];
 #endif
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     bool startsFromRoot = !parts.isEmpty() && parts[0].endsWith(QLatin1Char(':'));
 #else
     bool startsFromRoot = pathCopy[0] == sep[0];
@@ -3434,7 +3434,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
         else
             dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
         if (currentLocation.endsWith(QLatin1Char(':')))
             currentLocation.append(sep);
 #endif

@@ -20,7 +20,8 @@ HEADERS += \
         dialogs/qfileinfogatherer_p.h \
         dialogs/qwizard.h
 
-!qpa:mac {
+# TODO
+false:mac {
     OBJECTIVE_SOURCES += dialogs/qfiledialog_mac.mm \
                          dialogs/qfontdialog_mac.mm \
                          dialogs/qnspanelproxy_mac.mm
@@ -41,8 +42,6 @@ HEADERS += \
 }
 
 win32 {
-    qpa:DEFINES += QT_NO_PRINTDIALOG
-
     HEADERS += dialogs/qwizard_win_p.h \
                dialogs/qfiledialog_win_p.h
     SOURCES += dialogs/qdialogsbinarycompat_win.cpp \

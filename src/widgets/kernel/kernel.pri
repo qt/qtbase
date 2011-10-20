@@ -1,8 +1,7 @@
 # Qt kernel module
 
 # Only used on platforms with CONFIG += precompile_header
-PRECOMPILED_HEADER = kernel/qt_gui_pch.h
-
+PRECOMPILED_HEADER = kernel/qt_widgets_pch.h
 
 KERNEL_P= kernel
 HEADERS += \
@@ -31,8 +30,8 @@ HEADERS += \
         kernel/qstackedlayout.h \
 	kernel/qtooltip.h \
 	kernel/qwhatsthis.h \
-    kernel/qwidget.h \
-    kernel/qwidget_p.h \
+        kernel/qwidget.h \
+        kernel/qwidget_p.h \
 	kernel/qwidgetaction.h \
 	kernel/qwidgetaction_p.h \
 	kernel/qgesture.h \
@@ -41,8 +40,11 @@ HEADERS += \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturemanager_p.h \
 	kernel/qsoftkeymanager_p.h \
-    kernel/qsoftkeymanager_common_p.h \
-        kernel/qguiplatformplugin_p.h
+        kernel/qsoftkeymanager_common_p.h \
+        kernel/qguiplatformplugin_p.h \
+        kernel/qdesktopwidget_qpa_p.h \
+        kernel/qwidgetwindow_qpa_p.h \
+        kernel/qplatformmenu_qpa.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -73,90 +75,15 @@ SOURCES += \
 	kernel/qsoftkeymanager.cpp \
         kernel/qdesktopwidget.cpp \
         kernel/qguiplatformplugin.cpp \
-        kernel/qwidgetsvariant.cpp
+        kernel/qwidgetsvariant.cpp \
+        kernel/qapplication_qpa.cpp \
+        kernel/qdesktopwidget_qpa.cpp \
+        kernel/qwidget_qpa.cpp \
+        kernel/qwidgetwindow_qpa.cpp \
+        kernel/qplatformmenu_qpa.cpp
 
-win32: DEFINES += QT_NO_DIRECTDRAW
-
-win32:!qpa {
-    HEADERS += \
-        kernel/qwinnativepangesturerecognizer_win_p.h
-
-	SOURCES += \
-		kernel/qapplication_win.cpp \
-		kernel/qclipboard_win.cpp \
-		kernel/qcursor_win.cpp \
-		kernel/qdesktopwidget_win.cpp \
-		kernel/qdnd_win.cpp \
-		kernel/qmime_win.cpp \
-		kernel/qsound_win.cpp \
-		kernel/qwidget_win.cpp \
-		kernel/qole_win.cpp \
-        kernel/qkeymapper_win.cpp \
-        kernel/qwinnativepangesturerecognizer_win.cpp
-
-    !contains(DEFINES, QT_NO_DIRECTDRAW):LIBS += ddraw.lib
-}
-
-unix:x11 {
-	INCLUDEPATH += ../3rdparty/xorg
-	HEADERS += \
-		kernel/qx11embed_x11.h \
-		kernel/qx11info_x11.h \
-        kernel/qkde_p.h
-
-	SOURCES += \
-		kernel/qapplication_x11.cpp \
-		kernel/qclipboard_x11.cpp \
-		kernel/qcursor_x11.cpp \
-		kernel/qdnd_x11.cpp \
-		kernel/qdesktopwidget_x11.cpp \
-		kernel/qmotifdnd_x11.cpp \
-		kernel/qsound_x11.cpp \
-		kernel/qwidget_x11.cpp \
-		kernel/qwidgetcreate_x11.cpp \
-		kernel/qx11embed_x11.cpp \
-		kernel/qx11info_x11.cpp \
-		kernel/qkeymapper_x11.cpp \
-		kernel/qkde.cpp
-
-        contains(QT_CONFIG, glib) {
-            SOURCES += \
-		kernel/qguieventdispatcher_glib.cpp
-            HEADERS += \
-                kernel/qguieventdispatcher_glib_p.h
-            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-	    LIBS_PRIVATE +=$$QT_LIBS_GLIB
-	}
-            SOURCES += \
-		kernel/qeventdispatcher_x11.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_x11_p.h
-}
-
-!qpa {
-        HEADERS += \
-                kernel/qsound.h \
-                kernel/qsound_p.h
-
-        SOURCES += \
-                kernel/qsound.cpp
-}
-
-qpa {
-        HEADERS += \
-                kernel/qdesktopwidget_qpa_p.h \
-                kernel/qwidgetwindow_qpa_p.h \
-                kernel/qplatformmenu_qpa.h \
-
-        SOURCES += \
-                kernel/qapplication_qpa.cpp \
-                kernel/qdesktopwidget_qpa.cpp \
-                kernel/qwidget_qpa.cpp \
-                kernel/qwidgetwindow_qpa.cpp \
-                kernel/qplatformmenu_qpa.cpp \
-}
-
-!qpa:!x11:mac {
+# TODO
+false:!x11:mac {
 	SOURCES += \
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \

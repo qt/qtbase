@@ -49,6 +49,7 @@
 
 #include <qlibrary.h>
 #include <qimage.h>
+#include <qwindow.h>
 
 QT_BEGIN_NAMESPACE
 

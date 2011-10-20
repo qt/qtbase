@@ -223,9 +223,6 @@ public:
     bool autoAddOkButton;
     QAbstractButton *detectedEscapeButton;
     QLabel *informativeLabel;
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    QTextBrowser *textBrowser;
-#endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
@@ -307,7 +304,7 @@ void QMessageBoxPrivate::updateSize()
         return;
 
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-#if defined(Q_WS_QWS) || defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
@@ -2498,24 +2495,10 @@ void QMessageBox::setInformativeText(const QString &text)
 #endif
         label->setWordWrap(true);
         QGridLayout *grid = static_cast<QGridLayout *>(layout());
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-        label->hide();
-        QTextBrowser *textBrowser = new QTextBrowser(this);
-        textBrowser->setOpenExternalLinks(true);
-        grid->addWidget(textBrowser, 1, 1, 1, 1);
-        d->textBrowser = textBrowser;
-#else
         grid->addWidget(label, 1, 1, 1, 1);
-#endif
         d->informativeLabel = label;
     }
     d->informativeLabel->setText(text);
-
-#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    //We need to put the informative label inside textBrowser to enable scrolling of long texts.
-    d->textBrowser->setText(d->informativeLabel->text());
-#endif
-
     d->updateSize();
 }
 

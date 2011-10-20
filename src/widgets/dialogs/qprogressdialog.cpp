@@ -154,12 +154,6 @@ void QProgressDialogPrivate::layout()
         bool(q->style()->styleHint(QStyle::SH_ProgressDialog_CenterCancelButton, 0, q));
 
     int additionalSpacing = 0;
-#ifdef Q_OS_SYMBIAN
-    //In Symbian, we need to have wider margins for dialog borders, as the actual border is some pixels
-    //inside the dialog area (to enable transparent borders)
-    additionalSpacing = mlr;
-#endif
-
     QSize cs = cancel ? cancel->sizeHint() : QSize(0,0);
     QSize bh = bar->sizeHint();
     int cspc;

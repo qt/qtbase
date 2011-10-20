@@ -25,28 +25,11 @@ SOURCES += \
         util/qflickgesture.cpp \
         util/qundogroup.cpp \
         util/qundostack.cpp \
-        util/qundoview.cpp
+        util/qundoview.cpp \
+        util/qsystemtrayicon_qpa.cpp
 
-
-wince* {
-		SOURCES += \
-				util/qsystemtrayicon_wince.cpp
-} else:win32:!qpa {
-		SOURCES += \
-				util/qsystemtrayicon_win.cpp
-}
-
-unix:x11 {
-		SOURCES += \
-				util/qsystemtrayicon_x11.cpp
-}
-
-qpa {
-		SOURCES += \
-                                util/qsystemtrayicon_qpa.cpp
-}
-
-!qpa:!x11:mac {
+# TODO
+false:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
 

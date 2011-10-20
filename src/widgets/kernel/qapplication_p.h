@@ -72,15 +72,10 @@
 #include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
 #include <QTime>
-#ifdef Q_OS_SYMBIAN
-#include <w32std.h>
-#endif
-#ifdef Q_WS_QPA
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "QtGui/qplatformintegration_qpa.h"
 #include "private/qguiapplication_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -289,11 +284,7 @@ FontHash *qt_app_fonts_hash();
 typedef QHash<QByteArray, QPalette> PaletteHash;
 PaletteHash *qt_app_palettes_hash();
 
-#ifdef Q_WS_QPA
 #define QApplicationPrivateBase QGuiApplicationPrivate
-#else
-#define QApplicationPrivateBase QCoreApplicationPrivate
-#endif
 
 class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
 {
@@ -393,9 +384,6 @@ public:
     static QPalette *set_pal;
 
 private:
-#ifndef Q_WS_QPA
-    static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
-#endif
 public:
     static QFont *sys_font;
     static QFont *set_font;
@@ -477,20 +465,7 @@ public:
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
-#ifdef Q_OS_SYMBIAN
-    static void setNavigationMode(Qt::NavigationMode mode);
-    static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
-    QSet<WId> nativeWindows;
-
-    int symbianProcessWsEvent(const QSymbianEvent *symbianEvent);
-    int symbianHandleCommand(const QSymbianEvent *symbianEvent);
-    int symbianResourceChange(const QSymbianEvent *symbianEvent);
-
-    void _q_aboutToQuit();
-#endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
     void sendSyntheticEnterLeave(QWidget *widget);
-#endif
 #ifdef Q_OS_WIN
     static HWND getHWNDForWidget(QWidget *widget)
     {
@@ -602,8 +577,6 @@ Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
 #elif defined(Q_WS_X11)
   extern void qt_x11_enforce_cursor(QWidget *, bool);
   extern void qt_x11_enforce_cursor(QWidget *);
-#elif defined(Q_OS_SYMBIAN)
-  extern void qt_symbian_set_cursor(QWidget *, bool);
 #else
   extern void qt_qpa_set_cursor(QWidget * w, bool force);
 #endif

@@ -11,8 +11,6 @@ DEFINES   += QT_BUILD_WIDGETS_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-!win32:!qpa:!mac:CONFIG      += x11
-
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 HEADERS += $$QT_SOURCE_TREE/src/widgets/qtwidgetsversion.h

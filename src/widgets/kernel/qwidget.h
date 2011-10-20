@@ -56,10 +56,6 @@
 #include <QtGui/qcursor.h>
 #include <QtGui/qkeysequence.h>
 
-#ifdef Q_WS_QPA //should this go somewhere else?
-#include <QtGui/qwindow.h>
-#endif
-
 #ifdef QT_INCLUDE_COMPAT
 #include <QtGui/qevent.h>
 #endif
@@ -75,7 +71,7 @@ class QWSRegionManager;
 class QStyle;
 class QAction;
 class QVariant;
-
+class QWindow;
 class QActionEvent;
 class QMouseEvent;
 class QWheelEvent;
@@ -600,13 +596,6 @@ public:
     Qt::HANDLE macCGHandle() const;
 #endif
 
-#if defined(Q_WS_WIN)
-    HDC getDC() const;
-    void releaseDC(HDC) const;
-#else
-    Qt::HANDLE handle() const;
-#endif
-
     void setAttribute(Qt::WidgetAttribute, bool on = true);
     inline bool testAttribute(Qt::WidgetAttribute) const;
 
@@ -628,12 +617,10 @@ public:
 
     QBackingStore *backingStore() const;
 
-#if defined(Q_WS_QPA)
     void setWindowHandle(QWindow *window);
     QWindow *windowHandle() const;
 
     friend class QDesktopScreenWidget;
-#endif
 
 Q_SIGNALS:
     void customContextMenuRequested(const QPoint &pos);
@@ -773,36 +760,12 @@ private:
     friend class QRasterWindowSurface;
     friend class QUnifiedToolbarSurface;
 #endif
-#ifdef Q_WS_QWS
-    friend class QWSBackingStore;
-    friend class QWSManager;
-    friend class QWSManagerPrivate;
-    friend class QDecoration;
-    friend class QWSWindowSurface;
-    friend class QScreen;
-    friend class QVNCScreen;
-    friend bool isWidgetOpaque(const QWidget *);
-    friend class QGLWidgetPrivate;
-#endif
-#ifdef Q_OS_SYMBIAN
-    friend class QSymbianControl;
-    friend class QS60WindowSurface;
-#endif
-#ifdef Q_WS_X11
-    friend void qt_net_update_user_time(QWidget *tlw, unsigned long timestamp);
-    friend void qt_net_remove_user_time(QWidget *tlw);
-    friend void qt_set_winid_on_widget(QWidget*, Qt::HANDLE);
-#endif
-
     friend Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
     friend Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 private:
     Q_DISABLE_COPY(QWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
-#ifdef Q_OS_SYMBIAN
-    Q_PRIVATE_SLOT(d_func(), void _q_delayedDestroy(WId winId))
-#endif
 
     QWidgetData *data;
 };
