@@ -1323,9 +1323,8 @@ uint QGuiApplicationPrivate::currentKeyPlatform()
     uint platform = KB_Win;
 #ifdef Q_OS_MAC
     platform = KB_Mac;
-#elif defined Q_WS_X11
+#elif defined Q_WS_X11 // ## TODO: detect these
     platform = KB_X11;
-    // ## TODO: detect these
 #if 0
     if (X11->desktopEnvironment == DE_KDE)
         platform |= KB_KDE;

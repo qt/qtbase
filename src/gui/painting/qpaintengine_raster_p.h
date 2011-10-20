@@ -324,8 +324,6 @@ public:
 
 #if defined (Q_OS_WIN)
     HDC hdc;
-#elif defined(Q_WS_MAC)
-    CGContextRef cgContext;
 #endif
 
     QRect deviceRect;

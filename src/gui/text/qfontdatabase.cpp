@@ -556,9 +556,7 @@ public:
         HANDLE handle;
         bool memoryFont;
         QVector<FONTSIGNATURE> signatures;
-#elif defined(Q_WS_MAC)
-        ATSFontContainerRef handle;
-#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+#elif defined(Q_OS_SYMBIAN)
         QString temporaryFileName;
         TInt screenDeviceFontFileId;
         TUid fontStoreFontFileUid;

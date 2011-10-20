@@ -123,13 +123,6 @@ bool QEglProperties::reduceConfiguration()
     return false;
 }
 
-static void addTag(QString& str, const QString& tag)
-{
-    Q_UNUSED(str)
-    Q_UNUSED(tag)
-    NOEGL
-}
-
 // Convert a property list to a string suitable for debug output.
 QString QEglProperties::toString() const
 {

@@ -81,59 +81,9 @@ private:
     Q_DISABLE_COPY(QKeyMapper)
 };
 
-
-
-#if defined(Q_OS_WIN)
-enum WindowsNativeModifiers {
-    ShiftLeft            = 0x00000001,
-    ControlLeft          = 0x00000002,
-    AltLeft              = 0x00000004,
-    MetaLeft             = 0x00000008,
-    ShiftRight           = 0x00000010,
-    ControlRight         = 0x00000020,
-    AltRight             = 0x00000040,
-    MetaRight            = 0x00000080,
-    CapsLock             = 0x00000100,
-    NumLock              = 0x00000200,
-    ScrollLock           = 0x00000400,
-    ExtendedKey          = 0x01000000,
-
-    // Convenience mappings
-    ShiftAny             = 0x00000011,
-    ControlAny           = 0x00000022,
-    AltAny               = 0x00000044,
-    MetaAny              = 0x00000088,
-    LockAny              = 0x00000700
-};
-# if !defined(tagMSG)
-    typedef struct tagMSG MSG;
-# endif
-#elif defined(Q_WS_MAC)
-QT_BEGIN_INCLUDE_NAMESPACE
-# include <private/qt_mac_p.h>
-QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_X11)
-
-QT_BEGIN_INCLUDE_NAMESPACE
-typedef ulong XID;
-typedef XID KeySym;
-QT_END_INCLUDE_NAMESPACE
-
-struct QXCoreDesc {
-    int min_keycode;
-    int max_keycode;
-    int keysyms_per_keycode;
-    KeySym *keysyms;
-    uchar mode_switch;
-    uchar num_lock;
-    KeySym lock_meaning;
-};
-
-#endif
-
 struct KeyboardLayoutItem;
-typedef struct __TISInputSource * TISInputSourceRef;
 class QKeyEvent;
+
 class QKeyMapperPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QKeyMapper)
@@ -146,17 +96,6 @@ public:
 
     QLocale keyboardInputLocale;
     Qt::LayoutDirection keyboardInputDirection;
-
-#if defined(Q_OS_WIN)
-    void clearRecordedKeys();
-    void updateKeyMap(const MSG &msg);
-    bool translateKeyEvent(QWidget *receiver, const MSG &msg, bool grab);
-    void updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode, quint32 vk_key);
-    bool isADeadKey(unsigned int vk_key, unsigned int modifiers);
-    void deleteLayouts();
-
-    KeyboardLayoutItem *keyLayout[256];
-#endif // defined(Q_OS_WIN)
 };
 
 QKeyMapperPrivate *qt_keymapper_private(); // from qkeymapper.cpp

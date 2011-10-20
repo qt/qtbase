@@ -2879,7 +2879,7 @@ CONVERT_DECL(quint32, qrgb666)
 CONVERT_DECL(qargb6666, quint32)
 CONVERT_DECL(quint32, qargb6666)
 CONVERT_DECL(qrgb555, quint32)
-#if !defined(Q_WS_QWS) || (defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16))
+#if (defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16))
 CONVERT_DECL(quint16, qrgb555)
 CONVERT_DECL(qrgb555, quint16)
 #endif
@@ -3046,7 +3046,7 @@ static Image_Converter converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-#if !defined(Q_WS_QWS) || (defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16))
+#if defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16)
         CONVERT_PTR(qrgb555, quint16),
 #else
         0,
@@ -3122,7 +3122,7 @@ static Image_Converter converter_map[QImage::NImageFormats][QImage::NImageFormat
         CONVERT_PTR(quint32, qrgb555),
         CONVERT_PTR(quint32, qrgb555),
         CONVERT_PTR(quint32, qrgb555),
-#if !defined(Q_WS_QWS) || (defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16))
+#if defined(QT_QWS_DEPTH_15) && defined(QT_QWS_DEPTH_16)
         CONVERT_PTR(quint16, qrgb555),
 #else
         0,

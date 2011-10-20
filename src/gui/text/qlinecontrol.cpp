@@ -1521,12 +1521,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {
-#if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
         if (hasSelectedText()) {
-#else
-        if (hasSelectedText() && m_completer
-            && m_completer->completionMode() == QCompleter::InlineCompletion) {
-#endif
             moveCursor(selectionEnd(), false);
         } else {
             cursorForward(0, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
@@ -1536,12 +1531,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
-#if !defined(Q_WS_WIN) || defined(QT_NO_COMPLETER)
         if (hasSelectedText()) {
-#else
-        if (hasSelectedText() && m_completer
-            && m_completer->completionMode() == QCompleter::InlineCompletion) {
-#endif
             moveCursor(selectionStart(), false);
         } else {
             cursorForward(0, visual ? -1 : (layoutDirection() == Qt::LeftToRight ? -1 : 1));

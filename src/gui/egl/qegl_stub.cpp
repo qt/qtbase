@@ -41,7 +41,6 @@
 
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
-#include <QtGui/qwidget.h>
 #include <QtCore/qdebug.h>
 
 #include "qegl_p.h"

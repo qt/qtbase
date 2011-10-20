@@ -80,14 +80,6 @@ SOURCES += \
         text/qrawfont.cpp \
     text/qglyphrun.cpp
 
-win32:!qpa {
-	SOURCES += \
-		text/qfont_win.cpp \
-                text/qfontengine_win.cpp \
-                text/qrawfont_win.cpp
-	HEADERS += text/qfontengine_win_p.h
-}
-
 contains(QT_CONFIG, directwrite) {
     LIBS_PRIVATE += -ldwrite
     HEADERS += text/qfontenginedirectwrite_p.h
@@ -106,35 +98,14 @@ unix:x11 {
                 text/qrawfont_ft.cpp
 }
 
-!qpa:!x11:mac {
-        HEADERS += \
-                text/qfontengine_mac_p.h
-        OBJECTIVE_HEADERS += \
-                text/qfontengine_coretext_p.h
-	SOURCES += \
-                text/qfont_mac.cpp \
-                text/qrawfont_mac.cpp
-        OBJECTIVE_SOURCES += \
-                text/qfontengine_coretext.mm \
-                text/qfontengine_mac.mm
-        contains(QT_CONFIG, harfbuzz) {
-            DEFINES += QT_ENABLE_HARFBUZZ_FOR_MAC
-        }
-}
+SOURCES += \
+      text/qfont_qpa.cpp \
+      text/qfontengine_qpa.cpp \
+      text/qplatformfontdatabase_qpa.cpp \
+      text/qrawfont_qpa.cpp
 
-qpa {
-	SOURCES += \
-                text/qfont_qpa.cpp \
-                text/qfontengine_qpa.cpp \
-                text/qplatformfontdatabase_qpa.cpp \
-                text/qrawfont_qpa.cpp
-
-	HEADERS += \
-                text/qplatformfontdatabase_qpa.h
-
-	DEFINES += QT_NO_FONTCONFIG
-        DEFINES += QT_NO_FREETYPE
-}
+HEADERS += \
+      text/qplatformfontdatabase_qpa.h
 
 symbian {
 	SOURCES += \
@@ -155,80 +126,6 @@ symbian {
 	}
 	LIBS += -lfntstr -lecom
 }
-
-!qpa {
-contains(QT_CONFIG, freetype) {
-    SOURCES += \
-	../3rdparty/freetype/src/base/ftbase.c \
-	../3rdparty/freetype/src/base/ftbbox.c \
-	../3rdparty/freetype/src/base/ftdebug.c \
-	../3rdparty/freetype/src/base/ftglyph.c \
-	../3rdparty/freetype/src/base/ftinit.c \
-	../3rdparty/freetype/src/base/ftmm.c \
-	../3rdparty/freetype/src/base/fttype1.c \
-	../3rdparty/freetype/src/base/ftsynth.c \
-	../3rdparty/freetype/src/base/ftbitmap.c \
-	../3rdparty/freetype/src/bdf/bdf.c \
-	../3rdparty/freetype/src/cache/ftcache.c \
-	../3rdparty/freetype/src/cff/cff.c \
-	../3rdparty/freetype/src/cid/type1cid.c \
-	../3rdparty/freetype/src/gzip/ftgzip.c \
-	../3rdparty/freetype/src/pcf/pcf.c \
-	../3rdparty/freetype/src/pfr/pfr.c \
-	../3rdparty/freetype/src/psaux/psaux.c \
-	../3rdparty/freetype/src/pshinter/pshinter.c \
-	../3rdparty/freetype/src/psnames/psmodule.c \
-	../3rdparty/freetype/src/raster/raster.c \
-	../3rdparty/freetype/src/sfnt/sfnt.c \
-	../3rdparty/freetype/src/smooth/smooth.c \
-	../3rdparty/freetype/src/truetype/truetype.c \
-	../3rdparty/freetype/src/type1/type1.c \
-	../3rdparty/freetype/src/type42/type42.c \
-	../3rdparty/freetype/src/winfonts/winfnt.c \
-	../3rdparty/freetype/src/lzw/ftlzw.c\
-          ../3rdparty/freetype/src/otvalid/otvalid.c\
-          ../3rdparty/freetype/src/otvalid/otvbase.c\
-          ../3rdparty/freetype/src/otvalid/otvgdef.c\
-          ../3rdparty/freetype/src/otvalid/otvjstf.c\
-          ../3rdparty/freetype/src/otvalid/otvcommn.c\
-          ../3rdparty/freetype/src/otvalid/otvgpos.c\
-          ../3rdparty/freetype/src/otvalid/otvgsub.c\
-          ../3rdparty/freetype/src/otvalid/otvmod.c\
-          ../3rdparty/freetype/src/autofit/afangles.c\
-          ../3rdparty/freetype/src/autofit/afglobal.c\
-          ../3rdparty/freetype/src/autofit/aflatin.c\
-          ../3rdparty/freetype/src/autofit/afmodule.c\
-          ../3rdparty/freetype/src/autofit/afdummy.c\
-          ../3rdparty/freetype/src/autofit/afhints.c\
-          ../3rdparty/freetype/src/autofit/afloader.c\
-          ../3rdparty/freetype/src/autofit/autofit.c
-
-    symbian {
-        SOURCES += \
-            ../3rdparty/freetype/src/base/ftsystem.c
-    } else {
-        SOURCES += \
-            ../3rdparty/freetype/builds/unix/ftsystem.c
-        INCLUDEPATH += \
-            ../3rdparty/freetype/builds/unix
-    }
-
-    INCLUDEPATH += \
-	../3rdparty/freetype/src \
-	../3rdparty/freetype/include
-
-    DEFINES += FT2_BUILD_LIBRARY FT_CONFIG_OPTION_SYSTEM_ZLIB
-    
-} else:contains(QT_CONFIG, system-freetype) {
-    # pull in the proper freetype2 include directory
-    include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
-    LIBS_PRIVATE += -lfreetype
-}
-
-contains(QT_CONFIG, fontconfig) {
-    CONFIG += opentype
-}
-}#!qpa
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

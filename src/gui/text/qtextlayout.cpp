@@ -61,10 +61,6 @@
 
 #include "qfontengine_p.h"
 
-#if !defined(QT_NO_FREETYPE)
-#  include "qfontengine_ft_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #define ObjectSelectionBrush (QTextFormat::ForegroundBrush + 1)
@@ -2109,23 +2105,6 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     fontD->fontEngine = fontEngine;
     fontD->thread = QThread::currentThread();
     fontD->fontEngine->ref.ref();
-#if !defined(QT_NO_FREETYPE)
-    if (fontEngine->type() == QFontEngine::Freetype) {
-        QFontEngineFT *freeTypeEngine = static_cast<QFontEngineFT *>(fontEngine);
-        switch (freeTypeEngine->defaultHintStyle()) {
-        case QFontEngineFT::HintNone:
-            fontD->hintingPreference = QFont::PreferNoHinting;
-            break;
-        case QFontEngineFT::HintLight:
-            fontD->hintingPreference = QFont::PreferVerticalHinting;
-            break;
-        case QFontEngineFT::HintMedium:
-        case QFontEngineFT::HintFull:
-            fontD->hintingPreference = QFont::PreferFullHinting;
-            break;
-        };
-    }
-#endif
     QVarLengthArray<glyph_t> glyphsArray;
     QVarLengthArray<QFixedPoint> positionsArray;
 

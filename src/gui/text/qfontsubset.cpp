@@ -45,12 +45,6 @@
 #include "private/qpdf_p.h"
 #include "private/qfunctions_p.h"
 
-
-#ifndef QT_NO_FREETYPE
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#endif
-
 QT_BEGIN_NAMESPACE
 
 static const char * const agl =
@@ -276,13 +270,6 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
     return buffer;
 }
 
-#ifndef QT_NO_FREETYPE
-static FT_Face ft_face(const QFontEngine *engine)
-{
-    return 0;
-}
-#endif
-
 QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> reverseMap) const
 {
     uint glyphIndex = glyph_indices[glyph];
@@ -292,20 +279,6 @@ QByteArray QFontSubset::glyphName(unsigned int glyph, const QVector<int> reverse
 
     QByteArray ba;
     QPdf::ByteStream s(&ba);
-#ifndef QT_NO_FREETYPE
-    FT_Face face = ft_face(fontEngine);
-
-    char name[32];
-    name[0] = 0;
-    if (face && FT_HAS_GLYPH_NAMES(face)) {
-        FT_Get_Glyph_Name(face, glyphIndex, &name, 32);
-        if (name[0] == '.') // fix broken PS fonts returning .notdef for many glyphs
-            name[0] = 0;
-    }
-    if (name[0]) {
-        s << '/' << name;
-    } else
-#endif
     if (reverseMap[glyphIndex] && reverseMap[glyphIndex] < 0x10000) {
         s << '/' << glyphName(reverseMap[glyphIndex], false);
     } else {
