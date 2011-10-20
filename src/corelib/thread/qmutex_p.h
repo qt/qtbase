@@ -65,15 +65,23 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMutexPrivate  {
+class QMutexData
+{
+public:
+    bool recursive;
+    QMutexData(QMutex::RecursionMode mode = QMutex::NonRecursive)
+        : recursive(mode == QMutex::Recursive) {}
+};
+
+#if !defined(Q_OS_LINUX)
+class QMutexPrivate : public QMutexData {
 public:
     ~QMutexPrivate();
-    QMutexPrivate(QMutex::RecursionMode mode = QMutex::NonRecursive);
+    QMutexPrivate();
 
     bool wait(int timeout = -1);
     void wakeUp();
 
-#if !defined(Q_OS_LINUX)
     // Conrol the lifetime of the privates
     QAtomicInt refCount;
     int id;
@@ -102,15 +110,11 @@ public:
     QAtomicInt possiblyUnlocked; //bool saying that a timed wait timed out
     enum { BigNumber = 0x100000 }; //Must be bigger than the possible number of waiters (number of threads)
     void derefWaiters(int value);
-#endif
-
-    // handle recursive mutex
-    bool recursive;
 
     //platform specific stuff
 #if defined(Q_OS_MAC)
     semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX)
+#elif defined(Q_OS_UNIX)
     bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
@@ -118,12 +122,13 @@ public:
     HANDLE event;
 #endif
 };
+#endif //Q_OS_LINUX
 
-class QRecursiveMutexPrivate : public QMutexPrivate
+class QRecursiveMutexPrivate : public QMutexData
 {
 public:
     QRecursiveMutexPrivate()
-        : QMutexPrivate(QMutex::Recursive), owner(0), count(0) {}
+        : QMutexData(QMutex::Recursive), owner(0), count(0) {}
     Qt::HANDLE owner;
     uint count;
     QMutex mutex;

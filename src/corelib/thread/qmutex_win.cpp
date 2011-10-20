@@ -47,12 +47,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode)
+QMutexPrivate::QMutexPrivate()
 {
     event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
-        qWarning("QMutexPrivate::QMutexPrivate: Cannot create event");
+        qWarning("QMutexData::QMutexData: Cannot create event");
 }
 
 QMutexPrivate::~QMutexPrivate()

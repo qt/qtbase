@@ -54,7 +54,7 @@ QT_MODULE(Core)
 
 #if !defined(QT_NO_THREAD) && !defined(qdoc)
 
-class QMutexPrivate;
+class QMutexData;
 
 class Q_CORE_EXPORT QBasicMutex
 {
@@ -83,13 +83,13 @@ private:
     bool lockInternal(int timeout = -1);
     void unlockInternal();
 
-    QBasicAtomicPointer<QMutexPrivate> d_ptr;
-    static inline QMutexPrivate *dummyLocked() {
-        return reinterpret_cast<QMutexPrivate *>(quintptr(1));
+    QBasicAtomicPointer<QMutexData> d_ptr;
+    static inline QMutexData *dummyLocked() {
+        return reinterpret_cast<QMutexData *>(quintptr(1));
     }
 
     friend class QMutex;
-    friend class QMutexPrivate;
+    friend class QMutexData;
 };
 
 class Q_CORE_EXPORT QMutex : public QBasicMutex {

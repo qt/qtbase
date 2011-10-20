@@ -53,8 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive)
+QMutexPrivate::QMutexPrivate()
 {
     kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);
     if (r != KERN_SUCCESS)

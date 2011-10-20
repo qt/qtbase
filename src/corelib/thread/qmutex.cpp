@@ -150,11 +150,16 @@ QMutex::QMutex(RecursionMode mode)
 */
 QMutex::~QMutex()
 {
-    if (isRecursive())
-        delete static_cast<QRecursiveMutexPrivate *>(d_ptr.load());
-    else if (d_ptr.load()) {
+    QMutexData *d = d_ptr.load();
+    if (quintptr(d) > 0x3 && d->recursive) {
+        delete static_cast<QRecursiveMutexPrivate *>(d);
+    } else if (d) {
 #ifndef Q_OS_LINUX
-        if (d_ptr.load()->possiblyUnlocked.load() && tryLock()) { unlock(); return; }
+        if (d != dummyLocked() && static_cast<QMutexPrivate *>(d)->possiblyUnlocked.load()
+            && tryLock()) {
+            unlock();
+            return;
+        }
 #endif
         qWarning("QMutex: destroying locked mutex");
     }
@@ -233,7 +238,7 @@ QMutex::~QMutex()
 
 */
 bool QBasicMutex::isRecursive() {
-    QMutexPrivate *d = d_ptr.load();
+    QMutexData *d = d_ptr.load();
     if (quintptr(d) <= 0x3)
         return false;
     return d->recursive;
@@ -342,30 +347,31 @@ bool QBasicMutex::isRecursive() {
 bool QBasicMutex::lockInternal(int timeout)
 {
     while (!fastTryLock()) {
-        QMutexPrivate *d = d_ptr.loadAcquire();
-        if (!d) // if d is 0, the mutex is unlocked
+        QMutexData *copy = d_ptr.loadAcquire();
+        if (!copy) // if d is 0, the mutex is unlocked
             continue;
 
-        if (d == dummyLocked()) {
+        if (copy == dummyLocked()) {
             if (timeout == 0)
                 return false;
             QMutexPrivate *newD = QMutexPrivate::allocate();
-            if (!d_ptr.testAndSetOrdered(d, newD)) {
+            if (!d_ptr.testAndSetOrdered(dummyLocked(), newD)) {
                 //Either the mutex is already unlocked, or another thread already set it.
                 newD->deref();
                 continue;
             }
-            d = newD;
+            copy = newD;
             //the d->refCount is already 1 the deref will occurs when we unlock
-        } else if (d->recursive) {
-             return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
+        } else if (copy->recursive) {
+             return static_cast<QRecursiveMutexPrivate *>(copy)->lock(timeout);
         }
 
+        QMutexPrivate *d = static_cast<QMutexPrivate *>(copy);
         if (timeout == 0 && !d->possiblyUnlocked.load())
             return false;
 
         if (!d->ref())
-            continue; //that QMutexPrivate was already released
+            continue; //that QMutexData was already released
 
         if (d != d_ptr.loadAcquire()) {
             //Either the mutex is already unlocked, or relocked with another mutex
@@ -433,14 +439,16 @@ bool QBasicMutex::lockInternal(int timeout)
 */
 void QBasicMutex::unlockInternal()
 {
-    QMutexPrivate *d = d_ptr.loadAcquire();
-    Q_ASSERT(d); //we must be locked
-    Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
+    QMutexData *copy = d_ptr.loadAcquire();
+    Q_ASSERT(copy); //we must be locked
+    Q_ASSERT(copy != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
 
-    if (d->recursive) {
-        static_cast<QRecursiveMutexPrivate *>(d)->unlock();
+    if (copy->recursive) {
+        static_cast<QRecursiveMutexPrivate *>(copy)->unlock();
         return;
     }
+
+    QMutexPrivate *d = reinterpret_cast<QMutexPrivate *>(copy);
 
     if (d->waiters.fetchAndAddRelease(-QMutexPrivate::BigNumber) == 0) {
         //there is no one waiting on this mutex anymore, set the mutex as unlocked (d = 0)

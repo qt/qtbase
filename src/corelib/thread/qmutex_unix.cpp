@@ -60,8 +60,8 @@ static void report_error(int code, const char *where, const char *what)
         qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
 }
 
-QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive), wakeup(false)
+QMutexPrivate::QMutexPrivate()
+    : wakeup(false)
 {
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
