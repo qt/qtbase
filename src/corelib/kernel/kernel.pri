@@ -36,7 +36,8 @@ HEADERS += \
         kernel/qsystemsemaphore_p.h \
         kernel/qfunctions_p.h \
         kernel/qmath.h \
-        kernel/qsystemerror_p.h
+        kernel/qsystemerror_p.h \
+        kernel/qmetatype_p.h
 
 SOURCES += \
         kernel/qabstracteventdispatcher.cpp \
