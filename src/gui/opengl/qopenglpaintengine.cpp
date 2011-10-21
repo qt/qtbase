@@ -124,14 +124,14 @@ void QOpenGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wra
     lastTextureUsed = id;
 
     if (smoothPixmapTransform) {
-        glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     } else {
-        glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
-    glTexParameterf(target, GL_TEXTURE_WRAP_S, wrapMode);
-    glTexParameterf(target, GL_TEXTURE_WRAP_T, wrapMode);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapMode);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapMode);
 }
 
 
@@ -1776,11 +1776,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 
         if (cache->filterMode() != filterMode) {
             if (filterMode == QOpenGLTextureGlyphCache::Linear) {
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             } else {
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             }
             cache->setFilterMode(filterMode);
         }

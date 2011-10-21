@@ -2217,7 +2217,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     GLuint tx_id;
     glGenTextures(1, &tx_id);
     glBindTexture(target, tx_id);
-    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filtering);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filtering);
 
 #if defined(QT_OPENGL_ES_2)
     bool genMipmap = false;
@@ -2229,22 +2229,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     {
 #if !defined(QT_OPENGL_ES_2)
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
-#ifndef QT_OPENGL_ES
         glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-#else
-        glTexParameterf(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-#endif
 #else
         glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
         genMipmap = true;
 #endif
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, options & QGLContext::LinearFilteringBindOption
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, options & QGLContext::LinearFilteringBindOption
                         ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
 #ifdef QGL_BIND_TEXTURE_DEBUG
         printf(" - generating mipmaps (%d ms)\n", time.elapsed());
 #endif
     } else {
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, filtering);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filtering);
     }
 
     QImage::Format target_format = img.format();
@@ -5124,8 +5120,8 @@ QSize QGLTexture::bindCompressedTextureDDS(const char *buf, int len)
 
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     int size;
     int offset = 0;
@@ -5225,18 +5221,18 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
     glBindTexture(GL_TEXTURE_2D, id);
     if (pvrHeader->mipMapCount) {
         if ((options & QGLContext::LinearFilteringBindOption) != 0) {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         } else {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
         }
     } else if ((options & QGLContext::LinearFilteringBindOption) != 0) {
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     } else {
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     // Load the compressed mipmap levels.
