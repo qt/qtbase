@@ -2,12 +2,12 @@ Generic plug-in for evdev touch events
 
 (a) Using as a QPA generic plug-in
 
-1. set up the touch device
-2. sudo apt-get install libmtdev-dev libudev-dev
+1. set up and connect the touch device
+2. install libudev-dev or similar
 3. build this plug-in (qmake && make)
 4. sudo cp 70-qtouchscreen.rules /etc/udev/rules.d
 5. sudo udevadm trigger --subsystem-match=input
-6. run apps like this: app -platform xcb -plugin LinuxTouchScreen
+6. ./fingerpaint -plugin LinuxTouchScreen:force_window
 
 If automatic detection does not work, use -plugin
 LinuxTouchScreen:/dev/input/eventN to explicitly set the device file
@@ -15,15 +15,14 @@ name.
 
 By default the surface of the touch device is mapped to the entire
 screen. If this is not desired, pass force_window in the plugin
-specification. This will cause mapping the touch surface to the active
-window instead.
+specification as shown in the example above. This will cause mapping
+the touch surface to the active window instead.
 
-Only touch events are generated (via
-QWindowSystemInterface::handleTouchEvent), mouse events are not. This
-is because on desktop the touch device will usually act as a
-single-touch mouse replacement anyway. For pointer-less systems the
-code needs to be extended to generate also mouse events (by calling
-handleMouseEvent too).
+Only touch events are generated, mouse events are not. This is because
+on desktop the touch device will usually act as a single-point mouse
+replacement by default. For embedded systems the code could to be
+extended to generate also mouse events (by calling handleMouseEvent
+for the primary touch point for example).
 
 (b) Using in a compositor
 
@@ -40,6 +39,5 @@ Known issues:
 The udev rule matches any touchpad device. If there are multiple ones,
 specify the device as described above.
 
-On recent distributions (e.g. Ubuntu 11.04) you may need to remove
-50-synaptics.conf from /usr/share/X11/xorg.conf.d (followed by
-logout/login) otherwise no evdev events can be read.
+If no evdev events are read, remove 50-synaptics.conf from
+/usr/share/X11/xorg.conf.d and restart X.

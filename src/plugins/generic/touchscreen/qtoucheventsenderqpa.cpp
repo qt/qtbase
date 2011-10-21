@@ -86,15 +86,8 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
     for (int i = 0; i < touchPoints.size(); ++i) {
         QWindowSystemInterface::TouchPoint &tp(touchPoints[i]);
 
-        // Translate so that (0, 0) is the top-left corner.
-        const int hw_x = qBound(hw_range_x_min, int(tp.area.left()), hw_range_x_max) - hw_range_x_min;
-        const int hw_y = qBound(hw_range_y_min, int(tp.area.top()), hw_range_y_max) - hw_range_y_min;
-
-        // Get a normalized position in range 0..1.
         const int hw_w = hw_range_x_max - hw_range_x_min;
         const int hw_h = hw_range_y_max - hw_range_y_min;
-        tp.normalPosition = QPointF(hw_x / qreal(hw_w),
-                                    hw_y / qreal(hw_h));
 
         qreal nx = tp.normalPosition.x();
         qreal ny = tp.normalPosition.y();

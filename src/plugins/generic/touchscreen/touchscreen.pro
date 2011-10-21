@@ -15,4 +15,4 @@ SOURCES = main.cpp \
 
 QT += core-private gui-private
 
-LIBS += -ludev -lmtdev
+LIBS += -ludev

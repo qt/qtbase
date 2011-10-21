@@ -46,11 +46,9 @@
 #include <QString>
 #include <QList>
 #include <QThread>
-#include <QtGui/private/qwindowsysteminterface_qpa_p.h>
+#include <QWindowSystemInterface>
 
 QT_BEGIN_HEADER
-
-struct mtdev;
 
 QT_BEGIN_NAMESPACE
 
@@ -75,14 +73,12 @@ public:
 
 private slots:
     void readData();
-    void onTimeout();
 
 private:
     void try_udev(QString *path);
 
     QSocketNotifier *m_notify;
     int m_fd;
-    mtdev *m_mtdev;
     QTouchScreenData *d;
 };
 

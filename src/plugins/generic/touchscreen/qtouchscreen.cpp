@@ -42,19 +42,14 @@
 #include "qtouchscreen.h"
 #include <QStringList>
 #include <QSocketNotifier>
-#include <QtCore/private/qcore_unix_p.h>
-#include <QTimer>
 #include <QDebug>
-
+#include <QtCore/private/qcore_unix_p.h>
+#include <linux/input.h>
 #include <libudev.h>
 
-extern "C" {
-#include <mtdev.h>
-}
+QT_BEGIN_NAMESPACE
 
 //#define POINT_DEBUG
-
-QT_BEGIN_NAMESPACE
 
 class QTouchScreenData
 {
@@ -63,25 +58,25 @@ public:
 
     void processInputEvent(input_event *data);
 
+    void dump();
+
     QTouchScreenHandler *q;
     QEvent::Type m_state;
     QEvent::Type m_prevState;
+    int m_lastEventType;
     QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
 
-    struct Slot {
+    struct Contact {
         int trackingId;
         int x;
         int y;
         int maj;
         Qt::TouchPointState state;
         bool primary;
-        Slot() : trackingId(0), x(0), y(0), maj(1), state(Qt::TouchPointPressed), primary(false) { }
+        Contact() : trackingId(0), x(0), y(0), maj(1), state(Qt::TouchPointPressed), primary(false) { }
     };
-    QMap<int, Slot> m_slots;
-    QMap<int, QPoint> m_lastReport;
-    int m_currentSlot;
-    QTimer m_clearTimer;
-    bool m_clearTimerEnabled;
+    QMap<int, Contact> m_contacts, m_lastContacts;
+    Contact m_currentData;
 
     int hw_range_x_min;
     int hw_range_x_max;
@@ -96,23 +91,15 @@ QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList
     : q(q_ptr),
       m_state(QEvent::TouchBegin),
       m_prevState(m_state),
-      m_currentSlot(0),
+      m_lastEventType(-1),
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0)
 {
-    m_clearTimerEnabled = !args.contains(QLatin1String("no_timeout"));
-    if (m_clearTimerEnabled) {
-        QObject::connect(&m_clearTimer, SIGNAL(timeout()), q, SLOT(onTimeout()));
-        m_clearTimer.setSingleShot(true);
-        m_clearTimer.setInterval(2000); // default timeout is 2 seconds
-        for (int i = 0; i < args.count(); ++i)
-            if (args.at(i).startsWith(QLatin1String("timeout=")))
-                m_clearTimer.setInterval(args.at(i).mid(8).toInt());
-    }
+    Q_UNUSED(args);
 }
 
 QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
-    : m_notify(0), m_fd(-1), m_mtdev(0), d(0)
+    : m_notify(0), m_fd(-1), d(0)
 {
     setObjectName(QLatin1String("LinuxInputSubsystem Touch Handler"));
 
@@ -135,14 +122,6 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         return;
     }
 
-    m_mtdev = (mtdev *) calloc(1, sizeof(mtdev));
-    int mtdeverr = mtdev_open(m_mtdev, m_fd);
-    if (mtdeverr) {
-        qWarning("mtdev_open failed: %d", mtdeverr);
-        QT_CLOSE(m_fd);
-        return;
-    }
-
     d = new QTouchScreenData(this, args);
 
     input_absinfo absInfo;
@@ -159,8 +138,8 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
     }
     char name[1024];
     if (ioctl(m_fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
-        d->hw_name = QString::fromUtf8(name);
-        qDebug() << "device name" << d->hw_name;
+        d->hw_name = QString::fromLocal8Bit(name);
+        qDebug("device name: %s", name);
     }
 }
 
@@ -168,11 +147,6 @@ QTouchScreenHandler::~QTouchScreenHandler()
 {
     if (m_fd >= 0)
         QT_CLOSE(m_fd);
-
-    if (m_mtdev) {
-        mtdev_close(m_mtdev);
-        free(m_mtdev);
-    }
 
     delete d;
 }
@@ -191,7 +165,7 @@ void QTouchScreenHandler::try_udev(QString *path)
     udev *u = udev_new();
     udev_enumerate *ue = udev_enumerate_new(u);
     udev_enumerate_add_match_subsystem(ue, "input");
-    udev_enumerate_add_match_property(ue, "QT_TOUCH", "1");
+    udev_enumerate_add_match_property(ue, "ID_INPUT_TOUCHPAD", "1");
     udev_enumerate_scan_devices(ue);
     udev_list_entry *entry;
     udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(ue)) {
@@ -207,88 +181,100 @@ void QTouchScreenHandler::try_udev(QString *path)
 
 void QTouchScreenHandler::readData()
 {
-    input_event buffer[32];
+    ::input_event buffer[32];
     int n = 0;
-    n = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(input_event));
-    if (n < 0) {
-        if (errno != EINTR && errno != EAGAIN)
+    for (; ;) {
+        n = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
+
+        if (!n) {
+            qWarning("Got EOF from input device");
+            return;
+        } else if (n < 0 && (errno != EINTR && errno != EAGAIN)) {
             qWarning("Could not read from input device: %s", strerror(errno));
-    } else if (n > 0) {
-        for (int i = 0; i < n; ++i) {
-            input_event *data = &buffer[i];
-            d->processInputEvent(data);
+            if (errno == ENODEV) { // device got disconnected -> stop reading
+                delete m_notify;
+                m_notify = 0;
+                QT_CLOSE(m_fd);
+                m_fd = -1;
+            }
+            return;
+        } else if (n % sizeof(::input_event) == 0) {
+            break;
         }
     }
-}
 
-void QTouchScreenHandler::onTimeout()
-{
-#ifdef POINT_DEBUG
-    qDebug("TIMEOUT (%d slots)", d->m_slots.count());
-#endif
-    d->m_slots.clear();
-    if (d->m_state != QEvent::TouchEnd)
-        for (int i = 0; i < d->m_observers.count(); ++i)
-            d->m_observers.at(i)->touch_point(QEvent::TouchEnd,
-                                              QList<QWindowSystemInterface::TouchPoint>());
-    d->m_state = QEvent::TouchBegin;
+    n /= sizeof(::input_event);
+
+    for (int i = 0; i < n; ++i)
+        d->processInputEvent(&buffer[i]);
 }
 
 void QTouchScreenData::processInputEvent(input_event *data)
 {
     if (data->type == EV_ABS) {
+
          if (data->code == ABS_MT_POSITION_X) {
-             m_slots[m_currentSlot].x = data->value;
+             m_currentData.x = data->value;
          } else if (data->code == ABS_MT_POSITION_Y) {
-             m_slots[m_currentSlot].y = data->value;
-         } else if (data->code == ABS_MT_SLOT) {
-             m_currentSlot = data->value;
+             m_currentData.y = data->value;
          } else if (data->code == ABS_MT_TRACKING_ID) {
-             if (data->value == -1) {
-                 bool wasPrimary = m_slots[m_currentSlot].primary;
-                 m_lastReport.remove(m_slots[m_currentSlot].trackingId);
-                 m_slots.remove(m_currentSlot);
-                 if (wasPrimary && !m_slots.isEmpty())
-                     m_slots[m_slots.keys().at(0)].primary = true;
-             } else {
-                m_slots[m_currentSlot].trackingId = data->value;
-                m_slots[m_currentSlot].primary = m_slots.count() == 1;
-             }
+             m_currentData.trackingId = data->value;
+             m_currentData.primary = m_contacts.isEmpty();
          } else if (data->code == ABS_MT_TOUCH_MAJOR) {
-             m_slots[m_currentSlot].maj = data->value;
+             m_currentData.maj = data->value;
              if (data->value == 0)
-                 m_slots[m_currentSlot].state = Qt::TouchPointReleased;
+                 m_currentData.state = Qt::TouchPointReleased;
          }
+
+    } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT && m_lastEventType != EV_SYN) {
+
+        m_contacts.insert(m_currentData.trackingId, m_currentData);
+        m_currentData = Contact();
+
     } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
-        if (m_clearTimerEnabled)
-            m_clearTimer.stop();
+
         m_touchPoints.clear();
-        QList<int> keys = m_slots.keys();
-        int ignoredSlotCount = 0;
-        for (int i = 0; i < keys.count(); ++i) {
-            const Slot &slot(m_slots.value(keys.at(i)));
-            if (slot.trackingId == 0) {
-                ++ignoredSlotCount;
-                continue;
-            }
+        for (QMap<int, Contact>::iterator it = m_contacts.begin(), ite = m_contacts.end();
+             it != ite; ++it) {
             QWindowSystemInterface::TouchPoint tp;
-            tp.id = slot.trackingId;
-            tp.isPrimary = slot.primary;
-            tp.pressure = slot.state == Qt::TouchPointReleased ? 0 : 1;
-            tp.area = QRectF(slot.x, slot.y, slot.maj, slot.maj);
-            tp.state = slot.state;
-            if (slot.state == Qt::TouchPointMoved && m_lastReport.contains(slot.trackingId)) {
-                QPoint lastPos = m_lastReport.value(slot.trackingId);
-                if (lastPos.x() == slot.x && lastPos.y() == slot.y)
-                    tp.state = Qt::TouchPointStationary;
+            tp.id = it->trackingId;
+            tp.isPrimary = it->primary;
+            tp.pressure = it->state == Qt::TouchPointReleased ? 0 : 1;
+
+            if (m_lastContacts.contains(it->trackingId)) {
+                const Contact &prev(m_lastContacts.value(it->trackingId));
+                if (it->state == Qt::TouchPointReleased) {
+                    // Copy over the previous values for released points, just in case.
+                    it->x = prev.x;
+                    it->y = prev.y;
+                    it->maj = prev.maj;
+                } else {
+                    it->state = (prev.x == it->x && prev.y == it->y) ? Qt::TouchPointStationary : Qt::TouchPointMoved;
+                }
             }
+
+            tp.state = it->state;
+            tp.area = QRectF(it->x, it->y, it->maj, it->maj);
+
+            // Translate so that (0, 0) is the top-left corner.
+            const int hw_x = qBound(hw_range_x_min, int(tp.area.left()), hw_range_x_max) - hw_range_x_min;
+            const int hw_y = qBound(hw_range_y_min, int(tp.area.top()), hw_range_y_max) - hw_range_y_min;
+            // Get a normalized position in range 0..1.
+            const int hw_w = hw_range_x_max - hw_range_x_min;
+            const int hw_h = hw_range_y_max - hw_range_y_min;
+            tp.normalPosition = QPointF(hw_x / qreal(hw_w),
+                                        hw_y / qreal(hw_h));
+
             m_touchPoints.append(tp);
-            m_lastReport.insert(slot.trackingId, QPoint(slot.x, slot.y));
         }
-        if (m_slots.count() - ignoredSlotCount == 0)
+
+        if (m_contacts.isEmpty())
             m_state = QEvent::TouchEnd;
 
-        // Skip if state is TouchUpdate and all points are Stationary.
+        m_lastContacts = m_contacts;
+        m_contacts.clear();
+
+        // No need to deliver if all points are stationary.
         bool skip = false;
         if (m_state == QEvent::TouchUpdate) {
             skip = true;
@@ -300,32 +286,62 @@ void QTouchScreenData::processInputEvent(input_event *data)
         }
 
 #ifdef POINT_DEBUG
-        qDebug() << m_touchPoints.count() << "touchpoints, event type" << m_state;
-        for (int i = 0; i < m_touchPoints.count(); ++i)
-            qDebug() << "    " << m_touchPoints[i].id << m_touchPoints[i].state << m_touchPoints[i].area;
+        dump();
 #endif
 
         if (!skip && !(m_state == m_prevState && m_state == QEvent::TouchEnd))
             for (int i = 0; i < m_observers.count(); ++i)
                 m_observers.at(i)->touch_point(m_state, m_touchPoints);
 
-        for (int i = 0; i < keys.count(); ++i) {
-            Slot &slot(m_slots[keys.at(i)]);
-            if (slot.state == Qt::TouchPointPressed)
-                slot.state = Qt::TouchPointMoved;
-        }
         m_prevState = m_state;
         if (m_state == QEvent::TouchBegin)
             m_state = QEvent::TouchUpdate;
         else if (m_state == QEvent::TouchEnd)
             m_state = QEvent::TouchBegin;
+    }
 
-        // The user's finger may fall off the touchscreen which in some rare
-        // cases may mean there will be no released event ever received for that
-        // particular point. Use a timer to clear all points when no activity
-        // occurs for a certain period of time.
-        if (m_clearTimerEnabled && m_state != QEvent::TouchBegin)
-            m_clearTimer.start();
+    m_lastEventType = data->type;
+}
+
+void QTouchScreenData::dump()
+{
+    const char *eventType;
+    switch (m_state) {
+    case QEvent::TouchBegin:
+        eventType = "TouchBegin";
+        break;
+    case QEvent::TouchUpdate:
+        eventType = "TouchUpdate";
+        break;
+    case QEvent::TouchEnd:
+        eventType = "TouchEnd";
+        break;
+    default:
+        eventType = "unknown";
+        break;
+    }
+    qDebug() << "touch event" << eventType;
+    foreach (const QWindowSystemInterface::TouchPoint &tp, m_touchPoints) {
+        const char *pointState;
+        switch (tp.state & Qt::TouchPointStateMask) {
+        case Qt::TouchPointPressed:
+            pointState = "pressed";
+            break;
+        case Qt::TouchPointMoved:
+            pointState = "moved";
+            break;
+        case Qt::TouchPointStationary:
+            pointState = "stationary";
+            break;
+        case Qt::TouchPointReleased:
+            pointState = "released";
+            break;
+        default:
+            pointState = "unknown";
+            break;
+        }
+        qDebug() << "  " << tp.id << tp.area << pointState << tp.normalPosition
+                 << tp.pressure << tp.isPrimary << tp.area.center();
     }
 }
 
