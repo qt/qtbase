@@ -99,7 +99,7 @@ int runQMake(int argc, char **argv)
     }
 
     QString oldpwd = qmake_getpwd();
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if(!(oldpwd.length() == 3 && oldpwd[0].isLetter() && oldpwd.endsWith(":/")))
 #endif
     {
