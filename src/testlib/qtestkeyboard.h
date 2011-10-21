@@ -85,7 +85,12 @@ namespace QTest
                              QString text, Qt::KeyboardModifiers modifier, int delay=-1)
     {
         QTEST_ASSERT(qApp);
+
+        if (!window)
+            window = QGuiApplication::activeWindow();
+
         QTEST_ASSERT(window);
+
 
         if (action == Click) {
             sendKeyEvent(Press, window, code, text, modifier, delay);
@@ -183,6 +188,12 @@ namespace QTest
         if (!widget)
             widget = QWidget::keyboardGrabber();
         if (!widget) {
+            QWindow *window = QGuiApplication::focusWindow();
+            if (window) {
+                sendKeyEvent(action, window, code, text, modifier, delay);
+                return;
+            }
+
             if (QWidget *apw = QApplication::activePopupWidget())
                 widget = apw->focusWidget() ? apw->focusWidget() : apw;
             else

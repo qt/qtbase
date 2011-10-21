@@ -1249,10 +1249,12 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     menubar.setActiveAction(first);
     QTRY_VERIFY(menu.isVisible());
     QCOMPARE(menubar.activeAction(), first);
+    QTest::qWaitForWindowShown(&menu);
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Escape);
     QVERIFY(!menu.isVisible());
     QTRY_VERIFY(menubar.hasFocus());
     QCOMPARE(menubar.activeAction(), first);
+    QTest::qWait(200);
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Escape);
     QVERIFY(!menubar.activeAction());
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Escape); //now the action should be triggered
