@@ -71,6 +71,7 @@ public:
         DataLocation,
         CacheLocation,
         GenericDataLocation,
+        RuntimeLocation,
         ConfigLocation
     };
 

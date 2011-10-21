@@ -77,6 +77,7 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
     case QStandardPaths::TempLocation:
         return kTemporaryFolderType;
     case QStandardPaths::GenericDataLocation:
+    case QStandardPaths::RuntimeLocation:
     case QStandardPaths::DataLocation:
         return kApplicationSupportFolderType;
     case QStandardPaths::CacheLocation:
@@ -126,6 +127,7 @@ QString QStandardPaths::storageLocation(StandardLocation type)
     case GenericDataLocation:
     case DataLocation:
     case CacheLocation:
+    case RuntimeLocation:
         return macLocation(type, kUserDomain);
     default:
         return macLocation(type, kOnAppropriateDisk);

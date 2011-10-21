@@ -46,6 +46,8 @@
 #include <qfile.h>
 #include <qtextstream.h>
 #include <qcoreapplication.h>
+#include <private/qfilesystemengine_p.h>
+#include <errno.h>
 #include <stdlib.h>
 
 #ifndef QT_NO_STANDARDPATHS
@@ -92,6 +94,38 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         if (xdgConfigHome.isEmpty())
             xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
         return xdgConfigHome;
+    }
+    case RuntimeLocation:
+    {
+        const uid_t myUid = geteuid();
+        // http://standards.freedesktop.org/basedir-spec/latest/
+        QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
+        if (xdgRuntimeDir.isEmpty()) {
+            const QString userName = QFileSystemEngine::resolveUserName(myUid);
+            xdgRuntimeDir = QDir::tempPath() + QLatin1String("/runtime-") + userName;
+            QDir dir(xdgRuntimeDir);
+            if (!dir.exists()) {
+                if (!QDir().mkdir(xdgRuntimeDir)) {
+                    qWarning("QStandardPaths: error creating runtime directory %s: %s", qPrintable(xdgRuntimeDir), qPrintable(qt_error_string(errno)));
+                    return QString();
+                }
+            }
+        }
+        // "The directory MUST be owned by the user"
+        QFileInfo fileInfo(xdgRuntimeDir);
+        if (fileInfo.ownerId() != myUid) {
+            qWarning("QStandardPaths: wrong ownership on runtime directory %s, %d instead of %d", qPrintable(xdgRuntimeDir),
+                     fileInfo.ownerId(), myUid);
+            return QString();
+        }
+        // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
+        QFile file(xdgRuntimeDir);
+        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
+        if (file.permissions() != wantedPerms && !file.setPermissions(wantedPerms)) {
+            qWarning("QStandardPaths: wrong permissions on runtime directory %s", qPrintable(xdgRuntimeDir));
+            return QString();
+        }
+        return xdgRuntimeDir;
     }
     default:
         break;

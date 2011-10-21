@@ -85,6 +85,8 @@ QT_BEGIN_NAMESPACE
            non-essential (cached) data should be written.
     \value GenericDataLocation Returns a directory location where persistent
            data shared across applications can be stored.
+    \value RuntimeLocation Returns a directory location where runtime communication
+           files should be written. For instance unix local sockets.
     \value ConfigLocation Returns a directory location where user-specific
            configuration files should be written.
 
@@ -117,8 +119,6 @@ QT_BEGIN_NAMESPACE
    Much like the PATH variable, it returns the directories in order of priority,
    starting with the user-specific storageLocation() for the \a type.
  */
-
-// TODO add XDG_RUNTIME_DIR?
 
 /*!
     \enum QStandardPaths::LocateOption

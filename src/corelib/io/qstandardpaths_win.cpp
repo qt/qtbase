@@ -159,15 +159,13 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         // cache directory located in their AppData directory
         return storageLocation(DataLocation) + QLatin1String("\\cache");
 
-    case QStandardPaths::HomeLocation:
+    case RuntimeLocation:
+    case HomeLocation:
         result = QDir::homePath();
         break;
 
-    case QStandardPaths::TempLocation:
+    case TempLocation:
         result = QDir::tempPath();
-        break;
-
-    default:
         break;
     }
     return result;
