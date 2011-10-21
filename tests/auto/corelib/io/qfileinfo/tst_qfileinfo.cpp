@@ -1473,7 +1473,24 @@ void tst_QFileInfo::isExecutable()
     QFileInfo fi(appPath);
     QCOMPARE(fi.isExecutable(), true);
 
-    QCOMPARE(QFileInfo("qfileinfo.pro").isExecutable(), false);
+    QCOMPARE(QFileInfo(SRCDIR "qfileinfo.pro").isExecutable(), false);
+
+#ifdef Q_OS_UNIX
+    QFile::remove("link.lnk");
+
+    // Symlink to executable
+    QFile appFile(appPath);
+    QVERIFY(appFile.link("link.lnk"));
+    QCOMPARE(QFileInfo("link.lnk").isExecutable(), true);
+    QFile::remove("link.lnk");
+
+    // Symlink to .pro file
+    QFile proFile(SRCDIR "qfileinfo.pro");
+    QVERIFY(proFile.link("link.lnk"));
+    QCOMPARE(QFileInfo("link.lnk").isExecutable(), false);
+    QFile::remove("link.lnk");
+#endif
+
 }
 
 
