@@ -61,9 +61,9 @@
 #include <qlineedit.h>
 #include <qlayout.h>
 #if defined QT_BUILD_INTERNAL
-#include "../../../src/widgets/dialogs/qsidebar_p.h"
-#include "../../../src/widgets/dialogs/qfilesystemmodel_p.h"
-#include "../../../src/widgets/dialogs/qfiledialog_p.h"
+#include <private/qsidebar_p.h>
+#include <private/qfilesystemmodel_p.h>
+#include <private/qfiledialog_p.h>
 #endif
 #include <QFileDialog>
 #include <QFileSystemModel>
