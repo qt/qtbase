@@ -645,12 +645,16 @@ QScreen *QWindow::screen() const
 void QWindow::setScreen(QScreen *newScreen)
 {
     Q_D(QWindow);
-    bool wasCreated = d->platformWindow != 0;
-    if (wasCreated)
-        destroy();
-    d->screen = newScreen ? newScreen : QGuiApplication::primaryScreen();
-    if (wasCreated)
-        create();
+    if (!newScreen)
+        newScreen = QGuiApplication::primaryScreen();
+    if (newScreen != screen()) {
+        const bool wasCreated = d->platformWindow != 0;
+        if (wasCreated)
+            destroy();
+        d->screen = newScreen;
+        if (wasCreated)
+            create();
+    }
 }
 
 /*!
