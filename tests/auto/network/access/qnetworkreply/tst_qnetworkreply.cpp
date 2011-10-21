@@ -63,6 +63,7 @@
 #include <QtNetwork/qnetworkcookie.h>
 #include <QtNetwork/QHttpPart>
 #include <QtNetwork/QHttpMultiPart>
+#include <QtNetwork/QNetworkProxyQuery>
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslconfiguration.h>
@@ -74,8 +75,6 @@
 #endif
 
 #include <time.h>
-
-#include "private/qnetworkaccessmanager_p.h"
 
 #include "../../../network-settings.h"
 
