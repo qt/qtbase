@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-#if !defined(QT_SHARED) && !defined(QT_DLL)  && !(defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT))
+#if !defined(QT_SHARED) && !defined(QT_DLL)
 # define Q_TESTLIB_EXPORT
 #else
 # ifdef QTESTLIB_MAKEDLL
@@ -60,7 +60,7 @@ QT_MODULE(Test)
 # endif
 #endif
 
-#if defined (Q_CC_SUN) || defined (Q_CC_XLC) || (defined (Q_CC_GNU) && (__GNUC__ - 0 < 3)) || defined (Q_CC_NOKIAX86)
+#if defined (Q_CC_SUN) || defined (Q_CC_XLC) || (defined (Q_CC_GNU) && (__GNUC__ - 0 < 3))
 # define QTEST_NO_SPECIALIZATIONS
 #endif
 

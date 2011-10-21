@@ -83,4 +83,3 @@ QMAKE_TARGET_DESCRIPTION = Qt \
     Unit \
     Testing \
     Library
-symbian:TARGET.UID3=0x2001B2DF

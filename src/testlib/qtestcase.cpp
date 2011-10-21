@@ -898,7 +898,7 @@ namespace QTest
     static int mouseDelay = -1;
     static int eventDelay = -1;
     static int keyVerbose = -1;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     static bool noCrashHandler = false;
 #endif
 
@@ -1067,7 +1067,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -keyevent-verbose   : Turn on verbose messages for keyboard simulation\n"
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
          " -nocrashhandler     : Disables the crash handler\n"
 #endif
          "\n"
@@ -1188,7 +1188,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
             }
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
 #endif
@@ -1662,7 +1662,7 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestLog::stopLogging();
 }
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
 class FatalSignalHandler
 {
 public:
@@ -1822,14 +1822,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // Delay execution of tests in Symbian emulator.
-    // Needed to allow worst of other higher priority apps and services launched by emulator
-    // to get out of the way before we run our test. Otherwise some of the timing sensitive tests
-    // will not work properly.
-    qSleep(3000);
-#endif
-
     QTestResult::reset();
 
     QTEST_ASSERT(testObject);
@@ -1852,7 +1844,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     } else
 #endif
     {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
         QScopedPointer<FatalSignalHandler> handler;
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);

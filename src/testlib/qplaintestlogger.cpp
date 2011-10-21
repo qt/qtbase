@@ -55,10 +55,6 @@
 #include <windows.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <e32debug.h>
-#endif
-
 #ifdef Q_OS_WINCE
 #include <QtCore/QString>
 #endif
@@ -217,27 +213,6 @@ void QPlainTestLogger::outputMessage(const char *str)
     // OutputDebugString is not threadsafe
     OutputDebugStringA(str);
     LeaveCriticalSection(&QTest::outputCriticalSection);
-#elif defined(Q_OS_SYMBIAN)
-    // RDebug::Print has a cap of 256 characters so break it up
-    TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-    _LIT(format, "[QTestLib] %S");
-    const int maxBlockSize = 256 - ((const TDesC &)format).Length();
-    HBufC* hbuffer = HBufC::New(maxBlockSize);
-    if (hbuffer) {
-        for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
-            int size = Min(maxBlockSize, ptr.Length() - i);
-            hbuffer->Des().Copy(ptr.Mid(i, size));
-            RDebug::Print(format, hbuffer);
-        }
-        delete hbuffer;
-    }
-    else {
-        // fast, no allocations, but truncates silently
-        RDebug::RawPrint(format);
-        TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-        RDebug::RawPrint(ptr);
-        RDebug::RawPrint(_L8("\n"));
-    }
 #endif
     outputString(str);
 }
