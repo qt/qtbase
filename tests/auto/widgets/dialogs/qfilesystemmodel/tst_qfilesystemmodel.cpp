@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #ifdef QT_BUILD_INTERNAL
-#include "../../../src/widgets/dialogs/qfilesystemmodel_p.h"
+#include <private/qfilesystemmodel_p.h>
 #endif
 #include <QFileSystemModel>
 #include <QFileIconProvider>
