@@ -56,6 +56,8 @@ QT_BEGIN_NAMESPACE
 OSType translateLocation(QStandardPaths::StandardLocation type)
 {
     switch (type) {
+    case QStandardPaths::ConfigLocation:
+        return kPreferencesFolderType;
     case QStandardPaths::DesktopLocation:
         return kDesktopFolderType;
     case QStandardPaths::DocumentsLocation:
@@ -74,6 +76,7 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
         return kPictureDocumentsFolderType;
     case QStandardPaths::TempLocation:
         return kTemporaryFolderType;
+    case QStandardPaths::GenericDataLocation:
     case QStandardPaths::DataLocation:
         return kApplicationSupportFolderType;
     case QStandardPaths::CacheLocation:
@@ -94,35 +97,54 @@ static QString getFullPath(const FSRef &ref)
     return QString();
 }
 
+static QString macLocation(QStandardPaths::StandardLocation type, short domain)
+{
+    // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/Reference/reference.html
+    FSRef ref;
+    OSErr err = FSFindFolder(domain, translateLocation(type), false, &ref);
+    if (err)
+       return QString();
+
+   QString path = getFullPath(ref);
+
+   if (type == QStandardPaths::DataLocation || type == QStandardPaths::CacheLocation) {
+       if (!QCoreApplication::organizationName().isEmpty())
+           path += QLatin1Char('/') + QCoreApplication::organizationName();
+       if (!QCoreApplication::applicationName().isEmpty())
+           path += QLatin1Char('/') + QCoreApplication::applicationName();
+   }
+   return path;
+}
+
 QString QStandardPaths::storageLocation(StandardLocation type)
 {
-     if (type == HomeLocation)
+    switch (type) {
+    case HomeLocation:
         return QDir::homePath();
+    case TempLocation:
+        return QDir::tempPath();
+    case GenericDataLocation:
+    case DataLocation:
+    case CacheLocation:
+        return macLocation(type, kUserDomain);
+    default:
+        return macLocation(type, kOnAppropriateDisk);
+    }
+}
 
-     if (type == TempLocation)
-         return QDir::tempPath();
+QStringList QStandardPaths::standardLocations(StandardLocation type)
+{
+    QStringList dirs;
 
-    short domain = kOnAppropriateDisk;
-
-    if (type == DataLocation || type == CacheLocation)
-        domain = kUserDomain;
-
-     // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/Reference/reference.html
-     FSRef ref;
-     OSErr err = FSFindFolder(domain, translateLocation(type), false, &ref);
-     if (err)
-        return QString();
-
-    QString path = getFullPath(ref);
-
-    if (type == DataLocation || type == CacheLocation) {
-        if (QCoreApplication::organizationName().isEmpty() == false)
-            path += QLatin1Char('/') + QCoreApplication::organizationName();
-        if (QCoreApplication::applicationName().isEmpty() == false)
-            path += QLatin1Char('/') + QCoreApplication::applicationName();
+    if (type == GenericDataLocation || type == DataLocation || type == CacheLocation) {
+        const QString path = macLocation(type, kOnAppropriateDisk);
+        if (!path.isEmpty())
+            dirs.append(path);
     }
 
-    return path;
+    const QString localDir = storageLocation(type);
+    dirs.prepend(localDir);
+    return dirs;
 }
 
 QString QStandardPaths::displayName(StandardLocation type)

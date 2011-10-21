@@ -54,29 +54,47 @@ QT_BEGIN_NAMESPACE
 
 QString QStandardPaths::storageLocation(StandardLocation type)
 {
-    if (type == QStandardPaths::HomeLocation)
+    switch (type) {
+    case HomeLocation:
         return QDir::homePath();
-    if (type == QStandardPaths::TempLocation)
+    case TempLocation:
         return QDir::tempPath();
-
-    // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
-    if (type == QStandardPaths::CacheLocation) {
-        QString xdgCacheHome = QLatin1String(qgetenv("XDG_CACHE_HOME"));
+    case CacheLocation:
+    {
+        // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
+        QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
         if (xdgCacheHome.isEmpty())
             xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
-        xdgCacheHome += QLatin1Char('/') + QCoreApplication::organizationName()
-                    + QLatin1Char('/') + QCoreApplication::applicationName();
+        if (!QCoreApplication::organizationName().isEmpty())
+            xdgCacheHome += QLatin1Char('/') + QCoreApplication::organizationName();
+        if (!QCoreApplication::applicationName().isEmpty())
+            xdgCacheHome += QLatin1Char('/') + QCoreApplication::applicationName();
         return xdgCacheHome;
     }
-
-    if (type == QStandardPaths::DataLocation) {
-        QString xdgDataHome = QLatin1String(qgetenv("XDG_DATA_HOME"));
+    case DataLocation:
+    case GenericDataLocation:
+    {
+        QString xdgDataHome = QFile::decodeName(qgetenv("XDG_DATA_HOME"));
         if (xdgDataHome.isEmpty())
             xdgDataHome = QDir::homePath() + QLatin1String("/.local/share");
-        xdgDataHome += QLatin1String("/data/")
-                    + QCoreApplication::organizationName() + QLatin1Char('/')
-                    + QCoreApplication::applicationName();
+        if (type == QStandardPaths::DataLocation) {
+            if (!QCoreApplication::organizationName().isEmpty())
+                xdgDataHome += QLatin1Char('/') + QCoreApplication::organizationName();
+            if (!QCoreApplication::applicationName().isEmpty())
+                xdgDataHome += QLatin1Char('/') + QCoreApplication::applicationName();
+        }
         return xdgDataHome;
+    }
+    case ConfigLocation:
+    {
+        // http://standards.freedesktop.org/basedir-spec/latest/
+        QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
+        if (xdgConfigHome.isEmpty())
+            xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
+        return xdgConfigHome;
+    }
+    default:
+        break;
     }
 
     // http://www.freedesktop.org/wiki/Software/xdg-user-dirs
@@ -90,7 +108,7 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"
         QRegExp exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
         while (!stream.atEnd()) {
-            QString line = stream.readLine();
+            const QString &line = stream.readLine();
             if (exp.indexIn(line) != -1) {
                 const QStringList lst = exp.capturedTexts();
                 const QString key = lst.at(1);
@@ -106,23 +124,35 @@ QString QStandardPaths::storageLocation(StandardLocation type)
 
         QString key;
         switch (type) {
-        case DesktopLocation: key = QLatin1String("DESKTOP"); break;
-        case DocumentsLocation: key = QLatin1String("DOCUMENTS"); break;
-        case PicturesLocation: key = QLatin1String("PICTURES"); break;
-        case MusicLocation: key = QLatin1String("MUSIC"); break;
-        case MoviesLocation: key = QLatin1String("VIDEOS"); break;
-        default: break;
+        case DesktopLocation:
+            key = QLatin1String("DESKTOP");
+            break;
+        case DocumentsLocation:
+            key = QLatin1String("DOCUMENTS");
+            break;
+        case PicturesLocation:
+            key = QLatin1String("PICTURES");
+            break;
+        case MusicLocation:
+            key = QLatin1String("MUSIC");
+            break;
+        case MoviesLocation:
+            key = QLatin1String("VIDEOS");
+            break;
+        default:
+            break;
         }
-        if (!key.isEmpty() && lines.contains(key)) {
-            QString value = lines[key];
-            // value can start with $HOME
-            if (value.startsWith(QLatin1String("$HOME")))
-                value = QDir::homePath() + value.mid(5);
-            return value;
+        if (!key.isEmpty()) {
+            QString value = lines.value(key);
+            if (!value.isEmpty()) {
+                // value can start with $HOME
+                if (value.startsWith(QLatin1String("$HOME")))
+                    value = QDir::homePath() + value.mid(5);
+                return value;
+            }
         }
     }
 
-    QDir emptyDir;
     QString path;
     switch (type) {
     case DesktopLocation:
@@ -148,11 +178,38 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         break;
 
     case ApplicationsLocation:
+        path = storageLocation(GenericDataLocation) + QLatin1String("/applications");
+        break;
+
     default:
         break;
     }
 
     return path;
+}
+
+QStringList QStandardPaths::standardLocations(StandardLocation type)
+{
+    QStringList dirs;
+    if (type == ConfigLocation) {
+        // http://standards.freedesktop.org/basedir-spec/latest/
+        QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));
+        if (xdgConfigDirs.isEmpty())
+            dirs.append(QString::fromLatin1("/etc/xdg"));
+        else
+            dirs = xdgConfigDirs.split(QLatin1Char(':'));
+    } else if (type == GenericDataLocation) {
+        // http://standards.freedesktop.org/basedir-spec/latest/
+        QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_DATA_DIRS"));
+        if (xdgConfigDirs.isEmpty()) {
+            dirs.append(QString::fromLatin1("/usr/local/share"));
+            dirs.append(QString::fromLatin1("/usr/share"));
+        } else
+            dirs = xdgConfigDirs.split(QLatin1Char(':'));
+    }
+    const QString localDir = storageLocation(type);
+    dirs.prepend(localDir);
+    return dirs;
 }
 
 QString QStandardPaths::displayName(StandardLocation type)

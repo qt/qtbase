@@ -69,11 +69,28 @@ public:
         TempLocation,
         HomeLocation,
         DataLocation,
-        CacheLocation
+        CacheLocation,
+        GenericDataLocation,
+        ConfigLocation
     };
 
     static QString storageLocation(StandardLocation type);
+    static QStringList standardLocations(StandardLocation type);
+
+    enum LocateOption {
+        LocateFile = 0x0,
+        LocateDirectory = 0x1
+    };
+    Q_DECLARE_FLAGS(LocateOptions, LocateOption)
+
+    static QString locate(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
+    static QStringList locateAll(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QString displayName(StandardLocation type);
+
+private:
+    // prevent construction
+    QStandardPaths();
+    ~QStandardPaths();
 };
 
 #endif // QT_NO_STANDARDPATHS

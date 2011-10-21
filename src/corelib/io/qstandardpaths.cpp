@@ -65,7 +65,8 @@ QT_BEGIN_NAMESPACE
     \enum QStandardPaths::StandardLocation
 
     This enum describes the different locations that can be queried using
-    methods such as QStandardPaths::storageLocation and QStandardPaths::displayName.
+    methods such as QStandardPaths::storageLocation, QStandardPaths::standardLocations,
+    and QStandardPaths::displayName.
 
     \value DesktopLocation Returns the user's desktop directory.
     \value DocumentsLocation Returns the user's document.
@@ -77,19 +78,24 @@ QT_BEGIN_NAMESPACE
     \value TempLocation Returns the system's temporary directory.
     \value HomeLocation Returns the user's home directory.
     \value DataLocation Returns a directory location where persistent
-           application data can be stored. QCoreApplication::applicationName
-           and QCoreApplication::organizationName should work on all
-           platforms.
+           application data can be stored. QCoreApplication::organizationName
+           and QCoreApplication::applicationName are appended to the directory location
+           returned for GenericDataLocation.
     \value CacheLocation Returns a directory location where user-specific
            non-essential (cached) data should be written.
+    \value GenericDataLocation Returns a directory location where persistent
+           data shared across applications can be stored.
+    \value ConfigLocation Returns a directory location where user-specific
+           configuration files should be written.
 
-    \sa storageLocation() displayName()
+
+    \sa storageLocation() standardLocations() displayName() locate() locateAll()
 */
 
 /*!
     \fn QString QStandardPaths::storageLocation(StandardLocation type)
 
-    Returns the default system directory where files of \a type belong, or an empty string
+    Returns the directory where files of \a type should be written to, or an empty string
     if the location cannot be determined.
 
     \note The storage location returned can be a directory that does not exist; i.e., it
@@ -101,6 +107,74 @@ QT_BEGIN_NAMESPACE
     Rest of the standard locations point to folder on same drive with executable, except
     that if executable is in ROM the folder from C drive is returned.
 */
+
+
+/*!
+   \fn QStringList QStandardPaths::standardLocations(StandardLocation type)
+
+   Returns all the directories where files of \a type belong.
+
+   Much like the PATH variable, it returns the directories in order of priority,
+   starting with the user-specific storageLocation() for the \a type.
+ */
+
+// TODO add XDG_RUNTIME_DIR?
+
+/*!
+    \enum QStandardPaths::LocateOption
+
+    This enum describes the different flags that can be used for
+    controlling the behavior of QStandardPaths::locate and
+    QStandardPaths::locateAll.
+
+    \value LocateFile return only files
+    \value LocateDirectory return only directories
+*/
+
+static bool existsAsSpecified(const QString &path, QStandardPaths::LocateOptions options)
+{
+    if (options & QStandardPaths::LocateDirectory)
+        return QDir(path).exists();
+    return QFileInfo(path).isFile();
+}
+
+/*!
+   Tries to find a file or directory called \a fileName in the standard locations
+   for \a type.
+
+   The full path to the first file or directory (depending on \a options) found is returned.
+   If no such file or directory can be found, an empty string is returned.
+ */
+QString QStandardPaths::locate(StandardLocation type, const QString &fileName, LocateOptions options)
+{
+    const QStringList &dirs = standardLocations(type);
+    for (QStringList::const_iterator dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
+        const QString path = *dir + QLatin1Char('/') + fileName;
+        if (existsAsSpecified(path, options))
+            return path;
+    }
+    return QString();
+}
+
+/*!
+   Tries to find all files or directories called \a fileName in the standard locations
+   for \a type.
+
+   The \a options flag allows to specify whether to look for files or directories.
+
+   Returns the list of all the files that were found.
+ */
+QStringList QStandardPaths::locateAll(StandardLocation type, const QString &fileName, LocateOptions options)
+{
+    const QStringList &dirs = standardLocations(type);
+    QStringList result;
+    for (QStringList::const_iterator dir = dirs.constBegin(); dir != dirs.constEnd(); ++dir) {
+        const QString path = *dir + QLatin1Char('/') + fileName;
+        if (existsAsSpecified(path, options))
+            result.append(path);
+    }
+    return result;
+}
 
 /*!
     \fn QString QStandardPaths::displayName(StandardLocation type)

@@ -15,6 +15,7 @@ SUBDIRS=\
     qprocessenvironment \
     qresourceengine \
     qsettings \
+    qstandardpaths \
     qtemporaryfile \
     qtextstream \
     qurl \
