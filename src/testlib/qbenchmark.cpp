@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "QtTest/qbenchmark.h"
-#include "QtTest/private/qbenchmark_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
+#include <QtTest/qbenchmark.h>
+#include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
 
 #include <QtCore/qprocess.h>
 #include <QtCore/qdir.h>

@@ -39,13 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qxunittestlogger_p.h"
-#include "qtestelement.h"
-#include "qtestxunitstreamer.h"
-
-#include "QtTest/qtestcase.h"
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/private/qbenchmark_p.h"
+#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/qtestelement.h>
+#include <QtTest/qtestxunitstreamer.h>
+#include <QtTest/qtestcase.h>
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/private/qbenchmark_p.h>
 
 #include <string.h>
 

@@ -45,7 +45,6 @@
 #include <QtTest/qtest_global.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/qtestdata.h>
-#include <QtTest/qtestdata.h>
 #include <QtTest/qbenchmark.h>
 
 #include <QtCore/qbytearray.h>

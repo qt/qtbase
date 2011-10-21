@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/qtestassert.h"
-#include "QtTest/private/qtestlog_p.h"
-#include "QtTest/private/qplaintestlogger_p.h"
-#include "QtTest/private/qbenchmark_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/qtestassert.h>
+#include <QtTest/private/qtestlog_p.h>
+#include <QtTest/private/qplaintestlogger_p.h>
+#include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -52,7 +52,7 @@
 #include <string.h>
 
 #ifdef Q_OS_WIN
-#include "windows.h"
+#include <windows.h>
 #endif
 
 #if defined(Q_OS_SYMBIAN)

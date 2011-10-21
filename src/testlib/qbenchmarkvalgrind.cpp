@@ -39,17 +39,17 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qbenchmark_p.h"
+#include <QtTest/private/qbenchmark_p.h>
 
 #ifdef QTESTLIB_USE_VALGRIND
 
-#include "QtTest/private/qbenchmarkvalgrind_p.h"
+#include <QtTest/private/qbenchmarkvalgrind_p.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
-#include "3rdparty/callgrind_p.h"
+#include <QtTest/private/callgrind_p.h>
 
 QT_BEGIN_NAMESPACE
 

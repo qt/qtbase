@@ -39,15 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qtestxunitstreamer.h"
-#include "qxunittestlogger_p.h"
-#include "qtestelement.h"
-#include "qtestelementattribute.h"
-#include "qtestassert.h"
-
-#include "QtTest/private/qtestlog_p.h"
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/private/qxmltestlogger_p.h"
+#include <QtTest/qtestxunitstreamer.h>
+#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/qtestelement.h>
+#include <QtTest/qtestelementattribute.h>
+#include <QtTest/qtestassert.h>
+#include <QtTest/private/qtestlog_p.h>
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/private/qxmltestlogger_p.h>
 
 QT_BEGIN_NAMESPACE
 

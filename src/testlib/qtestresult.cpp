@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qtestresult_p.h"
+#include <QtTest/private/qtestresult_p.h>
 #include <QtCore/qglobal.h>
 
-#include "QtTest/private/qtestlog_p.h"
-#include "QtTest/qtestdata.h"
-#include "QtTest/qtestassert.h"
+#include <QtTest/private/qtestlog_p.h>
+#include <QtTest/qtestdata.h>
+#include <QtTest/qtestassert.h>
 
 #include <stdio.h>
 #include <string.h>

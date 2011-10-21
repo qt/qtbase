@@ -41,9 +41,9 @@
 
 #include <QtCore/qmetaobject.h>
 
-#include "QtTest/qtestassert.h"
-#include "QtTest/qtestdata.h"
-#include "QtTest/private/qtesttable_p.h"
+#include <QtTest/qtestassert.h>
+#include <QtTest/qtestdata.h>
+#include <QtTest/private/qtesttable_p.h>
 
 #include <string.h>
 #include <stdlib.h>

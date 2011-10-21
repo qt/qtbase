@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "QtTest/qtestassert.h"
+#include <QtTest/qtestassert.h>
 
-#include "QtTest/private/qtestlog_p.h"
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/private/qabstracttestlogger_p.h"
-#include "QtTest/private/qplaintestlogger_p.h"
-#include "QtTest/private/qxunittestlogger_p.h"
-#include "QtTest/private/qxmltestlogger_p.h"
+#include <QtTest/private/qtestlog_p.h>
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/private/qabstracttestlogger_p.h>
+#include <QtTest/private/qplaintestlogger_p.h>
+#include <QtTest/private/qxunittestlogger_p.h>
+#include <QtTest/private/qxmltestlogger_p.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
 

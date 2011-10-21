@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qbenchmarkmeasurement_p.h"
-#include "QtTest/private/qbenchmark_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
-#include "qbenchmark.h"
+#include <QtTest/private/qbenchmarkmeasurement_p.h>
+#include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
+#include <QtTest/qbenchmark.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

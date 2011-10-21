@@ -39,14 +39,13 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qtesttable_p.h"
-#include "QtTest/qtestdata.h"
+#include <QtTest/private/qtesttable_p.h>
+#include <QtTest/qtestdata.h>
+#include <QtTest/qtestassert.h>
 
 #include <QtCore/qmetaobject.h>
 
 #include <string.h>
-
-#include "QtTest/qtestassert.h"
 
 QT_BEGIN_NAMESPACE
 

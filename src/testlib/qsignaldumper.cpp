@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qsignaldumper_p.h"
+#include <QtTest/private/qsignaldumper_p.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qmetaobject.h>
@@ -47,7 +47,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 
-#include "QtTest/private/qtestlog_p.h"
+#include <QtTest/private/qtestlog_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,11 +43,11 @@
 #include <string.h>
 #include <QtCore/qglobal.h>
 
-#include "QtTest/private/qxmltestlogger_p.h"
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/private/qbenchmark_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
-#include "QtTest/qtestcase.h"
+#include <QtTest/private/qxmltestlogger_p.h>
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
+#include <QtTest/qtestcase.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "QtTest/qtestcase.h"
-#include "QtTest/qtestassert.h"
+#include <QtTest/qtestcase.h>
+#include <QtTest/qtestassert.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetaobject.h>
@@ -55,13 +55,13 @@
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
 
-#include "QtTest/private/qtestlog_p.h"
-#include "QtTest/private/qtesttable_p.h"
-#include "QtTest/qtestdata.h"
-#include "QtTest/private/qtestresult_p.h"
-#include "QtTest/private/qsignaldumper_p.h"
-#include "QtTest/private/qbenchmark_p.h"
-#include "3rdparty/cycle_p.h"
+#include <QtTest/private/qtestlog_p.h>
+#include <QtTest/private/qtesttable_p.h>
+#include <QtTest/qtestdata.h>
+#include <QtTest/private/qtestresult_p.h>
+#include <QtTest/private/qsignaldumper_p.h>
+#include <QtTest/private/qbenchmark_p.h>
+#include <QtTest/private/cycle_p.h>
 
 #include <stdarg.h>
 #include <stdio.h>

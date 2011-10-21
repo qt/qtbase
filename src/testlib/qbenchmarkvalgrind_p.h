@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "QtTest/private/qbenchmarkmeasurement_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
+#include <QtTest/private/qbenchmarkmeasurement_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 

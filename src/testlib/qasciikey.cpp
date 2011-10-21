@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "QtTest/qtestcase.h"
-#include "QtTest/qtestassert.h"
+#include <QtTest/qtestcase.h>
+#include <QtTest/qtestassert.h>
 
 QT_BEGIN_NAMESPACE
 

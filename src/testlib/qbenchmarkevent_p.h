@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qbenchmarkmeasurement_p.h"
+#include <QtTest/private/qbenchmarkmeasurement_p.h>
 #include <QAbstractEventDispatcher>
 #include <QObject>
 

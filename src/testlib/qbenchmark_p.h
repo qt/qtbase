@@ -63,14 +63,14 @@
 #undef QTESTLIB_USE_VALGRIND
 #endif
 
-#include "QtTest/private/qbenchmarkmeasurement_p.h"
+#include <QtTest/private/qbenchmarkmeasurement_p.h>
 #include <QtCore/QMap>
 #include <QtTest/qtest_global.h>
 #ifdef QTESTLIB_USE_VALGRIND
-#include "QtTest/private/qbenchmarkvalgrind_p.h"
+#include <QtTest/private/qbenchmarkvalgrind_p.h>
 #endif
-#include "QtTest/private/qbenchmarkevent_p.h"
-#include "QtTest/private/qbenchmarkmetric_p.h"
+#include <QtTest/private/qbenchmarkevent_p.h>
+#include <QtTest/private/qbenchmarkmetric_p.h>
 
 QT_BEGIN_NAMESPACE
 
