@@ -153,14 +153,14 @@ public:
 #ifdef QT_ARCH_PARISC
         this->_q_lock[0] = this->_q_lock[1] = this->_q_lock[2] = this->_q_lock[3] = -1;
 #endif
-        store(value);
+        this->store(value);
     }
     inline QAtomicPointer(const QAtomicPointer<T> &other)
     {
 #ifdef QT_ARCH_PARISC
         this->_q_lock[0] = this->_q_lock[1] = this->_q_lock[2] = this->_q_lock[3] = -1;
 #endif
-        store(other.load());
+        this->store(other.load());
     }
 
     inline QAtomicPointer<T> &operator=(T *value)
