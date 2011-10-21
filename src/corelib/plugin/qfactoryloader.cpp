@@ -225,7 +225,7 @@ QObject *QFactoryLoader::instance(const QString &key) const
     return 0;
 }
 
-#ifdef Q_WS_X11
+#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
 QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 {
     Q_D(const QFactoryLoader);

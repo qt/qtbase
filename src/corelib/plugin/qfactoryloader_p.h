@@ -77,7 +77,7 @@ public:
     QStringList keys() const;
     QObject *instance(const QString &key) const;
 
-#ifdef Q_WS_X11
+#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
     QLibraryPrivate *library(const QString &key) const;
 #endif
 

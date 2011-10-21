@@ -575,11 +575,6 @@ QFileInfoList QFSFileEngine::drives()
 #if !defined(Q_OS_WINCE)
 #if defined(Q_OS_WIN32)
     quint32 driveBits = (quint32) GetLogicalDrives() & 0x3ffffff;
-#elif defined(Q_OS_OS2EMX)
-    quint32 driveBits, cur;
-    if (DosQueryCurrentDisk(&cur, &driveBits) != NO_ERROR)
-        exit(1);
-    driveBits &= 0x3ffffff;
 #endif
     char driveName[] = "A:/";
 

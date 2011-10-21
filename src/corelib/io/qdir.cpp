@@ -794,7 +794,7 @@ QString QDir::convertSeparators(const QString &pathName)
 */
 QString QDir::toNativeSeparators(const QString &pathName)
 {
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     int i = pathName.indexOf(QLatin1Char('/'));
     if (i != -1) {
         QString n(pathName);
@@ -827,7 +827,7 @@ QString QDir::toNativeSeparators(const QString &pathName)
 */
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     int i = pathName.indexOf(QLatin1Char('\\'));
     if (i != -1) {
         QString n(pathName);
@@ -1763,12 +1763,8 @@ QFileInfoList QDir::drives()
 */
 QChar QDir::separator()
 {
-#if defined (Q_FS_FAT) || defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     return QLatin1Char('\\');
-#elif defined(Q_OS_UNIX)
-    return QLatin1Char('/');
-#elif defined (Q_OS_MAC)
-    return QLatin1Char(':');
 #else
     return QLatin1Char('/');
 #endif

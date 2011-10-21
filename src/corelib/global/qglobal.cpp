@@ -933,7 +933,7 @@ bool qSharedBuild()
     \endlist
 
     Some constants are defined only on certain platforms. You can use
-    the preprocessor symbols Q_WS_WIN and Q_WS_MAC to test that
+    the preprocessor symbols Q_OS_WIN and Q_OS_MAC to test that
     the application is compiled under Windows or Mac.
 
     \sa QLibraryInfo
@@ -1119,76 +1119,10 @@ bool qSharedBuild()
 */
 
 /*!
-    \macro Q_WS_MAC
-    \relates <QtGlobal>
-
-    Defined on Mac OS X.
-
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
-*/
-
-/*!
-    \macro Q_WS_WIN
-    \relates <QtGlobal>
-
-    Defined on Windows.
-
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
-*/
-
-/*!
-    \macro Q_WS_X11
-    \relates <QtGlobal>
-
-    Defined on X11.
-
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
-*/
-
-/*!
-    \macro Q_WS_QWS
-    \relates <QtGlobal>
-
-    Defined on Qt for Embedded Linux.
-
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QPA, Q_WS_S60
-*/
-
-/*!
-    \macro Q_WS_QPA
-    \relates <QtGlobal>
-
-    Defined on Qt for Embedded Linux, Lite version.
-
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
-*/
-
-/*!
     \macro Q_OS_DARWIN
     \relates <QtGlobal>
 
     Defined on Darwin OS (synonym for Q_OS_MAC).
-*/
-
-/*!
-    \macro Q_OS_MSDOS
-    \relates <QtGlobal>
-
-    Defined on MS-DOS and Windows.
-*/
-
-/*!
-    \macro Q_OS_OS2
-    \relates <QtGlobal>
-
-    Defined on OS/2.
-*/
-
-/*!
-    \macro Q_OS_OS2EMX
-    \relates <QtGlobal>
-
-    Defined on XFree86 on OS/2 (not PM).
 */
 
 /*!
@@ -1521,15 +1455,6 @@ bool qSharedBuild()
  */
 
 /*!
-  \macro Q_WS_S60
-  \relates <QtGlobal>
-
-  Defined on S60 with the Avkon UI framework.
-
-  \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
- */
-
-/*!
   \macro QT_DISABLE_DEPRECATED_BEFORE
   \relates <QtGlobal>
 
@@ -1550,7 +1475,7 @@ static const unsigned int qt_one = 1;
 const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
 #endif
 
-#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
@@ -1562,51 +1487,19 @@ Q_CORE_EXPORT OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref)
     return FSPathMakeRef(reinterpret_cast<const UInt8 *>(file.toUtf8().constData()), fsref, 0);
 }
 
-// Don't use this function, it won't work in 10.5 (Leopard) and up
-Q_CORE_EXPORT OSErr qt_mac_create_fsspec(const QString &file, FSSpec *spec)
-{
-    FSRef fsref;
-    OSErr ret = qt_mac_create_fsref(file, &fsref);
-    if (ret == noErr)
-        ret = FSGetCatalogInfo(&fsref, kFSCatInfoNone, 0, 0, spec, 0);
-    return ret;
-}
-
 Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding=0, int len=-1)
 {
-    if(len == -1)
-        len = s.length();
-#if 0
-    UnicodeMapping mapping;
-    mapping.unicodeEncoding = CreateTextEncoding(kTextEncodingUnicodeDefault,
-                                                 kTextEncodingDefaultVariant,
-                                                 kUnicode16BitFormat);
-    mapping.otherEncoding = (encoding ? encoding : );
-    mapping.mappingVersion = kUnicodeUseLatestMapping;
-
-    UnicodeToTextInfo info;
-    OSStatus err = CreateUnicodeToTextInfo(&mapping, &info);
-    if(err != noErr) {
-        qDebug("Qt: internal: Unable to create pascal string '%s'::%d [%ld]",
-               s.left(len).latin1(), (int)encoding, err);
-        return;
-    }
-    const int unilen = len * 2;
-    const UniChar *unibuf = (UniChar *)s.unicode();
-    ConvertFromUnicodeToPString(info, unilen, unibuf, str);
-    DisposeUnicodeToTextInfo(&info);
-#else
     Q_UNUSED(encoding);
+    Q_UNUSED(len);
     CFStringGetPascalString(QCFString(s), str, 256, CFStringGetSystemEncoding());
-#endif
 }
 
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
     return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
 }
-#endif //!defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+#endif // defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 
-#if !defined(QWS) && defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
 
 static QSysInfo::MacVersion macVersion()
 {
@@ -1620,7 +1513,7 @@ static QSysInfo::MacVersion macVersion()
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = macVersion();
 
-#elif defined(Q_OS_WIN32) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE)
+#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"

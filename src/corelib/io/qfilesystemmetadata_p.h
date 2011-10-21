@@ -106,7 +106,7 @@ public:
 #endif
         FileType            = 0x00020000,
         DirectoryType       = 0x00040000,
-#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
         BundleType          = 0x00080000,
         AliasType           = 0x08000000,
 #else
@@ -266,7 +266,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemMetaData::MetaDataFlags)
 
-#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 inline bool QFileSystemMetaData::isBundle() const                   { return (entryFlags & BundleType); }
 inline bool QFileSystemMetaData::isAlias() const                    { return (entryFlags & AliasType); }
 #else

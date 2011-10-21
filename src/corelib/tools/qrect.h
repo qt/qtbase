@@ -146,9 +146,6 @@ public:
     friend Q_CORE_EXPORT_INLINE bool operator!=(const QRect &, const QRect &);
 
 private:
-#if defined(Q_WS_X11)
-    friend void qt_setCoords(QRect *r, int xp1, int yp1, int xp2, int yp2);
-#endif
     // ### Qt 5;  remove the ifdef and just have the same order on all platforms.
 #if defined(Q_OS_MAC)
     int y1;

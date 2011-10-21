@@ -139,7 +139,7 @@
 #define CLEARTYPE_QUALITY 5
 #endif
 
-#ifdef Q_WS_WINCE
+#ifdef Q_OS_WINCE
 #ifndef LR_DEFAULTSIZE
 #define LR_DEFAULTSIZE 0
 #endif

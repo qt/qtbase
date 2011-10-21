@@ -975,15 +975,11 @@ QString QFileSystemEngine::rootPath()
 {
 #if defined(Q_OS_WINCE)
     QString ret = QLatin1String("/");
-#elif defined(Q_FS_FAT)
+#else
     QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
     if (ret.isEmpty())
         ret = QLatin1String("c:");
     ret.append(QLatin1Char('/'));
-#elif defined(Q_OS_OS2EMX)
-    char dir[4];
-    _abspath(dir, QLatin1String("/"), _MAX_PATH);
-    QString ret(dir);
 #endif
     return ret;
 }

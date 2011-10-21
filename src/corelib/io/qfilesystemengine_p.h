@@ -76,7 +76,7 @@ public:
     static QString resolveGroupName(uint groupId);
 #endif
 
-#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     static QString bundleName(const QFileSystemEntry &entry);
 #else
     static QString bundleName(const QFileSystemEntry &entry) { Q_UNUSED(entry) return QString(); }

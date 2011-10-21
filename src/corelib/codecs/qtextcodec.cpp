@@ -74,7 +74,7 @@
 #    include "../../plugins/codecs/kr/qeuckrcodec.h"
 #    include "../../plugins/codecs/tw/qbig5codec.h"
 #  endif // QT_NO_ICONV
-#  if defined(Q_WS_X11) && !defined(QT_BOOTSTRAPPED)
+#  if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
 #    include "qfontlaocodec_p.h"
 #    include "../../plugins/codecs/jp/qfontjpcodec.h"
 #  endif
@@ -756,7 +756,7 @@ static void setup()
     localeMapper = QSymbianTextCodec::init();
 #endif
 
-#  if defined(Q_WS_X11) && !defined(QT_BOOTSTRAPPED)
+#  if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
     // no font codecs when bootstrapping
     (void)new QFontLaoCodec;
 #    if defined(QT_NO_ICONV)
@@ -770,7 +770,7 @@ static void setup()
     (void)new QFontBig5hkscsCodec;
     (void)new QFontBig5Codec;
 #    endif // QT_NO_ICONV && !QT_BOOTSTRAPPED
-#  endif // Q_WS_X11
+#  endif // Q_OS_UNIX
 
 
 #if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)

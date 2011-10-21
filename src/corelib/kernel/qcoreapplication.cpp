@@ -172,7 +172,7 @@ CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
 
 #endif
 
-#if defined(Q_OS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
 #endif
 
@@ -1968,7 +1968,7 @@ QString QCoreApplication::applicationFilePath()
 #if defined(Q_OS_WIN)
     d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
     if(!qAppFileName_str.isEmpty()) {
         QFileInfo fi(qAppFileName_str);

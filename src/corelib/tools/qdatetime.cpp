@@ -69,7 +69,7 @@
 #  define QDTPDEBUGN if (false) qDebug
 #endif
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
 #include <private/qcore_mac_p.h>
 #endif
 

@@ -1395,16 +1395,10 @@ public:
     };
     Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
 
-#if defined(Q_WS_MAC)
-    typedef void * HANDLE;
-#elif defined(Q_WS_WIN)
-    typedef void *HANDLE;
-#elif defined(Q_WS_X11)
-    typedef unsigned long HANDLE;
-#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
-    typedef void * HANDLE;
-#elif defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN)
     typedef unsigned long int HANDLE; // equivalent to TUint32
+#else
+    typedef void * HANDLE;
 #endif
     typedef WindowFlags WFlags;
 

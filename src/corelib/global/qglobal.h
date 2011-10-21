@@ -210,14 +210,6 @@ namespace QT_NAMESPACE {}
 #  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
-#elif defined(MSDOS) || defined(_MSDOS)
-#  define Q_OS_MSDOS
-#elif defined(__OS2__)
-#  if defined(__EMX__)
-#    define Q_OS_OS2EMX
-#  else
-#    define Q_OS_OS2
-#  endif
 #elif !defined(SAG_COM) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
 #  define Q_OS_WIN32
 #  define Q_OS_WIN64
@@ -298,7 +290,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MSDOS) || defined(Q_OS_OS2) || defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
 #  undef Q_OS_UNIX
 #elif !defined(Q_OS_UNIX)
 #  define Q_OS_UNIX
@@ -854,54 +846,6 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-/*
-   The window system, must be one of: (Q_WS_x)
-
-     MACX     - Mac OS X
-     MAC9     - Mac OS 9
-     QWS      - Qt for Embedded Linux
-     WIN32    - Windows
-     X11      - X Window System
-     S60      - Symbian S60
-     PM       - unsupported
-     WIN16    - unsupported
-*/
-
-#if defined (Q_WS_QPA)
-
-#elif defined(Q_OS_MSDOS)
-#  define Q_WS_WIN16
-#  error "Qt requires Win32 and does not work with Windows 3.x"
-#elif defined(_WIN32_X11_)
-#  define Q_WS_X11
-#elif defined(Q_OS_WIN32)
-#  define Q_WS_WIN32
-#  if defined(Q_OS_WIN64)
-#    define Q_WS_WIN64
-#  endif
-#elif defined(Q_OS_WINCE)
-#  define Q_WS_WIN32
-#  define Q_WS_WINCE
-#  if defined(Q_OS_WINCE_WM)
-#    define Q_WS_WINCE_WM
-#  endif
-#elif defined(Q_OS_OS2)
-#  define Q_WS_PM
-#  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
-#elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_SYMBIAN)
-#    if !defined(QT_NO_S60)
-#      define Q_WS_S60
-#    endif
-#  elif !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
-#    define Q_WS_X11
-#  endif
-#endif
-
-#if defined(Q_WS_WIN16) || defined(Q_WS_WIN32) || defined(Q_WS_WINCE)
-#  define Q_WS_WIN
-#endif
-
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
@@ -1186,13 +1130,7 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 class QDataStream;
 
-#if defined(Q_WS_MAC)
-#  ifndef QMAC_QMENUBAR_NO_EVENT
-#    define QMAC_QMENUBAR_NO_EVENT
-#  endif
-#endif
-
-#if !defined(Q_WS_QWS) && !defined(QT_NO_COP)
+#if !defined(QT_NO_COP)
 #  define QT_NO_COP
 #endif
 
@@ -2728,12 +2666,6 @@ QT_LICENSED_MODULE(DBus)
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
 #  endif
-#endif
-
-#if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
-    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
-    && !(defined(Q_WS_QPA))
-#  define QT_NO_RAWFONT
 #endif
 
 namespace QtPrivate {
