@@ -39,11 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTCOREELEMENT_H
-#define QTESTCOREELEMENT_H
+#ifndef QTESTCOREELEMENT_P_H
+#define QTESTCOREELEMENT_P_H
 
-#include <QtTest/qtestcorelist.h>
-#include <QtTest/qtestelementattribute.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtTest/private/qtestcorelist_p.h>
+#include <QtTest/private/qtestelementattribute_p.h>
 
 QT_BEGIN_HEADER
 

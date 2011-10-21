@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/qtestelement.h>
+#include <QtTest/private/qtestelement_p.h>
 
 QT_BEGIN_NAMESPACE
 

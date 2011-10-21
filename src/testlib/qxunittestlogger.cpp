@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <QtTest/private/qxunittestlogger_p.h>
-#include <QtTest/qtestelement.h>
-#include <QtTest/qtestxunitstreamer.h>
+#include <QtTest/private/qtestelement_p.h>
+#include <QtTest/private/qtestxunitstreamer_p.h>
 #include <QtTest/qtestcase.h>
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qbenchmark_p.h>

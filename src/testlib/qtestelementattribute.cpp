@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/qtestelementattribute.h>
+#include <QtTest/private/qtestelementattribute_p.h>
 #include <QtCore/qbytearray.h>
 #include <string.h>
 #include <stdlib.h>

@@ -39,8 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTXUNITSTREAMER_H
-#define QTESTXUNITSTREAMER_H
+#ifndef QTESTCORELIST_P_H
+#define QTESTCORELIST_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qglobal.h>
 
@@ -50,33 +61,84 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-class QTestElement;
-class QTestElementAttribute;
-class QXunitTestLogger;
-struct QTestCharBuffer;
-
-class QTestXunitStreamer
+template <class T>
+class QTestCoreList
 {
     public:
-        QTestXunitStreamer(QXunitTestLogger *logger);
-        ~QTestXunitStreamer();
+        QTestCoreList();
+        virtual ~QTestCoreList();
 
-        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
-        void output(QTestElement *element) const;
-        void outputElements(QTestElement *element, bool isChildElement = false) const;
-        void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
-
-        void outputString(const char *msg) const;
+        void addToList(T **list);
+        T *nextElement();
+        T *previousElement();
+        int count(T *list);
+        int count();
 
     private:
-        void displayXunitXmlHeader() const;
-        static void indentForElement(const QTestElement* element, char* buf, int size);
-
-        QXunitTestLogger *testLogger;
+        T *next;
+        T *prev;
 };
+
+template <class T>
+QTestCoreList<T>::QTestCoreList()
+    : next(0)
+    , prev(0)
+{
+}
+
+template <class T>
+QTestCoreList<T>::~QTestCoreList()
+{
+    if (prev) {
+        prev->next = 0;
+    }
+    delete prev;
+
+    if (next) {
+        next->prev = 0;
+    }
+    delete next;
+}
+
+template <class T>
+void QTestCoreList<T>::addToList(T **list)
+{
+    if (next)
+        next->addToList(list);
+    else {
+        next = *list;
+        if (next)
+            next->prev = static_cast<T*>(this);
+    }
+
+    *list = static_cast<T*>(this);
+}
+
+template <class T>
+T *QTestCoreList<T>::nextElement()
+{
+    return next;
+}
+
+template <class T>
+T *QTestCoreList<T>::previousElement()
+{
+    return prev;
+}
+
+template <class T>
+int QTestCoreList<T>::count()
+{
+    int numOfElements = 0;
+    T *it = next;
+
+    while (it) {
+        ++numOfElements;
+        it = it->nextElement();
+    }
+
+    return numOfElements;
+}
 
 QT_END_NAMESPACE
 

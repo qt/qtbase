@@ -19,11 +19,7 @@ HEADERS = qbenchmark.h \
     qtestaccessible.h \
     qtestassert.h \
     qtestcase.h \
-    qtestcoreelement.h \
-    qtestcorelist.h \
     qtestdata.h \
-    qtestelementattribute.h \
-    qtestelement.h \
     qtestevent.h \
     qtesteventloop.h \
     qtest_global.h \
@@ -34,7 +30,7 @@ HEADERS = qbenchmark.h \
     qtestspontaneevent.h \
     qtestsystem.h \
     qtesttouch.h \
-    qtestxunitstreamer.h
+
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \

@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "QtTest/private/qabstracttestlogger_p.h"
-#include "QtTest/qtestassert.h"
+#include <QtTest/private/qabstracttestlogger_p.h>
+#include <QtTest/qtestassert.h>
 
-#include "QtCore/qbytearray.h"
+#include <QtCore/qbytearray.h>
 
 #include <stdio.h>
 #include <stdlib.h>
