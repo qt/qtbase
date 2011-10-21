@@ -75,7 +75,7 @@ public:
         ConfigLocation
     };
 
-    static QString storageLocation(StandardLocation type);
+    static QString writableLocation(StandardLocation type);
     static QStringList standardLocations(StandardLocation type);
 
     enum LocateOption {

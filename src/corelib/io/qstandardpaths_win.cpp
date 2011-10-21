@@ -90,7 +90,7 @@ static QString convertCharArray(const wchar_t *path)
     return QDir::fromNativeSeparators(QString::fromWCharArray(path));
 }
 
-QString QStandardPaths::storageLocation(StandardLocation type)
+QString QStandardPaths::writableLocation(StandardLocation type)
 {
     QString result;
 
@@ -157,7 +157,7 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
-        return storageLocation(DataLocation) + QLatin1String("\\cache");
+        return writableLocation(DataLocation) + QLatin1String("\\cache");
 
     case RuntimeLocation:
     case HomeLocation:
@@ -202,7 +202,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     }
 #endif
 
-    const QString localDir = storageLocation(type);
+    const QString localDir = writableLocation(type);
     dirs.prepend(localDir);
     return dirs;
 }

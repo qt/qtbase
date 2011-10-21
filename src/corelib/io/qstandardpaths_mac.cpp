@@ -117,7 +117,7 @@ static QString macLocation(QStandardPaths::StandardLocation type, short domain)
    return path;
 }
 
-QString QStandardPaths::storageLocation(StandardLocation type)
+QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
     case HomeLocation:
@@ -144,7 +144,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
             dirs.append(path);
     }
 
-    const QString localDir = storageLocation(type);
+    const QString localDir = writableLocation(type);
     dirs.prepend(localDir);
     return dirs;
 }

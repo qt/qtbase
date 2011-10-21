@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     \enum QStandardPaths::StandardLocation
 
     This enum describes the different locations that can be queried using
-    methods such as QStandardPaths::storageLocation, QStandardPaths::standardLocations,
+    methods such as QStandardPaths::writableLocation, QStandardPaths::standardLocations,
     and QStandardPaths::displayName.
 
     \value DesktopLocation Returns the user's desktop directory.
@@ -91,11 +91,11 @@ QT_BEGIN_NAMESPACE
            configuration files should be written.
 
 
-    \sa storageLocation() standardLocations() displayName() locate() locateAll()
+    \sa writableLocation() standardLocations() displayName() locate() locateAll()
 */
 
 /*!
-    \fn QString QStandardPaths::storageLocation(StandardLocation type)
+    \fn QString QStandardPaths::writableLocation(StandardLocation type)
 
     Returns the directory where files of \a type should be written to, or an empty string
     if the location cannot be determined.
@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
    Returns all the directories where files of \a type belong.
 
    Much like the PATH variable, it returns the directories in order of priority,
-   starting with the user-specific storageLocation() for the \a type.
+   starting with the user-specific writableLocation() for the \a type.
  */
 
 /*!

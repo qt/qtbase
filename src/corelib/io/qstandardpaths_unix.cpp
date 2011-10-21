@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QString QStandardPaths::storageLocation(StandardLocation type)
+QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
     case HomeLocation:
@@ -212,7 +212,7 @@ QString QStandardPaths::storageLocation(StandardLocation type)
         break;
 
     case ApplicationsLocation:
-        path = storageLocation(GenericDataLocation) + QLatin1String("/applications");
+        path = writableLocation(GenericDataLocation) + QLatin1String("/applications");
         break;
 
     default:
@@ -241,7 +241,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         } else
             dirs = xdgConfigDirs.split(QLatin1Char(':'));
     }
-    const QString localDir = storageLocation(type);
+    const QString localDir = writableLocation(type);
     dirs.prepend(localDir);
     return dirs;
 }
