@@ -42,7 +42,7 @@
 #ifndef QSTANDARDPATHS_H
 #define QSTANDARDPATHS_H
 
-#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_HEADER
 
@@ -86,6 +86,8 @@ public:
     static QString locate(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QStringList locateAll(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QString displayName(StandardLocation type);
+
+    static QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
 private:
     // prevent construction

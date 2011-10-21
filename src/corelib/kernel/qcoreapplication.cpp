@@ -53,6 +53,7 @@
 #include <qfileinfo.h>
 #include <qhash.h>
 #include <private/qprocess_p.h>
+#include <qstandardpaths.h>
 #include <qtextcodec.h>
 #include <qthread.h>
 #include <qthreadpool.h>
@@ -2019,19 +2020,7 @@ QString QCoreApplication::applicationFilePath()
           Otherwise, the file path has to be determined using the
           PATH environment variable.
         */
-        QByteArray pEnv = qgetenv("PATH");
-        QDir currentDir = QDir::current();
-        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1Char(':'));
-        for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
-            if ((*p).isEmpty())
-                continue;
-            QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
-            QFileInfo candidate_fi(candidate);
-            if (candidate_fi.exists() && !candidate_fi.isDir()) {
-                absPath = candidate;
-                break;
-            }
-        }
+        absPath = QStandardPaths::findExecutable(argv0);
     }
 
     absPath = QDir::cleanPath(absPath);
