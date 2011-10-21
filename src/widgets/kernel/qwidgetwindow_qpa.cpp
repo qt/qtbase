@@ -67,6 +67,16 @@ QAccessibleInterface *QWidgetWindow::accessibleRoot() const
     return 0;
 }
 
+QObject *QWidgetWindow::focusObject() const
+{
+    QWidget *widget = m_widget->focusWidget();
+
+    if (!widget)
+        widget = m_widget;
+
+    return widget;
+}
+
 bool QWidgetWindow::event(QEvent *event)
 {
     switch (event->type()) {
@@ -287,12 +297,9 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
         return;
 
-    QWidget *widget = m_widget->focusWidget();
+    QObject *receiver = focusObject();
 
-    if (!widget)
-        widget = m_widget;
-
-    QGuiApplication::sendSpontaneousEvent(widget, event);
+    QGuiApplication::sendSpontaneousEvent(receiver, event);
 }
 
 void QWidgetWindow::updateGeometry()

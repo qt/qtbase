@@ -196,6 +196,7 @@ public:
     void setScreen(QScreen *screen);
 
     virtual QAccessibleInterface *accessibleRoot() const;
+    virtual QObject *focusObject() const;
 
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;

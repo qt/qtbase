@@ -663,6 +663,15 @@ QAccessibleInterface *QWindow::accessibleRoot() const
     return 0;
 }
 
+/*!
+  Returns the QObject that will be the final receiver of events tied focus, such
+  as key events.
+*/
+QObject *QWindow::focusObject() const
+{
+    return const_cast<QWindow *>(this);
+}
+
 
 void QWindow::showMinimized()
 {

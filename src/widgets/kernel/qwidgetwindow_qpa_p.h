@@ -65,6 +65,7 @@ public:
     QWidget *widget() const { return m_widget; }
     QAccessibleInterface *accessibleRoot() const;
 
+    QObject *focusObject() const;
 protected:
     bool event(QEvent *);
 
