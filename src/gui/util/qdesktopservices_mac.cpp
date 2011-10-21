@@ -45,7 +45,6 @@
 #include <qstringlist.h>
 #include <qdir.h>
 #include <qurl.h>
-#include <qstringlist.h>
 #include <private/qcore_mac_p.h>
 #include <qcoreapplication.h>
 
@@ -121,66 +120,6 @@ static bool openDocument(const QUrl &file)
 
    // LSOpen does not work in this case, use QProcess open instead.
    return QProcess::startDetached(QLatin1String("open"), QStringList() << file.toLocalFile());
-}
-
-/*
-    Constructs a full unicode path from a FSRef.
-*/
-static QString getFullPath(const FSRef &ref)
-{
-    QByteArray ba(2048, 0);
-    if (FSRefMakePath(&ref, reinterpret_cast<UInt8 *>(ba.data()), ba.size()) == noErr)
-        return QString::fromUtf8(ba).normalized(QString::NormalizationForm_C);
-    return QString();
-}
-
-QString QDesktopServices::storageLocation(StandardLocation type)
-{
-     if (type == HomeLocation)
-        return QDir::homePath();
-
-     if (type == TempLocation)
-         return QDir::tempPath();
-
-    short domain = kOnAppropriateDisk;
-
-    if (type == DataLocation || type == CacheLocation)
-        domain = kUserDomain;
-
-     // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/Reference/reference.html
-     FSRef ref;
-     OSErr err = FSFindFolder(domain, translateLocation(type), false, &ref);
-     if (err)
-        return QString();
-
-    QString path = getFullPath(ref);
-
-    if (type == DataLocation || type == CacheLocation) {
-        if (QCoreApplication::organizationName().isEmpty() == false)
-            path += QLatin1Char('/') + QCoreApplication::organizationName();
-        if (QCoreApplication::applicationName().isEmpty() == false)
-            path += QLatin1Char('/') + QCoreApplication::applicationName();
-    }
-
-    return path;
-}
-
-QString QDesktopServices::displayName(StandardLocation type)
-{
-    if (QDesktopServices::HomeLocation == type)
-        return QObject::tr("Home");
-
-    FSRef ref;
-    OSErr err = FSFindFolder(kOnAppropriateDisk, translateLocation(type), false, &ref);
-    if (err)
-        return QString();
-
-    QCFString displayName;
-    err = LSCopyDisplayNameForRef(&ref, &displayName);
-    if (err)
-        return QString();
-
-    return static_cast<QString>(displayName);
 }
 
 QT_END_NAMESPACE

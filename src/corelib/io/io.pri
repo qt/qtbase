@@ -23,6 +23,7 @@ HEADERS +=  \
         io/qtemporaryfile.h \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
+        io/qstandardpaths.h \
         io/qurl.h \
         io/qurltlds_p.h \
         io/qtldurl_p.h \
@@ -56,6 +57,7 @@ SOURCES += \
         io/qtemporaryfile.cpp \
         io/qresource.cpp \
         io/qresource_iterator.cpp \
+        io/qstandardpaths.cpp \
         io/qurl.cpp \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
@@ -75,6 +77,7 @@ win32 {
         SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
+        SOURCES += io/qstandardpaths_win.cpp
 } else:unix {
         SOURCES += io/qfsfileengine_unix.cpp
         symbian {
@@ -90,6 +93,11 @@ win32 {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
+        }
+        macx-*: {
+            SOURCES += io/qstandardpaths_mac.cpp
+        } else {
+            SOURCES += io/qstandardpaths_unix.cpp
         }
 
         linux-*:!symbian {

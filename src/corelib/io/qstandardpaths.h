@@ -39,23 +39,47 @@
 **
 ****************************************************************************/
 
-#include <qdebug.h>
-#include <qurl.h>
+#ifndef QSTANDARDPATHS_H
+#define QSTANDARDPATHS_H
+
+#include <QtCore/qstring.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-static bool launchWebBrowser(const QUrl &url)
-{
-    Q_UNUSED(url);
-    qWarning("QDesktopServices::launchWebBrowser not implemented");
-    return false;
-}
+QT_MODULE(Core)
 
-static bool openDocument(const QUrl &file)
+#ifndef QT_NO_STANDARDPATHS
+
+class QStringList;
+
+class Q_CORE_EXPORT QStandardPaths
 {
-    Q_UNUSED(file);
-    qWarning("QDesktopServices::openDocument not implemented");
-    return false;
-}
+public:
+    // Do not re-order, must match QDesktopServices
+    enum StandardLocation {
+        DesktopLocation,
+        DocumentsLocation,
+        FontsLocation,
+        ApplicationsLocation,
+        MusicLocation,
+        MoviesLocation,
+        PicturesLocation,
+        TempLocation,
+        HomeLocation,
+        DataLocation,
+        CacheLocation
+    };
+
+    static QString storageLocation(StandardLocation type);
+    static QString displayName(StandardLocation type);
+};
+
+#endif // QT_NO_STANDARDPATHS
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QSTANDARDPATHS_H
