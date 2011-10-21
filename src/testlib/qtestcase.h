@@ -112,6 +112,14 @@ do { \
     QCOMPARE(__expr, __expected); \
 } while (0)
 
+
+#ifdef Q_CC_MSVC
+#define QSKIP(statement) \
+do {\
+    QTest::qSkip(statement, __FILE__, __LINE__);\
+    return;\
+} while (0)
+#else
 #define QSKIP(statement, ...) \
 do {\
     if (strcmp(#__VA_ARGS__, "") != 0)\
@@ -120,6 +128,7 @@ do {\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
+#endif
 
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
