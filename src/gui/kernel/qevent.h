@@ -111,7 +111,7 @@ public:
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    Q_DEPRECATED inline QPointF posF() const { return l; }
+    QT_DEPRECATED inline QPointF posF() const { return l; }
 #endif
 
 protected:
