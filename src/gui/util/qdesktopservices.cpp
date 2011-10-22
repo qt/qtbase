@@ -270,21 +270,16 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 */
 
 /*!
-    \deprecated Use QStandardPaths::writableLocation()
+    \fn QString QDesktopServices::storageLocation(StandardLocation type)
+    \obsolete
+    Use QStandardPaths::writableLocation()
 */
-QString QDesktopServices::storageLocation(StandardLocation type)
-{
-    return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
-}
-
 
 /*!
-    \deprecated Use QStandardPaths::displayName()
+    \fn QString QDesktopServices::displayName(StandardLocation type)
+    \obsolete
+    Use QStandardPaths::displayName()
 */
-QString QDesktopServices::displayName(StandardLocation type)
-{
-    return QStandardPaths::displayName(static_cast<QStandardPaths::StandardLocation>(type));
-}
 
 QT_END_NAMESPACE
 

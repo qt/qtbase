@@ -100,9 +100,9 @@ void Images::open()
         imageScaling->waitForFinished();
     }
 
-    // Show a file open dialog at QDesktopServices::PicturesLocation.
+    // Show a file open dialog at QStandardPaths::PicturesLocation.
     QStringList files = QFileDialog::getOpenFileNames(this, tr("Select Images"), 
-                            QDesktopServices::storageLocation(QDesktopServices::PicturesLocation),
+                            QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
                             "*.jpg *.png");
 
     if (files.count() == 0)

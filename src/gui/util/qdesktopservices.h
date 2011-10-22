@@ -43,6 +43,9 @@
 #define QDESKTOPSERVICES_H
 
 #include <QtCore/qstring.h>
+#if QT_DEPRECATED_SINCE(5, 0)
+#include <QtCore/qstandardpaths.h>
+#endif
 
 QT_BEGIN_HEADER
 
@@ -63,6 +66,7 @@ public:
     static void setUrlHandler(const QString &scheme, QObject *receiver, const char *method);
     static void unsetUrlHandler(const QString &scheme);
 
+#if QT_DEPRECATED_SINCE(5, 0)
     enum StandardLocation {
         DesktopLocation,
         DocumentsLocation,
@@ -77,8 +81,13 @@ public:
         CacheLocation
     };
 
-    static QString storageLocation(StandardLocation type);
-    static QString displayName(StandardLocation type);
+    QT_DEPRECATED static QString storageLocation(StandardLocation type) {
+        return QStandardPaths::writableLocation(static_cast<QStandardPaths::StandardLocation>(type));
+    }
+    QT_DEPRECATED static QString displayName(StandardLocation type) {
+        return QStandardPaths::displayName(static_cast<QStandardPaths::StandardLocation>(type));
+    }
+#endif
 };
 
 #endif // QT_NO_DESKTOPSERVICES

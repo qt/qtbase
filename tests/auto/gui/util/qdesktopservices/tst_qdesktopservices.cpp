@@ -61,11 +61,6 @@ private slots:
     void cleanup();
     void openUrl();
     void handlers();
-    void storageLocation_data();
-    void storageLocation();
-
-    void storageLocationDoesNotEndWithSlash_data();
-    void storageLocationDoesNotEndWithSlash();
 };
 
 tst_qdesktopservices::tst_qdesktopservices()
@@ -125,45 +120,6 @@ void tst_qdesktopservices::handlers()
     QCOMPARE(fooHandler.lastHandledUrl.toString(), fooUrl.toString());
     QCOMPARE(barHandler.lastHandledUrl.toString(), barUrl.toString());
 }
-
-Q_DECLARE_METATYPE(QDesktopServices::StandardLocation)
-void tst_qdesktopservices::storageLocation_data()
-{
-    QTest::addColumn<QDesktopServices::StandardLocation>("location");
-    QTest::newRow("DesktopLocation") << QDesktopServices::DesktopLocation;
-    QTest::newRow("DocumentsLocation") << QDesktopServices::DocumentsLocation;
-    QTest::newRow("FontsLocation") << QDesktopServices::FontsLocation;
-    QTest::newRow("ApplicationsLocation") << QDesktopServices::ApplicationsLocation;
-    QTest::newRow("MusicLocation") << QDesktopServices::MusicLocation;
-    QTest::newRow("MoviesLocation") << QDesktopServices::MoviesLocation;
-    QTest::newRow("PicturesLocation") << QDesktopServices::PicturesLocation;
-    QTest::newRow("TempLocation") << QDesktopServices::TempLocation;
-    QTest::newRow("HomeLocation") << QDesktopServices::HomeLocation;
-    QTest::newRow("DataLocation") << QDesktopServices::DataLocation;
-}
-
-void tst_qdesktopservices::storageLocation()
-{
-    QFETCH(QDesktopServices::StandardLocation, location);
-    QDesktopServices::storageLocation(location);
-    QDesktopServices::displayName(location);
-}
-
-void tst_qdesktopservices::storageLocationDoesNotEndWithSlash_data()
-{
-    storageLocation_data();
-}
-
-void tst_qdesktopservices::storageLocationDoesNotEndWithSlash()
-{
-    // Currently all desktop locations return their storage location
-    // with "Unix-style" paths (i.e. they use a slash, not backslash).
-    QFETCH(QDesktopServices::StandardLocation, location);
-    QString loc = QDesktopServices::storageLocation(location);
-    if (loc.size() > 1)  // workaround for unlikely case of locations that return '/'
-        QCOMPARE(loc.endsWith(QLatin1Char('/')), false);
-}
-
 
 QTEST_MAIN(tst_qdesktopservices)
 #include "tst_qdesktopservices.moc"

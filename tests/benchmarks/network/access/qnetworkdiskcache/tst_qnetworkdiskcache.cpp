@@ -47,7 +47,7 @@
 #include <QDebug>
 #include <QtTest/QtTest>
 #include <QIODevice>
-#include <QDesktopServices>
+#include <QStandardPaths>
 
 
 
@@ -109,8 +109,8 @@ void tst_qnetworkdiskcache::timeInsertion_data()
 {
     QTest::addColumn<QString>("cacheRootDirectory");
 
-    QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
-    QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
+    QString cacheLoc = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QTest::newRow("QStandardPaths Cache Location") << cacheLoc;
 }
 
 //This functions times an insert() operation.
@@ -170,8 +170,8 @@ void tst_qnetworkdiskcache::timeRead_data()
 {
     QTest::addColumn<QString>("cacheRootDirectory");
 
-    QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
-    QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
+    QString cacheLoc = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QTest::newRow("QStandardPaths Cache Location") << cacheLoc;
 }
 
 //Times metadata as well payload lookup
@@ -229,8 +229,8 @@ void tst_qnetworkdiskcache::timeRemoval_data()
 {
     QTest::addColumn<QString>("cacheRootDirectory");
 
-    QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
-    QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
+    QString cacheLoc = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QTest::newRow("QStandardPaths Cache Location") << cacheLoc;
 }
 
 void tst_qnetworkdiskcache::timeRemoval()
@@ -279,8 +279,8 @@ void tst_qnetworkdiskcache::timeExpiration_data()
 {
     QTest::addColumn<QString>("cacheRootDirectory");
 
-    QString cacheLoc = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
-    QTest::newRow("QDesktopServices Cache Location") << cacheLoc;
+    QString cacheLoc = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QTest::newRow("QStandardPaths Cache Location") << cacheLoc;
 }
 
 void tst_qnetworkdiskcache::timeExpiration()
