@@ -299,13 +299,13 @@ class QAccessibleMainWindow : public QAccessibleWidget
 public:
     explicit QAccessibleMainWindow(QWidget *widget);
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
+    QAccessibleInterface *child(int index) const;
     int childCount() const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *iface) const;
     int childAt(int x, int y) const;
     QMainWindow *mainWindow() const;
 
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 };
 #endif //QT_NO_MAINWINDOW
 

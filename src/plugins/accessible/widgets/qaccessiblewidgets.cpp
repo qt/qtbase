@@ -1634,6 +1634,15 @@ QVariant QAccessibleMainWindow::invokeMethod(QAccessible::Method /*method*/, int
     return QVariant();
 }
 
+QAccessibleInterface *QAccessibleMainWindow::child(int index) const
+{
+    QList<QWidget*> kids = childWidgets(mainWindow(), true);
+    if (index < kids.count()) {
+        return QAccessible::queryAccessibleInterface(kids.at(index));
+    }
+    return 0;
+}
+
 int QAccessibleMainWindow::childCount() const
 {
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
@@ -1645,18 +1654,6 @@ int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
     int childIndex = kids.indexOf(static_cast<QWidget*>(iface->object()));
     return childIndex == -1 ? -1 : ++childIndex;
-}
-
-int QAccessibleMainWindow::navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const
-{
-    if (relation == Child && entry >= 1) {
-        QList<QWidget*> kids = childWidgets(mainWindow(), true);
-        if (entry <= kids.count()) {
-            *iface = QAccessible::queryAccessibleInterface(kids.at(entry - 1));
-            return *iface ? 0 : -1;
-        }
-    }
-    return QAccessibleWidget::navigate(relation, entry, iface);
 }
 
 int QAccessibleMainWindow::childAt(int x, int y) const
