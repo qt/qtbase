@@ -105,9 +105,8 @@ QAbstractButton *QAccessibleButton::button() const
 }
 
 /*! \reimp */
-QString QAccessibleButton::text(Text t, int child) const
+QString QAccessibleButton::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Accelerator:
@@ -130,13 +129,12 @@ QString QAccessibleButton::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidget::text(t, child);
+        str = QAccessibleWidget::text(t);
     return qt_accStripAmp(str);
 }
 
-QAccessible::State QAccessibleButton::state(int child) const
+QAccessible::State QAccessibleButton::state() const
 {
-    Q_ASSERT(child == 0);
     State state = QAccessibleWidget::state();
 
     QAbstractButton *b = button();
@@ -261,7 +259,7 @@ bool QAccessibleToolButton::isSplitButton() const
 #endif
 }
 
-QAccessible::State QAccessibleToolButton::state(int) const
+QAccessible::State QAccessibleToolButton::state() const
 {
     QAccessible::State st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
@@ -295,7 +293,7 @@ QAccessibleInterface *QAccessibleToolButton::child(int index) const
     Returns the button's text label, depending on the text \a t, and
     the \a child.
 */
-QString QAccessibleToolButton::text(Text t, int) const
+QString QAccessibleToolButton::text(Text t) const
 {
     QString str;
     switch (t) {
@@ -310,16 +308,6 @@ QString QAccessibleToolButton::text(Text t, int) const
     if (str.isEmpty())
         str = QAccessibleButton::text(t);
     return qt_accStripAmp(str);
-}
-
-/*!
-    \internal
-
-    Returns the number of actions. 1 to trigger the button, 2 to show the menu.
-*/
-int QAccessibleToolButton::actionCount(int) const
-{
-    return 1;
 }
 
 /*
@@ -379,9 +367,8 @@ QAccessibleDisplay::QAccessibleDisplay(QWidget *w, Role role)
 {
 }
 
-QAccessible::Role QAccessibleDisplay::role(int child) const
+QAccessible::Role QAccessibleDisplay::role() const
 {
-    Q_ASSERT(child == 0);
     QLabel *l = qobject_cast<QLabel*>(object());
     if (l) {
         if (l->pixmap())
@@ -399,12 +386,11 @@ QAccessible::Role QAccessibleDisplay::role(int child) const
         return ProgressBar;
 #endif
     }
-    return QAccessibleWidget::role(child);
+    return QAccessibleWidget::role();
 }
 
-QString QAccessibleDisplay::text(Text t, int child) const
+QString QAccessibleDisplay::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Name:
@@ -437,17 +423,13 @@ QString QAccessibleDisplay::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidget::text(t, child);;
+        str = QAccessibleWidget::text(t);
     return qt_accStripAmp(str);
 }
 
-QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibleInterface *other,
-                                                     int otherChild) const
+QAccessible::Relation QAccessibleDisplay::relationTo(const QAccessibleInterface *other) const
 {
-    Q_ASSERT(child == 0);
-    Relation relation = QAccessibleWidget::relationTo(child, other, otherChild);
-    if (child || otherChild)
-        return relation;
+    Relation relation = QAccessibleWidget::relationTo(other);
 
     QObject *o = other->object();
     QLabel *label = qobject_cast<QLabel*>(object());
@@ -560,9 +542,8 @@ QLineEdit *QAccessibleLineEdit::lineEdit() const
     return qobject_cast<QLineEdit*>(object());
 }
 
-QString QAccessibleLineEdit::text(Text t, int child) const
+QString QAccessibleLineEdit::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Value:
@@ -573,14 +554,14 @@ QString QAccessibleLineEdit::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidget::text(t, child);;
+        str = QAccessibleWidget::text(t);;
     return qt_accStripAmp(str);
 }
 
-void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
+void QAccessibleLineEdit::setText(Text t, const QString &text)
 {
-    if (t != Value || control) {
-        QAccessibleWidget::setText(t, control, text);
+    if (t != Value) {
+        QAccessibleWidget::setText(t, text);
         return;
     }
 
@@ -593,10 +574,9 @@ void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
     lineEdit()->setText(newText);
 }
 
-QAccessible::State QAccessibleLineEdit::state(int child) const
+QAccessible::State QAccessibleLineEdit::state() const
 {
-    Q_ASSERT(child == 0);
-    State state = QAccessibleWidget::state(child);
+    State state = QAccessibleWidget::state();
 
     QLineEdit *l = lineEdit();
     if (l->isReadOnly())
@@ -614,17 +594,15 @@ QAccessible::State QAccessibleLineEdit::state(int child) const
     return state;
 }
 
-QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method, int child,
+QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method,
                                                      const QVariantList &params)
 {
-    Q_ASSERT(child == 0);
-
     switch (method) {
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods << SetCursorPosition << GetCursorPosition;
         return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                QAccessibleWidget::invokeMethod(method, child, params)));
+                QAccessibleWidget::invokeMethod(method, params)));
     }
     case SetCursorPosition:
         setCursorPosition(params.value(0).toInt());
@@ -632,7 +610,7 @@ QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method, int child
     case GetCursorPosition:
         return cursorPosition();
     default:
-        return QAccessibleWidget::invokeMethod(method, child, params);
+        return QAccessibleWidget::invokeMethod(method, params);
     }
 }
 

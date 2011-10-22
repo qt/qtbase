@@ -50,6 +50,7 @@
 
 #include <QtCore/qmap.h>
 #include <QtCore/qsettings.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qpair.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qmessagebox.h>
@@ -277,6 +278,8 @@ void showDebug(const char* funcName, const QAccessibleInterface *iface)
 # define showDebug(f, iface)
 #endif
 
+typedef QSharedPointer<QAccessibleInterface> QAIPointer;
+
 // This stuff is used for widgets/items with no window handle:
 typedef QMap<int, QPair<QObject*,int> > NotifyMap;
 Q_GLOBAL_STATIC(NotifyMap, qAccessibleRecentSentEvents)
@@ -448,6 +451,11 @@ public:
 private:
     ULONG ref;
     QAccessibleInterface *accessible;
+
+    QAIPointer childPointer(VARIANT varID)
+    {
+        return QAIPointer(accessible->child(varID.lVal - 1));
+    }
 };
 
 static inline BSTR QStringToBSTR(const QString &str)
@@ -790,18 +798,20 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accLocation(long *pxLeft, long *py
     if (!accessible->isValid())
         return E_FAIL;
 
-    QRect rect = accessible->rect(varID.lVal);
-    if (rect.isValid()) {
-        *pxLeft = rect.x();
-        *pyTop = rect.y();
-        *pcxWidth = rect.width();
-        *pcyHeight = rect.height();
+    QRect rect;
+    if (varID.lVal) {
+        QAIPointer child = QAIPointer(accessible->child(varID.lVal - 1));
+        if (child->isValid())
+            rect = child->rect();
     } else {
-        *pxLeft = 0;
-        *pyTop = 0;
-        *pcxWidth = 0;
-        *pcyHeight = 0;
+        rect = accessible->rect();
     }
+
+    *pxLeft = rect.x();
+    *pyTop = rect.y();
+    *pcxWidth = rect.width();
+    *pcyHeight = rect.height();
+
     return S_OK;
 }
 
@@ -998,7 +1008,16 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, 
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString descr = accessible->text(Description, varID.lVal);
+
+    QString descr;
+    if (varID.lVal) {
+        QAIPointer child = childPointer(varID);
+        if (!child)
+            return E_FAIL;
+        descr = child->text(Description);
+    } else {
+        descr = accessible->text(Description);
+    }
     if (descr.size()) {
         *pszDescription = QStringToBSTR(descr);
         return S_OK;
@@ -1014,7 +1033,15 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelp(VARIANT varID, BSTR *p
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString help = accessible->text(Help, varID.lVal);
+    QString help;
+    if (varID.lVal) {
+        QAIPointer child = childPointer(varID);
+        if (!child)
+            return E_FAIL;
+        help = child->text(Help);
+    } else {
+        help = accessible->text(Help);
+    }
     if (help.size()) {
         *pszHelp = QStringToBSTR(help);
         return S_OK;
@@ -1038,7 +1065,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
 
     *pszKeyboardShortcut = 0;
     if (QAccessibleActionInterface *actionIface = accessible->actionInterface()) {
-        const QString def = actionIface->actionNames().value(0);
+        const QString def = actionIface->actionNames().value(0); // I CRASH YOU
         if (!def.isEmpty()) {
             const QString keyBoardShortCut = actionIface->keyBindingsForAction(def).value(0);
             if (!keyBoardShortCut.isEmpty())
@@ -1055,9 +1082,17 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
     if (!accessible->isValid())
         return E_FAIL;
 
-    QString n = accessible->text(Name, varID.lVal);
-    if (n.size()) {
-        *pszName = QStringToBSTR(n);
+    QString name;
+    if (varID.lVal) {
+        QAIPointer child = childPointer(varID);
+        if (!child)
+            return E_FAIL;
+        name = child->text(Name);
+    } else {
+        name = accessible->text(Name);
+    }
+    if (name.size()) {
+        *pszName = QStringToBSTR(name);
         return S_OK;
     }
 
@@ -1078,7 +1113,16 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
     if (!accessible->isValid())
         return E_FAIL;
 
-    Role role = accessible->role(varID.lVal);
+    Role role;
+    if (varID.lVal) {
+        QAIPointer child = childPointer(varID);
+        if (!child)
+            return E_FAIL;
+        role = child->role();
+    } else {
+        role = accessible->role();
+    }
+
     if (role != NoRole) {
         if (role == LayeredPane)
             role = QAccessible::Pane;
@@ -1097,8 +1141,18 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
     if (!accessible->isValid())
         return E_FAIL;
 
+    State state;
+    if (varID.lVal) {
+        QAIPointer child = childPointer(varID);
+        if (!child.data())
+            return E_FAIL;
+        state = child->state();
+    } else {
+        state = accessible->state();
+    }
+
     (*pvarState).vt = VT_I4;
-    (*pvarState).lVal = accessible->state(varID.lVal);
+    (*pvarState).lVal = state;
     return S_OK;
 }
 
@@ -1106,10 +1160,15 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* pszValue)
 {
     showDebug(__FUNCTION__, accessible);
-    if (!accessible->isValid())
+    if (!accessible->isValid() || varID.lVal)
         return E_FAIL;
 
-    QString value = accessible->text(Value, varID.lVal);
+    QString value;
+    if (accessible->valueInterface()) {
+        value = QString::number(accessible->valueInterface()->currentValue().toDouble());
+    } else {
+        value = accessible->text(Value);
+    }
     if (!value.isNull()) {
         *pszValue = QStringToBSTR(value);
         return S_OK;
@@ -1197,19 +1256,15 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
     int cc = accessible->childCount();
     QVector<int> sel(cc);
     int selIndex = 0;
-    for (int i = 1; i <= cc; ++i) {
-        QAccessibleInterface *child = 0;
-        int i2 = accessible->navigate(Child, i, &child);
+    for (int i = 0; i < cc; ++i) {
         bool isSelected = false;
+        QAccessibleInterface *child = accessible->child(i);
         if (child) {
-            isSelected = child->state(0) & Selected;
+            isSelected = child->state() & Selected;
             delete child;
-            child = 0;
-        } else {
-            isSelected = accessible->state(i2) & Selected;
         }
         if (isSelected)
-            sel[selIndex++] = i;
+            sel[selIndex++] = i+1;
     }
     sel.resize(selIndex);
     if (sel.isEmpty()) {

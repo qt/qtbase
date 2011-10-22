@@ -73,10 +73,10 @@ class QAccessibleTextEdit : public QAccessibleWidget, public QAccessibleTextInte
 public:
     explicit QAccessibleTextEdit(QWidget *o);
 
-    QString text(Text t, int child) const;
-    void setText(Text t, int control, const QString &text);
+    QString text(Text t) const;
+    void setText(Text t, const QString &text);
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
@@ -139,13 +139,11 @@ class QAccessibleToolBox : public QAccessibleWidget
 public:
     explicit QAccessibleToolBox(QWidget *widget);
 
-    QString text(Text textType, int child) const;
-    void setText(Text textType, int child, const QString &text);
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+// FIXME we currently expose the toolbox but it is not keyboard navigatable
+// and the accessible hierarchy is not exactly beautiful.
+//    int childCount() const;
+//    QAccessibleInterface *child(int index) const;
+//    int indexOfChild(const QAccessibleInterface *child) const;
 
 protected:
     QToolBox *toolBox() const;
@@ -157,8 +155,6 @@ class QAccessibleMdiArea : public QAccessibleWidget
 public:
     explicit QAccessibleMdiArea(QWidget *widget);
 
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -172,14 +168,13 @@ class QAccessibleMdiSubWindow : public QAccessibleWidget
 public:
     explicit QAccessibleMdiSubWindow(QWidget *widget);
 
-    QString text(Text textType, int child) const;
-    void setText(Text textType, int child, const QString &text);
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
+    QString text(Text textType) const;
+    void setText(Text textType, const QString &text);
+    State state() const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
-    QRect rect(int child) const;
+    QRect rect() const;
     int childAt(int x, int y) const;
 
 protected:
@@ -193,8 +188,6 @@ class QAccessibleWorkspace : public QAccessibleWidget
 public:
     explicit QAccessibleWorkspace(QWidget *widget);
 
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -218,7 +211,7 @@ class QAccessibleTextBrowser : public QAccessibleTextEdit
 public:
     explicit QAccessibleTextBrowser(QWidget *widget);
 
-    Role role(int child) const;
+    Role role() const;
 };
 #endif // QT_NO_TEXTBROWSER
 
@@ -253,12 +246,9 @@ public:
     QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
-    QRect rect (int child ) const;
-    Role role(int child) const;
-    State state(int child) const;
-    int childAt(int x, int y) const;
+    QRect rect () const;
+    Role role() const;
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     QDockWidget *dockWidget() const;
 };
 
@@ -266,24 +256,21 @@ class QAccessibleTitleBar : public QAccessibleInterface
 {
 public:
     explicit QAccessibleTitleBar(QDockWidget *widget);
-    QString actionText(int action, Text t, int child) const;
-    bool doAction(int action, int child, const QVariantList& params = QVariantList());
-    int userActionCount ( int child) const;
+
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
-    Relation relationTo(int child,  const QAccessibleInterface *other, int otherChild) const;
-    void setText(Text t, int child, const QString &text);
-    QString text(Text t, int child) const;
-    Role role(int child) const;
-    QRect rect (int child) const;
-    State state(int child) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
+    void setText(Text t, const QString &text);
+    QString text(Text t) const;
+    Role role() const;
+    QRect rect () const;
+    State state() const;
     int childAt(int x, int y) const;
     QObject *object() const;
     bool isValid() const;
-
 
     QPointer<QDockWidget> m_dockWidget;
 

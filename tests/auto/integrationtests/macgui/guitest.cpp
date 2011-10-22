@@ -58,13 +58,12 @@
 class PrintTest : public TestBase
 {
 public:
-    bool operator()(InterfaceChildPair candidate) 
+    bool operator()(QAccessibleInterface *candidate)
     {
         qDebug() << "";
-        qDebug() << "Name" << candidate.iface->text(QAccessible::Name, candidate.possibleChild);
-        qDebug() << "Pos" <<  candidate.iface->rect(candidate.possibleChild);
-        if (candidate.possibleChild == 0)
-            qDebug() << "Number of children" << candidate.iface->childCount();
+        qDebug() << "Name" << candidate->text(QAccessible::Name);
+        qDebug() << "Pos" <<  candidate->rect();
+        qDebug() << "Number of children" << candidate->childCount();
         return false;
     }
 };
@@ -76,9 +75,9 @@ public:
     QString text;
     QAccessible::Text textType;
 
-    bool operator()(InterfaceChildPair candidate) 
+    bool operator()(QAccessibleInterface *candidate)
     {
-        return (candidate.iface->text(textType, candidate.possibleChild) == text);
+        return (candidate->text(textType) == text);
     }
 };
 
@@ -86,66 +85,63 @@ void WidgetNavigator::printAll(QWidget *widget)
 {
     QAccessibleInterface * const iface = QAccessible::queryAccessibleInterface(widget);
     deleteInDestructor(iface);
-    printAll(InterfaceChildPair(iface, 0));
+    printAll(iface);
 }
 
-void WidgetNavigator::printAll(InterfaceChildPair interface) 
+void WidgetNavigator::printAll(QAccessibleInterface *interface)
 {
     PrintTest printTest;
-    recursiveSearch(&printTest, interface.iface, interface.possibleChild);
+    recursiveSearch(&printTest, interface);
 }
 
-InterfaceChildPair WidgetNavigator::find(QAccessible::Text textType, const QString &text, QWidget *start)
+QAccessibleInterface *WidgetNavigator::find(QAccessible::Text textType, const QString &text, QWidget *start)
 {
-    QAccessibleInterface * const iface = QAccessible::queryAccessibleInterface(start);
+    QAccessibleInterface *const iface = QAccessible::queryAccessibleInterface(start);
     deleteInDestructor(iface);
     return find(textType, text, iface);
 }
 
-InterfaceChildPair WidgetNavigator::find(QAccessible::Text textType, const QString &text, QAccessibleInterface *start)
+QAccessibleInterface *WidgetNavigator::find(QAccessible::Text textType, const QString &text, QAccessibleInterface *start)
 {
     NameTest nameTest(text, textType);
-    return recursiveSearch(&nameTest, start, 0);
+    return recursiveSearch(&nameTest, start);
 }
 
 /*
     Recursiveley navigates the accessible hiearchy looking for an interface that
     passsed the Test (meaning it returns true).
 */
-InterfaceChildPair WidgetNavigator::recursiveSearch(TestBase *test, QAccessibleInterface *iface, int possibleChild)
+QAccessibleInterface *WidgetNavigator::recursiveSearch(TestBase *test, QAccessibleInterface *iface)
 {
-    QStack<InterfaceChildPair> todoInterfaces;
-    todoInterfaces.push(InterfaceChildPair(iface, possibleChild));
+    QStack<QAccessibleInterface *> todoInterfaces;
+    todoInterfaces.push(iface);
 
     while (todoInterfaces.isEmpty() == false) {
-        InterfaceChildPair testInterface = todoInterfaces.pop();
+        QAccessibleInterface *testInterface = todoInterfaces.pop();
         
         if ((*test)(testInterface))
             return testInterface;
             
-        if (testInterface.possibleChild != 0)
-            continue;
-
-        const int numChildren = testInterface.iface->childCount();
+        const int numChildren = testInterface->childCount();
         for (int i = 0; i < numChildren; ++i) {
-            QAccessibleInterface *childInterface = testInterface.iface->child(i);
+            QAccessibleInterface *childInterface = testInterface->child(i);
             if (childInterface) {
-                todoInterfaces.push(InterfaceChildPair(childInterface, 0));
+                todoInterfaces.push(childInterface);
                 deleteInDestructor(childInterface);
             }
         }
     }
-    return InterfaceChildPair();
+    return 0;
 }
 
-void WidgetNavigator::deleteInDestructor(QAccessibleInterface * interface)
+void WidgetNavigator::deleteInDestructor(QAccessibleInterface *interface)
 {
     interfaces.insert(interface);
 }
 
-QWidget *WidgetNavigator::getWidget(InterfaceChildPair interface)
+QWidget *WidgetNavigator::getWidget(QAccessibleInterface *interface)
 {
-    return qobject_cast<QWidget *>(interface.iface->object());
+    return qobject_cast<QWidget *>(interface->object());
 }
 
 WidgetNavigator::~WidgetNavigator()
@@ -275,7 +271,7 @@ void DelayedAction::run()
     Schedules a mouse click at an interface using a singleShot timer.
     Only one click can be scheduled at a time.
 */
-ClickLaterAction::ClickLaterAction(InterfaceChildPair interface, Qt::MouseButtons buttons)
+ClickLaterAction::ClickLaterAction(QAccessibleInterface *interface, Qt::MouseButtons buttons)
 {
     this->useInterface = true;
     this->interface = interface;
@@ -296,7 +292,7 @@ ClickLaterAction::ClickLaterAction(QWidget *widget, Qt::MouseButtons buttons)
 void ClickLaterAction::run()
 {
     if (useInterface) {
-        const QPoint globalCenter = interface.iface->rect(interface.possibleChild).center();
+        const QPoint globalCenter = interface->rect().center();
         NativeEvents::mouseClick(globalCenter, buttons);
     } else { // use widget
         const QSize halfSize = widget->size() / 2;
@@ -306,7 +302,7 @@ void ClickLaterAction::run()
     DelayedAction::run();
 }
 
-void GuiTester::clickLater(InterfaceChildPair interface, Qt::MouseButtons buttons, int delay)
+void GuiTester::clickLater(QAccessibleInterface *interface, Qt::MouseButtons buttons, int delay)
 {
     clearSequence();
     addToSequence(new ClickLaterAction(interface, buttons), delay);

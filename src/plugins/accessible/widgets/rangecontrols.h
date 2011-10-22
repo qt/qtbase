@@ -64,11 +64,7 @@ class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleVa
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
-    QString text(Text t, int child) const;
-
-    bool doAction(int action, int child, const QVariantList &params);
-
-    QVariant invokeMethod(Method method, int child, const QVariantList &params);
+    QString text(Text t) const;
 
     // QAccessibleValueInterface
     QVariant currentValue();
@@ -96,8 +92,7 @@ class QAccessibleDoubleSpinBox : public QAccessibleAbstractSpinBox
 public:
     explicit QAccessibleDoubleSpinBox(QWidget *widget);
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
-    QString text(Text t, int child) const;
+    QString text(Text t) const;
 
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
@@ -109,8 +104,6 @@ class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleVal
     Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleAbstractSlider(QWidget *w, Role r = Slider);
-
-    QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
     // QAccessibleValueInterface
     QVariant currentValue();
@@ -127,7 +120,7 @@ class QAccessibleScrollBar : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleScrollBar(QWidget *w);
-    QString text(Text t, int child) const;
+    QString text(Text t) const;
 
 protected:
     QScrollBar *scrollBar() const;
@@ -139,7 +132,7 @@ class QAccessibleSlider : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleSlider(QWidget *w);
-    QString text(Text t, int child) const;
+    QString text(Text t) const;
 
 protected:
     QSlider *slider() const;
@@ -152,8 +145,7 @@ class QAccessibleDial : public QAccessibleAbstractSlider
 public:
     explicit QAccessibleDial(QWidget *w);
 
-    QString text(Text textType, int child) const;
-    QVariant invokeMethod(Method method, int child, const QVariantList &params);
+    QString text(Text textType) const;
 
 protected:
     QDial *dial() const;

@@ -62,8 +62,8 @@ class QAccessibleButton : public QAccessibleWidget
 public:
     QAccessibleButton(QWidget *w, Role r);
 
-    QString text(Text t, int child = 0) const;
-    State state(int child = 0) const;
+    QString text(Text t) const;
+    State state() const;
 
     QStringList actionNames() const;
     void doAction(const QString &actionName);
@@ -79,16 +79,12 @@ class QAccessibleToolButton : public QAccessibleButton
 public:
     QAccessibleToolButton(QWidget *w, Role role);
 
-    State state(int) const;
+    State state() const;
 
     int childCount() const;
     QAccessibleInterface *child(int index) const;
 
-    QString text(Text t, int child) const;
-
-    int actionCount(int child) const;
-    QString actionText(int action, Text text, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
+    QString text(Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;
@@ -107,10 +103,10 @@ class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInte
 public:
     explicit QAccessibleDisplay(QWidget *w, Role role = StaticText);
 
-    QString text(Text t, int child) const;
-    Role role(int child) const;
+    QString text(Text t) const;
+    Role role() const;
 
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
     int navigate(RelationFlag, int entry, QAccessibleInterface **target) const;
 
     // QAccessibleImageInterface
@@ -127,10 +123,10 @@ class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInte
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());
 
-    QString text(Text t, int child) const;
-    void setText(Text t, int control, const QString &text);
-    State state(int child) const;
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
+    QString text(Text t) const;
+    void setText(Text t, const QString &text);
+    State state() const;
+    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);

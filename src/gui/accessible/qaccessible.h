@@ -369,8 +369,7 @@ public:
     virtual QWindow *window() const;
 
     // relations
-    virtual Relation relationTo(int child, const QAccessibleInterface *other,
-                                int otherChild) const;
+    virtual Relation relationTo(const QAccessibleInterface *other) const;
     virtual QVector<QPair<QAccessibleInterface*, Relation> > relations() const;
 
     virtual int childAt(int x, int y) const = 0;
@@ -383,17 +382,16 @@ public:
     virtual int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
 
     // properties and state
-    virtual QString text(Text t, int child = 0) const = 0;
-    virtual void setText(Text t, int child, const QString &text) = 0;
-    virtual QRect rect(int child = 0) const = 0;
-    virtual Role role(int child = 0) const = 0;
-    virtual State state(int child = 0) const = 0;
+    virtual QString text(Text t) const = 0;
+    virtual void setText(Text t, const QString &text) = 0;
+    virtual QRect rect() const = 0;
+    virtual Role role() const = 0;
+    virtual State state() const = 0;
 
     virtual QColor foregroundColor() const;
     virtual QColor backgroundColor() const;
 
-    virtual QVariant invokeMethod(Method method, int child = 0,
-                          const QVariantList &params = QVariantList());
+    virtual QVariant invokeMethod(Method method, const QVariantList &params = QVariantList());
 
     inline QSet<Method> supportedMethods()
     { return qvariant_cast<QSet<Method> >(invokeMethod(ListSupportedMethods)); }
@@ -431,18 +429,16 @@ private:
 class QAccessibleEvent : public QEvent
 {
 public:
-    inline QAccessibleEvent(Type type, int child);
-    inline int child() const { return c; }
+    inline QAccessibleEvent(Type type);
     inline QString value() const { return val; }
     inline void setValue(const QString &aText) { val = aText; }
 
 private:
-    int c;
     QString val;
 };
 
-inline QAccessibleEvent::QAccessibleEvent(Type atype, int achild)
-    : QEvent(atype), c(achild) {}
+inline QAccessibleEvent::QAccessibleEvent(Type atype)
+    : QEvent(atype) {}
 
 #define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)

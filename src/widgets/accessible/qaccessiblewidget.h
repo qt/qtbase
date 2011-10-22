@@ -63,29 +63,27 @@ public:
     QWindow *window() const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
 
     int childAt(int x, int y) const;
-    QRect rect(int child = 0) const;
+    QRect rect() const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
-    QString text(Text t, int child = 0) const;
-    Role role(int child = 0) const;
-    State state(int child = 0) const;
+    QString text(Text t) const;
+    Role role() const;
+    State state() const;
 
     QColor foregroundColor() const;
     QColor backgroundColor() const;
 
-    QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
     // QAccessibleActionInterface
     QStringList actionNames() const;
     void doAction(const QString &actionName);
     QStringList keyBindingsForAction(const QString &actionName) const;
-
 protected:
     ~QAccessibleWidget();
     QWidget *widget() const;

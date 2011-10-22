@@ -401,7 +401,7 @@ QAccessibleSimpleEditableTextInterface::QAccessibleSimpleEditableTextInterface(
 #ifndef QT_NO_CLIPBOARD
 static QString textForRange(QAccessibleInterface *iface, int startOffset, int endOffset)
 {
-    return iface->text(QAccessible::Value, 0).mid(startOffset, endOffset - startOffset);
+    return iface->text(QAccessible::Value).mid(startOffset, endOffset - startOffset);
 }
 #endif
 
@@ -417,16 +417,16 @@ void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOf
 
 void QAccessibleSimpleEditableTextInterface::deleteText(int startOffset, int endOffset)
 {
-    QString txt = iface->text(QAccessible::Value, 0);
+    QString txt = iface->text(QAccessible::Value);
     txt.remove(startOffset, endOffset - startOffset);
-    iface->setText(QAccessible::Value, 0, txt);
+    iface->setText(QAccessible::Value, txt);
 }
 
 void QAccessibleSimpleEditableTextInterface::insertText(int offset, const QString &text)
 {
-    QString txt = iface->text(QAccessible::Value, 0);
+    QString txt = iface->text(QAccessible::Value);
     txt.insert(offset, text);
-    iface->setText(QAccessible::Value, 0, txt);
+    iface->setText(QAccessible::Value, txt);
 }
 
 void QAccessibleSimpleEditableTextInterface::cutText(int startOffset, int endOffset)
@@ -446,17 +446,17 @@ void QAccessibleSimpleEditableTextInterface::pasteText(int offset)
 #ifdef QT_NO_CLIPBOARD
     Q_UNUSED(offset);
 #else
-    QString txt = iface->text(QAccessible::Value, 0);
+    QString txt = iface->text(QAccessible::Value);
     txt.insert(offset, QGuiApplication::clipboard()->text());
-    iface->setText(QAccessible::Value, 0, txt);
+    iface->setText(QAccessible::Value, txt);
 #endif
 }
 
 void QAccessibleSimpleEditableTextInterface::replaceText(int startOffset, int endOffset, const QString &text)
 {
-    QString txt = iface->text(QAccessible::Value, 0);
+    QString txt = iface->text(QAccessible::Value);
     txt.replace(startOffset, endOffset - startOffset, text);
-    iface->setText(QAccessible::Value, 0, txt);
+    iface->setText(QAccessible::Value, txt);
 }
 
 QT_END_NAMESPACE

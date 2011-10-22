@@ -871,8 +871,7 @@ const QAccessibleInterface *other, int otherChild) const
 
     \sa relations(), indexOfChild(), navigate()
 */
-QAccessible::Relation QAccessibleInterface::relationTo(int,
-            const QAccessibleInterface *, int) const
+QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *) const
 {
     return Unrelated;
 }
@@ -1206,10 +1205,9 @@ QWindow *QAccessibleInterface::window() const
 
     Returns an invalid QVariant if the object doesn't support the action.
 */
-QVariant QAccessibleInterface::invokeMethod(Method method, int child, const QVariantList &params)
+QVariant QAccessibleInterface::invokeMethod(Method method, const QVariantList &params)
 {
     Q_UNUSED(method)
-    Q_UNUSED(child)
     Q_UNUSED(params)
     return QVariant();
 }

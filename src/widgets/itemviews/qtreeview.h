@@ -218,7 +218,7 @@ protected:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
-    friend class QAccessibleItemView;
+    //friend class QAccessibleItemView;
     friend class QAccessibleTable2;
     friend class QAccessibleTree;
     friend class QAccessibleTable2Cell;

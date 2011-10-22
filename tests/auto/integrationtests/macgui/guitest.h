@@ -54,23 +54,9 @@ QT_USE_NAMESPACE
      - Simulating platform mouse and keybord events.
 */
 
-/*
-    InterfaceChildPair specifies an accessibilty interface item.
-*/
-class InterfaceChildPair {
-public:
-    InterfaceChildPair() : iface(0), possibleChild(0) {}
-    InterfaceChildPair(QAccessibleInterface *iface, int possibleChild)
-    :iface(iface), possibleChild(possibleChild)    
-    { }
-    
-    QAccessibleInterface *iface;
-    int possibleChild;
-};
-
 class TestBase {
 public:
-    virtual bool operator()(InterfaceChildPair candidate) = 0;
+    virtual bool operator()(QAccessibleInterface *candidate) = 0;
     virtual ~TestBase() {}
 };
 
@@ -83,15 +69,15 @@ public:
     ~WidgetNavigator();
 
     void printAll(QWidget *widget);
-    void printAll(InterfaceChildPair interface);
+    void printAll(QAccessibleInterface *interface);
     
-    InterfaceChildPair find(QAccessible::Text textType, const QString &text, QWidget *start);
-    InterfaceChildPair find(QAccessible::Text textType, const QString &text, QAccessibleInterface *start);
+    QAccessibleInterface *find(QAccessible::Text textType, const QString &text, QWidget *start);
+    QAccessibleInterface *find(QAccessible::Text textType, const QString &text, QAccessibleInterface *start);
 
-    InterfaceChildPair recursiveSearch(TestBase *test, QAccessibleInterface *iface, int possibleChild);
+    QAccessibleInterface *recursiveSearch(TestBase *test, QAccessibleInterface *iface);
     
     void deleteInDestructor(QAccessibleInterface * interface);
-    static QWidget *getWidget(InterfaceChildPair interface);
+    static QWidget *getWidget(QAccessibleInterface *interface);
 private:
     QSet<QAccessibleInterface *> interfaces;
 };
@@ -141,13 +127,13 @@ class ClickLaterAction : public DelayedAction
 {
 Q_OBJECT
 public:
-    ClickLaterAction(InterfaceChildPair interface, Qt::MouseButtons buttons = Qt::LeftButton);
+    ClickLaterAction(QAccessibleInterface *interface, Qt::MouseButtons buttons = Qt::LeftButton);
     ClickLaterAction(QWidget *widget, Qt::MouseButtons buttons = Qt::LeftButton);
 protected slots:
     void run();
 private:
     bool useInterface;
-    InterfaceChildPair interface;
+    QAccessibleInterface *interface;
     QWidget *widget;
     Qt::MouseButtons buttons;
 };
@@ -168,7 +154,7 @@ public:
 protected slots:
     void exitLoopSlot();
 protected:
-    void clickLater(InterfaceChildPair interface, Qt::MouseButtons buttons = Qt::LeftButton, int delay = 300);
+    void clickLater(QAccessibleInterface *interface, Qt::MouseButtons buttons = Qt::LeftButton, int delay = 300);
     void clickLater(QWidget *widget, Qt::MouseButtons buttons = Qt::LeftButton, int delay = 300);
 
     void clearSequence();

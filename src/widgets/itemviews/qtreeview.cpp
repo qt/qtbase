@@ -3749,29 +3749,15 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column() + 1;
             Q_ASSERT(entry > 0);
             QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
-#else
-            int entry = visualIndex(sel) + 1;
-            if (header())
-                ++entry;
-            QAccessible::updateAccessibility(viewport(), entry, QAccessible::Selection);
-#endif
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-#ifdef Q_OS_UNIX
             int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column() + 1;
             Q_ASSERT(entry > 0);
             QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
-#else
-            int entry = visualIndex(desel) + 1;
-            if (header())
-                ++entry;
-            QAccessible::updateAccessibility(viewport(), entry, QAccessible::SelectionRemove);
-#endif
         }
     }
 #endif

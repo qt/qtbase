@@ -80,12 +80,11 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
     return qobject_cast<QAbstractSpinBox*>(object());
 }
 
-QString QAccessibleAbstractSpinBox::text(Text t, int child) const
+QString QAccessibleAbstractSpinBox::text(Text t) const
 {
-    Q_UNUSED(child)
     if (t == QAccessible::Value)
         return abstractSpinBox()->text();
-    return QAccessibleWidget::text(t, 0);
+    return QAccessibleWidget::text(t);
 }
 
 QVariant QAccessibleAbstractSpinBox::currentValue()
@@ -115,21 +114,6 @@ QVariant QAccessibleAbstractSpinBox::minimumValue()
 {
     return abstractSpinBox()->property("minimum");
 }
-
-QVariant QAccessibleAbstractSpinBox::invokeMethod(Method method, int child, const QVariantList &params)
-{
-    switch (method) {
-    case ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << ListSupportedMethods;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidget::invokeMethod(method, child, params)));
-    }
-    default:
-        return QAccessibleWidget::invokeMethod(method, child, params);
-    }
-}
-
 
 /*!
   \class QAccessibleSpinBox
@@ -176,17 +160,11 @@ QDoubleSpinBox *QAccessibleDoubleSpinBox::doubleSpinBox() const
     return static_cast<QDoubleSpinBox*>(object());
 }
 
-QVariant QAccessibleDoubleSpinBox::invokeMethod(QAccessible::Method, int, const QVariantList &)
+QString QAccessibleDoubleSpinBox::text(Text textType) const
 {
-    return QVariant();
-}
-
-QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
-{
-    Q_UNUSED(child)
     if (textType == Value)
         return doubleSpinBox()->textFromValue(doubleSpinBox()->value());
-    return QAccessibleWidget::text(textType, 0);
+    return QAccessibleWidget::text(textType);
 }
 
 #endif // QT_NO_SPINBOX
@@ -217,11 +195,11 @@ QScrollBar *QAccessibleScrollBar::scrollBar() const
     return qobject_cast<QScrollBar*>(object());
 }
 
-QString QAccessibleScrollBar::text(Text t, int child) const
+QString QAccessibleScrollBar::text(Text t) const
 {
     if (t == Value)
         return QString::number(scrollBar()->value());
-    return QAccessibleAbstractSlider::text(t, child);
+    return QAccessibleAbstractSlider::text(t);
 }
 
 #endif // QT_NO_SCROLLBAR
@@ -252,32 +230,18 @@ QSlider *QAccessibleSlider::slider() const
     return qobject_cast<QSlider*>(object());
 }
 
-QString QAccessibleSlider::text(Text t, int child) const
+QString QAccessibleSlider::text(Text t) const
 {
     if (t == Value)
         return QString::number(slider()->value());
 
-    return QAccessibleAbstractSlider::text(t, child);
+    return QAccessibleAbstractSlider::text(t);
 }
 
 QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)
     : QAccessibleWidget(w, r)
 {
     Q_ASSERT(qobject_cast<QAbstractSlider *>(w));
-}
-
-QVariant QAccessibleAbstractSlider::invokeMethod(Method method, int child, const QVariantList &params)
-{
-    switch (method) {
-    case ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << ListSupportedMethods;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidget::invokeMethod(method, child, params)));
-    }
-    default:
-        return QAccessibleWidget::invokeMethod(method, child, params);
-    }
 }
 
 QVariant QAccessibleAbstractSlider::currentValue()
@@ -316,17 +280,12 @@ QAccessibleDial::QAccessibleDial(QWidget *widget)
     addControllingSignal(QLatin1String("valueChanged(int)"));
 }
 
-QString QAccessibleDial::text(Text textType, int) const
+QString QAccessibleDial::text(Text textType) const
 {
     if (textType == Value)
         return QString::number(dial()->value());
 
-    return QAccessibleAbstractSlider::text(textType, 0);
-}
-
-QVariant QAccessibleDial::invokeMethod(Method, int, const QVariantList &)
-{
-    return QVariant();
+    return QAccessibleAbstractSlider::text(textType);
 }
 
 QDial *QAccessibleDial::dial() const

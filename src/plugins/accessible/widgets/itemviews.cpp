@@ -222,7 +222,7 @@ QAccessibleTable2Cell *QAccessibleTable2::cell(const QModelIndex &index) const
 
 QAccessibleTable2CellInterface *QAccessibleTable2::cellAt(int row, int column) const
 {
-    Q_ASSERT(role(0) != QAccessible::Tree);
+    Q_ASSERT(role() != QAccessible::Tree);
     QModelIndex index = view->model()->index(row, column);
     //Q_ASSERT(index.isValid());
     if (!index.isValid()) {
@@ -357,15 +357,13 @@ QAccessible2::TableModelChange QAccessibleTable2::modelChange() const
     return change;
 }
 
-QAccessible::Role QAccessibleTable2::role(int child) const
+QAccessible::Role QAccessibleTable2::role() const
 {
-    Q_ASSERT(child == 0);
     return m_role;
 }
 
-QAccessible::State QAccessibleTable2::state(int child) const
+QAccessible::State QAccessibleTable2::state() const
 {
-    Q_ASSERT(child == 0);
     return QAccessible::Normal;
 }
 
@@ -393,37 +391,35 @@ int QAccessibleTable2::childCount() const
 
 int QAccessibleTable2::indexOfChild(const QAccessibleInterface *iface) const
 {
-    Q_ASSERT(iface->role(0) != QAccessible::TreeItem); // should be handled by tree class
-    if (iface->role(0) == QAccessible::Cell || iface->role(0) == QAccessible::ListItem) {
+    Q_ASSERT(iface->role() != QAccessible::TreeItem); // should be handled by tree class
+    if (iface->role() == QAccessible::Cell || iface->role() == QAccessible::ListItem) {
         const QAccessibleTable2Cell* cell = static_cast<const QAccessibleTable2Cell*>(iface);
         return logicalIndex(cell->m_index);
-    } else if (iface->role(0) == QAccessible::ColumnHeader){
+    } else if (iface->role() == QAccessible::ColumnHeader){
         const QAccessibleTable2HeaderCell* cell = static_cast<const QAccessibleTable2HeaderCell*>(iface);
         return cell->index + (verticalHeader() ? 1 : 0) + 1;
-    } else if (iface->role(0) == QAccessible::RowHeader){
+    } else if (iface->role() == QAccessible::RowHeader){
         const QAccessibleTable2HeaderCell* cell = static_cast<const QAccessibleTable2HeaderCell*>(iface);
         return (cell->index+1) * (view->model()->rowCount()+1)  + 1;
-    } else if (iface->role(0) == QAccessible::Pane) {
+    } else if (iface->role() == QAccessible::Pane) {
         return 1; // corner button
     } else {
         qWarning() << "WARNING QAccessibleTable2::indexOfChild Fix my children..."
-                   << iface->role(0) << iface->text(QAccessible::Name, 0);
+                   << iface->role() << iface->text(QAccessible::Name);
     }
     // FIXME: we are in denial of our children. this should stop.
     return -1;
 }
 
-QString QAccessibleTable2::text(Text t, int child) const
+QString QAccessibleTable2::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     if (t == QAccessible::Description)
         return view->accessibleDescription();
     return view->accessibleName();
 }
 
-QRect QAccessibleTable2::rect(int child) const
+QRect QAccessibleTable2::rect() const
 {
-    Q_ASSERT(!child);
     if (!view->isVisible())
         return QRect();
     QPoint pos = view->mapToGlobal(QPoint(0, 0));
@@ -469,26 +465,10 @@ int QAccessibleTable2::navigate(RelationFlag relation, int index, QAccessibleInt
     return -1;
 }
 
-QAccessible::Relation QAccessibleTable2::relationTo(int, const QAccessibleInterface *, int) const
+QAccessible::Relation QAccessibleTable2::relationTo(const QAccessibleInterface *) const
 {
     return QAccessible::Unrelated;
 }
-
-#ifndef QT_NO_ACTION
-int QAccessibleTable2::userActionCount(int) const
-{
-    return 0;
-}
-QString QAccessibleTable2::actionText(int, Text, int) const
-{
-    return QString();
-}
-bool QAccessibleTable2::doAction(int, int, const QVariantList &)
-{
-    return false;
-}
-#endif
-
 
 // TREE VIEW
 
@@ -541,7 +521,7 @@ int QAccessibleTree::rowCount() const
 
 int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
 {
-     if (iface->role(0) == QAccessible::TreeItem) {
+     if (iface->role() == QAccessible::TreeItem) {
         const QAccessibleTable2Cell* cell = static_cast<const QAccessibleTable2Cell*>(iface);
         const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
         Q_ASSERT(treeView);
@@ -552,13 +532,13 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
         //qDebug() << "QAccessibleTree::indexOfChild r " << row << " c " << column << "index " << index;
         Q_ASSERT(index > treeView->model()->columnCount());
         return index;
-    } else if (iface->role(0) == QAccessible::ColumnHeader){
+    } else if (iface->role() == QAccessible::ColumnHeader){
         const QAccessibleTable2HeaderCell* cell = static_cast<const QAccessibleTable2HeaderCell*>(iface);
         //qDebug() << "QAccessibleTree::indexOfChild header " << cell->index << "is: " << cell->index + 1;
         return cell->index + 1;
     } else {
         qWarning() << "WARNING QAccessibleTable2::indexOfChild invalid child"
-                   << iface->role(0) << iface->text(QAccessible::Name, 0);
+                   << iface->role() << iface->text(QAccessible::Name);
     }
     // FIXME: add scrollbars and don't just ignore them
     return -1;
@@ -596,7 +576,7 @@ int QAccessibleTree::navigate(RelationFlag relation, int index, QAccessibleInter
     return QAccessibleTable2::navigate(relation, index, iface);
 }
 
-QAccessible::Relation QAccessibleTree::relationTo(int, const QAccessibleInterface *, int) const
+QAccessible::Relation QAccessibleTree::relationTo(const QAccessibleInterface *) const
 {
     return QAccessible::Unrelated;
 }
@@ -695,7 +675,7 @@ int QAccessibleTable2Cell::columnIndex() const
 
 int QAccessibleTable2Cell::rowIndex() const
 {
-    if (role(0) == QAccessible::TreeItem) {
+    if (role() == QAccessible::TreeItem) {
        const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
        Q_ASSERT(treeView);
        int row = treeView->d_func()->viewIndex(m_index);
@@ -723,20 +703,18 @@ QAccessibleTable2Interface* QAccessibleTable2Cell::table() const
     return QAccessible::queryAccessibleInterface(view)->table2Interface();
 }
 
-QAccessible::Role QAccessibleTable2Cell::role(int child) const
+QAccessible::Role QAccessibleTable2Cell::role() const
 {
-    Q_ASSERT(child == 0);
     return m_role;
 }
 
-QAccessible::State QAccessibleTable2Cell::state(int child) const
+QAccessible::State QAccessibleTable2Cell::state() const
 {
-    Q_ASSERT(child == 0);
     State st = Normal;
 
     QRect globalRect = view->rect();
     globalRect.translate(view->mapToGlobal(QPoint(0,0)));
-    if (!globalRect.intersects(rect(0)))
+    if (!globalRect.intersects(rect()))
         st |= Invisible;
 
     if (view->selectionModel()->isSelected(m_index))
@@ -768,10 +746,8 @@ bool QAccessibleTable2Cell::isExpandable() const
     return view->model()->hasChildren(m_index);
 }
 
-QRect QAccessibleTable2Cell::rect(int child) const
+QRect QAccessibleTable2Cell::rect() const
 {
-    Q_ASSERT(child == 0);
-
     QRect r;
     r = view->visualRect(m_index);
 
@@ -781,9 +757,8 @@ QRect QAccessibleTable2Cell::rect(int child) const
     return r;
 }
 
-QString QAccessibleTable2Cell::text(Text t, int child) const
+QString QAccessibleTable2Cell::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     QAbstractItemModel *model = view->model();
     QString value;
     switch (t) {
@@ -802,9 +777,8 @@ QString QAccessibleTable2Cell::text(Text t, int child) const
     return value;
 }
 
-void QAccessibleTable2Cell::setText(Text /*t*/, int child, const QString &text)
+void QAccessibleTable2Cell::setText(Text /*t*/, const QString &text)
 {
-    Q_ASSERT(child == 0);
     if (!(m_index.flags() & Qt::ItemIsEditable))
         return;
     view->model()->setData(m_index, text);
@@ -888,12 +862,10 @@ int QAccessibleTable2Cell::navigate(RelationFlag relation, int index, QAccessibl
     return -1;
 }
 
-QAccessible::Relation QAccessibleTable2Cell::relationTo(int child, const QAccessibleInterface *other, int otherChild) const
+QAccessible::Relation QAccessibleTable2Cell::relationTo(const QAccessibleInterface *other) const
 {
-    Q_ASSERT(child == 0);
-    Q_ASSERT(otherChild == 0);
     // we only check for parent-child relationships in trees
-    if (m_role == QAccessible::TreeItem && other->role(0) == QAccessible::TreeItem) {
+    if (m_role == QAccessible::TreeItem && other->role() == QAccessible::TreeItem) {
         QModelIndex otherIndex = static_cast<const QAccessibleTable2Cell*>(other)->m_index;
         // is the other our parent?
         if (otherIndex.parent() == m_index)
@@ -905,46 +877,26 @@ QAccessible::Relation QAccessibleTable2Cell::relationTo(int child, const QAccess
     return QAccessible::Unrelated;
 }
 
-#ifndef QT_NO_ACTION
-int QAccessibleTable2Cell::userActionCount(int) const
-{
-    return 0;
-}
-
-QString QAccessibleTable2Cell::actionText(int, Text, int) const
-{
-    return QString();
-}
-
-bool QAccessibleTable2Cell::doAction(int, int, const QVariantList &)
-{
-    return false;
-}
-
 QAccessibleTable2HeaderCell::QAccessibleTable2HeaderCell(QAbstractItemView *view_, int index_, Qt::Orientation orientation_)
     : view(view_), index(index_), orientation(orientation_)
 {
     Q_ASSERT(index_ >= 0);
 }
 
-QAccessible::Role QAccessibleTable2HeaderCell::role(int child) const
+QAccessible::Role QAccessibleTable2HeaderCell::role() const
 {
-    Q_ASSERT(child == 0);
     if (orientation == Qt::Horizontal)
         return QAccessible::ColumnHeader;
     return QAccessible::RowHeader;
 }
 
-QAccessible::State QAccessibleTable2HeaderCell::state(int child) const
+QAccessible::State QAccessibleTable2HeaderCell::state() const
 {
-    Q_ASSERT(child == 0);
     return QAccessible::Normal;
 }
 
-QRect QAccessibleTable2HeaderCell::rect(int child) const
+QRect QAccessibleTable2HeaderCell::rect() const
 {
-    Q_ASSERT(child == 0);
-
     QHeaderView *header = 0;
     if (false) {
 #ifndef QT_NO_TABLEVIEW
@@ -968,9 +920,8 @@ QRect QAccessibleTable2HeaderCell::rect(int child) const
             : QRect(zero.x(), zero.y() + sectionPos, header->width(), sectionSize);
 }
 
-QString QAccessibleTable2HeaderCell::text(Text t, int child) const
+QString QAccessibleTable2HeaderCell::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     QAbstractItemModel *model = view->model();
     QString value;
     switch (t) {
@@ -989,7 +940,7 @@ QString QAccessibleTable2HeaderCell::text(Text t, int child) const
     return value;
 }
 
-void QAccessibleTable2HeaderCell::setText(Text, int, const QString &)
+void QAccessibleTable2HeaderCell::setText(Text, const QString &)
 {
     return;
 }
@@ -1030,27 +981,6 @@ QAccessible::Relation QAccessibleTable2HeaderCell::relationTo(int, const QAccess
 {
     return QAccessible::Unrelated;
 }
-
-#ifndef QT_NO_ACTION
-int QAccessibleTable2HeaderCell::userActionCount(int) const
-{
-    return 0;
-}
-
-QString QAccessibleTable2HeaderCell::actionText(int, Text, int) const
-{
-    return QString();
-}
-
-bool QAccessibleTable2HeaderCell::doAction(int, int, const QVariantList &)
-{
-    return false;
-}
-#endif
-
-
-
-#endif
 
 #endif // QT_NO_ITEMVIEWS
 

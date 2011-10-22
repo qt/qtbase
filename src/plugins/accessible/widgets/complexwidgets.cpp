@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
 
 QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
 
+#if 0
 #ifndef QT_NO_ITEMVIEWS
 /*
 The MSDN article "Exposing Data Tables through Microsoft Active Accessibility" explains
@@ -425,7 +426,7 @@ int QAccessibleItemRow::childCount() const
 
 int QAccessibleItemRow::indexOfChild(const QAccessibleInterface *iface) const
 {
-    if (!iface || iface->role(0) != Row)
+    if (!iface || iface->role() != Row)
         return -1;
 
     //### meaningless code?
@@ -1437,6 +1438,7 @@ QAccessible::State QAccessibleHeader::state(int child) const
     return state;
 }
 #endif // QT_NO_ITEMVIEWS
+#endif // 0
 
 #ifndef QT_NO_TABBAR
 /*!
@@ -1456,14 +1458,14 @@ public:
     {}
 
     QObject *object() const { return 0; }
-    Role role(int child) const { Q_ASSERT(child == 0); return QAccessible::PageTab; }
-    State state(int) const {
+    Role role() const { return QAccessible::PageTab; }
+    State state() const {
         QAccessibleInterface *parentInterface = parent();
         State state = parentInterface->state();
         delete parentInterface;
         return state;
     }
-    QRect rect(int) const {
+    QRect rect() const {
         if (!isValid())
             return QRect();
 
@@ -1479,8 +1481,8 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text, int) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
-    void setText(Text, int, const QString &) {}
+    QString text(Text) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
+    void setText(Text, const QString &) {}
 
     QAccessibleInterface *parent() const {
         return QAccessible::queryAccessibleInterface(m_parent);
@@ -1494,17 +1496,12 @@ public:
         }
         return -1;
     }
-    Relation relationTo(int, const QAccessibleInterface *, int) const
+    Relation relationTo(const QAccessibleInterface *) const
     {
         return QAccessible::Unrelated;
     }
 
     // action interface
-    int actionCount() {
-        return 1;
-    }
-
-
     QStringList actionNames() const
     {
         return QStringList(pressAction());
@@ -1587,9 +1584,8 @@ int QAccessibleTabBar::childCount() const
     return tabBar()->count() + 2;
 }
 
-QString QAccessibleTabBar::text(Text t, int child) const
+QString QAccessibleTabBar::text(Text t) const
 {
-    Q_ASSERT(child == 0);
     if (t == QAccessible::Name) {
         return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
     }
@@ -1694,14 +1690,14 @@ int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
 }
 
 /*! \reimp */
-QString QAccessibleComboBox::text(Text t, int) const
+QString QAccessibleComboBox::text(Text t) const
 {
     QString str;
 
     switch (t) {
     case Name:
 #ifndef Q_OS_UNIX // on Linux we use relations for this, name is text (fall through to Value)
-        str = QAccessibleWidget::text(t, 0);
+        str = QAccessibleWidget::text(t);
         break;
 #endif
     case Value:
@@ -1719,7 +1715,7 @@ QString QAccessibleComboBox::text(Text t, int) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidget::text(t, 0);
+        str = QAccessibleWidget::text(t);
     return str;
 }
 

@@ -67,10 +67,10 @@ public:
     virtual ~QAccessibleTable2();
 
     QObject *object() const { return view; }
-    Role role(int child) const;
-    State state(int child) const;
-    QString text(Text t, int child) const;
-    QRect rect(int child) const;
+    Role role() const;
+    State state() const;
+    QString text(Text t) const;
+    QRect rect() const;
 
     int childAt(int x, int y) const;
     int childCount() const;
@@ -79,14 +79,9 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
 
-#ifndef QT_NO_ACTION
-    int userActionCount(int child) const;
-    QString actionText(int action, Text t, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-#endif
-    QVariant invokeMethodEx(Method, int, const QVariantList &) { return QVariant(); }
+    QVariant invokeMethod(Method, const QVariantList &) { return QVariant(); }
 
     // table2 interface
     virtual QAccessibleTable2CellInterface *cellAt(int row, int column) const;
@@ -165,7 +160,7 @@ public:
     int rowCount() const;
 
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
 
     // table2 interface
     QAccessibleTable2CellInterface *cellAt(int row, int column) const;
@@ -183,30 +178,24 @@ public:
     QAccessibleTable2Cell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
 
     QObject *object() const { return 0; }
-    Role role(int child) const;
-    State state(int child) const;
-    QRect rect(int child) const;
+    Role role() const;
+    State state() const;
+    QRect rect() const;
     bool isValid() const;
 
     int childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text t, int child) const;
-    void setText(Text t, int child, const QString &text);
+    QString text(Text t) const;
+    void setText(Text t, const QString &text);
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int) const;
     int navigate(RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    Relation relationTo(const QAccessibleInterface *other) const;
 
     bool isExpandable() const;
-
-#ifndef QT_NO_ACTION
-    int userActionCount(int child) const;
-    QString actionText(int action, Text t, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-#endif
 
     // cell interface
     virtual int columnExtent() const;
@@ -238,28 +227,22 @@ public:
     QAccessibleTable2HeaderCell(QAbstractItemView *view, int index, Qt::Orientation orientation);
 
     QObject *object() const { return 0; }
-    Role role(int child) const;
-    State state(int child) const;
-    QRect rect(int child) const;
+    Role role() const;
+    State state() const;
+    QRect rect() const;
     bool isValid() const;
 
     int childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text t, int child) const;
-    void setText(Text t, int child, const QString &text);
+    QString text(Text t) const;
+    void setText(Text t, const QString &text);
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
-
-#ifndef QT_NO_ACTION
-    int userActionCount(int child) const;
-    QString actionText(int action, Text t, int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-#endif
 
 private:
     QAbstractItemView *view;
@@ -281,17 +264,17 @@ public:
     {}
 
     QObject *object() const { return 0; }
-    Role role(int child) const { Q_ASSERT(child == 0); return QAccessible::Pane; }
-    State state(int child) const { Q_ASSERT(child == 0); return QAccessible::Normal; }
-    QRect rect(int child) const { Q_ASSERT(child == 0); return QRect(); }
+    Role role() const { return QAccessible::Pane; }
+    State state() const { return QAccessible::Normal; }
+    QRect rect() const { return QRect(); }
     bool isValid() const { return true; }
 
     int childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text, int) const { return QString(); }
-    void setText(Text, int, const QString &) {}
+    QString text(Text) const { return QString(); }
+    void setText(Text, const QString &) {}
 
     QAccessibleInterface *parent() const {
         return QAccessible::queryAccessibleInterface(view);
@@ -312,11 +295,6 @@ public:
         return QAccessible::Unrelated;
     }
 
-#ifndef QT_NO_ACTION
-    int userActionCount(int) const { return 0; }
-    QString actionText(int, Text, int) const { return QString(); }
-    bool doAction(int, int, const QVariantList &) { return false; }
-#endif
 private:
     QAbstractItemView *view;
 };

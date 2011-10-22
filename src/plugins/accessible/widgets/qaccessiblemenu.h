@@ -61,10 +61,8 @@ public:
     int childCount() const;
     int childAt(int x, int y) const;
 
-    QRect rect(int child) const;
-    QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
+    QString text(Text t) const;
+    Role role() const;
     QAccessibleInterface *child(int index) const;
     QAccessibleInterface *parent() const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -83,12 +81,8 @@ public:
     QAccessibleInterface *child(int index) const;
     int childCount() const;
 
-    QRect rect(int child) const;
-    QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
-    int indexOfChild( const QAccessibleInterface *child ) const;
+    int indexOfChild(const QAccessibleInterface *child) const;
 
 protected:
     QMenuBar *menuBar() const;
@@ -103,22 +97,21 @@ public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
     virtual ~QAccessibleMenuItem();
-    virtual QString actionText ( int action, Text t, int child ) const;
-    virtual int childAt ( int x, int y ) const;
-    virtual int childCount () const;
-    virtual int indexOfChild ( const QAccessibleInterface * child ) const;
-    virtual bool isValid () const;
+    virtual int childAt(int x, int y) const;
+    virtual int childCount() const;
+    virtual int indexOfChild(const QAccessibleInterface * child) const;
+    virtual bool isValid() const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    virtual int navigate ( RelationFlag relation, int entry, QAccessibleInterface ** target ) const;
-    virtual QObject * object () const;
-    virtual QRect rect ( int child ) const;
-    virtual Relation relationTo ( int child, const QAccessibleInterface * other, int otherChild ) const;
-    virtual Role role ( int child ) const;
-    virtual void setText ( Text t, int child, const QString & text );
-    virtual State state ( int child ) const;
-    virtual QString text ( Text t, int child ) const;
+    virtual int navigate(RelationFlag relation, int entry, QAccessibleInterface ** target) const;
+    virtual QObject * object() const;
+    virtual QRect rect() const;
+    virtual Relation relationTo(const QAccessibleInterface *other) const;
+    virtual Role role() const;
+    virtual void setText(Text t, const QString & text );
+    virtual State state() const;
+    virtual QString text(Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;

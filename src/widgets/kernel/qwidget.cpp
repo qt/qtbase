@@ -8192,8 +8192,6 @@ bool QWidget::event(QEvent *event)
     case QEvent::AccessibilityDescription:
     case QEvent::AccessibilityHelp: {
         QAccessibleEvent *ev = static_cast<QAccessibleEvent *>(event);
-        if (ev->child())
-            return false;
         switch (ev->type()) {
 #ifndef QT_NO_TOOLTIP
         case QEvent::AccessibilityDescription:

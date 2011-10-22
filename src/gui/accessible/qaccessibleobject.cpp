@@ -144,13 +144,13 @@ bool QAccessibleObject::isValid() const
 }
 
 /*! \reimp */
-QRect QAccessibleObject::rect(int) const
+QRect QAccessibleObject::rect() const
 {
     return QRect();
 }
 
 /*! \reimp */
-void QAccessibleObject::setText(Text, int, const QString &)
+void QAccessibleObject::setText(Text, const QString &)
 {
 }
 
@@ -227,20 +227,14 @@ int QAccessibleApplication::childAt(int x, int y) const
 }
 
 /*! \reimp */
-QAccessible::Relation QAccessibleApplication::relationTo(int child, const
-        QAccessibleInterface *other, int otherChild) const
+QAccessible::Relation QAccessibleApplication::relationTo(const QAccessibleInterface *other) const
 {
     QObject *o = other ? other->object() : 0;
     if (!o)
         return Unrelated;
 
     if(o == object()) {
-        if (child && !otherChild)
-            return Child;
-        if (!child && otherChild)
-            return Ancestor;
-        if (!child && !otherChild)
-            return Self;
+        return Self;
     }
 
     return Unrelated;
@@ -290,7 +284,7 @@ int QAccessibleApplication::navigate(RelationFlag relation, int,
 }
 
 /*! \reimp */
-QString QAccessibleApplication::text(Text t, int) const
+QString QAccessibleApplication::text(Text t) const
 {
     switch (t) {
     case Name:
@@ -304,13 +298,13 @@ QString QAccessibleApplication::text(Text t, int) const
 }
 
 /*! \reimp */
-QAccessible::Role QAccessibleApplication::role(int) const
+QAccessible::Role QAccessibleApplication::role() const
 {
     return Application;
 }
 
 /*! \reimp */
-QAccessible::State QAccessibleApplication::state(int) const
+QAccessible::State QAccessibleApplication::state() const
 {
     return QGuiApplication::activeWindow() ? Focused : Normal;
 }

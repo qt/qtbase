@@ -99,6 +99,7 @@ public:
 
 #endif // QT_NO_SCROLLAREA
 
+#if 0
 #ifndef QT_NO_ITEMVIEWS
 class QAccessibleHeader : public QAccessibleWidget
 {
@@ -226,6 +227,7 @@ private:
 };
 
 #endif
+#endif
 
 #ifndef QT_NO_TABBAR
 class QAccessibleTabBar : public QAccessibleWidget
@@ -235,7 +237,7 @@ public:
     explicit QAccessibleTabBar(QWidget *w);
 
     int childCount() const;
-    QString text(Text t, int child) const;
+    QString text(Text t) const;
 
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
@@ -261,7 +263,7 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface* child(int index) const;
 
-    QString text(Text t, int child) const;
+    QString text(Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;

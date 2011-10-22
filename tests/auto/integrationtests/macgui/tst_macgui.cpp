@@ -116,8 +116,8 @@ void tst_MacGui::dummy()
     box->show();
 
     // Find the "OK" button and schedule a press.
-    InterfaceChildPair interface = wn.find(QAccessible::Name, "OK", box);
-    QVERIFY(interface.iface);
+    QAccessibleInterface *interface = wn.find(QAccessible::Name, "OK", box);
+    QVERIFY(interface);
     const int delay = 1000;
     clickLater(interface, Qt::LeftButton, delay);
 
@@ -142,8 +142,8 @@ void tst_MacGui::splashScreenModality()
     box.show();
 
     // Find the "OK" button and schedule a press.
-    InterfaceChildPair interface = wn.find(QAccessible::Name, "OK", &box);
-    QVERIFY(interface.iface);
+    QAccessibleInterface *interface = wn.find(QAccessible::Name, "OK", &box);
+    QVERIFY(interface);
     const int delay = 1000;
     clickLater(interface, Qt::LeftButton, delay);
 
@@ -220,8 +220,8 @@ void tst_MacGui::spinBoxArrowButtons()
     const QImage noFocus = grabWindowContents(&colorWidget).toImage();
 
     // Set focus by clicking the less button.
-    InterfaceChildPair lessInterface = wn.find(QAccessible::Name, "Less", &spinBox);
-    QVERIFY(lessInterface.iface);
+    QAccessibleInterface *lessInterface = wn.find(QAccessible::Name, "Less", &spinBox);
+    QVERIFY(lessInterface);
     const int delay = 500;
     clickLater(lessInterface, Qt::LeftButton, delay);
     const int timeout = 1;
@@ -231,7 +231,7 @@ void tst_MacGui::spinBoxArrowButtons()
     const QImage focus = grabWindowContents(&colorWidget).toImage();
 
     // Compare the arrow area of the less button to see if it moved.
-    const QRect lessRect = lessInterface.iface->rect(lessInterface.possibleChild);
+    const QRect lessRect = lessInterface->rect();
     const QRect lessLocalRect(colorWidget.mapFromGlobal(lessRect.topLeft()), colorWidget.mapFromGlobal(lessRect.bottomRight()));
     const QRect compareRect = lessLocalRect.adjusted(5, 3, -5, -7);
     QVERIFY(noFocus.copy(compareRect) == focus.copy(compareRect));
