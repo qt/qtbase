@@ -135,14 +135,14 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
 #endif
 }
 
-class QAccessibleWidgetPrivate : public QAccessible
+class QAccessibleWidgetPrivate
 {
 public:
     QAccessibleWidgetPrivate()
-        :role(Client)
+        :role(QAccessible::Client)
     {}
 
-    Role role;
+    QAccessible::Role role;
     QString name;
     QString description;
     QString value;
