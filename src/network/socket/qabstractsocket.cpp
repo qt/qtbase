@@ -369,13 +369,6 @@
     This enum describes the different flags you can pass to modify the
     behavior of QAbstractSocket::bind().
 
-    \note On Symbian OS bind flags behaviour depends on process capabilties.
-    If process has NetworkControl capability, the bind attempt with
-    ReuseAddressHint will always succeed even if the address and port is already
-    bound by another socket with any flags. If process does not have
-    NetworkControl capability, the bind attempt to address and port already
-    bound by another socket will always fail.
-
     \value ShareAddress Allow other services to bind to the same address
     and port. This is useful when multiple processes share
     the load of a single service by listening to the same address and port
