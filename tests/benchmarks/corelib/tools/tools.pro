@@ -3,6 +3,7 @@ SUBDIRS = \
         containers-associative \
         containers-sequential \
         qbytearray \
+        qcontiguouscache \
         qlist \
         qrect \
         qregexp \
