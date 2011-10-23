@@ -42,8 +42,8 @@
 #ifndef QACCESSIBLEOBJECT_H
 #define QACCESSIBLEOBJECT_H
 
-#include "qaccessible.h"
-#include "qaccessible2.h"
+#include <QtGui/qaccessible.h>
+#include <QtGui/qaccessible2.h>
 
 QT_BEGIN_HEADER
 

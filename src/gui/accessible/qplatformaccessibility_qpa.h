@@ -44,7 +44,7 @@
 #include <QtCore/qobject.h>
 #ifndef QT_NO_ACCESSIBILITY
 
-#include "qaccessible.h"
+#include <QtGui/qaccessible.h>
 
 QT_BEGIN_HEADER
 
