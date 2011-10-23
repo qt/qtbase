@@ -115,9 +115,19 @@ public:
         MulticastTtlOption, // IP_MULTICAST_TTL
         MulticastLoopbackOption // IP_MULTICAST_LOOPBACK
     };
+    enum BindFlag {
+        DefaultForPlatform = 0x0,
+        ShareAddress = 0x1,
+        DontShareAddress = 0x2,
+        ReuseAddressHint = 0x4
+    };
+    Q_DECLARE_FLAGS(BindMode, BindFlag)
 
     QAbstractSocket(SocketType socketType, QObject *parent);
     virtual ~QAbstractSocket();
+
+    bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
+    bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
 
     // ### Qt 5: Make connectToHost() and disconnectFromHost() virtual.
     void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
@@ -213,6 +223,9 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_testConnection())
     Q_PRIVATE_SLOT(d_func(), void _q_forceDisconnect())
 };
+
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocket::BindMode)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QAbstractSocket::SocketError);

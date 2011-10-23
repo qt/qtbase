@@ -138,6 +138,8 @@ public slots:
 private slots:
     void socketsConstructedBeforeEventLoop();
     void constructing();
+    void bind_data();
+    void bind();
     void setInvalidSocketDescriptor();
     void setSocketDescriptor();
     void socketDescriptor();
@@ -478,6 +480,65 @@ void tst_QTcpSocket::constructing()
 }
 
 //----------------------------------------------------------------------------------
+
+void tst_QTcpSocket::bind_data()
+{
+    QTest::addColumn<QString>("stringAddr");
+    QTest::addColumn<bool>("successExpected");
+    QTest::addColumn<QString>("stringExpectedLocalAddress");
+
+    // iterate all interfaces, add all addresses on them as test data
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    foreach (const QNetworkInterface &interface, interfaces) {
+        if (!interface.isValid())
+            continue;
+
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10")))
+                continue; // link-local bind will fail, at least on Linux, so skip it.
+
+            QString ip(entry.ip().toString());
+            QTest::newRow(ip.toLatin1().constData()) << ip << true << ip;
+        }
+    }
+
+    // additionally, try bind to known-bad addresses, and make sure this doesn't work
+    // these ranges are guarenteed to be reserved for 'documentation purposes',
+    // and thus, should be unused in the real world. Not that I'm assuming the
+    // world is full of competent administrators, or anything.
+    QStringList knownBad;
+    knownBad << "198.51.100.1";
+    knownBad << "2001:0DB8::1";
+    foreach (const QString &badAddress, knownBad) {
+        QTest::newRow(badAddress.toLatin1().constData()) << badAddress << false << QString();
+    }
+}
+
+void tst_QTcpSocket::bind()
+{
+    QFETCH(QString, stringAddr);
+    QFETCH(bool, successExpected);
+    QFETCH(QString, stringExpectedLocalAddress);
+
+    QHostAddress addr(stringAddr);
+    QHostAddress expectedLocalAddress(stringExpectedLocalAddress);
+
+    QTcpSocket *socket = newSocket();
+    qDebug() << "Binding " << addr;
+
+    if (successExpected) {
+        QVERIFY2(socket->bind(addr), qPrintable(socket->errorString()));
+    } else {
+        QVERIFY(!socket->bind(addr));
+    }
+
+    QCOMPARE(socket->localAddress(), expectedLocalAddress);
+
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+
 
 void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
