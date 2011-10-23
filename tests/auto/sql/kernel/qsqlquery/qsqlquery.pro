@@ -1,11 +1,11 @@
-load(qttest_p4)
+TARGET = tst_qsqlquery
+CONFIG += testcase
+
 SOURCES  += tst_qsqlquery.cpp
 
-QT = core sql
-
+QT = core sql testlib
 
 !wince*:win32:LIBS += -lws2_32
-
 
 wince*: {
    plugFiles.files = ../../../plugins/sqldrivers
