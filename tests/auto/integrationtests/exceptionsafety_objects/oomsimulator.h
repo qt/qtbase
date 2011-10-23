@@ -252,8 +252,10 @@ struct AllocFailer
 static void *new_helper(std::size_t size)
 {
     void *ptr = malloc(size);
+#ifndef QT_NO_EXCEPTIONS
     if (!ptr)
         throw std::bad_alloc();
+#endif
     return ptr;
 }
 
@@ -263,8 +265,10 @@ static void *new_helper(std::size_t size)
 #endif
 
 // overload operator new
+#ifndef QT_NO_EXCEPTIONS
 void* operator new(size_t size) throw (std::bad_alloc) { return new_helper(size); }
 void* operator new[](size_t size) throw (std::bad_alloc) { return new_helper(size); }
+#endif
 void* operator new(size_t size, const std::nothrow_t&) throw() { return malloc(size); }
 void* operator new[](std::size_t size, const std::nothrow_t&) throw() { return malloc(size); }
 
