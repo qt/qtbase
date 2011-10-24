@@ -815,6 +815,7 @@ I_FLAGS=
 L_FLAGS=
 RPATH_FLAGS=
 l_FLAGS=
+W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "symbian-gcce"
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
@@ -1229,6 +1230,10 @@ while [ "$#" -gt 0 ]; do
         else
             VAL=`echo $1 | sed 's,-fw,,'`
         fi
+        ;;
+    -W*)
+        VAR="add_warn"
+        VAL="$1"
         ;;
     -*)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
@@ -2382,6 +2387,9 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
+        ;;
+    add_warn)
+        W_FLAGS="$W_FLAGS \"${VAL}\""
         ;;
     silent)
         CFG_SILENT="$VAL"
@@ -7398,6 +7406,13 @@ if [ '!' -z "$I_FLAGS" ]; then
     # add the user define include paths
     QMakeVar add QMAKE_CFLAGS "$I_FLAGS"
     QMakeVar add QMAKE_CXXFLAGS "$I_FLAGS"
+fi
+
+if [ '!' -z "$W_FLAGS" ]; then
+    # add the user defined warning flags
+    QMakeVar add QMAKE_CFLAGS "$W_FLAGS"
+    QMakeVar add QMAKE_CXXFLAGS "$W_FLAGS"
+    QMakeVar add QMAKE_OBJECTIVE_CFLAGS "$W_FLAGS"
 fi
 
 # turn off exceptions for the compilers that support it
