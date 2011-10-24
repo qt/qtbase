@@ -48,7 +48,7 @@
 #include <EGL/egl.h>
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                                         EGLint eglClientVersion, EGLenum eglApi)
+                                         EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglApi(eglApi)
     , m_format(format)
@@ -60,7 +60,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
 
     QVector<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-    contextAttrs.append(eglClientVersion);
+    contextAttrs.append(format.majorVersion());
     contextAttrs.append(EGL_NONE);
 
     eglBindAPI(m_eglApi);

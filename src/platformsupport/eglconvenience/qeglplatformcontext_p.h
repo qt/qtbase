@@ -50,7 +50,7 @@ class QEGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                        EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API);
+                        EGLenum eglApi = EGL_OPENGL_ES_API);
     ~QEGLPlatformContext();
 
     bool makeCurrent(QPlatformSurface *surface);

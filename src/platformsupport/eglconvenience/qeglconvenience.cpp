@@ -212,7 +212,7 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
     configureAttributes.append(surfaceType);
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    configureAttributes.append(EGL_OPENGL_ES2_BIT);
+    configureAttributes.append(format.majorVersion() == 1 ? EGL_OPENGL_ES_BIT : EGL_OPENGL_ES2_BIT);
     configureAttributes.append(EGL_NONE);
 
     do {

@@ -69,8 +69,8 @@ public:
         , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
         , profile(QSurfaceFormat::NoProfile)
-        , major(1)
-        , minor(1)
+        , major(2)
+        , minor(0)
     {
     }
 
@@ -399,6 +399,8 @@ void QSurfaceFormat::setMajorVersion(int major)
 
 /*!
     Returns the major OpenGL version.
+
+    The default version is 2.0.
 */
 int QSurfaceFormat::majorVersion() const
 {
@@ -407,6 +409,8 @@ int QSurfaceFormat::majorVersion() const
 
 /*!
     Sets the desired minor OpenGL version.
+
+    The default version is 2.0.
 */
 void QSurfaceFormat::setMinorVersion(int minor)
 {
