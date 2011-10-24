@@ -1358,7 +1358,7 @@ void tst_QTextEdit::copyAvailable()
     QFETCH(QString, function);
 
 #ifdef Q_WS_MAC
-    QSKIP("copyAvailable has never passed on Mac, task to fix is 132482");
+    QSKIP("QTBUG-22283: copyAvailable has never passed on Mac");
 #endif
     ed->clear();
     QApplication::clipboard()->clear();
