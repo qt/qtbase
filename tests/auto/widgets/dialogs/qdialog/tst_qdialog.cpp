@@ -75,7 +75,7 @@ private slots:
     void showMaximized();
     void showMinimized();
     void showFullScreen();
-#if !defined(Q_WS_X11) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
     void showAsTool();
 #endif
 #ifndef Q_OS_WINCE
@@ -374,7 +374,7 @@ void tst_QDialog::showFullScreen()
 
 // Qt/X11: Skipped since activeWindow() is not respected by all window managers.
 // Qt/WinCE: No real support for Qt::Tool on WinCE.
-#if !defined(Q_WS_X11) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
 void tst_QDialog::showAsTool()
 {
     ToolDialog dialog(testWidget);
