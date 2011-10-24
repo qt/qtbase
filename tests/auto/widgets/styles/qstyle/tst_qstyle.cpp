@@ -114,8 +114,8 @@ public:
     tst_QStyle();
     virtual ~tst_QStyle();
 private:
-    void testAllFunctions(QStyle *);
-    void testScrollBarSubControls(QStyle *);
+    bool testAllFunctions(QStyle *);
+    bool testScrollBarSubControls(QStyle *);
     void testPainting(QStyle *style, const QString &platform);
 private slots:
     void drawItemPixmap();
@@ -257,13 +257,13 @@ void tst_QStyle::testProxyStyle()
     QVERIFY(style->parent() == proxyStyle);
     QVERIFY(proxyStyle->baseStyle() == style);
 
-    testAllFunctions(proxyStyle);
+    QVERIFY(testAllFunctions(proxyStyle));
     proxyStyle->setBaseStyle(0);
     QVERIFY(proxyStyle->baseStyle());
     qApp->setStyle(proxyStyle);
 
     QProxyStyle doubleProxy(new QProxyStyle(new QWindowsStyle()));
-    testAllFunctions(&doubleProxy);
+    QVERIFY(testAllFunctions(&doubleProxy));
 
     CustomProxy customStyle;
     QLineEdit edit;
@@ -284,7 +284,7 @@ void tst_QStyle::drawItemPixmap()
     testWidget->hide();
 }
 
-void tst_QStyle::testAllFunctions(QStyle *style)
+bool tst_QStyle::testAllFunctions(QStyle *style)
 {
     QStyleOption opt;
     opt.init(testWidget);
@@ -361,14 +361,15 @@ void tst_QStyle::testAllFunctions(QStyle *style)
     style->itemPixmapRect(QRect(0, 0, 100, 100), Qt::AlignHCenter, QPixmap(200, 200));
     style->itemTextRect(QFontMetrics(qApp->font()), QRect(0, 0, 100, 100), Qt::AlignHCenter, true, QString("Test"));
 
-    testScrollBarSubControls(style);
+    return testScrollBarSubControls(style);
 }
 
-void tst_QStyle::testScrollBarSubControls(QStyle* style)
+bool tst_QStyle::testScrollBarSubControls(QStyle* style)
 {
+    // WinCE SmartPhone doesn't have scrollbar subcontrols, so skip the rest of the test.
 #ifdef Q_OS_WINCE_WM
     if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())
-        QSKIP("SmartPhone doesn't have scrollbar subcontrols.");
+        return true;
 #else
     Q_UNUSED(style);
 #endif
@@ -379,15 +380,19 @@ void tst_QStyle::testScrollBarSubControls(QStyle* style)
     foreach (int subControl, QList<int>() << 1 << 2 << 4 << 8) {
         QRect sr = testWidget->style()->subControlRect(QStyle::CC_ScrollBar, &opt,
                                     QStyle::SubControl(subControl), &scrollBar);
-        QVERIFY(sr.isNull() == false);
+        if (sr.isNull()) {
+            qWarning("Null rect for subcontrol %d", subControl);
+            return false;
+        }
     }
+    return true;
 }
 
 #ifndef QT_NO_STYLE_PLASTIQUE
 void tst_QStyle::testPlastiqueStyle()
 {
     QPlastiqueStyle pstyle;
-    testAllFunctions(&pstyle);
+    QVERIFY(testAllFunctions(&pstyle));
     lineUpLayoutTest(&pstyle);
 }
 #endif
@@ -396,7 +401,7 @@ void tst_QStyle::testPlastiqueStyle()
 void tst_QStyle::testCleanlooksStyle()
 {
     QCleanlooksStyle cstyle;
-    testAllFunctions(&cstyle);
+    QVERIFY(testAllFunctions(&cstyle));
     lineUpLayoutTest(&cstyle);
 }
 #endif
@@ -404,7 +409,7 @@ void tst_QStyle::testCleanlooksStyle()
 void tst_QStyle::testWindowsStyle()
 {
     QWindowsStyle wstyle;
-    testAllFunctions(&wstyle);
+    QVERIFY(testAllFunctions(&wstyle));
     lineUpLayoutTest(&wstyle);
 
     // Tests drawing indeterminate progress with 0 size: QTBUG-15973
@@ -419,7 +424,7 @@ void tst_QStyle::testWindowsStyle()
 void tst_QStyle::testWindowsXPStyle()
 {
     QWindowsXPStyle xpstyle;
-    testAllFunctions(&xpstyle);
+    QVERIFY(testAllFunctions(&xpstyle));
     lineUpLayoutTest(&xpstyle);
 }
 #endif
@@ -442,7 +447,7 @@ void tst_QStyle::testWindowsVistaStyle()
 {
 #if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QWindowsVistaStyle vistastyle;
-    testAllFunctions(&vistastyle);
+    QVERIFY(testAllFunctions(&vistastyle));
 
     if (QSysInfo::WindowsVersion == QSysInfo::WV_VISTA)
         testPainting(&vistastyle, "vista");
@@ -561,7 +566,7 @@ void tst_QStyle::testMacStyle()
 {
 #ifdef Q_WS_MAC
     QMacStyle mstyle;
-    testAllFunctions(&mstyle);
+    QVERIFY(testAllFunctions(&mstyle));
 #endif
 }
 
@@ -569,7 +574,7 @@ void tst_QStyle::testMacStyle()
 void tst_QStyle::testMotifStyle()
 {
     QMotifStyle mstyle;
-    testAllFunctions(&mstyle);
+    QVERIFY(testAllFunctions(&mstyle));
 }
 #endif
 
@@ -577,7 +582,7 @@ void tst_QStyle::testMotifStyle()
 void tst_QStyle::testCDEStyle()
 {
     QCDEStyle cstyle;
-    testAllFunctions(&cstyle);
+    QVERIFY(testAllFunctions(&cstyle));
 }
 #endif
 
@@ -585,7 +590,7 @@ void tst_QStyle::testCDEStyle()
 void tst_QStyle::testWindowsCEStyle()
 {
     QWindowsCEStyle cstyle;
-    testAllFunctions(&cstyle);
+    QVERIFY(testAllFunctions(&cstyle));
 }
 #endif
 
@@ -593,7 +598,7 @@ void tst_QStyle::testWindowsCEStyle()
 void tst_QStyle::testWindowsMobileStyle()
 {
     QWindowsMobileStyle cstyle;
-    testAllFunctions(&cstyle);
+    QVERIFY(testAllFunctions(&cstyle));
 }
 #endif
 
