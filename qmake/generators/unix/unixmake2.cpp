@@ -274,61 +274,70 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << (*cit) << Option::obj_ext << ":\n\t" << var("QMAKE_RUN_CC_IMP") << endl << endl;
 
     if(include_deps) {
-        QString cmd=var("QMAKE_CFLAGS_DEPS") + " ";
-        cmd += varGlue("DEFINES","-D"," -D","") + varGlue("PRL_EXPORT_DEFINES"," -D"," -D","");
-        if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
-            cmd += " -I" + project->first("QMAKE_ABSOLUTE_SOURCE_PATH") + " ";
-        cmd += " $(INCPATH) " + varGlue("DEPENDPATH", "-I", " -I", "");
-        QString odir;
-        if(!project->values("OBJECTS_DIR").isEmpty())
-            odir = project->first("OBJECTS_DIR");
+        if (project->isActiveConfig("gcc_MD_depends")) {
+            QStringList objects = project->values("OBJECTS");
+            for(QStringList::Iterator it = objects.begin(); it != objects.end(); ++it) {
+                QString d_file = (*it).replace(QRegExp(Option::obj_ext + "$"), ".d");
+                t << "-include " << d_file << endl;
+                project->values("QMAKE_DISTCLEAN") += d_file;
+            }
+        } else {
+            QString cmd=var("QMAKE_CFLAGS_DEPS") + " ";
+            cmd += varGlue("DEFINES","-D"," -D","") + varGlue("PRL_EXPORT_DEFINES"," -D"," -D","");
+            if(!project->isEmpty("QMAKE_ABSOLUTE_SOURCE_PATH"))
+                cmd += " -I" + project->first("QMAKE_ABSOLUTE_SOURCE_PATH") + " ";
+            cmd += " $(INCPATH) " + varGlue("DEPENDPATH", "-I", " -I", "");
+            QString odir;
+            if(!project->values("OBJECTS_DIR").isEmpty())
+                odir = project->first("OBJECTS_DIR");
 
-        QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
+            QString pwd = escapeFilePath(fileFixify(qmake_getpwd()));
 
-        t << "###### Dependencies" << endl << endl;
-        t << odir << ".deps/%.d: " << pwd << "/%.cpp\n\t";
-        if(project->isActiveConfig("echo_depend_creation"))
-            t << "@echo Creating depend for $<" << "\n\t";
-        t << mkdir_p_asstring("$(@D)") << "\n\t"
-          << "@$(CXX) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
+            t << "###### Dependencies" << endl << endl;
+            t << odir << ".deps/%.d: " << pwd << "/%.cpp\n\t";
+            if(project->isActiveConfig("echo_depend_creation"))
+                t << "@echo Creating depend for $<" << "\n\t";
+            t << mkdir_p_asstring("$(@D)") << "\n\t"
+              << "@$(CXX) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
 
-        t << odir << ".deps/%.d: " << pwd << "/%.c\n\t";
-        if(project->isActiveConfig("echo_depend_creation"))
-            t << "@echo Creating depend for $<" << "\n\t";
-        t << mkdir_p_asstring("$(@D)") << "\n\t"
-          << "@$(CC) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
+            t << odir << ".deps/%.d: " << pwd << "/%.c\n\t";
+            if(project->isActiveConfig("echo_depend_creation"))
+                t << "@echo Creating depend for $<" << "\n\t";
+            t << mkdir_p_asstring("$(@D)") << "\n\t"
+              << "@$(CC) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@" << endl << endl;
 
-        QString src[] = { "SOURCES", "GENERATED_SOURCES", QString() };
-        for(int x = 0; !src[x].isNull(); x++) {
-            QStringList &l = project->values(src[x]);
-            for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-                if(!(*it).isEmpty()) {
-                    QString d_file;
-                    for(QStringList::Iterator cit = Option::c_ext.begin();
-                        cit != Option::c_ext.end(); ++cit) {
-                        if((*it).endsWith((*cit))) {
-                            d_file = (*it).left((*it).length() - (*cit).length());
-                            break;
-                        }
-                    }
-                    if(d_file.isEmpty()) {
-                        for(QStringList::Iterator cppit = Option::cpp_ext.begin();
-                            cppit != Option::cpp_ext.end(); ++cppit) {
-                            if((*it).endsWith((*cppit))) {
-                                d_file = (*it).left((*it).length() - (*cppit).length());
+            QString src[] = { "SOURCES", "GENERATED_SOURCES", QString() };
+            for(int x = 0; !src[x].isNull(); x++) {
+                QStringList &l = project->values(src[x]);
+                for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+                    if(!(*it).isEmpty()) {
+                        QString d_file;
+                        for(QStringList::Iterator cit = Option::c_ext.begin();
+                            cit != Option::c_ext.end(); ++cit) {
+                            if((*it).endsWith((*cit))) {
+                                d_file = (*it).left((*it).length() - (*cit).length());
                                 break;
                             }
                         }
-                    }
+                        if(d_file.isEmpty()) {
+                            for(QStringList::Iterator cppit = Option::cpp_ext.begin();
+                                cppit != Option::cpp_ext.end(); ++cppit) {
+                                if((*it).endsWith((*cppit))) {
+                                    d_file = (*it).left((*it).length() - (*cppit).length());
+                                    break;
+                                }
+                            }
+                        }
 
-                    if(!d_file.isEmpty()) {
-                        d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
-                        QStringList deps = findDependencies((*it)).filter(QRegExp(
-                                    "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
-                        if(!deps.isEmpty())
-                            t << d_file << ": " << deps.join(" ") << endl;
-                        t << "-include " << d_file << endl;
-                        project->values("QMAKE_DISTCLEAN") += d_file;
+                        if(!d_file.isEmpty()) {
+                            d_file = odir + ".deps/" + fileFixify(d_file, pwd, Option::output_dir) + ".d";
+                            QStringList deps = findDependencies((*it)).filter(QRegExp(
+                                        "((^|/)" + Option::h_moc_mod + "|" + Option::cpp_moc_ext + "$)"));
+                            if(!deps.isEmpty())
+                                t << d_file << ": " << deps.join(" ") << endl;
+                            t << "-include " << d_file << endl;
+                            project->values("QMAKE_DISTCLEAN") += d_file;
+                        }
                     }
                 }
             }
@@ -1222,6 +1231,11 @@ void UnixMakefileGenerator::init2()
             if(!project->isActiveConfig("compile_libtool"))
                 project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_SONAME");
         }
+    }
+
+    if (include_deps && project->isActiveConfig("gcc_MD_depends")) {
+        project->values("QMAKE_CFLAGS") += "-MD";
+        project->values("QMAKE_CXXFLAGS") += "-MD";
     }
 
     if(!project->isEmpty("QMAKE_BUNDLE")) {
