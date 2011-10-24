@@ -2,6 +2,8 @@ CONFIG += testcase
 
 QT += declarative qmltest
 
+macx: CONFIG -= app_bundle
+
 # If the .pro file specified an IMPORTPATH, then add that to
 # the command-line when the test is run.
 !isEmpty(IMPORTPATH) {
