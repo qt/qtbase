@@ -854,6 +854,7 @@ void tst_QDoubleSpinBox::removeAll()
 void tst_QDoubleSpinBox::task54433()
 {
     DoubleSpinBox priceSpinBox;
+    QCOMPARE(priceSpinBox.decimals(), 2);
     priceSpinBox.show();
     priceSpinBox.setRange(0.0, 999.99);
     priceSpinBox.setDecimals(2);
@@ -1012,13 +1013,9 @@ void tst_QDoubleSpinBox::task221221()
 {
     QDoubleSpinBox spin;
     QTest::keyClick(&spin, Qt::Key_1);
-    QCOMPARE(spin.text(), QLatin1String("1"));
     spin.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&spin);
-#endif
     QVERIFY(spin.isVisible());
-    QCOMPARE(spin.text(), QLatin1String("1"));
+    QCOMPARE(spin.text(), QLatin1String("1.00"));
 }
 
 void tst_QDoubleSpinBox::task255471_decimalsValidation()
