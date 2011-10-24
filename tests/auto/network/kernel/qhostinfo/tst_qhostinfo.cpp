@@ -214,7 +214,8 @@ void tst_QHostInfo::initTestCase()
         ipv6Available = true;
     }
 
-#if !defined(QT_NO_GETADDRINFO)
+// HP-UX 11i does not support IPv6 reverse lookups.
+#if !defined(QT_NO_GETADDRINFO) || !(defined(Q_OS_HPUX) && defined(__ia64))
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
     memset(&hint, 0, sizeof hint);
@@ -355,13 +356,11 @@ void tst_QHostInfo::reverseLookup_data()
     QTest::addColumn<QString>("address");
     QTest::addColumn<QStringList>("hostNames");
     QTest::addColumn<int>("err");
+    QTest::addColumn<bool>("ipv6");
 
-    QTest::newRow("trolltech.com") << QString("62.70.27.69") << QStringList(QString("diverse.troll.no")) << 0;
-
-    // ### Use internal DNS instead. Discussed with Andreas.
-    //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
-    QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0;
-    QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1;
+    QTest::newRow("trolltech.com") << QString("62.70.27.69") << QStringList(QString("diverse.troll.no")) << 0 << false;
+    QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0 << false;
+    QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1 << true;
 }
 
 void tst_QHostInfo::reverseLookup()
@@ -369,14 +368,11 @@ void tst_QHostInfo::reverseLookup()
     QFETCH(QString, address);
     QFETCH(QStringList, hostNames);
     QFETCH(int, err);
+    QFETCH(bool, ipv6);
 
-    if (!ipv6LookupsAvailable && hostNames.contains("classical.hexago.com")) {
-        QSKIP("IPv6 lookups are not supported on this platform");
+    if (ipv6 && !ipv6LookupsAvailable) {
+        QSKIP("IPv6 reverse lookups are not supported on this platform");
     }
-#if defined(Q_OS_HPUX) && defined(__ia64)
-    if (hostNames.contains("classical.hexago.com"))
-        QSKIP("HP-UX 11i does not support IPv6 reverse lookups.");
-#endif
 
     QHostInfo info = QHostInfo::fromName(address);
 
