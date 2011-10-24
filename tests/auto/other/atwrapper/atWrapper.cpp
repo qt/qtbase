@@ -565,7 +565,7 @@ bool atWrapper::loadConfig( QString path )
 {
     qDebug() << "Loading config file from ... " << path;
     configPath = path;
-    //If there is no config file, dont proceed;
+    //If there is no config file, don't proceed;
     if ( !QFile::exists( path ) )
     {
         return false;

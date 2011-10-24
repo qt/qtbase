@@ -868,7 +868,7 @@ void tst_QTextDocumentFragment::unorderedListEnumeration()
 
 void tst_QTextDocumentFragment::resetHasBlockAfterClosedBlockTags()
 {
-    // when closing tags we have to make sure hasBlock in import() gets resetted
+    // when closing tags we have to make sure hasBlock in import() gets reset
     const char html[] = "<body><table><tr><td><td><p></table><p></body>";
     setHtml(QString::fromLatin1(html));
     QVERIFY(!doc->isEmpty());

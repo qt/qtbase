@@ -528,7 +528,7 @@ void tst_QSortFilterProxyModel::insertRows_data()
             << "Three")
         << 2;
 
-    QTest::newRow("insert one row in the begining")
+    QTest::newRow("insert one row in the beginning")
         << (QStringList()
             << "Two"
             << "Three"

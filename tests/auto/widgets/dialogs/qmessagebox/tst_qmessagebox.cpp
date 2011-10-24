@@ -455,7 +455,7 @@ void tst_QMessageBox::staticSourceCompat()
     QCOMPARE(ret, 1);
     QCOMPARE(keyToSend, -1);
 
-    if (0) { // dont run these tests since the dialog wont close!
+    if (0) { // don't run these tests since the dialog won't close!
         keyToSend = Qt::Key_Escape;
         sendKeySoon();
         ret = QMessageBox::information(0, "title", "text", "Yes", "No", QString(), 1);

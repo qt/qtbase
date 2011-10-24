@@ -127,7 +127,7 @@ void tst_QSizeF::expandedTo_data() {
     QTest::newRow("data0") << QSizeF(10.4, 12.8) << QSizeF(6.6, 4.4) << QSizeF(10.4, 12.8);
     QTest::newRow("data1") << QSizeF(0.0, 0.0) << QSizeF(6.6, 4.4) << QSizeF(6.6, 4.4);
     // This should pick the highest of w,h components independently of each other,
-    // thus the result dont have to be equal to neither input1 nor input2.
+    // thus the result don't have to be equal to neither input1 nor input2.
     QTest::newRow("data3") << QSizeF(6.6, 4.4) << QSizeF(4.4, 6.6) << QSizeF(6.6, 6.6);
 }
 
@@ -147,7 +147,7 @@ void tst_QSizeF::boundedTo_data() {
     QTest::newRow("data0") << QSizeF(10.4, 12.8) << QSizeF(6.6, 4.4) << QSizeF(6.6, 4.4);
     QTest::newRow("data1") << QSizeF(0.0, 0.0) << QSizeF(6.6, 4.4) << QSizeF(0.0, 0.0);
     // This should pick the lowest of w,h components independently of each other,
-    // thus the result dont have to be equal to neither input1 nor input2.
+    // thus the result don't have to be equal to neither input1 nor input2.
     QTest::newRow("data3") << QSizeF(6.6, 4.4) << QSizeF(4.4, 6.6) << QSizeF(4.4, 4.4);
 }
 

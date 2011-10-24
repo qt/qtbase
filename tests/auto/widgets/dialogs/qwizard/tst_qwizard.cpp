@@ -2522,7 +2522,7 @@ void tst_QWizard::task161658_alignments()
 
     QWizardPage page;
     page.setTitle("Title");
-    page.setSubTitle("SUBTITLE#:  The subtitle bust be alligned with the rest of the widget");
+    page.setSubTitle("SUBTITLE#:  The subtitle bust be aligned with the rest of the widget");
 
     QLabel label1("Field:");
     QLineEdit lineEdit1;

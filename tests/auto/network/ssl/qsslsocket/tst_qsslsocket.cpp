@@ -1787,7 +1787,7 @@ void tst_QSslSocket::disconnectFromHostWhenConnecting()
     QVERIFY(socket->isOpen());
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 
-    // dont forget to login
+    // don't forget to login
     QCOMPARE((int) socket->write("USER ftptest\r\n"), 14);
 
 }
@@ -1829,7 +1829,7 @@ void tst_QSslSocket::resetProxy()
     socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY(! socket.waitForConnected(10000));
 
-    // dont forget to login
+    // don't forget to login
     QCOMPARE((int) socket.write("USER ftptest\r\n"), 14);
     QCOMPARE((int) socket.write("PASS password\r\n"), 15);
 

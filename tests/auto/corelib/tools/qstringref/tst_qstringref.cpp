@@ -812,7 +812,7 @@ void tst_QStringRef::compare_data()
     QTest::newRow("data8") << upper << lower << -1 << 0;
 
     // embedded nulls
-    // These dont work as of now. Its OK that these dont work since \0 is not a valid unicode
+    // These don't work as of now. It's OK that these don't work since \0 is not a valid unicode
     /*QTest::newRow("data9") << QString(QByteArray("\0", 1)) << QString(QByteArray("\0", 1)) << 0 << 0;
       QTest::newRow("data10") << QString(QByteArray("\0", 1)) << QString("") << 1 << 1;
       QTest::newRow("data11") << QString("") << QString(QByteArray("\0", 1)) << -1 << -1;

@@ -3852,7 +3852,7 @@ public:
         QItemSelectionModel *oldModel = view->selectionModel();
         if (oldModel != m_selectionModel)
             delete oldModel;
-        view->setModel(this); // this creates a new selection model for the view, but we dont want it either ...
+        view->setModel(this); // this creates a new selection model for the view, but we don't want it either ...
         oldModel = view->selectionModel();
         view->setSelectionModel(m_selectionModel);
         delete oldModel;

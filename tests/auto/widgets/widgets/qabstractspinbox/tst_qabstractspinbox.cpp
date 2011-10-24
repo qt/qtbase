@@ -154,7 +154,7 @@ void tst_QAbstractSpinBox::task228728_cssselector()
 {
     //QAbstractSpinBox does some call to stylehint into his constructor.
     //so while the stylesheet want to access property, it should not crash
-    qApp->setStyleSheet("[alignement=\"1\"], [text=\"foo\"] { color:black; }" );
+    qApp->setStyleSheet("[alignment=\"1\"], [text=\"foo\"] { color:black; }" );
     QSpinBox box;
 }
 
