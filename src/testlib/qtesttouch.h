@@ -77,7 +77,6 @@ namespace QTest
         ~QTouchEventSequence()
         {
             commit();
-            points.clear();
         }
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWindow *window = 0)
         {
@@ -102,7 +101,7 @@ namespace QTest
         }
         QTouchEventSequence& stationary(int touchId)
         {
-            QTouchEvent::TouchPoint &p = point(touchId);
+            QTouchEvent::TouchPoint &p = pointOrPreviousPoint(touchId);
             p.setState(Qt::TouchPointStationary);
             return *this;
         }
@@ -131,6 +130,25 @@ namespace QTest
         }
 #endif
 
+        void commit()
+        {
+            if (!points.isEmpty()) {
+                if (targetWindow)
+                {
+                    QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None,deviceType, touchPointList(points.values()));
+                    QTest::qWait(10);
+                }
+#ifdef QT_WIDGETS_LIB
+                else if (targetWidget)
+                {
+                    qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
+                }
+#endif
+            }
+            previousPoints = points;
+            points.clear();
+        }
+
     private:
 #ifdef QT_WIDGETS_LIB
         QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
@@ -146,8 +164,6 @@ namespace QTest
               targetWindow(window), deviceType(aDeviceType)
         {
         }
-        QTouchEventSequence(const QTouchEventSequence &v);
-        void operator=(const QTouchEventSequence&);
 
         QTouchEvent::TouchPoint &point(int touchId)
         {
@@ -155,6 +171,18 @@ namespace QTest
                 points[touchId] = QTouchEvent::TouchPoint(touchId);
             return points[touchId];
         }
+
+        QTouchEvent::TouchPoint &pointOrPreviousPoint(int touchId)
+        {
+            if (!points.contains(touchId)) {
+                if (previousPoints.contains(touchId))
+                    points[touchId] = previousPoints.value(touchId);
+                else
+                    points[touchId] = QTouchEvent::TouchPoint(touchId);
+            }
+            return points[touchId];
+        }
+
 #ifdef QT_WIDGETS_LIB
         QPoint mapToScreen(QWidget *widget, const QPoint &pt)
         {
@@ -190,23 +218,8 @@ namespace QTest
             }
             return newList;
         }
-        void commit()
-        {
-            if(targetWindow)
-            {
-                QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None,deviceType, touchPointList(points.values()));
-		QTest::qWait(10);
-                targetWindow = 0;
-            }
-#ifdef QT_WIDGETS_LIB
-            else if(targetWidget)
-            {
-                qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
-                targetWidget = 0;
-            }
-#endif
-        }
 
+        QMap<int, QTouchEvent::TouchPoint> previousPoints;
         QMap<int, QTouchEvent::TouchPoint> points;
 #ifdef QT_WIDGETS_LIB
         QWidget *targetWidget;
