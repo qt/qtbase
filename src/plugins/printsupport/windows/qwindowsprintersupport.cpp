@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,23 +39,17 @@
 **
 ****************************************************************************/
 
-#include "qprinterinfo.h"
-#include "qprinterinfo_p.h"
+#include "qwindowsprintersupport.h"
 
-#include <qstringlist.h>
+#include <QtCore/QList>
+#include <QtPrintSupport/QPrinterInfo>
+#include <qprintengine_win_p.h>
+#include <private/qpaintengine_alpha_p.h>
+#include <private/qprinterinfo_p.h>
 
-#include <qt_windows.h>
-
-QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_PRINTER
-
-extern QPrinter::PaperSize mapDevmodePaperSize(int s);
-
-QList<QPrinterInfo> QPrinterInfo::availablePrinters()
+QWindowsPrinterSupport::QWindowsPrinterSupport()
+    : QPlatformPrinterSupport()
 {
-    QList<QPrinterInfo> printers;
-
     DWORD needed = 0;
     DWORD returned = 0;
     if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, 0, 0, &needed, &returned)) {
@@ -69,54 +63,40 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
                 QPrinterInfo printerInfo(printerName);
                 if (printerInfo.printerName() == defPrn.printerName())
                     printerInfo.d_ptr->isDefault = true;
-                printers.append(printerInfo);
+                mPrinterList.append(printerInfo);
             }
         }
         delete [] buffer;
     }
-
-    return printers;
 }
 
-QPrinterInfo QPrinterInfo::defaultPrinter()
+QWindowsPrinterSupport::~QWindowsPrinterSupport()
 {
-    QString noPrinters(QLatin1String("qt_no_printers"));
-    wchar_t buffer[256];
-    GetProfileString(L"windows", L"device", (wchar_t*)noPrinters.utf16(), buffer, 256);
-    QString output = QString::fromWCharArray(buffer);
-    if (output != noPrinters) {
-        // Filter out the name of the printer, which should be everything before a comma.
-        QString printerName = output.split(QLatin1Char(',')).value(0);
-        QPrinterInfo printerInfo(printerName);
-        printerInfo.d_ptr->isDefault = true;
-        return printerInfo;
-    }
-
-    return QPrinterInfo();
 }
 
-QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
+QPrintEngine *QWindowsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
 {
-    const Q_D(QPrinterInfo);
-
-    QList<QPrinter::PaperSize> paperSizes;
-    if (isNull())
-        return paperSizes;
-
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                    NULL, DC_PAPERS, NULL, NULL);
-    if ((int)size != -1) {
-        wchar_t *papers = new wchar_t[size];
-        size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                  NULL, DC_PAPERS, papers, NULL);
-        for (int c = 0; c < (int)size; ++c)
-            paperSizes.append(mapDevmodePaperSize(papers[c]));
-        delete [] papers;
-    }
-
-    return paperSizes;
+        return new QWin32PrintEngine(printerMode);
 }
 
-#endif // QT_NO_PRINTER
+QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrinter::PrinterMode printerMode)
+{
+    Q_UNUSED(printerMode)
+    return static_cast<QWin32PrintEngine *>(engine);
+}
 
-QT_END_NAMESPACE
+QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &) const
+{
+    QList<QPrinter::PaperSize> returnList;
+    foreach (const QPrinterInfo &info, mPrinterList) {
+        foreach (const QPrinter::PaperSize supportedSize, info.supportedPaperSizes())
+            if (!returnList.contains(supportedSize))
+                returnList.append(supportedSize);
+    }
+    return returnList;
+}
+
+QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()
+{
+    return mPrinterList;
+}

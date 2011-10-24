@@ -41,11 +41,11 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "qprinter_p.h"
 #include "qprintengine_win_p.h"
 
 #include <limits.h>
 
+#include <private/qprinter_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qpainter_p.h>
@@ -54,7 +54,9 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qpicture.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qpicture_p.h>
+#include <private/qpixmap_raster_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -347,6 +349,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                     || ti.fontEngine->type() != QFontEngine::Win;
 
 
+#if 0
     if (!fallBack) {
         QFontEngineWin *fe = static_cast<QFontEngineWin *>(ti.fontEngine);
 
@@ -360,6 +363,7 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                     != QString::fromWCharArray(fe->logfont.lfFaceName);
         }
     }
+#endif
 
 
     if (fallBack) {
@@ -579,14 +583,17 @@ void QWin32PrintEngine::updateClipPath(const QPainterPath &clipPath, Qt::ClipOpe
         QPainterPath xformed = clipPath * d->matrix;
 
         if (xformed.isEmpty()) {
-            QRegion empty(-0x1000000, -0x1000000, 1, 1);
-            SelectClipRgn(d->hdc, empty.handle());
+//            QRegion empty(-0x1000000, -0x1000000, 1, 1);
+            HRGN empty = CreateRectRgn(-0x1000000, -0x1000000, -0x0fffffff, -0x0ffffff);
+            SelectClipRgn(d->hdc, empty);
+            DeleteObject(empty);
         } else {
             d->composeGdiPath(xformed);
             const int ops[] = {
                 -1,         // Qt::NoClip, covered above
                 RGN_COPY,   // Qt::ReplaceClip
-                RGN_AND     // Qt::IntersectClip
+                RGN_AND,    // Qt::IntersectClip
+                RGN_OR      // Qt::UniteClip
             };
             Q_ASSERT(op > 0 && unsigned(op) <= sizeof(ops) / sizeof(int));
             SelectClipPath(d->hdc, ops[op]);
@@ -610,6 +617,71 @@ void QWin32PrintEngine::updateMatrix(const QTransform &m)
     d->matrix = d->painterMatrix * stretch;
     d->txop = d->matrix.type();
     d->complex_xform = (d->txop > QTransform::TxScale);
+}
+
+enum HBitmapFormat
+{
+    HBitmapNoAlpha,
+    HBitmapPremultipliedAlpha,
+    HBitmapAlpha
+};
+
+HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
+{
+    if (p.isNull())
+        return 0;
+
+    HBITMAP bitmap = 0;
+    if (p.handle()->classId() != QPlatformPixmap::RasterClass) {
+        QRasterPlatformPixmap *data = new QRasterPlatformPixmap(p.depth() == 1 ?
+            QRasterPlatformPixmap::BitmapType : QRasterPlatformPixmap::PixmapType);
+        data->fromImage(p.toImage(), Qt::AutoColor);
+        return qPixmapToWinHBITMAP(QPixmap(data), format);
+    }
+
+    QRasterPlatformPixmap *d = static_cast<QRasterPlatformPixmap*>(p.handle());
+    const QImage *rasterImage = d->buffer();
+    const int w = rasterImage->width();
+    const int h = rasterImage->height();
+
+    HDC display_dc = GetDC(0);
+
+    // Define the header
+    BITMAPINFO bmi;
+    memset(&bmi, 0, sizeof(bmi));
+    bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth       = w;
+    bmi.bmiHeader.biHeight      = -h;
+    bmi.bmiHeader.biPlanes      = 1;
+    bmi.bmiHeader.biBitCount    = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage   = w * h * 4;
+
+    // Create the pixmap
+    uchar *pixels = 0;
+    bitmap = CreateDIBSection(display_dc, &bmi, DIB_RGB_COLORS, (void **) &pixels, 0, 0);
+    ReleaseDC(0, display_dc);
+    if (!bitmap) {
+        qErrnoWarning("%s, failed to create dibsection", __FUNCTION__);
+        return 0;
+    }
+    if (!pixels) {
+        qErrnoWarning("%s, did not allocate pixel data", __FUNCTION__);
+        return 0;
+    }
+
+    // Copy over the data
+    QImage::Format imageFormat = QImage::Format_ARGB32;
+    if (format == HBitmapAlpha)
+        imageFormat = QImage::Format_RGB32;
+    else if (format == HBitmapPremultipliedAlpha)
+        imageFormat = QImage::Format_ARGB32_Premultiplied;
+    const QImage image = rasterImage->convertToFormat(imageFormat);
+    const int bytes_per_line = w * 4;
+    for (int y=0; y < h; ++y)
+        memcpy(pixels + y * bytes_per_line, image.scanLine(y), bytes_per_line);
+
+    return bitmap;
 }
 
 void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
@@ -688,7 +760,7 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
             }
 
             QPixmap p = pixmap.copy(tileSize * x, tileSize * y, imgw, imgh);
-            HBITMAP hbitmap = p.toWinHBITMAP(QPixmap::NoAlpha);
+            HBITMAP hbitmap = qPixmapToWinHBITMAP(p, HBitmapNoAlpha);
             HDC display_dc = GetDC(0);
             HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
             HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
@@ -723,7 +795,7 @@ void QWin32PrintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, cons
         int dc_state = SaveDC(d->hdc);
 
         HDC display_dc = GetDC(0);
-        HBITMAP hbitmap = pm.toWinHBITMAP(QPixmap::NoAlpha);
+        HBITMAP hbitmap = qPixmapToWinHBITMAP(pm, HBitmapNoAlpha);
         HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
         HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
 
@@ -1642,17 +1714,18 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     SetBkMode(hdc, TRANSPARENT);
 
     bool has_kerning = ti.f && ti.f->kerning();
-    QFontEngineWin *winfe = (fe->type() == QFontEngine::Win) ? static_cast<QFontEngineWin *>(fe) : 0;
+//  ### TODO
+//    QFontEngineWin *winfe = (fe->type() == QFontEngine::Win) ? static_cast<QFontEngineWin *>(fe) : 0;
 
     HFONT hfont;
     bool ttf = false;
 
-    if (winfe) {
-        hfont = winfe->hfont;
-        ttf = winfe->ttf;
-    } else {
+//    if (winfe) {
+//        hfont = winfe->hfont;
+//        ttf = winfe->ttf;
+//    } else {
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);
-    }
+//    }
 
     HGDIOBJ old_font = SelectObject(hdc, hfont);
     unsigned int options = (ttf && !convertToText) ? ETO_GLYPH_INDEX : 0;

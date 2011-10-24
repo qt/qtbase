@@ -48,9 +48,9 @@
 #include <qmessagebox.h>
 #include <private/qapplication_p.h>
 
-#include <private/qabstractprintdialog_p.h>
-#include <private/qprintengine_win_p.h>
-#include <private/qprinter_p.h>
+#include "qabstractprintdialog_p.h"
+#include "../kernel/qprintengine_win_p.h"
+#include "../kernel/qprinter_p.h"
 
 #if !defined(PD_NOCURRENTPAGE)
 #define PD_NOCURRENTPAGE    0x00800000
@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_win_eatMouseMove();
+//extern void qt_win_eatMouseMove();
 
 class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
 {
@@ -142,7 +142,8 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
     Q_ASSERT(parent);
-    pd->hwndOwner = parent->window()->winId();
+    QWindow *parentWindow = parent->windowHandle();
+    pd->hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->ep->num_copies;
@@ -275,7 +276,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
 
     QApplicationPrivate::leaveModal(&modal_widget);
 
-    qt_win_eatMouseMove();
+//    qt_win_eatMouseMove();
 
     // write values back...
     if (result && (pd.dwResultAction == PD_RESULT_PRINT

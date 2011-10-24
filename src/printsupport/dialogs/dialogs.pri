@@ -16,8 +16,6 @@ HEADERS += \
 }
 
 win32 {
-    qpa:DEFINES += QT_NO_PRINTDIALOG
-
     SOURCES += dialogs/qpagesetupdialog_win.cpp \
                dialogs/qprintdialog_win.cpp
 }

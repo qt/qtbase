@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QAlphaPaintEnginePrivate;
 
-class QAlphaPaintEngine : public QPaintEngine
+class Q_PRINTSUPPORT_EXPORT QAlphaPaintEngine : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QAlphaPaintEngine)
 public:

@@ -25,6 +25,13 @@ unix:!symbian {
                 $$PWD/qprinterinfo_unix.cpp
 }
 
+win32 {
+        HEADERS += \
+                $$PWD/qprintengine_win_p.h
+        SOURCES += \
+                $$PWD/qprintengine_win.cpp
+        LIBS += -lWinspool -lComdlg32
+}
 
 x11|qpa:!win32 {
         SOURCES += $$PWD/qcups.cpp

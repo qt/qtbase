@@ -44,8 +44,10 @@
 #ifndef QT_NO_PRINTDIALOG
 #include <qapplication.h>
 
-#include <private/qprintengine_win_p.h>
-#include <private/qabstractpagesetupdialog_p.h>
+#include "../kernel/qprintengine_win_p.h"
+#include "qabstractpagesetupdialog_p.h"
+#include "qprinter.h"
+#include <QtGui/qplatformnativeinterface_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +101,9 @@ int QPageSetupDialog::exec()
     QWidget *parent = parentWidget();
     parent = parent ? parent->window() : QApplication::activeWindow();
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
-    psd.hwndOwner = parent ? parent->winId() : 0;
+
+    QWindow *parentWindow = parent->windowHandle();
+    psd.hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
 
     QRect paperRect = d->printer->paperRect();
     QRect pageRect = d->printer->pageRect();

@@ -13,4 +13,5 @@ symbian:SUBDIRS += s60
 qpa: {
     SUBDIRS += platforms
     SUBDIRS += platforminputcontexts
+    SUBDIRS += printsupport
 }

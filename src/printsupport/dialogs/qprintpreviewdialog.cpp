@@ -331,7 +331,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     q->setWindowTitle(caption);
 
     if (!printer->isValid()
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
         || printer->outputFormat() != QPrinter::NativeFormat
 #endif
         )
@@ -560,7 +560,7 @@ void QPrintPreviewDialogPrivate::_q_print()
 {
     Q_Q(QPrintPreviewDialog);
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_WS_MAC)
     if (printer->outputFormat() != QPrinter::NativeFormat) {
         QString title;
         QString suffix;

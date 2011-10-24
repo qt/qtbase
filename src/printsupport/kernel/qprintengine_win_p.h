@@ -55,11 +55,12 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "QtGui/qprinter.h"
-#include "QtGui/qprintengine.h"
-#include "QtGui/qpaintengine.h"
-#include "QtCore/qt_windows.h"
-#include "private/qpaintengine_alpha_p.h"
+#include "qt_windows.h"
+
+#include <QtGui/qpaintengine.h>
+#include <QtPrintSupport/QPrintEngine>
+#include <QtPrintSupport/QPrinter>
+#include <private/qpaintengine_alpha_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +68,7 @@ class QWin32PrintEnginePrivate;
 class QPrinterPrivate;
 class QPainterState;
 
-class QWin32PrintEngine : public QAlphaPaintEngine, public QPrintEngine
+class Q_PRINTSUPPORT_EXPORT QWin32PrintEngine : public QAlphaPaintEngine, public QPrintEngine
 {
     Q_DECLARE_PRIVATE(QWin32PrintEngine)
 public:

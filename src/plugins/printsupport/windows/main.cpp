@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,54 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QPRINTERINFO_H
-#define QPRINTERINFO_H
 
-#include <QtCore/QList>
+#include <QtPrintSupport/qplatformprintplugin_qpa.h>
+#include <QtCore/QStringList>
 
-#include <QtPrintSupport/QPrinter>
-
-QT_BEGIN_HEADER
+#include "qwindowsprintersupport.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-#ifndef QT_NO_PRINTER
-class QPrinterInfoPrivate;
-class QPrinterInfoPrivateDeleter;
-class Q_PRINTSUPPORT_EXPORT QPrinterInfo
+class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 {
+    Q_OBJECT
 public:
-    QPrinterInfo();
-    QPrinterInfo(const QPrinterInfo &other);
-    QPrinterInfo(const QPrinter &printer);
-    ~QPrinterInfo();
-
-    QPrinterInfo &operator=(const QPrinterInfo &other);
-
-    QString printerName() const;
-    bool isNull() const;
-    bool isDefault() const;
-    QList<QPrinter::PaperSize> supportedPaperSizes() const;
-
-    static QList<QPrinterInfo> availablePrinters();
-    static QPrinterInfo defaultPrinter();
-
-private:
-    QPrinterInfo(const QString &name);
-
-private:
-    friend class QPlatformPrinterSupport;
-    friend class QWindowsPrinterSupport;
-    Q_DECLARE_PRIVATE(QPrinterInfo)
-    QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
+    QStringList keys() const;
+    QPlatformPrinterSupport *create(const QString &);
 };
 
-#endif // QT_NO_PRINTER
+QStringList QWindowsPrinterSupportPlugin::keys() const
+{
+    return QStringList(QStringLiteral("windowsprintsupport"));
+}
+
+QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
+{
+    if (key.compare(key, QStringLiteral("windowsprintsupport"), Qt::CaseInsensitive) == 0)
+        return new QWindowsPrinterSupport;
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(windowsprint, QWindowsPrinterSupportPlugin)
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QPRINTERINFO_H
+#include "main.moc"
