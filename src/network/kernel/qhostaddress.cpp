@@ -1109,6 +1109,28 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
     return qMakePair(QHostAddress(addr), netmask);
 }
 
+/*!
+    \since 5.0
+
+    returns true if the address is the IPv6 loopback address, or any
+    of the IPv4 loopback addresses.
+*/
+bool QHostAddress::isLoopback() const
+{
+    QT_ENSURE_PARSED(this);
+    if ((d->a & 0xFF000000) == 0x7F000000)
+        return true; // v4 range (including IPv6 wrapped IPv4 addresses)
+    if (d->protocol == QAbstractSocket::IPv6Protocol) {
+        if (d->a6.c[15] != 1)
+            return false;
+        for (int i = 0; i < 15; i++)
+            if (d->a6[i] != 0)
+                return false;
+        return true;
+    }
+    return false;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug d, const QHostAddress &address)
 {

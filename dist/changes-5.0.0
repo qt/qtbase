@@ -70,6 +70,8 @@ QtWidgets
 
 QtNetwork
 ---------
+* QHostAddress::isLoopback() API added. Returns true if the address is
+  one of the IP loopback addresses.
 
 QtOpenGL
 --------

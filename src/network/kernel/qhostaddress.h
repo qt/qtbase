@@ -120,6 +120,8 @@ public:
     bool isInSubnet(const QHostAddress &subnet, int netmask) const;
     bool isInSubnet(const QPair<QHostAddress, int> &subnet) const;
 
+    bool isLoopback() const;
+
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
 protected:

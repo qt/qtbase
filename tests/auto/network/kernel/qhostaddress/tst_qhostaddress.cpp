@@ -82,6 +82,8 @@ private slots:
     void parseSubnet();
     void isInSubnet_data();
     void isInSubnet();
+    void isLoopback_data();
+    void isLoopback();
 };
 
 QT_BEGIN_NAMESPACE
@@ -605,6 +607,44 @@ void tst_QHostAddress::isInSubnet()
     QFETCH(int, prefixLength);
 
     QTEST(address.isInSubnet(prefix, prefixLength), "result");
+}
+
+void tst_QHostAddress::isLoopback_data()
+{
+    QTest::addColumn<QHostAddress>("address");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("ipv6_loop") << QHostAddress(QHostAddress::LocalHostIPv6) << true;
+    QTest::newRow("::1") << QHostAddress("::1") << true;
+
+    QTest::newRow("ipv4_loop") << QHostAddress(QHostAddress::LocalHost) << true;
+    QTest::newRow("127.0.0.1") << QHostAddress("127.0.0.1") << true;
+    QTest::newRow("127.0.0.2") << QHostAddress("127.0.0.2") << true;
+    QTest::newRow("127.3.2.1") << QHostAddress("127.3.2.1") << true;
+
+    QTest::newRow("default") << QHostAddress() << false;
+    QTest::newRow("1.2.3.4") << QHostAddress("1.2.3.4") << false;
+    QTest::newRow("10.0.0.4") << QHostAddress("10.0.0.4") << false;
+    QTest::newRow("192.168.3.4") << QHostAddress("192.168.3.4") << false;
+
+    QTest::newRow("::") << QHostAddress("::") << false;
+    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << false;
+    QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << false;
+    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << false;
+    QTest::newRow("Broadcast") << QHostAddress(QHostAddress::Broadcast) << false;
+    QTest::newRow("Null") << QHostAddress(QHostAddress::Null) << false;
+
+    QTest::newRow("::ffff:127.0.0.1") << QHostAddress("::ffff:127.0.0.1") << true;
+    QTest::newRow("::ffff:127.0.0.2") << QHostAddress("::ffff:127.0.0.2") << true;
+    QTest::newRow("::ffff:127.3.2.1") << QHostAddress("::ffff:127.3.2.1") << true;
+}
+
+void tst_QHostAddress::isLoopback()
+{
+    QFETCH(QHostAddress, address);
+    QFETCH(bool, result);
+
+    QCOMPARE(address.isLoopback(), result);
 }
 
 QTEST_MAIN(tst_QHostAddress)
