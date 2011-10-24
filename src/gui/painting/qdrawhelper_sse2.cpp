@@ -538,6 +538,122 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Opera
     return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2> >(buffer, op, data, y, x, length);
 }
 
+void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                          const uchar *srcPixels, int sbpl,
+                                          const QRectF &targetRect,
+                                          const QRectF &sourceRect,
+                                          const QRect &clip,
+                                          int const_alpha)
+{
+    if (const_alpha != 256) {
+        // from qblendfunctions.cpp
+        extern void qt_scale_image_argb32_on_argb32(uchar *destPixels, int dbpl,
+                                               const uchar *srcPixels, int sbpl,
+                                               const QRectF &targetRect,
+                                               const QRectF &sourceRect,
+                                               const QRect &clip,
+                                               int const_alpha);
+        return qt_scale_image_argb32_on_argb32(destPixels, dbpl, srcPixels, sbpl, targetRect, sourceRect, clip, const_alpha);
+    }
+
+    qreal sx = targetRect.width() / (qreal) sourceRect.width();
+    qreal sy = targetRect.height() / (qreal) sourceRect.height();
+
+    int ix = 0x00010000 / sx;
+    int iy = 0x00010000 / sy;
+
+    int cx1 = clip.x();
+    int cx2 = clip.x() + clip.width();
+    int cy1 = clip.top();
+    int cy2 = clip.y() + clip.height();
+
+    int tx1 = qRound(targetRect.left());
+    int tx2 = qRound(targetRect.right());
+    int ty1 = qRound(targetRect.top());
+    int ty2 = qRound(targetRect.bottom());
+
+    if (tx2 < tx1)
+        qSwap(tx2, tx1);
+    if (ty2 < ty1)
+        qSwap(ty2, ty1);
+
+    if (tx1 < cx1)
+        tx1 = cx1;
+    if (tx2 >= cx2)
+        tx2 = cx2;
+
+    if (tx1 >= tx2)
+        return;
+
+    if (ty1 < cy1)
+        ty1 = cy1;
+    if (ty2 >= cy2)
+       ty2 = cy2;
+    if (ty1 >= ty2)
+        return;
+
+    int h = ty2 - ty1;
+    int w = tx2 - tx1;
+
+    quint32 basex;
+    quint32 srcy;
+
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(sourceRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(sourceRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(sourceRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(sourceRect.top() * 65536) + dsty;
+    }
+
+    quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
+
+    const __m128i nullVector = _mm_set1_epi32(0);
+    const __m128i half = _mm_set1_epi16(0x80);
+    const __m128i one = _mm_set1_epi16(0xff);
+    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+    const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+    const __m128i ixVector = _mm_set1_epi32(4*ix);
+
+
+    while (h--) {
+        const uint *src = (const quint32 *) (srcPixels + (srcy >> 16) * sbpl);
+        int srcx = basex;
+        int x = 0;
+
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
+            uint s = src[(srcx + x*ix) >> 16];
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+        }
+
+        __m128i srcxVector = _mm_set_epi32(srcx, srcx + ix, srcx + ix + ix, srcx + ix + ix + ix);
+
+        for (; x<w - 3; x += 4) {
+            union Vect_buffer { __m128i vect; quint32 i[4]; };
+            Vect_buffer addr;
+            addr.vect = _mm_srli_epi32(srcxVector, 16);
+            srcxVector = _mm_add_epi32(srcxVector, ixVector);
+
+            const __m128i srcVector = _mm_set_epi32(src[addr.i[0]], src[addr.i[1]], src[addr.i[2]], src[addr.i[3]]);
+            BLEND_SOURCE_OVER_ARGB32_SSE2_helper(dst, srcVector, nullVector, half, one, colorMask, alphaMask);
+        }
+
+        for (; x<w; x++) {
+            uint s = src[(srcx + x*ix) >> 16];
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+        }
+        dst = (quint32 *)(((uchar *) dst) + dbpl);
+        srcy += iy;
+    }
+}
+
 
 QT_END_NAMESPACE
 

@@ -7050,6 +7050,15 @@ void qInitDrawhelperAsm()
         qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
         qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
         qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse2;
+
+        extern void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                                         const uchar *srcPixels, int sbpl,
+                                                         const QRectF &targetRect,
+                                                         const QRectF &sourceRect,
+                                                         const QRect &clip,
+                                                         int const_alpha);
+        qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
+        qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
 #endif
 #ifdef QT_HAVE_SSE
     } else if (features & SSE) {
