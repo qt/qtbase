@@ -281,7 +281,7 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
 
 bool QNativeSocketEnginePrivate::checkProxy(const QHostAddress &address)
 {
-    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
+    if (address.isLoopback())
         return true;
 
 #if !defined(QT_NO_NETWORKPROXY)

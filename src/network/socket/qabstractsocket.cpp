@@ -802,8 +802,7 @@ void QAbstractSocketPrivate::resolveProxy(const QString &hostname, quint16 port)
     if (hostname == QLatin1String("localhost")
         || hostname.startsWith(QLatin1String("localhost."))
         || (parsed.setAddress(hostname)
-            && (parsed == QHostAddress::LocalHost
-                || parsed == QHostAddress::LocalHostIPv6))) {
+            && (parsed.isLoopback()))) {
         proxyInUse = QNetworkProxy::NoProxy;
         return;
     }

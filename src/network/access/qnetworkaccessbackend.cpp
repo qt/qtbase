@@ -372,8 +372,7 @@ bool QNetworkAccessBackend::start()
             const QString host = reply->url.host();
 
             if (host == QLatin1String("localhost") ||
-                QHostAddress(host) == QHostAddress::LocalHost ||
-                QHostAddress(host) == QHostAddress::LocalHostIPv6) {
+                QHostAddress(host).isLoopback()) {
                 // Don't need an open session for localhost access.
             } else {
                 // need to wait for session to be opened

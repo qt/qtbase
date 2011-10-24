@@ -1283,7 +1283,7 @@ bool QSymbianSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 
 bool QSymbianSocketEnginePrivate::checkProxy(const QHostAddress &address)
 {
-    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
+    if (address.isLoopback())
         return true;
 
 #if !defined(QT_NO_NETWORKPROXY)

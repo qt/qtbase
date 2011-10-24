@@ -1504,8 +1504,7 @@ bool QNetworkReplyHttpImplPrivate::start()
     // This is not ideal.
     const QString host = url.host();
     if (host == QLatin1String("localhost") ||
-        QHostAddress(host) == QHostAddress::LocalHost ||
-        QHostAddress(host) == QHostAddress::LocalHostIPv6) {
+        QHostAddress(host).isLoopback()) {
         // Don't need an open session for localhost access.
         postRequest();
         return true;

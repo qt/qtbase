@@ -177,8 +177,7 @@ QTcpServerPrivate::~QTcpServerPrivate()
 */
 QNetworkProxy QTcpServerPrivate::resolveProxy(const QHostAddress &address, quint16 port)
 {
-    if (address == QHostAddress::LocalHost ||
-        address == QHostAddress::LocalHostIPv6)
+    if (address.isLoopback())
         return QNetworkProxy::NoProxy;
 
     QList<QNetworkProxy> proxies;
