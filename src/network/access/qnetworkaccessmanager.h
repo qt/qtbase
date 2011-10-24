@@ -62,7 +62,7 @@ class QNetworkReply;
 class QNetworkProxy;
 class QNetworkProxyFactory;
 class QSslError;
-#if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
+#ifndef QT_NO_BEARERMANAGEMENT
 class QNetworkConfiguration;
 #endif
 class QHttpMultiPart;
@@ -126,13 +126,11 @@ public:
     QNetworkReply *deleteResource(const QNetworkRequest &request);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = 0);
 
-#if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
+#ifndef QT_NO_BEARERMANAGEMENT
     void setConfiguration(const QNetworkConfiguration &config);
     QNetworkConfiguration configuration() const;
     QNetworkConfiguration activeConfiguration() const;
-#endif
 
-#ifndef QT_NO_BEARERMANAGEMENT
     void setNetworkAccessible(NetworkAccessibility accessible);
     NetworkAccessibility networkAccessible() const;
 #endif
@@ -147,11 +145,9 @@ Q_SIGNALS:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 
-#if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
-    void networkSessionConnected();
-#endif
-
 #ifndef QT_NO_BEARERMANAGEMENT
+    void networkSessionConnected();
+
     void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 #endif
 
@@ -166,7 +162,7 @@ private:
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
-#if !defined(QT_NO_BEARERMANAGEMENT) && !defined(QT_MOBILITY_BEARER)
+#ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
 #endif
