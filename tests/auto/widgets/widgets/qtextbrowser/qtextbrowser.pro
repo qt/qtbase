@@ -12,5 +12,3 @@ wince* {
    addDir.path = subdir
    DEPLOYMENT += addFiles addDir
 }
-
-CONFIG+=insignificant_test
