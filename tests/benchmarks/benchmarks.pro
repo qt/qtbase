@@ -3,6 +3,7 @@ SUBDIRS = \
         corelib \
         gui \
         network \
+        sql \
 
 # removed-by-refactor contains(QT_CONFIG, opengl): SUBDIRS += opengl
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
