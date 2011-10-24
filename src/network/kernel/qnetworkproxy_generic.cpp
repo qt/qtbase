@@ -41,17 +41,44 @@
 
 #include "qnetworkproxy.h"
 
+#include <QtCore/QByteArray>
+#include <QtCore/QUrl>
+
 #ifndef QT_NO_NETWORKPROXY
 
 /*
- * No system proxy. Just return a list with NoProxy.
+ * Construct a proxy from the environment variable http_proxy.
+ * Or no system proxy. Just return a list with NoProxy.
  */
 
 QT_BEGIN_NAMESPACE
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &)
 {
-    return QList<QNetworkProxy>() << QNetworkProxy::NoProxy;
+    QList<QNetworkProxy> proxyList;
+
+    QByteArray proxy_env = qgetenv("http_proxy");
+    if (!proxy_env.isEmpty()) {
+        QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
+        if (url.scheme() == QLatin1String("socks5")) {
+            QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
+                    url.port() ? url.port() : 1080, url.userName(), url.password());
+            proxyList << proxy;
+        } else if (url.scheme() == QLatin1String("socks5h")) {
+            QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
+                    url.port() ? url.port() : 1080, url.userName(), url.password());
+            proxy.setCapabilities(QNetworkProxy::HostNameLookupCapability);
+            proxyList << proxy;
+        } else if (url.scheme() == QLatin1String("http") || url.scheme().isEmpty()) {
+            QNetworkProxy proxy(QNetworkProxy::HttpProxy, url.host(),
+                    url.port() ? url.port() : 8080, url.userName(), url.password());
+            proxyList << proxy;
+        }
+    }
+    if (proxyList.isEmpty())
+        proxyList << QNetworkProxy::NoProxy;
+
+    return proxyList;
 }
 
 QT_END_NAMESPACE
