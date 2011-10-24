@@ -768,6 +768,9 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
         return false;
     }
 
+    localPort = port;
+    localAddress = address;
+
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeBind(%s, %i) == true",
            address.toString().toLatin1().constData(), port);
