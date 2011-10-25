@@ -100,27 +100,28 @@ nacl {
 }
 
 unix:!symbian {
-        SOURCES += \
-                kernel/qcore_unix.cpp \
-                kernel/qcrashhandler.cpp \
-                kernel/qsharedmemory_unix.cpp \
-                kernel/qsystemsemaphore_unix.cpp
-        HEADERS += \
-                kernel/qcore_unix_p.h \
-                kernel/qcrashhandler_p.h
+    SOURCES += \
+            kernel/qcore_unix.cpp \
+            kernel/qcrashhandler.cpp \
+            kernel/qsharedmemory_unix.cpp \
+            kernel/qsystemsemaphore_unix.cpp \
+            kernel/qeventdispatcher_unix.cpp \
+            kernel/qtimerinfo_unix.cpp
 
-        contains(QT_CONFIG, glib) {
-            SOURCES += \
-                kernel/qeventdispatcher_glib.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_glib_p.h
-            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-            LIBS_PRIVATE +=$$QT_LIBS_GLIB
-        }
-            SOURCES += \
-                kernel/qeventdispatcher_unix.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_unix_p.h
+    HEADERS += \
+            kernel/qcore_unix_p.h \
+            kernel/qcrashhandler_p.h \
+            kernel/qeventdispatcher_unix_p.h \
+            kernel/qtimerinfo_unix_p.h
+
+    contains(QT_CONFIG, glib) {
+        SOURCES += \
+            kernel/qeventdispatcher_glib.cpp
+        HEADERS += \
+            kernel/qeventdispatcher_glib_p.h
+        QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
+        LIBS_PRIVATE +=$$QT_LIBS_GLIB
+    }
 
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 }
@@ -155,11 +156,13 @@ integrity {
                  kernel/qcrashhandler.cpp \
                  kernel/qsharedmemory_unix.cpp \
                  kernel/qsystemsemaphore_unix.cpp \
-                 kernel/qeventdispatcher_unix.cpp
+                 kernel/qeventdispatcher_unix.cpp \
+                 kernel/qtimerinfo_unix.cpp
        HEADERS += \
                  kernel/qcore_unix_p.h \
                  kernel/qcrashhandler_p.h \
-                 kernel/qeventdispatcher_unix_p.h
+                 kernel/qeventdispatcher_unix_p.h \
+                 kernel/qtimerinfo_unix_p.h
 
    contains(QT_CONFIG, clock-gettime):include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
 }
