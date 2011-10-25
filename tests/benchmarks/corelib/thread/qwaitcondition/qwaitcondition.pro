@@ -1,9 +1,4 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 TARGET = tst_bench_qwaitcondition
-QT -= gui
+QT = core testlib
 SOURCES += tst_qwaitcondition.cpp

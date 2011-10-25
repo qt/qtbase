@@ -1,8 +1,3 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 TARGET = bench_qdir_10000
 DEPENDPATH += .
@@ -11,4 +6,4 @@ INCLUDEPATH += .
 # Input
 SOURCES += bench_qdir_10000.cpp
 
-QT -= gui
+QT = core testlib

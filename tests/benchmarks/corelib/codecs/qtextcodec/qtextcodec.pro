@@ -1,10 +1,5 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TARGET = tst_bench_qtextcodec
-QT -= gui
+QT = core testlib
 SOURCES += main.cpp
 
 wince*:{

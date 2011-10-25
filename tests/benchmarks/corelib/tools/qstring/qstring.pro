@@ -1,11 +1,6 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TARGET = tst_bench_qstring
 QT -= gui
-QT += core-private
+QT += core-private testlib
 SOURCES += main.cpp data.cpp fromlatin1.cpp fromutf8.cpp
 
 wince*:{

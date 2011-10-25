@@ -1,8 +1,4 @@
-load(qttest_p4)
-QT += widgets
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
+QT += widgets testlib
 
 TEMPLATE = app
 TARGET = tst_bench_qgraphicsview

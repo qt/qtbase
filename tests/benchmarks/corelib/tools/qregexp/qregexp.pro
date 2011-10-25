@@ -1,14 +1,9 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 TARGET = tst_bench_qregexp
 DEPENDPATH += .
 INCLUDEPATH += .
 RESOURCES+=qregexp.qrc
-QT -= gui
+QT = core testlib
 
 CONFIG += release
 

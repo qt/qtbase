@@ -1,11 +1,6 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 TARGET = tst_bench_imageConversion
-
+QT += testlib
 SOURCES += tst_qimageconversion.cpp
 
 !contains(QT_CONFIG, no-gif):DEFINES += QTEST_HAVE_GIF

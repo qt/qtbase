@@ -1,8 +1,3 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 TARGET = qtimer_vs_qmetaobject
 DEPENDPATH += .
@@ -13,4 +8,4 @@ CONFIG += release
 
 
 SOURCES += tst_qtimer_vs_qmetaobject.cpp
-QT -= gui
+QT = core testlib

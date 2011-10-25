@@ -1,9 +1,5 @@
-load(qttest_p4)
-
-QT += widgets
+QT += widgets testlib
 QT += gui-private widgets-private
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
 
 TEMPLATE = app
 TARGET = tst_bench_QText

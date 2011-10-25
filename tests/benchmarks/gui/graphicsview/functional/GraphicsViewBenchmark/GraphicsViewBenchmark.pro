@@ -1,11 +1,6 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
 TEMPLATE = app
 
-QT += svg
+QT += svg testlib
 contains(QT_CONFIG, opengl):QT += opengl
 
 HEADERS += widgets/gvbwidget.h \

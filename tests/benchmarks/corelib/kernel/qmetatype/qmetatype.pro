@@ -1,9 +1,4 @@
-load(qttest_p4)
-
-# do not run benchmarks by default in 'make check'
-CONFIG -= testcase
-
-QT = core
+QT = core testlib
 TEMPLATE = app
 TARGET = tst_qmetatype
 
