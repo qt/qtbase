@@ -1053,13 +1053,13 @@ void tst_QGraphicsGridLayout::horizontalSpacing()
     layout->setContentsMargins(0, 0, 0, 0);
     qreal w = layout->sizeHint(Qt::PreferredSize, QSizeF()).width();
     qreal oldSpacing = layout->horizontalSpacing();
+
+    // The remainder of this test is only applicable if the current style uses uniform layout spacing
     if (oldSpacing != -1) {
         layout->setHorizontalSpacing(horizontalSpacing);
         QApplication::processEvents();
         qreal new_w = layout->sizeHint(Qt::PreferredSize, QSizeF()).width();
         QCOMPARE(new_w, w - (3-1)*(oldSpacing - horizontalSpacing));
-    } else {
-        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }
@@ -1638,14 +1638,14 @@ void tst_QGraphicsGridLayout::setSpacing()
     QSizeF sh = layout->sizeHint(Qt::PreferredSize, QSizeF());
     qreal oldVSpacing = layout->verticalSpacing();
     qreal oldHSpacing = layout->horizontalSpacing();
+
+    // The remainder of this test is only applicable if the current style uses uniform layout spacing
     if (oldVSpacing != -1) {
         layout->setSpacing(spacing);
         QApplication::processEvents();
         QSizeF newSH = layout->sizeHint(Qt::PreferredSize, QSizeF());
         QCOMPARE(newSH.height(), sh.height() - (2-1)*(oldVSpacing - spacing));
         QCOMPARE(newSH.width(), sh.width() - (3-1)*(oldHSpacing - spacing));
-    } else {
-        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }
@@ -1753,13 +1753,13 @@ void tst_QGraphicsGridLayout::verticalSpacing()
     layout->setContentsMargins(0, 0, 0, 0);
     qreal h = layout->sizeHint(Qt::PreferredSize, QSizeF()).height();
     qreal oldSpacing = layout->verticalSpacing();
+
+    // The remainder of this test is only applicable if the current style uses uniform layout spacing
     if (oldSpacing != -1) {
         layout->setVerticalSpacing(verticalSpacing);
         QApplication::processEvents();
         qreal new_h = layout->sizeHint(Qt::PreferredSize, QSizeF()).height();
         QCOMPARE(new_h, h - (2-1)*(oldSpacing - verticalSpacing));
-    } else {
-        QSKIP("The current style uses non-uniform layout spacing");
     }
     delete widget;
 }
