@@ -47,11 +47,9 @@ DEPENDPATH += $$INCLUDEPATH \
               ../../xml
 
 SOURCES += \
-           ../../corelib/codecs/qisciicodec.cpp \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qsimplecodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
-           ../../corelib/codecs/qtsciicodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
            ../../corelib/global/qmalloc.cpp \
@@ -101,11 +99,6 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
-
-mac: OBJECTIVE_SOURCES += ../../corelib/tools/qlocale_mac.mm
-else:symbian:SOURCES += ../../corelib/tools/qlocale_symbian.cpp
-else:unix:SOURCES += ../../corelib/tools/qlocale_unix.cpp
-else:win32:SOURCES += ../../corelib/tools/qlocale_win.cpp
 
 macx: {
    SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp
