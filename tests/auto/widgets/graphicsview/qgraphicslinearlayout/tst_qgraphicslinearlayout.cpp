@@ -936,6 +936,7 @@ void tst_QGraphicsLinearLayout::setSpacing()
     widget->setLayout(&layout);
     layout.setContentsMargins(0, 0, 0, 0);
 
+    // The remainder of this test is only applicable if the style uses uniform spacing
     qreal oldSpacing = layout.spacing();
     if (oldSpacing != -1) {
         for (int i = 0; i < 3; ++i)
@@ -951,8 +952,6 @@ void tst_QGraphicsLinearLayout::setSpacing()
         QSizeF newSizeHint = layout.sizeHint(Qt::PreferredSize);
 
         QCOMPARE(oldSizeHint.width() - oldSpacing * 2, newSizeHint.width() - spacing * 2);
-    } else {
-        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)");
     }
     delete widget;
 }
@@ -995,10 +994,10 @@ void tst_QGraphicsLinearLayout::setItemSpacing()
     view.show();
     QApplication::processEvents();
     QSizeF newSizeHint = layout->sizeHint(Qt::PreferredSize);
+
+    // The remainder of this test is only applicable if the style uses uniform spacing
     if (oldSpacing >= 0) {
         QCOMPARE(newSizeHint.width() - spacing, oldSizeHint.width() - oldSpacing);
-    } else {
-        QSKIP("This style uses non-uniform spacings (layoutSpacingImplementation() is reimplemented)");
     }
     delete widget;
 }
