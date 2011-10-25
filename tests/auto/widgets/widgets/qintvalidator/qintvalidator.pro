@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qintvalidator
 SOURCES += tst_qintvalidator.cpp
-
-
+QT += testlib

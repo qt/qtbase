@@ -2,8 +2,9 @@
 # Project file for autotest for file qfiledialog.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets widgets-private
+CONFIG += testcase
+TARGET = tst_qfiledialog
+QT += widgets widgets-private testlib
 QT += core-private gui-private
 SOURCES += tst_qfiledialog.cpp
 

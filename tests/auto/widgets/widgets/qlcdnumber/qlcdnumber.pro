@@ -2,8 +2,9 @@
 # Project file for autotest for file qlcdnumber.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qlcdnumber
+QT += widgets testlib
 SOURCES += tst_qlcdnumber.cpp
 
 

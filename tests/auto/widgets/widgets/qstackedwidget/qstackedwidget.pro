@@ -2,8 +2,9 @@
 # Project file for autotest for file qstackedwidget.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qstackedwidget
+QT += widgets testlib
 SOURCES += tst_qstackedwidget.cpp
 
 

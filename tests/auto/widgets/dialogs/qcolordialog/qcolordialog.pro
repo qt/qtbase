@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qcolordialog
+QT += widgets testlib
 SOURCES  += tst_qcolordialog.cpp
 
 

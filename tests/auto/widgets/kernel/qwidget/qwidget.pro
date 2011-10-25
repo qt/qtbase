@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qwidget
 
-QT += widgets core-private gui-private widgets-private
+QT += widgets core-private gui-private widgets-private testlib
 
 SOURCES  += tst_qwidget.cpp
 RESOURCES     = qwidget.qrc

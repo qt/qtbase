@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qgraphicsobject
 
-QT += widgets
+QT += widgets testlib
 QT += core-private
 
 SOURCES  += tst_qgraphicsobject.cpp

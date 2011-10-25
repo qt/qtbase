@@ -1,3 +1,4 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qdesktopwidget
+QT += widgets testlib
 SOURCES += tst_qdesktopwidget.cpp

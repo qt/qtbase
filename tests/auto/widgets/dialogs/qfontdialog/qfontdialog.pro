@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qfontdialog
 
-QT += widgets widgets-private
+QT += widgets widgets-private testlib
 QT += core-private gui-private
 
 SOURCES  += tst_qfontdialog.cpp

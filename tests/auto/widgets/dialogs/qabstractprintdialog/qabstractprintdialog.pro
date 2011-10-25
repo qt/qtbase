@@ -2,8 +2,9 @@
 # Project file for autotest for file qabstractprintdialog.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets printsupport
+CONFIG += testcase
+TARGET = tst_qabstractprintdialog
+QT += widgets printsupport testlib
 SOURCES += tst_qabstractprintdialog.cpp
 
 CONFIG += insignificant_test # QTBUG-21402

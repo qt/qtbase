@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qdial
+QT += widgets testlib
 SOURCES  += tst_qdial.cpp
 
 

@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qwidget_window
+QT += widgets testlib
 SOURCES  += tst_qwidget_window.cpp
 
 x11 {

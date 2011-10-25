@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmdiarea
 
-QT += gui-private widgets
+QT += gui-private widgets testlib
 
 INCLUDEPATH += .
 SOURCES += tst_qmdiarea.cpp

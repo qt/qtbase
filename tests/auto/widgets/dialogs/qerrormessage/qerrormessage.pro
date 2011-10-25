@@ -1,10 +1,10 @@
-load(qttest_p4)
+CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qerrormessage
 DEPENDPATH += .
 INCLUDEPATH += . 
 
-QT += widgets
+QT += widgets testlib
 
 # Input
 SOURCES += tst_qerrormessage.cpp

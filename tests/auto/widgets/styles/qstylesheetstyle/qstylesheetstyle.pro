@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets widgets-private
+CONFIG += testcase
+TARGET = tst_qstylesheetstyle
+QT += widgets widgets-private testlib
 QT += gui-private
 # Input
 SOURCES += tst_qstylesheetstyle.cpp

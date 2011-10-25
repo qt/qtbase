@@ -1,7 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qcompleter
-QT += widgets
+QT += widgets testlib
 DEPENDPATH += .
 INCLUDEPATH += . ..
 

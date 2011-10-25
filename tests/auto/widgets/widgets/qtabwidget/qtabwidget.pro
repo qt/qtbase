@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtabwidget
 
-QT += widgets widgets-private
+QT += widgets widgets-private testlib
 
 INCLUDEPATH += ../
 

@@ -1,6 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
 
-QT += widgets widgets-private
+QT += widgets widgets-private testlib
 QT += core-private gui-private
 
 SOURCES += ../tst_qapplication.cpp

@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qstringlistmodel
+QT += widgets testlib
 HEADERS += qmodellistener.h
 
 SOURCES         += tst_qstringlistmodel.cpp

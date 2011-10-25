@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtextbrowser
 SOURCES += tst_qtextbrowser.cpp
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-QT += widgets
+QT += widgets testlib
 
 wince* {
    addFiles.files = *.html

@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsizegrip
 INCLUDEPATH += .
-QT += widgets
+QT += widgets testlib
 SOURCES += tst_qsizegrip.cpp
 
 

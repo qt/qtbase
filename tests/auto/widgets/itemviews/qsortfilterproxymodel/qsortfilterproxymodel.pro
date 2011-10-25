@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsortfilterproxymodel
 
-QT += gui widgets
+QT += gui widgets testlib
 mtdir = ../../../integrationtests/modeltest
 
 INCLUDEPATH += $$PWD/$${mtdir}

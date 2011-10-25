@@ -2,8 +2,9 @@
 # Project file for autotest for file qprogressdialog.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qprogressdialog
+QT += widgets testlib
 SOURCES += tst_qprogressdialog.cpp
 
 

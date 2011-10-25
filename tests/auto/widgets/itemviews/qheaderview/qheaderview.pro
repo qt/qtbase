@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qheaderview
 
-QT += widgets widgets-private
+QT += widgets widgets-private testlib
 QT += core-private gui-private
 
 SOURCES  += tst_qheaderview.cpp

@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtextedit
 
-QT += widgets widgets-private gui-private
+QT += widgets widgets-private gui-private testlib
 INCLUDEPATH += ../
 
 HEADERS +=  

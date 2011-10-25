@@ -1,6 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
 TARGET.EPOCHEAPSIZE = 0x200000 0x800000
-QT += widgets
+QT += widgets testlib
 SOURCES  += tst_qstyle.cpp
 
 wince* {

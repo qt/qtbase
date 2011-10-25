@@ -2,8 +2,9 @@
 # Project file for autotest for file qsystemtrayicon.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qsystemtrayicon
+QT += widgets testlib
 SOURCES += tst_qsystemtrayicon.cpp
 
 

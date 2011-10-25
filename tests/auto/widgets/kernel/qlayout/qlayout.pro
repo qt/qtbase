@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qlayout
 
-QT += widgets widgets-private
+QT += widgets widgets-private testlib
 
 SOURCES += tst_qlayout.cpp
 wince* {

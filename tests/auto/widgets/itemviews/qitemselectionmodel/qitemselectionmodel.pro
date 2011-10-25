@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qitemselectionmodel
+QT += widgets testlib
 SOURCES  += tst_qitemselectionmodel.cpp
 
 

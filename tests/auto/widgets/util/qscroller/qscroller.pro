@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qscroller
 
-QT += widgets
+QT += widgets testlib
 SOURCES += tst_qscroller.cpp

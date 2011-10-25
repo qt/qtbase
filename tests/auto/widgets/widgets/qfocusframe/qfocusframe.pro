@@ -2,8 +2,9 @@
 # Project file for autotest for file qfocusframe.h
 ############################################################
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qfocusframe
+QT += widgets testlib
 SOURCES += tst_qfocusframe.cpp
 
 
