@@ -74,8 +74,8 @@ static QByteArray getMacLocaleName()
     QByteArray result = envVarLocale();
 
     QString lang, script, cntry;
-    if (result.isEmpty() || result != "C"
-            && !qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) {
+    if (result.isEmpty()
+        || (result != "C" && !qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry))) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
         result = QCFString::toQString(locale).toUtf8();
