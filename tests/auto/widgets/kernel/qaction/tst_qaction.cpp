@@ -240,13 +240,12 @@ void tst_QAction::setStandardKeys()
     QVERIFY(act.shortcut() == act.shortcuts().first());
 
     QList<QKeySequence> expected;
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     expected  << QKeySequence("CTRL+C");
-#elif defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
-    expected  << QKeySequence("CTRL+C") << QKeySequence("CTRL+INSERT");
 #else
-    expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
+    expected  << QKeySequence("CTRL+C") << QKeySequence("CTRL+INSERT");
 #endif
+//  Qt/Embedded on Windows: expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
     QVERIFY(act.shortcuts() == expected);
 }
 

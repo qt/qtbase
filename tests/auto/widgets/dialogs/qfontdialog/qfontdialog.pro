@@ -6,8 +6,9 @@ QT += core-private gui-private
 
 SOURCES  += tst_qfontdialog.cpp
 
-mac:!qpa {
-    OBJECTIVE_SOURCES += tst_qfontdialog_mac_helpers.mm
-    LIBS += -framework Cocoa
+mac {
+#    ### fixme
+#    OBJECTIVE_SOURCES += tst_qfontdialog_mac_helpers.mm
+#    LIBS += -framework Cocoa
 }
 

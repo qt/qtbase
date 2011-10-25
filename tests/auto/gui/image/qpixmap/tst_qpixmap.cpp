@@ -52,6 +52,7 @@
 #include <qsplashscreen.h>
 
 #include <qplatformpixmap_qpa.h>
+#include <private/qguiapplication_p.h>
 #include <private/qdrawhelper_p.h>
 
 #include <QSet>
@@ -774,9 +775,8 @@ void tst_QPixmap::grabWidget()
 
 void tst_QPixmap::grabWindow()
 {
-#ifdef Q_WS_QPA
+//  ### fixme: Check platforms
     QSKIP("QTBUG-20863 grabWindow is broken on most qpa backends");
-#endif
 #ifdef Q_OS_WINCE
     // We get out of memory, if the desktop itself is too big.
     if (QApplication::desktop()->width() <= 480)
@@ -1083,10 +1083,6 @@ void tst_QPixmap::fromWinHICON()
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {
-#ifdef Q_WS_QPA
-    QSKIP("QTBUG-20864 can't determine if threaded pixmaps are available for qpa");
-#endif
-#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
     class Thread : public QThread
     {
     public:
@@ -1108,10 +1104,12 @@ void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
             QVERIFY(pixmap2.isNull());
         }
     };
+    if (QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::ThreadedPixmaps))
+        QSKIP("This platform supports threaded pixmaps.");
+
     Thread thread;
     thread.start();
     thread.wait();
-#endif // !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
 }
 
 void tst_QPixmap::refUnref()

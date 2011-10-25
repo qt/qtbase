@@ -1593,12 +1593,10 @@ void tst_QCssParser::extractFontFamily()
     extractor.extractFont(&fnt, &adjustment);
     QFontInfo info(fnt);
 
-#ifdef Q_WS_QPA
     // Note, we have to QSKIP rather than QEXPECT_FAIL because font lookup is broken
     // such that it may work or not work depending on the order in which fonts were
-    // loaded from disk
+    // loaded from disk: ### fixme: Check platforms
     QSKIP("QTBUG-20986 may fail on qpa");
-#endif
 
     QTEST(info.family(), "expectedFamily");
 }

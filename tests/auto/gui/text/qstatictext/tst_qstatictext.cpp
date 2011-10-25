@@ -388,18 +388,7 @@ bool tst_QStaticText::supportsTransformations() const
 {
     QPixmap pm(10, 10);
     QPainter p(&pm);
-    QPaintEngine *engine = p.paintEngine();
-
-    QPaintEngine::Type type = engine->type();
-
-    if (type == QPaintEngine::OpenGL
-#if !defined(Q_WS_WIN) && !defined(Q_WS_X11) && !defined(Q_WS_MAC) && !defined(Q_WS_QPA)
-        || type == QPaintEngine::Raster
-#endif
-        )
-        return false;
-
-    return true;
+    return p.paintEngine()->type() != QPaintEngine::OpenGL;
 }
 
 void tst_QStaticText::rotatedPainter()

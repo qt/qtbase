@@ -55,7 +55,7 @@ class tst_QClipboard : public QObject
 {
     Q_OBJECT
 private slots:
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(QT_NO_PROCESS)
+#if (defined(Q_OS_WIN) || defined(Q_OS_MAC)) && !defined(QT_NO_PROCESS)
     void copy_exit_paste();
 #endif
     void capabiliyFunctions();
@@ -191,14 +191,14 @@ void tst_QClipboard::testSignals()
 // This test does not make sense on X11 and embedded, as copied data disappears
 // from the clipboard when the application exits.  It's still possible to test
 // copy/paste - just keep the apps running.
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(QT_NO_PROCESS)
+#if (defined(Q_OS_WIN) || defined(Q_OS_MAC)) && !defined(QT_NO_PROCESS)
 void tst_QClipboard::copy_exit_paste()
 {
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup");
     const QStringList stringArgument = QStringList() << "Test string.";
     QCOMPARE(QProcess::execute("copier/copier", stringArgument), 0);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
 #endif

@@ -22,10 +22,10 @@ SUBDIRS=\
 
 wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
 
-!mac|qpa: SUBDIRS -= \
+!mac: SUBDIRS -= \
            macgui \
            macnativeevents \
-           macplist \
+           macplist
 
 !embedded|wince*: SUBDIRS -= \
            qdirectpainter \

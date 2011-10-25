@@ -82,9 +82,9 @@ private slots:
     void testSetOptions();
     void testMargins_data();
     void testMargins();
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(Q_OS_MAC)
+#ifdef Q_OS_WIN
     void testNonExistentPrinter();
-#endif
+#endif // Q_OS_WIN
     void testPageSetupDialog();
     void testMulitpleSets_data();
     void testMulitpleSets();
@@ -384,8 +384,7 @@ void tst_QPrinter::testMargins()
         delete painter;
 }
 
-// QPrinter::testNonExistentPrinter() is not relevant for some platforms.
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA) && !defined(Q_OS_MAC)
+#ifdef Q_OS_WIN
 void tst_QPrinter::testNonExistentPrinter()
 {
     QPrinter printer;
@@ -416,7 +415,7 @@ void tst_QPrinter::testNonExistentPrinter()
 
     QVERIFY(!painter.begin(&printer));
 }
-#endif
+#endif // Q_OS_WIN
 
 void tst_QPrinter::testMulitpleSets_data()
 {

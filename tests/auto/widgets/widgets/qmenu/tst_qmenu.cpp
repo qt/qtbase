@@ -773,9 +773,9 @@ public:
 #ifndef Q_OS_WINCE_WM
 void tst_QMenu::task258920_mouseBorder()
 {
-#ifdef Q_WS_QPA
+    // ### fixme: Check platforms
     QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa");
-#endif
+
     Menu258920 menu;
     // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
     menu.setMouseTracking(true);

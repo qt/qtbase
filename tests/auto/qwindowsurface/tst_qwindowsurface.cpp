@@ -125,9 +125,6 @@ static void VERIFY_COLOR(const QRegion &region, const QColor &color)
             const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(),
                                                    rect.left(), rect.top(),
                                                    rect.width(), rect.height());
-#ifdef Q_WS_QPA
-            QEXPECT_FAIL("", "QTBUG-20863 QPixmap::grabWindow unimplemented for qpa", Abort);
-#endif
             QCOMPARE(pixmap.size(), rect.size());
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */
             expectedPixmap.fill(color);

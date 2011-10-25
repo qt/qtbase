@@ -80,9 +80,7 @@ private slots:
     void italicOblique();
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
-#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
     void lastResortFont();
-#endif
 #if defined(Q_WS_MAC)
     void styleName();
 #endif
@@ -611,13 +609,13 @@ void tst_QFont::serializeSpacing()
 // QFont::lastResortFont() may abort with qFatal() on QWS/QPA
 // if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
 // This happens on our CI machines which run QWS autotests.
-#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
+// ### fixme: Check platforms
 void tst_QFont::lastResortFont()
 {
+    QSKIP("QFont::lastResortFont() may abort with qFatal() on QPA, QTBUG-22325");
     QFont font;
     QVERIFY(!font.lastResortFont().isEmpty());
 }
-#endif
 
 #if defined(Q_WS_MAC)
 void tst_QFont::styleName()

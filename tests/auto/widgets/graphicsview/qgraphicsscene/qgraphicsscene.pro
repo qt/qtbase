@@ -18,4 +18,5 @@ wince* {
    DEFINES += SRCDIR=\\\".\\\"
 }
 
-contains(QT_CONFIG,xcb):qpa:CONFIG+=insignificant_test  # QTBUG-20756 crashes on qpa, xcb
+# ### fixme: QTBUG-20756 crashes on xcb
+contains(QT_CONFIG,xcb):CONFIG+=insignificant_test

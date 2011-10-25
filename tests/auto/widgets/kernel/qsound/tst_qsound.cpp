@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui>
+#include <QtWidgets>
 
 class tst_QSound : public QObject
 {
@@ -59,9 +59,7 @@ private slots:
 
 void tst_QSound::checkFinished()
 {
-#if defined(Q_WS_QPA)
     QSKIP("QSound is not implemented on Lighthouse");
-#else
     QSound sound(SRCDIR"4.wav");
     sound.setLoops(3);
     sound.play();
@@ -71,17 +69,14 @@ void tst_QSound::checkFinished()
     QEXPECT_FAIL("", "QSound buggy on embedded (task QTBUG-157)", Abort);
 #endif
     QVERIFY(sound.isFinished() );
-#endif
 }
 
 void tst_QSound::staticPlay()
 {
     QSKIP("Test disabled -- only for manual purposes");
-#if !defined(Q_WS_QPA)
     // Check that you hear sound with static play also.
     QSound::play(SRCDIR"4.wav");
     QTest::qWait(2000);
-#endif
 }
 
 QTEST_MAIN(tst_QSound);

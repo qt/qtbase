@@ -380,7 +380,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if !defined(Q_OS_WINCE_WM)
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
@@ -1931,8 +1931,9 @@ void tst_QWidget::showMaximized()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowMaximized));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_QPA)
-//embedded may choose a different size to fit on the screen.
+    // ### fixme: embedded may choose a different size to fit on the screen.
+    // Check platforms (QTBUG-22326)
+#if 0
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
     layouted.showMaximized();
@@ -2008,8 +2009,8 @@ void tst_QWidget::showFullScreen()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_QPA)
-//embedded may choose a different size to fit on the screen.
+    // ### fixme: embedded may choose a different size to fit on the screen. (QTBUG-22326)
+#if 0
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
 
@@ -3278,9 +3279,8 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-#if defined(Q_WS_QPA)
-    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
-#endif
+    /// ### fixme: Check platforms
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse QTBUG-22326", Continue);
 
     QTRY_COMPARE(QApplication::widgetAt(100,100)->objectName(), w1->objectName());
     QTRY_COMPARE(QApplication::widgetAt(101,101)->objectName(), w2->objectName());
@@ -3297,9 +3297,8 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
-#if defined(Q_WS_QPA)
-    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
-#endif
+    /// ### fixme: Check platforms
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse  QTBUG-22326", Continue);
     QTRY_VERIFY(QApplication::widgetAt(100,100) == w1);
     QTRY_VERIFY(QApplication::widgetAt(101,101) == w2);
 
@@ -8632,7 +8631,7 @@ void tst_QWidget::maskedUpdate()
 }
 
 // Windows Mobile has no proper cursor support, so skip this test on that platform.
-#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if !defined(Q_OS_WINCE_WM)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -8737,7 +8736,7 @@ void tst_QWidget::syntheticEnterLeave()
 #endif
 
 // Windows Mobile has no proper cursor support, so skip this test on that platform.
-#if defined(Q_WS_X11) || (defined(Q_WS_WIN) && !defined(Q_OS_WINCE_WM)) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if !defined(Q_OS_WINCE_WM)
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
     class SELParent : public QWidget
