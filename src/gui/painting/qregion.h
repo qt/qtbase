@@ -82,6 +82,7 @@ public:
 #endif
     inline void swap(QRegion &other) { qSwap(d, other.d); }
     bool isEmpty() const;
+    bool isNull() const;
 
     bool contains(const QPoint &p) const;
     bool contains(const QRect &r) const;

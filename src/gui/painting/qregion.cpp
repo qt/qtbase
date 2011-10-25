@@ -729,6 +729,17 @@ QRegion QRegion::intersect(const QRect &r) const
 */
 
 /*!
+    \fn bool QRegion::isNull() const
+    \since 5.0
+
+    Returns true if the region is empty; otherwise returns false. An
+    empty region is a region that contains no points. This function is
+    the same as isEmpty
+
+    \sa isEmpty()
+*/
+
+/*!
     \fn bool QRegion::contains(const QPoint &p) const
 
     Returns true if the region contains the point \a p; otherwise
@@ -3893,6 +3904,10 @@ bool QRegion::isEmpty() const
     return d == &shared_empty || d->qt_rgn->numRects == 0;
 }
 
+bool QRegion::isNull() const
+{
+    return d == &shared_empty || d->qt_rgn->numRects == 0;
+}
 
 bool QRegion::contains(const QPoint &p) const
 {
