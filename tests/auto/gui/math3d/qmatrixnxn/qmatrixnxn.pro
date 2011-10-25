@@ -1,2 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmatrixnxn
 SOURCES += tst_qmatrixnxn.cpp
+QT += testlib

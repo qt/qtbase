@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qimagereader
 SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
-QT += widgets widgets-private core-private gui-private network
+QT += widgets widgets-private core-private gui-private network testlib
 RESOURCES += qimagereader.qrc
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 

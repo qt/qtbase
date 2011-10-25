@@ -1,5 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qicoimageformat
 SOURCES+= tst_qicoimageformat.cpp
+QT += testlib
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"

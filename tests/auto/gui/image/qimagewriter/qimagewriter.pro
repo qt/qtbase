@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+TARGET = tst_qimagewriter
+QT += widgets testlib
 SOURCES += tst_qimagewriter.cpp
 MOC_DIR=tmp
 !contains(QT_CONFIG, no-tiff):DEFINES += QTEST_HAVE_TIFF

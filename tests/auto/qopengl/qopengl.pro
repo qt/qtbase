@@ -2,8 +2,9 @@
 # Project file for autotest for gui/opengl functionality
 ############################################################
 
-load(qttest_p4)
-QT += gui gui-private core-private
+CONFIG += testcase
+TARGET = tst_qopengl
+QT += gui gui-private core-private testlib
 
 SOURCES   += tst_qopengl.cpp
 

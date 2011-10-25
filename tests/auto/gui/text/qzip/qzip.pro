@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += gui-private
+CONFIG += testcase
+TARGET = tst_qzip
+QT += gui-private testlib
 SOURCES += tst_qzip.cpp
 
 wince* {

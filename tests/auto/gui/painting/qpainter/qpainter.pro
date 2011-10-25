@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qpainter
 
-QT += widgets widgets-private printsupport
+QT += widgets widgets-private printsupport testlib
 
 SOURCES  += tst_qpainter.cpp
 wince* {

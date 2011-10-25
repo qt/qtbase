@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core gui
+CONFIG += testcase
+TARGET = tst_qglyphrun
+QT = core gui testlib
 
 SOURCES += \
     tst_qglyphrun.cpp

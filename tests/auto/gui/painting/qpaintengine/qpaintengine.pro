@@ -1,9 +1,4 @@
-############################################################
-# Project file for autotest for file qpaintengine.h
-############################################################
-
-load(qttest_p4)
-
+CONFIG += testcase
+TARGET = tst_qpaintengine
 SOURCES += tst_qpaintengine.cpp
-
-
+QT += testlib

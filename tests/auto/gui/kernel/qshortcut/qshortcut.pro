@@ -1,10 +1,11 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qshortcut
 
 # Project Configuration ----------------------------------------------
 INCLUDEPATH  += ../
 
 # Normal Test Files --------------------------------------------------
-QT += widgets
+QT += widgets testlib
 HEADERS      += 
 SOURCES      += tst_qshortcut.cpp
 

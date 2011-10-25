@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtextscriptengine
 
-QT += core-private gui-private
+QT += core-private gui-private testlib
 
 HEADERS += 
 SOURCES += tst_qtextscriptengine.cpp 

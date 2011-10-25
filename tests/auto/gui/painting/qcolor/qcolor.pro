@@ -1,5 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qcolor
 SOURCES  += tst_qcolor.cpp
-
-
-
+QT += testlib

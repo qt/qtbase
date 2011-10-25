@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += core-private gui-private xml
+CONFIG += testcase
+TARGET = tst_qtextdocument
+QT += core-private gui-private xml testlib
 HEADERS += common.h
 SOURCES += tst_qtextdocument.cpp 
 

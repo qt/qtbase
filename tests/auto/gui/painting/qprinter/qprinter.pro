@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += printsupport widgets
+CONFIG += testcase
+TARGET = tst_qprinter
+QT += printsupport widgets testlib
 SOURCES  += tst_qprinter.cpp
 
 mac*:CONFIG+=insignificant_test

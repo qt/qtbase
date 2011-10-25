@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qimage
 SOURCES  += tst_qimage.cpp
 
-QT += core-private gui-private
+QT += core-private gui-private testlib
 
 wince*: {
    addImages.files = images/*

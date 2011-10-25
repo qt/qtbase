@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += core-private gui-private
+CONFIG += testcase
+TARGET = tst_qtextlayout
+QT += core-private gui-private testlib
 HEADERS += 
 SOURCES += tst_qtextlayout.cpp 
 DEFINES += QT_COMPILES_IN_HARFBUZZ

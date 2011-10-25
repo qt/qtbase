@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtextdocumentfragment
 
-QT += core-private gui-private
+QT += core-private gui-private testlib
 
 SOURCES  += tst_qtextdocumentfragment.cpp
 

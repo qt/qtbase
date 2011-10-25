@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtextlist
 
-QT += core-private gui-private
+QT += core-private gui-private testlib
 
 SOURCES  += tst_qtextlist.cpp
 HEADERS += ../qtextdocument/common.h

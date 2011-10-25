@@ -1,5 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qpainterpath
 SOURCES  += tst_qpainterpath.cpp
-
-
-
+QT += testlib

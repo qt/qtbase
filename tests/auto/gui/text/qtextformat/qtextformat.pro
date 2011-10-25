@@ -1,9 +1,4 @@
-############################################################
-# Project file for autotest for file qtextformat.h
-############################################################
-
-load(qttest_p4)
-
+CONFIG += testcase
+TARGET = tst_qtextformat
+QT += testlib
 SOURCES += tst_qtextformat.cpp
-
-

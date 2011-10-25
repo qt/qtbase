@@ -1,6 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qfontdatabase
 SOURCES  += tst_qfontdatabase.cpp
 DEFINES += SRCDIR=\\\"$$PWD\\\"
+QT += testlib
 
 wince* {
     additionalFiles.files = FreeMono.ttf

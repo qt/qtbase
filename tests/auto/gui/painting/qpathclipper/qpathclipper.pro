@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qpathclipper
 INCLUDEPATH += .
 HEADERS += paths.h
 SOURCES  += tst_qpathclipper.cpp paths.cpp
-QT += gui-private
+QT += gui-private testlib
 
 requires(contains(QT_CONFIG,private_tests))
 

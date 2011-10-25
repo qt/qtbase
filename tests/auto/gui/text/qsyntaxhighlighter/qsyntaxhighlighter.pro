@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsyntaxhighlighter
 SOURCES += tst_qsyntaxhighlighter.cpp
-
-
+QT += testlib

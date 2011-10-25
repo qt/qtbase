@@ -1,2 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qwsinputmethod
+QT += testlib
 SOURCES += tst_qwsinputmethod.cpp

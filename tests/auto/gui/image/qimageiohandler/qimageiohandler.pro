@@ -1,8 +1,6 @@
-############################################################
-# Project file for autotest for file qimageiohandler.h
-############################################################
-
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qimageiohandler
+QT += testlib
 
 SOURCES += tst_qimageiohandler.cpp
 

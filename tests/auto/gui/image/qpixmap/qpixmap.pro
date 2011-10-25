@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qpixmap
 
-QT += core-private gui-private widgets widgets-private
+QT += core-private gui-private widgets widgets-private testlib
 
 SOURCES  += tst_qpixmap.cpp
 wince* {

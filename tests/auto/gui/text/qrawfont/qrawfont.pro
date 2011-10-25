@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qrawfont
 
-QT = core core-private gui gui-private
+QT = core core-private gui gui-private testlib
 
 SOURCES += \
     tst_qrawfont.cpp

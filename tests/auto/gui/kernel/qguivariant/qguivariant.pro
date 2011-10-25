@@ -1,5 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qguivariant
 SOURCES  += tst_qguivariant.cpp
-
-
+QT += testlib
 

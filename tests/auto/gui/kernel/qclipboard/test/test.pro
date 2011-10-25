@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += ../tst_qclipboard.cpp
 TARGET = ../tst_qclipboard
+QT += testlib
 
 win32 {
   CONFIG(debug, debug|release) {

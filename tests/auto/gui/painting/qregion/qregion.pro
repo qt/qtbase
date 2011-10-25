@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qregion
 
-QT += gui-private
+QT += gui-private testlib
 
 SOURCES  += tst_qregion.cpp
 
