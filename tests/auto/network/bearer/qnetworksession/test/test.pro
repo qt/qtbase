@@ -20,5 +20,3 @@ maemo6|maemo5 {
 
     PKGCONFIG += conninet
 }
-
-CONFIG += insignificant_test # QTBUG-21402

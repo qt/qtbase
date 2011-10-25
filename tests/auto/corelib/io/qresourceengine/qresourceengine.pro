@@ -40,4 +40,3 @@ wince* {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 CONFIG += parallel_test
-CONFIG += insignificant_test # QTBUG-21159

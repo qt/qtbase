@@ -4,4 +4,3 @@ SOURCES += tst_qfilesystemwatcher.cpp
 QT = core testlib
 
 CONFIG += parallel_test
-CONFIG += insignificant_test
