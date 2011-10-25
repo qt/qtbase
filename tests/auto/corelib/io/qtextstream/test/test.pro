@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += ../tst_qtextstream.cpp
 
 TARGET = ../tst_qtextstream
@@ -13,7 +13,7 @@ win32 {
 
 RESOURCES += ../qtextstream.qrc
 
-QT = core network
+QT = core network testlib
 
 wince* {
     addFiles.files = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp

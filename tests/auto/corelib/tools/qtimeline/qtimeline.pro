@@ -1,5 +1,5 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qtimeline
+QT = core testlib
 SOURCES  += tst_qtimeline.cpp
-QT = core
 CONFIG += parallel_test

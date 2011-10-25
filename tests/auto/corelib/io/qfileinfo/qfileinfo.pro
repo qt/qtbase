@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qfileinfo
 SOURCES  += tst_qfileinfo.cpp
 
-QT = core-private
+QT = core-private testlib
 
 
 RESOURCES      += qfileinfo.qrc

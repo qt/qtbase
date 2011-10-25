@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qscopedvaluerollback
 SOURCES += tst_qscopedvaluerollback.cpp
-QT -= gui
+QT = core testlib
 CONFIG += parallel_test

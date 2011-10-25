@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdiriterator
 SOURCES  += tst_qdiriterator.cpp
 RESOURCES      += qdiriterator.qrc
-QT = core
+QT = core testlib
 
 wince*mips*|wincewm50smart-msvc200*: DEFINES += WINCE_BROKEN_ITERATE=1
 

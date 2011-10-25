@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 
 SOURCES += ../tst_qprocess.cpp
 !wince*: {
@@ -17,7 +17,7 @@ win32: {
 
 
 
-QT = core
+QT = core testlib
 QT += network
 
 embedded: QT += gui

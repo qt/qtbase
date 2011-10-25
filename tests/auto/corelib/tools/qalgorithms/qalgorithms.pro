@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qalgorithms
 SOURCES  += tst_qalgorithms.cpp
 
-QT = core
+QT = core testlib

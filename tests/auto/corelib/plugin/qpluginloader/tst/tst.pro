@@ -1,7 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES         += ../tst_qpluginloader.cpp
 TARGET  = ../tst_qpluginloader
-QT = core
+QT = core testlib
 HEADERS += ../theplugin/plugininterface.h
 
 win32 {

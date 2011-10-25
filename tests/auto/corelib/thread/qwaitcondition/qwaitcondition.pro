@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qwaitcondition
 SOURCES += tst_qwaitcondition.cpp
-QT = core
+QT = core testlib
 
 
 CONFIG += parallel_test

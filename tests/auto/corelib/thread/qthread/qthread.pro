@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qthread
 SOURCES += tst_qthread.cpp
-QT = core
+QT = core testlib
 CONFIG += parallel_test

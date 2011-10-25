@@ -1,3 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qthreadstorage
 SOURCES += tst_qthreadstorage.cpp
-QT = core
+QT = core testlib

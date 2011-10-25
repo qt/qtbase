@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qfilesystemwatcher
 SOURCES += tst_qfilesystemwatcher.cpp
-QT = core
+QT = core testlib
 
 CONFIG += parallel_test
 CONFIG += insignificant_test

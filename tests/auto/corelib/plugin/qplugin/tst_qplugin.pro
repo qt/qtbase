@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qplugin
 
 SOURCES = tst_qplugin.cpp
-QT = core
+QT = core testlib
 
 wince*: {
    plugins.files = plugins/*

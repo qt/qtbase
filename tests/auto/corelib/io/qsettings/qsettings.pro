@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsettings
 
-QT += core-private
+QT += core-private testlib
 
 SOURCES  += tst_qsettings.cpp
 RESOURCES += qsettings.qrc

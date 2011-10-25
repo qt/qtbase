@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdatastream
 SOURCES += tst_qdatastream.cpp
-QT += gui widgets
+QT += gui widgets testlib
 wince*: {
    addFiles.files = datastream.q42
    addFiles.path = .

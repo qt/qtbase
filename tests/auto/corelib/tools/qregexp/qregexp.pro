@@ -1,9 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qregexp
 
-QT = core
-
-
-QT = core
+QT = core testlib
 
 SOURCES  += tst_qregexp.cpp
 CONFIG += parallel_test

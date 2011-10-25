@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qxmlstream
 SOURCES += tst_qxmlstream.cpp
 
-QT = core xml network
+QT = core xml network testlib
 
 wince* {
     addFiles.files = data XML-Test-Suite

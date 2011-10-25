@@ -1,7 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES         += ../tst_qlibrary.cpp
 TARGET  = ../tst_qlibrary
-QT = core
+QT = core testlib
 
 win32 {
   CONFIG(debug, debug|release) {

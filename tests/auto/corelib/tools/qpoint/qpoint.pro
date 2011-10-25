@@ -2,7 +2,8 @@
 # Project file for autotest for file qpoint.h
 ############################################################
 
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qpoint
 SOURCES += tst_qpoint.cpp
-QT = core
+QT = core testlib
 CONFIG += parallel_test

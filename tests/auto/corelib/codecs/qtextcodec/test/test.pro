@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+QT += testlib
 
 SOURCES  += ../tst_qtextcodec.cpp
 

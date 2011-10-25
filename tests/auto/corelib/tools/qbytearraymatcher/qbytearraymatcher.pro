@@ -1,5 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qbytearraymatcher
 SOURCES  += tst_qbytearraymatcher.cpp
 
-QT = core
+QT = core testlib
 CONFIG += parallel_test

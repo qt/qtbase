@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmetaobject
 
-QT = core gui widgets
+QT = core gui widgets testlib
 
 SOURCES  += tst_qmetaobject.cpp
 

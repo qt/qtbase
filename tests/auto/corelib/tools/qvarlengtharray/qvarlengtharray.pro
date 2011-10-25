@@ -1,5 +1,5 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qvarlengtharray
+QT = core testlib
 SOURCES  += tst_qvarlengtharray.cpp
-QT = core
 CONFIG += parallel_test

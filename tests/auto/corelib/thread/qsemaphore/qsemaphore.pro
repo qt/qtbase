@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsemaphore
 SOURCES  += tst_qsemaphore.cpp
-QT = core
+QT = core testlib
 
 
 CONFIG += parallel_test

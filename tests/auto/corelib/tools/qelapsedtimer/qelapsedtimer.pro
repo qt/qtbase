@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT -= gui
+CONFIG += testcase
+TARGET = tst_qelapsedtimer
+QT = core testlib
 
 SOURCES += tst_qelapsedtimer.cpp
 wince* {

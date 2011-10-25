@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += ../tst_qfile.cpp
 
 wince* {
-    QT = core gui
+    QT = core gui testlib
     files.files += ..\\dosfile.txt ..\\noendofline.txt ..\\testfile.txt \
                      ..\\testlog.txt ..\\two.dots.file ..\\tst_qfile.cpp \
                      ..\\Makefile ..\\forCopying.txt ..\\forRenaming.txt
@@ -17,7 +17,7 @@ wince* {
     SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp     # needed for QT_OPEN
     DEFINES += SRCDIR=\\\"\\\"
 } else {
-    QT = core network
+    QT = core network testlib
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
 

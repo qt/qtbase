@@ -1,7 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
 
 include(../src/src.pri)
-QT -= gui
+QT = core testlib
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG

@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qbytearray
 SOURCES  += tst_qbytearray.cpp
 
 
-QT = core core-private
+QT = core core-private testlib
 
 wince* {
    addFile.files = rfc3252.txt

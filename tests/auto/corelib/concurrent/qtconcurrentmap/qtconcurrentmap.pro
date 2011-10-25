@@ -1,5 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtconcurrentmap
 DEFINES += QT_STRICT_ITERATORS
 SOURCES += tst_qtconcurrentmap.cpp
-QT = core
+QT = core testlib
 CONFIG += parallel_test

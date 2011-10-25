@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core gui widgets
+CONFIG += testcase
+TARGET = tst_qpropertyanimation
+QT = core gui widgets testlib
 SOURCES  += tst_qpropertyanimation.cpp
 
 

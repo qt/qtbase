@@ -1,6 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
 
-QT = core
+QT = core testlib
 SOURCES += ../tst_quuid.cpp
 TARGET = tst_quuid
 

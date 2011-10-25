@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qstringbuilder1
 
-QT = core
+QT = core testlib
 
 SOURCES  += tst_qstringbuilder1.cpp
 

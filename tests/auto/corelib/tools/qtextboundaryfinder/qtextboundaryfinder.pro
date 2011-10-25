@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qtextboundaryfinder
+QT = core testlib
 HEADERS += 
 SOURCES += tst_qtextboundaryfinder.cpp 
 DEFINES += SRCDIR=\\\"$$PWD\\\"

@@ -1,5 +1,5 @@
-load(qttest_p4)
-#QT = core
+CONFIG += testcase
+QT += testlib
 
 include(../qsharedmemory/src/src.pri)
 win32: CONFIG += console

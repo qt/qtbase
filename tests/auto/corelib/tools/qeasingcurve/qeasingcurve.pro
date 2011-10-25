@@ -1,4 +1,5 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qeasingcurve
+QT = core testlib
 SOURCES  += tst_qeasingcurve.cpp
 CONFIG += parallel_test

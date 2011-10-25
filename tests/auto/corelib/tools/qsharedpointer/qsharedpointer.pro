@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsharedpointer
 
 SOURCES += tst_qsharedpointer.cpp \
     forwarddeclaration.cpp \
@@ -8,7 +9,7 @@ SOURCES += tst_qsharedpointer.cpp \
 HEADERS += forwarddeclared.h \
     wrapper.h
 
-QT = core
+QT = core testlib
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include(externaltests.pri)

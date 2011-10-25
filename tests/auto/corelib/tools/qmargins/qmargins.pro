@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmargins
 SOURCES += tst_qmargins.cpp
-QT = core
+QT = core testlib
 CONFIG += parallel_test

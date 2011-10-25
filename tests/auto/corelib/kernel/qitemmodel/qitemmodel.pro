@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qitemmodel
 SOURCES         += tst_qitemmodel.cpp
 
-QT += widgets sql
+QT += widgets sql testlib
 
 # NOTE: The deployment of the sqldrivers is disabled on purpose.
 #       If we deploy the plugins, they are loaded twice when running

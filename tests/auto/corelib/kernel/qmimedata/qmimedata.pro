@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmimedata
 SOURCES  += tst_qmimedata.cpp
-
+QT += testlib
 

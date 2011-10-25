@@ -1,7 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qmath
 
-QT = core
+QT = core testlib
 
 SOURCES += tst_qmath.cpp
-QT = core
 CONFIG += parallel_test

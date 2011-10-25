@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qiodevice
 SOURCES  += tst_qiodevice.cpp
 
-QT = core network
+QT = core network testlib
 
 wince*: {
    addFiles.files = tst_qiodevice.cpp

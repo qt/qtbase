@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qchar
 SOURCES  += tst_qchar.cpp
 
-QT = core core-private
+QT = core core-private testlib
 
 wince*: {
     deploy.files += NormalizationTest.txt

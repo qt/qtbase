@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qvariantanimation
+QT = core testlib
 SOURCES  += tst_qvariantanimation.cpp \
 
 

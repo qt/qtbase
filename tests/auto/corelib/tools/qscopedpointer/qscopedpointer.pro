@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qscopedpointer
 SOURCES += tst_qscopedpointer.cpp
-QT -= gui
+QT = core testlib
 CONFIG += parallel_test

@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdatetime
 
 SOURCES += tst_qdatetime.cpp
-QT = core core-private
+QT = core core-private testlib
 
 # For some reason using optimization here triggers a compiler issue, which causes an exception
 # However, the code is correct

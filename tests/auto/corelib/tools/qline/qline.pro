@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT -= gui
+CONFIG += testcase
+TARGET = tst_qline
+QT = core testlib
 SOURCES += tst_qline.cpp
 unix:!mac:!vxworks:LIBS+=-lm
 

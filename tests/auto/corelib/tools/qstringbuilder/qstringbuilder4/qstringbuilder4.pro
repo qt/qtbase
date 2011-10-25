@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qstringbuilder4
 
-QT = core
+QT = core testlib
 
 SOURCES  += tst_qstringbuilder4.cpp
 CONFIG += parallel_test

@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qatomicint
 SOURCES += tst_qatomicint.cpp
-QT = core
+QT = core testlib
 CONFIG += parallel_test

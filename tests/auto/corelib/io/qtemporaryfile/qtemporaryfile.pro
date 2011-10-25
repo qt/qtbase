@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtemporaryfile
 SOURCES       += tst_qtemporaryfile.cpp
-QT = core
+QT = core testlib
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 

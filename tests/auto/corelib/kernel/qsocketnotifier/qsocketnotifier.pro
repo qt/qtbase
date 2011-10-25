@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsocketnotifier
 SOURCES += tst_qsocketnotifier.cpp
-QT = core-private network-private
+QT = core-private network-private testlib
 
 requires(contains(QT_CONFIG,private_tests))
 
