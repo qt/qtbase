@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdbusabstractinterface
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = qpinger test

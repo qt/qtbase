@@ -2,9 +2,10 @@
 # Project file for autotest for file qglbuffer.h
 ############################################################
 
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qglbuffer
 requires(contains(QT_CONFIG,opengl))
-QT += opengl widgets
+QT += opengl widgets testlib
 
 win32:!wince*: DEFINES += QT_NO_EGL
 

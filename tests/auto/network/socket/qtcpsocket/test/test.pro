@@ -1,6 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
 
-QT += widgets
+QT += widgets testlib
 QT += core-private network-private
 SOURCES += ../tst_qtcpsocket.cpp
 win32: {

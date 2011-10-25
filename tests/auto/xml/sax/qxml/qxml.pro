@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qxml
 
 SOURCES += tst_qxml.cpp
-QT = core xml
+QT = core xml testlib
 
 wince* {
    addFiles.files = 0x010D.xml

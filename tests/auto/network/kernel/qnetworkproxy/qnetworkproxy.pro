@@ -2,7 +2,8 @@
 # Project file for autotest for file qnetworkproxy.h
 ############################################################
 
-load(qttest_p4)
-QT = core network
+CONFIG += testcase
+TARGET = tst_qnetworkproxy
+QT = core network testlib
 
 SOURCES += tst_qnetworkproxy.cpp

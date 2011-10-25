@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += network
+CONFIG += testcase
+TARGET = tst_qabstractnetworkcache
+QT += network testlib
 QT -= gui
 SOURCES  += tst_qabstractnetworkcache.cpp
 

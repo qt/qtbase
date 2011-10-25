@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qftp
 SOURCES  += tst_qftp.cpp
 
 
-QT = core network network-private
+QT = core network network-private testlib
 
 wince*: {
    addFiles.files = rfc3252.txt

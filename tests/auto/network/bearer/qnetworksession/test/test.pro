@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += tst_qnetworksession.cpp
 HEADERS  += ../../qbearertestcommon.h
 
-QT = core network
+QT = core network testlib
 
 TARGET = tst_qnetworksession
 CONFIG(debug_and_release) {

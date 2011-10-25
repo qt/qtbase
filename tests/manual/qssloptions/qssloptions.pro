@@ -1,11 +1,11 @@
-load(qttest_p4)
+CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qssloptions
 DEPENDPATH += .
 INCLUDEPATH += .
 
 QT -= gui
-QT += network
+QT += network testlib
 
 #CONFIG += release
 

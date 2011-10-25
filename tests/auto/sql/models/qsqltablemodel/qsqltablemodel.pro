@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsqltablemodel
 SOURCES  += tst_qsqltablemodel.cpp
 
-QT = core sql
+QT = core sql testlib
 
 wince*: {
    plugFiles.files = ../../../plugins/sqldrivers

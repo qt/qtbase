@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdom
 SOURCES  += tst_qdom.cpp
 
-QT = core xml
+QT = core xml testlib
 QT -= gui
 
 wince* {

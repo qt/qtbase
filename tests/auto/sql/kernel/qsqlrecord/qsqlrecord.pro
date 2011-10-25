@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsqlrecord
 SOURCES  += tst_qsqlrecord.cpp
 
-QT = core sql
+QT = core sql testlib

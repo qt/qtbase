@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qhttpsocketengine
 SOURCES  += tst_qhttpsocketengine.cpp
 
 
@@ -6,5 +7,5 @@ include(../platformsocketengine/platformsocketengine.pri)
 
 MOC_DIR=tmp
 
-QT = core-private network-private
+QT = core-private network-private testlib
 

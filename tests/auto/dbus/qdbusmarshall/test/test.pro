@@ -1,9 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES += ../tst_qdbusmarshall.cpp
 TARGET = ../tst_qdbusmarshall
 
-QT = core
-QT += core-private dbus-private
+QT = core-private dbus-private testlib
 
 LIBS += $$QT_LIBS_DBUS
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS

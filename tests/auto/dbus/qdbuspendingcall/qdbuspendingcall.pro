@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core dbus
+CONFIG += testcase
+TARGET = tst_qdbuspendingcall
+QT = core dbus testlib
 SOURCES += tst_qdbuspendingcall.cpp
 
 CONFIG+=insignificant_test

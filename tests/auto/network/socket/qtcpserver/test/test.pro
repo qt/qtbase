@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += ../tst_qtcpserver.cpp
 
 win32: {
@@ -22,7 +22,7 @@ win32 {
   }
 }
 
-QT = core network
+QT = core network testlib
 
 MOC_DIR=tmp
 

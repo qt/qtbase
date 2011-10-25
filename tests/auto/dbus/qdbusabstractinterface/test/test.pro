@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES += ../tst_qdbusabstractinterface.cpp ../interface.cpp
 HEADERS += ../interface.h
 
@@ -9,5 +9,5 @@ HEADERS += ../pinger.h
 
 TARGET = ../tst_qdbusabstractinterface
 
-QT = core
+QT = core testlib
 QT += dbus

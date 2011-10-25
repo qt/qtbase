@@ -1,3 +1,4 @@
-load(qttest_p4)
-QT = core dbus
+CONFIG += testcase
+TARGET = tst_qdbusthreading
+QT = core dbus testlib
 SOURCES += tst_qdbusthreading.cpp

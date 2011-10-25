@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qhostaddress
 SOURCES  += tst_qhostaddress.cpp
 
 
-QT = core network
+QT = core network testlib
 
 win32: {
 wince*: {

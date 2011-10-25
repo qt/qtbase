@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qglfunctions
 requires(contains(QT_CONFIG,opengl))
-QT += opengl widgets
+QT += opengl widgets testlib
 
 win32:!wince*: DEFINES += QT_NO_EGL
 

@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT += xml widgets
+CONFIG += testcase
+TARGET = tst_lancelot
+QT += xml widgets testlib
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2):QT += opengl
 
 SOURCES += tst_lancelot.cpp \

@@ -1,6 +1,6 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES  += ../tst_qudpsocket.cpp
-QT = core network
+QT = core network testlib
 
 MOC_DIR=tmp
 

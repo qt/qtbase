@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qnetworkdiskcache
 QT -= gui
-QT += network
+QT += network testlib
 SOURCES  += tst_qnetworkdiskcache.cpp

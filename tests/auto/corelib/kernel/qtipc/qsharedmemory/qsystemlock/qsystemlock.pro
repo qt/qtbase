@@ -1,5 +1,5 @@
-CONFIG += qttest_p4
-QT += gui-private
+CONFIG += testcase
+QT += gui-private testlib
 
 include(../src/src.pri)
 win32: CONFIG += console

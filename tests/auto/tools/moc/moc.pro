@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_moc
 
 #exists(/usr/include/boost/spirit.hpp) {
 #    message("including boost headers in test")
@@ -21,7 +22,7 @@ if(*-g++*|*-icc*|*-clang|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win
 SOURCES += tst_moc.cpp
 
 QT -= gui
-QT += sql network
+QT += sql network testlib
 contains(QT_CONFIG, dbus){
     DEFINES += WITH_DBUS
     QT += dbus

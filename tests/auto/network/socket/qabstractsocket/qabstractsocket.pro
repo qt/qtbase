@@ -2,8 +2,9 @@
 # Project file for autotest for file qabstractsocket.h
 ############################################################
 
-load(qttest_p4)
-QT = core network
+CONFIG += testcase
+TARGET = tst_qabstractsocket
+QT = core network testlib
 
 SOURCES += tst_qabstractsocket.cpp
 

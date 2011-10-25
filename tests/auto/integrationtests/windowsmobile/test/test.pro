@@ -1,6 +1,6 @@
 
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+QT += widgets testlib
 HEADERS += ddhelper.h
 SOURCES += tst_windowsmobile.cpp ddhelper.cpp
 RESOURCES += windowsmobile.qrc

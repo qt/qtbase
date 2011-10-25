@@ -1,3 +1,4 @@
-load(qttest_p4)
-QT = core dbus
+CONFIG += testcase
+TARGET = tst_qdbusreply
+QT = core dbus testlib
 SOURCES += tst_qdbusreply.cpp

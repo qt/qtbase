@@ -1,8 +1,3 @@
-load(qttest_p4)
-
-# this is not a real testcase ('make check' should not run it)
-CONFIG -= testcase
-
 SOURCES += tst_benchlibtickcounter.cpp
 QT = core testlib-private
 

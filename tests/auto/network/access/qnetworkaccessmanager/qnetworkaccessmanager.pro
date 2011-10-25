@@ -1,3 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qnetworkaccessmanager
 SOURCES += tst_qnetworkaccessmanager.cpp
-QT = core network
+QT = core network testlib

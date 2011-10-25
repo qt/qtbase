@@ -1,5 +1,5 @@
-load(qttest_p4)
-QT += widgets
+CONFIG += testcase
+QT += widgets testlib
 SOURCES += ../tst_qdirectpainter.cpp
 TARGET = ../tst_qdirectpainter
 

@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 QT -= gui
 SOURCES  += ../tst_qnetworkreply.cpp
 TARGET = ../tst_qnetworkreply
@@ -15,7 +15,7 @@ win32 {
 
 DEFINES += SRCDIR=\\\"$$PWD/..\\\"
 
-QT = core-private network-private
+QT = core-private network-private testlib
 RESOURCES += ../qnetworkreply.qrc
 
 wince* {

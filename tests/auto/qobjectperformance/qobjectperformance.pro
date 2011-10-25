@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qobjectperformance
 SOURCES  += tst_qobjectperformance.cpp
 
-QT = core network
+QT = core network testlib
 
 

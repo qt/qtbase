@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qnetworkinterface
 SOURCES  += tst_qnetworkinterface.cpp
 
-QT = core network
+QT = core network testlib

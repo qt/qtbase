@@ -1,7 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qsqlthread
 SOURCES  += tst_qsqlthread.cpp
 
-QT = core sql
+QT = core sql testlib
 
 
 wince*: {

@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qwindow
 
-QT += core-private gui-private
+QT += core-private gui-private testlib
 
 SOURCES  += tst_qwindow.cpp
 

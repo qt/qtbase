@@ -1,8 +1,8 @@
-load(qttest_p4)
+CONFIG += testcase
 
 SOURCES += tst_qsslcipher.cpp
 !wince*:win32:LIBS += -lws2_32
-QT = core network
+QT = core network testlib
 
 TARGET = tst_qsslcipher
 

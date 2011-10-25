@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qdbusmarshall
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = qpong test
 
-QT += core-private
+QT += core-private testlib
 
 requires(contains(QT_CONFIG,private_tests))

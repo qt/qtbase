@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qxmlinputsource
 SOURCES  += tst_qxmlinputsource.cpp
-QT += core xml network
+QT += core xml network testlib
 QT -= gui
 
 

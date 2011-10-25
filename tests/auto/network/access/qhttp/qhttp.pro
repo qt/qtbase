@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qhttp
 SOURCES  += tst_qhttp.cpp
 
 
-QT = core network
+QT = core network testlib
 
 wince*: {
     webFiles.files = webserver/*

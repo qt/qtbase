@@ -1,6 +1,7 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qaccessibility
 requires(contains(QT_CONFIG,accessibility))
-QT += widgets
+QT += widgets testlib
 SOURCES  += tst_qaccessibility.cpp
 
 unix:!mac:LIBS+=-lm

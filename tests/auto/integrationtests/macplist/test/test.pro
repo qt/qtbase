@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 
 SOURCES += ../tst_macplist.cpp
 TARGET = ../tst_macplist

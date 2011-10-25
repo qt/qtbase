@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 SOURCES += ../tst_selftests.cpp
 QT = core xml testlib-private
 

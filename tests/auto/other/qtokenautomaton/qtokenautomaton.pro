@@ -1,4 +1,5 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qtokenautomaton
 SOURCES += tst_qtokenautomaton.cpp                      \
            tokenizers/basic/basic.cpp                   \
            tokenizers/basicNamespace/basicNamespace.cpp \
@@ -14,5 +15,5 @@ HEADERS += tokenizers/basic/basic.h                     \
            tokenizers/noToString/noToString.h           \
            tokenizers/withNamespace/withNamespace.h
 
-QT -= gui
+QT = core testlib
 CONFIG += parallel_test

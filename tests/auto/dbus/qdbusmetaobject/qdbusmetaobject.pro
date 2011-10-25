@@ -1,3 +1,4 @@
-load(qttest_p4)
-QT = core dbus-private
+CONFIG += testcase
+TARGET = tst_qdbusmetaobject
+QT = core dbus-private testlib
 SOURCES += tst_qdbusmetaobject.cpp

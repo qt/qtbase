@@ -1,6 +1,5 @@
-CONFIG += qttest_p4
-
-QT = core
+CONFIG += testcase
+QT = core testlib
 TARGET = tst_rcc
 
 SOURCES += tst_rcc.cpp

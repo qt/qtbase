@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qnetworkconfigurationmanager
 SOURCES  += tst_qnetworkconfigurationmanager.cpp
 HEADERS  += ../qbearertestcommon.h
 
-QT = core network
+QT = core network testlib
 
 maemo6|maemo5 {
     CONFIG += link_pkgconfig

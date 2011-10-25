@@ -1,4 +1,5 @@
-load(qttest_p4) 
+CONFIG += testcase
+TARGET = tst_macgui
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
@@ -7,7 +8,7 @@ INCLUDEPATH += .
 SOURCES += tst_macgui.cpp guitest.cpp
 HEADERS += guitest.h
 
-QT = core-private gui-private widgets
+QT = core-private gui-private widgets testlib
 
 requires(mac)
 

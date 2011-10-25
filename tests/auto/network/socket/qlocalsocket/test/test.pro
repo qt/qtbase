@@ -1,4 +1,4 @@
-load(qttest_p4)
+CONFIG += testcase
 
 DEFINES += QLOCALSERVER_DEBUG
 DEFINES += QLOCALSOCKET_DEBUG
@@ -10,7 +10,7 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
 
-QT = core network
+QT = core network testlib
 
 SOURCES += ../tst_qlocalsocket.cpp
 

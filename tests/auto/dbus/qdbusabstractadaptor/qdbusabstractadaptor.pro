@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core core-private
+CONFIG += testcase
+TARGET = tst_qdbusabstractadaptor
+QT = core core-private testlib
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = qmyserver test

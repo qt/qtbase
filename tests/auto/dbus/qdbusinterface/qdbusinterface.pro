@@ -1,5 +1,6 @@
-load(qttest_p4)
-QT = core
+CONFIG += testcase
+TARGET = tst_qdbusinterface
+QT = core testlib
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = qmyserver test

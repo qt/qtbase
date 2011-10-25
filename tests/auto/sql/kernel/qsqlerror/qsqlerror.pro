@@ -2,7 +2,8 @@
 # Project file for autotest for file qsqlerror.h
 ############################################################
 
-load(qttest_p4)
-QT = core sql
+CONFIG += testcase
+TARGET = tst_qsqlerror
+QT = core sql testlib
 
 SOURCES += tst_qsqlerror.cpp

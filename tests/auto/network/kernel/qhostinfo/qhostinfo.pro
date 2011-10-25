@@ -1,8 +1,9 @@
-load(qttest_p4)
+CONFIG += testcase
+TARGET = tst_qhostinfo
 
 SOURCES  += tst_qhostinfo.cpp
 
-QT = core-private network-private
+QT = core-private network-private testlib
 
 wince*: {
   LIBS += ws2.lib

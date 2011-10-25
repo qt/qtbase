@@ -7,13 +7,13 @@ TEMPLATE = app
 INCLUDEPATH += $$ARTHUR
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-QT += xml svg network
+QT += xml svg network testlib
 
 contains(QT_CONFIG, opengl):QT += opengl
 
 include($$ARTHUR/datagenerator/datagenerator.pri)
 
-load(qttest_p4)
+CONFIG += testcase
 
 # Input
 HEADERS += atWrapper.h

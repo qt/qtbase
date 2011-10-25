@@ -1,9 +1,4 @@
-load(qttest_p4)
-QT = core
-
-# this is not a real testcase ('make check' should not run it)
-CONFIG -= testcase
-
+QT = core testlib
 SOURCES  += tst_xunit.cpp
 
 mac:CONFIG -= app_bundle
