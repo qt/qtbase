@@ -156,6 +156,47 @@ QT_BEGIN_NAMESPACE
     Returns true if \a m1 and \a m2 are different; otherwise returns false.
 */
 
+/*****************************************************************************
+  QMargins stream functions
+ *****************************************************************************/
+#ifndef QT_NO_DATASTREAM
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QMargins &m)
+    \relates QMargins
+
+    Writes the given \a margin to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Serializing Qt Data Types}
+*/
+
+QDataStream &operator<<(QDataStream &s, const QMargins &m)
+{
+    s << m.left() << m.top() << m.right() << m.bottom();
+    return s;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QMargins &m)
+    \relates QMargins
+
+    Reads a margin from the given \a stream into the given \a margin
+    and returns a reference to the stream.
+
+    \sa {Serializing Qt Data Types}
+*/
+
+QDataStream &operator>>(QDataStream &s, QMargins &m)
+{
+    int left, top, right, bottom;
+    s >> left; m.setLeft(left);
+    s >> top; m.setTop(top);
+    s >> right; m.setRight(right);
+    s >> bottom; m.setBottom(bottom);
+    return s;
+}
+#endif // QT_NO_DATASTREAM
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QMargins &m) {
     dbg.nospace() << "QMargins(" << m.left() << ", "

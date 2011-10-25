@@ -61,6 +61,7 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
+    void dataStreamCheck();
 };
 
 // Testing get/set functions
@@ -85,6 +86,31 @@ void tst_QMargins::getSetCheck()
     QVERIFY(!margins.isNull());
     QCOMPARE(margins, QMargins(5, 0, 5, 0));
 } 
+
+// Testing QDataStream operators
+void tst_QMargins::dataStreamCheck()
+{
+    QByteArray buffer;
+
+    // stream out
+    {
+        QMargins marginsOut(0,INT_MIN,INT_MAX,6852);
+        QDataStream streamOut(&buffer, QIODevice::WriteOnly);
+        streamOut << marginsOut;
+    }
+
+    // stream in & compare
+    {
+        QMargins marginsIn;
+        QDataStream streamIn(&buffer, QIODevice::ReadOnly);
+        streamIn >> marginsIn;
+
+        QCOMPARE(marginsIn.left(), 0);
+        QCOMPARE(marginsIn.top(), INT_MIN);
+        QCOMPARE(marginsIn.right(), INT_MAX);
+        QCOMPARE(marginsIn.bottom(), 6852);
+    }
+}
 
 tst_QMargins::tst_QMargins()
 {

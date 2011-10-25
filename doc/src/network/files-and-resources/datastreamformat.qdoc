@@ -196,6 +196,13 @@
             \o The number of items (quint32)
             \o For all items, the key (Key) and value (T)
             \endlist
+    \row \o QMargins
+         \o \list
+            \o left (int)
+            \o top (int)
+            \o right (int)
+            \o bottom (int)
+            \endlist
     \row \o QMatrix
          \o \list
             \o m11 (double)

@@ -81,6 +81,14 @@ private:
 Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
 
 /*****************************************************************************
+  QMargins stream functions
+ *****************************************************************************/
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QMargins &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QMargins &);
+#endif
+
+/*****************************************************************************
   QMargins inline functions
  *****************************************************************************/
 
