@@ -128,6 +128,10 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     return qt_mac_cgimage_to_nsimage(qt_mac_image_to_cgimage(image));
 }
 
+NSSize qt_mac_toNSSize(const QSize &qtSize)
+{
+    return NSMakeSize(qtSize.width(), qtSize.height());
+}
 
 // Use this method to keep all the information in the TextSegment. As long as it is ordered
 // we are in OK shape, and we can influence that ourselves.

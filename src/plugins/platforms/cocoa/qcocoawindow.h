@@ -64,6 +64,8 @@ public:
     void raise();
     void lower();
 
+    void propagateSizeHints();
+
     WId winId() const;
     NSView *contentView() const;
 
