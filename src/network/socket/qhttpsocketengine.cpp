@@ -614,6 +614,10 @@ void QHttpSocketEngine::slotSocketReadNotification()
 
         bool willClose;
         QString proxyConnectionHeader = responseHeader.value(QLatin1String("Proxy-Connection"));
+        // Although most proxies use the unofficial Proxy-Connection header, the Connection header
+        // from http spec is also allowed.
+        if (proxyConnectionHeader.isEmpty())
+            proxyConnectionHeader = responseHeader.value(QLatin1String("Connection"));
         proxyConnectionHeader = proxyConnectionHeader.toLower();
         if (proxyConnectionHeader == QLatin1String("close")) {
             willClose = true;
