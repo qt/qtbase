@@ -563,15 +563,39 @@ void tst_QPushButton::defaultAndAutoDefault()
 void tst_QPushButton::sizeHint_data()
 {
     QTest::addColumn<QString>("stylename");
+#if !defined(QT_NO_STYLE_MOTIF)
     QTest::newRow("motif") << QString::fromAscii("motif");
+#endif
+#if !defined(QT_NO_STYLE_CDE)
     QTest::newRow("cde") << QString::fromAscii("cde");
+#endif
+#if !defined(QT_NO_STYLE_WINDOWS)
     QTest::newRow("windows") << QString::fromAscii("windows");
+#endif
+#if !defined(QT_NO_STYLE_CLEANLOOKS)
     QTest::newRow("cleanlooks") << QString::fromAscii("cleanlooks");
+#endif
+#if !defined(QT_NO_STYLE_GTK)
     QTest::newRow("gtk") << QString::fromAscii("gtk");
+#endif
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     QTest::newRow("mac") << QString::fromAscii("mac");
+#endif
+#if !defined(QT_NO_STYLE_PLASTIQUE)
     QTest::newRow("plastique") << QString::fromAscii("plastique");
+#endif
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
     QTest::newRow("windowsxp") << QString::fromAscii("windowsxp");
+#endif
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QTest::newRow("windowsvista") << QString::fromAscii("windowsvista");
+#endif
+#if defined(Q_OS_WINCE) && !defined(QT_NO_STYLE_WINDOWSCE)
+    QTest::newRow("windowsce") << QString::fromAscii("windowsce");
+#endif
+#if defined(Q_OS_WINCE_WM) && !defined(QT_NO_STYLE_WINDOWSCE)
+    QTest::newRow("windowsmobile") << QString::fromAscii("windowsmobile");
+#endif
 }
 
 void tst_QPushButton::sizeHint()
@@ -580,7 +604,7 @@ void tst_QPushButton::sizeHint()
 
     QStyle *style = QStyleFactory::create(stylename);
     if (!style)
-        QSKIP(qPrintable(QString::fromLatin1("Qt has been compiled without style: %1").arg(stylename)));
+        QFAIL(qPrintable(QString::fromLatin1("Cannot create style: %1").arg(stylename)));
     QApplication::setStyle(style);
 
 // Test 1
