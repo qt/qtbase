@@ -218,15 +218,14 @@ inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,
 #if QT_DEPRECATED_SINCE(5, 0)
 inline QPixmap QPixmap::alphaChannel() const
 {
-    return toImage().alphaChannel();
+    return QPixmap::fromImage(toImage().alphaChannel());
 }
 
 inline void QPixmap::setAlphaChannel(const QPixmap &p)
 {
-    detach();
-    QImage image = data->toImage();
+    QImage image = toImage();
     image.setAlphaChannel(p.toImage());
-    data->fromImage(image);
+    *this = QPixmap::fromImage(image);
 
 }
 #endif

@@ -318,7 +318,7 @@ inline QString QImage::text(const char* key, const char* lang) const
     QString k = QString::fromAscii(key);
     if (lang && *lang)
         k += QLatin1Char('/') + QString::fromAscii(lang);
-    return d->text.value(k);
+    return text(k);
 }
 
 inline QList<QImageTextKeyLang> QImage::textList() const
@@ -355,17 +355,17 @@ inline QStringList QImage::textLanguages() const
     return languages;
 }
 
-inline QString QImage::text(const QImageTextKeyLang&) const
+inline QString QImage::text(const QImageTextKeyLang&kl) const
 {
     if (!d)
         return QString();
     QString k = QString::fromAscii(kl.key);
     if (!kl.lang.isEmpty())
         k += QLatin1Char('/') + QString::fromAscii(kl.lang);
-    return d->text.value(k);
+    return text(k);
 }
 
-inline void QImage::setText(const char* key, const char* lang, const QString&)
+inline void QImage::setText(const char* key, const char* lang, const QString &s)
 {
     if (!d)
         return;
@@ -378,22 +378,22 @@ inline void QImage::setText(const char* key, const char* lang, const QString&)
     QString k = QString::fromAscii(key);
     if (lang && *lang)
         k += QLatin1Char('/') + QString::fromAscii(lang);
-    d->text.insert(k, s);
+    setText(k, s);
 }
 #endif
 inline int QImage::numColors() const
 {
-    return d ? d->colortable.size() : 0;
+    return colorCount();
 }
 
-inline void QImage::setNumColors(int)
+inline void QImage::setNumColors(int n)
 {
-    setColorCount(numColors);
+    setColorCount(n);
 }
 
 inline int QImage::numBytes() const
 {
-    return d ? d->nbytes : 0;
+    return byteCount();
 }
 #endif
 
