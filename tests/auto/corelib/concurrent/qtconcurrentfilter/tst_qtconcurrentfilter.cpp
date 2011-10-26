@@ -1511,9 +1511,6 @@ void tst_QtConcurrentFilter::noDetatch()
 #ifndef QT_NO_STL
 void tst_QtConcurrentFilter::stlContainers()
 {
-#if defined(_MSC_VER) && _MSC_VER >= 1600
-    QSKIP("Test does not compile with MSVC 2010 (see QTBUG-18996)");
-#else
     std::vector<int> vector;
     vector.push_back(1);
     vector.push_back(2);
@@ -1537,7 +1534,6 @@ void tst_QtConcurrentFilter::stlContainers()
     QtConcurrent::blockingFilter(list, waitFilterfn);
     QCOMPARE(list2.size(), (std::list<int>::size_type)(1));
     QCOMPARE(*list2.begin(), 1);
-#endif
 }
 #endif
 
