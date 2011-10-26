@@ -194,7 +194,7 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
 void QPlatformWindow::setWindowTitle(const QString &title) { Q_UNUSED(title); }
 
 /*!
-  Reimplement to be able to let Qt rais windows to the top of the desktop
+  Reimplement to be able to let Qt raise windows to the top of the desktop
 */
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }
 
@@ -279,7 +279,7 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
     created by calling the createPlatformWindow function in the loaded QPlatformIntegration
     instance.
 
-    QPlatformWindow is used to signal to the windowing system, how Qt persieves its frame.
+    QPlatformWindow is used to signal to the windowing system, how Qt perceives its frame.
     However, it is not concerned with how Qt renders into the window it represents.
 
     Visible QWindows will always have a QPlatformWindow. However, it is not necessary for
