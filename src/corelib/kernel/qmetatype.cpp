@@ -142,6 +142,7 @@ QT_BEGIN_NAMESPACE
     \value QTime QTime
     \value QVariantList QVariantList
     \value QPolygon QPolygon
+    \value QPolygonF QPolygonF
     \value QColor QColor
     \value QSizeF QSizeF
     \value QRectF QRectF
@@ -293,6 +294,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("QVector3D", QMetaType::QVector3D),
     QT_ADD_STATIC_METATYPE("QVector4D", QMetaType::QVector4D),
     QT_ADD_STATIC_METATYPE("QQuaternion", QMetaType::QQuaternion),
+    QT_ADD_STATIC_METATYPE("QPolygonF", QMetaType::QPolygonF),
 
     /* All Widgets types */
     QT_ADD_STATIC_METATYPE("QIcon", QMetaType::QIcon),
@@ -786,6 +788,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QPalette:
     case QMetaType::QImage:
     case QMetaType::QPolygon:
+    case QMetaType::QPolygonF:
     case QMetaType::QRegion:
     case QMetaType::QBitmap:
     case QMetaType::QCursor:
@@ -992,6 +995,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QPalette:
     case QMetaType::QImage:
     case QMetaType::QPolygon:
+    case QMetaType::QPolygonF:
     case QMetaType::QRegion:
     case QMetaType::QBitmap:
     case QMetaType::QCursor:

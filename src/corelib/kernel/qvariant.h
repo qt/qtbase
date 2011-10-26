@@ -148,7 +148,8 @@ class Q_CORE_EXPORT QVariant
         Vector3D = 82,
         Vector4D = 83,
         Quaternion = 84,
-        LastGuiType = Quaternion,
+        PolygonF = 85,
+        LastGuiType = PolygonF,
 
         Icon = 120,
         SizePolicy = 121,

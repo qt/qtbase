@@ -1914,7 +1914,7 @@ void tst_QVariant::typeToName()
     QCOMPARE( QVariant::typeToName( v.type() ), (const char*)0 ); // Invalid
     // assumes that QVariant::Type contains consecutive values
 
-    int max = QVariant::Quaternion;
+    int max = QVariant::LastGuiType;
     for ( int t = 1; t <= max; t++ ) {
         const char *n = QVariant::typeToName( (QVariant::Type)t );
         if (n)

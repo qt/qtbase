@@ -549,6 +549,7 @@ Q_DECL_METATYPE_HELPER(QVector4D)
 #ifndef QT_NO_QUATERNION
 Q_DECL_METATYPE_HELPER(QQuaternion)
 #endif
+Q_DECL_METATYPE_HELPER(QPolygonF)
 
 #ifdef QT_NO_DATASTREAM
 #  define Q_IMPL_METATYPE_HELPER(TYPE) \
@@ -616,10 +617,11 @@ static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
     {0, 0, 0, 0, 0, 0, 0},
 #endif
 #ifndef QT_NO_QUATERNION
-    Q_IMPL_METATYPE_HELPER(QQuaternion)
+    Q_IMPL_METATYPE_HELPER(QQuaternion),
 #else
-    {0, 0, 0, 0, 0, 0, 0}
+    {0, 0, 0, 0, 0, 0, 0},
 #endif
+    Q_IMPL_METATYPE_HELPER(QPolygonF)
 };
 
 static const QVariant::Handler *qt_guivariant_last_handler = 0;

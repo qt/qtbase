@@ -135,6 +135,7 @@ QT_MODULE(Core)
     F(QVector3D, 82, QVector3D) \
     F(QVector4D, 83, QVector4D) \
     F(QQuaternion, 84, QQuaternion) \
+    F(QPolygonF, 85, QPolygonF) \
 
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
     F(QIcon, 120, QIcon) \
@@ -185,7 +186,7 @@ public:
 
         LastCoreType = QEasingCurve,
         FirstGuiType = QFont,
-        LastGuiType = QQuaternion,
+        LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
         LastWidgetsType = QSizePolicy,
         FirstCoreExtType = VoidStar,
