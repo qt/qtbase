@@ -140,7 +140,6 @@ public:
     QPushButton *collapseButton;
 };
 
-#if defined (Q_OS_UNIX)
 class QUnixPrintWidgetPrivate
 {
 public:
@@ -1004,8 +1003,6 @@ void QUnixPrintWidget::updatePrinter()
 {
     d->setupPrinter();
 }
-
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)

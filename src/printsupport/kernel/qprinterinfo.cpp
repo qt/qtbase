@@ -149,7 +149,7 @@ QString QPrinterInfo::printerName() const
 */
 bool QPrinterInfo::isNull() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d == &QPrinterInfoPrivate::shared_null;
 }
 
@@ -158,7 +158,7 @@ bool QPrinterInfo::isNull() const
 */
 bool QPrinterInfo::isDefault() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     return d->isDefault;
 }
 
@@ -172,10 +172,9 @@ bool QPrinterInfo::isDefault() const
     On Mac OS X 10.3, this function always returns an empty list.
 */
 
-#ifdef Q_WS_QPA
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
-    const Q_D(QPrinterInfo);
+    Q_D(const QPrinterInfo);
     if (!isNull() && !d->hasPaperSizes) {
         d->paperSizes = QPlatformPrinterSupportPlugin::get()->supportedPaperSizes(*this);
         d->hasPaperSizes = true;
@@ -198,8 +197,6 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
         return QPrinterInfo();
     return QPlatformPrinterSupportPlugin::get()->defaultPrinter();
 }
-
-#endif //Q_WS_QPA
 
 QT_END_NAMESPACE
 

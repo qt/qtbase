@@ -66,10 +66,8 @@ class QPrinterInfoPrivate
 public:
     QPrinterInfoPrivate(const QString& name = QString()) :
         name(name), isDefault(false)
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
         , cupsPrinterIndex(0)
-#endif
 #endif
         , hasPaperSizes(false)
     {}
@@ -81,10 +79,8 @@ public:
     QString name;
     bool isDefault;
 
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     int cupsPrinterIndex;
-#endif
 #endif
     mutable bool hasPaperSizes;
     mutable QList<QPrinter::PaperSize> paperSizes;

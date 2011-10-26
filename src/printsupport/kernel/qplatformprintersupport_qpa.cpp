@@ -106,26 +106,22 @@ bool QPlatformPrinterSupport::printerInfoIsDefault(const QPrinterInfo &p)
 
 int QPlatformPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
 {
-    int i = -1;
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (!p.isNull())
-        return i = p.d_func()->cupsPrinterIndex;
-#endif
-#endif
+    return p.isNull() ? -1 : p.d_func()->cupsPrinterIndex;
+#else
     Q_UNUSED(p)
-    return i;
+    return -1;
+#endif
 }
 
 void QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
 {
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     p->d_func()->cupsPrinterIndex = index;
-#endif
-#endif
+#else
     Q_UNUSED(p)
     Q_UNUSED(index)
+#endif
 }
 
 QT_END_NAMESPACE

@@ -9,10 +9,10 @@ HEADERS += \
         dialogs/qprintdialog.h \
         dialogs/qprintpreviewdialog.h
 
-!qpa:mac {
+# ### fixme
+false {
     OBJECTIVE_SOURCES += dialogs/qpagesetupdialog_mac.mm \
                          dialogs/qprintdialog_mac.mm
-
 }
 
 win32 {
@@ -20,13 +20,13 @@ win32 {
                dialogs/qprintdialog_win.cpp
 }
 
-!mac:!symbian:unix|qpa:!win32 {
-        HEADERS += dialogs/qpagesetupdialog_unix_p.h
-        SOURCES += dialogs/qprintdialog_unix.cpp \
-                   dialogs/qpagesetupdialog_unix.cpp
-        FORMS += dialogs/qprintsettingsoutput.ui \
-        dialogs/qprintwidget.ui \
-        dialogs/qprintpropertieswidget.ui
+unix {
+    HEADERS += dialogs/qpagesetupdialog_unix_p.h
+    SOURCES += dialogs/qprintdialog_unix.cpp \
+               dialogs/qpagesetupdialog_unix.cpp
+    FORMS += dialogs/qprintsettingsoutput.ui \
+    dialogs/qprintwidget.ui \
+    dialogs/qprintpropertieswidget.ui
 }
 
 INCLUDEPATH += $$PWD

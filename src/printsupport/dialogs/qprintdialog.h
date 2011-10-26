@@ -56,7 +56,7 @@ class QPrintDialogPrivate;
 class QPushButton;
 class QPrinter;
 
-#if defined (Q_OS_UNIX) && !defined(QTOPIA_PRINTDIALOG) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_UNIX)
 class QUnixPrintWidgetPrivate;
 
 class Q_PRINTSUPPORT_EXPORT QUnixPrintWidget : public QWidget
@@ -91,7 +91,7 @@ public:
     ~QPrintDialog();
 
     int exec();
-#if defined (Q_OS_UNIX) && !defined(QTOPIA_PRINTDIALOG) && !defined(Q_WS_MAC)
+#if defined (Q_OS_UNIX)
     virtual void accept();
 #endif
     void done(int result);
@@ -101,7 +101,7 @@ public:
     void setOptions(PrintDialogOptions options);
     PrintDialogOptions options() const;
 
-#if defined(Q_OS_UNIX) || defined(Q_WS_MAC) || defined(Q_OS_WIN)
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN)
     void setVisible(bool visible);
 #endif
 
@@ -137,10 +137,10 @@ Q_SIGNALS:
 private:
 #ifndef QTOPIA_PRINTDIALOG
     Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
-#if defined (Q_OS_UNIX) && !defined (Q_OS_MAC)
+#if defined (Q_OS_UNIX)
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
 #endif
-# if defined(Q_OS_UNIX) && !defined (Q_OS_MAC) && !defined(QT_NO_MESSAGEBOX)
+# if defined(Q_OS_UNIX) && !defined(QT_NO_MESSAGEBOX)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())
 # endif
 #else // QTOPIA_PRINTDIALOG
