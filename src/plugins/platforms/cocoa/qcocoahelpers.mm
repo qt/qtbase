@@ -450,3 +450,10 @@ QString qt_mac_applicationName()
     return appName;
 }
 
+NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
+{
+    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
+    int flippedY = onScreen->geometry().height() - rect.y() - rect.height();
+    return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
+}
+

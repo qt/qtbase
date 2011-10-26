@@ -79,7 +79,6 @@ public:
 protected:
     void determineWindowClass();
     NSWindow *createWindow();
-    NSRect globalGeometry(const QRect localWindowGeometry) const;
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
 
