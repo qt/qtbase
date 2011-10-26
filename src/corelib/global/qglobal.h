@@ -55,7 +55,8 @@
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
 #ifndef QT_DISABLE_DEPRECATED_BEFORE
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
+// ### Qt5: remember to change that to 5 when we reach feature freeze
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(4, 9, 0)
 #endif
 
 /*
@@ -69,7 +70,7 @@
             QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
         #endif
  */
-#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+#define QT_DEPRECATED_SINCE(major, minor) (defined(QT_DEPRECATED) &&  QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
 
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
