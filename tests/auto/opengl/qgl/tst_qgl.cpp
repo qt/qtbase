@@ -73,6 +73,7 @@ public:
     virtual ~tst_QGL();
 
 private slots:
+    void initTestCase();
     void getSetCheck();
     void openGLVersionCheck();
     void graphicsViewClipping();
@@ -106,6 +107,13 @@ tst_QGL::tst_QGL()
 
 tst_QGL::~tst_QGL()
 {
+}
+
+void tst_QGL::initTestCase()
+{
+    QGLWidget glWidget;
+    if (!glWidget.isValid())
+        QSKIP("QGL is not supported on the test system");
 }
 
 class MyGLContext : public QGLContext
@@ -144,9 +152,6 @@ static int appDefaultDepth()
 // Testing get/set functions
 void tst_QGL::getSetCheck()
 {
-    if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform");
-
     QGLFormat obj1;
     // int QGLFormat::depthBufferSize()
     // void QGLFormat::setDepthBufferSize(int)
@@ -655,9 +660,6 @@ QT_END_NAMESPACE
 void tst_QGL::openGLVersionCheck()
 {
 #ifdef QT_BUILD_INTERNAL
-    if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform");
-
     QString versionString;
     QGLFormat::OpenGLVersionFlags expectedFlag;
     QGLFormat::OpenGLVersionFlags versionFlag;
@@ -894,9 +896,6 @@ void tst_QGL::partialGLWidgetUpdates_data()
 
 void tst_QGL::partialGLWidgetUpdates()
 {
-    if (!QGLFormat::hasOpenGL())
-        QSKIP("QGL not supported on this platform");
-
     QFETCH(bool, doubleBufferedContext);
     QFETCH(bool, autoFillBackground);
     QFETCH(bool, supportsPartialUpdates);
@@ -2371,30 +2370,5 @@ void tst_QGL::nullRectCrash()
     fboPainter.end();
 }
 
-class tst_QGLDummy : public QObject
-{
-Q_OBJECT
-
-public:
-    tst_QGLDummy() {}
-
-private slots:
-    void qglSkipTests() {
-	QSKIP("QGL not supported on this system.");
-    }
-};
-
-int main(int argc, char **argv)
-{
-    QApplication app(argc, argv);
-    QTEST_DISABLE_KEYPAD_NAVIGATION \
-    QGLWidget glWidget;
-    if (!glWidget.isValid()) {
-	tst_QGLDummy tc;
-	return QTest::qExec(&tc, argc, argv);
-    }
-    tst_QGL tc;
-    return QTest::qExec(&tc, argc, argv);
-}
-
+QTEST_MAIN(tst_QGL)
 #include "tst_qgl.moc"
