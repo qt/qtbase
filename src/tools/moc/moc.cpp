@@ -46,7 +46,7 @@
 #include "outputrevision.h"
 
 // for normalizeTypeInternal
-#include <private/qmetaobject_p.h>
+#include <private/qmetaobject_moc_p.h>
 
 QT_BEGIN_NAMESPACE
 
