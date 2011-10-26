@@ -183,8 +183,6 @@ public:
     QStyleHints *styleHints;
     QInputPanel *inputPanel;
 
-    static bool quitOnLastWindowClosed;
-
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT
     QShortcutMap shortcutMap;

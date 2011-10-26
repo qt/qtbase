@@ -89,6 +89,10 @@ public:
     static QString macMenuBarName();
 #endif
 
+    QAtomicInt quitLockRef;
+    void ref();
+    void deref();
+
     static QThread *theMainThread;
     static QThread *mainThread();
     static bool checkInstance(const char *method);

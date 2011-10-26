@@ -143,8 +143,6 @@ QApplicationPrivate *QApplicationPrivate::self = 0;
 
 QInputContext *QApplicationPrivate::inputContext = 0;
 
-bool QApplicationPrivate::quitOnLastWindowClosed = true;
-
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
@@ -160,8 +158,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
 #endif
-
-    quitOnLastWindowClosed = true;
 
 #if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
     directPainters = 0;
@@ -4621,24 +4617,12 @@ bool QApplicationPrivate::inPopupMode() const
 
 void QApplication::setQuitOnLastWindowClosed(bool quit)
 {
-    QApplicationPrivate::quitOnLastWindowClosed = quit;
+    QCoreApplication::setQuitLockEnabled(quit);
 }
 
 bool QApplication::quitOnLastWindowClosed()
 {
-    return QApplicationPrivate::quitOnLastWindowClosed;
-}
-
-void QApplicationPrivate::emitLastWindowClosed()
-{
-    if (qApp && qApp->d_func()->in_exec) {
-        if (QApplicationPrivate::quitOnLastWindowClosed) {
-            // get ready to quit, this event might be removed if the
-            // event loop is re-entered, however
-            QApplication::postEvent(qApp, new QEvent(QEvent::Quit));
-        }
-        emit qApp->lastWindowClosed();
-    }
+    return QCoreApplication::isQuitLockEnabled();
 }
 
 /*! \variable QApplication::NormalColors

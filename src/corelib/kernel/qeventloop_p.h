@@ -39,72 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTLOOP_H
-#define QEVENTLOOP_H
+#ifndef QEVENTLOOP_P_H
+#define QEVENTLOOP_P_H
 
-#include <QtCore/qobject.h>
+#include "qobject_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Core)
 
-class QEventLoopPrivate;
-
-class Q_CORE_EXPORT QEventLoop : public QObject
+class QEventLoopPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventLoop)
-
+    Q_DECLARE_PUBLIC(QEventLoop)
 public:
-    explicit QEventLoop(QObject *parent = 0);
-    ~QEventLoop();
+    inline QEventLoopPrivate()
+        : exit(true), inExec(false), returnCode(-1)
+    { }
 
-    enum ProcessEventsFlag {
-        AllEvents = 0x00,
-        ExcludeUserInputEvents = 0x01,
-        ExcludeSocketNotifiers = 0x02,
-        WaitForMoreEvents = 0x04,
-        X11ExcludeTimers = 0x08,
-        EventLoopExec = 0x20,
-        DialogExec = 0x40
-    };
-    Q_DECLARE_FLAGS(ProcessEventsFlags, ProcessEventsFlag)
+    QAtomicInt quitLockRef;
 
-    bool processEvents(ProcessEventsFlags flags = AllEvents);
-    void processEvents(ProcessEventsFlags flags, int maximumTime);
+    bool exit, inExec;
+    int returnCode;
 
-    int exec(ProcessEventsFlags flags = AllEvents);
-    void exit(int returnCode = 0);
-    bool isRunning() const;
+    void ref()
+    {
+        quitLockRef.ref();
+    }
 
-    void wakeUp();
-
-    bool event(QEvent *event);
-
-public Q_SLOTS:
-    void quit();
-};
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QEventLoop::ProcessEventsFlags)
-
-
-class QEventLoopLockerPrivate;
-
-class Q_CORE_EXPORT QEventLoopLocker
-{
-public:
-    QEventLoopLocker();
-    explicit QEventLoopLocker(QEventLoop *loop);
-    ~QEventLoopLocker();
-
-private:
-    Q_DISABLE_COPY(QEventLoopLocker)
-    QEventLoopLockerPrivate *d_ptr;
+    void deref()
+    {
+        if (!quitLockRef.deref() && inExec) {
+            qApp->postEvent(q_ptr, new QEvent(QEvent::Quit));
+        }
+    }
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QEVENTLOOP_H
+#endif // QEVENTLOOP_P_H

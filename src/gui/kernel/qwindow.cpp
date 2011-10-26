@@ -165,6 +165,14 @@ void QWindow::setVisible(bool visible)
         return;
     d->visible = visible;
     emit visibleChanged(visible);
+    if (QCoreApplication::instance() && !transientParent()) {
+        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+        if (visible) {
+            applicationPrivate->ref();
+        } else {
+            applicationPrivate->deref();
+        }
+    }
 
     if (!d->platformWindow)
         create();
@@ -499,7 +507,19 @@ void QWindow::setWindowState(Qt::WindowState state)
 void QWindow::setTransientParent(QWindow *parent)
 {
     Q_D(QWindow);
+
+    QWindow *previousParent = d->transientParent;
+
     d->transientParent = parent;
+
+    if (QCoreApplication::instance() && d->visible) {
+        QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
+        if (parent && !previousParent) {
+            applicationPrivate->deref();
+        } else if (!parent && previousParent) {
+            applicationPrivate->ref();
+        }
+    }
 }
 
 QWindow *QWindow::transientParent() const

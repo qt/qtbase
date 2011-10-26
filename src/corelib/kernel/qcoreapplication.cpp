@@ -271,6 +271,8 @@ struct QCoreApplicationData {
 
 Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
+static bool quitLockRefEnabled = true;
+
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     : QObjectPrivate(), argc(aargc), argv(aargv), application_type(0), eventFilter(0),
       in_exec(false), aboutToQuitEmitted(false), threadData_clean(false)
@@ -649,6 +651,29 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
     return QCoreApplicationPrivate::testAttribute(attribute);
 }
 
+/*!/
+    Returns true if the use of the QEventLoopLocker feature can cause the
+    application to quit, otherwise returns false.
+
+    \sa QEventLoopLocker
+ */
+bool QCoreApplication::isQuitLockEnabled()
+{
+    return quitLockRefEnabled;
+}
+
+/*!
+    Enables the ability of the QEventLoopLocker feature to quit
+    the application.
+
+    If disabled, the use of QEventLoopLocker will not quit the application.
+
+    \sa QEventLoopLocker
+ */
+void QCoreApplication::setQuitLockEnabled(bool enabled)
+{
+    quitLockRefEnabled = enabled;
+}
 
 /*!
   \internal
@@ -1475,6 +1500,17 @@ bool QCoreApplication::event(QEvent *e)
 
     \sa QObject::tr(), QObject::trUtf8(), QString::fromUtf8()
 */
+
+void QCoreApplicationPrivate::ref()
+{
+    quitLockRef.ref();
+}
+
+void QCoreApplicationPrivate::deref()
+{
+    if (!quitLockRef.deref() && in_exec && quitLockRefEnabled)
+        QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
+}
 
 /*!
     Tells the application to exit with return code 0 (success).

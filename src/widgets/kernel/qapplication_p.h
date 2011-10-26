@@ -188,8 +188,6 @@ public:
     static bool qws_apply_settings();
     static QWidget *findWidget(const QObjectList&, const QPoint &, bool rec);
 #endif
-    static bool quitOnLastWindowClosed;
-    static void emitLastWindowClosed();
 #ifdef Q_WS_WINCE
     static int autoMaximizeThreshold;
 #endif

@@ -45,6 +45,7 @@
 #include <qcoreapplication.h>
 #include <qcoreevent.h>
 #include <qeventloop.h>
+#include <private/qeventloop_p.h>
 #include <qmutex.h>
 #include <qthread.h>
 #include <qtimer.h>
@@ -193,6 +194,8 @@ private slots:
 
     // keep this test last:
     void nestedLoops();
+
+    void testQuitLock();
 
 protected:
     void customEvent(QEvent *e);
@@ -640,6 +643,85 @@ void tst_QEventLoop::deliverInDefinedOrder()
 
 }
 
+class JobObject : public QObject
+{
+    Q_OBJECT
+public:
+
+    explicit JobObject(QEventLoop *loop, QObject *parent = 0)
+        : QObject(parent), loop(loop), locker(loop)
+    {
+    }
+
+    explicit JobObject(QObject *parent = 0)
+        : QObject(parent)
+    {
+    }
+
+public slots:
+    void start(int timeout = 200)
+    {
+        QTimer::singleShot(timeout, this, SLOT(timeout()));
+    }
+
+private slots:
+    void timeout()
+    {
+        emit done();
+        deleteLater();
+    }
+
+signals:
+    void done();
+
+private:
+    QEventLoop *loop;
+    QEventLoopLocker locker;
+};
+
+void tst_QEventLoop::testQuitLock()
+{
+    QEventLoop eventLoop;
+
+    QTimer timer;
+    timer.setInterval(100);
+    QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+    timer.start();
+
+    QEventLoopPrivate* privateClass = static_cast<QEventLoopPrivate*>(QObjectPrivate::get(&eventLoop));
+
+    QCOMPARE(privateClass->quitLockRef.load(), 0);
+
+    JobObject *job1 = new JobObject(&eventLoop, this);
+    job1->start(500);
+
+    QCOMPARE(privateClass->quitLockRef.load(), 1);
+
+    eventLoop.exec();
+
+    QCOMPARE(privateClass->quitLockRef.load(), 0);
+
+    // The job takes long enough that the timer times out several times.
+    QVERIFY(timerSpy.count() > 3);
+    timerSpy.clear();
+
+    job1 = new JobObject(&eventLoop, this);
+    job1->start(200);
+
+    JobObject *previousJob = job1;
+    for (int i = 0; i < 9; ++i) {
+        JobObject *subJob = new JobObject(&eventLoop, this);
+        connect(previousJob, SIGNAL(done()), subJob, SLOT(start()));
+        previousJob = subJob;
+    }
+
+    eventLoop.exec();
+
+    qDebug() << timerSpy.count();
+    // The timer times out more if it has more subjobs to do.
+    // We run 10 jobs in sequence here of about 200ms each.
+    QVERIFY(timerSpy.count() > 17);
+}
 
 QTEST_MAIN(tst_QEventLoop)
 #include "tst_qeventloop.moc"

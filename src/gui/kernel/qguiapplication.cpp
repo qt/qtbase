@@ -107,8 +107,6 @@ int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
 int QGuiApplicationPrivate::mouse_double_click_distance = 5;
 
-bool QGuiApplicationPrivate::quitOnLastWindowClosed = true;
-
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
 
@@ -1388,14 +1386,14 @@ void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
 
 void QGuiApplication::setQuitOnLastWindowClosed(bool quit)
 {
-    QGuiApplicationPrivate::quitOnLastWindowClosed = quit;
+    QCoreApplication::setQuitLockEnabled(quit);
 }
 
 
 
 bool QGuiApplication::quitOnLastWindowClosed()
 {
-    return QGuiApplicationPrivate::quitOnLastWindowClosed;
+    return QCoreApplication::isQuitLockEnabled();
 }
 
 
@@ -1403,11 +1401,6 @@ bool QGuiApplication::quitOnLastWindowClosed()
 void QGuiApplicationPrivate::emitLastWindowClosed()
 {
     if (qGuiApp && qGuiApp->d_func()->in_exec) {
-        if (QGuiApplicationPrivate::quitOnLastWindowClosed) {
-            // get ready to quit, this event might be removed if the
-            // event loop is re-entered, however
-            QGuiApplication::postEvent(qApp, new QEvent(QEvent::Quit));
-        }
         emit qGuiApp->lastWindowClosed();
     }
 }

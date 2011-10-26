@@ -71,6 +71,7 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
     Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion)
     Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName)
     Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain)
+    Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
 
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
@@ -160,6 +161,9 @@ public:
     EventFilter setEventFilter(EventFilter filter);
     bool filterEvent(void *message, long *result);
 
+    static bool isQuitLockEnabled();
+    static void setQuitLockEnabled(bool enabled);
+
 public Q_SLOTS:
     static void quit();
 
@@ -183,7 +187,7 @@ private:
     void init();
 
     static QCoreApplication *self;
-    
+
     Q_DISABLE_COPY(QCoreApplication)
 
     friend class QEventDispatcherUNIXPrivate;
