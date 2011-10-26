@@ -71,11 +71,6 @@
 #include "parse-boost.h"
 #endif
 
-// No such thing as "long long" in Microsoft's compiler 13.0 and before
-#if defined Q_CC_MSVC && _MSC_VER <= 1310
-#  define NOLONGLONG
-#endif
-
 QT_USE_NAMESPACE
 
 struct MyStruct {};
@@ -284,13 +279,11 @@ private slots:
     inline void dummy2() MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES const {}
     inline void dummy3() const MACRO_WITH_POSSIBLE_COMPILER_SPECIFIC_ATTRIBUTES {}
 
-#ifndef NOLONGLONG
     void slotWithULongLong(unsigned long long) {}
     void slotWithULongLongP(unsigned long long*) {}
     void slotWithULong(unsigned long) {}
     void slotWithLongLong(long long) {}
     void slotWithLong(long) {}
-#endif
 
     void slotWithColonColonType(::Int::Type) {}
 
@@ -456,9 +449,7 @@ private slots:
     void oldStyleCasts();
     void warnOnExtraSignalSlotQualifiaction();
 #endif
-#ifndef NOLONGLONG
     void uLongLong();
-#endif
 #if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     void inputFileNameWithDotsButNoExtension();
 #endif
@@ -626,8 +617,6 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 }
 #endif
 
-// long long doesn't work on MSVC6 & .NET 2002, also skipped on 2003 due to compiler version issue with moc
-#ifndef NOLONGLONG
 void tst_Moc::uLongLong()
 {
     TestClass tst;
@@ -644,7 +633,6 @@ void tst_Moc::uLongLong()
     idx = mobj->indexOfSlot("slotWithLongLong(long long)");
     QVERIFY(idx != -1);
 }
-#endif
 
 // Only tested on linux/gcc. Not tested when cross-compiled.
 #if !defined(MOC_CROSS_COMPILED) && defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)

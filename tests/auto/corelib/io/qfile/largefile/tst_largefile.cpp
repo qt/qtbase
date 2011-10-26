@@ -436,11 +436,6 @@ void tst_LargeFile::streamPositioning()
 {
     QFETCH( qint64, position );
 
-#if defined(QT_LARGEFILE_SUPPORT) && defined(Q_CC_MSVC) && _MSC_VER < 1400
-    if (position >= (qint64)1 << 31)
-        QSKIP("MSVC 2003 doesn't have 64 bit versions of fseek/ftell.");
-#endif
-
     stream_ = QT_FOPEN("qt_largefile.tmp", "rb");
     QVERIFY( 0 != stream_ );
 

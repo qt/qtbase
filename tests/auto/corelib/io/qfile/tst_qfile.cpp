@@ -1468,9 +1468,6 @@ void tst_QFile::largeUncFileSupport()
     }
     {
         // 2) stdlib file handling.
-#if _MSC_VER <= 1310
-        QSKIP("platform SDK for MSVC 2003 does not support large files");
-#endif
         QFile file;
         FILE *fh = fopen(QFile::encodeName(largeFile).data(), "rb");
         QVERIFY(file.open(fh, QIODevice::ReadOnly));

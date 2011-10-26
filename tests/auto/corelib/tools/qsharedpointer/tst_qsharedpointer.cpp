@@ -850,14 +850,7 @@ void tst_QSharedPointer::differentPointers()
 
         QVERIFY(baseptr.data() == aData);
         QVERIFY(aData == baseptr.data());
-
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(baseptr == aData);
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(aData == baseptr);
     }
     check();
@@ -873,9 +866,6 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(ptr == baseptr);
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(baseptr == aData);
     }
     check();
@@ -892,9 +882,6 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
@@ -915,9 +902,6 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
@@ -935,9 +919,6 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
         QVERIFY(ptr == aData);
-#if defined(Q_CC_MSVC) && _MSC_VER < 1400
-        QEXPECT_FAIL("", "Compiler bug", Continue);
-#endif
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
