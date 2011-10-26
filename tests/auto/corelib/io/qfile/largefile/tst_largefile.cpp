@@ -521,6 +521,9 @@ void tst_LargeFile::mapOffsetOverflow()
         uchar *address = 0;
 
         address = largeFile.map(((qint64)1 << i), blockSize);
+#if defined(__x86_64__)
+        QEXPECT_FAIL("", "fails on 64-bit Linux (QTBUG-21175)", Abort);
+#endif
         QVERIFY( !address );
 
         address = largeFile.map(((qint64)1 << i) + blockSize, blockSize);
