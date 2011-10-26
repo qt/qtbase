@@ -378,7 +378,6 @@ void tst_QPainter::cleanup()
 */
 void tst_QPainter::qt_format_text_clip()
 {
-    QVERIFY(1);
     QSKIP("Needs fixing...");
 
     QWidget *w = new QWidget( 0 );
@@ -512,7 +511,6 @@ void tst_QPainter::qt_format_text_clip()
 */
 void tst_QPainter::qt_format_text_boundingRect()
 {
-    QVERIFY(1);
     QSKIP("Needs fixing...");
 
     {
@@ -784,8 +782,6 @@ void tst_QPainter::drawPixmap_comp()
 
 void tst_QPainter::saveAndRestore_data()
 {
-    QVERIFY(1);
-
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QPen>("pen");
     QTest::addColumn<QBrush>("brush");
