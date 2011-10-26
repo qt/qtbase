@@ -340,8 +340,7 @@ void tst_QTextCodec::codecForLocale()
                      originalLocaleEncodedTimeString.size(),
                      "%A%a%B%b%Z",
                      localtime(&t));
-    if (r == 0)
-        QSKIP("strftime() failed");
+    QVERIFY(r != 0);
     originalLocaleEncodedTimeString.resize(r);
 
     QString unicodeTimeString = codec->toUnicode(originalLocaleEncodedTimeString);
