@@ -68,15 +68,12 @@ private Q_SLOTS:
 private:
     QString workingDir() const;
 
-private:
-    bool uicExists;
     const QString command;
 };
 
 
 tst_uic::tst_uic()
-    : uicExists(true)
-    , command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
+    : command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
 {
 }
 
@@ -86,7 +83,6 @@ void tst_uic::initTestCase()
     process.start(command, QStringList(QLatin1String("-help")));
 
     if (!process.waitForFinished()) {
-        uicExists = false;
         const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
         QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
                           arg(command, QDir::currentPath(), path);
@@ -109,9 +105,6 @@ void tst_uic::initTestCase()
 
 void tst_uic::run()
 {
-    if (!uicExists)
-        QSKIP("uic not found in the path...");
-
     QFETCH(QString, originalFile);
     QFETCH(QString, generatedFile);
 
