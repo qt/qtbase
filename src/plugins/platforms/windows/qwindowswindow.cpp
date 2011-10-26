@@ -617,7 +617,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_dropTarget(0)
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
-        setFlag(OpenGL_Surface);
+        setFlag(OpenGLSurface);
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
     if (aWindow->isTopLevel()) {
         switch (aWindow->windowType()) {
@@ -779,9 +779,14 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
         parentHWND = parentW->handle();
 
     }
+
     const bool wasTopLevel = window()->isTopLevel();
     const bool isTopLevel = parentHWND == 0;
+
+    setFlag(WithinSetParent);
     SetParent(m_data.hwnd, parentHWND);
+    clearFlag(WithinSetParent);
+
     // WS_CHILD/WS_POPUP must be manually set/cleared in addition
     // to dialog frames, etc (see  SetParent() ) if the top level state changes.
     if (wasTopLevel != isTopLevel) {
@@ -841,7 +846,8 @@ void QWindowsWindow::setGeometry(const QRect &rect)
 
 void QWindowsWindow::handleMoved()
 {
-    if (!IsIconic(m_data.hwnd)) // Minimize can send nonsensical move events.
+    // Minimize/Set parent can send nonsensical move events.
+    if (!IsIconic(m_data.hwnd) && !testFlag(WithinSetParent))
         handleGeometryChange();
 }
 
@@ -940,7 +946,7 @@ void QWindowsWindow::handleWmPaint(HWND hwnd, UINT,
                                          WPARAM, LPARAM)
 {
     PAINTSTRUCT ps;
-    if (testFlag(OpenGL_Surface)) {
+    if (testFlag(OpenGLSurface)) {
         BeginPaint(hwnd, &ps); // WM_ERASEBKGND needs to be handled.
         EndPaint(hwnd, &ps);
     } else {

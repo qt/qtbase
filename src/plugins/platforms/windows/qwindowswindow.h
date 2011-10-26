@@ -95,10 +95,12 @@ class QWindowsWindow : public QPlatformWindow
 public:
     enum Flags
     {
-        OpenGL_Surface = 0x1,
-        WithinWmPaint = 0x2,
-        PixelFormatInitialized = 0x4,
-        FrameDirty = 0x8            //! Frame outdated by setStyle, recalculate in next query.
+        WithinWmPaint = 0x1,
+        WithinSetParent = 0x2,
+        FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
+        OpenGLSurface = 0x10,
+        OpenGLDoubleBuffered = 0x20,
+        OpenGlPixelFormatInitialized = 0x40
     };
 
     struct WindowData

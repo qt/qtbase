@@ -64,10 +64,11 @@ enum QWindowsGLFormatFlags
 // Additional format information for Windows.
 struct QWindowsOpenGLAdditionalFormat
 {
-    QWindowsOpenGLAdditionalFormat(unsigned formatFlagsIn = 0, unsigned pixmapDepthIn = 0) :
-        formatFlags(formatFlagsIn), pixmapDepth(pixmapDepthIn) {}
+    QWindowsOpenGLAdditionalFormat(unsigned formatFlagsIn = 0, unsigned pixmapDepthIn = 0, unsigned swapIntervalIn = -1) :
+        formatFlags(formatFlagsIn), pixmapDepth(pixmapDepthIn), swapInterval(swapIntervalIn) {}
     unsigned formatFlags; // QWindowsGLFormatFlags.
     unsigned pixmapDepth; // for QWindowsGLRenderToPixmap
+    int swapInterval;
 };
 
 // Per-window data for active OpenGL contexts.
@@ -80,6 +81,19 @@ struct QOpenGLContextData
     HWND hwnd;
     HDC hdc;
 };
+
+struct QWindowsOpenGLContextFormat
+{
+    QWindowsOpenGLContextFormat();
+    static QWindowsOpenGLContextFormat current();
+    void apply(QSurfaceFormat *format) const;
+
+    QSurfaceFormat::OpenGLContextProfile profile;
+    int version; //! majorVersion<<8 + minorVersion
+    QSurfaceFormat::FormatOptions options;
+};
+
+QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &);
 
 class QOpenGLStaticContext
 {
@@ -104,6 +118,11 @@ public:
     typedef HGLRC
         (APIENTRY *WglCreateContextAttribsARB)(HDC, HGLRC, const int *);
 
+    typedef BOOL
+        (APIENTRY *WglSwapInternalExt)(int interval);
+    typedef int
+        (APIENTRY *WglGetSwapInternalExt)(void);
+
     bool hasExtensions() const
         { return wglGetPixelFormatAttribIVARB && wglChoosePixelFormatARB && wglCreateContextAttribsARB; }
 
@@ -113,13 +132,14 @@ public:
     const QByteArray vendor;
     const QByteArray renderer;
     const QByteArray extensionNames;
-    int majorVersion;
-    int minorVersion;
     unsigned extensions;
+    const QWindowsOpenGLContextFormat defaultFormat;
 
     WglGetPixelFormatAttribIVARB wglGetPixelFormatAttribIVARB;
     WglChoosePixelFormatARB wglChoosePixelFormatARB;
     WglCreateContextAttribsARB wglCreateContextAttribsARB;
+    WglSwapInternalExt wglSwapInternalExt;
+    WglGetSwapInternalExt wglGetSwapInternalExt;
 };
 
 QDebug operator<<(QDebug d, const QOpenGLStaticContext &);

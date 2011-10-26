@@ -545,49 +545,6 @@ static QSurfaceFormat
         if (iValues[11])
             additionalIn->formatFlags |= QWindowsGLOverlay;
     }
-    // Check version. Known to fail for some drivers
-    if (staticContext.majorVersion > 1) {
-        i = 0;
-        iAttributes[i++] = WGL_CONTEXT_MAJOR_VERSION_ARB; // 0
-        iAttributes[i++] = WGL_CONTEXT_MINOR_VERSION_ARB; // 1
-        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
-                                                       iAttributes, iValues)) {
-            result.setMajorVersion(iValues[0]);
-            result.setMinorVersion(iValues[1]);
-        } else {
-            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for version.", __FUNCTION__);
-        }
-    }
-    // Query flags from 3.2 onwards
-    if (staticContext.majorVersion > 3) {
-        i = 0;
-        iAttributes[i++] = WGL_CONTEXT_FLAGS_ARB; // 0
-        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
-                                                       iAttributes, iValues)) {
-            if (iValues[0] & WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB)
-                result.setOption(QSurfaceFormat::DeprecatedFunctions);
-            if (iValues[0] & WGL_CONTEXT_DEBUG_BIT_ARB)
-                result.setOption(QSurfaceFormat::DebugContext);
-        } else {
-            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for context flags.", __FUNCTION__);
-        }
-    }
-    // Query profile from 3.2 onwards. Known to fail for some drivers
-    if ((staticContext.majorVersion == 3 && staticContext.minorVersion >= 2)
-        || staticContext.majorVersion > 3) {
-        i = 0;
-        iAttributes[i++] = WGL_CONTEXT_PROFILE_MASK_ARB; // 0
-        if (staticContext.wglGetPixelFormatAttribIVARB(hdc, pixelFormat, 0, i,
-                                                       iAttributes, iValues)) {
-            if (iValues[0] & WGL_CONTEXT_CORE_PROFILE_BIT_ARB) {
-                result.setProfile(QSurfaceFormat::CoreProfile);
-            } else if (iValues[0] & WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB) {
-                result.setProfile(QSurfaceFormat::CompatibilityProfile);
-            }
-        } else {
-            qErrnoWarning("%s: wglGetPixelFormatAttribIVARB() failed for profile mask.", __FUNCTION__);
-        }
-    }
     return result;
 }
 
@@ -604,22 +561,14 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     int attributes[attribSize];
     int attribIndex = 0;
     qFill(attributes, attributes + attribSize, int(0));
-
-    const int formatMajorVersion = format.majorVersion();
-    const int formatMinorVersion = format.minorVersion();
-    const bool versionRequested = formatMajorVersion != 1 || formatMinorVersion != 1;
-    const int majorVersion = versionRequested ?
-        formatMajorVersion : staticContext.majorVersion;
-    const int minorVersion = versionRequested ?
-        formatMinorVersion : staticContext.minorVersion;
-
-    if (majorVersion > 1) {
+    const int requestedVersion = (format.majorVersion() << 8) + format.minorVersion();
+    if (requestedVersion > 0x0101) {
         attributes[attribIndex++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-        attributes[attribIndex++] = majorVersion;
+        attributes[attribIndex++] = format.majorVersion();
         attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-        attributes[attribIndex++] = minorVersion;
+        attributes[attribIndex++] = format.minorVersion();
     }
-    if (majorVersion >= 3) {
+    if (requestedVersion >= 0x0300) {
         attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
         attributes[attribIndex] = 0;
         if (format.testOption(QSurfaceFormat::DeprecatedFunctions))
@@ -628,8 +577,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
             attributes[attribIndex++] |= WGL_CONTEXT_DEBUG_BIT_ARB;
         attribIndex++;
     }
-    if ((majorVersion == 3 && minorVersion >= 2)
-        || majorVersion > 3) {
+    if (requestedVersion >= 0x0302) {
         switch (format.profile()) {
         case QSurfaceFormat::NoProfile:
             break;
@@ -645,7 +593,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     }
     if (QWindowsContext::verboseGL)
         qDebug("%s: Creating context version %d.%d with %d attributes",
-               __FUNCTION__,  majorVersion, minorVersion, attribIndex / 2);
+               __FUNCTION__,  format.majorVersion(), format.minorVersion(), attribIndex / 2);
 
     const HGLRC result =
         staticContext.wglCreateContextAttribsARB(hdc, shared, attributes);
@@ -705,6 +653,85 @@ static inline QOpenGLContextData createDummyWindowOpenGLContextData()
     result.hdc = GetDC(result.hwnd);
     result.renderingContext = createDummyGLContext(result.hdc);
     return result;
+}
+
+/*!
+    \class QOpenGLContextFormat
+    \brief Format options that are related to the context (not pixelformats)
+
+    Provides utility function to retrieve from currently active
+    context and to apply to a QSurfaceFormat.
+
+    \ingroup qt-lighthouse-win
+*/
+
+QWindowsOpenGLContextFormat::QWindowsOpenGLContextFormat() :
+    profile(QSurfaceFormat::NoProfile),
+    version(0),
+    options(0)
+{
+}
+
+QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
+{
+    QWindowsOpenGLContextFormat result;
+    const QByteArray version = QOpenGLStaticContext::getGlString(GL_VERSION);
+    const int majorDot = version.indexOf('.');
+    if (majorDot != -1) {
+        int minorDot = version.indexOf('.', majorDot + 1);
+        if (minorDot == -1)
+            minorDot = version.size();
+        result.version = (version.mid(0, majorDot).toInt() << 8)
+            + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
+    }
+    if (result.version < 0x0300) {
+        result.profile = QSurfaceFormat::NoProfile;
+        result.options |= QSurfaceFormat::DeprecatedFunctions;
+        return result;
+    }
+    // v3 onwards
+    GLint value = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+    if (value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+        result.options |= QSurfaceFormat::DeprecatedFunctions;
+    if (value & WGL_CONTEXT_DEBUG_BIT_ARB)
+        result.options |= QSurfaceFormat::DebugContext;
+    if (result.version < 0x0302)
+        return result;
+    // v3.2 onwards: Profiles
+    value = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+    switch (value) {
+    case WGL_CONTEXT_CORE_PROFILE_BIT_ARB:
+        result.profile = QSurfaceFormat::CoreProfile;
+        break;
+    case WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+        result.profile = QSurfaceFormat::CompatibilityProfile;
+        break;
+    default:
+        result.profile = QSurfaceFormat::NoProfile;
+        break;
+    }
+    return result;
+}
+
+void QWindowsOpenGLContextFormat::apply(QSurfaceFormat *format) const
+{
+    format->setMajorVersion(version >> 8);
+    format->setMinorVersion(version & 0xFF);
+    format->setProfile(profile);
+    if (options & QSurfaceFormat::DebugContext)
+        format->setOption(QSurfaceFormat::DebugContext);
+    if (options & QSurfaceFormat::DeprecatedFunctions)
+        format->setOption(QSurfaceFormat::DeprecatedFunctions);
+}
+
+QDebug operator<<(QDebug d, const QWindowsOpenGLContextFormat &f)
+{
+    d.nospace() << "ContextFormat: v" << (f.version >> 8) << '.'
+                << (f.version & 0xFF) << " profile: " << f.profile
+                << " options: " << f.options;
+    return d;
 }
 
 /*!
@@ -768,29 +795,17 @@ QOpenGLStaticContext::QOpenGLStaticContext() :
     vendor(QOpenGLStaticContext::getGlString(GL_VENDOR)),
     renderer(QOpenGLStaticContext::getGlString(GL_RENDERER)),
     extensionNames(QOpenGLStaticContext::getGlString(GL_EXTENSIONS)),
-    majorVersion(0), minorVersion(0),
     extensions(0),
+    defaultFormat(QWindowsOpenGLContextFormat::current()),
     wglGetPixelFormatAttribIVARB((WglGetPixelFormatAttribIVARB)wglGetProcAddress("wglGetPixelFormatAttribivARB")),
     wglChoosePixelFormatARB((WglChoosePixelFormatARB)wglGetProcAddress("wglChoosePixelFormatARB")),
-    wglCreateContextAttribsARB((WglCreateContextAttribsARB)wglGetProcAddress("wglCreateContextAttribsARB"))
+    wglCreateContextAttribsARB((WglCreateContextAttribsARB)wglGetProcAddress("wglCreateContextAttribsARB")),
+    wglSwapInternalExt((WglSwapInternalExt)wglGetProcAddress("wglSwapIntervalEXT")),
+    wglGetSwapInternalExt((WglGetSwapInternalExt)wglGetProcAddress("wglGetSwapIntervalEXT"))
 {
     if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION" ")
             || extensionNames.indexOf(" "SAMPLE_BUFFER_EXTENSION" ") != -1)
         extensions |= SampleBuffers;
-    // Get version
-    do {
-        const QByteArray version = QOpenGLStaticContext::getGlString(GL_VERSION);
-        if (version.isEmpty())
-            break;
-        const int majorDot = version.indexOf('.');
-        if (majorDot == -1)
-            break;
-        int minorDot = version.indexOf('.', majorDot + 1);
-        if (minorDot == -1)
-            minorDot = version.size();
-        majorVersion = version.mid(0, majorDot).toInt();
-        minorVersion = version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
-    } while (false);
 }
 
 QByteArray QOpenGLStaticContext::getGlString(unsigned int which)
@@ -815,13 +830,15 @@ QOpenGLStaticContext *QOpenGLStaticContext::create()
 QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
 {
     QDebug nsp = d.nospace();
-    nsp << "OpenGL: " << s.vendor << ',' << s.renderer << ",v"
-        <<  s.majorVersion << '.' << s.minorVersion;
+    nsp << "OpenGL: " << s.vendor << ',' << s.renderer << " default "
+        <<  s.defaultFormat;
     if (s.extensions &  QOpenGLStaticContext::SampleBuffers)
         nsp << ",SampleBuffers";
     if (s.hasExtensions())
         nsp << ", Extension-API present";
-    nsp  << "\nExtensions: " << s.extensionNames;
+    nsp  << "\nExtensions: " << (s.extensionNames.count(' ') + 1);
+    if (QWindowsContext::verboseGL > 1)
+        nsp <<  s.extensionNames;
     return d;
 }
 
@@ -872,6 +889,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     HWND dummyWindow = 0;
     HDC hdc = 0;
     bool tryExtensions = false;
+    int obtainedSwapInternal = -1;
     do {
         dummyWindow = createDummyGLWindow();
         if (!dummyWindow)
@@ -934,6 +952,21 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
             qWarning("Unable to create a GL Context.");
             break;
         }
+
+        // Query obtained parameters and apply swap interval.
+        if (!wglMakeCurrent(hdc, m_renderingContext)) {
+            qWarning("Failed to make context current.");
+            break;
+        }
+
+        QWindowsOpenGLContextFormat::current().apply(&m_obtainedFormat);
+
+        if (requestedAdditional.swapInterval != -1 && m_staticContext->wglSwapInternalExt) {
+            m_staticContext->wglSwapInternalExt(requestedAdditional.swapInterval);
+            if (m_staticContext->wglGetSwapInternalExt)
+                obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
+        }
+        wglMakeCurrent(0, 0);
     } while (false);
     if (hdc)
         ReleaseDC(dummyWindow, hdc);
@@ -945,6 +978,8 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
             << " requested: " << context->format()
             << "\n    obtained #" << m_pixelFormat << (m_extensionsUsed ? "ARB" : "GDI")
             << m_obtainedFormat << "\n    " << m_obtainedPixelFormatDescriptor
+            << " swap interval: " << obtainedSwapInternal
+            << "\n    default: " << m_staticContext->defaultFormat
             << "\n    HGLRC=" << m_renderingContext;
 }
 
@@ -1012,13 +1047,15 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
         return false;
     // Initialize pixel format first time. This will apply to
     // the HWND as well and  must be done only once.
-    if (!window->testFlag(QWindowsWindow::PixelFormatInitialized)) {
+    if (!window->testFlag(QWindowsWindow::OpenGlPixelFormatInitialized)) {
         if (!SetPixelFormat(newContext.hdc, m_pixelFormat, &m_obtainedPixelFormatDescriptor)) {
             qErrnoWarning("%s: SetPixelFormat() failed", __FUNCTION__);
             ReleaseDC(newContext.hwnd, newContext.hdc);
             return false;
         }
-        window->setFlag(QWindowsWindow::PixelFormatInitialized);
+        window->setFlag(QWindowsWindow::OpenGlPixelFormatInitialized);
+        if (m_obtainedFormat.swapBehavior() == QSurfaceFormat::DoubleBuffer)
+            window->setFlag(QWindowsWindow::OpenGLDoubleBuffered);
     }
     m_windowContexts.append(newContext);
     return wglMakeCurrent(newContext.hdc, newContext.renderingContext);
