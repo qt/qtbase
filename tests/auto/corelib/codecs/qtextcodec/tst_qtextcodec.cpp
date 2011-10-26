@@ -330,6 +330,7 @@ void tst_QTextCodec::codecForLocale()
     QTextCodec *codec = QTextCodec::codecForLocale();
     QVERIFY(codec != 0);
 
+    // The rest of this test is for Unix only
 #if defined(Q_OS_UNIX)
     // get a time string that is locale-encoded
     QByteArray originalLocaleEncodedTimeString;
@@ -346,9 +347,6 @@ void tst_QTextCodec::codecForLocale()
     QString unicodeTimeString = codec->toUnicode(originalLocaleEncodedTimeString);
     QByteArray localeEncodedTimeString = codec->fromUnicode(unicodeTimeString);
     QCOMPARE(localeEncodedTimeString, originalLocaleEncodedTimeString);
-#else
-    QSKIP("This test is not implemented on Windows");
-#endif
 
     // find a codec that is not the codecForLocale()
     QTextCodec *codec2 = 0;
@@ -370,6 +368,7 @@ void tst_QTextCodec::codecForLocale()
     // reset back to the default
     QTextCodec::setCodecForLocale(0);
     QCOMPARE(QTextCodec::codecForLocale(), codec);
+#endif
 }
 
 void tst_QTextCodec::asciiToIscii() const
