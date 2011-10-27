@@ -44,7 +44,26 @@
 
 #include <math.h>
 
-#if defined(Q_OS_UNIX)
+#ifdef Q_OS_SYMBIAN
+# include <e32std.h>
+typedef RMutex NativeMutexType;
+void NativeMutexInitialize(NativeMutexType *mutex)
+{
+    mutex->CreateLocal();
+}
+void NativeMutexDestroy(NativeMutexType *mutex)
+{
+    mutex->Close();
+}
+void NativeMutexLock(NativeMutexType *mutex)
+{
+    mutex->Wait();
+}
+void NativeMutexUnlock(NativeMutexType *mutex)
+{
+    mutex->Signal();
+}
+#elif defined(Q_OS_UNIX)
 #  include <pthread.h>
 #  include <errno.h>
 typedef pthread_mutex_t NativeMutexType;
@@ -109,7 +128,9 @@ private slots:
     void noThread_data();
     void noThread();
 
+    void constructionNative();
     void uncontendedNative();
+    void constructionQMutex();
     void uncontendedQMutex();
     void uncontendedQMutexLocker();
 
@@ -175,6 +196,15 @@ void tst_QMutex::noThread()
     QCOMPARE(int(count), N);
 }
 
+void tst_QMutex::constructionNative()
+{
+    QBENCHMARK {
+        NativeMutexType mutex;
+        NativeMutexInitialize(&mutex);
+        NativeMutexDestroy(&mutex);
+    }
+}
+
 void tst_QMutex::uncontendedNative()
 {
     NativeMutexType mutex;
@@ -184,6 +214,14 @@ void tst_QMutex::uncontendedNative()
         NativeMutexUnlock(&mutex);
     }
     NativeMutexDestroy(&mutex);
+}
+
+void tst_QMutex::constructionQMutex()
+{
+    QBENCHMARK {
+        QMutex mutex;
+        Q_UNUSED(mutex);
+    }
 }
 
 void tst_QMutex::uncontendedQMutex()
