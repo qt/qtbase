@@ -39,17 +39,10 @@
 **
 ****************************************************************************/
 
+#include "qpagedpaintdevice_p.h"
 #include <qpagedpaintdevice.h>
 
 QT_BEGIN_NAMESPACE
-
-class QPagedPaintDevicePrivate
-{
-public:
-    QPagedPaintDevice::PageSize pageSize;
-    QSizeF pageSizeMM;
-    QPagedPaintDevice::Margins margins;
-};
 
 static const struct {
     float width;
