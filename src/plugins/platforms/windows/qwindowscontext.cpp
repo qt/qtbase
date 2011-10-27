@@ -680,8 +680,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         }
         break;
     case QtWindows::ExposeEvent:
-        platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
-        return true;
+        return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::NonClientMouseEvent:

@@ -942,12 +942,22 @@ void QWindowsWindow::releaseDC()
     }
 }
 
-void QWindowsWindow::handleWmPaint(HWND hwnd, UINT,
+bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
                                          WPARAM, LPARAM)
 {
+    // Ignore invalid update bounding rectangles
+    if (!GetUpdateRect(m_data.hwnd, 0, FALSE))
+        return false;
+    if (message == WM_ERASEBKGND) // Backing store - ignored.
+        return true;
     PAINTSTRUCT ps;
     if (testFlag(OpenGLSurface)) {
-        BeginPaint(hwnd, &ps); // WM_ERASEBKGND needs to be handled.
+        // Observed painting problems with Aero style disabled (QTBUG-7865).
+        if (testFlag(OpenGLDoubleBuffered))
+            InvalidateRect(hwnd, 0, false);
+        BeginPaint(hwnd, &ps);
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(),
+                                                             QRegion(qrectFromRECT(ps.rcPaint)));
         EndPaint(hwnd, &ps);
     } else {
         releaseDC();
@@ -963,6 +973,7 @@ void QWindowsWindow::handleWmPaint(HWND hwnd, UINT,
         m_hdc = 0;
         EndPaint(hwnd, &ps);
     }
+    return true;
 }
 
 void QWindowsWindow::setWindowTitle(const QString &title)

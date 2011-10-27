@@ -156,7 +156,7 @@ public:
         { return GetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE); }
     void setExStyle(unsigned s) const;
 
-    void handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    bool handleWmPaint(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void handleMoved();
     void handleResized(int wParam);
