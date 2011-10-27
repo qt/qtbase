@@ -169,9 +169,13 @@ QDragManager *QDragManager::self()
 
 QPixmap QDragManager::dragCursor(Qt::DropAction action) const
 {
-    QDragPrivate * d = dragPrivate();
-    if (d && d->customCursors.contains(action))
-        return d->customCursors[action];
+    typedef QMap<Qt::DropAction, QPixmap>::const_iterator Iterator;
+
+    if (const QDragPrivate *d = dragPrivate()) {
+        const Iterator it = d->customCursors.constFind(action);
+        if (it != d->customCursors.constEnd())
+            return it.value();
+    }
 
     Qt::CursorShape shape = Qt::ForbiddenCursor;
     switch (action) {
@@ -187,8 +191,7 @@ QPixmap QDragManager::dragCursor(Qt::DropAction action) const
     default:
         shape = Qt::ForbiddenCursor;
     }
-
-    return QGuiApplicationPrivate::instance()->getPixmapCursor(Qt::DragMoveCursor);
+    return QGuiApplicationPrivate::instance()->getPixmapCursor(shape);
 }
 
 Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,

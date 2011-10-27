@@ -513,21 +513,18 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     m_dash_stroker.setMiterLimit(pen.miterLimit());
     m_dash_stroker.setClipRect(clip);
 
-    float curvynessAdd, curvynessMul, roundness = 0;
+    float curvynessAdd, curvynessMul;
 
     // simplfy pens that are thin in device size (2px wide or less)
     if (width < 2.5 && (cosmetic || m_inv_scale == 1)) {
         curvynessAdd = 0.5;
         curvynessMul = CURVE_FLATNESS / m_inv_scale;
-        roundness = 1;
     } else if (cosmetic) {
         curvynessAdd= width / 2;
         curvynessMul= CURVE_FLATNESS;
-        roundness = qMax<int>(4, width * CURVE_FLATNESS);
     } else {
         curvynessAdd = width * m_inv_scale;
         curvynessMul = CURVE_FLATNESS / m_inv_scale;
-        roundness = qMax<int>(4, width * curvynessMul);
     }
 
     if (count < 2)

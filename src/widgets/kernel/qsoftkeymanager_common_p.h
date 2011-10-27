@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <private/qobject_p.h>
+
 QT_BEGIN_HEADER
 
 #ifndef QT_NO_SOFTKEYMANAGER
@@ -64,7 +66,7 @@ class QSoftKeyManagerPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSoftKeyManager)
 
 public:
-    virtual void updateSoftKeys_sys() {};
+    virtual void updateSoftKeys_sys() {}
 
 protected:
     static QSoftKeyManager *self;

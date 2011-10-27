@@ -687,11 +687,6 @@ void WriteInitialization::acceptWidget(DomWidget *node)
 
     const QString pageDefaultString = QLatin1String("Page");
 
-    int id = -1;
-    if (const DomProperty *pid = attributes.value(QLatin1String("id"))) {
-        id = pid->elementNumber();
-    }
-
     if (m_uic->customWidgetsInfo()->extends(parentClass, QLatin1String("QMainWindow"))) {
         if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QMenuBar"))) {
             m_output << m_indent << parentWidget << "->setMenuBar(" << varName <<");\n";

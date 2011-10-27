@@ -2284,7 +2284,7 @@ struct QForeachContainerBase {};
 template <typename T>
 class QForeachContainer : public QForeachContainerBase {
 public:
-    inline QForeachContainer(const T& t): c(t), brk(0), i(c.begin()), e(c.end()){};
+    inline QForeachContainer(const T& t): c(t), brk(0), i(c.begin()), e(c.end()){}
     const T c;
     mutable int brk;
     mutable typename T::const_iterator i, e;

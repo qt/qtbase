@@ -596,6 +596,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         case QTextCharFormat::AlignSubScript: value = QString::fromLatin1("sub"); break;
         case QTextCharFormat::AlignTop: value = QString::fromLatin1("100%"); break;
         case QTextCharFormat::AlignBottom : value = QString::fromLatin1("-100%"); break;
+        case QTextCharFormat::AlignBaseline: break;
         }
         writer.writeAttribute(styleNS, QString::fromLatin1("text-position"), value);
     }

@@ -134,7 +134,7 @@ public:
     ResultIteratorBase resultAt(int index) const;
     bool contains(int index) const;
     int count() const;
-    virtual ~ResultStoreBase() { };
+    virtual ~ResultStoreBase() { }
 
 protected:
     int insertResultItem(int index, ResultItem &resultItem);

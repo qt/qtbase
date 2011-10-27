@@ -86,7 +86,7 @@ class Q_WIDGETS_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformP
         explicit QGuiPlatformPlugin(QObject *parent = 0);
         ~QGuiPlatformPlugin();
 
-        virtual QStringList keys() const {  return QStringList() << QLatin1String("default");  };
+        virtual QStringList keys() const {  return QStringList(QStringLiteral("default"));  }
 
         virtual QString styleName();
         virtual QPalette palette();

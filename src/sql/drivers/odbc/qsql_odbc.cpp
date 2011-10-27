@@ -630,12 +630,6 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
     QString qColName = QString::fromUtf8((const char *)colName.constData());
 #endif
     // nullable can be SQL_NO_NULLS, SQL_NULLABLE or SQL_NULLABLE_UNKNOWN
-    int required = -1;
-    if (nullable == SQL_NO_NULLS) {
-        required = 1;
-    } else if (nullable == SQL_NULLABLE) {
-        required = 0;
-    }
     QVariant::Type type = qDecodeODBCType(colType, p, unsignedFlag == SQL_FALSE);
     QSqlField f(qColName, type);
     f.setSqlType(colType);
