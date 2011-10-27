@@ -1832,7 +1832,6 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
 
     if (!gset || gset->outline_drawing || !loadGlyph(gset, glyphIndex, subPixelPosition,
                                                      neededFormat)) {
-        unlockFace();
         return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t,
                                                    offset);
     }
