@@ -52,10 +52,6 @@
 #include "qdebug.h"
 #endif
 
-#ifdef Q_WS_X11
-#include <qx11info_x11.h>
-#endif
-
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
@@ -2194,15 +2190,8 @@ int QStyle::sliderValueFromPosition(int min, int max, int pos, int span, bool up
  */
 QPalette QStyle::standardPalette() const
 {
-#ifdef Q_WS_X11
-    QColor background;
-    if (QX11Info::appDepth() > 8)
-        background = QColor(0xd4, 0xd0, 0xc8); // win 2000 grey
-    else
-        background = QColor(192, 192, 192);
-#else
-    QColor background(0xd4, 0xd0, 0xc8); // win 2000 grey
-#endif
+    QColor background = QColor(0xd4, 0xd0, 0xc8); // win 2000 grey
+
     QColor light(background.lighter());
     QColor dark(background.darker());
     QColor mid(Qt::gray);

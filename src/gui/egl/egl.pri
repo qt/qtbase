@@ -22,13 +22,7 @@ contains(QT_CONFIG, egl): {
             !isEmpty(QMAKE_LIBS_EGL): LIBS += $$QMAKE_LIBS_EGL
         }
 
-	wince*: SOURCES += egl/qegl_wince.cpp
-
-        symbian {
-            SOURCES += egl/qegl_symbian.cpp
-        } else {
-             SOURCES += egl/qegl_qpa.cpp
-        }
+        SOURCES += egl/qegl_qpa.cpp
 } else:symbian: {
     DEFINES += QT_NO_EGL
     SOURCES += egl/qegl_stub.cpp

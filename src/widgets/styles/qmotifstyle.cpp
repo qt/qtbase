@@ -72,10 +72,6 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
 
-#ifdef Q_WS_X11
-#include "qx11info_x11.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // old constants that might still be useful...
@@ -2693,13 +2689,9 @@ QMotifStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *w
 /*! \reimp */
 QPalette QMotifStyle::standardPalette() const
 {
-#ifdef Q_WS_X11
     QColor background(0xcf, 0xcf, 0xcf);
-    if (QX11Info::appDepth() <= 8)
+    if (QPixmap::defaultDepth() <= 8)
         background = QColor(0xc0, 0xc0, 0xc0);
-#else
-    QColor background = QColor(0xcf, 0xcf, 0xcf);
-#endif
 
     QColor light = background.lighter();
     QColor mid = QColor(0xa6, 0xa6, 0xa6);

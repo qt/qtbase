@@ -60,7 +60,6 @@ class QImageWriter;
 class QImageReader;
 class QColor;
 class QVariant;
-class QX11Info;
 class QPlatformPixmap;
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice

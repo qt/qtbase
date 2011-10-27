@@ -65,10 +65,6 @@
 #define SPI_GETDROPSHADOW                   0x1024
 #endif
 #endif
-#if defined(Q_WS_X11)
-#include "qx11info_x11.h"
-#include <qwidget.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -93,7 +93,7 @@
     In the illustration above, Application One's primary screen is
     screen 0, and App Two's primary screen is screen 1.
 
-    \sa QApplication, QApplication::desktop(), QX11Info::appRootWindow()
+    \sa QApplication, QApplication::desktop()
 */
 
 /*!

@@ -65,10 +65,6 @@
 #include <qscreen_qws.h>
 #endif
 
-#ifdef Q_WS_X11
-#include <QX11Info>
-#endif
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -180,10 +176,8 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
     int size = actual.width() * actual.height();
 
     int threshold = 2;
-#ifdef Q_WS_X11
-    if (QX11Info::appDepth() == 16)
+    if (QPixmap::defaultDepth() == 16)
         threshold = 10;
-#endif
 
     QRgb *a = (QRgb *)actualImage.bits();
     QRgb *e = (QRgb *)expectedImage.bits();
@@ -245,10 +239,8 @@ void tst_QPixmap::swap()
 void tst_QPixmap::fromImage_data()
 {
     bool is16bit = false;
-#ifdef Q_WS_X11
-    if (QX11Info::appDepth() == 16)
+    if (QPixmap::defaultDepth() == 16)
         is16bit = true;
-#endif
 
     QTest::addColumn<QImage::Format>("format");
 

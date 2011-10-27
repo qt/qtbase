@@ -11,8 +11,7 @@ SUBDIRS=\
     qwindowsurface \
     qwsembedwidget \
     qwsinputmethod \
-    qwswindowsystem \
-    qx11info \
+    qwswindowsystem
 
 # This test cannot be run on Mac OS
 mac*:SUBDIRS -= \

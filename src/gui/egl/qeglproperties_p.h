@@ -60,7 +60,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QX11Info;
 class QPaintDevice;
 
 class Q_GUI_EXPORT QEglProperties

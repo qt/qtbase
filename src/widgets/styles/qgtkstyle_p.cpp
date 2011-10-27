@@ -73,7 +73,6 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QToolButton>
-#include <QtWidgets/QX11Info>
 
 #include <private/qt_x11_p.h>
 
@@ -947,7 +946,9 @@ void QGtkStylePrivate::setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *p
         XSetTransientForHint(QGtkStylePrivate::gdk_x11_drawable_get_xdisplay(gtkFileChooser->window),
                              QGtkStylePrivate::gdk_x11_drawable_get_xid(gtkFileChooser->window),
                              modalFor->winId());
+#ifdef Q_WS_X11
         QGtkStylePrivate::gdk_x11_window_set_user_time (gtkFileChooser->window, QX11Info::appUserTime());
+#endif
 
     }
 
