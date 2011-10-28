@@ -65,10 +65,8 @@ public slots:
     void cleanup();
 private slots:
     void mapRect_data();
-    void operator_star_qrect_data();
     void mapToPolygon_data();
     void mapRect();
-    void operator_star_qrect();
     void assignments();
     void mapToPolygon();
     void translate();
@@ -156,11 +154,6 @@ void tst_QTransform::mapRect_data()
         << QTransform().rotate(deg).scale(10, 10)
         << QRect( 10, 20, 30, 40 )
         << QPolygon( QRect( -354, 212, 495, 495 ) );
-}
-
-void tst_QTransform::operator_star_qrect_data()
-{
-    mapping_data();
 }
 
 void tst_QTransform::mapToPolygon_data()
@@ -330,17 +323,6 @@ void tst_QTransform::mapRect()
     QRectF r = matrix.mapRect(QRectF(src));
     QRect ir(r.topLeft().toPoint(), r.bottomRight().toPoint() - QPoint(1, 1));
     QCOMPARE( mapped, ir );
-}
-
-void tst_QTransform::operator_star_qrect()
-{
-#if 0
-    QFETCH( QTransform, matrix );
-    QFETCH( QRect, src );
-    QFETCH( QPolygon, res );
-
-    QCOMPARE( (matrix * src), QRegion(res) );
-#endif
 }
 
 void tst_QTransform::assignments()
