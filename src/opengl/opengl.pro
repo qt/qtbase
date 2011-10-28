@@ -19,7 +19,6 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/opengl/qtopenglversion.h
 
-!win32:!embedded:!mac:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2

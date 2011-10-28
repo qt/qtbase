@@ -45,24 +45,7 @@ SOURCES += \
         image/qimagepixmapcleanuphooks.cpp \
         image/qvolatileimage.cpp
 
-qpa: {
-    SOURCES += image/qpixmap_qpa.cpp
-}
-else:win32 {
-    SOURCES += image/qpixmap_win.cpp
-}
-else:x11 {
-    HEADERS += image/qpixmap_x11_p.h
-    SOURCES += image/qpixmap_x11.cpp
-}
-else:mac {
-    HEADERS += image/qpixmap_mac_p.h
-    SOURCES += image/qpixmap_mac.cpp
-}
-else:symbian {
-    HEADERS += image/qpixmap_s60_p.h
-    SOURCES += image/qpixmap_s60.cpp
-}
+SOURCES += image/qpixmap_qpa.cpp
 
 !symbian|contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2) {
     SOURCES += image/qvolatileimagedata.cpp
