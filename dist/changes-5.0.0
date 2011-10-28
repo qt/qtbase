@@ -36,6 +36,25 @@ information about a particular change.
 
 - QMetaType::construct() has been renamed to QMetaType::create().
 
+- QTestLib:
+  * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.
+    These macros formerly lived in tests/shared/util.h but are now provided
+    by including the <QtTest/QtTest> header.
+  * The QTEST_NOOP_MAIN macro has been removed from the API.  If a test is
+    known at compile-time to be inapplicable for a particular build it should
+    be omitted via .pro file logic, or the test should call QSKIP in the
+    initTestCase() method to skip the entire test and report a meaningful
+    explanation in the test log.
+  * The DEPENDS_ON macro has been removed from the API.  This macro did nothing
+    and misled some users to believe that they could make test functions depend
+    on each other or impose an execution order on test functions.
+  * The QSKIP macro no longer has the "mode" parameter, which caused problems
+    for calculating test metrics, as the SkipAll mode hid information about
+    what test data was skipped.  Calling QSKIP in a test function now behaves
+    like SkipSingle -- skipping a non-data-driven test function or skipping
+    only the current data row of a data-driven test function.  Every skipped
+    data row is now reported in the test log.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
@@ -43,7 +62,9 @@ information about a particular change.
 General Improvements
 --------------------
 
--
+- The directory structure of the qtbase unit-tests has been reworked to
+  more closely match the directory structure of the code under test.
+  Integration tests have been moved to tests/auto/integrationtests.
 
 Third party components
 ----------------------
@@ -78,6 +99,12 @@ QtOpenGL
 
 QtScript
 --------
+
+
+QTestLib
+--------
+* [QTBUG-20615] Autotests can now log test output to multiple destinations
+  and log formats simultaneously.
 
 
 ****************************************************************************
