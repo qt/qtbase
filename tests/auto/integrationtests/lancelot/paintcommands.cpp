@@ -1948,15 +1948,11 @@ void PaintCommands::command_setFont(QRegExp re)
 
     QFont font(family, size, weight, italic);
 
-#if QT_VERSION >= 0x040800
     int hinting = translateEnum(fontHintingTable, caps.at(5), 4);
     if (hinting == -1)
         hinting = 0;
     else
         font.setHintingPreference(QFont::HintingPreference(hinting));
-#else
-    int hinting = 1;
-#endif
     if (m_verboseMode)
         printf(" -(lance) setFont(family=%s, size=%d, weight=%d, italic=%d hinting=%s\n",
                qPrintable(family), size, weight, italic, fontHintingTable[hinting]);
@@ -2306,11 +2302,7 @@ void PaintCommands::command_gradient_setRadialExtended(QRegExp re)
                "focal radius=%.2f, spread=%d\n",
                cx, cy, rad, fx, fy, frad, m_gradientSpread);
 
-#if QT_VERSION >= 0x040800
     QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy), frad);
-#else
-    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
-#endif
     rg.setStops(m_gradientStops);
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);
