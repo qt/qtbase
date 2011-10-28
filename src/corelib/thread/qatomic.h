@@ -78,33 +78,39 @@ public:
         store(other.load());
     }
 
+    Q_DECL_DEPRECATED
     inline QAtomicInt &operator=(int value)
     {
         this->store(value);
         return *this;
     }
 
+    Q_DECL_DEPRECATED
     inline QAtomicInt &operator=(const QAtomicInt &other)
     {
         this->store(other.load());
         return *this;
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator==(int value) const
     {
         return this->load() == value;
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator!=(int value) const
     {
         return this->load() != value;
     }
 
+    Q_DECL_DEPRECATED
     inline operator int() const
     {
         return this->load();
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator!() const
     {
         return !this->load();
@@ -163,38 +169,45 @@ public:
         this->store(other.load());
     }
 
+    Q_DECL_DEPRECATED
     inline QAtomicPointer<T> &operator=(T *value)
     {
         this->store(value);
         return *this;
     }
 
+    Q_DECL_DEPRECATED
     inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other)
     {
         this->store(other.load());
         return *this;
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator==(T *value) const
     {
         return this->load() == value;
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator!=(T *value) const
     {
         return this->load() != value;
     }
 
+    Q_DECL_DEPRECATED
     inline bool operator!() const
     {
         return !this->load();
     }
 
+    Q_DECL_DEPRECATED
     inline operator T *() const
     {
         return this->load();
     }
 
+    Q_DECL_DEPRECATED
     inline T *operator->() const
     {
         return this->load();
