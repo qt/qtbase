@@ -909,6 +909,7 @@ QFile::copy(const QString &newName)
 #endif
                 if (error) {
                     out.close();
+                    close();
                     d->setError(QFile::CopyError, tr("Cannot open for output"));
                 } else {
                     char block[4096];
@@ -919,6 +920,7 @@ QFile::copy(const QString &newName)
                             break;
                         totalRead += in;
                         if(in != out.write(block, in)) {
+                            close();
                             d->setError(QFile::CopyError, tr("Failure to write block"));
                             error = true;
                             break;
@@ -932,6 +934,7 @@ QFile::copy(const QString &newName)
                     }
                     if (!error && !out.rename(newName)) {
                         error = true;
+                        close();
                         d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
                     }
 #ifdef QT_NO_TEMPORARYFILE
@@ -942,10 +945,10 @@ QFile::copy(const QString &newName)
                         out.setAutoRemove(false);
 #endif
                 }
-                close();
             }
             if(!error) {
                 QFile::setPermissions(newName, permissions());
+                close();
                 unsetError();
                 return true;
             }
