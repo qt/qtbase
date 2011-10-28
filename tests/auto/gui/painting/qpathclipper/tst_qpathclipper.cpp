@@ -513,27 +513,6 @@ void tst_QPathClipper::clipTest(int subjectIndex, int clipIndex, QPathClipper::O
                  op == QPathClipper::BoolOr ? "or" : "sub";
             sprintf(str, "Expected: %d, actual: %d, subject: %d, clip: %d, op: %s\n",
                      int(expected), int(inResult), subjectIndex, clipIndex, opStr);
-
-            // debugging
-#if 0
-            QRect rect = bounds.toAlignedRect();
-
-            QPainter p(&img);
-            p.scale(scale, scale);
-            p.translate(-bounds.topLeft());
-
-            p.setPen(Qt::NoPen);
-            p.setBrush(QColor(0x700ff00));
-            p.drawPath(result);
-
-            p.setPen(Qt::blue);
-            p.drawPoint(point);
-            p.end();
-
-            char str2[256];
-            sprintf(str2, "fail-%d-%d-%s.png", subjectIndex, clipIndex, opStr);
-            img.save(str2);
-#endif
             QFAIL(str);
         }
     }
