@@ -1,9 +1,6 @@
 isEmpty(TEMPLATE):TEMPLATE=app
 CONFIG += qt warn_on console depend_includepath testcase
 
-# x11 is not defined by configure (the following line is copied from gui.pro)
-!win32:!embedded:!qpa:!mac:!symbian:CONFIG += x11
-
 qtAddLibrary(QtTest)
 
 symbian:{
