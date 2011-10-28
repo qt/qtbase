@@ -419,13 +419,7 @@ void tst_QPixmap::scroll()
     else
         QVERIFY(pixmap.cacheKey() != oldKey);
 
-#if 0
-    // Remember to add to resources.
-    QString fileName = QString("images/%1.png").arg(QTest::currentDataTag());
-    pixmap.toImage().save(fileName);
-#else
     QString fileName = QString(":/images/%1.png").arg(QTest::currentDataTag());
-#endif
     QPixmap output(fileName);
     QVERIFY(input.isNull() == output.isNull());
     QVERIFY(lenientCompare(pixmap, output));
