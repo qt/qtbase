@@ -248,11 +248,7 @@ void tst_languageChange::retranslatability()
         QCOMPARE(dir.rmdir(tmpParentDir), true);
         break; }
     }
-#if 0
-    QList<QByteArray> list = translator.m_translations.toList();
-    qSort(list);
-    qDebug() << list;
-#endif
+
     // In case we use a Color dialog, we do not want to test for
     // strings non existing in the dialog and which do not get
     // translated.
