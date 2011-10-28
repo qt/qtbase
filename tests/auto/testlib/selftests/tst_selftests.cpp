@@ -305,13 +305,6 @@ void tst_Selftests::runSubTest_data()
 #endif
         << "benchlibeventcounter"
         << "benchliboptions"
-#if 0
-        // These tests are affected by timing and whether the CPU tick counter
-        // is monotonically increasing.  They won't work on some machines so
-        // leave them off by default.  Feel free to uncomment for your own testing.
-        << "benchlibtickcounter"
-        << "benchlibwalltime"
-#endif
         << "cmptest"
         << "commandlinedata"
         << "crashes"
@@ -343,6 +336,16 @@ void tst_Selftests::runSubTest_data()
         << "warnings"
         << "xunit"
     ;
+
+    // These tests are affected by timing and whether the CPU tick counter
+    // is monotonically increasing.  They won't work on some machines so
+    // leave them off by default.  Feel free to enable them for your own
+    // testing by setting the QTEST_ENABLE_EXTRA_SELFTESTS environment
+    // variable to something non-empty.
+    if (!qgetenv("QTEST_ENABLE_EXTRA_SELFTESTS").isEmpty())
+        tests << "benchlibtickcounter"
+              << "benchlibwalltime"
+        ;
 
     foreach (LoggerSet const& loggerSet, allLoggerSets()) {
         QStringList loggers = loggerSet.loggers;
