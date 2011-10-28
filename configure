@@ -7410,9 +7410,9 @@ fi
 
 if [ '!' -z "$W_FLAGS" ]; then
     # add the user defined warning flags
-    QMakeVar add QMAKE_CFLAGS "$W_FLAGS"
-    QMakeVar add QMAKE_CXXFLAGS "$W_FLAGS"
-    QMakeVar add QMAKE_OBJECTIVE_CFLAGS "$W_FLAGS"
+    QMakeVar add QMAKE_CFLAGS_WARN_ON "$W_FLAGS"
+    QMakeVar add QMAKE_CXXFLAGS_WARN_ON "$W_FLAGS"
+    QMakeVar add QMAKE_OBJECTIVE_CFLAGS_WARN_ON "$W_FLAGS"
 fi
 
 # turn off exceptions for the compilers that support it
