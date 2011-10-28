@@ -1942,12 +1942,6 @@ void tst_QPainter::setEqualClipRegionAndPath()
         p.fillRect(0, 0, img2.width(), img2.height(), QColor(Qt::red));
     }
 
-#if 0
-    if (img1 != img2) {
-        img1.save("setEqualClipRegionAndPath_1.xpm", "XPM");
-        img2.save("setEqualClipRegionAndPath_2.xpm", "XPM");
-    }
-#endif
     QCOMPARE(img1, img2);
 
 #if 0
@@ -1968,12 +1962,6 @@ void tst_QPainter::setEqualClipRegionAndPath()
         p.fillRect(0, 0, img2.width(), img2.height(), QColor(Qt::red));
     }
 
-#if 1
-    if (img1 != img2) {
-        img1.save("setEqualClipRegionAndPath_1.xpm", "XPM");
-        img2.save("setEqualClipRegionAndPath_2.xpm", "XPM");
-    }
-#endif
     QCOMPARE(img1, img2);
 #endif
 
@@ -1995,12 +1983,6 @@ void tst_QPainter::setEqualClipRegionAndPath()
         p.setClipPath(path, Qt::IntersectClip);
         p.fillRect(0, 0, img2.width(), img2.height(), QColor(Qt::red));
     }
-#if 0
-    if (img1 != img2) {
-        img1.save("setEqualClipRegionAndPath_1.png", "PNG");
-        img2.save("setEqualClipRegionAndPath_2.png", "PNG");
-    }
-#endif
     QCOMPARE(img1, img2);
 
     img1.fill(0x12345678);
@@ -2017,12 +1999,6 @@ void tst_QPainter::setEqualClipRegionAndPath()
         p.setClipPath(path, Qt::IntersectClip);
         p.fillRect(0, 0, img2.width(), img2.height(), QColor(Qt::red));
     }
-#if 0
-    if (img1 != img2) {
-        img1.save("setEqualClipRegionAndPath_1.xpm", "XPM");
-        img2.save("setEqualClipRegionAndPath_2.xpm", "XPM");
-    }
-#endif
     QCOMPARE(img1, img2);
 
 }
@@ -2171,12 +2147,6 @@ void tst_QPainter::clippedFillPath()
         painter.drawPath(path);
     }
 
-#if 0
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
 
     // repeat with antialiasing
@@ -2201,14 +2171,7 @@ void tst_QPainter::clippedFillPath()
         painter.drawPath(path);
     }
 
-#if 1
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
-
 }
 
 void tst_QPainter::clippedLines_data()
@@ -2288,12 +2251,6 @@ void tst_QPainter::clippedLines()
         painter.drawLine(line.toLine());
     }
 
-#if 0
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
 
     // repeat with antialiasing
@@ -2317,12 +2274,6 @@ void tst_QPainter::clippedLines()
         painter.drawLine(line.toLine());
     }
 
-#if 0
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
 }
 
@@ -2367,12 +2318,6 @@ void tst_QPainter::clippedPolygon()
         painter.drawPolygon(polygon.toPolygon());
     }
 
-#if 0
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
 
     // repeat with antialiasing
@@ -2399,12 +2344,6 @@ void tst_QPainter::clippedPolygon()
         painter.drawPolygon(polygon.toPolygon());
     }
 
-#if 0
-    if (clippedRect != clippedPath) {
-        clippedRect.save(QString("clippedRect.png"), "PNG");
-        clippedPath.save(QString("clippedPath.png"), "PNG");
-    }
-#endif
     QCOMPARE(clippedRect, clippedPath);
 }
 
@@ -2631,18 +2570,6 @@ void tst_QPainter::drawhelper_blend_untransformed()
             // Test skipped due to rounding errors...
             continue;
         }
-#if 0
-        if (subDest != expected) {
-            qDebug() << "size" << size << "opacity" << opacity;
-            for (int j = 0; j < expected.height(); ++j) {
-                for (int i = 0; i < expected.width(); ++i) {
-                    if (expected.pixel(i,j) != subDest.pixel(i,j))
-                        qDebug() << i << j << hex << expected.pixel(i, j)
-                                 << subDest.pixel(i, j);
-                }
-            }
-        }
-#endif
         QCOMPARE(subDest, expected);
     }
 }
@@ -2700,18 +2627,6 @@ void tst_QPainter::drawhelper_blend_tiled_untransformed()
             // Skipping test due to rounding errors. Test needs rewrite
             continue;
         }
-#if 0
-        if (subDest != expected) {
-            qDebug() << "size" << size << "opacity" << opacity;
-            for (int j = 0; j < expected.height(); ++j) {
-                for (int i = 0; i < expected.width(); ++i) {
-                    if (expected.pixel(i,j) != subDest.pixel(i,j))
-                        qDebug() << i << j << hex << expected.pixel(i, j)
-                                 << subDest.pixel(i, j);
-                }
-            }
-        }
-#endif
         QCOMPARE(subDest, expected);
     }
 }
@@ -3451,11 +3366,6 @@ void tst_QPainter::outlineFillConsistency()
         p.drawPolygon(copy);
         p.end();
 
-#if 0
-        if (!verifyOutlineFillConsistency(dst, background, p.brush().color().rgba(), p.pen().color().rgba()))
-            dst.save(QString("outlineFillConsistency-%1.png").arg(i));
-#endif
-
         QVERIFY(verifyOutlineFillConsistency(dst, background, brush.color().rgba(), pen.color().rgba()));
     }
 }
@@ -3497,13 +3407,6 @@ void tst_QPainter::drawImage_task217400()
 
         const QImage result = dest.copy(i, 0, src.width(), src.height());
 
-#if 0
-        if (result != expected) {
-            qDebug("i=%i", i);
-            result.save("result.png");
-            expected.save("expected.png");
-        }
-#endif
         QCOMPARE(result, expected);
     }
 }
