@@ -82,14 +82,14 @@ bool QBasicMutex::lockInternal(int timeout)
         elapsedTimer.start();
 
     while (!fastTryLock()) {
-        QMutexPrivate *d = this->d.load();
+        QMutexPrivate *d = d_ptr.load();
         if (!d) // if d is 0, the mutex is unlocked
             continue;
 
         if (quintptr(d) <= 0x3) { //d == dummyLocked() || d == dummyFutexValue()
             if (timeout == 0)
                 return false;
-            while (this->d.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
+            while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
                 struct timespec ts, *pts = 0;
                 if (timeout >= 1) {
                     // recalculate the timeout
@@ -103,7 +103,7 @@ bool QBasicMutex::lockInternal(int timeout)
                     ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
                     pts = &ts;
                 }
-                int r = _q_futex(&this->d, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
+                int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
                 if (r != 0 && errno == ETIMEDOUT)
                     return false;
             }
@@ -112,19 +112,19 @@ bool QBasicMutex::lockInternal(int timeout)
         Q_ASSERT(d->recursive);
         return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
     }
-    Q_ASSERT(this->d.load());
+    Q_ASSERT(d_ptr.load());
     return true;
 }
 
 void QBasicMutex::unlockInternal()
 {
-    QMutexPrivate *d = this->d.load();
+    QMutexPrivate *d = d_ptr.load();
     Q_ASSERT(d); //we must be locked
     Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
 
     if (d == dummyFutexValue()) {
-        this->d.fetchAndStoreRelease(0);
-        _q_futex(&this->d, FUTEX_WAKE, 1, 0);
+        d_ptr.fetchAndStoreRelease(0);
+        _q_futex(&d_ptr, FUTEX_WAKE, 1, 0);
         return;
     }
 

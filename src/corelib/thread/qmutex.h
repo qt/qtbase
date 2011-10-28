@@ -65,8 +65,8 @@ public:
     }
 
     inline void unlock() {
-        Q_ASSERT(d.load()); //mutex must be locked
-        if (!d.testAndSetRelease(dummyLocked(), 0))
+        Q_ASSERT(d_ptr.load()); //mutex must be locked
+        if (!d_ptr.testAndSetRelease(dummyLocked(), 0))
             unlockInternal();
     }
 
@@ -78,12 +78,12 @@ public:
 
 private:
     inline bool fastTryLock() {
-        return d.testAndSetAcquire(0, dummyLocked());
+        return d_ptr.testAndSetAcquire(0, dummyLocked());
     }
     bool lockInternal(int timeout = -1);
     void unlockInternal();
 
-    QBasicAtomicPointer<QMutexPrivate> d;
+    QBasicAtomicPointer<QMutexPrivate> d_ptr;
     static inline QMutexPrivate *dummyLocked() {
         return reinterpret_cast<QMutexPrivate *>(quintptr(1));
     }
