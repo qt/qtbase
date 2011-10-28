@@ -85,7 +85,6 @@ public:
         return *this;
     }
 
-    Q_DECL_DEPRECATED
     inline QAtomicInt &operator=(const QAtomicInt &other)
     {
         this->store(other.load());
@@ -176,7 +175,6 @@ public:
         return *this;
     }
 
-    Q_DECL_DEPRECATED
     inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other)
     {
         this->store(other.load());
