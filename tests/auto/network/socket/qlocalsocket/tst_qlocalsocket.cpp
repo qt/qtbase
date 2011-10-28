@@ -416,13 +416,7 @@ void tst_QLocalSocket::listenAndConnect()
         // Check first and last state
         QCOMPARE(qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.first()[0]),
                  QLocalSocket::ConnectingState);
-#if 0
-        for (int j = 0; j < spyStateChanged.count(); ++j) {
-            QLocalSocket::LocalSocketState s;
-            s = qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.at(j).at(0));
-            qDebug() << s;
-        }
-#endif
+
         if (canListen)
             QCOMPARE(qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.last()[0]),
                      QLocalSocket::ConnectedState);
