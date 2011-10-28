@@ -60,7 +60,6 @@ src_platformsupport.target = sub-platformsupport
    src_gui.depends = src_corelib
    src_printsupport.depends = src_corelib src_gui src_widgets
    src_widgets.depends = src_corelib src_gui src_tools_uic
-   embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
    src_dbus.depends = src_corelib src_xml
    src_network.depends = src_corelib
@@ -69,8 +68,6 @@ src_platformsupport.target = sub-platformsupport
    src_testlib.depends = src_corelib src_gui src_widgets
    src_plugins.depends = src_gui src_sql src_xml
    qpa: src_plugins.depends = src_platformsupport
-   src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
-   src_s60installs.depends -= src_s60installs
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
       src_plugins.depends += src_opengl
       src_declarative.depends += src_opengl
@@ -125,16 +122,5 @@ for(subname, SRC_SUBDIRS) {
 debug.depends = $$EXTRA_DEBUG_TARGETS
 release.depends = $$EXTRA_RELEASE_TARGETS
 QMAKE_EXTRA_TARGETS += debug release
-
-# This gives us a top-level runonphone target, which installs Qt and optionally QtWebKit.
-contains(CONFIG, run_on_phone) {
-    src_runonphone_target.target = runonphone
-    src_runonphone_target.commands = $(MAKE) -C $$QT_BUILD_TREE/src/s60installs runonphone
-    src_runonphone_target.depends = first
-    contains(QT_CONFIG, webkit) {
-        src_runonphone_target.commands += && $(MAKE) -C $$QT_BUILD_TREE/src/3rdparty/webkit/WebCore runonphone
-    }
-    QMAKE_EXTRA_TARGETS += src_runonphone_target
-}
 
 SUBDIRS += $$SRC_SUBDIRS
