@@ -10,8 +10,4 @@ unix:!symbian {
 !symbian:!contains(QT_CONFIG, no-gui):SUBDIRS += accessible
 
 symbian:SUBDIRS += s60
-qpa: {
-    SUBDIRS += platforms
-    SUBDIRS += platforminputcontexts
-    SUBDIRS += printsupport
-}
+SUBDIRS += platforms platforminputcontexts printsupport

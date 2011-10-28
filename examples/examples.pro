@@ -1,11 +1,10 @@
-Qt += widgets
-
 TEMPLATE      = subdirs
 SUBDIRS       = \
                 network \
                 statemachine \
                 threads \
-                xml
+                xml \
+                qpa
 
 !contains(QT_CONFIG, no-gui) {
     SUBDIRS  += \
@@ -30,9 +29,6 @@ SUBDIRS       = \
                 touch \
                 gestures
 }
-
-qpa:SUBDIRS += qpa
-
 wince*|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
 
 embedded:SUBDIRS += qws
@@ -46,5 +42,3 @@ contains(QT_CONFIG, concurrent): SUBDIRS += qtconcurrent
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]
 INSTALLS += sources
-
-QT += widgets

@@ -22,10 +22,8 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
                 textures
 }
 
-qpa {
-    SUBDIRS += hellowindow
-    SUBDIRS += paintedwindow
-}
+SUBDIRS += hellowindow \
+           paintedwindow
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl
