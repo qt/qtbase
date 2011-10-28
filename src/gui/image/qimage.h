@@ -49,6 +49,10 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
 
+#if QT_DEPRECATED_SINCE(5, 0)
+#include <QtCore/qstringlist.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
