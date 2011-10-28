@@ -3,12 +3,11 @@ TEMPLATE = subdirs
 # this order is important
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
-symbian:SRC_SUBDIRS += src_s60main
-!wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+!wince*:include(tools/tools.pro)
 SRC_SUBDIRS += src_corelib
 SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
-!symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
+contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 contains(QT_CONFIG, v8): SRC_SUBDIRS += src_v8
@@ -16,14 +15,6 @@ contains(QT_CONFIG, v8): SRC_SUBDIRS += src_v8
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins
 
-# s60installs need to be at the end, because qtbase.pro does an ordered build,
-# and s60installs depends on all the others.
-symbian:SRC_SUBDIRS += src_s60installs
-
-src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
-src_s60main.target = sub-s60main
-src_s60installs.subdir = $$QT_SOURCE_TREE/src/s60installs
-src_s60installs.target = sub-s60installs
 src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_corelib.subdir = $$QT_SOURCE_TREE/src/corelib
@@ -55,7 +46,7 @@ src_platformsupport.target = sub-platformsupport
 
 
 #CONFIG += ordered
-!wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
+!wince*:!ordered {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib
    src_printsupport.depends = src_corelib src_gui src_widgets
