@@ -251,26 +251,34 @@ void tst_QTextBrowser::viewportPositionInHistory()
 
 void tst_QTextBrowser::relativeLinks()
 {
+    QEXPECT_FAIL("", "QTBUG-22416: First call to QTextBrowser::setSource fails unless URL created with QUrl::fromLocalFile", Abort);
+
     qRegisterMetaType<QUrl>("QUrl");
     QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(const QUrl &)));
     browser->setSource(QUrl("../qtextbrowser.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../qtextbrowser.html"));
     browser->setSource(QUrl("qtextbrowser/subdir/index.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("qtextbrowser/subdir/index.html"));
     browser->setSource(QUrl("../anchor.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../anchor.html"));
     browser->setSource(QUrl("subdir/index.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("subdir/index.html"));
 
     // using QUrl::fromLocalFile()
     browser->setSource(QUrl::fromLocalFile("anchor.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("file:anchor.html"));
     browser->setSource(QUrl("../qtextbrowser.html"));
+    QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
     QCOMPARE(sourceChangedSpy.takeFirst()[0].toUrl(), QUrl("../qtextbrowser.html"));
 }
