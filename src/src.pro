@@ -59,6 +59,7 @@ src_platformsupport.target = sub-platformsupport
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib
    src_printsupport.depends = src_corelib src_gui src_widgets
+   src_platformsupport.depends = src_corelib src_gui src_network
    src_widgets.depends = src_corelib src_gui src_tools_uic
    src_xml.depends = src_corelib
    src_dbus.depends = src_corelib src_xml
