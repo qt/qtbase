@@ -62,9 +62,6 @@
 #include "QtCore/qmap.h"
 #include "private/qobject_p.h"
 
-#ifdef Q_OS_SYMBIAN
-#include <e32base.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -162,11 +159,7 @@ public:
     QWaitCondition thread_done;
 
     static void *start(void *arg);
-#if defined(Q_OS_SYMBIAN)
-    static void finish(void *arg, bool lockAnyway=true, bool closeNativeHandle=true);
-#else
     static void finish(void *);
-#endif
 
 #endif // Q_OS_UNIX
 
@@ -179,7 +172,7 @@ public:
     static void finish(void *, bool lockAnyway=true);
 #endif // Q_OS_WIN32
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     bool terminationEnabled, terminatePending;
 # endif
     QThreadData *data;
@@ -232,10 +225,6 @@ public:
     bool canWait;
     QVector<void *> tls;
     bool isAdopted;
-
-# ifdef Q_OS_SYMBIAN
-    RThread symbian_thread_handle;
-# endif
 };
 
 // thread wrapper for the main() thread
