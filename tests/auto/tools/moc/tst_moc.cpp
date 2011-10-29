@@ -66,10 +66,10 @@
 #include "escapes-in-string-literals.h"
 #include "cstyle-enums.h"
 
-
 #if defined(PARSE_BOOST)
 #include "parse-boost.h"
 #endif
+#include "cxx11-enums.h"
 
 QT_USE_NAMESPACE
 
@@ -511,6 +511,8 @@ private slots:
     void warnings();
 #endif
     void privateClass();
+    void cxx11Enums_data();
+    void cxx11Enums();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1630,6 +1632,39 @@ void tst_Moc::privateClass()
     QVERIFY(PrivateClass::staticMetaObject.indexOfSignal("someSignal()") > 0);
 }
 
+void tst_Moc::cxx11Enums_data()
+{
+    QTest::addColumn<QByteArray>("enumName");
+    QTest::addColumn<char>("prefix");
+
+    QTest::newRow("EnumClass") << QByteArray("EnumClass") << 'A';
+    QTest::newRow("TypedEnum") << QByteArray("TypedEnum") << 'B';
+    QTest::newRow("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C';
+    QTest::newRow("NormalEnum") << QByteArray("NormalEnum") << 'D';
+}
+
+
+void tst_Moc::cxx11Enums()
+{
+    const QMetaObject *meta = &CXX11Enums::staticMetaObject;
+    QCOMPARE(meta->enumeratorOffset(), 0);
+
+    QFETCH(QByteArray, enumName);
+    QFETCH(char, prefix);
+
+    int idx;
+    idx = meta->indexOfEnumerator(enumName);
+    QVERIFY(idx != -1);
+    QCOMPARE(meta->enumerator(idx).enclosingMetaObject(), meta);
+    QCOMPARE(meta->enumerator(idx).isValid(), true);
+    QCOMPARE(meta->enumerator(idx).keyCount(), 4);
+    QCOMPARE(meta->enumerator(idx).name(), enumName.constData());
+    for (int i = 0; i < 4; i++) {
+        QByteArray v = prefix + QByteArray::number(i);
+        QCOMPARE(meta->enumerator(idx).keyToValue(v), i);
+        QCOMPARE(meta->enumerator(idx).valueToKey(i), v.constData());
+    }
+}
 
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"

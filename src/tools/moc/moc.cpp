@@ -251,12 +251,19 @@ bool Moc::parseEnum(EnumDef *def)
 {
     bool isTypdefEnum = false; // typedef enum { ... } Foo;
 
+    if (test(CLASS))
+        def->isEnumClass = true;
+
     if (test(IDENTIFIER)) {
         def->name = lexem();
     } else {
         if (lookup(-1) != TYPEDEF)
             return false; // anonymous enum
         isTypdefEnum = true;
+    }
+    if (test(COLON)) { // C++11 strongly typed enum
+        // enum Foo : unsigned long { ... };
+        parseType(); //ignore the result
     }
     if (!test(LBRACE))
         return false;

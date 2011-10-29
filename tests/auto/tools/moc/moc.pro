@@ -17,7 +17,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            slots-with-void-template.h qinvokable.h namespaced-flags.h trigraphs.h \
            escapes-in-string-literals.h cstyle-enums.h qprivateslots.h gadgetwithnoenums.h \
            dir-in-include-path.h single_function_keyword.h task192552.h task189996.h \
-           task234909.h task240368.h pure-virtual-signals.h
+           task234909.h task240368.h pure-virtual-signals.h cxx11-enums.h
 if(*-g++*|*-icc*|*-clang|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
 SOURCES += tst_moc.cpp
 
