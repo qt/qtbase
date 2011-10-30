@@ -438,7 +438,7 @@
     The animation is implemented using the QTimeLine class together
     with the event handlers and the private \c setFrame() slot: The
     image item will expand when the mouse cursor hovers over it,
-    returning back to its orignal size when the cursor leaves its
+    returning back to its original size when the cursor leaves its
     borders.
 
     Finally, we store the location ID that this particular record is

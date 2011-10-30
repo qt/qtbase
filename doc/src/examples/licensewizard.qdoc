@@ -108,7 +108,7 @@
     \dots
     \snippet examples/dialogs/licensewizard/licensewizard.cpp 13
 
-    In \c showHelp(), we display help texts that are appropiate for
+    In \c showHelp(), we display help texts that are appropriate for
     the current page. If the user clicks \gui Help twice for the same
     page, we say, "Sorry, I already gave what help I could. Maybe you
     should try asking a human?"

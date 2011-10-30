@@ -112,7 +112,7 @@
 
     \snippet examples/widgets/tooltips/sortingbox.cpp 1
 
-    To be able to show the appropiate tooltips while the user is
+    To be able to show the appropriate tooltips while the user is
     moving the cursor around, we need to enable mouse tracking for the
     widget.
 
@@ -208,7 +208,7 @@
 
     The QPainter::setBrush() function sets the current brush used by
     the painter. When the provided argument is a QColor, the function
-    calls the appropiate QBrush constructor which creates a brush with
+    calls the appropriate QBrush constructor which creates a brush with
     the specified color and Qt::SolidPattern style. The
     QPainter::drawPath() function draws the given path using the
     current pen for outline and the current brush for filling.
@@ -340,14 +340,14 @@
     to appear at a random position, and we use the \c
     randomItemPosition() function to calculate such a position. We
     make sure that the item appears within the visible area of the
-    \c SortingBox widget, using the widget's current width and heigth
+    \c SortingBox widget, using the widget's current width and height
     when calculating the random coordinates.
 
     \snippet examples/widgets/tooltips/sortingbox.cpp 25
 
     As with \c initialItemPosition(), the \c initialItemColor()
     function is called from the constructor. The purposes of both
-    functions are purely cosmetic: We want to control the inital
+    functions are purely cosmetic: We want to control the initial
     position and color of the three first items.
 
     \snippet examples/widgets/tooltips/sortingbox.cpp 26

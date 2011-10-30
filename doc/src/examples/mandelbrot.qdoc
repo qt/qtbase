@@ -210,7 +210,7 @@
     \l{QImage}s. It is called from the constructor to initialize the
     \c colormap array with pleasing colors.
 
-    \section1 MandelbrotWidget Class Defintion
+    \section1 MandelbrotWidget Class Definition
 
     The \c MandelbrotWidget class uses \c RenderThread to draw the
     Mandelbrot set on screen. Here's the class definition:

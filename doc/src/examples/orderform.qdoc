@@ -306,7 +306,7 @@
         \row
             \o block \o \c{I want to receive...}
         \row
-            \o block \o \c{I do not want to recieve...}
+            \o block \o \c{I do not want to receive...}
         \row
             \o block \o \c{X}
     \endtable

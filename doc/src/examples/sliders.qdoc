@@ -195,7 +195,7 @@
 
     \snippet examples/widgets/sliders/slidersgroup.cpp 0
 
-    First we create the slider-like widgets with the appropiate
+    First we create the slider-like widgets with the appropriate
     properties. In particular we set the focus policy for each
     widget. Qt::FocusPolicy is an enum type that defines the various
     policies a widget can have with respect to acquiring keyboard

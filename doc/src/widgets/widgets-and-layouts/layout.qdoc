@@ -192,12 +192,12 @@
         \o  Any widgets that are allocated less space than their minimum size
             (or minimum size hint if no minimum size is specified) are
             allocated this minimum size they require. (Widgets don't have to
-            have a minimum size or minimum size hint in which case the strech
+            have a minimum size or minimum size hint in which case the stretch
             factor is their determining factor.)
 
         \o  Any widgets that are allocated more space than their maximum size
             are allocated the maximum size space they require. (Widgets do not
-            have to have a maximum size in which case the strech factor is
+            have to have a maximum size in which case the stretch factor is
             their determining factor.)
     \endlist
 

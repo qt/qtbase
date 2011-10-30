@@ -3542,7 +3542,7 @@
 
     \section2 Customizing QCheckBox
 
-    Styling of a QCheckBox is almost indentical to styling a QRadioButton. The
+    Styling of a QCheckBox is almost identical to styling a QRadioButton. The
     main difference is that a tristate QCheckBox has an indeterminate state.
 
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 108

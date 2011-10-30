@@ -192,7 +192,7 @@
     new subpath, and construct three sides of a square using the
     QPainterPath::lineTo() function.
 
-    Now, when we call the QPainterPath::closeSubpath() fucntion the
+    Now, when we call the QPainterPath::closeSubpath() function the
     last side is created. Remember that the
     QPainterPath::closeSubpath() function draws a line to the
     beginning of the \e current subpath, i.e the square.
@@ -286,7 +286,7 @@
 
     Finally, we initialize the \c RenderArea widgets by calling the \c
     fillRuleChanged(), \c fillGradientChanged() and \c
-    penColorChanged() slots, and we set the inital pen width and
+    penColorChanged() slots, and we set the initial pen width and
     window title.
 
     \snippet examples/painting/painterpaths/window.cpp 19
@@ -396,7 +396,7 @@
     painter path is rendered in the right size, i.e that it grows with
     the \c RenderArea widget when the application is resized. When we
     constructed the various painter paths, they were all rnedered
-    within a square with a 100 pixel width wich is equivalent to \c
+    within a square with a 100 pixel width which is equivalent to \c
     RenderArea::sizeHint(). The QPainter::scale() function scales the
     coordinate system by the \c RenderArea widget's \e current width
     and height divided by 100.

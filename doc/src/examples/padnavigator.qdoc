@@ -51,7 +51,7 @@
 
     \section1 RoundRectItem Class Definition
 
-    The \c RoundRectItem class is used by itself to diplay the icons on the
+    The \c RoundRectItem class is used by itself to display the icons on the
     pad, and as a base class for \c FlippablePad, the class for the pad itself.
     The role of the class is to paint a round rectangle of a specified size and
     gradient color, and optionally to paint a pixmap icon on top. To support \c
@@ -108,7 +108,7 @@
     \l{QGraphicsItem::ItemCoordinateCache}{ItemCoordinateCache}. This mode
     causes the item's rendering to be cached into an off-screen pixmap that
     remains persistent as we move and transform the item. This mode is ideal
-    for this example, and works particularily well with OpenGL and OpenGL ES.
+    for this example, and works particularly well with OpenGL and OpenGL ES.
 
     \snippet examples/graphicsview/padnavigator/roundrectitem.cpp 1
 
@@ -131,7 +131,7 @@
 
     We then draw the "foreground" round rectangle itself. The fill depends on
     the \c fill property; if true, we will with a plain QPalette::Window color.
-    We get the corrent brush from QApplication::palette(). We assign a single
+    We get the current brush from QApplication::palette(). We assign a single
     unit wide pen for the stroke, assign the brush, and then draw the
     rectangle.
 
@@ -359,7 +359,7 @@
     RoundRectItem that is slightly larger than the icons on the pad. We create
     it as an immediate child of the \c FlippablePad, so the selection item is a
     sibling to all the icons. By giving it a
-    \l{QGraphicsItem::zValue()}{Z-value} of 0.5 we ensure it will slide beteen
+    \l{QGraphicsItem::zValue()}{Z-value} of 0.5 we ensure it will slide between
     the pad and its icons.
 
     What follows now is a series of animation initializations.

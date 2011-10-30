@@ -56,7 +56,7 @@
 
     \list
     \o The difference between standard and model/view widgets
-    \o Adapters betweeen forms and models
+    \o Adapters between forms and models
     \o Developing a simple model/view application
     \o Predefined models
     \o Intermediate topics such as:
@@ -475,7 +475,7 @@
 
     The selection model (as shown above) can be retrieved, but it can also be
     set with \l{QAbstractItemView}{QAbstractItemView::setSelectionModel}. This
-    is how it's possible to have 3 view classes with synchronised selections
+    is how it's possible to have 3 view classes with synchronized selections
     because only one instance of a selection model is used. To share a selection
     model between 3 views use \l{QAbstractItemView::}{selectionModel()} and
     assign the result to the second and third view class with

@@ -99,7 +99,7 @@
 
     We create the applications's buttons and the group box containing
     the application's options, and put it all into a main
-    layout. Finally we take the initial screenshot, and set the inital
+    layout. Finally we take the initial screenshot, and set the initial
     delay and the window title, before we resize the widget to a
     suitable size.
 

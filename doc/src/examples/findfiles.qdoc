@@ -41,7 +41,7 @@
 
     With the Find Files application the user can search for files in a
     specified directory, matching a specified file name (using wild
-    cards if appropiate) and containing a specified text.
+    cards if appropriate) and containing a specified text.
 
     The user is provided with a \gui Browse option, and the result of
     the search is displayed in a table with the names of the files

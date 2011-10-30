@@ -120,8 +120,8 @@
     \snippet examples/dialogs/extension/finddialog.cpp 4
 
     Before we create the main layout, we create several child layouts
-    for the widgets: First we allign the QLabel ans its buddy, the
-    QLineEdit, using a QHBoxLayout. Then we vertically allign the
+    for the widgets: First we align the QLabel and its buddy, the
+    QLineEdit, using a QHBoxLayout. Then we vertically align the
     QLabel and QLineEdit with the check boxes associated with the
     simple search, using a QVBoxLayout. We also create a QVBoxLayout
     for the buttons. In the end we lay out the two latter layouts and

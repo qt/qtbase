@@ -164,7 +164,7 @@
 
     In release mode, the macro simply disappear. The mode can be set
     in the application's \c .pro file. One way to do so is to add an
-    option to \gui qmake when building the appliction:
+    option to \gui qmake when building the application:
 
     \snippet doc/src/snippets/code/doc_src_examples_imageviewer.qdoc 2
 
@@ -270,7 +270,7 @@
     actions providing the application features.
 
     We assign a short-cut key to each action and connect them to the
-    appropiate slots. We only enable the \c openAct and \c exitAxt at
+    appropriate slots. We only enable the \c openAct and \c exitAct at
     the time of creation, the others are updated once an image has
     been loaded into the application. In addition we make the \c
     fitToWindowAct \l {QAction::checkable}{checkable}.

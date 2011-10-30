@@ -358,7 +358,7 @@
     \snippet examples/widgets/scribble/mainwindow.cpp 14
 
     In the \c createAction() function we create the actions
-    representing the menu entries and connect them to the appropiate
+    representing the menu entries and connect them to the appropriate
     slots. In particular we create the actions found in the \gui
     {Save As} sub-menu. We use QImageWriter::supportedImageFormats()
     to get a list of the supported formats (as a QList<QByteArray>).

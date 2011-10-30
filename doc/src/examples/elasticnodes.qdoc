@@ -152,7 +152,7 @@
     \snippet examples/graphicsview/elasticnodes/node.cpp 5
 
     In theory, the sum of pushing and pulling forces should stabilize to
-    precisely 0. In practise, however, they never do. To circumvent errors in
+    precisely 0. In practice, however, they never do. To circumvent errors in
     numerical precision, we simply force the sum of forces to be 0 when they
     are less than 0.1.
 
@@ -282,7 +282,7 @@
 
     If the length of the vector is less than 20 (i.e., if two nodes overlap),
     then we fix the source and destination pointer at the center of the source
-    node. In practise this case is very hard to reproduce manually, as the
+    node. In practice this case is very hard to reproduce manually, as the
     forces between the two nodes is then at its maximum.
 
     It's important to notice that we call

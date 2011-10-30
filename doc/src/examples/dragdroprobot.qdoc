@@ -196,7 +196,7 @@
 
     \snippet examples/graphicsview/dragdroprobot/robot.cpp 10
 
-    The constuctor starts by setting the flag
+    The constructor starts by setting the flag
     \l{QGraphicsItem::ItemHasNoContents}{ItemHasNoContents}, which is a minor
     optimization for items that have no visual appearance.
 

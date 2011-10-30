@@ -31,7 +31,7 @@
   \brief Qt widgets shown in different styles on various platforms.
 
   Qt's support for widget styles and themes enables your application to fit in
-  with the native desktop enviroment. Below, you can find links to the various
+  with the native desktop environment. Below, you can find links to the various
   widget styles that are supplied with Qt 4.
 
   \table

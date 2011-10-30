@@ -234,7 +234,7 @@
     QSqlQuery::previous(), QSqlQuery::first(), QSqlQuery::last(), and
     QSqlQuery::seek(). The current row index is returned by
     QSqlQuery::at(), and the total number of rows in the result set
-    is avaliable as QSqlQuery::size() for databases that support it.
+    is available as QSqlQuery::size() for databases that support it.
 
     To determine whether a database driver supports a given feature,
     use QSqlDriver::hasFeature(). In the following example, we call

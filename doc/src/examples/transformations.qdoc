@@ -124,7 +124,7 @@
 
     In the constructor we pass the parent parameter on to the base
     class, and customize the font that we will use to render the
-    coordinates. The QWidget::font() funtion returns the font
+    coordinates. The QWidget::font() function returns the font
     currently set for the widget. As long as no special font has been
     set, or after QWidget::setFont() is called, this is either a
     special font for the widget class, the parent's font or (if this
@@ -163,7 +163,7 @@
 
     \snippet examples/painting/transformations/renderarea.cpp 5
 
-    The \c paintEvent() event handler recieves the \c RenderArea
+    The \c paintEvent() event handler receives the \c RenderArea
     widget's paint events. A paint event is a request to repaint all
     or part of the widget. It can happen as a result of
     QWidget::repaint() or QWidget::update(), or because the widget was

@@ -149,7 +149,7 @@
 
     \snippet examples/tools/completer/mainwindow.cpp 5
 
-    The mouse cursor is then overriden with Qt::WaitCursor before we fill
+    The mouse cursor is then overridden with Qt::WaitCursor before we fill
     a QStringList object, \c words, with the contents of \c file. Once this
     is done, we restore the mouse cursor.
 

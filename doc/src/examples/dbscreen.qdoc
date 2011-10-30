@@ -156,7 +156,7 @@
 
     \section1 Step 3: Creating the Driver Plugin
 
-    Qt provides a high level API for writing Qt extentions. One of the plugin
+    Qt provides a high level API for writing Qt extensions. One of the plugin
     base classes provided is QScreenDriverPlugin, which we use in this example
     to create our screen driver plugin.
 

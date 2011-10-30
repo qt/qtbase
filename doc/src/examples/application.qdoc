@@ -166,7 +166,7 @@
     the string for translation. It is a good habit to call
     \l{QObject::tr()}{tr()} on all user-visible strings, in case you
     later decide to translate your application to other languages.
-    The \l{Internationalization with Qt} overview convers
+    The \l{Internationalization with Qt} overview covers
     \l{QObject::tr()}{tr()} in more detail.
 
     \snippet examples/mainwindows/application/mainwindow.cpp 15

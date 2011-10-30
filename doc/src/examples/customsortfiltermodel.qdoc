@@ -91,7 +91,7 @@
     {QSortFilterProxyModel::filterAcceptsRow()}{filterAcceptsRow()}
     function to only accept rows with valid dates, and
     QSortFilterProxyModel::lessThan() to be able to sort the senders
-    by their email adresses. Finally, we implement a \c dateInRange()
+    by their email addresses. Finally, we implement a \c dateInRange()
     convenience function that we will use to determine if a date is
     valid.
 
@@ -112,21 +112,21 @@
 
     \snippet examples/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 4
 
-    We want to sort the senders by their email adresses. The \l
+    We want to sort the senders by their email addresses. The \l
     {QSortFilterProxyModel::}{lessThan()} function is used as the <
     operator when sorting. The default implementation handles a
     collection of types including QDateTime and String, but in order
-    to be able to sort the senders by their email adresses we must
-    first identify the adress within the given string:
+    to be able to sort the senders by their email addresses we must
+    first identify the address within the given string:
 
     \snippet examples/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 6
 
-    We use QRegExp to define a pattern for the adresses we are looking
+    We use QRegExp to define a pattern for the addresses we are looking
     for. The QRegExp::indexIn() function attempts to find a match in
     the given string and returns the position of the first match, or
     -1 if there was no match. If the given string contains the
     pattern, we use QRegExp's \l {QRegExp::cap()}{cap()} function to
-    retrieve the actual adress. The \l {QRegExp::cap()}{cap()}
+    retrieve the actual address. The \l {QRegExp::cap()}{cap()}
     function returns the text captured by the \e nth
     subexpression. The entire match has index 0 and the parenthesized
     subexpressions have indexes starting from 1 (excluding

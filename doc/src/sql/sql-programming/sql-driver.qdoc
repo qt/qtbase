@@ -86,7 +86,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 0
 
-    The \c configure script cannot detect the neccessary libraries
+    The \c configure script cannot detect the necessary libraries
     and include files if they are not in the standard paths, so it
     may be necessary to specify these paths using the \c -I and \c -L
     command-line options. For example, if your MySQL include files
@@ -303,7 +303,7 @@
 
     \bold{Note:} If you are using the Oracle Instant Client package,
     you will need to set LD_LIBRARY_PATH when building the OCI SQL plugin
-    and when running an applicaiton that uses the OCI SQL plugin. You can
+    and when running an application that uses the OCI SQL plugin. You can
     avoid this requirement by setting and RPATH and listing all of the
     libraries to link to. Here is an example:
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 32
@@ -409,7 +409,7 @@
     QODBC plugin with such drivers it has to be compiled with the
     Q_ODBC_VERSION_2 defined.
 
-    For the Oracle 9 ODBC driver (Windows), it is neccessary to check
+    For the Oracle 9 ODBC driver (Windows), it is necessary to check
     "SQL_WCHAR support" in the ODBC driver manager otherwise Oracle
     will convert all Unicode strings to local 8-bit.
 
@@ -661,7 +661,7 @@
     follow SQLite patch releases. Patch releases are therefore both backward and forward
     compatible.
 
-    To force SQLite to use a specific file format, it is neccessary to build and
+    To force SQLite to use a specific file format, it is necessary to build and
     ship your own database plugin with your own SQLite library as illustrated above.
     Some versions of SQLite can be forced to write a specific file format by setting
     the \c{SQLITE_DEFAULT_FILE_FORMAT} define when building SQLite.
@@ -734,7 +734,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 29
 
-    If you are using Firebird, the Firebird library has to be set explicitely:
+    If you are using Firebird, the Firebird library has to be set explicitly:
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 30
 

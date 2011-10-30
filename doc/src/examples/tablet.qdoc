@@ -318,7 +318,7 @@
 
     \snippet examples/widgets/tablet/tabletcanvas.cpp 11
    
-    We finally check wether the pointer is the stylus or the eraser.
+    We finally check whether the pointer is the stylus or the eraser.
     If it is the eraser, we set the color to the background color of
     the pixmap an let the pressure decide the pen width, else we set
     the colors we have set up previously in the function.
