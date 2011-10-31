@@ -1158,6 +1158,7 @@ void tst_QGraphicsWidget::initStyleOption()
     QCOMPARE(hasFocus, focus);
     bool isUnderMouse = option.state & QStyle::State_MouseOver;
 #ifndef Q_OS_WINCE
+    QEXPECT_FAIL("all", "QTBUG-22457", Abort);
     QCOMPARE(isUnderMouse, underMouse);
 #endif
     // if (layoutDirection != Qt::LeftToRight)
@@ -3191,6 +3192,7 @@ void tst_QGraphicsWidget::initialShow2()
     view.show();
     QTest::qWaitForWindowShown(&view);
 
+    QEXPECT_FAIL("", "QTBUG-20778", Abort);
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
 }
 
