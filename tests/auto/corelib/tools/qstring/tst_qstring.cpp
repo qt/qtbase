@@ -1756,19 +1756,6 @@ void tst_QString::append()
     QString a;
     a = "<>ABCABCABCABC";
     QCOMPARE(a.append(">"),(QString)"<>ABCABCABCABC>");
-#if 0
-#if !defined(QT_NO_STL)
-    /*
-      The std::string support is fairly trivial in itself. The major
-      problem is whether it compiles or not, because of the way
-      different compilers choose an overload based on the type of the
-      argument. If it compiles, we're happy.
-    */
-    std::string stroustrup;
-    a.append( stroustrup );
-    a += stroustrup;
-#endif
-#endif
 }
 
 void tst_QString::append_bytearray_data()
@@ -1782,19 +1769,7 @@ void tst_QString::append_bytearray_data()
     ba[1] = 'b';
     ba[2] = 'c';
     ba[3] = 'd';
-#if 0
-    ba[4] = 0;
 
-    for ( int i=0; i<2; i++ ) {
-	// i == 0: the byte array is exactly strlen+1
-	// i == 1: the byte array is larger than strlen+1
-	QTest::newRow( QString("nullTerminated_%1_0").arg(i) ) << QString() << ba << QString("abcd");
-	QTest::newRow( QString("nullTerminated_%1_1").arg(i) ) << QString("") << ba << QString("abcd");
-	QTest::newRow( QString("nullTerminated_%1_2").arg(i) ) << QString("foobar ") << ba << QString("foobar abcd");
-
-	ba.resize( 8 );
-    }
-#endif
     // no 0 termination
     ba.resize( 4 );
     QTest::newRow( "notTerminated_0" ) << QString() << ba << QString("abcd");
@@ -1877,12 +1852,6 @@ void tst_QString::prepend()
     QString a;
     a = "<>ABCABCABCABC>";
     QCOMPARE(a.prepend("-"),(QString)"-<>ABCABCABCABC>");
-#if 0
-#if !defined(QT_NO_STL)
-    std::string stroustrup;
-    a.prepend( stroustrup );
-#endif
-#endif
 }
 
 void tst_QString::prepend_bytearray_data()
@@ -1896,24 +1865,6 @@ void tst_QString::prepend_bytearray_data()
     ba[1] = 'b';
     ba[2] = 'c';
     ba[3] = 'd';
-#if 0
-    ba[4] = 0;
-
-    for ( int i=0; i<2; i++ ) {
-	// i == 0: the byte array is exactly strlen+1
-	// i == 1: the byte array is larger than strlen+1
-	QTest::newRow( QString("nullTerminated_%1_0").arg(i) ) << QString() << ba << QString("abcd");
-	QTest::newRow( QString("nullTerminated_%1_1").arg(i) ) << QString("") << ba << QString("abcd");
-	QTest::newRow( QString("nullTerminated_%1_2").arg(i) ) << QString(" foobar") << ba << QString("abcd foobar");
-
-	ba.resize( 8 );
-    }
-    // no 0 termination
-    ba.resize( 4 );
-    QTest::newRow( "notTerminated_0" ) << QString() << ba << QString("abcd");
-    QTest::newRow( "notTerminated_1" ) << QString("") << ba << QString("abcd");
-    QTest::newRow( "notTerminated_2" ) << QString(" foobar") << ba << QString("abcd foobar");
-#endif
 
     // byte array with only a 0
     ba.resize( 1 );
