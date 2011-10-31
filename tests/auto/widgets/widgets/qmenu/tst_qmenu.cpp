@@ -360,9 +360,12 @@ void tst_QMenu::keyboardNavigation()
         QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
-        if (expected_highlighted)
-            QCOMPARE(menus[expected_menu]->activeAction(), highlighted);
     }
+
+    if (expected_highlighted)
+        QCOMPARE(menus[expected_menu]->activeAction(), highlighted);
+    else
+        QCOMPARE(highlighted, (QAction *)0);
 }
 
 #ifdef Q_WS_MAC
