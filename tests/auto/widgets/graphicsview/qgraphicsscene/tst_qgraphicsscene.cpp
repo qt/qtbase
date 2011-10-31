@@ -3811,6 +3811,7 @@ void tst_QGraphicsScene::inputMethod()
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QEXPECT_FAIL("3", "QTBUG-22456", Abort);
     QCOMPARE(inputContext->resetCalls, callFocusItem ? 2 : 0);
     QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected

@@ -17,6 +17,3 @@ wince* {
    DEPLOYMENT += rootFiles renderFiles
    DEFINES += SRCDIR=\\\".\\\"
 }
-
-# ### fixme: QTBUG-20756 crashes on xcb
-contains(QT_CONFIG,xcb):CONFIG+=insignificant_test
