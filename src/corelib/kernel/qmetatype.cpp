@@ -136,7 +136,6 @@ QT_BEGIN_NAMESPACE
     \value QWidgetStar QWidget *
     \value QVariant QVariant
 
-    \value QColorGroup QColorGroup
     \value QCursor QCursor
     \value QDate QDate
     \value QSize QSize
@@ -185,9 +184,11 @@ QT_BEGIN_NAMESPACE
 
     \omitvalue FirstCoreExtType
     \omitvalue FirstGuiType
+    \omitvalue FirstWidgetsType
     \omitvalue LastCoreExtType
     \omitvalue LastCoreType
     \omitvalue LastGuiType
+    \omitvalue LastWidgetsType
     \omitvalue QReal
 
     Additional types can be registered using Q_DECLARE_METATYPE().
