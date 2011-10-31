@@ -536,14 +536,6 @@ void tst_QApplication::lastWindowClosed()
     QCOMPARE(spy.count(), 1);
     spy.clear();
 
-#if 0
-    // everything is closed, so doing this should not emit lastWindowClosed() again
-    QMetaObject::invokeMethod(dialog, "close", Qt::QueuedConnection);
-    QTimer::singleShot(1000, &app, SLOT(quit()));
-    app.exec();
-    QCOMPARE(spy.count(), 0);
-#endif
-
     delete dialog;
 
     // show 3 windows, close them, should only get lastWindowClosed once
