@@ -56,6 +56,9 @@
 #include <qstyle.h>
 #include <qdebug.h>
 
+Q_DECLARE_METATYPE(Qt::Key);
+Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -308,7 +311,8 @@ void tst_QMenu::mouseActivation()
 
 void tst_QMenu::keyboardNavigation_data()
 {
-    QTest::addColumn<int>("key");
+    QTest::addColumn<Qt::Key>("key");
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     QTest::addColumn<int>("expected_action");
     QTest::addColumn<int>("expected_menu");
     QTest::addColumn<bool>("init");
@@ -316,31 +320,30 @@ void tst_QMenu::keyboardNavigation_data()
     QTest::addColumn<bool>("expected_highlighted");
 
     //test up and down (order is important here)
-    QTest::newRow("data0") << int(Qt::Key_Down) << 0 << 0 << true << false << true;
-    QTest::newRow("data1") << int(Qt::Key_Down) << 2 << 0 << false << false << true; //skips the separator
-    QTest::newRow("data2") << int(Qt::Key_Down) << 3 << 0 << false << false << true;
+    QTest::newRow("data0") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 0 << 0 << true << false << true;
+    QTest::newRow("data1") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 2 << 0 << false << false << true; //skips the separator
+    QTest::newRow("data2") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << false << true;
 
     if (QApplication::style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled))
-        QTest::newRow("data3_noMac") << int(Qt::Key_Down) << 4 << 0 << false << false << true;
+        QTest::newRow("data3_noMac") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 4 << 0 << false << false << true;
     else
-        QTest::newRow("data3_Mac") << int(Qt::Key_Down) << 5 << 0 << false << false << true;
-    QTest::newRow("data4") << int(Qt::Key_Up) << 3 << 0 << false << false << true;
-    QTest::newRow("data5") << int(Qt::Key_Up) << 2 << 0 << false << false << true;
-    QTest::newRow("data6") << int(Qt::Key_Right) << 8 << 1 << false << false << true;
-    QTest::newRow("data7") << int(Qt::Key_Down) << 9 << 1 << false << false << true;
-    QTest::newRow("data8") << int(Qt::Key_Escape) << 2 << 0 << false << false << false;
-    QTest::newRow("data9") << int(Qt::Key_Down) << 3 << 0 << false << false<< true;
-    QTest::newRow("data10") << int(Qt::Key_Return) << 3 << 0 << false << true << false;
+        QTest::newRow("data3_Mac") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 5 << 0 << false << false << true;
+    QTest::newRow("data4") << Qt::Key(Qt::Key_Up) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << false << true;
+    QTest::newRow("data5") << Qt::Key(Qt::Key_Up) << Qt::KeyboardModifiers(Qt::NoModifier) << 2 << 0 << false << false << true;
+    QTest::newRow("data6") << Qt::Key(Qt::Key_Right) << Qt::KeyboardModifiers(Qt::NoModifier) << 8 << 1 << false << false << true;
+    QTest::newRow("data7") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 9 << 1 << false << false << true;
+    QTest::newRow("data8") << Qt::Key(Qt::Key_Escape) << Qt::KeyboardModifiers(Qt::NoModifier) << 2 << 0 << false << false << false;
+    QTest::newRow("data9") << Qt::Key(Qt::Key_Down) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << false<< true;
+    QTest::newRow("data10") << Qt::Key(Qt::Key_Return) << Qt::KeyboardModifiers(Qt::NoModifier) << 3 << 0 << false << true << false;
 
-    //test shortcuts
-#if 0
-    QTest::newRow("shortcut0") << (Qt::ALT | Qt::Key_A) << 2 << 0 << true << true << false;
-#endif
+    // Test shortcuts.
+    QTest::newRow("shortcut0") << Qt::Key(Qt::Key_V) << Qt::KeyboardModifiers(Qt::AltModifier) << 5 << 0 << true << true << false;
 }
 
 void tst_QMenu::keyboardNavigation()
 {
-    QFETCH(int, key);
+    QFETCH(Qt::Key, key);
+    QFETCH(Qt::KeyboardModifiers, modifiers);
     QFETCH(int, expected_action);
     QFETCH(int, expected_menu);
     QFETCH(bool, init);
@@ -354,9 +357,10 @@ void tst_QMenu::keyboardNavigation()
         lastMenu->popup(QPoint(0, 0));
     }
 
-    QTest::keyClick(lastMenu, (Qt::Key)key);
+    QTest::keyClick(lastMenu, key, modifiers);
     if (expected_activated) {
         QCOMPARE(activated, builtins[expected_action]);
+        QEXPECT_FAIL("shortcut0", "QTBUG-22449: QMenu doesn't remove highlight if a menu item is activated by a shortcut", Abort);
         QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
