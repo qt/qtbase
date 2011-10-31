@@ -1436,14 +1436,6 @@ void tst_QSortFilterProxyModel::buildHierarchy(const QStringList &l, QAbstractIt
             QVERIFY(index.isValid());
             m->setData(index, token, Qt::DisplayRole);
             ++row;
-#if 0
-            {
-                QString txt = token;
-                for (int t = 0; t < ind; ++t)
-                    txt.prepend(' ');
-                qDebug() << "#" << txt;
-            }
-#endif
         }
     }
 }
@@ -1472,14 +1464,10 @@ void tst_QSortFilterProxyModel::checkHierarchy(const QStringList &l, const QAbst
             QModelIndex index = m->index(row, 0, parent);
             QVERIFY(index.isValid());
             QString str =  m->data(index, Qt::DisplayRole).toString();
-#if 0
-            qDebug() << "proxy data is" << str << "level" << indent;
-#endif
             QCOMPARE(str, token);
             ++row;
         }
     }
-
 }
 
 
