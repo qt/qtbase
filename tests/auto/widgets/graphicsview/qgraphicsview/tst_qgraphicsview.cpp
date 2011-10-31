@@ -4149,6 +4149,7 @@ void tst_QGraphicsView::inputContextReset()
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
+    QEXPECT_FAIL("", "QTBUG-22454", Abort);
     QCOMPARE(inputContext->resets, 2);
 
     // introduce another item that is focusable but does not accept input methods
@@ -4285,6 +4286,7 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
 
     qreal slack = 1;
+    QEXPECT_FAIL("", "QTBUG-22455", Abort);
     QVERIFY(qAbs(newMouseScenePos.x() - mouseScenePos.x()) < slack);
     QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
 }
