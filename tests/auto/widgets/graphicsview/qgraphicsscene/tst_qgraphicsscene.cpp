@@ -207,7 +207,6 @@ private slots:
     void items_QPolygonF_2();
     void items_QPainterPath();
     void items_QPainterPath_2();
-    void selection();
     void selectionChanged();
     void selectionChanged2();
     void addItem();
@@ -914,82 +913,6 @@ void tst_QGraphicsScene::items_QPainterPath_2()
     QCOMPARE(scene.items(p6, Qt::ContainsItemShape).first(), ellipse);
     QCOMPARE(scene.items(p6, Qt::IntersectsItemBoundingRect).first(), ellipse);
     QCOMPARE(scene.items(p6, Qt::ContainsItemBoundingRect).first(), ellipse);
-}
-
-void tst_QGraphicsScene::selection()
-{
-    // ### This test is difficult to make work for all platforms; instead, a
-    // hand crafted data set would make it stable. Its behavior is thoroughly
-    // covered by other tests. Todo: Fix this test.
-
-    /*
-    QGraphicsScene scene;
-    QMap<QGraphicsItem *, int> itemIndexes;
-    for (int i = 0; i < 256; ++i) {
-        QPainterPath path;
-        path.addRect(randomX[i], randomY[i], 25, 25);
-
-        QGraphicsPathItem *pathItem = scene.addPath(path);
-        pathItem->setFlag(QGraphicsItem::ItemIsSelectable);
-        itemIndexes.insert(pathItem, i);
-    }
-
-#if 0
-    // Write data
-    QFile::remove("graphicsScene_selection.data");
-    QFile file("graphicsScene_selection.data");
-    if (!file.open(QFile::WriteOnly))
-        QFAIL("Unable to generate data file graphicsScene_selection.data");
-    QDataStream stream(&file);
-    for (qreal y = -1000; y < 1000; y += 33) {
-        for (qreal x = -1000; x < 1000; x += 33) {
-            for (qreal size = 1; size < 200; size += 33) {
-                QPainterPath path;
-                path.addRect(QRectF(x, y, size, size));
-                scene.setSelectionArea(path);
-                QCOMPARE(scene.selectionArea(), path);
-
-                QList<int> indexes;
-                foreach (QGraphicsItem *item, scene.selectedItems())
-                    indexes << itemIndexes.value(item);
-
-                stream << x << y << size << indexes;
-            }
-        }
-    }
-#else
-    // Read data
-    QFile file("graphicsScene_selection.data");
-    if (!file.open(QFile::ReadOnly))
-        QFAIL("Unable to load data file graphicsScene_selection.data");
-
-    QDataStream stream(&file);
-
-    while (!stream.atEnd()) {
-        QList<int> expectedIndexes;
-
-        qreal x, y, size;
-        stream >> x >> y >> size >> expectedIndexes;
-
-        QPainterPath path;
-        path.addRect(QRectF(x, y, size, size));
-        scene.setSelectionArea(path);
-        QCOMPARE(scene.selectionArea(), path);
-
-        QList<int> indexes;
-        foreach (QGraphicsItem *item, scene.selectedItems())
-            indexes << itemIndexes.value(item);
-
-        qSort(indexes);
-        qSort(expectedIndexes);
-
-        QCOMPARE(indexes, expectedIndexes);
-
-        scene.clearSelection();
-        QVERIFY(scene.selectedItems().isEmpty());
-    }
-#endif
-    */
 }
 
 class CustomView : public QGraphicsView
