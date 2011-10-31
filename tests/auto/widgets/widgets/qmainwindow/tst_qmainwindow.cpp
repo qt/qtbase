@@ -1539,15 +1539,6 @@ void tst_QMainWindow::saveRestore()
 
         mainWindow.layout()->setGeometry(mainWindow.rect());
         COMPARE_DOCK_WIDGET_GEOS(dockWidgetGeos, dockWidgetGeometries(&mainWindow));
-
-#if 0
-        QEventLoop eventLoop;
-        QPushButton quitButton("Quit", &centralWidget);
-        quitButton.setGeometry(0, 0, 100, 40);
-        connect(&quitButton, SIGNAL(clicked()), &eventLoop, SLOT(quit()));
-        quitButton.show();
-        eventLoop.exec();
-#endif
     }
 
     // restoreState() after show
