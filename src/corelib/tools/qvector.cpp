@@ -52,7 +52,7 @@ static inline int alignmentThreshold()
     return 2 * sizeof(void*);
 }
 
-const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, true, false, 0 };
+const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, 0 };
 
 QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init)
 {

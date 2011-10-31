@@ -292,7 +292,6 @@ public:
         d->ref.initializeOwned();
         d->alloc = m_alloc;
         d->size = m_size;
-        d->sharable = 0;
         d->capacity = 0;
 
         QVector<T> v;
