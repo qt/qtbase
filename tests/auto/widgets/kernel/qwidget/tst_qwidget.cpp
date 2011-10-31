@@ -1932,10 +1932,10 @@ void tst_QWidget::showMaximized()
     QVERIFY(!(layouted.windowState() & Qt::WindowMaximized));
 
     // ### fixme: embedded may choose a different size to fit on the screen.
-    // Check platforms (QTBUG-22326)
-#if 0
+    if (layouted.size() != layouted.sizeHint())
+        QEXPECT_FAIL("", "QTBUG-22326", Continue);
     QCOMPARE(layouted.size(), layouted.sizeHint());
-#endif
+
     layouted.showMaximized();
     QVERIFY(layouted.isMaximized());
     QVERIFY(layouted.isVisible());
@@ -2009,10 +2009,10 @@ void tst_QWidget::showFullScreen()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
 
-    // ### fixme: embedded may choose a different size to fit on the screen. (QTBUG-22326)
-#if 0
+    // ### fixme: embedded may choose a different size to fit on the screen.
+    if (layouted.size() != layouted.sizeHint())
+        QEXPECT_FAIL("", "QTBUG-22326", Continue);
     QCOMPARE(layouted.size(), layouted.sizeHint());
-#endif
 
     layouted.showFullScreen();
     QVERIFY(layouted.isFullScreen());
