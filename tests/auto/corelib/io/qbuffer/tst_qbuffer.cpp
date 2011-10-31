@@ -328,9 +328,8 @@ void tst_QBuffer::seekTest()
 
     QByteArray ba;
     QBuffer buf(&ba);
-#if 0
-    QCOMPARE(buf.pos(), qint64(-1));
-#endif
+    QCOMPARE(buf.pos(), qint64(0));
+
     buf.open(QIODevice::ReadWrite);
     QCOMPARE(buf.pos(), qint64(0));
 
