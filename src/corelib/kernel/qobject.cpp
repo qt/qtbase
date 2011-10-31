@@ -3011,7 +3011,7 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
     c->method_relative = method_index;
     c->method_offset = method_offset;
     c->connectionType = type;
-    c->argumentTypes = types;
+    c->argumentTypes.store(types);
     c->nextConnectionList = 0;
     c->callFunction = callFunction;
 

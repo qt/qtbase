@@ -91,7 +91,7 @@ public:
     inline QTouchEventTouchPointPrivate *detach()
     {
         QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
-        d->ref = 1;
+        d->ref.store(1);
         if (!this->ref.deref())
             delete this;
         return d;

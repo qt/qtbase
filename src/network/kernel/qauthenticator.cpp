@@ -264,7 +264,7 @@ void QAuthenticator::detach()
 {
     if (!d) {
         d = new QAuthenticatorPrivate;
-        d->ref = 1;
+        d->ref.store(1);
         return;
     }
 

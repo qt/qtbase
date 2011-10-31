@@ -358,7 +358,7 @@ void QPen::detach()
     QPenData *x = new QPenData(*static_cast<QPenData *>(d));
     if (!d->ref.deref())
         delete d;
-    x->ref = 1;
+    x->ref.store(1);
     d = x;
 }
 

@@ -69,14 +69,12 @@ struct Q_AUTOTEST_EXPORT QKeyBinding
 class Q_AUTOTEST_EXPORT QKeySequencePrivate
 {
 public:
-    inline QKeySequencePrivate()
+    inline QKeySequencePrivate() : ref(1)
     {
-        ref = 1;
         key[0] = key[1] = key[2] = key[3] =  0;
     }
-    inline QKeySequencePrivate(const QKeySequencePrivate &copy)
+    inline QKeySequencePrivate(const QKeySequencePrivate &copy) : ref(1)
     {
-        ref = 1;
         key[0] = copy.key[0];
         key[1] = copy.key[1];
         key[2] = copy.key[2];

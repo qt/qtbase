@@ -133,11 +133,11 @@ class QSqlDatabasePrivate
 {
 public:
     QSqlDatabasePrivate(QSqlDatabase *d, QSqlDriver *dr = 0):
+        ref(1),
         q(d),
         driver(dr),
         port(-1)
     {
-        ref = 1;
         if(driver)
             precisionPolicy = driver->numericalPrecisionPolicy();
         else
@@ -171,9 +171,8 @@ public:
     static void cleanConnections();
 };
 
-QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other)
+QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref(1)
 {
-    ref = 1;
     q = other.q;
     dbname = other.dbname;
     uname = other.uname;

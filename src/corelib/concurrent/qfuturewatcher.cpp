@@ -400,7 +400,7 @@ void QFutureWatcherBase::disconnectOutputInterface(bool pendingAssignment)
 {
     if (pendingAssignment) {
         Q_D(QFutureWatcherBase);
-        d->pendingResultsReady = 0;
+        d->pendingResultsReady.store(0);
         qDeleteAll(d->pendingCallOutEvents);
         d->pendingCallOutEvents.clear();
         d->finished = false;
@@ -439,7 +439,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
             emit q->finished();
         break;
         case QFutureCallOutEvent::Canceled:
-            pendingResultsReady = 0;
+            pendingResultsReady.store(0);
             emit q->canceled();
         break;
         case QFutureCallOutEvent::Paused:

@@ -557,7 +557,7 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         (*(*list)[i])(amsg);
     }
 
-    if (!ref)
+    if (!ref.load())
         return false;
 
     switch (amsg.type()) {
@@ -1981,7 +1981,7 @@ QDBusPendingCallPrivate *QDBusConnectionPrivate::sendWithReplyAsync(const QDBusM
 
     checkThread();
     QDBusPendingCallPrivate *pcall = new QDBusPendingCallPrivate(message, this);
-    pcall->ref = 0;
+    pcall->ref.store(0);
 
     QDBusError error;
     DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);

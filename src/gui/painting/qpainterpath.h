@@ -249,6 +249,9 @@ public:
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
 #endif
+
+    QPainterPathPrivate() : ref(1) {}
+
 private:
     QAtomicInt ref;
     QVector<QPainterPath::Element> elements;

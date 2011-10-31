@@ -68,7 +68,7 @@ public:
         OpenGLUserData
     };
 
-    QStaticTextUserData(Type t) : type(t) { ref = 0; }
+    QStaticTextUserData(Type t) : ref(0), type(t) {}
     virtual ~QStaticTextUserData() {}
 
     QAtomicInt ref;

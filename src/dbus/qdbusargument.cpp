@@ -113,7 +113,7 @@ bool QDBusArgumentPrivate::checkWrite(QDBusArgumentPrivate *&d)
         if (!d->marshaller()->ok)
             return false;
 
-        if (d->message && d->ref != 1) {
+        if (d->message && d->ref.load() != 1) {
             QDBusMarshaller *dd = new QDBusMarshaller(d->capabilities);
             dd->message = q_dbus_message_copy(d->message);
             q_dbus_message_iter_init_append(dd->message, &dd->iterator);
@@ -154,7 +154,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     if (!checkRead(d))
         return false;           //  don't bother
 
-    if (d->ref == 1)
+    if (d->ref.load() == 1)
         return true;            // no need to detach
 
     QDBusDemarshaller *dd = new QDBusDemarshaller(d->capabilities);

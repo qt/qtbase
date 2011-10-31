@@ -58,9 +58,8 @@ static int nextCursorId = Qt::BitmapCursor;
  *****************************************************************************/
 
 QCursorData::QCursorData(Qt::CursorShape s)
-    : cshape(s), bm(0), bmm(0), hx(0), hy(0), id(s)
+    : ref(1), cshape(s), bm(0), bmm(0), hx(0), hy(0), id(s)
 {
-    ref = 1;
 }
 
 QCursorData::~QCursorData()

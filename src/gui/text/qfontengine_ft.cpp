@@ -259,7 +259,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
         newFreetype->hbFace = qHBNewFace(face, hb_getSFntTable);
         Q_CHECK_PTR(newFreetype->hbFace);
-        newFreetype->ref = 1;
+        newFreetype->ref.store(1);
         newFreetype->xsize = 0;
         newFreetype->ysize = 0;
         newFreetype->matrix.xx = 0x10000;
