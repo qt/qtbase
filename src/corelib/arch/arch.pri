@@ -7,9 +7,6 @@ win32-g++*:HEADERS += arch/qatomic_i386.h \
 mac:HEADERS += arch/qatomic_macosx.h \
                arch/qatomic_generic.h
 
-symbian:HEADERS +=  arch/qatomic_symbian.h \
-                    arch/qatomic_generic.h
-
 vxworks:HEADERS += arch/qatomic_vxworks.h
 
 integrity:HEADERS += arch/qatomic_integrity.h

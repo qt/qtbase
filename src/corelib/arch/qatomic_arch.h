@@ -84,8 +84,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_windowsce.h"
 #elif defined(QT_ARCH_X86_64)
 #  include "QtCore/qatomic_x86_64.h"
-#elif defined(QT_ARCH_SYMBIAN)
-#  include "QtCore/qatomic_symbian.h"
 #elif defined(QT_ARCH_SH)
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)
