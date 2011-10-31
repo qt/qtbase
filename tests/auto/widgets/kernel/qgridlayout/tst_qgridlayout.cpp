@@ -1588,10 +1588,6 @@ void tst_QGridLayout::spacerWithSpacing()
                 populate(&layout, 1, j);
                 populate(&layout, 2, k);
                 QCOMPARE(window.sizeHint().height(), expectedHeight[ii]);
-#if 0
-                const char T[] = "ws-";
-                qWarning("%c%c%c: %.3d", i[T], j[T], k[T], window.sizeHint().height());
-#endif
                 ++ii;
             }
         }
