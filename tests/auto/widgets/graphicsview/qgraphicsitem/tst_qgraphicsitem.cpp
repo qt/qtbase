@@ -6518,25 +6518,6 @@ void tst_QGraphicsItem::boundingRegion_data()
 
     QTest::newRow("(0, 0, 10, 10) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(0.0) << QTransform()
                                                                         << QRegion(QRect(0, 0, 10, 10));
-#if 0
-    {
-        QRegion r;
-        r += QRect(0, 0, 6, 2);
-        r += QRect(0, 2, 8, 2);
-        r += QRect(0, 4, 10, 2);
-        r += QRect(2, 6, 8, 2);
-        r += QRect(4, 8, 6, 2);
-        QTest::newRow("(0, 0, 10, 10) | 0.5 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(0.5) << QTransform() << r;
-    }
-    {
-        QRegion r;
-        r += QRect(0, 0, 4, 1); r += QRect(0, 1, 5, 1); r += QRect(0, 2, 6, 1);
-        r += QRect(0, 3, 7, 1); r += QRect(1, 4, 7, 1); r += QRect(2, 5, 7, 1);
-        r += QRect(3, 6, 7, 1); r += QRect(4, 7, 6, 1); r += QRect(5, 8, 5, 1);
-        r += QRect(6, 9, 4, 1);
-        QTest::newRow("(0, 0, 10, 10) | 1.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(1.0) << QTransform() << r;
-    }
-#endif
     QTest::newRow("(0, 0, 10, 0) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 0) << qreal(0.0) << QTransform()
                                                                        << QRegion(QRect(0, 0, 10, 1));
     QTest::newRow("(0, 0, 10, 0) | 0.5 | identity | {(0, 0, 10, 1)}") << QLineF(0, 0, 10, 0) << qreal(0.5) << QTransform()
