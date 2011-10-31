@@ -1,5 +1,0 @@
-// 'new' implemented in symbian libs, so do nothing here; just keep Qt happy
-#ifndef __NEW_SYMB_ADDON
-#define __NEW_SYMB_ADDON
-#include <e32base.h>
-#endif //__NEW_SYMB_ADDON 
