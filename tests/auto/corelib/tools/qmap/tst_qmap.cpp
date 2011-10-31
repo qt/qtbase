@@ -713,31 +713,12 @@ void tst_QMap::iterators()
         QVERIFY(javaIt.value() == testString.arg(i));
     }
 
-    /*
-        I've removed findNextKey() and findPreviousKey() from the API
-        for Qt 4.0 beta 1.
-    */
-
-#if 0
-    QVERIFY(javaIt.findNextKey(50));
-    QVERIFY(javaIt.value() == "Teststring 50");
-#endif
-
     i = 51;
     while(javaIt.hasPrevious()) {
         --i;
         javaIt.previous();
         QVERIFY(javaIt.value() == testString.arg(i));
     }
-
-#if 0
-    QVERIFY(javaIt.findNextKey(50));
-    QVERIFY(javaIt.value() == "Teststring 50");
-
-    QVERIFY(javaIt.hasPrevious());
-    QVERIFY(javaIt.findPreviousKey(20));
-    QCOMPARE(javaIt.value(), QString("Teststring 20"));
-#endif
 }
 
 void tst_QMap::keys_values_uniqueKeys()

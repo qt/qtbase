@@ -935,32 +935,6 @@ void tst_QHash::iterators()
         QVERIFY(javaIt.value() == testMap.value(i));
     }
 
-    /*
-        I've removed findNextKey() and findPreviousKey() from the API
-        for Qt 4.0 beta 1.
-    */
-
-#if 0
-    //findPreviousKey()  findNextKey()
-    for(i = 1; i < 100; ++i) {
-        if(javaIt.findNextKey(i))
-            QVERIFY(javaIt.value() == testString.arg(i));
-        else {
-            QVERIFY(!javaIt.hasNext());
-            QVERIFY(javaIt.findPreviousKey(i));
-            QVERIFY(javaIt.value() == testString.arg(i));
-        }
-
-        if(javaIt.findPreviousKey(i))
-            QVERIFY(javaIt.value() == testString.arg(i));
-        else {
-            QVERIFY(!javaIt.hasPrevious());
-            QVERIFY(javaIt.findNextKey(i));
-            QVERIFY(javaIt.value() == testString.arg(i));
-        }
-    }
-#endif
-
     //peekNext()  peekPrevious()
     javaIt.toFront();
     javaIt.next();
