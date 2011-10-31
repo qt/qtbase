@@ -360,9 +360,6 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
         static const char * const squareRegExp[] = {
 	    "^a(?:(\\1aa)a)*$",
 	    "^(\\2(\\1a))+$",
-#if 0
-	    "^(?:(\\B\\1aa|^a))+$",
-#endif
 	    "^((\\2a)*)\\1\\2a$",
 	    0
         };
@@ -1215,9 +1212,6 @@ void tst_QRegExp::prepareEngineOptimization()
     QCOMPARE(rx1.matchedLength(), 2);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "fo" << "f" << "o" << "");
     QCOMPARE(rx1.pos(2), 1);
-#if 0
-    QCOMPARE(rx1.pos(3), -1); // ###
-#endif
 
     QRegExp rx3;
     QVERIFY(rx3.isValid());
