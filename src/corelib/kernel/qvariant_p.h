@@ -161,13 +161,13 @@ class QVariantComparator {
     struct FilteredComparator<T, /* IsAcceptedType = */ false> {
         static bool compare(const QVariant::Private *m_a, const QVariant::Private *m_b)
         {
-            if (!QMetaType::isRegistered(m_a->type))
+            const char *const typeName = QMetaType::typeName(m_a->type);
+            if (Q_UNLIKELY(!typeName) && Q_LIKELY(!QMetaType::isRegistered(m_a->type)))
                 qFatal("QVariant::compare: type %d unknown to QVariant.", m_a->type);
 
             const void *a_ptr = m_a->is_shared ? m_a->data.shared->ptr : &(m_a->data.ptr);
             const void *b_ptr = m_b->is_shared ? m_b->data.shared->ptr : &(m_b->data.ptr);
 
-            const char *const typeName = QMetaType::typeName(m_a->type);
             uint typeNameLen = qstrlen(typeName);
             if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
                 return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
