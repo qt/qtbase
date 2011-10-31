@@ -92,7 +92,6 @@ private slots:
     void combiningClass();
     void digitValue();
     void decomposition();
-//     void ligature();
     void lineBreakClass();
     void normalization_data();
     void normalization();
@@ -588,19 +587,6 @@ void tst_QChar::decomposition()
         QVERIFY(QChar::decomposition(0xc810) == str);
     }
 }
-
-#if 0
-void tst_QChar::ligature()
-{
-    QVERIFY(QChar::ligature(0x0041, 0x00300) == 0xc0);
-    QVERIFY(QChar::ligature(0x0049, 0x00308) == 0xcf);
-    QVERIFY(QChar::ligature(0x0391, 0x00301) == 0x386);
-    QVERIFY(QChar::ligature(0x0627, 0x00653) == 0x622);
-
-    QVERIFY(QChar::ligature(0x1100, 0x1161) == 0xac00);
-    QVERIFY(QChar::ligature(0xac00, 0x11a8) == 0xac01);
-}
-#endif
 
 void tst_QChar::lineBreakClass()
 {
