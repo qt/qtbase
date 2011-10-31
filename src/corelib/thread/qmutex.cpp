@@ -388,7 +388,7 @@ bool QBasicMutex::lockInternal(int timeout)
                 if (d_ptr.testAndSetAcquire(d, dummyLocked())) {
                     // Mutex aquired
                     Q_ASSERT(d->waiters.load() == -QMutexPrivate::BigNumber || d->waiters.load() == 0);
-                    d->waiters = 0;
+                    d->waiters.store(0);
                     d->deref();
                     return true;
                 } else {
@@ -491,7 +491,7 @@ QMutexPrivate *QMutexPrivate::allocate()
     Q_ASSERT(!d->recursive);
     Q_ASSERT(!d->possiblyUnlocked.load());
     Q_ASSERT(d->waiters.load() == 0);
-    d->refCount = 1;
+    d->refCount.store(1);
     return d;
 }
 
