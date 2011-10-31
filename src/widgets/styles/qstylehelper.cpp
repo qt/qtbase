@@ -246,7 +246,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     if (enabled) {
         // Drop shadow
-        qreal shadowSize = qMax(qreal(1.0), penSize/2.0);
+        qreal shadowSize = qMax(1.0, penSize/2.0);
         QRectF shadowRect= br.adjusted(-2*shadowSize, -2*shadowSize,
                                        2*shadowSize, 2*shadowSize);
         QRadialGradient shadowGradient(shadowRect.center().x(),
