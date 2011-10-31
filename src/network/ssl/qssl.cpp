@@ -131,7 +131,7 @@ QT_BEGIN_NAMESPACE
     fragments into the data when using block ciphers. When enabled, this
     prevents some attacks (such as the BEAST attack), however it is
     incompatible with some servers.
-    \value SslOptionDisableTickets Disables the SSL session ticket
+    \value SslOptionDisableSessionTickets Disables the SSL session ticket
     extension. This can cause slower connection setup, however some servers
     are not compatible with the extension.
     \value SslOptionDisableCompression Disables the SSL compression
