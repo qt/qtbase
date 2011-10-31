@@ -549,7 +549,7 @@ QPrinter::QPrinter(PrinterMode mode)
     : QPagedPaintDevice(),
       d_ptr(new QPrinterPrivate(this))
 {
-    init(mode);
+    d_ptr->init(mode);
     QPrinterInfo defPrn(QPrinterInfo::defaultPrinter());
     if (!defPrn.isNull()) {
         setPrinterName(defPrn.printerName());
@@ -569,11 +569,11 @@ QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
     : QPagedPaintDevice(),
       d_ptr(new QPrinterPrivate(this))
 {
-    init(mode);
+    d_ptr->init(mode);
     setPrinterName(printer.printerName());
 }
 
-void QPrinter::init(PrinterMode mode)
+void QPrinterPrivate::init(QPrinter::PrinterMode mode)
 {
 #if !defined(Q_WS_X11)
     if (!QCoreApplication::instance()) {
@@ -583,22 +583,21 @@ void QPrinter::init(PrinterMode mode)
         qFatal("QPrinter: Must construct a QApplication before a QPaintDevice");
         return;
     }
-    Q_D(QPrinter);
 
-    d->printerMode = mode;
-    d->outputFormat = QPrinter::NativeFormat;
-    d->createDefaultEngines();
+    printerMode = mode;
+    outputFormat = QPrinter::NativeFormat;
+    createDefaultEngines();
 
 #ifndef QT_NO_PRINTPREVIEWWIDGET
-    d->previewEngine = 0;
+    previewEngine = 0;
 #endif
-    d->realPrintEngine = 0;
-    d->realPaintEngine = 0;
+    realPrintEngine = 0;
+    realPaintEngine = 0;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (QCUPSSupport::cupsVersion() >= 10200 && QCUPSSupport().currentPPD()) {
-        setOutputFormat(QPrinter::PdfFormat);
-        d->outputFormat = QPrinter::NativeFormat;
+        q_func()->setOutputFormat(QPrinter::PdfFormat);
+        outputFormat = QPrinter::NativeFormat;
     }
 #endif
 }

@@ -90,6 +90,8 @@ public:
 
     }
 
+    void init(QPrinter::PrinterMode mode);
+
     void createDefaultEngines();
 #ifndef QT_NO_PRINTPREVIEWWIDGET
     QList<const QPicture *> previewPages() const;

@@ -256,8 +256,6 @@ protected:
     void setEngines(QPrintEngine *printEngine, QPaintEngine *paintEngine);
 
 private:
-    void init(PrinterMode mode);
-
     Q_DISABLE_COPY(QPrinter)
 
     QScopedPointer<QPrinterPrivate> d_ptr;
