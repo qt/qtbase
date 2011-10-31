@@ -545,7 +545,6 @@ private slots:
     void testReader_data() const;
     void reportSuccess() const;
     void reportSuccess_data() const;
-    void parseXSLTTestSuite() const;
     void writerHangs() const;
     void writerAutoFormattingWithComments() const;
     void writerAutoFormattingWithTabs() const;
@@ -815,74 +814,6 @@ void tst_QXmlStream::testReader_data() const
         QString reference =  QFileInfo(filename).baseName() + ".ref";
         QTest::newRow(dir.filePath(filename).toLatin1().data()) << dir.filePath(filename) << dir.filePath(reference);
     }
-}
-
-void tst_QXmlStream::parseXSLTTestSuite() const
-{
-    /* We disable this test for now, so it doesn't show up as an XFAIL. */
-#if 0
-    QEXPECT_FAIL("", "Two problems needs to be solved in order to enable this test: \n"
-                     "* The XSLT suite is 69 MB large, which is quite a lot compared to the existing XML suite on 2 mb.\n"
-                     "* We need a c14n-like implementation in order to compare the outputs.", Abort);
-    QVERIFY(false);
-
-    /* We don't yet know this. TODO */
-    int xsltExpectedRunCount = -1;
-
-    QStringList nameFilters;
-    nameFilters.append("*.xsl");
-    nameFilters.append("*.xml");
-
-    QDirIterator dirIterator("XSLT-Test-Suite/", nameFilters,
-                             QDir::AllEntries, QDirIterator::Subdirectories);
-
-    int filesParsed = 0;
-
-    while(dirIterator.hasNext())
-    {
-        dirIterator.next();
-
-        const QString fp(dirIterator.filePath());
-        qDebug() << "Found" << fp;
-
-        QFile inputFile(fp);
-        QVERIFY(inputFile.open(QIODevice::ReadOnly));
-
-        /* Read in and write out to the QByteArray. */
-        QByteArray outputArray;
-        {
-            QXmlStreamReader reader(&inputFile);
-
-            QXmlStreamWriter writer(&outputArray);
-
-            while(!reader.atEnd())
-            {
-                writer.writeCurrentToken(reader);
-                reader.readNext();
-
-                QVERIFY2(!reader.hasError(), qPrintable(reader.errorString()));
-            }
-            /* Might be we got an error here, but we don't care. */
-        }
-
-        /* Read in the two files, and compare them. */
-        {
-            QBuffer outputBuffer(&outputArray);
-            outputBuffer.open(QIODevice::ReadOnly);
-            inputFile.close();
-            inputFile.open(QIODevice::ReadOnly);
-
-            QString message;
-            const bool isEqual = QC14N::isEqual(&inputFile, &outputBuffer, &message);
-
-            QVERIFY2(isEqual, message.toLatin1().constData());
-
-            ++filesParsed;
-        }
-    }
-
-    QCOMPARE(xsltExpectedRunCount, filesParsed);
-#endif
 }
 
 void tst_QXmlStream::addExtraNamespaceDeclarations()
