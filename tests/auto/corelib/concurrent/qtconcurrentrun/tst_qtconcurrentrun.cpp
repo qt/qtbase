@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 #include <qtconcurrentrun.h>
-// #include <qtconcurrentcreatefunctor.h>
 #include <qfuture.h>
 #include <QString>
 #include <QtTest/QtTest>
@@ -61,9 +60,6 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
-#if 0
-    void createFunctor();
-#endif
 #ifdef Q_COMPILER_DECLTYPE
     void functor();
 #endif
@@ -71,12 +67,6 @@ private slots:
     void lambda();
 #endif
 };
-
-#if 0
-# define F(X) createFunctor(X)
-#else
-# define F(X) X
-#endif
 
 void light()
 {
@@ -97,7 +87,7 @@ void heavy()
 void tst_QtConcurrentRun::runLightFunction()
 {
     qDebug("starting function");
-    QFuture<void> future = run(F(light));
+    QFuture<void> future = run(light);
     qDebug("waiting");
     future.waitForFinished();
     qDebug("done");
@@ -106,7 +96,7 @@ void tst_QtConcurrentRun::runLightFunction()
 void tst_QtConcurrentRun::runHeavyFunction()
 {
     qDebug("starting function");
-    QFuture<void> future = run(F(heavy));
+    QFuture<void> future = run(heavy);
     qDebug("waiting");
     future.waitForFinished();
     qDebug("done");
@@ -148,20 +138,20 @@ void tst_QtConcurrentRun::returnValue()
 {
     QFuture<int> f;
     
-    f = run(F(returnInt0));
+    f = run(returnInt0);
     QCOMPARE(f.result(), 10);
     
     A a;
-    f = run(&a, F(&A::member0));
+    f = run(&a, &A::member0);
     QCOMPARE(f.result(), 10);
 
-    f = run(&a, F(&A::member1), 20);
+    f = run(&a, &A::member1, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(a, F(&A::member0));
+    f = run(a, &A::member0);
     QCOMPARE(f.result(), 10);
 
-    f = run(a, F(&A::member1), 20);
+    f = run(a, &A::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(a);
@@ -180,13 +170,13 @@ void tst_QtConcurrentRun::returnValue()
     f = run(&aConst, &AConst::member0);
     QCOMPARE(f.result(), 10);
 
-    f = run(&aConst, F(&AConst::member1), 20);
+    f = run(&aConst, &AConst::member1, 20);
     QCOMPARE(f.result(), 20);
 
-    f = run(aConst, F(&AConst::member0));
+    f = run(aConst, &AConst::member0);
     QCOMPARE(f.result(), 10);
 
-    f = run(aConst, F(&AConst::member1), 20);
+    f = run(aConst, &AConst::member1, 20);
     QCOMPARE(f.result(), 20);
 
     f = run(aConst);
@@ -226,15 +216,15 @@ void tst_QtConcurrentRun::functionObject()
     TestClass c;
     
     f = run(c);
-    f = run(F(&c));
+    f = run(&c);
     f = run(c, 10);
-    f = run(F(&c), 10);
+    f = run(&c, 10);
 
     const TestConstClass cc = TestConstClass();
     f = run(cc);
-    f = run(F(&cc));
+    f = run(&cc);
     f = run(cc, 10);
-    f = run(F(&cc), 10);
+    f = run(&cc, 10);
 }
 
 
@@ -242,16 +232,16 @@ void tst_QtConcurrentRun::memberFunctions()
 {
     TestClass c;
 
-    run(c, F(&TestClass::foo)).waitForFinished();
-    run(&c, F(&TestClass::foo)).waitForFinished();
-    run(c, F(&TestClass::fooInt), 10).waitForFinished();
-    run(&c, F(&TestClass::fooInt), 10).waitForFinished();
+    run(c, &TestClass::foo).waitForFinished();
+    run(&c, &TestClass::foo).waitForFinished();
+    run(c, &TestClass::fooInt, 10).waitForFinished();
+    run(&c, &TestClass::fooInt, 10).waitForFinished();
 
     const TestConstClass cc = TestConstClass();
-    run(cc, F(&TestConstClass::foo)).waitForFinished();
-    run(&cc, F(&TestConstClass::foo)).waitForFinished();
-    run(cc, F(&TestConstClass::fooInt), 10).waitForFinished();
-    run(&cc, F(&TestConstClass::fooInt), 10).waitForFinished();
+    run(cc, &TestConstClass::foo).waitForFinished();
+    run(&cc, &TestConstClass::foo).waitForFinished();
+    run(cc, &TestConstClass::fooInt, 10).waitForFinished();
+    run(&cc, &TestConstClass::fooInt, 10).waitForFinished();
 }
 
 
@@ -284,15 +274,15 @@ void stringIntFunction(QString)
 void tst_QtConcurrentRun::implicitConvertibleTypes()
 {
     double d;
-    run(F(doubleFunction), d).waitForFinished();
+    run(doubleFunction, d).waitForFinished();
     int i;
-    run(F(doubleFunction), d).waitForFinished();
-    run(F(doubleFunction), i).waitForFinished();
-    run(F(doubleFunction), 10).waitForFinished();
-    run(F(stringFunction), QLatin1String("Foo")).waitForFinished();
-    run(F(stringConstRefFunction), QLatin1String("Foo")).waitForFinished();
+    run(doubleFunction, d).waitForFinished();
+    run(doubleFunction, i).waitForFinished();
+    run(doubleFunction, 10).waitForFinished();
+    run(stringFunction, QLatin1String("Foo")).waitForFinished();
+    run(stringConstRefFunction, QLatin1String("Foo")).waitForFinished();
     QString string;
-    run(F(stringRefFunction), string).waitForFinished();
+    run(stringRefFunction, string).waitForFinished();
 }
 
 void fn() { }
@@ -409,38 +399,6 @@ void tst_QtConcurrentRun::exceptions()
     }
     if (!caught)
         QFAIL("did not get exception");
-}
-#endif
-
-#if 0
-void tst_QtConcurrentRun::createFunctor()
-{
-    e = 0;
-    ::QtConcurrent::createFunctor(vfn0)();
-    e += QtConcurrent::createFunctor(fn0)();
-    ::QtConcurrent::createFunctor(vfn1)(1); // implicit conversions should work
-    e += QtConcurrent::createFunctor(fn1)(2);
-    ::QtConcurrent::createFunctor(vfn2)(1.0, &e);
-    e += QtConcurrent::createFunctor(fn2)(2, &e);
-    QCOMPARE(e, 6);
-
-
-    e = 0;
-    TestClass c;
-
-//    ::QtConcurrent::createFunctor(c, &TestClass::foo)();
-    ::QtConcurrent::createFunctor(&c, &TestClass::foo)();
-//    ::QtConcurrent::createFunctor(c, &TestClass::fooInt)(10);
-    ::QtConcurrent::createFunctor(&c, &TestClass::fooInt)(10);
-
-    const TestConstClass cc = TestConstClass();
-/*
-    ::QtConcurrent::createFunctor(cc, &TestConstClass::foo)();
-    ::QtConcurrent::createFunctor(&cc, &TestConstClass::foo)();
-    ::QtConcurrent::createFunctor(cc, &TestConstClass::fooInt(10);
-    ::QtConcurrent::createFunctor(&cc, &TestConstClass::fooInt)(10);
-*/
-    qDebug() << e;
 }
 #endif
 
