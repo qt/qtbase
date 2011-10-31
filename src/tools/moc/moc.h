@@ -58,8 +58,12 @@ struct Type
     enum ReferenceType { NoReference, Reference, RValueReference, Pointer };
 
     inline Type() : isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
-    inline explicit Type(const QByteArray &_name) : name(_name), isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
+    inline explicit Type(const QByteArray &_name)
+        : name(_name), rawName(name), isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
     QByteArray name;
+    //When used as a return type, the type name may be modified to remove the references.
+    // rawName is the type as found in the function signature
+    QByteArray rawName;
     uint isVolatile : 1;
     uint isScoped : 1;
     Token firstToken;

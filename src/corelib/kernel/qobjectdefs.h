@@ -443,7 +443,8 @@ struct Q_CORE_EXPORT QMetaObject
         QueryPropertyStored,
         QueryPropertyEditable,
         QueryPropertyUser,
-        CreateInstance
+        CreateInstance,
+        IndexOfMethod
     };
 
     int static_metacall(Call, int, void **) const;

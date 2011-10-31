@@ -240,6 +240,7 @@ Type Moc::parseType()
         else if (lookup(0) == STAR)
             type.referenceType = Type::Pointer;
     }
+    type.rawName = type.name;
     // transform stupid things like 'const void' or 'void const' into 'void'
     if (isVoid && type.referenceType == Type::NoReference) {
         type.name = "void";
@@ -404,8 +405,11 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     }
 
     // we don't support references as return types, it's too dangerous
-    if (def->type.referenceType == Type::Reference)
+    if (def->type.referenceType == Type::Reference) {
+        QByteArray rawName = def->type.rawName;
         def->type = Type("void");
+        def->type.rawName = rawName;
+    }
 
     def->normalizedType = normalizeType(def->type.name);
 

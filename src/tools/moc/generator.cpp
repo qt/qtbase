@@ -954,6 +954,35 @@ void Generator::generateStaticMetacall()
         }
         fprintf(out, "        default: ;\n");
         fprintf(out, "        }\n");
+
+        fprintf(out, "    } else if (_c == QMetaObject::IndexOfMethod) {\n");
+        fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
+        fprintf(out, "        void **func = reinterpret_cast<void **>(_a[1]);\n");
+        bool anythingUsed = false;
+        for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
+            const FunctionDef &f = methodList.at(methodindex);
+            if (f.wasCloned || !f.inPrivateClass.isEmpty() || f.isStatic)
+                continue;
+            anythingUsed = true;
+            fprintf(out, "        {\n");
+            fprintf(out, "            typedef %s (%s::*_t)(",f.type.rawName.constData() , cdef->classname.constData());
+            for (int j = 0; j < f.arguments.count(); ++j) {
+                const ArgumentDef &a = f.arguments.at(j);
+                if (j)
+                    fprintf(out, ", ");
+                fprintf(out, "%s", QByteArray(a.type.name + ' ' + a.rightType).constData());
+            }
+            if (f.isConst)
+                fprintf(out, ") const;\n");
+            else
+                fprintf(out, ");\n");
+            fprintf(out, "            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&%s::%s)) {\n",
+                    cdef->classname.constData(), f.name.constData());
+            fprintf(out, "                *result = %d;\n", methodindex);
+            fprintf(out, "            }\n        }\n");
+        }
+        if (!anythingUsed)
+            fprintf(out, "        Q_UNUSED(result);\n        Q_UNUSED(func);\n");
         fprintf(out, "    }");
         needElse = true;
     }

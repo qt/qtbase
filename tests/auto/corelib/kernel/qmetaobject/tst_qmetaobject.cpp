@@ -174,6 +174,8 @@ private slots:
     void indexOfMethod_data();
     void indexOfMethod();
 
+    void indexOfMethodPMF();
+
 signals:
     void value6Changed();
     void value7Changed(const QString &);
@@ -290,6 +292,7 @@ void tst_QMetaObject::connectSlotsByName()
 
 class QtTestObject: public QObject
 {
+    friend class tst_QMetaObject;
     Q_OBJECT
 
 public:
@@ -1115,6 +1118,25 @@ void tst_QMetaObject::indexOfMethod()
     QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
 }
 
+void tst_QMetaObject::indexOfMethodPMF()
+{
+#define INDEXOFMETHODPMF_HELPER(ObjectType, Name, Arguments)  { \
+        int idx = -1; \
+        void (ObjectType::*signal)Arguments = &ObjectType::Name; \
+        void *signal_p = &signal; \
+        void *args[] = { &idx, signal_p, 0}; \
+        ObjectType::qt_static_metacall(0, QMetaObject::IndexOfMethod, 0, args); \
+        QCOMPARE(ObjectType::staticMetaObject.indexOfMethod(QMetaObject::normalizedSignature(#Name #Arguments)), \
+                 ObjectType::staticMetaObject.methodOffset() + idx); \
+    }
+
+    INDEXOFMETHODPMF_HELPER(tst_QMetaObject, value7Changed, (const QString&))
+    INDEXOFMETHODPMF_HELPER(tst_QMetaObject, stdSet, ())
+    INDEXOFMETHODPMF_HELPER(QtTestObject, sl10, (QString,QString,QString,QString,QString,QString,QString,QString,QString,QString))
+    INDEXOFMETHODPMF_HELPER(QtTestObject, sig0, ())
+    INDEXOFMETHODPMF_HELPER(QtTestObject, testLongLong, (qint64, quint64))
+    INDEXOFMETHODPMF_HELPER(QtTestObject, testReference, (QString&))
+}
 
 QTEST_MAIN(tst_QMetaObject)
 #include "tst_qmetaobject.moc"
