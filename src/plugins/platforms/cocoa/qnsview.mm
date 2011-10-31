@@ -168,7 +168,7 @@
     return YES;
 }
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
+- (void)handleMouseEvent:(NSEvent *)theEvent
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
     // starting from coordinates in the NSWindow coordinate system.
@@ -281,28 +281,28 @@
     [self handleMouseEvent:theEvent];
 }
 
-- (void)touchesBeganWithEvent:(NSEvent *)event;
+- (void)touchesBeganWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchBegin,  QTouchEvent::TouchPad, points);
 }
 
-- (void)touchesMovedWithEvent:(NSEvent *)event;
+- (void)touchesMovedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchUpdate,  QTouchEvent::TouchPad, points);
 }
 
-- (void)touchesEndedWithEvent:(NSEvent *)event;
+- (void)touchesEndedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd,  QTouchEvent::TouchPad, points);
 }
 
-- (void)touchesCancelledWithEvent:(NSEvent *)event;
+- (void)touchesCancelledWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
