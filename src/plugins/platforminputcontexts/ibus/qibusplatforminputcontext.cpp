@@ -77,6 +77,7 @@ public:
     QIBusInputContextProxy *context;
 
     bool valid;
+    QString predit;
 };
 
 
@@ -104,10 +105,11 @@ bool QIBusPlatformInputContext::isValid() const
 
 void QIBusPlatformInputContext::invokeAction(QInputPanel::Action a, int x)
 {
-    QPlatformInputContext::invokeAction(a, x);
-
     if (!d->valid)
         return;
+
+    if (a == QInputPanel::Click)
+        commit();
 }
 
 void QIBusPlatformInputContext::reset()
@@ -118,7 +120,30 @@ void QIBusPlatformInputContext::reset()
         return;
 
     d->context->Reset();
+    d->predit = QString();
 }
+
+void QIBusPlatformInputContext::commit()
+{
+    QPlatformInputContext::commit();
+
+    if (!d->valid)
+        return;
+
+    QObject *input = qApp->inputPanel()->inputItem();
+    if (!input) {
+        d->predit = QString();
+        return;
+    }
+
+    QInputMethodEvent event;
+    event.setCommitString(d->predit);
+    QCoreApplication::sendEvent(input, &event);
+
+    d->context->Reset();
+    d->predit = QString();
+}
+
 
 void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 {
@@ -179,6 +204,8 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
     QInputMethodEvent event;
     event.setCommitString(t.text);
     QCoreApplication::sendEvent(input, &event);
+
+    d->predit = QString();
 }
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
@@ -195,10 +222,13 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
         qDebug() << "preedit text:" << t.text;
 
     QList<QInputMethodEvent::Attribute> attributes = t.attributes.imAttributes();
-    attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
+    if (!t.text.isEmpty())
+        attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
 
     QInputMethodEvent event(t.text, attributes);
     QCoreApplication::sendEvent(input, &event);
+
+    d->predit = t.text;
 }
 
 

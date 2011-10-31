@@ -58,7 +58,8 @@ public:
     bool isValid() const;
 
     void invokeAction(QInputPanel::Action a, int x);
-    void reset(void);
+    void reset();
+    void commit();
     void update(Qt::InputMethodQueries);
 
     Q_INVOKABLE bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
