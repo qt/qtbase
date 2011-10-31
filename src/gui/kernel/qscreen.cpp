@@ -57,6 +57,13 @@ public:
     QPlatformScreen *platformScreen;
 };
 
+/*!
+    \class QScreen
+    \brief The QScreen class is used to query screen properties.
+
+    \inmodule QtGui
+*/
+
 QScreen::QScreen(QPlatformScreen *screen)
     : QObject(*new QScreenPrivate(screen), 0)
 {
@@ -72,10 +79,11 @@ QPlatformScreen *QScreen::handle() const
 }
 
 /*!
-  Get the platform dependent screen name.
+  \property QScreen::name
+  \brief a user presentable string representing the screen
 
-  For example, on an X11 platform this should typically be
-  the DISPLAY environment variable corresponding to the screen.
+  For example, on X11 these correspond to the XRandr screen names,
+  typically "VGA1", "HDMI1", etc.
 */
 QString QScreen::name() const
 {
@@ -84,7 +92,8 @@ QString QScreen::name() const
 }
 
 /*!
-  Get the screen's color depth.
+  \property QScreen::depth
+  \brief the color depth of the screen
 */
 int QScreen::depth() const
 {
@@ -93,7 +102,8 @@ int QScreen::depth() const
 }
 
 /*!
-  Get the screen's size.
+  \property QScreen::size
+  \brief the pixel resolution of the screen
 */
 QSize QScreen::size() const
 {
@@ -102,7 +112,8 @@ QSize QScreen::size() const
 }
 
 /*!
-  Gets the number of physical dots or pixels per inch in the horizontal direction.
+  \property QScreen::physicalDotsPerInchX
+  \brief the number of physical dots or pixels per inch in the horizontal direction
 
   This value represents the actual horizontal pixel density on the screen's display.
   Depending on what information the underlying system provides the value might not be
@@ -116,7 +127,8 @@ qreal QScreen::physicalDotsPerInchX() const
 }
 
 /*!
-  Gets the number of physical dots or pixels per inch in the vertical direction.
+  \property QScreen::physicalDotsPerInchY
+  \brief the number of physical dots or pixels per inch in the vertical direction
 
   This value represents the actual vertical pixel density on the screen's display.
   Depending on what information the underlying system provides the value might not be
@@ -130,7 +142,8 @@ qreal QScreen::physicalDotsPerInchY() const
 }
 
 /*!
-  Gets the number of logical dots or pixels per inch in the horizontal direction.
+  \property QScreen::logicalDotsPerInchX
+  \brief the number of logical dots or pixels per inch in the horizontal direction
 
   This value is used to convert font point sizes to pixel sizes.
 
@@ -143,7 +156,8 @@ qreal QScreen::logicalDotsPerInchX() const
 }
 
 /*!
-  Gets the number of logical dots or pixels per inch in the vertical direction.
+  \property QScreen::logicalDotsPerInchY
+  \brief the number of logical dots or pixels per inch in the vertical direction
 
   This value is used to convert font point sizes to pixel sizes.
 
@@ -156,7 +170,8 @@ qreal QScreen::logicalDotsPerInchY() const
 }
 
 /*!
-  Get the screen's physical size (in millimeters).
+  \property QScreen::physicalSize
+  \brief the screen's physical size (in millimeters)
 
   The physical size represents the actual physical dimensions of the
   screen's display.
@@ -171,7 +186,8 @@ QSizeF QScreen::physicalSize() const
 }
 
 /*!
-  Get the screen's available size.
+  \property QScreen::availableSize
+  \brief the screen's available size in pixels
 
   The available size is the size excluding window manager reserved areas
   such as task bars and system menus.
@@ -183,7 +199,11 @@ QSize QScreen::availableSize() const
 }
 
 /*!
-  Get the screen's geometry.
+  \property QScreen::geometry
+  \brief the screen's geometry in pixels
+
+  As an example this might return QRect(0, 0, 1280, 1024), or in a
+  virtual desktop setting QRect(1280, 0, 1280, 1024).
 */
 QRect QScreen::geometry() const
 {
@@ -192,7 +212,8 @@ QRect QScreen::geometry() const
 }
 
 /*!
-  Get the screen's available geometry.
+  \property QScreen::availableGeometry
+  \brief the screen's available geometry in pixels
 
   The available geometry is the geometry excluding window manager reserved areas
   such as task bars and system menus.
@@ -221,7 +242,8 @@ QList<QScreen *> QScreen::virtualSiblings() const
 }
 
 /*!
-  Get the size of the virtual desktop corresponding to this screen.
+  \property QScreen::virtualSize
+  \brief the pixel size of the virtual desktop corresponding to this screen
 
   This is the combined size of the virtual siblings' individual geometries.
 
@@ -233,7 +255,8 @@ QSize QScreen::virtualSize() const
 }
 
 /*!
-  Get the geometry of the virtual desktop corresponding to this screen.
+  \property QScreen::virtualGeometry
+  \brief the pixel geometry of the virtual desktop corresponding to this screen
 
   This is the union of the virtual siblings' individual geometries.
 
@@ -249,7 +272,8 @@ QRect QScreen::virtualGeometry() const
 }
 
 /*!
-  Get the available size of the virtual desktop corresponding to this screen.
+  \property QScreen::availableVirtualSize
+  \brief the available pixel size of the virtual desktop corresponding to this screen
 
   This is the combined size of the virtual siblings' individual available geometries.
 
@@ -262,7 +286,8 @@ QSize QScreen::availableVirtualSize() const
 }
 
 /*!
-  Get the available size of the virtual desktop corresponding to this screen.
+  \property QScreen::availableVirtualGeometry
+  \brief the available size of the virtual desktop corresponding to this screen
 
   This is the union of the virtual siblings' individual available geometries.
 
@@ -279,7 +304,8 @@ QRect QScreen::availableVirtualGeometry() const
 }
 
 /*!
-    Gets the primary screen orientation.
+    \property QScreen::primaryOrientation
+    \brief the primary screen orientation
 
     The primary screen orientation is the orientation that corresponds
     to an un-rotated screen buffer. When the current orientation is equal
@@ -293,7 +319,8 @@ Qt::ScreenOrientation QScreen::primaryOrientation() const
 }
 
 /*!
-    Gets the current orientation of the screen.
+    \property QScreen::primaryOrientation
+    \brief the current screen orientation
 
     The current orientation is a hint to the application saying
     what the preferred application orientation should be, based on the

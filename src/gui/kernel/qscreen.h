@@ -68,6 +68,22 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QScreen)
 
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(int depth READ depth CONSTANT)
+    Q_PROPERTY(QSize size READ size CONSTANT)
+    Q_PROPERTY(QRect geometry READ geometry CONSTANT)
+    Q_PROPERTY(QSizeF physicalSize READ physicalSize CONSTANT)
+    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX CONSTANT)
+    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY CONSTANT)
+    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX CONSTANT)
+    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY CONSTANT)
+    Q_PROPERTY(QSize availableSize READ availableSize CONSTANT)
+    Q_PROPERTY(QRect availableGeometry READ availableGeometry CONSTANT)
+    Q_PROPERTY(QSize virtualSize READ virtualSize CONSTANT)
+    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry CONSTANT)
+    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation CONSTANT)
+    Q_PROPERTY(Qt::ScreenOrientation currentOrientation READ currentOrientation NOTIFY currentOrientationChanged)
+
 public:
     QPlatformScreen *handle() const;
 
