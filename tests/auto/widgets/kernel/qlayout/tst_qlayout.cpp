@@ -195,15 +195,11 @@ void tst_QLayout::smartMaxSize()
                         Qt::Alignment align = alignments[a];
                         QSize sz = qSmartMaxSize(QSize(sizeHint, 1), QSize(minSize, 1), QSize(maxSize, 1), sizePolicy, align);
                         int width = sz.width();
-#if 0
-                        qDebug() << expectedIndex << sizePolicy.horizontalPolicy() << align << minSize << sizeHint << maxSize << width;
-#else
                         int expectedWidth = expectedWidths[expectedIndex];
                         if (width != expectedWidth) {
                             qDebug() << "error at index" << expectedIndex << ":" << sizePolicy.horizontalPolicy() << align << minSize << sizeHint << maxSize << width;
                             ++regressionCount;
                         }
-#endif
                         ++expectedIndex;
                     }
                 }
