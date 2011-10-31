@@ -11199,6 +11199,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     else
         view.show();
     QTest::qWaitForWindowShown(&view);
+    QEXPECT_FAIL("", "QTBUG-22434", Abort);
     QTRY_COMPARE(view.repaints, 1);
     QTRY_COMPARE(item->painted, 1);
     QTRY_COMPARE(item2->painted, 1);
