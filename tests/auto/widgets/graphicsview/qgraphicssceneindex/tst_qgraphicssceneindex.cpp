@@ -56,8 +56,6 @@ public slots:
     void initTestCase();
 
 private slots:
-    void customIndex_data();
-    void customIndex();
     void scatteredItems_data();
     void scatteredItems();
     void overlappedItems_data();
@@ -99,25 +97,6 @@ QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMe
     return index;
 }
 
-void tst_QGraphicsSceneIndex::customIndex_data()
-{
-    common_data();
-}
-
-void tst_QGraphicsSceneIndex::customIndex()
-{
-#if 0
-    QFETCH(QString, indexMethod);
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
-
-    QGraphicsScene scene;
-    scene.setSceneIndex(index);
-
-    scene.addRect(0, 0, 30, 40);
-    QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
-#endif
-}
-
 void tst_QGraphicsSceneIndex::scatteredItems_data()
 {
     common_data();
@@ -128,12 +107,7 @@ void tst_QGraphicsSceneIndex::scatteredItems()
     QFETCH(QString, indexMethod);
 
     QGraphicsScene scene;
-#if 1
     scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
-#else
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
-    scene.setSceneIndex(index);
-#endif
 
     for (int i = 0; i < 10; ++i)
         scene.addRect(i*50, i*50, 40, 35);
@@ -157,12 +131,7 @@ void tst_QGraphicsSceneIndex::overlappedItems()
     QFETCH(QString, indexMethod);
 
     QGraphicsScene scene;
-#if 1
     scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
-#else
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
-    scene.setSceneIndex(index);
-#endif
 
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 10; ++j)
@@ -191,12 +160,7 @@ void tst_QGraphicsSceneIndex::movingItems()
     QFETCH(QString, indexMethod);
 
     QGraphicsScene scene;
-#if 1
     scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
-#else
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
-    scene.setSceneIndex(index);
-#endif
 
     for (int i = 0; i < 10; ++i)
         scene.addRect(i*50, i*50, 40, 35);
