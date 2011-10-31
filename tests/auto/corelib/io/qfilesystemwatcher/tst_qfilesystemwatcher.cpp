@@ -400,15 +400,6 @@ void tst_QFileSystemWatcher::removePaths()
     watcher.removePaths(paths);
 }
 
-#if 0
-class SignalTest : public QObject {
-    Q_OBJECT
-    public slots:
-        void fileSlot(const QString &file) { qDebug() << "file " << file;}
-        void dirSlot(const QString &dir) { qDebug() << "dir" << dir;}
-};
-#endif
-
 void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 {
     QFETCH(QString, backend);
@@ -432,12 +423,6 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     watcher.addPath(testDir.dirName());
     watcher.addPath(testFileName);
-
-    /*
-    SignalTest signalTest;
-    QObject::connect(&watcher, SIGNAL(fileChanged(const QString &)), &signalTest, SLOT(fileSlot(const QString &)));
-    QObject::connect(&watcher, SIGNAL(directoryChanged(const QString &)), &signalTest, SLOT(dirSlot(const QString &)));
-    */
 
     QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
