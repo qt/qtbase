@@ -100,11 +100,6 @@ private slots:
     void blockSize();
     void multipleResults();
 #endif
-#if 0
-    //"while" iterations tests:
-    void instantiateWhile();
-    void stresstestWhile();
-#endif
 };
 
 QAtomicInt iterations;
@@ -306,45 +301,6 @@ void tst_QtConcurrentIterateKernel::multipleResults()
     QCOMPARE(f.resultAt(5), 5);
     QCOMPARE(f.resultAt(9), 9);
     f.waitForFinished();
-}
-#endif
-
-#if 0
-class PrintWhile : public IterateKernel<TestIterator, void>
-{
-public:
-    PrintWhile() : IterateKernel<TestIterator, void>(0, 10, WhileIteration) { }
-    bool runIteration(TestIterator it, TestIterator, void *)
-    {
-        return false;
-    }
-};
-
-void tst_QtConcurrentIterateKernel::instantiateWhile()
-{
-    PrintWhile w;
-    w.startBlocking();
-}
-
-QAtomicInt iterationCount;
-class StressWhile : public IterateKernel<TestIterator, void>
-{
-public:
-    StressWhile(TestIterator iterations) : IterateKernel<TestIterator, void>(0, iterations, WhileIteration) { }
-    bool runIteration(TestIterator it, TestIterator index, void *)
-    {
-        if (it == index) // should match.
-            ::iterationCount.ref();
-        return false;
-    }
-};
-
-void tst_QtConcurrentIterateKernel::stresstestWhile()
-{
-    int iterations = 100000;
-    StressWhile w(iterations);
-    w.startBlocking();
-    QCOMPARE(int(iterationCount), iterations);
 }
 #endif
 
