@@ -200,7 +200,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
                                      works across multiple processes. If the platform session
                                      support is missing this API can only ensure the above behavior
                                      for network sessions within the same process.
-                                     In general mobile platforms (such as Symbian/S60) have such
+                                     In general mobile platforms have such
                                      support whereas most desktop platform lack this capability.
     \value ApplicationLevelRoaming   The system gives applications control over the systems roaming
                                      behavior. Applications can initiate roaming (in case the

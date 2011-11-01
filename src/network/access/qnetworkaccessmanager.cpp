@@ -160,21 +160,11 @@ static void ensureInitialized()
     upon the platform supporting connection management. The
     \l QNetworkConfigurationManager::NetworkSessionRequired can be used to
     detect whether QNetworkAccessManager utilizes this feature. Currently only
-    Meego/Harmattan and Symbian platforms provide connection management support.
+    Meego/Harmattan platforms provide connection management support.
 
     \note This feature cannot be used in combination with the Bearer Management
     API as provided by QtMobility. Applications have to migrate to the Qt version
     of Bearer Management.
-
-    \section1 Symbian Platform Security Requirements
-
-    On Symbian, processes which use this class must have the
-    \c NetworkServices platform security capability. If the client
-    process lacks this capability, operations will result in a panic.
-
-    Platform security capabilities are added via the
-    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
-    qmake variable.
 
     \sa QNetworkRequest, QNetworkReply, QNetworkProxy
 */

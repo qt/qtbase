@@ -111,24 +111,6 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     ::memcpy(addr.sun_path, fullServerName.toLatin1().data(),
              fullServerName.toLatin1().size() + 1);
 
-#ifdef Q_OS_SYMBIAN
-    // In SYMBIAN OS it can currently happen that accept is called twice,
-    // once from waitForNewConnection and once via QSocketNotfier activity
-    //
-    // As an workaround, we set the socket to non blocking so possible
-    // subsequent call to accept will not block in any case
-    //
-    // This change can be removed once more generic fix to select thread
-    // synchronization problem is implemented.
-    int flags = fcntl(listenSocket, F_GETFL, 0);
-    if (-1 == flags
-        || -1 == (fcntl(listenSocket, F_SETFL, flags | O_NONBLOCK))) {
-        setError(QLatin1String("QLocalServer::listen"));
-        closeServer();
-        return false;
-    }
-#endif
-
     // bind
     if(-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
         setError(QLatin1String("QLocalServer::listen"));

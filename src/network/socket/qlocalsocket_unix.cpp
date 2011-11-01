@@ -242,7 +242,6 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
-#ifndef Q_OS_SYMBIAN
     // set non blocking so we can try to connect and it wont wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
     if (-1 == flags
@@ -251,7 +250,6 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                 QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
-#endif
 
     // _q_connectToSocket does the actual connecting
     d->connectingName = name;
@@ -538,14 +536,7 @@ bool QLocalSocket::waitForConnected(int msec)
     timer.start();
     while (state() == ConnectingState
            && (-1 == msec || timer.elapsed() < msec)) {
-#ifdef Q_OS_SYMBIAN
-        // On Symbian, ready-to-write is signaled when non-blocking socket
-        // connect is finised. Is ready-to-read really used on other
-        // UNIX paltforms when using non-blocking AF_UNIX socket?
-        result = ::select(d->connectingSocket + 1, 0, &fds, 0, &timeout);
-#else
         result = ::select(d->connectingSocket + 1, &fds, 0, 0, &timeout);
-#endif
         if (-1 == result && errno != EINTR) {
             d->errorOccurred( QLocalSocket::UnknownSocketError,
                     QLatin1String("QLocalSocket::waitForConnected"));

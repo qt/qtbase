@@ -60,16 +60,6 @@
 
     \bold{Note:} TCP sockets cannot be opened in QIODevice::Unbuffered mode.
 
-    \section1 Symbian Platform Security Requirements
-
-    On Symbian, processes which use this class must have the
-    \c NetworkServices platform security capability. If the client
-    process lacks this capability, it will result in a panic.
-
-    Platform security capabilities are added via the
-    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
-    qmake variable.
-
     \sa QTcpServer, QUdpSocket, QFtp, QNetworkAccessManager,
     {Fortune Server Example}, {Fortune Client Example},
     {Threaded Fortune Server Example}, {Blocking Fortune Client Example},

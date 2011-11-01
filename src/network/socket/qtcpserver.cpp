@@ -79,16 +79,6 @@
     use waitForNewConnection(), which blocks until either a
     connection is available or a timeout expires.
 
-    \section1 Symbian Platform Security Requirements
-
-    On Symbian, processes which use this class must have the
-    \c NetworkServices platform security capability. If the client
-    process lacks this capability, it will lead to a panic.
-
-    Platform security capabilities are added via the
-    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
-    qmake variable.
-
     \sa QTcpSocket, {Fortune Server Example}, {Threaded Fortune Server Example},
         {Loopback Example}, {Torrent Example}
 */

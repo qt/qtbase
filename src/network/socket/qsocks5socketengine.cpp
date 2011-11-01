@@ -60,11 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_SYMBIAN
-static const int MaxWriteBufferSize = 4*1024;
-#else
 static const int MaxWriteBufferSize = 128*1024;
-#endif
 
 //#define QSOCKS5SOCKETLAYER_DEBUG
 

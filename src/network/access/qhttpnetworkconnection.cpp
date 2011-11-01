@@ -69,11 +69,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_SYMBIAN
-const int QHttpNetworkConnectionPrivate::defaultChannelCount = 3;
-#else
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
-#endif
 
 // The pipeline length. So there will be 4 requests in flight.
 const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;

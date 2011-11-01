@@ -293,16 +293,10 @@ DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *C
 DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
 DEFINEFUNC(const char *, SSLeay_version, int a, a, return 0, return)
 
-#ifdef Q_OS_SYMBIAN
-#define RESOLVEFUNC(func, ordinal, lib) \
-    if (!(_q_##func = _q_PTR_##func(lib->resolve(#ordinal)))) \
-        qWarning("QSslSocket: cannot resolve "#func);
-#else
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#func)))) \
         qWarning("QSslSocket: cannot resolve "#func);
-#endif
 
 #if !defined QT_LINKED_OPENSSL
 
@@ -412,25 +406,7 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     pair.first = 0;
     pair.second = 0;
 
-# if defined(Q_OS_SYMBIAN)
-     QLibrary *libssl = new QLibrary(QLatin1String("libssl"));
-    if (!libssl->load()) {
-        // Cannot find ssleay32.dll
-        delete libssl;
-        return pair;
-    }
-
-    QLibrary *libcrypto = new QLibrary(QLatin1String("libcrypto"));
-    if (!libcrypto->load()) {
-        delete libcrypto;
-        delete libssl;
-        return pair;
-    }
-
-    pair.first = libssl;
-    pair.second = libcrypto;
-    return pair;
-# elif defined(Q_OS_UNIX)
+# if defined(Q_OS_UNIX)
     QLibrary *&libssl = pair.first;
     QLibrary *&libcrypto = pair.second;
     libssl = new QLibrary;
@@ -536,141 +512,6 @@ bool q_resolveOpenSslSymbols()
         // failed to load them
         return false;
 
-#ifdef Q_OS_SYMBIAN
-#ifdef SSLEAY_MACROS
-    RESOLVEFUNC(ASN1_dup, 125, libs.second )
-#endif
-    RESOLVEFUNC(ASN1_INTEGER_get, 48, libs.second )
-    RESOLVEFUNC(ASN1_STRING_data, 71, libs.second )
-    RESOLVEFUNC(ASN1_STRING_length, 76, libs.second )
-    RESOLVEFUNC(ASN1_STRING_to_UTF8, 86, libs.second )
-    RESOLVEFUNC(BIO_ctrl, 184, libs.second )
-    RESOLVEFUNC(BIO_free, 209, libs.second )
-    RESOLVEFUNC(BIO_new, 222, libs.second )
-    RESOLVEFUNC(BIO_new_mem_buf, 230, libs.second )
-    RESOLVEFUNC(BIO_read, 244, libs.second )
-    RESOLVEFUNC(BIO_s_mem, 251, libs.second )
-    RESOLVEFUNC(BIO_write, 269, libs.second )
-    RESOLVEFUNC(BN_num_bits, 387, libs.second )
-    RESOLVEFUNC(CRYPTO_free, 469, libs.second )
-    RESOLVEFUNC(CRYPTO_num_locks, 500, libs.second )
-    RESOLVEFUNC(CRYPTO_set_id_callback, 513, libs.second )
-    RESOLVEFUNC(CRYPTO_set_locking_callback, 516, libs.second )
-    RESOLVEFUNC(DSA_free, 594, libs.second )
-    RESOLVEFUNC(ERR_error_string, 744, libs.second )
-    RESOLVEFUNC(ERR_get_error, 749, libs.second )
-    RESOLVEFUNC(EVP_des_ede3_cbc, 919, libs.second )
-    RESOLVEFUNC(EVP_PKEY_assign, 859, libs.second )
-    RESOLVEFUNC(EVP_PKEY_set1_RSA, 880, libs.second )
-    RESOLVEFUNC(EVP_PKEY_set1_DSA, 879, libs.second )
-    RESOLVEFUNC(EVP_PKEY_free, 867, libs.second )
-    RESOLVEFUNC(EVP_PKEY_get1_DSA, 869, libs.second )
-    RESOLVEFUNC(EVP_PKEY_get1_RSA, 870, libs.second )
-    RESOLVEFUNC(EVP_PKEY_new, 876, libs.second )
-    RESOLVEFUNC(EVP_PKEY_type, 882, libs.second )
-    RESOLVEFUNC(OBJ_nid2sn, 1036, libs.second )
-    RESOLVEFUNC(OBJ_obj2nid, 1037, libs.second )
-#ifdef SSLEAY_MACROS // ### verify
-    RESOLVEFUNC(PEM_ASN1_read_bio, 1180, libs.second )
-#else
-    RESOLVEFUNC(PEM_read_bio_DSAPrivateKey, 1219, libs.second )
-    RESOLVEFUNC(PEM_read_bio_RSAPrivateKey, 1228, libs.second )
-    RESOLVEFUNC(PEM_write_bio_DSAPrivateKey, 1260, libs.second )
-    RESOLVEFUNC(PEM_write_bio_RSAPrivateKey, 1271, libs.second )
-#endif
-    RESOLVEFUNC(PEM_read_bio_DSA_PUBKEY, 1220, libs.second )
-    RESOLVEFUNC(PEM_read_bio_RSA_PUBKEY, 1230, libs.second )
-    RESOLVEFUNC(PEM_write_bio_DSA_PUBKEY, 1261, libs.second )
-    RESOLVEFUNC(PEM_write_bio_RSA_PUBKEY, 1273, libs.second )
-    RESOLVEFUNC(RAND_seed, 1426, libs.second )
-    RESOLVEFUNC(RAND_status, 1429, libs.second )
-    RESOLVEFUNC(RSA_free, 1450, libs.second )
-    RESOLVEFUNC(sk_free, 2571, libs.second )
-    RESOLVEFUNC(sk_num, 2576, libs.second )
-    RESOLVEFUNC(sk_pop_free, 2578, libs.second )    
-    RESOLVEFUNC(sk_value, 2585, libs.second )
-    RESOLVEFUNC(SSL_CIPHER_description, 11, libs.first )
-    RESOLVEFUNC(SSL_CTX_check_private_key, 21, libs.first )
-    RESOLVEFUNC(SSL_CTX_ctrl, 22, libs.first )
-    RESOLVEFUNC(SSL_CTX_free, 24, libs.first )
-    RESOLVEFUNC(SSL_CTX_new, 35, libs.first )
-    RESOLVEFUNC(SSL_CTX_set_cipher_list, 40, libs.first )
-    RESOLVEFUNC(SSL_CTX_set_default_verify_paths, 44, libs.first )
-    RESOLVEFUNC(SSL_CTX_set_verify, 56, libs.first )
-    RESOLVEFUNC(SSL_CTX_set_verify_depth, 57, libs.first )
-    RESOLVEFUNC(SSL_CTX_use_certificate, 64, libs.first )
-    RESOLVEFUNC(SSL_CTX_use_certificate_file, 67, libs.first )
-    RESOLVEFUNC(SSL_CTX_use_PrivateKey, 58, libs.first )
-    RESOLVEFUNC(SSL_CTX_use_RSAPrivateKey, 61, libs.first )
-    RESOLVEFUNC(SSL_CTX_use_PrivateKey_file, 60, libs.first )
-    RESOLVEFUNC(SSL_accept, 82, libs.first )
-    RESOLVEFUNC(SSL_clear, 92, libs.first )
-    RESOLVEFUNC(SSL_connect, 93, libs.first )
-    RESOLVEFUNC(SSL_free, 99, libs.first )
-    RESOLVEFUNC(SSL_get_ciphers, 104, libs.first )
-    RESOLVEFUNC(SSL_get_current_cipher, 106, libs.first )
-    RESOLVEFUNC(SSL_get_error, 110, libs.first )
-    RESOLVEFUNC(SSL_get_peer_cert_chain, 117, libs.first )
-    RESOLVEFUNC(SSL_get_peer_certificate, 118, libs.first )
-    RESOLVEFUNC(SSL_get_verify_result, 132, libs.first )
-    RESOLVEFUNC(SSL_library_init, 137, libs.first )
-    RESOLVEFUNC(SSL_load_error_strings, 139, libs.first )
-    RESOLVEFUNC(SSL_new, 140, libs.first )
-#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-    RESOLVEFUNC(SSL_ctrl, 95, libs.first )
-#endif
-    RESOLVEFUNC(SSL_read, 143, libs.first )
-    RESOLVEFUNC(SSL_set_accept_state, 148, libs.first )
-    RESOLVEFUNC(SSL_set_bio, 149, libs.first )
-    RESOLVEFUNC(SSL_set_connect_state, 152, libs.first )
-    RESOLVEFUNC(SSL_shutdown, 173, libs.first )
-    RESOLVEFUNC(SSL_write, 188, libs.first )
-    RESOLVEFUNC(SSLv2_client_method, 192, libs.first )
-    RESOLVEFUNC(SSLv3_client_method, 195, libs.first )
-    RESOLVEFUNC(SSLv23_client_method, 189, libs.first )
-    RESOLVEFUNC(TLSv1_client_method, 198, libs.first )
-    RESOLVEFUNC(SSLv2_server_method, 194, libs.first )
-    RESOLVEFUNC(SSLv3_server_method, 197, libs.first )
-    RESOLVEFUNC(SSLv23_server_method, 191, libs.first )
-    RESOLVEFUNC(TLSv1_server_method, 200, libs.first )
-    RESOLVEFUNC(SSL_CTX_load_verify_locations, 34, libs.first )
-    RESOLVEFUNC(X509_NAME_entry_count, 1821, libs.second )
-    RESOLVEFUNC(X509_NAME_get_entry, 1823, libs.second )
-    RESOLVEFUNC(X509_NAME_ENTRY_get_data, 1808, libs.second )
-    RESOLVEFUNC(X509_NAME_ENTRY_get_object, 1809, libs.second )
-    RESOLVEFUNC(X509_PUBKEY_get, 1844, libs.second )
-    RESOLVEFUNC(X509_STORE_free, 1939, libs.second )
-    RESOLVEFUNC(X509_STORE_new, 1942, libs.second )
-    RESOLVEFUNC(X509_STORE_add_cert, 1936, libs.second )
-    RESOLVEFUNC(X509_STORE_CTX_free, 1907, libs.second )
-    RESOLVEFUNC(X509_STORE_CTX_init, 1919, libs.second )
-    RESOLVEFUNC(X509_STORE_CTX_new, 1920, libs.second )
-    RESOLVEFUNC(X509_STORE_CTX_set_purpose, 1931, libs.second )
-    RESOLVEFUNC(X509_cmp, 1992, libs.second )
-#ifndef SSLEAY_MACROS
-    RESOLVEFUNC(X509_dup, 1997, libs.second )
-#endif
-    RESOLVEFUNC(X509_print, 2046, libs.second )
-    RESOLVEFUNC(X509_EXTENSION_get_object, 1785, libs.second )
-    RESOLVEFUNC(X509_free, 2001, libs.second )
-    RESOLVEFUNC(X509_get_ext, 2012, libs.second )
-    RESOLVEFUNC(X509_get_ext_count, 2016, libs.second )
-    RESOLVEFUNC(X509_get_ext_d2i, 2017, libs.second )
-    RESOLVEFUNC(X509_get_issuer_name, 2018, libs.second )
-    RESOLVEFUNC(X509_get_subject_name, 2022, libs.second )
-    RESOLVEFUNC(X509_verify_cert, 2069, libs.second )
-    RESOLVEFUNC(d2i_X509, 2309, libs.second )
-    RESOLVEFUNC(i2d_X509, 2489, libs.second )
-#ifdef SSLEAY_MACROS
-    RESOLVEFUNC(i2d_DSAPrivateKey, 2395, libs.second )
-    RESOLVEFUNC(i2d_RSAPrivateKey, 2476, libs.second )
-    RESOLVEFUNC(d2i_DSAPrivateKey, 2220, libs.second )
-    RESOLVEFUNC(d2i_RSAPrivateKey, 2296, libs.second )
-#endif
-    RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf, 1153, libs.second )
-    RESOLVEFUNC(OPENSSL_add_all_algorithms_conf, 1152, libs.second )
-    RESOLVEFUNC(SSLeay, 1504, libs.second )
-#else // Q_OS_SYMBIAN
 #ifdef SSLEAY_MACROS
     RESOLVEFUNC(ASN1_dup)
 #endif
@@ -817,7 +658,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
     RESOLVEFUNC(SSLeay)
     RESOLVEFUNC(SSLeay_version)
-#endif // Q_OS_SYMBIAN
+
     symbolsResolved = true;
     delete libs.first;
     delete libs.second;

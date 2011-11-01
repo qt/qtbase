@@ -59,11 +59,7 @@ QT_BEGIN_NAMESPACE
 
 //#define QHOSTINFO_DEBUG
 
-#ifndef Q_OS_SYMBIAN
 Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
-#else
-Q_GLOBAL_STATIC(QSymbianHostInfoLookupManager, theHostInfoLookupManager)
-#endif
 
 /*!
     \class QHostInfo
@@ -178,7 +174,6 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         return id;
     }
 
-#ifndef Q_OS_SYMBIAN
     QHostInfoLookupManager *manager = theHostInfoLookupManager();
 
     if (manager) {
@@ -201,39 +196,6 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
         QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
     }
-#else
-    QSymbianHostInfoLookupManager *manager = theHostInfoLookupManager();
-
-    if (manager) {
-        // the application is still alive
-        if (manager->cache.isEnabled()) {
-            // check cache first
-            bool valid = false;
-            QHostInfo info = manager->cache.get(name, &valid);
-            if (valid) {
-                info.setLookupId(id);
-                QHostInfoResult result;
-                QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
-                result.emitResultsReady(info);
-                return id;
-            }
-        }
-
-        // cache is not enabled or it was not in the cache, do normal lookup
-#ifndef QT_NO_BEARERMANAGEMENT
-        QSharedPointer<QNetworkSession> networkSession;
-        QVariant v(receiver->property("_q_networksession"));
-        if (v.isValid())
-            networkSession = qvariant_cast< QSharedPointer<QNetworkSession> >(v);
-#endif
-
-        QSymbianHostResolver *symbianResolver = 0;
-        QT_TRAP_THROWING(symbianResolver = new QSymbianHostResolver(name, id, networkSession));
-        QObject::connect(&symbianResolver->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
-        manager->scheduleLookup(symbianResolver);
-    }
-#endif
-
     return id;
 }
 
@@ -286,13 +248,10 @@ QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetwor
 }
 #endif
 
-#ifndef Q_OS_SYMBIAN
-// This function has a special implementation for symbian right now in qhostinfo_symbian.cpp but not on other OS.
 QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession>)
 {
     return QHostInfoAgent::fromName(hostName);
 }
-#endif
 
 
 /*!
@@ -471,7 +430,6 @@ void QHostInfo::setErrorString(const QString &str)
     \sa hostName()
 */
 
-#ifndef Q_OS_SYMBIAN
 QHostInfoRunnable::QHostInfoRunnable(QString hn, int i) : toBeLookedUp(hn), id(i)
 {
     setAutoDelete(true);
@@ -699,7 +657,6 @@ void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
     finishedLookups.append(r);
     work();
 }
-#endif
 
 // This function returns immediately when we had a result in the cache, else it will later emit a signal
 QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char *member, bool *valid, int *id)

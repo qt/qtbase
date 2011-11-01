@@ -275,10 +275,6 @@ QLocalSocket *QLocalServer::nextPendingConnection()
         return 0;
     QLocalSocket *nextSocket = d->pendingConnections.dequeue();
 #ifndef QT_LOCALSOCKET_TCP
-#ifdef Q_OS_SYMBIAN
-    if(!d->socketNotifier)
-        return nextSocket;
-#endif
     if (d->pendingConnections.size() <= d->maxPendingConnections)
 #ifndef Q_OS_WIN
         d->socketNotifier->setEnabled(true);

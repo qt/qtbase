@@ -20,15 +20,11 @@ SOURCES += kernel/qauthenticator.cpp \
            kernel/qnetworkproxy.cpp \
 	   kernel/qnetworkinterface.cpp
 
-symbian: SOURCES += kernel/qhostinfo_symbian.cpp kernel/qnetworkinterface_symbian.cpp
-unix:!symbian:SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+unix:SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 win32:SOURCES += kernel/qhostinfo_win.cpp kernel/qnetworkinterface_win.cpp
 integrity:SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
 mac:LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation
 mac:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
-else:symbian:SOURCES += kernel/qnetworkproxy_symbian.cpp
 else:SOURCES += kernel/qnetworkproxy_generic.cpp
-
-symbian: LIBS += -lcommsdat
