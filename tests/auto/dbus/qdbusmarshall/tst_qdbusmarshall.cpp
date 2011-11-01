@@ -167,7 +167,6 @@ void tst_QDBusMarshall::sendBasic_data()
 
     // basic types:
     QTest::newRow("bool") << QVariant(false) << "b" << "false";
-#if 1
     QTest::newRow("bool2") << QVariant(true) << "b" << "true";
     QTest::newRow("byte") << qVariantFromValue(uchar(1)) << "y" << "1";
     QTest::newRow("int16") << qVariantFromValue(short(2)) << "n" << "2";
@@ -185,7 +184,6 @@ void tst_QDBusMarshall::sendBasic_data()
 
     if (fileDescriptorPassing)
         QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
-#endif
 }
 
 void tst_QDBusMarshall::sendVariant_data()
