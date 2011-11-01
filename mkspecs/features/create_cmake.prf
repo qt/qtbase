@@ -1,0 +1,100 @@
+
+defineReplace(cmakeModuleName) {
+    _module = $$1
+    _name = $$eval(QT.$${_module}.name)
+    cmake_module_name = $$replace(_name, ^Qt, )
+    return ($$cmake_module_name)
+}
+
+defineReplace(cmakeModuleList) {
+    variable = $$1
+    out =
+    for(v, variable) {
+        out += $$cmakeModuleName($$v)
+    }
+    return ($$join(out, ";"))
+}
+
+CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
+
+CMAKE_MODULE_DEPS = $$cmakeModuleList($$eval(QT.$${MODULE}.depends))
+CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5")
+!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5$${CMAKE_PARTIAL_MODULE_DEPS}"
+
+CMAKE_INCLUDE_DIR = include
+CMAKE_LIBS = $$eval(QT.$${MODULE}.libs)
+CMAKE_LIB_DIR = $$replace(CMAKE_LIBS, ^.*/, )
+CMAKE_BINS = $$eval(QT.$${MODULE}.bins)
+CMAKE_BIN_DIR = $$replace(CMAKE_BINS, ^.*/, )
+
+CMAKE_RELATIVE_INSTALL_DIR = "../../../"
+
+macx {
+    CONFIG(qt_framework, qt_framework|qt_no_framework) {
+        CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
+        CMAKE_LIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
+        CMAKE_BUILD_IS_FRAMEWORK = "true"
+    } else {
+        CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.$$eval(QT.$${MODULE}.VERSION).dylib
+        CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.$$eval(QT.$${MODULE}.VERSION).dylib
+    }
+} else:win32 {
+    CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}d$$eval(QT.$${MODULE}.MAJOR_VERSION).dll
+    CMAKE_LIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}$$eval(QT.$${MODULE}.MAJOR_VERSION).dll
+    CMAKE_IMPLIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}d$$eval(QT.$${MODULE}.MAJOR_VERSION).lib
+    CMAKE_IMPLIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}$$eval(QT.$${MODULE}.MAJOR_VERSION).lib
+} else {
+    CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.so.$$eval(QT.$${MODULE}.VERSION)
+    CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.so.$$eval(QT.$${MODULE}.VERSION)
+}
+
+debug_type =
+release_type =
+
+debug_and_release|debug:debug_type = debug
+debug_and_release|release:release_type = release
+
+INSTALLS += cmake_qt5_module_files
+
+cmake_config_file.input = $$PWD/../cmake/Qt5BasicConfig.cmake.in
+cmake_config_file.output = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
+
+cmake_config_version_file.input = $$PWD/../cmake/Qt5ConfigVersion.cmake.in
+cmake_config_version_file.output = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake
+
+QMAKE_SUBSTITUTES += \
+    cmake_config_file \
+    cmake_config_version_file
+
+cmake_qt5_module_files.files = \
+    $$cmake_config_file.output \
+    $$cmake_config_version_file.output
+
+cmake_extras_file.input = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake.in
+exists($$cmake_extras_file.input) {
+
+    CMAKE_MODULE_EXTRAS = "true"
+    cmake_extras_file.output = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake
+
+    QMAKE_SUBSTITUTES += cmake_extras_file
+
+    cmake_qt5_module_files.files += \
+        $$cmake_extras_file.output
+}
+
+cmake_macros_file = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
+exists($$cmake_macros_file) {
+    CMAKE_MODULE_MACROS = "true"
+    cmake_qt5_module_files.files += $$cmake_macros_file
+
+    CMAKE_MACROS_FILE_SOURCE = $$_PRO_FILE_PWD_/Qt5$${CMAKE_MODULE_NAME}Macros.cmake
+    CMAKE_MACROS_FILE_DESTINATION = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}
+
+    CMAKE_MACROS_FILE_SOURCE ~= s,[/\\\\],$$QMAKE_DIR_SEP,
+    CMAKE_MACROS_FILE_DESTINATION ~= s,[/\\\\],$$QMAKE_DIR_SEP,
+
+    system($$QMAKE_MKDIR \"$$CMAKE_MACROS_FILE_DESTINATION\")
+    system($$QMAKE_COPY \"$$CMAKE_MACROS_FILE_SOURCE\" \"$$CMAKE_MACROS_FILE_DESTINATION\")
+}
+
+cmake_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}

@@ -1,0 +1,4 @@
+
+set(Qt5Gui_PLUGIN_TYPES imageformats)
+
+set(Qt5_IMAGEFORMATS_PLUGINS qgif qjpeg qmng qico qtiff)

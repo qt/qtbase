@@ -4,6 +4,7 @@ QT.widgets.MINOR_VERSION = 0
 QT.widgets.PATCH_VERSION = 0
 
 QT.widgets.name = QtWidgets
+QT.widgets.bins = $$QT_MODULE_BIN_BASE
 QT.widgets.includes = $$QT_MODULE_INCLUDE_BASE/QtWidgets
 QT.widgets.private_includes = $$QT_MODULE_INCLUDE_BASE/QtWidgets/$$QT.widgets.VERSION
 QT.widgets.sources = $$QT_MODULE_BASE/src/widgets
