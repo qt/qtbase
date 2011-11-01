@@ -1729,8 +1729,8 @@ template <> class QStaticAssertFailure<true> {};
 
 #define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
 #define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
-#define Q_STATIC_ASSERT(...) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<bool(__VA_ARGS__)>)}
+#define Q_STATIC_ASSERT(Condition) \
+    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<bool(Condition)>)}
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
 Q_CORE_EXPORT void qBadAlloc();

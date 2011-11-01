@@ -319,8 +319,9 @@ struct Template
 
 struct MyTemplate
 {
-    Q_STATIC_ASSERT(Template<TypeDef, int>::True);
-    Q_STATIC_ASSERT(!!Template<TypeDef, int>::True);
+    static const bool Value = Template<TypeDef, int>::True;
+    Q_STATIC_ASSERT(Value);
+    Q_STATIC_ASSERT(!!Value);
 };
 
 void tst_QGlobal::qstaticassert()
