@@ -3,6 +3,7 @@ SUBDIRS=\
    qsslcertificate \
    qsslcipher \
    qsslerror \
-   qsslsocket \
    qsslkey \
-
+   qsslsocket \
+   qsslsocket_onDemandCertificates_member \
+   qsslsocket_onDemandCertificates_static \

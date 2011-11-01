@@ -48,7 +48,7 @@
 
 #include "private/qhostinfo_p.h"
 
-#include "../network-settings.h"
+#include "../../../network-settings.h"
 
 #ifndef QT_NO_OPENSSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
@@ -62,15 +62,15 @@ public:
 };
 #endif
 
-class tst_QSslSocket_onDemandCertificates_static : public QObject
+class tst_QSslSocket_onDemandCertificates_member : public QObject
 {
     Q_OBJECT
 
     int proxyAuthCalled;
 
 public:
-    tst_QSslSocket_onDemandCertificates_static();
-    virtual ~tst_QSslSocket_onDemandCertificates_static();
+    tst_QSslSocket_onDemandCertificates_member();
+    virtual ~tst_QSslSocket_onDemandCertificates_member();
 
 #ifndef QT_NO_OPENSSL
     QSslSocketPtr newSocket();
@@ -84,18 +84,18 @@ public slots:
 
 #ifndef QT_NO_OPENSSL
 private slots:
-    void onDemandRootCertLoadingStaticMethods();
+    void onDemandRootCertLoadingMemberMethods();
 
 private:
     QSslSocket *socket;
 #endif // QT_NO_OPENSSL
 };
 
-tst_QSslSocket_onDemandCertificates_static::tst_QSslSocket_onDemandCertificates_static()
+tst_QSslSocket_onDemandCertificates_member::tst_QSslSocket_onDemandCertificates_member()
 {
 }
 
-tst_QSslSocket_onDemandCertificates_static::~tst_QSslSocket_onDemandCertificates_static()
+tst_QSslSocket_onDemandCertificates_member::~tst_QSslSocket_onDemandCertificates_member()
 {
 }
 
@@ -111,7 +111,7 @@ enum ProxyTests {
     AuthMask = 0xf0
 };
 
-void tst_QSslSocket_onDemandCertificates_static::initTestCase_data()
+void tst_QSslSocket_onDemandCertificates_member::initTestCase_data()
 {
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
@@ -126,7 +126,7 @@ void tst_QSslSocket_onDemandCertificates_static::initTestCase_data()
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm);
 }
 
-void tst_QSslSocket_onDemandCertificates_static::init()
+void tst_QSslSocket_onDemandCertificates_member::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
@@ -161,13 +161,13 @@ void tst_QSslSocket_onDemandCertificates_static::init()
     qt_qhostinfo_clear_cache();
 }
 
-void tst_QSslSocket_onDemandCertificates_static::cleanup()
+void tst_QSslSocket_onDemandCertificates_member::cleanup()
 {
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
 }
 
 #ifndef QT_NO_OPENSSL
-QSslSocketPtr tst_QSslSocket_onDemandCertificates_static::newSocket()
+QSslSocketPtr tst_QSslSocket_onDemandCertificates_member::newSocket()
 {
     QSslSocket *socket = new QSslSocket;
 
@@ -180,7 +180,7 @@ QSslSocketPtr tst_QSslSocket_onDemandCertificates_static::newSocket()
 }
 #endif
 
-void tst_QSslSocket_onDemandCertificates_static::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
+void tst_QSslSocket_onDemandCertificates_member::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
 {
     ++proxyAuthCalled;
     auth->setUser("qsockstest");
@@ -189,46 +189,40 @@ void tst_QSslSocket_onDemandCertificates_static::proxyAuthenticationRequired(con
 
 #ifndef QT_NO_OPENSSL
 
-void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMethods()
+void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMethods()
 {
     QString host("qt.nokia.com");
 
     // not using any root certs -> should not work
-    QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
+    QSslSocketPtr socket2 = newSocket();
+    this->socket = socket2;
+    socket2->setCaCertificates(QList<QSslCertificate>());
+    socket2->connectToHostEncrypted(host, 443);
+    QVERIFY(!socket2->waitForEncrypted());
+
+    // default: using on demand loading -> should work
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
     socket->connectToHostEncrypted(host, 443);
-    QVERIFY(!socket->waitForEncrypted());
-
-    // using system root certs -> should work
-    QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
-    QSslSocketPtr socket2 = newSocket();
-    this->socket = socket2;
-    socket2->connectToHostEncrypted(host, 443);
     QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
-    QVERIFY2(socket2->waitForEncrypted(), qPrintable(socket2->errorString()));
+    QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
 
     // not using any root certs again -> should not work
-    QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocketPtr socket3 = newSocket();
     this->socket = socket3;
+    socket3->setCaCertificates(QList<QSslCertificate>());
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
 
-    QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
-
-    // setting empty default configuration -> should not work
-    QSslConfiguration conf;
-    QSslConfiguration originalDefaultConf = QSslConfiguration::defaultConfiguration();
-    QSslConfiguration::setDefaultConfiguration(conf);
+    // setting empty SSL configuration explicitly -> should not work
     QSslSocketPtr socket4 = newSocket();
     this->socket = socket4;
+    socket4->setSslConfiguration(QSslConfiguration());
     socket4->connectToHostEncrypted(host, 443);
-    QVERIFY(!socket4->waitForEncrypted(4000));
-    QSslConfiguration::setDefaultConfiguration(originalDefaultConf); // restore old behaviour for run with proxies etc.
+    QVERIFY(!socket4->waitForEncrypted());
 }
 
 #endif // QT_NO_OPENSSL
 
-QTEST_MAIN(tst_QSslSocket_onDemandCertificates_static)
-#include "tst_qsslsocket_onDemandCertificates_static.moc"
+QTEST_MAIN(tst_QSslSocket_onDemandCertificates_member)
+#include "tst_qsslsocket_onDemandCertificates_member.moc"
