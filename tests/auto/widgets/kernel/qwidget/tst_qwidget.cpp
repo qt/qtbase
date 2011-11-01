@@ -3894,17 +3894,6 @@ void tst_QWidget::setMaximumSize()
     w.setMaximumSize(defaultSize + QSize(50, 50));
     QCOMPARE(w.size(), defaultSize + QSize(50, 50));
     QVERIFY(!w.testAttribute(Qt::WA_Resized));
-
-#if 0
-    //we don't enforce maximum size on show, apparently
-    QSize nonDefaultSize = defaultSize - QSize(5,5);
-    w.setMaximumSize(nonDefaultSize);
-    w.show();
-    QTest::qWait(50);
-    qDebug() << nonDefaultSize << w.size();
-    QVERIFY(w.height() <= nonDefaultSize.height());
-    QVERIFY(w.width() <= nonDefaultSize.width());
-#endif
 }
 
 void tst_QWidget::setFixedSize()
