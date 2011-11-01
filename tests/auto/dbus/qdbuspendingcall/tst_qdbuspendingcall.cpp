@@ -86,7 +86,6 @@ private Q_SLOTS:
     void initTestCase();
     void waitForFinished();
     void waitForFinished_error();
-//    void setReplyCallback();
     void watcher();
     void watcher_error();
     void watcher_waitForFinished();
@@ -259,38 +258,6 @@ void tst_QDBusPendingCall::callWithCallback_localLoop_errorReply()
     QCOMPARE(errorArgument.name(), QString::fromLatin1("dbuspendingcall_error"));
     QVERIFY(callbackArgument.isEmpty());
 }
-
-#if 0
-// This function was removed from the public API
-void tst_QDBusPendingCall::setReplyCallback()
-{
-    QDBusPendingCall ac = sendMessage();
-    QVERIFY(!ac.isFinished());
-    QVERIFY(!ac.isError());
-    QVERIFY(ac.reply().type() == QDBusMessage::InvalidMessage);
-
-    callCount = 0;
-    callbackArgument.clear();
-    QVERIFY(ac.setReplyCallback(this, SLOT(callback(const QStringList &))));
-    QVERIFY(callCount == 0);
-    QVERIFY(callbackArgument.isEmpty());
-
-    QTestEventLoop::instance().enterLoop(2);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-
-    QVERIFY(ac.isFinished());
-    QVERIFY(!ac.isError());
-
-    QCOMPARE(callCount, 1);
-    QCOMPARE(slotCalled, (int)CallbackCalled);
-    QVERIFY(!callbackArgument.isEmpty());
-    QVERIFY(callbackArgument.contains(conn.baseService()));
-
-    const QVariantList args = ac.reply().arguments();
-    QVERIFY(!args.isEmpty());
-    QCOMPARE(args.at(0).toStringList(), callbackArgument);
-}
-#endif
 
 void tst_QDBusPendingCall::watcher()
 {
