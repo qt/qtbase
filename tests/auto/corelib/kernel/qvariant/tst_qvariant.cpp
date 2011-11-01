@@ -3055,6 +3055,34 @@ struct MyMovable
 
 int MyMovable::count  = 0;
 
+struct MyNotMovable
+{
+    static int count;
+    MyNotMovable *that;
+    MyNotMovable() : that(this) { count++; }
+    ~MyNotMovable() { QCOMPARE(that, this);  count--; }
+    MyNotMovable(const MyNotMovable &o) : that(this) { QCOMPARE(o.that, &o); count++; }
+    MyNotMovable &operator=(const MyNotMovable &o) {
+        bool ok = that == this && o.that == &o;
+        if (!ok) qFatal("MyNotMovable has been moved");
+        return *this;
+    }
+
+    //PLAY_WITH_VARIANT test that they are equal, but never that they are not equal
+    // so it would be fine just to always return true
+    bool operator==(const MyNotMovable &o) const
+    {
+        bool ok = that == this && o.that == &o;
+        if (!ok) qFatal("MyNotMovable has been moved");
+        return ok;
+    }
+};
+
+int MyNotMovable::count  = 0;
+
+struct MyShared : QSharedData {
+    MyMovable movable;
+};
 
 QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(MyMovable, Q_MOVABLE_TYPE);
@@ -3064,12 +3092,16 @@ Q_DECLARE_METATYPE(QList<QSize>)
 Q_DECLARE_METATYPE(MyPrimitive)
 Q_DECLARE_METATYPE(MyData)
 Q_DECLARE_METATYPE(MyMovable)
+Q_DECLARE_METATYPE(MyNotMovable)
 Q_DECLARE_METATYPE(QList<MyPrimitive>)
 Q_DECLARE_METATYPE(QList<MyData>)
 Q_DECLARE_METATYPE(QList<MyMovable>)
+Q_DECLARE_METATYPE(QList<MyNotMovable>)
 Q_DECLARE_METATYPE(MyPrimitive *)
 Q_DECLARE_METATYPE(MyData *)
 Q_DECLARE_METATYPE(MyMovable *)
+Q_DECLARE_METATYPE(MyNotMovable *)
+Q_DECLARE_METATYPE(QSharedDataPointer<MyShared>)
 
 
 void tst_QVariant::moreCustomTypes()
@@ -3125,6 +3157,18 @@ void tst_QVariant::moreCustomTypes()
     }
     QCOMPARE(MyMovable::count, 0);
 
+    QCOMPARE(MyNotMovable::count, 0);
+    {
+        MyNotMovable d;
+        PLAY_WITH_VARIANT(d, false, QString(), 0, false);
+        PLAY_WITH_VARIANT(&d, false, QString(), 0, false);
+        QList<MyNotMovable> l;
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
+        l << MyNotMovable() << d;
+        PLAY_WITH_VARIANT(l, false, QString(), 0, false);
+    }
+    QCOMPARE(MyNotMovable::count, 0);
+
     {
         PLAY_WITH_VARIANT(12.12, false, "12.12", 12.12, true);
         PLAY_WITH_VARIANT(12.12f, false, "12.12", 12.12f, true);
@@ -3170,6 +3214,13 @@ void tst_QVariant::moreCustomTypes()
 
         PLAY_WITH_VARIANT(v5, false, QString(), 0, false);
     }
+
+    QCOMPARE(MyMovable::count, 0);
+    {
+        QSharedDataPointer<MyShared> d(new MyShared);
+        PLAY_WITH_VARIANT(d, false, QString(), 0, false);
+    }
+    QCOMPARE(MyMovable::count, 0);
 }
 
 
