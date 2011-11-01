@@ -63,12 +63,12 @@ wince*::LIBS += libcmt.lib \
     commctrl.lib \
     coredll.lib \
     winsock.lib
-mac:LIBS += -framework IOKit \
-    -framework Security
-!qpa:mac: LIBS += -framework ApplicationServices
-qpa:mac: {
+
+mac {
+    LIBS += -framework IOKit -framework Security
     contains(QT_CONFIG, coreservices) {
       LIBS_PRIVATE += -framework CoreServices
+      LIBS += -framework ApplicationServices
     } else {
       LIBS_PRIVATE += -framework CoreFoundation
     }
