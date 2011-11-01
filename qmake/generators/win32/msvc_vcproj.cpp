@@ -367,6 +367,12 @@ QStringList VcprojGenerator::collectSubDirs(QMakeProject *proj)
     QStringList tmp_proj_subdirs = proj->variables()["SUBDIRS"];
     for(int x = 0; x < tmp_proj_subdirs.size(); ++x) {
         QString tmpdir = tmp_proj_subdirs.at(x);
+        const QString tmpdirConfig = tmpdir + QStringLiteral(".CONFIG");
+        if (!proj->isEmpty(tmpdirConfig)) {
+            const QStringList config = proj->variables().value(tmpdirConfig);
+            if (config.contains(QStringLiteral("no_default_target")))
+                continue; // Ignore this sub-dir
+        }
         if(!proj->isEmpty(tmpdir + ".file")) {
             if(!proj->isEmpty(tmpdir + ".subdir"))
                 warn_msg(WarnLogic, "Cannot assign both file and subdir for subdir %s",
