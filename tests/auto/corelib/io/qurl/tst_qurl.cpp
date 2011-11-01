@@ -2944,12 +2944,6 @@ void tst_QUrl::hosts_data()
     QTest::newRow("longer-ipv6-literal-v4compat") << QString("http://[fec0:8000:4000:8002:1000:ffff:200.100.50.250]")
                                                   << QString("fec0:8000:4000:8002:1000:ffff:200.100.50.250");
 
-#if 0
-    // this is actually invalid
-    QTest::newRow("mac-literal") << QString("obex://[00:30:1b:b7:21:fb]")
-                                 << QString("00:30:1b:b7:21:fb");
-#endif
-
     // normal hostnames
     QTest::newRow("normal") << QString("http://intern") << QString("intern");
     QTest::newRow("normal2") << QString("http://qt.nokia.com") << QString("qt.nokia.com");
