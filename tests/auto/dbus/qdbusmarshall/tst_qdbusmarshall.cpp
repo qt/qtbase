@@ -726,12 +726,6 @@ void tst_QDBusMarshall::sendArgument_data()
     arg << 1 << 2U << short(-3) << ushort(4) << 5.0 << false;
     arg.endStructure();
     QTest::newRow("structure") << qVariantFromValue(arg) << "(iunqdb)" << int(QDBusArgument::StructureType);
-
-#if 0
-    // this is now unsupported
-    arg << 1 << 2U << short(-3) << ushort(4) << 5.0 << false;
-    QTest::newRow("many-args") << qVariantFromValue(arg) << "(iunqdb)iunqdb";
-#endif
 }
 
 void tst_QDBusMarshall::sendBasic()
