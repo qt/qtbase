@@ -258,6 +258,9 @@ namespace QTest {
 
 void QTestLog::enterTestFunction(const char* function)
 {
+    if (printAvailableTags)
+        return;
+
     QTEST_ASSERT(function);
 
     QTest::TestLoggers::enterTestFunction(function);
@@ -276,6 +279,9 @@ int QTestLog::unhandledIgnoreMessages()
 
 void QTestLog::leaveTestFunction()
 {
+    if (printAvailableTags)
+        return;
+
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
     QTest::TestLoggers::leaveTestFunction();
 }
@@ -294,6 +300,9 @@ void QTestLog::printUnhandledIgnoreMessages()
 
 void QTestLog::addPass(const char *msg)
 {
+    if (printAvailableTags)
+        return;
+
     QTEST_ASSERT(msg);
 
     QTest::TestLoggers::addIncident(QAbstractTestLogger::Pass, msg);
@@ -429,6 +438,13 @@ void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
 void QTestLog::setMaxWarnings(int m)
 {
     QTest::maxWarnings = m <= 0 ? INT_MAX : m + 2;
+}
+
+bool QTestLog::printAvailableTags = false;
+
+void QTestLog::setPrintAvailableTagsMode()
+{
+    printAvailableTags = true;
 }
 
 QT_END_NAMESPACE

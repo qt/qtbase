@@ -93,9 +93,13 @@ public:
 
     static void setMaxWarnings(int max);
 
+    static void setPrintAvailableTagsMode();
+
 private:
     QTestLog();
     ~QTestLog();
+
+    static bool printAvailableTags;
 };
 
 QT_END_NAMESPACE

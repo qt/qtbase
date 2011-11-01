@@ -325,6 +325,8 @@ void tst_Selftests::runSubTest_data()
         << "longstring"
         << "maxwarnings"
         << "multiexec"
+        << "printdatatags"
+        << "printdatatagswithglobaltags"
         << "qexecstringlist"
         << "singleskip"
         << "skip"
@@ -370,6 +372,13 @@ void tst_Selftests::runSubTest_data()
             else if (subtest == "badxml") {
                 arguments << "-eventcounter";
             }
+            else if (subtest == "printdatatags") {
+                arguments << "-datatags";
+            }
+            else if (subtest == "printdatatagswithglobaltags") {
+                arguments << "-datatags";
+            }
+
 
             // These tests don't work right unless logging plain text to
             // standard output, either because they execute multiple test
@@ -386,6 +395,12 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
                 if (subtest == "benchliboptions") {
+                    continue;
+                }
+                if (subtest == "printdatatags") {
+                    continue;
+                }
+                if (subtest == "printdatatagswithglobaltags") {
                     continue;
                 }
                 // `crashes' will not output valid XML on platforms without a crash handler

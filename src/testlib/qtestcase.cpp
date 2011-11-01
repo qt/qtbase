@@ -1015,6 +1015,71 @@ static void qPrintTestSlots(FILE *stream)
     }
 }
 
+static void qPrintDataTags(FILE *stream)
+{
+    // Avoid invoking the actual test functions, and also avoid printing irrelevant output:
+    QTestLog::setPrintAvailableTagsMode();
+
+    // Get global data tags:
+    QTestTable::globalTestTable();
+    invokeMethod(QTest::currentTestObject, "initTestCase_data()");
+    const QTestTable *gTable = QTestTable::globalTestTable();
+
+    const QMetaObject *currTestMetaObj = QTest::currentTestObject->metaObject();
+
+    // Process test functions:
+    for (int i = 0; i < currTestMetaObj->methodCount(); ++i) {
+        QMetaMethod tf = currTestMetaObj->method(i);
+
+        if (isValidSlot(tf)) {
+
+            // Retrieve local tags:
+            QStringList localTags;
+            QTestTable table;
+            char *slot = qstrdup(tf.signature());
+            slot[strlen(slot) - 2] = '\0';
+            QByteArray member;
+            member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
+            QTest::qt_snprintf(member.data(), member.size(), "%s_data()", slot);
+            invokeMethod(QTest::currentTestObject, member.constData());
+            for (int j = 0; j < table.dataCount(); ++j)
+                localTags << QLatin1String(table.testData(j)->dataTag());
+
+            // Print all tag combinations:
+            if (gTable->dataCount() == 0) {
+                if (localTags.count() == 0) {
+                    // No tags at all, so just print the test function:
+                    fprintf(stream, "%s %s\n", currTestMetaObj->className(), slot);
+                } else {
+                    // Only local tags, so print each of them:
+                    for (int k = 0; k < localTags.size(); ++k)
+                        fprintf(
+                            stream, "%s %s %s\n",
+                            currTestMetaObj->className(), slot, localTags.at(k).toLatin1().data());
+                }
+            } else {
+                for (int j = 0; j < gTable->dataCount(); ++j) {
+                    if (localTags.count() == 0) {
+                        // Only global tags, so print the current one:
+                        fprintf(
+                            stream, "%s %s __global__ %s\n",
+                            currTestMetaObj->className(), slot, gTable->testData(j)->dataTag());
+                    } else {
+                        // Local and global tags, so print each of the local ones and
+                        // the current global one:
+                        for (int k = 0; k < localTags.size(); ++k)
+                            fprintf(
+                                stream, "%s %s %s __global__ %s\n", currTestMetaObj->className(), slot,
+                                localTags.at(k).toLatin1().data(), gTable->testData(j)->dataTag());
+                    }
+                }
+            }
+
+            delete[] slot;
+        }
+    }
+}
+
 static int qToInt(char *str)
 {
     char *pEnd;
@@ -1061,6 +1126,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          "\n"
          " Testing options:\n"
          " -functions          : Returns a list of current testfunctions\n"
+         " -datatags           : Returns a list of current data tags.\n"
+         "                       A global data tag is preceded by ' __global__ '.\n"
          " -eventdelay ms      : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
          " -keydelay ms        : Set default delay for keyboard simulation to ms milliseconds\n"
          " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
@@ -1109,6 +1176,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 QTest::printAvailableFunctions = true;
             } else {
                 qPrintTestSlots(stdout);
+                exit(0);
+            }
+        } else if (strcmp(argv[i], "-datatags") == 0) {
+            if (!qml) {
+                qPrintDataTags(stdout);
                 exit(0);
             }
         } else if (strcmp(argv[i], "-txt") == 0) {
