@@ -103,7 +103,7 @@ private slots:
     void filterColumns();
 
     void filterTable();
-//    void filterCurrent();
+    void filterCurrent();
 
     void changeSourceLayout();
     void removeSourceRows_data();
@@ -1492,7 +1492,6 @@ void tst_QSortFilterProxyModel::removeAfterSelect()
     QVERIFY(view.selectionModel()->selectedIndexes().size() > 0); // Should still have a selection
 }
 
-#if 0 // this test is disabled for now
 void tst_QSortFilterProxyModel::filterCurrent()
 {
     QStandardItemModel model(2, 1);
@@ -1511,7 +1510,6 @@ void tst_QSortFilterProxyModel::filterCurrent()
     proxy.setFilterRegExp(QRegExp("^B"));
     QCOMPARE(spy.count(), 2);
 }
-#endif
 
 void tst_QSortFilterProxyModel::changeSourceLayout()
 {
