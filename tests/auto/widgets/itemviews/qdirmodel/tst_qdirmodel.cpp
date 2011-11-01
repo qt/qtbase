@@ -63,10 +63,15 @@ public:
 public slots:
     void initTestCase();
     void cleanupTestCase();
+#ifdef Q_OS_UNIX
     void init();
+#endif
     void cleanup();
 private slots:
     void getSetCheck();
+#ifdef Q_OS_UNIX
+    void unreadable();
+#endif
     /*
     void construct();
     void rowCount();
@@ -158,9 +163,20 @@ void tst_QDirModel::cleanupTestCase()
     current.rmdir(".qtest_hidden");
 }
 
+#ifdef Q_OS_UNIX
 void tst_QDirModel::init()
 {
+    if (QTest::currentTestFunction() == QLatin1String( "unreadable" )) {
+        // Make sure that the unreadable file created by the unreadable()
+        // test function doesn't already exist.
+        QFile unreadableFile(QDir::currentPath() + "qtest_unreadable");
+        if (unreadableFile.exists()) {
+            unreadableFile.remove();
+            QVERIFY(!unreadableFile.exists());
+        }
+    }
 }
+#endif
 
 void tst_QDirModel::cleanup()
 {
@@ -554,23 +570,27 @@ void tst_QDirModel::fileName()
     QCOMPARE(model.fileName(model.index(path)), result);
 }
 
-#if 0
 #ifdef Q_OS_UNIX
 void tst_QDirModel::unreadable()
 {
-    //QFile current("qtest_unreadable");
-    //QVERIFY(current.setPermissions(QFile::WriteOwner));
+    // Create an empty file which has no read permissions (file will be removed by cleanup()).
+    QFile unreadableFile(QDir::currentPath() + "qtest_unreadable");
+    QVERIFY2(unreadableFile.open(QIODevice::WriteOnly | QIODevice::Text), qPrintable(unreadableFile.errorString()));
+    unreadableFile.close();
+    QVERIFY(unreadableFile.exists());
+    QVERIFY2(unreadableFile.setPermissions(QFile::WriteOwner), qPrintable(unreadableFile.errorString()));
 
+    // Check that we can't make a valid model index from an unreadable file.
     QDirModel model;
     QModelIndex index = model.index(QDir::currentPath() + "/qtest_unreadable");
     QVERIFY(!index.isValid());
 
+    // Check that unreadable files are not treated like hidden files.
     QDirModel model2;
     model2.setFilter(model2.filter() | QDir::Hidden);
     index = model2.index(QDir::currentPath() + "/qtest_unreadable");
-    QVERIFY(index.isValid());
+    QVERIFY(!index.isValid());
 }
-#endif
 #endif
 
 void tst_QDirModel::filePath()
