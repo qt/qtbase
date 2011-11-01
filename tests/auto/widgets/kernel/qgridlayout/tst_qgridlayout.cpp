@@ -458,19 +458,9 @@ void tst_QGridLayout::spacingAndSpacers()
 
     rightChild.show();
 
-#if 0
-    leftChild.setMaximumWidth(200);
-    rightChild.setMaximumWidth(200);
-
-    QApplication::sendPostedEvents(0, 0);
-    QCOMPARE(widget.maximumWidth(), leftChild.maximumWidth() + rightChild.maximumWidth());
-#endif
-
     layout.removeWidget(&rightChild);
     QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.sizeHint(), expectedSizeHint);
-
-
 }
 
 
