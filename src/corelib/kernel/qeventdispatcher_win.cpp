@@ -425,7 +425,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
                || (message == WM_TIMER
                    && d->sendPostedEventsWindowsTimerId != 0
                    && wp == (uint)d->sendPostedEventsWindowsTimerId)) {
-        int localSerialNumber = d->serialNumber;
+        const int localSerialNumber = d->serialNumber.load();
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
@@ -448,7 +448,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         if (q) {
             MSG *msg = (MSG *) lp;
             QEventDispatcherWin32Private *d = q->d_func();
-            int localSerialNumber = d->serialNumber;
+            const int localSerialNumber = d->serialNumber.load();
             if (HIWORD(GetQueueStatus(QS_TIMER | QS_INPUT | QS_RAWINPUT)) == 0) {
                 // no more input or timer events in the message queue, we can allow posted events to be sent normally now
                 if (d->sendPostedEventsWindowsTimerId != 0) {
