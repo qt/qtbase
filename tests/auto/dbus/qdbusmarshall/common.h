@@ -721,35 +721,3 @@ template<> bool compare(const QVariant &v1, const QVariant &v2)
         return false;           // unknown type
     }
 }
-
-#if 0
-bool compare(const QVariantList &l1, const QVariantList &l2)
-{
-    if (l1.count() != l2.size())
-        return false;
-    QVariantList::ConstIterator i1 = l1.constBegin();
-    QVariantList::ConstIterator i2 = l2.constBegin();
-    QVariantList::ConstIterator end = l1.constEnd();
-    for ( ; i1 != end; ++i1, ++i2) {
-        if (!compare(*i1, *i2))
-            return false;
-    }
-    return true;
-}
-
-bool compare(const QVariantMap &m1, const QVariantMap &m2)
-{
-    if (m1.count() != m2.size())
-        return false;
-    QVariantMap::ConstIterator i1 = m1.constBegin();
-    QVariantMap::ConstIterator end = m1.constEnd();
-    for ( ; i1 != end; ++i1) {
-        QVariantMap::ConstIterator i2 = m2.find(i1.key());
-        if (i2 == m2.constEnd())
-            return false;
-        if (!compare(*i1, *i2))
-            return false;
-    }
-    return true;
-}
-#endif
