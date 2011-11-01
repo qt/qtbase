@@ -10,6 +10,7 @@ MODULE_PRI = ../modules/qt_v8.pri
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 
 load(qt_module_config)
+CONFIG += warn_off
 
 # Remove includepaths that were added by qt_module_config.
 # These cause compilation of V8 to fail because they appear before
