@@ -257,11 +257,11 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 #if !defined QT_NO_IM
     Q_Q(QLineEdit);
     if ( control->composeMode() ) {
-	int tmp_cursor = xToPos(e->pos().x());
-	int mousePos = tmp_cursor - control->cursor();
-	if ( mousePos < 0 || mousePos > control->preeditAreaText().length() ) {
+        int tmp_cursor = xToPos(e->pos().x());
+        int mousePos = tmp_cursor - control->cursor();
+        if ( mousePos < 0 || mousePos > control->preeditAreaText().length() ) {
             mousePos = -1;
-	    // don't send move events outside the preedit area
+            // don't send move events outside the preedit area
             if ( e->type() == QEvent::MouseMove )
                 return true;
         }
