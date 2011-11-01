@@ -414,20 +414,18 @@ void tst_QSortFilterProxyModel::sortHierarchy_data()
     QTest::addColumn<QStringList>("initial");
     QTest::addColumn<QStringList>("expected");
 
-#if 1
     QTest::newRow("flat ascending")
         << static_cast<int>(Qt::AscendingOrder)
         << (QStringList()
             << "c" << "f" << "d" << "e" << "a" << "b")
         << (QStringList()
             << "a" << "b" << "c" << "d" << "e" << "f");
-#endif
+
     QTest::newRow("simple hierarchy")
         << static_cast<int>(Qt::AscendingOrder)
         << (QStringList() << "a" << "<" << "b" << "<" << "c" << ">" << ">")
         << (QStringList() << "a" << "<" << "b" << "<" << "c" << ">" << ">");
 
-#if 1
     QTest::newRow("hierarchical ascending")
         << static_cast<int>(Qt::AscendingOrder)
         << (QStringList()
@@ -488,7 +486,6 @@ void tst_QSortFilterProxyModel::sortHierarchy_data()
                           << ">"
                    << "i"
                    << ">");
-#endif
 }
 
 void tst_QSortFilterProxyModel::sortHierarchy()
