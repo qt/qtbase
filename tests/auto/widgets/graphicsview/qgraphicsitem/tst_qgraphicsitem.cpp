@@ -5492,7 +5492,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QCOMPARE(scene.itemAt(75, 100), (QGraphicsItem *)child1);
     QCOMPARE(scene.itemAt(100, 75), (QGraphicsItem *)child1);
 
-#if 1
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     image.fill(0);
     QPainter painter(&image);
@@ -5510,11 +5509,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QCOMPARE(image.pixel(70, 50), QColor(0, 255, 0).rgba());
     QCOMPARE(image.pixel(50, 60), QColor(255, 0, 0).rgba());
     QCOMPARE(image.pixel(60, 50), QColor(255, 0, 0).rgba());
-#else
-    QGraphicsView view(&scene);
-    view.show();
-    QTest::qWait(5000);
-#endif
 }
 
 void tst_QGraphicsItem::itemClipsChildrenToShape3()
