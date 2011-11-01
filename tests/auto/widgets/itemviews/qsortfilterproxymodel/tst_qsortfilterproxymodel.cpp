@@ -1351,49 +1351,6 @@ void tst_QSortFilterProxyModel::filterHierarchy_data()
     QTest::newRow("simple hierarchy") << "b.*z"
         << (QStringList() << "baz" << "<" << "boz" << "<" << "moo" << ">" << ">")
         << (QStringList() << "baz" << "<" << "boz" << ">");
-#if 0
-    QTest::newRow("hierarchical")
-        << (QStringList()
-            << "a"
-                   << "<"
-                   << "x"
-                   << "y"
-                   << "z"
-                   << ">"
-            << "b"
-                   << "<"
-                   << "k"
-                          << "<"
-                          << "7"
-                          << "8"
-                          << "9"
-                          << ">"
-                   << "l"
-                   << "m"
-                   << ">"
-            << "c"
-                   << "<"
-                   << "g"
-                   << "h"
-                          << "<"
-                          << "0"
-                          << "1"
-                          << "2"
-                          << ">"
-                   << "i"
-                   << ">")
-        << (QStringList()
-            << "a"
-                   << "<"
-                   << "x"
-                   << "z"
-                   << ">"
-            << "c"
-                   << "<"
-                   << "g"
-                   << "i"
-                   << ">");
-#endif
 }
 
 void tst_QSortFilterProxyModel::filterHierarchy()
