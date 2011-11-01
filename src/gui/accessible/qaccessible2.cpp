@@ -198,13 +198,27 @@ QT_BEGIN_NAMESPACE
     \sa actionNames()
 */
 
-const QString QAccessibleActionInterface::PressAction = QStringLiteral(QT_TR_NOOP("Press"));
-const QString QAccessibleActionInterface::IncreaseAction = QStringLiteral(QT_TR_NOOP("Increase"));
-const QString QAccessibleActionInterface::DecreaseAction = QStringLiteral(QT_TR_NOOP("Decrease"));
-const QString QAccessibleActionInterface::ShowMenuAction = QStringLiteral(QT_TR_NOOP("ShowMenu"));
-const QString QAccessibleActionInterface::SetFocusAction = QStringLiteral(QT_TR_NOOP("SetFocus"));
-const QString QAccessibleActionInterface::CheckAction = QStringLiteral(QT_TR_NOOP("Check"));
-const QString QAccessibleActionInterface::UncheckAction = QStringLiteral(QT_TR_NOOP("Uncheck"));
+struct QAccessibleActionStrings
+{
+    QAccessibleActionStrings() :
+        pressAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Press"))),
+        increaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Increase"))),
+        decreaseAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Decrease"))),
+        showMenuAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "ShowMenu"))),
+        setFocusAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "SetFocus"))),
+        checkAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Check"))),
+        uncheckAction(QStringLiteral(QT_TRANSLATE_NOOP("QAccessibleActionInterface", "Uncheck"))) {}
+
+    const QString pressAction;
+    const QString increaseAction;
+    const QString decreaseAction;
+    const QString showMenuAction;
+    const QString setFocusAction;
+    const QString checkAction;
+    const QString uncheckAction;
+};
+
+Q_GLOBAL_STATIC(QAccessibleActionStrings, accessibleActionStrings)
 
 QString QAccessibleActionInterface::localizedActionName(const QString &actionName) const
 {
@@ -213,24 +227,59 @@ QString QAccessibleActionInterface::localizedActionName(const QString &actionNam
 
 QString QAccessibleActionInterface::localizedActionDescription(const QString &actionName) const
 {
-    if (actionName == PressAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Triggers the action");
-    else if (actionName == IncreaseAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Increase the value");
-    else if (actionName == DecreaseAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Decrease the value");
-    else if (actionName == ShowMenuAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Shows the menu");
-    else if (actionName == SetFocusAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Sets the focus");
-    else if (actionName == CheckAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Checks the checkbox");
-    else if (actionName == UncheckAction)
-        return QCoreApplication::translate("QAccessibleActionInterface", "Unchecks the checkbox");
+    const QAccessibleActionStrings *strings = accessibleActionStrings();
+    if (actionName == strings->pressAction)
+        return tr("Triggers the action");
+    else if (actionName == strings->increaseAction)
+        return tr("Increase the value");
+    else if (actionName == strings->decreaseAction)
+        return tr("Decrease the value");
+    else if (actionName == strings->showMenuAction)
+        return tr("Shows the menu");
+    else if (actionName == strings->setFocusAction)
+        return tr("Sets the focus");
+    else if (actionName == strings->checkAction)
+        return tr("Checks the checkbox");
+    else if (actionName == strings->uncheckAction)
+        return tr("Unchecks the checkbox");
 
     return QString();
 }
 
+const QString &QAccessibleActionInterface::pressAction()
+{
+    return accessibleActionStrings()->pressAction;
+}
+
+const QString &QAccessibleActionInterface::increaseAction()
+{
+    return accessibleActionStrings()->increaseAction;
+}
+
+const QString &QAccessibleActionInterface::decreaseAction()
+{
+    return accessibleActionStrings()->decreaseAction;
+}
+
+const QString &QAccessibleActionInterface::showMenuAction()
+{
+    return accessibleActionStrings()->showMenuAction;
+}
+
+const QString &QAccessibleActionInterface::setFocusAction()
+{
+    return accessibleActionStrings()->setFocusAction;
+}
+
+const QString &QAccessibleActionInterface::checkAction()
+{
+    return accessibleActionStrings()->checkAction;
+}
+
+const QString &QAccessibleActionInterface::uncheckAction()
+{
+    return accessibleActionStrings()->uncheckAction;
+}
 
 /*!
   \internal

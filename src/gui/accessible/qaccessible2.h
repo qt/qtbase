@@ -339,13 +339,13 @@ public:
     virtual void doAction(const QString &actionName) = 0;
     virtual QStringList keyBindingsForAction(const QString &actionName) const = 0;
 
-    static const QString PressAction;
-    static const QString IncreaseAction;
-    static const QString DecreaseAction;
-    static const QString ShowMenuAction;
-    static const QString SetFocusAction;
-    static const QString CheckAction;
-    static const QString UncheckAction;
+    static const QString &pressAction();
+    static const QString &increaseAction();
+    static const QString &decreaseAction();
+    static const QString &showMenuAction();
+    static const QString &setFocusAction();
+    static const QString &checkAction();
+    static const QString &uncheckAction();
 };
 
 class Q_GUI_EXPORT QAccessibleImageInterface : public QAccessible2Interface

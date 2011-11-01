@@ -444,9 +444,9 @@ QStringList QAccessibleMenuItem::actionNames() const
         return actions;
 
     if (m_action->menu()) {
-        actions <<  ShowMenuAction;
+        actions << showMenuAction();
     } else {
-        actions << PressAction;
+        actions << pressAction();
     }
     return actions;
 }
@@ -456,9 +456,9 @@ void QAccessibleMenuItem::doAction(const QString &actionName)
     if (!m_action->isEnabled())
         return;
 
-    if (actionName == PressAction) {
+    if (actionName == pressAction()) {
         m_action->trigger();
-    } else if (actionName == ShowMenuAction) {
+    } else if (actionName == showMenuAction()) {
         if (QMenuBar *bar = qobject_cast<QMenuBar*>(owner())) {
             if (m_action->menu() && m_action->menu()->isVisible()) {
                 m_action->menu()->hide();

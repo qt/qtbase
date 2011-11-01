@@ -1508,12 +1508,12 @@ public:
 
     QStringList actionNames() const
     {
-        return QStringList() << PressAction;
+        return QStringList(pressAction());
     }
 
     void doAction(const QString &actionName)
     {
-        if (actionName == PressAction)
+        if (actionName == pressAction())
             m_parent->setCurrentIndex(m_index);
     }
 
@@ -1726,19 +1726,19 @@ QString QAccessibleComboBox::text(Text t, int) const
 
 QStringList QAccessibleComboBox::actionNames() const
 {
-    return QStringList() << ShowMenuAction;
+    return QStringList(showMenuAction());
 }
 
 QString QAccessibleComboBox::localizedActionDescription(const QString &actionName) const
 {
-    if (actionName == ShowMenuAction)
+    if (actionName == showMenuAction())
         return QComboBox::tr("Open the combo box selection popup");
     return QString();
 }
 
 void QAccessibleComboBox::doAction(const QString &actionName)
 {
-    if (actionName == ShowMenuAction) {
+    if (actionName == showMenuAction()) {
         if (comboBox()->view()->isVisible()) {
             comboBox()->hidePopup();
         } else {

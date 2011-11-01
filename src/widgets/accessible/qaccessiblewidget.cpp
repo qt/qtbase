@@ -824,7 +824,7 @@ QStringList QAccessibleWidget::actionNames() const
     QStringList names;
     if (widget()->isEnabled()) {
         if (widget()->focusPolicy() != Qt::NoFocus)
-            names << SetFocusAction;
+            names << setFocusAction();
     }
     return names;
 }
@@ -834,7 +834,7 @@ void QAccessibleWidget::doAction(const QString &actionName)
     if (!widget()->isEnabled())
         return;
 
-    if (actionName == SetFocusAction) {
+    if (actionName == setFocusAction()) {
         if (widget()->isWindow())
             widget()->activateWindow();
         widget()->setFocus();

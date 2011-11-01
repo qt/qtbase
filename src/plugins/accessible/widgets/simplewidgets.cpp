@@ -166,23 +166,23 @@ QStringList QAccessibleButton::actionNames() const
     if (widget()->isEnabled()) {
         switch (role()) {
         case ButtonMenu:
-            names << ShowMenuAction;
+            names << showMenuAction();
             break;
         case RadioButton:
-            names << CheckAction;
+            names << checkAction();
             break;
         default:
             if (button()->isCheckable()) {
                 if (state() & Checked) {
-                    names <<  UncheckAction;
+                    names <<  uncheckAction();
                 } else {
                     // FIXME
     //                QCheckBox *cb = qobject_cast<QCheckBox*>(object());
     //                if (!cb || !cb->isTristate() || cb->checkState() == Qt::PartiallyChecked)
-                    names <<  CheckAction;
+                    names <<  checkAction();
                 }
             } else {
-                names << PressAction;
+                names << pressAction();
             }
             break;
         }
@@ -195,8 +195,8 @@ void QAccessibleButton::doAction(const QString &actionName)
 {
     if (!widget()->isEnabled())
         return;
-    if (actionName == PressAction ||
-        actionName == ShowMenuAction) {
+    if (actionName == pressAction() ||
+        actionName == showMenuAction()) {
 #ifndef QT_NO_MENU
         QPushButton *pb = qobject_cast<QPushButton*>(object());
         if (pb && pb->menu())
@@ -204,9 +204,9 @@ void QAccessibleButton::doAction(const QString &actionName)
         else
 #endif
             button()->animateClick();
-    } else if (actionName == CheckAction) {
+    } else if (actionName == checkAction()) {
         button()->setChecked(true);
-    } else if (actionName == UncheckAction) {
+    } else if (actionName == uncheckAction()) {
         button()->setChecked(false);
     } else {
         QAccessibleWidget::doAction(actionName);
@@ -215,7 +215,7 @@ void QAccessibleButton::doAction(const QString &actionName)
 
 QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) const
 {
-    if (actionName == PressAction) {
+    if (actionName == pressAction()) {
 #ifndef QT_NO_SHORTCUT
         return QStringList() << button()->shortcut().toString();
 #endif
@@ -333,7 +333,7 @@ QStringList QAccessibleToolButton::actionNames() const
     QStringList names;
     if (widget()->isEnabled()) {
         if (toolButton()->menu())
-            names << ShowMenuAction;
+            names << showMenuAction();
         if (toolButton()->popupMode() != QToolButton::InstantPopup)
             names << QAccessibleButton::actionNames();
     }
@@ -345,9 +345,9 @@ void QAccessibleToolButton::doAction(const QString &actionName)
     if (!widget()->isEnabled())
         return;
 
-    if (actionName == PressAction) {
+    if (actionName == pressAction()) {
         button()->click();
-    } else if (actionName == ShowMenuAction) {
+    } else if (actionName == showMenuAction()) {
         if (toolButton()->popupMode() != QToolButton::InstantPopup) {
             toolButton()->setDown(true);
 #ifndef QT_NO_MENU
