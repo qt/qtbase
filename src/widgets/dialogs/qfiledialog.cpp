@@ -516,7 +516,6 @@ QFileDialogPrivate::QFileDialogPrivate()
         useDefaultCaption(true),
         defaultFileTypes(true),
         fileNameLabelExplicitlySat(false),
-        nativeDialogInUse(false),
         qFileDialogUi(0)
 {
 }
@@ -2223,10 +2222,6 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
                               const QString &caption)
 {
     Q_Q(QFileDialog);
-    platformHelper = QGuiApplicationPrivate::platformIntegration()->createPlatformDialogHelper(q);
-    if (platformHelper)
-        platformHelper->d_ptr = this;
-
     if (!caption.isEmpty()) {
         useDefaultCaption = false;
         setWindowTitle = caption;
@@ -2273,8 +2268,8 @@ void QFileDialogPrivate::createWidgets()
     Q_Q(QFileDialog);
     model = new QFileSystemModel(q);
     model->setObjectName(QLatin1String("qt_filesystem_model"));
-    if (platformHelper)
-        model->setNameFilterDisables(platformHelper->defaultNameFilterDisables());
+    if (QPlatformDialogHelper *helper = platformHelper())
+        model->setNameFilterDisables(helper->defaultNameFilterDisables());
     else
         model->setNameFilterDisables(false);
     model->d_func()->disableRecursiveSort = true;
@@ -3130,8 +3125,8 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
 
 void QFileDialogPrivate::_q_platformRunNativeAppModalPanel()
 {
-    if (platformHelper)
-        platformHelper->_q_platformRunNativeAppModalPanel();
+    if (nativeDialogInUse)
+        platformHelper()->_q_platformRunNativeAppModalPanel();
 }
 
 /*!

@@ -73,6 +73,21 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 
 QT_BEGIN_NAMESPACE
 
+QPlatformDialogHelper *QDialogPrivate::platformHelper() const
+{
+    // Delayed creation of the platform, ensuring that
+    // that qobject_cast<> on the dialog works in the plugin.
+    if (!m_platformHelperCreated) {
+        m_platformHelperCreated = true;
+        QDialog *dialog = const_cast<QDialog *>(q_func());
+        m_platformHelper = QGuiApplicationPrivate::platformIntegration()
+                               ->createPlatformDialogHelper(dialog);
+        if (m_platformHelper)
+            m_platformHelper->d_ptr = const_cast<QDialogPrivate *>(this);
+    }
+    return m_platformHelper;
+}
+
 /*!
     \class QDialog
     \brief The QDialog class is the base class of dialog windows.
@@ -252,10 +267,6 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f | ((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0)))
 {
-    Q_D(QDialog);
-    d->platformHelper = QGuiApplicationPrivate::platformIntegration()->createPlatformDialogHelper(this);
-    if (d->platformHelper)
-        d->platformHelper->d_ptr = d_func();
 #ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
@@ -515,8 +526,8 @@ int QDialog::exec()
     }
     show();
 
-    if (d->platformHelper)
-        d->platformHelper->platformNativeDialogModalHelp();
+    if (d->nativeDialogInUse)
+        d->platformHelper()->platformNativeDialogModalHelp();
 
     QEventLoop eventLoop;
     d->eventLoop = &eventLoop;

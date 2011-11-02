@@ -260,8 +260,6 @@ public:
     bool fileNameLabelExplicitlySat;
     QStringList nameFilters;
 
-    // Members for using native dialogs:
-    bool nativeDialogInUse;
     // setVisible_sys returns true if it ends up showing a native
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
@@ -370,84 +368,84 @@ inline QString QFileDialogPrivate::rootPath() const {
 // Dummies for platforms that don't use native dialogs:
 inline void QFileDialogPrivate::deleteNativeDialog_sys()
 {
-    if (platformHelper)
-        platformHelper->deleteNativeDialog_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->deleteNativeDialog_sys();
     else
         qt_guiPlatformPlugin()->fileDialogDelete(q_func());
 }
 
 inline bool QFileDialogPrivate::setVisible_sys(bool visible)
 {
-    if (platformHelper)
-        return platformHelper->setVisible_sys(visible);
+    if (QPlatformDialogHelper *helper = platformHelper())
+        return helper->setVisible_sys(visible);
     return qt_guiPlatformPlugin()->fileDialogSetVisible(q_func(), visible);
 }
 
 inline QDialog::DialogCode QFileDialogPrivate::dialogResultCode_sys()
 {
-    if (platformHelper)
-        return platformHelper->dialogResultCode_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        return helper->dialogResultCode_sys();
     return qt_guiPlatformPlugin()->fileDialogResultCode(q_func());
 }
 
 inline void QFileDialogPrivate::setDirectory_sys(const QString &directory)
 {
-    if (platformHelper)
-        platformHelper->setDirectory_sys(directory);
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->setDirectory_sys(directory);
     else
         qt_guiPlatformPlugin()->fileDialogSetDirectory(q_func(), directory);
 }
 
 inline QString QFileDialogPrivate::directory_sys() const
 {
-    if (platformHelper)
-        return platformHelper->directory_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        return helper->directory_sys();
     return qt_guiPlatformPlugin()->fileDialogDirectory(q_func());
 }
 
 inline void QFileDialogPrivate::selectFile_sys(const QString &filename)
 {
-    if (platformHelper)
-        platformHelper->selectFile_sys(filename);
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->selectFile_sys(filename);
     else
         qt_guiPlatformPlugin()->fileDialogSelectFile(q_func(), filename);
 }
 
 inline QStringList QFileDialogPrivate::selectedFiles_sys() const
 {
-    if (platformHelper)
-        return platformHelper->selectedFiles_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        return helper->selectedFiles_sys();
     return qt_guiPlatformPlugin()->fileDialogSelectedFiles(q_func());
 }
 
 inline void QFileDialogPrivate::setFilter_sys()
 {
-    if (platformHelper)
-        platformHelper->setFilter_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->setFilter_sys();
     else
         qt_guiPlatformPlugin()->fileDialogSetFilter(q_func());
 }
 
 inline void QFileDialogPrivate::setNameFilters_sys(const QStringList &filters)
 {
-    if (platformHelper)
-        platformHelper->setNameFilters_sys(filters);
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->setNameFilters_sys(filters);
     else
         qt_guiPlatformPlugin()->fileDialogSetNameFilters(q_func(), filters);
 }
 
 inline void QFileDialogPrivate::selectNameFilter_sys(const QString &filter)
 {
-    if (platformHelper)
-        platformHelper->selectNameFilter_sys(filter);
+    if (QPlatformDialogHelper *helper = platformHelper())
+        helper->selectNameFilter_sys(filter);
     else
         qt_guiPlatformPlugin()->fileDialogSelectNameFilter(q_func(), filter);
 }
 
 inline QString QFileDialogPrivate::selectedNameFilter_sys() const
 {
-    if (platformHelper)
-        return platformHelper->selectedNameFilter_sys();
+    if (QPlatformDialogHelper *helper = platformHelper())
+        return helper->selectedNameFilter_sys();
     return qt_guiPlatformPlugin()->fileDialogSelectedNameFilter(q_func());
 }
 

@@ -75,8 +75,10 @@ public:
           resizer(0),
           sizeGripEnabled(false),
 #endif
-          rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(0), platformHelper(0)
+          rescode(0), resetModalityTo(-1), wasModalitySet(true), eventLoop(0),
+          nativeDialogInUse(false), m_platformHelper(0), m_platformHelperCreated(false)
         {}
+    ~QDialogPrivate() { delete m_platformHelper; }
 
     QPointer<QPushButton> mainDef;
     Qt::Orientation orientation;
@@ -104,7 +106,12 @@ public:
 
     QPointer<QEventLoop> eventLoop;
 
-    QPlatformDialogHelper *platformHelper;
+    bool nativeDialogInUse; // Assigned in setVisible_sys() in derived classes.
+    QPlatformDialogHelper *platformHelper() const;
+
+private:
+    mutable QPlatformDialogHelper *m_platformHelper;
+    mutable bool m_platformHelperCreated;
 };
 
 QT_END_NAMESPACE
