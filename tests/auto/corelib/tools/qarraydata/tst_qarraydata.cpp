@@ -43,6 +43,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/qarraydata.h>
 
+#include "simplevector.h"
+
 class tst_QArrayData : public QObject
 {
     Q_OBJECT
@@ -51,6 +53,7 @@ private slots:
     void referenceCounting();
     void sharedNullEmpty();
     void staticData();
+    void simpleVector();
 };
 
 void tst_QArrayData::referenceCounting()
@@ -146,6 +149,108 @@ void tst_QArrayData::staticData()
     QCOMPARE(charArray.header.data(), reinterpret_cast<void *>(&charArray.data));
     QCOMPARE(intArray.header.data(), reinterpret_cast<void *>(&intArray.data));
     QCOMPARE(doubleArray.header.data(), reinterpret_cast<void *>(&doubleArray.data));
+}
+
+void tst_QArrayData::simpleVector()
+{
+    QArrayData data0 = { Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, 0 };
+    QStaticArrayData<int, 7> data1 = {
+            Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 7),
+            { 0, 1, 2, 3, 4, 5, 6 }
+        };
+
+    SimpleVector<int> v1;
+    SimpleVector<int> v2(v1);
+    SimpleVector<int> v3(&data0);
+    SimpleVector<int> v4(&data1.header);
+    SimpleVector<int> v5(&data0);
+    SimpleVector<int> v6(&data1.header);
+
+    v3 = v1;
+    v1.swap(v3);
+    v4.clear();
+
+    QVERIFY(v1.isNull());
+    QVERIFY(v2.isNull());
+    QVERIFY(v3.isNull());
+    QVERIFY(!v4.isNull());
+    QVERIFY(!v5.isNull());
+    QVERIFY(!v6.isNull());
+
+    QVERIFY(v1.isEmpty());
+    QVERIFY(v2.isEmpty());
+    QVERIFY(v3.isEmpty());
+    QVERIFY(v4.isEmpty());
+    QVERIFY(v5.isEmpty());
+    QVERIFY(!v6.isEmpty());
+
+    QCOMPARE(v1.size(), size_t(0));
+    QCOMPARE(v2.size(), size_t(0));
+    QCOMPARE(v3.size(), size_t(0));
+    QCOMPARE(v4.size(), size_t(0));
+    QCOMPARE(v5.size(), size_t(0));
+    QCOMPARE(v6.size(), size_t(7));
+
+    QCOMPARE(v1.capacity(), size_t(0));
+    QCOMPARE(v2.capacity(), size_t(0));
+    QCOMPARE(v3.capacity(), size_t(0));
+    QCOMPARE(v4.capacity(), size_t(0));
+    QCOMPARE(v5.capacity(), size_t(0));
+    // v6.capacity() is unspecified, for now
+
+    QVERIFY(v1.isSharedWith(v2));
+    QVERIFY(v1.isSharedWith(v3));
+    QVERIFY(!v1.isSharedWith(v4));
+    QVERIFY(!v1.isSharedWith(v5));
+    QVERIFY(!v1.isSharedWith(v6));
+
+    QVERIFY(v1.constBegin() == v1.constEnd());
+    QVERIFY(v4.constBegin() == v4.constEnd());
+    QVERIFY(v6.constBegin() + v6.size() == v6.constEnd());
+
+    QVERIFY(v1 == v2);
+    QVERIFY(v1 == v3);
+    QVERIFY(v1 == v4);
+    QVERIFY(v1 == v5);
+    QVERIFY(!(v1 == v6));
+
+    QVERIFY(v1 != v6);
+    QVERIFY(v4 != v6);
+    QVERIFY(v5 != v6);
+    QVERIFY(!(v1 != v5));
+
+    QVERIFY(v1 < v6);
+    QVERIFY(!(v6 < v1));
+    QVERIFY(v6 > v1);
+    QVERIFY(!(v1 > v6));
+    QVERIFY(v1 <= v6);
+    QVERIFY(!(v6 <= v1));
+    QVERIFY(v6 >= v1);
+    QVERIFY(!(v1 >= v6));
+
+    QCOMPARE(v6.front(), 0);
+    QCOMPARE(v6.back(), 6);
+
+    for (size_t i = 0; i < v6.size(); ++i) {
+        QCOMPARE(v6[i], int(i));
+        QCOMPARE(v6.at(i), int(i));
+        QCOMPARE(&v6[i], &v6.at(i));
+    }
+
+    v5 = v6;
+    QVERIFY(v5.isSharedWith(v6));
+    QVERIFY(!v1.isSharedWith(v5));
+
+    v1.swap(v6);
+    QVERIFY(v6.isNull());
+    QVERIFY(v1.isSharedWith(v5));
+
+    {
+        using std::swap;
+        swap(v1, v6);
+        QVERIFY(v5.isSharedWith(v6));
+        QVERIFY(!v1.isSharedWith(v5));
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QArrayData)
