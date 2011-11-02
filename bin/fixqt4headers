@@ -13,7 +13,7 @@ for module in $modules; do
         includes=`ls $QTDIR/include/$module`
         for i in $includes; do
 #            echo "    fixing " $i
-            perl -pi -e "s,^#include +<.+/$i>,#include <$module/$i>," $files;
+            perl -pi -e "s,^#(\\s*)include(\\s+)<.+?/$i>,#\\1include\\2<$module/$i>," $files;
 #            perl -pi -e 's,^#include +".+/$i",#include "$module/$i",' $files;
         done;
     fi;
