@@ -102,7 +102,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
         data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
         DeleteDC(hdc);
     } else {
-        qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %d DPI.",
+        qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",
                  __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
                  data.dpi.first);
     }

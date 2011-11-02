@@ -161,8 +161,7 @@ struct QWindowsIntegrationPrivate
 };
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
-    : m_eventDispatcher(new QWindowsGuiEventDispatcher)
-    , m_fontDatabase(0)
+    : m_fontDatabase(0), m_eventDispatcher(new QWindowsGuiEventDispatcher)
 {
 }
 
