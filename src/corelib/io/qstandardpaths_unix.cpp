@@ -132,7 +132,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
 
     // http://www.freedesktop.org/wiki/Software/xdg-user-dirs
-    QString xdgConfigHome = QLatin1String(qgetenv("XDG_CONFIG_HOME"));
+    QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
     if (xdgConfigHome.isEmpty())
         xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
     QFile file(xdgConfigHome + QLatin1String("/user-dirs.dirs"));
