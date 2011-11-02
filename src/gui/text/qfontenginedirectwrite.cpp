@@ -508,7 +508,7 @@ qreal QFontEngineDirectWrite::maxCharWidth() const
     return 0;
 }
 
-extern uint qt_pow_gamma[256];
+extern const uint *qt_pow_gamma();
 
 QImage QFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                                 const QTransform &xform)
@@ -521,11 +521,13 @@ QImage QFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPo
         colors[i] = qRgba(0, 0, 0, i);
     indexed.setColorTable(colors);
 
+    uint *gamma = qt_pow_gamma();
     for (int y=0; y<im.height(); ++y) {
         uint *src = (uint*) im.scanLine(y);
         uchar *dst = indexed.scanLine(y);
         for (int x=0; x<im.width(); ++x) {
-            *dst = 255 - (qt_pow_gamma[qGray(0xffffffff - *src)] * 255. / 2047.);
+            uint gray = qGray(0xffffffff - *src);
+            *dst = 255 - (gamma ? gamma[gray] * 255. / 2047. : gray);
             ++dst;
             ++src;
         }

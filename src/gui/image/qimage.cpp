@@ -3340,9 +3340,13 @@ void qInitImageConversions()
 #endif
 }
 
+extern const uchar *qt_pow_rgb_gamma();
+
 void qGamma_correct_back_to_linear_cs(QImage *image)
 {
-    extern uchar qt_pow_rgb_gamma[256];
+    const uchar *gamma = qt_pow_rgb_gamma();
+    if (!gamma)
+        return;
 
     // gamma correct the pixels back to linear color space...
     int h = image->height();
@@ -3352,9 +3356,9 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
         uint *pixels = (uint *) image->scanLine(y);
         for (int x=0; x<w; ++x) {
             uint p = pixels[x];
-            uint r = qt_pow_rgb_gamma[qRed(p)];
-            uint g = qt_pow_rgb_gamma[qGreen(p)];
-            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            uint r = gamma[qRed(p)];
+            uint g = gamma[qGreen(p)];
+            uint b = gamma[qBlue(p)];
             pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
         }
     }
