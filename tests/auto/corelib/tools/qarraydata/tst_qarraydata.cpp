@@ -82,6 +82,8 @@ private slots:
     void setSharable_data();
     void setSharable();
     void fromRawData();
+    void literals();
+    void variadicLiterals();
 };
 
 template <class T> const T &const_(const T &t) { return t; }
@@ -1180,6 +1182,96 @@ void tst_QArrayData::fromRawData()
         QCOMPARE(raw.back(), 11);
         QVERIFY(raw.constBegin() != array);
     }
+}
+
+void tst_QArrayData::literals()
+{
+    {
+        QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char, "ABCDEFGHIJ");
+        QCOMPARE(d->size, 10 + 1);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d->data()[i], char('A' + i));
+    }
+
+    {
+        // wchar_t is not necessarily 2-bytes
+        QArrayDataPointer<wchar_t> d = Q_ARRAY_LITERAL(wchar_t, L"ABCDEFGHIJ");
+        QCOMPARE(d->size, 10 + 1);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d->data()[i], wchar_t('A' + i));
+    }
+
+    {
+        SimpleVector<char> v = Q_ARRAY_LITERAL(char, "ABCDEFGHIJ");
+
+        QVERIFY(!v.isNull());
+        QVERIFY(!v.isEmpty());
+        QCOMPARE(v.size(), size_t(11));
+        // v.capacity() is unspecified, for now
+
+#if defined(Q_COMPILER_VARIADIC_MACROS) \
+        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+        QVERIFY(v.isStatic());
+#endif
+
+        QVERIFY(v.isSharable());
+        QVERIFY(v.constBegin() + v.size() == v.constEnd());
+
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(const_(v)[i], char('A' + i));
+        QCOMPARE(const_(v)[10], char('\0'));
+    }
+}
+
+void tst_QArrayData::variadicLiterals()
+{
+#if defined(Q_COMPILER_VARIADIC_MACROS) \
+        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+    {
+        QArrayDataPointer<int> d =
+            Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+        QCOMPARE(d->size, 10);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d->data()[i], i);
+    }
+
+    {
+        QArrayDataPointer<char> d = Q_ARRAY_LITERAL(char,
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+        QCOMPARE(d->size, 10);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d->data()[i], char('A' + i));
+    }
+
+    {
+        QArrayDataPointer<const char *> d = Q_ARRAY_LITERAL(const char *,
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
+        QCOMPARE(d->size, 10);
+        for (int i = 0; i < 10; ++i) {
+            QCOMPARE(d->data()[i][0], char('A' + i));
+            QCOMPARE(d->data()[i][1], '\0');
+        }
+    }
+
+    {
+        SimpleVector<int> v = Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6);
+
+        QVERIFY(!v.isNull());
+        QVERIFY(!v.isEmpty());
+        QCOMPARE(v.size(), size_t(7));
+        // v.capacity() is unspecified, for now
+
+        QVERIFY(v.isStatic());
+
+        QVERIFY(v.isSharable());
+        QVERIFY(v.constBegin() + v.size() == v.constEnd());
+
+        for (int i = 0; i < 7; ++i)
+            QCOMPARE(const_(v)[i], i);
+    }
+#else
+    QSKIP("Variadic Q_ARRAY_LITERAL not available in current configuration.");
+#endif // defined(Q_COMPILER_VARIADIC_MACROS)
 }
 
 QTEST_APPLESS_MAIN(tst_QArrayData)

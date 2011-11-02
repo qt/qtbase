@@ -77,6 +77,11 @@ public:
             d->copyAppend(begin, end);
     }
 
+    SimpleVector(QArrayDataPointerRef<T> ptr)
+        : d(ptr)
+    {
+    }
+
     explicit SimpleVector(Data *ptr)
         : d(ptr)
     {

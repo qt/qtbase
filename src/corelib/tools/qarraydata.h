@@ -43,6 +43,7 @@
 #define QARRAYDATA_H
 
 #include <QtCore/qrefcount.h>
+#include <string.h>
 
 QT_BEGIN_HEADER
 
@@ -189,6 +190,84 @@ struct QArrayDataPointerRef
     (sizeof(QArrayData) + (Q_ALIGNOF(type) - 1)) \
         & ~(Q_ALIGNOF(type) - 1) } \
     /**/
+
+////////////////////////////////////////////////////////////////////////////////
+//  Q_ARRAY_LITERAL
+
+// The idea here is to place a (read-only) copy of header and array data in an
+// mmappable portion of the executable (typically, .rodata section). This is
+// accomplished by hiding a static const instance of QStaticArrayData, which is
+// POD.
+
+#if defined(Q_COMPILER_VARIADIC_MACROS)
+#if defined(Q_COMPILER_LAMBDA)
+// Hide array inside a lambda
+#define Q_ARRAY_LITERAL(Type, ...)                                              \
+    ([]() -> QArrayDataPointerRef<Type> {                                       \
+            /* MSVC 2010 Doesn't support static variables in a lambda, but */   \
+            /* happily accepts them in a static function of a lambda-local */   \
+            /* struct :-) */                                                    \
+            struct StaticWrapper {                                              \
+                static QArrayDataPointerRef<Type> get()                         \
+                {                                                               \
+                    Q_ARRAY_LITERAL_IMPL(Type, __VA_ARGS__)                     \
+                    return ref;                                                 \
+                }                                                               \
+            };                                                                  \
+            return StaticWrapper::get();                                        \
+        }())                                                                    \
+    /**/
+#elif defined(Q_CC_GNU)
+// Hide array within GCC's __extension__ {( )} block
+#define Q_ARRAY_LITERAL(Type, ...)                                              \
+    __extension__ ({                                                            \
+            Q_ARRAY_LITERAL_IMPL(Type, __VA_ARGS__)                             \
+            ref;                                                                \
+        })                                                                      \
+    /**/
+#endif
+#endif // defined(Q_COMPILER_VARIADIC_MACROS)
+
+#if defined(Q_ARRAY_LITERAL)
+#define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
+    union { Type type_must_be_POD; } dummy; Q_UNUSED(dummy)                     \
+                                                                                \
+    /* Portable compile-time array size computation */                          \
+    Type data[] = { __VA_ARGS__ }; Q_UNUSED(data)                               \
+    enum { Size = sizeof(data) / sizeof(data[0]) };                             \
+                                                                                \
+    static const QStaticArrayData<Type, Size> literal = {                       \
+        Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(Type, Size), { __VA_ARGS__ } };  \
+                                                                                \
+    QArrayDataPointerRef<Type> ref =                                            \
+        { static_cast<QTypedArrayData<Type> *>(                                 \
+            const_cast<QArrayData *>(&literal.header)) };                       \
+    /**/
+#else
+// As a fallback, memory is allocated and data copied to the heap.
+
+// The fallback macro does NOT use variadic macros and does NOT support
+// variable number of arguments. It is suitable for char arrays.
+
+namespace QtPrivate {
+    template <class T, size_t N>
+    inline QArrayDataPointerRef<T> qMakeArrayLiteral(const T (&array)[N])
+    {
+        union { T type_must_be_POD; } dummy; Q_UNUSED(dummy)
+
+        QArrayDataPointerRef<T> result = { QTypedArrayData<T>::allocate(N) };
+        Q_CHECK_PTR(result.ptr);
+
+        ::memcpy(result.ptr->data(), array, N * sizeof(T));
+        result.ptr->size = N;
+
+        return result;
+    }
+}
+
+#define Q_ARRAY_LITERAL(Type, Array) \
+    QT_PREPEND_NAMESPACE(QtPrivate::qMakeArrayLiteral)<Type>( Array )
+#endif // !defined(Q_ARRAY_LITERAL)
 
 QT_END_NAMESPACE
 
