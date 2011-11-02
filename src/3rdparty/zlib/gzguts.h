@@ -4,8 +4,12 @@
  */
 
 #ifdef _MSC_VER
-#  define _CRT_SECURE_NO_DEPRECATE
-#  define _CRT_NONSTDC_NO_DEPRECATE
+#  ifndef _CRT_SECURE_NO_DEPRECATE
+#    define _CRT_SECURE_NO_DEPRECATE
+#  endif
+#  ifndef _CRT_NONSTDC_NO_DEPRECATE
+#    define _CRT_NONSTDC_NO_DEPRECATE
+#  endif
 #endif
 
 #ifdef _LARGEFILE64_SOURCE
