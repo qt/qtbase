@@ -44,7 +44,7 @@
 #define QARRAY_TEST_SIMPLE_VECTOR_H
 
 #include <QtCore/qarraydata.h>
-#include <QtCore/qarraydataops.h>
+#include <QtCore/qarraydatapointer.h>
 
 #include <algorithm>
 
@@ -53,7 +53,6 @@ struct SimpleVector
 {
 private:
     typedef QTypedArrayData<T> Data;
-    typedef QArrayDataOps<T> DataOps;
 
 public:
     typedef T value_type;
@@ -61,28 +60,21 @@ public:
     typedef typename Data::const_iterator const_iterator;
 
     SimpleVector()
-        : d(Data::sharedNull())
     {
-    }
-
-    SimpleVector(const SimpleVector &vec)
-        : d(vec.d)
-    {
-        d->ref.ref();
     }
 
     SimpleVector(size_t n, const T &t)
         : d(Data::allocate(n))
     {
         if (n)
-            static_cast<DataOps *>(d)->copyAppend(n, t);
+            d->copyAppend(n, t);
     }
 
     SimpleVector(const T *begin, const T *end)
         : d(Data::allocate(end - begin))
     {
         if (end - begin)
-            static_cast<DataOps *>(d)->copyAppend(begin, end);
+            d->copyAppend(begin, end);
     }
 
     explicit SimpleVector(Data *ptr)
@@ -90,23 +82,8 @@ public:
     {
     }
 
-    ~SimpleVector()
-    {
-        if (!d->ref.deref()) {
-            static_cast<DataOps *>(d)->destroyAll();
-            Data::deallocate(d);
-        }
-    }
-
-    SimpleVector &operator=(const SimpleVector &vec)
-    {
-        SimpleVector temp(vec);
-        this->swap(temp);
-        return *this;
-    }
-
     bool empty() const { return d->size == 0; }
-    bool isNull() const { return d == Data::sharedNull(); }
+    bool isNull() const { return d.isNull(); }
     bool isEmpty() const { return this->empty(); }
 
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
@@ -142,7 +119,7 @@ public:
                 && !d->capacityReserved
                 && (d->ref != 1 || (d->capacityReserved = 1, false)))) {
             SimpleVector detached(Data::allocate(n, true));
-            static_cast<DataOps *>(detached.d)->copyAppend(constBegin(), constEnd());
+            detached.d->copyAppend(constBegin(), constEnd());
             detached.swap(*this);
         }
     }
@@ -163,14 +140,14 @@ public:
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)), d->capacityReserved));
 
-            static_cast<DataOps *>(detached.d)->copyAppend(first, last);
-            static_cast<DataOps *>(detached.d)->copyAppend(begin, begin + d->size);
+            detached.d->copyAppend(first, last);
+            detached.d->copyAppend(begin, begin + d->size);
             detached.swap(*this);
 
             return;
         }
 
-        static_cast<DataOps *>(d)->insert(begin, first, last);
+        d->insert(begin, first, last);
     }
 
     void append(const_iterator first, const_iterator last)
@@ -185,15 +162,15 @@ public:
 
             if (d->size) {
                 const T *const begin = constBegin();
-                static_cast<DataOps *>(detached.d)->copyAppend(begin, begin + d->size);
+                detached.d->copyAppend(begin, begin + d->size);
             }
-            static_cast<DataOps *>(detached.d)->copyAppend(first, last);
+            detached.d->copyAppend(first, last);
             detached.swap(*this);
 
             return;
         }
 
-        static_cast<DataOps *>(d)->copyAppend(first, last);
+        d->copyAppend(first, last);
     }
 
     void insert(int position, const_iterator first, const_iterator last)
@@ -223,9 +200,9 @@ public:
                         qMax(capacity(), size() + (last - first)), d->capacityReserved));
 
             if (position)
-                static_cast<DataOps *>(detached.d)->copyAppend(begin, where);
-            static_cast<DataOps *>(detached.d)->copyAppend(first, last);
-            static_cast<DataOps *>(detached.d)->copyAppend(where, end);
+                detached.d->copyAppend(begin, where);
+            detached.d->copyAppend(first, last);
+            detached.d->copyAppend(where, end);
             detached.swap(*this);
 
             return;
@@ -235,11 +212,11 @@ public:
         if ((first >= where && first < end)
                 || (last > where && last <= end)) {
             SimpleVector tmp(first, last);
-            static_cast<DataOps *>(d)->insert(where, tmp.constBegin(), tmp.constEnd());
+            d->insert(where, tmp.constBegin(), tmp.constEnd());
             return;
         }
 
-        static_cast<DataOps *>(d)->insert(where, first, last);
+        d->insert(where, first, last);
     }
 
     void swap(SimpleVector &other)
@@ -249,12 +226,11 @@ public:
 
     void clear()
     {
-        SimpleVector tmp(d);
-        d = Data::sharedEmpty();
+        d.clear();
     }
 
 private:
-    Data *d;
+    QArrayDataPointer<T> d;
 };
 
 template <class T>
