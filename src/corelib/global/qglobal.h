@@ -424,6 +424,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE
+#      define Q_COMPILER_STATIC_ASSERT
 //  MSCV has std::initilizer_list, but do not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #  endif
@@ -518,6 +519,7 @@ namespace QT_NAMESPACE {}
        /* C++0x features supported in GCC 4.3: */
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_DECLTYPE
+#      define Q_COMPILER_STATIC_ASSERT
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
@@ -800,6 +802,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_STATIC_ASSERT
 #    endif
 #  endif
 #endif
@@ -1723,6 +1726,11 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #  endif
 #endif
 
+
+#ifdef Q_COMPILER_STATIC_ASSERT
+#define Q_STATIC_ASSERT(Condition) static_assert(Condition, #Condition)
+#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(Condition, Message)
+#else
 // Intentionally undefined
 template <bool Test> class QStaticAssertFailure;
 template <> class QStaticAssertFailure<true> {};
@@ -1731,6 +1739,8 @@ template <> class QStaticAssertFailure<true> {};
 #define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
 #define Q_STATIC_ASSERT(Condition) \
     enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<bool(Condition)>)}
+#define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
+#endif
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
 Q_CORE_EXPORT void qBadAlloc();

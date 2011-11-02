@@ -278,14 +278,20 @@ public:
     {
         Q_STATIC_ASSERT(true);
         Q_STATIC_ASSERT(!false);
+        Q_STATIC_ASSERT_X(true,"");
+        Q_STATIC_ASSERT_X(!false,"");
     }
     ~MyTrue()
     {
         Q_STATIC_ASSERT(true);
         Q_STATIC_ASSERT(!false);
+        Q_STATIC_ASSERT_X(true,"");
+        Q_STATIC_ASSERT_X(!false,"");
     }
     Q_STATIC_ASSERT(true);
     Q_STATIC_ASSERT(!false);
+    Q_STATIC_ASSERT_X(true,"");
+    Q_STATIC_ASSERT_X(!false,"");
 };
 
 struct MyExpresion
@@ -294,16 +300,21 @@ struct MyExpresion
     {
         Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
         Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+        Q_STATIC_ASSERT_X(sizeof(MyTrue) > 0,"");
+        Q_STATIC_ASSERT_X(sizeof(MyTrue) > 0,"");
     }
 private:
     Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
     Q_STATIC_ASSERT(sizeof(MyTrue) > 0);
+    Q_STATIC_ASSERT_X(sizeof(MyTrue) > 0, "");
+    Q_STATIC_ASSERT_X(sizeof(MyTrue) > 0, "");
 };
 
 struct TypeDef
 {
     typedef int T;
     Q_STATIC_ASSERT(sizeof(T));
+    Q_STATIC_ASSERT_X(sizeof(T), "");
 };
 
 template<typename T1, typename T2>
@@ -315,6 +326,10 @@ struct Template
     Q_STATIC_ASSERT(!!True);
     Q_STATIC_ASSERT(sizeof(DependentType));
     Q_STATIC_ASSERT(!!sizeof(DependentType));
+    Q_STATIC_ASSERT_X(True, "");
+    Q_STATIC_ASSERT_X(!!True, "");
+    Q_STATIC_ASSERT_X(sizeof(DependentType), "");
+    Q_STATIC_ASSERT_X(!!sizeof(DependentType), "");
 };
 
 struct MyTemplate
@@ -322,6 +337,8 @@ struct MyTemplate
     static const bool Value = Template<TypeDef, int>::True;
     Q_STATIC_ASSERT(Value);
     Q_STATIC_ASSERT(!!Value);
+    Q_STATIC_ASSERT_X(Value, "");
+    Q_STATIC_ASSERT_X(!!Value, "");
 };
 
 void tst_QGlobal::qstaticassert()
