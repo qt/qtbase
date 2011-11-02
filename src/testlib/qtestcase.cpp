@@ -945,7 +945,7 @@ static void invokeMethod(QObject *obj, const char *methodName)
 bool Q_TESTLIB_EXPORT defaultKeyVerbose()
 {
     if (keyVerbose == -1) {
-        keyVerbose = qgetenv("QTEST_KEYEVENT_VERBOSE").constData() ? 1 : 0;
+        keyVerbose = qgetenv("QTEST_KEYEVENT_VERBOSE").isEmpty() ? 0 : 1;
     }
     return keyVerbose == 1;
 }
@@ -953,7 +953,7 @@ bool Q_TESTLIB_EXPORT defaultKeyVerbose()
 int defaultEventDelay()
 {
     if (eventDelay == -1) {
-        if (qgetenv("QTEST_EVENT_DELAY").constData())
+        if (!qgetenv("QTEST_EVENT_DELAY").isEmpty())
             eventDelay = atoi(qgetenv("QTEST_EVENT_DELAY"));
         else
             eventDelay = 0;
@@ -964,8 +964,8 @@ int defaultEventDelay()
 int Q_TESTLIB_EXPORT defaultMouseDelay()
 {
     if (mouseDelay == -1) {
-        if (qgetenv("QTEST_MOUSEEVENT_DELAY").constData())
-            mouseDelay = atoi((qgetenv("QTEST_MOUSEEVENT_DELAY")));
+        if (!qgetenv("QTEST_MOUSEEVENT_DELAY").isEmpty())
+            mouseDelay = atoi(qgetenv("QTEST_MOUSEEVENT_DELAY"));
         else
             mouseDelay = defaultEventDelay();
     }
@@ -975,7 +975,7 @@ int Q_TESTLIB_EXPORT defaultMouseDelay()
 int Q_TESTLIB_EXPORT defaultKeyDelay()
 {
     if (keyDelay == -1) {
-        if (qgetenv("QTEST_KEYEVENT_DELAY").constData())
+        if (!qgetenv("QTEST_KEYEVENT_DELAY").isEmpty())
             keyDelay = atoi(qgetenv("QTEST_KEYEVENT_DELAY").constData());
         else
             keyDelay = defaultEventDelay();
