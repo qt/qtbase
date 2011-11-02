@@ -57,6 +57,7 @@
 //
 
 #include "qsslsocket_p.h"
+#include "qsslcertificateextension.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmap.h>
 
@@ -92,6 +93,7 @@ public:
 
     void init(const QByteArray &data, QSsl::EncodingFormat format);
 
+    static QByteArray asn1ObjectId(ASN1_OBJECT *object);
     static QByteArray asn1ObjectName(ASN1_OBJECT *object);
     static QByteArray QByteArray_from_X509(X509 *x509, QSsl::EncodingFormat format);
     static QByteArray text_from_X509(X509 *x509);
@@ -99,6 +101,7 @@ public:
     static QList<QSslCertificate> certificatesFromPem(const QByteArray &pem, int count = -1);
     static QList<QSslCertificate> certificatesFromDer(const QByteArray &der, int count = -1);
     static bool isBlacklisted(const QSslCertificate &certificate);
+    static QSslCertificateExtension convertExtension(X509_EXTENSION *ext);
 
     friend class QSslSocketBackendPrivate;
 

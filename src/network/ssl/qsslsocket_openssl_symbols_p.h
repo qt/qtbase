@@ -239,6 +239,7 @@ int q_i2d_X509(X509 *a, unsigned char **b);
 const char *q_OBJ_nid2sn(int a);
 const char *q_OBJ_nid2ln(int a);
 int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
+int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
 #ifdef SSLEAY_MACROS
 // ### verify
@@ -369,6 +370,13 @@ void q_X509_free(X509 *a);
 X509_EXTENSION *q_X509_get_ext(X509 *a, int b);
 int q_X509_get_ext_count(X509 *a);
 void *q_X509_get_ext_d2i(X509 *a, int b, int *c, int *d);
+const X509V3_EXT_METHOD *q_X509V3_EXT_get(X509_EXTENSION *a);
+void *q_X509V3_EXT_d2i(X509_EXTENSION *a);
+int q_X509_EXTENSION_get_critical(X509_EXTENSION *a);
+ASN1_OCTET_STRING *q_X509_EXTENSION_get_data(X509_EXTENSION *a);
+void q_BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a);
+void q_AUTHORITY_KEYID_free(AUTHORITY_KEYID *a);
+int q_ASN1_STRING_print(BIO *a, const ASN1_STRING *b);
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
 int q_X509_verify_cert(X509_STORE_CTX *ctx);

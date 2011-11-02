@@ -65,6 +65,7 @@ class QDateTime;
 class QIODevice;
 class QSslError;
 class QSslKey;
+class QSslCertificateExtension;
 class QStringList;
 
 class QSslCertificatePrivate;
@@ -114,6 +115,7 @@ public:
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;
     QSslKey publicKey() const;
+    QList<QSslCertificateExtension> extensions() const;
 
     QByteArray toPem() const;
     QByteArray toDer() const;
