@@ -433,7 +433,8 @@ QTextOption QTextLayout::textOption() const
 
 /*!
     Sets the \a position and \a text of the area in the layout that is
-    processed before editing occurs.
+    processed before editing occurs. The layout is
+    invalidated and must be laid out again.
 
     \sa preeditAreaPosition(), preeditAreaText()
 */
