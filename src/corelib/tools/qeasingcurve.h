@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QEasingCurvePrivate;
+class QPointF;
 class Q_CORE_EXPORT QEasingCurve
 {
     Q_GADGET
@@ -70,7 +71,7 @@ public:
         InBack, OutBack, InOutBack, OutInBack,
         InBounce, OutBounce, InOutBounce, OutInBounce,
         InCurve, OutCurve, SineCurve, CosineCurve,
-        Custom, NCurveTypes
+        BezierSpline, TCBSpline, Custom, NCurveTypes
     };
 
     QEasingCurve(Type type = Linear);
@@ -90,6 +91,9 @@ public:
 
     qreal overshoot() const;
     void setOvershoot(qreal overshoot);
+
+    void addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint);
+    void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
 
     Type type() const;
     void setType(Type type);
