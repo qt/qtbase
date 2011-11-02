@@ -1227,10 +1227,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (++QWidgetPrivate::instanceCounter > QWidgetPrivate::maxInstances)
         QWidgetPrivate::maxInstances = QWidgetPrivate::instanceCounter;
 
-    if (QApplicationPrivate::app_compile_version < 0x040200
-        || QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation))
+    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation))
         q->create();
-
 
     QEvent e(QEvent::Create);
     QApplication::sendEvent(q, &e);
@@ -9673,9 +9671,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         oldBs->moveStaticWidgets(this);
     }
 
-    if ((QApplicationPrivate::app_compile_version < 0x040200
-         || QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation))
-        && !testAttribute(Qt::WA_WState_Created))
+    if (QApplicationPrivate::testAttribute(Qt::AA_ImmediateWidgetCreation) && !testAttribute(Qt::WA_WState_Created))
         create();
 
     d->reparentFocusWidgets(oldtlw);

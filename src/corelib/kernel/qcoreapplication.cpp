@@ -176,7 +176,10 @@ CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
 extern QString qAppFileName();
 #endif
 
-int QCoreApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
+#if QT_VERSION >= 0x060000
+# error "Bump QCoreApplicatoinPrivate::app_compile_version to 0x060000"
+#endif
+int QCoreApplicationPrivate::app_compile_version = 0x050000; //we don't know exactly, but it's at least 5.0.0
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_MAC
