@@ -197,7 +197,7 @@ private:
 class Q_GUI_EXPORT QTextLine
 {
 public:
-    inline QTextLine() : i(0), eng(0) {}
+    inline QTextLine() : index(0), eng(0) {}
     inline bool isValid() const { return eng; }
 
     QRectF rect() const;
@@ -240,7 +240,7 @@ public:
     int textStart() const;
     int textLength() const;
 
-    int lineNumber() const { return i; }
+    int lineNumber() const { return index; }
 
     void draw(QPainter *p, const QPointF &point, const QTextLayout::FormatRange *selection = 0) const;
 
@@ -249,12 +249,12 @@ public:
 #endif
 
 private:
-    QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
+    QTextLine(int line, QTextEngine *e) : index(line), eng(e) {}
     void layout_helper(int numGlyphs);
 
     friend class QTextLayout;
     friend class QTextFragment;
-    int i;
+    int index;
     QTextEngine *eng;
 };
 

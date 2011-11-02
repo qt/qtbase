@@ -1358,7 +1358,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
 */
 QRectF QTextLine::rect() const
 {
-    const QScriptLine& sl = eng->lines[i];
+    const QScriptLine& sl = eng->lines[index];
     return QRectF(sl.x.toReal(), sl.y.toReal(), sl.width.toReal(), sl.height().toReal());
 }
 
@@ -1367,7 +1367,7 @@ QRectF QTextLine::rect() const
 */
 QRectF QTextLine::naturalTextRect() const
 {
-    const QScriptLine& sl = eng->lines[i];
+    const QScriptLine& sl = eng->lines[index];
     QFixed x = sl.x + eng->alignLine(sl);
 
     QFixed width = sl.textWidth;
@@ -1384,7 +1384,7 @@ QRectF QTextLine::naturalTextRect() const
 */
 qreal QTextLine::x() const
 {
-    return eng->lines[i].x.toReal();
+    return eng->lines[index].x.toReal();
 }
 
 /*!
@@ -1394,7 +1394,7 @@ qreal QTextLine::x() const
 */
 qreal QTextLine::y() const
 {
-    return eng->lines[i].y.toReal();
+    return eng->lines[index].y.toReal();
 }
 
 /*!
@@ -1404,7 +1404,7 @@ qreal QTextLine::y() const
 */
 qreal QTextLine::width() const
 {
-    return eng->lines[i].width.toReal();
+    return eng->lines[index].width.toReal();
 }
 
 
@@ -1415,7 +1415,7 @@ qreal QTextLine::width() const
 */
 qreal QTextLine::ascent() const
 {
-    return eng->lines[i].ascent.toReal();
+    return eng->lines[index].ascent.toReal();
 }
 
 /*!
@@ -1425,7 +1425,7 @@ qreal QTextLine::ascent() const
 */
 qreal QTextLine::descent() const
 {
-    return eng->lines[i].descent.toReal();
+    return eng->lines[index].descent.toReal();
 }
 
 /*!
@@ -1437,7 +1437,7 @@ qreal QTextLine::descent() const
 */
 qreal QTextLine::height() const
 {
-    return eng->lines[i].height().toReal();
+    return eng->lines[index].height().toReal();
 }
 
 /*!
@@ -1449,7 +1449,7 @@ qreal QTextLine::height() const
 */
 qreal QTextLine::leading() const
 {
-    return eng->lines[i].leading.toReal();
+    return eng->lines[index].leading.toReal();
 }
 
 /*!
@@ -1468,7 +1468,7 @@ qreal QTextLine::leading() const
 */
 void QTextLine::setLeadingIncluded(bool included)
 {
-    eng->lines[i].leadingIncluded= included;
+    eng->lines[index].leadingIncluded= included;
 
 }
 
@@ -1484,7 +1484,7 @@ void QTextLine::setLeadingIncluded(bool included)
 */
 bool QTextLine::leadingIncluded() const
 {
-    return eng->lines[i].leadingIncluded;
+    return eng->lines[index].leadingIncluded;
 }
 
 /*!
@@ -1494,7 +1494,7 @@ bool QTextLine::leadingIncluded() const
 */
 qreal QTextLine::naturalTextWidth() const
 {
-    return eng->lines[i].textWidth.toReal();
+    return eng->lines[index].textWidth.toReal();
 }
 
 /*!
@@ -1509,7 +1509,7 @@ qreal QTextLine::naturalTextWidth() const
 */
 qreal QTextLine::horizontalAdvance() const
 {
-    return eng->lines[i].textAdvance.toReal();
+    return eng->lines[index].textAdvance.toReal();
 }
 
 /*!
@@ -1521,7 +1521,7 @@ qreal QTextLine::horizontalAdvance() const
 */
 void QTextLine::setLineWidth(qreal width)
 {
-    QScriptLine &line = eng->lines[i];
+    QScriptLine &line = eng->lines[index];
     if (!eng->layoutData) {
         qWarning("QTextLine: Can't set a line width while not layouting.");
         return;
@@ -1552,7 +1552,7 @@ void QTextLine::setLineWidth(qreal width)
 */
 void QTextLine::setNumColumns(int numColumns)
 {
-    QScriptLine &line = eng->lines[i];
+    QScriptLine &line = eng->lines[index];
     line.width = QFIXED_MAX;
     line.length = 0;
     line.textWidth = 0;
@@ -1569,7 +1569,7 @@ void QTextLine::setNumColumns(int numColumns)
 */
 void QTextLine::setNumColumns(int numColumns, qreal alignmentWidth)
 {
-    QScriptLine &line = eng->lines[i];
+    QScriptLine &line = eng->lines[index];
     line.width = QFixed::fromReal(alignmentWidth);
     line.length = 0;
     line.textWidth = 0;
@@ -1713,7 +1713,7 @@ static inline void addNextCluster(int &pos, int end, QScriptLine &line, int &gly
 // fill QScriptLine
 void QTextLine::layout_helper(int maxGlyphs)
 {
-    QScriptLine &line = eng->lines[i];
+    QScriptLine &line = eng->lines[index];
     line.length = 0;
     line.trailingSpaces = 0;
     line.textWidth = 0;
@@ -1962,8 +1962,8 @@ found:
 */
 void QTextLine::setPosition(const QPointF &pos)
 {
-    eng->lines[i].x = QFixed::fromReal(pos.x());
-    eng->lines[i].y = QFixed::fromReal(pos.y());
+    eng->lines[index].x = QFixed::fromReal(pos.x());
+    eng->lines[index].y = QFixed::fromReal(pos.y());
 }
 
 /*!
@@ -1971,7 +1971,7 @@ void QTextLine::setPosition(const QPointF &pos)
 */
 QPointF QTextLine::position() const
 {
-    return QPointF(eng->lines[i].x.toReal(), eng->lines[i].y.toReal());
+    return QPointF(eng->lines[index].x.toReal(), eng->lines[index].y.toReal());
 }
 
 // ### DOC: I have no idea what this means/does.
@@ -1987,7 +1987,7 @@ QPointF QTextLine::position() const
 */
 int QTextLine::textStart() const
 {
-    return eng->lines[i].from;
+    return eng->lines[index].from;
 }
 
 /*!
@@ -1998,10 +1998,10 @@ int QTextLine::textStart() const
 int QTextLine::textLength() const
 {
     if (eng->option.flags() & QTextOption::ShowLineAndParagraphSeparators
-        && eng->block.isValid() && i == eng->lines.count()-1) {
-        return eng->lines[i].length - 1;
+        && eng->block.isValid() && index == eng->lines.count()-1) {
+        return eng->lines[index].length - 1;
     }
-    return eng->lines[i].length + eng->lines[i].trailingSpaces;
+    return eng->lines[index].length + eng->lines[index].trailingSpaces;
 }
 
 static void drawMenuText(QPainter *p, QFixed x, QFixed y, const QScriptItem &si, QTextItemInt &gf, QTextEngine *eng,
@@ -2169,7 +2169,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
 */
 QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 {
-    const QScriptLine &line = eng->lines[i];
+    const QScriptLine &line = eng->lines[index];
 
     if (line.length == 0)
         return QList<QGlyphRun>();
@@ -2187,7 +2187,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
     selection.start = from;
     selection.length = length;
 
-    QTextLineItemIterator iterator(eng, i, QPointF(), &selection);
+    QTextLineItemIterator iterator(eng, index, QPointF(), &selection);
     qreal y = line.y.toReal() + line.base().toReal();
     QList<QGlyphRun> glyphRuns;
     while (!iterator.atEnd()) {
@@ -2324,7 +2324,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 */
 void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatRange *selection) const
 {
-    const QScriptLine &line = eng->lines[i];
+    const QScriptLine &line = eng->lines[index];
     QPen pen = p->pen();
 
     bool noText = (selection && selection->format.property(SuppressText).toBool());
@@ -2344,7 +2344,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
     }
 
 
-    QTextLineItemIterator iterator(eng, i, pos, selection);
+    QTextLineItemIterator iterator(eng, index, pos, selection);
     QFixed lineBase = line.base();
 
     const QFixed y = QFixed::fromReal(pos.y()) + line.y + lineBase;
@@ -2536,13 +2536,13 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
     if (!eng->layoutData)
         eng->itemize();
 
-    const QScriptLine &line = eng->lines[i];
-    bool lastLine = i >= eng->lines.size() - 1;
+    const QScriptLine &line = eng->lines[index];
+    bool lastLine = index >= eng->lines.size() - 1;
 
     QFixed x = line.x;
     x += eng->alignLine(line);
 
-    if (!i && !eng->layoutData->items.size()) {
+    if (!index && !eng->layoutData->items.size()) {
         *cursorPos = 0;
         return x.toReal();
     }
@@ -2670,9 +2670,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
 {
     QFixed x = QFixed::fromReal(_x);
-    const QScriptLine &line = eng->lines[i];
-    bool lastLine = i >= eng->lines.size() - 1;
-    int lineNum = i;
+    const QScriptLine &line = eng->lines[index];
+    bool lastLine = index >= eng->lines.size() - 1;
+    int lineNum = index;
 
     if (!eng->layoutData)
         eng->itemize();
@@ -2883,7 +2883,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
     // to position the cursor to the left of that
     // character.
     // ###### breaks with japanese for example
-    if (this->i < eng->lines.count() - 1)
+    if (this->index < eng->lines.count() - 1)
         --maxPos;
 
     pos = qMin(pos, maxPos);
