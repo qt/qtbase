@@ -44,6 +44,8 @@
 #define QARRAY_TEST_SIMPLE_VECTOR_H
 
 #include <QtCore/qarraydata.h>
+#include <QtCore/qarraydataops.h>
+
 #include <algorithm>
 
 template <class T>
@@ -51,6 +53,7 @@ struct SimpleVector
 {
 private:
     typedef QTypedArrayData<T> Data;
+    typedef QArrayDataOps<T> DataOps;
 
 public:
     typedef T value_type;
@@ -71,10 +74,15 @@ public:
     SimpleVector(size_t n, const T &t)
         : d(Data::allocate(n))
     {
-        for (size_t i = 0; i < n; ++i) {
-            new (d->end()) T(t);
-            ++d->size;
-        }
+        if (n)
+            static_cast<DataOps *>(d)->copyAppend(n, t);
+    }
+
+    SimpleVector(const T *begin, const T *end)
+        : d(Data::allocate(end - begin))
+    {
+        if (end - begin)
+            static_cast<DataOps *>(d)->copyAppend(begin, end);
     }
 
     explicit SimpleVector(Data *ptr)
@@ -85,9 +93,7 @@ public:
     ~SimpleVector()
     {
         if (!d->ref.deref()) {
-            const T *const data = d->data();
-            while (d->size--)
-                data[d->size].~T();
+            static_cast<DataOps *>(d)->destroyAll();
             Data::deallocate(d);
         }
     }

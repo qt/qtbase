@@ -41,6 +41,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtCore/QString>
 #include <QtCore/qarraydata.h>
 
 #include "simplevector.h"
@@ -60,6 +61,7 @@ private slots:
     void alignment();
     void typedData();
     void gccBug43247();
+    void arrayOps();
 };
 
 void tst_QArrayData::referenceCounting()
@@ -165,6 +167,8 @@ void tst_QArrayData::simpleVector()
             { 0, 1, 2, 3, 4, 5, 6 }
         };
 
+    int array[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
     SimpleVector<int> v1;
     SimpleVector<int> v2(v1);
     SimpleVector<int> v3(static_cast<QTypedArrayData<int> *>(&data0));
@@ -172,6 +176,7 @@ void tst_QArrayData::simpleVector()
     SimpleVector<int> v5(static_cast<QTypedArrayData<int> *>(&data0));
     SimpleVector<int> v6(static_cast<QTypedArrayData<int> *>(&data1.header));
     SimpleVector<int> v7(10, 5);
+    SimpleVector<int> v8(array, array + sizeof(array)/sizeof(*array));
 
     v3 = v1;
     v1.swap(v3);
@@ -184,6 +189,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v5.isNull());
     QVERIFY(!v6.isNull());
     QVERIFY(!v7.isNull());
+    QVERIFY(!v8.isNull());
 
     QVERIFY(v1.isEmpty());
     QVERIFY(v2.isEmpty());
@@ -192,6 +198,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v5.isEmpty());
     QVERIFY(!v6.isEmpty());
     QVERIFY(!v7.isEmpty());
+    QVERIFY(!v8.isEmpty());
 
     QCOMPARE(v1.size(), size_t(0));
     QCOMPARE(v2.size(), size_t(0));
@@ -200,6 +207,7 @@ void tst_QArrayData::simpleVector()
     QCOMPARE(v5.size(), size_t(0));
     QCOMPARE(v6.size(), size_t(7));
     QCOMPARE(v7.size(), size_t(10));
+    QCOMPARE(v8.size(), size_t(10));
 
     QCOMPARE(v1.capacity(), size_t(0));
     QCOMPARE(v2.capacity(), size_t(0));
@@ -208,6 +216,7 @@ void tst_QArrayData::simpleVector()
     QCOMPARE(v5.capacity(), size_t(0));
     // v6.capacity() is unspecified, for now
     QVERIFY(v7.capacity() >= size_t(10));
+    QVERIFY(v8.capacity() >= size_t(10));
 
     QVERIFY(v1.isSharedWith(v2));
     QVERIFY(v1.isSharedWith(v3));
@@ -219,6 +228,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v4.constBegin() == v4.constEnd());
     QVERIFY(v6.constBegin() + v6.size() == v6.constEnd());
     QVERIFY(v7.constBegin() + v7.size() == v7.constEnd());
+    QVERIFY(v8.constBegin() + v8.size() == v8.constEnd());
 
     QVERIFY(v1 == v2);
     QVERIFY(v1 == v3);
@@ -253,6 +263,16 @@ void tst_QArrayData::simpleVector()
         int count = 0;
         Q_FOREACH (int value, v7) {
             QCOMPARE(value, 5);
+            ++count;
+        }
+
+        QCOMPARE(count, 10);
+    }
+
+    {
+        int count = 0;
+        Q_FOREACH (int value, v8) {
+            QCOMPARE(value, count);
             ++count;
         }
 
@@ -547,6 +567,113 @@ void tst_QArrayData::gccBug43247()
         // skipped.
         QVERIFY(array.at(i) == 0);
         // QVERIFY(vector.at(i) == 0);
+    }
+}
+
+struct CountedObject
+{
+    CountedObject()
+        : id(liveCount++)
+    {
+    }
+
+    CountedObject(const CountedObject &other)
+        : id(other.id)
+    {
+        ++liveCount;
+    }
+
+    ~CountedObject()
+    {
+        --liveCount;
+    }
+
+    CountedObject &operator=(const CountedObject &other)
+    {
+        id = other.id;
+        return *this;
+    }
+
+    struct LeakChecker
+    {
+        LeakChecker()
+            : previousLiveCount(liveCount)
+        {
+        }
+
+        ~LeakChecker()
+        {
+            QCOMPARE(liveCount, previousLiveCount);
+        }
+
+    private:
+        const size_t previousLiveCount;
+    };
+
+    size_t id; // not unique
+    static size_t liveCount;
+};
+
+size_t CountedObject::liveCount = 0;
+
+void tst_QArrayData::arrayOps()
+{
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
+
+    const int intArray[5] = { 80, 101, 100, 114, 111 };
+    const QString stringArray[5] = {
+        QLatin1String("just"),
+        QLatin1String("for"),
+        QLatin1String("testing"),
+        QLatin1String("a"),
+        QLatin1String("vector")
+    };
+    const CountedObject objArray[5];
+
+    QVERIFY(!QTypeInfo<int>::isComplex && !QTypeInfo<int>::isStatic);
+    QVERIFY(QTypeInfo<QString>::isComplex && !QTypeInfo<QString>::isStatic);
+    QVERIFY(QTypeInfo<CountedObject>::isComplex && QTypeInfo<CountedObject>::isStatic);
+
+    QCOMPARE(CountedObject::liveCount, size_t(5));
+    for (size_t i = 0; i < 5; ++i)
+        QCOMPARE(objArray[i].id, i);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // copyAppend (I)
+    SimpleVector<int> vi(intArray, intArray + 5);
+    SimpleVector<QString> vs(stringArray, stringArray + 5);
+    SimpleVector<CountedObject> vo(objArray, objArray + 5);
+
+    QCOMPARE(CountedObject::liveCount, size_t(10));
+    for (int i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], intArray[i]);
+        QVERIFY(vs[i].isSharedWith(stringArray[i]));
+        QCOMPARE(vo[i].id, objArray[i].id);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // destroyAll
+    vi.clear();
+    vs.clear();
+    vo.clear();
+
+    QCOMPARE(CountedObject::liveCount, size_t(5));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // copyAppend (II)
+    int referenceInt = 7;
+    QString referenceString = QLatin1String("reference");
+    CountedObject referenceObject;
+
+    vi = SimpleVector<int>(5, referenceInt);
+    vs = SimpleVector<QString>(5, referenceString);
+    vo = SimpleVector<CountedObject>(5, referenceObject);
+
+    QCOMPARE(CountedObject::liveCount, size_t(11));
+    for (int i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], referenceInt);
+        QVERIFY(vs[i].isSharedWith(referenceString));
+        QCOMPARE(vo[i].id, referenceObject.id);
     }
 }
 

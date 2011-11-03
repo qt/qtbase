@@ -3,6 +3,7 @@
 HEADERS +=  \
         tools/qalgorithms.h \
         tools/qarraydata.h \
+        tools/qarraydataops.h \
         tools/qbitarray.h \
         tools/qbytearray.h \
         tools/qbytearraymatcher.h \
