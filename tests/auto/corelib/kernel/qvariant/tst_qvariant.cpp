@@ -2914,6 +2914,9 @@ void tst_QVariant::task256984_setValue()
 
 void tst_QVariant::numericalConvert()
 {
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("Known to fail due to a GCC bug on at least Ubuntu 10.04 32-bit - check QTBUG-8959");
+#endif
     QVariant vfloat(float(5.3));
     QVariant vdouble(double(5.3));
     QVariant vreal(qreal(5.3));
