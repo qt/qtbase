@@ -4,7 +4,7 @@ SUBDIRS += \
     corelib.pro \
     dbus \
     host.pro \
-    gui.pro \
+    gui \
     integrationtests \
     network \
     opengl \
