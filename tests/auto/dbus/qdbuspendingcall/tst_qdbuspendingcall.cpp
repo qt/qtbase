@@ -392,7 +392,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
     QTestEventLoop::instance().connect(&thread, SIGNAL(finished()), SLOT(exitLoop()));
     thread.start();
     QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!thread.isRunning());
+    QVERIFY(thread.wait(3000));
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
