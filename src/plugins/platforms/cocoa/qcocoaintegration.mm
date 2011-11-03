@@ -76,10 +76,13 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
     const int dpi = 72;
     const qreal inch = 25.4;
     m_physicalSize = QSizeF(m_geometry.size()) * inch / dpi;
-}
+
+    m_cursor = new QCocoaCursor(this);
+};
 
 QCocoaScreen::~QCocoaScreen()
 {
+    delete m_cursor;
 }
 
 QCocoaIntegration::QCocoaIntegration()

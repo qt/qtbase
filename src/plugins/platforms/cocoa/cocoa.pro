@@ -23,6 +23,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaaccessibilityelement.mm \
     qcocoaaccessibility.mm \
     qcocoafiledialoghelper.mm \
+    qcocoacursor.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -43,6 +44,7 @@ HEADERS += qcocoaintegration.h \
     qcocoaaccessibilityelement.h \
     qcocoaaccessibility.h \
     qcocoafiledialoghelper.h \
+    qcocoacursor.h \
 
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc

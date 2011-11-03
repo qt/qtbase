@@ -39,68 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_COCOA_H
-#define QPLATFORMINTEGRATION_COCOA_H
+#ifndef QWINDOWSCURSOR_H
+#define QWINDOWSCURSOR_H
 
 #include <Cocoa/Cocoa.h>
 
-#include "qcocoaautoreleasepool.h"
-#include "qcocoacursor.h"
-
-#include <QtGui/QPlatformIntegration>
+#include <QtCore>
+#include <QtGui/QPlatformCursor>
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaScreen : public QPlatformScreen
+class QCocoaCursor : public QPlatformCursor
 {
 public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
+    explicit QCocoaCursor(QPlatformScreen *);
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSizeF physicalSize() const { return m_physicalSize; }
-
-public:
-    NSScreen *m_screen;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSizeF m_physicalSize;
-    QCocoaCursor *m_cursor;
-};
-
-class QCocoaIntegration : public QPlatformIntegration
-{
-public:
-    QCocoaIntegration();
-    ~QCocoaIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
-
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
-
-    bool usePlatformNativeDialog(QDialog *dialog = 0) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-    QPlatformAccessibility *accessibility() const;
+    virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
+    virtual QPoint pos();
+    virtual void setPos(const QPoint &position);
 private:
-    QPlatformFontDatabase *mFontDb;
-    QAbstractEventDispatcher *mEventDispatcher;
-
-    QCocoaAutoReleasePool *mPool;
-    QPlatformAccessibility *mAccessibility;
+    QHash<Qt::CursorShape, NSCursor *> m_cursors;
+    NSCursor *createCursorData(QCursor *);
+    NSCursor *createCursorFromBitmap(const QBitmap *bitmap, const QBitmap *mask, const QPoint hotspot = QPoint());
+    NSCursor *createCursorFromPixmap(const QPixmap pixmap, const QPoint hotspot = QPoint());
 };
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QWINDOWSCURSOR_H
