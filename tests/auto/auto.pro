@@ -11,7 +11,7 @@ SUBDIRS += \
     sql \
     testlib \
     tools \
-    v8.pro \
+    v8 \
     xml \
     other \
     widgets \
