@@ -81,9 +81,9 @@ public:
     {
         this->setRunnable(this);
         this->reportStarted();
-        QFuture<T> future = this->future();
+        QFuture<T> theFuture = this->future();
         QThreadPool::globalInstance()->start(this, /*m_priority*/ 0);
-        return future;
+        return theFuture;
     }
 
     void run() {}
