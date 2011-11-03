@@ -4,13 +4,14 @@ SUBDIRS=\
    qdrag \
    qevent \
    qfileopenevent \
-   qinputpanel \
    qguimetatype \
    qguivariant \
+   qinputpanel \
    qkeysequence \
    qmouseevent \
    qmouseevent_modal \
    qpalette \
+   qscreen \
    qshortcut \
    qtouchevent \
-
+   qwindow \

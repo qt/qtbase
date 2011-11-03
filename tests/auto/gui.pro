@@ -6,7 +6,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     gui \
-    qopengl \
     qtransformedscreen \
     qwindowsurface \
     qwsembedwidget \

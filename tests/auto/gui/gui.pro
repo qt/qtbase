@@ -4,6 +4,6 @@ SUBDIRS=\
     kernel \
     math3d \
     painting \
+    qopengl \
     text \
     util \
-
