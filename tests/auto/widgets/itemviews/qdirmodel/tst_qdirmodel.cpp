@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qdirmodel.h>
 #include <qapplication.h>
@@ -53,20 +52,11 @@
 class tst_QDirModel : public QObject
 {
     Q_OBJECT
-
-public:
-
-    tst_QDirModel();
-    virtual ~tst_QDirModel();
-
-
 public slots:
-    void initTestCase();
     void cleanupTestCase();
 #ifdef Q_OS_UNIX
     void init();
 #endif
-    void cleanup();
 private slots:
     void getSetCheck();
 #ifdef Q_OS_UNIX
@@ -144,19 +134,6 @@ void tst_QDirModel::getSetCheck()
 Q_DECLARE_METATYPE(QModelIndex)
 Q_DECLARE_METATYPE(QModelIndexList)
 
-tst_QDirModel::tst_QDirModel()
-
-{
-}
-
-tst_QDirModel::~tst_QDirModel()
-{
-}
-
-void tst_QDirModel::initTestCase()
-{
-}
-
 void tst_QDirModel::cleanupTestCase()
 {
     QDir current;
@@ -177,10 +154,6 @@ void tst_QDirModel::init()
     }
 }
 #endif
-
-void tst_QDirModel::cleanup()
-{
-}
 
 /*
   tests
