@@ -13,7 +13,7 @@ SUBDIRS += \
     tools \
     v8.pro \
     xml \
-    other.pro \
+    other \
     widgets \
 
 cross_compile:                              SUBDIRS -= host.pro
