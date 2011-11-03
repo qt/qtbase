@@ -111,6 +111,7 @@ private slots:
     void destroyFinishRace();
     void startFinishRace();
     void startAndQuitCustomEventLoop();
+    void isRunningInFinished();
 
 #ifndef Q_OS_WINCE
     void stressTest();
@@ -1199,6 +1200,39 @@ void tst_QThread::startAndQuitCustomEventLoop()
    }
 }
 
+class FinishedTestObject : public QObject {
+    Q_OBJECT
+public:
+    FinishedTestObject() : ok(false) {}
+    bool ok;
+public slots:
+    void slotFinished() {
+        QThread *t = qobject_cast<QThread *>(sender());
+        ok = t && t->isFinished() && !t->isRunning();
+    }
+};
+
+void tst_QThread::isRunningInFinished()
+{
+    for (int i = 0; i < 15; i++) {
+        QThread thread;
+        thread.start();
+        FinishedTestObject localObject;
+        FinishedTestObject inThreadObject;
+        localObject.setObjectName("...");
+        inThreadObject.moveToThread(&thread);
+        connect(&thread, SIGNAL(finished()), &localObject, SLOT(slotFinished()));
+        connect(&thread, SIGNAL(finished()), &inThreadObject, SLOT(slotFinished()));
+        QEventLoop loop;
+        connect(&thread, SIGNAL(finished()), &loop, SLOT(quit()));
+        QMetaObject::invokeMethod(&thread, "quit", Qt::QueuedConnection);
+        loop.exec();
+        QVERIFY(!thread.isRunning());
+        QVERIFY(thread.isFinished());
+        QVERIFY(localObject.ok);
+        QVERIFY(inThreadObject.ok);
+    }
+}
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"
