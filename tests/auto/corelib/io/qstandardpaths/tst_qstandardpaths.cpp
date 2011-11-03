@@ -50,6 +50,10 @@
 #include <sys/types.h>
 #endif
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#define Q_XDG_PLATFORM
+#endif
+
 //TESTED_CLASS=QStandardPaths
 //TESTED_FILES=qstandardpaths.cpp
 
@@ -91,7 +95,7 @@ private:
 
 void tst_qstandardpaths::testDefaultLocations()
 {
-#ifndef Q_OS_WIN
+#ifdef Q_XDG_PLATFORM
     qputenv("XDG_CONFIG_HOME", QByteArray());
     qputenv("XDG_CONFIG_DIRS", QByteArray());
     const QString expectedConfHome = QDir::homePath() + QString::fromLatin1("/.config");
@@ -113,7 +117,7 @@ void tst_qstandardpaths::testDefaultLocations()
 
 void tst_qstandardpaths::testCustomLocations()
 {
-#ifndef Q_OS_WIN
+#ifdef Q_XDG_PLATFORM
     setCustomLocations();
 
     // test writableLocation()
@@ -140,7 +144,7 @@ void tst_qstandardpaths::testCustomLocations()
 
 void tst_qstandardpaths::testLocateAll()
 {
-#ifndef Q_OS_WIN
+#ifdef Q_XDG_PLATFORM
     const QStringList appsDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "applications", QStandardPaths::LocateDirectory);
     //qDebug() << appsDirs;
     foreach (const QString &dir, appsDirs)
@@ -220,7 +224,7 @@ void tst_qstandardpaths::testRuntimeDirectory()
     QVERIFY(!runtimeDir.isEmpty());
 
     // Check that it can automatically fix permissions
-#ifdef Q_OS_UNIX
+#ifdef Q_XDG_PLATFORM
     QFile file(runtimeDir);
     const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser;
     const QFile::Permissions additionalPerms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
@@ -234,7 +238,7 @@ void tst_qstandardpaths::testRuntimeDirectory()
 
 void tst_qstandardpaths::testCustomRuntimeDirectory()
 {
-#ifdef Q_OS_UNIX
+#ifdef Q_XDG_PLATFORM
     qputenv("XDG_RUNTIME_DIR", QFile::encodeName("/tmp"));
     // It's very unlikely that /tmp is 0600 or that we can chmod it
     // The call below outputs
