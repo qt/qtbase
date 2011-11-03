@@ -177,6 +177,13 @@ struct QStaticArrayData
     T data[N];
 };
 
+// Support for returning QArrayDataPointer<T> from functions
+template <class T>
+struct QArrayDataPointerRef
+{
+    QTypedArrayData<T> *ptr;
+};
+
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) { \
     Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, \
     (sizeof(QArrayData) + (Q_ALIGNOF(type) - 1)) \

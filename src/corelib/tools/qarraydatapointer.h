@@ -76,6 +76,11 @@ public:
         Q_CHECK_PTR(ptr);
     }
 
+    QArrayDataPointer(QArrayDataPointerRef<T> ref)
+        : d(ref.ptr)
+    {
+    }
+
     QArrayDataPointer &operator=(const QArrayDataPointer &other)
     {
         QArrayDataPointer tmp(other);
