@@ -158,16 +158,20 @@ QDebug operator<<(QDebug d, const NCCALCSIZE_PARAMS &p)
 
 // Return the frame geometry relative to the parent
 // if there is one.
-// Note: This has been observed to return invalid sizes for child windows.
-static inline QRect frameGeometry(HWND hwnd)
+static inline QRect frameGeometry(HWND hwnd, bool topLevel)
 {
     RECT rect = { 0, 0, 0, 0 };
     GetWindowRect(hwnd, &rect); // Screen coordinates.
-    if (const HWND parent = GetParent(hwnd)) {
+    const HWND parent = GetParent(hwnd);
+    if (parent && !topLevel) {
+        const int width = rect.right - rect.left;
+        const int height = rect.bottom - rect.top;
         POINT leftTop = { rect.left, rect.top };
         ScreenToClient(parent, &leftTop);
         rect.left = leftTop.x;
         rect.top = leftTop.y;
+        rect.right = leftTop.x + width;
+        rect.bottom = leftTop.y + height;
     }
     return qrectFromRECT(rect);
 }
@@ -363,7 +367,7 @@ QWindowsWindow::WindowData
 
     if (desktop) {                        // desktop widget. No frame, hopefully?
         result.hwnd = GetDesktopWindow();
-        result.geometry = frameGeometry(result.hwnd);
+        result.geometry = frameGeometry(result.hwnd, true);
         if (QWindowsContext::verboseWindows)
             qDebug().nospace() << "Created desktop window " << w << result.hwnd;
         return result;
@@ -903,13 +907,7 @@ void QWindowsWindow::setGeometry_sys(const QRect &rect) const
 QRect QWindowsWindow::geometry_sys() const
 {
     // Warning: Returns bogus values when minimized.
-    // Note: Using frameGeometry (based on GetWindowRect)
-    // has been observed to return a size based on a standard top level
-    // frame for WS_CHILD windows (whose frame is zero), thus, use the real
-    // client size instead.
-    QRect result = frameGeometry(m_data.hwnd) - frameMargins();
-    if (result.isValid() && !window()->isTopLevel())
-        result.setSize(clientSize(m_data.hwnd));
+    QRect result = frameGeometry(m_data.hwnd, window()->isTopLevel()) - frameMargins();
     return result;
 }
 
