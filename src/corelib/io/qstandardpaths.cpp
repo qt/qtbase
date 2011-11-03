@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
     \value DocumentsLocation Returns the user's document.
     \value FontsLocation Returns the user's fonts.
     \value ApplicationsLocation Returns the user's applications.
-    \value MusicLocation Returns the users music.
+    \value MusicLocation Returns the user's music.
     \value MoviesLocation Returns the user's movies.
     \value PicturesLocation Returns the user's pictures.
     \value TempLocation Returns the system's temporary directory.
@@ -89,6 +89,7 @@ QT_BEGIN_NAMESPACE
            files should be written. For instance unix local sockets.
     \value ConfigLocation Returns a directory location where user-specific
            configuration files should be written.
+    \value DownloadLocation Returns a directory for user's downloaded files.
 
 
     \sa writableLocation() standardLocations() displayName() locate() locateAll()

@@ -60,6 +60,8 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
         return kPreferencesFolderType;
     case QStandardPaths::DesktopLocation:
         return kDesktopFolderType;
+    case QStandardPaths::DownloadLocation: // needs NSSearchPathForDirectoriesInDomains with NSDownloadsDirectory
+                                           // which needs an objective-C *.mm file...
     case QStandardPaths::DocumentsLocation:
         return kDocumentsFolderType;
     case QStandardPaths::FontsLocation:

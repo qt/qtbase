@@ -266,6 +266,7 @@ void tst_qstandardpaths::testAllWritableLocations_data()
     QTest::newRow("TempLocation") << QStandardPaths::TempLocation;
     QTest::newRow("HomeLocation") << QStandardPaths::HomeLocation;
     QTest::newRow("DataLocation") << QStandardPaths::DataLocation;
+    QTest::newRow("DownloadLocation") << QStandardPaths::DownloadLocation;
 }
 
 void tst_qstandardpaths::testAllWritableLocations()
