@@ -17,6 +17,7 @@ SUBDIRS=\
    qfocusevent \
    qmultiscreen \
    qnetworkaccessmanager_and_qprogressdialog \
+   qobjectrace \
    qsharedpointer_and_qwidget \
    windowsmobile \
 
