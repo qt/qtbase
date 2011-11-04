@@ -48,9 +48,57 @@
                "<p>Click a button to close the message box. Pressing the Esc button " \
                "will activate the detected escape button (if any).")
 
+
+class DialogOptionsWidget : public QGroupBox
+{
+public:
+    explicit DialogOptionsWidget(QWidget *parent = 0);
+
+    void addCheckBox(const QString &text, int value);
+    void addSpacer();
+    int value() const;
+
+private:
+    typedef QPair<QCheckBox *, int> CheckBoxEntry;
+    QVBoxLayout *layout;
+    QList<CheckBoxEntry> checkBoxEntries;
+};
+
+DialogOptionsWidget::DialogOptionsWidget(QWidget *parent) :
+    QGroupBox(parent) , layout(new QVBoxLayout)
+{
+    setTitle(Dialog::tr("Options"));
+    setLayout(layout);
+}
+
+void DialogOptionsWidget::addCheckBox(const QString &text, int value)
+{
+    QCheckBox *checkBox = new QCheckBox(text);
+    layout->addWidget(checkBox);
+    checkBoxEntries.append(CheckBoxEntry(checkBox, value));
+}
+
+void DialogOptionsWidget::addSpacer()
+{
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+}
+
+int DialogOptionsWidget::value() const
+{
+    int result = 0;
+    foreach (const CheckBoxEntry &checkboxEntry, checkBoxEntries)
+        if (checkboxEntry.first->isChecked())
+            result |= checkboxEntry.second;
+    return result;
+}
+
 Dialog::Dialog(QWidget *parent)
     : QWidget(parent)
 {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QToolBox *toolbox = new QToolBox;
+    mainLayout->addWidget(toolbox);
+
     errorMessageDialog = new QErrorMessage(this);
 
     int frameStyle = QFrame::Sunken | QFrame::Panel;
@@ -146,11 +194,8 @@ Dialog::Dialog(QWidget *parent)
     connect(warningButton, SIGNAL(clicked()), this, SLOT(warningMessage()));
     connect(errorButton, SIGNAL(clicked()), this, SLOT(errorMessage()));
 
-    native = new QCheckBox(this);
-    native->setText("Use native file dialog.");
-    native->setChecked(true);
-
-    QGridLayout *layout = new QGridLayout;
+    QWidget *page = new QWidget;
+    QGridLayout *layout = new QGridLayout(page);
     layout->setColumnStretch(1, 1);
     layout->setColumnMinimumWidth(1, 250);
     layout->addWidget(integerButton, 0, 0);
@@ -161,30 +206,75 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(itemLabel, 2, 1);
     layout->addWidget(textButton, 3, 0);
     layout->addWidget(textLabel, 3, 1);
-    layout->addWidget(colorButton, 4, 0);
-    layout->addWidget(colorLabel, 4, 1);
-    layout->addWidget(fontButton, 5, 0);
-    layout->addWidget(fontLabel, 5, 1);
-    layout->addWidget(directoryButton, 6, 0);
-    layout->addWidget(directoryLabel, 6, 1);
-    layout->addWidget(openFileNameButton, 7, 0);
-    layout->addWidget(openFileNameLabel, 7, 1);
-    layout->addWidget(openFileNamesButton, 8, 0);
-    layout->addWidget(openFileNamesLabel, 8, 1);
-    layout->addWidget(saveFileNameButton, 9, 0);
-    layout->addWidget(saveFileNameLabel, 9, 1);
-    layout->addWidget(criticalButton, 10, 0);
-    layout->addWidget(criticalLabel, 10, 1);
-    layout->addWidget(informationButton, 11, 0);
-    layout->addWidget(informationLabel, 11, 1);
-    layout->addWidget(questionButton, 12, 0);
-    layout->addWidget(questionLabel, 12, 1);
-    layout->addWidget(warningButton, 13, 0);
-    layout->addWidget(warningLabel, 13, 1);
-    layout->addWidget(errorButton, 14, 0);
-    layout->addWidget(errorLabel, 14, 1);
-    layout->addWidget(native, 15, 0);
-    setLayout(layout);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 4, 0);
+    toolbox->addItem(page, tr("Input Dialogs"));
+
+    const QString doNotUseNativeDialog = tr("Do not use native dialog");
+
+    page = new QWidget;
+    layout = new QGridLayout(page);
+    layout->setColumnStretch(1, 1);
+    layout->addWidget(colorButton, 0, 0);
+    layout->addWidget(colorLabel, 0, 1);
+    colorDialogOptionsWidget = new DialogOptionsWidget;
+    colorDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QColorDialog::DontUseNativeDialog);
+    colorDialogOptionsWidget->addCheckBox(tr("Show alpha channel") , QColorDialog::ShowAlphaChannel);
+    colorDialogOptionsWidget->addCheckBox(tr("No buttons") , QColorDialog::NoButtons);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 1, 0);
+    layout->addWidget(colorDialogOptionsWidget, 2, 0, 1 ,2);
+
+    toolbox->addItem(page, tr("Color Dialog"));
+
+    page = new QWidget;
+    layout = new QGridLayout(page);
+    layout->setColumnStretch(1, 1);
+    layout->addWidget(fontButton, 0, 0);
+    layout->addWidget(fontLabel, 0, 1);
+    fontDialogOptionsWidget = new DialogOptionsWidget;
+    fontDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QFontDialog::DontUseNativeDialog);
+    fontDialogOptionsWidget->addCheckBox(tr("No buttons") , QFontDialog::NoButtons);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 1, 0);
+    layout->addWidget(fontDialogOptionsWidget, 2, 0, 1 ,2);
+    toolbox->addItem(page, tr("Font Dialog"));
+
+    page = new QWidget;
+    layout = new QGridLayout(page);
+    layout->setColumnStretch(1, 1);
+    layout->addWidget(directoryButton, 0, 0);
+    layout->addWidget(directoryLabel, 0, 1);
+    layout->addWidget(openFileNameButton, 1, 0);
+    layout->addWidget(openFileNameLabel, 1, 1);
+    layout->addWidget(openFileNamesButton, 2, 0);
+    layout->addWidget(openFileNamesLabel, 2, 1);
+    layout->addWidget(saveFileNameButton, 3, 0);
+    layout->addWidget(saveFileNameLabel, 3, 1);
+    fileDialogOptionsWidget = new DialogOptionsWidget;
+    fileDialogOptionsWidget->addCheckBox(doNotUseNativeDialog, QFileDialog::DontUseNativeDialog);
+    fileDialogOptionsWidget->addCheckBox(tr("Show directories only"), QFileDialog::ShowDirsOnly);
+    fileDialogOptionsWidget->addCheckBox(tr("Do not resolve symlinks"), QFileDialog::DontResolveSymlinks);
+    fileDialogOptionsWidget->addCheckBox(tr("Do not confirm overwrite"), QFileDialog::DontConfirmOverwrite);
+    fileDialogOptionsWidget->addCheckBox(tr("Do not use sheet"), QFileDialog::DontUseSheet);
+    fileDialogOptionsWidget->addCheckBox(tr("Readonly"), QFileDialog::ReadOnly);
+    fileDialogOptionsWidget->addCheckBox(tr("Hide name filter details"), QFileDialog::HideNameFilterDetails);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 4, 0);
+    layout->addWidget(fileDialogOptionsWidget, 5, 0, 1 ,2);
+    toolbox->addItem(page, tr("File Dialogs"));
+
+    page = new QWidget;
+    layout = new QGridLayout(page);
+    layout->setColumnStretch(1, 1);
+    layout->addWidget(criticalButton, 0, 0);
+    layout->addWidget(criticalLabel, 0, 1);
+    layout->addWidget(informationButton, 1, 0);
+    layout->addWidget(informationLabel, 1, 1);
+    layout->addWidget(questionButton, 2, 0);
+    layout->addWidget(questionLabel, 2, 1);
+    layout->addWidget(warningButton, 3, 0);
+    layout->addWidget(warningLabel, 3, 1);
+    layout->addWidget(errorButton, 4, 0);
+    layout->addWidget(errorLabel, 4, 1);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 5, 0);
+    toolbox->addItem(page, tr("Message Boxes"));
 
     setWindowTitle(tr("Standard Dialogs"));
 }
@@ -239,11 +329,8 @@ void Dialog::setText()
 
 void Dialog::setColor()
 {
-    QColor color;
-    if (native->isChecked())
-        color = QColorDialog::getColor(Qt::green, this);
-    else
-        color = QColorDialog::getColor(Qt::green, this, "Select Color", QColorDialog::DontUseNativeDialog);
+    const QColorDialog::ColorDialogOptions options = QFlag(colorDialogOptionsWidget->value());
+    const QColor color = QColorDialog::getColor(Qt::green, this, "Select Color", options);
 
     if (color.isValid()) {
         colorLabel->setText(color.name());
@@ -254,8 +341,9 @@ void Dialog::setColor()
 
 void Dialog::setFont()
 {
+    const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
     bool ok;
-    QFont font = QFontDialog::getFont(&ok, QFont(fontLabel->text()), this);
+    QFont font = QFontDialog::getFont(&ok, QFont(fontLabel->text()), this, "Select Font", options);
     if (ok) {
         fontLabel->setText(font.key());
         fontLabel->setFont(font);
@@ -264,9 +352,8 @@ void Dialog::setFont()
 
 void Dialog::setExistingDirectory()
 {
-    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
-    if (!native->isChecked())
-        options |= QFileDialog::DontUseNativeDialog;
+    QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
+    options |= QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
     QString directory = QFileDialog::getExistingDirectory(this,
                                 tr("QFileDialog::getExistingDirectory()"),
                                 directoryLabel->text(),
@@ -277,9 +364,7 @@ void Dialog::setExistingDirectory()
 
 void Dialog::setOpenFileName()
 {
-    QFileDialog::Options options;
-    if (!native->isChecked())
-        options |= QFileDialog::DontUseNativeDialog;
+    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
     QString selectedFilter;
     QString fileName = QFileDialog::getOpenFileName(this,
                                 tr("QFileDialog::getOpenFileName()"),
@@ -293,9 +378,7 @@ void Dialog::setOpenFileName()
 
 void Dialog::setOpenFileNames()
 {
-    QFileDialog::Options options;
-    if (!native->isChecked())
-        options |= QFileDialog::DontUseNativeDialog;
+    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
     QString selectedFilter;
     QStringList files = QFileDialog::getOpenFileNames(
                                 this, tr("QFileDialog::getOpenFileNames()"),
@@ -311,9 +394,7 @@ void Dialog::setOpenFileNames()
 
 void Dialog::setSaveFileName()
 {
-    QFileDialog::Options options;
-    if (!native->isChecked())
-        options |= QFileDialog::DontUseNativeDialog;
+    const QFileDialog::Options options = QFlag(fileDialogOptionsWidget->value());
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
                                 tr("QFileDialog::getSaveFileName()"),

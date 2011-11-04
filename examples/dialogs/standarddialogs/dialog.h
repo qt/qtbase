@@ -49,6 +49,8 @@ class QLabel;
 class QErrorMessage;
 QT_END_NAMESPACE
 
+class DialogOptionsWidget;
+
 class Dialog : public QWidget
 {
     Q_OBJECT
@@ -74,7 +76,6 @@ private slots:
     void errorMessage();
 
 private:
-    QCheckBox *native;
     QLabel *integerLabel;
     QLabel *doubleLabel;
     QLabel *itemLabel;
@@ -91,7 +92,9 @@ private:
     QLabel *warningLabel;
     QLabel *errorLabel;
     QErrorMessage *errorMessageDialog;
-
+    DialogOptionsWidget *fileDialogOptionsWidget;
+    DialogOptionsWidget *colorDialogOptionsWidget;
+    DialogOptionsWidget *fontDialogOptionsWidget;
     QString openFilesPath;
 };
 
