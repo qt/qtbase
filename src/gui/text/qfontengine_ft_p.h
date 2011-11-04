@@ -152,7 +152,6 @@ public:
         signed char advance;
         signed char format;
         uchar *data;
-        unsigned int uploadedToServer : 1;
     };
 
     enum SubpixelAntialiasingType {
@@ -269,7 +268,7 @@ private:
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat, const QTransform &t,
                                            QPoint *offset);
-    virtual bool hasInternalCaching() const { return true; }
+    virtual bool hasInternalCaching() const { return cacheEnabled; }
     virtual void unlockAlphaMapForGlyph();
 
     virtual void removeGlyphFromCache(glyph_t glyph);
@@ -290,19 +289,14 @@ private:
     inline bool isBitmapFont() const { return defaultFormat == Format_Mono; }
 
     inline Glyph *loadGlyph(uint glyph, QFixed subPixelPosition, GlyphFormat format = Format_None, bool fetchMetricsOnly = false) const
-    { return loadGlyph(&defaultGlyphSet, glyph, subPixelPosition, format, fetchMetricsOnly); }
+    { return loadGlyph(cacheEnabled ? &defaultGlyphSet : 0, glyph, subPixelPosition, format, fetchMetricsOnly); }
     Glyph *loadGlyph(QGlyphSet *set, uint glyph, QFixed subPixelPosition, GlyphFormat = Format_None, bool fetchMetricsOnly = false) const;
-
-    QGlyphSet *defaultGlyphs() { return &defaultGlyphSet; }
-    GlyphFormat defaultGlyphFormat() const { return defaultFormat; }
-
-    inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.getGlyph(g, 0); }
+    Glyph *loadGlyphFor(glyph_t g, QFixed subPixelPosition, GlyphFormat format);
 
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
     bool loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
                     const QFixedPoint *positions,
                     GlyphFormat format = Format_Render);
-
 
     QFontEngineFT(const QFontDef &fd);
     virtual ~QFontEngineFT();
@@ -321,28 +315,20 @@ private:
     bool initFromFontEngine(const QFontEngineFT *fontEngine);
 
     HintStyle defaultHintStyle() const { return default_hint_style; }
+
 protected:
-
-    void freeGlyphSets();
-
-    virtual bool uploadGlyphToServer(QGlyphSet *set, uint glyphid, Glyph *g, GlyphInfo *info, int glyphDataSize) const;
-    virtual unsigned long allocateServerGlyphSet();
-    virtual void freeServerGlyphSet(unsigned long id);
 
     QFreetypeFace *freetype;
     int default_load_flags;
-
-
     HintStyle default_hint_style;
-
     bool antialias;
     bool transform;
     bool embolden;
     bool obliquen;
     SubpixelAntialiasingType subpixelType;
     int lcdFilterType;
-    bool canUploadGlyphsToServer;
     bool embeddedbitmap;
+    bool cacheEnabled;
 
 private:
     friend class QFontEngineFTRawFont;
