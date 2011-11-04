@@ -88,6 +88,16 @@ struct QWindowsUser32DLL
     CloseTouchInputHandle closeTouchInputHandle;
 };
 
+struct QWindowsShell32DLL
+{
+    QWindowsShell32DLL();
+    inline void init();
+
+    typedef HRESULT (WINAPI *SHCreateItemFromParsingName)(PCWSTR, IBindCtx *, const GUID&, void **);
+
+    SHCreateItemFromParsingName sHCreateItemFromParsingName;
+};
+
 class QWindowsContext
 {
     Q_DISABLE_COPY(QWindowsContext)
@@ -107,6 +117,7 @@ public:
     static int verboseGL;
     static int verboseOLE;
     static int verboseInputMethods;
+    static int verboseDialogs;
 
     explicit QWindowsContext();
     ~QWindowsContext();
@@ -153,6 +164,7 @@ public:
     QWindowsMimeConverter &mimeConverter() const;
 
     static QWindowsUser32DLL user32dll;
+    static QWindowsShell32DLL shell32dll;
 
     static QByteArray comErrorString(HRESULT hr);
 

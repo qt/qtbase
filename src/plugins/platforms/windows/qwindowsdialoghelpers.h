@@ -39,49 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSINTEGRATION_H
-#define QWINDOWSINTEGRATION_H
+#ifndef QWINDOWSDIALOGHELPER_H
+#define QWINDOWSDIALOGHELPER_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtCore/QScopedPointer>
+#ifdef QT_WIDGETS_LIB
+
+#include <QtWidgets/qplatformdialoghelper_qpa.h>
+#include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
 
-struct QWindowsIntegrationPrivate;
+class QFileDialog;
+class QWindowsNativeDialogBase;
 
-class QWindowsIntegration : public QPlatformIntegration
+namespace QWindowsDialogs
+{
+    enum Type { UnknownType, ColorDialog, FontDialog, FileDialog };
+
+    Type dialogType(const QDialog *dialog);
+    void eatMouseMove();
+} // namespace QWindowsDialogs
+
+class QWindowsDialogHelperBase : public QPlatformDialogHelper
 {
 public:
-    QWindowsIntegration();
-    virtual ~QWindowsIntegration();
+    static bool useHelper(const QDialog *dialog);
+    static QPlatformDialogHelper *create(QDialog *dialog);
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    virtual void platformNativeDialogModalHelp();
+    virtual void _q_platformRunNativeAppModalPanel();
+    virtual void deleteNativeDialog_sys();
+    virtual bool setVisible_sys(bool visible);
+    virtual QDialog::DialogCode dialogResultCode_sys();
 
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    virtual bool nonNativeDialog() const = 0;
+    virtual bool supportsNonModalDialog() const { return true; }
 
-    virtual QPlatformClipboard *clipboard() const;
-    virtual QPlatformDrag *drag() const;
-    virtual QPlatformInputContext *inputContext() const;
-    virtual QPlatformAccessibility *accessibility() const;
-    virtual QPlatformNativeInterface *nativeInterface() const;
-    virtual QPlatformFontDatabase *fontDatabase() const;
-    virtual QVariant styleHint(StyleHint hint) const;
-
-#ifdef QT_WIDGETS_LIB
-    virtual bool usePlatformNativeDialog(QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
-#endif // QT_WIDGETS_LIB
-
-    static QWindowsIntegration *instance();
+protected:
+    explicit QWindowsDialogHelperBase(QDialog *dialog);
+    QWindowsNativeDialogBase *nativeDialog() const;
 
 private:
-    QScopedPointer<QWindowsIntegrationPrivate> d;
+    virtual QWindowsNativeDialogBase *createNativeDialog() = 0;
+    inline QWindowsNativeDialogBase *ensureNativeDialog();
+
+    QDialog *m_dialog;
+    QWindowsNativeDialogBase *m_nativeDialog;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_WIDGETS_LIB
+#endif // QWINDOWSDIALOGHELPER_H

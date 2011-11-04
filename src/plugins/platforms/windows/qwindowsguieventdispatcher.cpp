@@ -126,6 +126,7 @@ messageDebugEntries[] = {
     {WM_MOUSEACTIVATE,"WM_MOUSEACTIVATE", true},
     {WM_CHILDACTIVATE, "WM_CHILDACTIVATE", true},
     {WM_PARENTNOTIFY, "WM_PARENTNOTIFY", true},
+    {WM_ENTERIDLE, "WM_ENTERIDLE", false},
     {WM_GETICON, "WM_GETICON", false},
     {WM_KEYDOWN, "WM_KEYDOWN", true},
     {WM_SYSKEYDOWN, "WM_SYSKEYDOWN", true},

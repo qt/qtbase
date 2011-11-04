@@ -61,6 +61,10 @@
 
 #define CO_E_NOT_SUPPORTED               _HRESULT_TYPEDEF_(0x80004021L)
 
+#define IFMETHOD HRESULT STDMETHODCALLTYPE
+#define IFACEMETHODIMP STDMETHODIMP
+#define IFACEMETHODIMP_(type) STDMETHODIMP_(type)
+
 typedef struct tagUPDATELAYEREDWINDOWINFO {
   DWORD               cbSize;
   HDC                 hdcDst;

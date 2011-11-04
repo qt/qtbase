@@ -69,6 +69,12 @@ HEADERS += \
     qwindowsinputcontext.h \
     qwindowsaccessibility.h
 
+#   Dialog helper: Should be used only if QtWidgets is built
+QT *= widgets
+HEADERS += qwindowsdialoghelpers.h
+SOURCES += qwindowsdialoghelpers.cpp
+LIBS += -lshlwapi -lShell32
+
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
     DEFINES *= QT_COMPILES_IN_HARFBUZZ

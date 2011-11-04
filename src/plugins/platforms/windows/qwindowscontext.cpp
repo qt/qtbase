@@ -75,6 +75,7 @@ int QWindowsContext::verboseFonts = 0;
 int QWindowsContext::verboseGL = 0;
 int QWindowsContext::verboseOLE = 0;
 int QWindowsContext::verboseInputMethods = 0;
+int QWindowsContext::verboseDialogs = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
 static inline int componentVerbose(const char *v, const char *keyWord)
@@ -144,6 +145,8 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
     In addition, touch-related functions are available only from Windows onwards.
     These need to resolved dynamically for Q_CC_MSVC as well.
 
+    \sa QWindowsShell32DLL
+
     \ingroup qt-lighthouse-win
 */
 
@@ -178,7 +181,30 @@ bool QWindowsUser32DLL::initTouch()
     return registerTouchWindow && getTouchInputInfo && getTouchInputInfo;
 }
 
+/*!
+    \class QWindowsShell32DLL
+    \brief Struct that contains dynamically resolved symbols of Shell32.dll.
+
+    The stub libraries shipped with the MinGW compiler miss some of the
+    functions. They need to be retrieved dynamically.
+
+    \sa QWindowsUser32DLL
+
+    \ingroup qt-lighthouse-win
+*/
+
+QWindowsShell32DLL::QWindowsShell32DLL() : sHCreateItemFromParsingName(0)
+{
+}
+
+void QWindowsShell32DLL::init()
+{
+    QSystemLibrary library(QStringLiteral("shell32"));
+    sHCreateItemFromParsingName = (SHCreateItemFromParsingName)(library.resolve("SHCreateItemFromParsingName"));
+}
+
 QWindowsUser32DLL QWindowsContext::user32dll;
+QWindowsShell32DLL QWindowsContext::shell32dll;
 
 QWindowsContext *QWindowsContext::m_instance = 0;
 
@@ -214,6 +240,7 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_oleInitializeResult(OleInitialize(NULL))
 {
     QWindowsContext::user32dll.init();
+    QWindowsContext::shell32dll.init();
 
     const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
 
@@ -242,6 +269,7 @@ QWindowsContext::QWindowsContext() :
         QWindowsContext::verboseGL = componentVerbose(v, "gl");
         QWindowsContext::verboseOLE = componentVerbose(v, "ole");
         QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
+        QWindowsContext::verboseDialogs = componentVerbose(v, "dialogs");
     }
 }
 

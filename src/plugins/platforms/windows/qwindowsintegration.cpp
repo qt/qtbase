@@ -54,6 +54,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowsdialoghelpers.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -320,5 +321,18 @@ QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
 {
     return d->m_eventDispatcher;
 }
+
+#ifdef QT_WIDGETS_LIB
+bool QWindowsIntegration::usePlatformNativeDialog(QDialog *dialog) const
+{
+    return QWindowsDialogHelperBase::useHelper(dialog);
+}
+
+QPlatformDialogHelper *QWindowsIntegration::createPlatformDialogHelper(QDialog *dialog) const
+{
+    return QWindowsDialogHelperBase::create(dialog);
+}
+
+#endif // QT_WIDGETS_LIB
 
 QT_END_NAMESPACE
