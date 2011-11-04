@@ -1834,7 +1834,7 @@ void tst_QMdiSubWindow::setFont()
     opt.initFrom(subWindow);
     const int titleBarHeight = subWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &opt);
     const QRect titleBarRect = QRect(0, 0, subWindow->width(), titleBarHeight);
-    const QImage originalTitleBar = QPixmap::grabWidget(subWindow, titleBarRect).toImage();
+    const QImage originalTitleBar = subWindow->grab(titleBarRect).toImage();
 
     QFont newFont(QLatin1String("Helvetica"), 16);
     newFont.setBold(true);
@@ -1844,13 +1844,13 @@ void tst_QMdiSubWindow::setFont()
     QCOMPARE(swFont.family(), newFont.family());
     QCOMPARE(swFont.pointSize(), newFont.pointSize());
     QCOMPARE(swFont.weight(), newFont.weight());
-    QImage newTitleBar = QPixmap::grabWidget(subWindow, titleBarRect).toImage();
+    QImage newTitleBar = subWindow->grab(titleBarRect).toImage();
     QVERIFY(newTitleBar != originalTitleBar);
 
     subWindow->setFont(originalFont);
     qApp->processEvents();
     QCOMPARE(subWindow->font(), originalFont);
-    newTitleBar = QPixmap::grabWidget(subWindow, titleBarRect).toImage();
+    newTitleBar = subWindow->grab(titleBarRect).toImage();
     QCOMPARE(newTitleBar, originalTitleBar);
 }
 
