@@ -50,6 +50,7 @@ public:
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
     bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
+    ulong timestamp;
 
     tst_QTouchEventWidget()
         : QWidget()
@@ -76,6 +77,7 @@ public:
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
             event->setAccepted(acceptTouchBegin);
             if (deleteInTouchBegin)
                 delete this;
@@ -85,6 +87,7 @@ public:
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
             event->setAccepted(acceptTouchUpdate);
             if (deleteInTouchUpdate)
                 delete this;
@@ -94,6 +97,7 @@ public:
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            timestamp = static_cast<QTouchEvent *>(event)->timestamp();
             event->setAccepted(acceptTouchEnd);
             if (deleteInTouchEnd)
                 delete this;
@@ -572,13 +576,16 @@ void tst_QTouchEvent::basicRawEventTranslation()
     rawTouchPoint.setState(Qt::TouchPointPressed);
     rawTouchPoint.setScreenPos(screenPos);
     rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.pos(), screenGeometry));
+    const ulong timestamp = 1234;
     qt_translateRawTouchEvent(&touchWidget,
                               QTouchEvent::TouchScreen,
-                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint);
+                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint,
+                              timestamp);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchBeginPoints.count(), 1);
+    QCOMPARE(touchWidget.timestamp, timestamp);
     QTouchEvent::TouchPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
     QCOMPARE(touchBeginPoint.id(), rawTouchPoint.id());
     QCOMPARE(touchBeginPoint.state(), rawTouchPoint.state());
@@ -605,7 +612,8 @@ void tst_QTouchEvent::basicRawEventTranslation()
     rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.pos(), screenGeometry));
     qt_translateRawTouchEvent(&touchWidget,
                               QTouchEvent::TouchScreen,
-                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint);
+                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint,
+                              0);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -636,7 +644,8 @@ void tst_QTouchEvent::basicRawEventTranslation()
     rawTouchPoint.setNormalizedPos(normalized(rawTouchPoint.pos(), screenGeometry));
     qt_translateRawTouchEvent(&touchWidget,
                               QTouchEvent::TouchScreen,
-                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint);
+                              QList<QTouchEvent::TouchPoint>() << rawTouchPoint,
+                              0);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(touchWidget.seenTouchEnd);
@@ -700,7 +709,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rawTouchPoints[1].setState(Qt::TouchPointPressed);
     rawTouchPoints[1].setScreenPos(rightScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -761,7 +770,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rawTouchPoints[1].setState(Qt::TouchPointMoved);
     rawTouchPoints[1].setScreenPos(centerScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -822,7 +831,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     rawTouchPoints[1].setState(Qt::TouchPointReleased);
     rawTouchPoints[1].setScreenPos(centerScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -915,7 +924,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rawTouchPoints[1].setState(Qt::TouchPointPressed);
     rawTouchPoints[1].setScreenPos(rightScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -976,7 +985,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rawTouchPoints[1].setState(Qt::TouchPointMoved);
     rawTouchPoints[1].setScreenPos(centerScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -1037,7 +1046,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     rawTouchPoints[1].setState(Qt::TouchPointReleased);
     rawTouchPoints[1].setScreenPos(centerScreenPos);
     rawTouchPoints[1].setNormalizedPos(normalized(rawTouchPoints[1].pos(), screenGeometry));
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchPad, rawTouchPoints, 0);
     QVERIFY(!touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -1295,20 +1304,20 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     rawTouchPoints[2].setNormalizedPos(normalized(rawTouchPoints[2].pos(), screenGeometry));
 
     // generate begin events on all widgets, the left widget should die
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
     QVERIFY(pl.isNull() && !pc.isNull() && !pr.isNull());
 
     // generate update events on all widget, the center widget should die
     rawTouchPoints[0].setState(Qt::TouchPointMoved);
     rawTouchPoints[1].setState(Qt::TouchPointMoved);
     rawTouchPoints[2].setState(Qt::TouchPointMoved);
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
 
     // generate end events on all widget, the right widget should die
     rawTouchPoints[0].setState(Qt::TouchPointReleased);
     rawTouchPoints[1].setState(Qt::TouchPointReleased);
     rawTouchPoints[2].setState(Qt::TouchPointReleased);
-    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+    qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints, 0);
 }
 
 void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()

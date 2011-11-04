@@ -499,7 +499,8 @@ public:
     void removeTouchPoint(int touchPointId);
     static void translateRawTouchEvent(QWidget *widget,
                                        QTouchEvent::DeviceType deviceType,
-                                       const QList<QTouchEvent::TouchPoint> &touchPoints);
+                                       const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                       ulong timestamp);
 
 #if defined(Q_WS_WIN)
     static bool HasTouchSupport;

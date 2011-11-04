@@ -1941,22 +1941,22 @@ void tst_QApplication::touchEventPropagation()
         TouchEventPropagationTestWidget window;
         window.setObjectName("1. window");
 
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
         window.reset();
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
         window.reset();
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
     }
@@ -1968,8 +1968,8 @@ void tst_QApplication::touchEventPropagation()
         TouchEventPropagationTestWidget widget(&window);
         widget.setObjectName("2. widget");
 
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1978,8 +1978,8 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1988,8 +1988,8 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptMouseEvent = true;
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1998,8 +1998,8 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -2009,8 +2009,8 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents, false);
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
@@ -2019,8 +2019,8 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
@@ -2030,8 +2030,8 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.acceptMouseEvent = true; // doesn't matter, touch events are propagated first
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints);
-        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, pressedTouchPoints, 0);
+        qt_translateRawTouchEvent(&window, QTouchEvent::TouchScreen, releasedTouchPoints, 0);
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);

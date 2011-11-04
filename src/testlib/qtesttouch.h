@@ -65,7 +65,8 @@ QT_MODULE(Test)
 #ifdef QT_WIDGETS_LIB
 extern Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                                    QTouchEvent::DeviceType deviceType,
-                                                   const QList<QTouchEvent::TouchPoint> &touchPoints);
+                                                   const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                                   ulong timestamp);
 #endif
 
 namespace QTest
@@ -141,7 +142,7 @@ namespace QTest
 #ifdef QT_WIDGETS_LIB
                 else if (targetWidget)
                 {
-                    qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
+                    qt_translateRawTouchEvent(targetWidget, deviceType, points.values(), 0);
                 }
 #endif
             }

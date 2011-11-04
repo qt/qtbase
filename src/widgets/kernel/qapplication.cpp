@@ -5215,7 +5215,8 @@ int QApplicationPrivate::findClosestTouchPointId(const QPointF &screenPos)
 
 void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  QTouchEvent::DeviceType deviceType,
-                                                 const QList<QTouchEvent::TouchPoint> &touchPoints)
+                                                 const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                                 ulong timestamp)
 {
     QApplicationPrivate *d = self;
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
@@ -5352,6 +5353,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);
+        touchEvent.setTimestamp(timestamp);
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:
@@ -5374,10 +5376,11 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 }
 
 Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                            QTouchEvent::DeviceType deviceType,
-                                            const QList<QTouchEvent::TouchPoint> &touchPoints)
+                                                QTouchEvent::DeviceType deviceType,
+                                                const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                                ulong timestamp)
 {
-    QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
+    QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints, timestamp);
 }
 
 #ifndef QT_NO_GESTURES
