@@ -158,7 +158,7 @@ public:
     };
     virtual int synthesized() const { return 0; }
     virtual bool supportsSubPixelPositions() const { return false; }
-    QFixed subPixelPositionForX(QFixed x);
+    virtual QFixed subPixelPositionForX(QFixed x) const;
 
     virtual QFixed emSquareSize() const { return ascent(); }
 
@@ -277,6 +277,7 @@ public:
 
     int glyphFormat;
     QImage currentlyLockedAlphaMap;
+    int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
 protected:
     static const QVector<QRgb> &grayPalette();

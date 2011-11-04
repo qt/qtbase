@@ -1536,12 +1536,13 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 
     void *cacheKey = ctx->shareGroup();
     bool recreateVertexArrays = false;
+    QFontEngine *fe = staticTextItem->fontEngine();
 
     QOpenGLTextureGlyphCache *cache =
-            (QOpenGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
+            (QOpenGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->contextGroup() == 0) {
         cache = new QOpenGLTextureGlyphCache(glyphType, QTransform());
-        staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
+        fe->setGlyphCache(cacheKey, cache);
         recreateVertexArrays = true;
     }
 
@@ -1565,11 +1566,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+        if (!cache->populate(fe, staticTextItem->numGlyphs,
                              staticTextItem->glyphs, staticTextItem->glyphPositions)) {
             // No space for glyphs in cache. We need to reset it and try again.
             cache->clear();
-            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+            cache->populate(fe, staticTextItem->numGlyphs,
                             staticTextItem->glyphs, staticTextItem->glyphPositions);
         }
         cache->fillInPendingGlyphs();
@@ -1620,11 +1621,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
         vertexCoordinates->clear();
         textureCoordinates->clear();
 
-        bool supportsSubPixelPositions = staticTextItem->fontEngine()->supportsSubPixelPositions();
+        bool supportsSubPixelPositions = fe->supportsSubPixelPositions();
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
             QFixed subPixelPosition;
             if (supportsSubPixelPositions)
-                subPixelPosition = cache->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
+                subPixelPosition = fe->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 

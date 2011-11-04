@@ -315,7 +315,6 @@ private:
     bool initFromFontEngine(const QFontEngineFT *fontEngine);
 
     HintStyle defaultHintStyle() const { return default_hint_style; }
-
 protected:
 
     QFreetypeFace *freetype;

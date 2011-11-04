@@ -81,7 +81,7 @@ class Q_GUI_EXPORT QTextureGlyphCache : public QFontEngineGlyphCache
 public:
     QTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
         : QFontEngineGlyphCache(matrix, type), m_current_fontengine(0),
-                                               m_w(0), m_h(0), m_cx(0), m_cy(0), m_currentRowHeight(0), m_subPixelPositionCount(0)
+                                               m_w(0), m_h(0), m_cx(0), m_cy(0), m_currentRowHeight(0)
         { }
 
     virtual ~QTextureGlyphCache() { }
@@ -146,8 +146,6 @@ public:
 
     QImage textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const;
 
-    QFixed subPixelPositionForX(QFixed x) const;
-
 protected:
     int calculateSubPixelPositionCount(glyph_t) const;
 
@@ -159,7 +157,6 @@ protected:
     int m_cx; // current x
     int m_cy; // current y
     int m_currentRowHeight; // Height of last row
-    int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 };
 
 inline uint qHash(const QTextureGlyphCache::GlyphAndSubPixelPosition &g)

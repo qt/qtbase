@@ -99,23 +99,6 @@ int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
     return images.size();
 }
 
-QFixed QTextureGlyphCache::subPixelPositionForX(QFixed x) const
-{
-    if (m_subPixelPositionCount <= 1)
-        return QFixed();
-
-    QFixed subPixelPosition;
-    if (x != 0) {
-        subPixelPosition = x - x.floor();
-        QFixed fraction = (subPixelPosition / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
-
-        // Compensate for precision loss in fixed point to make sure we are always drawing at a subpixel position over
-        // the lower boundary for the selected rasterization by adding 1/64.
-        subPixelPosition = fraction / QFixed(m_subPixelPositionCount) + QFixed::fromReal(0.015625);
-    }
-    return subPixelPosition;
-}
-
 bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                                                 const QFixedPoint *positions)
 {
@@ -129,13 +112,13 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     const int paddingDoubled = glyphPadding() * 2;
 
     bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
-    if (m_subPixelPositionCount == 0) {
+    if (fontEngine->m_subPixelPositionCount == 0) {
         if (!supportsSubPixelPositions) {
-            m_subPixelPositionCount = 1;
+            fontEngine->m_subPixelPositionCount = 1;
         } else {
             int i = 0;
-            while (m_subPixelPositionCount == 0 && i < numGlyphs)
-                m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
+            while (fontEngine->m_subPixelPositionCount == 0 && i < numGlyphs)
+                fontEngine->m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
         }
     }
 
@@ -156,7 +139,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         QFixed subPixelPosition;
         if (supportsSubPixelPositions) {
             QFixed x = positions != 0 ? positions[i].x : QFixed();
-            subPixelPosition = subPixelPositionForX(x);
+            subPixelPosition = fontEngine->subPixelPositionForX(x);
         }
 
         if (coords.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))

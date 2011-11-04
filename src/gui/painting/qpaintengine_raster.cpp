@@ -2752,13 +2752,13 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
-            QFixed subPixelPosition = cache->subPixelPositionForX(positions[i].x);
+            QFixed subPixelPosition = fontEngine->subPixelPositionForX(positions[i].x);
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
             const QTextureGlyphCache::Coord &c = cache->coords[glyph];
             if (c.isNull())
                 continue;
 
-            int x = qFloor(positions[i].x + offs) + c.baseLineX - margin;
+            int x = qFloor(positions[i].x) + c.baseLineX - margin;
             int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",

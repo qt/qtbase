@@ -179,6 +179,7 @@ QFontEngine::QFontEngine()
 
     hbFace = 0;
     glyphFormat = -1;
+    m_subPixelPositionCount = 0;
 }
 
 QFontEngine::~QFontEngine()
@@ -635,17 +636,19 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     return rgbMask;
 }
 
-QFixed QFontEngine::subPixelPositionForX(QFixed x)
+QFixed QFontEngine::subPixelPositionForX(QFixed x) const
 {
-    int m_subPixelPositionCount = 4;
-    if (!supportsSubPixelPositions())
-        return 0;
+    if (m_subPixelPositionCount <= 1 || !supportsSubPixelPositions())
+        return QFixed();
 
     QFixed subPixelPosition;
     if (x != 0) {
         subPixelPosition = x - x.floor();
         QFixed fraction = (subPixelPosition / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
-        subPixelPosition = fraction / QFixed(m_subPixelPositionCount);
+
+        // Compensate for precision loss in fixed point to make sure we are always drawing at a subpixel position over
+        // the lower boundary for the selected rasterization by adding 1/64.
+        subPixelPosition = fraction / QFixed(m_subPixelPositionCount) + QFixed::fromReal(0.015625);
     }
     return subPixelPosition;
 }

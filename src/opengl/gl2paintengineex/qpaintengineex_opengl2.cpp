@@ -1654,7 +1654,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
             QFixed subPixelPosition;
             if (supportsSubPixelPositions)
-                subPixelPosition = cache->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
+                subPixelPosition = staticTextItem->fontEngine()->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 
