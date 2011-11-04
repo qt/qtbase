@@ -564,6 +564,7 @@ void tst_QMenu::tearOff()
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTest::qWait(100);
 
+    QEXPECT_FAIL("", "QTBUG-22565", Abort);
     QVERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
@@ -638,6 +639,7 @@ void tst_QMenu::activeSubMenuPosition()
     // to check that submenu is to the right of the main menu too.
 #ifndef Q_OS_WINCE_WM
     QVERIFY(sub->pos().x() > main->pos().x());
+    QEXPECT_FAIL("", "QTBUG-22565", Abort);
     QCOMPARE(sub->activeAction(), subAction);
 #endif
 }
