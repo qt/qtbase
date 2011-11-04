@@ -983,20 +983,18 @@ void QFontDialog::setVisible(bool visible)
 {
     if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
-#ifdef Q_WS_MAC
     Q_D(QFontDialog);
-    if (d->canBeNativeDialog()){
-        if (d->setVisible_sys(visible)){
-            d->nativeDialogInUse = true;
-            // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
-            // updates the state correctly, but skips showing the non-native version:
-            setAttribute(Qt::WA_DontShowOnScreen, true);
-        } else {
-            d->nativeDialogInUse = false;
-            setAttribute(Qt::WA_DontShowOnScreen, false);
-        }
+    if (d->canBeNativeDialog())
+        if (QPlatformDialogHelper *helper = d->platformHelper())
+           d->nativeDialogInUse = helper->setVisible_sys(visible);
+    if (d->nativeDialogInUse) {
+        // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
+        // updates the state correctly, but skips showing the non-native version:
+        setAttribute(Qt::WA_DontShowOnScreen, true);
+    } else {
+        d->nativeDialogInUse = false;
+        setAttribute(Qt::WA_DontShowOnScreen, false);
     }
-#endif // Q_WS_MAC
     QDialog::setVisible(visible);
 }
 
@@ -1028,7 +1026,6 @@ void QFontDialog::done(int result)
     d->memberToDisconnectOnClose.clear();
 }
 
-#ifdef Q_WS_MAC
 bool QFontDialogPrivate::canBeNativeDialog()
 {
     Q_Q(QFontDialog);
@@ -1043,7 +1040,6 @@ bool QFontDialogPrivate::canBeNativeDialog()
     QLatin1String dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
 }
-#endif // Q_WS_MAC
 
 /*!
     \fn QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget* parent, const char* name)

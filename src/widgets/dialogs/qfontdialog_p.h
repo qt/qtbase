@@ -138,6 +138,8 @@ public:
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 
+    bool canBeNativeDialog();
+    void _q_runNativeAppModalPanel();
 #ifdef Q_WS_MAC
     static void setFont(void *delegate, const QFont &font);
 
@@ -146,12 +148,9 @@ public:
 
     void *delegate;
     void closeCocoaFontPanel();
-    bool nativeDialogInUse;
-    bool canBeNativeDialog();
+
     bool setVisible_sys(bool visible);
     void createNSFontPanelDelegate();
-    void _q_macRunNativeAppModalPanel();
-    void mac_nativeDialogModalHelp();
     bool showCocoaFontPanel();
     bool hideCocoaFontPanel();
 

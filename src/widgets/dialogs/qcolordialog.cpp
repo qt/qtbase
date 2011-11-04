@@ -1663,6 +1663,12 @@ void QColorDialogPrivate::_q_addCustom()
     nextCust = (nextCust+1) % 16;
 }
 
+void QColorDialogPrivate::_q_platformRunNativeAppModalPanel()
+{
+    if (nativeDialogInUse)
+        platformHelper()->_q_platformRunNativeAppModalPanel();
+}
+
 void QColorDialogPrivate::retranslateStrings()
 {
     if (!smallDisplay) {
@@ -1912,8 +1918,11 @@ void QColorDialog::setVisible(bool visible)
     }
 #else
 
-    if (!(d->opts & DontUseNativeDialog) && qt_guiPlatformPlugin()->colorDialogSetVisible(this, visible)) {
-        d->nativeDialogInUse = true;
+    if (!(d->opts & DontUseNativeDialog))
+        if (QPlatformDialogHelper *helper = d->platformHelper())
+            d->nativeDialogInUse = helper->setVisible_sys(visible);
+
+    if (d->nativeDialogInUse) {
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
         // updates the state correctly, but skips showing the non-native version:
         setAttribute(Qt::WA_DontShowOnScreen);

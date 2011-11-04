@@ -89,6 +89,7 @@ public:
     void retranslateStrings();
 
     void _q_addCustom();
+    void _q_platformRunNativeAppModalPanel();
 
     void _q_newHsv(int h, int s, int v);
     void _q_newColorTypedIn(QRgb rgb);
@@ -114,7 +115,6 @@ public:
     QColorDialog::ColorDialogOptions opts;
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
-    bool nativeDialogInUse;
 
 #ifdef Q_WS_MAC
     void openCocoaColorPanel(const QColor &initial,
