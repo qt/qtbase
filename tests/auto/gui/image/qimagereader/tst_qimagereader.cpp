@@ -55,8 +55,6 @@
 #include <QTcpServer>
 #include <QTimer>
 
-#include "../../../platformquirks.h"
-
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage)
@@ -320,14 +318,15 @@ void tst_QImageReader::jpegRgbCmyk()
     QImage image1(prefix + QLatin1String("YCbCr_cmyk.jpg"));
     QImage image2(prefix + QLatin1String("YCbCr_cmyk.png"));
 
-    if (PlatformQuirks::isImageLoaderImprecise()) {
+    if (image1 != image2) {
         // first, do some obvious tests
         QCOMPARE(image1.height(), image2.height());
         QCOMPARE(image1.width(), image2.width());
         QCOMPARE(image1.format(), image2.format());
         QCOMPARE(image1.format(), QImage::Format_RGB32);
 
-        // compare all the pixels with a slack of 3. This ignores rounding errors in libjpeg/libpng
+        // compare all the pixels with a slack of 3. This ignores rounding errors
+        // in libjpeg/libpng, where some versions sacrifice accuracy for speed.
         for (int h = 0; h < image1.height(); ++h) {
             const uchar *s1 = image1.constScanLine(h);
             const uchar *s2 = image2.constScanLine(h);
@@ -339,8 +338,6 @@ void tst_QImageReader::jpegRgbCmyk()
                 s2++;
             }
         }
-    } else {
-        QCOMPARE(image1, image2);
     }
 }
 
