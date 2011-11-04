@@ -482,10 +482,9 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     fid.index = fontfile->indexValue;
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
-
     engine = new QFontEngineFT(fontDef);
 
+    QFontEngineFT::GlyphFormat format;
     // try and get the pattern
     FcPattern *pattern = FcPatternCreate();
 
@@ -495,7 +494,6 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     value.u.s = (const FcChar8 *)cs.data();
     FcPatternAdd(pattern,FC_FAMILY,value,true);
 
-
     value.u.s = (const FcChar8 *)fid.filename.data();
     FcPatternAdd(pattern,FC_FILE,value,true);
 
@@ -503,12 +501,14 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     value.u.i = fid.index;
     FcPatternAdd(pattern,FC_INDEX,value,true);
 
-    if (FcConfigSubstitute(0,pattern,FcMatchPattern)) {
+    FcResult result;
+    FcPattern *match = FcFontMatch(0, pattern, &result);
+    if (match) {
         QFontEngineFT::HintStyle default_hint_style;
 
         //hinting
         int hint_style = 0;
-        if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+        if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
             hint_style = QFontEngineFT::HintFull;
         switch (hint_style) {
         case FC_HINT_NONE:
@@ -525,7 +525,34 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
             break;
         }
         engine->setDefaultHintStyle(default_hint_style);
-    }
+
+        if (antialias) {
+            QFontEngineFT::SubpixelAntialiasingType subpixelType = QFontEngineFT::Subpixel_None;
+            int subpixel = FC_RGBA_NONE;
+
+            FcPatternGetInteger(match, FC_RGBA, 0, &subpixel);
+            if (subpixel == FC_RGBA_UNKNOWN)
+                subpixel = FC_RGBA_NONE;
+
+            switch (subpixel) {
+                case FC_RGBA_NONE: subpixelType = QFontEngineFT::Subpixel_None; break;
+                case FC_RGBA_RGB: subpixelType = QFontEngineFT::Subpixel_RGB; break;
+                case FC_RGBA_BGR: subpixelType = QFontEngineFT::Subpixel_BGR; break;
+                case FC_RGBA_VRGB: subpixelType = QFontEngineFT::Subpixel_VRGB; break;
+                case FC_RGBA_VBGR: subpixelType = QFontEngineFT::Subpixel_VBGR; break;
+                default: break;
+            }
+
+            format = subpixelType == QFontEngineFT::Subpixel_None
+                        ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_A32;
+            engine->subpixelType = subpixelType;
+        } else
+            format = QFontEngineFT::Format_Mono;
+
+        FcPatternDestroy(match);
+    } else
+        format = antialias ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
+
     FcPatternDestroy(pattern);
 
     if (!engine->init(fid,antialias,format)) {

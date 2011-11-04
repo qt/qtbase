@@ -74,6 +74,7 @@
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
+class QFontconfigDatabase;
 
 /*
  * This struct represents one font file on disk (like Arial.ttf) and is shared between all the font engines
@@ -189,7 +190,6 @@ public:
         QGlyphSet();
         ~QGlyphSet();
         FT_Matrix transformationMatrix;
-        unsigned long id; // server sided id, GlyphSet for X11
         bool outline_drawing;
 
         void removeGlyphFromCache(glyph_t index, QFixed subPixelPosition);
@@ -346,6 +346,7 @@ protected:
 
 private:
     friend class QFontEngineFTRawFont;
+    friend class QFontconfigDatabase;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
