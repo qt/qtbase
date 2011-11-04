@@ -132,6 +132,10 @@ public:
     static int sizeOf(int type);
     static bool isRegistered(int type);
     static void *create(int type, const void *copy = 0);
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static void *construct(int type, const void *copy = 0)
+    { return create(type, copy); }
+#endif
     static void destroy(int type, void *data);
     static void *construct(int type, void *where, const void *copy);
     static void destruct(int type, void *where);
