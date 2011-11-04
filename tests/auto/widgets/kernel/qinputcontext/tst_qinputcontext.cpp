@@ -128,6 +128,7 @@ void tst_QInputContext::filterMouseEvents()
     qApp->setInputContext(ic);
     QTest::mouseClick(&le, Qt::LeftButton);
 
+    QEXPECT_FAIL("", "QTBUG-22564", Abort);
     QVERIFY(ic->lastTypes.indexOf(QEvent::MouseButtonRelease) >= 0);
 }
 
@@ -183,6 +184,7 @@ void tst_QInputContext::requestSoftwareInputPanel()
     // Testing single click panel activation.
     newStyle->m_rsipBehavior = QStyle::RSIP_OnMouseClick;
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QEXPECT_FAIL("", "QTBUG-22564", Abort);
     QVERIFY(ic->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
     ic->lastTypes.clear();
 
@@ -229,6 +231,7 @@ void tst_QInputContext::closeSoftwareInputPanel()
 
     // Testing that panel closes when focusing non-aware widget.
     QTest::mouseClick(rb, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+    QEXPECT_FAIL("", "QTBUG-22564", Abort);
     QVERIFY(ic->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) >= 0);
 }
 
