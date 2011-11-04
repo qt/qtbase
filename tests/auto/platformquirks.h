@@ -54,27 +54,6 @@
 
 struct PlatformQuirks
 {
-    enum MediaFileTypes
-    {
-        mp3,
-        wav,
-        ogg
-    };
-
-    /* On some platforms, libpng or libjpeg sacrifice precision for speed.
-       Esp. with NEON support, color values after decoding can be off by up
-       to three bytes.
-     */
-    static inline bool isImageLoaderImprecise()
-    {
-#if defined(Q_WS_X11)
-        // ### this is a very bad assumption, we should really check the version of libjpeg
-        return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
-#else
-        return false;
-#endif
-    }
-
     /* Some windowing systems automatically maximize apps on startup (e.g. Maemo)
        "Normal" fixed-sized windows do not work, the WM ignores their size settings.
     */
@@ -94,18 +73,6 @@ struct PlatformQuirks
 #else
         return true;
 #endif
-    }
-
-    /* On some systems an ogg codec is not installed by default.
-    The autotests have to know which fileType is the default on the system*/
-    static inline MediaFileTypes defaultMediaFileType()
-    {
-#ifdef Q_WS_X11
-        // ### very bad assumption
-        if (X11->desktopEnvironment == DE_MEEGO_COMPOSITOR)
-            return PlatformQuirks::mp3;
-#endif
-        return PlatformQuirks::ogg;
     }
 };
 
