@@ -1150,6 +1150,9 @@ static const char *certificate_blacklist[] = {
 //    "(has not been seen in the wild so far)", "Stichting TTP Infos CA," // compromised during DigiNotar breach
     "1184640175", "DigiNotar Root CA", // DigiNotar intermediate cross-signed by Entrust
     "1184644297", "DigiNotar Root CA", // DigiNotar intermediate cross-signed by Entrust
+
+    "120001705", "Digisign Server ID (Enrich)", // (Malaysian) Digicert Sdn. Bhd. cross-signed by Verizon CyberTrust
+    "1276011370", "Digisign Server ID - (Enrich)", // (Malaysian) Digicert Sdn. Bhd. cross-signed by Entrust
     0
 };
 
