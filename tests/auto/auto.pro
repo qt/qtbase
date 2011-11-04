@@ -6,7 +6,7 @@ SUBDIRS += \
     host.pro \
     gui.pro \
     integrationtests \
-    network.pro \
+    network \
     opengl \
     sql \
     testlib \
