@@ -45,33 +45,6 @@ defineTest(qtAddLibrary) {
            }
        }
     }
-    symbian {
-        isEqual(LIB_NAME, QtCore) {
-            #workaround for dependency from f32file.h on e32svr.h which has moved location in symbian3
-            contains(SYMBIAN_VERSION, Symbian3) {
-                INCLUDEPATH *= $$OS_LAYER_SYSTEMINCLUDE
-            }
-        } else:isEqual(LIB_NAME, QtGui) {
-            # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
-            INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
-        } else:isEqual(LIB_NAME, QtWebKit) {
-            # Needed for because relative inclusion problem in toolchain
-            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtXmlPatterns
-            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
-            isEmpty(TARGET.CAPABILITY): TARGET.CAPABILITY = NetworkServices
-            isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
-        } else:isEqual(LIB_NAME, QtXmlPatterns) {
-            # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
-            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
-        } else:isEqual(LIB_NAME, QtNetwork) {
-            isEmpty(TARGET.CAPABILITY): TARGET.CAPABILITY = NetworkServices
-        } else:isEqual(LIB_NAME, QtDeclarative) {
-            isEmpty(TARGET.CAPABILITY): TARGET.CAPABILITY = NetworkServices
-            isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
-        }
-        export(TARGET.EPOCHEAPSIZE)
-        export(TARGET.CAPABILITY)
-    }
     isEmpty(LINKAGE) {
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
            win32:LINKAGE = -l$${LIB_NAME}$${QT_LIBINFIX}d

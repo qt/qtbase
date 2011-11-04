@@ -15,7 +15,7 @@ CXX	    =	g++
 CFLAGS	    =	-c -o$@ -O \
 		-I. -Igenerators -Igenerators/unix \
 		-Igenerators/win32 -Igenerators/mac \
-		-Igenerators/symbian -Igenerators/integrity \
+		-Igenerators/integrity \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore -I$(SOURCE_PATH)/include/QtCore/$(QT_VERSION) -I$(SOURCE_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
@@ -25,7 +25,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
 		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
 		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
-		-DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT
+		-DQT_BOOTSTRAPPED
 CXXFLAGS    =   $(CFLAGS)
 LFLAGS	    = -static-libgcc -static-libstdc++ -s
 LIBS	    = -lole32 -luuid -ladvapi32 -lkernel32
@@ -38,8 +38,7 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o msvc_vcxproj.o \
-              msvc_objectmodel.o msbuild_objectmodel.o symmake.o initprojectdeploy_symbian.o \
-              symmake_abld.o symmake_sbsv2.o symbiancommon.o registry.o epocroot.o gbuild.o
+              msvc_objectmodel.o msbuild_objectmodel.o registry.o gbuild.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION
@@ -298,26 +297,8 @@ msvc_vcxproj.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcxproj.cpp
 msbuild_objectmodel.o: $(SOURCE_PATH)/qmake/generators/win32/msbuild_objectmodel.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
 
-symmake.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake.cpp
-	$(CXX) $(CXXFLAGS) generators/symbian/symmake.cpp
-
-symmake_abld.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
-	$(CXX) $(CXXFLAGS) generators/symbian/symmake_abld.cpp
-
-symmake_sbsv2.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
-	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
-
-symbiancommon.o: $(SOURCE_PATH)/qmake/generators/symbian/symbiancommon.cpp
-	$(CXX) $(CXXFLAGS) generators/symbian/symbiancommon.cpp
-
-initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
-	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
-
 registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-
-epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+        $(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 gbuild.o: $(SOURCE_PATH)/qmake/generators/integrity/gbuild.cpp
 	$(CXX) $(CXXFLAGS) generators/integrity/gbuild.cpp
@@ -346,7 +327,7 @@ pbuilder_pbx.o: $(SOURCE_PATH)/qmake/generators/mac/pbuilder_pbx.cpp
 makefiledeps.o: $(SOURCE_PATH)/qmake/generators/makefiledeps.cpp
 	$(CXX) $(CXXFLAGS) generators/makefiledeps.cpp
 
-metamakefile.o: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp $(SOURCE_PATH)/qmake/generators/symbian/symbian_makefile.h
+metamakefile.o: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
 	$(CXX) $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.o: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp

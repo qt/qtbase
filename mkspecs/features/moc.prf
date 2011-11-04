@@ -94,7 +94,7 @@ equals(MOC_DIR, .) {
 }
 
 #auto depend on moc
-unix:!symbian:!no_mocdepend {
+unix:!no_mocdepend {
      moc_source.depends += $$first(QMAKE_MOC)
      moc_header.depends += $$first(QMAKE_MOC)
      !contains(TARGET, moc) { #auto build moc

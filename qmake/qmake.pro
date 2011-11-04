@@ -24,7 +24,6 @@ INCLUDEPATH += . \
            generators/unix \
            generators/win32 \
            generators/mac \
-           generators/symbian \
            generators/integrity \
            $$QT_SOURCE_TREE/include \
            $$QT_SOURCE_TREE/include/QtCore \
@@ -32,8 +31,4 @@ INCLUDEPATH += . \
            $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION/QtCore \
            $$QT_SOURCE_TREE/qmake
 
-VPATH += $$QT_SOURCE_TREE/tools/shared
-INCLUDEPATH += $$QT_SOURCE_TREE/tools/shared
-
 include(qmake.pri)
-

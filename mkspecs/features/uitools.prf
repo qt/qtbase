@@ -2,8 +2,7 @@ QT += xml
 qt:load(qt)
 
 # Include the correct version of the UiLoader library
-symbian: QTUITOOLS_LINKAGE = -lQtUiTools.lib
-else: QTUITOOLS_LINKAGE = -lQtUiTools$${QT_LIBINFIX}
+QTUITOOLS_LINKAGE = -lQtUiTools$${QT_LIBINFIX}
 
 CONFIG(debug, debug|release) {
     mac: QTUITOOLS_LINKAGE = -lQtUiTools$${QT_LIBINFIX}_debug

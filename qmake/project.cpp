@@ -63,9 +63,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Included from tools/shared
-#include <symbian/epocroot_p.h>
-
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
 #define QT_PCLOSE _pclose
@@ -81,7 +78,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE, E_GENERATE_UID, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
+                  E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -113,7 +110,6 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
         qmake_expand_functions->insert("size", E_SIZE);
-        qmake_expand_functions->insert("generate_uid", E_GENERATE_UID);
         qmake_expand_functions->insert("sort_depends", E_SORT_DEPENDS);
         qmake_expand_functions->insert("resolve_depends", E_RESOLVE_DEPENDS);
     }
@@ -550,9 +546,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             break;
         case Option::TARG_WIN_MODE:
             concat << base_concat + QDir::separator() + "win32";
-            break;
-        case Option::TARG_SYMBIAN_MODE:
-            concat << base_concat + QDir::separator() + "symbian";
             break;
         }
         concat << base_concat;
@@ -1513,8 +1506,6 @@ void QMakeProject::validateModes()
                         Option::target_mode = Option::TARG_UNIX_MODE;
                     else if (os == "macx")
                         Option::target_mode = Option::TARG_MACX_MODE;
-                    else if (os == "symbian")
-                        Option::target_mode = Option::TARG_SYMBIAN_MODE;
                     else if (os == "win32")
                         Option::target_mode = Option::TARG_WIN_MODE;
                     else
@@ -1543,14 +1534,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     if (x == "unix") {
         validateModes();
         return Option::target_mode == Option::TARG_UNIX_MODE
-               || Option::target_mode == Option::TARG_MACX_MODE
-               || Option::target_mode == Option::TARG_SYMBIAN_MODE;
+               || Option::target_mode == Option::TARG_MACX_MODE;
     } else if (x == "macx" || x == "mac") {
         validateModes();
         return Option::target_mode == Option::TARG_MACX_MODE;
-    } else if (x == "symbian") {
-        validateModes();
-        return Option::target_mode == Option::TARG_SYMBIAN_MODE;
     } else if (x == "win32") {
         validateModes();
         return Option::target_mode == Option::TARG_WIN_MODE;
@@ -1797,9 +1784,6 @@ QMakeProject::doProjectExpand(QString func, QStringList args,
     }
     return doProjectExpand(func, args_list, place);
 }
-
-// defined in symbian generator
-extern QString generate_test_uid(const QString& target);
 
 static void
 populateDeps(const QStringList &deps, const QString &prefix,
@@ -2260,14 +2244,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += QString::number(size);
         }
         break; }
-    case E_GENERATE_UID:
-        if (args.count() != 1) {
-            fprintf(stderr, "%s:%d: generate_uid(var) requires one argument.\n",
-                    parser.file.toLatin1().constData(), parser.line_no);
-        } else {
-            ret += generate_test_uid(args.first());
-        }
-        break;
     case E_SORT_DEPENDS:
     case E_RESOLVE_DEPENDS: {
         if(args.count() < 1 || args.count() > 2) {
@@ -3187,9 +3163,6 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
                     ? Option::qmake_abslocation
                     : QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake",
                 false));
-    } else if (var == QLatin1String("EPOCROOT")) {
-        if (place[var].isEmpty())
-            place[var] = QStringList(qt_epocRoot());
     }
 #if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
       else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {

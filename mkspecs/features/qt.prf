@@ -109,14 +109,6 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}
         }
-        isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:symbian: {
-            QT_ITEM = $${QTPLUG}.dll
-
-            eval(qt_additional_plugin_$${QTPLUG}.files = $${QT_ITEM})
-            eval(qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH})
-
-            DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}
-        }
     }
 }
 

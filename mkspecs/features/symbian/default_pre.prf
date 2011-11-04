@@ -1,2 +1,0 @@
-CONFIG = stl_off $$CONFIG
-load(default_pre)

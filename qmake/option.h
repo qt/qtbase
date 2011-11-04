@@ -165,7 +165,7 @@ struct Option
     enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
     static HOST_MODE host_mode;
     enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
-                     TARG_SYMBIAN_MODE, TARG_INTEGRITY_MODE };
+                     TARG_INTEGRITY_MODE };
     static TARG_MODE target_mode;
     static bool target_mode_overridden;
     static QString user_template, user_template_prefix;

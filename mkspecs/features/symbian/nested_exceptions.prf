@@ -1,4 +1,0 @@
-# use nested exceptions runtime support for apps
-contains(TEMPLATE, app) {
-    MMP_RULES *= EPOCNESTEDEXCEPTIONS
-}

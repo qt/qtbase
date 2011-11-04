@@ -117,12 +117,3 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
     QMAKE_EXTRA_TARGETS += check
 }
 
-# Add special translation sources for projects that require them.
-# Note 1: Since lupdate will not parse regular config scopes right, contains checks are used instead.
-# Note 2: Checking for last value of TEMPLATE is used instead of simple contains check because
-#         lupdate doesn't respect "-=" variable assignments and therefore always finds "app"
-#         as the first value of TEMPLATE variable.
-contains(CONFIG, lupdate_run):contains(CONFIG, localize_deployment) {
-    equals($$list($$last(TEMPLATE)), app): SOURCES += $$[QT_INSTALL_DATA]/mkspecs/common/symbian/appCaptionForTranslation.cpp
-    SOURCES += $$[QT_INSTALL_DATA]/mkspecs/common/symbian/packageNameForTranslation.cpp
-}

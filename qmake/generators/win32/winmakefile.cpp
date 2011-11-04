@@ -314,8 +314,7 @@ void Win32MakefileGenerator::processVars()
 
     // TARGET_VERSION_EXT will be used to add a version number onto the target name
     if (project->values("TARGET_VERSION_EXT").isEmpty()
-        && !project->values("VER_MAJ").isEmpty()
-        && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty())
+        && !project->values("VER_MAJ").isEmpty())
         project->values("TARGET_VERSION_EXT").append(project->values("VER_MAJ").first());
 
     if(project->isEmpty("QMAKE_COPY_FILE"))

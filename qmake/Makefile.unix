@@ -11,8 +11,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_vcproj.o msvc_vcxproj.o msvc_nmake.o msvc_objectmodel.o msbuild_objectmodel.o \
-     symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
-     symbiancommon.o registry.o epocroot.o gbuild.o
+     gbuild.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -35,11 +34,6 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
 	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
 	   generators/win32/msvc_vcproj.cpp generators/win32/msvc_vcxproj.cpp generators/win32/msvc_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msbuild_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
-	   generators/symbian/symmake.cpp generators/symbian/initprojectdeploy_symbian.cpp \
-	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
-	   $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp \
-	   generators/symbian/symmake_abld.cpp generators/symbian/symmake_sbsv2.cpp \
-           generaters/symbian/symbiancommon.cpp \
 	   generators/integrity/gbuild.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
@@ -75,13 +69,13 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(QTSRCS)
 
 CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
-           -Igenerators/mac -Igenerators/symbian -Igenerators/integrity \
+           -Igenerators/mac -Igenerators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 	   -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
 	   -I$(SOURCE_PATH)/tools/shared \
 	   -DQT_NO_PCRE \
-	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DQLIBRARYINFO_EPOCROOT \
+	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_STL \
 	   -DQT_NO_COMPRESS -I$(QMAKESPEC) -DHAVE_QCONFIG_CPP -DQT_NO_THREAD -DQT_NO_QOBJECT \
            -DQT_NO_GEOM_VARIANT -DQT_NO_DEPRECATED $(OPENSOURCE_CXXFLAGS)
@@ -269,7 +263,7 @@ option.o: option.cpp option.h $(BUILD_PATH)/src/corelib/global/qconfig.cpp
 qcryptographichash.o:  $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp
 
-metamakefile.o: generators/metamakefile.cpp generators/symbian/symbian_makefile.h
+metamakefile.o: generators/metamakefile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/metamakefile.cpp
 
 xmloutput.o: generators/xmloutput.cpp
@@ -310,27 +304,6 @@ msvc_nmake.o: generators/win32/msvc_nmake.cpp
 
 pbuilder_pbx.o: generators/mac/pbuilder_pbx.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/mac/pbuilder_pbx.cpp
-
-symmake.o: generators/symbian/symmake.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake.cpp
-
-symmake_abld.o: generators/symbian/symmake_abld.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake_abld.cpp
-
-symmake_sbsv2.o: generators/symbian/symmake_sbsv2.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
-
-symbiancommon.o: generators/symbian/symbiancommon.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symbiancommon.cpp
-
-initprojectdeploy_symbian.o: generators/symbian/initprojectdeploy_symbian.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
-
-registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-
-epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 
 gbuild.o: generators/integrity/gbuild.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/integrity/gbuild.cpp

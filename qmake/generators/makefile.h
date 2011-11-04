@@ -255,40 +255,6 @@ public:
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
     virtual bool isWindowsShell() const { return Option::host_mode == Option::HOST_WIN_MODE; }
-    virtual bool isForSymbianSbsv2() const { return false; } // FIXME: killme - i'm ugly!
-
-    /* The next one is to avoid having SymbianCommonGenerator as a virtually
-       inherited class of this class. Instead it is without a base class
-       (avoiding the virtual inheritance problem), and is allowed to use
-       functions defined in here.
-
-       To illustrate:
-                               +-------------------+
-                               | MakefileGenerator |
-                               +-------------------+
-                                 ^            ^
-                                 |            |
-                                 |            X <-- Avoid this inheritance
-                                 |            |
-              +------------------------+  +------------------------+
-              | UnixMakefileGenerator  |  | SymbianCommonGenerator |
-              |         or             |  |                        |
-              | NmakeMakefileGenerator |  |                        |
-              +------------------------+  +------------------------+
-                                 ^            ^
-                                 |            |
-                                 |            |
-                                 |            |
-                           +-----------------------------+
-                           | SymbianMakefileTemplate<>   |
-                           +-----------------------------+
-
-       We want to avoid the famous diamond problem, because if we have that, we need
-       virtual inheritance, which not all compilers like. Therefore, we break the
-       link as illustrated. Instead, we have a pointer to MakefileGenerator inside
-       SymbianCommonGenerator, and allows full access by making it a friend here.
-    */
-    friend class SymbianCommonGenerator;
 };
 
 inline void MakefileGenerator::setNoIO(bool o)

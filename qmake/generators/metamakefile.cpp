@@ -445,9 +445,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "borland_bmake.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
-#include "symmake_abld.h"
-#include "symmake_sbsv2.h"
-#include "symbian_makefile.h"
 #include "gbuild.h"
 QT_END_INCLUDE_NAMESPACE
 
@@ -484,14 +481,6 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
             mkfile = new NmakeMakefileGenerator;
     } else if(gen == "BMAKE") {
         mkfile = new BorlandMakefileGenerator;
-    } else if(gen == "SYMBIAN_ABLD") {
-        mkfile = new SymbianAbldMakefileGenerator;
-    } else if(gen == "SYMBIAN_SBSV2") {
-        mkfile = new SymbianSbsv2MakefileGenerator;
-    } else if(gen == "SYMBIAN_UNIX") {
-        mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
-    } else if(gen == "SYMBIAN_MINGW") {
-        mkfile = new SymbianMakefileTemplate<MingwMakefileGenerator>;
     } else if(gen == "GBUILD") {
         mkfile = new GBuildMakefileGenerator;
     } else {
@@ -550,15 +539,6 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *host_mode = Option::HOST_MACX_MODE;
         *target_mode = Option::TARG_MACX_MODE;
-    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2" || gen == "SYMBIAN_UNIX" || gen == "SYMBIAN_MINGW") {
-#if defined(Q_OS_MAC)
-        *host_mode = Option::HOST_MACX_MODE;
-#elif defined(Q_OS_UNIX)
-        *host_mode = Option::HOST_UNIX_MODE;
-#else
-        *host_mode = Option::HOST_WIN_MODE;
-#endif
-        *target_mode = Option::TARG_SYMBIAN_MODE;
     } else if (gen == "GBUILD") {
         *host_mode = Option::HOST_UNIX_MODE;
         *target_mode = Option::TARG_INTEGRITY_MODE;

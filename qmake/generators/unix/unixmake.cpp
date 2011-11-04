@@ -528,9 +528,6 @@ UnixMakefileGenerator::findLibraries()
                 QStringList extens;
                 if(!extn.isNull())
                     extens << extn;
-                else if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB"))
-                    // In Symbian you link to the stub .lib file, but run with the .dll file.
-                    extens << "lib";
                 else
                     extens << project->values("QMAKE_EXTENSION_SHLIB").first() << "a";
                 for(QStringList::Iterator extit = extens.begin(); extit != extens.end(); ++extit) {

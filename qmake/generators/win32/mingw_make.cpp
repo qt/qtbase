@@ -222,12 +222,6 @@ void createRvctObjectScriptFile(const QString &fileName, const QStringList &objL
 
 void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 {
-    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
-        t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(";") << endl;
-        t << "vpath %.lib " << project->values("QMAKE_LIBDIR").join(";") << endl;
-        t << "\n\n";
-    }
-
     writeStandardParts(t);
 
     if (!preCompHeaderOut.isEmpty()) {
@@ -294,7 +288,7 @@ void MingwMakefileGenerator::init()
         if(configs.indexOf("qt") == -1)
             configs.append("qt");
 
-    if(project->isActiveConfig("dll") && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty()) {
+    if (project->isActiveConfig("dll")) {
         QString destDir = "";
         if(!project->first("DESTDIR").isEmpty())
             destDir = Option::fixPathToTargetOS(project->first("DESTDIR") + Option::dir_sep, false, false);
@@ -303,7 +297,7 @@ void MingwMakefileGenerator::init()
 	project->values("QMAKE_LFLAGS").append(QString("-Wl,--out-implib,") + project->first("MINGW_IMPORT_LIB"));
     }
 
-    if(!project->values("DEF_FILE").isEmpty() && project->values("QMAKE_SYMBIAN_SHLIB").isEmpty()) {
+    if (!project->values("DEF_FILE").isEmpty()) {
         QString defFileName = fileFixify(project->values("DEF_FILE")).first();
         project->values("QMAKE_LFLAGS").append(QString("-Wl,") + escapeFilePath(defFileName));
     }

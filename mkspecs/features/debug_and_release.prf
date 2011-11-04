@@ -1,1 +1,1 @@
-!macx-xcode:!symbian:addExclusiveBuilds(debug, Debug, release, Release)
+!macx-xcode:addExclusiveBuilds(debug, Debug, release, Release)
