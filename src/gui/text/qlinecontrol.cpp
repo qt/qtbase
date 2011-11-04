@@ -92,7 +92,7 @@ void QLineControl::updateDisplayText(bool forceUpdate)
 
     m_textLayout.setText(str);
 
-    QTextOption option;
+    QTextOption option = m_textLayout.textOption();
     option.setTextDirection(m_layoutDirection);
     option.setFlags(QTextOption::IncludeTrailingSpaces);
     m_textLayout.setTextOption(option);
@@ -297,6 +297,7 @@ void QLineControl::_q_deleteSelected()
 void QLineControl::init(const QString &txt)
 {
     m_text = txt;
+
     updateDisplayText();
     m_cursor = m_text.length();
 }
