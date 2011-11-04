@@ -468,6 +468,7 @@ QRectF QGlyphRun::boundingRect() const
         return d->boundingRect;
 
     qreal minX, minY, maxX, maxY;
+    minX = minY = maxX = maxY = 0;
 
     for (int i=0; i<qMin(d->glyphPositions.size(), d->glyphIndexes.size()); ++i) {
         QRectF glyphRect = d->rawFont.boundingRect(d->glyphIndexes.at(i));
