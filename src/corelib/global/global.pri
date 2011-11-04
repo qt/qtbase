@@ -25,10 +25,3 @@ linux*:!cross_compile:!static:!symbian-gcce:!*-armcc* {
    DEFINES += ELF_INTERPRETER=\\\"$$system(readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
-# Compensate for lack of platform defines in Symbian3 and Symbian4
-symbian {
-    DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_)) \
-               S60_VERSION_$$upper($$replace(S60_VERSION,\\.,_))
-}
-
-include(../../../tools/shared/symbian/epocroot.pri)

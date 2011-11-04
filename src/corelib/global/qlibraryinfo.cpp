@@ -62,10 +62,6 @@ QT_END_NAMESPACE
 #  include "private/qcore_mac_p.h"
 #endif
 
-#ifdef QLIBRARYINFO_EPOCROOT
-# include "symbian/epocroot_p.h"
-#endif
-
 #include "qconfig.cpp"
 
 QT_BEGIN_NAMESPACE
@@ -414,13 +410,6 @@ QLibraryInfo::location(LibraryLocation loc)
                             QString::fromLocal8Bit(qgetenv(ret.mid(rep + 2,
                                 reg_var.matchedLength() - 3).toLatin1().constData()).constData()));
             }
-
-#ifdef QLIBRARYINFO_EPOCROOT
-            // $${EPOCROOT} is a special case, resolve it similarly to qmake.
-            QRegExp epocrootMatcher(QLatin1String("\\$\\$\\{EPOCROOT\\}"));
-            if ((rep = epocrootMatcher.indexIn(ret)) != -1)
-                ret.replace(rep, epocrootMatcher.matchedLength(), qt_epocRoot());
-#endif
 
             config->endGroup();
         }
