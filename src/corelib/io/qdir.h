@@ -57,9 +57,6 @@ class QDirPrivate;
 
 class Q_CORE_EXPORT QDir
 {
-protected:
-    QSharedDataPointer<QDirPrivate> d_ptr;
-
 public:
     enum Filter { Dirs        = 0x001,
                   Files       = 0x002,
@@ -99,7 +96,7 @@ public:
                     Reversed    = 0x08,
                     IgnoreCase  = 0x10,
                     DirsLast    = 0x20,
-                    LocaleAware = 0x40, 
+                    LocaleAware = 0x40,
                     Type        = 0x80,
                     NoSort = -1
     };
@@ -208,6 +205,20 @@ public:
 
     static QString cleanPath(const QString &path);
     void refresh() const;
+
+protected:
+    explicit QDir(QDirPrivate &d);
+
+    QSharedDataPointer<QDirPrivate> d_ptr;
+
+private:
+    // Q_DECLARE_PRIVATE equivalent for shared data pointers
+    QDirPrivate* d_func();
+    inline const QDirPrivate* d_func() const
+    {
+        return d_ptr.constData();
+    }
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDir::Filters)

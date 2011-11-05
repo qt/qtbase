@@ -1275,11 +1275,10 @@ QDateTime QFileInfo::lastRead() const
 }
 
 /*! \internal
-    Detaches all internal data.
 */
-void QFileInfo::detach()
+QFileInfoPrivate* QFileInfo::d_func()
 {
-    d_ptr.detach();
+    return d_ptr.data();
 }
 
 /*!

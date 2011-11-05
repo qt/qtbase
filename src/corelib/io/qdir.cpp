@@ -508,6 +508,13 @@ inline void QDirPrivate::initFileEngine()
 */
 
 /*!
+    \internal
+*/
+QDir::QDir(QDirPrivate &p) : d_ptr(&p)
+{
+}
+
+/*!
     Constructs a QDir pointing to the given directory \a path. If path
     is empty the program's working directory, ("."), is used.
 
@@ -2095,6 +2102,13 @@ void QDir::refresh() const
     d->metaData.clear();
     d->initFileEngine();
     d->clearFileLists();
+}
+
+/*! \internal
+*/
+QDirPrivate* QDir::d_func()
+{
+    return d_ptr.data();
 }
 
 /*!

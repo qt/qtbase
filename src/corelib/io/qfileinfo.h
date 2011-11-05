@@ -132,20 +132,14 @@ public:
     QDateTime lastModified() const;
     QDateTime lastRead() const;
 
-    void detach();
-
     bool caching() const;
     void setCaching(bool on);
 
 protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
-private:
-    inline QFileInfoPrivate* d_func()
-    {
-        detach();
-        return const_cast<QFileInfoPrivate *>(d_ptr.constData());
-    }
 
+private:
+    QFileInfoPrivate* d_func();
     inline const QFileInfoPrivate* d_func() const
     {
         return d_ptr.constData();

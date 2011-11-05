@@ -1592,9 +1592,6 @@ void tst_QFileInfo::detachingOperations()
 
     QVERIFY(info1.makeAbsolute());
     QVERIFY(!info1.caching());
-
-    info1.detach();
-    QVERIFY(!info1.caching());
 }
 
 #if !defined(Q_OS_WINCE)
