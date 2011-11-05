@@ -1221,7 +1221,24 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 
 void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)
 {
-    QRect rect(event->x, event->y, event->width, event->height);
+    bool fromSendEvent = (event->response_type & 0x80);
+    QPoint pos(event->x, event->y);
+    if (!fromSendEvent) {
+        // Do not trust the position, query it instead.
+        xcb_translate_coordinates_cookie_t cookie = xcb_translate_coordinates(xcb_connection(), xcb_window(),
+                                                                              m_screen->root(), 0, 0);
+        xcb_generic_error_t *error;
+        xcb_translate_coordinates_reply_t *reply = xcb_translate_coordinates_reply(xcb_connection(), cookie, &error);
+        if (reply) {
+            pos.setX(reply->dst_x);
+            pos.setY(reply->dst_y);
+            free(reply);
+        } else if (error) {
+            free(error);
+        }
+    }
+
+    QRect rect(pos, QSize(event->width, event->height));
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
