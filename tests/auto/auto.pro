@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    corelib.pro \
+    corelib \
     dbus \
     host.pro \
     gui \

@@ -1,3 +1,4 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qtextcodec
+   qtextcodec \
+   utf8 \ # Integrate into qtextcodec test? See QTBUG-22590.
