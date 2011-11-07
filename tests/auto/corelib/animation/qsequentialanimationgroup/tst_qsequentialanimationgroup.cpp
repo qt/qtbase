@@ -922,8 +922,8 @@ void tst_QSequentialAnimationGroup::startDelay()
 void tst_QSequentialAnimationGroup::clearGroup()
 {
     QSequentialAnimationGroup group;
-	
-	static const int animationCount = 20;
+
+    static const int animationCount = 20;
 
     for (int i = 0; i < animationCount/2; ++i) {
         QSequentialAnimationGroup *subGroup = new QSequentialAnimationGroup(&group);

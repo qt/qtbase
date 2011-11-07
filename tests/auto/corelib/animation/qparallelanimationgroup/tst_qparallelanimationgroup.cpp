@@ -351,7 +351,7 @@ void tst_QParallelAnimationGroup::stateChanged()
 void tst_QParallelAnimationGroup::clearGroup()
 {
     QParallelAnimationGroup group;
-	static const int animationCount = 10;
+    static const int animationCount = 10;
 
     for (int i = 0; i < animationCount; ++i) {
         new QParallelAnimationGroup(&group);

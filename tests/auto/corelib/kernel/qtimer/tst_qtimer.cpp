@@ -189,7 +189,7 @@ public:
             if (++timeoutsForFirst == 1) {
                 killTimer(extraTimerId);
                 extraTimerId = -1;
-		QCoreApplication::postEvent(this, new QEvent(static_cast<QEvent::Type>(4002)));
+                QCoreApplication::postEvent(this, new QEvent(static_cast<QEvent::Type>(4002)));
                 secondTimerId = startTimer(interval);
             }
         } else if (te->timerId() == secondTimerId) {
@@ -229,10 +229,10 @@ void tst_QTimer::livelock()
     QCOMPARE(tester.timeoutsForExtra, 0);
     QTRY_COMPARE(tester.timeoutsForSecond, 1);
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
-		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
+        QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
 #elif defined(Q_OS_WINCE)
-	QEXPECT_FAIL("non-zero timer", "Windows CE devices often too slow", Continue);
+        QEXPECT_FAIL("non-zero timer", "Windows CE devices often too slow", Continue);
 #endif
     QVERIFY(tester.postEventAtRightTime);
 }

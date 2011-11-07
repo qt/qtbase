@@ -138,11 +138,11 @@ void tst_QBitArray::size()
     a.fill(1);
     int len = a.size();
     for (int j=0; j<len; j++) {
-	bool b = a[j];
-	if (b)
-	    S+= "1";
-	else
-	    S+= "0";
+        bool b = a[j];
+        if (b)
+            S+= "1";
+        else
+            S+= "0";
     }
     QTEST(S,"res");
 }

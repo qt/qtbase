@@ -85,24 +85,24 @@ class MyClass
 {
 public:
     MyClass() {
-       ++count;
-//     qDebug("creating MyClass count=%d", count);
+        ++count;
+//        qDebug("creating MyClass count=%d", count);
     }
     MyClass( const QString& c) {
-	count++; str = c;
-// 	qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
+        count++; str = c;
+//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     ~MyClass() {
-	count--;
-// 	qDebug("deleting MyClass '%s' count = %d", str.latin1(), count);
+        count--;
+//        qDebug("deleting MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass( const MyClass& c ) {
-	count++; str = c.str;
-// 	qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
+        count++; str = c.str;
+//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass &operator =(const MyClass &o) {
-// 	qDebug("copying MyClass '%s'", o.str.latin1());
-	str = o.str; return *this;
+//        qDebug("copying MyClass '%s'", o.str.latin1());
+        str = o.str; return *this;
     }
 
     QString str;
@@ -121,145 +121,145 @@ void tst_QMap::init()
 void tst_QMap::count()
 {
     {
-	MyMap map;
-	MyMap map2( map );
-	QCOMPARE( map.count(), 0 );
-	QCOMPARE( map2.count(), 0 );
-	QCOMPARE( MyClass::count, int(0) );
-	// detach
-	map2["Hallo"] = MyClass( "Fritz" );
-	QCOMPARE( map.count(), 0 );
+        MyMap map;
+        MyMap map2( map );
+        QCOMPARE( map.count(), 0 );
+        QCOMPARE( map2.count(), 0 );
+        QCOMPARE( MyClass::count, int(0) );
+        // detach
+        map2["Hallo"] = MyClass( "Fritz" );
+        QCOMPARE( map.count(), 0 );
         QCOMPARE( map2.count(), 1 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 1 );
+        QCOMPARE( MyClass::count, 1 );
 #endif
     }
     QCOMPARE( MyClass::count, int(0) );
 
     {
-	typedef QMap<QString, MyClass> Map;
-	Map map;
-	QCOMPARE( map.count(), 0);
-	map.insert( "Torben", MyClass("Weis") );
-	QCOMPARE( map.count(), 1 );
-	map.insert( "Claudia", MyClass("Sorg") );
-	QCOMPARE( map.count(), 2 );
-	map.insert( "Lars", MyClass("Linzbach") );
-	map.insert( "Matthias", MyClass("Ettrich") );
-	map.insert( "Sue", MyClass("Paludo") );
-	map.insert( "Eirik", MyClass("Eng") );
-	map.insert( "Haavard", MyClass("Nord") );
-	map.insert( "Arnt", MyClass("Gulbrandsen") );
-	map.insert( "Paul", MyClass("Tvete") );
-	QCOMPARE( map.count(), 9 );
-	map.insert( "Paul", MyClass("Tvete 1") );
-	map.insert( "Paul", MyClass("Tvete 2") );
-	map.insert( "Paul", MyClass("Tvete 3") );
-	map.insert( "Paul", MyClass("Tvete 4") );
-	map.insert( "Paul", MyClass("Tvete 5") );
-	map.insert( "Paul", MyClass("Tvete 6") );
+        typedef QMap<QString, MyClass> Map;
+        Map map;
+        QCOMPARE( map.count(), 0);
+        map.insert( "Torben", MyClass("Weis") );
+        QCOMPARE( map.count(), 1 );
+        map.insert( "Claudia", MyClass("Sorg") );
+        QCOMPARE( map.count(), 2 );
+        map.insert( "Lars", MyClass("Linzbach") );
+        map.insert( "Matthias", MyClass("Ettrich") );
+        map.insert( "Sue", MyClass("Paludo") );
+        map.insert( "Eirik", MyClass("Eng") );
+        map.insert( "Haavard", MyClass("Nord") );
+        map.insert( "Arnt", MyClass("Gulbrandsen") );
+        map.insert( "Paul", MyClass("Tvete") );
+        QCOMPARE( map.count(), 9 );
+        map.insert( "Paul", MyClass("Tvete 1") );
+        map.insert( "Paul", MyClass("Tvete 2") );
+        map.insert( "Paul", MyClass("Tvete 3") );
+        map.insert( "Paul", MyClass("Tvete 4") );
+        map.insert( "Paul", MyClass("Tvete 5") );
+        map.insert( "Paul", MyClass("Tvete 6") );
 
-	QCOMPARE( map.count(), 9 );
+        QCOMPARE( map.count(), 9 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	Map map2( map );
-	QVERIFY( map2.count() == 9 );
+        Map map2( map );
+        QVERIFY( map2.count() == 9 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	map2.insert( "Kay", MyClass("Roemer") );
-	QVERIFY( map2.count() == 10 );
-	QVERIFY( map.count() == 9 );
+        map2.insert( "Kay", MyClass("Roemer") );
+        QVERIFY( map2.count() == 10 );
+        QVERIFY( map.count() == 9 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 19 );
+        QCOMPARE( MyClass::count, 19 );
 #endif
 
-	map2 = map;
-	QVERIFY( map.count() == 9 );
-	QVERIFY( map2.count() == 9 );
+        map2 = map;
+        QVERIFY( map.count() == 9 );
+        QVERIFY( map2.count() == 9 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	map2.insert( "Kay", MyClass("Roemer") );
-	QVERIFY( map2.count() == 10 );
+        map2.insert( "Kay", MyClass("Roemer") );
+        QVERIFY( map2.count() == 10 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 19 );
+        QCOMPARE( MyClass::count, 19 );
 #endif
 
-	map2.clear();
-	QVERIFY( map.count() == 9 );
-	QVERIFY( map2.count() == 0 );
+        map2.clear();
+        QVERIFY( map.count() == 9 );
+        QVERIFY( map2.count() == 0 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	map2 = map;
-	QVERIFY( map.count() == 9 );
-	QVERIFY( map2.count() == 9 );
+        map2 = map;
+        QVERIFY( map.count() == 9 );
+        QVERIFY( map2.count() == 9 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	map2.clear();
-	QVERIFY( map.count() == 9 );
-	QVERIFY( map2.count() == 0 );
+        map2.clear();
+        QVERIFY( map.count() == 9 );
+        QVERIFY( map2.count() == 0 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 9 );
+        QCOMPARE( MyClass::count, 9 );
 #endif
 
-	map.remove( "Lars" );
-	QVERIFY( map.count() == 8 );
-	QVERIFY( map2.count() == 0 );
+        map.remove( "Lars" );
+        QVERIFY( map.count() == 8 );
+        QVERIFY( map2.count() == 0 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 8 );
+        QCOMPARE( MyClass::count, 8 );
 #endif
 
-	map.remove( "Mist" );
-	QVERIFY( map.count() == 8 );
-	QVERIFY( map2.count() == 0 );
+        map.remove( "Mist" );
+        QVERIFY( map.count() == 8 );
+        QVERIFY( map2.count() == 0 );
 #ifndef Q_CC_SUN
-	QCOMPARE( MyClass::count, 8 );
+        QCOMPARE( MyClass::count, 8 );
 #endif
     }
     QVERIFY( MyClass::count == 0 );
 
     {
-	typedef QMap<QString,MyClass> Map;
-	Map map;
-	map["Torben"] = MyClass("Weis");
+        typedef QMap<QString,MyClass> Map;
+        Map map;
+        map["Torben"] = MyClass("Weis");
 #ifndef Q_CC_SUN
-	QVERIFY( MyClass::count == 1 );
+        QVERIFY( MyClass::count == 1 );
 #endif
-	QVERIFY( map.count() == 1 );
+        QVERIFY( map.count() == 1 );
 
-	(void)map["Torben"].str;
-	(void)map["Lars"].str;
+        (void)map["Torben"].str;
+        (void)map["Lars"].str;
 #ifndef Q_CC_SUN
-	QVERIFY( MyClass::count == 2 );
+        QVERIFY( MyClass::count == 2 );
 #endif
-	QVERIFY( map.count() == 2 );
+        QVERIFY( map.count() == 2 );
 
-	const Map& cmap = map;
-	(void)cmap["Depp"].str;
+        const Map& cmap = map;
+        (void)cmap["Depp"].str;
 #ifndef Q_CC_SUN
-	QVERIFY( MyClass::count == 2 );
+        QVERIFY( MyClass::count == 2 );
 #endif
-	QVERIFY( map.count() == 2 );
-	QVERIFY( cmap.count() == 2 );
+        QVERIFY( map.count() == 2 );
+        QVERIFY( cmap.count() == 2 );
     }
     QCOMPARE( MyClass::count, 0 );
     {
-	for ( int i = 0; i < 100; ++i )
-	{
-	    QMap<int, MyClass> map;
-	    for (int j = 0; j < i; ++j)
-		map.insert(j, MyClass(QString::number(j)));
-	}
-	QCOMPARE( MyClass::count, 0 );
+        for ( int i = 0; i < 100; ++i )
+        {
+            QMap<int, MyClass> map;
+            for (int j = 0; j < i; ++j)
+                map.insert(j, MyClass(QString::number(j)));
+        }
+        QCOMPARE( MyClass::count, 0 );
     }
     QCOMPARE( MyClass::count, 0 );
 }
@@ -267,17 +267,17 @@ void tst_QMap::count()
 void tst_QMap::clear()
 {
     {
-	MyMap map;
-	map.clear();
-	QVERIFY( map.isEmpty() );
-	map.insert( "key", MyClass( "value" ) );
-	map.clear();
-	QVERIFY( map.isEmpty() );
-	map.insert( "key0", MyClass( "value0" ) );
-	map.insert( "key0", MyClass( "value1" ) );
-	map.insert( "key1", MyClass( "value2" ) );
-	map.clear();
-	QVERIFY( map.isEmpty() );
+        MyMap map;
+        map.clear();
+        QVERIFY( map.isEmpty() );
+        map.insert( "key", MyClass( "value" ) );
+        map.clear();
+        QVERIFY( map.isEmpty() );
+        map.insert( "key0", MyClass( "value0" ) );
+        map.insert( "key0", MyClass( "value1" ) );
+        map.insert( "key1", MyClass( "value2" ) );
+        map.clear();
+        QVERIFY( map.isEmpty() );
     }
     QCOMPARE( MyClass::count, int(0) );
 }
@@ -302,8 +302,8 @@ void tst_QMap::beginEnd()
     // test iteration
     QString result;
     for ( StringMap::ConstIterator it = map.constBegin();
-	  it != map.constEnd(); ++it )
-	result += *it;
+          it != map.constEnd(); ++it )
+        result += *it;
     QCOMPARE( result, QString( "ab" ) );
 
     // maps should still be identical

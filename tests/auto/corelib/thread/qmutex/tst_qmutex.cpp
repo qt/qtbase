@@ -314,16 +314,16 @@ public:
 
     void run()
     {
-	test_mutex.lock();
+        test_mutex.lock();
 
-	mutex.lock();
-	for (int i = 0; i < iterations; ++i) {
-	    cond.wakeOne();
-	    cond.wait(&mutex);
-	}
-	mutex.unlock();
+        mutex.lock();
+        for (int i = 0; i < iterations; ++i) {
+            cond.wakeOne();
+            cond.wait(&mutex);
+        }
+        mutex.unlock();
 
-    	test_mutex.unlock();
+        test_mutex.unlock();
     }
 };
 
@@ -339,22 +339,22 @@ public:
 
     void run()
     {
-	test_mutex.lock();
-	test_mutex.lock();
-	test_mutex.lock();
-	test_mutex.lock();
+        test_mutex.lock();
+        test_mutex.lock();
+        test_mutex.lock();
+        test_mutex.lock();
 
-	mutex.lock();
-	for (int i = 0; i < iterations; ++i) {
-	    cond.wakeOne();
-	    cond.wait(&mutex);
-	}
-	mutex.unlock();
+        mutex.lock();
+        for (int i = 0; i < iterations; ++i) {
+            cond.wakeOne();
+            cond.wait(&mutex);
+        }
+        mutex.unlock();
 
-    	test_mutex.unlock();
-    	test_mutex.unlock();
-    	test_mutex.unlock();
-    	test_mutex.unlock();
+        test_mutex.unlock();
+        test_mutex.unlock();
+        test_mutex.unlock();
+        test_mutex.unlock();
     }
 };
 
@@ -368,60 +368,60 @@ void tst_QMutex::lock_unlock_locked_tryLock()
     rmutex_Thread rthread(rmutex);
 
     for (int i = 0; i < iterations; ++i) {
-	// normal mutex
-	QVERIFY(mutex.tryLock());
-	mutex.unlock();
+        // normal mutex
+        QVERIFY(mutex.tryLock());
+        mutex.unlock();
 
-	thread.mutex.lock();
-	thread.start();
+        thread.mutex.lock();
+        thread.start();
 
-	for (int j = 0; j < iterations; ++j) {
-	    QVERIFY(thread.cond.wait(&thread.mutex, 10000));
-	    QVERIFY(!mutex.tryLock());
+        for (int j = 0; j < iterations; ++j) {
+            QVERIFY(thread.cond.wait(&thread.mutex, 10000));
+            QVERIFY(!mutex.tryLock());
 
-	    thread.cond.wakeOne();
-	}
+            thread.cond.wakeOne();
+        }
 
-	thread.mutex.unlock();
+        thread.mutex.unlock();
 
-	QVERIFY(thread.wait(10000));
-	QVERIFY(mutex.tryLock());
+        QVERIFY(thread.wait(10000));
+        QVERIFY(mutex.tryLock());
 
-	mutex.unlock();
+        mutex.unlock();
 
-    	// recursive mutex
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
+        // recursive mutex
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
 
-	rmutex.unlock();
-	rmutex.unlock();
-	rmutex.unlock();
-	rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
 
-	rthread.mutex.lock();
-	rthread.start();
+        rthread.mutex.lock();
+        rthread.start();
 
-	for (int k = 0; k < iterations; ++k) {
-	    QVERIFY(rthread.cond.wait(&rthread.mutex, 10000));
-	    QVERIFY(!rmutex.tryLock());
+        for (int k = 0; k < iterations; ++k) {
+            QVERIFY(rthread.cond.wait(&rthread.mutex, 10000));
+            QVERIFY(!rmutex.tryLock());
 
-	    rthread.cond.wakeOne();
-	}
+            rthread.cond.wakeOne();
+        }
 
-	rthread.mutex.unlock();
+        rthread.mutex.unlock();
 
-	QVERIFY(rthread.wait(10000));
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
-	QVERIFY(rmutex.tryLock());
+        QVERIFY(rthread.wait(10000));
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
+        QVERIFY(rmutex.tryLock());
 
-	rmutex.unlock();
-	rmutex.unlock();
-	rmutex.unlock();
-	rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
+        rmutex.unlock();
     }
 }
 

@@ -203,7 +203,7 @@ static QString settingsPath(const char *path = "")
     // Temporary path for files that are specified explictly in the constructor.
     QString tempPath = QDir::tempPath();
     if (tempPath.endsWith("/"))
-	tempPath.truncate(tempPath.size() - 1);
+        tempPath.truncate(tempPath.size() - 1);
     return QDir::toNativeSeparators(tempPath + "/tst_QSettings/" + QLatin1String(path));
 }
 
@@ -309,9 +309,9 @@ void tst_QSettings::init()
         removePath(settingsPath());
 #else
         if (QSysInfo::windowsVersion() & QSysInfo::WV_NT_based)
-	    system(QString("rmdir /Q /S %1").arg(settingsPath()).toLatin1());
-	else
-	    system(QString("deltree /Y %1").arg(settingsPath()).toLatin1());
+            system(QString("rmdir /Q /S %1").arg(settingsPath()).toLatin1());
+        else
+            system(QString("deltree /Y %1").arg(settingsPath()).toLatin1());
 #endif
     }
 #elif defined(Q_OS_DARWIN)
@@ -812,16 +812,16 @@ void tst_QSettings::testIniParsing()
     QSettings settings(settingsPath("someDir/someSettings.ini"), QSettings::IniFormat);
 
     if ( settings.status() == QSettings::NoError ) { // else no point proceeding
-	QVariant v = settings.value(key);
-	QVERIFY(v.canConvert(expect.type()));
-	// check some types so as to give prettier error messages
-	if ( v.type() == QVariant::String ) {
-	    QCOMPARE(v.toString(), expect.toString());
-	} else if ( v.type() == QVariant::Int ) {
-	    QCOMPARE(v.toInt(), expect.toInt());
-	} else {
-	    QCOMPARE(v, expect);
-	}
+        QVariant v = settings.value(key);
+        QVERIFY(v.canConvert(expect.type()));
+        // check some types so as to give prettier error messages
+        if ( v.type() == QVariant::String ) {
+            QCOMPARE(v.toString(), expect.toString());
+        } else if ( v.type() == QVariant::Int ) {
+            QCOMPARE(v.toInt(), expect.toInt());
+        } else {
+            QCOMPARE(v, expect);
+        }
     }
 
     QCOMPARE(settings.status(), status);

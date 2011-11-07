@@ -59,7 +59,7 @@
 #include <windows.h> // needed for GetUserDefaultLCID
 #define _control87 _controlfp
 extern "C" DWORD GetThreadLocale(void) {
-	return GetUserDefaultLCID();
+    return GetUserDefaultLCID();
 }
 
 #endif
@@ -162,16 +162,16 @@ void tst_QLocale::ctor()
             QLocale::countryToString(default_country).toLatin1().constData());
 
     {
-	QLocale l;
-	QVERIFY(l.language() == default_lang);
-	QVERIFY(l.country() == default_country);
+        QLocale l;
+        QVERIFY(l.language() == default_lang);
+        QVERIFY(l.country() == default_country);
     }
 
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
-    	QLocale l(QLocale::req_lang, QLocale::req_country); \
-	QCOMPARE(l.language(), exp_lang); \
-	QCOMPARE(l.country(), exp_country); \
+        QLocale l(QLocale::req_lang, QLocale::req_country); \
+        QCOMPARE(l.language(), exp_lang); \
+        QCOMPARE(l.country(), exp_country); \
     }
     {
         QLocale l(QLocale::C, QLocale::AnyCountry);
@@ -195,9 +195,9 @@ void tst_QLocale::ctor()
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
 
     {
-	QLocale l;
-	QVERIFY(l.language() == QLocale::English);
-	QVERIFY(l.country() == QLocale::UnitedStates);
+        QLocale l;
+        QVERIFY(l.language() == QLocale::English);
+        QVERIFY(l.country() == QLocale::UnitedStates);
     }
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
@@ -211,9 +211,9 @@ void tst_QLocale::ctor()
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
 
     {
-	QLocale l;
-	QVERIFY(l.language() == QLocale::English);
-	QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QLocale l;
+        QVERIFY(l.language() == QLocale::English);
+        QVERIFY(l.country() == QLocale::UnitedKingdom);
     }
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
@@ -225,9 +225,9 @@ void tst_QLocale::ctor()
     QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::France));
 
     {
-	QLocale l;
-	QVERIFY(l.language() == QLocale::English);
-	QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QLocale l;
+        QVERIFY(l.language() == QLocale::English);
+        QVERIFY(l.country() == QLocale::UnitedKingdom);
     }
 
     TEST_CTOR(Aymara, AnyCountry, QLocale::English, QLocale::UnitedKingdom)
@@ -245,11 +245,10 @@ void tst_QLocale::ctor()
     QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::AnyCountry));
 
     {
-	QLocale l;
-	QVERIFY(l.language() == QLocale::English);
-	QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QLocale l;
+        QVERIFY(l.language() == QLocale::English);
+        QVERIFY(l.country() == QLocale::UnitedKingdom);
     }
-
 
     TEST_CTOR(Aymara, AnyCountry, QLocale::English, QLocale::UnitedKingdom)
     TEST_CTOR(Aymara, France, QLocale::English, QLocale::UnitedKingdom)
@@ -280,12 +279,12 @@ void tst_QLocale::ctor()
 
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     { \
-	QLocale l(req_lc); \
-	QVERIFY2(l.language() == QLocale::exp_lang \
-		&& l.country() == QLocale::exp_country, \
-		QString("requested: \"" + QString(req_lc) + "\", got: " \
-		+ QLocale::languageToString(l.language()) \
-		+ "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+        QLocale l(req_lc); \
+        QVERIFY2(l.language() == QLocale::exp_lang \
+                && l.country() == QLocale::exp_country, \
+                QString("requested: \"" + QString(req_lc) + "\", got: " \
+                + QLocale::languageToString(l.language()) \
+                + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
     }
 
     QLocale::setDefault(QLocale(QLocale::C));
@@ -442,8 +441,8 @@ void tst_QLocale::unixLocaleName()
 {
 #define TEST_NAME(req_lang, req_country, exp_name) \
     { \
-    	QLocale l(QLocale::req_lang, QLocale::req_country); \
-	QCOMPARE(l.name(), QString(exp_name)); \
+        QLocale l(QLocale::req_lang, QLocale::req_country); \
+        QCOMPARE(l.name(), QString(exp_name)); \
     }
 
     QLocale::setDefault(QLocale(QLocale::C));
@@ -463,112 +462,112 @@ void tst_QLocale::double_conversion_data()
     QTest::addColumn<bool>("good");
     QTest::addColumn<double>("num");
 
-    QTest::newRow("C 1")         << QString("C") << QString("1")          << true  << 1.0;
-    QTest::newRow("C 1.0")       << QString("C") << QString("1.0")        << true  << 1.0;
-    QTest::newRow("C 1.234")     << QString("C") << QString("1.234")      << true  << 1.234;
-    QTest::newRow("C 1.234e-10") << QString("C") << QString("1.234e-10")  << true  << 1.234e-10;
-    QTest::newRow("C 1.234E10")  << QString("C") << QString("1.234E10")   << true  << 1.234e10;
-    QTest::newRow("C 1e10")      << QString("C") << QString("1e10")       << true  << 1.0e10;
-    QTest::newRow("C  1")        << QString("C") << QString(" 1")         << true  << 1.0;
-    QTest::newRow("C   1")       << QString("C") << QString("  1")        << true  << 1.0;
-    QTest::newRow("C 1 ")        << QString("C") << QString("1 ")         << true  << 1.0;
-    QTest::newRow("C 1  ")       << QString("C") << QString("1  ")        << true  << 1.0;
+    QTest::newRow("C 1")               << QString("C") << QString("1")               << true  << 1.0;
+    QTest::newRow("C 1.0")             << QString("C") << QString("1.0")             << true  << 1.0;
+    QTest::newRow("C 1.234")           << QString("C") << QString("1.234")           << true  << 1.234;
+    QTest::newRow("C 1.234e-10")       << QString("C") << QString("1.234e-10")       << true  << 1.234e-10;
+    QTest::newRow("C 1.234E10")        << QString("C") << QString("1.234E10")        << true  << 1.234e10;
+    QTest::newRow("C 1e10")            << QString("C") << QString("1e10")            << true  << 1.0e10;
+    QTest::newRow("C  1")              << QString("C") << QString(" 1")              << true  << 1.0;
+    QTest::newRow("C   1")             << QString("C") << QString("  1")             << true  << 1.0;
+    QTest::newRow("C 1 ")              << QString("C") << QString("1 ")              << true  << 1.0;
+    QTest::newRow("C 1  ")             << QString("C") << QString("1  ")             << true  << 1.0;
 
-    QTest::newRow("C 1,")	        << QString("C") << QString("1,")	 << false << 0.0;
-    QTest::newRow("C 1,2")	        << QString("C") << QString("1,2")	 << false << 0.0;
-    QTest::newRow("C 1,23")        << QString("C") << QString("1,23")	 << false << 0.0;
-    QTest::newRow("C 1,234")       << QString("C") << QString("1,234")	 << true  << 1234.0;
-    QTest::newRow("C 1,234,")      << QString("C") << QString("1,234,")	 << false << 0.0;
-    QTest::newRow("C 1,234,5")     << QString("C") << QString("1,234,5")	 << false << 0.0;
-    QTest::newRow("C 1,234,56")    << QString("C") << QString("1,234,56")   << false << 0.0;
-    QTest::newRow("C 1,234,567")   << QString("C") << QString("1,234,567")  << true  << 1234567.0;
-    QTest::newRow("C 1,234,567.")  << QString("C") << QString("1,234,567.") << true  << 1234567.0;
-    QTest::newRow("C 1,234,567.8")	<< QString("C") << QString("1,234,567.8")<< true  << 1234567.8;
-    QTest::newRow("C 1,234567.8")  << QString("C") << QString("1,234567.8") << false << 0.0;
-    QTest::newRow("C 12,34567.8")  << QString("C") << QString("12,34567.8") << false << 0.0;
-    QTest::newRow("C 1234,567.8")  << QString("C") << QString("1234,567.8") << false << 0.0;
-    QTest::newRow("C 1234567.8")   << QString("C") << QString("1234567.8")  << true  << 1234567.8;
-    QTest::newRow("C ,")	    	<< QString("C") << QString(",")	         << false << 0.0;
-    QTest::newRow("C ,123")	<< QString("C") << QString(",123")       << false << 0.0;
-    QTest::newRow("C ,3")	    	<< QString("C") << QString(",3")         << false << 0.0;
-    QTest::newRow("C , 3")	    	<< QString("C") << QString(", 3")        << false << 0.0;
-    QTest::newRow("C ,  3")	<< QString("C") << QString(",  3")       << false << 0.0;
-    QTest::newRow("C ,  3.2")	<< QString("C") << QString(",  3.2")     << false << 0.0;
-    QTest::newRow("C ,  3.2e2")	<< QString("C") << QString(",  3.2e2")   << false << 0.0;
-    QTest::newRow("C ,  e2")	<< QString("C") << QString(",  e2")	 << false << 0.0;
-    QTest::newRow("C 1,,234")	<< QString("C") << QString("1,,234")	 << false << 0.0;
+    QTest::newRow("C 1,")              << QString("C") << QString("1,")              << false << 0.0;
+    QTest::newRow("C 1,2")             << QString("C") << QString("1,2")             << false << 0.0;
+    QTest::newRow("C 1,23")            << QString("C") << QString("1,23")            << false << 0.0;
+    QTest::newRow("C 1,234")           << QString("C") << QString("1,234")           << true  << 1234.0;
+    QTest::newRow("C 1,234,")          << QString("C") << QString("1,234,")          << false << 0.0;
+    QTest::newRow("C 1,234,5")         << QString("C") << QString("1,234,5")         << false << 0.0;
+    QTest::newRow("C 1,234,56")        << QString("C") << QString("1,234,56")        << false << 0.0;
+    QTest::newRow("C 1,234,567")       << QString("C") << QString("1,234,567")       << true  << 1234567.0;
+    QTest::newRow("C 1,234,567.")      << QString("C") << QString("1,234,567.")      << true  << 1234567.0;
+    QTest::newRow("C 1,234,567.8")     << QString("C") << QString("1,234,567.8")     << true  << 1234567.8;
+    QTest::newRow("C 1,234567.8")      << QString("C") << QString("1,234567.8")      << false << 0.0;
+    QTest::newRow("C 12,34567.8")      << QString("C") << QString("12,34567.8")      << false << 0.0;
+    QTest::newRow("C 1234,567.8")      << QString("C") << QString("1234,567.8")      << false << 0.0;
+    QTest::newRow("C 1234567.8")       << QString("C") << QString("1234567.8")       << true  << 1234567.8;
+    QTest::newRow("C ,")               << QString("C") << QString(",")               << false << 0.0;
+    QTest::newRow("C ,123")            << QString("C") << QString(",123")            << false << 0.0;
+    QTest::newRow("C ,3")              << QString("C") << QString(",3")              << false << 0.0;
+    QTest::newRow("C , 3")             << QString("C") << QString(", 3")             << false << 0.0;
+    QTest::newRow("C ,  3")            << QString("C") << QString(",  3")            << false << 0.0;
+    QTest::newRow("C ,  3.2")          << QString("C") << QString(",  3.2")          << false << 0.0;
+    QTest::newRow("C ,  3.2e2")        << QString("C") << QString(",  3.2e2")        << false << 0.0;
+    QTest::newRow("C ,  e2")           << QString("C") << QString(",  e2")           << false << 0.0;
+    QTest::newRow("C 1,,234")          << QString("C") << QString("1,,234")          << false << 0.0;
 
-    QTest::newRow("C empty")     << QString("C") << QString("")           << false << 0.0;
-    QTest::newRow("C null")      << QString("C") << QString()         << false << 0.0;
-    QTest::newRow("C .")         << QString("C") << QString(".")          << false << 0.0;
-    QTest::newRow("C 1e")        << QString("C") << QString("1e")         << false << 0.0;
-    QTest::newRow("C 1,0")       << QString("C") << QString("1,0")        << false << 0.0;
-    QTest::newRow("C 1,000")     << QString("C") << QString("1,000")      << true  << 1000.0;
-    QTest::newRow("C 1,000e-6")  << QString("C") << QString("1,000e-6")   << true  << 1000.0e-6;
-    QTest::newRow("C 1e1.0")     << QString("C") << QString("1e1.0")      << false << 0.0;
-    QTest::newRow("C 1e+")       << QString("C") << QString("1e+")        << false << 0.0;
-    QTest::newRow("C 1e-")       << QString("C") << QString("1e-")        << false << 0.0;
+    QTest::newRow("C empty")           << QString("C") << QString("")                << false << 0.0;
+    QTest::newRow("C null")            << QString("C") << QString()                  << false << 0.0;
+    QTest::newRow("C .")               << QString("C") << QString(".")               << false << 0.0;
+    QTest::newRow("C 1e")              << QString("C") << QString("1e")              << false << 0.0;
+    QTest::newRow("C 1,0")             << QString("C") << QString("1,0")             << false << 0.0;
+    QTest::newRow("C 1,000")           << QString("C") << QString("1,000")           << true  << 1000.0;
+    QTest::newRow("C 1,000e-6")        << QString("C") << QString("1,000e-6")        << true  << 1000.0e-6;
+    QTest::newRow("C 1e1.0")           << QString("C") << QString("1e1.0")           << false << 0.0;
+    QTest::newRow("C 1e+")             << QString("C") << QString("1e+")             << false << 0.0;
+    QTest::newRow("C 1e-")             << QString("C") << QString("1e-")             << false << 0.0;
 
-    QTest::newRow("C .1")        << QString("C") << QString(".1")         << true  << 0.1;
-    QTest::newRow("C -.1")       << QString("C") << QString("-.1")        << true  << -0.1;
-    QTest::newRow("C 1.")        << QString("C") << QString("1.")         << true  << 1.0;
-    QTest::newRow("C 1.E10")     << QString("C") << QString("1.E10")      << true  << 1.0e10;
-    QTest::newRow("C 1e+10")     << QString("C") << QString("1e+10")      << true  << 1.0e+10;
+    QTest::newRow("C .1")              << QString("C") << QString(".1")              << true  << 0.1;
+    QTest::newRow("C -.1")             << QString("C") << QString("-.1")             << true  << -0.1;
+    QTest::newRow("C 1.")              << QString("C") << QString("1.")              << true  << 1.0;
+    QTest::newRow("C 1.E10")           << QString("C") << QString("1.E10")           << true  << 1.0e10;
+    QTest::newRow("C 1e+10")           << QString("C") << QString("1e+10")           << true  << 1.0e+10;
 
-    QTest::newRow("de_DE 1.")	    << QString("de_DE") << QString("1.")	 << false << 0.0;
-    QTest::newRow("de_DE 1.2")	    << QString("de_DE") << QString("1.2")	 << false << 0.0;
-    QTest::newRow("de_DE 1.23")        << QString("de_DE") << QString("1.23")       << false << 0.0;
-    QTest::newRow("de_DE 1.234")       << QString("de_DE") << QString("1.234")	 << true  << 1234.0;
-    QTest::newRow("de_DE 1.234,")      << QString("de_DE") << QString("1.234.")	 << false << 0.0;
-    QTest::newRow("de_DE 1.234.5")     << QString("de_DE") << QString("1.234.5")	 << false << 0.0;
-    QTest::newRow("de_DE 1.234.56")    << QString("de_DE") << QString("1.234.56")   << false << 0.0;
-    QTest::newRow("de_DE 1.234.567")   << QString("de_DE") << QString("1.234.567")  << true  << 1234567.0;
-    QTest::newRow("de_DE 1.234.567,")  << QString("de_DE") << QString("1.234.567,") << true  << 1234567.0;
-    QTest::newRow("de_DE 1.234.567,8") << QString("de_DE") << QString("1.234.567,8")<< true  << 1234567.8;
-    QTest::newRow("de_DE 1.234567,8")  << QString("de_DE") << QString("1.234567,8") << false << 0.0;
-    QTest::newRow("de_DE 12.34567,8")  << QString("de_DE") << QString("12.34567,8") << false << 0.0;
-    QTest::newRow("de_DE 1234.567,8")  << QString("de_DE") << QString("1234.567,8") << false << 0.0;
-    QTest::newRow("de_DE 1234567,8")   << QString("de_DE") << QString("1234567,8")  << true  << 1234567.8;
-    QTest::newRow("de_DE .123")	    << QString("de_DE") << QString(".123")       << false << 0.0;
-    QTest::newRow("de_DE .3")	    << QString("de_DE") << QString(".3")         << false << 0.0;
-    QTest::newRow("de_DE . 3")	    << QString("de_DE") << QString(". 3")        << false << 0.0;
-    QTest::newRow("de_DE .  3")	    << QString("de_DE") << QString(".  3")       << false << 0.0;
-    QTest::newRow("de_DE .  3,2")	    << QString("de_DE") << QString(".  3,2")     << false << 0.0;
-    QTest::newRow("de_DE .  3,2e2")    << QString("de_DE") << QString(".  3,2e2")   << false << 0.0;
-    QTest::newRow("de_DE .  e2")	    << QString("de_DE") << QString(".  e2")	 << false << 0.0;
-    QTest::newRow("de_DE 1..234")	    << QString("de_DE") << QString("1..234")	 << false << 0.0;
+    QTest::newRow("de_DE 1.")          << QString("de_DE") << QString("1.")          << false << 0.0;
+    QTest::newRow("de_DE 1.2")         << QString("de_DE") << QString("1.2")         << false << 0.0;
+    QTest::newRow("de_DE 1.23")        << QString("de_DE") << QString("1.23")        << false << 0.0;
+    QTest::newRow("de_DE 1.234")       << QString("de_DE") << QString("1.234")       << true  << 1234.0;
+    QTest::newRow("de_DE 1.234,")      << QString("de_DE") << QString("1.234.")      << false << 0.0;
+    QTest::newRow("de_DE 1.234.5")     << QString("de_DE") << QString("1.234.5")     << false << 0.0;
+    QTest::newRow("de_DE 1.234.56")    << QString("de_DE") << QString("1.234.56")    << false << 0.0;
+    QTest::newRow("de_DE 1.234.567")   << QString("de_DE") << QString("1.234.567")   << true  << 1234567.0;
+    QTest::newRow("de_DE 1.234.567,")  << QString("de_DE") << QString("1.234.567,")  << true  << 1234567.0;
+    QTest::newRow("de_DE 1.234.567,8") << QString("de_DE") << QString("1.234.567,8") << true  << 1234567.8;
+    QTest::newRow("de_DE 1.234567,8")  << QString("de_DE") << QString("1.234567,8")  << false << 0.0;
+    QTest::newRow("de_DE 12.34567,8")  << QString("de_DE") << QString("12.34567,8")  << false << 0.0;
+    QTest::newRow("de_DE 1234.567,8")  << QString("de_DE") << QString("1234.567,8")  << false << 0.0;
+    QTest::newRow("de_DE 1234567,8")   << QString("de_DE") << QString("1234567,8")   << true  << 1234567.8;
+    QTest::newRow("de_DE .123")        << QString("de_DE") << QString(".123")        << false << 0.0;
+    QTest::newRow("de_DE .3")          << QString("de_DE") << QString(".3")          << false << 0.0;
+    QTest::newRow("de_DE . 3")         << QString("de_DE") << QString(". 3")         << false << 0.0;
+    QTest::newRow("de_DE .  3")        << QString("de_DE") << QString(".  3")        << false << 0.0;
+    QTest::newRow("de_DE .  3,2")      << QString("de_DE") << QString(".  3,2")      << false << 0.0;
+    QTest::newRow("de_DE .  3,2e2")    << QString("de_DE") << QString(".  3,2e2")    << false << 0.0;
+    QTest::newRow("de_DE .  e2")       << QString("de_DE") << QString(".  e2")       << false << 0.0;
+    QTest::newRow("de_DE 1..234")      << QString("de_DE") << QString("1..234")      << false << 0.0;
 
-    QTest::newRow("de_DE 1")         << QString("de_DE") << QString("1")          << true  << 1.0;
-    QTest::newRow("de_DE 1.0")       << QString("de_DE") << QString("1.0")        << false << 0.0;
-    QTest::newRow("de_DE 1.234e-10") << QString("de_DE") << QString("1.234e-10")  << true  << 1234.0e-10;
-    QTest::newRow("de_DE 1.234E10")  << QString("de_DE") << QString("1.234E10")   << true  << 1234.0e10;
-    QTest::newRow("de_DE 1e10")      << QString("de_DE") << QString("1e10")       << true  << 1.0e10;
-    QTest::newRow("de_DE .1")        << QString("de_DE") << QString(".1")         << false << 0.0;
-    QTest::newRow("de_DE -.1")       << QString("de_DE") << QString("-.1")        << false << 0.0;
-    QTest::newRow("de_DE 1.E10")     << QString("de_DE") << QString("1.E10")      << false << 0.0;
-    QTest::newRow("de_DE 1e+10")     << QString("de_DE") << QString("1e+10")      << true  << 1.0e+10;
+    QTest::newRow("de_DE 1")           << QString("de_DE") << QString("1")           << true  << 1.0;
+    QTest::newRow("de_DE 1.0")         << QString("de_DE") << QString("1.0")         << false << 0.0;
+    QTest::newRow("de_DE 1.234e-10")   << QString("de_DE") << QString("1.234e-10")   << true  << 1234.0e-10;
+    QTest::newRow("de_DE 1.234E10")    << QString("de_DE") << QString("1.234E10")    << true  << 1234.0e10;
+    QTest::newRow("de_DE 1e10")        << QString("de_DE") << QString("1e10")        << true  << 1.0e10;
+    QTest::newRow("de_DE .1")          << QString("de_DE") << QString(".1")          << false << 0.0;
+    QTest::newRow("de_DE -.1")         << QString("de_DE") << QString("-.1")         << false << 0.0;
+    QTest::newRow("de_DE 1.E10")       << QString("de_DE") << QString("1.E10")       << false << 0.0;
+    QTest::newRow("de_DE 1e+10")       << QString("de_DE") << QString("1e+10")       << true  << 1.0e+10;
 
-    QTest::newRow("de_DE 1,0")       << QString("de_DE") << QString("1,0")        << true  << 1.0;
-    QTest::newRow("de_DE 1,234")     << QString("de_DE") << QString("1,234")      << true  << 1.234;
-    QTest::newRow("de_DE 1,234e-10") << QString("de_DE") << QString("1,234e-10")  << true  << 1.234e-10;
-    QTest::newRow("de_DE 1,234E10")  << QString("de_DE") << QString("1,234E10")   << true  << 1.234e10;
-    QTest::newRow("de_DE ,1")        << QString("de_DE") << QString(",1")         << true  << 0.1;
-    QTest::newRow("de_DE -,1")       << QString("de_DE") << QString("-,1")        << true  << -0.1;
-    QTest::newRow("de_DE 1,")        << QString("de_DE") << QString("1,")         << true  << 1.0;
-    QTest::newRow("de_DE 1,E10")     << QString("de_DE") << QString("1,E10")      << true  << 1.0e10;
+    QTest::newRow("de_DE 1,0")         << QString("de_DE") << QString("1,0")         << true  << 1.0;
+    QTest::newRow("de_DE 1,234")       << QString("de_DE") << QString("1,234")       << true  << 1.234;
+    QTest::newRow("de_DE 1,234e-10")   << QString("de_DE") << QString("1,234e-10")   << true  << 1.234e-10;
+    QTest::newRow("de_DE 1,234E10")    << QString("de_DE") << QString("1,234E10")    << true  << 1.234e10;
+    QTest::newRow("de_DE ,1")          << QString("de_DE") << QString(",1")          << true  << 0.1;
+    QTest::newRow("de_DE -,1")         << QString("de_DE") << QString("-,1")         << true  << -0.1;
+    QTest::newRow("de_DE 1,")          << QString("de_DE") << QString("1,")          << true  << 1.0;
+    QTest::newRow("de_DE 1,E10")       << QString("de_DE") << QString("1,E10")       << true  << 1.0e10;
 
-    QTest::newRow("de_DE empty")     << QString("de_DE") << QString("")           << false << 0.0;
-    QTest::newRow("de_DE null")      << QString("de_DE") << QString()         << false << 0.0;
-    QTest::newRow("de_DE .")         << QString("de_DE") << QString(".")          << false << 0.0;
-    QTest::newRow("de_DE 1e")        << QString("de_DE") << QString("1e")         << false << 0.0;
-    QTest::newRow("de_DE 1e1.0")     << QString("de_DE") << QString("1e1.0")      << false << 0.0;
-    QTest::newRow("de_DE 1e+")       << QString("de_DE") << QString("1e+")        << false << 0.0;
-    QTest::newRow("de_DE 1e-")       << QString("de_DE") << QString("1e-")        << false << 0.0;
+    QTest::newRow("de_DE empty")       << QString("de_DE") << QString("")            << false << 0.0;
+    QTest::newRow("de_DE null")        << QString("de_DE") << QString()              << false << 0.0;
+    QTest::newRow("de_DE .")           << QString("de_DE") << QString(".")           << false << 0.0;
+    QTest::newRow("de_DE 1e")          << QString("de_DE") << QString("1e")          << false << 0.0;
+    QTest::newRow("de_DE 1e1.0")       << QString("de_DE") << QString("1e1.0")       << false << 0.0;
+    QTest::newRow("de_DE 1e+")         << QString("de_DE") << QString("1e+")         << false << 0.0;
+    QTest::newRow("de_DE 1e-")         << QString("de_DE") << QString("1e-")         << false << 0.0;
 
-    QTest::newRow("C 9,876543")      << QString("C") << QString("9,876543")        << false << 0.0;
-    QTest::newRow("C 9,876543.2")    << QString("C") << QString("9,876543.2")      << false << 0.0;
-    QTest::newRow("C 9,876543e-2")   << QString("C") << QString("9,876543e-2")     << false << 0.0;
-    QTest::newRow("C 9,876543.0e-2") << QString("C") << QString("9,876543.0e-2")   << false << 0.0;
+    QTest::newRow("C 9,876543")        << QString("C") << QString("9,876543")        << false << 0.0;
+    QTest::newRow("C 9,876543.2")      << QString("C") << QString("9,876543.2")      << false << 0.0;
+    QTest::newRow("C 9,876543e-2")     << QString("C") << QString("9,876543e-2")     << false << 0.0;
+    QTest::newRow("C 9,876543.0e-2")   << QString("C") << QString("9,876543.0e-2")   << false << 0.0;
 
     QTest::newRow("de_DE 9.876543")      << QString("de_DE") << QString("9876.543")        << false << 0.0;
     QTest::newRow("de_DE 9.876543,2")    << QString("de_DE") << QString("9.876543,2")      << false << 0.0;
@@ -595,10 +594,10 @@ void tst_QLocale::double_conversion()
     QCOMPARE(ok, good);
 
     if (ok) {
-    	double diff = d - num;
-	if (diff < 0)
-	    diff = -diff;
-	QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        double diff = d - num;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_DOUBLE_EPSILON);
     }
 }
 
@@ -609,50 +608,50 @@ void tst_QLocale::long_long_conversion_data()
     QTest::addColumn<bool>("good");
     QTest::addColumn<qlonglong>("num");
 
-    QTest::newRow("C null")       << QString("C") << QString()	   << false  << (qlonglong) 0;
-    QTest::newRow("C empty")      << QString("C") << QString("")	   << false  << (qlonglong) 0;
-    QTest::newRow("C 1")          << QString("C") << "1"	   << true  << (qlonglong) 1;
-    QTest::newRow("C 1,")         << QString("C") << "1,"     << false << (qlonglong) 0;
-    QTest::newRow("C 1,2")        << QString("C") << "1,2"    << false << (qlonglong) 0;
-    QTest::newRow("C 1,23")       << QString("C") << "1,23"   << false << (qlonglong) 0;
-    QTest::newRow("C 1,234")      << QString("C") << "1,234"  << true  << (qlonglong) 1234;
-    QTest::newRow("C 1234567")    << QString("C") << "1234567"<< true  << (qlonglong) 1234567;
-    QTest::newRow("C 1,234567")    << QString("C") << "1,234567"<< false  << (qlonglong) 0;
-    QTest::newRow("C 12,34567")    << QString("C") << "12,34567"<< false  << (qlonglong) 0;
-    QTest::newRow("C 123,4567")    << QString("C") << "123,4567"<< false  << (qlonglong) 0;
-    QTest::newRow("C 1234,567")    << QString("C") << "1234,567"<< false  << (qlonglong) 0;
-    QTest::newRow("C 12345,67")    << QString("C") << "12345,67"<< false  << (qlonglong) 0;
-    QTest::newRow("C 123456,7")    << QString("C") << "123456,7"<< false  << (qlonglong) 0;
-    QTest::newRow("C 1,234,567")    << QString("C")<< "1,234,567"<< true  << (qlonglong) 1234567;
+    QTest::newRow("C null")                   << QString("C")     << QString()       << false << (qlonglong) 0;
+    QTest::newRow("C empty")                  << QString("C")     << QString("")     << false << (qlonglong) 0;
+    QTest::newRow("C 1")                      << QString("C")     << "1"             << true  << (qlonglong) 1;
+    QTest::newRow("C 1,")                     << QString("C")     << "1,"            << false << (qlonglong) 0;
+    QTest::newRow("C 1,2")                    << QString("C")     << "1,2"           << false << (qlonglong) 0;
+    QTest::newRow("C 1,23")                   << QString("C")     << "1,23"          << false << (qlonglong) 0;
+    QTest::newRow("C 1,234")                  << QString("C")     << "1,234"         << true  << (qlonglong) 1234;
+    QTest::newRow("C 1234567")                << QString("C")     << "1234567"       << true  << (qlonglong) 1234567;
+    QTest::newRow("C 1,234567")               << QString("C")     << "1,234567"      << false << (qlonglong) 0;
+    QTest::newRow("C 12,34567")               << QString("C")     << "12,34567"      << false << (qlonglong) 0;
+    QTest::newRow("C 123,4567")               << QString("C")     << "123,4567"      << false << (qlonglong) 0;
+    QTest::newRow("C 1234,567")               << QString("C")     << "1234,567"      << false << (qlonglong) 0;
+    QTest::newRow("C 12345,67")               << QString("C")     << "12345,67"      << false << (qlonglong) 0;
+    QTest::newRow("C 123456,7")               << QString("C")     << "123456,7"      << false << (qlonglong) 0;
+    QTest::newRow("C 1,234,567")              << QString("C")     << "1,234,567"     << true  << (qlonglong) 1234567;
 
-    QTest::newRow("de_DE 1")      << QString("de_DE") << "1"      << true  << (qlonglong) 1;
-    QTest::newRow("de_DE 1.")     << QString("de_DE") << "1."     << false << (qlonglong) 0;
-    QTest::newRow("de_DE 1.2")    << QString("de_DE") << "1.2"    << false << (qlonglong) 0;
-    QTest::newRow("de_DE 1.23")   << QString("de_DE") << "1.23"   << false << (qlonglong) 0;
-    QTest::newRow("de_DE 1.234")  << QString("de_DE") << "1.234"  << true  << (qlonglong) 1234;
-    QTest::newRow("de_DE 1234567")     << QString("de_DE") << "1234567"<< true  << (qlonglong) 1234567;
-    QTest::newRow("de_DE 1.234567")    << QString("de_DE") << "1.234567"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 12.34567")    << QString("de_DE") << "12.34567"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 123.4567")    << QString("de_DE") << "123.4567"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 1234.567")    << QString("de_DE") << "1234.567"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 12345.67")    << QString("de_DE") << "12345.67"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 123456.7")    << QString("de_DE") << "123456.7"<< false  << (qlonglong) 0;
-    QTest::newRow("de_DE 1.234.567")   << QString("de_DE")<< "1.234.567"<< true  << (qlonglong) 1234567;
-    QTest::newRow("de_DE 1.234.567 ldspcs")   << QString("de_DE")<< "  1.234.567" << true  << (qlonglong) 1234567;
-    QTest::newRow("de_DE 1.234.567 trspcs")   << QString("de_DE")<< "1.234.567  "<< true  << (qlonglong) 1234567;
-    QTest::newRow("de_DE 1.234.567 ldtrspcs")   << QString("de_DE")<< "  1.234.567  "<< true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1")                  << QString("de_DE") << "1"             << true  << (qlonglong) 1;
+    QTest::newRow("de_DE 1.")                 << QString("de_DE") << "1."            << false << (qlonglong) 0;
+    QTest::newRow("de_DE 1.2")                << QString("de_DE") << "1.2"           << false << (qlonglong) 0;
+    QTest::newRow("de_DE 1.23")               << QString("de_DE") << "1.23"          << false << (qlonglong) 0;
+    QTest::newRow("de_DE 1.234")              << QString("de_DE") << "1.234"         << true  << (qlonglong) 1234;
+    QTest::newRow("de_DE 1234567")            << QString("de_DE") << "1234567"       << true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234567")           << QString("de_DE") << "1.234567"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 12.34567")           << QString("de_DE") << "12.34567"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 123.4567")           << QString("de_DE") << "123.4567"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 1234.567")           << QString("de_DE") << "1234.567"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 12345.67")           << QString("de_DE") << "12345.67"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 123456.7")           << QString("de_DE") << "123456.7"      << false << (qlonglong) 0;
+    QTest::newRow("de_DE 1.234.567")          << QString("de_DE") << "1.234.567"     << true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 ldspcs")   << QString("de_DE") << "  1.234.567"   << true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 trspcs")   << QString("de_DE") << "1.234.567  "   << true  << (qlonglong) 1234567;
+    QTest::newRow("de_DE 1.234.567 ldtrspcs") << QString("de_DE") << "  1.234.567  " << true  << (qlonglong) 1234567;
 
     // test that space is also accepted whenever QLocale::groupSeparator() == 0xa0 (which looks like space).
-    QTest::newRow("nb_NO 123 groupsep")   << QString("nb_NO")<< QString("1")+QChar(0xa0)+QString("234") << true  << (qlonglong) 1234;
-    QTest::newRow("nb_NO 123 groupsep_space")   << QString("nb_NO")<< QString("1")+QChar(0x20)+QString("234") << true  << (qlonglong) 1234;
+    QTest::newRow("nb_NO 123 groupsep")       << QString("nb_NO") << QString("1")+QChar(0xa0)+QString("234") << true  << (qlonglong) 1234;
+    QTest::newRow("nb_NO 123 groupsep_space") << QString("nb_NO") << QString("1")+QChar(0x20)+QString("234") << true  << (qlonglong) 1234;
 
-    QTest::newRow("nb_NO 123 ldspcs")   << QString("nb_NO")<< "  123" << true  << (qlonglong) 123;
-    QTest::newRow("nb_NO 123 trspcs")   << QString("nb_NO")<< "123  "<< true  << (qlonglong) 123;
-    QTest::newRow("nb_NO 123 ldtrspcs")   << QString("nb_NO")<< "  123  "<< true  << (qlonglong) 123;
+    QTest::newRow("nb_NO 123 ldspcs")         << QString("nb_NO") << "  123"         << true  << (qlonglong) 123;
+    QTest::newRow("nb_NO 123 trspcs")         << QString("nb_NO") << "123  "         << true  << (qlonglong) 123;
+    QTest::newRow("nb_NO 123 ldtrspcs")       << QString("nb_NO") << "  123  "       << true  << (qlonglong) 123;
 
-    QTest::newRow("C   1234")       << QString("C") << "  1234"   << true  << (qlonglong) 1234;
-    QTest::newRow("C 1234  ")       << QString("C") << "1234  "   << true  << (qlonglong) 1234;
-    QTest::newRow("C   1234  ")     << QString("C") << "  1234  " << true  << (qlonglong) 1234;
+    QTest::newRow("C   1234")                 << QString("C")     << "  1234"        << true  << (qlonglong) 1234;
+    QTest::newRow("C 1234  ")                 << QString("C")     << "1234  "        << true  << (qlonglong) 1234;
+    QTest::newRow("C   1234  ")               << QString("C")     << "  1234  "      << true  << (qlonglong) 1234;
 }
 
 void tst_QLocale::long_long_conversion()
@@ -670,7 +669,7 @@ void tst_QLocale::long_long_conversion()
     QCOMPARE(ok, good);
 
     if (ok) {
-	QCOMPARE(l, num);
+        QCOMPARE(l, num);
     }
 }
 
@@ -1105,13 +1104,13 @@ void tst_QLocale::macDefaultLocale()
 
     int diff = currentTime.hour() - utcTime.hour();
 
-     // Check if local time and utc time are on opposite sides of the 24-hour wrap-around.
-	if (diff < -12)
-	   diff += 24;
-	if (diff > 12)
-	   diff -= 24;
+    // Check if local time and utc time are on opposite sides of the 24-hour wrap-around.
+    if (diff < -12)
+        diff += 24;
+    if (diff > 12)
+        diff -= 24;
 
-	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
+    const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
     QVERIFY(timeString.contains(QString("1:02:03")));
 
     QCOMPARE(locale.toCurrencyString(qulonglong(1234)), QString("$1,234.00"));

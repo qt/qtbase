@@ -70,12 +70,12 @@ public:
 protected:
     void run()
     {
-	int i = 0;
-	while ( i < 100 ) {
+        int i = 0;
+        while ( i < 100 ) {
             semaphore->acquire();
-	    i++;
+            i++;
             semaphore->release();
-	}
+        }
     }
 };
 
@@ -89,12 +89,12 @@ public:
 protected:
     void run()
     {
-	int i = 0;
-	while ( i < 100 ) {
+        int i = 0;
+        while ( i < 100 ) {
             semaphore->acquire(N);
-	    i++;
+            i++;
             semaphore->release(N);
-	}
+        }
     }
 };
 

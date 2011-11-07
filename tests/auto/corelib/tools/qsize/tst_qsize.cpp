@@ -165,11 +165,11 @@ void tst_QSize::expandedTo_data()
     QTest::addColumn<QSize>("input2");
     QTest::addColumn<QSize>("expected");
 
-    QTest::newRow("data0") << QSize(10,12) << QSize(6,4)	<< QSize(10,12);
-    QTest::newRow("data1") << QSize(0,0)   << QSize(6,4)	<< QSize(6,4);
+    QTest::newRow("data0") << QSize(10,12) << QSize(6,4) << QSize(10,12);
+    QTest::newRow("data1") << QSize(0,0)   << QSize(6,4) << QSize(6,4);
     // This should pick the highest of w,h components independently of each other,
     // thus the results don't have to be equal to neither input1 nor input2.
-    QTest::newRow("data3") << QSize(6,4)   << QSize(4,6)	<< QSize(6,6);
+    QTest::newRow("data3") << QSize(6,4)   << QSize(4,6) << QSize(6,6);
 }
 
 void tst_QSize::expandedTo()
@@ -187,11 +187,11 @@ void tst_QSize::boundedTo_data()
     QTest::addColumn<QSize>("input2");
     QTest::addColumn<QSize>("expected");
 
-    QTest::newRow("data0") << QSize(10,12) << QSize(6,4)	<< QSize(6,4);
-    QTest::newRow("data1") << QSize(0,0)	<< QSize(6,4)	<< QSize(0,0);
+    QTest::newRow("data0") << QSize(10,12) << QSize(6,4) << QSize(6,4);
+    QTest::newRow("data1") << QSize(0,0) << QSize(6,4) << QSize(0,0);
     // This should pick the lowest of w,h components independently of each other,
     // thus the results don't have to be equal to neither input1 nor input2.
-    QTest::newRow("data3") << QSize(6,4)	<< QSize(4,6)	<< QSize(4,4);
+    QTest::newRow("data3") << QSize(6,4) << QSize(4,6) << QSize(4,4);
 }
 
 void tst_QSize::boundedTo()
@@ -209,8 +209,8 @@ void tst_QSize::transpose_data()
     QTest::addColumn<QSize>("expected");
 
     QTest::newRow("data0") << QSize(10,12) << QSize(12,10);
-    QTest::newRow("data1") << QSize(0,0)	<< QSize(0,0);
-    QTest::newRow("data3") << QSize(6,4)	<< QSize(4,6);
+    QTest::newRow("data1") << QSize(0,0) << QSize(0,0);
+    QTest::newRow("data3") << QSize(6,4) << QSize(4,6);
 }
 
 void tst_QSize::transpose()

@@ -644,7 +644,7 @@ void tst_QFile::setSize()
     QCOMPARE(c, 'a');
 
     QCOMPARE(f.size(), (qlonglong)1);
-	bool ok = f.resize(99);
+    bool ok = f.resize(99);
     QVERIFY(ok);
     QCOMPARE(f.size(), (qlonglong)99);
 
@@ -1492,19 +1492,19 @@ void tst_QFile::tailFile()
 
 void tst_QFile::flush()
 {
-	QString fileName("stdfile.txt");
+    QString fileName("stdfile.txt");
 
-	QFile::remove(fileName);
+    QFile::remove(fileName);
 
-	{
-		QFile file(fileName);
-		QVERIFY(file.open(QFile::WriteOnly));
-		QCOMPARE(file.write("abc", 3),qint64(3));
-	}
+    {
+        QFile file(fileName);
+        QVERIFY(file.open(QFile::WriteOnly));
+        QCOMPARE(file.write("abc", 3),qint64(3));
+    }
 
-	{
-		QFile file(fileName);
-		QVERIFY(file.open(QFile::WriteOnly | QFile::Append));
+    {
+        QFile file(fileName);
+        QVERIFY(file.open(QFile::WriteOnly | QFile::Append));
         QCOMPARE(file.pos(), qlonglong(3));
         QCOMPARE(file.write("def", 3), qlonglong(3));
         QCOMPARE(file.pos(), qlonglong(6));
@@ -1516,7 +1516,7 @@ void tst_QFile::flush()
         QCOMPARE(file.readAll(), QByteArray("abcdef"));
     }
 
-	QFile::remove(fileName);
+    QFile::remove(fileName);
 }
 
 void tst_QFile::bufferedRead()
@@ -1529,7 +1529,7 @@ void tst_QFile::bufferedRead()
     file.close();
 
 #if defined(Q_OS_WINCE)
-	FILE *stdFile = fopen((QCoreApplication::applicationDirPath() + "/stdfile.txt").toAscii() , "r");
+    FILE *stdFile = fopen((QCoreApplication::applicationDirPath() + "/stdfile.txt").toAscii() , "r");
 #else
     FILE *stdFile = fopen("stdfile.txt", "r");
 #endif
@@ -2281,7 +2281,7 @@ void tst_QFile::virtualFile()
 void tst_QFile::textFile()
 {
 #if defined(Q_OS_WINCE)
-	FILE *fs = ::fopen((QCoreApplication::applicationDirPath() + "/writeabletextfile").toAscii() , "wt");
+    FILE *fs = ::fopen((QCoreApplication::applicationDirPath() + "/writeabletextfile").toAscii() , "wt");
 #elif defined(Q_OS_WIN)
     FILE *fs = ::fopen("writeabletextfile", "wt");
 #else
@@ -2787,8 +2787,7 @@ void tst_QFile::map()
     QVERIFY(file.open(QFile::ReadWrite));
     memory = file.map(offset, size);
     if (error != QFile::NoError) {
-
-	QVERIFY(file.error() != QFile::NoError);
+        QVERIFY(file.error() != QFile::NoError);
         return;
     }
 
@@ -2909,7 +2908,7 @@ void tst_QFile::mapOpenMode()
     if (QFile::exists(fileName)) {
         QVERIFY(QFile::setPermissions(fileName,
             QFile::WriteOwner | QFile::ReadOwner | QFile::WriteUser | QFile::ReadUser));
-	QFile::remove(fileName);
+        QFile::remove(fileName);
     }
     QFile file(fileName);
 

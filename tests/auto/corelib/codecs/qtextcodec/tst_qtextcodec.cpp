@@ -513,8 +513,8 @@ void tst_QTextCodec::aliasForUTF16() const
 
 void tst_QTextCodec::mibForTSCII() const
 {
-	QTextCodec *codec = QTextCodec::codecForName("TSCII");
-	QVERIFY(codec);
+    QTextCodec *codec = QTextCodec::codecForName("TSCII");
+    QVERIFY(codec);
     QCOMPARE(codec->mibEnum(), 2107);
 }
 

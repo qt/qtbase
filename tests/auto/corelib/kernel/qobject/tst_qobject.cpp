@@ -173,16 +173,19 @@ class ReceiverObject : public QObject
     Q_OBJECT
 
 public:
-    ReceiverObject() : sequence_slot1( 0 ),
-		       sequence_slot2( 0 ),
-		       sequence_slot3( 0 ),
-		       sequence_slot4( 0 ) {}
+    ReceiverObject()
+        : sequence_slot1( 0 )
+        , sequence_slot2( 0 )
+        , sequence_slot3( 0 )
+        , sequence_slot4( 0 )
+    {}
 
-    void reset() {
-	sequence_slot4 = 0;
-	sequence_slot3 = 0;
-	sequence_slot2 = 0;
-	sequence_slot1 = 0;
+    void reset()
+    {
+        sequence_slot4 = 0;
+        sequence_slot3 = 0;
+        sequence_slot2 = 0;
+        sequence_slot1 = 0;
         count_slot1 = 0;
         count_slot2 = 0;
         count_slot3 = 0;
@@ -198,7 +201,8 @@ public:
     int count_slot3;
     int count_slot4;
 
-    bool called(int slot) {
+    bool called(int slot)
+    {
         switch (slot) {
         case 1: return sequence_slot1;
         case 2: return sequence_slot2;
@@ -759,13 +763,13 @@ public:
 protected:
     void connectNotify( const char *signal )
     {
-    	org_signal = signal;
-    	nw_signal = QMetaObject::normalizedSignature(signal);
+        org_signal = signal;
+        nw_signal = QMetaObject::normalizedSignature(signal);
     };
     void disconnectNotify( const char *signal )
     {
-    	org_signal = signal;
-    	nw_signal = QMetaObject::normalizedSignature(signal);
+        org_signal = signal;
+        nw_signal = QMetaObject::normalizedSignature(signal);
     };
 };
 

@@ -410,20 +410,20 @@ void tst_QStringRef::indexOf2()
     QCOMPARE(haystackRef.indexOf(needle, 0, Qt::CaseInsensitive), resultpos);
     QCOMPARE(haystackRef.indexOf(needleRef, 0, Qt::CaseInsensitive), resultpos);
     if (needle.length() > 0) {
-	got = haystackRef.lastIndexOf(needle, -1, Qt::CaseSensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
-	got = haystackRef.lastIndexOf(needle, -1, Qt::CaseInsensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystackRef.lastIndexOf(needle, -1, Qt::CaseSensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystackRef.lastIndexOf(needle, -1, Qt::CaseInsensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
 
-	got = haystack.lastIndexOf(needleRef, -1, Qt::CaseSensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
-	got = haystack.lastIndexOf(needleRef, -1, Qt::CaseInsensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystack.lastIndexOf(needleRef, -1, Qt::CaseSensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystack.lastIndexOf(needleRef, -1, Qt::CaseInsensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
 
-	got = haystackRef.lastIndexOf(needleRef, -1, Qt::CaseSensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
-	got = haystackRef.lastIndexOf(needleRef, -1, Qt::CaseInsensitive);
-	QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystackRef.lastIndexOf(needleRef, -1, Qt::CaseSensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
+        got = haystackRef.lastIndexOf(needleRef, -1, Qt::CaseInsensitive);
+        QVERIFY(got == resultpos || (resultpos >= 0 && got >= resultpos));
     }
 }
 

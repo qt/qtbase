@@ -250,10 +250,10 @@ void tst_QIODevice::unget()
 
     for (int i = 0; i < 2; ++i) {
         QTcpSocket socket;
-	QIODevice *dev;
-	QByteArray result;
-	const char *lineResult;
-	if (i == 0) {
+        QIODevice *dev;
+        QByteArray result;
+        const char *lineResult;
+        if (i == 0) {
             dev = &buffer;
             result = QByteArray("ZXCV");
             lineResult = "ZXCV";
@@ -264,21 +264,21 @@ void tst_QIODevice::unget()
             dev = &socket;
             result = QByteArray("HTTP");
             lineResult = "Date";
-	}
-	char ch, ch2;
-	dev->seek(0);
-	dev->getChar(&ch);
-	dev->ungetChar(ch);
-	QCOMPARE(dev->peek(4), result);
-	dev->getChar(&ch);
-	dev->getChar(&ch2);
-	dev->ungetChar(ch2);
-	dev->ungetChar(ch);
-	QCOMPARE(dev->read(1), result.left(1));
-	QCOMPARE(dev->read(3), result.right(3));
+        }
+        char ch, ch2;
+        dev->seek(0);
+        dev->getChar(&ch);
+        dev->ungetChar(ch);
+        QCOMPARE(dev->peek(4), result);
+        dev->getChar(&ch);
+        dev->getChar(&ch2);
+        dev->ungetChar(ch2);
+        dev->ungetChar(ch);
+        QCOMPARE(dev->read(1), result.left(1));
+        QCOMPARE(dev->read(3), result.right(3));
 
         if (i == 0)
-	    dev->seek(0);
+            dev->seek(0);
         else
             dev->readLine();
         dev->getChar(&ch);
@@ -300,33 +300,33 @@ void tst_QIODevice::peek()
     QFile file("peektestfile");
 
     for (int i = 0; i < 2; ++i) {
-	QIODevice *device = i ? (QIODevice *)&file : (QIODevice *)&buffer;
+        QIODevice *device = i ? (QIODevice *)&file : (QIODevice *)&buffer;
 
-	device->open(QBuffer::ReadWrite);
-	device->write("ZXCV");
+        device->open(QBuffer::ReadWrite);
+        device->write("ZXCV");
 
-	device->seek(0);
-	QCOMPARE(device->peek(4), QByteArray("ZXCV"));
-	QCOMPARE(device->pos(), qint64(0));
-	device->write("ABCDE");
-	device->seek(3);
-	QCOMPARE(device->peek(1), QByteArray("D"));
-	QCOMPARE(device->peek(5), QByteArray("DE"));
-	device->seek(0);
-	QCOMPARE(device->read(4), QByteArray("ABCD"));
-	QCOMPARE(device->pos(), qint64(4));
+        device->seek(0);
+        QCOMPARE(device->peek(4), QByteArray("ZXCV"));
+        QCOMPARE(device->pos(), qint64(0));
+        device->write("ABCDE");
+        device->seek(3);
+        QCOMPARE(device->peek(1), QByteArray("D"));
+        QCOMPARE(device->peek(5), QByteArray("DE"));
+        device->seek(0);
+        QCOMPARE(device->read(4), QByteArray("ABCD"));
+        QCOMPARE(device->pos(), qint64(4));
 
-	device->seek(0);
-	device->write("ZXCV");
-	device->seek(0);
-	char buf[5];
-	buf[4] = 0;
-	device->peek(buf, 4);
-	QCOMPARE(static_cast<const char *>(buf), "ZXCV");
-	QCOMPARE(device->pos(), qint64(0));
-	device->read(buf, 4);
-	QCOMPARE(static_cast<const char *>(buf), "ZXCV");
-	QCOMPARE(device->pos(), qint64(4));
+        device->seek(0);
+        device->write("ZXCV");
+        device->seek(0);
+        char buf[5];
+        buf[4] = 0;
+        device->peek(buf, 4);
+        QCOMPARE(static_cast<const char *>(buf), "ZXCV");
+        QCOMPARE(device->pos(), qint64(0));
+        device->read(buf, 4);
+        QCOMPARE(static_cast<const char *>(buf), "ZXCV");
+        QCOMPARE(device->pos(), qint64(4));
     }
     QFile::remove("peektestfile");
 }

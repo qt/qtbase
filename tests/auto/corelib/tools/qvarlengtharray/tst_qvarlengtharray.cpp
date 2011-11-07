@@ -118,39 +118,39 @@ void tst_QVarLengthArray::removeLast()
 void tst_QVarLengthArray::oldTests()
 {
     {
-	QVarLengthArray<int, 256> sa(128);
-	QVERIFY(sa.data() == &sa[0]);
-	sa[0] = 0xfee;
-	sa[10] = 0xff;
-	QVERIFY(sa[0] == 0xfee);
-	QVERIFY(sa[10] == 0xff);
-	sa.resize(512);
-	QVERIFY(sa.data() == &sa[0]);
-	QVERIFY(sa[0] == 0xfee);
-	QVERIFY(sa[10] == 0xff);
+        QVarLengthArray<int, 256> sa(128);
+        QVERIFY(sa.data() == &sa[0]);
+        sa[0] = 0xfee;
+        sa[10] = 0xff;
+        QVERIFY(sa[0] == 0xfee);
+        QVERIFY(sa[10] == 0xff);
+        sa.resize(512);
+        QVERIFY(sa.data() == &sa[0]);
+        QVERIFY(sa[0] == 0xfee);
+        QVERIFY(sa[10] == 0xff);
         QVERIFY(sa.at(0) == 0xfee);
         QVERIFY(sa.at(10) == 0xff);
         QVERIFY(sa.value(0) == 0xfee);
         QVERIFY(sa.value(10) == 0xff);
         QVERIFY(sa.value(1000) == 0);
         QVERIFY(sa.value(1000, 12) == 12);
-	QVERIFY(sa.size() == 512);
-	sa.reserve(1024);
-	QVERIFY(sa.capacity() == 1024);
-	QVERIFY(sa.size() == 512);
+        QVERIFY(sa.size() == 512);
+        sa.reserve(1024);
+        QVERIFY(sa.capacity() == 1024);
+        QVERIFY(sa.size() == 512);
     }
     {
-	QVarLengthArray<QString> sa(10);
-	sa[0] = "Hello";
-	sa[9] = "World";
-	QVERIFY(*sa.data() == "Hello");
-	QVERIFY(sa[9] == "World");
-	sa.reserve(512);
-	QVERIFY(*sa.data() == "Hello");
-	QVERIFY(sa[9] == "World");
-	sa.resize(512);
-	QVERIFY(*sa.data() == "Hello");
-	QVERIFY(sa[9] == "World");
+        QVarLengthArray<QString> sa(10);
+        sa[0] = "Hello";
+        sa[9] = "World";
+        QVERIFY(*sa.data() == "Hello");
+        QVERIFY(sa[9] == "World");
+        sa.reserve(512);
+        QVERIFY(*sa.data() == "Hello");
+        QVERIFY(sa[9] == "World");
+        sa.resize(512);
+        QVERIFY(*sa.data() == "Hello");
+        QVERIFY(sa[9] == "World");
     }
     {
         int arr[2] = {1, 2};

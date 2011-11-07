@@ -796,84 +796,83 @@ void tst_QUrl::resolving()
     QCOMPARE(url.resolved(relativeUrl).toString(), relsolvedUrl);
 }
 
-
 void tst_QUrl::toString_data()
 {
     QTest::addColumn<QString>("urlString");
     QTest::addColumn<uint>("options");
     QTest::addColumn<QString>("string");
 
-    QTest::newRow("data0")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveScheme)
-			<< QString::fromLatin1("//ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data0") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveScheme)
+                        << QString::fromLatin1("//ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
-    QTest::newRow("data2")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemovePassword)
-			<< QString::fromLatin1("http://ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data2") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemovePassword)
+                        << QString::fromLatin1("http://ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
-    QTest::newRow("data3")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveUserInfo)
-			<< QString::fromLatin1("http://www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data3") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveUserInfo)
+                        << QString::fromLatin1("http://www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
-    QTest::newRow("data4")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemovePort)
-			<< QString::fromLatin1("http://ole:password@www.troll.no/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data4") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemovePort)
+                        << QString::fromLatin1("http://ole:password@www.troll.no/index.html?ole=semann&gud=hei#top");
 
-    QTest::newRow("data5")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveAuthority)
-			<< QString::fromLatin1("http:/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data5") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveAuthority)
+                        << QString::fromLatin1("http:/index.html?ole=semann&gud=hei#top");
 
-    QTest::newRow("data6")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemovePath)
-			<< QString::fromLatin1("http://ole:password@www.troll.no:9090?ole=semann&gud=hei#top");
+    QTest::newRow("data6") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemovePath)
+                        << QString::fromLatin1("http://ole:password@www.troll.no:9090?ole=semann&gud=hei#top");
 
-    QTest::newRow("data7")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveQuery)
-			<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html#top");
+    QTest::newRow("data7") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveQuery)
+                        << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html#top");
 
-    QTest::newRow("data8")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveFragment)
-			<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei");
+    QTest::newRow("data8") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveFragment)
+                        << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei");
 
-    QTest::newRow("data9")	<< QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			<< uint(QUrl::RemoveScheme | QUrl::RemovePassword)
-			<< QString::fromLatin1("//ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+    QTest::newRow("data9") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
+                        << uint(QUrl::RemoveScheme | QUrl::RemovePassword)
+                        << QString::fromLatin1("//ole@www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data10") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemoveUserInfo)
-			 << QString::fromLatin1("//www.troll.no:9090/index.html?ole=semann&gud=hei#top");
+                         << uint(QUrl::RemoveScheme | QUrl::RemoveUserInfo)
+                         << QString::fromLatin1("//www.troll.no:9090/index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data11") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemovePort)
-			 << QString::fromLatin1("//ole:password@www.troll.no/index.html?ole=semann&gud=hei#top");
+                         << uint(QUrl::RemoveScheme | QUrl::RemovePort)
+                         << QString::fromLatin1("//ole:password@www.troll.no/index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data12") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemoveAuthority)
-			 << QString::fromLatin1("/index.html?ole=semann&gud=hei#top");
+                         << uint(QUrl::RemoveScheme | QUrl::RemoveAuthority)
+                         << QString::fromLatin1("/index.html?ole=semann&gud=hei#top");
 
     QTest::newRow("data13") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemovePath)
-			 << QString::fromLatin1("//ole:password@www.troll.no:9090?ole=semann&gud=hei#top");
+                         << uint(QUrl::RemoveScheme | QUrl::RemovePath)
+                         << QString::fromLatin1("//ole:password@www.troll.no:9090?ole=semann&gud=hei#top");
 
     QTest::newRow("data14") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment)
-			 << QString::fromLatin1("/index.html?ole=semann&gud=hei");
+                         << uint(QUrl::RemoveScheme | QUrl::RemoveAuthority | QUrl::RemoveFragment)
+                         << QString::fromLatin1("/index.html?ole=semann&gud=hei");
 
     QTest::newRow("data15") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveAuthority | QUrl::RemoveQuery)
-			 << QString::fromLatin1("http:/index.html#top");
+                         << uint(QUrl::RemoveAuthority | QUrl::RemoveQuery)
+                         << QString::fromLatin1("http:/index.html#top");
 
     QTest::newRow("data16") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemovePassword | QUrl::RemovePort
-			    | QUrl::RemovePath | QUrl::RemoveQuery
-			    | QUrl::RemoveFragment)
-			 << QString::fromLatin1("http://ole@www.troll.no");
+                         << uint(QUrl::RemovePassword | QUrl::RemovePort
+                            | QUrl::RemovePath | QUrl::RemoveQuery
+                            | QUrl::RemoveFragment)
+                         << QString::fromLatin1("http://ole@www.troll.no");
 
     QTest::newRow("data17") << QString::fromLatin1("http://ole:password@www.troll.no:9090/index.html?ole=semann&gud=hei#top")
-			 << uint(QUrl::RemoveScheme | QUrl::RemovePassword
-			    | QUrl::RemovePort | QUrl::RemovePath
-			    | QUrl::RemoveQuery | QUrl::RemoveFragment)
-			 << QString::fromLatin1("//ole@www.troll.no");
+                         << uint(QUrl::RemoveScheme | QUrl::RemovePassword
+                            | QUrl::RemovePort | QUrl::RemovePath
+                            | QUrl::RemoveQuery | QUrl::RemoveFragment)
+                         << QString::fromLatin1("//ole@www.troll.no");
 
     QTest::newRow("data18") << QString::fromLatin1("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged")
                          << uint(QUrl::None)
@@ -911,18 +910,16 @@ void tst_QUrl::isParentOf_data()
     QTest::addColumn<QString>("child");
     QTest::addColumn<bool>("trueFalse");
 
-    QTest::newRow("data0")	<< QString::fromLatin1("http://a.b.c/d")
-			<< QString::fromLatin1("http://a.b.c/d/e?f") << true;
-    QTest::newRow("data1")	<< QString::fromLatin1("http://a.b.c/d")
-			<< QString::fromLatin1("http://a.b.c/d") << false;
-    QTest::newRow("data2")	<< QString::fromLatin1("http://a.b.c/d")
-			<< QString::fromLatin1("http://a.b.c/de") << false;
-    QTest::newRow("data3")	<< QString::fromLatin1("http://a.b.c/d/")
-			<< QString::fromLatin1("http://a.b.c/de") << false;
-    QTest::newRow("data4")	<< QString::fromLatin1("http://a.b.c/d/")
-			<< QString::fromLatin1("http://a.b.c/d/e") << true;
-
-
+    QTest::newRow("data0") << QString::fromLatin1("http://a.b.c/d")
+                        << QString::fromLatin1("http://a.b.c/d/e?f") << true;
+    QTest::newRow("data1") << QString::fromLatin1("http://a.b.c/d")
+                        << QString::fromLatin1("http://a.b.c/d") << false;
+    QTest::newRow("data2") << QString::fromLatin1("http://a.b.c/d")
+                        << QString::fromLatin1("http://a.b.c/de") << false;
+    QTest::newRow("data3") << QString::fromLatin1("http://a.b.c/d/")
+                        << QString::fromLatin1("http://a.b.c/de") << false;
+    QTest::newRow("data4") << QString::fromLatin1("http://a.b.c/d/")
+                        << QString::fromLatin1("http://a.b.c/d/e") << true;
 }
 
 void tst_QUrl::toString_constructed_data()
@@ -941,16 +938,16 @@ void tst_QUrl::toString_constructed_data()
     QString n("");
 
     QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt.nokia.com") << -1 << QString::fromLatin1("index.html")
-	                << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
-			<< QByteArray("//qt.nokia.com/index.html");
+                        << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
+                        << QByteArray("//qt.nokia.com/index.html");
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
                         << n << QString::fromLatin1("file:///root") << QByteArray("file:///root");
     QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
-                                 << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                                 << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
+                        << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                        << QString::fromLatin1("http://dfaure:kde@kde.org:443/") << QByteArray("http://dfaure:kde@kde.org:443/");
     QTest::newRow("PassWithoutUser") << QString::fromLatin1("http") << n << QString::fromLatin1("kde")
-                                     << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
-                                     << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
+                        << "kde.org" << 443 << QString::fromLatin1("/") << QByteArray() << n
+                        << QString::fromLatin1("http://:kde@kde.org:443/") << QByteArray("http://:kde@kde.org:443/");
 }
 
 void tst_QUrl::toString_constructed()
@@ -968,21 +965,21 @@ void tst_QUrl::toString_constructed()
 
     QUrl url;
     if (!scheme.isEmpty())
-	url.setScheme(scheme);
+        url.setScheme(scheme);
     if (!userName.isEmpty())
-	url.setUserName(userName);
+        url.setUserName(userName);
     if (!password.isEmpty())
-	url.setPassword(password);
+        url.setPassword(password);
     if (!host.isEmpty())
-	url.setHost(host);
+        url.setHost(host);
     if (port != -1)
-	url.setPort(port);
+        url.setPort(port);
     if (!path.isEmpty())
-	url.setPath(path);
+        url.setPath(path);
     if (!query.isEmpty())
-	url.setEncodedQuery(query);
+        url.setEncodedQuery(query);
     if (!fragment.isEmpty())
-	url.setFragment(fragment);
+        url.setFragment(fragment);
 
     QVERIFY(url.isValid());
     QCOMPARE(url.toString(), asString);
@@ -1006,14 +1003,14 @@ void tst_QUrl::toLocalFile_data()
     QTest::addColumn<QString>("theUrl");
     QTest::addColumn<QString>("theFile");
 
-    QTest::newRow("data0")	<< QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data4")	<< QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data5")	<< QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
-    QTest::newRow("data6")	<< QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
-    QTest::newRow("data7")	<< QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
-    QTest::newRow("data8")	<< QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
-    QTest::newRow("data9")	<< QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
-    QTest::newRow("data10")	<< QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data0") << QString::fromLatin1("file:/a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data4") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data5") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("c:/a.txt");
+    QTest::newRow("data6") << QString::fromLatin1("file://somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
+    QTest::newRow("data7") << QString::fromLatin1("file://somehost/") << QString::fromLatin1("//somehost/");
+    QTest::newRow("data8") << QString::fromLatin1("file://somehost") << QString::fromLatin1("//somehost");
+    QTest::newRow("data9") << QString::fromLatin1("file:////somehost/somedir/somefile") << QString::fromLatin1("//somehost/somedir/somefile");
+    QTest::newRow("data10") << QString::fromLatin1("FILE:/a.txt") << QString::fromLatin1("/a.txt");
 
     // and some that result in empty (i.e., not local)
     QTest::newRow("xdata0") << QString::fromLatin1("/a.txt") << QString();
@@ -1039,16 +1036,16 @@ void tst_QUrl::fromLocalFile_data()
     QTest::addColumn<QString>("theUrl");
     QTest::addColumn<QString>("thePath");
 
-    QTest::newRow("data0")	<< QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
-    QTest::newRow("data1")	<< QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
-    QTest::newRow("data2")	<< QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
-    QTest::newRow("data3")	<< QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
-    QTest::newRow("data4")	<< QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
-	                << QString::fromLatin1("/somedir/somefile");
-    QTest::newRow("data5")	<< QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
-	                << QString::fromLatin1("");
-    QTest::newRow("data6")	<< QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
-	                << QString::fromLatin1("/");
+    QTest::newRow("data0") << QString::fromLatin1("/a.txt") << QString::fromLatin1("file:///a.txt") << QString::fromLatin1("/a.txt");
+    QTest::newRow("data1") << QString::fromLatin1("a.txt") << QString::fromLatin1("file:a.txt") << QString::fromLatin1("a.txt");
+    QTest::newRow("data2") << QString::fromLatin1("/a/b.txt") << QString::fromLatin1("file:///a/b.txt") << QString::fromLatin1("/a/b.txt");
+    QTest::newRow("data3") << QString::fromLatin1("c:/a.txt") << QString::fromLatin1("file:///c:/a.txt") << QString::fromLatin1("/c:/a.txt");
+    QTest::newRow("data4") << QString::fromLatin1("//somehost/somedir/somefile") << QString::fromLatin1("file://somehost/somedir/somefile")
+                        << QString::fromLatin1("/somedir/somefile");
+    QTest::newRow("data5") << QString::fromLatin1("//somehost") << QString::fromLatin1("file://somehost")
+                        << QString::fromLatin1("");
+    QTest::newRow("data6") << QString::fromLatin1("//somehost/") << QString::fromLatin1("file://somehost/")
+                        << QString::fromLatin1("/");
 }
 
 void tst_QUrl::fromLocalFile()
@@ -1066,32 +1063,32 @@ void tst_QUrl::fromLocalFile()
 void tst_QUrl::compat_legacy()
 {
     {
-	QUrl u( "file:bar" );
-	QCOMPARE( u.toString(QUrl::RemoveScheme), QString("bar") );
+        QUrl u( "file:bar" );
+        QCOMPARE( u.toString(QUrl::RemoveScheme), QString("bar") );
     }
 
     /* others
      */
     {
-	QUrl u( "http://qt.nokia.com/images/ban/pgs_front.jpg" );
-	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
+        QUrl u( "http://qt.nokia.com/images/ban/pgs_front.jpg" );
+        QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
-	QUrl tmp( "http://qt.nokia.com/images/ban/" );
-	QUrl u = tmp.resolved(QString("pgs_front.jpg"));
-	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
+        QUrl tmp( "http://qt.nokia.com/images/ban/" );
+        QUrl u = tmp.resolved(QString("pgs_front.jpg"));
+        QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
-	QUrl tmp;
-	QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
-	QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
+        QUrl tmp;
+        QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
+        QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
-	QUrl tmp;
-	QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
-	QFileInfo fi(u.path());
-	u.setPath(fi.path());
-	QCOMPARE( u.path(), QString("/images/ban") );
+        QUrl tmp;
+        QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
+        QFileInfo fi(u.path());
+        u.setPath(fi.path());
+        QCOMPARE( u.path(), QString("/images/ban") );
     }
 }
 
@@ -1124,16 +1121,16 @@ void tst_QUrl::compat_constructor_01()
     QFETCH( QString, urlStr );
 
     {
-	QUrl empty;
-	QUrl u = empty.resolved(urlStr);
+        QUrl empty;
+        QUrl u = empty.resolved(urlStr);
 
-	QTEST( u.toString(), "res" );
+        QTEST( u.toString(), "res" );
     }
     {
-	QUrl empty;
-	QUrl u = empty.resolved(urlStr);
+        QUrl empty;
+        QUrl u = empty.resolved(urlStr);
 
-	QTEST( u.toString(), "res" );
+        QTEST( u.toString(), "res" );
     }
 }
 
@@ -1277,17 +1274,17 @@ void tst_QUrl::compat_isValid_02()
 
     QUrl url;
     if ( !protocol.isEmpty() )
-	url.setScheme( protocol );
+        url.setScheme( protocol );
     if ( !user.isEmpty() )
-	url.setUserName( user );
+        url.setUserName( user );
     if ( !password.isEmpty() )
-	url.setPassword( password );
+        url.setPassword( password );
     if ( !host.isEmpty() )
-	url.setHost( host );
+        url.setHost( host );
     if ( port != -1 )
-	url.setPort( port );
+        url.setPort( port );
     if ( !path.isEmpty() )
-	url.setPath( path );
+        url.setPath( path );
 
     QVERIFY( url.isValid() == res );
 }

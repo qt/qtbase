@@ -562,19 +562,19 @@ void tst_QString::utf8_data()
     QTest::addColumn<QString>("res" );
 
     QTest::newRow( "str0" ) << QByteArray("abcdefgh")
-			  << QString("abcdefgh");
+                          << QString("abcdefgh");
     QTest::newRow( "str1" ) << QByteArray("\303\266\303\244\303\274\303\226\303\204\303\234\303\270\303\246\303\245\303\230\303\206\303\205")
-			  << QString("\366\344\374\326\304\334\370\346\345\330\306\305") ;
+                          << QString("\366\344\374\326\304\334\370\346\345\330\306\305") ;
     str += QChar( 0x05e9 );
     str += QChar( 0x05d3 );
     str += QChar( 0x05d2 );
     QTest::newRow( "str2" ) << QByteArray("\327\251\327\223\327\222")
-			  << str;
+                          << str;
 
     str = QChar( 0x20ac );
     str += " some text";
     QTest::newRow( "str3" ) << QByteArray("\342\202\254 some text")
-			  << str;
+                          << str;
 
     str = "Old Italic: ";
     str += QChar(0xd800);
@@ -710,14 +710,14 @@ void tst_QString::acc_01()
     QVERIFY(*a.toLatin1().constData() == '\0');
     {
 #if defined(Q_OS_WINCE)
-    int argc = 0;
-    QCoreApplication app(argc, 0);
+        int argc = 0;
+        QCoreApplication app(argc, 0);
 #endif
-	QFile f("COMPARE.txt");
-	f.open(QIODevice::ReadOnly);
-	QTextStream ts( &f );
+        QFile f("COMPARE.txt");
+        f.open(QIODevice::ReadOnly);
+        QTextStream ts( &f );
         ts.setCodec(QTextCodec::codecForName("UTF-16"));
-	ts << "Abc";
+        ts << "Abc";
     }
 }
 
@@ -774,8 +774,6 @@ void tst_QString::constructor()
     QVERIFY( !empty.isNull() );
     QVERIFY( empty.isEmpty() );
 }
-
-
 
 void tst_QString::constructorQByteArray_data()
 {
@@ -1187,17 +1185,17 @@ void tst_QString::indexOf2()
     QCOMPARE( haystack.indexOf(ref, 0, Qt::CaseInsensitive), resultpos );
     QCOMPARE( QStringMatcher(needle, Qt::CaseInsensitive).indexIn(haystack, 0), resultpos );
     if ( needle.length() > 0 ) {
-	got = haystack.lastIndexOf( needle, -1, Qt::CaseSensitive );
-	QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
-	got = haystack.lastIndexOf( needle, -1, Qt::CaseInsensitive );
-	QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
+        got = haystack.lastIndexOf( needle, -1, Qt::CaseSensitive );
+        QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
+        got = haystack.lastIndexOf( needle, -1, Qt::CaseInsensitive );
+        QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
     }
 
     QCOMPARE( chaystack.indexOf(cneedle, 0), resultpos );
     QCOMPARE( QByteArrayMatcher(cneedle).indexIn(chaystack, 0), resultpos );
     if ( cneedle.length() > 0 ) {
-	got = chaystack.lastIndexOf(cneedle, -1);
-	QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
+        got = chaystack.lastIndexOf(cneedle, -1);
+        QVERIFY( got == resultpos || (resultpos >= 0 && got >= resultpos) );
     }
 }
 
@@ -1778,22 +1776,22 @@ void tst_QString::append_bytearray_data()
 void tst_QString::append_bytearray()
 {
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-	str.append( ba );
+        str.append( ba );
 
-	QTEST( str, "res" );
+        QTEST( str, "res" );
     }
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
-	str.append( ba );
-	QTextCodec::setCodecForCStrings( 0 );
+        QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
+        str.append( ba );
+        QTextCodec::setCodecForCStrings( 0 );
 
-	QTEST( str, "res" );
+        QTEST( str, "res" );
     }
 }
 
@@ -1805,22 +1803,22 @@ void tst_QString::operator_pluseq_bytearray_data()
 void tst_QString::operator_pluseq_bytearray()
 {
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-	str += ba;
+        str += ba;
 
-	QTEST( str, "res" );
+        QTEST( str, "res" );
     }
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
-	str += ba;
-	QTextCodec::setCodecForCStrings( 0 );
+        QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
+        str += ba;
+        QTextCodec::setCodecForCStrings( 0 );
 
-	QTEST( str, "res" );
+        QTEST( str, "res" );
     }
 }
 
@@ -1866,23 +1864,23 @@ void tst_QString::prepend_bytearray_data()
 void tst_QString::prepend_bytearray()
 {
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-    str.prepend( ba );
+        str.prepend( ba );
 
-	QFETCH( QString, res );
-	QCOMPARE( str, res );
+        QFETCH( QString, res );
+        QCOMPARE( str, res );
     }
     {
-	QFETCH( QString, str );
-	QFETCH( QByteArray, ba );
+        QFETCH( QString, str );
+        QFETCH( QByteArray, ba );
 
-	QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
-	str.prepend( ba );
-	QTextCodec::setCodecForCStrings( 0 );
+        QTextCodec::setCodecForCStrings( QTextCodec::codecForMib(4) ); // Latin 1
+        str.prepend( ba );
+        QTextCodec::setCodecForCStrings( 0 );
 
-	QTEST( str, "res" );
+        QTEST( str, "res" );
     }
 }
 
@@ -1902,13 +1900,13 @@ void tst_QString::replace_uint_uint()
     QTEST( s2, "result" );
 
     if ( after.length() == 1 ) {
-	QString s3 = string;
-	s3.replace( (uint) index, (uint) len, QChar(after[0]) );
-	QTEST( s3, "result" );
+        QString s3 = string;
+        s3.replace( (uint) index, (uint) len, QChar(after[0]) );
+        QTEST( s3, "result" );
 
-	QString s4 = string;
-	s4.replace( (uint) index, (uint) len, QChar(after[0]).toLatin1() );
-	QTEST( s4, "result" );
+        QString s4 = string;
+        s4.replace( (uint) index, (uint) len, QChar(after[0]).toLatin1() );
+        QTEST( s4, "result" );
     }
 }
 
@@ -1961,17 +1959,17 @@ void tst_QString::replace_string()
     Qt::CaseSensitivity cs = bcs ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
     if ( before.length() == 1 ) {
-	QChar ch = before.at( 0 );
+        QChar ch = before.at( 0 );
 
-	QString s1 = string;
-	s1.replace( ch, after, cs );
-	QTEST( s1, "result" );
+        QString s1 = string;
+        s1.replace( ch, after, cs );
+        QTEST( s1, "result" );
 
-	if ( QChar(ch.toLatin1()) == ch ) {
-	    QString s2 = string;
-	    s2.replace( ch.toLatin1(), after, cs );
-	    QTEST( s2, "result" );
-	}
+        if ( QChar(ch.toLatin1()) == ch ) {
+            QString s2 = string;
+            s2.replace( ch.toLatin1(), after, cs );
+            QTEST( s2, "result" );
+        }
     }
 
     QString s3 = string;
@@ -2006,11 +2004,11 @@ void tst_QString::remove_uint_uint()
     QFETCH( QString, after );
 
     if ( after.length() == 0 ) {
-	QString s1 = string;
-	s1.remove( (uint) index, (uint) len );
-	QTEST( s1, "result" );
+        QString s1 = string;
+        s1.remove( (uint) index, (uint) len );
+        QTEST( s1, "result" );
     } else
-	QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut QtTest
 }
 
 void tst_QString::remove_string()
@@ -2023,33 +2021,33 @@ void tst_QString::remove_string()
     Qt::CaseSensitivity cs = bcs ? Qt::CaseSensitive : Qt::CaseInsensitive;
 
     if ( after.length() == 0 ) {
-	if ( before.length() == 1 && cs ) {
-	    QChar ch = before.at( 0 );
+        if ( before.length() == 1 && cs ) {
+            QChar ch = before.at( 0 );
 
-	    QString s1 = string;
-	    s1.remove( ch );
-	    QTEST( s1, "result" );
+            QString s1 = string;
+            s1.remove( ch );
+            QTEST( s1, "result" );
 
-	    if ( QChar(ch.toLatin1()) == ch ) {
-		QString s2 = string;
-		s2.remove( ch );
-		QTEST( s2, "result" );
-	    }
-	}
+            if ( QChar(ch.toLatin1()) == ch ) {
+                QString s2 = string;
+                s2.remove( ch );
+                QTEST( s2, "result" );
+            }
+        }
 
-	QString s3 = string;
-	s3.remove( before, cs );
-	QTEST( s3, "result" );
+        QString s3 = string;
+        s3.remove( before, cs );
+        QTEST( s3, "result" );
 
-	QString s4 = string;
-	s4.replace( QRegExp(QRegExp::escape(before), cs), after );
-	QTEST( s4, "result" );
+        QString s4 = string;
+        s4.replace( QRegExp(QRegExp::escape(before), cs), after );
+        QTEST( s4, "result" );
 
-	QString s5 = string;
-	s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
-	QTEST( s5, "result" );
+        QString s5 = string;
+        s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
+        QTEST( s5, "result" );
     } else {
-	QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut QtTest
     }
 }
 
@@ -2060,10 +2058,10 @@ void tst_QString::remove_regexp()
     QFETCH( QString, after );
 
     if ( after.length() == 0 ) {
-	string.remove( QRegExp(regexp) );
-	QTEST( string, "result" );
+        string.remove( QRegExp(regexp) );
+        QTEST( string, "result" );
     } else {
-	QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut QtTest
     }
 }
 
@@ -2354,15 +2352,15 @@ void tst_QString::toUShort()
     QVERIFY(ok);
 
     if (sizeof(short) == 2) {
-	a = "65536";
-	QCOMPARE(a.toUShort(),(ushort)0);
-	QCOMPARE(a.toUShort(&ok),(ushort)0);
-	QVERIFY(!ok);
+        a = "65536";
+        QCOMPARE(a.toUShort(),(ushort)0);
+        QCOMPARE(a.toUShort(&ok),(ushort)0);
+        QVERIFY(!ok);
 
-	a = "123456";
-	QCOMPARE(a.toUShort(),(ushort)0);
-	QCOMPARE(a.toUShort(&ok),(ushort)0);
-	QVERIFY(!ok);
+        a = "123456";
+        QCOMPARE(a.toUShort(),(ushort)0);
+        QCOMPARE(a.toUShort(&ok),(ushort)0);
+        QVERIFY(!ok);
     }
 }
 
@@ -2430,15 +2428,15 @@ void tst_QString::toShort()
     QVERIFY(ok);
 
     if (sizeof(short) == 2) {
-	a = "32768";
-	QCOMPARE(a.toShort(),(short)0);
-	QCOMPARE(a.toShort(&ok),(short)0);
-	QVERIFY(!ok);
+        a = "32768";
+        QCOMPARE(a.toShort(),(short)0);
+        QCOMPARE(a.toShort(&ok),(short)0);
+        QVERIFY(!ok);
 
-	a = "-32769";
-	QCOMPARE(a.toShort(),(short)0);
-	QCOMPARE(a.toShort(&ok),(short)0);
-	QVERIFY(!ok);
+        a = "-32769";
+        QCOMPARE(a.toShort(),(short)0);
+        QCOMPARE(a.toShort(&ok),(short)0);
+        QVERIFY(!ok);
     }
 }
 
@@ -2506,25 +2504,25 @@ void tst_QString::toInt()
     QVERIFY(ok);
 
     if (sizeof(int) == 4) {
-	a = "-2147483647"; // -(2**31 - 1)
-	QCOMPARE(a.toInt(),-2147483647);
-	QCOMPARE(a.toInt(&ok),-2147483647);
-	QVERIFY(ok);
+        a = "-2147483647"; // -(2**31 - 1)
+        QCOMPARE(a.toInt(),-2147483647);
+        QCOMPARE(a.toInt(&ok),-2147483647);
+        QVERIFY(ok);
 
-	a = "2147483648"; // 2**31
-	QCOMPARE(a.toInt(),0);
-	QCOMPARE(a.toInt(&ok),0);
-	QVERIFY(!ok);
+        a = "2147483648"; // 2**31
+        QCOMPARE(a.toInt(),0);
+        QCOMPARE(a.toInt(&ok),0);
+        QVERIFY(!ok);
 
-	a = "-2147483648"; // -2**31
-	QCOMPARE(a.toInt(),-2147483647 - 1);
-	QCOMPARE(a.toInt(&ok),-2147483647 - 1);
-	QVERIFY(ok);
+        a = "-2147483648"; // -2**31
+        QCOMPARE(a.toInt(),-2147483647 - 1);
+        QCOMPARE(a.toInt(&ok),-2147483647 - 1);
+        QVERIFY(ok);
 
-	a = "2147483649"; // 2**31 + 1
-	QCOMPARE(a.toInt(),0);
-	QCOMPARE(a.toInt(&ok),0);
-	QVERIFY(!ok);
+        a = "2147483649"; // 2**31 + 1
+        QCOMPARE(a.toInt(),0);
+        QCOMPARE(a.toInt(&ok),0);
+        QVERIFY(!ok);
     }
 }
 
@@ -2547,10 +2545,10 @@ void tst_QString::toUInt()
     QVERIFY(ok);
 
     if (sizeof(int) == 4) {
-	a = "4294967296"; // 2**32
-	QCOMPARE(a.toUInt(),0u);
-	QCOMPARE(a.toUInt(&ok),0u);
-	QVERIFY(!ok);
+        a = "4294967296"; // 2**32
+        QCOMPARE(a.toUInt(),0u);
+        QCOMPARE(a.toUInt(&ok),0u);
+        QVERIFY(!ok);
     }
 }
 
@@ -2649,9 +2647,9 @@ void tst_QString::toLongLong()
 
     str = "-9223372036854775808"; // LLONG_MIN
     QCOMPARE( str.toLongLong( 0 ),
-	     -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
+             -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
     QCOMPARE( str.toLongLong( &ok ),
-	     -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
+             -Q_INT64_C(9223372036854775807) - Q_INT64_C(1) );
     QVERIFY( ok );
 
     str = "aaaa9223372036854775807aaaa";
@@ -2738,10 +2736,10 @@ void tst_QString::toDouble()
     bool ok;
     double d = str.toDouble( &ok );
     if ( result_ok ) {
-	QTEST( d, "result" );
-	QVERIFY( ok );
+        QTEST( d, "result" );
+        QVERIFY( ok );
     } else {
-	QVERIFY( !ok );
+        QVERIFY( !ok );
     }
 }
 
@@ -2770,11 +2768,11 @@ void tst_QString::setNum()
     QCOMPARE(a.setNum(Q_INT64_C(-1099511627776)), QString("-1099511627776"));
     QCOMPARE(a.setNum(Q_UINT64_C(1099511627776)), QString("1099511627776"));
     QCOMPARE(a.setNum(Q_INT64_C(9223372036854775807)), // LLONG_MAX
-	    QString("9223372036854775807"));
+            QString("9223372036854775807"));
     QCOMPARE(a.setNum(-Q_INT64_C(9223372036854775807) - Q_INT64_C(1)),
-	    QString("-9223372036854775808"));
+            QString("-9223372036854775808"));
     QCOMPARE(a.setNum(Q_UINT64_C(18446744073709551615)), // ULLONG_MAX
-	    QString("18446744073709551615"));
+            QString("18446744073709551615"));
     QCOMPARE(a.setNum(0.000000000931322574615478515625),QString("9.31323e-10"));
 
 //  QCOMPARE(a.setNum(0.000000000931322574615478515625,'g',30),(QString)"9.31322574615478515625e-010");
@@ -2989,8 +2987,8 @@ void tst_QString::check_QDataStream()
     QString a;
     QByteArray ar;
     {
-	QDataStream out(&ar,QIODevice::WriteOnly);
-	out << QString("COMPARE Text");
+        QDataStream out(&ar,QIODevice::WriteOnly);
+        out << QString("COMPARE Text");
     }
     {
         QDataStream in(&ar,QIODevice::ReadOnly);
@@ -3004,13 +3002,13 @@ void tst_QString::check_QTextStream()
     QString a;
     QByteArray ar;
     {
-	QTextStream out(&ar,QIODevice::WriteOnly);
-	out << QString("This is COMPARE Text");
+        QTextStream out(&ar,QIODevice::WriteOnly);
+        out << QString("This is COMPARE Text");
     }
     {
-	QTextStream in(&ar,QIODevice::ReadOnly);
-	in >> a;
-	QCOMPARE(a,(QString)"This");
+        QTextStream in(&ar,QIODevice::ReadOnly);
+        in >> a;
+        QCOMPARE(a,(QString)"This");
     }
 }
 
@@ -3018,17 +3016,17 @@ void tst_QString::check_QTextIOStream()
 {
     QString a;
     {
-	a="";
-	QTextStream ts(&a);
-	ts << "pi \261= " << 3.125;
-	QCOMPARE(a,(QString)"pi \261= 3.125");
+        a="";
+        QTextStream ts(&a);
+        ts << "pi \261= " << 3.125;
+        QCOMPARE(a,(QString)"pi \261= 3.125");
     }
     {
-	a="123 456";
-	int x,y;
-	QTextStream(&a) >> x >> y;
-	QCOMPARE(x,123);
-	QCOMPARE(y,456);
+        a="123 456";
+        int x,y;
+        QTextStream(&a) >> x >> y;
+        QCOMPARE(x,123);
+        QCOMPARE(y,456);
     }
 }
 
@@ -3256,8 +3254,8 @@ void tst_QString::fromLocal8Bit_data()
     QString longQString;
 
     for (int l=0;l<111;l++) {
-	longQByteArray = longQByteArray + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-	longQString += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        longQByteArray = longQByteArray + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        longQString += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     }
 
     //QTest::newRow("longString") << longQByteArray << -1 << longQString;
@@ -3303,8 +3301,8 @@ void tst_QString::local8Bit_data()
     QString longQString;
 
     for (int l=0;l<111;l++) {
-	longQByteArray = longQByteArray + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-	longQString += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        longQByteArray = longQByteArray + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        longQString += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     }
 
     QTest::newRow("longString") << longQString << longQByteArray;
@@ -3569,7 +3567,7 @@ void tst_QString::arg()
     QString firstName( "James" );
     QString lastName( "Bond" );
     QString fullName = QString( "My name is %2, %1 %2" )
-		       .arg( firstName ).arg( lastName );
+                       .arg( firstName ).arg( lastName );
     QCOMPARE( fullName, QString("My name is Bond, James Bond") );
 
     // number overloads
@@ -3577,7 +3575,7 @@ void tst_QString::arg()
     QCOMPARE( s4.arg(-1), QString("[-1]") );
     QCOMPARE( s4.arg(4294967295UL), QString("[4294967295]") ); // ULONG_MAX 32
     QCOMPARE( s4.arg(Q_INT64_C(9223372036854775807)), // LLONG_MAX
-	     QString("[9223372036854775807]") );
+             QString("[9223372036854775807]") );
 
     QCOMPARE( QString().arg(0), QString() );
     QCOMPARE( QString("").arg(0), QString("") );
@@ -4009,7 +4007,7 @@ void tst_QString::integer_conversion()
     QCOMPARE(ok, good);
 
     if (ok) {
-	QCOMPARE(d, num);
+        QCOMPARE(d, num);
     }
 
     QLocale::setDefault(QLocale::C);
@@ -4088,8 +4086,8 @@ void tst_QString::double_conversion_data()
 */
     // Let's try some Arabic
     const quint16 arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
-				    0x0663, 0x0664, 0x0065, 0x0662,
-				    0x0000 };			    // "0.1234e2"
+                                    0x0663, 0x0664, 0x0065, 0x0662,
+                                    0x0000 };                            // "0.1234e2"
     QTest::newRow("ar_SA") << QString("ar_SA") << QString::fromUtf16(arabic_str) << true << 0.1234e2;
 }
 
@@ -4110,10 +4108,10 @@ void tst_QString::double_conversion()
     QCOMPARE(ok, good);
 
     if (ok) {
-	double diff = d - num;
-	if (diff < 0)
-	    diff = -diff;
-	QVERIFY(diff <= MY_DOUBLE_EPSILON);
+        double diff = d - num;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_DOUBLE_EPSILON);
     }
 
     QLocale::setDefault(QLocale::C);
@@ -4130,11 +4128,11 @@ void tst_QString::tortureSprintfDouble()
     QString s;
 
     for (; data->fmt != 0; ++data) {
-	double d;
-	char *buff = (char *)&d;
-#	ifndef Q_BYTE_ORDER
-#	    error "Q_BYTE_ORDER not defined"
-#	endif
+        double d;
+        char *buff = (char *)&d;
+#        ifndef Q_BYTE_ORDER
+#            error "Q_BYTE_ORDER not defined"
+#        endif
 
 #       ifdef QT_ARMFPA
         buff[0] = data->bytes[4];
@@ -4145,20 +4143,20 @@ void tst_QString::tortureSprintfDouble()
         buff[5] = data->bytes[1];
         buff[6] = data->bytes[2];
         buff[7] = data->bytes[3];
-#	elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-	for (uint i = 0; i < 8; ++i)
-	    buff[i] = data->bytes[i];
-#	else
-	for (uint i = 0; i < 8; ++i)
-	    buff[7 - i] = data->bytes[i];
-#	endif
-	s.sprintf(data->fmt, d);
+#        elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        for (uint i = 0; i < 8; ++i)
+            buff[i] = data->bytes[i];
+#        else
+        for (uint i = 0; i < 8; ++i)
+            buff[7 - i] = data->bytes[i];
+#        endif
+        s.sprintf(data->fmt, d);
 #ifdef QT_NO_FPU // reduced precision when running with hardfloats in qemu
-	if (d - 0.1 < 1e12)
+        if (d - 0.1 < 1e12)
             QSKIP("clib sprintf doesn't fill with 0's on this platform");
-	QCOMPARE(s.left(16), QString(data->expected).left(16));
+        QCOMPARE(s.left(16), QString(data->expected).left(16));
 #else
-	QCOMPARE(s, QString(data->expected));
+        QCOMPARE(s, QString(data->expected));
 #endif
     }
 }
@@ -4361,7 +4359,7 @@ void tst_QString::localeAwareCompare()
 
 #else
     if (!locale.isEmpty())
-	    setlocale(LC_ALL, "");
+            setlocale(LC_ALL, "");
 #endif
 }
 #endif
@@ -4374,7 +4372,7 @@ void tst_QString::split_data()
 
     QTest::newRow("1") << "a,b,c" << "," << (QStringList() << "a" << "b" << "c");
     QTest::newRow("2") << QString("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile")
-		    << " "
+                    << " "
                     << (QStringList() << "-rw-r--r--" << "" << "1" << "0" << "" << "0" << ""
                                       << "519240" << "Jul" << "" << "9" << "" << "2002" << "bigfile");
     QTest::newRow("one-empty") << "" << " " << (QStringList() << "");
@@ -4580,14 +4578,14 @@ void tst_QString::arg_fillChar_data()
     replaceValues << QVariant((int)5.5) << QVariant(QString("foo")) << QVariant((qulonglong)INT_MAX);
     widths << 10 << 2 << 5;
     QTest::newRow("str1") << QString("%3.%1.%3.%2") << replaceValues << widths << QString("0 c")
-		       << QString("2147483647.0000000005.2147483647.foo");
+                       << QString("2147483647.0000000005.2147483647.foo");
 
     replaceValues.clear();
     widths.clear();
     replaceValues << QVariant(QString("fisk"));
     widths << 100;
     QTest::newRow("str2") << QString("%9 og poteter") << replaceValues << widths << QString("f")
-		       << QString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffisk og poteter");
+                       << QString("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffisk og poteter");
 }
 
 void tst_QString::arg_fillChar()
@@ -4606,9 +4604,9 @@ void tst_QString::arg_fillChar()
 
     QString actual = pattern;
     for (int i=0; i<replaceValues.count(); ++i) {
-	const QVariant &var = replaceValues.at(i);
-	const int width = widths.at(i);
-	const QChar &fillChar = fillChars.at(i);
+        const QVariant &var = replaceValues.at(i);
+        const int width = widths.at(i);
+        const QChar &fillChar = fillChars.at(i);
         switch (var.type()) {
         case QVariant::String: actual = actual.arg(var.toString(), width, fillChar); break;
         case QVariant::Int: actual = actual.arg(var.toInt(), width, base, fillChar); break;

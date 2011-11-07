@@ -199,13 +199,12 @@ void tst_QLibrary::version()
     VersionFunction fnVersion = (VersionFunction)library.resolve("mylibversion");
     QVERIFY(fnVersion);
     QCOMPARE(fnVersion(), resultversion);
-	QVERIFY(library.unload());
+    QVERIFY(library.unload());
 #else
     Q_UNUSED(lib);
     Q_UNUSED(loadversion);
     Q_UNUSED(resultversion);
 #endif
-
 }
 
 void tst_QLibrary::load_data()
@@ -242,10 +241,10 @@ void tst_QLibrary::load()
     QLibrary library( lib );
     bool ok = library.load();
     if ( result ) {
-	QVERIFY( ok );
-	QVERIFY(library.unload());
+        QVERIFY( ok );
+        QVERIFY(library.unload());
     } else {
-	QVERIFY( !ok );
+        QVERIFY( !ok );
     }
 }
 
@@ -273,9 +272,9 @@ void tst_QLibrary::unload()
     library.load();
     bool ok = library.unload();
     if ( result ) {
-	QVERIFY( ok );
+        QVERIFY( ok );
     } else {
-	QVERIFY( !ok );
+        QVERIFY( !ok );
     }
 }
 
@@ -312,11 +311,11 @@ void tst_QLibrary::resolve()
     QLibrary library( lib );
     testFunc func = (testFunc) library.resolve( symbol.toLatin1() );
     if ( goodPointer ) {
-	QVERIFY( func != 0 );
+        QVERIFY( func != 0 );
     } else {
-	QVERIFY( func == 0 );
+        QVERIFY( func == 0 );
     }
-	library.unload();
+    library.unload();
 }
 
 void tst_QLibrary::library_data()
@@ -435,7 +434,7 @@ void tst_QLibrary::errorString()
             break;
     }
     QRegExp re(errorString);
-	QString libErrorString = lib.errorString();
+    QString libErrorString = lib.errorString();
     QVERIFY(!lib.isLoaded() || lib.unload());
     QVERIFY2(re.exactMatch(libErrorString), qPrintable(libErrorString));
     QCOMPARE(ok, success);
@@ -489,7 +488,7 @@ void tst_QLibrary::loadHints()
     bool ok = library.load();
     if ( result ) {
         QVERIFY( ok );
-		QVERIFY(library.unload());
+        QVERIFY(library.unload());
     } else {
         QVERIFY( !ok );
     }
@@ -539,29 +538,29 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
     QString lib = QDir::currentPath() + "/mylib";
 
     {
-		QLibrary lib1(lib);
-		QLibrary lib2(lib);
-		QCOMPARE(lib1.isLoaded(), false);
-		QCOMPARE(lib2.isLoaded(), false);
-		lib1.load();
-		QCOMPARE(lib1.isLoaded(), true);
-		QCOMPARE(lib2.isLoaded(), true);
-		QCOMPARE(lib1.unload(), true);
-		QCOMPARE(lib1.isLoaded(), false);
-		QCOMPARE(lib2.isLoaded(), false);
-		lib1.load();
-		lib2.load();
-		QCOMPARE(lib1.isLoaded(), true);
-		QCOMPARE(lib2.isLoaded(), true);
-		QCOMPARE(lib1.unload(), false);
-		QCOMPARE(lib1.isLoaded(), true);
-		QCOMPARE(lib2.isLoaded(), true);
-		QCOMPARE(lib2.unload(), true);
-		QCOMPARE(lib1.isLoaded(), false);
-		QCOMPARE(lib2.isLoaded(), false);
+        QLibrary lib1(lib);
+        QLibrary lib2(lib);
+        QCOMPARE(lib1.isLoaded(), false);
+        QCOMPARE(lib2.isLoaded(), false);
+        lib1.load();
+        QCOMPARE(lib1.isLoaded(), true);
+        QCOMPARE(lib2.isLoaded(), true);
+        QCOMPARE(lib1.unload(), true);
+        QCOMPARE(lib1.isLoaded(), false);
+        QCOMPARE(lib2.isLoaded(), false);
+        lib1.load();
+        lib2.load();
+        QCOMPARE(lib1.isLoaded(), true);
+        QCOMPARE(lib2.isLoaded(), true);
+        QCOMPARE(lib1.unload(), false);
+        QCOMPARE(lib1.isLoaded(), true);
+        QCOMPARE(lib2.isLoaded(), true);
+        QCOMPARE(lib2.unload(), true);
+        QCOMPARE(lib1.isLoaded(), false);
+        QCOMPARE(lib2.isLoaded(), false);
 
-		// Finally; unload on that is already unloaded
-		QCOMPARE(lib1.unload(), false);
+        // Finally; unload on that is already unloaded
+        QCOMPARE(lib1.unload(), false);
     }
 
     //now let's try with a 3rd one that will go out of scope
@@ -570,9 +569,9 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
         QCOMPARE(lib1.isLoaded(), false);
         lib1.load();
         QCOMPARE(lib1.isLoaded(), true);
-	}
-	QLibrary lib2(lib);
-	//lib2 should be loaded because lib1 was loaded and never unloaded
+    }
+    QLibrary lib2(lib);
+    //lib2 should be loaded because lib1 was loaded and never unloaded
     QCOMPARE(lib2.isLoaded(), true);
 
 /*

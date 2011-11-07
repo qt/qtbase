@@ -450,7 +450,7 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(obj.slotResult, QString("testReference:whatever"));
     QCOMPARE(refStr, QString("gotcha"));
 
-	qint64 ll1 = -1;
+    qint64 ll1 = -1;
     quint64 ll2 = 0;
     QVERIFY(QMetaObject::invokeMethod(&obj,
                                       "testLongLong",
@@ -559,7 +559,7 @@ void tst_QMetaObject::invokeQueuedMetaMember()
     QVERIFY(!QMetaObject::invokeMethod(&obj, "sig1", Qt::QueuedConnection, Q_RETURN_ARG(QString, exp),
                               Q_ARG(QString, "nono")));
 
-	qint64 ll1 = -1;
+    qint64 ll1 = -1;
     quint64 ll2 = 0;
     QVERIFY(QMetaObject::invokeMethod(&obj,
                                       "testLongLong",

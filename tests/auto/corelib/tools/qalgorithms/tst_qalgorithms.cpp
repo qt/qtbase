@@ -544,7 +544,7 @@ ostream &operator<<(ostream &out, const StableSortTest& obj)  { out << obj.Major
 QVector<StableSortTest> createStableTestVector()
 {
     QVector<StableSortTest> stableTestVector;
-	for (int i=500; i>=0; --i) {
+    for (int i=500; i>=0; --i) {
         for (int j=0; j<10; ++j) {
             stableTestVector.append(StableSortTest(i, j));
         }

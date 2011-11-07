@@ -161,11 +161,11 @@ void tst_QByteArray::qCompress_data()
 
     int i;
     for ( i=0; i<size1; i++ )
-	ba1[i] = (char)( i / 1024 );
+        ba1[i] = (char)( i / 1024 );
     QTest::newRow( "01" ) << ba1;
 
     for ( i=0; i<size1; i++ )
-	ba1[i] = (char)( i % 256 );
+        ba1[i] = (char)( i % 256 );
     QTest::newRow( "02" ) << ba1;
 
     ba1.fill( 'A' );
@@ -403,8 +403,7 @@ void tst_QByteArray::split_data()
     QTest::addColumn<QByteArray>("sample");
     QTest::addColumn<int>("size");
 
-    QTest::newRow("1") << QByteArray("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile")
-		    << 14;
+    QTest::newRow("1") << QByteArray("-rw-r--r--  1 0  0  519240 Jul  9  2002 bigfile") << 14;
     QTest::newRow("2") << QByteArray("abcde") << 1;
     QTest::newRow("one empty") << QByteArray("") << 1;
     QTest::newRow("two empty") << QByteArray(" ") << 2;
@@ -956,31 +955,31 @@ void tst_QByteArray::lastIndexOf()
     if (!hasNull)
         QCOMPARE( haystack.lastIndexOf(needle.data(), startpos), expected );
     if (needle.size() == 1)
-	QCOMPARE( haystack.lastIndexOf(needle.at(0), startpos), expected );
+        QCOMPARE( haystack.lastIndexOf(needle.at(0), startpos), expected );
 
     if (startpos == -1) {
-	QCOMPARE( haystack.lastIndexOf(needle), expected );
+        QCOMPARE( haystack.lastIndexOf(needle), expected );
         if (!hasNull)
             QCOMPARE( haystack.lastIndexOf(needle.data()), expected );
-	if (needle.size() == 1)
-	    QCOMPARE( haystack.lastIndexOf(needle.at(0)), expected );
+        if (needle.size() == 1)
+            QCOMPARE( haystack.lastIndexOf(needle.at(0)), expected );
     }
 }
 
 void tst_QByteArray::number()
 {
     QCOMPARE(QString(QByteArray::number((quint64) 0)),
-	    QString(QByteArray("0")));
+             QString(QByteArray("0")));
     QCOMPARE(QString(QByteArray::number(Q_UINT64_C(0xFFFFFFFFFFFFFFFF))),
-	    QString(QByteArray("18446744073709551615")));
+             QString(QByteArray("18446744073709551615")));
     QCOMPARE(QString(QByteArray::number(Q_INT64_C(0xFFFFFFFFFFFFFFFF))),
-	    QString(QByteArray("-1")));
+             QString(QByteArray("-1")));
     QCOMPARE(QString(QByteArray::number(qint64(0))),
-	    QString(QByteArray("0")));
+             QString(QByteArray("0")));
     QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x7FFFFFFFFFFFFFFF))),
-	    QString(QByteArray("9223372036854775807")));
+             QString(QByteArray("9223372036854775807")));
     QCOMPARE(QString(QByteArray::number(Q_INT64_C(0x8000000000000000))),
-	    QString(QByteArray("-9223372036854775808")));
+             QString(QByteArray("-9223372036854775808")));
 }
 
 // defined later

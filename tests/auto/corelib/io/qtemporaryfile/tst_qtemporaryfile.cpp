@@ -224,38 +224,36 @@ void tst_QTemporaryFile::fileNameIsEmpty()
 
 void tst_QTemporaryFile::autoRemove()
 {
-	// Test auto remove
-	QString fileName;
-	{
-		QTemporaryFile file("tempXXXXXX");
-		file.setAutoRemove(true);
-		QVERIFY(file.open());
-		fileName = file.fileName();
-		file.close();
-	}
-	QVERIFY(!QFile::exists(fileName));
+    // Test auto remove
+    QString fileName;
+    {
+        QTemporaryFile file("tempXXXXXX");
+        file.setAutoRemove(true);
+        QVERIFY(file.open());
+        fileName = file.fileName();
+        file.close();
+    }
+    QVERIFY(!QFile::exists(fileName));
 
-	// Test if disabling auto remove works.
-	{
-		QTemporaryFile file("tempXXXXXX");
-		file.setAutoRemove(false);
-		QVERIFY(file.open());
-		fileName = file.fileName();
-		file.close();
-	}
-	QVERIFY(QFile::exists(fileName));
-	QVERIFY(QFile::remove(fileName));
+    // Test if disabling auto remove works.
+    {
+        QTemporaryFile file("tempXXXXXX");
+        file.setAutoRemove(false);
+        QVERIFY(file.open());
+        fileName = file.fileName();
+        file.close();
+    }
+    QVERIFY(QFile::exists(fileName));
+    QVERIFY(QFile::remove(fileName));
 
-
-	// Do not explicitly call setAutoRemove (tests if it really is the default as documented)
-	{
-		QTemporaryFile file("tempXXXXXX");
-		QVERIFY(file.open());
-		fileName = file.fileName();
-		file.close();
-	}
-	QVERIFY(!QFile::exists(fileName));
-
+    // Do not explicitly call setAutoRemove (tests if it really is the default as documented)
+    {
+        QTemporaryFile file("tempXXXXXX");
+        QVERIFY(file.open());
+        fileName = file.fileName();
+        file.close();
+    }
+    QVERIFY(!QFile::exists(fileName));
 }
 
 void tst_QTemporaryFile::nonWritableCurrentDir()

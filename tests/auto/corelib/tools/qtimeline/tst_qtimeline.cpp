@@ -108,9 +108,9 @@ void tst_QTimeLine::range()
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
     timeLine.start();
 #ifdef Q_OS_WINCE
-	QTest::qWait(1000);
+    QTest::qWait(1000);
 #else
-	QTest::qWait(100);
+    QTest::qWait(100);
 #endif
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     int oldValue = timeLine.currentFrame();
@@ -301,7 +301,7 @@ void tst_QTimeLine::loopCount()
     timeLine.stop();
 
     timeLine.setDuration(2500); // ### some platforms have a very low resolution timer
-	timeLine.setFrameRange(0, 2);
+    timeLine.setFrameRange(0, 2);
     timeLine.setLoopCount(4);
 
     QSignalSpy finishedSpy(&timeLine, SIGNAL(finished()));
@@ -333,9 +333,9 @@ void tst_QTimeLine::loopCount()
 
     QCOMPARE(finishedSpy.count(), 2);
     QCOMPARE(frameChangedSpy.count(), 22);
-	for (int i = 11; i < 22; ++i) {
+    for (int i = 11; i < 22; ++i) {
         QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), 2 - (i+2) % 3);
-	}
+    }
 }
 
 void tst_QTimeLine::interpolation()
