@@ -1,7 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qnumeric
-
 QT = core testlib
-
-SOURCES += tst_qnumeric.cpp
-CONFIG += parallel_test
+SOURCES = tst_qnumeric.cpp

@@ -1,8 +1,7 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qtextboundaryfinder
 QT = core testlib
-HEADERS += 
-SOURCES += tst_qtextboundaryfinder.cpp 
+SOURCES = tst_qtextboundaryfinder.cpp
 DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 wince* {
@@ -10,4 +9,3 @@ wince* {
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
-CONFIG += parallel_test

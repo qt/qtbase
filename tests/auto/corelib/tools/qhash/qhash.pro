@@ -1,6 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qhash
-SOURCES  += tst_qhash.cpp
 QT = core testlib
-
-CONFIG += parallel_test
+SOURCES = tst_qhash.cpp

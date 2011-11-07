@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qtranslator
-QT += widgets testlib
-SOURCES  += tst_qtranslator.cpp
+QT = widgets testlib
+SOURCES = tst_qtranslator.cpp
 RESOURCES += qtranslator.qrc
 
 wince* {

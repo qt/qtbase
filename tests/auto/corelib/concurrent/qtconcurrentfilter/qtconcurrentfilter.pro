@@ -1,7 +1,7 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qtconcurrentfilter
-DEFINES += QT_STRICT_ITERATORS
-SOURCES += tst_qtconcurrentfilter.cpp
 QT = core testlib
-CONFIG += parallel_test
+SOURCES = tst_qtconcurrentfilter.cpp
+DEFINES += QT_STRICT_ITERATORS
+
 CONFIG += insignificant_test # See QTBUG-20688

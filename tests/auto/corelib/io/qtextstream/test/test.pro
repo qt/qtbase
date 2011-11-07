@@ -1,19 +1,16 @@
 CONFIG += testcase
-SOURCES  += ../tst_qtextstream.cpp
-
 TARGET = ../tst_qtextstream
-
-win32 {
-  CONFIG(debug, debug|release) {
-    TARGET = ../../debug/tst_qtextstream
-} else {
-    TARGET = ../../release/tst_qtextstream
-  }
-}
-
+QT = core network testlib
+SOURCES = ../tst_qtextstream.cpp
 RESOURCES += ../qtextstream.qrc
 
-QT = core network testlib
+win32 {
+    CONFIG(debug, debug|release) {
+        TARGET = ../../debug/tst_qtextstream
+    } else {
+        TARGET = ../../release/tst_qtextstream
+    }
+}
 
 wince* {
     addFiles.files = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp

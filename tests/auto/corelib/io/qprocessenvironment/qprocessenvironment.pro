@@ -1,7 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qprocessenvironment
-
 QT = core testlib
-
-SOURCES  += tst_qprocessenvironment.cpp
-CONFIG += parallel_test
+SOURCES = tst_qprocessenvironment.cpp

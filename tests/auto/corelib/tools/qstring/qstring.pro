@@ -1,10 +1,6 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qstring
-SOURCES  += tst_qstring.cpp
-
 QT = core testlib
-
+SOURCES = tst_qstring.cpp
 DEFINES += QT_NO_CAST_TO_ASCII
-CONFIG += parallel_test
-
 contains(QT_CONFIG,icu):DEFINES += QT_USE_ICU

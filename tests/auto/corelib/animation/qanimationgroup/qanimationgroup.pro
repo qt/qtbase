@@ -1,7 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qanimationgroup
 QT = core testlib
-SOURCES  += tst_qanimationgroup.cpp
-
-
-CONFIG += parallel_test
+SOURCES = tst_qanimationgroup.cpp

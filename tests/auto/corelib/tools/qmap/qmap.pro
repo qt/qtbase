@@ -1,7 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qmap
-
 QT = core testlib
-
-SOURCES  += tst_qmap.cpp
-CONFIG += parallel_test
+SOURCES = tst_qmap.cpp

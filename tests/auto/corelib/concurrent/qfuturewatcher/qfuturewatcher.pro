@@ -1,5 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qfuturewatcher
-SOURCES += tst_qfuturewatcher.cpp 
-QT = core core-private testlib
-CONFIG += parallel_test
+QT = core-private testlib
+SOURCES = tst_qfuturewatcher.cpp

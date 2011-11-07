@@ -1,8 +1,7 @@
+CONFIG += testcase parallel_test
 TARGET = tst_qstandardpaths
-CONFIG += testcase
-SOURCES += tst_qstandardpaths.cpp
 QT = core testlib
-CONFIG += parallel_test
+SOURCES = tst_qstandardpaths.cpp
 
 wince* {
     DEFINES += SRCDIR=\\\"\\\"

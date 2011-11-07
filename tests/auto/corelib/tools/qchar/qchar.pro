@@ -1,14 +1,11 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qchar
-SOURCES  += tst_qchar.cpp
+QT = core-private testlib
+SOURCES = tst_qchar.cpp
 
-QT = core core-private testlib
-
-wince*: {
+wince* {
     deploy.files += NormalizationTest.txt
     DEPLOYMENT += deploy
 }
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
-
-CONFIG += parallel_test

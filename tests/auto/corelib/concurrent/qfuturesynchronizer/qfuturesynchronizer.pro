@@ -1,6 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qfuturesynchronizer
 QT = core testlib
-SOURCES  += tst_qfuturesynchronizer.cpp \
-
-CONFIG += parallel_test
+SOURCES = tst_qfuturesynchronizer.cpp

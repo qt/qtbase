@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qvariant
-SOURCES  += tst_qvariant.cpp
-QT += widgets network testlib
+QT = widgets network testlib
+SOURCES = tst_qvariant.cpp

@@ -1,20 +1,13 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qbytearray
-SOURCES  += tst_qbytearray.cpp
-
-
-QT = core core-private testlib
+QT = core-private testlib
+SOURCES = tst_qbytearray.cpp
 
 wince* {
-   addFile.files = rfc3252.txt
-   addFile.path = .
-   DEPLOYMENT += addFile
-}
-
-wince* {
-  DEFINES += SRCDIR=\\\"./\\\"
+    addFile.files = rfc3252.txt
+    addFile.path = .
+    DEPLOYMENT += addFile
+    DEFINES += SRCDIR=\\\"./\\\"
 } else {
-  DEFINES += SRCDIR=\\\"$$PWD/\\\"
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
-
-CONFIG += parallel_test

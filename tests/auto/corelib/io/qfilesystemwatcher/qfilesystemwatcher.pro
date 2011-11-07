@@ -1,6 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qfilesystemwatcher
-SOURCES += tst_qfilesystemwatcher.cpp
 QT = core testlib
-
-CONFIG += parallel_test
+SOURCES = tst_qfilesystemwatcher.cpp

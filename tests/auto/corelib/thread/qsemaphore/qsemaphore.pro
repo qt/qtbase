@@ -1,8 +1,6 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qsemaphore
-SOURCES  += tst_qsemaphore.cpp
 QT = core testlib
+SOURCES = tst_qsemaphore.cpp
 
-
-CONFIG += parallel_test
 mac*:CONFIG+=insignificant_test

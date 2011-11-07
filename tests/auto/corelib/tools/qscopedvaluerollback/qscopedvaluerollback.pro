@@ -1,5 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qscopedvaluerollback
-SOURCES += tst_qscopedvaluerollback.cpp
 QT = core testlib
-CONFIG += parallel_test
+SOURCES = tst_qscopedvaluerollback.cpp

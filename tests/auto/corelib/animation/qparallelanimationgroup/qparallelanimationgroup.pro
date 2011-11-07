@@ -1,6 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qparallelanimationgroup
 QT = core gui testlib
-SOURCES  += tst_qparallelanimationgroup.cpp
-
-
+SOURCES = tst_qparallelanimationgroup.cpp

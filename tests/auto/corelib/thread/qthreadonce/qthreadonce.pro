@@ -1,7 +1,7 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qthreadonce
-SOURCES += tst_qthreadonce.cpp
 QT = core testlib
+SOURCES = tst_qthreadonce.cpp
 
 # Don't use gcc's threadsafe statics
 # Note: some versions of gcc generate invalid code with this option...
@@ -10,5 +10,3 @@ QT = core testlib
 
 # Temporary:
 SOURCES += qthreadonce.cpp
-
-CONFIG += parallel_test

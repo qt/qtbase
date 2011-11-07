@@ -1,5 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qwritelocker
-SOURCES += tst_qwritelocker.cpp
 QT = core testlib
-CONFIG += parallel_test
+SOURCES = tst_qwritelocker.cpp

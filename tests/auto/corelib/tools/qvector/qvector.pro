@@ -1,5 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qvector
-SOURCES  += tst_qvector.cpp
 QT = core testlib
-CONFIG += parallel_test
+SOURCES = tst_qvector.cpp

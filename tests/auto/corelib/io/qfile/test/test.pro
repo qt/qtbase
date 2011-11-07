@@ -1,5 +1,7 @@
 CONFIG += testcase
-SOURCES  += ../tst_qfile.cpp
+TARGET = ../tst_qfile
+SOURCES = ../tst_qfile.cpp
+RESOURCES += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc
 
 wince* {
     QT = core gui testlib
@@ -11,19 +13,12 @@ wince* {
     resour.path = resources
 
     DEPLOYMENT += files resour
-}
-
-wince* {
     SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp     # needed for QT_OPEN
     DEFINES += SRCDIR=\\\"\\\"
 } else {
     QT = core network testlib
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
-
-RESOURCES      += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc
-
-TARGET = ../tst_qfile
 
 win32 {
     CONFIG(debug, debug|release) {

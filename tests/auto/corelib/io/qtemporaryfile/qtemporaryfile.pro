@@ -1,8 +1,5 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qtemporaryfile
-SOURCES       += tst_qtemporaryfile.cpp
 QT = core testlib
-
+SOURCES = tst_qtemporaryfile.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
-
-CONFIG += parallel_test

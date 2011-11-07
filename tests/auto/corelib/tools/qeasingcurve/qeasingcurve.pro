@@ -1,5 +1,4 @@
-CONFIG += testcase
+CONFIG += testcase parallel_test
 TARGET = tst_qeasingcurve
 QT = core testlib
-SOURCES  += tst_qeasingcurve.cpp
-CONFIG += parallel_test
+SOURCES = tst_qeasingcurve.cpp

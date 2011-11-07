@@ -1,6 +1,5 @@
 CONFIG += testcase
 TARGET = tst_qfreelist
-SOURCES  += tst_qfreelist.cpp
-QT += core-private testlib
-QT -= gui
+QT = core-private testlib
+SOURCES = tst_qfreelist.cpp
 !contains(QT_CONFIG,private_tests): SOURCES += $$QT.core.sources/tools/qfreelist.cpp
