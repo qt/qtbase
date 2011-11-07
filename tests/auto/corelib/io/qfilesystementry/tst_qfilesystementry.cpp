@@ -38,13 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QtTest/QtTest>
 
 #include <QtCore/private/qfilesystementry_p.h>
-
-#if defined(Q_OS_WIN)
-#   define WIN_STUFF
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -64,7 +61,7 @@ private slots:
     void baseName();
     void completeBaseName_data();
     void completeBaseName();
-#if defined(WIN_STUFF)
+#if defined(Q_OS_WIN)
     void absoluteOrRelative_data();
     void absoluteOrRelative();
 #endif
@@ -72,7 +69,7 @@ private slots:
     void isClean();
 };
 
-#if defined(WIN_STUFF)
+#if defined(Q_OS_WIN)
 void tst_QFileSystemEntry::getSetCheck_data()
 {
     QTest::addColumn<QString>("nativeFilePath");
@@ -359,7 +356,7 @@ void tst_QFileSystemEntry::completeBaseName()
     QCOMPARE(fi2.completeBaseName(), expected);
 }
 
-#if defined(WIN_STUFF)
+#if defined(Q_OS_WIN)
 void tst_QFileSystemEntry::absoluteOrRelative_data()
 {
     QTest::addColumn<QString>("path");
