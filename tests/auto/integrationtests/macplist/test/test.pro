@@ -1,5 +1,6 @@
 CONFIG += testcase
 
+QT += testlib
 SOURCES += ../tst_macplist.cpp
 TARGET = ../tst_macplist
 win32 {
