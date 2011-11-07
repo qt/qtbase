@@ -3,7 +3,6 @@ TEMPLATE = subdirs
 SUBDIRS += \
     corelib \
     dbus \
-    host.pro \
     gui \
     integrationtests \
     network \
@@ -16,7 +15,6 @@ SUBDIRS += \
     other \
     widgets \
 
-cross_compile:                              SUBDIRS -= host.pro
 cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl
 !unix|embedded|!contains(QT_CONFIG, dbus):  SUBDIRS -= dbus
