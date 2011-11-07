@@ -31,10 +31,10 @@ else
     exit 2
 fi
 
-if strings $binary | grep LeastSignificantByteFirst >/dev/null 2>&1; then
+if strings - $binary | grep LeastSignificantByteFirst >/dev/null 2>&1; then
     [ "$VERBOSE" = "yes" ] && echo "    Found 'LeastSignificantByteFirst' in binary"
     ENDIAN="LITTLE"
-elif strings $binary | grep MostSignificantByteFirst >/dev/null 2>&1; then
+elif strings - $binary | grep MostSignificantByteFirst >/dev/null 2>&1; then
     [ "$VERBOSE" = "yes" ] && echo "    Found 'MostSignificantByteFirst' in binary"
     ENDIAN="BIG"
 fi
