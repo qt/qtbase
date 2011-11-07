@@ -70,7 +70,6 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror_p.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.h \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h \
-           $$QT_SOURCE_TREE/tools/shared/symbian/epocroot_p.h \
            $$QT_SOURCE_TREE/tools/shared/windows/registry_p.h
 
 
@@ -126,7 +125,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils.cpp \
-           $$QT_SOURCE_TREE/tools/shared/symbian/epocroot.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
 
 DEFINES += COMMERCIAL_VERSION

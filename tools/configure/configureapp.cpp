@@ -193,34 +193,6 @@ Configure::Configure(int& argc, char** argv)
             }
         }
 
-        // make patch_capabilities and createpackage scripts for Symbian that can be used from the shadow build
-        QFile patch_capabilities(buildPath + "/bin/patch_capabilities");
-        if (patch_capabilities.open(QFile::WriteOnly)) {
-            QTextStream stream(&patch_capabilities);
-            stream << "#!/usr/bin/perl -w" << endl
-                   << "require \"" << sourcePath + "/bin/patch_capabilities\";" << endl;
-        }
-        QFile patch_capabilities_bat(buildPath + "/bin/patch_capabilities.bat");
-        if (patch_capabilities_bat.open(QFile::WriteOnly)) {
-            QTextStream stream(&patch_capabilities_bat);
-            stream << "@echo off" << endl
-                   << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/patch_capabilities.bat %*") << endl;
-            patch_capabilities_bat.close();
-        }
-        QFile createpackage(buildPath + "/bin/createpackage");
-        if (createpackage.open(QFile::WriteOnly)) {
-            QTextStream stream(&createpackage);
-            stream << "#!/usr/bin/perl -w" << endl
-                   << "require \"" << sourcePath + "/bin/createpackage\";" << endl;
-        }
-        QFile createpackage_bat(buildPath + "/bin/createpackage.bat");
-        if (createpackage_bat.open(QFile::WriteOnly)) {
-            QTextStream stream(&createpackage_bat);
-            stream << "@echo off" << endl
-                   << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/createpackage.bat %*") << endl;
-            createpackage_bat.close();
-        }
-
         QFile configtests(buildPath + "/bin/qtmodule-configtests");
         if (configtests.open(QFile::WriteOnly)) {
             QTextStream stream(&configtests);
@@ -350,7 +322,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "OPENVG" ]          = "no";
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
-    dictionary[ "S60" ]             = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -361,7 +332,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
     dictionary[ "STYLE_MOTIF" ]     = "yes";
     dictionary[ "STYLE_CDE" ]       = "yes";
-    dictionary[ "STYLE_S60" ]       = "no";
     dictionary[ "STYLE_GTK" ]       = "no";
 
     dictionary[ "SQL_MYSQL" ]       = "no";
@@ -519,9 +489,6 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
-            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-                dictionary[ "SYMBIAN_DEFFILES" ] = "no";
-            }
         }
         else if (configCmdLine.at(i) == "-opensource") {
             dictionary[ "BUILDTYPE" ] = "opensource";
@@ -714,11 +681,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-style-cde")
             dictionary[ "STYLE_CDE" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-style-s60")
-            dictionary[ "STYLE_S60" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-s60")
-            dictionary[ "STYLE_S60" ] = "no";
-
         // Qt 3 Support ---------------------------------------------
         else if (configCmdLine.at(i) == "-no-qt3support")
             dictionary[ "QT3SUPPORT" ] = "no";
@@ -865,25 +827,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-native-gestures")
             dictionary[ "NATIVE_GESTURES" ] = "no";
 #if !defined(EVAL)
-        // Symbian Support -------------------------------------------
-        else if (configCmdLine.at(i) == "-fpu")
-        {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "ARM_FPU_TYPE" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-s60")
-            dictionary[ "S60" ]    = "yes";
-        else if (configCmdLine.at(i) == "-no-s60")
-            dictionary[ "S60" ]    = "no";
-
-        else if (configCmdLine.at(i) == "-usedeffiles")
-            dictionary[ "SYMBIAN_DEFFILES" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-usedeffiles")
-            dictionary[ "SYMBIAN_DEFFILES" ] = "no";
-
         // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-fast")
             dictionary[ "FAST" ] = "yes";
@@ -1038,14 +981,6 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             dictionary[ "QT_LIBINFIX" ] = configCmdLine.at(i);
-            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-                dictionary[ "QT_INSTALL_PLUGINS" ] =
-                    QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
-                dictionary[ "QT_INSTALL_IMPORTS" ] =
-                    QString("\\resource\\qt%1\\imports").arg(dictionary[ "QT_LIBINFIX" ]);
-                dictionary[ "QT_INSTALL_TRANSLATIONS" ] =
-                    QString("\\resource\\qt%1\\translations").arg(dictionary[ "QT_LIBINFIX" ]);
-            }
         } else if (configCmdLine.at(i) == "-D") {
             ++i;
             if (i == argCount)
@@ -1285,9 +1220,7 @@ void Configure::parseCmdLine()
     // Tell the user how to proceed building Qt after configure finished its job
     dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
     if (dictionary.contains("XQMAKESPEC")) {
-        if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv5|release-armv5");
-        } else if (dictionary["XQMAKESPEC"].startsWith("wince")) {
+        if (dictionary["XQMAKESPEC"].startsWith("wince")) {
             dictionary["QTBUILDINSTRUCTION"] =
                 QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];
         }
@@ -1516,7 +1449,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
         dictionary[ "STYLE_MOTIF" ]         = "no";
         dictionary[ "STYLE_CDE" ]           = "no";
-        dictionary[ "STYLE_S60" ]           = "no";
         dictionary[ "FREETYPE" ]            = "no";
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
@@ -1542,52 +1474,6 @@ void Configure::applySpecSpecifics()
         }
         dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
         dictionary[ "QT_INSTALL_PREFIX" ]   = "";
-
-    } else if (dictionary[ "XQMAKESPEC" ].startsWith("symbian")) {
-        dictionary[ "ACCESSIBILITY" ]       = "no";
-        dictionary[ "STYLE_WINDOWSXP" ]     = "no";
-        dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "STYLE_PLASTIQUE" ]     = "no";
-        dictionary[ "STYLE_CLEANLOOKS" ]    = "no";
-        dictionary[ "STYLE_WINDOWSCE" ]     = "no";
-        dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
-        dictionary[ "STYLE_MOTIF" ]         = "no";
-        dictionary[ "STYLE_CDE" ]           = "no";
-        dictionary[ "STYLE_S60" ]           = "yes";
-        dictionary[ "FREETYPE" ]            = "no";
-        dictionary[ "QT3SUPPORT" ]          = "no";
-        dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "OPENSSL" ]             = "yes";
-        dictionary[ "STL" ]                 = "yes";
-        dictionary[ "EXCEPTIONS" ]          = "yes";
-        dictionary[ "RTTI" ]                = "yes";
-        dictionary[ "ARCHITECTURE" ]        = "symbian";
-        dictionary[ "3DNOW" ]               = "no";
-        dictionary[ "SSE" ]                 = "no";
-        dictionary[ "SSE2" ]                = "no";
-        dictionary[ "MMX" ]                 = "no";
-        dictionary[ "IWMMXT" ]              = "no";
-        dictionary[ "CE_CRT" ]              = "no";
-        dictionary[ "DIRECT3D" ]            = "no";
-        dictionary[ "WEBKIT" ]              = "yes";
-        dictionary[ "ASSISTANT_WEBKIT" ]    = "no";
-        dictionary[ "PHONON" ]              = "yes";
-        dictionary[ "XMLPATTERNS" ]         = "yes";
-        dictionary[ "QT_GLIB" ]             = "no";
-        dictionary[ "S60" ]                 = "yes";
-        dictionary[ "SYMBIAN_DEFFILES" ]    = "yes";
-        // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
-        // iconv_open seems to return -1 always, so something is probably missing from the platform.
-        dictionary[ "QT_ICONV" ]            = "no";
-        dictionary[ "SCRIPTTOOLS" ]         = "no";
-        dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
-        dictionary[ "QT_INSTALL_PREFIX" ]   = "";
-        dictionary[ "QT_INSTALL_PLUGINS" ]  = "\\resource\\qt\\plugins";
-        dictionary[ "QT_INSTALL_IMPORTS" ]  = "\\resource\\qt\\imports";
-        dictionary[ "QT_INSTALL_TRANSLATIONS" ]  = "\\resource\\qt\\translations";
-        dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
-        dictionary[ "SQL_SQLITE" ]          = "yes";
-        dictionary[ "SQL_SQLITE_LIB" ]      = "system";
 
     } else if (dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
@@ -1816,6 +1702,8 @@ bool Configure::displayHelp()
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
         desc("LIBJPEG", "system","-system-libjpeg",     "Use libjpeg from the operating system.\nSee http://www.ijg.org\n");
 
+        desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
+        desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("Qt for Windows only:\n\n");
@@ -1883,7 +1771,6 @@ bool Configure::displayHelp()
                                                         "Available values for <arch>:");
         desc("ARCHITECTURE","windows",       "",        "  windows", ' ');
         desc("ARCHITECTURE","windowsce",     "",        "  windowsce", ' ');
-        desc("ARCHITECTURE","symbian",     "",          "  symbian", ' ');
         desc("ARCHITECTURE","boundschecker",     "",    "  boundschecker", ' ');
         desc("ARCHITECTURE","generic", "",              "  generic\n", ' ');
 
@@ -1899,7 +1786,6 @@ bool Configure::displayHelp()
         desc("STYLE_CDE", "yes", "",                    "  cde", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile", ' ');
-        desc("STYLE_S60" , "yes", "",                   "  s60\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
         desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.");
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
@@ -1929,16 +1815,6 @@ bool Configure::displayHelp()
         desc(                      "-signature <file>",    "Use file for signing the target project");
 
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
-
-        // Qt\Symbian only options go below here -----------------------------------------------------------------------------
-        desc("Qt for Symbian OS only:\n\n");
-        desc("FREETYPE", "no",     "-no-freetype",         "Do not compile in Freetype2 support.");
-        desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
-        desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
-        desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
-        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework");
-        desc("SYMBIAN_DEFFILES", "no",  "-no-usedeffiles",  "Disable the usage of DEF files.");
-        desc("SYMBIAN_DEFFILES", "yes", "-usedeffiles",     "Enable the usage of DEF files.\n");
         return true;
     }
     return false;
@@ -2105,21 +1981,12 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "SQL_DB2")
         available = findFile("sqlcli.h") && findFile("sqlcli1.h") && findFile("db2cli.lib");
     else if (part == "SQL_SQLITE")
-        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian"))
-            available = false; // In Symbian we only support system sqlite option
-        else
-            available = true; // Built in, we have a fork
+        available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
-            // Symbian has multiple .lib/.dll files we need to find
-            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-                available = true; // There is sqlite_symbian plugin which exports the necessary stuff
-                dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
-            } else {
-                available = findFile("sqlite3.h") && findFile("sqlite3.lib");
-                if (available)
-                    dictionary[ "QT_LFLAGS_SQLITE" ] += "sqlite3.lib";
-            }
+            available = findFile("sqlite3.h") && findFile("sqlite3.lib");
+            if (available)
+                dictionary[ "QT_LFLAGS_SQLITE" ] += "sqlite3.lib";
         } else
             available = true;
     } else if (part == "SQL_SQLITE2")
@@ -2163,26 +2030,22 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "XMLPATTERNS")
         available = dictionary.value("EXCEPTIONS") == "yes";
     else if (part == "PHONON") {
-        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            available = true;
-        } else {
-            available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
-                && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
-                && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
-                && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
-                && findFile("d3d9.h");
+        available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
+            && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
+            && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
+            && (findFile("msdmo.lib") || findFile("libmsdmo.a"))
+            && findFile("d3d9.h");
 
-            if (!available) {
-                cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
-                     << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
-                     << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
-                if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
-                if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
-                if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
-                if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
-                if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
-                if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
-            }
+        if (!available) {
+            cout << "All the required DirectShow/Direct3D files couldn't be found." << endl
+                 << "Make sure you have either the platform SDK AND the DirectShow SDK or the Windows SDK installed." << endl
+                 << "If you have the DirectShow SDK installed, please make sure that you have run the <path to SDK>\\SetEnv.Cmd script." << endl;
+            if (!findFile("vmr9.h"))  cout << "vmr9.h not found" << endl;
+            if (!findFile("dshow.h")) cout << "dshow.h not found" << endl;
+            if (!findFile("strmiids.lib")) cout << "strmiids.lib not found" << endl;
+            if (!findFile("dmoguids.lib")) cout << "dmoguids.lib not found" << endl;
+            if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
+            if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
@@ -2197,50 +2060,6 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "AUDIO_BACKEND") {
         available = true;
-        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            QString epocRoot = Environment::symbianEpocRoot();
-            const QDir epocRootDir(epocRoot);
-            if (epocRootDir.exists()) {
-                QStringList paths;
-                paths << "epoc32/release/armv5/lib/mmfdevsound.dso"
-                      << "epoc32/release/armv5/lib/mmfdevsound.lib"
-                      << "epoc32/release/winscw/udeb/mmfdevsound.dll"
-                      << "epoc32/release/winscw/udeb/mmfdevsound.lib"
-                      << "epoc32/include/mmf/server/sounddevice.h";
-
-                QStringList::iterator i = paths.begin();
-                while (i != paths.end()) {
-                    const QString &path = epocRoot + *i;
-                    if (QFile::exists(path))
-                        i = paths.erase(i);
-                    else
-                        ++i;
-                }
-
-                available = (paths.size() == 0);
-                if (!available) {
-                    if (epocRoot.isEmpty())
-                        epocRoot = "<empty string>";
-                    cout << endl
-                         << "The QtMultimedia audio backend will not be built because required" << endl
-                         << "support for CMMFDevSound was not found in the SDK." << endl
-                         << "The SDK which was examined was located at the following path:" << endl
-                         << "    " << epocRoot << endl
-                         << "The following required files were missing from the SDK:" << endl;
-                    QString path;
-                    foreach (path, paths)
-                        cout << "    " << path << endl;
-                    cout << endl;
-                }
-            } else {
-                cout << endl
-                     << "The SDK root was determined to be '" << epocRoot << "'." << endl
-                     << "This directory was not found, so the SDK could not be checked for" << endl
-                     << "CMMFDevSound support.  The QtMultimedia audio backend will therefore" << endl
-                     << "not be built." << endl << endl;
-                available = false;
-            }
-        }
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     }
@@ -2551,9 +2370,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "STYLE_CDE" ] == "yes")
         qmakeStyles += "cde";
 
-    if (dictionary[ "STYLE_S60" ] == "yes")
-        qmakeStyles += "s60";
-
     // Databases ----------------------------------------------------
     if (dictionary[ "SQL_MYSQL" ] == "yes")
         qmakeSql += "mysql";
@@ -2649,10 +2465,6 @@ void Configure::generateOutputVars()
     if (dictionary["OPENVG"] == "yes") {
         qtConfig += "openvg";
         qtConfig += "egl";
-    }
-
-    if (dictionary["S60"] == "yes") {
-        qtConfig += "s60";
     }
 
      if (dictionary["DIRECTSHOW"] == "yes")
@@ -2790,12 +2602,8 @@ void Configure::generateOutputVars()
         qmakeVars += QString("INCLUDEPATH    += ") + escapeSeparators(qmakeIncludes.join(" "));
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
-    else if (dictionary[ "OPENSSL" ] == "linked") {
-        if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian"))
-            qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
-        else
-            qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
-        }
+    else if (dictionary[ "OPENSSL" ] == "linked")
+        qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
 
@@ -2920,10 +2728,6 @@ void Configure::generateCachefile()
         if (!dictionary["QT_LIBINFIX"].isEmpty())
             moduleStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
 
-        moduleStream << "#Qt for Symbian FPU settings" << endl;
-        if (!dictionary["ARM_FPU_TYPE"].isEmpty()) {
-            moduleStream<<"MMP_RULES += \"ARMFPU "<< dictionary["ARM_FPU_TYPE"]<< "\"";
-        }
         if (!dictionary["QT_NAMESPACE"].isEmpty()) {
             moduleStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
@@ -2985,14 +2789,6 @@ void Configure::generateCachefile()
             configStream << " no_plugin_manifest";
         if (dictionary["QPA"] == "yes")
             configStream << " qpa";
-
-        if (dictionary.contains("SYMBIAN_DEFFILES")) {
-            if (dictionary["SYMBIAN_DEFFILES"] == "yes") {
-                configStream << " def_files";
-            } else if (dictionary["SYMBIAN_DEFFILES"] == "no") {
-                configStream << " def_files_disabled";
-            }
-        }
 
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << "directwrite";
@@ -3120,7 +2916,10 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
         if (dictionary["STYLE_MOTIF"] != "yes")       qconfigList += "QT_NO_STYLE_MOTIF";
         if (dictionary["STYLE_CDE"] != "yes")         qconfigList += "QT_NO_STYLE_CDE";
-        if (dictionary["STYLE_S60"] != "yes")         qconfigList += "QT_NO_STYLE_S60";
+
+        // ### We still need the QT_NO_STYLE_S60 define for compiling Qt. Remove later!
+        qconfigList += "QT_NO_STYLE_S60";
+
         if (dictionary["STYLE_WINDOWSCE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSCE";
         if (dictionary["STYLE_WINDOWSMOBILE"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSMOBILE";
         if (dictionary["STYLE_GTK"] != "yes")         qconfigList += "QT_NO_STYLE_GTK";
@@ -3152,7 +2951,6 @@ void Configure::generateConfigfiles()
         if (dictionary["SCRIPT"] == "no")            qconfigList += "QT_NO_SCRIPT";
         if (dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
-        if (dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if (dictionary["OPENGL_ES_CM"] == "no" &&
@@ -3178,15 +2976,6 @@ void Configure::generateConfigfiles()
         if (dictionary["GRAPHICS_SYSTEM"] == "opengl")  qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
         if (dictionary["GRAPHICS_SYSTEM"] == "raster")  qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
         if (dictionary["GRAPHICS_SYSTEM"] == "runtime") qconfigList += "QT_GRAPHICSSYSTEM_RUNTIME";
-
-        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            // These features are not ported to Symbian (yet)
-            qconfigList += "QT_NO_CRASHHANDLER";
-            qconfigList += "QT_NO_PRINTER";
-            qconfigList += "QT_NO_SYSTEMTRAYICON";
-            if (dictionary.contains("QT_LIBINFIX"))
-                tmpStream << QString("#define QT_LIBINFIX \"%1\"").arg(dictionary["QT_LIBINFIX"]) << endl;
-        }
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
@@ -3463,8 +3252,7 @@ void Configure::displayConfig()
     cout << "    Motif..................." << dictionary[ "STYLE_MOTIF" ] << endl;
     cout << "    CDE....................." << dictionary[ "STYLE_CDE" ] << endl;
     cout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
-    cout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl;
-    cout << "    S60....................." << dictionary[ "STYLE_S60" ] << endl << endl;
+    cout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
 
     cout << "Sql Drivers:" << endl;
     cout << "    ODBC...................." << dictionary[ "SQL_ODBC" ] << endl;
@@ -3494,18 +3282,6 @@ void Configure::displayConfig()
         cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
         cout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
         cout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
-    }
-
-    if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("symbian"))) {
-        cout << "Support for S60............." << dictionary[ "S60" ] << endl;
-    }
-
-    if (dictionary.contains("SYMBIAN_DEFFILES")) {
-        cout << "Symbian DEF files enabled..." << dictionary[ "SYMBIAN_DEFFILES" ] << endl;
-        if (dictionary["SYMBIAN_DEFFILES"] == "no") {
-            cout << "WARNING: Disabling DEF files will mean that Qt is NOT binary compatible with previous versions." << endl;
-            cout << "         This feature is only intended for use during development, NEVER for release builds." << endl;
-        }
     }
 
     if (dictionary["ASSISTANT_WEBKIT"] == "yes")
@@ -3899,9 +3675,6 @@ void Configure::showSummary()
              << "\tsetcepaths " << dictionary.value("XQMAKESPEC") << endl
              << "\t" << qPrintable(make) << endl
              << "To reconfigure, run " << qPrintable(make) << " confclean and configure." << endl << endl;
-    } else { // Compiling for Symbian OS
-        cout << endl << endl << "Qt is now configured for building. To start the build run:" << qPrintable(dictionary["QTBUILDINSTRUCTION"]) << "." << endl
-        << "To reconfigure, run '" << qPrintable(dictionary["CONFCLEANINSTRUCTION"]) << "' and configure." << endl;
     }
 }
 
@@ -4026,8 +3799,6 @@ void Configure::readLicense()
    if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/src/corelib/kernel/qfunctions_wince.h") &&
        (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
         dictionary["PLATFORM NAME"] = "Qt for Windows CE";
-    else if (dictionary.value("XQMAKESPEC").startsWith("symbian"))
-        dictionary["PLATFORM NAME"] = "Qt for Symbian";
     else
         dictionary["PLATFORM NAME"] = "Qt for Windows";
     dictionary["LICENSE FILE"] = sourcePath;

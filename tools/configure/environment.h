@@ -70,8 +70,6 @@ public:
                       const QString &includeSrcDir = QString());
     static bool rmdir(const QString &name);
 
-    static QString symbianEpocRoot();
-
 private:
     static Compiler detectedCompiler;
 

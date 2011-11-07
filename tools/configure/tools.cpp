@@ -184,11 +184,6 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
             && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
             && platformCode != PL('S', 'W') && platformCode != PL('K', 'M')) {
             dictionary["DONE"] = "error";
-        } else if (dictionary["PLATFORM NAME"].contains("Symbian")
-                   && platformCode != PL('N', '9') && platformCode != PL('S', '9')
-                   && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
-                   && platformCode != PL('S', 'W')) {
-            dictionary["DONE"] = "error";
         }
         break;
     case PL('R', 'M'):
