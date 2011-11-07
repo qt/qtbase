@@ -1063,6 +1063,12 @@ static inline int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int l
     return ucstrncmp_short_tail(a + counter + N/2, b + counter, len);
 }
 
+// external linkage to be used as the MMLoadFunction template argument for ucstrncmp_ssse3_alignr
+__m128i EXT_mm_lddqu_si128(const __m128i *p)
+{ return _mm_lddqu_si128(p); }
+__m128i EXT_mm_load_si128(__m128i const *p)
+{ return _mm_load_si128(p); }
+
 static int ucstrncmp_ssse3(const ushort *a, const ushort *b, int len)
 {
     if (len >= 8) {
@@ -1070,23 +1076,23 @@ static int ucstrncmp_ssse3(const ushort *a, const ushort *b, int len)
         a -= val/2;
 
         if (val == 10)
-            return ucstrncmp_ssse3_alignr<10, _mm_lddqu_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<10, EXT_mm_lddqu_si128>(a, b, len);
         else if (val == 2)
-            return ucstrncmp_ssse3_alignr<2, _mm_lddqu_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<2, EXT_mm_lddqu_si128>(a, b, len);
         if (val < 8) {
             if (val < 4)
                 return ucstrncmp_ssse3_alignr_aligned(a, b, len);
             else if (val == 4)
-                    return ucstrncmp_ssse3_alignr<4, _mm_lddqu_si128>(a, b, len);
+                    return ucstrncmp_ssse3_alignr<4, EXT_mm_lddqu_si128>(a, b, len);
             else
-                    return ucstrncmp_ssse3_alignr<6, _mm_lddqu_si128>(a, b, len);
+                    return ucstrncmp_ssse3_alignr<6, EXT_mm_lddqu_si128>(a, b, len);
         } else {
             if (val < 12)
-                return ucstrncmp_ssse3_alignr<8, _mm_lddqu_si128>(a, b, len);
+                return ucstrncmp_ssse3_alignr<8, EXT_mm_lddqu_si128>(a, b, len);
             else if (val == 12)
-                return ucstrncmp_ssse3_alignr<12, _mm_lddqu_si128>(a, b, len);
+                return ucstrncmp_ssse3_alignr<12, EXT_mm_lddqu_si128>(a, b, len);
             else
-                return ucstrncmp_ssse3_alignr<14, _mm_lddqu_si128>(a, b, len);
+                return ucstrncmp_ssse3_alignr<14, EXT_mm_lddqu_si128>(a, b, len);
         }
     }
     return ucstrncmp_short_tail(a, b, len);
@@ -1121,23 +1127,23 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
     a -= val/2;
 
     if (val == 8)
-        return ucstrncmp_ssse3_alignr<8, _mm_load_si128>(a, b, len);
+        return ucstrncmp_ssse3_alignr<8, EXT_mm_load_si128>(a, b, len);
     else if (val == 0)
         return ucstrncmp_sse2_aligned(a, b, len);
     if (val < 8) {
         if (val < 4)
-            return ucstrncmp_ssse3_alignr<2, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<2, EXT_mm_load_si128>(a, b, len);
         else if (val == 4)
-            return ucstrncmp_ssse3_alignr<4, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<4, EXT_mm_load_si128>(a, b, len);
         else
-            return ucstrncmp_ssse3_alignr<6, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<6, EXT_mm_load_si128>(a, b, len);
     } else {
         if (val < 12)
-            return ucstrncmp_ssse3_alignr<10, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<10, EXT_mm_load_si128>(a, b, len);
         else if (val == 12)
-            return ucstrncmp_ssse3_alignr<12, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<12, EXT_mm_load_si128>(a, b, len);
         else
-            return ucstrncmp_ssse3_alignr<14, _mm_load_si128>(a, b, len);
+            return ucstrncmp_ssse3_alignr<14, EXT_mm_load_si128>(a, b, len);
     }
 }
 
