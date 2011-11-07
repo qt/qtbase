@@ -8,7 +8,7 @@ INCLUDEPATH += .
 SOURCES += tst_macgui.cpp guitest.cpp
 HEADERS += guitest.h
 
-QT = core-private gui-private widgets testlib
+QT = core-private widgets-private testlib
 
 requires(mac)
 
