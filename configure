@@ -1053,7 +1053,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
