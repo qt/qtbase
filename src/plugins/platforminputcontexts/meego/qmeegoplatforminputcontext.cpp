@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-enum { debug = 1 };
+enum { debug = 0 };
 
 enum InputPanelVisibility {
     InputPanelHidden,
