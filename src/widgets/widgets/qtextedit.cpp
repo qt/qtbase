@@ -1099,13 +1099,17 @@ void QTextEdit::setPlainText(const QString &text)
 }
 
 /*!
-    \fn QString QTextEdit::toPlainText() const
+    QString QTextEdit::toPlainText() const
 
     Returns the text of the text edit as plain text.
 
     \sa QTextEdit::setPlainText()
  */
-
+QString QTextEdit::toPlainText() const
+{
+    Q_D(const QTextEdit);
+    return d->control->toPlainText();
+}
 
 /*!
     \property QTextEdit::html
@@ -1135,7 +1139,14 @@ void QTextEdit::setHtml(const QString &text)
     d->control->setHtml(text);
     d->preferRichText = true;
 }
+
+QString QTextEdit::toHtml() const
+{
+    Q_D(const QTextEdit);
+    return d->control->toHtml();
+}
 #endif
+
 
 /*! \reimp
 */

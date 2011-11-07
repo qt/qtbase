@@ -202,6 +202,7 @@ private slots:
     void bidiLogicalMovement_data();
     void bidiLogicalMovement();
 
+    void inputMethodEvent();
     void inputMethodSelection();
     void inputMethodQuery();
 
@@ -2361,6 +2362,25 @@ void tst_QTextEdit::bidiLogicalMovement()
         newPos = ed->textCursor().position();
         moved = (oldPos != newPos);
     } while (moved && i >= 0);
+}
+
+void tst_QTextEdit::inputMethodEvent()
+{
+    // test that text change with an input method event triggers change signal
+    QSignalSpy spy(ed, SIGNAL(textChanged()));
+
+    QInputMethodEvent event;
+    event.setCommitString("text");
+    QApplication::sendEvent(ed, &event);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event2("preedit", attributes);
+    event2.setTentativeCommitString("string");
+    QApplication::sendEvent(ed, &event2);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(ed->toPlainText(), QString("textstring"));
 }
 
 void tst_QTextEdit::inputMethodSelection()

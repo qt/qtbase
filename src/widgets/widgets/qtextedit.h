@@ -162,11 +162,9 @@ public:
 
     bool find(const QString &exp, QTextDocument::FindFlags options = 0);
 
-    inline QString toPlainText() const
-    { return document()->toPlainText(); }
+    QString toPlainText() const;
 #ifndef QT_NO_TEXTHTMLPARSER
-    inline QString toHtml() const
-    { return document()->toHtml(); }
+    QString toHtml() const;
 #endif
 
     void ensureCursorVisible();

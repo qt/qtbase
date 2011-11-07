@@ -208,6 +208,7 @@ public:
 
     int preeditCursor;
     bool hideCursor; // used to hide the cursor in the preedit area
+    QString tentativeCommit;
 
     QVector<QAbstractTextDocumentLayout::Selection> extraSelections;
 

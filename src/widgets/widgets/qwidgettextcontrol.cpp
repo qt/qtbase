@@ -1991,7 +1991,10 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         }
     }
     layout->setAdditionalFormats(overrides);
+    tentativeCommit = e->tentativeCommitString();
+
     cursor.endEditBlock();
+
     if (cursor.d)
         cursor.d->setX();
     if (oldPreeditCursor != preeditCursor)
@@ -2909,7 +2912,22 @@ bool QWidgetTextControl::find(const QString &exp, QTextDocument::FindFlags optio
     return true;
 }
 
+QString QWidgetTextControl::toPlainText() const
+{
+    Q_D(const QWidgetTextControl);
+    QString plainText = document()->toPlainText();
+    if (!d->tentativeCommit.isEmpty())
+        plainText.insert(textCursor().position(), d->tentativeCommit);
+    return plainText;
+}
 
+#ifndef QT_NO_TEXTHTMLPARSER
+QString QWidgetTextControl::toHtml() const
+{
+    // note: currently not including tentative commit
+    return document()->toHtml();
+}
+#endif
 
 void QWidgetTextControlPrivate::append(const QString &text, Qt::TextFormat format)
 {
