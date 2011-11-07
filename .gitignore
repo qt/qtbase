@@ -32,6 +32,7 @@ pcviewer.cfg
 *.swp
 *.rej
 *.so
+*.so.*
 *.pbxuser
 *.mode1
 *.mode1v3
@@ -131,6 +132,8 @@ src/platformsupport/qtplatformsupportversion.h
 src/printsupport/qtprintsupportversion.h
 src/widgets/qtwidgetsversion.h
 
+src/v8/generated-debug/
+
 # Test generated files
 QObject.log
 tst_*
@@ -218,6 +221,7 @@ doc-build
 .rcc
 .pch
 .metadata
+tmp-debug
 
 # Symbian build system generated files
 # ---------------------
@@ -279,39 +283,53 @@ work
 mkspecs/modules/qt_*.pri
 mkspecs/qmodule.pri
 
+#unit tests libs/plugins
+tests/auto/corelib/plugin/qlibrary/libmylib.so2
+tests/auto/corelib/plugin/qlibrary/mylib.dl2
 
-#unit tests executables
-selftests/assert/assert
-selftests/badxml/badxml
-selftests/benchlibcallgrind/benchlibcallgrind
-selftests/benchlibeventcounter/benchlibeventcounter
-selftests/benchliboptions/benchliboptions
-selftests/benchlibtickcounter/benchlibtickcounter
-selftests/benchlibwalltime/benchlibwalltime
-selftests/cmptest/cmptest
-selftests/commandlinedata/commandlinedata
-selftests/crashes/crashes
-selftests/datatable/datatable
-selftests/datetime/datetime
-selftests/differentexec/differentexec
-selftests/exceptionthrow/exceptionthrow
-selftests/expectfail/expectfail
-selftests/failinit/failinit
-selftests/failinitdata/failinitdata
-selftests/fetchbogus/fetchbogus
-selftests/globaldata/globaldata
-selftests/longstring/longstring
-selftests/maxwarnings/maxwarnings
-selftests/multiexec/multiexec
-selftests/qexecstringlist/qexecstringlist
-selftests/singleskip/singleskip
-selftests/skip/skip
-selftests/skipglobal/skipglobal
-selftests/skipinit/skipinit
-selftests/skipinitdata/skipinitdata
-selftests/sleep/sleep
-selftests/strcmp/strcmp
-selftests/subtest/subtest
-selftests/waitwithoutgui/waitwithoutgui
-selftests/warnings/warnings
-selftests/xunit/xunit
+#unit tests executables (other than those named tst_*)
+tests/auto/testlib/selftests/assert/assert
+tests/auto/testlib/selftests/badxml/badxml
+tests/auto/testlib/selftests/benchlibcallgrind/benchlibcallgrind
+tests/auto/testlib/selftests/benchlibeventcounter/benchlibeventcounter
+tests/auto/testlib/selftests/benchliboptions/benchliboptions
+tests/auto/testlib/selftests/benchlibtickcounter/benchlibtickcounter
+tests/auto/testlib/selftests/benchlibwalltime/benchlibwalltime
+tests/auto/testlib/selftests/cmptest/cmptest
+tests/auto/testlib/selftests/commandlinedata/commandlinedata
+tests/auto/testlib/selftests/crashes/crashes
+tests/auto/testlib/selftests/datatable/datatable
+tests/auto/testlib/selftests/datetime/datetime
+tests/auto/testlib/selftests/differentexec/differentexec
+tests/auto/testlib/selftests/exceptionthrow/exceptionthrow
+tests/auto/testlib/selftests/expectfail/expectfail
+tests/auto/testlib/selftests/failinit/failinit
+tests/auto/testlib/selftests/failinitdata/failinitdata
+tests/auto/testlib/selftests/fetchbogus/fetchbogus
+tests/auto/testlib/selftests/float/float
+tests/auto/testlib/selftests/globaldata/globaldata
+tests/auto/testlib/selftests/longstring/longstring
+tests/auto/testlib/selftests/maxwarnings/maxwarnings
+tests/auto/testlib/selftests/multiexec/multiexec
+tests/auto/testlib/selftests/qexecstringlist/qexecstringlist
+tests/auto/testlib/selftests/singleskip/singleskip
+tests/auto/testlib/selftests/skip/skip
+tests/auto/testlib/selftests/skipglobal/skipglobal
+tests/auto/testlib/selftests/skipinit/skipinit
+tests/auto/testlib/selftests/skipinitdata/skipinitdata
+tests/auto/testlib/selftests/sleep/sleep
+tests/auto/testlib/selftests/strcmp/strcmp
+tests/auto/testlib/selftests/subtest/subtest
+tests/auto/testlib/selftests/waitwithoutgui/waitwithoutgui
+tests/auto/testlib/selftests/warnings/warnings
+tests/auto/testlib/selftests/xunit/xunit
+tests/auto/corelib/thread/qthreadstorage/crashOnExit
+tests/auto/corelib/io/qresourceengine/qresourceengine
+tests/auto/corelib/codecs/qtextcodec/echo/echo
+tests/auto/corelib/plugin/quuid/testProcessUniqueness/testProcessUniqueness
+tests/auto/dbus/qdbusabstractadaptor/qmyserver/qmyserver
+tests/auto/dbus/qdbusabstractinterface/qpinger/qpinger
+tests/auto/dbus/qdbusinterface/qmyserver/qmyserver
+tests/auto/gui/kernel/qfileopenevent/qfileopeneventexternal/qfileopeneventexternal
+tests/auto/network/bearer/qnetworksession/lackey/lackey
+tests/auto/widgets/kernel/qapplication/modal/modal
