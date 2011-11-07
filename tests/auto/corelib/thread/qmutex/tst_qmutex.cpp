@@ -617,8 +617,8 @@ void tst_QMutex::moreStress()
     QVERIFY(threads[0].wait(one_minute + 10000));
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
-    qDebug("locked %d times", int(MoreStressTestThread::lockCount));
-    QCOMPARE(int(MoreStressTestThread::errorCount), 0);
+    qDebug("locked %d times", MoreStressTestThread::lockCount.load());
+    QCOMPARE(MoreStressTestThread::errorCount.load(), 0);
 }
 
 

@@ -124,15 +124,15 @@ void tst_QAtomicPointer::constructor()
 {
     void *one = this;
     QAtomicPointer<void> atomic1 = one;
-    QVERIFY(atomic1 == one);
+    QVERIFY(atomic1.load() == one);
 
     void *two = &one;
     QAtomicPointer<void> atomic2 = two;
-    QVERIFY(atomic2 == two);
+    QVERIFY(atomic2.load() == two);
 
     void *three = &two;
     QAtomicPointer<void> atomic3 = three;
-    QVERIFY(atomic3 == three);
+    QVERIFY(atomic3.load() == three);
 }
 
 void tst_QAtomicPointer::copy_constructor()
@@ -140,20 +140,20 @@ void tst_QAtomicPointer::copy_constructor()
     void *one = this;
     QAtomicPointer<void> atomic1 = one;
     QAtomicPointer<void> atomic1_copy = atomic1;
-    QVERIFY(atomic1_copy == one);
-    QCOMPARE(atomic1_copy, atomic1);
+    QVERIFY(atomic1_copy.load() == one);
+    QCOMPARE(atomic1_copy.load(), atomic1.load());
 
     void *two = &one;
     QAtomicPointer<void> atomic2 = two;
     QAtomicPointer<void> atomic2_copy = atomic2;
-    QVERIFY(atomic2_copy == two);
-    QCOMPARE(atomic2_copy, atomic2);
+    QVERIFY(atomic2_copy.load() == two);
+    QCOMPARE(atomic2_copy.load(), atomic2.load());
 
     void *three = &two;
     QAtomicPointer<void> atomic3 = three;
     QAtomicPointer<void> atomic3_copy = atomic3;
-    QVERIFY(atomic3_copy == three);
-    QCOMPARE(atomic3_copy, atomic3);
+    QVERIFY(atomic3_copy.load() == three);
+    QCOMPARE(atomic3_copy.load(), atomic3.load());
 }
 
 void tst_QAtomicPointer::equality_operator()
@@ -305,17 +305,17 @@ void tst_QAtomicPointer::testAndSet()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QVERIFY(atomic1.testAndSetRelaxed(one, two));
         QVERIFY(atomic2.testAndSetRelaxed(two, three));
         QVERIFY(atomic3.testAndSetRelaxed(three, one));
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -323,17 +323,17 @@ void tst_QAtomicPointer::testAndSet()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QVERIFY(atomic1.testAndSetAcquire(one, two));
         QVERIFY(atomic2.testAndSetAcquire(two, three));
         QVERIFY(atomic3.testAndSetAcquire(three, one));
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -341,17 +341,17 @@ void tst_QAtomicPointer::testAndSet()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QVERIFY(atomic1.testAndSetRelease(one, two));
         QVERIFY(atomic2.testAndSetRelease(two, three));
         QVERIFY(atomic3.testAndSetRelease(three, one));
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -359,17 +359,17 @@ void tst_QAtomicPointer::testAndSet()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QVERIFY(atomic1.testAndSetOrdered(one, two));
         QVERIFY(atomic2.testAndSetOrdered(two, three));
         QVERIFY(atomic3.testAndSetOrdered(three, one));
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 }
 
@@ -433,17 +433,17 @@ void tst_QAtomicPointer::fetchAndStore()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QCOMPARE(atomic1.fetchAndStoreRelaxed(two), one);
         QCOMPARE(atomic2.fetchAndStoreRelaxed(three), two);
         QCOMPARE(atomic3.fetchAndStoreRelaxed(one), three);
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -451,17 +451,17 @@ void tst_QAtomicPointer::fetchAndStore()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QCOMPARE(atomic1.fetchAndStoreAcquire(two), one);
         QCOMPARE(atomic2.fetchAndStoreAcquire(three), two);
         QCOMPARE(atomic3.fetchAndStoreAcquire(one), three);
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -469,17 +469,17 @@ void tst_QAtomicPointer::fetchAndStore()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QCOMPARE(atomic1.fetchAndStoreRelease(two), one);
         QCOMPARE(atomic2.fetchAndStoreRelease(three), two);
         QCOMPARE(atomic3.fetchAndStoreRelease(one), three);
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 
     {
@@ -487,17 +487,17 @@ void tst_QAtomicPointer::fetchAndStore()
         QAtomicPointer<void> atomic2 = two;
         QAtomicPointer<void> atomic3 = three;
 
-        QVERIFY(atomic1 == one);
-        QVERIFY(atomic2 == two);
-        QVERIFY(atomic3 == three);
+        QCOMPARE(atomic1.load(), one);
+        QCOMPARE(atomic2.load(), two);
+        QVERIFY(atomic3.load() == three);
 
         QCOMPARE(atomic1.fetchAndStoreOrdered(two), one);
         QCOMPARE(atomic2.fetchAndStoreOrdered(three), two);
         QCOMPARE(atomic3.fetchAndStoreOrdered(one), three);
 
-        QVERIFY(atomic1 == two);
-        QVERIFY(atomic2 == three);
-        QVERIFY(atomic3 == one);
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
     }
 }
 
@@ -598,62 +598,62 @@ void tst_QAtomicPointer::fetchAndAdd()
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(quintptr(pointer1.fetchAndAddRelaxed(valueToAdd)), quintptr(pc));
-        QCOMPARE(quintptr(pointer1.fetchAndAddRelaxed(-valueToAdd)), quintptr(pc + valueToAdd));
-        QCOMPARE(quintptr(static_cast<char *>(pointer1)), quintptr(pc));
+        QCOMPARE(pointer1.fetchAndAddRelaxed(valueToAdd), pc);
+        QCOMPARE(pointer1.fetchAndAddRelaxed(-valueToAdd), pc + valueToAdd);
+        QCOMPARE(pointer1.load(), pc);
         QAtomicPointer<short> pointer2 = ps;
-        QCOMPARE(quintptr(pointer2.fetchAndAddRelaxed(valueToAdd)), quintptr(ps));
-        QCOMPARE(quintptr(pointer2.fetchAndAddRelaxed(-valueToAdd)), quintptr(ps + valueToAdd));
-        QCOMPARE(quintptr(static_cast<short *>(pointer2)), quintptr(ps));
+        QCOMPARE(pointer2.fetchAndAddRelaxed(valueToAdd), ps);
+        QCOMPARE(pointer2.fetchAndAddRelaxed(-valueToAdd), ps + valueToAdd);
+        QCOMPARE(pointer2.load(), ps);
         QAtomicPointer<int> pointer3 = pi;
-        QCOMPARE(quintptr(pointer3.fetchAndAddRelaxed(valueToAdd)), quintptr(pi));
-        QCOMPARE(quintptr(pointer3.fetchAndAddRelaxed(-valueToAdd)), quintptr(pi + valueToAdd));
-        QCOMPARE(quintptr(static_cast<int *>(pointer3)), quintptr(pi));
+        QCOMPARE(pointer3.fetchAndAddRelaxed(valueToAdd), pi);
+        QCOMPARE(pointer3.fetchAndAddRelaxed(-valueToAdd), pi + valueToAdd);
+        QCOMPARE(pointer3.load(), pi);
     }
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(quintptr(pointer1.fetchAndAddAcquire(valueToAdd)), quintptr(pc));
-        QCOMPARE(quintptr(pointer1.fetchAndAddAcquire(-valueToAdd)), quintptr(pc + valueToAdd));
-        QCOMPARE(quintptr(static_cast<char *>(pointer1)), quintptr(pc));
+        QCOMPARE(pointer1.fetchAndAddAcquire(valueToAdd), pc);
+        QCOMPARE(pointer1.fetchAndAddAcquire(-valueToAdd), pc + valueToAdd);
+        QCOMPARE(pointer1.load(), pc);
         QAtomicPointer<short> pointer2 = ps;
-        QCOMPARE(quintptr(pointer2.fetchAndAddAcquire(valueToAdd)), quintptr(ps));
-        QCOMPARE(quintptr(pointer2.fetchAndAddAcquire(-valueToAdd)), quintptr(ps + valueToAdd));
-        QCOMPARE(quintptr(static_cast<short *>(pointer2)), quintptr(ps));
+        QCOMPARE(pointer2.fetchAndAddAcquire(valueToAdd), ps);
+        QCOMPARE(pointer2.fetchAndAddAcquire(-valueToAdd), ps + valueToAdd);
+        QCOMPARE(pointer2.load(), ps);
         QAtomicPointer<int> pointer3 = pi;
-        QCOMPARE(quintptr(pointer3.fetchAndAddAcquire(valueToAdd)), quintptr(pi));
-        QCOMPARE(quintptr(pointer3.fetchAndAddAcquire(-valueToAdd)), quintptr(pi + valueToAdd));
-        QCOMPARE(quintptr(static_cast<int *>(pointer3)), quintptr(pi));
+        QCOMPARE(pointer3.fetchAndAddAcquire(valueToAdd), pi);
+        QCOMPARE(pointer3.fetchAndAddAcquire(-valueToAdd), pi + valueToAdd);
+        QCOMPARE(pointer3.load(), pi);
     }
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(quintptr(pointer1.fetchAndAddRelease(valueToAdd)), quintptr(pc));
-        QCOMPARE(quintptr(pointer1.fetchAndAddRelease(-valueToAdd)), quintptr(pc + valueToAdd));
-        QCOMPARE(quintptr(static_cast<char *>(pointer1)), quintptr(pc));
+        QCOMPARE(pointer1.fetchAndAddRelease(valueToAdd), pc);
+        QCOMPARE(pointer1.fetchAndAddRelease(-valueToAdd), pc + valueToAdd);
+        QCOMPARE(pointer1.load(), pc);
         QAtomicPointer<short> pointer2 = ps;
-        QCOMPARE(quintptr(pointer2.fetchAndAddRelease(valueToAdd)), quintptr(ps));
-        QCOMPARE(quintptr(pointer2.fetchAndAddRelease(-valueToAdd)), quintptr(ps + valueToAdd));
-        QCOMPARE(quintptr(static_cast<short *>(pointer2)), quintptr(ps));
+        QCOMPARE(pointer2.fetchAndAddRelease(valueToAdd), ps);
+        QCOMPARE(pointer2.fetchAndAddRelease(-valueToAdd), ps + valueToAdd);
+        QCOMPARE(pointer2.load(), ps);
         QAtomicPointer<int> pointer3 = pi;
-        QCOMPARE(quintptr(pointer3.fetchAndAddRelease(valueToAdd)), quintptr(pi));
-        QCOMPARE(quintptr(pointer3.fetchAndAddRelease(-valueToAdd)), quintptr(pi + valueToAdd));
-        QCOMPARE(quintptr(static_cast<int *>(pointer3)), quintptr(pi));
+        QCOMPARE(pointer3.fetchAndAddRelease(valueToAdd), pi);
+        QCOMPARE(pointer3.fetchAndAddRelease(-valueToAdd), pi + valueToAdd);
+        QCOMPARE(pointer3.load(), pi);
     }
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(quintptr(pointer1.fetchAndAddOrdered(valueToAdd)), quintptr(pc));
-        QCOMPARE(quintptr(pointer1.fetchAndAddOrdered(-valueToAdd)), quintptr(pc + valueToAdd));
-        QCOMPARE(quintptr(static_cast<char *>(pointer1)), quintptr(pc));
+        QCOMPARE(pointer1.fetchAndAddOrdered(valueToAdd), pc);
+        QCOMPARE(pointer1.fetchAndAddOrdered(-valueToAdd), pc + valueToAdd);
+        QCOMPARE(pointer1.load(), pc);
         QAtomicPointer<short> pointer2 = ps;
-        QCOMPARE(quintptr(pointer2.fetchAndAddOrdered(valueToAdd)), quintptr(ps));
-        QCOMPARE(quintptr(pointer2.fetchAndAddOrdered(-valueToAdd)), quintptr(ps + valueToAdd));
-        QCOMPARE(quintptr(static_cast<short *>(pointer2)), quintptr(ps));
+        QCOMPARE(pointer2.fetchAndAddOrdered(valueToAdd), ps);
+        QCOMPARE(pointer2.fetchAndAddOrdered(-valueToAdd), ps + valueToAdd);
+        QCOMPARE(pointer2.load(), ps);
         QAtomicPointer<int> pointer3 = pi;
-        QCOMPARE(quintptr(pointer3.fetchAndAddOrdered(valueToAdd)), quintptr(pi));
-        QCOMPARE(quintptr(pointer3.fetchAndAddOrdered(-valueToAdd)), quintptr(pi + valueToAdd));
-        QCOMPARE(quintptr(static_cast<int *>(pointer3)), quintptr(pi));
+        QCOMPARE(pointer3.fetchAndAddOrdered(valueToAdd), pi);
+        QCOMPARE(pointer3.fetchAndAddOrdered(-valueToAdd), pi + valueToAdd);
+        QCOMPARE(pointer3.load(), pi);
     }
 }
 

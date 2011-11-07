@@ -161,9 +161,9 @@ void tst_QAtomicInt::constructor()
 {
     QFETCH(int, value);
     QAtomicInt atomic1(value);
-    QCOMPARE(int(atomic1), value);
+    QCOMPARE(atomic1.load(), value);
     QAtomicInt atomic2 = value;
-    QCOMPARE(int(atomic2), value);
+    QCOMPARE(atomic2.load(), value);
 }
 
 void tst_QAtomicInt::copy_constructor_data()
@@ -173,16 +173,16 @@ void tst_QAtomicInt::copy_constructor()
 {
     QFETCH(int, value);
     QAtomicInt atomic1(value);
-    QCOMPARE(int(atomic1), value);
+    QCOMPARE(atomic1.load(), value);
 
     QAtomicInt atomic2(atomic1);
-    QCOMPARE(int(atomic2), value);
+    QCOMPARE(atomic2.load(), value);
     QAtomicInt atomic3 = atomic1;
-    QCOMPARE(int(atomic3), value);
+    QCOMPARE(atomic3.load(), value);
     QAtomicInt atomic4(atomic2);
-    QCOMPARE(int(atomic4), value);
+    QCOMPARE(atomic4.load(), value);
     QAtomicInt atomic5 = atomic2;
-    QCOMPARE(int(atomic5), value);
+    QCOMPARE(atomic5.load(), value);
 }
 
 void tst_QAtomicInt::equality_operator_data()
@@ -274,9 +274,10 @@ void tst_QAtomicInt::assignment_operator()
         QCOMPARE(int(atomic1), newval);
         atomic1 = value;
         QCOMPARE(int(atomic1), value);
+
         QAtomicInt atomic2 = newval;
         atomic1 = atomic2;
-        QCOMPARE(atomic1, atomic2);
+        QCOMPARE(atomic1.load(), atomic2.load());
     }
 }
 
@@ -344,7 +345,7 @@ void tst_QAtomicInt::ref()
     QFETCH(int, value);
     QAtomicInt x = value;
     QTEST(x.ref() ? 1 : 0, "result");
-    QTEST(int(x), "expected");
+    QTEST(x.load(), "expected");
 }
 
 void tst_QAtomicInt::deref_data()
@@ -363,7 +364,7 @@ void tst_QAtomicInt::deref()
     QFETCH(int, value);
     QAtomicInt x = value;
     QTEST(x.deref() ? 1 : 0, "result");
-    QTEST(int(x), "expected");
+    QTEST(x.load(), "expected");
 }
 
 void tst_QAtomicInt::isTestAndSetNative()
@@ -542,25 +543,25 @@ void tst_QAtomicInt::fetchAndStore()
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreRelaxed(newval), value);
-        QCOMPARE(int(atomic), newval);
+        QCOMPARE(atomic.load(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreAcquire(newval), value);
-        QCOMPARE(int(atomic), newval);
+        QCOMPARE(atomic.load(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreRelease(newval), value);
-        QCOMPARE(int(atomic), newval);
+        QCOMPARE(atomic.load(), newval);
     }
 
     {
         QAtomicInt atomic = value;
         QCOMPARE(atomic.fetchAndStoreOrdered(newval), value);
-        QCOMPARE(int(atomic), newval);
+        QCOMPARE(atomic.load(), newval);
     }
 }
 
@@ -679,28 +680,28 @@ void tst_QAtomicInt::fetchAndAdd()
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddRelaxed(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(int(atomic), value1 + value2);
+        QCOMPARE(atomic.load(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddAcquire(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(int(atomic), value1 + value2);
+        QCOMPARE(atomic.load(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddRelease(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(int(atomic), value1 + value2);
+        QCOMPARE(atomic.load(), value1 + value2);
     }
 
     {
         QAtomicInt atomic = value1;
         result = atomic.fetchAndAddOrdered(value2);
         QCOMPARE(result, value1);
-        QCOMPARE(int(atomic), value1 + value2);
+        QCOMPARE(atomic.load(), value1 + value2);
     }
 }
 
@@ -713,7 +714,8 @@ void tst_QAtomicInt::testAndSet_loop()
 
     QAtomicInt val=0;
     for (int i = 0; i < iterations; ++i) {
-        QVERIFY(val.testAndSetRelaxed(val, val+1));
+        int v = val.load();
+        QVERIFY(val.testAndSetRelaxed(v, v+1));
         if ((i % 1000) == 999) {
             if (stopWatch.elapsed() > 60 * 1000) {
                 // This test shouldn't run for more than two minutes.
@@ -735,7 +737,7 @@ void tst_QAtomicInt::fetchAndAdd_loop()
     QAtomicInt val=0;
     for (int i = 0; i < iterations; ++i) {
         const int prev = val.fetchAndAddRelaxed(1);
-        QCOMPARE(prev, int(val) -1);
+        QCOMPARE(prev, val.load() -1);
     }
 }
 
@@ -773,7 +775,7 @@ void tst_QAtomicInt::fetchAndAdd_threadedLoop()
     t1.wait();
     t2.wait();
 
-    QCOMPARE(int(val), 0);
+    QCOMPARE(val.load(), 0);
 }
 
 QTEST_MAIN(tst_QAtomicInt)

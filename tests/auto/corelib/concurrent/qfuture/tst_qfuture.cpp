@@ -625,26 +625,26 @@ template <typename T>
 void testRefCounting()
 {
     QFutureInterface<T> interface;
-    QCOMPARE(int(interface.d->refCount), 1);
+    QCOMPARE(interface.d->refCount.load(), 1);
 
     {
         interface.reportStarted();
 
         QFuture<T> f = interface.future();
-        QCOMPARE(int(interface.d->refCount), 2);
+        QCOMPARE(interface.d->refCount.load(), 2);
 
         QFuture<T> f2(f);
-        QCOMPARE(int(interface.d->refCount), 3);
+        QCOMPARE(interface.d->refCount.load(), 3);
 
         QFuture<T> f3;
         f3 = f2;
-        QCOMPARE(int(interface.d->refCount), 4);
+        QCOMPARE(interface.d->refCount.load(), 4);
 
         interface.reportFinished(0);
-        QCOMPARE(int(interface.d->refCount), 4);
+        QCOMPARE(interface.d->refCount.load(), 4);
     }
 
-    QCOMPARE(int(interface.d->refCount), 1);
+    QCOMPARE(interface.d->refCount.load(), 1);
 }
 
 void tst_QFuture::refcounting()

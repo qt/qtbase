@@ -620,14 +620,14 @@ class CountingRunnable : public QRunnable
 void tst_QThreadPool::start()
 {
     const int runs = 1000;
-    count = 0;
+    count.store(0);
     {
         QThreadPool threadPool;
         for (int i = 0; i< runs; ++i) {
             threadPool.start(new CountingRunnable());
         }
     }
-    QCOMPARE(int(count), runs);
+    QCOMPARE(count.load(), runs);
 }
 
 void tst_QThreadPool::tryStart()
@@ -646,7 +646,7 @@ void tst_QThreadPool::tryStart()
         }
     };
 
-    count = 0;
+    count.store(0);
 
     WaitingTask task;
     QThreadPool threadPool;
@@ -656,7 +656,7 @@ void tst_QThreadPool::tryStart()
     QVERIFY(!threadPool.tryStart(&task));
     task.semaphore.release(threadPool.maxThreadCount());
     threadPool.waitForDone();
-    QCOMPARE(int(count), threadPool.maxThreadCount());
+    QCOMPARE(count.load(), threadPool.maxThreadCount());
 }
 
 QMutex mutex;
@@ -736,16 +736,16 @@ void tst_QThreadPool::waitForDone()
     QThreadPool threadPool;
     while (total.elapsed() < 10000) {
         int runs;
-        runs = count = 0;
+        count.store(runs = 0);
         pass.restart();
         while (pass.elapsed() < 100) {
             threadPool.start(new CountingRunnable());
             ++runs;
         }
         threadPool.waitForDone();
-        QCOMPARE(int(count), runs);
+        QCOMPARE(count.load(), runs);
 
-        runs = count = 0;
+        count.store(runs = 0);
         pass.restart();
         while (pass.elapsed() < 100) {
             threadPool.start(new CountingRunnable());
@@ -753,7 +753,7 @@ void tst_QThreadPool::waitForDone()
             runs += 2;
         }
         threadPool.waitForDone();
-        QCOMPARE(int(count), runs);
+        QCOMPARE(count.load(), runs);
     }
 }
 
@@ -790,7 +790,7 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
 
     while (total.elapsed() < 10000) {
         int runs;
-        runs = count = 0;
+        count.store(runs = 0);
         {
             QThreadPool threadPool;
             pass.restart();
@@ -799,9 +799,9 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
                 ++runs;
             }
         }
-        QCOMPARE(int(count), runs);
+        QCOMPARE(count.load(), runs);
 
-        runs = count = 0;
+        count.store(runs = 0);
         {
             QThreadPool threadPool;
             pass.restart();
@@ -811,7 +811,7 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
                 runs += 2;
             }
         }
-        QCOMPARE(int(count), runs);
+        QCOMPARE(count.load(), runs);
     }
 }
 

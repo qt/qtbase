@@ -123,10 +123,11 @@ public:
     QAtomicInt activationCount;
 
     inline SignalRecorder()
-    { activationCount = 0; }
+        : activationCount(0)
+    { }
 
     bool wasActivated()
-    { return activationCount > 0; }
+    { return activationCount.load() > 0; }
 
 public slots:
     void slot();
@@ -907,7 +908,7 @@ void tst_QThread::adoptMultipleThreads()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(int(recorder.activationCount), numThreads);
+    QCOMPARE(recorder.activationCount.load(), numThreads);
 }
 
 void tst_QThread::adoptMultipleThreadsOverlap()
@@ -949,7 +950,7 @@ void tst_QThread::adoptMultipleThreadsOverlap()
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(int(recorder.activationCount), numThreads);
+    QCOMPARE(recorder.activationCount.load(), numThreads);
 }
 
 // Disconnects on WinCE, so skip this test.
