@@ -229,91 +229,17 @@ QT_BEGIN_NAMESPACE
     \sa Q_DECLARE_METATYPE(), QVariant::setValue(), QVariant::value(), QVariant::fromValue()
 */
 
-#define QT_ADD_STATIC_METATYPE(STR, TP) \
-    { STR, sizeof(STR) - 1, TP }
+#define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
+    { #RealName, sizeof(#RealName) - 1, MetaTypeId },
 
-#define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, TypeId, AliasingName, RealNameStr) \
-    QT_ADD_STATIC_METATYPE(RealNameStr, QMetaType::MetaTypeName),
+#define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, MetaTypeId, AliasingName, RealNameStr) \
+    { RealNameStr, sizeof(RealNameStr) - 1, QMetaType::MetaTypeName },
 
 #define QT_ADD_STATIC_METATYPE_HACKS_ITER(MetaTypeName, TypeId, Name) \
-    QT_ADD_STATIC_METATYPE(#Name, MetaTypeName),
+    QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeName, Name)
 
-/* Note: these MUST be in the order of the enums */
 static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
-    /* All Core types */
-    QT_ADD_STATIC_METATYPE("void", QMetaType::Void),
-    QT_ADD_STATIC_METATYPE("bool", QMetaType::Bool),
-    QT_ADD_STATIC_METATYPE("int", QMetaType::Int),
-    QT_ADD_STATIC_METATYPE("uint", QMetaType::UInt),
-    QT_ADD_STATIC_METATYPE("qlonglong", QMetaType::LongLong),
-    QT_ADD_STATIC_METATYPE("qulonglong", QMetaType::ULongLong),
-    QT_ADD_STATIC_METATYPE("double", QMetaType::Double),
-    QT_ADD_STATIC_METATYPE("QChar", QMetaType::QChar),
-    QT_ADD_STATIC_METATYPE("QVariantMap", QMetaType::QVariantMap),
-    QT_ADD_STATIC_METATYPE("QVariantList", QMetaType::QVariantList),
-    QT_ADD_STATIC_METATYPE("QString", QMetaType::QString),
-    QT_ADD_STATIC_METATYPE("QStringList", QMetaType::QStringList),
-    QT_ADD_STATIC_METATYPE("QByteArray", QMetaType::QByteArray),
-    QT_ADD_STATIC_METATYPE("QBitArray", QMetaType::QBitArray),
-    QT_ADD_STATIC_METATYPE("QDate", QMetaType::QDate),
-    QT_ADD_STATIC_METATYPE("QTime", QMetaType::QTime),
-    QT_ADD_STATIC_METATYPE("QDateTime", QMetaType::QDateTime),
-    QT_ADD_STATIC_METATYPE("QUrl", QMetaType::QUrl),
-    QT_ADD_STATIC_METATYPE("QLocale", QMetaType::QLocale),
-    QT_ADD_STATIC_METATYPE("QRect", QMetaType::QRect),
-    QT_ADD_STATIC_METATYPE("QRectF", QMetaType::QRectF),
-    QT_ADD_STATIC_METATYPE("QSize", QMetaType::QSize),
-    QT_ADD_STATIC_METATYPE("QSizeF", QMetaType::QSizeF),
-    QT_ADD_STATIC_METATYPE("QLine", QMetaType::QLine),
-    QT_ADD_STATIC_METATYPE("QLineF", QMetaType::QLineF),
-    QT_ADD_STATIC_METATYPE("QPoint", QMetaType::QPoint),
-    QT_ADD_STATIC_METATYPE("QPointF", QMetaType::QPointF),
-    QT_ADD_STATIC_METATYPE("QRegExp", QMetaType::QRegExp),
-    QT_ADD_STATIC_METATYPE("QVariantHash", QMetaType::QVariantHash),
-    QT_ADD_STATIC_METATYPE("QEasingCurve", QMetaType::QEasingCurve),
-
-    /* All GUI types */
-    QT_ADD_STATIC_METATYPE("QFont", QMetaType::QFont),
-    QT_ADD_STATIC_METATYPE("QPixmap", QMetaType::QPixmap),
-    QT_ADD_STATIC_METATYPE("QBrush", QMetaType::QBrush),
-    QT_ADD_STATIC_METATYPE("QColor", QMetaType::QColor),
-    QT_ADD_STATIC_METATYPE("QPalette", QMetaType::QPalette),
-    QT_ADD_STATIC_METATYPE("QImage", QMetaType::QImage),
-    QT_ADD_STATIC_METATYPE("QPolygon", QMetaType::QPolygon),
-    QT_ADD_STATIC_METATYPE("QRegion", QMetaType::QRegion),
-    QT_ADD_STATIC_METATYPE("QBitmap", QMetaType::QBitmap),
-    QT_ADD_STATIC_METATYPE("QCursor", QMetaType::QCursor),
-    QT_ADD_STATIC_METATYPE("QKeySequence", QMetaType::QKeySequence),
-    QT_ADD_STATIC_METATYPE("QPen", QMetaType::QPen),
-    QT_ADD_STATIC_METATYPE("QTextLength", QMetaType::QTextLength),
-    QT_ADD_STATIC_METATYPE("QTextFormat", QMetaType::QTextFormat),
-    QT_ADD_STATIC_METATYPE("QMatrix", QMetaType::QMatrix),
-    QT_ADD_STATIC_METATYPE("QTransform", QMetaType::QTransform),
-    QT_ADD_STATIC_METATYPE("QMatrix4x4", QMetaType::QMatrix4x4),
-    QT_ADD_STATIC_METATYPE("QVector2D", QMetaType::QVector2D),
-    QT_ADD_STATIC_METATYPE("QVector3D", QMetaType::QVector3D),
-    QT_ADD_STATIC_METATYPE("QVector4D", QMetaType::QVector4D),
-    QT_ADD_STATIC_METATYPE("QQuaternion", QMetaType::QQuaternion),
-    QT_ADD_STATIC_METATYPE("QPolygonF", QMetaType::QPolygonF),
-
-    /* All Widgets types */
-    QT_ADD_STATIC_METATYPE("QIcon", QMetaType::QIcon),
-    QT_ADD_STATIC_METATYPE("QSizePolicy", QMetaType::QSizePolicy),
-
-    /* All Metatype builtins */
-    QT_ADD_STATIC_METATYPE("void*", QMetaType::VoidStar),
-    QT_ADD_STATIC_METATYPE("long", QMetaType::Long),
-    QT_ADD_STATIC_METATYPE("short", QMetaType::Short),
-    QT_ADD_STATIC_METATYPE("char", QMetaType::Char),
-    QT_ADD_STATIC_METATYPE("ulong", QMetaType::ULong),
-    QT_ADD_STATIC_METATYPE("ushort", QMetaType::UShort),
-    QT_ADD_STATIC_METATYPE("uchar", QMetaType::UChar),
-    QT_ADD_STATIC_METATYPE("float", QMetaType::Float),
-    QT_ADD_STATIC_METATYPE("QObject*", QMetaType::QObjectStar),
-    QT_ADD_STATIC_METATYPE("QWidget*", QMetaType::QWidgetStar),
-    QT_ADD_STATIC_METATYPE("QVariant", QMetaType::QVariant),
-
-    /* Type aliases - order doesn't matter */
+    QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
     QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
     QT_FOR_EACH_STATIC_HACKS_TYPE(QT_ADD_STATIC_METATYPE_HACKS_ITER)
     {0, 0, QMetaType::Void}
@@ -398,26 +324,38 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 */
 const char *QMetaType::typeName(int type)
 {
-    enum { GuiTypeCount = LastGuiType - FirstGuiType,
-       WidgetsTypeCount = LastWidgetsType - FirstWidgetsType };
+    // In theory it can be filled during compilation time, but for some reason template code
+    // that is able to do it causes GCC 4.6 to generate additional 3K of executable code. Probably
+    // it is not worth of it.
+    static const char *namesCache[QMetaType::LastCoreExtType + 1];
 
-    if (type >= 0 && type <= LastCoreType) {
-        return types[type].typeName;
-    } else if (type >= FirstGuiType && type <= LastGuiType) {
-        return types[type - FirstGuiType + LastCoreType + 1].typeName;
-    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
-        return types[type - FirstWidgetsType + GuiTypeCount + LastCoreType + 2].typeName;
-    } else if (type >= FirstCoreExtType && type <= LastCoreExtType) {
-        return types[type - FirstCoreExtType + GuiTypeCount + WidgetsTypeCount + LastCoreType + 3].typeName;
-    } else if (type >= User) {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        QReadLocker locker(customTypesLock());
-        return ct && ct->count() > type - User && !ct->at(type - User).typeName.isEmpty()
-                ? ct->at(type - User).typeName.constData()
-                : static_cast<const char *>(0);
+    const char *result;
+    if (type <= QMetaType::LastCoreExtType && ((result = namesCache[type])))
+        return result;
+
+#define QT_METATYPE_TYPEID_TYPENAME_CONVERTER(MetaTypeName, TypeId, RealName) \
+        case QMetaType::MetaTypeName: result = #RealName; break;
+
+    switch (QMetaType::Type(type)) {
+    QT_FOR_EACH_STATIC_TYPE(QT_METATYPE_TYPEID_TYPENAME_CONVERTER)
+
+    default: {
+        if (Q_UNLIKELY(type < QMetaType::User)) {
+            return 0; // It can happen when someone cast int to QVariant::Type, we should not crash...
+        } else {
+            const QVector<QCustomTypeInfo> * const ct = customTypes();
+            QReadLocker locker(customTypesLock());
+            return ct && ct->count() > type - QMetaType::User && !ct->at(type - QMetaType::User).typeName.isEmpty()
+                    ? ct->at(type - QMetaType::User).typeName.constData()
+                    : 0;
+        }
     }
+    }
+#undef QT_METATYPE_TYPEID_TYPENAME_CONVERTER
 
-    return 0;
+    Q_ASSERT(type <= QMetaType::LastCoreExtType);
+    namesCache[type] = result;
+    return result;
 }
 
 /*! \internal
