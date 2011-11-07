@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qmacstyle \
+# disabled in src/widgets/styles/styles.pri, so disable the test as well
+#   qmacstyle \
    qstyle \
    qstyleoption \
    qstylesheetstyle \

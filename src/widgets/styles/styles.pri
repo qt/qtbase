@@ -37,7 +37,7 @@ contains( styles, all ) {
 	styles = mac windows windowsxp windowsvista
 }
 
-# TODO
+# TODO, re-enable qmacstyle in tests/auto/widgets/styles/sytles.pro when done
 styles -= mac
 
 x11{
