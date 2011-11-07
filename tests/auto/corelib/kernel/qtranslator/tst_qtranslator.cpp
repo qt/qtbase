@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QWidget>
 #include <qtranslator.h>
@@ -54,15 +53,8 @@ class tst_QTranslator : public QWidget
 
 public:
     tst_QTranslator();
-    virtual ~tst_QTranslator();
-
-public slots:
-    void init();
-    void cleanup();
-
 protected:
     bool event(QEvent *event);
-
 private slots:
     void load();
     void load2();
@@ -77,24 +69,11 @@ private:
     int languageChangeEventCounter;
 };
 
-
 tst_QTranslator::tst_QTranslator()
     : languageChangeEventCounter(0)
 {
     show();
     hide();
-}
-
-tst_QTranslator::~tst_QTranslator()
-{
-}
-
-void tst_QTranslator::init()
-{
-}
-
-void tst_QTranslator::cleanup()
-{
 }
 
 bool tst_QTranslator::event(QEvent *event)

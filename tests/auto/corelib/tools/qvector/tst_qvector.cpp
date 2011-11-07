@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qvector.h>
 
@@ -49,11 +48,6 @@
 class tst_QVector : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QVector() {}
-    virtual ~tst_QVector() {}
-
 private slots:
     void constructors() const;
     void append() const;

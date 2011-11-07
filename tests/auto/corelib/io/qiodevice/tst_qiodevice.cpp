@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtCore/QtCore>
 #include <QtNetwork/QtNetwork>
 #include <QtTest/QtTest>
@@ -53,14 +52,6 @@ class tst_QIODevice : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QIODevice();
-    virtual ~tst_QIODevice();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void getSetCheck();
 #if !defined(Q_OS_WINCE) || !defined(WINCE_EMULATOR_TEST)
@@ -98,22 +89,6 @@ void tst_QIODevice::getSetCheck()
     QCOMPARE(QIODevice::OpenMode(QIODevice::NotOpen), obj1->openMode());
     obj1->setOpenMode(QIODevice::OpenMode(QIODevice::ReadWrite));
     QCOMPARE(QIODevice::OpenMode(QIODevice::ReadWrite), obj1->openMode());
-}
-
-tst_QIODevice::tst_QIODevice()
-{
-}
-
-tst_QIODevice::~tst_QIODevice()
-{
-}
-
-void tst_QIODevice::init()
-{
-}
-
-void tst_QIODevice::cleanup()
-{
 }
 
 //----------------------------------------------------------------------------------

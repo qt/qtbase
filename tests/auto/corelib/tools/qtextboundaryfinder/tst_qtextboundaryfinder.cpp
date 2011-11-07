@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qtextboundaryfinder.h>
@@ -52,15 +51,8 @@
 class tst_QTextBoundaryFinder : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QTextBoundaryFinder();
-    virtual ~tst_QTextBoundaryFinder();
-
-
 public slots:
     void init();
-    void cleanup();
 private slots:
     void graphemeBoundaries();
     void wordBoundaries();
@@ -74,23 +66,11 @@ private slots:
     void toPreviousBoundary();
 };
 
-tst_QTextBoundaryFinder::tst_QTextBoundaryFinder()
-{
-}
-
-tst_QTextBoundaryFinder::~tst_QTextBoundaryFinder()
-{
-}
-
 void tst_QTextBoundaryFinder::init()
 {
 #ifndef Q_OS_IRIX
     QDir::setCurrent(SRCDIR);
 #endif
-}
-
-void tst_QTextBoundaryFinder::cleanup()
-{
 }
 
 void tst_QTextBoundaryFinder::graphemeBoundaries()

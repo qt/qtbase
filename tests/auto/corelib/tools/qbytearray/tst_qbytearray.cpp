@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qbytearray.h>
@@ -59,13 +58,6 @@ class tst_QByteArray : public QObject
 
 public:
     tst_QByteArray();
-    virtual ~tst_QByteArray();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void swap();
     void qCompress_data();
@@ -152,26 +144,6 @@ private slots:
 tst_QByteArray::tst_QByteArray()
 {
     qRegisterMetaType<qulonglong>("qulonglong");
-}
-
-tst_QByteArray::~tst_QByteArray()
-{
-}
-
-void tst_QByteArray::initTestCase()
-{
-}
-
-void tst_QByteArray::cleanupTestCase()
-{
-}
-
-void tst_QByteArray::init()
-{
-}
-
-void tst_QByteArray::cleanup()
-{
 }
 
 void tst_QByteArray::qCompress_data()

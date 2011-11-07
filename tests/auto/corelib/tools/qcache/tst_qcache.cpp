@@ -49,11 +49,6 @@
 class tst_QCache : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QCache();
-    virtual ~tst_QCache();
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
@@ -81,14 +76,6 @@ struct Foo {
 };
 
 int Foo::count = 0;
-
-tst_QCache::tst_QCache()
-{
-}
-
-tst_QCache::~tst_QCache()
-{
-}
 
 void tst_QCache::initTestCase()
 {

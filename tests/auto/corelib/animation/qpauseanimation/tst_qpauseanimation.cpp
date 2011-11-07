@@ -88,10 +88,6 @@ public:
 class tst_QPauseAnimation : public QObject
 {
   Q_OBJECT
-public:
-    tst_QPauseAnimation();
-    virtual ~tst_QPauseAnimation();
-
 public Q_SLOTS:
     void initTestCase();
 
@@ -107,14 +103,6 @@ private slots:
     void multipleSequentialGroups();
     void zeroDuration();
 };
-
-tst_QPauseAnimation::tst_QPauseAnimation()
-{
-}
-
-tst_QPauseAnimation::~tst_QPauseAnimation()
-{
-}
 
 void tst_QPauseAnimation::initTestCase()
 {

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QAtomicInt>
@@ -53,10 +52,6 @@
 class tst_QAtomicInt : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QAtomicInt();
-    ~tst_QAtomicInt();
 
 private slots:
     void warningFree();
@@ -107,12 +102,6 @@ private slots:
 private:
     static void warningFreeHelper();
 };
-
-tst_QAtomicInt::tst_QAtomicInt()
-{ }
-
-tst_QAtomicInt::~tst_QAtomicInt()
-{ }
 
 void tst_QAtomicInt::warningFreeHelper()
 {

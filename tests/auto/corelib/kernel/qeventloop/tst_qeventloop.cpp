@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qabstracteventdispatcher.h>
 #include <qcoreapplication.h>
@@ -183,12 +181,6 @@ public slots:
 class tst_QEventLoop : public QObject
 {
     Q_OBJECT
-public:
-    tst_QEventLoop();
-    ~tst_QEventLoop();
-public slots:
-    void init();
-    void cleanup();
 private slots:
     // This test *must* run first. See the definition for why.
     void processEvents();
@@ -210,18 +202,6 @@ private slots:
 protected:
     void customEvent(QEvent *e);
 };
-
-tst_QEventLoop::tst_QEventLoop()
-{ }
-
-tst_QEventLoop::~tst_QEventLoop()
-{ }
-
-void tst_QEventLoop::init()
-{ }
-
-void tst_QEventLoop::cleanup()
-{ }
 
 void tst_QEventLoop::processEvents()
 {

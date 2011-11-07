@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qrect.h>
 #include <limits.h>
@@ -72,17 +71,10 @@ public:
 	NegXQPoint, NegYQPoint, RandomQPoint
     };
 
-    tst_QRect();
-    virtual ~tst_QRect();
-
-
     static QRect getQRectCase( QRectCases c );
     static int getIntCase( IntCases i );
     static QPoint getQPointCase( QPointCases p );
 
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void isNull_data();
     void isNull();
@@ -214,23 +206,6 @@ private slots:
 // Used to work around some floating point precision problems.
 #define LARGE 1000000000
 static bool isLarge(int x) { return x > LARGE || x < -LARGE; }
-
-
-tst_QRect::tst_QRect()
-{
-}
-
-tst_QRect::~tst_QRect()
-{
-}
-
-void tst_QRect::init()
-{
-}
-
-void tst_QRect::cleanup()
-{
-}
 
 QRect tst_QRect::getQRectCase( QRectCases c )
 {

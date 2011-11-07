@@ -50,15 +50,6 @@ Q_DECLARE_METATYPE(QMargins)
 class tst_QMargins : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QMargins();
-    virtual ~tst_QMargins();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void getSetCheck();
     void dataStreamCheck();
@@ -111,24 +102,6 @@ void tst_QMargins::dataStreamCheck()
         QCOMPARE(marginsIn.bottom(), 6852);
     }
 }
-
-tst_QMargins::tst_QMargins()
-{
-}
-
-tst_QMargins::~tst_QMargins()
-{
-}
-
-void tst_QMargins::init()
-{
-}
-
-void tst_QMargins::cleanup()
-{
-}
-
-
 
 QTEST_APPLESS_MAIN(tst_QMargins)
 #include "tst_qmargins.moc"

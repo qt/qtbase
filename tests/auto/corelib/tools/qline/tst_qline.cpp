@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qline.h>
 #include <math.h>
@@ -53,11 +52,7 @@
 
 class tst_QLine : public QObject
 {
-Q_OBJECT
-
-public:
-    tst_QLine();
-
+    Q_OBJECT
 private slots:
     void testIntersection();
     void testIntersection_data();
@@ -89,11 +84,6 @@ private slots:
 #define UNITX_45 0.707106781186547
 
 const qreal epsilon = sizeof(qreal) == sizeof(double) ? 1e-8 : 1e-4;
-
-tst_QLine::tst_QLine()
-
-{
-}
 
 void tst_QLine::testSet()
 {

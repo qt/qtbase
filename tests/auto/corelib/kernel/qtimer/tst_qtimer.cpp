@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qtimer.h>
 #include <qthread.h>
@@ -56,17 +54,6 @@
 class tst_QTimer : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QTimer();
-    virtual ~tst_QTimer();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void zeroTimer();
     void singleShotTimeout();
@@ -108,30 +95,6 @@ public slots:
 void TimerHelper::timeout()
 {
     ++count;
-}
-
-tst_QTimer::tst_QTimer()
-{
-}
-
-tst_QTimer::~tst_QTimer()
-{
-}
-
-void tst_QTimer::initTestCase()
-{
-}
-
-void tst_QTimer::cleanupTestCase()
-{
-}
-
-void tst_QTimer::init()
-{
-}
-
-void tst_QTimer::cleanup()
-{
 }
 
 void tst_QTimer::zeroTimer()

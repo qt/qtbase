@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -55,10 +54,6 @@
 class tst_QWaitCondition : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QWaitCondition();
-
 private slots:
     void wait_QMutex();
     void wait_QReadWriteLock();
@@ -75,11 +70,6 @@ static const int ThreadCount = 4;
 #else
 static const int ThreadCount = 10;
 #endif
-
-tst_QWaitCondition::tst_QWaitCondition()
-
-{
-}
 
 class wait_QMutex_Thread_1 : public QThread
 {

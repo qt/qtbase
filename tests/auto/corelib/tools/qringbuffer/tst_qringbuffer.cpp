@@ -46,13 +46,6 @@
 class tst_QRingBuffer : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QRingBuffer();
-    virtual ~tst_QRingBuffer();
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
 private slots:
     void readPointerAtPositionWriteRead();
     void readPointerAtPositionEmptyRead();
@@ -62,22 +55,6 @@ private slots:
     void sizeWhenReservedAndChopped();
     void sizeWhenReserved();
 };
-
-tst_QRingBuffer::tst_QRingBuffer()
-{
-}
-
-tst_QRingBuffer::~tst_QRingBuffer()
-{
-}
-
-void tst_QRingBuffer::initTestCase()
-{
-}
-
-void tst_QRingBuffer::cleanupTestCase()
-{
-}
 
 void tst_QRingBuffer::sizeWhenReserved()
 {

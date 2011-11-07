@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qregexp.h>
 #include <qtextcodec.h>
@@ -67,11 +66,7 @@ class tst_QString : public QObject
 
 public:
     tst_QString();
-    virtual ~tst_QString();
-
-
 public slots:
-    void init();
     void cleanup();
 private slots:
 #if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
@@ -317,14 +312,6 @@ static inline double nan()
 tst_QString::tst_QString()
 {
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("ISO 8859-1"));
-}
-
-tst_QString::~tst_QString()
-{
-}
-
-void tst_QString::init()
-{
 }
 
 void tst_QString::cleanup()

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QMimeData>
@@ -47,11 +46,6 @@
 class tst_QMimeData : public QObject
 {
     Q_OBJECT
-public:
-    tst_QMimeData()
-    {
-    }
-
 private slots:
     void clear() const;
     void colorData() const;
@@ -337,7 +331,6 @@ void tst_QMimeData::setUrls() const
     mimeData.clear();
     QVERIFY(mimeData.hasUrls() == false);
 }
-
 
 QTEST_MAIN(tst_QMimeData)
 #include "tst_qmimedata.moc"

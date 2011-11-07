@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qobject.h>
@@ -119,9 +118,6 @@ class tst_QMetaObject : public QObject
 public:
     enum EnumType { EnumType1 };
 
-    tst_QMetaObject();
-    ~tst_QMetaObject();
-
     void setValue(EnumType) {}
     EnumType getValue() const { return EnumType1; }
 
@@ -151,11 +147,6 @@ public:
     QList<QVariant> value4;
     QVariantList value5;
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void connectSlotsByName();
     void invokeMetaMember();
@@ -187,32 +178,6 @@ signals:
     void value6Changed();
     void value7Changed(const QString &);
 };
-
-tst_QMetaObject::tst_QMetaObject()
-{
-
-}
-
-tst_QMetaObject::~tst_QMetaObject()
-{
-
-}
-
-void tst_QMetaObject::initTestCase()
-{
-}
-
-void tst_QMetaObject::cleanupTestCase()
-{
-}
-
-void tst_QMetaObject::init()
-{
-}
-
-void tst_QMetaObject::cleanup()
-{
-}
 
 void tst_QMetaObject::stdSet()
 {

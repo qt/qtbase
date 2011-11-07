@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qplatformdefs.h>
 
@@ -101,15 +100,9 @@ class tst_QFile : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QFile();
-    virtual ~tst_QFile();
-
-
-public slots:
+private slots:
     void init();
     void cleanup();
-private slots:
     void initTestCase();
     void cleanupTestCase();
     void exists();
@@ -325,28 +318,14 @@ private:
     FILE *stream_;
 };
 
-tst_QFile::tst_QFile()
-{
-}
-
-tst_QFile::~tst_QFile()
-{
-
-}
-
 void tst_QFile::init()
 {
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
     fd_ = -1;
     stream_ = 0;
 }
 
 void tst_QFile::cleanup()
 {
-// TODO: Add cleanup code here.
-// This will be executed immediately after each test is run.
-
     // for copyFallback()
     if (QFile::exists("file-copy-destination.txt")) {
         QFile::setPermissions("file-copy-destination.txt",

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 
@@ -53,21 +52,15 @@
 Q_DECLARE_METATYPE(QModelIndex)
 
 /*!
-    Note that this doesn't test models, but any functionality that QAbstractItemModel shoudl provide
+    Note that this doesn't test models, but any functionality that QAbstractItemModel should provide
  */
 class tst_QAbstractItemModel : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QAbstractItemModel();
-    virtual ~tst_QAbstractItemModel();
-
 public slots:
     void initTestCase();
-    void cleanupTestCase();
     void init();
-    void cleanup();
 
 private slots:
     void index();
@@ -116,17 +109,15 @@ private slots:
 
     void testReset();
 
-
 private:
     DynamicTreeModel *m_model;
-
 };
 
 /*!
     Test model that impliments the pure vitual functions and anything else that is
     needed.
 
-    It is a table implimented as a vector of vectors of strings.
+    It is a table implemented as a vector of vectors of strings.
  */
 class QtTestModel: public QAbstractItemModel
 {
@@ -153,8 +144,8 @@ public:
 };
 
 QtTestModel::QtTestModel(int rows, int columns, QObject *parent)
-    : QAbstractItemModel(parent), cCount(columns), rCount(rows), wrongIndex(false) {
-
+    : QAbstractItemModel(parent), cCount(columns), rCount(rows), wrongIndex(false)
+{
     table.resize(rows);
     for (int r = 0; r < rows; ++r) {
         table[r].resize(columns);
@@ -164,14 +155,17 @@ QtTestModel::QtTestModel(int rows, int columns, QObject *parent)
 }
 
 QtTestModel::QtTestModel(const QVector<QVector<QString> > tbl, QObject *parent)
-    : QAbstractItemModel(parent), wrongIndex(false) {
+    : QAbstractItemModel(parent), wrongIndex(false)
+{
     table = tbl;
     rCount = tbl.count();
     cCount = tbl.at(0).count();
 }
 
 QModelIndex QtTestModel::index(int row, int column, const QModelIndex &parent) const
-        { return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex(); }
+{
+    return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex();
+}
 
 QModelIndex QtTestModel::parent(const QModelIndex &) const { return QModelIndex(); }
 int QtTestModel::rowCount(const QModelIndex &parent) const { return parent.isValid() ? 0 : rCount; }
@@ -251,14 +245,6 @@ void QtTestModel::reset()
     QAbstractItemModel::reset();
 }
 
-tst_QAbstractItemModel::tst_QAbstractItemModel()
-{
-}
-
-tst_QAbstractItemModel::~tst_QAbstractItemModel()
-{
-}
-
 /**
  * The source Model *must* be initialized before the _data function, since the _data function uses QModelIndexes to reference the items in the tables.
  * Therefore, we must initialize it globally.
@@ -267,11 +253,6 @@ tst_QAbstractItemModel::~tst_QAbstractItemModel()
 void tst_QAbstractItemModel::initTestCase()
 {
     qRegisterMetaType<QModelIndex>("QModelIndex");
-}
-
-void tst_QAbstractItemModel::cleanupTestCase()
-{
-
 }
 
 void tst_QAbstractItemModel::init()
@@ -290,11 +271,6 @@ void tst_QAbstractItemModel::init()
     insertCommand->setStartRow(0);
     insertCommand->setEndRow(9);
     insertCommand->doCommand();
-}
-
-void tst_QAbstractItemModel::cleanup()
-{
-
 }
 
 /*

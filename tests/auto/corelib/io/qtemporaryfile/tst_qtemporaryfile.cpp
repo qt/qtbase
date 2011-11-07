@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qcoreapplication.h>
 #include <qstring.h>
@@ -65,13 +64,7 @@
 class tst_QTemporaryFile : public QObject
 {
     Q_OBJECT
-public:
-    tst_QTemporaryFile();
-    virtual ~tst_QTemporaryFile();
 public slots:
-    void init();
-    void cleanup();
-
     void initTestCase();
     void cleanupTestCase();
 
@@ -100,8 +93,6 @@ private slots:
 
     void QTBUG_4796_data();
     void QTBUG_4796();
-
-public:
 };
 
 void tst_QTemporaryFile::initTestCase()
@@ -135,27 +126,6 @@ void tst_QTemporaryFile::getSetCheck()
     QCOMPARE(false, obj1.autoRemove());
     obj1.setAutoRemove(true);
     QCOMPARE(true, obj1.autoRemove());
-}
-
-tst_QTemporaryFile::tst_QTemporaryFile()
-{
-}
-
-tst_QTemporaryFile::~tst_QTemporaryFile()
-{
-
-}
-
-void tst_QTemporaryFile::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
-}
-
-void tst_QTemporaryFile::cleanup()
-{
-// TODO: Add cleanup code here.
-// This will be executed immediately after each test is run.
 }
 
 void tst_QTemporaryFile::fileTemplate_data()

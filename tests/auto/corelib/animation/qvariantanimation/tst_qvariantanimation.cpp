@@ -46,15 +46,6 @@
 class tst_QVariantAnimation : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QVariantAnimation() {}
-    virtual ~tst_QVariantAnimation() {}
-
-public slots:
-    void init();
-    void cleanup();
-
 private slots:
     void construction();
     void destruction();
@@ -73,14 +64,6 @@ class TestableQVariantAnimation : public QVariantAnimation
 public:
     void updateCurrentValue(const QVariant&) {}
 };
-
-void tst_QVariantAnimation::init()
-{
-}
-
-void tst_QVariantAnimation::cleanup()
-{
-}
 
 void tst_QVariantAnimation::construction()
 {

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qvarlengtharray.h>
 #include <qvariant.h>
@@ -52,11 +51,6 @@ const int N = 1;
 class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QVarLengthArray() {}
-    virtual ~tst_QVarLengthArray() {}
-
 private slots:
     void append();
     void removeLast();

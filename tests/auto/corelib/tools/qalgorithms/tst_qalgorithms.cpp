@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <iostream>
@@ -59,16 +58,7 @@ using namespace std;
 
 class tst_QAlgorithms : public QObject
 {
-Q_OBJECT
-
-public:
-    tst_QAlgorithms();
-    ~tst_QAlgorithms();
-
-public slots:
-    void init();
-    void cleanup();
-
+    Q_OBJECT
 private slots:
     void test_qLowerBound_data();
     void test_qLowerBound();
@@ -95,23 +85,6 @@ private:
     void performance();
 #endif
 };
-
-tst_QAlgorithms::tst_QAlgorithms()
-{
-}
-
-tst_QAlgorithms::~tst_QAlgorithms()
-{
-}
-
-void tst_QAlgorithms::init()
-{
-}
-
-void tst_QAlgorithms::cleanup()
-{
-}
-
 
 class TestInt
 {

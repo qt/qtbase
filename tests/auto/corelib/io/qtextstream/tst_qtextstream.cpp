@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-
-/*-*-encoding:latin1-*-*/
-//#include <iostream>
-//using namespace std;
-
 #include <QtTest/QtTest>
 
 #ifdef Q_OS_UNIX
@@ -80,12 +75,7 @@ class tst_QTextStream : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTextStream();
-    virtual ~tst_QTextStream();
-
 public slots:
-    void init();
     void cleanup();
 
 private slots:
@@ -374,18 +364,6 @@ void tst_QTextStream::getSetCheck()
     QCOMPARE(6, obj1.realNumberPrecision()); // Setting a negative precision reverts it to the default value (6).
     obj1.setRealNumberPrecision(INT_MAX);
     QCOMPARE(INT_MAX, obj1.realNumberPrecision());
-}
-
-tst_QTextStream::tst_QTextStream()
-{
-}
-
-tst_QTextStream::~tst_QTextStream()
-{
-}
-
-void tst_QTextStream::init()
-{
 }
 
 void tst_QTextStream::cleanup()

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qvariant.h>
@@ -89,9 +88,6 @@ Q_DECLARE_METATYPE(QKeySequence)
 class tst_QVariant : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QVariant();
 
 private slots:
     void constructor();
@@ -274,10 +270,6 @@ Q_DECLARE_METATYPE(QVariant)
 
 const qlonglong intMax1 = (qlonglong)INT_MAX + 1;
 const qulonglong uintMax1 = (qulonglong)UINT_MAX + 1;
-
-tst_QVariant::tst_QVariant()
-{
-}
 
 void tst_QVariant::constructor()
 {

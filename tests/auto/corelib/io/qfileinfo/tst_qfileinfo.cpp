@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qfile.h>
@@ -79,11 +78,9 @@ class tst_QFileInfo : public QObject
 {
 Q_OBJECT
 
-public:
-    tst_QFileInfo();
-    ~tst_QFileInfo();
-
 private slots:
+    void cleanupTestCase();
+
     void getSetCheck();
 
     void copy();
@@ -196,11 +193,7 @@ private slots:
     void invalidState();
 };
 
-tst_QFileInfo::tst_QFileInfo()
-{
-}
-
-tst_QFileInfo::~tst_QFileInfo()
+void tst_QFileInfo::cleanupTestCase()
 {
     QFile::remove("brokenlink.lnk");
     QFile::remove("link.lnk");

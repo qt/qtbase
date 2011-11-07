@@ -39,14 +39,9 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qregexp.h>
 #include <qstringlist.h>
-
-
-
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -54,14 +49,6 @@
 class tst_QStringList : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QStringList();
-    virtual ~tst_QStringList();
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void filter();
     void replaceInStrings();
@@ -85,22 +72,6 @@ private slots:
 };
 
 extern const char email[];
-
-tst_QStringList::tst_QStringList()
-{
-}
-
-tst_QStringList::~tst_QStringList()
-{
-}
-
-void tst_QStringList::init()
-{
-}
-
-void tst_QStringList::cleanup()
-{
-}
 
 void tst_QStringList::indexOf_regExp()
 {

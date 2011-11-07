@@ -54,11 +54,6 @@
 class tst_QMutex : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QMutex();
-    virtual ~tst_QMutex();
-
 private slots:
     void tryLock();
     void lock_unlock_locked_tryLock();
@@ -69,15 +64,6 @@ private slots:
 };
 
 static const int iterations = 100;
-
-tst_QMutex::tst_QMutex()
-
-{
-}
-
-tst_QMutex::~tst_QMutex()
-{
-}
 
 QAtomicInt lockCount(0);
 QMutex normalMutex, recursiveMutex(QMutex::Recursive);

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtCore/QBuffer>
 #include <QtCore/QDataStream>
@@ -71,16 +70,7 @@ static QBitArray QStringToQBitArray(const QString &str)
 
 class tst_QBitArray : public QObject
 {
-Q_OBJECT
-
-public:
-    tst_QBitArray();
-    virtual ~tst_QBitArray();
-
-
-public slots:
-    void init();
-    void cleanup();
+    Q_OBJECT
 private slots:
     void size_data();
     void size();
@@ -114,27 +104,6 @@ private slots:
 };
 
 Q_DECLARE_METATYPE(QBitArray)
-
-tst_QBitArray::tst_QBitArray()
-{
-}
-
-tst_QBitArray::~tst_QBitArray()
-{
-
-}
-
-void tst_QBitArray::init()
-{
-// TODO: Add initialization code here.
-// This will be executed immediately before each test is run.
-}
-
-void tst_QBitArray::cleanup()
-{
-// TODO: Add cleanup code here.
-// This will be executed immediately after each test is run.
-}
 
 void tst_QBitArray::size_data()
 {

@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <QBuffer>
 #include <QByteArray>
@@ -52,9 +50,6 @@
 class tst_QBuffer : public QObject
 {
     Q_OBJECT
-public:
-    tst_QBuffer();
-
 private slots:
     void open();
     void getSetCheck();
@@ -99,10 +94,6 @@ void tst_QBuffer::getSetCheck()
     QCOMPARE(var1, obj1.data());
     obj1.setData(QByteArray());
     QCOMPARE(QByteArray(), obj1.data());
-}
-
-tst_QBuffer::tst_QBuffer()
-{
 }
 
 void tst_QBuffer::open()

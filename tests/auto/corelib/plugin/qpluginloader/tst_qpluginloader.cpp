@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qdir.h>
 #include <qpluginloader.h>
@@ -107,11 +106,6 @@ QT_FORWARD_DECLARE_CLASS(QPluginLoader)
 class tst_QPluginLoader : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QPluginLoader();
-    virtual ~tst_QPluginLoader();
-
 private slots:
     void errorString();
     void loadHints();
@@ -120,15 +114,6 @@ private slots:
     void loadCorruptElf();
     void loadGarbage();
 };
-
-tst_QPluginLoader::tst_QPluginLoader()
-
-{
-}
-
-tst_QPluginLoader::~tst_QPluginLoader()
-{
-}
 
 //#define SHOW_ERRORS 1
 

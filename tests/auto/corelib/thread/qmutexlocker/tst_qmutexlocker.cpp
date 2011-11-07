@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QCoreApplication>
@@ -73,9 +72,6 @@ class tst_QMutexLocker : public QObject
     Q_OBJECT
 
 public:
-    tst_QMutexLocker();
-    ~tst_QMutexLocker();
-
     tst_QMutexLockerThread *thread;
 
     void waitForThread()
@@ -92,14 +88,6 @@ private slots:
     void unlockAndRelockTest();
     void lockerStateTest();
 };
-
-tst_QMutexLocker::tst_QMutexLocker()
-{
-}
-
-tst_QMutexLocker::~tst_QMutexLocker()
-{
-}
 
 void tst_QMutexLocker::scopeTest()
 {

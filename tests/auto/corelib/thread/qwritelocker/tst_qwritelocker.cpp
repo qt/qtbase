@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QCoreApplication>
@@ -68,9 +67,6 @@ class tst_QWriteLocker : public QObject
     Q_OBJECT
 
 public:
-    tst_QWriteLocker();
-    ~tst_QWriteLocker();
-
     tst_QWriteLockerThread *thread;
 
     void waitForThread()
@@ -87,14 +83,6 @@ private slots:
     void unlockAndRelockTest();
     void lockerStateTest();
 };
-
-tst_QWriteLocker::tst_QWriteLocker()
-{
-}
-
-tst_QWriteLocker::~tst_QWriteLocker()
-{
-}
 
 void tst_QWriteLocker::scopeTest()
 {

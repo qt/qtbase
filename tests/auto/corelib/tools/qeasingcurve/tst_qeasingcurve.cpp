@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qeasingcurve.h>
@@ -47,17 +46,9 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-class tst_QEasingCurve : public QObject {
-  Q_OBJECT
-
-public:
-    tst_QEasingCurve();
-    virtual ~tst_QEasingCurve();
-
-public Q_SLOTS:
-    void init();
-    void cleanup();
-
+class tst_QEasingCurve : public QObject
+{
+    Q_OBJECT
 private slots:
     void type();
     void propertyDefaults();
@@ -67,26 +58,7 @@ private slots:
     void operators();
     void properties();
     void metaTypes();
-
-protected:
 };
-
-tst_QEasingCurve::tst_QEasingCurve()
-{
-}
-
-tst_QEasingCurve::~tst_QEasingCurve()
-{
-}
-
-void tst_QEasingCurve::init()
-{
-}
-
-void tst_QEasingCurve::cleanup()
-{
-}
-#include <qdebug.h>
 
 void tst_QEasingCurve::type()
 {

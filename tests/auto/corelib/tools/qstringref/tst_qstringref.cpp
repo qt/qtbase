@@ -51,18 +51,10 @@ Q_DECLARE_METATYPE(qlonglong)
 //TESTED_CLASS=
 //TESTED_FILES=
 
-
 class tst_QStringRef : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QStringRef();
-    virtual ~tst_QStringRef();
-
-
 public slots:
-    void init();
     void cleanup();
 private slots:
     void endsWith();
@@ -166,18 +158,6 @@ static inline double nan()
 }
 #   define NAN (::nan())
 #endif
-
-tst_QStringRef::tst_QStringRef()
-{
-}
-
-tst_QStringRef::~tst_QStringRef()
-{
-}
-
-void tst_QStringRef::init()
-{
-}
 
 void tst_QStringRef::cleanup()
 {

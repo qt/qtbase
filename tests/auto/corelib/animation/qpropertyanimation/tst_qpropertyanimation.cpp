@@ -90,14 +90,9 @@ public:
 
 class tst_QPropertyAnimation : public QObject
 {
-  Q_OBJECT
-public:
-    tst_QPropertyAnimation();
-    virtual ~tst_QPropertyAnimation();
-
+    Q_OBJECT
 public Q_SLOTS:
-    void init();
-    void cleanup();
+    void initTestCase();
 
 private slots:
     void construction();
@@ -133,22 +128,10 @@ private slots:
     void zeroLoopCount();
 };
 
-tst_QPropertyAnimation::tst_QPropertyAnimation()
-{
-}
-
-tst_QPropertyAnimation::~tst_QPropertyAnimation()
-{
-}
-
-void tst_QPropertyAnimation::init()
+void tst_QPropertyAnimation::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
     qRegisterMetaType<QAbstractAnimation::DeletionPolicy>("QAbstractAnimation::DeletionPolicy");
-}
-
-void tst_QPropertyAnimation::cleanup()
-{
 }
 
 class AnimationObject : public QObject

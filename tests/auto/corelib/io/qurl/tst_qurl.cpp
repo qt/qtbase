@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>
 
@@ -80,14 +79,6 @@ class tst_QUrl : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QUrl();
-    virtual ~tst_QUrl();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void effectiveTLDs_data();
     void effectiveTLDs();
@@ -244,23 +235,6 @@ void tst_QUrl::getSetCheck()
     // reset to the original
     QUrl::setIdnWhitelist(original);
     QCOMPARE(QUrl::idnWhitelist(), original);
-}
-
-tst_QUrl::tst_QUrl()
-{
-}
-
-tst_QUrl::~tst_QUrl()
-{
-
-}
-
-void tst_QUrl::init()
-{
-}
-
-void tst_QUrl::cleanup()
-{
 }
 
 void tst_QUrl::constructing()

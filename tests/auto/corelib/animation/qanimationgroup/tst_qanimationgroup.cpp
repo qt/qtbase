@@ -52,41 +52,23 @@ Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
 class tst_QAnimationGroup : public QObject
 {
-  Q_OBJECT
-public:
-    tst_QAnimationGroup();
-    virtual ~tst_QAnimationGroup();
-
+    Q_OBJECT
 public Q_SLOTS:
     void init();
-    void cleanup();
 
 private slots:
     void construction();
     void emptyGroup();
     void setCurrentTime();
-    void statesAndSignals();
     void setParentAutoAdd();
     void beginNestedGroup();
     void addChildTwice();
     void loopWithoutStartValue();
 };
 
-tst_QAnimationGroup::tst_QAnimationGroup()
-{
-}
-
-tst_QAnimationGroup::~tst_QAnimationGroup()
-{
-}
-
 void tst_QAnimationGroup::init()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-}
-
-void tst_QAnimationGroup::cleanup()
-{
 }
 
 void tst_QAnimationGroup::construction()
@@ -308,10 +290,6 @@ void tst_QAnimationGroup::setCurrentTime()
     QCOMPARE(notTimeDriven->currentLoopTime(), 251);
     QCOMPARE(loopsForever->currentLoopTime(), 1);
     QCOMPARE(sequence->currentAnimation(), a2_s_o1);
-}
-
-void tst_QAnimationGroup::statesAndSignals()
-{
 }
 
 void tst_QAnimationGroup::setParentAutoAdd()

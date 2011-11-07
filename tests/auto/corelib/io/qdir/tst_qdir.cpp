@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -71,10 +70,6 @@
 class tst_QDir : public QObject
 {
 Q_OBJECT
-
-public:
-    tst_QDir();
-    virtual ~tst_QDir();
 
 private slots:
     void getSetCheck();
@@ -211,14 +206,6 @@ void tst_QDir::getSetCheck()
     QCOMPARE(QDir::SortFlags(QDir::Name | QDir::IgnoreCase), obj1.sorting());
     obj1.setSorting(QDir::SortFlags(QDir::NoSort));
     QCOMPARE(QDir::SortFlags(QDir::NoSort), obj1.sorting());
-}
-
-tst_QDir::tst_QDir()
-{
-}
-
-tst_QDir::~tst_QDir()
-{
 }
 
 void tst_QDir::construction()

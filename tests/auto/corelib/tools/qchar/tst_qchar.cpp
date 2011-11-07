@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qchar.h>
 #include <qfile.h>
@@ -49,23 +48,13 @@
 #include <qcoreapplication.h>
 #endif
 
-
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
 class tst_QChar : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QChar();
-    ~tst_QChar();
-
-
 public slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
     void cleanup();
 private slots:
@@ -104,20 +93,8 @@ private:
 #endif
 };
 
-tst_QChar::tst_QChar()
-{}
-
-tst_QChar::~tst_QChar()
-{ }
-
-void tst_QChar::initTestCase()
-{ }
-
-void tst_QChar::cleanupTestCase()
-{ }
-
 void tst_QChar::init()
-{ 
+{
 #if defined(Q_OS_WINCE)
     int argc = 0;
     app = new QCoreApplication(argc, NULL);

@@ -50,9 +50,6 @@
 class tst_QContiguousCache : public QObject
 {
     Q_OBJECT
-public:
-    tst_QContiguousCache() {}
-    virtual ~tst_QContiguousCache() {}
 private slots:
     void empty();
     void swap();

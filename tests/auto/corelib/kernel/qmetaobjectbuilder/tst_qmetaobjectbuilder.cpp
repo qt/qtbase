@@ -46,10 +46,6 @@
 class tst_QMetaObjectBuilder : public QObject
 {
     Q_OBJECT
-public:
-    tst_QMetaObjectBuilder() {}
-    ~tst_QMetaObjectBuilder() {}
-
 private slots:
     void mocVersionCheck();
     void create();

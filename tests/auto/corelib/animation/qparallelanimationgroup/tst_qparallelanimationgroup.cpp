@@ -50,11 +50,7 @@ Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
 class tst_QParallelAnimationGroup : public QObject
 {
-  Q_OBJECT
-public:
-    tst_QParallelAnimationGroup();
-    virtual ~tst_QParallelAnimationGroup();
-
+    Q_OBJECT
 public Q_SLOTS:
     void initTestCase();
 
@@ -78,14 +74,6 @@ private slots:
 
     void QTBUG8910_crashWhenRemovingUncontrolledAnimation();
 };
-
-tst_QParallelAnimationGroup::tst_QParallelAnimationGroup()
-{
-}
-
-tst_QParallelAnimationGroup::~tst_QParallelAnimationGroup()
-{
-}
 
 void tst_QParallelAnimationGroup::initTestCase()
 {

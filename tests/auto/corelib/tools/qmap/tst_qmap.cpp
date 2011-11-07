@@ -44,7 +44,6 @@
 #include <QtTest/QtTest>
 #include <QDebug>
 
-
 #include <qmap.h>
 
 //TESTED_CLASS=
@@ -53,10 +52,6 @@
 class tst_QMap : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QMap();
-
 public slots:
     void init();
 private slots:
@@ -83,10 +78,6 @@ private slots:
 
     void const_shared_null();
 };
-
-tst_QMap::tst_QMap()
-{
-}
 
 typedef QMap<QString, QString> StringMap;
 

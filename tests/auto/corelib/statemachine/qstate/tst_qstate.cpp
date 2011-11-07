@@ -68,7 +68,6 @@ class tst_QState : public QObject
 
 public:
     tst_QState();
-    virtual ~tst_QState();
 
 private slots:
     void assignProperty();
@@ -81,10 +80,6 @@ private:
 };
 
 tst_QState::tst_QState() : functionCalled(false)
-{
-}
-
-tst_QState::~tst_QState()
 {
 }
 

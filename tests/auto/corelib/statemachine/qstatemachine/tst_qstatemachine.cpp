@@ -108,14 +108,7 @@ Q_SIGNALS:
 class tst_QStateMachine : public QObject
 {
     Q_OBJECT
-public:
-    tst_QStateMachine();
-    virtual ~tst_QStateMachine();
-
 private slots:
-    void init();
-    void cleanup();
-
     void rootState();
     void machineWithParent();
     void addAndRemoveState();
@@ -217,14 +210,6 @@ private slots:
     void stopInEventTest();
 };
 
-tst_QStateMachine::tst_QStateMachine()
-{
-}
-
-tst_QStateMachine::~tst_QStateMachine()
-{
-}
-
 class TestState : public QState
 {
 public:
@@ -259,14 +244,6 @@ protected:
         triggers.append(globalTick++);
     }
 };
-
-void tst_QStateMachine::init()
-{
-}
-
-void tst_QStateMachine::cleanup()
-{
-}
 
 class EventTransition : public QAbstractTransition
 {

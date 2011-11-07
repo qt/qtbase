@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -67,11 +66,6 @@
 class tst_QThread : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QThread();
-    virtual ~tst_QThread();
-
 private slots:
     void currentThreadId();
     void currentThread();
@@ -271,16 +265,6 @@ public:
         cond.wakeOne();
     }
 };
-
-tst_QThread::tst_QThread()
-
-{
-}
-
-tst_QThread::~tst_QThread()
-{
-
-}
 
 void tst_QThread::currentThreadId()
 {

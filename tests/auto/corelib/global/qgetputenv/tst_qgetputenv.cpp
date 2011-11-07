@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <qdebug.h>
 #include <QtTest/QtTest>
 
@@ -51,14 +50,8 @@
 class tst_QGetPutEnv : public QObject
 {
 Q_OBJECT
-
-public:
-    tst_QGetPutEnv();
-    virtual ~tst_QGetPutEnv();
-
 private slots:
     void getSetCheck();
-private:
 };
 
 void tst_QGetPutEnv::getSetCheck()
@@ -70,14 +63,6 @@ void tst_QGetPutEnv::getSetCheck()
     result = qgetenv(varName);
     QVERIFY(result == "supervalue");
     qputenv(varName,QByteArray());
-}
-
-tst_QGetPutEnv::tst_QGetPutEnv()
-{
-}
-
-tst_QGetPutEnv::~tst_QGetPutEnv()
-{
 }
 
 QTEST_MAIN(tst_QGetPutEnv)

@@ -39,11 +39,8 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qcoreapplication.h>
-
-
 #include <qreadwritelock.h>
 #include <qmutex.h>
 #include <qthread.h>
@@ -73,60 +70,46 @@
 class tst_QReadWriteLock : public QObject
 {
     Q_OBJECT
-public:
-    tst_QReadWriteLock();
-    virtual ~tst_QReadWriteLock();
-
 
 /*
     Singlethreaded tests
 */
 private slots:
-void constructDestruct();
-void readLockUnlock();
-void writeLockUnlock();
-void readLockUnlockLoop();
-void writeLockUnlockLoop();
-void readLockLoop();
-void writeLockLoop();
-void readWriteLockUnlockLoop();
-void tryReadLock();
-void tryWriteLock();
+    void constructDestruct();
+    void readLockUnlock();
+    void writeLockUnlock();
+    void readLockUnlockLoop();
+    void writeLockUnlockLoop();
+    void readLockLoop();
+    void writeLockLoop();
+    void readWriteLockUnlockLoop();
+    void tryReadLock();
+    void tryWriteLock();
+
 /*
     Multithreaded tests
 */
 private slots:
-
-void readLockBlockRelease();
-void writeLockBlockRelease();
-void multipleReadersBlockRelease();
-void multipleReadersLoop();
-void multipleWritersLoop();
-void multipleReadersWritersLoop();
-void countingTest();
-void limitedReaders();
-void deleteOnUnlock();
+    void readLockBlockRelease();
+    void writeLockBlockRelease();
+    void multipleReadersBlockRelease();
+    void multipleReadersLoop();
+    void multipleWritersLoop();
+    void multipleReadersWritersLoop();
+    void countingTest();
+    void limitedReaders();
+    void deleteOnUnlock();
 
 /*
     Performance tests
 */
 private slots:
-void uncontendedLocks();
+    void uncontendedLocks();
 
     // recursive locking tests
     void recursiveReadLock();
     void recursiveWriteLock();
 };
-
-tst_QReadWriteLock::tst_QReadWriteLock()
-{
-
-}
-
-tst_QReadWriteLock::~tst_QReadWriteLock()
-{
-
-}
 
 void tst_QReadWriteLock::constructDestruct()
 {

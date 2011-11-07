@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qregexp.h>
 
@@ -51,15 +50,6 @@ const int N = 1;
 class tst_QRegExp : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QRegExp();
-    virtual ~tst_QRegExp();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void getSetCheck();
     void indexIn_data();
@@ -124,14 +114,6 @@ void tst_QRegExp::getSetCheck()
 }
 
 extern const char email[];
-
-tst_QRegExp::tst_QRegExp()
-{
-}
-
-tst_QRegExp::~tst_QRegExp()
-{
-}
 
 void tst_QRegExp::lastIndexIn_data()
 {
@@ -516,15 +498,6 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
 			        << QStringList();
         QTest::newRow( stri + "star16" ) << QString("(?:ab|ba|b)*") << QString("abbbababbbaaab") << 0 << 11
 			        << QStringList();
-}
-
-
-void tst_QRegExp::init()
-{
-}
-
-void tst_QRegExp::cleanup()
-{
 }
 
 /*

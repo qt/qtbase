@@ -65,10 +65,6 @@ class tst_QItemModel : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QItemModel() {};
-    virtual ~tst_QItemModel() {};
-
 public slots:
     void init();
     void cleanup();

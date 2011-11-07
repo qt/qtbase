@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qstandardpaths.h>
 #include <qdebug.h>
@@ -57,14 +56,9 @@
 //TESTED_CLASS=QStandardPaths
 //TESTED_FILES=qstandardpaths.cpp
 
-class tst_qstandardpaths : public QObject {
-  Q_OBJECT
-
-public:
-    tst_qstandardpaths() {
-    }
-    virtual ~tst_qstandardpaths() {
-    }
+class tst_qstandardpaths : public QObject
+{
+    Q_OBJECT
 
 private slots:
     void testDefaultLocations();

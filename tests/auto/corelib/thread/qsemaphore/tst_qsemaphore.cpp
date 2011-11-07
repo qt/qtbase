@@ -39,9 +39,7 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qcoreapplication.h>
 #include <qthread.h>
@@ -53,11 +51,6 @@
 class tst_QSemaphore : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QSemaphore();
-    ~tst_QSemaphore();
-
 private slots:
     void acquire();
     void tryAcquire();
@@ -68,12 +61,6 @@ private slots:
 };
 
 static QSemaphore *semaphore = 0;
-
-tst_QSemaphore::tst_QSemaphore()
-{ }
-
-tst_QSemaphore::~tst_QSemaphore()
-{ }
 
 class ThreadOne : public QThread
 {

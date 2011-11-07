@@ -39,11 +39,9 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qatomic.h>
-
 #include <limits.h>
 
 //TESTED_CLASS=
@@ -52,11 +50,6 @@
 class tst_QAtomicPointer : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QAtomicPointer();
-    ~tst_QAtomicPointer();
-
 private slots:
     void warningFree();
 
@@ -84,12 +77,6 @@ private slots:
 private:
     static void warningFreeHelper();
 };
-
-tst_QAtomicPointer::tst_QAtomicPointer()
-{ }
-
-tst_QAtomicPointer::~tst_QAtomicPointer()
-{ }
 
 struct WFHC
 {

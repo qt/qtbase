@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
 
@@ -54,14 +53,10 @@ class tst_QDataStream : public QObject
 Q_OBJECT
 
 public:
-    tst_QDataStream();
-    virtual ~tst_QDataStream();
-
     void stream_data(int noOfElements);
 
 public slots:
-    void init();
-    void cleanup();
+    void cleanupTestCase();
 
 private slots:
     void getSetCheck();
@@ -296,21 +291,9 @@ void tst_QDataStream::getSetCheck()
     QCOMPARE(QDataStream::ReadCorruptData, obj1.status());
 }
 
-tst_QDataStream::tst_QDataStream()
-{
-}
-
-tst_QDataStream::~tst_QDataStream()
+void tst_QDataStream::cleanupTestCase()
 {
     QFile::remove(QLatin1String("qdatastream.out"));
-}
-
-void tst_QDataStream::init()
-{
-}
-
-void tst_QDataStream::cleanup()
-{
 }
 
 static int dataIndex(const QString &tag)

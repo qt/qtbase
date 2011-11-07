@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qsize.h>
 
@@ -51,15 +50,6 @@ Q_DECLARE_METATYPE(QSize)
 class tst_QSize : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QSize();
-    virtual ~tst_QSize();
-
-
-public slots:
-    void init();
-    void cleanup();
 private slots:
     void getSetCheck();
     void scale();
@@ -110,23 +100,6 @@ void tst_QSize::getSetCheck()
     QCOMPARE(0.0, obj2.height());
     obj2.setHeight(1.1);
     QCOMPARE(1.1, obj2.height());
-}
-
-
-tst_QSize::tst_QSize()
-{
-}
-
-tst_QSize::~tst_QSize()
-{
-}
-
-void tst_QSize::init()
-{
-}
-
-void tst_QSize::cleanup()
-{
 }
 
 void tst_QSize::scale()

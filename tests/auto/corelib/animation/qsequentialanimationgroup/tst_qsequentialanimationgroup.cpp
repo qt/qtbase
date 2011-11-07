@@ -51,14 +51,9 @@ Q_DECLARE_METATYPE(QAbstractAnimation*)
 
 class tst_QSequentialAnimationGroup : public QObject
 {
-  Q_OBJECT
-public:
-    tst_QSequentialAnimationGroup();
-    virtual ~tst_QSequentialAnimationGroup();
-
+    Q_OBJECT
 public Q_SLOTS:
-    void init();
-    void cleanup();
+    void initTestCase();
 
 private slots:
     void construction();
@@ -89,22 +84,10 @@ private slots:
     void pauseResume();
 };
 
-tst_QSequentialAnimationGroup::tst_QSequentialAnimationGroup()
-{
-}
-
-tst_QSequentialAnimationGroup::~tst_QSequentialAnimationGroup()
-{
-}
-
-void tst_QSequentialAnimationGroup::init()
+void tst_QSequentialAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
     qRegisterMetaType<QAbstractAnimation*>("QAbstractAnimation*");
-}
-
-void tst_QSequentialAnimationGroup::cleanup()
-{
 }
 
 void tst_QSequentialAnimationGroup::construction()

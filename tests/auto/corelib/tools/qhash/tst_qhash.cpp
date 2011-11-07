@@ -50,11 +50,6 @@
 class tst_QHash : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QHash();
-    virtual ~tst_QHash() {}
-
 private slots:
     void insert1();
     void erase();
@@ -91,9 +86,6 @@ struct Foo {
     int c;
     int data[8];
 };
-
-tst_QHash::tst_QHash()
-{}
 
 int Foo::count = 0;
 

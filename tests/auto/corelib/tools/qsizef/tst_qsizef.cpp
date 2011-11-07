@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qsize.h>
 
@@ -48,17 +47,9 @@ Q_DECLARE_METATYPE(QSizeF)
 //TESTED_CLASS=
 //TESTED_FILES=corelib/tools/qsize.h corelib/tools/qsize.cpp
 
-class tst_QSizeF : public QObject {
+class tst_QSizeF : public QObject
+{
     Q_OBJECT
-
-public:
-    tst_QSizeF();
-    virtual ~tst_QSizeF();
-
-public slots:
-    void init();
-    void cleanup();
-
 private slots:
     void scale();
 
@@ -71,18 +62,6 @@ private slots:
     void transpose_data();
     void transpose();
 };
-
-tst_QSizeF::tst_QSizeF() {
-}
-
-tst_QSizeF::~tst_QSizeF() {
-}
-
-void tst_QSizeF::init() {
-}
-
-void tst_QSizeF::cleanup() {
-}
 
 void tst_QSizeF::scale() {
     QSizeF t1(10.4, 12.8);

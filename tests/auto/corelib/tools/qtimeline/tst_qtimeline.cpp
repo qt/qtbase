@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qtimeline.h>
@@ -47,17 +46,9 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-class tst_QTimeLine : public QObject {
+class tst_QTimeLine : public QObject
+{
   Q_OBJECT
-
-public:
-    tst_QTimeLine();
-    virtual ~tst_QTimeLine();
-
-public Q_SLOTS:
-    void init();
-    void cleanup();
-
 private slots:
     void range();
     void currentTime();
@@ -90,23 +81,6 @@ protected:
     QTimeLine::State state;
     QTimeLine * view;
 };
-
-tst_QTimeLine::tst_QTimeLine()
-{
-}
-
-tst_QTimeLine::~tst_QTimeLine()
-{
-}
-
-void tst_QTimeLine::init()
-{
-}
-
-void tst_QTimeLine::cleanup()
-{
-}
-#include <qdebug.h>
 
 void tst_QTimeLine::range()
 {

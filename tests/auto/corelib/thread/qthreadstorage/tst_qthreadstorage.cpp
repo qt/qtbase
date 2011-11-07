@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -64,10 +63,6 @@
 class tst_QThreadStorage : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QThreadStorage();
-
 private slots:
     void hasLocalData();
     void localData();
@@ -90,10 +85,6 @@ public:
     inline ~Pointer() { --count; }
 };
 int Pointer::count = 0;
-
-tst_QThreadStorage::tst_QThreadStorage()
-
-{ }
 
 void tst_QThreadStorage::hasLocalData()
 {

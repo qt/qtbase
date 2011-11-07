@@ -47,14 +47,6 @@
 class tst_QAbstractAnimation : public QObject
 {
   Q_OBJECT
-public:
-    tst_QAbstractAnimation() {};
-    virtual ~tst_QAbstractAnimation() {};
-
-public Q_SLOTS:
-    void init();
-    void cleanup();
-
 private slots:
     void construction();
     void destruction();
@@ -86,14 +78,6 @@ public:
     int duration() const { return 10; }
     virtual void updateCurrentTime(int) {}
 };
-
-void tst_QAbstractAnimation::init()
-{
-}
-
-void tst_QAbstractAnimation::cleanup()
-{
-}
 
 void tst_QAbstractAnimation::construction()
 {

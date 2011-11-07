@@ -39,17 +39,14 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
-
 #include <qpointer.h>
 #include <qtimer.h>
 #include <qregexp.h>
 #include <qmetaobject.h>
 #include <qvariant.h>
-
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
@@ -62,7 +59,6 @@
 #include <private/qobject_p.h>
 #endif
 
-
 #include <math.h>
 
 //TESTED_CLASS=
@@ -71,17 +67,6 @@
 class tst_QObject : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QObject();
-    virtual ~tst_QObject();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void disconnect();
     void connectByName();
@@ -136,34 +121,7 @@ private slots:
     void disconnectNotSignalMetaMethod();
     void autoConnectionBehavior();
     void baseDestroyed();
-protected:
 };
-
-tst_QObject::tst_QObject()
-{
-
-}
-
-tst_QObject::~tst_QObject()
-{
-
-}
-
-void tst_QObject::initTestCase()
-{
-}
-
-void tst_QObject::cleanupTestCase()
-{
-}
-
-void tst_QObject::init()
-{
-}
-
-void tst_QObject::cleanup()
-{
-}
 
 class SenderObject : public QObject
 {

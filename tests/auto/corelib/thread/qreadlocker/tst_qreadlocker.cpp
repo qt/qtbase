@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QCoreApplication>
@@ -68,9 +67,6 @@ class tst_QReadLocker : public QObject
     Q_OBJECT
 
 public:
-    tst_QReadLocker();
-    ~tst_QReadLocker();
-
     tst_QReadLockerThread *thread;
 
     void waitForThread()
@@ -87,14 +83,6 @@ private slots:
     void unlockAndRelockTest();
     void lockerStateTest();
 };
-
-tst_QReadLocker::tst_QReadLocker()
-{
-}
-
-tst_QReadLocker::~tst_QReadLocker()
-{
-}
 
 void tst_QReadLocker::scopeTest()
 {

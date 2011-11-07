@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QTest>
 #include <QtTest/QSignalSpy>
 #include <QtTest/QTestEventLoop>
@@ -65,10 +64,6 @@
 class tst_QSocketNotifier : public QObject
 {
     Q_OBJECT
-public:
-    tst_QSocketNotifier();
-    ~tst_QSocketNotifier();
-
 private slots:
     void unexpectedDisconnection();
     void mixingWithTimers();
@@ -76,13 +71,6 @@ private slots:
     void posixSockets();
 #endif
 };
-
-tst_QSocketNotifier::tst_QSocketNotifier()
-{ }
-
-tst_QSocketNotifier::~tst_QSocketNotifier()
-{
-}
 
 class UnexpectedDisconnectTester : public QObject
 {

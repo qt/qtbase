@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #ifndef Q_OS_WINCE
 #include <time.h>
@@ -61,13 +60,11 @@ class tst_QDateTime : public QObject
 
 public:
     tst_QDateTime();
-    virtual ~tst_QDateTime();
 
     static QString str( int y, int month, int d, int h, int min, int s );
     static QDateTime dt( const QString& str );
 public slots:
     void init();
-    void cleanup();
 private slots:
     void ctor();
     void operator_eq();
@@ -162,23 +159,13 @@ tst_QDateTime::tst_QDateTime()
     europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
 }
 
-tst_QDateTime::~tst_QDateTime()
-{
-
-}
-
 void tst_QDateTime::init()
 {
 #if defined(Q_OS_WINCE)
-	SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
+    SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
 #elif defined(Q_OS_WIN)
     SetThreadLocale(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
 #endif
-
-}
-
-void tst_QDateTime::cleanup()
-{
 }
 
 QString tst_QDateTime::str( int y, int month, int d, int h, int min, int s )

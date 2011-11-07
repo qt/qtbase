@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -51,28 +50,13 @@
 
 class tst_QPoint : public QObject
 {
-Q_OBJECT
-
-public:
-    tst_QPoint();
-    virtual ~tst_QPoint();
-
+    Q_OBJECT
 private slots:
     void getSetCheck();
     void division();
 
     void manhattanLength();
 };
-
-tst_QPoint::tst_QPoint()
-{
-}
-
-tst_QPoint::~tst_QPoint()
-{
-}
-
-
 
 void tst_QPoint::manhattanLength()
 {

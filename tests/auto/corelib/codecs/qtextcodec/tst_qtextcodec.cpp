@@ -74,7 +74,6 @@ private slots:
     void flagF7808080() const;
     void flagEFBFBF() const;
     void decode0D() const;
-    void codecForIndex() const;
     void aliasForUTF16() const;
     void mibForTSCII() const;
 
@@ -455,7 +454,6 @@ void tst_QTextCodec::flagF7808080() const
     input[2] = char(0x80);
     input[3] = char(0x80);
 
-
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
     QVERIFY(codec);
 
@@ -506,10 +504,6 @@ void tst_QTextCodec::decode0D() const
     input[2] = 'B';
 
     QCOMPARE(QString::fromUtf8(input.constData()).toUtf8(), input);
-}
-
-void tst_QTextCodec::codecForIndex() const
-{
 }
 
 void tst_QTextCodec::aliasForUTF16() const

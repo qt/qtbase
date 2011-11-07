@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <private/qwineventnotifier_p.h>
 #include <qtimer.h>
@@ -51,46 +50,16 @@ class tst_QWinEventNotifier : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QWinEventNotifier();
-    ~tst_QWinEventNotifier();
-
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 protected slots:
     void simple_activated();
     void simple_timerSet();
 private slots:
-
     void simple();
 
 private:
     HANDLE simpleHEvent;
     bool simpleActivated;
 };
-
-tst_QWinEventNotifier::tst_QWinEventNotifier()
-{}
-
-tst_QWinEventNotifier::~tst_QWinEventNotifier()
-{ }
-
-void tst_QWinEventNotifier::initTestCase()
-{ }
-
-void tst_QWinEventNotifier::cleanupTestCase()
-{ }
-
-void tst_QWinEventNotifier::init()
-{ }
-
-void tst_QWinEventNotifier::cleanup()
-{
-}
-
 
 void tst_QWinEventNotifier::simple_activated()
 {

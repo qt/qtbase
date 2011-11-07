@@ -39,16 +39,10 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
 
 #include <qsignalmapper.h>
 #include <qspinbox.h>
-
-
-
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -56,44 +50,9 @@
 class tst_QSignalMapper : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QSignalMapper();
-    virtual ~tst_QSignalMapper();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
     void mapped();
 };
-
-tst_QSignalMapper::tst_QSignalMapper()
-{
-}
-
-tst_QSignalMapper::~tst_QSignalMapper()
-{
-}
-
-void tst_QSignalMapper::initTestCase()
-{
-}
-
-void tst_QSignalMapper::cleanupTestCase()
-{
-}
-
-void tst_QSignalMapper::init()
-{
-}
-
-void tst_QSignalMapper::cleanup()
-{
-}
 
 class QtTestObject : public QObject
 {
@@ -101,7 +60,7 @@ class QtTestObject : public QObject
 public slots:
     void myslot(int id);
     void myslot(const QString &str);
- 
+
 public:
     int id;
     QString str;

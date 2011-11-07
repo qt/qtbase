@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qstringmatcher.h>
 
@@ -48,7 +47,6 @@ class tst_QStringMatcher : public QObject
     Q_OBJECT
 
 private slots:
-    void qstringmatcher_data();
     void qstringmatcher();
     void caseSensitivity();
     void indexIn_data();
@@ -63,10 +61,6 @@ class SubQStringMatcher : public QStringMatcher
 {
 public:
 };
-
-void tst_QStringMatcher::qstringmatcher_data()
-{
-}
 
 void tst_QStringMatcher::qstringmatcher()
 {
