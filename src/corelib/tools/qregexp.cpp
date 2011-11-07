@@ -66,6 +66,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 #define RXERR_DISABLED   QT_TRANSLATE_NOOP("QRegExp", "disabled feature used")
 #define RXERR_CHARCLASS  QT_TRANSLATE_NOOP("QRegExp", "bad char class syntax")
 #define RXERR_LOOKAHEAD  QT_TRANSLATE_NOOP("QRegExp", "bad lookahead syntax")
+#define RXERR_LOOKBEHIND QT_TRANSLATE_NOOP("QRegExp", "lookbehinds not supported, see QTBUG-2371")
 #define RXERR_REPETITION QT_TRANSLATE_NOOP("QRegExp", "bad repetition syntax")
 #define RXERR_OCTAL      QT_TRANSLATE_NOOP("QRegExp", "invalid octal value")
 #define RXERR_LEFTDELIM  QT_TRANSLATE_NOOP("QRegExp", "missing left delim")
@@ -3364,6 +3365,9 @@ int QRegExpEngine::getToken()
                 return Tok_PosLookahead;
 #endif
             case ':':
+                return Tok_MagicLeftParen;
+            case '<':
+                error(RXERR_LOOKBEHIND);
                 return Tok_MagicLeftParen;
             default:
                 error(RXERR_LOOKAHEAD);
