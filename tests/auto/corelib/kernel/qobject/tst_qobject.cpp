@@ -4793,7 +4793,6 @@ namespace ManyArgumentNamespace {
 
 void tst_QObject::connectManyArguments()
 {
-#ifdef Q_COMPILER_VARIADIC_TEMPLATES
     ManyArgumentObject ob;
     ob.count = 0;
     ManyArgumentNamespace::count = 0;
@@ -4841,7 +4840,6 @@ void tst_QObject::connectManyArguments()
     emit ob2.signal6("a", "b", "c", "d", "e", "f");
     QCOMPARE(ob2.count, 6);
     QCOMPARE(ManyArgumentNamespace::count, 6);
-#endif
 }
 
 class ReturnValue : public QObject {
