@@ -75,7 +75,7 @@ typedef uint64_t FSEventStreamEventId;
 QT_BEGIN_NAMESPACE
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-// Yes, I use a stat64 element here. QFileInfo requires too much knowledge about implementation
+// Yes, I use a stat element here. QFileInfo requires too much knowledge about implementation
 // details to be used as a long-standing record. Since I'm going to have to store this information, I can
 // do the stat myself too.
 struct PathInfo {
@@ -83,7 +83,7 @@ struct PathInfo {
             : originalPath(path), absolutePath(absPath) {}
     QString originalPath; // The path we need to emit
     QByteArray absolutePath; // The path we need to stat.
-    struct ::stat64 savedInfo;  // All the info for the path so we can compare it.
+    struct ::stat savedInfo;  // All the info for the path so we can compare it.
 };
 typedef QLinkedList<PathInfo> PathInfoList;
 typedef QHash<QString, PathInfoList> PathHash;
