@@ -1051,7 +1051,7 @@ void Generator::generateSignal(FunctionDef *def,int index)
     }
     fprintf(out, ")%s\n{\n", constQualifier);
     if (def->type.name.size() && def->normalizedType.size())
-        fprintf(out, "    %s _t0;\n", noRef(def->normalizedType).constData());
+        fprintf(out, "    %s _t0 = %s();\n", noRef(def->normalizedType).constData(), noRef(def->normalizedType).constData());
 
     fprintf(out, "    void *_a[] = { ");
     if (def->normalizedType.isEmpty()) {
