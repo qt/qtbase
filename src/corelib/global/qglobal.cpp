@@ -2026,25 +2026,11 @@ extern bool usingWinMain;
 extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str);
 #endif
 
-QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
-{
-    QtMsgHandler old = handler;
-    handler = h;
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-    if (!handler && usingWinMain)
-        handler = qWinMsgHandler;
-#endif
-    return old;
-}
-
 /*!
     \internal
 */
-void qt_message_output(QtMsgType msgType, const char *buf)
+static void qDefaultMsgHandler(QtMsgType, const char *buf)
 {
-    if (handler) {
-        (*handler)(msgType, buf);
-    } else {
 #if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
         mac_default_handler(buf);
 #elif defined(Q_OS_WINCE)
@@ -2067,7 +2053,31 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         fprintf(stderr, "%s\n", buf);
         fflush(stderr);
 #endif
-    }
+}
+
+QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
+{
+    //if handler is 0, set it to the
+    //default message handler
+    if (!handler)
+        handler = qDefaultMsgHandler;
+    QtMsgHandler old = handler;
+    handler = h;
+#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+    if (!handler && usingWinMain)
+        handler = qWinMsgHandler;
+#endif
+    return old;
+}
+
+/*!
+    \internal
+*/
+void qt_message_output(QtMsgType msgType, const char *buf)
+{
+    if (!handler)
+        handler = qDefaultMsgHandler;
+     (*handler)(msgType, buf);
 
     if (msgType == QtFatalMsg
         || (msgType == QtWarningMsg

@@ -54,6 +54,7 @@ private slots:
     void debugWithQBool() const;
     void veryLongWarningMessage() const;
     void qDebugQStringRef() const;
+    void defaultMessagehandler() const;
 };
 
 void tst_QDebug::assignment() const
@@ -152,6 +153,17 @@ void tst_QDebug::qDebugQStringRef() const
         QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("\"\" "));
         qInstallMsgHandler(0);
     }
+}
+
+void tst_QDebug::defaultMessagehandler() const
+{
+    QtMsgHandler defaultMessageHandler1 = qInstallMsgHandler(0);
+    QtMsgHandler defaultMessageHandler2 = qInstallMsgHandler(myMessageHandler);
+    bool same = (*defaultMessageHandler1 == *defaultMessageHandler2);
+    QVERIFY(same);
+    QtMsgHandler messageHandler = qInstallMsgHandler(0);
+    same = (*messageHandler == *myMessageHandler);
+    QVERIFY(same);
 }
 
 QTEST_MAIN(tst_QDebug);
