@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QDBusServer
     \inmodule QtDBus
-    \internal
 
     \brief The QDBusServer class provides peer-to-peer communication
     between processes on the same computer.
