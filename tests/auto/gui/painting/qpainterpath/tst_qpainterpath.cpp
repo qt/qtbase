@@ -742,7 +742,11 @@ void tst_QPainterPath::closing()
         triangle.lineTo(200, 200);
         QCOMPARE(triangle.elementCount(), 3);
 
+        //add this line to make sure closeSubpath() also calls detach() and detached properly
+        QPainterPath copied = triangle;
         triangle.closeSubpath();
+        QCOMPARE(copied.elementCount(), 3);
+
         QCOMPARE(triangle.elementCount(), 4);
         QCOMPARE(triangle.elementAt(3).type, QPainterPath::LineToElement);
 

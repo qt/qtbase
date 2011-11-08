@@ -153,7 +153,7 @@ public:
     }
 
     QPainterPathData(const QPainterPathData &other) :
-        QPainterPathPrivate(other), cStart(other.cStart), fillRule(other.fillRule),
+        QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
         bounds(other.bounds),
         controlBounds(other.controlBounds),
         dirtyBounds(other.dirtyBounds),
