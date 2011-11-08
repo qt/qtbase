@@ -327,6 +327,10 @@ void tst_QOpenGL::fboSimpleRendering()
 //       buffer is actually missing. But that's probably ok anyway.
 void tst_QOpenGL::fboRendering()
 {
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
     QWindow window;
     window.setGeometry(0, 0, 10, 10);
     window.create();
@@ -391,6 +395,10 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 
 void tst_QOpenGL::openGLPaintDevice()
 {
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
     QWindow window;
     window.setGeometry(0, 0, 128, 128);
     window.create();
