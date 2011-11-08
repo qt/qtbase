@@ -761,6 +761,8 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
 static inline QString toString(asmListingOption option)
 {
     switch (option) {
+    case asmListingNone:
+        break;
     case asmListingAsmMachine:
         return "AssemblyAndMachineCode";
     case asmListingAsmMachineSrc:
@@ -791,6 +793,8 @@ static inline QString toString(basicRuntimeCheckOption option)
 static inline QString toString(callingConventionOption option)
 {
     switch (option) {
+    case callConventionDefault:
+        break;
     case callConventionCDecl:
         return "Cdecl";
     case callConventionFastCall:
@@ -804,6 +808,8 @@ static inline QString toString(callingConventionOption option)
 static inline QString toString(CompileAsOptions option)
 {
     switch (option) {
+    case compileAsDefault:
+        break;
     case compileAsC:
         return "CompileAsC";
     case compileAsCPlusPlus:
@@ -815,6 +821,9 @@ static inline QString toString(CompileAsOptions option)
 static inline QString toString(compileAsManagedOptions option)
 {
     switch (option) {
+    case managedDefault:
+    case managedAssemblySafe:
+        break;
     case managedAssembly:
         return "true";
     case managedAssemblyPure:
@@ -828,6 +837,10 @@ static inline QString toString(compileAsManagedOptions option)
 static inline QString toString(debugOption option)
 {
     switch (option) {
+    case debugUnknown:
+    case debugDisabled:
+    case debugLineInfoOnly:
+        break;
     case debugOldStyleInfo:
         return "OldStyle";
     case debugEditAndContinue:
@@ -841,6 +854,8 @@ static inline QString toString(debugOption option)
 static inline QString toString(enhancedInstructionSetOption option)
 {
     switch (option) {
+    case archNotSet:
+        break;
     case archSSE:
         return "StreamingSIMDExtensions";
     case archSSE2:
@@ -852,6 +867,8 @@ static inline QString toString(enhancedInstructionSetOption option)
 static inline QString toString(exceptionHandling option)
 {
     switch (option) {
+    case ehDefault:
+        break;
     case ehNone:
         return "false";
     case ehNoSEH:
@@ -865,6 +882,8 @@ static inline QString toString(exceptionHandling option)
 static inline QString toString(favorSizeOrSpeedOption option)
 {
     switch (option) {
+    case favorNone:
+        break;
     case favorSize:
         return "Size";
     case favorSpeed:
@@ -876,6 +895,8 @@ static inline QString toString(favorSizeOrSpeedOption option)
 static inline QString toString(floatingPointModel option)
 {
     switch (option) {
+    case floatingPointNotSet:
+        break;
     case floatingPointFast:
         return "Fast";
     case floatingPointPrecise:
@@ -889,6 +910,8 @@ static inline QString toString(floatingPointModel option)
 static inline QString toString(inlineExpansionOption option)
 {
     switch (option) {
+    case expandDefault:
+        break;
     case expandDisable:
         return "Disabled";
     case expandOnlyInline:
@@ -902,6 +925,11 @@ static inline QString toString(inlineExpansionOption option)
 static inline QString toString(optimizeOption option)
 {
     switch (option) {
+    case optimizeDisabled:
+    case optimizeFull:
+    case optimizeCustom:
+    case optimizeDefault:
+        break;
     case optimizeMinSpace:
         return "MinSpace";
     case optimizeMaxSpeed:
@@ -913,6 +941,9 @@ static inline QString toString(optimizeOption option)
 static inline QString toString(pchOption option)
 {
     switch (option) {
+    case pchUnset:
+    case pchGenerateAuto:
+        break;
     case pchNone:
          return "NotUsing";
     case pchCreateUsingSpecific:
@@ -926,6 +957,10 @@ static inline QString toString(pchOption option)
 static inline QString toString(runtimeLibraryOption option)
 {
     switch (option) {
+    case rtUnknown:
+    case rtSingleThreaded:
+    case rtSingleThreadedDebug:
+        break;
     case rtMultiThreaded:
         return "MultiThreaded";
     case rtMultiThreadedDLL:
@@ -941,6 +976,8 @@ static inline QString toString(runtimeLibraryOption option)
 static inline QString toString(structMemberAlignOption option)
 {
     switch (option) {
+    case alignNotSet:
+        break;
     case alignSingleByte:
         return "1Byte";
     case alignTwoBytes:
@@ -958,6 +995,8 @@ static inline QString toString(structMemberAlignOption option)
 static inline QString toString(warningLevelOption option)
 {
     switch (option) {
+    case warningLevelUnknown:
+        break;
     case warningLevel_0:
         return "TurnOffAllWarnings";
     case warningLevel_1:
@@ -975,6 +1014,8 @@ static inline QString toString(warningLevelOption option)
 static inline QString toString(optLinkTimeCodeGenType option)
 {
     switch (option) {
+    case optLTCGDefault:
+        break;
     case optLTCGEnabled:
         return "UseLinkTimeCodeGeneration";
     case optLTCGInstrument:
@@ -990,6 +1031,8 @@ static inline QString toString(optLinkTimeCodeGenType option)
 static inline QString toString(subSystemOption option)
 {
     switch (option) {
+    case subSystemNotSet:
+        break;
     case subSystemConsole:
         return "Console";
     case subSystemWindows:
@@ -1001,6 +1044,8 @@ static inline QString toString(subSystemOption option)
 static inline QString toString(machineTypeOption option)
 {
     switch (option) {
+    case machineNotSet:
+        break;
     case machineX86:
         return "MachineX86";
     case machineX64:
@@ -1025,6 +1070,8 @@ static inline QString toString(midlCharOption option)
 static inline QString toString(midlErrorCheckOption option)
 {
     switch (option) {
+    case midlAlignNotSet:
+        break;
     case midlDisableAll:
         return "None";
     case midlEnableAll:
@@ -1036,6 +1083,8 @@ static inline QString toString(midlErrorCheckOption option)
 static inline QString toString(midlStructMemberAlignOption option)
 {
     switch (option) {
+    case midlAlignNotSet:
+        break;
     case midlAlignSingleByte:
         return "1";
     case midlAlignTwoBytes:
@@ -1053,6 +1102,8 @@ static inline QString toString(midlStructMemberAlignOption option)
 static inline QString toString(midlTargetEnvironment option)
 {
     switch (option) {
+    case midlTargetNotSet:
+        break;
     case midlTargetWin32:
         return "Win32";
     case midlTargetWin64:
@@ -1102,6 +1153,9 @@ static inline QString toString(charSet option)
 static inline QString toString(ConfigurationTypes option)
 {
     switch (option) {
+    case typeUnknown:
+    case typeGeneric:
+        break;
     case typeApplication:
         return "Application";
     case typeDynamicLibrary:
@@ -1115,6 +1169,8 @@ static inline QString toString(ConfigurationTypes option)
 static inline QString toString(useOfATL option)
 {
     switch (option) {
+    case useATLNotSet:
+        break;
     case useATLStatic:
         return "Static";
     case useATLDynamic:
@@ -1126,6 +1182,8 @@ static inline QString toString(useOfATL option)
 static inline QString toString(useOfMfc option)
 {
     switch (option) {
+    case useMfcStdWin:
+        break;
     case useMfcStatic:
         return "Static";
     case useMfcDynamic:
@@ -1151,6 +1209,8 @@ static inline triState toTriState(preprocessOption option)
 {
     switch (option)
     {
+    case preprocessUnknown:
+        break;
     case preprocessNo:
         return _False;
     case preprocessNoLineNumbers:
@@ -1164,6 +1224,8 @@ static inline triState toTriState(optFoldingType option)
 {
     switch (option)
     {
+    case optFoldingDefault:
+        break;
     case optNoFolding:
         return _False;
     case optFolding:
