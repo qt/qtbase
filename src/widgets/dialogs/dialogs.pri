@@ -42,13 +42,8 @@ false:mac {
 }
 
 win32 {
-    HEADERS += dialogs/qwizard_win_p.h \
-               dialogs/qfiledialog_win_p.h
-    SOURCES += dialogs/qdialogsbinarycompat_win.cpp \
-               dialogs/qfiledialog_win.cpp \
-               dialogs/qwizard_win.cpp
-
-    !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
+    HEADERS += dialogs/qwizard_win_p.h
+    SOURCES += dialogs/qwizard_win.cpp
 }
 
 wince*: FORMS += dialogs/qfiledialog_embedded.ui
