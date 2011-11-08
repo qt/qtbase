@@ -435,6 +435,11 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 // send any pending requests
                 copyCredentials(i,  auth, isProxy);
             }
+        } else if (priv->phase == QAuthenticatorPrivate::Start) {
+            // If the url's authenticator has a 'user' set we will end up here (phase is only set to 'Done' by
+            // parseHttpResponse above if 'user' is empty). So if credentials were supplied with the request,
+            // such as in the case of an XMLHttpRequest, this is our only opportunity to cache them.
+            emit reply->cacheCredentials(reply->request(), auth);
         }
         // - Changing values in QAuthenticator will reset the 'phase'. Therefore if it is still "Done"
         //   then nothing was filled in by the user or the cache

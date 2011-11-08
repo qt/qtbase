@@ -312,8 +312,6 @@ void QHttpThreadDelegate::startRequest()
         // some signals are only interesting when normal asynchronous style is used
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(httpReply,SIGNAL(dataReadProgress(qint64, qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
-        connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
-                this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
 #ifndef QT_NO_OPENSSL
         connect(httpReply,SIGNAL(sslErrors(const QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
 #endif
@@ -325,6 +323,9 @@ void QHttpThreadDelegate::startRequest()
         connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     }
+
+    connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
 }
 
 // This gets called from the user thread or by the synchronous HTTP timeout timer

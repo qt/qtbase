@@ -378,6 +378,7 @@ private Q_SLOTS:
     void dontInsertPartialContentIntoTheCache();
 
     void httpUserAgent();
+    void synchronousAuthenticationCache();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -499,6 +500,14 @@ protected:
         client->setParent(this);
         ++totalConnections;
     }
+
+    virtual void reply() {
+        // we need to emulate the bytesWrittenSlot call if the data is empty.
+        if (dataToTransmit.size() == 0)
+            QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
+        else
+            client->write(dataToTransmit);
+    }
 private:
     void connectSocketSignals()
     {
@@ -532,11 +541,7 @@ public slots:
             if (multiple)
                 receivedData.remove(0, doubleEndlPos+4);
 
-            // we need to emulate the bytesWrittenSlot call if the data is empty.
-            if (dataToTransmit.size() == 0)
-                QMetaObject::invokeMethod(this, "bytesWrittenSlot", Qt::QueuedConnection);
-            else
-                client->write(dataToTransmit);
+            reply();
         }
     }
 
@@ -6359,6 +6364,79 @@ void tst_QNetworkReply::httpUserAgent()
     QVERIFY(server.receivedData.contains("\r\nUser-Agent: abcDEFghi\r\n"));
 }
 
+void tst_QNetworkReply::synchronousAuthenticationCache()
+{
+    class MiniAuthServer : public MiniHttpServer {
+    public:
+        MiniAuthServer(QThread *thread) : MiniHttpServer(QByteArray(), false, thread) {};
+        virtual void reply() {
+
+            dataToTransmit =
+                "HTTP/1.0 401 Unauthorized\r\n"
+                "WWW-Authenticate: Basic realm=\"QNetworkAccessManager Test Realm\"\r\n"
+                "Content-Length: 4\r\n"
+                "Connection: close\r\n"
+                "Content-Type: text/plain\r\n"
+                "\r\n"
+                "auth";
+            QRegExp rx("Authorization: Basic ([^\r\n]*)\r\n");
+            if (rx.indexIn(receivedData) > 0) {
+                if (QByteArray::fromBase64(rx.cap(1).toLatin1()) == "login:password") {
+                    dataToTransmit =
+                          "HTTP/1.0 200 OK\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "Content-Length: 2\r\n"
+                          "\r\n"
+                          "OK";
+                }
+            }
+            receivedData.clear();
+            MiniHttpServer::reply();
+        }
+    };
+
+    // when using synchronous commands, we need a different event loop for
+    // the server thread, because the client is never returning to the
+    // event loop
+    QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
+    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> server(new MiniAuthServer(serverThread.data()));
+    server->doClose = true;
+
+    //1)  URL without credentials, we are not authenticated
+    {
+        QUrl url = "http://localhost:" + QString::number(server->serverPort()) + "/path";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    }
+
+    //2)  URL with credentials, we are authenticated
+    {
+        QUrl url = "http://login:password@localhost:" + QString::number(server->serverPort()) + "/path2";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->readAll().constData(), "OK");
+    }
+
+    //3)  URL without credentials, we are authenticated because they are cached
+    {
+        QUrl url = "http://localhost:" + QString::number(server->serverPort()) + "/path3";
+        QNetworkRequest request(url);
+        request.setAttribute(QNetworkRequest::SynchronousRequestAttribute, true);
+
+        QNetworkReplyPtr reply = manager.get(request);
+        QVERIFY(reply->isFinished());
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->readAll().constData(), "OK");
+    }
+}
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
