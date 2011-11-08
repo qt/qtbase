@@ -1,7 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file alias="systemsemaphore_acquire.js">../lackey/scripts/systemsemaphore_acquire.js</file>
-    <file alias="systemsemaphore_release.js">../lackey/scripts/systemsemaphore_release.js</file>
-    <file alias="systemsemaphore_acquirerelease.js">../lackey/scripts/systemsemaphore_acquirerelease.js</file>
-</qresource>
-</RCC>

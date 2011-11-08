@@ -14,7 +14,6 @@ SUBDIRS=\
     qsignalmapper \
     qsocketnotifier \
     qtimer \
-    # qtipc \ # needs to be moved to qtscript (and note that it uses private API)
     qtranslator \
     qvariant \
     qwineventnotifier
