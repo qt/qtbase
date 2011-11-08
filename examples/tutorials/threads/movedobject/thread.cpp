@@ -66,7 +66,7 @@ Thread::~Thread()
 // starts thread, moves worker to this thread and blocks
 void Thread::launchWorker(QObject *worker)
 {
-    worker = worker;
+    this->worker = worker;
     start();
     worker->moveToThread(this);
     shutDownHelper->moveToThread(this);
