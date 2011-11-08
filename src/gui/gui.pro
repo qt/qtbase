@@ -59,8 +59,8 @@ contains(QMAKE_MAC_XARCH, no) {
             mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
-                mmx_compiler.commands += -Xarch_i386 -mmmx
-                mmx_compiler.commands += -Xarch_x86_64 -mmmx
+                x86: mmx_compiler.commands += -Xarch_i386 -mmmx
+                x86_64: mmx_compiler.commands += -Xarch_x86_64 -mmmx
             } else {
                 mmx_compiler.commands += -mmmx
             }
@@ -78,8 +78,8 @@ contains(QMAKE_MAC_XARCH, no) {
             mmx3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
-                mmx3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -mmmx
-                mmx3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -mmmx
+                x86: mmx3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -mmmx
+                x86_64: mmx3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -mmmx
             } else {
                 mmx3dnow_compiler.commands += -m3dnow -mmmx
             }
@@ -96,8 +96,8 @@ contains(QMAKE_MAC_XARCH, no) {
                 sse3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
 
                 mac {
-                    sse3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -msse
-                    sse3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -msse
+                    x86: sse3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -msse
+                    x86_64: sse3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -msse
                 } else {
                     sse3dnow_compiler.commands += -m3dnow -msse
                 }
@@ -116,8 +116,8 @@ contains(QMAKE_MAC_XARCH, no) {
             sse_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
-                sse_compiler.commands += -Xarch_i386 -msse
-                sse_compiler.commands += -Xarch_x86_64 -msse
+                x86: sse_compiler.commands += -Xarch_i386 -msse
+                x86_64: sse_compiler.commands += -Xarch_x86_64 -msse
             } else {
                 sse_compiler.commands += -msse
             }
@@ -135,8 +135,8 @@ contains(QMAKE_MAC_XARCH, no) {
             sse2_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
-                sse2_compiler.commands += -Xarch_i386 -msse2
-                sse2_compiler.commands += -Xarch_x86_64 -msse2
+                x86: sse2_compiler.commands += -Xarch_i386 -msse2
+                x86_64: sse2_compiler.commands += -Xarch_x86_64 -msse2
             } else {
                 sse2_compiler.commands += -msse2
             }
@@ -154,8 +154,8 @@ contains(QMAKE_MAC_XARCH, no) {
             ssse3_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
-                ssse3_compiler.commands += -Xarch_i386 -mssse3
-                ssse3_compiler.commands += -Xarch_x86_64 -mssse3
+                x86: ssse3_compiler.commands += -Xarch_i386 -mssse3
+                x86_64: ssse3_compiler.commands += -Xarch_x86_64 -mssse3
             } else {
                 ssse3_compiler.commands += -mssse3
             }
