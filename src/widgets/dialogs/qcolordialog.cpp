@@ -63,13 +63,8 @@
 #include "qmimedata.h"
 #include "qspinbox.h"
 #include "qdialogbuttonbox.h"
-#include "private/qguiplatformplugin_p.h"
 
-#ifdef Q_WS_S60
-#include "private/qt_s60_p.h"
-#endif
-
-#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+#ifdef MAEMO_UI
 #  define QT_SMALL_COLORDIALOG
 #endif
 
@@ -1762,8 +1757,9 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->setCurrentQColor(color);
     d->setCocoaPanelColor(color);
 #endif
-    if (d->nativeDialogInUse)
-        qt_guiPlatformPlugin()->colorDialogSetCurrentColor(this, color);
+    // ### fixme: Call helper
+    // if (d->nativeDialogInUse)
+    //    qt_guiPlatformPlugin()->colorDialogSetCurrentColor(this, color);
 }
 
 QColor QColorDialog::currentColor() const
@@ -2050,8 +2046,8 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
-    Q_D(QColorDialog);
 #if defined(Q_WS_MAC)
+    Q_D(QColorDialog);
     if (d->delegate) {
         d->releaseCocoaColorPanelDelegate();
         QColorDialogPrivate::sharedColorPanelAvailable = true;
@@ -2065,11 +2061,7 @@ QColorDialog::~QColorDialog()
             settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), cusrgb[i]);
     }
 #endif
-    if (d->nativeDialogInUse)
-        qt_guiPlatformPlugin()->colorDialogDelete(this);
-
 }
-
 
 /*!
     \reimp
