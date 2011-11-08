@@ -929,14 +929,12 @@ static QString elliditide(const QString &text, const QFontMetrics &fontMetrics, 
             int width = fontMetrics.width(leftHalf + ellipsis + rightHalf);
             if (width < rect.width()) {
                 title = leftHalf + ellipsis + rightHalf;
-                width = width;
                 break;
             }
             rightHalf.remove(0, 1);
             width = fontMetrics.width(leftHalf + ellipsis + rightHalf);
             if (width < rect.width()) {
                 title = leftHalf + ellipsis + rightHalf;
-                width = width;
                 break;
             }
         }
