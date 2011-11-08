@@ -1537,8 +1537,7 @@ void QWidgetTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton butto
     const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
-    if (isPreediting())
-        qApp->inputPanel()->commit();
+    commitPreedit();
 
     if (trippleClickTimer.isActive()
         && ((pos - trippleClickPoint).toPoint().manhattanLength() < QApplication::startDragDistance())) {
@@ -1648,7 +1647,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             int selectionStartPos = q->hitTest(mousePressPos, Qt::FuzzyHit);
 
             if (newCursorPos != selectionStartPos) {
-                qApp->inputPanel()->commit();
+                commitPreedit();
                 // commit invalidates positions
                 newCursorPos = q->hitTest(mousePos, Qt::FuzzyHit);
                 selectionStartPos = q->hitTest(mousePressPos, Qt::FuzzyHit);
@@ -1774,8 +1773,7 @@ void QWidgetTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton
 #ifndef QT_NO_DRAGANDDROP
         mightStartDrag = false;
 #endif
-        if (isPreediting())
-            qApp->inputPanel()->commit();
+        commitPreedit();
 
         const QTextCursor oldSelection = cursor;
         setCursorPosition(pos);
@@ -2750,6 +2748,27 @@ bool QWidgetTextControlPrivate::isPreediting() const
         return true;
 
     return false;
+}
+
+void QWidgetTextControlPrivate::commitPreedit()
+{
+    if (!isPreediting())
+        return;
+
+    cursor.beginEditBlock();
+    qApp->inputPanel()->reset();
+
+    if (!tentativeCommit.isEmpty()) {
+        cursor.insertText(tentativeCommit);
+        tentativeCommit.clear();
+    }
+
+    preeditCursor = 0;
+    QTextBlock block = cursor.block();
+    QTextLayout *layout = block.layout();
+    layout->setPreeditArea(-1, QString());
+    layout->clearAdditionalFormats();
+    cursor.endEditBlock();
 }
 
 bool QWidgetTextControl::setFocusToNextOrPreviousAnchor(bool next)

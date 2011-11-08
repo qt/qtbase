@@ -170,6 +170,7 @@ public:
 #endif
 
     bool isPreediting() const;
+    void commitPreedit();
 
     void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
 
