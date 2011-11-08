@@ -3854,6 +3854,13 @@ void tst_QLineEdit::inputMethodTentativeCommit()
     QCOMPARE(testWidget->text(), QString(""));
     testWidget->setValidator(0);
     delete validator;
+
+    // text remains when focus is removed
+    testWidget->setText(""); // ensure input state is reset
+    QApplication::sendEvent(testWidget, &event);
+    QFocusEvent lostFocus(QEvent::FocusOut);
+    QApplication::sendEvent(testWidget, &lostFocus);
+    QCOMPARE(testWidget->text(), QString("test"));
 }
 
 

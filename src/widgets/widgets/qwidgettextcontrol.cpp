@@ -2046,6 +2046,7 @@ void QWidgetTextControlPrivate::focusEvent(QFocusEvent *e)
         }
 #endif
     } else {
+        commitPreedit();
         setBlinkingCursorEnabled(false);
 
         if (cursorIsFocusIndicator

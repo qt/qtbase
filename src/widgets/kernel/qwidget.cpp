@@ -3132,7 +3132,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
                 qApp->inputPanel()->setInputItem(focusWidget);
         } else {
-            qApp->inputPanel()->commit();
+            qApp->inputPanel()->reset();
             qApp->inputPanel()->setInputItem(0);
         }
     }
@@ -10191,7 +10191,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->commit();
+            qApp->inputPanel()->reset();
             qApp->inputPanel()->setInputItem(0);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
@@ -10244,7 +10244,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             qApp->inputPanel()->setInputItem(focusWidget);
         } else if (!on && qApp->inputPanel()->inputItem() == focusWidget) {
-            qApp->inputPanel()->commit();
+            qApp->inputPanel()->reset();
             qApp->inputPanel()->setInputItem(0);
         }
 #endif //QT_NO_IM

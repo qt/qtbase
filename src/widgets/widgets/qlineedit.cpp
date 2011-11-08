@@ -1751,6 +1751,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         reason != Qt::PopupFocusReason)
         deselect();
 
+    d->control->commitPreedit();
     d->setCursorVisible(false);
     d->control->setCursorBlinkPeriod(0);
 #ifdef QT_KEYPAD_NAVIGATION

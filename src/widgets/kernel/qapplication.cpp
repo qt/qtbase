@@ -1989,7 +1989,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                      // or it is not created fully yet.
                      || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
                                           || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
-            qApp->inputPanel()->commit();
+            qApp->inputPanel()->reset();
             qApp->inputPanel()->setInputItem(0);
         }
 #endif //QT_NO_IM
