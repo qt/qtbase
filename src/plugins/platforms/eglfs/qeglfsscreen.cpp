@@ -91,8 +91,8 @@ class QEglFSContext : public QEGLPlatformContext
 {
 public:
     QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
-                  EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API)
-        : QEGLPlatformContext(format, share, display, eglClientVersion, eglApi)
+                  EGLenum eglApi = EGL_OPENGL_ES_API)
+        : QEGLPlatformContext(format, share, display, eglApi)
     {
     }
 
