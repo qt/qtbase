@@ -282,8 +282,7 @@ public:
     template<typename T>
     bool delegate(const T*)
     {
-        CallIsNull<T> null;
-        return null.isNull(m_d);
+        return CallIsNull<T>::isNull(m_d);
     }
     // we need that as sizof(void) is undefined and it is needed in HasIsNullMethod
     bool delegate(const void *) { return m_d->is_null; }
