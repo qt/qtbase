@@ -101,13 +101,13 @@ QT_BEGIN_NAMESPACE
 // Internal operator functions for timevals
 inline timeval &normalizedTimeval(timeval &t)
 {
-    while (t.tv_usec > 1000000l) {
+    while (t.tv_usec >= 1000000) {
         ++t.tv_sec;
-        t.tv_usec -= 1000000l;
+        t.tv_usec -= 1000000;
     }
-    while (t.tv_usec < 0l) {
+    while (t.tv_usec < 0) {
         --t.tv_sec;
-        t.tv_usec += 1000000l;
+        t.tv_usec += 1000000;
     }
     return t;
 }

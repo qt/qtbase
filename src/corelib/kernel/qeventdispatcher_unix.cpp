@@ -448,11 +448,7 @@ static timeval roundToMillisecond(timeval val)
 
     int us = val.tv_usec % 1000;
     val.tv_usec += 1000 - us;
-    if (val.tv_usec > 1000000) {
-        val.tv_usec -= 1000000;
-        ++val.tv_sec;
-    }
-    return val;
+    return normalizedTimeval(val);
 }
 
 /*
