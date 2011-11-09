@@ -54,6 +54,23 @@
 
 #include <QDebug>
 
+@implementation QNSWindow
+
+- (BOOL)canBecomeKeyWindow
+{
+
+    // The default implementation returns NO for title-bar less windows,
+    // override and return yes here to make sure popup windows such as
+    // the combobox popup can become the key window.
+    return YES;
+}
+
+@end
+
+@implementation QNSPanel
+
+@end
+
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_windowAttributes(0)
@@ -161,6 +178,24 @@ void QCocoaWindow::propagateSizeHints()
     } else {
         [m_nsWindow setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) display : YES];
     }
+}
+
+bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
+{
+    if (grab && ![m_nsWindow isKeyWindow])
+        [m_nsWindow makeKeyWindow];
+    else if (!grab && [m_nsWindow isKeyWindow])
+        [m_nsWindow resignKeyWindow];
+    return true;
+}
+
+bool QCocoaWindow::setMouseGrabEnabled(bool grab)
+{
+    if (grab && ![m_nsWindow isKeyWindow])
+        [m_nsWindow makeKeyWindow];
+    else if (!grab && [m_nsWindow isKeyWindow])
+        [m_nsWindow resignKeyWindow];
+    return true;
 }
 
 WId QCocoaWindow::winId() const
@@ -343,7 +378,7 @@ NSWindow * QCocoaWindow::createWindow()
             break;
         }
 
-        panel = [[NSPanel alloc] initWithContentRect:frame
+        panel = [[QNSPanel alloc] initWithContentRect:frame
                                    styleMask:m_windowAttributes
                                    backing:NSBackingStoreBuffered
                                    defer:NO]; // see window case below
@@ -354,7 +389,7 @@ NSWindow * QCocoaWindow::createWindow()
         break;
     }
     default:
-        window  = [[NSWindow alloc] initWithContentRect:frame
+        window  = [[QNSWindow alloc] initWithContentRect:frame
                                             styleMask:(NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask)
                                             backing:NSBackingStoreBuffered
                                             defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up

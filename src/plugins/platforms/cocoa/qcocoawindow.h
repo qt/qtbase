@@ -52,6 +52,20 @@
 
 QT_BEGIN_NAMESPACE
 
+@interface QNSWindow : NSWindow {
+
+}
+
+- (BOOL)canBecomeKeyWindow;
+
+@end
+
+@interface QNSPanel : QNSWindow {
+
+}
+
+@end
+
 class QCocoaWindow : public QPlatformWindow
 {
 public:
@@ -63,8 +77,9 @@ public:
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
-
     void propagateSizeHints();
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
 
     WId winId() const;
     NSView *contentView() const;
