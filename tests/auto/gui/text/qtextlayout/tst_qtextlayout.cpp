@@ -1513,7 +1513,7 @@ void tst_QTextLayout::xToCursorForLigatures()
 void tst_QTextLayout::cursorInNonStopChars()
 {
 #if defined(Q_WS_MAC)
-    QSKIP("This test can not be run on Mac", SkipAll);
+    QSKIP("This test can not be run on Mac");
 #endif
     QTextLayout layout(QString::fromUtf8("\xE0\xA4\xA4\xE0\xA5\x8D\xE0\xA4\xA8"));
     layout.beginLayout();
