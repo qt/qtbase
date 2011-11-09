@@ -45,6 +45,9 @@
 #include "qdir.h"
 #include "qvarlengtharray.h"
 #include "private/qcore_mac_p.h"
+#ifndef QT_NO_QOBJECT
+#include "qcoreapplication.h"
+#endif // QT_NO_QOBJECT
 
 QT_BEGIN_NAMESPACE
 
@@ -377,7 +380,28 @@ QMacSettingsPrivate::QMacSettingsPrivate(QSettings::Scope scope, const QString &
     int curPos = 0;
     int nextDot;
 
+    // attempt to use the organization parameter
     QString domainName = comify(organization);
+    // if not found, attempt to use the bundle identifier.
+    if (domainName.isEmpty()) {
+        CFBundleRef main_bundle = CFBundleGetMainBundle();
+        if (main_bundle != NULL) {
+            CFStringRef main_bundle_identifier = CFBundleGetIdentifier(main_bundle);
+            if (main_bundle_identifier != NULL) {
+                QString bundle_identifier(qtKey(main_bundle_identifier));
+                // CFBundleGetIdentifier returns identifier separated by slashes rather than periods.
+                QStringList bundle_identifier_components = bundle_identifier.split(QLatin1String("/"));
+                // pre-reverse them so that when they get reversed again below, they are in the com.company.product format.
+                QStringList bundle_identifier_components_reversed;
+                for (int i=0; i<bundle_identifier_components.size(); ++i) {
+                    const QString &bundle_identifier_component = bundle_identifier_components.at(i);
+                    bundle_identifier_components_reversed.push_front(bundle_identifier_component);
+                }
+                domainName = bundle_identifier_components_reversed.join(QLatin1String("."));
+            }
+        }
+    }
+    // if no bundle identifier yet. use a hard coded string.
     if (domainName.isEmpty()) {
         setStatus(QSettings::AccessError);
         domainName = QLatin1String("unknown-organization.trolltech.com");
@@ -579,6 +603,26 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format,
                                            const QString &organization,
                                            const QString &application)
 {
+#ifndef QT_BOOTSTRAPPED
+    if (organization == QLatin1String("Trolltech"))
+    {
+        QString organizationDomain = QCoreApplication::organizationDomain();
+        QString applicationName = QCoreApplication::applicationName();
+
+        QSettingsPrivate *newSettings;
+        if (format == QSettings::NativeFormat) {
+            newSettings = new QMacSettingsPrivate(scope, organizationDomain, applicationName);
+        } else {
+            newSettings = new QConfFileSettingsPrivate(format, scope, organizationDomain, applicationName);
+        }
+
+        newSettings->beginGroupOrArray(QSettingsGroup(normalizedKey(organization)));
+        if (!application.isEmpty())
+            newSettings->beginGroupOrArray(QSettingsGroup(normalizedKey(application)));
+
+        return newSettings;
+    }
+#endif
     if (format == QSettings::NativeFormat) {
         return new QMacSettingsPrivate(scope, organization, application);
     } else {
