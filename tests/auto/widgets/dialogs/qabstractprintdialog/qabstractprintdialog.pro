@@ -6,5 +6,3 @@ CONFIG += testcase
 TARGET = tst_qabstractprintdialog
 QT += widgets printsupport testlib
 SOURCES += tst_qabstractprintdialog.cpp
-
-CONFIG += insignificant_test # QTBUG-21402
