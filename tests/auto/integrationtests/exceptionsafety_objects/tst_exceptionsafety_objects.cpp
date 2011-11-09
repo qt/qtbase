@@ -490,6 +490,9 @@ void tst_ExceptionSafety_Objects::widgets()
         || tag == QLatin1String("QWorkspace"))
         QSKIP("This type of widget is not currently strongly exception safe");
 
+    if (tag == QLatin1String("QWidget"))
+        QSKIP("QTBUG-18927");
+
     QFETCH(AbstractTester *, widgetCreator);
 
     doOOMTest(*widgetCreator, 0, 00000);
