@@ -457,8 +457,8 @@ public:
 
     Qt::InputMethodQueries queries() const { return m_queries; }
 
-    void setValue(Qt::InputMethodQuery q, const QVariant &v);
-    QVariant value(Qt::InputMethodQuery q) const;
+    void setValue(Qt::InputMethodQuery query, const QVariant &value);
+    QVariant value(Qt::InputMethodQuery query) const;
 private:
     Qt::InputMethodQueries m_queries;
     struct QueryPair {

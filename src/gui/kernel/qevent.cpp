@@ -1721,38 +1721,56 @@ void QInputMethodEvent::setTentativeCommitString(const QString &tentativeCommitS
     able to support complex input method operations as support for
     surrounding text and reconversions.
 
-    query() specifies which property is queried.
+    queries() specifies which properties are queried.
 
     The object should call setValue() on the event to fill in the requested
     data before calling accept().
 */
+
+/*!
+    \fn Qt::InputMethodQueries QInputMethodQueryEvent::queries() const
+
+    Returns the properties queried by the event.
+ */
+
+/*!
+    Constructs a query event for properties given by \a queries.
+ */
 QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQueries queries)
     : QEvent(InputMethodQuery),
       m_queries(queries)
 {
 }
 
+/*!
+    \internal
+ */
 QInputMethodQueryEvent::~QInputMethodQueryEvent()
 {
 }
 
-
-void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery q, const QVariant &v)
+/*!
+    Sets query property to given value.
+ */
+void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery query, const QVariant &value)
 {
     for (int i = 0; i < m_values.size(); ++i) {
-        if (m_values.at(i).query == q) {
-            m_values[i].value = v;
+        if (m_values.at(i).query == query) {
+            m_values[i].value = value;
             return;
         }
     }
-    QueryPair pair = { q, v };
+    QueryPair pair = { query, value };
     m_values.append(pair);
 }
 
-QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery q) const
+/*!
+    Returns value of a query property.
+ */
+QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 {
     for (int i = 0; i < m_values.size(); ++i)
-        if (m_values.at(i).query == q)
+        if (m_values.at(i).query == query)
             return m_values.at(i).value;
     return QVariant();
 }
