@@ -115,9 +115,7 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
 #endif
 
     EGLint major, minor;
-#ifdef QEGL_EXTRA_DEBUG
-    EGLint index;
-#endif
+
     if (!eglBindAPI(EGL_OPENGL_ES_API)) {
         qWarning("Could not bind GL_ES API\n");
         qFatal("EGL error");
@@ -188,6 +186,20 @@ void QEglFSScreen::createAndSetPlatformContext()
     kdRealizeWindow(window,&eglWindow);
 #endif
 
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("Configuration %d matches requirements\n", (int)config);
+
+    EGLint index;
+    for (index = 0; attrs[index].attr != -1; ++index) {
+        EGLint value;
+        if (eglGetConfigAttrib(m_dpy, config, attrs[index].attr, &value)) {
+            qWarning("\t%s: %d\n", attrs[index].name, (int)value);
+        }
+    }
+
+    qWarning("\n");
+#endif
+
     m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
@@ -195,18 +207,6 @@ void QEglFSScreen::createAndSetPlatformContext()
         qFatal("EGL error");
     }
     //    qWarning("Created surface %dx%d\n", w, h);
-
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("Configuration %d matches requirements\n", (int)config);
-
-    for (index = 0; attrs[index].attr != -1; ++index) {
-        EGLint value;
-        if (eglGetConfigAttrib(m_dpy, config, attrs[index].attr, &value)) {
-            qWarning("\t%s: %d\n", attrs[index].name, (int)value);
-        }
-    }
-    qWarning("\n");
-#endif
 
     QEGLPlatformContext *platformContext = new QEglFSContext(platformFormat, 0, m_dpy);
     m_platformContext = platformContext;
