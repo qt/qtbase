@@ -98,24 +98,24 @@ namespace QTest
         switch (action)
         {
             case MousePress:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 lastButton = button;
                 break;
             case MouseRelease:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 lastButton = Qt::NoButton;
                 break;
             case MouseDClick:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 qWait(10);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 qWait(20);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button,stateKey);
                 qWait(10);
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton,stateKey);
                 break;
             case MouseMove:
-                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton,stateKey);
                 //QCursor::setPos(window->mapToGlobal(pos));
 #ifdef Q_OS_MAC
                 QTest::qWait(20);
