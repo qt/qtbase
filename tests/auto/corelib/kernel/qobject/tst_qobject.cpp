@@ -124,6 +124,9 @@ private slots:
     void pointerConnect();
     void emitInDefinedOrderPointer();
     void customTypesPointer();
+    void connectCxx0x();
+    void connectToStaticCxx0x();
+    void connectCxx0xTypeMatching();
     void connectConvert();
     void connectWithReference();
     void connectManyArguments();
@@ -4202,6 +4205,229 @@ void tst_QObject::customTypesPointer()
         QVERIFY(QMetaType::isRegistered(idx));
     }
     QCOMPARE(instanceCount, 3);
+}
+
+void tst_QObject::connectCxx0x()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+
+    QObject::connect(s, &SenderObject::signal1, r1, &ReceiverObject::slot1);
+    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
+    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
+    QObject::connect(s, &SenderObject::signal3, r1, &ReceiverObject::slot2);
+
+    r1->reset();
+    QCOMPARE( r1->count_slot1, 0 );
+    QCOMPARE( r1->count_slot2, 0 );
+
+    s->emitSignal1();
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+
+    s->emitSignal3();
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 3 );
+
+    // connect signal to signal
+    QObject::connect(s, &SenderObject::signal2, s, &SenderObject::signal1);
+
+    r1->reset();
+    s->emitSignal2();
+    QCOMPARE( r1->count_slot1, 1 );
+
+    delete s;
+    delete r1;
+}
+
+int receivedCount;
+void receiverFunction() { ++receivedCount; }
+
+void tst_QObject::connectToStaticCxx0x()
+{
+    SenderObject *s = new SenderObject;
+
+    void (*receiver)() = receiverFunction;
+
+    QObject::connect(s, &SenderObject::signal1, receiver);
+    receivedCount = 0;
+    s->emitSignal1();
+    QCOMPARE(receivedCount, 1);
+
+    QObject::connect(s, &SenderObject::signal1, receiver);
+    receivedCount = 0;
+    s->emitSignal1();
+    QCOMPARE(receivedCount, 2);
+
+    delete s;
+}
+
+class LotsOfSignalsAndSlots: public QObject
+{
+    Q_OBJECT
+    typedef void (*fptr)();
+
+    public slots:
+        void slot_v() {}
+        void slot_vi(int) {}
+        void slot_vii(int, int) {}
+        void slot_viii(int, int, int) {}
+        int slot_i() { return 0; }
+        int slot_ii(int) { return 0; }
+        int slot_iii(int, int) { return 0; }
+        int slot_iiii(int, int, int) { return 0; }
+        void slot_vRi(int &) {}
+        void slot_vs(short) {}
+        void slot_vRs(short&) {}
+   /*     #ifdef Q_COMPILER_RVALUE_REFS
+        void slot_vOi(int &&) {}
+        void slot_vOs(short &&) {}
+        #endif*/
+        void slot_vPFvvE(fptr) {}
+
+        static void static_slot_v() {}
+        static void static_slot_vi(int) {}
+        static void static_slot_vii(int, int) {}
+        static void static_slot_viii(int, int, int) {}
+        static int static_slot_i() { return 0; }
+        static int static_slot_ii(int) { return 0; }
+        static int static_slot_iii(int, int) { return 0; }
+        static int static_slot_iiii(int, int, int) { return 0; }
+        static void static_slot_vRi(int &) {}
+        static void static_slot_vs(short) {}
+        static void static_slot_vRs(short&) {}
+/*        #if defined(Q_COMPILER_RVALUE_REFS) || defined(QT_ENABLE_CXX0X)
+        static void static_slot_vOi(int &&) {}
+        static void static_slot_vOs(short &&) {}
+        #endif*/
+        static void static_slot_vPFvvE(fptr) {}
+
+    signals:
+        void signal_v();
+        void signal_vi(int);
+        void signal_vii(int, int);
+        void signal_viii(int, int, int);
+        void signal_vRi(int &);
+        void signal_vs(short);
+        void signal_vRs(short &);
+/*        #if defined(Q_COMPILER_RVALUE_REFS) || defined(QT_ENABLE_CXX0X)
+        void signal_vOi(int &&);
+        void signal_vOs(short &&);
+        #endif*/
+        void signal_vPFvvE(fptr);
+
+        void signal(short&, short, long long, short);
+        void otherSignal(const char *);
+};
+
+void tst_QObject::connectCxx0xTypeMatching()
+{
+    // this is just about connecting the signals to the slots
+    // if this fails, this will be a compiler failure
+    typedef LotsOfSignalsAndSlots Foo;
+    Foo obj;
+
+    // member connects
+    QObject::connect(&obj, &Foo::signal_v, &obj, &Foo::slot_v);
+    QObject::connect(&obj, &Foo::signal_v, &obj, &Foo::slot_i);
+
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_v);
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_i);
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_ii);
+
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_v);
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_i);
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_ii);
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_vii);
+    QObject::connect(&obj, &Foo::signal_vii, &obj, &Foo::slot_iii);
+
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_v);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_i);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_ii);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_vii);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_iii);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_viii);
+    QObject::connect(&obj, &Foo::signal_viii, &obj, &Foo::slot_iiii);
+
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_vi); // repeated from above
+    QObject::connect(&obj, &Foo::signal_vRi, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRi, &obj, &Foo::slot_vRi);
+/*#if defined(Q_COMPILER_RVALUE_REFS) || defined(QT_ENABLE_CXX0X)
+    QObject::connect(&obj, &Foo::signal_vOi, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vRi, &obj, &Foo::slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vOi, &obj, &Foo::slot_vOi);
+#endif*/
+    // these are not supposed to compile:
+    //QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::slot_vRi);
+    //QObject::connect(&obj, &Foo::signal_vOi, &obj, &Foo::slot_vRi);
+
+    QObject::connect(&obj, &Foo::signal_vs, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRs, &obj, &Foo::slot_vi);
+/*#if defined(Q_COMPILER_RVALUE_REFS) || defined(QT_ENABLE_CXX0X)
+    QObject::connect(&obj, &Foo::signal_vOs, &obj, &Foo::slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRs, &obj, &Foo::slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vOs, &obj, &Foo::slot_vOi);
+    // these are not supposed to compile:
+    //QObject::connect(&obj, &Foo::signal_vOs, &obj, &Foo::slot_vRi);
+    //QObject::connect(&obj, &Foo::signal_vRs, &obj, &Foo::slot_vRi);
+#endif*/
+
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &obj, &Foo::slot_v);
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &obj, &Foo::slot_i);
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &obj, &Foo::slot_vPFvvE);
+
+    QObject::connect(&obj, &Foo::signal_v, &Foo::static_slot_v);
+    QObject::connect(&obj, &Foo::signal_v, &Foo::static_slot_i);
+
+    QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_v);
+    QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_i);
+    QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_ii);
+
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_v);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_i);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_ii);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_vii);
+    QObject::connect(&obj, &Foo::signal_vii, &Foo::static_slot_iii);
+
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_v);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_i);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_ii);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_vii);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_iii);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_viii);
+    QObject::connect(&obj, &Foo::signal_viii, &Foo::static_slot_iiii);
+
+/*#if defined(Q_COMPILER_RVALUE_REFS) && defined(QT_ENABLE_CXX0X)
+    QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vRi, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRi, &Foo::static_slot_vRi);
+    QObject::connect(&obj, &Foo::signal_vRi, &Foo::static_slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vOi, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vOi, &Foo::static_slot_vOi);
+    //QObject::connect(&obj, &Foo::signal_vi, &Foo::static_slot_vRi);
+    //QObject::connect(&obj, &Foo::signal_vOi, &Foo::static_slot_vRi);
+#endif*/
+
+    QObject::connect(&obj, &Foo::signal_vs, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRs, &Foo::static_slot_vi);
+/*#if defined(Q_COMPILER_RVALUE_REFS) && defined(QT_ENABLE_CXX0X)
+    QObject::connect(&obj, &Foo::signal_vOs, &Foo::static_slot_vi);
+    QObject::connect(&obj, &Foo::signal_vRs, &Foo::static_slot_vOi);
+    QObject::connect(&obj, &Foo::signal_vOs, &Foo::static_slot_vOi);
+    //QObject::connect(&obj, &Foo::signal_vOs, &Foo::static_slot_vRi);
+    //QObject::connect(&obj, &Foo::signal_vRs, &Foo::static_slot_vRi);
+#endif*/
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &Foo::static_slot_v);
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &Foo::static_slot_i);
+    QObject::connect(&obj, &Foo::signal_vPFvvE, &Foo::static_slot_vPFvvE);
+    QVERIFY(true); //compilation only test
 }
 
 class StringVariant : public QObject
