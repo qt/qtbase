@@ -80,6 +80,10 @@ public:
         {}
     ~QDialogPrivate() { delete m_platformHelper; }
 
+    QWindow *parentWindow() const;
+    bool setNativeDialogVisible(bool visible);
+    QVariant styleHint(QPlatformDialogHelper::StyleHint hint) const;
+
     QPointer<QPushButton> mainDef;
     Qt::Orientation orientation;
     QWidget *extension;
@@ -110,6 +114,8 @@ public:
     QPlatformDialogHelper *platformHelper() const;
 
 private:
+    virtual void initHelper(QPlatformDialogHelper *) {}
+
     mutable QPlatformDialogHelper *m_platformHelper;
     mutable bool m_platformHelperCreated;
 };

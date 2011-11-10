@@ -58,6 +58,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QDir>
 #include <QtCore/QScopedArrayPointer>
+#include <QtCore/QSharedPointer>
 #include <QtCore/QObject>
 #include <QtCore/QThread>
 #include <QtCore/private/qsystemlibrary_p.h>
@@ -353,17 +354,6 @@ Type dialogType(const QDialog *dialog)
 
 } // namespace QWindowsDialogs
 
-// Find the owner which to use as a parent of a native dialog.
-static inline HWND ownerWindow(const QDialog *dialog)
-{
-    if (QWidget *parent = dialog->nativeParentWidget())
-        if (QWindow *windowHandle = parent->windowHandle())
-            return QWindowsWindow::handleOf(windowHandle);
-    if (QWindow *fw = QGuiApplication::focusWindow())
-        return QWindowsWindow::handleOf(fw);
-    return 0;
-}
-
 /*!
     \class QWindowsNativeDialogBase
     \brief Base class for Windows native dialogs.
@@ -395,7 +385,7 @@ class QWindowsNativeDialogBase : public QObject
 public:
     virtual void setWindowTitle(const QString &title) = 0;
     virtual void exec(HWND owner = 0) = 0;
-    virtual QDialog::DialogCode result() const = 0;
+    virtual QPlatformDialogHelper::DialogCode result() const = 0;
 
 signals:
     void accepted();
@@ -425,13 +415,16 @@ protected:
     \ingroup qt-lighthouse-win
 */
 
-QWindowsDialogHelperBase::QWindowsDialogHelperBase(QDialog *dialog) :
+template <class BaseClass>
+QWindowsDialogHelperBase<BaseClass>::QWindowsDialogHelperBase(QDialog *dialog) :
     m_dialog(dialog),
-    m_nativeDialog(0)
+    m_nativeDialog(0),
+    m_ownerWindow(0)
 {
 }
 
-QWindowsNativeDialogBase *QWindowsDialogHelperBase::nativeDialog() const
+template <class BaseClass>
+QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::nativeDialog() const
 {
     if (!m_nativeDialog) {
          qWarning("%s invoked with no native dialog present.", __FUNCTION__);
@@ -440,7 +433,8 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase::nativeDialog() const
     return m_nativeDialog;
 }
 
-QWindowsNativeDialogBase *QWindowsDialogHelperBase::ensureNativeDialog()
+template <class BaseClass>
+QWindowsNativeDialogBase *QWindowsDialogHelperBase<BaseClass>::ensureNativeDialog()
 {
     // Create dialog and apply common settings.
     if (!m_nativeDialog) {
@@ -451,7 +445,8 @@ QWindowsNativeDialogBase *QWindowsDialogHelperBase::ensureNativeDialog()
     return m_nativeDialog;
 }
 
-void QWindowsDialogHelperBase::deleteNativeDialog_sys()
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::deleteNativeDialog_sys()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
@@ -491,29 +486,39 @@ void QWindowsDialogThread::run()
         qDebug("<%s" , __FUNCTION__);
 }
 
-bool QWindowsDialogHelperBase::setVisible_sys(bool visible)
+template <class BaseClass>
+bool QWindowsDialogHelperBase<BaseClass>::show_sys(QWindow *parent)
 {
-    const bool nonNative = nonNativeDialog();
     const bool modal = m_dialog->isModal();
+    if (parent) {
+        m_ownerWindow = QWindowsWindow::handleOf(parent);
+    } else {
+        m_ownerWindow = 0;
+    }
     if (QWindowsContext::verboseDialogs)
-        qDebug("%s visible=%d, native=%d, modal=%d native=%p" ,
-               __FUNCTION__, visible, !nonNative, modal, m_nativeDialog);
-    if (nonNative || (!visible && !m_nativeDialog) || (!modal && !supportsNonModalDialog()))
+        qDebug("%s modal=%d native=%p parent=%p" ,
+               __FUNCTION__, modal, m_nativeDialog, m_ownerWindow);
+    if (!modal && !supportsNonModalDialog())
         return false; // Was it changed in-between?
     if (!ensureNativeDialog())
         return false;
-    if (visible) {
-        if (!modal) { // Modal dialogs are shown in separate slot.
-            QWindowsDialogThread *thread = new QWindowsDialogThread(m_nativeDialog, ownerWindow(m_dialog));
-            thread->start();
-        }
-    } else {
-        m_nativeDialog->close();
+    if (!modal) { // Modal dialogs are shown in separate slot.
+        QWindowsDialogThread *thread = new QWindowsDialogThread(m_nativeDialog, m_ownerWindow);
+        thread->start();
     }
     return true;
 }
 
-void QWindowsDialogHelperBase::platformNativeDialogModalHelp()
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::hide_sys()
+{
+    if (m_nativeDialog)
+        m_nativeDialog->close();
+    m_ownerWindow = 0;
+}
+
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::platformNativeDialogModalHelp()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
@@ -522,17 +527,37 @@ void QWindowsDialogHelperBase::platformNativeDialogModalHelp()
                                        Qt::QueuedConnection);
 }
 
-void QWindowsDialogHelperBase::_q_platformRunNativeAppModalPanel()
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::_q_platformRunNativeAppModalPanel()
 {
     if (QWindowsNativeDialogBase *nd =nativeDialog())
-        nd->exec(ownerWindow(m_dialog));
+        nd->exec(m_ownerWindow);
 }
 
-QDialog::DialogCode QWindowsDialogHelperBase::dialogResultCode_sys()
+template <class BaseClass>
+QPlatformDialogHelper::DialogCode QWindowsDialogHelperBase<BaseClass>::dialogResultCode_sys()
 {
     if (QWindowsNativeDialogBase *nd =nativeDialog())
         return nd->result();
-    return QDialog::Rejected;
+    return QPlatformDialogHelper::Rejected;
+}
+
+static inline bool snapToDefaultButtonHint()
+{
+    BOOL snapToDefault = false;
+    if (SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0))
+        return snapToDefault;
+    return false;
+}
+
+template <class BaseClass>
+QVariant QWindowsDialogHelperBase<BaseClass>::styleHint(QPlatformDialogHelper::StyleHint hint) const
+{
+    switch (hint) {
+    case QPlatformDialogHelper::SnapToDefaultButton:
+        return QVariant(snapToDefaultButtonHint());
+    }
+    return BaseClass::styleHint(hint);
 }
 
 /*!
@@ -638,9 +663,9 @@ public:
     bool hideFiltersDetails() const    { return m_hideFiltersDetails; }
     void setHideFiltersDetails(bool h) { m_hideFiltersDetails = h; }
 
-    virtual QDialog::DialogCode result() const
+    virtual QPlatformDialogHelper::DialogCode result() const
         { return fileResult(); }
-    virtual QDialog::DialogCode fileResult(QStringList *fileResult = 0) const = 0;
+    virtual QPlatformDialogHelper::DialogCode fileResult(QStringList *fileResult = 0) const = 0;
     virtual QStringList selectedFiles() const = 0;
 
     inline void onFolderChange(IShellItem *);
@@ -953,21 +978,21 @@ HRESULT QWindowsNativeFileDialogEventHandler::OnTypeChange(IFileDialog *)
 class QWindowsNativeSaveFileDialog : public QWindowsNativeFileDialogBase
 {
 public:
-    virtual QDialog::DialogCode fileResult(QStringList *fileResult = 0) const;
+    virtual QPlatformDialogHelper::DialogCode fileResult(QStringList *fileResult = 0) const;
     virtual QStringList selectedFiles() const;
 };
 
-QDialog::DialogCode QWindowsNativeSaveFileDialog::fileResult(QStringList *result /* = 0 */) const
+QPlatformDialogHelper::DialogCode QWindowsNativeSaveFileDialog::fileResult(QStringList *result /* = 0 */) const
 {
     if (result)
         result->clear();
     IShellItem *item = 0;
     const HRESULT hr = fileDialog()->GetResult(&item);
     if (FAILED(hr) || !item)
-        return QDialog::Rejected;
+        return QPlatformDialogHelper::Rejected;
     if (result)
         result->push_back(QWindowsNativeFileDialogBase::itemPath(item));
-    return QDialog::Accepted;
+    return QPlatformDialogHelper::Accepted;
 }
 
 QStringList QWindowsNativeSaveFileDialog::selectedFiles() const
@@ -992,7 +1017,7 @@ QStringList QWindowsNativeSaveFileDialog::selectedFiles() const
 class QWindowsNativeOpenFileDialog : public QWindowsNativeFileDialogBase
 {
 public:
-    virtual QDialog::DialogCode fileResult(QStringList *fileResult = 0) const;
+    virtual QPlatformDialogHelper::DialogCode fileResult(QStringList *fileResult = 0) const;
     virtual QStringList selectedFiles() const;
 
 private:
@@ -1000,15 +1025,15 @@ private:
         { return static_cast<IFileOpenDialog *>(fileDialog()); }
 };
 
-QDialog::DialogCode QWindowsNativeOpenFileDialog::fileResult(QStringList *result /* = 0 */) const
+QPlatformDialogHelper::DialogCode QWindowsNativeOpenFileDialog::fileResult(QStringList *result /* = 0 */) const
 {
     if (result)
         result->clear();
     IShellItemArray *items = 0;
     const HRESULT hr = openFileDialog()->GetResults(&items);
     if (SUCCEEDED(hr) && items && QWindowsNativeFileDialogBase::itemPaths(items, result) > 0)
-        return QDialog::Accepted;
-    return QDialog::Rejected;
+        return QPlatformDialogHelper::Accepted;
+    return QPlatformDialogHelper::Rejected;
 }
 
 QStringList QWindowsNativeOpenFileDialog::selectedFiles() const
@@ -1053,16 +1078,13 @@ QWindowsNativeFileDialogBase *QWindowsNativeFileDialogBase::create(QFileDialog::
     \ingroup qt-lighthouse-win
 */
 
-class QWindowsFileDialogHelper : public QWindowsDialogHelperBase
+class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDialogHelper>
 {
 public:
     explicit QWindowsFileDialogHelper(QDialog *dialog) :
         QWindowsDialogHelperBase(dialog),
         m_fileDialog(qobject_cast<QFileDialog *>(dialog))
         { Q_ASSERT(m_fileDialog); }
-
-    virtual bool nonNativeDialog() const
-        { return m_fileDialog->testOption(QFileDialog::DontUseNativeDialog); }
 
     virtual bool defaultNameFilterDisables() const
         { return true; }
@@ -1093,13 +1115,13 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     QObject::connect(result, SIGNAL(rejected()), m_fileDialog, SLOT(reject()),
                      Qt::QueuedConnection);
     QObject::connect(result, SIGNAL(directoryEntered(QString)),
-                     m_fileDialog, SIGNAL(directoryEntered(QString)),
+                     this, SIGNAL(directoryEntered(QString)),
                      Qt::QueuedConnection);
     QObject::connect(result, SIGNAL(currentChanged(QString)),
-                     m_fileDialog, SIGNAL(currentChanged(QString)),
+                     this, SIGNAL(currentChanged(QString)),
                      Qt::QueuedConnection);
     QObject::connect(result, SIGNAL(filterSelected(QString)),
-                     m_fileDialog, SIGNAL(filterSelected(QString)),
+                     this, SIGNAL(filterSelected(QString)),
                      Qt::QueuedConnection);
 
     // Apply settings.
@@ -1190,27 +1212,29 @@ QString QWindowsFileDialogHelper::selectedNameFilter_sys() const
     \ingroup qt-lighthouse-win
 */
 
+typedef QSharedPointer<QColor> SharedPointerColor;
+
 class QWindowsNativeColorDialog : public QWindowsNativeDialogBase
 {
     Q_OBJECT
 public:
-    explicit QWindowsNativeColorDialog(QColorDialog *dialog);
+    explicit QWindowsNativeColorDialog(const SharedPointerColor &color);
 
     virtual void setWindowTitle(const QString &) {}
     virtual void exec(HWND owner = 0);
-    virtual QDialog::DialogCode result() const { return m_code; }
+    virtual QPlatformDialogHelper::DialogCode result() const { return m_code; }
 
 public slots:
     virtual void close() {}
 
 private:
     COLORREF m_customColors[16];
-    QDialog::DialogCode m_code;
-    QColorDialog *m_dialog;
+    QPlatformDialogHelper::DialogCode m_code;
+    SharedPointerColor m_color;
 };
 
-QWindowsNativeColorDialog::QWindowsNativeColorDialog(QColorDialog *dialog) :
-    m_code(QDialog::Rejected), m_dialog(dialog)
+QWindowsNativeColorDialog::QWindowsNativeColorDialog(const SharedPointerColor &color) :
+    m_code(QPlatformDialogHelper::Rejected), m_color(color)
 {
     qFill(m_customColors, m_customColors + 16, COLORREF(0));
 }
@@ -1232,7 +1256,7 @@ void QWindowsNativeColorDialog::exec(HWND owner)
     chooseColor.lStructSize = sizeof(chooseColor);
     chooseColor.hwndOwner = owner;
     chooseColor.lpCustColors = m_customColors;
-    chooseColor.rgbResult = qColorToCOLORREF(m_dialog->currentColor());
+    chooseColor.rgbResult = qColorToCOLORREF(*m_color);
     chooseColor.Flags = CC_FULLOPEN | CC_RGBINIT;
     static ChooseColorWType chooseColorW = 0;
     if (!chooseColorW) {
@@ -1240,16 +1264,17 @@ void QWindowsNativeColorDialog::exec(HWND owner)
         chooseColorW = (ChooseColorWType)library.resolve("ChooseColorW");
     }
     if (chooseColorW) {
-        m_code = chooseColorW(&chooseColor) ? QDialog::Accepted :QDialog::Rejected;
+        m_code = chooseColorW(&chooseColor) ?
+            QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
         QWindowsDialogs::eatMouseMove();
     } else {
-        m_code = QDialog::Rejected;
+        m_code = QPlatformDialogHelper::Rejected;
     }
-    if (m_code == QDialog::Accepted) {
-        m_dialog->setCurrentColor(COLORREFToQColor(chooseColor.rgbResult));
+    if (m_code == QPlatformDialogHelper::Accepted) {
+        *m_color = COLORREFToQColor(chooseColor.rgbResult);
         emit accepted();
         if (QWindowsContext::verboseDialogs)
-            qDebug() << '<' << __FUNCTION__ << m_dialog->currentColor();
+            qDebug() << '<' << __FUNCTION__ << m_color;
     } else {
         emit rejected();
     }
@@ -1267,41 +1292,30 @@ void QWindowsNativeColorDialog::exec(HWND owner)
     \ingroup qt-lighthouse-win
 */
 
-class QWindowsColorDialogHelper : public QWindowsDialogHelperBase
+class QWindowsColorDialogHelper : public QWindowsDialogHelperBase<QPlatformColorDialogHelper>
 {
 public:
-    explicit QWindowsColorDialogHelper(QDialog *dialog) :
-        QWindowsDialogHelperBase(dialog),
-        m_colorDialog(qobject_cast<QColorDialog *>(dialog))
-        { Q_ASSERT(m_colorDialog); }
+    QWindowsColorDialogHelper(QDialog *dialog) :
+        QWindowsDialogHelperBase(dialog), m_currentColor(new QColor) { }
 
-    virtual bool nonNativeDialog() const
-        { return m_colorDialog->testOption(QColorDialog::DontUseNativeDialog); }
     virtual bool supportsNonModalDialog()
         { return false; }
 
-    // ### fixme: Remove once a dialog helper hierarchy is in place
-    virtual bool defaultNameFilterDisables() const { return true; }
-    virtual void setDirectory_sys(const QString &) {}
-    virtual QString directory_sys() const { return QString(); }
-    virtual void selectFile_sys(const QString &) {}
-    virtual QStringList selectedFiles_sys() const { return QStringList(); }
-    virtual void setFilter_sys() {}
-    virtual void setNameFilters_sys(const QStringList &) {}
-    virtual void selectNameFilter_sys(const QString &) {}
-    virtual QString selectedNameFilter_sys() const { return QString(); }
+    virtual QColor currentColor_sys() const { return *m_currentColor; }
+    virtual void setCurrentColor_sys(const QColor &c) { *m_currentColor = c; }
 
 private:
     inline QWindowsNativeColorDialog *nativeFileDialog() const
         { return static_cast<QWindowsNativeColorDialog *>(nativeDialog()); }
     virtual QWindowsNativeDialogBase *createNativeDialog()
-        { return new QWindowsNativeColorDialog(m_colorDialog); }
-    QColorDialog *m_colorDialog;
+        { return new QWindowsNativeColorDialog(m_currentColor); }
+    SharedPointerColor m_currentColor;
 };
 
-// QWindowsDialogHelperBase creation functions
+namespace QWindowsDialogs {
 
-bool QWindowsDialogHelperBase::useHelper(const QDialog *dialog)
+// QWindowsDialogHelperBase creation functions
+bool useHelper(const QDialog *dialog)
 {
     switch (QWindowsDialogs::dialogType(dialog)) {
     case QWindowsDialogs::FileDialog:
@@ -1317,7 +1331,7 @@ bool QWindowsDialogHelperBase::useHelper(const QDialog *dialog)
     return false;
 }
 
-QPlatformDialogHelper *QWindowsDialogHelperBase::create(QDialog *dialog)
+QPlatformDialogHelper *createHelper(QDialog *dialog)
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s %p %s" , __FUNCTION__, dialog, dialog->metaObject()->className());
@@ -1336,6 +1350,7 @@ QPlatformDialogHelper *QWindowsDialogHelperBase::create(QDialog *dialog)
     return 0;
 }
 
+} // namespace QWindowsDialogs
 QT_END_NAMESPACE
 
 #include "qwindowsdialoghelpers.moc"

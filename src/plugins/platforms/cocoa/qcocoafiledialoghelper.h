@@ -44,10 +44,11 @@
 
 #include <QObject>
 #include <qplatformdialoghelper_qpa.h>
+
 class QFileDialog;
 class QFileDialogPrivate;
 
-class QCocoaFileDialogHelper : public QPlatformDialogHelper
+class QCocoaFileDialogHelper : public QPlatformFileDialogHelper
 {
 public:
     QCocoaFileDialogHelper(QFileDialog *dialog);
@@ -59,8 +60,9 @@ public:
     bool defaultNameFilterDisables() const;
 
     void deleteNativeDialog_sys();
-    bool setVisible_sys(bool visible);
-    QDialog::DialogCode dialogResultCode_sys();
+    bool show_sys(QWindow *parent);
+    void hide_sys();
+    QPlatformFileDialogHelper::DialogCode dialogResultCode_sys();
     void setDirectory_sys(const QString &directory);
     QString directory_sys() const;
     void selectFile_sys(const QString &filename);

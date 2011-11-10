@@ -713,8 +713,7 @@ void QFileDialog::setVisible(bool visible)
         return;
 
     if (d->canBeNativeDialog()){
-        if (d->setVisible_sys(visible)){
-            d->nativeDialogInUse = true;
+        if (d->setNativeDialogVisible(visible)){
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
@@ -723,7 +722,6 @@ void QFileDialog::setVisible(bool visible)
             d->completer->setModel(0);
 #endif
         } else {
-            d->nativeDialogInUse = false;
             setAttribute(Qt::WA_DontShowOnScreen, false);
 #ifndef QT_NO_FSCOMPLETER
             if (d->proxyModel != 0)
@@ -2268,7 +2266,7 @@ void QFileDialogPrivate::createWidgets()
     Q_Q(QFileDialog);
     model = new QFileSystemModel(q);
     model->setObjectName(QLatin1String("qt_filesystem_model"));
-    if (QPlatformDialogHelper *helper = platformHelper())
+    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         model->setNameFilterDisables(helper->defaultNameFilterDisables());
     else
         model->setNameFilterDisables(false);

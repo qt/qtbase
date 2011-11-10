@@ -57,6 +57,7 @@
 #include "private/qdialog_p.h"
 #include "qfontdatabase.h"
 #include "qfontdialog.h"
+#include "qplatformdialoghelper_qpa.h"
 
 #ifndef QT_NO_FONTDIALOG
 
@@ -79,6 +80,9 @@ public:
     inline QFontDialogPrivate()
         : writingSystem(QFontDatabase::Any)
     { }
+
+    QPlatformFontDialogHelper *platformFontDialogHelper() const
+        { return static_cast<QPlatformFontDialogHelper *>(platformHelper()); }
 
     void updateFamilies();
     void updateStyles();
@@ -156,6 +160,9 @@ public:
 
     static bool sharedFontPanelAvailable;
 #endif
+
+private:
+    virtual void initHelper(QPlatformDialogHelper *);
 };
 
 #endif // QT_NO_FONTDIALOG

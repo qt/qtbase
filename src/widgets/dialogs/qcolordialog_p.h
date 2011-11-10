@@ -75,6 +75,9 @@ class QColorDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QColorDialog)
 
 public:
+    QPlatformColorDialogHelper *platformColorDialogHelper() const
+        { return static_cast<QPlatformColorDialogHelper *>(platformHelper()); }
+
     void init(const QColor &initial);
     QRgb currentColor() const;
     QColor currentQColor() const;
@@ -133,6 +136,8 @@ public:
     void _q_macRunNativeAppModalPanel();
     void mac_nativeDialogModalHelp();
 #endif
+private:
+    virtual void initHelper(QPlatformDialogHelper *h);
 };
 
 #endif // QT_NO_COLORDIALOG

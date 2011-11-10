@@ -44,12 +44,14 @@
 
 #ifdef QT_WIDGETS_LIB
 
+#include "qtwindows_additional.h"
 #include <QtWidgets/qplatformdialoghelper_qpa.h>
 #include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
 
 class QFileDialog;
+class QDialog;
 class QWindowsNativeDialogBase;
 
 namespace QWindowsDialogs
@@ -58,21 +60,25 @@ namespace QWindowsDialogs
 
     Type dialogType(const QDialog *dialog);
     void eatMouseMove();
+
+    bool useHelper(const QDialog *dialog);
+    QPlatformDialogHelper *createHelper(QDialog *dialog);
 } // namespace QWindowsDialogs
 
-class QWindowsDialogHelperBase : public QPlatformDialogHelper
+template <class BaseClass>
+class QWindowsDialogHelperBase : public BaseClass
 {
 public:
-    static bool useHelper(const QDialog *dialog);
-    static QPlatformDialogHelper *create(QDialog *dialog);
 
     virtual void platformNativeDialogModalHelp();
     virtual void _q_platformRunNativeAppModalPanel();
     virtual void deleteNativeDialog_sys();
-    virtual bool setVisible_sys(bool visible);
-    virtual QDialog::DialogCode dialogResultCode_sys();
+    virtual bool show_sys(QWindow *parent);
+    virtual void hide_sys();
+    virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;
 
-    virtual bool nonNativeDialog() const = 0;
+    virtual QPlatformDialogHelper::DialogCode dialogResultCode_sys();
+
     virtual bool supportsNonModalDialog() const { return true; }
 
 protected:
@@ -85,6 +91,7 @@ private:
 
     QDialog *m_dialog;
     QWindowsNativeDialogBase *m_nativeDialog;
+    HWND m_ownerWindow;
 };
 
 QT_END_NAMESPACE

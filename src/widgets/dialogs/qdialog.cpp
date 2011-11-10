@@ -64,14 +64,40 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
     // Delayed creation of the platform, ensuring that
     // that qobject_cast<> on the dialog works in the plugin.
     if (!m_platformHelperCreated) {
+        QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         m_platformHelperCreated = true;
-        QDialog *dialog = const_cast<QDialog *>(q_func());
         m_platformHelper = QGuiApplicationPrivate::platformIntegration()
-                               ->createPlatformDialogHelper(dialog);
+                               ->createPlatformDialogHelper(ncThis->q_func());
         if (m_platformHelper)
-            m_platformHelper->d_ptr = const_cast<QDialogPrivate *>(this);
+            ncThis->initHelper(m_platformHelper);
     }
     return m_platformHelper;
+}
+
+QWindow *QDialogPrivate::parentWindow() const
+{
+    if (const QWidget *parent = q_func()->nativeParentWidget())
+        return parent->windowHandle();
+    return 0;
+}
+
+bool QDialogPrivate::setNativeDialogVisible(bool visible)
+{
+    if (QPlatformDialogHelper *helper = platformHelper()) {
+        if (visible) {
+            nativeDialogInUse = helper->show_sys(parentWindow());
+        } else {
+            helper->hide_sys();
+        }
+    }
+    return nativeDialogInUse;
+}
+
+QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
+{
+    if (const QPlatformDialogHelper *helper = platformHelper())
+        return helper->styleHint(hint);
+    return QPlatformDialogHelper::defaultStyleHint(hint);
 }
 
 /*!
@@ -705,15 +731,9 @@ void QDialog::setVisible(bool visible)
         if (d->eventLoop)
             d->eventLoop->exit();
     }
-#ifdef Q_WS_WIN
-    if (d->mainDef && isActiveWindow()) {
-        BOOL snapToDefault = false;
-        if (SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0)) {
-            if (snapToDefault)
-                QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
-        }
-    }
-#endif
+    if (d->mainDef && isActiveWindow()
+        && d->styleHint(QPlatformDialogHelper::SnapToDefaultButton).toBool())
+        QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
 }
 
 /*!\reimp */

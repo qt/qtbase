@@ -490,6 +490,13 @@ bool QFontDialog::eventFilter(QObject *o , QEvent *e)
     return QDialog::eventFilter(o, e);
 }
 
+void QFontDialogPrivate::initHelper(QPlatformDialogHelper *h)
+{
+    QFontDialog *d = q_func();
+    QObject::connect(h, SIGNAL(currentFontChanged(QFont)), d, SIGNAL(currentFontChanged(QFont)));
+    QObject::connect(h, SIGNAL(fontSelected(QFont)), d, SIGNAL(fontSelected(QFont)));
+}
+
 /*
     Updates the contents of the "font family" list box. This
     function can be reimplemented if you have special requirements.
@@ -819,6 +826,8 @@ void QFontDialog::setCurrentFont(const QFont &font)
     d->strikeout->setChecked(font.strikeOut());
     d->underline->setChecked(font.underline());
     d->updateFamilies();
+    if (QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+        helper->setCurrentFont_sys(font);
 
 #ifdef Q_WS_MAC
     if (d->delegate)
@@ -836,6 +845,8 @@ void QFontDialog::setCurrentFont(const QFont &font)
 QFont QFontDialog::currentFont() const
 {
     Q_D(const QFontDialog);
+    if (const QPlatformFontDialogHelper *helper = d->platformFontDialogHelper())
+        return helper->currentFont_sys();
     return d->sampleEdit->font();
 }
 
@@ -985,8 +996,7 @@ void QFontDialog::setVisible(bool visible)
         return;
     Q_D(QFontDialog);
     if (d->canBeNativeDialog())
-        if (QPlatformDialogHelper *helper = d->platformHelper())
-           d->nativeDialogInUse = helper->setVisible_sys(visible);
+        d->setNativeDialogVisible(visible);
     if (d->nativeDialogInUse) {
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
         // updates the state correctly, but skips showing the non-native version:

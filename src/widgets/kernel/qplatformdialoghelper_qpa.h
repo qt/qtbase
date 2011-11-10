@@ -43,7 +43,7 @@
 #define QPLATFORMDIALOGHELPER_H
 
 #include <qglobal.h>
-#include <qdialog.h>
+#include <qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -52,23 +52,66 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QString;
-class QObjectPrivate;
+class QColor;
+class QFont;
+class QWindow;
+class QVariant;
 
-class Q_WIDGETS_EXPORT QPlatformDialogHelper
+class Q_WIDGETS_EXPORT QPlatformDialogHelper : public QObject
 {
+    Q_OBJECT
 public:
+    enum StyleHint {
+        SnapToDefaultButton
+    };
+    enum DialogCode { Rejected, Accepted };
+
     QPlatformDialogHelper();
     virtual ~QPlatformDialogHelper();
+
+    virtual QVariant styleHint(StyleHint hint) const;
 
     virtual void platformNativeDialogModalHelp() = 0;
     virtual void _q_platformRunNativeAppModalPanel() = 0;
 
-    virtual bool defaultNameFilterDisables() const = 0;
-
     virtual void deleteNativeDialog_sys() = 0;
-    virtual bool setVisible_sys(bool visible) = 0;
-    virtual QDialog::DialogCode dialogResultCode_sys() = 0;
+    virtual bool show_sys(QWindow *parent) = 0;
+    virtual void hide_sys() = 0;
 
+    virtual DialogCode dialogResultCode_sys() = 0;
+
+    static QVariant defaultStyleHint(QPlatformDialogHelper::StyleHint hint);
+};
+
+class Q_WIDGETS_EXPORT QPlatformColorDialogHelper : public QPlatformDialogHelper
+{
+    Q_OBJECT
+public:
+    virtual void setCurrentColor_sys(const QColor &) = 0;
+    virtual QColor currentColor_sys() const = 0;
+
+Q_SIGNALS:
+    void currentColorChanged(const QColor &color);
+    void colorSelected(const QColor &color);
+};
+
+class Q_WIDGETS_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
+{
+    Q_OBJECT
+public:
+    virtual void setCurrentFont_sys(const QFont &) = 0;
+    virtual QFont currentFont_sys() const = 0;
+
+Q_SIGNALS:
+    void currentFontChanged(const QFont &font);
+    void fontSelected(const QFont &font);
+};
+
+class Q_WIDGETS_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
+{
+    Q_OBJECT
+public:
+    virtual bool defaultNameFilterDisables() const = 0;
     virtual void setDirectory_sys(const QString &directory) = 0;
     virtual QString directory_sys() const = 0;
     virtual void selectFile_sys(const QString &filename) = 0;
@@ -78,7 +121,12 @@ public:
     virtual void selectNameFilter_sys(const QString &filter) = 0;
     virtual QString selectedNameFilter_sys() const = 0;
 
-    QObjectPrivate *d_ptr;
+Q_SIGNALS:
+    void fileSelected(const QString &file);
+    void filesSelected(const QStringList &files);
+    void currentChanged(const QString &path);
+    void directoryEntered(const QString &directory);
+    void filterSelected(const QString &filter);
 };
 
 QT_END_NAMESPACE

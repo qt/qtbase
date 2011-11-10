@@ -325,12 +325,12 @@ QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
 #ifdef QT_WIDGETS_LIB
 bool QWindowsIntegration::usePlatformNativeDialog(QDialog *dialog) const
 {
-    return QWindowsDialogHelperBase::useHelper(dialog);
+    return QWindowsDialogs::useHelper(dialog);
 }
 
 QPlatformDialogHelper *QWindowsIntegration::createPlatformDialogHelper(QDialog *dialog) const
 {
-    return QWindowsDialogHelperBase::create(dialog);
+    return QWindowsDialogs::createHelper(dialog);
 }
 
 #endif // QT_WIDGETS_LIB

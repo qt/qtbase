@@ -41,11 +41,50 @@
 
 #include "qplatformdialoghelper_qpa.h"
 
-QPlatformDialogHelper::QPlatformDialogHelper() :
-    d_ptr(0)
+#include <QtCore/QVariant>
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QPlatformDialogHelper
+    \since 5.0
+    \internal
+    \brief The QPlatformDialogHelper class allows for platform-specific customization of dialogs.
+
+*/
+
+/*!
+    \enum QPlatformDialogHelper::StyleHint
+
+    This enum type specifies platform-specific style hints.
+
+    \value SnapToDefaultButton Snap the mouse to the center of the default
+                               button. There is corresponding system
+                               setting on Windows.
+
+    \sa styleHint()
+*/
+
+QPlatformDialogHelper::QPlatformDialogHelper()
 {
 }
 
 QPlatformDialogHelper::~QPlatformDialogHelper()
 {
 }
+
+QVariant QPlatformDialogHelper::styleHint(StyleHint hint) const
+{
+    return QPlatformDialogHelper::defaultStyleHint(hint);
+}
+
+QVariant  QPlatformDialogHelper::defaultStyleHint(QPlatformDialogHelper::StyleHint hint)
+{
+    switch (hint) {
+    case QPlatformDialogHelper::SnapToDefaultButton:
+        return QVariant(false);
+    }
+    return QVariant();
+}
+
+QT_END_NAMESPACE

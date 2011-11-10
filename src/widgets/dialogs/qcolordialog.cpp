@@ -1282,6 +1282,8 @@ inline bool QColorDialogPrivate::isAlphaVisible() const { return cs->isAlphaVisi
 
 QColor QColorDialogPrivate::currentQColor() const
 {
+    if (nativeDialogInUse)
+        return platformColorDialogHelper()->currentColor_sys();
     return cs->currentQColor();
 }
 
@@ -1650,6 +1652,13 @@ void QColorDialogPrivate::init(const QColor &initial)
     q->setCurrentColor(initial);
 }
 
+void QColorDialogPrivate::initHelper(QPlatformDialogHelper *h)
+{
+    QColorDialog *d = q_func();
+    QObject::connect(h, SIGNAL(currentColorChanged(QColor)), d, SIGNAL(currentColorChanged(QColor)));
+    QObject::connect(h, SIGNAL(colorSelected(QColor)), d, SIGNAL(colorSelected(QColor)));
+}
+
 void QColorDialogPrivate::_q_addCustom()
 {
     cusrgb[nextCust] = cs->currentColor();
@@ -1758,8 +1767,8 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->setCocoaPanelColor(color);
 #endif
     // ### fixme: Call helper
-    // if (d->nativeDialogInUse)
-    //    qt_guiPlatformPlugin()->colorDialogSetCurrentColor(this, color);
+    if (d->nativeDialogInUse)
+        d->platformColorDialogHelper()->setCurrentColor_sys(color);
 }
 
 QColor QColorDialog::currentColor() const
@@ -1767,7 +1776,6 @@ QColor QColorDialog::currentColor() const
     Q_D(const QColorDialog);
     return d->currentQColor();
 }
-
 
 /*!
     Returns the color that the user selected by clicking the \gui{OK}
@@ -1915,8 +1923,7 @@ void QColorDialog::setVisible(bool visible)
 #else
 
     if (!(d->opts & DontUseNativeDialog))
-        if (QPlatformDialogHelper *helper = d->platformHelper())
-            d->nativeDialogInUse = helper->setVisible_sys(visible);
+        d->setNativeDialogVisible(visible);
 
     if (d->nativeDialogInUse) {
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
