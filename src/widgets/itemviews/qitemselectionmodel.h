@@ -202,6 +202,7 @@ public Q_SLOTS:
     virtual void reset();
 
     void clearSelection();
+    virtual void clearCurrentIndex();
 
 Q_SIGNALS:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);

@@ -1118,8 +1118,16 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
 */
 void QItemSelectionModel::clear()
 {
-    Q_D(QItemSelectionModel);
     clearSelection();
+    clearCurrentIndex();
+}
+
+/*!
+    Clears the current index. Emits currentChanged().
+ */
+void QItemSelectionModel::clearCurrentIndex()
+{
+    Q_D(QItemSelectionModel);
     QModelIndex previous = d->currentIndex;
     d->currentIndex = QModelIndex();
     if (previous.isValid()) {

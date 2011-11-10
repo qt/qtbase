@@ -103,6 +103,7 @@ private slots:
 
     void testValidRangesInSelectionsAfterReset();
     void testChainedSelectionClear();
+    void testClearCurrentIndex();
 
 private:
     QAbstractItemModel *model;
@@ -2681,6 +2682,12 @@ public:
       m_target->setCurrentIndex(index, command);
   }
 
+  void clearCurrentIndex()
+  {
+      QItemSelectionModel::clearCurrentIndex();
+      m_target->clearCurrentIndex();
+  }
+
 private:
   QItemSelectionModel *m_target;
 
@@ -2717,6 +2724,31 @@ void tst_QItemSelectionModel::testChainedSelectionClear()
     duplicate.setCurrentIndex(model.index(0, 0), QItemSelectionModel::NoUpdate);
 
     QVERIFY(selectionModel.currentIndex() == duplicate.currentIndex());
+
+    duplicate.clearCurrentIndex();
+
+    QVERIFY(!duplicate.currentIndex().isValid());
+    QVERIFY(selectionModel.currentIndex() == duplicate.currentIndex());
+}
+
+void tst_QItemSelectionModel::testClearCurrentIndex()
+{
+    QStringListModel model(QStringList() << "Apples" << "Pears");
+
+    QItemSelectionModel selectionModel(&model, 0);
+
+    QSignalSpy currentIndexSpy(&selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)));
+
+    QModelIndex firstIndex = model.index(0, 0);
+    QVERIFY(firstIndex.isValid());
+    selectionModel.setCurrentIndex(firstIndex, QItemSelectionModel::NoUpdate);
+    QVERIFY(selectionModel.currentIndex() == firstIndex);
+    QVERIFY(currentIndexSpy.size() == 1);
+
+    selectionModel.clearCurrentIndex();
+
+    QVERIFY(selectionModel.currentIndex() == QModelIndex());
+    QVERIFY(currentIndexSpy.size() == 2);
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
