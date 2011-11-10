@@ -1832,12 +1832,8 @@ void tst_QTextCodec::utfHeaders()
     QLatin1String ignoreReverseTestOn = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? QLatin1String(" le") : QLatin1String(" be");
     QString rowName(QTest::currentDataTag());
 
-    /*for (int i = 0; i < encoded.length(); ++i)
-        qDebug() << hex << "    " << (uint)(uchar)encoded.at(i);*/
     if (toUnicode) {
         QString result = codec->toUnicode(encoded.constData(), encoded.length(), &state);
-        /*for (int i = 0; i < result.length(); ++i)
-            qDebug() << hex << "    " << (uint)result.at(i).unicode();*/
         QCOMPARE(result.length(), unicode.length());
         QCOMPARE(result, unicode);
 

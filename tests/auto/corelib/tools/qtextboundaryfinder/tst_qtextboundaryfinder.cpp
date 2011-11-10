@@ -242,7 +242,6 @@ void tst_QTextBoundaryFinder::isAtWordStart()
     for(int i=0; i < txt.length(); ++i) {
         finder.setPosition(i);
         QTextBoundaryFinder::BoundaryReasons r = finder.boundaryReasons();
-        // qDebug() << i << r;
         QCOMPARE((r & QTextBoundaryFinder::StartWord) != 0, start.contains(i) == true);
         QCOMPARE((r & QTextBoundaryFinder::EndWord) != 0, end.contains(i) == true);
     }
@@ -277,7 +276,6 @@ void tst_QTextBoundaryFinder::isAtBoundaryLine()
     // break?    -       -       -       -       +       -      +
     QChar s[] = { 0x0061, 0x00AD, 0x0062, 0x0009, 0x0063, 0x0064 };
     QString text(s, sizeof(s)/sizeof(s[0]));
-//    qDebug() << "text = " << text << ", length = " << text.length();
     QTextBoundaryFinder finder(QTextBoundaryFinder::Line, text.constData(), text.length(), /*buffer*/0, /*buffer size*/0);
     finder.setPosition(0);
     QVERIFY(finder.isAtBoundary());

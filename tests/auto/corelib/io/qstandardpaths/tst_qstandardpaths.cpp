@@ -74,7 +74,6 @@ private slots:
 private:
     void setCustomLocations() {
         m_thisDir = QFile::decodeName(SRCDIR);
-        //qDebug() << m_thisDir;
         m_thisDir.chop(1); // remove trailing slash!
 
         qputenv("XDG_CONFIG_HOME", QFile::encodeName(m_thisDir));
@@ -140,7 +139,6 @@ void tst_qstandardpaths::testLocateAll()
 {
 #ifdef Q_XDG_PLATFORM
     const QStringList appsDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "applications", QStandardPaths::LocateDirectory);
-    //qDebug() << appsDirs;
     foreach (const QString &dir, appsDirs)
         QVERIFY2(dir.endsWith(QLatin1String("/share/applications")), qPrintable(dir));
 

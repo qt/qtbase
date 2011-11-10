@@ -2391,7 +2391,6 @@ void tst_QSettings::testEscapes()
     { \
         QVariant v(val); \
         QString s = QSettingsPrivate::variantToString(v); \
-        /*qDebug() << QString("testVariant(): reference=\"%1\" result=\"%2\"").arg(escStr).arg(s); */\
         QCOMPARE(s, escStr); \
         QCOMPARE(QVariant(QSettingsPrivate::stringToVariant(escStr)), v); \
         QVERIFY(val == v.func()); \

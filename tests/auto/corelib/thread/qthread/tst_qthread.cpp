@@ -293,7 +293,7 @@ void tst_QThread::currentThread()
 void tst_QThread::idealThreadCount()
 {
     QVERIFY(QThread::idealThreadCount() > 0);
-    qDebug() << "Available cpu cores:" << QThread::idealThreadCount();
+    qDebug() << "Ideal thread count:" << QThread::idealThreadCount();
 }
 
 void tst_QThread::isFinished()

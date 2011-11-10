@@ -719,7 +719,6 @@ void tst_QThreadPool::tryStartCount()
     const int runs = 5;
 
     for (int i = 0; i < runs; ++i) {
-//        qDebug() << "iteration" << i;
         int count = 0;
         while (threadPool.tryStart(&task))
             ++count;

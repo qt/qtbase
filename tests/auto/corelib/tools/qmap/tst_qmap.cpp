@@ -86,22 +86,17 @@ class MyClass
 public:
     MyClass() {
         ++count;
-//        qDebug("creating MyClass count=%d", count);
     }
     MyClass( const QString& c) {
         count++; str = c;
-//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     ~MyClass() {
         count--;
-//        qDebug("deleting MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass( const MyClass& c ) {
         count++; str = c.str;
-//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass &operator =(const MyClass &o) {
-//        qDebug("copying MyClass '%s'", o.str.latin1());
         str = o.str; return *this;
     }
 

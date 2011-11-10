@@ -94,22 +94,17 @@ class MyClass
 {
 public:
     MyClass() { ++count;
-//     qDebug("creating MyClass count=%d", count);
     }
     MyClass( const QString& c) {
         count++; str = c;
-//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     ~MyClass() {
         count--;
-//        qDebug("deleting MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass( const MyClass& c ) {
         count++; str = c.str;
-//        qDebug("creating MyClass '%s' count = %d", str.latin1(), count);
     }
     MyClass &operator =(const MyClass &o) {
-//        qDebug("copying MyClass '%s'", o.str.latin1());
         str = o.str; return *this;
     }
 
@@ -916,7 +911,6 @@ void tst_QHash::iterators()
     while(javaIt.hasNext()) {
         ++i;
         javaIt.next();
-        //qDebug(javaIt.value());
         QVERIFY(javaIt.value() == testMap.value(i));
     }
 
@@ -934,7 +928,6 @@ void tst_QHash::iterators()
         testString = javaIt.value();
         testString1 = javaIt.peekNext().value();
         javaIt.next();
-        //qDebug(testString + "  " + testString1 + "    " + javaIt.peekPrevious().value());
         QVERIFY(javaIt.value() == testString1);
         QCOMPARE(javaIt.peekPrevious().value(), testString1);
     }
@@ -943,7 +936,6 @@ void tst_QHash::iterators()
         testString1 = javaIt.peekPrevious().value();
         javaIt.previous();
         QVERIFY(javaIt.value() == testString1);
-        //qDebug(testString + testString1 + javaIt.peekNext().value());
         QCOMPARE(javaIt.peekNext().value(), testString1);
     }
 }

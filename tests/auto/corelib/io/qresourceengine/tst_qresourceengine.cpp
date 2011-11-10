@@ -333,13 +333,7 @@ void tst_QResourceEngine::checkStructure()
 
         // Test the Dir filter
         QFileInfoList list = dir.entryInfoList(QDir::Dirs, QDir::Name);
-//           for(int i = 0; i < list.size(); ++i)
-//               qDebug() << "one" << i << list.at(i).fileName();
-//           for(int i = 0; i < containedDirs.size(); ++i)
-//               qDebug() << "two" << i << containedDirs.at(i);
-//           qDebug() << "one" << list.size() << containedDirs.size();
-       QCOMPARE(list.size(), containedDirs.size());
-//         qDebug() << "two";
+        QCOMPARE(list.size(), containedDirs.size());
 
         int i;
         for (i=0; i<list.size(); ++i) {

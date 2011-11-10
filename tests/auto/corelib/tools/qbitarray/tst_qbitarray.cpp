@@ -256,10 +256,6 @@ void tst_QBitArray::fill()
 
     for (i = 0; i < N-M; ++i) {
         a.fill(true, i, i + M);
-/*
-        for (int k = 0; k < N; ++k)
-        qDebug("%*s%d", k, "", a.at(k));
-*/
         for (j = 0; j < N; ++j) {
             if (j >= i && j < i + M) {
                 QVERIFY(a.at(j));

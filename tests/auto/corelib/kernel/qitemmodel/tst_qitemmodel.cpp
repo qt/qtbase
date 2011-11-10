@@ -57,9 +57,6 @@ Q_DECLARE_METATYPE(QModelIndex)
     the tests specified by modelstotest.cpp and any extra data needed for that particular test.
 
     setupWithNoTestData() fills the QTest data with just the tests and is used by most tests.
-
-    There are some basic qDebug statements sprikled about that might be helpfull for fixing
-    your issues.
  */
 class tst_QItemModel : public QObject
 {
@@ -410,9 +407,6 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
     else
         QCOMPARE(currentModel->hasChildren(parent), false);
 
-    //qDebug() << "parent:" << currentModel->data(parent).toString() << "rows:" << rows
-    //         << "columns:" << columns << "parent column:" << parent.column();
-
     QCOMPARE(currentModel->hasIndex(rows+1, 0, parent), false);
     for (int r = 0; r < rows; ++r) {
         if (currentModel->canFetchMore(parent))
@@ -455,7 +449,6 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
 
             // recursivly go down
             if (currentModel->hasChildren(index) && currentDepth < 5) {
-                //qDebug() << r << c << "has children" << currentModel->rowCount(index);
                 checkChildren(currentModel, index, ++currentDepth);
                 // Because this is recursive we will return at the first failure rather then
                 // reporting it over and over
@@ -846,8 +839,6 @@ void tst_QItemModel::remove()
         return;
     }
 
-    //qDebug() << "remove start:" << start << "count:" << count << "rowCount:" << currentModel->rowCount(parentOfRemoved);
-
     // When a row or column is removed there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
     qRegisterMetaType<QModelIndex>("QModelIndex");
@@ -912,7 +903,6 @@ void tst_QItemModel::remove()
     }
 
     // The row count should only change *after* rowsAboutToBeRemoved has been emitted
-    //qDebug() << beforeRemoveRowCount << afterAboutToRemoveRowCount << afterRemoveRowCount << currentModel->rowCount(parentOfRemoved);
     if (shouldSucceed) {
         if (modelResetSpy.count() == 0 && modelLayoutChangedSpy.count() == 0){
             QCOMPARE(afterAboutToRemoveRowCount, beforeRemoveRowCount);
@@ -1022,7 +1012,6 @@ void verifyState(QAbstractItemModel *currentModel) {
 void tst_QItemModel::slot_rowsAboutToRemove(const QModelIndex &parent)
 {
     QVERIFY(parentOfRemoved == parent);
-    //qDebug() << "slot_rowsAboutToRemove" << currentModel->rowCount(parent);
     afterAboutToRemoveRowCount = currentModel->rowCount(parent);
     // hasChildren() should still work
     if (afterAboutToRemoveRowCount > 0)
@@ -1036,7 +1025,6 @@ void tst_QItemModel::slot_rowsAboutToRemove(const QModelIndex &parent)
     if (removeRecursively) {
         QFETCH(int, recursiveRow);
         QFETCH(int, recursiveCount);
-        //qDebug() << recursiveRow << recursiveCount;
         removeRecursively = false;
         QCOMPARE(currentModel->removeRows(recursiveRow, recursiveCount, parent), true);
     }
@@ -1045,7 +1033,6 @@ void tst_QItemModel::slot_rowsAboutToRemove(const QModelIndex &parent)
 void tst_QItemModel::slot_rowsRemoved(const QModelIndex &parent)
 {
     QVERIFY(parentOfRemoved == parent);
-    //qDebug() << "slot_rowsRemoved" << currentModel->rowCount(parent);
     afterRemoveRowCount = currentModel->rowCount(parent);
     if (afterRemoveRowCount > 0)
         QCOMPARE(currentModel->hasChildren(parent), true);
@@ -1188,8 +1175,6 @@ void tst_QItemModel::insert()
         return;
     }
 
-    //qDebug() << "insert start:" << start << "count:" << count << "rowCount:" << currentModel->rowCount(parentOfInserted);
-
     // When a row or column is inserted there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
     qRegisterMetaType<QModelIndex>("QModelIndex");
@@ -1250,7 +1235,6 @@ void tst_QItemModel::insert()
         QCOMPARE(rowsInsertedSpy.count(), numberOfRowsInsertedSignals);
     }
     // The row count should only change *after* rowsAboutToBeInserted has been emitted
-    //qDebug() << beforeInsertRowCount << afterAboutToInsertRowCount << afterInsertRowCount << currentModel->rowCount(parentOfInserted);
     if (shouldSucceed) {
         if (modelResetSpy.count() == 0 && modelLayoutChangedSpy.count() == 0) {
             QCOMPARE(afterAboutToInsertRowCount, beforeInsertRowCount);
@@ -1342,7 +1326,6 @@ void tst_QItemModel::insert()
 void tst_QItemModel::slot_rowsAboutToInserted(const QModelIndex &parent)
 {
     QVERIFY(parentOfInserted == parent);
-    //qDebug() << "slot_rowsAboutToInsert" << currentModel->rowCount(parent);
     afterAboutToInsertRowCount = currentModel->rowCount(parent);
     bool hasChildren = currentModel->hasChildren(parent);
     bool hasDimensions = currentModel->columnCount(parent) > 0 && currentModel->rowCount(parent) > 0;
@@ -1353,7 +1336,6 @@ void tst_QItemModel::slot_rowsAboutToInserted(const QModelIndex &parent)
     if (insertRecursively) {
         QFETCH(int, recursiveRow);
         QFETCH(int, recursiveCount);
-        //qDebug() << recursiveRow << recursiveCount;
         insertRecursively = false;
         QCOMPARE(currentModel->insertRows(recursiveRow, recursiveCount, parent), true);
     }

@@ -2171,14 +2171,12 @@ InstanceCounter slowMap(const InstanceCounter &in)
 InstanceCounter fastMap(const InstanceCounter &in)
 {
     QTest::qSleep(rand() % 2 + 1);
-//    qDebug() << "map   " << QThread::currentThread();
     return in;
 }
 
 void slowReduce(int &result, const InstanceCounter&)
 {
     QTest::qSleep(rand() % 4 + 1);
-//    qDebug() << "reduce" << QThread::currentThread();
     ++result;
 }
 
@@ -2204,8 +2202,6 @@ void tst_QtConcurrentMap::throttling()
 
         int results = QtConcurrent::blockingMappedReduced(instances, slowMap, fastReduce);
         QCOMPARE(results, itemcount);
-        qDebug() << (int)currentInstanceCount;
-        qDebug() << (int)peakInstanceCount;
         QCOMPARE(int(currentInstanceCount), itemcount);
         QVERIFY(int(peakInstanceCount) < itemcount + allowedTemporaries);
     }
@@ -2222,8 +2218,6 @@ void tst_QtConcurrentMap::throttling()
         int results = QtConcurrent::blockingMappedReduced(instances, fastMap, slowReduce);
 
         QCOMPARE(results, itemcount);
-        qDebug() << (int)currentInstanceCount;
-        qDebug() << (int)peakInstanceCount;
         QCOMPARE((int)currentInstanceCount, itemcount);
         QVERIFY(int(peakInstanceCount) < itemcount + allowedTemporaries);
     }

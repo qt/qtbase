@@ -184,7 +184,6 @@ void tst_QByteArray::qCompress()
 {
     QFETCH( QByteArray, ba );
     QByteArray compressed = ::qCompress( ba );
-    //qDebug( "size uncompressed: %d    size compressed: %d", ba.size(), compressed.size() );
     QTEST( ::qUncompress( compressed ), "ba" );
 }
 

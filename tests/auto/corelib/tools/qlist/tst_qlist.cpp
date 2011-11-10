@@ -153,13 +153,11 @@ void tst_QList::append() const
     list2.append(three);
     list2.append(four);
     list1.append(list2);
-    qDebug() << list1;
     listTotal.append(one);
     listTotal.append(two);
     listTotal.append(three);
     listTotal.append(four);
     QCOMPARE(list1, listTotal);
-
 }
 
 void tst_QList::prepend() const

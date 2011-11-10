@@ -64,7 +64,6 @@ public:
 protected:
     void updateCurrentTime(int currentTime)
     {
-        //qDebug() << this << "update current time: " << currentTime;
         QPauseAnimation::updateCurrentTime(currentTime);
         ++m_updateCurrentTimeCount;
     }

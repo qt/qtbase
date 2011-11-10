@@ -1165,32 +1165,27 @@ public:
 public slots:
     void finished()
     {
-//        qDebug() << "finished called";
         finishedCalled = true;
     }
 
     void canceled()
     {
-//        qDebug() << "canceled called";
         canceledCalled = true;
     }
 
     void resultReady(int index)
     {
-//        qDebug() << "result" << index << "ready";
         results.insert(index);
     }
 
     void progressRange(int begin, int end)
     {
-//        qDebug() << "progress range" << begin << end;
         rangeBegin = begin;
         rangeEnd = end;
     }
 
     void progress(int progress)
     {
-//        qDebug() << "progress" << progress;
         reportedProgress.insert(progress);
     }
 public:

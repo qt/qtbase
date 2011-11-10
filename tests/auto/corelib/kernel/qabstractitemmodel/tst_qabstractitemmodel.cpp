@@ -657,10 +657,6 @@ void tst_QAbstractItemModel::dropMimeData()
     QtTestModel dst(dst_table);
     QtTestModel res(res_table);
 
-//     qDebug() << "src" << src.rowCount(QModelIndex()) << src.columnCount(QModelIndex());
-//     qDebug() << "dst" << dst.rowCount(QModelIndex()) << dst.columnCount(QModelIndex());
-//     qDebug() << "res" << res.rowCount(QModelIndex()) << res.columnCount(QModelIndex());
-
     // get the mimeData from the "selected" indexes
     QModelIndexList selectedIndexes;
     for (int i = 0; i < selection.count(); ++i)
@@ -679,12 +675,9 @@ void tst_QAbstractItemModel::dropMimeData()
             QModelIndex res_idx = res.index(r, c, QModelIndex());
             QMap<int, QVariant> dst_data = dst.itemData(dst_idx);
             QMap<int, QVariant> res_data = res.itemData(res_idx);
-            //if(dst_data != res_data)
-            //    qDebug() << r << c << dst_data.value(0).toString() << res_data.value(0).toString();
             QCOMPARE(dst_data , res_data);
         }
     }
-
 }
 
 

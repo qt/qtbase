@@ -341,8 +341,6 @@ public:
             QString expectedFilePath;
             const int index = m_atts.top().index(QString(), QLatin1String("OUTPUT"));
 
-            //qDebug() << "Running test case:" << id;
-
             if(index != -1)
             {
                 expectedFilePath = m_baseURI.top().resolved(m_atts.top().value(QString(),

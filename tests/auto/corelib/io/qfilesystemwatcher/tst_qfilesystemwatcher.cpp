@@ -161,7 +161,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.write(QByteArray("world"));
     testFile.close();
 
-    // qDebug() << "waiting max 5 seconds for notification for file modification to trigger(1)";
+    // waiting max 5 seconds for notification for file modification to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -179,7 +179,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.write(QByteArray("hello universe!"));
     testFile.close();
 
-    // qDebug() << "waiting max 5 seconds for notification for file modification to trigger (2)";
+    // waiting max 5 seconds for notification for file modification to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -206,7 +206,7 @@ void tst_QFileSystemWatcher::basicTest()
     // change the permissions, should get a signal from the watcher
     testFile.setPermissions(QFile::ReadOwner);
 
-    // qDebug() << "waiting max 5 seconds for notification for file permission modification to trigger(1)";
+    // waiting max 5 seconds for notification for file permission modification to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -222,7 +222,7 @@ void tst_QFileSystemWatcher::basicTest()
     watcher.removePath(testFile.fileName());
     testFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOther);
 
-    // qDebug() << "waiting max 5 seconds for notification for file modification to trigger (2)";
+    // waiting max 5 seconds for notification for file modification to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -234,7 +234,7 @@ void tst_QFileSystemWatcher::basicTest()
     // remove the file, should get a signal from the watcher
     QVERIFY(testFile.remove());
 
-    // qDebug() << "waiting max 5 seconds for notification for file removal to trigger";
+    // waiting max 5 seconds for notification for file removal to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -251,7 +251,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.write(QByteArray("hello"));
     testFile.close();
 
-    // qDebug() << "waiting max 5 seconds for notification for file recreation to trigger";
+    // waiting max 5 seconds for notification for file recreation to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -292,7 +292,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.close();
 
-    // qDebug() << "waiting max 5 seconds for notification for file recreationg to trigger";
+    // waiting max 5 seconds for notification for file recreationg to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -309,7 +309,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     // remove the directory, should get a signal from the watcher
     QVERIFY(QDir().rmdir("testDir"));
 
-    // qDebug() << "waiting max 5 seconds for notification for directory removal to trigger";
+    // waiting max 5 seconds for notification for directory removal to trigger
     timer.start(5000);
     eventLoop.exec();
 
@@ -331,7 +331,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     if (!QDir().mkdir("testDir"))
         QSKIP("Failed to recreate directory, skipping final test.");
 
-    // qDebug() << "waiting max 5 seconds for notification for dir recreation to trigger";
+    // waiting max 5 seconds for notification for dir recreation to trigger
     timer.start(5000);
     eventLoop.exec();
 

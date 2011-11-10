@@ -1470,12 +1470,6 @@ void tst_QDataStream::readQImage(QDataStream *s)
 
 //     ################ Bug : ref and orig has ff in alpha; readback has 0
 //     ### (Was like this in 1.44 as well)
-//
-//    for(int i = 0; i < d12.height(); i++)
-//        for(int j = 0; j < d12.width(); j++)
-//            if (d12.pixel(j, i) != ref.pixel(j, i))
-//                qDebug("Feil %i %i", j, i);
-//
 }
 
 // ************************************
