@@ -1265,14 +1265,35 @@ static Qt::MouseButtons translateMouseButtons(int s)
 static Qt::MouseButton translateMouseButton(xcb_button_t s)
 {
     switch (s) {
-    case 1:
-        return Qt::LeftButton;
-    case 2:
-        return Qt::MidButton;
-    case 3:
-        return Qt::RightButton;
-    default:
-        return Qt::NoButton;
+    case 1: return Qt::LeftButton;
+    case 2: return Qt::MidButton;
+    case 3: return Qt::RightButton;
+    // Button values 4-7 were already handled as Wheel events, and won't occur here.
+    case 8: return Qt::BackButton;      // Also known as Qt::ExtraButton1
+    case 9: return Qt::ForwardButton;   // Also known as Qt::ExtraButton2
+    case 10: return Qt::ExtraButton3;
+    case 11: return Qt::ExtraButton4;
+    case 12: return Qt::ExtraButton5;
+    case 13: return Qt::ExtraButton6;
+    case 14: return Qt::ExtraButton7;
+    case 15: return Qt::ExtraButton8;
+    case 16: return Qt::ExtraButton9;
+    case 17: return Qt::ExtraButton10;
+    case 18: return Qt::ExtraButton11;
+    case 19: return Qt::ExtraButton12;
+    case 20: return Qt::ExtraButton13;
+    case 21: return Qt::ExtraButton14;
+    case 22: return Qt::ExtraButton15;
+    case 23: return Qt::ExtraButton16;
+    case 24: return Qt::ExtraButton17;
+    case 25: return Qt::ExtraButton18;
+    case 26: return Qt::ExtraButton19;
+    case 27: return Qt::ExtraButton20;
+    case 28: return Qt::ExtraButton21;
+    case 29: return Qt::ExtraButton22;
+    case 30: return Qt::ExtraButton23;
+    case 31: return Qt::ExtraButton24;
+    default: return Qt::NoButton;
     }
 }
 
@@ -1286,7 +1307,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
     if (event->detail >= 4 && event->detail <= 7) {
-        //logic borrowed from qapplication_x11.cpp
+        // Logic borrowed from qapplication_x11.cpp
         int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
         bool hor = (((event->detail == 4 || event->detail == 5)
                      && (modifiers & Qt::AltModifier))

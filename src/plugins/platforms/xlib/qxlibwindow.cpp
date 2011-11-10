@@ -221,6 +221,30 @@ void QXlibWindow::handleMouseEvent(QEvent::Type type, XButtonEvent *e)
             }
             return;
         }
+        case 8: button = Qt::BackButton; break;      // Also known as Qt::ExtraButton1
+        case 9: button = Qt::ForwardButton; break;   // Also known as Qt::ExtraButton2
+        case 10: button = Qt::ExtraButton3; break;
+        case 11: button = Qt::ExtraButton4; break;
+        case 12: button = Qt::ExtraButton5; break;
+        case 13: button = Qt::ExtraButton6; break;
+        case 14: button = Qt::ExtraButton7; break;
+        case 15: button = Qt::ExtraButton8; break;
+        case 16: button = Qt::ExtraButton9; break;
+        case 17: button = Qt::ExtraButton10; break;
+        case 18: button = Qt::ExtraButton11; break;
+        case 19: button = Qt::ExtraButton12; break;
+        case 20: button = Qt::ExtraButton13; break;
+        case 21: button = Qt::ExtraButton14; break;
+        case 22: button = Qt::ExtraButton15; break;
+        case 23: button = Qt::ExtraButton16; break;
+        case 24: button = Qt::ExtraButton17; break;
+        case 25: button = Qt::ExtraButton18; break;
+        case 26: button = Qt::ExtraButton19; break;
+        case 27: button = Qt::ExtraButton20; break;
+        case 28: button = Qt::ExtraButton21; break;
+        case 29: button = Qt::ExtraButton22; break;
+        case 30: button = Qt::ExtraButton23; break;
+        case 31: button = Qt::ExtraButton24; break;
         default: break;
         }
     }

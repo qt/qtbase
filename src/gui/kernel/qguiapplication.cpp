@@ -316,7 +316,7 @@ static void init_plugins(const QList<QByteArray> &pluginList)
         else
             plugin = QGenericPluginFactory::create(QLatin1String(pluginSpec.mid(0, colonPos)),
                                                    QLatin1String(pluginSpec.mid(colonPos+1)));
-        qDebug() << "	created" << plugin;
+        qDebug() << "   created" << plugin;
         if (plugin)
             QGuiApplicationPrivate::generic_plugin_list.append(plugin);
     }
@@ -618,9 +618,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
             mousePressButton = Qt::NoButton;
     }
-    else { // check to see if a new button has been pressed/released
+    else { // Check to see if a new button has been pressed/released.
         for (int check = Qt::LeftButton;
-             check <= Qt::XButton2;
+            check <= Qt::MaxMouseButton;
              check = check << 1) {
             if (check & stateChange) {
                 button = Qt::MouseButton(check);
@@ -628,7 +628,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             }
         }
         if (button == Qt::NoButton) {
-            // Ignore mouse events that don't change the current state
+            // Ignore mouse events that don't change the current state.
             return;
         }
         buttons = e->buttons;
