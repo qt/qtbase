@@ -229,8 +229,8 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QSemaphore semaphore;
     QTime time;
 
-#define QVERIFYGE(a,b) {int e = a; if (a<b) qDebug() << #a << "=" << e << " !>= " << #b << "=" << b; QVERIFY(e>=b);}
-#define QVERIFYLE(a,b) {int e = a; if (b<a) qDebug() << #a << "=" << e << " !<= " << #b << "=" << b; QVERIFY(e<=b);}
+#define QVERIFYGE(a,b) QVERIFY2(a >= b, qPrintable(QString("%1 = %2 !>= %3 = %4").arg(#a).arg(a).arg(#b).arg(b)));
+#define QVERIFYLE(a,b) QVERIFY2(a <= b, qPrintable(QString("%1 = %2 !<= %3 = %4").arg(#a).arg(a).arg(#b).arg(b)));
 
     QCOMPARE(semaphore.available(), 0);
 
@@ -302,6 +302,9 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QVERIFY(!semaphore.tryAcquire(10, timeout));
     QVERIFYGE(time.elapsed(), timeout);
     QCOMPARE(semaphore.available(), 0);
+
+#undef QVERIFYGE
+#undef QVERIFYLE
 }
 
 void tst_QSemaphore::tryAcquireWithTimeoutStarvation()

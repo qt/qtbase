@@ -519,18 +519,13 @@ void tst_QLibrary::fileName()
 
     QLibrary lib(libName);
     bool ok = lib.load();
-    if (!ok) {
-        qDebug() << lib.errorString();
-    }
-
-    QVERIFY(ok);
+    QVERIFY2(ok, qPrintable(lib.errorString()));
 #if defined(Q_OS_WIN)
     QCOMPARE(lib.fileName().toLower(), expectedFilename.toLower());
 #else
     QCOMPARE(lib.fileName(), expectedFilename);
 #endif
     QVERIFY(lib.unload());
-
 }
 
 void tst_QLibrary::multipleInstancesForOneLibrary()
