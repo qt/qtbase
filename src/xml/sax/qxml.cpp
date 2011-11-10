@@ -1321,7 +1321,8 @@ QXmlInputSource::QXmlInputSource(QIODevice *dev)
 {
     init();
     d->inputDevice = dev;
-    d->inputDevice->setTextModeEnabled(false);
+    if (dev->isOpen())
+        d->inputDevice->setTextModeEnabled(false);
 }
 
 /*!
