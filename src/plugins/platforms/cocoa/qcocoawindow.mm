@@ -69,6 +69,11 @@
 
 @implementation QNSPanel
 
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+
 @end
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)

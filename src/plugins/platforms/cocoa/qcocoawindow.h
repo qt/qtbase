@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
 
 @end
 
-@interface QNSPanel : QNSWindow {
+@interface QNSPanel : NSPanel {
 
 }
-
+- (BOOL)canBecomeKeyWindow;
 @end
 
 class QCocoaWindow : public QPlatformWindow
