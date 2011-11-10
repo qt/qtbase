@@ -101,15 +101,6 @@ public:
         return (count != 1) && (count != 0);
     }
 
-    inline bool operator==(int value) const
-    { return atomic.load() == value; }
-    inline bool operator!=(int value) const
-    { return atomic.load() != value; }
-    inline bool operator!() const
-    { return !atomic.load(); }
-    inline operator int() const
-    { return atomic.load(); }
-
     void initializeOwned() { atomic.store(1); }
     void initializeUnsharable() { atomic.store(0); }
 
