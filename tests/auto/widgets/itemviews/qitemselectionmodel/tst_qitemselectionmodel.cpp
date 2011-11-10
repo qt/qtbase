@@ -2675,6 +2675,12 @@ public:
 
   using QItemSelectionModel::select;
 
+  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+  {
+      QItemSelectionModel::setCurrentIndex(index, command);
+      m_target->setCurrentIndex(index, command);
+  }
+
 private:
   QItemSelectionModel *m_target;
 
@@ -2708,6 +2714,9 @@ void tst_QItemSelectionModel::testChainedSelectionClear()
         QVERIFY(selectedIndexes.size() == 0);
     }
 
+    duplicate.setCurrentIndex(model.index(0, 0), QItemSelectionModel::NoUpdate);
+
+    QVERIFY(selectionModel.currentIndex() == duplicate.currentIndex());
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
