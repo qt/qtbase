@@ -78,10 +78,6 @@ struct Q_CORE_EXPORT QVectorData
 #endif
 
     static const QVectorData shared_null;
-    // ### Qt 5: rename to 'allocate()'. The current name causes problems for
-    // some debugges when the QVector is member of a class within an unnamed namespace.
-    // ### Qt 5: can be removed completely. (Ralf)
-    static QVectorData *malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init);
     static QVectorData *allocate(int size, int alignment);
     static QVectorData *reallocate(QVectorData *old, int newsize, int oldsize, int alignment);
     static void free(QVectorData *data, int alignment);

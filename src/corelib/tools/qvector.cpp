@@ -56,14 +56,6 @@ static inline int alignmentThreshold()
 
 const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, false, 0 };
 
-QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init)
-{
-    QVectorData* p = (QVectorData *)::malloc(sizeofTypedData + (size - 1) * sizeofT);
-    Q_CHECK_PTR(p);
-    ::memcpy(p, init, sizeofTypedData + (qMin(size, init->alloc) - 1) * sizeofT);
-    return p;
-}
-
 QVectorData *QVectorData::allocate(int size, int alignment)
 {
     return static_cast<QVectorData *>(alignment > alignmentThreshold() ? qMallocAligned(size, alignment) : ::malloc(size));
