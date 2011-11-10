@@ -346,10 +346,27 @@ private slots:
     void invalidSlot() {}
 #endif
 
-
     friend class Receiver; // task #85783
 signals:
     friend class Sender; // task #85783
+
+#define MACRO_DEFINED
+
+#if !(defined MACRO_UNDEF || defined MACRO_DEFINED) || 1
+    void signalInIf1();
+#else
+    void doNotExist();
+#endif
+#if !(!defined MACRO_UNDEF || !defined MACRO_DEFINED) && 1
+    void doNotExist();
+#else
+    void signalInIf2();
+#endif
+#if !(!defined (MACRO_DEFINED) || !defined (MACRO_UNDEF)) && 1
+    void doNotExist();
+#else
+    void signalInIf3();
+#endif
 
 public slots:
     void const slotWithSillyConst() {}
@@ -756,6 +773,10 @@ void tst_Moc::preprocessorConditionals()
     QVERIFY(mobj->indexOfSlot("slotInIf()") != -1);
     QVERIFY(mobj->indexOfSlot("slotInLastElse()") != -1);
     QVERIFY(mobj->indexOfSlot("slotInElif()") != -1);
+    QVERIFY(mobj->indexOfSignal("signalInIf1()") != -1);
+    QVERIFY(mobj->indexOfSignal("signalInIf2()") != -1);
+    QVERIFY(mobj->indexOfSignal("signalInIf3()") != -1);
+    QVERIFY(mobj->indexOfSignal("doNotExist()") == -1);
 }
 
 void tst_Moc::blackslashNewlines()

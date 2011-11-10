@@ -538,12 +538,13 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted, MacroSafeSet saf
                 continue;
             }
         } else if (token == PP_DEFINED) {
-            test(PP_LPAREN);
+            bool braces = test(PP_LPAREN);
             next(PP_IDENTIFIER);
             Symbol definedOrNotDefined = symbol();
             definedOrNotDefined.token = macros.contains(definedOrNotDefined)? PP_MOC_TRUE : PP_MOC_FALSE;
             substituted += definedOrNotDefined;
-            test(PP_RPAREN);
+            if (braces)
+                test(PP_RPAREN);
             continue;
         } else if (token == PP_NEWLINE) {
             substituted += symbol();
