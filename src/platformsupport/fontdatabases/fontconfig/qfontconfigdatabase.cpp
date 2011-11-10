@@ -503,6 +503,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
 
     FcResult result;
     FcPattern *match = FcFontMatch(0, pattern, &result);
+    FcCharSet *charset;
     if (match) {
         QFontEngineFT::HintStyle default_hint_style;
 
@@ -549,6 +550,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
         } else
             format = QFontEngineFT::Format_Mono;
 
+        FcPatternGetCharSet(match, FC_CHARSET, 0, &charset);
         FcPatternDestroy(match);
     } else
         format = antialias ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
@@ -570,6 +572,9 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
             engine = 0;
         }
     }
+
+    if (engine && engine->freetype && !engine->freetype->charset)
+        engine->freetype->charset = FcCharSetCopy(charset);
 
     return engine;
 }
