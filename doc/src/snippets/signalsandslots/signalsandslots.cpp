@@ -57,8 +57,8 @@ int main()
 //! [1]
     Counter a, b;
 //! [1] //! [2]
-    QObject::connect(&a, SIGNAL(valueChanged(int)),
-                     &b, SLOT(setValue(int)));
+    QObject::connect(&a, &Counter::valueChanged,
+                     &b, &Counter::setValue);
 //! [2]
 
 //! [3]

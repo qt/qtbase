@@ -57,12 +57,12 @@ FileReader::FileReader(QWidget *parent)
     signalMapper->setMapping(accountFileButton, QString("accountsfile.txt"));
     signalMapper->setMapping(reportFileButton, QString("reportfile.txt"));
 
-    connect(taxFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
-    connect(accountFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
-    connect(reportFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
+    connect(taxFileButton, &QPushButton::clicked,
+        signalMapper, &QSignalMapper::map);
+    connect(accountFileButton, &QPushButton::clicked,
+        signalMapper, &QSignalMapper::map);
+    connect(reportFileButton, &QPushButton::clicked,
+        signalMapper, &QSignalMapper::map);
 //! [0]
 
 //! [1]

@@ -195,8 +195,9 @@
 
     Signals are emitted by an object when its internal state has changed
     in some way that might be interesting to the object's client or owner.
-    Only the class that defines a signal and its subclasses can emit the
-    signal.
+    Signals are public access functions and can be emitted from anywhere,
+    but we recommend to only emit them from the class that defines the
+    signal and its subclasses.
 
     When a signal is emitted, the slots connected to it are usually
     executed immediately, just like a normal function call. When this
@@ -253,15 +254,10 @@
     string, vector or list operation that behind the scene requires
     \c new or \c delete, the signals and slots overhead is only
     responsible for a very small proportion of the complete function
-    call costs.
-
-    The same is true whenever you do a system call in a slot; or
-    indirectly call more than ten functions. On an i586-500, you can
-    emit around 2,000,000 signals per second connected to one
-    receiver, or around 1,200,000 per second connected to two
-    receivers. The simplicity and flexibility of the signals and
-    slots mechanism is well worth the overhead, which your users
-    won't even notice.
+    call costs. The same is true whenever you do a system call in a slot;
+    or indirectly call more than ten functions.
+    The simplicity and flexibility of the signals and slots mechanism is
+    well worth the overhead, which your users won't even notice.
 
     Note that other libraries that define variables called \c signals
     or \c slots may cause compiler warnings and errors when compiled
@@ -381,8 +377,30 @@
     void objectDestroyed(QObject* obj = 0);
     \endcode
 
-    To connect the signal to the slot, we use QObject::connect() and
-    the \c{SIGNAL()} and \c{SLOT()} macros. The rule about whether to
+    To connect the signal to the slot, we use QObject::connect().
+    There are several ways to connect signal and slots. The first is to use
+    function pointers:
+    \code
+    connect(sender, &QObject::destroyed, this, &MyObject::objectDestroyed);
+    \endcode
+
+    There are several advantages to using connect() with function pointers.
+    First, it allows the compiler to check that the signal's arguments are
+    compatible with the slot's arguments. Arguments can also be implicitly
+    converted by the compiler, if needed.
+
+    You can also connect to functors or C++11 lamdas:
+
+    \code
+    connect(sender, &QObject::destroyed, [=](){ this->m_objects.remove(sender); });
+    \endcode
+
+    Note that if your compiler does not support C++11 variadic templates,
+    this syntax only works if the signal and slot have 3 arguments or less.
+
+    The other way to connect a signal to a slot is to use QObject::connect()
+    and the \c{SIGNAL} and \c{SLOT} macros.
+    The rule about whether to
     include arguments or not in the \c{SIGNAL()} and \c{SLOT()}
     macros, if the arguments have default values, is that the
     signature passed to the \c{SIGNAL()} macro must \e not have fewer
@@ -401,6 +419,9 @@
 
     ...because the slot will be expecting a QObject that the signal
     will not send. This connection will report a runtime error.
+
+    Note that signal and slot arguments are not checked by the compiler when
+    using this QObject::connect() overload.
 
     \section1 Advanced Signals and Slots Usage
 
@@ -426,10 +447,6 @@
     which push button is pressed.
 
     \snippet doc/src/snippets/signalmapper/filereader.cpp 1
-
-    \note The following code will compile and run, but due to signature normalization, the code will be slower.
-
-    \snippet doc/src/snippets/signalmapper/filereader.cpp 2
 
     \sa {Meta-Object System}, {Qt's Property System}
 
