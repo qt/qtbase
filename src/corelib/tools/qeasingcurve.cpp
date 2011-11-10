@@ -628,19 +628,40 @@ struct BezierEase : public QEasingCurveFunction
 
     float static inline _fast_cbrt(float x)
     {
-        int& i = (int&) x;
-        i = (i - (127<<23)) / 3 + (127<<23);
-        return x;
+        union {
+            float f;
+            quint32 i;
+        } ux;
+
+        const unsigned int B1 = 709921077;
+
+        ux.f = x;
+        ux.i = (ux.i / 3 + B1);
+
+        return ux.f;
     }
 
     double static inline _fast_cbrt(double d)
     {
-       const unsigned int B1 = 715094163;
-       double t = 0.0;
-       unsigned int* pt = (unsigned int*) &t;
-       unsigned int* px = (unsigned int*) &d;
-       pt[1]=px[1]/3+B1;
-       return t;
+        union {
+            double d;
+            quint32 pt[2];
+        } ut, ux;
+
+        const unsigned int B1 = 715094163;
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        const int h0 = 1;
+#else
+        const int h0 = 0;
+#endif
+        ut.d = 0.0;
+        ux.d = d;
+
+        quint32 hx = ux.pt[h0]; //high word of d
+        ut.pt[h0] = hx / 3 + B1;
+
+        return ut.d;
     }
 
     qreal static inline _acos(qreal x)
