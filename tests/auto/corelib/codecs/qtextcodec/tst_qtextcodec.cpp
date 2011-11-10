@@ -1946,7 +1946,7 @@ static QByteArray loadAndConvert(const QByteArray &codecName)
 {
     QTextCodec *c = QTextCodec::codecForName(codecName);
     if (!c) {
-        qDebug() << "WARNING " << codecName << " not found? ";
+        qWarning() << "WARNING" << codecName << "not found?";
         return QByteArray();
     }
     QString str = QString::fromLatin1(codecName);
@@ -1959,7 +1959,7 @@ static int loadAndConvertMIB(int mib)
 {
     QTextCodec *c = QTextCodec::codecForMib(mib);
     if (!c) {
-        qDebug() << "WARNING " << mib << " not found? ";
+        qWarning() << "WARNING" << mib << "not found?";
         return 0;
     }
     QString str = QString::number(mib);
