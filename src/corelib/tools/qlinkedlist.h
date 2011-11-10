@@ -266,6 +266,7 @@ void QLinkedList<T>::detach_helper()
             copy = copy->n;
         } QT_CATCH(...) {
             copy->n = x.e;
+            Q_ASSERT(!x.d->ref.deref()); // Don't trigger assert in free
             free(x.d);
             QT_RETHROW;
         }
@@ -282,14 +283,13 @@ void QLinkedList<T>::free(QLinkedListData *x)
 {
     Node *y = reinterpret_cast<Node*>(x);
     Node *i = y->n;
-    if (x->ref == 0) {
-        while(i != y) {
-            Node *n = i;
-            i = i->n;
-            delete n;
-        }
-        delete x;
+    Q_ASSERT(x->ref.atomic.load() == 0);
+    while (i != y) {
+        Node *n = i;
+        i = i->n;
+        delete n;
     }
+    delete x;
 }
 
 template <typename T>
