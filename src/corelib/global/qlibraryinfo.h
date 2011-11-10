@@ -63,6 +63,8 @@ public:
     static QDate buildDate();
 #endif //QT_NO_DATESTRING
 
+    static bool isDebugBuild();
+
     enum LibraryLocation
     {
         PrefixPath,

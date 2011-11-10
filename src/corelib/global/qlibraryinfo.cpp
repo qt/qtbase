@@ -139,22 +139,11 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     \class QLibraryInfo
     \brief The QLibraryInfo class provides information about the Qt library.
 
-    Many pieces of information are established when Qt is configured.
-    Installation paths, license information, and even a unique build
-    key. This class provides an abstraction for accessing this
-    information.
-
-    \table
-    \header \o Function           \o Return value
-    \row    \o buildKey()         \o A string that identifies the Qt version and
-                                     the configuration. This key is used to ensure
-                                     that \l{plugins} link against the same version
-                                     of Qt as the application.
-    \row    \o location()         \o The path to a certain Qt
-                                     component (e.g., documentation, header files).
-    \row    \o licensee(),
-               licensedProducts() \o Licensing information.
-    \endtable
+    Many pieces of information are established when Qt is configured and built.
+    This class provides an abstraction for accessing that information.
+    By using the static functions of this class, an application can obtain
+    information about the instance of the Qt library which the application
+    is using at run-time.
 
     You can also use a \c qt.conf file to override the hard-coded paths
     that are compiled into the Qt library. For more information, see
@@ -210,6 +199,20 @@ QLibraryInfo::buildDate()
     return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
 #endif //QT_NO_DATESTRING
+
+/*!
+    \since 5.0
+    Returns true if this build of Qt was built with debugging enabled, or
+    false if it was built in release mode.
+*/
+bool
+QLibraryInfo::isDebugBuild()
+{
+#ifdef QT_DEBUG
+    return true;
+#endif
+    return false;
+}
 
 /*!
   Returns the location specified by \a loc.
