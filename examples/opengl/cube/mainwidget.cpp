@@ -46,10 +46,10 @@
 
 #include <QBasicTimer>
 #include <QMouseEvent>
+#include <QDebug>
 
 #include <math.h>
-
-#include <QDebug>
+#include <locale.h>
 
 MainWidget::MainWidget(QWidget *parent) :
     QGLWidget(parent),
