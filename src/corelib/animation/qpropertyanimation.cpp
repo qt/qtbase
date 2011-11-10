@@ -187,7 +187,7 @@ QObject *QPropertyAnimation::targetObject() const
 void QPropertyAnimation::setTargetObject(QObject *target)
 {
     Q_D(QPropertyAnimation);
-    if (d->targetValue == target)
+    if (d->target.data() == target)
         return;
 
     if (d->state != QAbstractAnimation::Stopped) {
