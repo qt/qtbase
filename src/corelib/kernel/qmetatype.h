@@ -45,10 +45,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 
-#ifndef QT_NO_DATASTREAM
-#include <QtCore/qdatastream.h>
-#endif
-
 #include <new>
 
 #ifdef Bool
@@ -177,6 +173,8 @@ QT_MODULE(Core)
 
 #define QT_DEFINE_METATYPE_ID(TypeName, Id, Name) \
     TypeName = Id,
+
+class QDataStream;
 
 class Q_CORE_EXPORT QMetaType {
 public:
