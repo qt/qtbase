@@ -63,10 +63,8 @@ private slots:
     void qCompress_data();
 #ifndef QT_NO_COMPRESS
     void qCompress();
-#if !(defined Q_OS_HPUX && !defined __ia64 && defined Q_CC_GNU) && !defined Q_OS_SOLARIS && !defined Q_OS_QNX && !defined Q_OS_WIN
     void qUncompress_data();
     void qUncompress();
-#endif
     void qCompressionZeroTermination();
 #endif
     void constByteArray();
@@ -192,9 +190,9 @@ void tst_QByteArray::qCompress()
 
 // Corrupt data causes this test to lock up on HP-UX / PA-RISC with gcc,
 // SOLARIS, QNX and Windows.
-#if !(defined Q_OS_HPUX && !defined __ia64 && defined Q_CC_GNU) && !defined Q_OS_SOLARIS && !defined Q_OS_QNX && !defined Q_OS_WIN
 void tst_QByteArray::qUncompress_data()
 {
+#if !(defined(Q_OS_HPUX) && !defined(__ia64) && defined(Q_CC_GNU)) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX) && !defined(Q_OS_WIN)
     QTest::addColumn<QByteArray>("in");
     QTest::addColumn<QByteArray>("out");
 
@@ -210,10 +208,14 @@ void tst_QByteArray::qUncompress_data()
     QTest::newRow("0xcfffffff") << QByteArray("\xcf\xff\xff\xff", 4) << QByteArray();
     QTest::newRow("0xffffff00") << QByteArray("\xff\xff\xff\x00", 4) << QByteArray();
     QTest::newRow("0xffffffff") << QByteArray("\xff\xff\xff\xff", 4) << QByteArray();
+#else
+    QSKIP("Test does not make sense on this platform");
+#endif
 }
 
 void tst_QByteArray::qUncompress()
 {
+#if !(defined(Q_OS_HPUX) && !defined(__ia64) && defined(Q_CC_GNU)) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_QNX) && !defined(Q_OS_WIN)
     QFETCH(QByteArray, in);
     QFETCH(QByteArray, out);
 
@@ -223,8 +225,10 @@ void tst_QByteArray::qUncompress()
 
     res = ::qUncompress(in + "blah");
     QCOMPARE(res, out);
-}
+#else
+    QSKIP("Test does not make sense on this platform");
 #endif
+}
 
 void tst_QByteArray::qCompressionZeroTermination()
 {
