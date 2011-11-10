@@ -58,6 +58,12 @@ private slots:
     void operators();
     void properties();
     void metaTypes();
+    void bezierSpline_data();
+    void bezierSpline();
+    void tcbSpline_data();
+    void tcbSpline();
+    void testCbrtDouble();
+    void testCbrtFloat();
 };
 
 void tst_QEasingCurve::type()
@@ -542,6 +548,222 @@ void tst_QEasingCurve::metaTypes()
     QVERIFY(QMetaType::isRegistered(QMetaType::QEasingCurve));
 
     QVERIFY(qMetaTypeId<QEasingCurve>() == QMetaType::QEasingCurve);
+}
+
+void tst_QEasingCurve::bezierSpline_data()
+{
+    QTest::addColumn<QString>("definition");
+    QTest::addColumn<IntList>("at");
+    QTest::addColumn<RealList>("expected");
+
+    QTest::newRow("EasingCurve") << QString::fromLatin1("0.2,0 0.6,0.09 0.7,1.0 0.7,0.97 0.74,0.96 0.74,0.95 0.81,0.97 0.9,0.97 1,1")
+         << (IntList()  << 0 << 70 << 74 << 100)
+         << (RealList() << 0.0000 << 1.0000 << 0.9500 << 1.0000);
+
+    //This curve is likely to be numerical instable
+    QTest::newRow("NastyCurve") << QString::fromLatin1("0.2,0.2 0.126667,0.646667 0.2,0.8 0.624,0.984 0.930667,0.946667 1,1")
+         << (IntList()  << 0 << 20 << 30 << 50 << 75 << 100)
+         << (RealList() << 0.0000 << 0.8000 << 0.8402 << 0.9029 << 0.9515 << 1.0000);
+
+    QTest::newRow("ComplexCurve") << QString::fromLatin1("0,0.47174849 0.17393079,0.35634291 0.18950309,0.47179766 0.2487779,0.91126755 "
+                                             "0.27029205,-0.11275513 0.33421971,0.12062718 0.41170105,-0.10157488 0.4140625,0.16796875 "
+                                             "0.4140625,0.16796875 0.4140625,0.16796875 0.59658877,0.36978503 0.67931151,0.89255893 0.711253,0.44658283 "
+                                             "0.88203125,0.43671875 0.88203125,0.43671875 0.86087213,0.78786873 0.99609375,0.4921875 1,1")
+         << (IntList()  << 0 << 15 << 20 << 30 << 40 << 70 << 50 << 80 << 100)
+         << (RealList() << 0.0000 << 0.4134 << 0.5367 << 0.1107 << 0.0505 << 0.7299 << 0.3030 << 0.4886 << 1.0000);
+}
+
+static inline void setupBezierSpline(QEasingCurve *easingCurve, const QString &string)
+{
+    QStringList pointStr = string.split(QLatin1Char(' '));
+
+    QVector<QPointF> points;
+    foreach (const QString &str, pointStr) {
+        QStringList coordStr = str.split(QLatin1Char(','));
+        QPointF point(coordStr.first().toDouble(), coordStr.last().toDouble());
+        points.append(point);
+    }
+
+    QVERIFY(points.count() % 3 == 0);
+
+    for (int i = 0; i < points.count() / 3; i++) {
+        QPointF c1 = points.at(i * 3);
+        QPointF c2 = points.at(i * 3 + 1);
+        QPointF p1 = points.at(i * 3 + 2);
+        easingCurve->addCubicBezierSegment(c1, c2, p1);
+    }
+}
+
+void tst_QEasingCurve::bezierSpline()
+{
+    QFETCH(QString, definition);
+    QFETCH(IntList, at);
+    QFETCH(RealList, expected);
+
+    QEasingCurve bezierEasingCurve(QEasingCurve::BezierSpline);
+    setupBezierSpline(&bezierEasingCurve, definition);
+
+    const qreal errorBound = 0.002;
+    for (int i = 0; i < at.count(); ++i) {
+        const qreal ex = expected.at(i);
+        const qreal value = bezierEasingCurve.valueForProgress(at.at(i)/qreal(100));
+        const qreal error = qAbs(ex - value);
+        if (error > errorBound)
+            QCOMPARE(value, ex);
+        QVERIFY(error <= errorBound);
+    }
+}
+
+void tst_QEasingCurve::tcbSpline_data()
+{
+    QTest::addColumn<QString>("definition");
+    QTest::addColumn<IntList>("at");
+    QTest::addColumn<RealList>("expected");
+
+    QTest::newRow("NegativeCurved") << QString::fromLatin1("0.0,0.0,0,0,0 0.4,0.8,0.0,1,0.0 1.0,1.0,0.0,0.0,0")
+         << (IntList()  << 0 << 66 << 73 << 100)
+         << (RealList() << 0.0000 << 0.9736 << 0.9774 << 1.0000);
+
+    //This curve is likely to be numerical instable
+    QTest::newRow("Corner") << QString::fromLatin1("0.0,0.0,0,0,0 0.4,0.8,0.0,-1,0.0 1.0,1.0,0.0,0.0,0")
+         << (IntList()  << 0 << 20 << 30 << 50 << 75 << 100)
+         << (RealList() << 0.0000 << 0.3999 << 0.5996 << 0.8334 << 0.9166 << 1.0000);
+
+    QTest::newRow("RoundCurve") << QString::fromLatin1("0.0,0.0,0,0,0 0.4,0.8,0.0,0,0.0 1.0,1.0,0.0,0.0,0")
+         << (IntList()  << 0 << 15 << 20 << 30 << 40 << 70 << 50 << 80 << 100)
+         << (RealList() << 0.0000 << 0.3478 << 0.4663 << 0.6664 << 0.8000 << 0.9399 << 0.8746 << 0.9567 << 1.0000);
+
+    QTest::newRow("Bias") << QString::fromLatin1("0.0,0.0,0,0,0 0.4,0.8,0.1,0,1.0 1.0,1.0,0.0,0.0,0")
+         << (IntList()  << 0 << 15 << 20 << 30 << 40 << 70 << 50 << 80 << 100)
+         << (RealList() << 0.0000 << 0.2999 << 0.3998 << 0.5997 << 0.8000 << 0.9676 << 0.9136 << 0.9725 << 1.0000);
+}
+
+static inline void setupTCBSpline(QEasingCurve *easingCurve, const QString &string)
+{
+    QStringList pointStr = string.split(QLatin1Char(' '));
+
+    foreach (const QString &str, pointStr) {
+        QStringList coordStr = str.split(QLatin1Char(','));
+        Q_ASSERT(coordStr.count() == 5);
+        QPointF point(coordStr.first().toDouble(), coordStr.at(1).toDouble());
+        qreal t = coordStr.at(2).toDouble();
+        qreal c = coordStr.at(3).toDouble();
+        qreal b = coordStr.at(4).toDouble();
+        easingCurve->addTCBSegment(point, t, c ,b);
+    }
+}
+
+void tst_QEasingCurve::tcbSpline()
+{
+    QFETCH(QString, definition);
+    QFETCH(IntList, at);
+    QFETCH(RealList, expected);
+
+    QEasingCurve tcbEasingCurve(QEasingCurve::TCBSpline);
+    setupTCBSpline(&tcbEasingCurve, definition);
+
+    const qreal errorBound = 0.002;
+    for (int i = 0; i < at.count(); ++i) {
+        const qreal ex = expected.at(i);
+        const qreal value = tcbEasingCurve.valueForProgress(at.at(i)/qreal(100));
+        const qreal error = qAbs(ex - value);
+        if (error > errorBound)
+            QCOMPARE(value, ex);
+        QVERIFY(error <= errorBound);
+    }
+}
+
+/*This is single precision code for a cubic root used inside the spline easing curve.
+  This code is tested here explicitly. See: qeasingcurve.cpp */
+
+float static inline _fast_cbrt(float x)
+{
+    union {
+        float f;
+        quint32 i;
+    } ux;
+
+    const unsigned int B1 = 709921077;
+
+    ux.f = x;
+    ux.i = (ux.i / 3 + B1);
+
+    return ux.f;
+}
+
+/*This is double precision code for a cubic root used inside the spline easing curve.
+  This code is tested here explicitly. See: qeasingcurve.cpp */
+
+double static inline _fast_cbrt(double d)
+{
+    union {
+        double d;
+        quint32 pt[2];
+    } ut, ux;
+
+    const unsigned int B1 = 715094163;
+
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    const int h0 = 1;
+#else
+    const int h0 = 0;
+#endif
+    ut.d = 0.0;
+    ux.d = d;
+
+    quint32 hx = ux.pt[h0]; //high word of d
+    ut.pt[h0] = hx/3 + B1;
+
+    return ut.d;
+}
+
+void tst_QEasingCurve::testCbrtDouble()
+{
+    const qreal errorBound = 0.0001;
+
+    for (int i = 0; i < 100000; i++) {
+        double d = double(i) / 1000.0;
+        double t = _fast_cbrt(d);
+
+        const double t_cubic = t * t * t;
+        t = t * (t_cubic + d + d) / (t_cubic + t_cubic + d);
+
+        double expected = pow(d, 1.0/3.0);
+
+        const qreal error = qAbs(expected - t);
+
+        if (!(error < errorBound)) {
+            qWarning() << d;
+            qWarning() << error;
+        }
+
+        QVERIFY(error < errorBound);
+    }
+}
+
+void tst_QEasingCurve::testCbrtFloat()
+{
+    const qreal errorBound = 0.0005;
+
+    for (int i = 1; i < 100000; i++) {
+        float f = float(i) / 1000.0f;
+        float t = _fast_cbrt(f);
+
+        const float t_cubic = t * t * t;
+        t = t * (t_cubic + f + f) / (t_cubic + t_cubic + f);
+
+        float expected = pow(f, 1.0/3.0);
+
+        const qreal error = qAbs(expected - t);
+
+        if (!(error < errorBound)) {
+            qWarning() << f;
+            qWarning() << error;
+        }
+
+        QVERIFY(error < errorBound);
+    }
 }
 
 QTEST_MAIN(tst_QEasingCurve)
