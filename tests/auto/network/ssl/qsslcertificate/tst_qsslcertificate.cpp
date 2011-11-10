@@ -711,7 +711,7 @@ void tst_QSslCertificate::certInfo()
     QCOMPARE(cert.subjectInfo("ST"), QStringList());
 
     QCOMPARE(cert.version(), QByteArray::number(1));
-    QCOMPARE(cert.serialNumber(), QByteArray::number(17));
+    QCOMPARE(cert.serialNumber(), QByteArray("11"));
 
     QCOMPARE(cert.toPem().constData(), (const char*)pem);
     QCOMPARE(cert.toDer(), QByteArray::fromHex(der));

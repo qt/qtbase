@@ -99,6 +99,10 @@ QtNetwork
 * QHostAddress::isLoopback() API added. Returns true if the address is
   one of the IP loopback addresses.
 
+* QSslCertificate::serialNumber() now always returns the serial number in
+  hexadecimal format.
+
+
 QtOpenGL
 --------
 

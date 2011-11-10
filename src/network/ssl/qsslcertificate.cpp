@@ -271,28 +271,20 @@ QByteArray QSslCertificate::version() const
 }
 
 /*!
-    Returns the certificate's serial number string in decimal format.
-    In case the serial number cannot be converted to decimal format
-    (i.e. if it is bigger than 4294967295, which means it does not fit into 4 bytes),
-    its hexadecimal version is returned.
+    Returns the certificate's serial number string in hexadecimal format.
 */
 QByteArray QSslCertificate::serialNumber() const
 {
     if (d->serialNumberString.isEmpty() && d->x509) {
         ASN1_INTEGER *serialNumber = d->x509->cert_info->serialNumber;
-        // if we cannot convert to a long, just output the hexadecimal number
-        if (serialNumber->length > 4) {
-            QByteArray hexString;
-            hexString.reserve(serialNumber->length * 3);
-            for (int a = 0; a < serialNumber->length; ++a) {
-                hexString += QByteArray::number(serialNumber->data[a], 16).rightJustified(2, '0');
-                hexString += ':';
-            }
-            hexString.chop(1);
-            d->serialNumberString = hexString;
-        } else {
-            d->serialNumberString = QByteArray::number(qlonglong(q_ASN1_INTEGER_get(serialNumber)));
+        QByteArray hexString;
+        hexString.reserve(serialNumber->length * 3);
+        for (int a = 0; a < serialNumber->length; ++a) {
+            hexString += QByteArray::number(serialNumber->data[a], 16).rightJustified(2, '0');
+            hexString += ':';
         }
+        hexString.chop(1);
+        d->serialNumberString = hexString;
     }
     return d->serialNumberString;
 }
