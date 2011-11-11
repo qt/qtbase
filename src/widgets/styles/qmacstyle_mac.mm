@@ -2851,10 +2851,14 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         QVector<QLineF> a(2);
         a << QLineF(x1, y1, x2, y2);
         a << QLineF(x2, y2, x3, y3);
-        if (opt->palette.currentColorGroup() == QPalette::Active)
-            p->setPen(QPen(Qt::white, 3));
-        else
+        if (opt->palette.currentColorGroup() == QPalette::Active) {
+            if (opt->state & State_On)
+                p->setPen(QPen(opt->palette.highlightedText().color(), 3));
+            else
+                p->setPen(QPen(opt->palette.text().color(), 3));
+        } else {
             p->setPen(QPen(QColor(100, 100, 100), 3));
+        }
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
         p->drawLines(a);
