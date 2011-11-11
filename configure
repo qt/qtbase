@@ -833,6 +833,7 @@ CFG_COREWLAN=auto
 CFG_ICD=auto
 CFG_NOPROCESS=no
 CFG_ICU=auto
+CFG_FORCE_ASSERTS=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1037,7 +1038,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2399,6 +2400,13 @@ while [ "$#" -gt 0 ]; do
     icu)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_ICU="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    force-asserts)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_FORCE_ASSERTS="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -7249,6 +7257,10 @@ fi
 
 if [ "$CFG_ICU" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG icu"
+fi
+
+if [ "$CFG_FORCE_ASSERTS" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG force_asserts"
 fi
 
 #

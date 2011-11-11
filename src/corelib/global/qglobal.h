@@ -1706,10 +1706,10 @@ inline QNoDebug qDebug();
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
 #if !defined(Q_ASSERT)
-#  ifndef QT_NO_DEBUG
-#    define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
-#  else
+#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_ASSERT(cond) qt_noop()
+#  else
+#    define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
 #  endif
 #endif
 

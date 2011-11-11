@@ -18,6 +18,7 @@ win32 {
    !isEmpty(QMAKESPEC_ORIGINAL):INCLUDEPATH += $$QMAKESPEC_ORIGINAL
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG
+contains(QT_CONFIG, force_asserts):DEFINES += QT_FORCE_ASSERTS
 no_keywords:DEFINES += QT_NO_KEYWORDS
 plugin { #Qt plugins
    static:DEFINES += QT_STATICPLUGIN
