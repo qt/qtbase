@@ -1869,7 +1869,6 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
     QApplication::processEvents();
     QTest::qWait(50);
     QCOMPARE(bar->value(), bar->maximum());
-    QEXPECT_FAIL("LeftToRight", "QTBUG-21833", Abort);
     QCOMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
 }
 

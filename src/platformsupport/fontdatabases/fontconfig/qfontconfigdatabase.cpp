@@ -715,8 +715,10 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
     if (!pattern)
         return family;
 
-    QByteArray cs = family.toUtf8();
-    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) cs.constData());
+    if (!family.isEmpty()) {
+        QByteArray cs = family.toUtf8();
+        FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) cs.constData());
+    }
     FcConfigSubstitute(0, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 
@@ -726,4 +728,9 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
     FcPatternDestroy(pattern);
 
     return resolved;
+}
+
+QFont QFontconfigDatabase::defaultFont() const
+{
+    return QFont(resolveFontFamilyAlias(QString()));
 }

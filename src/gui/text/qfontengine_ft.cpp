@@ -1218,6 +1218,7 @@ static const ushort char_table[] = {
         88,
         89,
         91,
+        95,
         102,
         114,
         124,
