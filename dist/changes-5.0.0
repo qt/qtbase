@@ -11,8 +11,13 @@ information about a particular change.
 *                       Source incompatible changes                        *
 ****************************************************************************
 
+
 - QSslCertificate::subjectInfo() and QSslCertificate::issuerInfo() now
   return a QStringList instead of a QString
+
+- QSslCertificate::isValid() has been deprecated. Originally it only checked
+  the certificate dates, but later checking for blacklisting was added. Now
+  there's a more specific QSslCertificate::isBlacklisted() method.
 
 - Unite clipping support has been removed from QPainter. The alternative is
   to unite QRegion's and using the result on QPainter.

@@ -62,11 +62,10 @@
     a DER (binary) or PEM (Base64) encoded bundle, typically stored as
     one or more local files, or in a Qt Resource.
 
-    You can call isNull() to check if your certificate is null. By
-    default, QSslCertificate constructs a null certificate. To check
-    if the certificate is valid, call isValid(). A null certificate is
-    invalid, but an invalid certificate is not necessarily null. If
-    you want to reset all contents in a certificate, call clear().
+    You can call isNull() to check if your certificate is null. By default,
+    QSslCertificate constructs a null certificate. A null certificate is
+    invalid, but an invalid certificate is not necessarily null. If you want
+    to reset all contents in a certificate, call clear().
 
     After loading a certificate, you can find information about the
     certificate, its subject, and its issuer, by calling one of the
@@ -212,14 +211,17 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 
     By default, QSslCertificate constructs a null certificate.
 
-    \sa isValid(), clear()
+    \sa clear()
 */
 bool QSslCertificate::isNull() const
 {
     return d->null;
 }
 
+#if QT_DEPRECATED_SINCE(5,0)
 /*!
+    \fn bool QSslCertificate::isValid() const
+
     Returns true if this certificate is valid; otherwise returns
     false.
 
@@ -230,12 +232,17 @@ bool QSslCertificate::isNull() const
 
     \sa isNull()
 */
-bool QSslCertificate::isValid() const
+#endif
+
+/*!
+    Returns true if this certificate is blacklisted; otherwise
+    returns false.
+
+    \sa isNull()
+*/
+bool QSslCertificate::isBlacklisted() const
 {
-    const QDateTime currentTime = QDateTime::currentDateTime();
-    return currentTime >= d->notValidBefore &&
-            currentTime <= d->notValidAfter &&
-            ! QSslCertificatePrivate::isBlacklisted(*this);
+    return QSslCertificatePrivate::isBlacklisted(*this);
 }
 
 /*!

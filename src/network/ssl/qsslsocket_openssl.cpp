@@ -336,7 +336,7 @@ init_context:
     foreach (const QSslCertificate &caCertificate, q->caCertificates()) {
         // add expired certs later, so that the
         // valid ones are used before the expired ones
-        if (! caCertificate.isValid()) {
+        if (caCertificate.expiryDate() > QDateTime::currentDateTime()) {
             expiredCerts.append(caCertificate);
         } else {
             q_X509_STORE_add_cert(ctx->cert_store, reinterpret_cast<X509 *>(caCertificate.handle()));
@@ -1533,7 +1533,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
     foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {
         // add expired certs later, so that the
         // valid ones are used before the expired ones
-        if (!caCertificate.isValid()) {
+        if (caCertificate.expiryDate() > QDateTime::currentDateTime()) {
             expiredCerts.append(caCertificate);
         } else {
             q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));

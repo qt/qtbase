@@ -46,6 +46,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qmap.h>
@@ -94,7 +95,15 @@ public:
     inline bool operator!=(const QSslCertificate &other) const { return !operator==(other); }
 
     bool isNull() const;
-    bool isValid() const;
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED inline bool isValid() const {
+        const QDateTime currentTime = QDateTime::currentDateTime();
+        return currentTime >= effectiveDate() &&
+               currentTime <= expiryDate() &&
+               !isBlacklisted();
+    }
+#endif
+    bool isBlacklisted() const;
     void clear();
 
     // Certificate info

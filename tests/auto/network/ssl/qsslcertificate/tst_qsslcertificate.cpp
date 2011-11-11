@@ -193,7 +193,7 @@ void tst_QSslCertificate::emptyConstructor()
     QSslCertificate certificate;
     QVERIFY(certificate.isNull());
     //make sure none of the functions crash  (task 203035)
-    QVERIFY(!certificate.isValid());
+    QVERIFY(!certificate.isBlacklisted());
     QCOMPARE(certificate.version() , QByteArray());
     QCOMPARE(certificate.serialNumber(), QByteArray());
     QCOMPARE(certificate.digest(), QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5));
@@ -256,7 +256,7 @@ void tst_QSslCertificate::compareCertificates(
 {
     QCOMPARE(cert1.isNull(), cert2.isNull());
     // Note: in theory, the next line could fail even if the certificates are identical!
-    QCOMPARE(cert1.isValid(), cert2.isValid());
+    QCOMPARE(cert1.isBlacklisted(), cert2.isBlacklisted());
     QCOMPARE(cert1.version(), cert2.version());
     QCOMPARE(cert1.serialNumber(), cert2.serialNumber());
     QCOMPARE(cert1.digest(), cert2.digest());
@@ -723,7 +723,7 @@ void tst_QSslCertificate::certInfo()
 
     QCOMPARE(cert.effectiveDate().toUTC(), QDateTime(QDate(2007, 4, 17), QTime(7,40,26), Qt::UTC));
     QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2007, 5, 17), QTime(7,40,26), Qt::UTC));
-    QVERIFY(!cert.isValid());   // cert has expired
+    QVERIFY(cert.expiryDate() < QDateTime::currentDateTime());   // cert has expired
 
     QSslCertificate copy = cert;
     QVERIFY(cert == copy);
@@ -849,7 +849,7 @@ void tst_QSslCertificate::blacklistedCertificates()
     QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath("more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
     QVERIFY2(blacklistedCerts.count() > 0, "Please run this test from the source directory");
     for (int a = 0; a < blacklistedCerts.count(); a++) {
-        QVERIFY(! blacklistedCerts.at(a).isValid());
+        QVERIFY(blacklistedCerts.at(a).isBlacklisted());
     }
 }
 
