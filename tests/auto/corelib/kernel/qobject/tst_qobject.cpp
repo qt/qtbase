@@ -3798,8 +3798,6 @@ void tst_QObject::disconnectByMetaMethod()
             s->metaObject()->indexOfMethod("signal2()"));
     QMetaMethod signal3 = s->metaObject()->method(
             s->metaObject()->indexOfMethod("signal3()"));
-    QMetaMethod signal4 = s->metaObject()->method(
-            s->metaObject()->indexOfMethod("signal4()"));
 
     QMetaMethod slot1 = r1->metaObject()->method(
             r1->metaObject()->indexOfMethod("slot1()"));
