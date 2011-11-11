@@ -133,6 +133,26 @@ QWindowsStylePrivate::QWindowsStylePrivate()
     startTime.start();
 }
 
+void QWindowsStylePrivate::startAnimation(QObject *o, QProgressBar *bar)
+{
+    if (!animatedProgressBars.contains(bar)) {
+        animatedProgressBars << bar;
+        if (!animateTimer) {
+            Q_ASSERT(animationFps > 0);
+            animateTimer = o->startTimer(1000 / animationFps);
+        }
+    }
+}
+
+void QWindowsStylePrivate::stopAnimation(QObject *o, QProgressBar *bar)
+{
+    animatedProgressBars.removeAll(bar);
+    if (animatedProgressBars.isEmpty() && animateTimer) {
+        o->killTimer(animateTimer);
+        animateTimer = 0;
+    }
+}
+
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
 bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
@@ -150,10 +170,8 @@ void QWindowsStyle::timerEvent(QTimerEvent *event)
     if (event->timerId() == d->animateTimer) {
         Q_ASSERT(d->animationFps> 0);
         d->animateStep = d->startTime.elapsed() / (1000 / d->animationFps);
-        foreach (QProgressBar *bar, d->bars) {
-            if ((bar->minimum() == 0 && bar->maximum() == 0))
-                bar->update();
-        }
+        foreach (QProgressBar *bar, d->animatedProgressBars)
+            bar->update();
     }
 #endif // QT_NO_PROGRESSBAR
     event->ignore();
@@ -212,29 +230,23 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
         break;
 #ifndef QT_NO_PROGRESSBAR
     case QEvent::StyleChange:
+    case QEvent::Paint:
     case QEvent::Show:
         if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            if (!d->bars.contains(bar)) {
-                d->bars << bar;
-                if (d->bars.size() == 1) {
-                    Q_ASSERT(d->animationFps> 0);
-                    if (d->animateTimer == 0)
-                        d->animateTimer = startTimer(1000 / d->animationFps);
-                }
-            }
+            // Animation by timer for progress bars that have their min and
+            // max values the same
+            if (bar->minimum() == bar->maximum())
+                d->startAnimation(this, bar);
+            else
+                d->stopAnimation(this, bar);
         }
         break;
     case QEvent::Destroy:
     case QEvent::Hide:
-        // reinterpret_cast because there is no type info when getting
-        // the destroy event. We know that it is a QProgressBar.
-        if (QProgressBar *bar = reinterpret_cast<QProgressBar *>(o)) {
-            d->bars.removeAll(bar);
-            if (d->bars.isEmpty() && d->animateTimer) {
-                killTimer(d->animateTimer);
-                d->animateTimer = 0;
-            }
-        }
+        // Do static_cast because there is no type info when getting
+        // the destroy event. We know that it is a QProgressBar, since
+        // we only install a widget event filter for QScrollBars.
+        d->stopAnimation(this, static_cast<QProgressBar *>(o));
         break;
 #endif // QT_NO_PROGRESSBAR
     default:
@@ -341,7 +353,7 @@ void QWindowsStyle::unpolish(QWidget *widget)
     if (QProgressBar *bar=qobject_cast<QProgressBar *>(widget)) {
         Q_D(QWindowsStyle);
         widget->removeEventFilter(this);
-        d->bars.removeAll(bar);
+        d->stopAnimation(this, bar);
     }
 #endif
 }
