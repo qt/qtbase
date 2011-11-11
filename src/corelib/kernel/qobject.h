@@ -194,15 +194,14 @@ public:
     void installEventFilter(QObject *);
     void removeEventFilter(QObject *);
 
-
-    static bool connect(const QObject *sender, const char *signal,
+    static QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
-        
-    static bool connect(const QObject *sender, const QMetaMethod &signal,
+
+    static QMetaObject::Connection connect(const QObject *sender, const QMetaMethod &signal,
                         const QObject *receiver, const QMetaMethod &method,
                         Qt::ConnectionType type = Qt::AutoConnection);
 
-    inline bool connect(const QObject *sender, const char *signal,
+    inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
     static bool disconnect(const QObject *sender, const char *signal,
@@ -214,6 +213,7 @@ public:
         { return disconnect(this, signal, receiver, member); }
     inline bool disconnect(const QObject *receiver, const char *member = 0)
         { return disconnect(this, 0, receiver, member); }
+    static bool disconnect(const QMetaObject::Connection &);
 
     void dumpObjectTree();
     void dumpObjectInfo();
@@ -275,8 +275,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
 };
 
-inline bool QObject::connect(const QObject *asender, const char *asignal,
-                             const char *amember, Qt::ConnectionType atype) const
+inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,
+                                            const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
 
 #ifndef QT_NO_USERDATA

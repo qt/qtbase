@@ -110,7 +110,7 @@ void tst_QGlobal::qInternalCallbacks()
     // Test that connect works as expected...
     connect_info.reset();
     bool ok = QObject::connect(&a, signal.toLatin1(), &b, slot.toLatin1(), Qt::AutoConnection);
-    QVERIFY(ok);
+    QVERIFY(!ok); // our dummy callback do not return a valid QMetaObject::Connection
     QCOMPARE(&a, connect_info.sender);
     QCOMPARE(&b, connect_info.receiver);
     QCOMPARE(signal, connect_info.signal);

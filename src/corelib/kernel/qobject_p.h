@@ -121,11 +121,22 @@ public:
         Connection *next;
         Connection **prev;
         QAtomicPointer<int> argumentTypes;
+        QAtomicInt ref_;
         ushort method_offset;
         ushort method_relative;
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
+        Connection() : nextConnectionList(0), ref_(2) {
+            //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
+        }
         ~Connection();
         int method() const { return method_offset + method_relative; }
+        void ref() { ref_.ref(); }
+        void deref() {
+            if (!ref_.deref()) {
+                Q_ASSERT(!receiver);
+                delete this;
+            }
+        }
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {

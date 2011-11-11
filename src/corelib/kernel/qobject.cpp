@@ -373,7 +373,7 @@ void QObjectPrivate::cleanConnectionLists()
                 } else {
                     QObjectPrivate::Connection *next = c->nextConnectionList;
                     *prev = next;
-                    delete c;
+                    c->deref();
                     c = next;
                 }
             }
@@ -854,7 +854,7 @@ QObject::~QObject()
                 while (QObjectPrivate::Connection *c = connectionList.first) {
                     if (!c->receiver) {
                         connectionList.first = c->nextConnectionList;
-                        delete c;
+                        c->deref();
                         continue;
                     }
 
@@ -865,11 +865,12 @@ QObject::~QObject()
                         *c->prev = c->next;
                         if (c->next) c->next->prev = c->prev;
                     }
+                    c->receiver = 0;
                     if (needToUnlock)
                         m->unlock();
 
                     connectionList.first = c->nextConnectionList;
-                    delete c;
+                    c->deref();
                 }
             }
 
@@ -2280,7 +2281,8 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
 
     Creates a connection of the given \a type from the \a signal in
     the \a sender object to the \a method in the \a receiver object.
-    Returns true if the connection succeeds; otherwise returns false.
+    Returns a handle to the connection that can be used to disconnect
+    it later.
 
     You must use the \c SIGNAL() and \c SLOT() macros when specifying
     the \a signal and the \a method, for example:
@@ -2309,11 +2311,12 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     in the same order as the order the connection was made, when the
     signal is emitted.
 
-    The function returns true if it successfully connects the signal
-    to the slot. It will return false if it cannot create the
-    connection, for example, if QObject is unable to verify the
-    existence of either \a signal or \a method, or if their signatures
-    aren't compatible.
+    The function returns a handle to a connection if it successfully
+    connects the signal to the slot. The Connection handle will be invalid
+    if it cannot create the connection, for example, if QObject is unable
+    to verify the existence of either \a signal or \a method, or if their
+    signatures aren't compatible.
+    You can check if the QMetaObject::Connection is valid by casting it to a bool.
 
     By default, a signal is emitted for every connection you make;
     two signals are emitted for duplicate connections. You can break
@@ -2339,15 +2342,15 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
 
     \sa disconnect(), sender(), qRegisterMetaType()
 */
-
-bool QObject::connect(const QObject *sender, const char *signal,
-                      const QObject *receiver, const char *method,
-                      Qt::ConnectionType type)
+QMetaObject::Connection QObject::connect(const QObject *sender, const char *signal,
+                                     const QObject *receiver, const char *method,
+                                     Qt::ConnectionType type)
 {
     {
-        const void *cbdata[] = { sender, signal, receiver, method, &type };
+        void *result = 0;
+        const void *cbdata[] = { sender, signal, receiver, method, &type , &result};
         if (QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata))
-            return true;
+            return QMetaObject::Connection(result);
     }
 
 #ifndef QT_NO_DEBUG
@@ -2366,12 +2369,12 @@ bool QObject::connect(const QObject *sender, const char *signal,
                  (signal && *signal) ? signal+1 : "(null)",
                  receiver ? receiver->metaObject()->className() : "(null)",
                  (method && *method) ? method+1 : "(null)");
-        return false;
+        return QMetaObject::Connection(0);
     }
     QByteArray tmp_signal_name;
 
     if (!check_signal_macro(sender, signal, "connect", "bind"))
-        return false;
+        return QMetaObject::Connection(0);
     const QMetaObject *smeta = sender->metaObject();
     const char *signal_arg = signal;
     ++signal; //skip code
@@ -2393,7 +2396,7 @@ bool QObject::connect(const QObject *sender, const char *signal,
     if (signal_index < 0) {
         err_method_notfound(sender, signal_arg, "connect");
         err_info_about_objects("connect", sender, receiver);
-        return false;
+        return QMetaObject::Connection(0);
     }
     signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
     int signalOffset, methodOffset;
@@ -2405,7 +2408,7 @@ bool QObject::connect(const QObject *sender, const char *signal,
     int membcode = extract_code(method);
 
     if (!check_method_code(membcode, receiver, method, "connect"))
-        return false;
+        return QMetaObject::Connection(0);
     const char *method_arg = method;
     ++method; // skip code
 
@@ -2444,7 +2447,7 @@ bool QObject::connect(const QObject *sender, const char *signal,
     if (method_index_relative < 0) {
         err_method_notfound(receiver, method_arg, "connect");
         err_info_about_objects("connect", sender, receiver);
-        return false;
+        return QMetaObject::Connection(0);
     }
 
     if (!QMetaObject::checkConnectArgs(signal, method)) {
@@ -2452,13 +2455,13 @@ bool QObject::connect(const QObject *sender, const char *signal,
                  "\n        %s::%s --> %s::%s",
                  sender->metaObject()->className(), signal,
                  receiver->metaObject()->className(), method);
-        return false;
+        return QMetaObject::Connection(0);
     }
 
     int *types = 0;
     if ((type == Qt::QueuedConnection)
             && !(types = queuedConnectionTypes(smeta->method(signal_absolute_index).parameterTypes())))
-        return false;
+        return QMetaObject::Connection(0);
 
 #ifndef QT_NO_DEBUG
     if (warnCompat) {
@@ -2467,10 +2470,11 @@ bool QObject::connect(const QObject *sender, const char *signal,
         check_and_warn_compat(smeta, smethod, rmeta, rmethod);
     }
 #endif
-    if (!QMetaObjectPrivate::connect(sender, signal_index, receiver, method_index_relative, rmeta ,type, types))
-        return false;
-    const_cast<QObject*>(sender)->connectNotify(signal - 1);
-    return true;
+    QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
+        sender, signal_index, receiver, method_index_relative, rmeta ,type, types));
+    if (handle)
+        const_cast<QObject*>(sender)->connectNotify(signal - 1);
+    return handle;
 }
 
 /*!
@@ -2478,7 +2482,12 @@ bool QObject::connect(const QObject *sender, const char *signal,
 
     Creates a connection of the given \a type from the \a signal in
     the \a sender object to the \a method in the \a receiver object.
-    Returns true if the connection succeeds; otherwise returns false.
+    Returns a handle to the connection that can be used to disconnect
+    it later.
+
+    The Connection handle will be invalid  if it cannot create the
+    connection, for example, the parameters were invalid.
+    You can check if the QMetaObject::Connection is valid by casting it to a bool.
 
     This function works in the same way as
     connect(const QObject *sender, const char *signal,
@@ -2490,9 +2499,9 @@ bool QObject::connect(const QObject *sender, const char *signal,
                 const QObject *receiver, const char *method,
                 Qt::ConnectionType type)
  */
-bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
-                      const QObject *receiver, const QMetaMethod &method,
-                      Qt::ConnectionType type)
+QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMethod &signal,
+                                     const QObject *receiver, const QMetaMethod &method,
+                                     Qt::ConnectionType type)
 {
 #ifndef QT_NO_DEBUG
     bool warnCompat = true;
@@ -2513,7 +2522,7 @@ bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
                  signal.signature(),
                  receiver ? receiver->metaObject()->className() : "(null)",
                  method.signature() );
-        return false;
+        return QMetaObject::Connection(0);
     }
 
     // Reconstructing SIGNAL() macro result for signal.signature() string
@@ -2528,11 +2537,11 @@ bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
         methodSignature.append((char)(method.methodType() == QMetaMethod::Slot ? QSLOT_CODE
                                     : method.methodType() == QMetaMethod::Signal ? QSIGNAL_CODE : 0  + '0'));
         methodSignature.append(method.signature());
-        const void *cbdata[] = { sender, signalSignature.constData(), receiver, methodSignature.constData(), &type };
+        void *result = 0;
+        const void *cbdata[] = { sender, signalSignature.constData(), receiver, methodSignature.constData(), &type, &result };
         if (QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata))
-            return true;
+            return QMetaObject::Connection(result);
     }
-
 
     int signal_index;
     int method_index;
@@ -2547,36 +2556,36 @@ bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
     if (signal_index == -1) {
         qWarning("QObject::connect: Can't find signal %s on instance of class %s",
                  signal.signature(), smeta->className());
-        return false;
+        return QMetaObject::Connection(0);
     }
     if (method_index == -1) {
         qWarning("QObject::connect: Can't find method %s on instance of class %s",
                  method.signature(), rmeta->className());
-        return false;
+        return QMetaObject::Connection(0);
     }
-    
+
     if (!QMetaObject::checkConnectArgs(signal.signature(), method.signature())) {
         qWarning("QObject::connect: Incompatible sender/receiver arguments"
                  "\n        %s::%s --> %s::%s",
                  smeta->className(), signal.signature(),
                  rmeta->className(), method.signature());
-        return false;
+        return QMetaObject::Connection(0);
     }
 
     int *types = 0;
     if ((type == Qt::QueuedConnection)
             && !(types = queuedConnectionTypes(signal.parameterTypes())))
-        return false;
+        return QMetaObject::Connection(0);
 
 #ifndef QT_NO_DEBUG
     if (warnCompat)
         check_and_warn_compat(smeta, signal, rmeta, method);
 #endif
-    if (!QMetaObjectPrivate::connect(sender, signal_index, receiver, method_index, 0, type, types))
-        return false;
-
-    const_cast<QObject*>(sender)->connectNotify(signalSignature.constData());
-    return true;
+    QMetaObject::Connection handle = QMetaObject::Connection(QMetaObjectPrivate::connect(
+        sender, signal_index, receiver, method_index, 0, type, types));
+    if (handle)
+        const_cast<QObject*>(sender)->connectNotify(signalSignature.constData());
+    return handle;
 }
 
 /*!
@@ -2958,22 +2967,24 @@ static int methodIndexToSignalIndex(const QMetaObject *metaObject, int signal_in
    if \a signal_index is -1, then we effectively connect *all* signals
    from the sender to the receiver's slot
  */
-bool QMetaObject::connect(const QObject *sender, int signal_index,
-                          const QObject *receiver, int method_index, int type, int *types)
+QMetaObject::Connection QMetaObject::connect(const QObject *sender, int signal_index,
+                                          const QObject *receiver, int method_index, int type, int *types)
 {
     signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
-    return QMetaObjectPrivate::connect(sender, signal_index,
+    return Connection(QMetaObjectPrivate::connect(sender, signal_index,
                                        receiver, method_index,
                                        0, //FIXME, we could speed this connection up by computing the relative index
-                                       type, types);
+                                       type, types));
 }
 
 /*! \internal
    Same as the QMetaObject::connect, but \a signal_index must be the result of QObjectPrivate::signalIndex
 
     method_index is relative to the rmeta metaobject, if rmeta is null, then it is absolute index
+
+    the QObjectPrivate::Connection* has a refcount of 2, so it must be passed to a QMetaObject::Connection
  */
-bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
+QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
                                  const QObject *receiver, int method_index,
                                  const QMetaObject *rmeta, int type, int *types)
 {
@@ -2998,7 +3009,7 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 
             while (c2) {
                 if (c2->receiver == receiver && c2->method() == method_index_absolute)
-                    return false;
+                    return 0;
                 c2 = c2->nextConnectionList;
             }
         }
@@ -3030,8 +3041,7 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
         sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
     }
 
-    c.take(); // stop tracking
-    return true;
+    return c.take();
 }
 
 /*!\internal
@@ -4032,6 +4042,82 @@ void qDeleteInEventHandler(QObject *o)
     delete o;
 }
 
+/*!
+    Disconnect a connection.
+
+    If the \a connection is invalid or has already been disconnected, do nothing
+    and return false.
+
+   \sa connect()
+ */
+bool QObject::disconnect(const QMetaObject::Connection &connection)
+{
+    QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
+
+    if (!c || !c->receiver)
+        return false;
+
+    QMutex *senderMutex = signalSlotLock(c->sender);
+    QMutex *receiverMutex = signalSlotLock(c->receiver);
+    QOrderedMutexLocker locker(senderMutex, receiverMutex);
+
+    QObjectConnectionListVector *connectionLists = QObjectPrivate::get(c->sender)->connectionLists;
+    Q_ASSERT(connectionLists);
+    connectionLists->dirty = true;
+
+    *c->prev = c->next;
+    if (c->next)
+        c->next->prev = c->prev;
+    c->receiver = 0;
+    return true;
+}
+
+/*! \class QMetaObject::Connection
+     Represents a handle to a signal-slot connection.
+     It can be used to disconnect that connection, or check if
+     the connection was successful
+
+     \sa QObject::disconnect
+ */
+
+/*!
+    Create a copy of the handle to the connection
+ */
+QMetaObject::Connection::Connection(const QMetaObject::Connection &other) : d_ptr(other.d_ptr)
+{
+    if (d_ptr)
+        static_cast<QObjectPrivate::Connection *>(d_ptr)->ref();
+}
+
+QMetaObject::Connection& QMetaObject::Connection::operator=(const QMetaObject::Connection& other)
+{
+    if (other.d_ptr != d_ptr) {
+        if (d_ptr)
+            static_cast<QObjectPrivate::Connection *>(d_ptr)->deref();
+        d_ptr = other.d_ptr;
+        if (other.d_ptr)
+            static_cast<QObjectPrivate::Connection *>(other.d_ptr)->ref();
+    }
+    return *this;
+}
+
+QMetaObject::Connection::Connection() : d_ptr(0) {}
+
+QMetaObject::Connection::~Connection()
+{
+    if (d_ptr)
+        static_cast<QObjectPrivate::Connection *>(d_ptr)->deref();
+}
+
+/*!
+    \fn bool QMetaObject::Connection::operator bool()
+
+    Returns true if the connection is valid.
+
+    The connection is valid if the call to QObject::connect succeeded.
+    The connection is invalid if QObject::connect was not able to find
+    the signal or the slot, or if the arguments do not match.
+ */
 
 QT_END_NAMESPACE
 

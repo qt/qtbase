@@ -137,7 +137,7 @@ struct QMetaObjectPrivate
     enum DisconnectType { DisconnectAll, DisconnectOne };
     static void memberIndexes(const QObject *obj, const QMetaMethod &member,
                               int *signalIndex, int *methodIndex);
-    static bool connect(const QObject *sender, int signal_index,
+    static QObjectPrivate::Connection *connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index_relative,
                         const QMetaObject *rmeta = 0,
                         int type = 0, int *types = 0);
