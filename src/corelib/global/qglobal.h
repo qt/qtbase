@@ -820,7 +820,7 @@ Q_CORE_EXPORT bool qSharedBuild();
    Avoid "unused parameter" warnings
 */
 
-#if defined(Q_CC_INTEL) && !defined(Q_OS_WIN) || defined(Q_CC_RVCT)
+#if defined(Q_CC_RVCT)
 template <typename T>
 inline void qUnused(T &x) { (void)x; }
 #  define Q_UNUSED(x) qUnused(x);
