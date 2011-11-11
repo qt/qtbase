@@ -204,4 +204,4 @@ qmake_pch.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::
-        $(CXX) $(CXXFLAGS) $<
+	$(CXX) $(CXXFLAGS) $<

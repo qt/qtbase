@@ -297,7 +297,7 @@ msbuild_objectmodel.o: $(SOURCE_PATH)/qmake/generators/win32/msbuild_objectmodel
 	$(CXX) $(CXXFLAGS) generators/win32/msbuild_objectmodel.cpp
 
 registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-        $(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 gbuild.o: $(SOURCE_PATH)/qmake/generators/integrity/gbuild.cpp
 	$(CXX) $(CXXFLAGS) generators/integrity/gbuild.cpp
