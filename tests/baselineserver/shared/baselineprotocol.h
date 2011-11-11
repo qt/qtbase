@@ -61,6 +61,7 @@ extern const QString PI_HostAddress;
 extern const QString PI_OSName;
 extern const QString PI_OSVersion;
 extern const QString PI_QtVersion;
+extern const QString PI_QtBuildMode;
 extern const QString PI_GitCommit;
 extern const QString PI_QMakeSpec;
 extern const QString PI_PulseGitBranch;

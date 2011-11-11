@@ -56,6 +56,7 @@ const QString PI_HostAddress(QLS("HostAddress"));
 const QString PI_OSName(QLS("OSName"));
 const QString PI_OSVersion(QLS("OSVersion"));
 const QString PI_QtVersion(QLS("QtVersion"));
+const QString PI_QtBuildMode(QLS("QtBuildMode"));
 const QString PI_GitCommit(QLS("GitCommit"));
 const QString PI_QMakeSpec(QLS("QMakeSpec"));
 const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
@@ -92,6 +93,9 @@ PlatformInfo PlatformInfo::localHostInfo()
     pi.insert(PI_HostName, QHostInfo::localHostName());
     pi.insert(PI_QtVersion, QLS(qVersion()));
     pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
+#if QT_VERSION >= 0x050000
+    pi.insert(PI_QtBuildMode, QLibraryInfo::isDebugBuild() ? QLS("QtDebug") : QLS("QtRelease"));
+#endif
 #if defined(Q_OS_LINUX)
     pi.insert(PI_OSName, QLS("Linux"));
     QProcess uname;
