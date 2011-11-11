@@ -18,5 +18,3 @@ wince* {
    addFiles.path = bin
    DEPLOYMENT += addFiles
 }
-
-CONFIG += insignificant_test # QTBUG-21402
