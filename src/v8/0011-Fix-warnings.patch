@@ -1,4 +1,4 @@
-From 36be1e6b4af4601faa40ea4a222539c6b48f0e03 Mon Sep 17 00:00:00 2001
+From 03d5b0219d5bdd14012c97906de9074d80d6e2de Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 27 May 2011 13:04:15 +1000
 Subject: [PATCH 11/11] Fix warnings
@@ -42,5 +42,5 @@ index d995e54..a7b5c8a 100644
  
  }  // namespace internal
 -- 
-1.7.4.4
+1.7.6
 

@@ -1,4 +1,4 @@
-From 15e2b05fae59aa4ed7c0974ba296ec8893c4d7f2 Mon Sep 17 00:00:00 2001
+From 5d7801496ea41f9d1cf4260cd2b0508929ebde76 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 13:40:00 +0100
 Subject: [PATCH 06/11] Add custom object compare callback
@@ -544,5 +544,5 @@ index f30221f..ff8337f 100644
    ASSERT(GetCondition() == equal);
    __ subq(rax, rdx);
 -- 
-1.7.4.4
+1.7.6
 

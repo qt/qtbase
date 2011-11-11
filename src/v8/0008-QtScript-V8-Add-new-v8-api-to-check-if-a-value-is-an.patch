@@ -1,4 +1,4 @@
-From 8e095c6171d6be5ac3c90fd2a8707579050d5e47 Mon Sep 17 00:00:00 2001
+From 35ec23697719708e18a42c40fd80719247ca62e4 Mon Sep 17 00:00:00 2001
 From: Jedrzej Nowacki <jedrzej.nowacki@nokia.com>
 Date: Tue, 7 Dec 2010 11:56:42 +0100
 Subject: [PATCH 08/11] QtScript/V8: Add new v8 api to check if a value is an
@@ -60,5 +60,5 @@ index 5e90964..6166cde 100644
    V(to_string_symbol, "toString")                                        \
    V(char_at_symbol, "CharAt")                                            \
 -- 
-1.7.4.4
+1.7.6
 

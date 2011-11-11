@@ -1,4 +1,4 @@
-From bf0c62b53bf018a7f0b3e9ea3dcdcbcc0ee6fd53 Mon Sep 17 00:00:00 2001
+From 5d8ee260641b6a6b7f50b68c7746f7ee7fe01de5 Mon Sep 17 00:00:00 2001
 From: Kent Hansen <kent.hansen@nokia.com>
 Date: Fri, 2 Sep 2011 12:03:09 +0200
 Subject: [PATCH 09/11] Fix deprecated Python code
@@ -47,5 +47,5 @@ index 646bf14..395441b 100644
        if identifier_second_char != 0:
          new_identifier = (
 -- 
-1.7.4.4
+1.7.6
 

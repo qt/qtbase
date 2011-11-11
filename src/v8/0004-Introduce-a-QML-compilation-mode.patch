@@ -1,4 +1,4 @@
-From 6f97385cf3cb17d245e7f3d61ba975183a786220 Mon Sep 17 00:00:00 2001
+From b4bb5845077f9b2ad4359360d2e071ed992ede10 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 13:34:16 +0100
 Subject: [PATCH 04/11] Introduce a QML compilation mode
@@ -37,7 +37,7 @@ runs.
  src/full-codegen.h               |    1 +
  src/heap.cc                      |    4 ++
  src/hydrogen-instructions.cc     |    5 +++
- src/hydrogen-instructions.h      |   16 ++++++++-
+ src/hydrogen-instructions.h      |   21 ++++++++++--
  src/hydrogen.cc                  |    4 ++
  src/ia32/code-stubs-ia32.cc      |    5 +++
  src/ia32/full-codegen-ia32.cc    |   28 +++++++++-------
@@ -62,7 +62,7 @@ runs.
  src/x64/lithium-x64.cc           |    4 +-
  src/x64/lithium-x64.h            |   12 +++++++
  src/x64/macro-assembler-x64.h    |    5 +++
- 47 files changed, 490 insertions(+), 117 deletions(-)
+ 47 files changed, 494 insertions(+), 118 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
 index 3ef4dd6..193e2fe 100644
@@ -932,10 +932,10 @@ index 6f46509..ac9728c 100644
    stream->Add("%o ", *name());
    HUnaryCall::PrintDataTo(stream);
 diff --git a/src/hydrogen-instructions.h b/src/hydrogen-instructions.h
-index 65fc4df..c29d781 100644
+index 65fc4df..ebf0030 100644
 --- a/src/hydrogen-instructions.h
 +++ b/src/hydrogen-instructions.h
-@@ -1410,19 +1410,27 @@ class HOuterContext: public HUnaryOperation {
+@@ -1410,19 +1410,30 @@ class HOuterContext: public HUnaryOperation {
  
  class HGlobalObject: public HUnaryOperation {
   public:
@@ -957,14 +957,18 @@ index 65fc4df..c29d781 100644
 +  void set_qml_global(bool v) { qml_global_ = v; }
 +
   protected:
-   virtual bool DataEquals(HValue* other) { return true; }
+-  virtual bool DataEquals(HValue* other) { return true; }
++  virtual bool DataEquals(HValue* other) {
++      HGlobalObject* o = HGlobalObject::cast(other);
++      return o->qml_global_ == qml_global_;
++  }
 +
 + private:
 +  bool qml_global_;
  };
  
  
-@@ -1601,7 +1609,7 @@ class HCallFunction: public HUnaryCall {
+@@ -1601,7 +1612,7 @@ class HCallFunction: public HUnaryCall {
  class HCallGlobal: public HUnaryCall {
   public:
    HCallGlobal(HValue* context, Handle<String> name, int argument_count)
@@ -973,7 +977,7 @@ index 65fc4df..c29d781 100644
    }
  
    virtual void PrintDataTo(StringStream* stream);
-@@ -1613,10 +1621,14 @@ class HCallGlobal: public HUnaryCall {
+@@ -1613,10 +1624,14 @@ class HCallGlobal: public HUnaryCall {
      return Representation::Tagged();
    }
  
@@ -2055,5 +2059,5 @@ index f5f81b1..5caa6cf 100644
  static inline Operand StackSpaceOperand(int index) {
  #ifdef _WIN64
 -- 
-1.7.4.4
+1.7.6
 

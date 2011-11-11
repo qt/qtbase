@@ -332,5 +332,5 @@ index f7d2180..d96e5f9 100644
   private:
    DISALLOW_IMPLICIT_CONSTRUCTORS(SeqString);
 -- 
-1.7.4.4
+1.7.6
 

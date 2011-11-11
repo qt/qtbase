@@ -1,4 +1,4 @@
-From c9277f820ae47f32f127b156ac2e1200458ab876 Mon Sep 17 00:00:00 2001
+From b733a2fec5c51b7d7219505b89f34715603bd49c Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 9 Sep 2011 14:16:12 +1000
 Subject: [PATCH 07/11] Allow a script to be flagged as "native"
@@ -42,5 +42,5 @@ index 4902e72..cabca74 100644
      }
      if (!script_name.is_null()) {
 -- 
-1.7.4.4
+1.7.6
 
