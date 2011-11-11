@@ -68,6 +68,7 @@ namespace QTest
         timer.start();
         do {
             QCoreApplication::processEvents(QEventLoop::AllEvents, ms);
+            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
             QTest::qSleep(10);
         } while (timer.elapsed() < ms);
     }
@@ -97,3 +98,4 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif
+
