@@ -415,8 +415,9 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
     if (overflow || !ok)
         return Invalid;
+
     if (entered >= b && entered <= t) {
-        locale().toInt(input, &ok);
+        locale().toInt(input, &ok, 10);
         return ok ? Acceptable : Intermediate;
     }
 

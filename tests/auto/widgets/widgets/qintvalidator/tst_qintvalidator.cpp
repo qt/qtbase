@@ -169,6 +169,15 @@ void tst_QIntValidator::validate_data()
     QTest::newRow("8.9") << -1 << 100 << QString("5") << ACC;
     QTest::newRow("8.10") << -1 << 100 << QString("+") << INT;
     QTest::newRow("8.11") << -1 << 100 << QString("+50") << ACC;
+
+    QTest::newRow("9.0") << -10 << 10 << QString("000") << ACC;
+    QTest::newRow("9.1") << -10 << 10 << QString("008") << ACC;
+    QTest::newRow("9.2") << -10 << 10 << QString("-008") << ACC;
+    QTest::newRow("9.3") << -10 << 10 << QString("00010") << ACC;
+    QTest::newRow("9.4") << -10 << 10 << QString("-00010") << ACC;
+    QTest::newRow("9.5") << -10 << 10 << QString("00020") << INV;
+    QTest::newRow("9.6") << -10 << 10 << QString("-00020") << INV;
+
 }
 
 void tst_QIntValidator::validateArabic()
