@@ -2532,8 +2532,10 @@ void QDateTimeEditPrivate::syncCalendarWidget()
 {
     Q_Q(QDateTimeEdit);
     if (monthCalendar) {
+        const bool sb = monthCalendar->blockSignals(true);
         monthCalendar->setDateRange(q->minimumDate(), q->maximumDate());
         monthCalendar->setDate(q->date());
+        monthCalendar->blockSignals(sb);
     }
 }
 
