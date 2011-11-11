@@ -67,6 +67,13 @@
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
     "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
+%explicitheaders = (
+    "QtCore" => {
+        "QVariantHash" => "qvariant.h",
+        "QVariantList" => "qvariant.h",
+        "QVariantMap" => "qvariant.h",
+    }
+);
 
 @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
 @ignore_for_include_check = ( "qatomic.h" );
