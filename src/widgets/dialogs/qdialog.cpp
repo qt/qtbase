@@ -66,8 +66,8 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
     if (!m_platformHelperCreated) {
         QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         m_platformHelperCreated = true;
-        m_platformHelper = QGuiApplicationPrivate::platformIntegration()
-                               ->createPlatformDialogHelper(ncThis->q_func());
+        m_platformHelper = QGuiApplicationPrivate::platformTheme()
+                                       ->createPlatformDialogHelper(ncThis->q_func());
         if (m_platformHelper)
             ncThis->initHelper(m_platformHelper);
     }

@@ -51,6 +51,7 @@
 #include "qcocoaapplicationdelegate.h"
 #include "qmenu_mac.h"
 #include "qcocoafiledialoghelper.h"
+#include "qcocoatheme.h"
 
 #include <QtGui/qplatformaccessibility_qpa.h>
 #include <QtCore/qcoreapplication.h>
@@ -134,6 +135,7 @@ QCocoaIntegration::QCocoaIntegration()
     }
 
     mAccessibility = new QPlatformAccessibility;
+    mPlatformTheme = new QCocoaTheme;
 }
 
 QCocoaIntegration::~QCocoaIntegration()
@@ -179,16 +181,6 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
     return mFontDb;
 }
 
-QPlatformMenu *QCocoaIntegration::createPlatformMenu(QMenu *menu) const
-{
-    return new QCocoaMenu(menu);
-}
-
-QPlatformMenuBar *QCocoaIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
-{
-    return new QCocoaMenuBar(menuBar);
-}
-
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 {
     return new QCocoaNativeInterface();
@@ -199,26 +191,9 @@ QPlatformAccessibility *QCocoaIntegration::accessibility() const
     return mAccessibility;
 }
 
-bool QCocoaIntegration::usePlatformNativeDialog(QDialog *dialog) const
+QPlatformTheme *QCocoaIntegration::platformTheme() const
 {
-    Q_UNUSED(dialog);
-    return true;
-#if 0
-    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
-    if (fileDialog) {
-        return true;
-    }
-    return false;
-#endif
-}
-
-QPlatformDialogHelper * QCocoaIntegration::createPlatformDialogHelper(QDialog *dialog) const
-{
-    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
-    if (fileDialog) {
-        return new QCocoaFileDialogHelper(fileDialog);
-    }
-    return 0;
+    return mPlatformTheme;
 }
 
 QT_END_NAMESPACE

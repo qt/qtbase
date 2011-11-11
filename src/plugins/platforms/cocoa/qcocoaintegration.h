@@ -84,20 +84,18 @@ public:
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
     QPlatformFontDatabase *fontDatabase() const;
-    QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
-
-    bool usePlatformNativeDialog(QDialog *dialog = 0) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
 
     QPlatformNativeInterface *nativeInterface() const;
     QPlatformAccessibility *accessibility() const;
+
+    QPlatformTheme *platformTheme() const;
 private:
     QPlatformFontDatabase *mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
     QCocoaAutoReleasePool *mPool;
     QPlatformAccessibility *mAccessibility;
+    QPlatformTheme *mPlatformTheme;
 };
 
 QT_END_NAMESPACE

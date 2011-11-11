@@ -39,38 +39,28 @@
 **
 ****************************************************************************/
 
+#ifndef QPLATFORMTHEME_COCOA_H
+#define QPLATFORMTHEME_COCOA_H
+
 #include <Cocoa/Cocoa.h>
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+#include <QtGui/QPlatformTheme>
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+class QCocoaTheme : public QPlatformTheme
 {
 public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QCocoaTheme();
+    ~QCocoaTheme();
+
+    QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
+    QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
+
+    bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
 };
 
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
-}
-
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#endif

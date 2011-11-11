@@ -45,6 +45,7 @@
 #include "qwindowscontext.h"
 #include "qwindowsglcontext.h"
 #include "qwindowsscreen.h"
+#include "qwindowstheme.h"
 #ifndef QT_NO_FREETYPE
 #include "qwindowsfontdatabase_ft.h"
 #endif
@@ -54,7 +55,6 @@
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
-#include "qwindowsdialoghelpers.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -159,6 +159,7 @@ struct QWindowsIntegrationPrivate
     QOpenGLStaticContextPtr m_staticOpenGLContext;
     QWindowsInputContext m_inputContext;
     QWindowsAccessibility m_accessibility;
+    QWindowsTheme m_theme;
 };
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
@@ -322,17 +323,9 @@ QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
     return d->m_eventDispatcher;
 }
 
-#ifdef QT_WIDGETS_LIB
-bool QWindowsIntegration::usePlatformNativeDialog(QDialog *dialog) const
+QPlatformTheme *QWindowsIntegration::platformTheme() const
 {
-    return QWindowsDialogs::useHelper(dialog);
+    return &d->m_theme;
 }
-
-QPlatformDialogHelper *QWindowsIntegration::createPlatformDialogHelper(QDialog *dialog) const
-{
-    return QWindowsDialogs::createHelper(dialog);
-}
-
-#endif // QT_WIDGETS_LIB
 
 QT_END_NAMESPACE

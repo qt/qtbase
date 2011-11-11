@@ -62,6 +62,8 @@
 #include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputpanel.h>
+#include <QtGui/qplatformtheme_qpa.h>
+
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -69,6 +71,7 @@
 #include "private/qkeymapper_p.h"
 #include "private/qcursor_p.h"
 #include "private/qdnd_p.h"
+#include <private/qplatformthemefactory_qpa_p.h>
 #ifndef QT_NO_CURSOR
 #include "qplatformcursor_qpa.h"
 #endif
@@ -89,6 +92,7 @@ Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
+QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
 
 QList<QObject *> QGuiApplicationPrivate::generic_plugin_list;
 
@@ -257,6 +261,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         }
     }
 
+   // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
     if (!QGuiApplicationPrivate::platform_integration) {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
@@ -268,6 +273,22 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         qFatal("%s", fatalMessage.toLocal8Bit().constData());
         return;
     }
+
+    // Create the platform theme:
+    // 1) Ask the platform integration to create a platform theme
+    QGuiApplicationPrivate::platform_theme = QGuiApplicationPrivate::platform_integration->platformTheme();
+
+    // 2) If none found, look for a theme plugin. Theme plugins are located in the
+    // same directory as platform plugins.
+    if (!QGuiApplicationPrivate::platform_theme) {
+        QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(name, platformPluginPath);
+        // No error message; not having a theme plugin is allowed.
+    }
+
+    // 3) Fall back on the built-in "null" platform theme.
+    if (!QGuiApplicationPrivate::platform_theme)
+        QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
+
     // Set arguments as dynamic properties on the native interface as
     // boolean 'foo' or strings: 'foo=bar'
     if (!arguments.isEmpty()) {

@@ -161,7 +161,7 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
-    platformMenu = QGuiApplicationPrivate::platformIntegration()->createPlatformMenu(q);
+    platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu(q);
 
 #ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);

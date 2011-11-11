@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,38 +39,36 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#ifndef QPLATFORMTHEME_H
+#define QPLATFORMTHEME_H
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+#include <QtCore/QtGlobal>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QT_MODULE(Gui)
+
+class QMenu;
+class QMenuBar;
+class QPlatformMenu;
+class QPlatformMenuBar;
+class QPlatformDialogHelper;
+class QDialog;
+
+class Q_GUI_EXPORT QPlatformTheme
 {
 public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
+    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
+
+    virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
 };
 
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
-}
-
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMTHEME_H

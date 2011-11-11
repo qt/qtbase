@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,38 +39,39 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#ifndef QPLATFORMTHEMEFACTORY_H
+#define QPLATFORMTHEMEFACTORY_H
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qstringlist.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QT_MODULE(Gui)
+
+class QPlatformTheme;
+
+class QPlatformThemeFactory
 {
 public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    static QStringList keys(const QString &platformPluginPath = QString());
+    static QPlatformTheme *create(const QString &key, const QString &platformPluginPath = QString());
 };
 
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
-}
-
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMTHEMEFACTORY_H

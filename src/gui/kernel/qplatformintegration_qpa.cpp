@@ -238,30 +238,6 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     return 0;
 }
 
-QPlatformMenu *QPlatformIntegration::createPlatformMenu(QMenu *menu) const
-{
-    Q_UNUSED(menu);
-    return 0;
-}
-
-QPlatformMenuBar *QPlatformIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
-{
-    Q_UNUSED(menuBar);
-    return 0;
-}
-
-bool QPlatformIntegration::usePlatformNativeDialog(QDialog *dialog) const
-{
-    Q_UNUSED(dialog);
-    return false;
-}
-
-QPlatformDialogHelper * QPlatformIntegration::createPlatformDialogHelper(QDialog *dialog) const
-{
-    Q_UNUSED(dialog);
-    return 0;
-}
-
 /*!
   Should be called by the implementation whenever a new screen is added.
 
@@ -280,6 +256,11 @@ void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
         QGuiApplicationPrivate::screen_list << screen;
         emit qGuiApp->screenAdded(screen);
     }
+}
+
+class QPlatformTheme *QPlatformIntegration::platformTheme() const
+{
+    return 0;
 }
 
 QT_END_NAMESPACE

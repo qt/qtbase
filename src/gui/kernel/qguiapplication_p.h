@@ -51,7 +51,8 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include "QtGui/qplatformintegration_qpa.h"
+#include <QtGui/qplatformintegration_qpa.h>
+#include <QtGui/qplatformtheme_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -80,6 +81,12 @@ public:
 
     static QPlatformIntegration *platformIntegration()
     { return platform_integration; }
+
+    static QPlatformTheme *platform_theme;
+
+    static QPlatformTheme *platformTheme()
+    { return platform_theme; }
+
 
     enum KeyPlatform {
         KB_Win = 1,

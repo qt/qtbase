@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,38 +39,54 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
+#ifndef QPLATFORMTHEMEPLUGIN_H
+#define QPLATFORMTHEMEPLUGIN_H
 
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QT_MODULE(Gui)
+
+class QPlatformTheme;
+
+struct QPlatformThemeFactoryInterface : public QFactoryInterface
 {
-public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;
 };
 
-QStringList QCocoaIntegrationPlugin::keys() const
+#define QPlatformThemeFactoryInterface_iid "com.nokia.Qt.QPlatformThemeFactoryInterface"
+
+Q_DECLARE_INTERFACE(QPlatformThemeFactoryInterface, QPlatformThemeFactoryInterface_iid)
+
+class Q_GUI_EXPORT QPlatformThemePlugin : public QObject, public QPlatformThemeFactoryInterface
 {
-    QStringList list;
-    list << "Cocoa";
-    return list;
-}
+    Q_OBJECT
+    Q_INTERFACES(QPlatformThemeFactoryInterface:QFactoryInterface)
+public:
+    explicit QPlatformThemePlugin(QObject *parent = 0);
+    ~QPlatformThemePlugin();
 
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
+    virtual QStringList keys() const = 0;
+    virtual QPlatformTheme *create(const QString &key, const QStringList &paramList) = 0;
+};
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMTHEMEPLUGIN_H

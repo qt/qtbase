@@ -4,6 +4,7 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 OBJECTIVE_SOURCES += main.mm \
     qcocoaintegration.mm \
+    qcocoatheme.mm \
     qcocoabackingstore.mm \
     qcocoawindow.mm \
     qnsview.mm \
@@ -26,6 +27,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoacursor.mm \
 
 HEADERS += qcocoaintegration.h \
+    qcocoatheme.h \
     qcocoabackingstore.h \
     qcocoawindow.h \
     qnsview.h \

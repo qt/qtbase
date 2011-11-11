@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,38 +39,17 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+#include "qplatformthemeplugin_qpa.h"
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QPlatformThemePlugin::QPlatformThemePlugin(QObject *parent)
+    : QObject(parent)
 {
-public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
-};
-
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
 }
 
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformThemePlugin::~QPlatformThemePlugin()
 {
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
 }
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
 
 QT_END_NAMESPACE

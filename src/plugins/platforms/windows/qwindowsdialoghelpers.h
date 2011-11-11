@@ -61,8 +61,8 @@ namespace QWindowsDialogs
     Type dialogType(const QDialog *dialog);
     void eatMouseMove();
 
-    bool useHelper(const QDialog *dialog);
-    QPlatformDialogHelper *createHelper(QDialog *dialog);
+    bool useHelper(const QDialog *dialog = 0);
+    QPlatformDialogHelper *createHelper(QDialog *dialog = 0);
 } // namespace QWindowsDialogs
 
 template <class BaseClass>

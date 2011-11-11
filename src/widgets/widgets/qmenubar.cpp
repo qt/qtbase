@@ -715,7 +715,7 @@ void QMenuBarPrivate::init()
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
 
-    platformMenuBar = QGuiApplicationPrivate::platformIntegration()->createPlatformMenuBar(q);
+    platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar(q);
 
     if (platformMenuBar)
         q->hide();
@@ -1836,7 +1836,7 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
             d->platformMenuBar = 0;
         } else {
             if (!d->platformMenuBar)
-                d->platformMenuBar = QGuiApplicationPrivate::platformIntegration()->createPlatformMenuBar(this);
+                d->platformMenuBar = QGuiApplicationPrivate::platformTheme()->createPlatformMenuBar(this);
         }
 
 	updateGeometry();

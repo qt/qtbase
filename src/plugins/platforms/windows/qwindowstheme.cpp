@@ -39,38 +39,23 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
-#include "qcocoatheme.h"
+#include "qwindowstheme.h"
+#include "qwindowsdialoghelpers.h"
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QWindowsTheme::QWindowsTheme()
 {
-public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
-};
-
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
 }
 
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+bool QWindowsTheme::usePlatformNativeDialog(const QDialog *dialog) const
 {
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
-
-    return 0;
+    return QWindowsDialogs::useHelper(dialog);
 }
 
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
+QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(QDialog *dialog) const
+{
+    return QWindowsDialogs::createHelper(dialog);
+}
 
 QT_END_NAMESPACE

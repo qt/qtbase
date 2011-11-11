@@ -63,12 +63,8 @@ class QPlatformOpenGLContext;
 class QGuiGLFormat;
 class QAbstractEventDispatcher;
 class QPlatformInputContext;
-class QMenu;
-class QMenuBar;
-class QPlatformMenu;
-class QPlatformMenuBar;
 class QPlatformAccessibility;
-class QPlatformDialogHelper;
+class QPlatformTheme;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -100,15 +96,9 @@ public:
     virtual QPlatformDrag *drag() const;
 #endif
     virtual QPlatformInputContext *inputContext() const;
-
-    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
-    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
     virtual QPlatformAccessibility *accessibility() const;
 
-    virtual bool usePlatformNativeDialog(QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
-
-// Access native handles. The window handle is already available from Wid;
+    // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
 
     enum StyleHint {
@@ -120,6 +110,8 @@ public:
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
+
+    virtual QPlatformTheme *platformTheme() const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);

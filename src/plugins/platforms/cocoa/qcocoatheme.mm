@@ -39,38 +39,55 @@
 **
 ****************************************************************************/
 
-#include <Cocoa/Cocoa.h>
-
-#include <QtGui/QPlatformIntegrationPlugin>
-#include <QtGui/QPlatformThemePlugin>
-#include "qcocoaintegration.h"
 #include "qcocoatheme.h"
+
+#include "qmenu_mac.h"
+#include "qcocoafiledialoghelper.h"
+#include <QtWidgets/QFileDialog>
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
+QCocoaTheme::QCocoaTheme()
 {
-public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
-};
 
-QStringList QCocoaIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "Cocoa";
-    return list;
 }
 
-QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QCocoaTheme::~QCocoaTheme()
 {
-    Q_UNUSED(paramList);
-    if (system.toLower() == "cocoa")
-        return new QCocoaIntegration;
 
+}
+
+QPlatformMenu *QCocoaTheme::createPlatformMenu(QMenu *menu) const
+{
+    return new QCocoaMenu(menu);
+}
+
+QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar(QMenuBar *menuBar) const
+{
+    return new QCocoaMenuBar(menuBar);
+}
+
+
+bool QCocoaTheme::usePlatformNativeDialog(const QDialog *dialog) const
+{
+    Q_UNUSED(dialog);
+    return true;
+#if 0
+    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
+    if (fileDialog) {
+        return true;
+    }
+    return false;
+#endif
+}
+
+QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(QDialog *dialog) const
+{
+    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
+    if (fileDialog) {
+        return new QCocoaFileDialogHelper(fileDialog);
+    }
     return 0;
 }
-
-Q_EXPORT_PLUGIN2(CocoaIntegration, QCocoaIntegrationPlugin)
 
 QT_END_NAMESPACE

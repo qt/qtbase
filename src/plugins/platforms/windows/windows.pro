@@ -4,6 +4,8 @@ load(qt_plugin)
 QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
+# ### fixme: Remove widgets dependencies of dialog helpers
+QT *= widgets
 
 INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
@@ -11,6 +13,8 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm  -lOleaut32
 win32-g++: LIBS *= -luuid
+# For the dialog helpers:
+LIBS *= -lshlwapi -lShell32
 
 contains(QT_CONFIG, directwrite) {
     LIBS *= -ldwrite
@@ -41,7 +45,9 @@ SOURCES += \
     qwindowscursor.cpp \
     pixmaputils.cpp \
     qwindowsinputcontext.cpp \
-    qwindowsaccessibility.cpp
+    qwindowsaccessibility.cpp \
+    qwindowstheme.cpp \
+    qwindowsdialoghelpers.cpp
 
 HEADERS += \
     qwindowsnativeimage.h \
@@ -67,13 +73,9 @@ HEADERS += \
     pixmaputils.h \
     array.h \
     qwindowsinputcontext.h \
-    qwindowsaccessibility.h
-
-#   Dialog helper: Should be used only if QtWidgets is built
-QT *= widgets
-HEADERS += qwindowsdialoghelpers.h
-SOURCES += qwindowsdialoghelpers.cpp
-LIBS += -lshlwapi -lShell32
+    qwindowsaccessibility.h \
+    qwindowstheme.h \
+    qwindowsdialoghelpers.h
 
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG

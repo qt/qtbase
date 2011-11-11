@@ -69,12 +69,8 @@ public:
     virtual QPlatformAccessibility *accessibility() const;
     virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
+    virtual QPlatformTheme *platformTheme() const;
     virtual QVariant styleHint(StyleHint hint) const;
-
-#ifdef QT_WIDGETS_LIB
-    virtual bool usePlatformNativeDialog(QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
-#endif // QT_WIDGETS_LIB
 
     static QWindowsIntegration *instance();
 

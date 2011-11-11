@@ -1317,16 +1317,18 @@ namespace QWindowsDialogs {
 // QWindowsDialogHelperBase creation functions
 bool useHelper(const QDialog *dialog)
 {
-    switch (QWindowsDialogs::dialogType(dialog)) {
-    case QWindowsDialogs::FileDialog:
-        return true;
-    case QWindowsDialogs::ColorDialog:
+    if (dialog) {
+        switch (QWindowsDialogs::dialogType(dialog)) {
+        case QWindowsDialogs::FileDialog:
+            return true;
+        case QWindowsDialogs::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
-        return true;
+            return true;
 #endif
-    case QWindowsDialogs::FontDialog:
-    case QWindowsDialogs::UnknownType:
-        break;
+        case QWindowsDialogs::FontDialog:
+        case QWindowsDialogs::UnknownType:
+            break;
+        }
     }
     return false;
 }
@@ -1335,6 +1337,8 @@ QPlatformDialogHelper *createHelper(QDialog *dialog)
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s %p %s" , __FUNCTION__, dialog, dialog->metaObject()->className());
+    if (!dialog)
+        return 0;
 
     switch (QWindowsDialogs::dialogType(dialog)) {
     case QWindowsDialogs::FileDialog:
