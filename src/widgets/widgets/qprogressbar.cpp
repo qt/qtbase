@@ -341,11 +341,17 @@ int QProgressBar::value() const
 void QProgressBar::setRange(int minimum, int maximum)
 {
     Q_D(QProgressBar);
-    d->minimum = minimum;
-    d->maximum = qMax(minimum, maximum);
-    if ( d->value <(d->minimum-1) || d->value > d->maximum)
-        reset();
+    if (minimum != d->minimum || maximum != d->maximum) {
+        d->minimum = minimum;
+        d->maximum = qMax(minimum, maximum);
+
+        if (d->value < (d->minimum - 1) || d->value > d->maximum)
+            reset();
+        else
+            update();
+    }
 }
+
 /*!
     \property QProgressBar::textVisible
     \brief whether the current completed percentage should be displayed

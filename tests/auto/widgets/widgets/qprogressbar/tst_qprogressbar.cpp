@@ -61,6 +61,7 @@ private slots:
     void text();
     void format();
     void setValueRepaint();
+    void setMinMaxRepaint();
     void sizeHint();
     void formatedText_data();
     void formatedText();
@@ -210,6 +211,44 @@ void tst_QProgressBar::setValueRepaint()
         pbar.repainted = false;
         pbar.setValue(i);
         QTest::qWait(50);
+        QTRY_VERIFY(pbar.repainted);
+    }
+}
+
+void tst_QProgressBar::setMinMaxRepaint()
+{
+    ProgressBar pbar;
+    pbar.setMinimum(0);
+    pbar.setMaximum(10);
+    pbar.setFormat("%v");
+    pbar.show();
+    QTest::qWaitForWindowShown(&pbar);
+
+    QApplication::processEvents();
+
+    // No repaint when setting minimum to the current minimum
+    pbar.repainted = false;
+    pbar.setMinimum(0);
+    QTest::qWait(50);
+    QTRY_VERIFY(!pbar.repainted);
+
+    // No repaint when setting maximum to the current maximum
+    pbar.repainted = false;
+    pbar.setMaximum(10);
+    QTest::qWait(50);
+    QTRY_VERIFY(!pbar.repainted);
+
+    // Repaint when setting minimum
+    for (int i = 9; i >= 0; i--) {
+        pbar.repainted = false;
+        pbar.setMinimum(i);
+        QTRY_VERIFY(pbar.repainted);
+    }
+
+    // Repaint when setting maximum
+    for (int i = 0; i < 10; ++i) {
+        pbar.repainted = false;
+        pbar.setMaximum(i);
         QTRY_VERIFY(pbar.repainted);
     }
 }
