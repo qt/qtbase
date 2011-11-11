@@ -81,6 +81,7 @@ private slots:
     void toggledVsClicked();
     void childrenAreDisabled();
     void propagateFocus();
+    void task_QTBUG_19170_ignoreMouseReleseEvent();
 
 private:
     bool checked;
@@ -469,6 +470,28 @@ void tst_QGroupBox::propagateFocus()
     box.setFocus();
     QTest::qWait(250);
     QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
+}
+
+void tst_QGroupBox::task_QTBUG_19170_ignoreMouseReleseEvent()
+{
+    QGroupBox box;
+    box.setCheckable(true);
+    box.setChecked(false);
+    box.setTitle("This is a test for QTBUG-19170");
+    box.show();
+
+    QStyleOptionGroupBox option;
+    option.initFrom(&box);
+    option.subControls = QStyle::SubControls(QStyle::SC_All);
+    QRect rect = box.style()->subControlRect(QStyle::CC_GroupBox, &option,
+                                             QStyle::SC_GroupBoxCheckBox, &box);
+
+    QTest::mouseClick(&box, Qt::LeftButton, 0, rect.center());
+    QCOMPARE(box.isChecked(), true);
+
+    box.setChecked(false);
+    QTest::mouseRelease(&box, Qt::LeftButton, 0, rect.center());
+    QCOMPARE(box.isChecked(), false);
 }
 
 QTEST_MAIN(tst_QGroupBox)

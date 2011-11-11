@@ -734,6 +734,10 @@ void QGroupBox::mouseReleaseEvent(QMouseEvent *event)
     }
 
     Q_D(QGroupBox);
+    if (!d->overCheckBox) {
+        event->ignore();
+        return;
+    }
     QStyleOptionGroupBox box;
     initStyleOption(&box);
     QStyle::SubControl released = style()->hitTestComplexControl(QStyle::CC_GroupBox, &box,
