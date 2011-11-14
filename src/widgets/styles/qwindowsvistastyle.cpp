@@ -2494,6 +2494,7 @@ QWindowsVistaStylePrivate::QWindowsVistaStylePrivate() :
 
 QWindowsVistaStylePrivate::~QWindowsVistaStylePrivate()
 {
+    qDeleteAll(animations);
     delete m_treeViewHelper;
 }
 
