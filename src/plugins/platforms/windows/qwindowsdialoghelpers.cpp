@@ -1082,7 +1082,7 @@ class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDi
 {
 public:
     explicit QWindowsFileDialogHelper(QDialog *dialog) :
-        QWindowsDialogHelperBase(dialog),
+        QWindowsDialogHelperBase<QPlatformFileDialogHelper>(dialog),
         m_fileDialog(qobject_cast<QFileDialog *>(dialog))
         { Q_ASSERT(m_fileDialog); }
 
@@ -1296,7 +1296,7 @@ class QWindowsColorDialogHelper : public QWindowsDialogHelperBase<QPlatformColor
 {
 public:
     QWindowsColorDialogHelper(QDialog *dialog) :
-        QWindowsDialogHelperBase(dialog), m_currentColor(new QColor) { }
+        QWindowsDialogHelperBase<QPlatformColorDialogHelper>(dialog), m_currentColor(new QColor) { }
 
     virtual bool supportsNonModalDialog()
         { return false; }
