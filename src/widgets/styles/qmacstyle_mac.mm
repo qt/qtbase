@@ -4465,6 +4465,107 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.setTop(rect.top() + SIZE(6 /* AHIG */, 3 /* guess */, 2 /* AHIG */));
         }
         break;
+#ifndef QT_NO_DOCKWIDGET
+        case SE_DockWidgetCloseButton:
+        case SE_DockWidgetFloatButton:
+        case SE_DockWidgetTitleBarText:
+        case SE_DockWidgetIcon: {
+            int iconSize = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+            int buttonMargin = proxy()->pixelMetric(PM_DockWidgetTitleBarButtonMargin, opt, widget);
+            QRect srect = opt->rect;
+
+            const QStyleOptionDockWidget *dwOpt
+                = qstyleoption_cast<const QStyleOptionDockWidget*>(opt);
+            bool canClose = dwOpt == 0 ? true : dwOpt->closable;
+            bool canFloat = dwOpt == 0 ? false : dwOpt->floatable;
+            const QStyleOptionDockWidgetV2 *v2
+                = qstyleoption_cast<const QStyleOptionDockWidgetV2*>(opt);
+            bool verticalTitleBar = v2 == 0 ? false : v2->verticalTitleBar;
+
+            // If this is a vertical titlebar, we transpose and work as if it was
+            // horizontal, then transpose again.
+            if (verticalTitleBar) {
+                QSize size = srect.size();
+                size.transpose();
+                srect.setSize(size);
+            }
+
+            do {
+                int right = srect.right();
+                int left = srect.left();
+
+                QRect closeRect;
+                if (canClose) {
+                    QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton,
+                                            opt, widget).actualSize(QSize(iconSize, iconSize));
+                    sz += QSize(buttonMargin, buttonMargin);
+                    if (verticalTitleBar)
+                        sz.transpose();
+                    closeRect = QRect(left,
+                                      srect.center().y() - sz.height()/2,
+                                      sz.width(), sz.height());
+                    left = closeRect.right() + 1;
+                }
+                if (sr == SE_DockWidgetCloseButton) {
+                    rect = closeRect;
+                    break;
+                }
+
+                QRect floatRect;
+                if (canFloat) {
+                    QSize sz = standardIcon(QStyle::SP_TitleBarNormalButton,
+                                            opt, widget).actualSize(QSize(iconSize, iconSize));
+                    sz += QSize(buttonMargin, buttonMargin);
+                    if (verticalTitleBar)
+                        sz.transpose();
+                    floatRect = QRect(left,
+                                      srect.center().y() - sz.height()/2,
+                                      sz.width(), sz.height());
+                    left = floatRect.right() + 1;
+                }
+                if (sr == SE_DockWidgetFloatButton) {
+                    rect = floatRect;
+                    break;
+                }
+
+                QRect iconRect;
+                if (const QDockWidget *dw = qobject_cast<const QDockWidget*>(widget)) {
+                    QIcon icon;
+                    if (dw->isFloating())
+                        icon = dw->windowIcon();
+                    if (!icon.isNull()
+                        && icon.cacheKey() != QApplication::windowIcon().cacheKey()) {
+                        QSize sz = icon.actualSize(QSize(rect.height(), rect.height()));
+                        if (verticalTitleBar)
+                            sz.transpose();
+                        iconRect = QRect(right - sz.width(), srect.center().y() - sz.height()/2,
+                                         sz.width(), sz.height());
+                        right = iconRect.left() - 1;
+                    }
+                }
+                if (sr == SE_DockWidgetIcon) {
+                    rect = iconRect;
+                    break;
+                }
+
+                QRect textRect = QRect(left, srect.top(),
+                                       right - left, srect.height());
+                if (sr == SE_DockWidgetTitleBarText) {
+                    rect = textRect;
+                    break;
+                }
+            } while (false);
+
+            if (verticalTitleBar) {
+                rect = QRect(srect.left() + rect.top() - srect.top(),
+                          srect.top() + srect.right() - rect.right(),
+                          rect.height(), rect.width());
+            } else {
+                rect = visualRect(opt->direction, srect, rect);
+            }
+            break;
+        }
+#endif
     default:
         rect = QWindowsStyle::subElementRect(sr, opt, widget);
         break;
