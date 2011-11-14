@@ -214,7 +214,7 @@ sub executeTest {
     my $oldWorkingDir = getcwd();
     my $ret = 0;
 
-    my @QMAKEARGS = ('CONFIG-=debug_and_release');
+    my @QMAKEARGS = ('CONFIG-=debug_and_release', 'CONFIG-=app_bundle');
 
     my $testOutDir = catdir($out_basedir, 'config.tests', $testName);
 
