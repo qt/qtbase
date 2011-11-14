@@ -188,7 +188,6 @@ static inline bool scriptRequiresOpenType(int script)
 
 void QBasicFontDatabase::populateFontDatabase()
 {
-    QPlatformFontDatabase::populateFontDatabase();
     QString fontpath = fontDir();
 
     if(!QFile::exists(fontpath)) {
