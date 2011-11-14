@@ -82,7 +82,8 @@ public:
     QSslConfigurationPrivate()
         : protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
-          peerVerifyDepth(0)
+          peerVerifyDepth(0),
+          sslOptions(QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation)
     { }
 
     QSslCertificate peerCertificate;

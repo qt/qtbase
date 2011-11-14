@@ -56,6 +56,7 @@ int main(int argc, char **argv)
         out << "disable_session_tickets" << endl;
         out << "disable_compression" << endl;
         out << "disable_sni" << endl;
+        out << "enable_unsafe_reneg" << endl;
         return 1;
     }
 
@@ -75,6 +76,8 @@ int main(int argc, char **argv)
             config.setSslOption(QSsl::SslOptionDisableCompression, true);
         else if (option == QStringLiteral("disable_sni"))
             config.setSslOption(QSsl::SslOptionDisableServerNameIndication, true);
+        else if (option == QStringLiteral("enable_unsafe_reneg"))
+            config.setSslOption(QSsl::SslOptionDisableLegacyRenegotiation, false);
     }
 
     QSslConfiguration::setDefaultConfiguration(config);

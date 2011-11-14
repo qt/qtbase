@@ -287,6 +287,14 @@ init_context:
     else
         options &= ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
 
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    // This option is disabled by default, so we need to be able to clear it
+    if (configuration.sslOptions & QSsl::SslOptionDisableLegacyRenegotiation)
+        options &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+    else
+        options |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+#endif
+
 #ifdef SSL_OP_NO_TICKET
     if (configuration.sslOptions & QSsl::SslOptionDisableSessionTickets)
         options |= SSL_OP_NO_TICKET;

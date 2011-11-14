@@ -141,9 +141,15 @@ QT_BEGIN_NAMESPACE
     \value SslOptionDisableServerNameIndication Disables the SSL server
     name indication extension. When enabled, this tells the server the virtual
     host being accessed allowing it to respond with the correct certificate.
+    \value SslOptionDisableLegacyRenegotiation Disables the older insecure
+    mechanism for renegotiating the connection parameters. When enabled, this
+    option can allow connections for legacy servers, but it introduces the
+    possibility that an attacker could inject plaintext into the SSL session.
 
     By default, SslOptionDisableEmptyFragments is turned on since this causes
-    problems with a large number of servers, but the other options are disabled.
+    problems with a large number of servers. SslOptionDisableLegacyRenegotiation
+    is also turned on, since it introduces a security risk. The other options
+    are turned off.
 
     Note: Availability of above options depends on the version of the SSL
     backend in use.
