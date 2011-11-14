@@ -44,15 +44,17 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
 # Let every project have a standard GNU `check' target
 !contains(QMAKE_EXTRA_TARGETS, check) {
     # `make check' should iterate through all subdirs
-    # (except those with no_default_target)
+    # (except those with no_default_target or no_check_target)
     contains(TEMPLATE, subdirs) {
-        check.CONFIG = recursive
-        check.recurse_target = check
-
         for(subdir, SUBDIRS) {
             subdir_config=$$eval($${subdir}.CONFIG)
-            !contains(subdir_config, no_default_target):check.recurse += $$subdir
+            !contains(subdir_config, no_check_target):!contains(subdir_config, no_default_target):check.recurse += $$subdir
             unset(subdir_config)
+        }
+        !isEmpty(check.recurse) {
+            # setup the recurse target only when there is to recurse into
+            check.CONFIG = recursive
+            check.recurse_target = check
         }
     }
     # `make check' should imply building the project
