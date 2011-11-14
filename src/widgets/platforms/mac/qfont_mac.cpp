@@ -101,11 +101,6 @@ void QFont::cleanup()
 quint32 QFont::macFontID() const  // ### need 64-bit version
 {
     return 0;
-#elif 1
-    QFontEngine *fe = d->engineForScript(QUnicodeTables::Common);
-    if (fe && fe->type() == QFontEngine::Multi)
-        return static_cast<QFontEngineMacMulti*>(fe)->macFontID();
-    return 0;
 }
 
 // Returns an ATSUFonFamilyRef
