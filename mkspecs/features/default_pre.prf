@@ -31,7 +31,8 @@ CONFIG = lex yacc warn_on debug uic resources $$CONFIG
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
 
-    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$OUT_PWD $$_PRO_FILE_PWD_)
+    isEmpty(QMAKE_SYNCQT_OUTDIR): QMAKE_SYNCQT_OUTDIR = $$OUT_PWD
+    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$QMAKE_SYNCQT_OUTDIR $$_PRO_FILE_PWD_)
     !silent:message($$MSG)
     system($$MSG) {
         # success! Nothing to do
