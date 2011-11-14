@@ -97,7 +97,7 @@ QT_BEGIN_NAMESPACE
     change the settings in the related SSL connection. You must call
     setSslConfiguration on a modified QSslConfiguration object to
     achieve that. The following example illustrates how to change the
-    protocol to TLSv1 in a QSslSocket object:
+    protocol to TLSv1_0 in a QSslSocket object:
 
     \snippet doc/src/snippets/code/src_network_ssl_qsslconfiguration.cpp 0
 

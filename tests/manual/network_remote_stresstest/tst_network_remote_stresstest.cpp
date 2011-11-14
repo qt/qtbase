@@ -253,7 +253,7 @@ void tst_NetworkRemoteStressTest::blockingSequentialRemoteHosts()
         QVERIFY2(socket->waitForConnected(10000), "Timeout connecting to " + url.encodedHost());
 
         if (isHttps) {
-            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1);
+            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1_0);
             static_cast<QSslSocket *>(socket.data())->startClientEncryption();
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
             QVERIFY2(static_cast<QSslSocket *>(socket.data())->waitForEncrypted(10000), "Timeout starting TLS with " + url.encodedHost());
@@ -306,7 +306,7 @@ void tst_NetworkRemoteStressTest::sequentialRemoteHosts()
             socket = QSharedPointer<QTcpSocket>(new QTcpSocket);
         }
         if (isHttps) {
-            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1);
+            static_cast<QSslSocket *>(socket.data())->setProtocol(QSsl::TlsV1_0);
             static_cast<QSslSocket *>(socket.data())->connectToHostEncrypted(url.host(), url.port(443));
             static_cast<QSslSocket *>(socket.data())->ignoreSslErrors();
         } else {
@@ -377,7 +377,7 @@ void tst_NetworkRemoteStressTest::parallelRemoteHosts()
             else
                 socket = new QTcpSocket;
             if (isHttps) {
-                static_cast<QSslSocket *>(socket)->setProtocol(QSsl::TlsV1);
+                static_cast<QSslSocket *>(socket)->setProtocol(QSsl::TlsV1_0);
                 static_cast<QSslSocket *>(socket)->connectToHostEncrypted(url.host(), url.port(443));
                 static_cast<QSslSocket *>(socket)->ignoreSslErrors();
             } else {

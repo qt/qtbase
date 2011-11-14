@@ -103,13 +103,13 @@ QT_BEGIN_NAMESPACE
 
     \value SslV3 SSLv3
     \value SslV2 SSLv2
-    \value TlsV1 TLSv1
+    \value TlsV1_0 TLSv1.0
     \value UnknownProtocol The cipher's protocol cannot be determined.
-    \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1. This
+    \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1.0. This
     value is used by QSslSocket only.
     \value TlsV1SslV3 On the client side, this will send
-    a TLS 1.0 Client Hello, enabling TLSv1 and SSLv3 connections.
-    On the server side, this will enable both SSLv3 and TLSv1 connections.
+    a TLS 1.0 Client Hello, enabling TLSv1_0 and SSLv3 connections.
+    On the server side, this will enable both SSLv3 and TLSv1_0 connections.
     \value SecureProtocols The default option, using protocols known to be secure;
     currently behaves like TlsV1SslV3.
 

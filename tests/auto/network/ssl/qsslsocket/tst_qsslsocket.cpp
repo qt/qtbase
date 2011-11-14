@@ -823,18 +823,18 @@ void tst_QSslSocket::protocol()
     }
     {
         // Fluke allows TLSV1.
-        socket->setProtocol(QSsl::TlsV1);
-        QCOMPARE(socket->protocol(), QSsl::TlsV1);
+        socket->setProtocol(QSsl::TlsV1_0);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
         QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
-        QCOMPARE(socket->protocol(), QSsl::TlsV1);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->abort();
-        QCOMPARE(socket->protocol(), QSsl::TlsV1);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->connectToHost(QtNetworkSettings::serverName(), 443);
         QVERIFY2(socket->waitForConnected(), qPrintable(socket->errorString()));
         socket->startClientEncryption();
         QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
-        QCOMPARE(socket->protocol(), QSsl::TlsV1);
+        QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->abort();
     }
     {
@@ -892,7 +892,7 @@ class SslServer : public QTcpServer
 public:
     SslServer(const QString &keyFile = SRCDIR "certs/fluke.key", const QString &certFile = SRCDIR "certs/fluke.cert")
         : socket(0),
-          protocol(QSsl::TlsV1),
+          protocol(QSsl::TlsV1_0),
           m_keyFile(keyFile),
           m_certFile(certFile) { }
     QSslSocket *socket;
@@ -943,46 +943,46 @@ void tst_QSslSocket::protocolServerSide_data()
 
     QTest::newRow("ssl2-ssl2") << QSsl::SslV2 << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
     QTest::newRow("ssl3-ssl3") << QSsl::SslV3 << QSsl::SslV3 << true;
-    QTest::newRow("tls1-tls1") << QSsl::TlsV1 << QSsl::TlsV1 << true;
+    QTest::newRow("tls1.0-tls1.0") << QSsl::TlsV1_0 << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1ssl3-tls1ssl3") << QSsl::TlsV1SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
     QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
     QTest::newRow("ssl2-ssl3") << QSsl::SslV2 << QSsl::SslV3 << false;
-    QTest::newRow("ssl2-tls1") << QSsl::SslV2 << QSsl::TlsV1 << false;
+    QTest::newRow("ssl2-tls1.0") << QSsl::SslV2 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl2-tls1ssl3") << QSsl::SslV2 << QSsl::TlsV1SslV3 << false;
     QTest::newRow("ssl2-secure") << QSsl::SslV2 << QSsl::SecureProtocols << false;
     QTest::newRow("ssl2-any") << QSsl::SslV2 << QSsl::AnyProtocol << false; // no idea why it does not work, but we don't care about SSL 2
 
     QTest::newRow("ssl3-ssl2") << QSsl::SslV3 << QSsl::SslV2 << false;
-    QTest::newRow("ssl3-tls1") << QSsl::SslV3 << QSsl::TlsV1 << false;
+    QTest::newRow("ssl3-tls1.0") << QSsl::SslV3 << QSsl::TlsV1_0 << false;
     QTest::newRow("ssl3-tls1ssl3") << QSsl::SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("ssl3-secure") << QSsl::SslV3 << QSsl::SecureProtocols << true;
     QTest::newRow("ssl3-any") << QSsl::SslV3 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
 
-    QTest::newRow("tls1-ssl2") << QSsl::TlsV1 << QSsl::SslV2 << false;
-    QTest::newRow("tls1-ssl3") << QSsl::TlsV1 << QSsl::SslV3 << false;
-    QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1 << QSsl::TlsV1SslV3 << true;
-    QTest::newRow("tls1-secure") << QSsl::TlsV1 << QSsl::SecureProtocols << true;
-    QTest::newRow("tls1-any") << QSsl::TlsV1 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
+    QTest::newRow("tls1.0-ssl2") << QSsl::TlsV1_0 << QSsl::SslV2 << false;
+    QTest::newRow("tls1.0-ssl3") << QSsl::TlsV1_0 << QSsl::SslV3 << false;
+    QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1_0 << QSsl::TlsV1SslV3 << true;
+    QTest::newRow("tls1.0-secure") << QSsl::TlsV1_0 << QSsl::SecureProtocols << true;
+    QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << false; // we wont set a SNI header here because we connect to a
                                                                             // numerical IP, so OpenSSL will send a SSL 2 handshake
 
     QTest::newRow("tls1ssl3-ssl2") << QSsl::TlsV1SslV3 << QSsl::SslV2 << false;
     QTest::newRow("tls1ssl3-ssl3") << QSsl::TlsV1SslV3 << QSsl::SslV3 << true;
-    QTest::newRow("tls1ssl3-tls1") << QSsl::TlsV1SslV3 << QSsl::TlsV1 << true;
+    QTest::newRow("tls1ssl3-tls1.0") << QSsl::TlsV1SslV3 << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1ssl3-secure") << QSsl::TlsV1SslV3 << QSsl::SecureProtocols << true;
     QTest::newRow("tls1ssl3-any") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
 
     QTest::newRow("secure-ssl2") << QSsl::SecureProtocols << QSsl::SslV2 << false;
     QTest::newRow("secure-ssl3") << QSsl::SecureProtocols << QSsl::SslV3 << true;
-    QTest::newRow("secure-tls1") << QSsl::SecureProtocols << QSsl::TlsV1 << true;
+    QTest::newRow("secure-tls1.0") << QSsl::SecureProtocols << QSsl::TlsV1_0 << true;
     QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
     QTest::newRow("any-ssl2") << QSsl::AnyProtocol << QSsl::SslV2 << false; // no idea why it does not work, but we don't care about SSL 2
     QTest::newRow("any-ssl3") << QSsl::AnyProtocol << QSsl::SslV3 << true;
-    QTest::newRow("any-tls1") << QSsl::AnyProtocol << QSsl::TlsV1 << true;
+    QTest::newRow("any-tls1.0") << QSsl::AnyProtocol << QSsl::TlsV1_0 << true;
     QTest::newRow("any-tls1ssl3") << QSsl::AnyProtocol << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
 }

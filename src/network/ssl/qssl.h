@@ -81,7 +81,10 @@ namespace QSsl {
     enum SslProtocol {
         SslV3,
         SslV2,
-        TlsV1, // ### Qt 5: rename to TlsV1_0 or so
+        TlsV1_0,
+#if QT_DEPRECATED_SINCE(5,0)
+        TlsV1 = TlsV1_0,
+#endif
         AnyProtocol,
         TlsV1SslV3,
         SecureProtocols,

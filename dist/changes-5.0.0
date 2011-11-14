@@ -60,6 +60,8 @@ information about a particular change.
     only the current data row of a data-driven test function.  Every skipped
     data row is now reported in the test log.
 
+- The QSsl::TlsV1 enum value was renamed to QSsl::TlsV1_0 .
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
