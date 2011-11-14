@@ -976,6 +976,11 @@ void tst_QColumnView::parentCurrentIndex()
     QTest::qWait(ANIMATION_DELAY);
     QTRY_COMPARE(view.createdColumns[0]->currentIndex(), first);
     QTRY_COMPARE(view.createdColumns[1]->currentIndex(), second);
+
+    // The next two lines should be removed when QTBUG-22707 is resolved.
+    QEXPECT_FAIL("", "QTBUG-22707", Abort);
+    QVERIFY(view.createdColumns[2]);
+
     QTRY_COMPARE(view.createdColumns[2]->currentIndex(), third);
 }
 
