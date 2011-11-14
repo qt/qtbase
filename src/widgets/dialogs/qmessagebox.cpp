@@ -153,7 +153,7 @@ public:
                       expandedTo(QApplication::globalStrut());
         opt.text = label(HideLabel);
         sz = fm.size(Qt::TextShowMnemonic, opt.text);
-        ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
+        ret = ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
                       expandedTo(QApplication::globalStrut()));
         return ret;
     }
