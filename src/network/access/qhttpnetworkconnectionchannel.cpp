@@ -731,6 +731,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
             && (!serverHeaderField.contains("Netscape-Enterprise/3."))
             // this is adpoted from the knowledge of the Nokia 7.x browser team (DEF143319)
             && (!serverHeaderField.contains("WebLogic"))
+            && (!serverHeaderField.startsWith("Rocket")) // a Python Web Server, see Web2py.com
             ) {
         pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningProbablySupported;
     } else {
