@@ -232,6 +232,40 @@ static int q_X509Callback(int ok, X509_STORE_CTX *ctx)
     return 1;
 }
 
+long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
+{
+    long options;
+    if (protocol == QSsl::TlsV1SslV3 || protocol == QSsl::SecureProtocols)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2;
+    else
+        options = SSL_OP_ALL;
+
+    // This option is disabled by default, so we need to be able to clear it
+    if (sslOptions & QSsl::SslOptionDisableEmptyFragments)
+        options |= SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+    else
+        options &= ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    // This option is disabled by default, so we need to be able to clear it
+    if (sslOptions & QSsl::SslOptionDisableLegacyRenegotiation)
+        options &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+    else
+        options |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+#endif
+
+#ifdef SSL_OP_NO_TICKET
+    if (sslOptions & QSsl::SslOptionDisableSessionTickets)
+        options |= SSL_OP_NO_TICKET;
+#endif
+#ifdef SSL_OP_NO_COMPRESSION
+    if (sslOptions & QSsl::SslOptionDisableCompression)
+        options |= SSL_OP_NO_COMPRESSION;
+#endif
+
+    return options;
+}
+
 bool QSslSocketBackendPrivate::initSslContext()
 {
     Q_Q(QSslSocket);
@@ -275,35 +309,7 @@ init_context:
     }
 
     // Enable bug workarounds.
-    long options;
-    if (configuration.protocol == QSsl::TlsV1SslV3 || configuration.protocol == QSsl::SecureProtocols)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2;
-    else
-        options = SSL_OP_ALL;
-
-    // This option is disabled by default, so we need to be able to clear it
-    if (configuration.sslOptions & QSsl::SslOptionDisableEmptyFragments)
-        options |= SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
-    else
-        options &= ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
-
-#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-    // This option is disabled by default, so we need to be able to clear it
-    if (configuration.sslOptions & QSsl::SslOptionDisableLegacyRenegotiation)
-        options &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-    else
-        options |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
-#endif
-
-#ifdef SSL_OP_NO_TICKET
-    if (configuration.sslOptions & QSsl::SslOptionDisableSessionTickets)
-        options |= SSL_OP_NO_TICKET;
-#endif
-#ifdef SSL_OP_NO_COMPRESSION
-    if (configuration.sslOptions & QSsl::SslOptionDisableCompression)
-        options |= SSL_OP_NO_COMPRESSION;
-#endif
-
+    long options = setupOpenSslOptions(configuration.protocol, configuration.sslOptions);
     q_SSL_CTX_set_options(ctx, options);
 
     // Initialize ciphers

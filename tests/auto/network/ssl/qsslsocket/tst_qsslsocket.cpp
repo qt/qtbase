@@ -192,6 +192,7 @@ private slots:
     void blacklistedCertificates();
     void setEmptyDefaultConfiguration();
     void versionAccessors();
+    void sslOptions();
 
     static void exitLoop()
     {
@@ -2050,6 +2051,48 @@ void tst_QSslSocket::versionAccessors()
 
     qDebug() << QSslSocket::sslLibraryVersionString();
     qDebug() << QString::number(QSslSocket::sslLibraryVersionNumber(), 16);
+}
+
+void tst_QSslSocket::sslOptions()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSsl::SslOptionDisableEmptyFragments
+                                                           |QSsl::SslOptionDisableLegacyRenegotiation),
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2));
+
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSsl::SslOptionDisableEmptyFragments),
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION)));
+#endif
+
+#ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSsl::SslOptionDisableLegacyRenegotiation),
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
+#endif
+
+#ifdef SSL_OP_NO_TICKET
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSsl::SslOptionDisableEmptyFragments
+                                                           |QSsl::SslOptionDisableLegacyRenegotiation
+                                                           |QSsl::SslOptionDisableSessionTickets),
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_TICKET)));
+#endif
+
+#ifdef SSL_OP_NO_TICKET
+#ifdef SSL_OP_NO_COMPRESSION
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSsl::SslOptionDisableEmptyFragments
+                                                           |QSsl::SslOptionDisableLegacyRenegotiation
+                                                           |QSsl::SslOptionDisableSessionTickets
+                                                           |QSsl::SslOptionDisableCompression),
+             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION)));
+#endif
+#endif
 }
 
 #endif // QT_NO_OPENSSL
