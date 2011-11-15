@@ -209,6 +209,7 @@ public:
     QString text() const;
     QString realText() const;
     void setText(const QString &txt);
+    void commitPreedit();
 
     QString displayText() const { return m_textLayout.text(); }
 
