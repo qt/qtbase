@@ -373,6 +373,11 @@ public slots:
 
 public:
     Q_INVOKABLE void const slotWithSillyConst2() {}
+    Q_INVOKABLE QObject& myInvokableReturningRef()
+    { return *this; }
+    Q_INVOKABLE const QObject& myInvokableReturningConstRef() const
+    { return *this; }
+
 
     // that one however should be fine
 public slots:
@@ -530,6 +535,7 @@ private slots:
     void privateClass();
     void cxx11Enums_data();
     void cxx11Enums();
+    void returnRefs();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1685,6 +1691,16 @@ void tst_Moc::cxx11Enums()
         QCOMPARE(meta->enumerator(idx).keyToValue(v), i);
         QCOMPARE(meta->enumerator(idx).valueToKey(i), v.constData());
     }
+}
+
+void tst_Moc::returnRefs()
+{
+    TestClass tst;
+    const QMetaObject *mobj = tst.metaObject();
+    QVERIFY(mobj->indexOfMethod("myInvokableReturningRef()") != -1);
+    QVERIFY(mobj->indexOfMethod("myInvokableReturningConstRef()") != -1);
+    // Those two functions are copied from the qscriptextqobject test in qtscript
+    // they used to cause miscompilation of the moc generated file.
 }
 
 QTEST_APPLESS_MAIN(tst_Moc)

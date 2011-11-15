@@ -503,8 +503,11 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     }
 
     // we don't support references as return types, it's too dangerous
-    if (def->type.referenceType == Type::Reference)
+    if (def->type.referenceType == Type::Reference) {
+        QByteArray rawName = def->type.rawName;
         def->type = Type("void");
+        def->type.rawName = rawName;
+    }
 
     def->normalizedType = normalizeType(def->type.name);
 
