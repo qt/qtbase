@@ -64,6 +64,11 @@ QWindow::QWindow(QScreen *targetScreen)
     d->screen = targetScreen;
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
+
+    //if your applications aborts here, then chances are your creating a QWindow before the
+    //screen list is populated.
+    Q_ASSERT(d->screen);
+
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
