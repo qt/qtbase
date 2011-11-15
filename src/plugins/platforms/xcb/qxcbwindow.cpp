@@ -715,7 +715,11 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
         flags |= Qt::X11BypassWindowManagerHint;
 
     if (flags & Qt::WindowTransparentForInput) {
-        uint32_t mask = XCB_EVENT_MASK_NO_EVENT;
+        uint32_t mask = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_VISIBILITY_CHANGE
+                 | XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_RESIZE_REDIRECT
+                | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
+                | XCB_EVENT_MASK_FOCUS_CHANGE  | XCB_EVENT_MASK_PROPERTY_CHANGE
+                | XCB_EVENT_MASK_COLOR_MAP_CHANGE | XCB_EVENT_MASK_OWNER_GRAB_BUTTON;
         xcb_change_window_attributes(xcb_connection(), xcb_window(), XCB_CW_EVENT_MASK, &mask);
     }
 
