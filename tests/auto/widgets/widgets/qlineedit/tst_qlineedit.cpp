@@ -266,9 +266,7 @@ private slots:
     void taskQTBUG_7902_contextMenuCrash();
 #endif
     void taskQTBUG_7395_readOnlyShortcut();
-#ifdef Q_WS_X11
     void QTBUG697_paletteCurrentColorGroup();
-#endif
     void QTBUG13520_textNotVisible();
 
     void bidiVisualMovement_data();
@@ -3627,9 +3625,11 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     QCOMPARE(spy.count(), 1);
 }
 
-#ifdef Q_WS_X11
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
+#ifndef Q_WS_X11
+    QSKIP("Only tested on X11");
+#endif
     QLineEdit le;
     le.setText("               ");
     QPalette p = le.palette();
@@ -3651,7 +3651,6 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.render(&img);
     QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
-#endif
 
 void tst_QLineEdit::QTBUG13520_textNotVisible()
 {

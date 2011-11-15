@@ -94,10 +94,8 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-#ifndef Q_WS_MAC
     void drawPixmap_comp_data();
     void drawPixmap_comp();
-#endif
     void saveAndRestore_data();
     void saveAndRestore();
 
@@ -183,10 +181,8 @@ private slots:
     void fillRect_stretchToDeviceMode();
     void monoImages();
 
-#ifndef Q_WS_QWS
     void linearGradientSymmetry_data();
     void linearGradientSymmetry();
-#endif
     void gradientInterpolation();
 
     void fpe_pixmapTransform();
@@ -219,9 +215,7 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
-#if defined(Q_OS_MAC)
     void drawText_subPixelPositionsInRaster_qtbug5053();
-#endif
 
     void drawImage_data();
     void drawImage();
@@ -416,8 +410,6 @@ static const char* const maskResult_data[] = {
 "...ddddddddddddd"};
 
 
-// Mac has other ideas about alpha composition
-#ifndef Q_WS_MAC
 void tst_QPainter::drawPixmap_comp_data()
 {
     if (qApp->desktop()->depth() < 24)
@@ -462,6 +454,9 @@ QRgb qt_compose_alpha(QRgb source, QRgb dest)
 */
 void tst_QPainter::drawPixmap_comp()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Mac has other ideas about alpha composition");
+#endif
     QFETCH(uint, dest);
     QFETCH(uint, source);
 
@@ -509,7 +504,6 @@ void tst_QPainter::drawPixmap_comp()
 
     QVERIFY(!different);
 }
-#endif
 
 void tst_QPainter::saveAndRestore_data()
 {
@@ -3522,8 +3516,6 @@ static QLinearGradient inverseGradient(QLinearGradient g)
     return g2;
 }
 
-// QWS has limited resolution in the gradient color table
-#ifndef Q_WS_QWS
 void tst_QPainter::linearGradientSymmetry_data()
 {
     QTest::addColumn<QGradientStops>("stops");
@@ -3555,6 +3547,9 @@ void tst_QPainter::linearGradientSymmetry_data()
 
 void tst_QPainter::linearGradientSymmetry()
 {
+#ifdef Q_WS_QWS
+    QSKIP("QWS has limited resolution in the gradient color table");
+#else
     QFETCH(QGradientStops, stops);
 
     QImage a(64, 8, QImage::Format_ARGB32_Premultiplied);
@@ -3576,8 +3571,8 @@ void tst_QPainter::linearGradientSymmetry()
 
     b = b.mirrored(true);
     QCOMPARE(a, b);
-}
 #endif
+}
 
 void tst_QPainter::gradientInterpolation()
 {
@@ -4148,11 +4143,12 @@ void tst_QPainter::clipBoundingRect()
 
 }
 
-//Only Mac/Cocoa supports sub pixel positions in raster engine currently
-#ifdef Q_OS_MAC
 void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
-	QFontMetricsF fm(qApp->font());
+#if !defined(Q_OS_MAC)
+    QSKIP("Only Mac supports sub pixel positions in raster engine currently");
+#endif
+    QFontMetricsF fm(qApp->font());
 
     QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
     baseLine.fill(Qt::white);
@@ -4179,7 +4175,6 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 
     QVERIFY(foundDifferentRasterization);
 }
-#endif
 
 void tst_QPainter::drawPointScaled()
 {

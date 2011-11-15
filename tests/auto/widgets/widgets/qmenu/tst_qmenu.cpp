@@ -83,9 +83,7 @@ private slots:
     void overrideMenuAction();
     void statusTip();
     void widgetActionFocus();
-#ifndef Q_OS_WINCE_WM
     void mouseActivation();
-#endif
     void tearOff();
     void layoutDirection();
 
@@ -96,9 +94,7 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
-#ifndef Q_OS_WINCE_WM
     void task258920_mouseBorder();
-#endif
     void setFixedWidth();
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
@@ -271,10 +267,11 @@ void tst_QMenu::addActionsAndClear()
     QCOMPARE(menus[0]->actions().count(), 0);
 }
 
-// We have a separate mouseActivation test for Windows mobile.
-#ifndef Q_OS_WINCE_WM
 void tst_QMenu::mouseActivation()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("We have a separate mouseActivation test for Windows mobile.");
+#endif
     QWidget topLevel;
     QMenu menu(&topLevel);
     topLevel.show();
@@ -307,7 +304,6 @@ void tst_QMenu::mouseActivation()
     QVERIFY(submenu.isVisible());
 #endif
 }
-#endif
 
 void tst_QMenu::keyboardNavigation_data()
 {
@@ -778,10 +774,11 @@ public:
     bool painted;
 };
 
-// Mouse move related signals for Windows Mobile unavailable.
-#ifndef Q_OS_WINCE_WM
 void tst_QMenu::task258920_mouseBorder()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Mouse move related signals for Windows Mobile unavailable");
+#endif
     // ### fixme: Check platforms
     QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa");
 
@@ -805,7 +802,6 @@ void tst_QMenu::task258920_mouseBorder()
     QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
     QVERIFY(menu.painted);
 }
-#endif
 
 void tst_QMenu::setFixedWidth()
 {

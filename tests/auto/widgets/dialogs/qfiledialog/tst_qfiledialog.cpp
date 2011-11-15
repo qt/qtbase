@@ -145,7 +145,7 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void hooks();
-#if defined(Q_OS_UNIX) && defined(QT_BUILD_INTERNAL)
+#ifdef Q_OS_UNIX
     void tildeExpansion_data();
     void tildeExpansion();
 #endif
@@ -1318,8 +1318,7 @@ void tst_QFiledialog::hooks()
     QCOMPARE(QFileDialog::getSaveFileName(), QString("saveName"));
 }
 
-// Test case relies on developer build (AUTOTEST_EXPORT).
-#if defined(Q_OS_UNIX) && defined(QT_BUILD_INTERNAL)
+#ifdef Q_OS_UNIX
 void tst_QFiledialog::tildeExpansion_data()
 {
     QTest::addColumn<QString>("tildePath");
@@ -1338,10 +1337,14 @@ void tst_QFiledialog::tildeExpansion_data()
 
 void tst_QFiledialog::tildeExpansion()
 {
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)");
+#else
     QFETCH(QString, tildePath);
     QFETCH(QString, expandedPath);
 
     QCOMPARE(qt_tildeExpansion(tildePath), expandedPath);
+#endif
 }
 #endif
 

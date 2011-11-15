@@ -109,9 +109,7 @@ private slots:
 
     void customEventDispatcher();
 
-#ifndef Q_OS_WINCE
     void stressTest();
-#endif
 };
 
 enum { one_minute = 60 * 1000, five_minutes = 5 * one_minute };
@@ -952,11 +950,11 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }
-
-// Disconnects on WinCE, so skip this test.
-#ifndef Q_OS_WINCE
 void tst_QThread::stressTest()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Disconnects on WinCE, skipping...");
+#endif
     QTime t;
     t.start();
     while (t.elapsed() < one_minute) {
@@ -965,7 +963,6 @@ void tst_QThread::stressTest()
         t.wait(one_minute);
     }
 }
-#endif
 
 class Syncronizer : public QObject
 { Q_OBJECT

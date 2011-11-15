@@ -83,17 +83,11 @@ public:
     tst_QLocale();
 
 private slots:
-#ifdef Q_OS_WIN
     void windowsDefaultLocale();
-#endif
-#ifdef Q_OS_MAC
     void macDefaultLocale();
-#endif
 
     void ctor();
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void emptyCtor();
-#endif
     void unixLocaleName();
     void double_conversion_data();
     void double_conversion();
@@ -360,10 +354,14 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
-// Uses unsupported Windows CE QProcess functionality (std streams, env).
-#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QLocale::emptyCtor()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Uses unsupported Windows CE QProcess functionality (std streams, env)");
+#endif
+#if defined(QT_NO_PROCESS)
+    QSKIP("Qt was compiled with QT_NO_PROCESS");
+#else
 #define TEST_CTOR(req_lc, exp_str) \
     { \
     /* Test constructor without arguments. Needs separate process */ \
@@ -434,8 +432,8 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("123456", defaultLoc);
 
 #undef TEST_CTOR
-}
 #endif
+}
 
 void tst_QLocale::unixLocaleName()
 {
@@ -1069,9 +1067,12 @@ void tst_QLocale::toDateTime()
         QCOMPARE(l.toDateTime(string, QLocale::LongFormat), result);
 }
 
-#ifdef Q_OS_MAC
 void tst_QLocale::macDefaultLocale()
 {
+#ifndef Q_OS_MAC
+    QSKIP("This is a Mac OS X-only test");
+#endif
+
     QLocale locale = QLocale::system();
     if (locale.name() != QLatin1String("en_US"))
         QSKIP("This test only tests for en_US");
@@ -1147,8 +1148,8 @@ void tst_QLocale::macDefaultLocale()
     QList<Qt::DayOfWeek> days;
     days << Qt::Monday << Qt::Tuesday << Qt::Wednesday << Qt::Thursday << Qt::Friday;
     QCOMPARE(locale.weekdays(), days);
+
 }
-#endif
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -1203,11 +1204,14 @@ public:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
 
 };
+
 #endif
 
-#ifdef Q_OS_WIN
 void tst_QLocale::windowsDefaultLocale()
 {
+#ifndef Q_OS_WIN
+    QSKIP("This is a Windows test");
+#else
     RestoreLocaleHelper systemLocale;
     // set weird system defaults and make sure we're using them
     setWinLocaleInfo(LOCALE_SDECIMAL, QLatin1String("@"));
@@ -1242,8 +1246,8 @@ void tst_QLocale::windowsDefaultLocale()
     QCOMPARE(locale.toString(QDateTime(QDate(1974, 12, 1), QTime(1,2,3)), QLocale::LongFormat),
              QString("1@12@1974 1^2^3"));
     QCOMPARE(locale.toString(QTime(1,2,3), QLocale::LongFormat), QString("1^2^3"));
-}
 #endif
+}
 
 void tst_QLocale::numberOptions()
 {

@@ -90,7 +90,6 @@ public slots:
     void init();
     void cleanup();
 private slots:
-#ifdef Q_WS_X11
     void devanagari();
     void bengali();
     void gurmukhi();
@@ -106,15 +105,10 @@ private slots:
     void khmer();
     void linearB();
     void controlInSyllable_qtbug14204();
-#endif
-#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
     void combiningMarks_qtbug15675();
-#endif
 
-#ifndef Q_WS_MAC
     void mirroredChars_data();
     void mirroredChars();
-#endif
 
 private:
     bool haveTestFonts;
@@ -204,9 +198,9 @@ static bool shaping( const QFont &f, const ShapeTable *s)
 }
 #endif
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::devanagari()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -312,12 +306,14 @@ void tst_QTextScriptEngine::devanagari()
 	} else
 	    QSKIP("couldn't find mangal");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::bengali()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -561,12 +557,14 @@ void tst_QTextScriptEngine::bengali()
 	} else
 	    QSKIP("couldn't find Likhan");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::gurmukhi()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -588,12 +586,14 @@ void tst_QTextScriptEngine::gurmukhi()
 	} else
 	    QSKIP("couldn't find Lohit Punjabi");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::oriya()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -626,13 +626,15 @@ void tst_QTextScriptEngine::oriya()
 	    }
 	} else
 	    QSKIP("couldn't find utkal");
-   }
-}
+    }
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::tamil()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -703,12 +705,14 @@ void tst_QTextScriptEngine::tamil()
 	} else
 	    QSKIP("couldn't find AkrutiTml1");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::telugu()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -750,12 +754,14 @@ void tst_QTextScriptEngine::telugu()
 	} else
 	    QSKIP("couldn't find Pothana2000");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::kannada()
 {
+#if defined(Q_WS_X11)
     {
         if (QFontDatabase().families(QFontDatabase::Kannada).contains("Sampige")) {
             QFont f("Sampige");
@@ -823,12 +829,14 @@ void tst_QTextScriptEngine::kannada()
 	} else
 	    QSKIP("couldn't find Tunga");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::malayalam()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -909,12 +917,14 @@ void tst_QTextScriptEngine::malayalam()
         } else
             QSKIP("couldn't find Rachana");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::sinhala()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -946,12 +956,14 @@ void tst_QTextScriptEngine::sinhala()
         } else
             QSKIP("couldn't find Malithi Web");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::khmer()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -989,12 +1001,14 @@ void tst_QTextScriptEngine::khmer()
 	} else
 	    QSKIP("couldn't find Khmer OS");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::linearB()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -1016,8 +1030,10 @@ void tst_QTextScriptEngine::linearB()
 	} else
 	    QSKIP("couldn't find Penuturesu");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
 #if defined(Q_WS_X11)
 static bool decomposedShaping( const QFont &f, const QChar &ch)
@@ -1066,9 +1082,9 @@ static bool decomposedShaping( const QFont &f, const QChar &ch)
 }
 #endif
 
-#ifdef Q_WS_X11
 void tst_QTextScriptEngine::greek()
 {
+#if defined(Q_WS_X11)
     if (!haveTestFonts)
         QSKIP("Test fonts are not available");
 
@@ -1124,12 +1140,14 @@ void tst_QTextScriptEngine::greek()
         } else
             QSKIP("couldn't find SBL_grk");
     }
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#if defined(Q_WS_X11)
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
+#if defined(Q_WS_X11)
     QString s;
     s.append(QChar(0x0915));
     s.append(QChar(0x094d));
@@ -1143,10 +1161,11 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 
     QVERIFY(e->layoutData->items[0].num_glyphs == 2);
     QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
-}
+#else
+    QSKIP("X11 specific test");
 #endif
+}
 
-#if (defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) || defined(Q_WS_X11)
 void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 {
 #if defined(Q_WS_MAC)
@@ -1182,11 +1201,11 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 
     QVERIFY(e->layoutData->items[0].num_glyphs == 3);
     QVERIFY(e->layoutData->glyphLayout.advances_x[1] == 0);
+#else
+    QSKIP("X11/Mac specific test");
 #endif
 }
-#endif
 
-#ifndef Q_WS_MAC
 void tst_QTextScriptEngine::mirroredChars_data()
 {
     QTest::addColumn<int>("hintingPreference");
@@ -1199,6 +1218,9 @@ void tst_QTextScriptEngine::mirroredChars_data()
 
 void tst_QTextScriptEngine::mirroredChars()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("Not supported on Mac");
+#endif
     QFETCH(int, hintingPreference);
 
     QFont font;
@@ -1240,7 +1262,6 @@ void tst_QTextScriptEngine::mirroredChars()
         QCOMPARE(glyphLayout.glyphs[1], leftParenthesis);
     }
 }
-#endif
 
 QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"

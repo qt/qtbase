@@ -121,10 +121,8 @@ private slots:
     void symetricConstructors();
     void checkMultipleNames();
     void checkMultipleCodes();
-#ifndef Q_WS_MAC
     void mnemonic_data();
     void mnemonic();
-#endif
     void toString_data();
     void toString();
     void streamOperators_data();
@@ -135,10 +133,8 @@ private slots:
     void standardKeys_data();
     void standardKeys();
     void keyBindings();
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
     void translated_data();
     void translated();
-#endif
     void i18nKeys_data();
     void i18nKeys();
 
@@ -384,8 +380,6 @@ void tst_QKeySequence::keyBindings()
 	QVERIFY(bindings == expected);
 }
 
-// mnemonics are not used on Mac OS X.
-#ifndef Q_WS_MAC
 void tst_QKeySequence::mnemonic_data()
 {
     QTest::addColumn<QString>("string");
@@ -407,6 +401,9 @@ void tst_QKeySequence::mnemonic_data()
 
 void tst_QKeySequence::mnemonic()
 {
+#ifdef Q_WS_MAC
+    QSKIP("mnemonics are not used on Mac OS X");
+#endif
     QFETCH(QString, string);
     QFETCH(QString, key);
     QFETCH(bool, warning);
@@ -423,7 +420,6 @@ void tst_QKeySequence::mnemonic()
 
     QCOMPARE(seq, res);
 }
-#endif
 
 void tst_QKeySequence::toString_data()
 {
@@ -531,8 +527,6 @@ void tst_QKeySequence::fromString()
     QCOMPARE(ks4, ks1);
 }
 
-// No need to translate modifiers on Mac OS X or WinCE.
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
 void tst_QKeySequence::translated_data()
 {
     qApp->installTranslator(ourTranslator);
@@ -564,6 +558,11 @@ void tst_QKeySequence::translated()
 {
     QFETCH(QString, transKey);
     QFETCH(QString, compKey);
+#ifdef Q_WS_MAC
+    QSKIP("No need to translate modifiers on Mac OS X");
+#elif defined(Q_OS_WINCE)
+    QSKIP("No need to translate modifiers on WinCE");
+#endif
 
     qApp->installTranslator(ourTranslator);
     qApp->installTranslator(qtTranslator);
@@ -574,7 +573,7 @@ void tst_QKeySequence::translated()
     qApp->removeTranslator(ourTranslator);
     qApp->removeTranslator(qtTranslator);
 }
-#endif
+
 
 void tst_QKeySequence::i18nKeys_data()
 {

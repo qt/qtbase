@@ -69,10 +69,8 @@ public:
 public slots:
     void cleanup();
 private slots:
-#if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
     void fromStdString();
     void toStdString();
-#endif
     void check_QTextIOStream();
     void check_QTextStream();
     void check_QDataStream();
@@ -153,9 +151,7 @@ private slots:
     void constructor();
     void constructorQByteArray_data();
     void constructorQByteArray();
-#if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
     void STL();
-#endif
     void isEmpty();
     void isNull();
     void acc_01();
@@ -196,10 +192,8 @@ private slots:
     void integer_conversion();
     void tortureSprintfDouble();
     void toNum();
-#if !defined(Q_OS_MAC) && (!defined(Q_OS_WIN) || defined(Q_OS_WINCE))
     void localeAwareCompare_data();
     void localeAwareCompare();
-#endif
     void split_data();
     void split();
     void split_regexp();
@@ -223,12 +217,8 @@ private slots:
     void QTBUG10404_compareRef();
     void QTBUG9281_arg_locale();
 
-#ifdef QT_USE_ICU
     void toUpperLower_icu();
-#endif
-#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
     void literals();
-#endif
 
     void reserve();
     void toHtmlEscaped_data();
@@ -818,10 +808,12 @@ void tst_QString::constructorQByteArray()
     QCOMPARE( strBA, expected );
 }
 
-// This test crashes on HP-UX with aCC.
-#if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
 void tst_QString::STL()
 {
+#ifdef Q_CC_HPACC
+    QSKIP("This test crashes on HP-UX with aCC");
+#endif
+#ifndef QT_NO_STL
 #ifndef QT_NO_CAST_TO_ASCII
     QString qt( "QString" );
 
@@ -868,8 +860,10 @@ void tst_QString::STL()
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
 #endif
-}
+#else
+    QSKIP( "Not tested without STL support");
 #endif
+}
 
 void tst_QString::truncate()
 {
@@ -3082,10 +3076,12 @@ void tst_QString::setRawData()
     QVERIFY(cstr.data_ptr() != csd);
 }
 
-// This test crashes on HP-UX with aCC.
-#if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
 void tst_QString::fromStdString()
 {
+#ifdef Q_CC_HPACC
+    QSKIP("This test crashes on HP-UX with aCC");
+#endif
+#if !defined(QT_NO_STL)
     std::string stroustrup = "foo";
     QString eng = QString::fromStdString( stroustrup );
     QCOMPARE( eng, QString("foo") );
@@ -3093,13 +3089,15 @@ void tst_QString::fromStdString()
     std::string stdnull( cnull, sizeof(cnull)-1 );
     QString qtnull = QString::fromStdString( stdnull );
     QCOMPARE( qtnull.size(), int(stdnull.size()) );
-}
 #endif
+}
 
-// This test crashes on HP-UX with aCC.
-#if !defined(Q_CC_HPACC) && !defined(QT_NO_STL)
 void tst_QString::toStdString()
 {
+#ifdef Q_CC_HPACC
+    QSKIP("This test crashes on HP-UX with aCC");
+#endif
+#if !defined(QT_NO_STL)
     QString nord = "foo";
     std::string stroustrup1 = nord.toStdString();
     QVERIFY( qstrcmp(stroustrup1.c_str(), "foo") == 0 );
@@ -3113,8 +3111,8 @@ void tst_QString::toStdString()
     QString qtnull( qcnull, sizeof(qcnull)/sizeof(QChar) );
     std::string stdnull = qtnull.toStdString();
     QCOMPARE( int(stdnull.size()), qtnull.size() );
-}
 #endif
+}
 
 void tst_QString::utf8()
 {
@@ -4163,10 +4161,6 @@ void tst_QString::tortureSprintfDouble()
 
 #include <locale.h>
 
-// Setting the locale is not supported on OS X (you can set the C locale,
-// but that won't affect CFStringCompare which is used to compare strings).
-// On Windows other than Win CE, we cannot set the system or user locale.
-#if !defined(Q_OS_MAC) && (!defined(Q_OS_WIN) || defined(Q_OS_WINCE))
 void tst_QString::localeAwareCompare_data()
 {
 #ifdef Q_OS_WIN
@@ -4264,6 +4258,9 @@ void tst_QString::localeAwareCompare_data()
 void tst_QString::localeAwareCompare()
 {
 #ifdef Q_OS_WIN
+#   ifndef Q_OS_WINCE
+       QSKIP("On others than Win CE, we cannot set the system or user locale.");
+#   endif
     QFETCH(ulong, locale);
 #else
     QFETCH(QString, locale);
@@ -4288,6 +4285,8 @@ void tst_QString::localeAwareCompare()
     QCOMPARE(locale, GetThreadLocale());
 #  endif
 
+#elif defined (Q_OS_MAC)
+    QSKIP("Setting the locale is not supported on OS X (you can set the C locale, but that won't affect CFStringCompare which is used to compare strings)");
 #elif defined(QT_USE_ICU)
     QLocale::setDefault(QLocale(locale));
 #else
@@ -4362,7 +4361,6 @@ void tst_QString::localeAwareCompare()
             setlocale(LC_ALL, "");
 #endif
 }
-#endif
 
 void tst_QString::split_data()
 {
@@ -5007,9 +5005,12 @@ void tst_QString::QTBUG9281_arg_locale()
     QLocale::setDefault(QLocale::C);
 }
 
-#ifdef QT_USE_ICU
 void tst_QString::toUpperLower_icu()
 {
+#ifndef QT_USE_ICU
+    QSKIP("Qt was built without ICU support");
+#endif
+
     QString s = QString::fromLatin1("i");
 
     QCOMPARE(s.toUpper(), QString::fromLatin1("I"));
@@ -5042,12 +5043,10 @@ void tst_QString::toUpperLower_icu()
 
     // the cleanup function will restore the default locale
 }
-#endif
 
-// Only tested on c++0x compliant compiler or gcc.
-#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
 void tst_QString::literals()
 {
+#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
     QString str(QStringLiteral("abcd"));
 
     QVERIFY(str.length() == 4);
@@ -5064,8 +5063,11 @@ void tst_QString::literals()
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
-}
+
+#else
+    QSKIP("Only tested on c++0x compliant compiler or gcc");
 #endif
+}
 
 void tst_QString::reserve()
 {

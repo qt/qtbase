@@ -63,10 +63,8 @@ private slots:
     void styles_data();
     void styles();
 
-#ifndef Q_WS_QWS
     void fixedPitch_data();
     void fixedPitch();
-#endif
 
 #ifdef Q_WS_MAC
     void trickyFonts_data();
@@ -127,8 +125,6 @@ void tst_QFontDatabase::styles()
     }
 }
 
-// fixedPitch not implemented for Qtopia Core.
-#ifndef Q_WS_QWS
 void tst_QFontDatabase::fixedPitch_data()
 {
     QTest::addColumn<QString>("font");
@@ -152,6 +148,9 @@ void tst_QFontDatabase::fixedPitch_data()
 
 void tst_QFontDatabase::fixedPitch()
 {
+#ifdef Q_WS_QWS
+    QSKIP("fixedPitch not implemented for Qtopia Core");
+#endif
     QFETCH(QString, font);
     QFETCH(bool, fixedPitch);
 
@@ -165,7 +164,6 @@ void tst_QFontDatabase::fixedPitch()
     QFontInfo fi(qfont);
     QCOMPARE(fi.fixedPitch(), fixedPitch);
 }
-#endif
 
 #ifdef Q_WS_MAC
 void tst_QFontDatabase::trickyFonts_data()

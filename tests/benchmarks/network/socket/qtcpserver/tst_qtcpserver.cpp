@@ -74,9 +74,7 @@ public slots:
     void cleanup();
 private slots:
     void ipv4LoopbackPerformanceTest();
-#ifndef Q_WS_WINCE_WM
     void ipv6LoopbackPerformanceTest();
-#endif
     void ipv4PerformanceTest();
 };
 
@@ -167,13 +165,14 @@ void tst_QTcpServer::ipv4LoopbackPerformanceTest()
 }
 
 //----------------------------------------------------------------------------------
-// IPv6 loopback not yet supported on Windows Mobile
-#ifndef Q_WS_WINCE_WM
 void tst_QTcpServer::ipv6LoopbackPerformanceTest()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
+#if defined(Q_WS_WINCE_WM)
+    QSKIP("WinCE WM: Not yet supported");
+#endif
 
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {
@@ -218,7 +217,6 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
         delete clientB;
     }
 }
-#endif
 
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::ipv4PerformanceTest()

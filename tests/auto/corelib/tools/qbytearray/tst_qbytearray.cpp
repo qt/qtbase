@@ -134,9 +134,7 @@ private slots:
 
     void reserve();
 
-#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
     void literals();
-#endif
 };
 
 tst_QByteArray::tst_QByteArray()
@@ -1509,10 +1507,9 @@ void tst_QByteArray::reserve()
     nil2.reserve(0);
 }
 
-// Only tested on c++0x compliant compiler or gcc.
-#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
 void tst_QByteArray::literals()
 {
+#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
     QByteArray str(QByteArrayLiteral("abcd"));
 
     QVERIFY(str.length() == 4);
@@ -1529,8 +1526,10 @@ void tst_QByteArray::literals()
 
     QVERIFY(str2.constData() == s);
     QVERIFY(str2.data() != s);
-}
+#else
+    QSKIP("Only tested on c++0x compliant compiler or gcc");
 #endif
+}
 
 const char globalChar = '1';
 

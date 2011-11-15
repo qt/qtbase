@@ -112,9 +112,7 @@ private slots:
     void scrollBarAsNeeded();
     void moveItems();
     void wordWrap();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && WINVER >= 0x0500
     void setCurrentIndexAfterAppendRowCrash();
-#endif
     void emptyItemSize();
     void task203585_selectAll();
     void task228566_infiniteRelayout();
@@ -1496,14 +1494,15 @@ private:
 };
 #endif
 
-// This test only makes sense on Windows 2000 and higher.
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && WINVER >= 0x0500
 void tst_QListView::setCurrentIndexAfterAppendRowCrash()
 {
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && WINVER >= 0x0500
     SetCurrentIndexAfterAppendRowCrashDialog w;
     w.exec();
-}
+#else
+    QSKIP("This test only makes sense on windows 2000 and higher.");
 #endif
+}
 
 void tst_QListView::emptyItemSize()
 {

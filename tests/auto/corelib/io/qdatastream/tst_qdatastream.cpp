@@ -101,10 +101,8 @@ private slots:
     void stream_QPen_data();
     void stream_QPen();
 
-#ifndef Q_OS_WINCE
     void stream_QPixmap_data();
     void stream_QPixmap();
-#endif
 
     void stream_QPoint_data();
     void stream_QPoint();
@@ -136,10 +134,8 @@ private slots:
     void stream_qint64_data();
     void stream_qint64();
 
-#ifndef Q_OS_WINCE
     void stream_QIcon_data();
     void stream_QIcon();
-#endif
 
     void stream_QEasingCurve_data();
     void stream_QEasingCurve();
@@ -1578,31 +1574,35 @@ void tst_QDataStream::readQPen(QDataStream *s)
 
 // pixmap testing is currently limited to one pixmap only.
 //
-// Test depends on more memory than available on Qt/CE.
-#ifndef Q_OS_WINCE
 void tst_QDataStream::stream_QPixmap_data()
 {
+#ifndef Q_OS_WINCE
     stream_data(1);
+#endif
 }
 
 void tst_QDataStream::stream_QPixmap()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test depends on more memory than available on Qt/CE");
+#endif
     STREAM_IMPL(QPixmap);
 }
-#endif
 
-// Test depends on more memory than available on Qt/CE.
-#ifndef Q_OS_WINCE
 void tst_QDataStream::stream_QIcon_data()
 {
+#ifndef Q_OS_WINCE
     stream_data(1);
+#endif
 }
 
 void tst_QDataStream::stream_QIcon()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test depends on more memory than available on Qt/CE");
+#endif
     STREAM_IMPL(QIcon);
 }
-#endif
 
 void tst_QDataStream::writeQPixmap(QDataStream *s)
 {

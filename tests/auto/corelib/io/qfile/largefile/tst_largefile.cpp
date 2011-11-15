@@ -121,9 +121,7 @@ private slots:
 
     // Map/unmap large file
     void mapFile();
-#ifndef Q_OS_MAC
     void mapOffsetOverflow();
-#endif
 
     void closeFile() { largeFile.close(); }
 
@@ -512,10 +510,12 @@ void tst_LargeFile::mapFile()
     QVERIFY( largeFile.unmap( baseAddress ) );
 }
 
-// mmap'ping beyond EOF may succeed; generate bus error on access.
-#ifndef Q_OS_MAC
 void tst_LargeFile::mapOffsetOverflow()
 {
+#if defined(Q_OS_MAC)
+    QSKIP("mmap'ping beyond EOF may succeed; generate bus error on access");
+#endif
+
     // Out-of-range mappings should fail, and not silently clip the offset
     for (int i = 50; i < 63; ++i) {
         uchar *address = 0;
@@ -530,7 +530,6 @@ void tst_LargeFile::mapOffsetOverflow()
         QVERIFY( !address );
     }
 }
-#endif
 
 QTEST_APPLESS_MAIN(tst_LargeFile)
 #include "tst_largefile.moc"

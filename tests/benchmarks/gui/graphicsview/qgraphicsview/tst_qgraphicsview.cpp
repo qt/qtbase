@@ -144,10 +144,8 @@ private slots:
     void mapRectToScene();
     void mapRectFromScene_data();
     void mapRectFromScene();
-#ifndef Q_WS_WINCE_WM
     void chipTester_data();
     void chipTester();
-#endif
     void deepNesting_data();
     void deepNesting();
     void imageRiver_data();
@@ -397,8 +395,6 @@ void tst_QGraphicsView::mapRectFromScene()
     }
 }
 
-// This test does not make sense Windows Mobile without OpenGL
-#ifndef Q_WS_WINCE_WM
 void tst_QGraphicsView::chipTester_data()
 {
     QTest::addColumn<bool>("antialias");
@@ -420,6 +416,9 @@ void tst_QGraphicsView::chipTester_data()
 
 void tst_QGraphicsView::chipTester()
 {
+#ifdef Q_WS_WINCE_WM
+    QSKIP("WinCE WM: Fails on Windows Mobile w/o OpenGL");
+#endif
     QFETCH(bool, antialias);
     QFETCH(bool, opengl);
     QFETCH(int, operation);
@@ -437,7 +436,6 @@ void tst_QGraphicsView::chipTester()
         tester.runBenchmark();
     }
 }
-#endif
 
 static void addChildHelper(QGraphicsItem *parent, int n, bool rotate)
 {

@@ -67,23 +67,17 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-#ifndef Q_WS_WIN
     void exactMatch();
-#endif
     void compare();
     void resolve();
     void resetFont();
     void isCopyOf();
-#ifdef Q_WS_X11
     void setFontRaw();
-#endif
     void italicOblique();
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
     void lastResortFont();
-#if defined(Q_WS_MAC)
     void styleName();
-#endif
 #ifdef QT_BUILD_INTERNAL
     void defaultFamily_data();
     void defaultFamily();
@@ -148,8 +142,6 @@ void tst_QFont::cleanup()
 // This will be executed immediately after each test is run.
 }
 
-// Exact matching on windows misses a lot because of the sample chars.
-#ifndef Q_WS_WIN
 void tst_QFont::exactMatch()
 {
     QFont font;
@@ -157,6 +149,10 @@ void tst_QFont::exactMatch()
     // Check if a non-existing font hasn't an exact match
     font = QFont( "BogusFont", 33 );
     QVERIFY( !font.exactMatch() );
+
+#ifdef Q_WS_WIN
+    QSKIP("Exact matching on windows misses a lot because of the sample chars");
+#endif
 
 #ifdef Q_WS_X11
     QVERIFY(QFont("sans").exactMatch());
@@ -305,7 +301,6 @@ void tst_QFont::exactMatch()
         }
     }
 }
-#endif
 
 void tst_QFont::italicOblique()
 {
@@ -519,9 +514,11 @@ void tst_QFont::isCopyOf()
     QVERIFY(!font3.isCopyOf(font));
 }
 
-#ifdef Q_WS_X11
 void tst_QFont::setFontRaw()
 {
+#ifndef Q_WS_X11
+    QSKIP("Only tested on X11");
+#else
     QFont f;
     f.setRawName("-*-fixed-bold-r-normal--0-0-*-*-*-0-iso8859-1");
 //     qDebug("font family: %s", f.family().utf8());
@@ -538,8 +535,8 @@ void tst_QFont::setFontRaw()
     if (!found)
         QSKIP("Fixed font not available.");
     QCOMPARE(QFontInfo(f).family().left(5).toLower(), QString("fixed"));
-}
 #endif
+}
 
 void tst_QFont::insertAndRemoveSubstitutions()
 {
@@ -617,15 +614,17 @@ void tst_QFont::lastResortFont()
     QVERIFY(!font.lastResortFont().isEmpty());
 }
 
-#if defined(Q_WS_MAC)
 void tst_QFont::styleName()
 {
+#if !defined(Q_WS_MAC)
+    QSKIP("Only tested on Mac");
+#else
     QFont font("Helvetica Neue");
     font.setStyleName("UltraLight");
 
     QCOMPARE(QFontInfo(font).styleName(), QString("UltraLight"));
-}
 #endif
+}
 
 #ifdef QT_BUILD_INTERNAL
 Q_DECLARE_METATYPE(QFont::StyleHint)

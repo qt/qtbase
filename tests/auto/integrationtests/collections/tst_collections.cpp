@@ -152,9 +152,7 @@ private slots:
     void qtimerList();
     void containerTypedefs();
     void forwardDeclared();
-#if defined(Q_ALIGNOF) && defined(Q_DECL_ALIGN)
     void alignment();
-#endif
     void QTBUG13079_collectionInsideCollection();
 
     void foreach_2();
@@ -3396,6 +3394,12 @@ void tst_Collections::alignment()
     testAssociativeContainerAlignment<QHash<Aligned4, Aligned128> >();
     testAssociativeContainerAlignment<QHash<Aligned128, Aligned4> >();
     testAssociativeContainerAlignment<QHash<Aligned128, Aligned128> >();
+}
+
+#else
+void tst_Collections::alignment()
+{
+    QSKIP("Compiler doesn't support necessary extension keywords");
 }
 #endif
 

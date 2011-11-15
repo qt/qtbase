@@ -60,12 +60,8 @@ private slots:
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
-#ifdef Q_COMPILER_DECLTYPE
     void functor();
-#endif
-#ifdef Q_COMPILER_LAMBDA
     void lambda();
-#endif
 };
 
 void light()
@@ -414,9 +410,11 @@ struct Functor {
 };
 
 // This tests functor without result_type; decltype need to be supported by the compiler.
-#ifdef Q_COMPILER_DECLTYPE
 void tst_QtConcurrentRun::functor()
 {
+#ifndef Q_COMPILER_DECLTYPE
+    QSKIP("Compiler does not support decltype");
+#else
     Functor f;
     {
         QFuture<int> fut = QtConcurrent::run(f);
@@ -437,12 +435,14 @@ void tst_QtConcurrentRun::functor()
         QtConcurrent::run(f, 1,2,3,4).waitForFinished();
         QtConcurrent::run(f, 1,2,3,4,5).waitForFinished();
     }
-}
 #endif
+}
 
-#ifdef Q_COMPILER_LAMBDA
 void tst_QtConcurrentRun::lambda()
 {
+#ifndef Q_COMPILER_LAMBDA
+    QSKIP("Compiler does not support lambda");
+#else
     QCOMPARE(QtConcurrent::run([](){ return 45; }).result(), 45);
     QCOMPARE(QtConcurrent::run([](int a){ return a+15; }, 12).result(), 12+15);
     QCOMPARE(QtConcurrent::run([](int a, double b){ return a + b; }, 12, 15).result(), double(12+15));
@@ -456,8 +456,8 @@ void tst_QtConcurrentRun::lambda()
         QCOMPARE(r, QStringList({"Hello", "World", "Foo"}));
     }
 #endif
-}
 #endif
+}
 
 QTEST_MAIN(tst_QtConcurrentRun)
 #include "tst_qtconcurrentrun.moc"

@@ -133,7 +133,7 @@ private slots:
 #ifndef QT_NO_STYLE_CDE
     void testCDEStyle();
 #endif
-#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
+#ifndef QT_NO_STYLE_WINDOWSXP
     void testWindowsXPStyle();
 #endif
     void testWindowsVistaStyle();
@@ -141,12 +141,8 @@ private slots:
     void testCleanlooksStyle();
 #endif
     void testMacStyle();
-#ifdef Q_OS_WINCE
     void testWindowsCEStyle();
-#endif
-#ifdef Q_OS_WINCE_WM
     void testWindowsMobileStyle();
-#endif
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
@@ -420,12 +416,16 @@ void tst_QStyle::testWindowsStyle()
     wstyle.drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
 }
 
-#if defined(Q_WS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
+#ifndef QT_NO_STYLE_WINDOWSXP
 void tst_QStyle::testWindowsXPStyle()
 {
+#ifdef Q_WS_WIN
     QWindowsXPStyle xpstyle;
     QVERIFY(testAllFunctions(&xpstyle));
     lineUpLayoutTest(&xpstyle);
+#else
+    QSKIP("No WindowsXP style");
+#endif
 }
 #endif
 
@@ -586,21 +586,25 @@ void tst_QStyle::testCDEStyle()
 }
 #endif
 
-#ifdef Q_OS_WINCE
 void tst_QStyle::testWindowsCEStyle()
 {
+#if defined(Q_OS_WINCE)
     QWindowsCEStyle cstyle;
     QVERIFY(testAllFunctions(&cstyle));
-}
+#else
+    QSKIP("No WindowsCEStyle style");
 #endif
+}
 
-#ifdef Q_OS_WINCE_WM
 void tst_QStyle::testWindowsMobileStyle()
 {
+#if defined(Q_OS_WINCE_WM)
     QWindowsMobileStyle cstyle;
     QVERIFY(testAllFunctions(&cstyle));
-}
+#else
+    QSKIP("No WindowsMobileStyle style");
 #endif
+}
 
 // Helper class...
 

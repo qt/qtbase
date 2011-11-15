@@ -61,16 +61,12 @@ private slots:
     void qgraphicsgridlayout();
     void addItem_data();
     void addItem();
-#ifndef Q_WS_MAC
     void alignment_data();
     void alignment();
-#endif
     void alignment2();
     void alignment2_data();
-#ifndef Q_WS_MAC
     void columnAlignment_data();
     void columnAlignment();
-#endif
     void columnCount_data();
     void columnCount();
     void columnMaximumWidth_data();
@@ -494,8 +490,6 @@ void tst_QGraphicsGridLayout::addItem()
     delete layout;
 }
 
-// Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac.
-#ifndef Q_WS_MAC
 void tst_QGraphicsGridLayout::alignment_data()
 {
     QTest::addColumn<bool>("hasHeightForWidth");
@@ -507,6 +501,9 @@ void tst_QGraphicsGridLayout::alignment_data()
 // public Qt::Alignment alignment(QGraphicsLayoutItem* item) const
 void tst_QGraphicsGridLayout::alignment()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
+#endif
     QFETCH(bool, hasHeightForWidth);
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -565,10 +562,7 @@ void tst_QGraphicsGridLayout::alignment()
 
     delete widget;
 }
-#endif
 
-// Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac.
-#ifndef Q_WS_MAC
 void tst_QGraphicsGridLayout::columnAlignment_data()
 {
     QTest::addColumn<bool>("hasHeightForWidth");
@@ -581,6 +575,9 @@ void tst_QGraphicsGridLayout::columnAlignment_data()
 // public Qt::Alignment columnAlignment(int column) const
 void tst_QGraphicsGridLayout::columnAlignment()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
+#endif
     QFETCH(bool, hasHeightForWidth);
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -633,7 +630,6 @@ void tst_QGraphicsGridLayout::columnAlignment()
 
     delete widget;
 }
-#endif
 
 void tst_QGraphicsGridLayout::columnCount_data()
 {

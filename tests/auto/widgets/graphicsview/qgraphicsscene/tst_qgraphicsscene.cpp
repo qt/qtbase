@@ -216,9 +216,7 @@ private slots:
     void addPixmap();
     void addRect();
     void addText();
-#if !defined(Q_OS_WINCE) || defined(GWES_ICONCURS)
     void removeItem();
-#endif
     void clear();
     void focusItem();
     void focusItemLostFocus();
@@ -1245,9 +1243,11 @@ void tst_QGraphicsScene::addText()
     QCOMPARE(text->font(), QFont());
 }
 
-#if !defined(Q_OS_WINCE) || defined(GWES_ICONCURS)
 void tst_QGraphicsScene::removeItem()
 {
+#if defined(Q_OS_WINCE) && !defined(GWES_ICONCURS)
+    QSKIP("No mouse cursor support");
+#endif
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
     QCOMPARE(scene.itemAt(0, 0), item); // forces indexing
@@ -1309,7 +1309,6 @@ void tst_QGraphicsScene::removeItem()
     qApp->processEvents(); // <- pending update is sent to view
     QVERIFY(!hoverItem->isHovered);
 }
-#endif
 
 void tst_QGraphicsScene::focusItem()
 {

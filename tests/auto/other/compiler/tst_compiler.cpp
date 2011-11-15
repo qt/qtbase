@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 
@@ -48,6 +47,31 @@
 #define BASECLASS_NOT_ABSTRACT
 #include "baseclass.h"
 #include "derivedclass.h"
+
+QT_USE_NAMESPACE
+
+class tst_Compiler : public QObject
+{
+Q_OBJECT
+private slots:
+    void template_methods();
+    void template_constructors();
+    void template_subclasses();
+    void methodSpecialization();
+    void constructorSpecialization();
+    void staticTemplateMethods();
+    void staticTemplateMethodSpecialization();
+    void detectDataStream();
+    void detectEnums();
+    void overrideCFunction();
+    void stdSortQList();
+    void stdSortQVector();
+    void templateCallOrder();
+    void virtualFunctionNoLongerPureVirtual();
+    void charSignedness() const;
+    void privateStaticTemplateMember() const;
+    void staticConstUnionWithInitializerList() const;
+};
 
 #if defined(Q_CC_HPACC)
 # define DONT_TEST_TEMPLATE_CONSTRUCTORS
@@ -58,40 +82,6 @@
 #if defined(Q_CC_SUN)
 # define DONT_TEST_STL_SORTING
 #endif
-
-QT_USE_NAMESPACE
-
-class tst_Compiler : public QObject
-{
-Q_OBJECT
-
-private slots:
-    void template_methods();
-#ifndef DONT_TEST_TEMPLATE_CONSTRUCTORS
-    void template_constructors();
-#endif
-    void template_subclasses();
-    void methodSpecialization();
-#ifndef DONT_TEST_CONSTRUCTOR_SPECIALIZATION
-    void constructorSpecialization();
-#endif
-    void staticTemplateMethods();
-    void staticTemplateMethodSpecialization();
-#ifndef DONT_TEST_DATASTREAM_DETECTION
-    void detectDataStream();
-#endif
-    void detectEnums();
-    void overrideCFunction();
-#ifndef DONT_TEST_STL_SORTING
-    void stdSortQList();
-    void stdSortQVector();
-#endif
-    void templateCallOrder();
-    void virtualFunctionNoLongerPureVirtual();
-    void charSignedness() const;
-    void privateStaticTemplateMember() const;
-    void staticConstUnionWithInitializerList() const;
-};
 
 class TemplateMethodClass
 {
@@ -129,6 +119,9 @@ void tst_Compiler::template_constructors()
     QCOMPARE(t2.i, 42);
     QCOMPARE(t3.i, 42);
 }
+#else
+void tst_Compiler::template_constructors()
+{ QSKIP("Compiler doesn't do template constructors"); }
 #endif
 
 template <typename T>
@@ -193,6 +186,9 @@ void tst_Compiler::constructorSpecialization()
     QCOMPARE(t2.i, 42);
     QCOMPARE(t3.i, 42);
 }
+#else
+void tst_Compiler::constructorSpecialization()
+{ QSKIP("Compiler doesn't do constructor specialization"); }
 #endif
 
 class StaticTemplateClass
@@ -313,6 +309,9 @@ void tst_Compiler::detectDataStream()
     QVERIFY(QtTestInternal::getSaveOperator<MyString>() != 0);
     QVERIFY(QtTestInternal::getSaveOperator<Qxxx>() == 0);
 }
+#else
+void tst_Compiler::detectDataStream()
+{ QSKIP("Compiler doesn't evaluate templates correctly"); }
 #endif
 
 enum Enum1 { Foo = 0, Bar = 1 };
@@ -346,9 +345,7 @@ void tst_Compiler::detectEnums()
     QVERIFY(QTestTypeInfo<Qt::MatchFlag>::IsEnum);
     QVERIFY(!QTestTypeInfo<Qt::MatchFlags>::IsEnum);
 }
-
 static int indicator = 0;
-
 
 // this is a silly C function
 extern "C" {
@@ -395,6 +392,11 @@ void tst_Compiler::stdSortQVector()
     QCOMPARE(strvec.value(0), QString("a"));
     QCOMPARE(strvec.value(1), QString("b"));
 }
+#else
+void tst_Compiler::stdSortQList()
+{ QSKIP("Compiler's STL broken"); }
+void tst_Compiler::stdSortQVector()
+{ QSKIP("Compiler's STL broken"); }
 #endif
 
 // the C func will set it to 1, the template to 2

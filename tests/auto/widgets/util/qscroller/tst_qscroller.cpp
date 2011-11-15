@@ -134,10 +134,8 @@ private slots:
     void staticScrollers();
     void scrollerProperties();
     void scrollTo();
-#if !defined(QT_NO_GESTURES) && !(defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6))
     void scroll();
     void overshoot();
-#endif
 };
 
 /*! \internal
@@ -383,10 +381,14 @@ void tst_QScroller::scrollTo()
     }
 }
 
-// Mac OS X < 10.6 does not support QTouchEvents.
-#if !defined(QT_NO_GESTURES) && !(defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6))
 void tst_QScroller::scroll()
 {
+#if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
+    return;
+#endif
+
+#ifndef QT_NO_GESTURES
     // -- good case. normal scroll
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();
     sw->scrollArea = QRectF(0, 0, 1000, 1000);
@@ -423,13 +425,17 @@ void tst_QScroller::scroll()
     QCOMPARE(sw->currentPos.y(), 500.0);
 
     delete sw;
-}
 #endif
+}
 
-// Mac OS X < 10.6 does not support QTouchEvents.
-#if !defined(QT_NO_GESTURES) && !(defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6))
 void tst_QScroller::overshoot()
 {
+#if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
+    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
+    return;
+#endif
+
+#ifndef QT_NO_GESTURES
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();
     sw->scrollArea = QRectF(0, 0, 1000, 1000);
     QScroller::grabGesture(sw, QScroller::TouchGesture);
@@ -522,8 +528,8 @@ void tst_QScroller::overshoot()
     QCOMPARE( sw->receivedOvershoot, false );
 
     delete sw;
-}
 #endif
+}
 
 QTEST_MAIN(tst_QScroller)
 

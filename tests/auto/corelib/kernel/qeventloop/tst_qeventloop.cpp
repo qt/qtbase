@@ -185,9 +185,7 @@ private slots:
     // This test *must* run first. See the definition for why.
     void processEvents();
     void exec();
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
     void throwInExec();
-#endif
     void reexec();
     void execAfterExit();
     void wakeUp();
@@ -318,14 +316,16 @@ void tst_QEventLoop::exec()
     }
 }
 
-// This test needs exceptions to be enabled.
-// Windows Mobile cannot handle cross library exceptions
-// qobject.cpp will try to rethrow the exception after handling
-// which causes gwes.exe to crash
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
 void tst_QEventLoop::throwInExec()
 {
-#if defined(Q_OS_LINUX)
+#if defined(QT_NO_EXCEPTIONS) || defined(NO_EVENTLOOP_EXCEPTIONS)
+    QSKIP("Exceptions are disabled");
+#elif defined(Q_OS_WINCE_WM)
+    // Windows Mobile cannot handle cross library exceptions
+    // qobject.cpp will try to rethrow the exception after handling
+    // which causes gwes.exe to crash
+    QSKIP("This platform doesn't support propagating exceptions through the event loop");
+#elif defined(Q_OS_LINUX)
     // C++ exceptions can't be passed through glib callbacks.  Skip the test if
     // we're using the glib event loop.
     QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
@@ -361,7 +361,6 @@ void tst_QEventLoop::throwInExec()
         QCOMPARE(caughtExceptions, 2);
     }
 }
-#endif
 
 void tst_QEventLoop::reexec()
 {

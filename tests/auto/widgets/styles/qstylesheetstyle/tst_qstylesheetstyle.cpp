@@ -79,9 +79,7 @@ private slots:
     void fontPropagation();
     void onWidgetDestroyed();
     void fontPrecedence();
-#if defined(Q_OS_WIN32) || defined(Q_OS_MAC) || (defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
     void focusColors();
-#endif
     void hoverColors();
     void background();
     void tabAlignement();
@@ -726,9 +724,6 @@ static bool testForColors(const QImage& image, const QColor& color, bool ensureP
     return false;
 }
 
-// This is a fragile test which fails on many esoteric platforms
-// because of focus problems.  Test only on Windows, Mac, and Linux/gcc.
-#if defined(Q_OS_WIN32) || defined(Q_OS_MAC) || (defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
 void tst_QStyleSheetStyle::focusColors()
 {
     // Tests if colors can be changed by altering the focus of the widget.
@@ -736,6 +731,10 @@ void tst_QStyleSheetStyle::focusColors()
     // is reached if at least ten pixels of the right color can be found in
     // the image.
     // For this reason, we use unusual and extremely ugly colors! :-)
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_MAC) && !(defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(Q_CC_INTEL))
+    QSKIP("This is a fragile test which fails on many esoteric platforms because of focus problems. "
+          "That doesn't mean that the feature doesn't work in practice.");
+#endif
     QList<QWidget *> widgets;
     widgets << new QPushButton("TESTING");
     widgets << new QLineEdit("TESTING");
@@ -792,7 +791,6 @@ void tst_QStyleSheetStyle::focusColors()
                 .toLocal8Bit().constData());
     }
 }
-#endif
 
 void tst_QStyleSheetStyle::hoverColors()
 {

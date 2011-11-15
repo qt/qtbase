@@ -75,9 +75,7 @@ private slots:
     void constructor();
     void iconSize();
     void toolButtonStyle();
-#ifndef Q_WS_WINCE_WM
     void menuBar();
-#endif
     void statusBar();
     void centralWidget();
     void corner();
@@ -105,9 +103,7 @@ private slots:
     void centralWidgetSize();
     void dockWidgetSize();
     void QTBUG2774_stylechange();
-#ifdef Q_OS_MAC
     void toggleUnifiedTitleAndToolBarOnMac();
-#endif
 };
 
 // Testing get/set functions
@@ -530,8 +526,6 @@ void tst_QMainWindow::toolButtonStyle()
     }
 }
 
-// With native menubar integration on Windows Mobile the menubar is not a child
-#ifndef Q_WS_WINCE_WM
 void tst_QMainWindow::menuBar()
 {
     {
@@ -547,6 +541,9 @@ void tst_QMainWindow::menuBar()
         mw.setMenuBar(mb1);
         QVERIFY(mw.menuBar() != 0);
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb1);
+#ifdef Q_WS_WINCE_WM
+        QSKIP("With native menubar integration the menubar is not a child");
+#endif
         QCOMPARE(mb1->parentWidget(), (QWidget *)&mw);
 
         mw.setMenuBar(0);
@@ -615,7 +612,6 @@ void tst_QMainWindow::menuBar()
         QVERIFY(!topRightCornerWidget);
     }
 }
-#endif
 
 void tst_QMainWindow::statusBar()
 {
@@ -1712,9 +1708,9 @@ void tst_QMainWindow::QTBUG2774_stylechange()
     }
 }
 
-#ifdef Q_OS_MAC
 void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
 {
+#ifdef Q_OS_MAC
     QMainWindow mw;
     QToolBar *tb = new QToolBar;
     tb->addAction("Test");
@@ -1726,8 +1722,11 @@ void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
     mw.setUnifiedTitleAndToolBarOnMac(true);
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
-}
+#else
+    QSKIP("Mac specific test");
 #endif
+}
+
 
 QTEST_MAIN(tst_QMainWindow)
 #include "tst_qmainwindow.moc"

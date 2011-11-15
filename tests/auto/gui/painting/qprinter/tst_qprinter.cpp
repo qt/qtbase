@@ -74,17 +74,13 @@ public slots:
 private slots:
     void getSetCheck();
 // Add your testfunctions and testdata create functions here
-#ifdef Q_WS_WIN
     void testPageSize();
-#endif
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
     void testSetOptions();
     void testMargins_data();
     void testMargins();
-#ifdef Q_OS_WIN
     void testNonExistentPrinter();
-#endif // Q_OS_WIN
     void testPageSetupDialog();
     void testMulitpleSets_data();
     void testMulitpleSets();
@@ -224,10 +220,11 @@ void tst_QPrinter::testPageSetupDialog()
     }
 }
 
-// QPrinter::winPageSize() does not exist for non-Windows platforms.
-#ifdef Q_WS_WIN
 void tst_QPrinter::testPageSize()
 {
+#ifndef Q_OS_WIN
+    QSKIP("QPrinter::winPageSize() does not exist for non-Windows platforms");
+#else
     QPrinter prn;
 
     prn.setPageSize(QPrinter::Letter);
@@ -245,8 +242,8 @@ void tst_QPrinter::testPageSize()
     prn.setWinPageSize(DMPAPER_A4);
     MYCOMPARE(prn.winPageSize(), DMPAPER_A4);
     MYCOMPARE(prn.pageSize(), QPrinter::A4);
-}
 #endif
+}
 
 void tst_QPrinter::testPageRectAndPaperRect_data()
 {
@@ -385,9 +382,11 @@ void tst_QPrinter::testMargins()
         delete painter;
 }
 
-#ifdef Q_OS_WIN
 void tst_QPrinter::testNonExistentPrinter()
 {
+#ifndef Q_OS_WIN
+    QSKIP("QPrinter::testNonExistentPrinter() is not relevant for this platform");
+#else
     QPrinter printer;
     QPainter painter;
 
@@ -415,8 +414,8 @@ void tst_QPrinter::testNonExistentPrinter()
     QCOMPARE(printer.printEngine()->metric(QPaintDevice::PdmPhysicalDpiY), 0);
 
     QVERIFY(!painter.begin(&printer));
+#endif
 }
-#endif // Q_OS_WIN
 
 void tst_QPrinter::testMulitpleSets_data()
 {

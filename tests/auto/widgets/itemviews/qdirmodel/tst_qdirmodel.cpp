@@ -54,14 +54,10 @@ class tst_QDirModel : public QObject
     Q_OBJECT
 public slots:
     void cleanupTestCase();
-#ifdef Q_OS_UNIX
     void init();
-#endif
 private slots:
     void getSetCheck();
-#ifdef Q_OS_UNIX
     void unreadable();
-#endif
     /*
     void construct();
     void rowCount();
@@ -87,9 +83,7 @@ private slots:
 
     void filePath();
 
-#ifdef Q_OS_UNIX
     void hidden();
-#endif
 
     void fileName();
     void fileName_data();
@@ -140,9 +134,9 @@ void tst_QDirModel::cleanupTestCase()
     current.rmdir(".qtest_hidden");
 }
 
-#ifdef Q_OS_UNIX
 void tst_QDirModel::init()
 {
+#ifdef Q_OS_UNIX
     if (QTest::currentTestFunction() == QLatin1String( "unreadable" )) {
         // Make sure that the unreadable file created by the unreadable()
         // test function doesn't already exist.
@@ -152,8 +146,8 @@ void tst_QDirModel::init()
             QVERIFY(!unreadableFile.exists());
         }
     }
-}
 #endif
+}
 
 /*
   tests
@@ -502,9 +496,11 @@ void tst_QDirModel::rowsAboutToBeRemoved()
     QVERIFY(rowsAboutToBeRemoved_cleanup(test_path));
 }
 
-#ifdef Q_OS_UNIX
 void tst_QDirModel::hidden()
 {
+#ifndef Q_OS_UNIX
+    QSKIP("Test not implemented on non-Unixes");
+#else
     QDir current;
     current.mkdir(".qtest_hidden");
 
@@ -520,8 +516,8 @@ void tst_QDirModel::hidden()
     model2.setFilter(model2.filter() | QDir::Hidden);
     index = model2.index(QDir::currentPath() + "/.qtest_hidden");
     QVERIFY(index.isValid());
-}
 #endif
+}
 
 void tst_QDirModel::fileName_data()
 {
@@ -543,9 +539,11 @@ void tst_QDirModel::fileName()
     QCOMPARE(model.fileName(model.index(path)), result);
 }
 
-#ifdef Q_OS_UNIX
 void tst_QDirModel::unreadable()
 {
+#ifndef Q_OS_UNIX
+    QSKIP("Test not implemented on non-Unixes");
+#else
     // Create an empty file which has no read permissions (file will be removed by cleanup()).
     QFile unreadableFile(QDir::currentPath() + "qtest_unreadable");
     QVERIFY2(unreadableFile.open(QIODevice::WriteOnly | QIODevice::Text), qPrintable(unreadableFile.errorString()));
@@ -563,8 +561,8 @@ void tst_QDirModel::unreadable()
     model2.setFilter(model2.filter() | QDir::Hidden);
     index = model2.index(QDir::currentPath() + "/qtest_unreadable");
     QVERIFY(!index.isValid());
-}
 #endif
+}
 
 void tst_QDirModel::filePath()
 {

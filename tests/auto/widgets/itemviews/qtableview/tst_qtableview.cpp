@@ -204,10 +204,8 @@ private slots:
     void taskQTBUG_8777_scrollToSpans();
     void taskQTBUG_10169_sizeHintForRow();
 
-#ifndef Q_OS_WINCE
     void mouseWheel_data();
     void mouseWheel();
-#endif
 
     void addColumnWhileEditing();
     void task234926_setHeaderSorting();
@@ -3638,8 +3636,6 @@ void tst_QTableView::task248688_autoScrollNavigation()
 }
 
 
-// Since different Windows CE versions sport different taskbars, we skip this test.
-#ifndef Q_OS_WINCE
 void tst_QTableView::mouseWheel_data()
 {
     QTest::addColumn<int>("scrollMode");
@@ -3660,6 +3656,9 @@ void tst_QTableView::mouseWheel_data()
 
 void tst_QTableView::mouseWheel()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Since different Windows CE versions sport different taskbars, we skip this test");
+#endif
 
     QFETCH(int, scrollMode);
     QFETCH(int, delta);
@@ -3693,7 +3692,6 @@ void tst_QTableView::mouseWheel()
     QApplication::sendEvent(view.viewport(), &verticalEvent);
     QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 10);
 }
-#endif
 
 void tst_QTableView::addColumnWhileEditing()
 {

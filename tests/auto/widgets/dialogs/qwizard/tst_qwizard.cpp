@@ -97,10 +97,8 @@ private slots:
     void setOption_HaveHelpButton();
     void setOption_HelpButtonOnRight();
     void setOption_HaveCustomButtonX();
-#ifndef Q_OS_WINCE
     void combinations_data();
     void combinations();
-#endif
     void showCurrentPageOnly();
     void setButtonText();
     void setCommitPage();
@@ -2020,8 +2018,6 @@ public:
     }
 };
 
-// Too much memory usage for testing on CE emulator.
-#ifndef Q_OS_WINCE
 void tst_QWizard::combinations_data()
 {
     CombinationsTestData combTestData;
@@ -2033,6 +2029,10 @@ void tst_QWizard::combinations_data()
 
 void tst_QWizard::combinations()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Too much memory usage for testing on CE emulator");
+#endif
+
     QFETCH(bool, ref);
     QFETCH(bool, testEquality);
     QFETCH(QList<Operation *>, operations);
@@ -2083,7 +2083,6 @@ void tst_QWizard::combinations()
         QVERIFY(false);
     }
 }
-#endif
 
 class WizardPage : public QWizardPage
 {

@@ -74,19 +74,13 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
-#ifdef Q_WS_X11
     void lineBreaking();
-#endif
     void simpleBoundingRect();
-#ifndef Q_WS_MAC
     void threeLineBoundingRect();
-#endif
     void boundingRectWithLongLineAndNoWrap();
     void forcedBreaks();
-#ifndef Q_WS_MAC
     void breakAny();
     void noWrap();
-#endif
     void cursorToXForInlineObjects();
     void cursorToXForSetColumns();
     void defaultWordSeparators_data();
@@ -94,14 +88,10 @@ private slots:
     void cursorMovementFromInvalidPositions();
     void cursorMovementInsideSpaces();
     void charWordStopOnLineSeparator();
-#ifndef Q_WS_MAC
     void xToCursorAtEndOfLine();
-#endif
     void boundingRectTopLeft();
     void charStopForSurrogatePairs();
-#ifndef Q_WS_MAC
     void tabStops();
-#endif
     void integerOverflow();
     void testDefaultTabs();
     void testTabs();
@@ -210,9 +200,9 @@ void tst_QTextLayout::cleanup()
     testFont = QFont();
 }
 
-#ifdef Q_WS_X11
 void tst_QTextLayout::lineBreaking()
 {
+#if defined(Q_WS_X11)
     struct Breaks {
 	const char *utf8;
 	uchar breaks[32];
@@ -289,8 +279,10 @@ void tst_QTextLayout::lineBreaking()
         QCOMPARE(b->breaks[i], (uchar)0xff);
         ++b;
     }
-}
+#else
+    QSKIP("This test can not be run on non-X11 platforms");
 #endif
+}
 
 void tst_QTextLayout::simpleBoundingRect()
 {
@@ -309,10 +301,11 @@ void tst_QTextLayout::simpleBoundingRect()
     QCOMPARE(layout.boundingRect(), QRectF(0, 0, width, QFontMetrics(testFont).height()));
 }
 
-// QTestFontEngine on the mac does not support logclusters at the moment.
-#ifndef Q_WS_MAC
 void tst_QTextLayout::threeLineBoundingRect()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
+#endif
     /* stricter check. break text into three lines */
 
     QString firstWord("hello");
@@ -364,7 +357,6 @@ void tst_QTextLayout::threeLineBoundingRect()
 
     QCOMPARE(layout.boundingRect(), QRectF(0, 0, longestLine, y + 1));
 }
-#endif
 
 void tst_QTextLayout::boundingRectWithLongLineAndNoWrap()
 {
@@ -428,10 +420,11 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(line.xToCursor(0), line.textStart());
 }
 
-// QTestFontEngine on the mac does not support logclusters at the moment.
-#ifndef Q_WS_MAC
 void tst_QTextLayout::breakAny()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
+#endif
     QString text = "ABCD";
 
     QTextLayout layout(text, testFont);
@@ -468,12 +461,12 @@ void tst_QTextLayout::breakAny()
 
     layout.endLayout();
 }
-#endif
 
-// QTestFontEngine on the mac does not support logclusters at the moment.
-#ifndef Q_WS_MAC
 void tst_QTextLayout::noWrap()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
+#endif
     QString text = "AB CD";
 
     QTextLayout layout(text, testFont);
@@ -494,7 +487,6 @@ void tst_QTextLayout::noWrap()
 
     layout.endLayout();
 }
-#endif
 
 void tst_QTextLayout::cursorToXForInlineObjects()
 {
@@ -614,10 +606,11 @@ void tst_QTextLayout::charWordStopOnLineSeparator()
     QVERIFY(attrs[1].charStop);
 }
 
-// QTestFontEngine on the mac does not support logclusters at the moment.
-#ifndef Q_WS_MAC
 void tst_QTextLayout::xToCursorAtEndOfLine()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
+#endif
     QString text = "FirstLine SecondLine";
     text.replace('\n', QChar::LineSeparator);
 
@@ -638,7 +631,6 @@ void tst_QTextLayout::xToCursorAtEndOfLine()
     line = layout.lineAt(1);
     QCOMPARE(line.xToCursor(100000), 20);
 }
-#endif
 
 void tst_QTextLayout::boundingRectTopLeft()
 {
@@ -676,10 +668,11 @@ void tst_QTextLayout::charStopForSurrogatePairs()
     QVERIFY(attrs[3].charStop);
 }
 
-// QTestFontEngine on the mac does not support logclusters at the moment.
-#ifndef Q_WS_MAC
 void tst_QTextLayout::tabStops()
 {
+#if defined(Q_WS_MAC)
+    QSKIP("QTestFontEngine on the mac does not support logclusters at the moment");
+#endif
     QString txt("Hello there\tworld");
     QTextLayout layout(txt, testFont);
     layout.beginLayout();
@@ -696,7 +689,6 @@ void tst_QTextLayout::tabStops()
 
     layout.endLayout();
 }
-#endif
 
 void tst_QTextLayout::integerOverflow()
 {

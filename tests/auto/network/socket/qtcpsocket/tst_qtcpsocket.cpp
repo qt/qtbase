@@ -177,16 +177,12 @@ private slots:
     void socketsInThreads();
     void waitForReadyReadInASlot();
     void remoteCloseError();
-#ifndef Q_OS_VXWORKS
     void openMessageBoxInErrorSlot();
-#endif
 #ifndef Q_OS_WIN
     void connectToLocalHostNoService();
 #endif
     void waitForConnectedInHostLookupSlot();
-#if !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS)
     void waitForConnectedInHostLookupSlot2();
-#endif
     void readyReadSignalsAfterWaitForReadyRead();
 #ifdef Q_OS_LINUX
     void linuxKernelBugLocalSocket();
@@ -197,9 +193,7 @@ private slots:
     void connectionRefused();
     void suddenRemoteDisconnect_data();
     void suddenRemoteDisconnect();
-#ifndef Q_OS_VXWORKS
     void connectToMultiIP();
-#endif
     void moveToThread0();
     void increaseReadBufferSize();
     void taskQtBug5799ConnectionErrorWaitForConnected();
@@ -225,9 +219,7 @@ protected slots:
     void downloadBigFileSlot();
     void recursiveReadyReadSlot();
     void waitForReadyReadInASlotSlot();
-#ifndef Q_OS_VXWORKS
     void messageBoxSlot();
-#endif
     void hostLookupSlot();
     void abortiveClose_abortSlot();
     void remoteCloseErrorSlot();
@@ -1826,10 +1818,9 @@ void tst_QTcpSocket::remoteCloseErrorSlot()
     static_cast<QTcpSocket *>(sender())->close();
 }
 
-// VxWorks has no default gui
-#ifndef Q_OS_VXWORKS
 void tst_QTcpSocket::messageBoxSlot()
 {
+#if !defined(Q_OS_VXWORKS) // no gui
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     socket->deleteLater();
     QMessageBox box;
@@ -1840,15 +1831,14 @@ void tst_QTcpSocket::messageBoxSlot()
 
     // Fire a non-0 singleshot to leave time for the delete
     QTimer::singleShot(250, this, SLOT(exitLoopSlot()));
-}
 #endif
-
+}
 //----------------------------------------------------------------------------------
-
-// VxWorks has no default gui
-#ifndef Q_OS_VXWORKS
 void tst_QTcpSocket::openMessageBoxInErrorSlot()
 {
+#if defined(Q_OS_VXWORKS) // no gui
+    QSKIP("no default gui available on VxWorks");
+#else
     QTcpSocket *socket = newSocket();
     QPointer<QTcpSocket> p(socket);
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(messageBoxSlot()));
@@ -1856,8 +1846,8 @@ void tst_QTcpSocket::openMessageBoxInErrorSlot()
     socket->connectToHost("hostnotfoundhostnotfound.troll.no", 9999); // Host not found, fyi
     enterLoop(30);
     QVERIFY(!p);
-}
 #endif
+}
 
 //----------------------------------------------------------------------------------
 #ifndef Q_OS_WIN
@@ -1978,10 +1968,12 @@ public slots:
 };
 
 //----------------------------------------------------------------------------------
-
-#if !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS)
 void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
 {
+#if defined(Q_OS_WIN) || defined(Q_OS_VXWORKS)
+    QSKIP("waitForConnectedInHostLookupSlot2 is not run on Windows and VxWorks");
+#else
+
     Foo foo;
     QPushButton top("Go", 0);
     top.show();
@@ -1996,8 +1988,8 @@ void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
 
     QVERIFY(foo.attemptedToConnect);
     QCOMPARE(foo.count, 1);
-}
 #endif
+}
 
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
@@ -2280,12 +2272,12 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 
 //----------------------------------------------------------------------------------
 
-// VxSim in standard config doesn't even run a DNS resolver.
-#ifndef Q_OS_VXWORKS
 void tst_QTcpSocket::connectToMultiIP()
 {
     QSKIP("TODO: setup DNS in the new network");
-
+#if defined(Q_OS_VXWORKS)
+    QSKIP("VxSim in standard config doesn't even run a DNS resolver");
+#else
     QFETCH_GLOBAL(bool, ssl);
     if (ssl)
         return;
@@ -2313,8 +2305,8 @@ void tst_QTcpSocket::connectToMultiIP()
     QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
     delete socket;
-}
 #endif
+}
 
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::moveToThread0()

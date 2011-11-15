@@ -100,10 +100,8 @@ private slots:
     void testEscapes();
     void testCaseSensitivity_data();
     void testCaseSensitivity();
-#if defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN)
     void testErrorHandling_data();
     void testErrorHandling();
-#endif
     void testIniParsing_data();
     void testIniParsing();
     void testChildKeysAndGroups_data();
@@ -127,7 +125,7 @@ private slots:
     void setPath();
     void setDefaultFormat();
     void dontCreateNeedlessPaths();
-#if !defined(Q_OS_WIN) && !defined(QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER)
+#if !defined(Q_OS_WIN)
     void dontReorderIniKeysNeedlessly();
 #endif
 #if defined(Q_OS_WIN)
@@ -650,8 +648,6 @@ void tst_QSettings::testByteArray()
     }
 }
 
-// Windows doesn't support most file modes, including read-only directories, so this test is moot.
-#if defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN)
 void tst_QSettings::testErrorHandling_data()
 {
     QTest::addColumn<int>("filePerms"); // -1 means file should not exist
@@ -682,7 +678,10 @@ void tst_QSettings::testErrorHandling_data()
 
 void tst_QSettings::testErrorHandling()
 {
-#if defined(Q_OS_UNIX)
+#ifdef QT_BUILD_INTERNAL
+#ifdef Q_OS_WIN
+    QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.");
+#elif defined(Q_OS_UNIX)
     if (::getuid() == 0)
         QSKIP("Running this test as root doesn't work, since file perms do not bother him");
 #else
@@ -744,9 +743,9 @@ void tst_QSettings::testErrorHandling()
         QCOMPARE(settings.value("alpha/beta/geometry").toInt(), 100);
         QCOMPARE((int)settings.status(), statusAfterSetAndSync);
     }
+#endif // !Q_OS_WIN
 #endif
 }
-#endif
 
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QSettings::Status)
@@ -2998,11 +2997,13 @@ void tst_QSettings::dontCreateNeedlessPaths()
     QVERIFY(!fileInfo.dir().exists());
 }
 
-// if QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER is defined,
-// the Qt build does not preserve ordering, as a code size optimization.
-#if !defined(Q_OS_WIN) && !defined(QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER)
+#if !defined(Q_OS_WIN)
 void tst_QSettings::dontReorderIniKeysNeedlessly()
 {
+#ifdef  QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
+    QSKIP("This Qt build does not preserve ordering, as a code size optimization.");
+#endif
+
     /*
         This is a very strong test. It asserts that modifying
         resourcefile2.ini will lead to the exact contents of

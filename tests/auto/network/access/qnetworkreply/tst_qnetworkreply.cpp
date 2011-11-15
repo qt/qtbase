@@ -263,7 +263,7 @@ private Q_SLOTS:
     void ioPutToFileFromSocket();
     void ioPutToFileFromLocalSocket_data();
     void ioPutToFileFromLocalSocket();
-#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
+#ifndef QT_NO_PROCESS
     void ioPutToFileFromProcess_data();
     void ioPutToFileFromProcess();
 #endif
@@ -3812,7 +3812,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
 }
 
 // Currently no stdin/out supported for Windows CE.
-#if !defined(QT_NO_PROCESS) && !defined(Q_OS_WINCE)
+#ifndef QT_NO_PROCESS
 void tst_QNetworkReply::ioPutToFileFromProcess_data()
 {
     putToFile_data();
@@ -3820,6 +3820,9 @@ void tst_QNetworkReply::ioPutToFileFromProcess_data()
 
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Currently no stdin/out supported for Windows CE");
+#else
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
         QSKIP("When passing a CR-LF-LF sequence through Windows stdio, it gets converted, "
@@ -3852,6 +3855,7 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QCOMPARE(file.size(), qint64(data.size()));
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
+#endif
 }
 #endif
 

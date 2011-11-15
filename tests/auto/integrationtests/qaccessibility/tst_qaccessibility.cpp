@@ -247,18 +247,14 @@ private slots:
     void abstractScrollAreaTest();
     void scrollAreaTest();
 
-    // Accessible table1 interface is no longer supported on X11,
-    // where it has been replaced by table2 interface.
-#ifndef Q_OS_UNIX
     void listViewTest();
     void treeWidgetTest();
     void tableWidgetTest();
     void tableViewTest();
-#else
+
     void table2ListTest();
     void table2TreeTest();
     void table2TableTest();
-#endif
 
     void calendarWidgetTest();
     void dockWidgetTest();
@@ -2469,12 +2465,11 @@ void tst_QAccessibility::scrollAreaTest()
     QTestAccessibility::clearEvents();
 }
 
-// Accessible table1 interface is no longer supported on X11,
-// where it has been replaced by table2 interface.
-#ifndef Q_OS_UNIX
-
 void tst_QAccessibility::listViewTest()
 {
+#if defined(Q_OS_UNIX)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.");
+#else
     {
         QListView listView;
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
@@ -2535,10 +2530,14 @@ void tst_QAccessibility::listViewTest()
     delete iface;
     }
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::treeWidgetTest()
 {
+#if defined(Q_OS_UNIX)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.");
+#else
     QWidget *w = new QWidget;
     QTreeWidget *tree = new QTreeWidget(w);
     QHBoxLayout *l = new QHBoxLayout(w);
@@ -2591,10 +2590,14 @@ void tst_QAccessibility::treeWidgetTest()
     delete w;
 
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::tableWidgetTest()
 {
+#if defined(Q_OS_UNIX)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.");
+#else
     {
     QWidget *topLevel = new QWidget;
     QTableWidget *w = new QTableWidget(8,4,topLevel);
@@ -2631,6 +2634,7 @@ void tst_QAccessibility::tableWidgetTest()
     delete topLevel;
     }
     QTestAccessibility::clearEvents();
+#endif
 }
 
 class QtTestTableModel: public QAbstractTableModel
@@ -2713,6 +2717,9 @@ public:
 
 void tst_QAccessibility::tableViewTest()
 {
+#if defined(Q_OS_UNIX)
+    QSKIP( "Accessible table1 interface is no longer supported on X11.");
+#else
     {
     QtTestTableModel *model = new QtTestTableModel(3, 4);
     QTableView *w = new QTableView();
@@ -2789,13 +2796,14 @@ void tst_QAccessibility::tableViewTest()
     delete model;
     }
     QTestAccessibility::clearEvents();
+#endif
 }
-
-#else
-// Test accessible table2 interface on unix
 
 void tst_QAccessibility::table2ListTest()
 {
+#if !defined(Q_OS_UNIX)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.");
+#else
     QListWidget *listView = new QListWidget;
     listView->addItem("Oslo");
     listView->addItem("Berlin");
@@ -2867,10 +2875,14 @@ void tst_QAccessibility::table2ListTest()
     delete iface;
     delete listView;
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::table2TreeTest()
 {
+#if !defined(Q_OS_UNIX)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.");
+#else
     QTreeWidget *treeView = new QTreeWidget;
     treeView->setColumnCount(2);
     QTreeWidgetItem *header = new QTreeWidgetItem;
@@ -2986,10 +2998,14 @@ void tst_QAccessibility::table2TreeTest()
 
     delete iface;
     QTestAccessibility::clearEvents();
+#endif
 }
 
 void tst_QAccessibility::table2TableTest()
 {
+#if !defined(Q_OS_UNIX)
+    QSKIP( "Accessible table2 interface is currently only supported on X11.");
+#else
     QTableWidget *tableView = new QTableWidget(3, 3);
     tableView->setColumnCount(3);
     QStringList hHeader;
@@ -3089,8 +3105,8 @@ void tst_QAccessibility::table2TableTest()
     delete tableView;
 
     QTestAccessibility::clearEvents();
-}
 #endif
+}
 
 void tst_QAccessibility::calendarWidgetTest()
 {
