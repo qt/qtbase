@@ -347,6 +347,30 @@ QRect QLineControl::cursorRect() const
     return QRect(cix-5, 0, w+9, ch);
 }
 
+QString QLineControl::text() const
+{
+    QString content = m_text;
+    if (!m_tentativeCommit.isEmpty())
+        content.insert(m_cursor, m_tentativeCommit);
+    QString res = m_maskData ? stripString(content) : content;
+    return (res.isNull() ? QString::fromLatin1("") : res);
+}
+
+// like text() but doesn't include preedit
+QString QLineControl::realText() const
+{
+    QString res = m_maskData ? stripString(m_text) : m_text;
+    return (res.isNull() ? QString::fromLatin1("") : res);
+}
+
+void QLineControl::setText(const QString &txt)
+{
+    if (composeMode())
+        qApp->inputPanel()->reset();
+    m_tentativeCommit.clear();
+    internalSetText(txt, -1, false);
+}
+
 /*!
     \internal
 
@@ -414,7 +438,7 @@ void QLineControl::moveCursor(int pos, bool mark)
 */
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
-    int priorState = 0;
+    int priorState = -1;
     bool isGettingInput = !event->commitString().isEmpty()
             || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
@@ -499,7 +523,15 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         emitCursorPositionChanged();
     else if (m_preeditCursor != oldPreeditCursor)
         emit updateMicroFocus();
-    if (isGettingInput)
+
+    bool tentativeCommitChanged = (m_tentativeCommit != event->tentativeCommitString());
+
+    if (tentativeCommitChanged) {
+        m_textDirty = true;
+        m_tentativeCommit = event->tentativeCommitString();
+    }
+
+    if (isGettingInput || tentativeCommitChanged)
         finishChange(priorState);
 
     if (selectionChange)
@@ -598,7 +630,6 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
         m_validInput = true;
 #ifndef QT_NO_VALIDATOR
         if (m_validator) {
-            m_validInput = false;
             QString textCopy = m_text;
             int cursorCopy = m_cursor;
             m_validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
@@ -608,6 +639,15 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
                     return true;
                 }
                 m_cursor = cursorCopy;
+
+                if (!m_tentativeCommit.isEmpty()) {
+                    textCopy.insert(m_cursor, m_tentativeCommit);
+                    bool validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
+                    if (!validInput)
+                        m_tentativeCommit.clear();
+                }
+            } else {
+                m_tentativeCommit.clear();
             }
         }
 #endif

@@ -61,6 +61,7 @@
 #include "QtGui/qvalidator.h"
 #include "QtGui/qpalette.h"
 #include "QtGui/qguiapplication.h"
+#include "QtGui/qinputpanel.h"
 #include "QtCore/qpoint.h"
 
 QT_BEGIN_HEADER
@@ -205,12 +206,10 @@ public:
     bool isReadOnly() const { return m_readOnly; }
     void setReadOnly(bool enable) { m_readOnly = enable; }
 
-    QString text() const
-    {
-        QString res = m_maskData ? stripString(m_text) : m_text;
-        return (res.isNull() ? QString::fromLatin1("") : res);
-    }
-    void setText(const QString &txt) { internalSetText(txt, -1, false); }
+    QString text() const;
+    QString realText() const;
+    void setText(const QString &txt);
+
     QString displayText() const { return m_textLayout.text(); }
 
     void backspace();
@@ -347,6 +346,7 @@ private:
     int m_cursor;
     int m_preeditCursor;
     int m_cursorWidth;
+    QString m_tentativeCommit;
     Qt::LayoutDirection m_layoutDirection;
     uint m_hideCursor : 1; // used to hide the m_cursor inside preedit areas
     uint m_separator : 1;
