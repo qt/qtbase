@@ -277,13 +277,6 @@
 #    endif
 #  endif
 
-#   if !defined(PNG_IMPEXP)
-#       include <qconfig.h>
-#       if defined(QT_VISIBILITY_AVAILABLE)
-#           define PNG_IMPEXP __attribute__((visibility("default")))
-#       endif
-#   endif
-
 #  ifndef PNG_IMPEXP
 #    define PNG_IMPEXP
 #  endif
