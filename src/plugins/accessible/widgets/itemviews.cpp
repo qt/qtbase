@@ -851,10 +851,9 @@ int QAccessibleTable2Cell::navigate(RelationFlag relation, int index, QAccessibl
     case Sibling:
         if (index > 0) {
             QAccessibleInterface *parent = queryAccessibleInterface(view);
-            int ret = parent->navigate(QAccessible::Child, index, iface);
+            *iface = parent->child(index - 1);
             delete parent;
-            if (*iface)
-                return ret;
+            return *iface ? 0 : -1;
         }
         return -1;
 

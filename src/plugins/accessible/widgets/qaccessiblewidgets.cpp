@@ -1419,9 +1419,6 @@ int QAccessibleTitleBar::navigate(RelationFlag relation, int entry, QAccessibleI
     case Ancestor:
         *iface = parent();
         return iface ? 0 : -1;
-    case Sibling:
-        return navigate(Child, entry, iface);
-        break;
     default:
         break;
     }

@@ -272,50 +272,45 @@ QAccessibleInterface *QAccessibleMenuItem::child(int index) const
     return 0;
 }
 
-int QAccessibleMenuItem::navigate(RelationFlag relation, int entry, QAccessibleInterface ** target ) const
+int QAccessibleMenuItem::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
-    int ret = -1;
     if (entry < 0) {
         *target = 0;
-        return ret;
+        return -1;
     }
 
     switch (relation) {
     case Child:
         *target = child(entry - 1);
-        ret = *target ? 0 : -1;
         break;
     case Ancestor:
         *target = parent();
-        return 0;
+        break;
     case Up:
     case Down:{
-        QAccessibleInterface *parent = 0;
-        int ent = navigate(Ancestor, 1, &parent);
-        if (ent == 0) {
-            int index = parent->indexOfChild(this);
+        QAccessibleInterface *parentIface = parent();
+        if (parentIface) {
+            int index = parentIface->indexOfChild(this);
             if (index != -1) {
                 index += (relation == Down ? +1 : -1);
-                ret = parent->navigate(Child, index, target);
+                *target = parentIface->child(index - 1);
             }
         }
-        delete parent;
-        break;}
+        delete parentIface;
+        break;
+    }
     case Sibling: {
-        QAccessibleInterface *parent = 0;
-        int ent = navigate(Ancestor, 1, &parent);
-        if (ent == 0) {
-            ret = parent->navigate(Child, entry, target);
-        }
-        delete parent;
-        break;}
+        QAccessibleInterface *parentIface = parent();
+        if (parentIface)
+            *target = parentIface->child(entry - 1);
+        delete parentIface;
+        break;
+    }
     default:
         break;
 
     }
-    if (ret == -1)
-        *target = 0;
-    return ret;
+    return *target ? 0 : -1;
 }
 
 QObject *QAccessibleMenuItem::object() const

@@ -172,8 +172,7 @@ static int verifyHierarchy(QAccessibleInterface *iface)
         if2 = iface->child(i);
         EXPECT(if2 != 0);
         // navigate Ancestor...
-        QAccessibleInterface *parent = 0;
-        parent = if2->parent();
+        QAccessibleInterface *parent = if2->parent();
         EXPECT(iface->object() == parent->object());
         delete parent;
 
@@ -1533,8 +1532,8 @@ void tst_QAccessibility::menuTest()
     QAccessibleInterface *iface2 = 0;
 
     // traverse siblings with navigate(Sibling, ...)
-    int entry = interface->navigate(QAccessible::Child, 1, &iface);
-    QCOMPARE(entry, 0);
+    int entry;
+    iface = interface->child(0);
     QVERIFY(iface);
     QCOMPARE(iface->role(), QAccessible::MenuItem);
 
@@ -1555,8 +1554,7 @@ void tst_QAccessibility::menuTest()
     delete iface;
 
     // traverse menu items with navigate(Down, ...)
-    entry = interface->navigate(QAccessible::Child, 1, &iface);
-    QCOMPARE(entry, 0);
+    iface = interface->child(0);
     QVERIFY(iface);
     QCOMPARE(iface->role(), QAccessible::MenuItem);
 
@@ -1571,8 +1569,7 @@ void tst_QAccessibility::menuTest()
     delete iface;
 
     // traverse menu items with navigate(Up, ...)
-    entry = interface->navigate(QAccessible::Child, interface->childCount(), &iface);
-    QCOMPARE(entry, 0);
+    iface = interface->child(interface->childCount() - 1);
     QVERIFY(iface);
     QCOMPARE(iface->role(), QAccessible::MenuItem);
 
@@ -1587,13 +1584,12 @@ void tst_QAccessibility::menuTest()
     delete iface;
 
     // "New" item
-    entry = interface->navigate(QAccessible::Child, 1, &iface);
-    QCOMPARE(entry, 0);
+    iface = interface->child(0);
     QVERIFY(iface);
     QCOMPARE(iface->role(), QAccessible::MenuItem);
 
     // "New" menu
-    entry = iface->navigate(QAccessible::Child, 1, &iface2);
+    iface2 = iface->child(0);
     delete iface;
     iface = iface2;
     QCOMPARE(entry, 0);
@@ -1601,10 +1597,9 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iface->role(), QAccessible::PopupMenu);
 
     // "Text file" menu item
-    entry = iface->navigate(QAccessible::Child, 1, &iface2);
+    iface2 = iface->child(0);
     delete iface;
     iface = iface2;
-    QCOMPARE(entry, 0);
     QVERIFY(iface);
     QCOMPARE(iface->role(), QAccessible::MenuItem);
 
@@ -1905,8 +1900,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     if (isSubWindowsPlacedNextToEachOther) {
         // This part of the test can only be run if the sub windows are
         // placed next to each other.
-        QAccessibleInterface *destination = 0;
-        QCOMPARE(interface->navigate(QAccessible::Child, 1, &destination), 0);
+        QAccessibleInterface *destination = interface->child(0);
         QVERIFY(destination);
         QCOMPARE(destination->object(), (QObject*)testWindow->widget());
         delete destination;

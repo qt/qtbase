@@ -109,7 +109,7 @@ InterfaceChildPair WidgetNavigator::find(QAccessible::Text textType, const QStri
 }
 
 /*
-    Recursiveley navigates the accessible hiearchy looking for an interfafce that
+    Recursiveley navigates the accessible hiearchy looking for an interface that
     passsed the Test (meaning it returns true).
 */
 InterfaceChildPair WidgetNavigator::recursiveSearch(TestBase *test, QAccessibleInterface *iface, int possibleChild)
@@ -128,13 +128,10 @@ InterfaceChildPair WidgetNavigator::recursiveSearch(TestBase *test, QAccessibleI
 
         const int numChildren = testInterface.iface->childCount();
         for (int i = 0; i < numChildren; ++i) {
-            QAccessibleInterface *childInterface = 0;
-            int newPossibleChild = testInterface.iface->navigate(QAccessible::Child, i + 1, &childInterface);
+            QAccessibleInterface *childInterface = testInterface.iface->child(i);
             if (childInterface) {
-                todoInterfaces.push(InterfaceChildPair(childInterface, newPossibleChild));
+                todoInterfaces.push(InterfaceChildPair(childInterface, 0));
                 deleteInDestructor(childInterface);
-            } else if (newPossibleChild != -1) {
-                todoInterfaces.push(InterfaceChildPair(testInterface.iface, newPossibleChild));
             }
         }
     }

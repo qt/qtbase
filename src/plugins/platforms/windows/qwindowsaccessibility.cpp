@@ -824,8 +824,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
     case NAVDIR_NEXT:
     case NAVDIR_PREVIOUS:
         if (!varStart.lVal){
-            QAccessibleInterface *parent = 0;
-            accessible->navigate(Ancestor, 1, &parent);
+            QAccessibleInterface *parent = accessible->parent();
             if (parent) {
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
@@ -944,8 +943,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accParent(IDispatch** ppdispPa
     if (!accessible->isValid())
         return E_FAIL;
 
-    QAccessibleInterface *acc = 0;
-    accessible->navigate(Ancestor, 1, &acc);
+    QAccessibleInterface *acc = accessible->parent();
     if (acc) {
         QWindowsAccessible* wacc = new QWindowsAccessible(acc);
         wacc->QueryInterface(IID_IDispatch, (void**)ppdispParent);

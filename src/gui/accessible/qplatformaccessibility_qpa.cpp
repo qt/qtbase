@@ -88,8 +88,7 @@ void QPlatformAccessibility::notifyAccessibilityUpdate(QObject *o,
 
     // updates for List/Table/Tree should send child
     if (who) {
-        QAccessibleInterface *child;
-        iface->navigate(QAccessible::Child, who, &child);
+        QAccessibleInterface *child = iface->child(who - 1);
         if (child) {
             delete iface;
             iface = child;

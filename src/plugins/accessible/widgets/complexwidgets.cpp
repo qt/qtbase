@@ -512,12 +512,11 @@ int QAccessibleItemRow::navigate(RelationFlag relation, int index,
         return index;}
     case Sibling:
         if (index) {
-            QAccessibleInterface *ifaceParent = 0;
-            navigate(Ancestor, 1, &ifaceParent);
+            QAccessibleInterface *ifaceParent = parent();
             if (ifaceParent) {
-                int entry = ifaceParent->navigate(Child, index, iface);
+                *iface = ifaceParent->child(index - 1);
                 delete ifaceParent;
-                return entry;
+                return *iface ? 0 : -1;
             }
         }
         return -1;
@@ -589,11 +588,11 @@ QAccessible::State QAccessibleItemRow::state(int child) const
     if (!view)
         return st;
 
-    QAccessibleInterface *parent = 0;
+    QAccessibleInterface *parentIface = parent();
     QRect globalRect;
-    if (navigate(Ancestor, 1, &parent) == 0) {
-        globalRect = parent->rect(0);
-        delete parent;
+    if (parentIface) {
+        globalRect = parentIface->rect(0);
+        delete parentIface;
     }
     if (!globalRect.intersects(rect(child)))
         st |= Invisible;
@@ -998,11 +997,11 @@ void QAccessibleItemView::setText(Text t, int child, const QString &text)
     }
 }
 
-QRect QAccessibleItemView::rect(int child) const
+QRect QAccessibleItemView::rect(int childIndex) const
 {
     if (atViewport()) {
         QRect r;
-        if (!child) {
+        if (!childIndex) {
             // Make sure that the rect *include* the vertical and horizontal headers, while
             // not including the potential vertical and horizontal scrollbars.
             QAbstractItemView *w = itemView();
@@ -1025,16 +1024,16 @@ QRect QAccessibleItemView::rect(int child) const
                 r.adjust(0, 0, -vscrollWidth, -hscrollHeight);
             }
         } else {
-            QAccessibleInterface *iface = 0;
-            if (navigate(Child, child, &iface) == 0) {
+            QAccessibleInterface *iface = child(childIndex - 1);
+            if (iface) {
                 r = iface->rect(0);
                 delete iface;
             }
         }
         return r;
     } else {
-        QRect r = QAccessibleAbstractScrollArea::rect(child);
-        if (child == 1) {
+        QRect r = QAccessibleAbstractScrollArea::rect(childIndex);
+        if (childIndex == 1) {
             // include the potential vertical and horizontal headers
 
             const QHeaderView *header = verticalHeader();
