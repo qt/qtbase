@@ -659,9 +659,16 @@ Option::fixString(QString string, uchar flags)
     if(string.length() > 2 && string[0].isLetter() && string[1] == QLatin1Char(':'))
         string[0] = string[0].toLower();
 
+    bool localSep = (flags & Option::FixPathToLocalSeparators) != 0;
+    bool targetSep = (flags & Option::FixPathToTargetSeparators) != 0;
+    bool normalSep = (flags & Option::FixPathToNormalSeparators) != 0;
+
+    // either none or only one active flag
+    Q_ASSERT(localSep + targetSep + normalSep <= 1);
     //fix separators
-    Q_ASSERT(!((flags & Option::FixPathToLocalSeparators) && (flags & Option::FixPathToTargetSeparators)));
-    if(flags & Option::FixPathToLocalSeparators) {
+    if (flags & Option::FixPathToNormalSeparators) {
+        string = string.replace('\\', '/');
+    } else if (flags & Option::FixPathToLocalSeparators) {
 #if defined(Q_OS_WIN32)
         string = string.replace('/', '\\');
 #else

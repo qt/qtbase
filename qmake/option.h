@@ -115,7 +115,8 @@ struct Option
         FixEnvVars              = 0x01,
         FixPathCanonicalize     = 0x02,
         FixPathToLocalSeparators  = 0x04,
-        FixPathToTargetSeparators = 0x08
+        FixPathToTargetSeparators = 0x08,
+        FixPathToNormalSeparators = 0x10
     };
     static QString fixString(QString string, uchar flags);
 
@@ -135,6 +136,15 @@ struct Option
         if(fix_env)
             flags |= FixEnvVars;
         if(canonical)
+            flags |= FixPathCanonicalize;
+        return fixString(in, flags);
+    }
+    inline static QString normalizePath(const QString &in, bool fix_env=true, bool canonical=true)
+    {
+        uchar flags = FixPathToNormalSeparators;
+        if (fix_env)
+            flags |= FixEnvVars;
+        if (canonical)
             flags |= FixPathCanonicalize;
         return fixString(in, flags);
     }
