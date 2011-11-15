@@ -835,17 +835,6 @@ void Moc::generate(FILE *out)
     fprintf(out, "QT_END_MOC_NAMESPACE\n");
 }
 
-
-QList<QMetaObject*> Moc::generate(bool ignoreProperties)
-{
-    QList<QMetaObject*> result;
-    for (int i = 0; i < classList.size(); ++i) {
-        Generator generator(&classList[i], metaTypes);
-        result << generator.generateMetaObject(ignoreProperties);
-    }
-    return result;
-}
-
 void Moc::parseSlots(ClassDef *def, FunctionDef::Access access)
 {
     int defaultRevision = -1;

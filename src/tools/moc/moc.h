@@ -209,7 +209,6 @@ public:
 
     void parse();
     void generate(FILE *out);
-    QList<QMetaObject*> generate(bool ignoreProperties);
 
     bool parseClassHead(ClassDef *def);
     inline bool inClass(const ClassDef *def) const {

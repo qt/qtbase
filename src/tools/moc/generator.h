@@ -54,7 +54,6 @@ class Generator
 public:
     Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile = 0);
     void generateCode();
-    QMetaObject *generateMetaObject(bool ignoreProperties);
 private:
     void generateClassInfos();
     void generateFunctions(QList<FunctionDef> &list, const char *functype, int type);
@@ -64,12 +63,6 @@ private:
     void generateMetacall();
     void generateStaticMetacall();
     void generateSignal(FunctionDef *def, int index);
-
-    // used by binary QMetaObject generator
-    void _generateClassInfos();
-    void _generateFunctions(QList<FunctionDef> &list, int type);
-    void _generateEnums(int index);
-    void _generateProperties();
 
     int strreg(const char *); // registers a string and returns its id
     QList<QByteArray> strings;
