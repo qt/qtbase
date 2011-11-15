@@ -42,6 +42,7 @@
 
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFramebufferObject>
+#include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
@@ -55,6 +56,7 @@ Q_OBJECT
 
 private slots:
     void sharedResourceCleanup();
+    void multiGroupSharedResourceCleanup();
     void fboSimpleRendering();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
@@ -170,6 +172,27 @@ void tst_QOpenGL::sharedResourceCleanup()
     QCOMPARE(tracker.invalidateResourceCalls, 1);
     QCOMPARE(tracker.freeResourceCalls, 0);
     QCOMPARE(tracker.destructorCalls, 1);
+}
+
+void tst_QOpenGL::multiGroupSharedResourceCleanup()
+{
+    QWindow window;
+    window.setGeometry(0, 0, 10, 10);
+    window.create();
+
+    for (int i = 0; i < 10; ++i) {
+        QOpenGLContext *gl = new QOpenGLContext();
+        gl->create();
+        gl->makeCurrent(&window);
+        {
+            // Cause QOpenGLMultiGroupSharedResource instantiation.
+            QOpenGLFunctions func(gl);
+        }
+        delete gl;
+        // Cause context group's deleteLater() to be processed.
+        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    }
+    // Shouldn't crash when application exits.
 }
 
 static bool fuzzyComparePixels(const QRgb testPixel, const QRgb refPixel, const char* file, int line, int x = -1, int y = -1)

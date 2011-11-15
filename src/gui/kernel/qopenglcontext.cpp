@@ -404,6 +404,15 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
 
 void QOpenGLContextGroupPrivate::cleanup()
 {
+    Q_Q(QOpenGLContextGroup);
+    {
+        QHash<QOpenGLMultiGroupSharedResource *, QOpenGLSharedResource *>::const_iterator it, end;
+        end = m_resources.constEnd();
+        for (it = m_resources.constBegin(); it != end; ++it)
+            it.key()->cleanup(q, it.value());
+        m_resources.clear();
+    }
+
     QList<QOpenGLSharedResource *>::iterator it = m_sharedResources.begin();
     QList<QOpenGLSharedResource *>::iterator end = m_sharedResources.end();
 
@@ -581,29 +590,15 @@ QList<QOpenGLSharedResource *> QOpenGLMultiGroupSharedResource::resources() cons
     return result;
 }
 
-void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContext *ctx)
-{
-    QOpenGLSharedResource *resource = value(ctx);
-
-    if (resource != 0) {
-        resource->free();
-
-        QOpenGLContextGroup *group = ctx->shareGroup();
-        group->d_func()->m_resources.remove(this);
-        m_groups.removeOne(group);
-        active.deref();
-    }
-}
-
-void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContext *ctx, QOpenGLSharedResource *value)
+void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContextGroup *group, QOpenGLSharedResource *value)
 {
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
-    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
+    qDebug("Cleaning up context group resource %p, for group %p in thread %p.", this, group, QThread::currentThread());
 #endif
     value->free();
     active.deref();
 
-    QOpenGLContextGroup *group = ctx->shareGroup();
+    Q_ASSERT(m_groups.contains(group));
     m_groups.removeOne(group);
 }
 

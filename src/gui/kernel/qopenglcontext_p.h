@@ -138,8 +138,6 @@ public:
 
     QList<QOpenGLSharedResource *> m_sharedResources;
     QList<QOpenGLSharedResource *> m_pendingDeletion;
-
-    void cleanupResources(QOpenGLContext *ctx);
 };
 
 class Q_GUI_EXPORT QOpenGLMultiGroupSharedResource
@@ -149,8 +147,7 @@ public:
     ~QOpenGLMultiGroupSharedResource();
 
     void insert(QOpenGLContext *context, QOpenGLSharedResource *value);
-    void cleanup(QOpenGLContext *context);
-    void cleanup(QOpenGLContext *context, QOpenGLSharedResource *value);
+    void cleanup(QOpenGLContextGroup *group, QOpenGLSharedResource *value);
 
     QOpenGLSharedResource *value(QOpenGLContext *context);
 
@@ -219,8 +216,6 @@ public:
     bool workaround_brokenTexSubImage;
 
     QPaintEngineEx *active_engine;
-
-    QHash<QOpenGLMultiGroupSharedResource *, void *> m_resources;
 
     static void setCurrentContext(QOpenGLContext *context);
 
