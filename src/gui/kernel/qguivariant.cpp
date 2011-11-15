@@ -98,6 +98,7 @@ Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler = 0;
 
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
+namespace {
 template<typename T>
 struct TypeDefiniton {
     static const bool IsAvailable = true;
@@ -141,6 +142,7 @@ struct CoreAndGuiTypesFilter {
         static const bool IsAccepted = (QTypeModuleInfo<T>::IsCore || QTypeModuleInfo<T>::IsGui) && TypeDefiniton<T>::IsAvailable;
     };
 };
+} // namespace
 
 static void construct(QVariant::Private *x, const void *copy)
 {

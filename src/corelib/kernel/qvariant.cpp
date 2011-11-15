@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 #  define FLT_DIG 6
 #endif
 
+namespace {
 template<typename T>
 struct TypeDefiniton {
     static const bool IsAvailable = true;
@@ -99,6 +100,7 @@ struct CoreTypesFilter {
         static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefiniton<T>::IsAvailable;
     };
 };
+} // namspace
 
 static void construct(QVariant::Private *x, const void *copy)
 {
