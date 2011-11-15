@@ -198,3 +198,5 @@ bool QSslCertificateExtension::isSupported() const
 {
     return d->supported;
 }
+
+QT_END_NAMESPACE

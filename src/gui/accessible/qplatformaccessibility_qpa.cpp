@@ -45,6 +45,8 @@
 #include "qaccessiblebridge.h"
 #include <QtGui/QGuiApplication>
 
+QT_BEGIN_NAMESPACE
+
 /* accessiblebridge plugin discovery stuff */
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
@@ -134,7 +136,6 @@ void QPlatformAccessibility::initialize()
             QAccessibleBridge * bridge = factory->create(l.at(i));
             if (bridge) {
                 bridges()->append(bridge);
-#
             }
         }
     }
@@ -146,3 +147,4 @@ void QPlatformAccessibility::cleanup()
     qDeleteAll(*bridges());
 }
 
+QT_END_NAMESPACE

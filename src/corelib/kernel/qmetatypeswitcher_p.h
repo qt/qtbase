@@ -55,6 +55,8 @@
 // We mean it.
 //
 
+QT_BEGIN_NAMESPACE
+
 class QMetaTypeSwitcher {
 public:
 
@@ -97,5 +99,7 @@ ReturnType QMetaTypeSwitcher::switcher(DelegateObject &logic, int type, const vo
 #undef QT_METATYPE_SWICHER_CASE_PRIMITIVE_POINTER
 #undef QT_METATYPE_SWICHER_CASE_QCLASS
 #undef QT_METATYPE_SWICHER_CASE_POINTER
+
+QT_END_NAMESPACE
 
 #endif // QMETATYPESWITCHER_P_H
