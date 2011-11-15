@@ -59,7 +59,7 @@ static void my_terminate_handler()
     exit(1);
 }
 
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && !defined(__UCLIBC__)
 /* Use glibc's memory allocation hooks */
 
 // From glibc 2.14, the malloc hook variables are declared volatile.
@@ -194,6 +194,12 @@ static struct QCrtDebugRegistrator
     }
 
 } crtDebugRegistrator;
+
+#else
+
+static void disableHooks()
+{
+}
 
 #endif
 
