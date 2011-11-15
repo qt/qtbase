@@ -50,7 +50,11 @@
 #include <qlocale.h>
 #include <qnumeric.h>
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
+#    define QT_USE_FENV
+#endif
+
+#ifdef QT_USE_FENV
 #    include <fenv.h>
 #endif
 
@@ -729,7 +733,7 @@ void tst_QLocale::fpExceptions()
     _control87( 0 | _EM_INEXACT, _MCW_EM );
 #endif
 
-#ifdef Q_OS_LINUX
+#ifdef QT_USE_FENV
     fenv_t envp;
     fegetenv(&envp);
     feclearexcept(FE_ALL_EXCEPT);
@@ -747,7 +751,7 @@ void tst_QLocale::fpExceptions()
     _control87(oldbits, 0xFFFFF);
 #endif
 
-#ifdef Q_OS_LINUX
+#ifdef QT_USE_FENV
     fesetenv(&envp);
 #endif
 }

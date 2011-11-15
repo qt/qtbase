@@ -2598,7 +2598,7 @@ void tst_QPainter::monoImages()
     }
 }
 
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS)
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_CC_MSVC) && !defined(Q_OS_SOLARIS) && !defined(__UCLIBC__)
 #include <fenv.h>
 
 static const QString fpeExceptionString(int exception)
