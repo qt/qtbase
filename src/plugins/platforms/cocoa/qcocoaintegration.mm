@@ -59,7 +59,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFileDialog>
 
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,7 +87,7 @@ QCocoaScreen::~QCocoaScreen()
 }
 
 QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QBasicFontDatabase())
+    : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
 {
     mPool = new QCocoaAutoReleasePool;

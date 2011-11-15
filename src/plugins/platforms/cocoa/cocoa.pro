@@ -51,12 +51,10 @@ HEADERS += qcocoaintegration.h \
 FORMS += $$PWD/../../../widgets/dialogs/qfiledialog.ui
 RESOURCES += qcocoaresources.qrc
 
-#add libz for freetype.
-LIBS += -lz -framework Cocoa
+LIBS += -framework Cocoa
 
 QT += core-private gui-private widgets-private platformsupport-private
 
-CONFIG += qpa/basicunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 

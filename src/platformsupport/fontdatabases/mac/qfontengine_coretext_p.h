@@ -43,6 +43,8 @@
 #define QFONTENGINE_CORETEXT_P_H
 
 #include <private/qfontengine_p.h>
+#include <private/qcore_mac_p.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 

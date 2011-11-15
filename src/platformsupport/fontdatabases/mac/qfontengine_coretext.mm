@@ -135,7 +135,7 @@ void QCoreTextFontEngineMulti::init(bool kerning)
     attributeDict = CFDictionaryCreateMutable(0, 2,
                                        &kCFTypeDictionaryKeyCallBacks,
                                        &kCFTypeDictionaryValueCallBacks);
-    CFDictionaryAddValue(attributeDict, NSFontAttributeName, ctfont);
+    CFDictionaryAddValue(attributeDict, kCTFontAttributeName, ctfont);
     if (!kerning) {
         float zero = 0.0;
         QCFType<CFNumberRef> noKern = CFNumberCreate(kCFAllocatorDefault, kCFNumberFloatType, &zero);
@@ -257,7 +257,7 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             //NSLog(@"Dictionary %@", runAttribs);
             if (!runAttribs)
                 runAttribs = attributeDict;
-            CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, NSFontAttributeName));
+            CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, kCTFontAttributeName));
             uint fontIndex = fontIndexForFont(runFont);
             const QFontEngine *engine = engineAt(fontIndex);
             fontIndex <<= 24;
@@ -437,7 +437,19 @@ QCoreTextFontEngine::~QCoreTextFontEngine()
     CFRelease(ctfont);
 }
 
-extern QFont::Weight weightFromInteger(int weight); // qfontdatabase.cpp
+static QFont::Weight weightFromInteger(int weight)
+{
+    if (weight < 400)
+        return QFont::Light;
+    else if (weight < 600)
+        return QFont::Normal;
+    else if (weight < 700)
+        return QFont::DemiBold;
+    else if (weight < 800)
+        return QFont::Bold;
+    else
+        return QFont::Black;
+}
 
 int getTraitValue(CFDictionaryRef allTraits, CFStringRef trait)
 {
