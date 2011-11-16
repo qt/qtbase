@@ -84,7 +84,7 @@ struct QDBusSlotCache
     {
         int flags;
         int slotIdx;
-        QList<int> metaTypes;
+        QVector<int> metaTypes;
     };
     typedef QMultiHash<QString, Data> Hash;
     Hash hash;
@@ -94,7 +94,7 @@ class QDBusCallDeliveryEvent: public QMetaCallEvent
 {
 public:
     QDBusCallDeliveryEvent(const QDBusConnection &c, int id, QObject *sender,
-                           const QDBusMessage &msg, const QList<int> &types, int f = 0)
+                           const QDBusMessage &msg, const QVector<int> &types, int f = 0)
         : QMetaCallEvent(0, id, 0, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
         { }
 
@@ -106,7 +106,7 @@ public:
 private:
     QDBusConnection connection; // just for refcounting
     QDBusMessage message;
-    QList<int> metaTypes;
+    QVector<int> metaTypes;
     int flags;
 };
 

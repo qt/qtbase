@@ -296,7 +296,7 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
         realObject = realObject->parent();
 
     // break down the parameter list
-    QList<int> types;
+    QVector<int> types;
     int inputCount = qDBusParametersForMethod(mm, types);
     if (inputCount == -1)
         // invalid signal signature

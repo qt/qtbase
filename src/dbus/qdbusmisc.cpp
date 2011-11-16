@@ -126,7 +126,7 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 // metaTypes.count() >= retval + 1 in all cases
 //
 // sig must be the normalised signature for the method
-int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes)
+int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
 {
     QDBusMetaTypeId::init();
 

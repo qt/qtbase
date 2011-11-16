@@ -168,7 +168,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             continue;           // wasn't a valid type
 
         QList<QByteArray> names = mm.parameterNames();
-        QList<int> types;
+        QVector<int> types;
         int inputCount = qDBusParametersForMethod(mm, types);
         if (inputCount == -1)
             continue;           // invalid form

@@ -624,7 +624,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
 }
 
 static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
-                    const QString &signature_, QList<int>& metaTypes)
+                    const QString &signature_, QVector<int> &metaTypes)
 {
     QByteArray msgSignature = signature_.toLatin1();
 
@@ -724,7 +724,7 @@ static QDBusCallDeliveryEvent * const DIRECT_DELIVERY = (QDBusCallDeliveryEvent 
 
 QDBusCallDeliveryEvent* QDBusConnectionPrivate::prepareReply(QDBusConnectionPrivate *target,
                                                              QObject *object, int idx,
-                                                             const QList<int> &metaTypes,
+                                                             const QVector<int> &metaTypes,
                                                              const QDBusMessage &msg)
 {
     Q_ASSERT(object);
@@ -862,7 +862,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
 }
 
 void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const QDBusMessage &msg,
-                                         const QList<int> &metaTypes, int slotIdx)
+                                         const QVector<int> &metaTypes, int slotIdx)
 {
     Q_ASSERT_X(!object || QThread::currentThread() == object->thread(),
                "QDBusConnection: internal threading error",
@@ -1238,7 +1238,7 @@ void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
 }
 
 int QDBusConnectionPrivate::findSlot(QObject* obj, const QByteArray &normalizedName,
-                                     QList<int> &params)
+                                     QVector<int> &params)
 {
     int midx = obj->metaObject()->indexOfMethod(normalizedName);
     if (midx == -1)

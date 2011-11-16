@@ -180,12 +180,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
     if (metaTypes.at(count) == QDBusMetaTypeId::message)
         --count;
 
-    if (count == 0) {
-        setMetaTypes(count, 0);
-    } else {
-        QVector<int> types = QVector<int>::fromList(metaTypes);
-        setMetaTypes(count, types.constData() + 1);
-    }
+    setMetaTypes(count, count ? metaTypes.constData() + 1 : 0);
     return true;
 }
 
