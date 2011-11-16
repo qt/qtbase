@@ -447,6 +447,10 @@ inline QAccessibleEvent::QAccessibleEvent(Type atype, int achild)
 #define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface);
+#endif
+
 #endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

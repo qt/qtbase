@@ -50,6 +50,7 @@
 #include <private/qguiapplication_p.h>
 #include "qplatformaccessibility_qpa.h"
 
+#include <QtCore/QDebug>
 #include <QtCore/QHash>
 #include <QtCore/QMetaObject>
 #include <QtCore/QMutex>
@@ -1223,6 +1224,33 @@ QAccessible2Interface *QAccessibleInterface::cast_helper(QAccessible2::Interface
 {
     return interface_cast(t);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
+{
+    if (!iface) {
+        d << "QAccessibleInterface(null)";
+        return d;
+    }
+    d.nospace();
+    d << "QAccessibleInterface(" << hex << (void *) iface << dec;
+    d << " name=" << iface->text(QAccessible::Name) << " ";
+    d << "role=" << iface->role() << " ";
+    if (iface->childCount())
+        d << "childc=" << iface->childCount() << " ";
+    if (iface->object()) {
+        d << "obj=" << iface->object();
+    }
+    bool invisible = iface->state() & QAccessible::Invisible;
+    if (invisible) {
+        d << "invisible";
+    } else {
+        d << "rect=" << iface->rect();
+    }
+    d << ")";
+    return d.space();
+}
+#endif
 
 QT_END_NAMESPACE
 
