@@ -11,3 +11,5 @@ wince*: {
 	accessneeded.path = accessible
 	DEPLOYMENT += accessneeded
 }
+
+mac: CONFIG += insignificant_test # QTBUG-22812

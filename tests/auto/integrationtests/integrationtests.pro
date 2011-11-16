@@ -34,3 +34,4 @@ wince*|!contains(QT_CONFIG, accessibility):SUBDIRS -= qaccessibility
 
 !linux*-g++*:SUBDIRS -= exceptionsafety_objects
 
+mac: lancelot.CONFIG = no_check_target # QTBUG-22792

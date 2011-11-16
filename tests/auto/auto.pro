@@ -24,7 +24,6 @@ cross_compile:                              SUBDIRS -= tools
 mac {
     dbus.CONFIG += no_check_target
     gui.CONFIG += no_check_target
-    integrationtests.CONFIG += no_check_target
     network.CONFIG += no_check_target
     opengl.CONFIG += no_check_target
     sql.CONFIG += no_check_target
