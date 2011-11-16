@@ -201,7 +201,7 @@ bool QSslConfiguration::isNull() const
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
             d->peerCertificateChain.count() == 0 &&
-            d->sslOptions == QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation);
+            d->sslOptions == (QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation));
 }
 
 /*!
