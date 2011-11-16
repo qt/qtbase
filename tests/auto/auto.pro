@@ -19,3 +19,19 @@ cross_compile:                              SUBDIRS -= tools
 !contains(QT_CONFIG, opengl):               SUBDIRS -= opengl
 !unix|embedded|!contains(QT_CONFIG, dbus):  SUBDIRS -= dbus
 !contains(QT_CONFIG, v8):                   SUBDIRS -= v8
+
+# disable 'make check' on Mac OS X for the following subdirs for the time being
+mac {
+    dbus.CONFIG += no_check_target
+    gui.CONFIG += no_check_target
+    integrationtests.CONFIG += no_check_target
+    network.CONFIG += no_check_target
+    opengl.CONFIG += no_check_target
+    sql.CONFIG += no_check_target
+    testlib.CONFIG += no_check_target
+    tools.CONFIG += no_check_target
+    v8.CONFIG += no_check_target
+    xml.CONFIG += no_check_target
+    other.CONFIG += no_check_target
+    widgets.CONFIG += no_check_target
+}

@@ -18,3 +18,5 @@ SOURCES = ../tst_qlocale.cpp
     addFiles.path = "\\Program Files\\tst_qlocale"
     DEPLOYMENT += addFiles
 }
+
+mac: CONFIG += insignificant_test # QTBUG-22769

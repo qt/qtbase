@@ -22,3 +22,5 @@ wince* {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
+
+mac: CONFIG += insignificant_test # QTBUG-22767

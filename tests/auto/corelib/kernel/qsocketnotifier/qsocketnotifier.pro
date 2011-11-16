@@ -6,3 +6,5 @@ SOURCES = tst_qsocketnotifier.cpp
 requires(contains(QT_CONFIG,private_tests))
 
 include(../../../network/socket/platformsocketengine/platformsocketengine.pri)
+
+mac: CONFIG += insignificant_test # QTBUG-22746
