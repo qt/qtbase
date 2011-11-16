@@ -2423,12 +2423,18 @@
 
     \value ImhHiddenText             Characters should be hidden, as is typically used when entering passwords.
                                      This is automatically set when setting QLineEdit::echoMode to \c Password.
+    \value ImhSensitiveData          Typed text should not be stored by the active input method
+                                     in any persistent storage like predictive user dictionary.
     \value ImhNoAutoUppercase        The input method should not try to automatically switch to upper case
                                      when a sentence ends.
     \value ImhPreferNumbers          Numbers are preferred (but not required).
     \value ImhPreferUppercase        Upper case letters are preferred (but not required).
     \value ImhPreferLowercase        Lower case letters are preferred (but not required).
     \value ImhNoPredictiveText       Do not use predictive text (i.e. dictionary lookup) while typing.
+
+    \value ImhDate                   The text editor functions as a date field.
+    \value ImhTime                   The text editor functions as a time field.
+    \value ImhMultiLine              The text editor accepts multi-line content.
 
     Flags that restrict input (exclusive flags):
 
