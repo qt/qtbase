@@ -782,8 +782,8 @@ inline int QString::toWCharArray(wchar_t *array) const
 }
 inline QString QString::fromWCharArray(const wchar_t *string, int size)
 {
-    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16((const ushort *)string, size)
-                                            : fromUcs4((uint *)string, size);
+    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16(reinterpret_cast<const ushort *>(string), size)
+                                            : fromUcs4(reinterpret_cast<const uint *>(string), size);
 }
 
 
