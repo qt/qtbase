@@ -3784,10 +3784,9 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 if (!QPixmapCache::find(handlePixmapName, cache)) {
                     cache = QPixmap(handle.size());
-                    cache.fill(Qt::white);
+                    cache.fill(Qt::transparent);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
                     QPainter handlePainter(&cache);
-                    handlePainter.fillRect(pixmapRect, option->palette.background());
 
                     // draw handle
                     if (horizontal) {
