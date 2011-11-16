@@ -322,7 +322,9 @@ void QTextDocumentPrivate::setLayout(QAbstractTextDocumentLayout *layout)
 void QTextDocumentPrivate::insert_string(int pos, uint strPos, uint length, int format, QTextUndoCommand::Operation op)
 {
     // ##### optimize when only appending to the fragment!
+#ifndef QT_NO_DEBUG
     Q_ASSERT(noBlockInString(text.mid(strPos, length)));
+#endif
 
     split(pos);
     uint x = fragments.insert_single(pos, length);
@@ -478,7 +480,9 @@ void QTextDocumentPrivate::insert(int pos, const QString &str, int format)
     if (str.size() == 0)
         return;
 
+#ifndef QT_NO_DEBUG
     Q_ASSERT(noBlockInString(str));
+#endif
 
     int strPos = text.length();
     text.append(str);
@@ -496,7 +500,9 @@ int QTextDocumentPrivate::remove_string(int pos, uint length, QTextUndoCommand::
 
     Q_ASSERT(blocks.size(b) > length);
     Q_ASSERT(x && fragments.position(x) == (uint)pos && fragments.size(x) == length);
+#ifndef QT_NO_DEBUG
     Q_ASSERT(noBlockInString(text.mid(fragments.fragment(x)->stringPosition, length)));
+#endif
 
     blocks.setSize(b, blocks.size(b)-length);
 
@@ -630,7 +636,9 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
 
         if (key+1 != blocks.position(b)) {
 //	    qDebug("remove_string from %d length %d", key, X->size_array[0]);
+#ifndef QT_NO_DEBUG
             Q_ASSERT(noBlockInString(text.mid(X->stringPosition, X->size_array[0])));
+#endif
             w = remove_string(key, X->size_array[0], op);
 
             if (needsInsert) {

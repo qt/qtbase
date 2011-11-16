@@ -3115,12 +3115,16 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
             sectionSpans[i].resizeMode = mode;
             // ### check if we can merge the section with any of its neighbours
             removeSpans(spansToRemove);
+#ifndef QT_NO_DEBUG
             Q_ASSERT(initial_section_count == headerSectionCount());
+#endif
             return;
         } else if (start > start_section && end < end_section) {
             if (sectionSpans.at(i).sectionSize() == span.sectionSize()
                 && sectionSpans.at(i).resizeMode == span.resizeMode) {
+#ifndef QT_NO_DEBUG
                 Q_ASSERT(initial_section_count == headerSectionCount());
+#endif
                 return;
             }
             // the new span is in the middle of the old span, so we have to split it
@@ -3149,9 +3153,13 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
             int last_span_size = section_size * last_span_count;
             sectionSpans.insert(i + 2, SectionSpan(last_span_size, last_span_count, span_mode));
             length += last_span_size;
+#ifndef QT_NO_DEBUG
             Q_ASSERT(span_count == first_span_count + mid_span_count + last_span_count);
+#endif
             removeSpans(spansToRemove);
+#ifndef QT_NO_DEBUG
             Q_ASSERT(initial_section_count == headerSectionCount());
+#endif
             return;
         } else if (start > start_section && start <= end_section && end >= end_section) {
             // the new span covers the last part of the existing span
@@ -3167,7 +3175,9 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
                 sectionSpans.insert(i + 1, span); // insert after
                 length += span.size;
                 removeSpans(spansToRemove);
+#ifndef QT_NO_DEBUG
                 Q_ASSERT(initial_section_count == headerSectionCount());
+#endif
                 return;
             }
         } else if (end < end_section && end >= start_section && start <= start_section) {
@@ -3183,7 +3193,9 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
             sectionSpans.insert(i, span); // insert before
             length += span.size;
             removeSpans(spansToRemove);
+#ifndef QT_NO_DEBUG
             Q_ASSERT(initial_section_count == headerSectionCount());
+#endif
             return;
         }
         start_section += section_count;
