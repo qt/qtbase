@@ -111,6 +111,7 @@ extern HB_Bool HB_HangulShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_MyanmarShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_KhmerShape(HB_ShaperItem *shaper_item);
 extern HB_Bool HB_IndicShape(HB_ShaperItem *shaper_item);
+extern HB_Bool HB_ThaiShape(HB_ShaperItem *shaper_item);
 
 extern void HB_TibetanAttributes(HB_Script script, const HB_UChar16 *string, hb_uint32 from, hb_uint32 len, HB_CharAttributes *attributes);
 
