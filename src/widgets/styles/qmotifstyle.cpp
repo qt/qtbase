@@ -1952,11 +1952,13 @@ QMotifStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
                                                         slider->upsideDown);
                 if (horizontal)
                     return visualRect(slider->direction, slider->rect,
-                                      QRect(sliderPos + motifBorder, tickOffset + motifBorder, len,
-                                            thickness - 2 * motifBorder));
+                                      QRect(sliderPos + motifBorder + slider->rect.left()
+                                            , tickOffset + motifBorder + slider->rect.top()
+                                            , len, thickness - 2 * motifBorder));
                 return visualRect(slider->direction, slider->rect,
-                                  QRect(tickOffset + motifBorder, sliderPos + motifBorder,
-                                        thickness - 2 * motifBorder, len));
+                                  QRect(tickOffset + motifBorder + slider->rect.left()
+                                        , sliderPos + motifBorder + slider->rect.top()
+                                        , thickness - 2 * motifBorder, len));
             }
         }
         break;

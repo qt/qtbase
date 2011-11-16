@@ -3727,46 +3727,49 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 BEGIN_STYLE_PIXMAPCACHE(QString::fromLatin1("slider_groove-%0-%1").arg(ticksAbove).arg(ticksBelow))
                 p->fillRect(groove, option->palette.background());
 
+                rect = groove;
+                rect.moveTo(groove.left() - option->rect.left(), groove.top() - option->rect.top());
+
                 // draw groove
                 if (horizontal) {
                     p->setPen(borderColor);
                     const QLine lines[4] = {
-                        QLine(groove.left() + 1, groove.top(),
-                              groove.right() - 1, groove.top()),
-                        QLine(groove.left() + 1, groove.bottom(),
-                              groove.right() - 1, groove.bottom()),
-                        QLine(groove.left(), groove.top() + 1,
-                              groove.left(), groove.bottom() - 1),
-                        QLine(groove.right(), groove.top() + 1,
-                              groove.right(), groove.bottom() - 1) };
+                        QLine(rect.left() + 1, rect.top(),
+                              rect.right() - 1, rect.top()),
+                        QLine(rect.left() + 1, rect.bottom(),
+                              rect.right() - 1, rect.bottom()),
+                        QLine(rect.left(), rect.top() + 1,
+                              rect.left(), rect.bottom() - 1),
+                        QLine(rect.right(), rect.top() + 1,
+                              rect.right(), rect.bottom() - 1) };
                     p->drawLines(lines, 4);
 
                     p->setPen(alphaCornerColor);
                     const QPoint points[4] = {
-                        QPoint(groove.left(), groove.top()),
-                        QPoint(groove.left(), groove.bottom()),
-                        QPoint(groove.right(), groove.top()),
-                        QPoint(groove.right(), groove.bottom()) };
+                        QPoint(rect.left(), rect.top()),
+                        QPoint(rect.left(), rect.bottom()),
+                        QPoint(rect.right(), rect.top()),
+                        QPoint(rect.right(), rect.bottom()) };
                     p->drawPoints(points, 4);
                 } else {
                     p->setPen(borderColor);
                     const QLine lines[4] = {
-                        QLine(groove.left() + 1, groove.top(),
-                              groove.right() - 1, groove.top()),
-                        QLine(groove.left() + 1, groove.bottom(),
-                              groove.right() - 1, groove.bottom()),
-                        QLine(groove.left(), groove.top() + 1,
-                              groove.left(), groove.bottom() - 1),
-                        QLine(groove.right(), groove.top() + 1,
-                              groove.right(), groove.bottom() - 1) };
+                        QLine(rect.left() + 1, rect.top(),
+                              rect.right() - 1, rect.top()),
+                        QLine(rect.left() + 1, rect.bottom(),
+                              rect.right() - 1, rect.bottom()),
+                        QLine(rect.left(), rect.top() + 1,
+                              rect.left(), rect.bottom() - 1),
+                        QLine(rect.right(), rect.top() + 1,
+                              rect.right(), rect.bottom() - 1) };
                     p->drawLines(lines, 4);
 
                     p->setPen(alphaCornerColor);
                     const QPoint points[4] = {
-                        QPoint(groove.left(), groove.top()),
-                        QPoint(groove.right(), groove.top()),
-                        QPoint(groove.left(), groove.bottom()),
-                        QPoint(groove.right(), groove.bottom()) };
+                        QPoint(rect.left(), rect.top()),
+                        QPoint(rect.right(), rect.top()),
+                        QPoint(rect.left(), rect.bottom()),
+                        QPoint(rect.right(), rect.bottom()) };
                     p->drawPoints(points, 4);
                 }
                 END_STYLE_PIXMAPCACHE
