@@ -375,7 +375,6 @@ void QWidgetPrivate::updateWidgetTransform()
 */
 QInputContext *QWidget::inputContext()
 {
-    Q_D(QWidget);
     if (!testAttribute(Qt::WA_InputMethodEnabled))
         return 0;
 

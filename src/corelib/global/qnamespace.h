@@ -185,7 +185,7 @@ public:
         ExtraButton24    = 0x04000000,
         MaxMouseButton   = ExtraButton24,
         // 4 high-order bits remain available for future use (0x08000000 through 0x40000000).
-        MouseButtonMask  = 0xffffffff,
+        MouseButtonMask  = 0xffffffff
     };
     Q_DECLARE_FLAGS(MouseButtons, MouseButton)
 

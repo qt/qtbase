@@ -749,7 +749,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
                     cg = QPalette::Inactive;
 
-                QRect textRect = subElementRect(QStyle::SE_ItemViewItemText, option, widget);
                 QRect itemRect = subElementRect(QStyle::SE_ItemViewItemFocusRect, option, widget).adjusted(-1, 0, 1, 0);
                 itemRect.setTop(vopt->rect.top());
                 itemRect.setBottom(vopt->rect.bottom());
@@ -765,7 +764,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 QPixmap pixmap;
 
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
-                    QPointF oldBO = painter->brushOrigin();
                     painter->setBrushOrigin(vopt->rect.topLeft());
                     painter->fillRect(vopt->rect, vopt->backgroundBrush);
                 }
@@ -1065,9 +1063,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
-            int stateId = MBI_NORMAL;
-            if (disabled)
-                stateId = MBI_DISABLED;
             bool isIndeterminate = (bar->minimum == 0 && bar->maximum == 0);
             bool vertical = false;
             bool inverted = false;
@@ -1245,10 +1240,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 pGetThemeMargins(theme.handle(), NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &margins);
                 checkcol = qMax(menuitem->maxIconWidth, int(6 + size.cx + margins.cxLeftWidth + margins.cxRightWidth));
             }
-            QColor darkLine = option->palette.background().color().darker(108);
-            QColor lightLine = option->palette.background().color().lighter(107);
             QRect rect = option->rect;
-            QStyleOptionMenuItem mbiCopy = *menuitem;
 
             //draw vertical menu line
             QPoint p1 = QStyle::visualPos(option->direction, menuitem->rect, QPoint(checkcol, rect.top()));

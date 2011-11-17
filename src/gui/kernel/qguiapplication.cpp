@@ -620,7 +620,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
     else { // Check to see if a new button has been pressed/released.
         for (int check = Qt::LeftButton;
-            check <= Qt::MaxMouseButton;
+            check <= int(Qt::MaxMouseButton);
              check = check << 1) {
             if (check & stateChange) {
                 button = Qt::MouseButton(check);

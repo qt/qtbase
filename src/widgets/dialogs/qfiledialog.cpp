@@ -906,6 +906,7 @@ QStringList QFileDialogPrivate::typedFiles() const
             files << qt_tildeExpansion(editText);
 #else
         files << editText;
+        Q_UNUSED(q)
 #endif
     } else {
         // " is used to separate files like so: "file1" "file2" "file3" ...

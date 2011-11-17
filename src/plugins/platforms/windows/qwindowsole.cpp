@@ -458,13 +458,12 @@ bool QWindowsOleEnumFmtEtc::copyFormatEtc(LPFORMATETC dest, LPFORMATETC src) con
     *dest = *src;
 
     if (src->ptd) {
-        LPVOID pout;
         LPMALLOC pmalloc;
 
         if (CoGetMalloc(MEMCTX_TASK, &pmalloc) != NOERROR)
             return false;
 
-        pout = (LPVOID)pmalloc->Alloc(src->ptd->tdSize);
+        pmalloc->Alloc(src->ptd->tdSize);
         memcpy(dest->ptd, src->ptd, size_t(src->ptd->tdSize));
 
         pmalloc->Release();

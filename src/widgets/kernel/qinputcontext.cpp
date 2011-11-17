@@ -284,6 +284,7 @@ void QInputContext::update()
 */
 void QInputContext::widgetDestroyed(QWidget *widget)
 {
+    Q_UNUSED(widget)
     // nothing to be done here, as we use a weak pointer in the input panel
 }
 

@@ -1707,7 +1707,6 @@ void QWin32PrintEnginePrivate::readDevmode(HGLOBAL globalDevmode)
 static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC hdc,
                                bool convertToText, const QTransform &xform, const QPointF &topLeft)
 {
-    QFontEngine *fe = ti.fontEngine;
     QPointF baseline_pos = xform.inverted().map(xform.map(pos) - topLeft);
 
     SetTextAlign(hdc, TA_BASELINE);

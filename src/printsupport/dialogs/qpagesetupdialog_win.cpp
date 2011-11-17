@@ -105,9 +105,6 @@ int QPageSetupDialog::exec()
     QWindow *parentWindow = parent->windowHandle();
     psd.hwndOwner = parentWindow ? (HWND)QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow) : 0;
 
-    QRect paperRect = d->printer->paperRect();
-    QRect pageRect = d->printer->pageRect();
-
     psd.Flags = PSD_MARGINS;
     double multiplier = 1;
     switch (QLocale::system().measurementSystem()) {

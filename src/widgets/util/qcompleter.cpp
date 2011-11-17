@@ -474,14 +474,19 @@ QMatchData QCompletionEngine::filterHistory()
     QAbstractItemModel *source = c->proxy->sourceModel();
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
-    bool isDirModel = false;
-    bool isFsModel = false;
+
 #ifndef QT_NO_DIRMODEL
-    isDirModel = (qobject_cast<QDirModel *>(source) != 0);
+    const bool isDirModel = (qobject_cast<QDirModel *>(source) != 0);
+#else
+    const bool isDirModel = false;
 #endif
+    Q_UNUSED(isDirModel)
 #ifndef QT_NO_FILESYSTEMMODEL
-    isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
+    const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
+#else
+    const bool isFsModel = false;
 #endif
+    Q_UNUSED(isFsModel)
     QVector<int> v;
     QIndexMapper im(v);
     QMatchData m(im, -1, true);

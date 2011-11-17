@@ -841,7 +841,7 @@ void QAccessibleWidget::doAction(const QString &actionName)
     }
 }
 
-QStringList QAccessibleWidget::keyBindingsForAction(const QString &actionName) const
+QStringList QAccessibleWidget::keyBindingsForAction(const QString & /* actionName */) const
 {
     return QStringList();
 }

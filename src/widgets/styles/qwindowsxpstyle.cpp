@@ -2471,7 +2471,6 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {
             QColor highlight = option->palette.color(QPalette::Active, QPalette::Highlight);
             p->save();
-            QRect r = option->rect;
             p->setPen(highlight.darker(120));
             QColor dimHighlight(qMin(highlight.red()/2 + 110, 255),
                                 qMin(highlight.green()/2 + 110, 255),
