@@ -305,7 +305,7 @@ public:
     QXcbClipboard *clipboard() const { return m_clipboard; }
     QXcbDrag *drag() const { return m_drag; }
 
-    QXcbWMSupport *wmSupport() const { return m_wmSupport; }
+    QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
 
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
@@ -382,7 +382,7 @@ private:
     QXcbKeyboard *m_keyboard;
     QXcbClipboard *m_clipboard;
     QXcbDrag *m_drag;
-    QXcbWMSupport *m_wmSupport;
+    QScopedPointer<QXcbWMSupport> m_wmSupport;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;

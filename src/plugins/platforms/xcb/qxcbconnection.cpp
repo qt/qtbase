@@ -162,7 +162,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     initializeXInput2();
 #endif
 
-    m_wmSupport = new QXcbWMSupport(this);
+    m_wmSupport.reset(new QXcbWMSupport(this));
     m_keyboard = new QXcbKeyboard(this);
     m_clipboard = new QXcbClipboard(this);
     m_drag = new QXcbDrag(this);
