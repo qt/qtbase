@@ -45,6 +45,8 @@
 #include <QPlatformFontDatabase>
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QFontconfigDatabase : public QBasicFontDatabase
 {
 public:
@@ -55,5 +57,7 @@ public:
     QString resolveFontFamilyAlias(const QString &family) const;
     QFont defaultFont() const;
 };
+
+QT_END_NAMESPACE
 
 #endif // QFONTCONFIGDATABASE_H

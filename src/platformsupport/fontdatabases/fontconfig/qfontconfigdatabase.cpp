@@ -68,6 +68,8 @@
 #define JapaneseCsbBit 17
 #define KoreanCsbBit 21
 
+QT_BEGIN_NAMESPACE
+
 static inline bool requiresOpenType(int writingSystem)
 {
     return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
@@ -734,3 +736,5 @@ QFont QFontconfigDatabase::defaultFont() const
 {
     return QFont(resolveFontFamilyAlias(QString()));
 }
+
+QT_END_NAMESPACE
