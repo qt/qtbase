@@ -123,20 +123,19 @@ void tst_q_func_info::isOfTypeConstChar() const
 
 /* \internal
     Ensure that the macro is available even though QT_NO_DEBUG
-    is defined. We do this by undefining it, and turning it on again
-    backwards(just so we don't break stuff), if it was in fact defined.
+    is defined.  If QT_NO_DEBUG is not defined, we define it
+    just for this function then undef it again afterwards.
  */
 void tst_q_func_info::availableWithoutDebug() const
 {
 #ifndef QT_NO_DEBUG
-#   define USE_DEBUG
+#   define UNDEF_NO_DEBUG
 #   define QT_NO_DEBUG
 #endif
-#undef QT_NO_DEBUG
-    QString::fromLatin1(Q_FUNC_INFO);
-#ifdef USE_DEBUG
+    QVERIFY(!QString::fromLatin1(Q_FUNC_INFO).isEmpty());
+#ifdef UNDEF_NO_DEBUG
 #   undef QT_NO_DEBUG
-#   undef USE_DEBUG
+#   undef UNDEF_NO_DEBUG
 #endif
 }
 
