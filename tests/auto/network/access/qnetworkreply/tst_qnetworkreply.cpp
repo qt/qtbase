@@ -165,6 +165,7 @@ public Q_SLOTS:
     void gotError();
     void authenticationRequired(QNetworkReply*,QAuthenticator*);
     void proxyAuthenticationRequired(const QNetworkProxy &,QAuthenticator*);
+    void pipeliningHelperSlot();
 
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply*,const QList<QSslError> &);
@@ -384,6 +385,7 @@ private Q_SLOTS:
     void authenticationCacheAfterCancel();
     void authenticationWithDifferentRealm();
     void synchronousAuthenticationCache();
+    void pipelining();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -6660,6 +6662,43 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
         QVERIFY(reply->isFinished());
         QCOMPARE(reply->error(), QNetworkReply::NoError);
         QCOMPARE(reply->readAll().constData(), "OK");
+    }
+}
+
+void tst_QNetworkReply::pipelining()
+{
+    QString urlString("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/echo.cgi?");
+    QList<QNetworkReplyPtr> replies;
+    for (int a = 0; a < 20; a++) {
+        QNetworkRequest request(urlString + QString::number(a));
+        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, QVariant(true));
+        replies.append(manager.get(request));
+        connect(replies.at(a), SIGNAL(finished()), this, SLOT(pipeliningHelperSlot()));
+    }
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
+void tst_QNetworkReply::pipeliningHelperSlot() {
+    static int a = 0;
+
+    // check that pipelining was used in at least one of the replies
+    static bool pipeliningWasUsed = false;
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    bool pipeliningWasUsedInReply = reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool();
+    if (pipeliningWasUsedInReply)
+        pipeliningWasUsed = true;
+
+    // check that the contents match (the response to echo.cgi?3 should return 3 etc.)
+    QString urlQueryString = reply->url().queryItems().at(0).first;
+    QString content = reply->readAll();
+    QVERIFY2(urlQueryString == content, "data corruption with pipelining detected");
+
+    a++;
+
+    if (a == 20) { // all replies have finished
+        QTestEventLoop::instance().exitLoop();
+        QVERIFY2(pipeliningWasUsed, "pipelining was not used in any of the replies when trying to test pipelining");
     }
 }
 
