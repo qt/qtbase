@@ -28,7 +28,6 @@ mac {
     opengl.CONFIG += no_check_target
     sql.CONFIG += no_check_target
     testlib.CONFIG += no_check_target
-    tools.CONFIG += no_check_target
     v8.CONFIG += no_check_target
     xml.CONFIG += no_check_target
     other.CONFIG += no_check_target
