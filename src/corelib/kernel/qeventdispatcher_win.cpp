@@ -481,11 +481,16 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     wc.lpszClassName = reinterpret_cast<const wchar_t *> (className.utf16());
 
     RegisterClass(&wc);
+#ifdef Q_OS_WINCE
+    HWND parent = 0;
+#else
+    HWND parent = HWND_MESSAGE;
+#endif
     HWND wnd = CreateWindow(wc.lpszClassName,  // classname
                             wc.lpszClassName,  // window name
                             0,                 // style
                             0, 0, 0, 0,        // geometry
-                            0,                 // parent
+                            parent,            // parent
                             0,                 // menu handle
                             qWinAppInst(),     // application
                             0);                // windows creation data.
