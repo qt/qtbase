@@ -281,6 +281,11 @@ QLibraryInfo::location(LibraryLocation loc)
             path = QT_CONFIGURE_EXAMPLES_PATH;
             break;
 #endif
+#ifdef QT_CONFIGURE_TESTS_PATH
+        case TestsPath:
+            path = QT_CONFIGURE_TESTS_PATH;
+            break;
+#endif
         default:
             break;
         }
@@ -330,6 +335,10 @@ QLibraryInfo::location(LibraryLocation loc)
             break;
         case ExamplesPath:
             key = QLatin1String("Examples");
+            break;
+        case TestsPath:
+            key = QLatin1String("Tests");
+            defaultValue = QLatin1String("tests");
             break;
         default:
             break;
@@ -469,6 +478,7 @@ QLibraryInfo::location(LibraryLocation loc)
     \value TranslationsPath The location of translation information for Qt strings.
     \value SettingsPath The location for Qt settings.
     \value ExamplesPath The location for examples upon install.
+    \value TestsPath The location of installed Qt testcases.
 
     \sa location()
 */

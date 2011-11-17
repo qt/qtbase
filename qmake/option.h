@@ -220,7 +220,8 @@ public:
         TranslationsPath,
         SettingsPath,
         ExamplesPath,
-        ImportsPath
+        ImportsPath,
+        TestsPath
     };
     static QString location(LibraryLocation);
 };

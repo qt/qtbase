@@ -65,5 +65,51 @@ QMAKE_EXTRA_TARGETS *= check
     }
 }
 
+!no_testcase_installs:!contains(INSTALLS, target) {
+    # Install tests unless no_testcase_installs is set, or there is already
+    # a `target' in INSTALLS.
+    #
+    # Tests are installed under a directory named after the target so that each
+    # test has its own directory for testdata etc.
+    #
+    load(resolve_target)
+    TARGET_BASENAME = $$basename(QMAKE_RESOLVED_TARGET)
+    target.path = $$[QT_INSTALL_TESTS]/$$TARGET_BASENAME
+    INSTALLS += target
+}
+
+contains(INSTALLS, target) {
+    # Install testdata as well, but only if we're actually installing the test.
+    #
+    # Testdata is installed relative to the directory containing the testcase
+    # binary itself, e.g. this:
+    #
+    #   CONFIG += testcase
+    #   TARGET = tst_qxmlreader
+    #
+    #   TESTDATA += testdata/test1.xml testdata/test2.xml
+    #
+    # ... will result in:
+    #
+    #   /usr/lib/qt5/tests/tst_qxmlreader/tst_qxmlreader
+    #   /usr/lib/qt5/tests/tst_qxmlreader/testdata/test1.xml
+    #   /usr/lib/qt5/tests/tst_qxmlreader/testdata/test2.xml
+    #   ...
+    #
+    for(file, TESTDATA) {
+        tdi = testdata_install_$${elem}
+        tdif = $${tdi}.files
+        tdip = $${tdi}.path
+
+        # TESTDATA consists of the files to install (source)...
+        $$tdif = $$file
+
+        # ... and the destination preserves the relative path
+        $$tdip = $${target.path}/$$dirname(file)
+
+        INSTALLS += $$tdi
+    }
+}
+
 }
 

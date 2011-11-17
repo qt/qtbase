@@ -93,6 +93,8 @@ QMakeProperty::value(QString v, bool just_check)
         return QLibraryInfo::location(QLibraryInfo::LibrariesPath);
     else if(v == "QT_INSTALL_BINS")
         return QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    else if(v == "QT_INSTALL_TESTS")
+        return QLibraryInfo::location(QLibraryInfo::TestsPath);
     else if(v == "QT_INSTALL_PLUGINS")
         return QLibraryInfo::location(QLibraryInfo::PluginsPath);
     else if(v == "QT_INSTALL_IMPORTS")
@@ -199,6 +201,7 @@ QMakeProperty::exec()
             specialProps.append("QT_INSTALL_HEADERS");
             specialProps.append("QT_INSTALL_LIBS");
             specialProps.append("QT_INSTALL_BINS");
+            specialProps.append("QT_INSTALL_TESTS");
             specialProps.append("QT_INSTALL_PLUGINS");
             specialProps.append("QT_INSTALL_IMPORTS");
             specialProps.append("QT_INSTALL_TRANSLATIONS");

@@ -1119,6 +1119,13 @@ void Configure::parseCmdLine()
             dictionary[ "QT_INSTALL_EXAMPLES" ] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-testsdir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_INSTALL_TESTS" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-hostprefix") {
             ++i;
             if (i == argCount)
@@ -2602,6 +2609,8 @@ void Configure::generateOutputVars()
         dictionary[ "QT_INSTALL_TRANSLATIONS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/translations");
     if (!dictionary[ "QT_INSTALL_EXAMPLES" ].size())
         dictionary[ "QT_INSTALL_EXAMPLES" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/examples");
+    if (!dictionary[ "QT_INSTALL_TESTS" ].size())
+        dictionary[ "QT_INSTALL_TESTS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/tests");
 
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         dictionary[ "QMAKE_RPATHDIR" ] = dictionary[ "QT_INSTALL_LIBS" ];
@@ -3103,6 +3112,7 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << escapeSeparators(dictionary["QT_INSTALL_DATA"]) << "\";"  << endl
                   << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << escapeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\";" << endl
                   << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << escapeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << "\";"  << endl
+                  << "static const char qt_configure_tests_path_str        [512 + 12] = \"qt_tstspath=" << escapeSeparators(dictionary["QT_INSTALL_TESTS"]) << "\";"  << endl
                   //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << escapeSeparators(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
                   ;
         if (!dictionary[ "QT_HOST_PREFIX" ].isNull()) {
@@ -3117,6 +3127,7 @@ void Configure::generateConfigfiles()
                        << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ], true) <<"\";"  << endl
                        << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/translations", true) <<"\";" << endl
                        << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/example", true) <<"\";"  << endl
+                       << "static const char qt_configure_tests_path_str        [512 + 12] = \"qt_tstspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/tests", true) <<"\";"  << endl
                        << "#endif //QT_BOOTSTRAPPED" << endl;
         }
         tmpStream << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
@@ -3132,6 +3143,7 @@ void Configure::generateConfigfiles()
                   << "#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;" << endl
+                  << "#define QT_CONFIGURE_TESTS_PATH qt_configure_tests_path_str + 12;" << endl
                   //<< "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl
                   << endl;
 
@@ -3291,6 +3303,7 @@ void Configure::displayConfig()
     cout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;
     cout << "Translations installed to..." << dictionary[ "QT_INSTALL_TRANSLATIONS" ] << endl;
     cout << "Examples installed to......." << dictionary[ "QT_INSTALL_EXAMPLES" ] << endl;
+    cout << "Tests installed to.........." << dictionary[ "QT_INSTALL_TESTS" ] << endl;
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
         cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
