@@ -718,7 +718,7 @@ void tst_QImageReader::sizeBeforeFormat()
 
     {
         QImageReader reader(prefix + fileName);
-        QSize size = reader.size();
+        reader.size();
         formatB = reader.format();
     }
 

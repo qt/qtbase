@@ -82,7 +82,7 @@ bool v8test_externalteardown()
         Persistent<Context> context = Context::New();
         Context::Scope context_scope(context);
 
-        Local<String> str = String::NewExternal(new MyStringResource);
+        String::NewExternal(new MyStringResource);
 
         Local<FunctionTemplate> ft = FunctionTemplate::New();
         ft->InstanceTemplate()->SetHasExternalResource(true);

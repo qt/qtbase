@@ -1188,7 +1188,7 @@ void tst_QTextLayout::capitalization_allUpperCase()
     font.setCapitalization(QFont::AllUppercase);
     QTextLayout layout("Test", font);
     layout.beginLayout();
-    QTextLine line = layout.createLine();
+    layout.createLine();
     layout.endLayout();
 
     QTextEngine *engine = layout.engine();
@@ -1203,7 +1203,7 @@ void tst_QTextLayout::capitalization_allLowerCase()
     font.setCapitalization(QFont::AllLowercase);
     QTextLayout layout("Test", font);
     layout.beginLayout();
-    QTextLine line = layout.createLine();
+    layout.createLine();
     layout.endLayout();
 
     QTextEngine *engine = layout.engine();
@@ -1218,7 +1218,7 @@ void tst_QTextLayout::capitalization_smallCaps()
     font.setCapitalization(QFont::SmallCaps);
     QTextLayout layout("Test", font);
     layout.beginLayout();
-    QTextLine line = layout.createLine();
+    layout.createLine();
     layout.endLayout();
 
     QTextEngine *engine = layout.engine();
@@ -1234,7 +1234,7 @@ void tst_QTextLayout::capitalization_capitalize()
     font.setCapitalization(QFont::Capitalize);
     QTextLayout layout("hello\tworld", font);
     layout.beginLayout();
-    QTextLine line = layout.createLine();
+    layout.createLine();
     layout.endLayout();
 
     QTextEngine *engine = layout.engine();

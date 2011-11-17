@@ -517,11 +517,9 @@ void tst_QFiledialog::completer()
         if (!fullPath.endsWith(QLatin1Char('/')))
             fullPath.append(QLatin1Char('/'));
         fullPath.append(input);
-        bool inputStartsWithRootPath = false;
         if (input.startsWith(QDir::rootPath())) {
             fullPath = input;
             input.clear();
-            inputStartsWithRootPath = true;
         }
 
         QFileInfo fi(fullPath);

@@ -88,7 +88,6 @@ void tst_QtConcurrentResultStore::iterators()
 {
     {
         ResultStore<int> store;
-        ResultIteratorBase it = store.begin();
         QVERIFY(store.begin() == store.end());
         QVERIFY(store.resultAt(0) == store.end());
         QVERIFY(store.resultAt(1) == store.end());

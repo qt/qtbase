@@ -891,8 +891,8 @@ void tst_QShortcut::ambiguousItems()
     pb1.show();	// Must be show for QShortcutMap::correctSubWindow to trigger
     pb2.show();
 
-    QShortcut *cut1 = setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, "M");
-    QShortcut *cut2 = setupShortcut(&pb1, "shortcut2-pb2", TriggerSlot2, "M");
+    setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, "M");
+    setupShortcut(&pb1, "shortcut2-pb2", TriggerSlot2, "M");
 
     currentResult = NoResult;
     sendKeyEvents( Qt::Key_M, 'm' );
@@ -910,7 +910,6 @@ void tst_QShortcut::ambiguousItems()
     QCOMPARE( ambigResult, Slot1Triggered );
 
     clearAllShortcuts();
-    cut1 = 0; cut2 = 0;
 }
 
 
@@ -933,8 +932,8 @@ void tst_QShortcut::unicodeCompare()
 
     QKeySequence ks1("Ctrl+M");     // Unicode
     QKeySequence ks2(Qt::CTRL+Qt::Key_M);   // non-Unicode
-    QShortcut *cut1 = setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, ks1);
-    QShortcut *cut2 = setupShortcut(&pb1, "shortcut2-pb2", TriggerSlot2, ks2);
+    setupShortcut(&pb1, "shortcut1-pb1", TriggerSlot1, ks1);
+    setupShortcut(&pb1, "shortcut2-pb2", TriggerSlot2, ks2);
 
     currentResult = NoResult;
     sendKeyEvents( Qt::CTRL+Qt::Key_M, 0 );
@@ -945,7 +944,6 @@ void tst_QShortcut::unicodeCompare()
     QVERIFY( !(ks1 != ks2) );
 
     clearAllShortcuts();
-    cut1 = 0; cut2 = 0;
 }
 
 // ------------------------------------------------------------------

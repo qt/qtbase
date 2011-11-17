@@ -578,7 +578,6 @@ void tst_QGraphicsProxyWidget::eventFilter()
         break;
                        }
     case QEvent::Resize: {
-        QSize oldSize = widget->size();
         QSize newSize = QSize(100, 100);
         if (fromObject) {
             widget->resize(newSize);
@@ -590,7 +589,6 @@ void tst_QGraphicsProxyWidget::eventFilter()
         break;
                          }
     case QEvent::Move: {
-        QPoint oldPoint = widget->pos();
         QPoint newPoint = QPoint(100, 100);
         if (fromObject) {
             widget->move(newPoint);
@@ -2651,26 +2649,25 @@ void tst_QGraphicsProxyWidget::childPos_data()
     QTest::addColumn<bool>("moveCombo");
     QTest::addColumn<QPoint>("comboPos");
     QTest::addColumn<QPointF>("proxyPos");
-    QTest::addColumn<QPointF>("menuPos");
 
-    QTest::newRow("0") << true << QPoint() << QPointF() << QPointF();
-    QTest::newRow("1") << true << QPoint(10, 0) << QPointF(10, 0) << QPointF();
-    QTest::newRow("2") << true << QPoint(100, 0) << QPointF(100, 0) << QPointF();
-    QTest::newRow("3") << true << QPoint(1000, 0) << QPointF(1000, 0) << QPointF();
-    QTest::newRow("4") << true << QPoint(10000, 0) << QPointF(10000, 0) << QPointF();
-    QTest::newRow("5") << true << QPoint(-10000, 0) << QPointF(-10000, 0) << QPointF();
-    QTest::newRow("6") << true << QPoint(-1000, 0) << QPointF(-1000, 0) << QPointF();
-    QTest::newRow("7") << true << QPoint(-100, 0) << QPointF(-100, 0) << QPointF();
-    QTest::newRow("8") << true << QPoint(-10, 0) << QPointF(-10, 0) << QPointF();
-    QTest::newRow("0-") << false << QPoint() << QPointF() << QPointF();
-    QTest::newRow("1-") << false << QPoint(10, 0) << QPointF(10, 0) << QPointF();
-    QTest::newRow("2-") << false << QPoint(100, 0) << QPointF(100, 0) << QPointF();
-    QTest::newRow("3-") << false << QPoint(1000, 0) << QPointF(1000, 0) << QPointF();
-    QTest::newRow("4-") << false << QPoint(10000, 0) << QPointF(10000, 0) << QPointF();
-    QTest::newRow("5-") << false << QPoint(-10000, 0) << QPointF(-10000, 0) << QPointF();
-    QTest::newRow("6-") << false << QPoint(-1000, 0) << QPointF(-1000, 0) << QPointF();
-    QTest::newRow("7-") << false << QPoint(-100, 0) << QPointF(-100, 0) << QPointF();
-    QTest::newRow("8-") << false << QPoint(-10, 0) << QPointF(-10, 0) << QPointF();
+    QTest::newRow("0") << true << QPoint() << QPointF();
+    QTest::newRow("1") << true << QPoint(10, 0) << QPointF(10, 0);
+    QTest::newRow("2") << true << QPoint(100, 0) << QPointF(100, 0);
+    QTest::newRow("3") << true << QPoint(1000, 0) << QPointF(1000, 0);
+    QTest::newRow("4") << true << QPoint(10000, 0) << QPointF(10000, 0);
+    QTest::newRow("5") << true << QPoint(-10000, 0) << QPointF(-10000, 0);
+    QTest::newRow("6") << true << QPoint(-1000, 0) << QPointF(-1000, 0);
+    QTest::newRow("7") << true << QPoint(-100, 0) << QPointF(-100, 0);
+    QTest::newRow("8") << true << QPoint(-10, 0) << QPointF(-10, 0);
+    QTest::newRow("0-") << false << QPoint() << QPointF();
+    QTest::newRow("1-") << false << QPoint(10, 0) << QPointF(10, 0);
+    QTest::newRow("2-") << false << QPoint(100, 0) << QPointF(100, 0);
+    QTest::newRow("3-") << false << QPoint(1000, 0) << QPointF(1000, 0);
+    QTest::newRow("4-") << false << QPoint(10000, 0) << QPointF(10000, 0);
+    QTest::newRow("5-") << false << QPoint(-10000, 0) << QPointF(-10000, 0);
+    QTest::newRow("6-") << false << QPoint(-1000, 0) << QPointF(-1000, 0);
+    QTest::newRow("7-") << false << QPoint(-100, 0) << QPointF(-100, 0);
+    QTest::newRow("8-") << false << QPoint(-10, 0) << QPointF(-10, 0);
 }
 
 void tst_QGraphicsProxyWidget::childPos()
@@ -2681,7 +2678,6 @@ void tst_QGraphicsProxyWidget::childPos()
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
     QFETCH(QPointF, proxyPos);
-    QFETCH(QPointF, menuPos);
 
     QGraphicsScene scene;
 

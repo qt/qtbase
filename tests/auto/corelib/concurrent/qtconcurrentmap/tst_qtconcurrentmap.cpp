@@ -1285,6 +1285,7 @@ void tst_QtConcurrentMap::mappedReduced()
 
     // test Q_DECLARE_OPERATORS_FOR_FLAGS
     QtConcurrent::ReduceOptions opt = (QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce);
+    QVERIFY(opt);
 
     // functor-functor
     {

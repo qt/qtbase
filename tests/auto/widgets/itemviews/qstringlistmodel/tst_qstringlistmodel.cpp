@@ -169,7 +169,7 @@ void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved_data()
 
     QStringList strings3;   strings3    << "One" << "Two" << "Three" << "Four" << "Five";
     QStringList aboutto3;   aboutto3    << "One" << "Two" << "Three" << "Four" << "Five";
-    QStringList res3;       res3        ;
+    QStringList res3;
     QTest::newRow( "data3" )   << strings3 << 0 << 5 << aboutto3 << res3;
 
     /* Not sure if this is a valid test */

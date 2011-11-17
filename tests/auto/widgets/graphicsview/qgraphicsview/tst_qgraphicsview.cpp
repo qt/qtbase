@@ -1369,7 +1369,6 @@ void tst_QGraphicsView::itemsInRect()
     view.setSceneRect(-10000, -10000, 20000, 20000);
     view.show();
 
-    QPoint centerPoint = view.viewport()->rect().center();
     QRect leftRect = view.mapFromScene(-30, -10, 20, 20).boundingRect();
     QRect rightRect = view.mapFromScene(30, -10, 20, 20).boundingRect();
 
@@ -1490,7 +1489,6 @@ void tst_QGraphicsView::itemsInPoly()
     view.setSceneRect(-10000, -10000, 20000, 20000);
     view.show();
 
-    QPoint centerPoint = view.viewport()->rect().center();
     QPolygon leftPoly = view.mapFromScene(QRectF(-30, -10, 20, 20));
     QPolygon rightPoly = view.mapFromScene(QRectF(30, -10, 20, 20));
 
@@ -1534,7 +1532,6 @@ void tst_QGraphicsView::itemsInPath()
     view.setSceneRect(-10000, -10000, 20000, 20000);
     view.show();
 
-    QPoint centerPoint = view.viewport()->rect().center();
     QPainterPath leftPath;
     leftPath.addEllipse(QRect(view.mapFromScene(-30, -10), QSize(20, 20)));
 
@@ -1794,7 +1791,6 @@ void tst_QGraphicsView::mapToScenePath()
     view.translate(10, 10);
     view.setFixedSize(300, 300);
     view.show();
-    QPoint center = view.viewport()->rect().center();
     QRect rect(QPoint(10, 0), QSize(10, 10));
 
     QPainterPath path;

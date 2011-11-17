@@ -3280,8 +3280,6 @@ void tst_QTreeWidget::taskQTBUG2844_visualItemRect()
     tree.setColumnCount(3);
     QTreeWidgetItem item(&tree);
 
-    QRect itemRect = tree.visualItemRect(&item);
-
     QRect rectCol0 = tree.visualRect(tree.indexFromItem(&item, 0));
     QRect rectCol1 = tree.visualRect(tree.indexFromItem(&item, 1));
     QRect rectCol2 = tree.visualRect(tree.indexFromItem(&item, 2));

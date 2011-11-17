@@ -4541,17 +4541,16 @@ void tst_QString::nanAndInf()
     QVERIFY(ok);
     QVERIFY(d == -INFINITY);
 
-    long l;
-    l = QString("INF").toLong(&ok);
+    QString("INF").toLong(&ok);
     QVERIFY(!ok);
 
-    l = QString("INF").toLong(&ok, 36);
+    QString("INF").toLong(&ok, 36);
     QVERIFY(ok);
 
-    l = QString("INF0").toLong(&ok, 36);
+    QString("INF0").toLong(&ok, 36);
     QVERIFY(ok);
 
-    l = QString("0INF0").toLong(&ok, 36);
+    QString("0INF0").toLong(&ok, 36);
     QVERIFY(ok);
 }
 

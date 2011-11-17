@@ -5015,8 +5015,6 @@ void tst_QWidget::moveChild()
     parent.setGeometry(60, 60, 150, 150);
 #endif
     child.setGeometry(25, 25, 50, 50);
-    QPoint childOffset = child.mapToGlobal(QPoint());
-
     parent.show();
     QTest::qWaitForWindowShown(&parent);
     QTest::qWait(30);
@@ -6970,9 +6968,6 @@ void tst_QWidget::render_worldTransform()
     painter.translate(105, 5);
     painter.rotate(90);
 
-    const QTransform worldTransform = painter.worldTransform();
-    const QTransform deviceTransform = painter.deviceTransform();
-
     // Render widgets onto image.
     widget.render(&painter);
 #ifdef RENDER_DEBUG
@@ -7100,7 +7095,6 @@ void tst_QWidget::repaintWhenChildDeleted()
     w.r = QRegion();
 
     {
-        const QPoint tlwOffset = w.geometry().topLeft();
         ColorWidget child(&w, Qt::blue);
         child.setGeometry(10, 10, 10, 10);
         child.show();

@@ -294,7 +294,6 @@ void tst_QMainWindow::iconSize()
 
         // the default is determined by the style
         const int metric = mw.style()->pixelMetric(QStyle::PM_ToolBarIconSize);
-        const QSize defaultIconSize = QSize(metric, metric);
         const QSize smallIconSize = QSize(metric / 2, metric / 2);
         const QSize largeIconSize = QSize(metric * 2, metric * 2);
 

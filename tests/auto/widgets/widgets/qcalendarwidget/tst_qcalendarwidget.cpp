@@ -180,7 +180,6 @@ void tst_QCalendarWidget::buttonClickCheck()
     object.setGeometry(0,0,size.width(), size.height());
     object.show();
 
-    QRect rect = object.geometry();
     QDate selectedDate(2005, 1, 1);
     //click on the month buttons
     int month = object.monthShown();

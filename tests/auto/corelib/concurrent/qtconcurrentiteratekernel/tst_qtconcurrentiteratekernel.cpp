@@ -233,7 +233,8 @@ public:
 
     bool shouldThrottleThread()
     {
-       return (iterations > 100 && iterations < 200);
+       const int load = iterations.load();
+       return (load > 100 && load < 200);
     }
     bool throttling;
 };

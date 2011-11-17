@@ -1023,12 +1023,12 @@ void tst_QMetaObjectBuilder::removeNotifySignal()
 {
     QMetaObjectBuilder builder;
 
-    QMetaMethodBuilder method1 = builder.addSignal("foo(const QString&, int)");
-    QMetaMethodBuilder method2 = builder.addSignal("bar(QString)");
+    builder.addSignal("foo(const QString&, int)");
+    QMetaMethodBuilder method = builder.addSignal("bar(QString)");
 
     // Setup property
     QMetaPropertyBuilder prop = builder.addProperty("prop", "const QString &");
-    prop.setNotifySignal(method2);
+    prop.setNotifySignal(method);
     QVERIFY(prop.hasNotifySignal());
     QCOMPARE(prop.notifySignal().index(), 1);
 

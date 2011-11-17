@@ -2026,9 +2026,6 @@ void tst_QTextEdit::fullWidthSelection2()
     widget.setExtraSelections(selections);
 
     compareWidgetAndImage(widget, "fullWidthSelection/nowrap_long.png");
-
-    QTextLine line = widget.document()->begin().layout()->lineAt(0);
-    // qDebug() << line.width();
 }
 
 void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imageFileName)

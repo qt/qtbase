@@ -522,6 +522,7 @@ void tst_QMessageBox::testSymbols()
     button = QMessageBox::Default;
     button = QMessageBox::Escape;
     button = QMessageBox::FlagMask;
+    QVERIFY(button);
 
     const QString text = QStringLiteral("Foo");
     mb1.setText(text);
