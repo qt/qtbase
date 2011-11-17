@@ -259,7 +259,7 @@ static const char *validateSingleType(const char *signature)
 {
     register char c = *signature;
     if (c == DBUS_TYPE_INVALID)
-        return false;
+        return 0;
 
     // is it one of the one-letter types?
     if (strchr(oneLetterTypes, c) != NULL)

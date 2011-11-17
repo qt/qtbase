@@ -937,7 +937,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
     Q_ASSERT_X(QDBusUtil::isValidObjectPath(path), "QDBusConnection::registeredObject",
                "Invalid object path given");
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
-        return false;
+        return 0;
 
     QStringList pathComponents = path.split(QLatin1Char('/'));
     if (pathComponents.last().isEmpty())
