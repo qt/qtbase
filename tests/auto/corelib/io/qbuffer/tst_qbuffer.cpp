@@ -148,9 +148,6 @@ void tst_QBuffer::open()
 // some status() tests, too
 void tst_QBuffer::readBlock()
 {
-//    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read: File not open");
-//    QTest::ignoreMessage(QtWarningMsg, "QIODevice::read: Read operation not permitted");
-
     const int arraySize = 10;
     char a[arraySize];
     QBuffer b;
