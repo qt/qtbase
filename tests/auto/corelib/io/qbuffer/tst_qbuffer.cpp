@@ -71,6 +71,7 @@ private slots:
     void canReadLine();
     void atEnd();
     void readLineBoundaries();
+    void getAndUngetChar();
     void writeAfterQByteArrayResize();
     void read_null();
 
@@ -520,6 +521,8 @@ void tst_QBuffer::atEnd()
     QCOMPARE(buffer.read(&c, 1), qint64(0));
 }
 
+// Test that reading data out of a QBuffer a line at a time gives the same
+// result as reading the whole buffer at once.
 void tst_QBuffer::readLineBoundaries()
 {
     QByteArray line = "This is a line\n";
@@ -528,26 +531,50 @@ void tst_QBuffer::readLineBoundaries()
     while (buffer.size() < 16384)
         buffer.write(line);
 
-/*
     buffer.seek(0);
-    QFile out1("out1.txt");
-    out1.open(QFile::WriteOnly);
-    out1.write(buffer.readAll());
-    out1.close();
-*/
-    buffer.seek(0);
-
-    char c;
-    buffer.getChar(&c);
-    buffer.ungetChar(c);
-
-    QFile out2("out2.txt");
-    out2.open(QFile::WriteOnly);
+    QByteArray lineByLine;
     while (!buffer.atEnd())
-        out2.write(buffer.readLine());
-    
-    out2.close();
-    out2.remove();
+        lineByLine.append(buffer.readLine());
+
+    buffer.seek(0);
+    QCOMPARE(lineByLine, buffer.readAll());
+}
+
+// Test that any character in a buffer can be read and pushed back.
+void tst_QBuffer::getAndUngetChar()
+{
+    // Create some data in a buffer
+    QByteArray line = "This is a line\n";
+    QBuffer buffer;
+    buffer.open(QIODevice::ReadWrite);
+    while (buffer.size() < 16384)
+        buffer.write(line);
+
+    // Take a copy of the data held in the buffer
+    buffer.seek(0);
+    QByteArray data = buffer.readAll();
+
+    // Get and unget each character in order
+    for (qint64 i = 0; i < buffer.size(); ++i) {
+        buffer.seek(i);
+        char c;
+        QVERIFY(buffer.getChar(&c));
+        QCOMPARE(c, data.at((uint)i));
+        buffer.ungetChar(c);
+    }
+
+    // Get and unget each character in reverse order
+    for (qint64 i = buffer.size() - 1; i >= 0; --i) {
+        buffer.seek(i);
+        char c;
+        QVERIFY(buffer.getChar(&c));
+        QCOMPARE(c, data.at((uint)i));
+        buffer.ungetChar(c);
+    }
+
+    // Verify that the state of the buffer still matches the original data.
+    buffer.seek(0);
+    QCOMPARE(buffer.readAll(), data);
 }
 
 void tst_QBuffer::writeAfterQByteArrayResize()
