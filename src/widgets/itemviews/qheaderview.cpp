@@ -3126,8 +3126,8 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
             // the new span is in the middle of the old span, so we have to split it
             length -= sectionSpans.at(i).size;
             int section_size = sectionSpans.at(i).sectionSize();
-#ifndef QT_NO_DEBUG
-            int span_count = sectionSpans.at(i).count;
+#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
+            const int span_count = sectionSpans.at(i).count;
 #endif
             QHeaderView::ResizeMode span_mode = sectionSpans.at(i).resizeMode;
             // first span
@@ -3139,7 +3139,7 @@ void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeader
             length += first_span_size;
             // middle span (the new span)
 #if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
-            int mid_span_count = span.count;
+            const int mid_span_count = span.count;
 #endif
             int mid_span_size = span.size;
             sectionSpans.insert(i + 1, span);
