@@ -1221,6 +1221,10 @@ void tst_QThread::isRunningInFinished()
     }
 }
 
+QT_BEGIN_NAMESPACE
+Q_CORE_EXPORT uint qGlobalPostedEventsCount();
+QT_END_NAMESPACE
+
 class DummyEventDispatcher : public QAbstractEventDispatcher {
 public:
     DummyEventDispatcher() : QAbstractEventDispatcher(), visited(false) {}
@@ -1231,7 +1235,6 @@ public:
         return false;
     }
     bool hasPendingEvents() {
-        extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
         return qGlobalPostedEventsCount();
     }
     void registerSocketNotifier(QSocketNotifier *) {}

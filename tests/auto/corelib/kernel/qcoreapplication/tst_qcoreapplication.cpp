@@ -597,7 +597,6 @@ public:
         return false;
     }
     bool hasPendingEvents() {
-        extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
         return qGlobalPostedEventsCount();
     }
     void registerSocketNotifier(QSocketNotifier *) {}
