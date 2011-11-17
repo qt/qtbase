@@ -80,6 +80,7 @@ private:
 
     friend class QOpenGLContextGroup;
     friend class QOpenGLContextGroupPrivate;
+    friend class QOpenGLMultiGroupSharedResource;
 
     Q_DISABLE_COPY(QOpenGLSharedResource);
 };

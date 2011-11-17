@@ -57,6 +57,7 @@ Q_OBJECT
 private slots:
     void sharedResourceCleanup();
     void multiGroupSharedResourceCleanup();
+    void multiGroupSharedResourceCleanupCustom();
     void fboSimpleRendering();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
@@ -91,22 +92,32 @@ struct SharedResource : public QOpenGLSharedResource
     {
     }
 
+    SharedResource(QOpenGLContext *ctx)
+        : QOpenGLSharedResource(ctx->shareGroup())
+        , resource(1)
+        , tracker(0)
+    {
+    }
+
     ~SharedResource()
     {
-        tracker->destructorCalls++;
+        if (tracker)
+            tracker->destructorCalls++;
     }
 
     void invalidateResource()
     {
         resource = 0;
-        tracker->invalidateResourceCalls++;
+        if (tracker)
+            tracker->invalidateResourceCalls++;
     }
 
     void freeResource(QOpenGLContext *context)
     {
         Q_ASSERT(context == QOpenGLContext::currentContext());
         resource = 0;
-        tracker->freeResourceCalls++;
+        if (tracker)
+            tracker->freeResourceCalls++;
     }
 
     int resource;
@@ -193,6 +204,28 @@ void tst_QOpenGL::multiGroupSharedResourceCleanup()
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
     // Shouldn't crash when application exits.
+}
+
+void tst_QOpenGL::multiGroupSharedResourceCleanupCustom()
+{
+    QWindow window;
+    window.setGeometry(0, 0, 10, 10);
+    window.create();
+
+    QOpenGLContext *ctx = new QOpenGLContext();
+    ctx->create();
+    ctx->makeCurrent(&window);
+
+    QOpenGLMultiGroupSharedResource multiGroupSharedResource;
+    SharedResource *resource = multiGroupSharedResource.value<SharedResource>(ctx);
+    SharedResourceTracker tracker;
+    resource->tracker = &tracker;
+
+    delete ctx;
+
+    QCOMPARE(tracker.invalidateResourceCalls, 1);
+    QCOMPARE(tracker.freeResourceCalls, 0);
+    QCOMPARE(tracker.destructorCalls, 1);
 }
 
 static bool fuzzyComparePixels(const QRgb testPixel, const QRgb refPixel, const char* file, int line, int x = -1, int y = -1)

@@ -595,6 +595,7 @@ void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContextGroup *group, QOpenG
 #ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
     qDebug("Cleaning up context group resource %p, for group %p in thread %p.", this, group, QThread::currentThread());
 #endif
+    value->invalidateResource();
     value->free();
     active.deref();
 
