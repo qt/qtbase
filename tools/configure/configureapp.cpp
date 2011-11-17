@@ -508,6 +508,10 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-mp") {
             dictionary[ "MSVC_MP" ] = "no";
         }
+        else if (configCmdLine.at(i) == "-force-asserts") {
+            dictionary[ "FORCE_ASSERTS" ] = "yes";
+        }
+
 
 #endif
 
@@ -1264,6 +1268,8 @@ void Configure::parseCmdLine()
     if (dictionary["BUILDDEV"] == "yes")
         qtConfig += "private_tests";
 
+    if (dictionary["FORCE_ASSERTS"] == "yes")
+        qtConfig += "force_asserts";
 
 #if !defined(EVAL)
     for (QStringList::Iterator dis = disabledModules.begin(); dis != disabledModules.end(); ++dis) {
@@ -1655,7 +1661,7 @@ bool Configure::displayHelp()
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
         desc(                   "",                     "Requires EGL support, typically supplied by an OpenGL", false, ' ');
         desc(                   "",                     "or other graphics implementation\n", false, ' ');
-
+        desc(                   "-force-asserts",       "Activate asserts in release mode.\n");
 #endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
