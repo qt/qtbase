@@ -20,13 +20,20 @@ CONFIG = lex yacc warn_on debug uic resources $$CONFIG
     }
 
     QTFWD = -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
-    !isEmpty(QTDIR) {
+    !isEmpty(QTDIR):exists($$QTDIR/.qmake.cache) {
         # Only if QTDIR points to an actual build directory
         # and this build directory is the install directory
         # can we tell syncqt to do a -developer-build
-        exists($$QTDIR/.qmake.cache):contains(QTDIR, $$[QT_INSTALL_PREFIX]) {
-            QTFWD = -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+        win32 {
+            CMP_QDIR = $$upper($$QTDIR)
+            CMP_INSTALL_PREFIX = $$upper($$[QT_INSTALL_PREFIX])
+        } else {
+            CMP_QDIR = $$QTDIR
+            CMP_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
         }
+        contains(CMP_QDIR, $$CMP_INSTALL_PREFIX):QTFWD = -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+        unset(CMP_QDIR)
+        unset(CMP_INSTALL_PREFIX)
     }
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
