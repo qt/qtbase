@@ -3512,7 +3512,6 @@ fi
 # post process QT_INSTALL_* variables
 #-------------------------------------------------------------------------------
 
-#prefix
 if [ -z "$QT_INSTALL_PREFIX" ]; then
     if [ "$CFG_DEV" = "yes" ]; then
         QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
@@ -3522,11 +3521,10 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
 fi
 QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
 
-#docs
 if [ -z "$QT_INSTALL_DOCS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        QT_INSTALL_DOCS="/Developer/Documentation/Qt"
+        if [ "$PLATFORM_MAC" = "yes" ]; then
+            QT_INSTALL_DOCS="/Developer/Documentation/Qt"
         fi
     fi
     [ -z "$QT_INSTALL_DOCS" ] && QT_INSTALL_DOCS="$QT_INSTALL_PREFIX/doc" #fallback
@@ -3534,12 +3532,11 @@ if [ -z "$QT_INSTALL_DOCS" ]; then #default
 fi
 QT_INSTALL_DOCS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DOCS"`
 
-#headers
 if [ -z "$QT_INSTALL_HEADERS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        if [ "$CFG_FRAMEWORK" = "yes" ]; then
-        QT_INSTALL_HEADERS=
+        if [ "$PLATFORM_MAC" = "yes" ]; then
+            if [ "$CFG_FRAMEWORK" = "yes" ]; then
+                QT_INSTALL_HEADERS=
             fi
         fi
     fi
@@ -3548,7 +3545,6 @@ if [ -z "$QT_INSTALL_HEADERS" ]; then #default
 fi
 QT_INSTALL_HEADERS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_HEADERS"`
 
-#libs
 if [ -z "$QT_INSTALL_LIBS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
         if [ "$PLATFORM_MAC" = "yes" ]; then
@@ -3561,7 +3557,6 @@ if [ -z "$QT_INSTALL_LIBS" ]; then #default
 fi
 QT_INSTALL_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBS"`
 
-#bins
 if [ -z "$QT_INSTALL_BINS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
         if [ "$PLATFORM_MAC" = "yes" ]; then
@@ -3572,55 +3567,49 @@ if [ -z "$QT_INSTALL_BINS" ]; then #default
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
-#plugins
 if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        QT_INSTALL_PLUGINS="/Developer/Applications/Qt/plugins"
+        if [ "$PLATFORM_MAC" = "yes" ]; then
+            QT_INSTALL_PLUGINS="/Developer/Applications/Qt/plugins"
         fi
     fi
     [ -z "$QT_INSTALL_PLUGINS" ] && QT_INSTALL_PLUGINS="$QT_INSTALL_PREFIX/plugins" #fallback
 fi
 QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
 
-#imports
 if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        QT_INSTALL_IMPORTS="/Developer/Applications/Qt/imports"
+        if [ "$PLATFORM_MAC" = "yes" ]; then
+            QT_INSTALL_IMPORTS="/Developer/Applications/Qt/imports"
         fi
     fi
     [ -z "$QT_INSTALL_IMPORTS" ] && QT_INSTALL_IMPORTS="$QT_INSTALL_PREFIX/imports" #fallback
 fi
 QT_INSTALL_IMPORTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_IMPORTS"`
 
-#data
 if [ -z "$QT_INSTALL_DATA" ]; then #default
     QT_INSTALL_DATA="$QT_INSTALL_PREFIX"
 fi
 QT_INSTALL_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DATA"`
 
-#translations
 if [ -z "$QT_INSTALL_TRANSLATIONS" ]; then #default
     QT_INSTALL_TRANSLATIONS="$QT_INSTALL_PREFIX/translations"
 fi
 QT_INSTALL_TRANSLATIONS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TRANSLATIONS"`
 
-#settings
 if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
     if [ "$PLATFORM_MAC" = "yes" ]; then
-    QT_INSTALL_SETTINGS=/Library/Preferences/Qt
+        QT_INSTALL_SETTINGS=/Library/Preferences/Qt
     else
-    QT_INSTALL_SETTINGS=/etc/xdg
+        QT_INSTALL_SETTINGS=/etc/xdg
     fi
 fi
 QT_INSTALL_SETTINGS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_SETTINGS"`
 
-#examples
 if [ -z "$QT_INSTALL_EXAMPLES" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        QT_INSTALL_EXAMPLES="/Developer/Examples/Qt"
+        if [ "$PLATFORM_MAC" = "yes" ]; then
+            QT_INSTALL_EXAMPLES="/Developer/Examples/Qt"
         fi
     fi
     [ -z "$QT_INSTALL_EXAMPLES" ] && QT_INSTALL_EXAMPLES="$QT_INSTALL_PREFIX/examples" #fallback
