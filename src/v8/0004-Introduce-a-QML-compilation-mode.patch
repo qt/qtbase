@@ -1,7 +1,7 @@
-From b4bb5845077f9b2ad4359360d2e071ed992ede10 Mon Sep 17 00:00:00 2001
+From ae1c497cf2235df9d73d3c5d3c2b40bcde7e534f Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 13:34:16 +0100
-Subject: [PATCH 04/11] Introduce a QML compilation mode
+Subject: [PATCH 04/12] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
@@ -15,54 +15,56 @@ closures etc. created during the run will retain a reference to this
 object, so different objects can be passed in different script
 runs.
 ---
- include/v8.h                     |   19 ++++++++--
- src/api.cc                       |   52 ++++++++++++++++++++++++-----
+ include/v8.h                     |   19 +++++++--
+ src/api.cc                       |   52 +++++++++++++++++++----
  src/arm/code-stubs-arm.cc        |    4 ++
- src/arm/full-codegen-arm.cc      |   28 +++++++++-------
+ src/arm/full-codegen-arm.cc      |   28 +++++++-----
  src/arm/lithium-arm.cc           |    4 +-
- src/arm/lithium-arm.h            |   12 ++++++-
- src/arm/lithium-codegen-arm.cc   |    9 +++--
- src/arm/macro-assembler-arm.h    |    5 +++
- src/ast-inl.h                    |    5 +++
- src/ast.cc                       |    5 +++
+ src/arm/lithium-arm.h            |   12 +++++-
+ src/arm/lithium-codegen-arm.cc   |    9 ++--
+ src/arm/macro-assembler-arm.h    |    5 ++
+ src/ast-inl.h                    |    5 ++
+ src/ast.cc                       |    5 ++
  src/ast.h                        |    1 +
  src/code-stubs.h                 |    2 +-
- src/compiler.cc                  |   15 +++++++-
- src/compiler.h                   |   16 +++++++--
- src/contexts.cc                  |   35 +++++++++++++++++++
+ src/compiler.cc                  |   15 ++++++-
+ src/compiler.h                   |   16 ++++++-
+ src/contexts.cc                  |   35 ++++++++++++++++
  src/contexts.h                   |    4 ++
- src/execution.cc                 |   31 ++++++++++++++---
+ src/execution.cc                 |   31 ++++++++++++--
  src/execution.h                  |    8 ++++
  src/full-codegen.cc              |    3 +-
  src/full-codegen.h               |    1 +
  src/heap.cc                      |    4 ++
- src/hydrogen-instructions.cc     |    5 +++
- src/hydrogen-instructions.h      |   21 ++++++++++--
+ src/hydrogen-instructions.cc     |    5 ++
+ src/hydrogen-instructions.h      |   21 ++++++++-
  src/hydrogen.cc                  |    4 ++
- src/ia32/code-stubs-ia32.cc      |    5 +++
- src/ia32/full-codegen-ia32.cc    |   28 +++++++++-------
- src/ia32/lithium-codegen-ia32.cc |    9 +++--
+ src/ia32/code-stubs-ia32.cc      |    5 ++
+ src/ia32/full-codegen-ia32.cc    |   28 +++++++-----
+ src/ia32/lithium-codegen-ia32.cc |    9 ++--
  src/ia32/lithium-ia32.cc         |    4 +-
  src/ia32/lithium-ia32.h          |   12 +++++-
- src/ia32/macro-assembler-ia32.h  |    3 ++
+ src/ia32/macro-assembler-ia32.h  |    3 +
  src/objects-inl.h                |    2 +
- src/objects.h                    |    4 ++
- src/parser.cc                    |   28 +++++++++++++--
- src/parser.h                     |    4 ++-
- src/prettyprinter.cc             |    3 ++
- src/runtime.cc                   |   68 +++++++++++++++++++++++++-------------
+ src/objects.h                    |    7 +++
+ src/parser.cc                    |   28 +++++++++++--
+ src/parser.h                     |    4 +-
+ src/prettyprinter.cc             |    3 +
+ src/runtime.cc                   |   84 +++++++++++++++++++++++++-------------
  src/runtime.h                    |    8 ++--
- src/scopes.cc                    |   63 +++++++++++++++++++++++++++++++++++
+ src/scopeinfo.cc                 |   28 ++++++++++---
+ src/scopeinfo.h                  |    1 +
+ src/scopes.cc                    |   63 ++++++++++++++++++++++++++++
  src/scopes.h                     |    8 ++++
  src/variables.cc                 |    3 +-
- src/variables.h                  |    5 +++
+ src/variables.h                  |    5 ++
  src/x64/code-stubs-x64.cc        |    4 ++
- src/x64/full-codegen-x64.cc      |   28 +++++++++-------
- src/x64/lithium-codegen-x64.cc   |    9 +++--
+ src/x64/full-codegen-x64.cc      |   28 +++++++-----
+ src/x64/lithium-codegen-x64.cc   |    9 ++--
  src/x64/lithium-x64.cc           |    4 +-
- src/x64/lithium-x64.h            |   12 +++++++
- src/x64/macro-assembler-x64.h    |    5 +++
- 47 files changed, 494 insertions(+), 118 deletions(-)
+ src/x64/lithium-x64.h            |   12 +++++
+ src/x64/macro-assembler-x64.h    |    5 ++
+ 49 files changed, 531 insertions(+), 129 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
 index 3ef4dd6..193e2fe 100644
@@ -1272,10 +1274,20 @@ index 6a80c9c..2e83fb7 100644
  BOOL_ACCESSORS(SharedFunctionInfo, compiler_hints,
                 name_should_print_as_anonymous,
 diff --git a/src/objects.h b/src/objects.h
-index c38d461..73e7f8b 100644
+index c38d461..b71eaac 100644
 --- a/src/objects.h
 +++ b/src/objects.h
-@@ -4929,6 +4929,9 @@ class SharedFunctionInfo: public HeapObject {
+@@ -3120,6 +3120,9 @@ class SerializedScopeInfo : public FixedArray {
+   // Is this scope a strict mode scope?
+   bool IsStrictMode();
+ 
++  // Is this scope a qml mode scope?
++  bool IsQmlMode();
++
+   // Return the number of stack slots for code.
+   int NumberOfStackSlots();
+ 
+@@ -4929,6 +4932,9 @@ class SharedFunctionInfo: public HeapObject {
    inline StrictModeFlag strict_mode_flag();
    inline void set_strict_mode_flag(StrictModeFlag strict_mode_flag);
  
@@ -1285,7 +1297,7 @@ index c38d461..73e7f8b 100644
    // False if the function definitely does not allocate an arguments object.
    DECL_BOOLEAN_ACCESSORS(uses_arguments)
  
-@@ -5150,6 +5153,7 @@ class SharedFunctionInfo: public HeapObject {
+@@ -5150,6 +5156,7 @@ class SharedFunctionInfo: public HeapObject {
      kCodeAgeShift,
      kOptimizationDisabled = kCodeAgeShift + kCodeAgeSize,
      kStrictModeFunction,
@@ -1421,7 +1433,7 @@ index 37c76ce..73812fd 100644
      PrintLiteralIndented(buf.start(), value, true);
    }
 diff --git a/src/runtime.cc b/src/runtime.cc
-index 0e256c1..5746c20 100644
+index 0e256c1..b64e66b 100644
 --- a/src/runtime.cc
 +++ b/src/runtime.cc
 @@ -1307,19 +1307,23 @@ static Failure* ThrowRedeclarationError(Isolate* isolate,
@@ -1601,7 +1613,56 @@ index 0e256c1..5746c20 100644
  }
  
  
-@@ -12034,6 +12053,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+@@ -11220,10 +11239,12 @@ class ScopeIterator {
+     ZoneScope zone_scope(isolate, DELETE_ON_EXIT);
+     Handle<Script> script(Script::cast(shared_info->script()));
+     Scope* scope;
+-    if (index >= 0) {
++    if (index >= 0 || shared_info->qml_mode()) {
+       // Global code
+       CompilationInfo info(script);
+       info.MarkAsGlobal();
++      if (shared_info->qml_mode())
++          info.MarkAsQmlMode();
+       bool result = ParserApi::Parse(&info);
+       ASSERT(result);
+       result = Scope::Analyze(&info);
+@@ -11253,7 +11274,6 @@ class ScopeIterator {
+     ScopeType scope_type = Type();
+     if (scope_type == ScopeTypeGlobal) {
+       // The global scope is always the last in the chain.
+-      ASSERT(context_->IsGlobalContext());
+       context_ = Handle<Context>();
+       return;
+     }
+@@ -11277,7 +11297,7 @@ class ScopeIterator {
+                  !scope_info->HasContext());
+           return ScopeTypeLocal;
+         case GLOBAL_SCOPE:
+-          ASSERT(context_->IsGlobalContext());
++          ASSERT(context_->IsGlobalContext() || scope_info->IsQmlMode());
+           return ScopeTypeGlobal;
+         case WITH_SCOPE:
+           ASSERT(context_->IsWithContext());
+@@ -11315,10 +11335,15 @@ class ScopeIterator {
+     switch (Type()) {
+       case ScopeIterator::ScopeTypeGlobal:
+         return Handle<JSObject>(CurrentContext()->global());
+-      case ScopeIterator::ScopeTypeLocal:
++      case ScopeIterator::ScopeTypeLocal: {
++        Handle<SerializedScopeInfo> scope_info = nested_scope_chain_.last();
++        if (scope_info->IsQmlMode())
++            ASSERT(nested_scope_chain_.length() == 2);
++        else
++            ASSERT(nested_scope_chain_.length() == 1);
+         // Materialize the content of the local scope into a JSObject.
+-        ASSERT(nested_scope_chain_.length() == 1);
+         return MaterializeLocalScope(isolate_, frame_, inlined_frame_index_);
++      }
+       case ScopeIterator::ScopeTypeWith:
+         // Return the with object.
+         return Handle<JSObject>(JSObject::cast(CurrentContext()->extension()));
+@@ -12034,6 +12059,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
    Handle<JSFunction> function(JSFunction::cast(frame->function()));
    Handle<SerializedScopeInfo> scope_info(function->shared()->scope_info());
    ScopeInfo<> sinfo(*scope_info);
@@ -1609,7 +1670,7 @@ index 0e256c1..5746c20 100644
  
    // Traverse the saved contexts chain to find the active context for the
    // selected frame.
-@@ -12107,7 +12127,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+@@ -12107,7 +12133,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
        Compiler::CompileEval(function_source,
                              context,
                              context->IsGlobalContext(),
@@ -1619,7 +1680,7 @@ index 0e256c1..5746c20 100644
    if (shared.is_null()) return Failure::Exception();
    Handle<JSFunction> compiled_function =
        isolate->factory()->NewFunctionFromSharedFunctionInfo(shared, context);
-@@ -12117,7 +12138,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
+@@ -12117,7 +12144,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluate) {
    Handle<Object> receiver(frame->receiver(), isolate);
    Handle<Object> evaluation_function =
        Execution::Call(compiled_function, receiver, 0, NULL,
@@ -1629,7 +1690,7 @@ index 0e256c1..5746c20 100644
    if (has_pending_exception) return Failure::Exception();
  
    Handle<Object> arguments = GetArgumentsObject(isolate,
-@@ -12198,7 +12220,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluateGlobal) {
+@@ -12198,7 +12226,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DebugEvaluateGlobal) {
    // Currently, the eval code will be executed in non-strict mode,
    // even in the strict code context.
    Handle<SharedFunctionInfo> shared =
@@ -1664,6 +1725,102 @@ index 67fc628..aada06d 100644
    F(InitializeConstContextSlot, 3, 1) \
    F(OptimizeObjectForAddingMultipleProperties, 2, 1) \
    \
+diff --git a/src/scopeinfo.cc b/src/scopeinfo.cc
+index 8ea5f1e..a61b787 100644
+--- a/src/scopeinfo.cc
++++ b/src/scopeinfo.cc
+@@ -51,6 +51,7 @@ ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
+     : function_name_(FACTORY->empty_symbol()),
+       calls_eval_(scope->calls_eval()),
+       is_strict_mode_(scope->is_strict_mode()),
++      is_qml_mode_(scope->is_qml_mode()),
+       type_(scope->type()),
+       parameters_(scope->num_parameters()),
+       stack_slots_(scope->num_stack_slots()),
+@@ -153,6 +154,8 @@ ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
+ //
+ // - is strict mode scope
+ //
++// - is qml mode scope
++//
+ // - scope type
+ //
+ // - number of variables in the context object (smi) (= function context
+@@ -252,6 +255,7 @@ ScopeInfo<Allocator>::ScopeInfo(SerializedScopeInfo* data)
+     p = ReadObject(p, &function_name_);
+     p = ReadBool(p, &calls_eval_);
+     p = ReadBool(p, &is_strict_mode_);
++    p = ReadBool(p, &is_qml_mode_);
+     p = ReadInt(p, &type_);
+     p = ReadList<Allocator>(p, &context_slots_, &context_modes_);
+     p = ReadList<Allocator>(p, &parameters_);
+@@ -307,9 +311,9 @@ static Object** WriteList(Object** p,
+ 
+ template<class Allocator>
+ Handle<SerializedScopeInfo> ScopeInfo<Allocator>::Serialize() {
+-  // function name, calls eval, is_strict_mode, scope type,
++  // function name, calls eval, is_strict_mode, is_qml_mode, scope type,
+   // length for 3 tables:
+-  const int extra_slots = 1 + 1 + 1 + 1 + 3;
++  const int extra_slots = 1 + 1 + 1 + 1 + 1 + 3;
+   int length = extra_slots +
+                context_slots_.length() * 2 +
+                parameters_.length() +
+@@ -324,6 +328,7 @@ Handle<SerializedScopeInfo> ScopeInfo<Allocator>::Serialize() {
+   p = WriteObject(p, function_name_);
+   p = WriteBool(p, calls_eval_);
+   p = WriteBool(p, is_strict_mode_);
++  p = WriteBool(p, is_qml_mode_);
+   p = WriteInt(p, type_);
+   p = WriteList(p, &context_slots_, &context_modes_);
+   p = WriteList(p, &parameters_);
+@@ -372,8 +377,8 @@ SerializedScopeInfo* SerializedScopeInfo::Empty() {
+ 
+ Object** SerializedScopeInfo::ContextEntriesAddr() {
+   ASSERT(length() > 0);
+-  // +4 for function name, calls eval, strict mode, scope type.
+-  return data_start() + 4;
++  // +5 for function name, calls eval, strict mode, qml mode, scope type.
++  return data_start() + 5;
+ }
+ 
+ 
+@@ -417,10 +422,21 @@ bool SerializedScopeInfo::IsStrictMode() {
+ }
+ 
+ 
++bool SerializedScopeInfo::IsQmlMode() {
++  if (length() > 0) {
++    Object** p = data_start() + 3;  // +3 for function name, calls eval, strict mode.
++    bool qml_mode;
++    p = ReadBool(p, &qml_mode);
++    return qml_mode;
++  }
++  return false;
++}
++
++
+ ScopeType SerializedScopeInfo::Type() {
+   ASSERT(length() > 0);
+-  // +3 for function name, calls eval, strict mode.
+-  Object** p = data_start() + 3;
++  // +4 for function name, calls eval, strict mode, qml mode.
++  Object** p = data_start() + 4;
+   ScopeType type;
+   p = ReadInt(p, &type);
+   return type;
+diff --git a/src/scopeinfo.h b/src/scopeinfo.h
+index eeb3047..2ca4503 100644
+--- a/src/scopeinfo.h
++++ b/src/scopeinfo.h
+@@ -88,6 +88,7 @@ class ScopeInfo BASE_EMBEDDED {
+   Handle<String> function_name_;
+   bool calls_eval_;
+   bool is_strict_mode_;
++  bool is_qml_mode_;
+   ScopeType type_;
+   List<Handle<String>, Allocator > parameters_;
+   List<Handle<String>, Allocator > stack_slots_;
 diff --git a/src/scopes.cc b/src/scopes.cc
 index 3167c4d..6503d07 100644
 --- a/src/scopes.cc
@@ -1766,7 +1923,7 @@ index 3167c4d..6503d07 100644
  
      case DYNAMIC_LOOKUP:
 diff --git a/src/scopes.h b/src/scopes.h
-index a141887..41e5f5c 100644
+index a1418874..41e5f5c 100644
 --- a/src/scopes.h
 +++ b/src/scopes.h
 @@ -228,6 +228,11 @@ class Scope: public ZoneObject {
@@ -2059,5 +2216,5 @@ index f5f81b1..5caa6cf 100644
  static inline Operand StackSpaceOperand(int index) {
  #ifdef _WIN64
 -- 
-1.7.6
+1.7.7.3
 

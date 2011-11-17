@@ -1,7 +1,7 @@
 From 0a86a97f554c4aaa727da1c4481ca6368c68bf85 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Tue, 4 Oct 2011 15:04:21 +1000
-Subject: [PATCH 01/11] Add hashing and comparison methods to v8::String
+Subject: [PATCH 01/12] Add hashing and comparison methods to v8::String
 
 This allows us to more rapidly search for a v8::String inside a hash
 of QStrings.
@@ -303,7 +303,7 @@ index 9a87ac5..2946d02 100644
  
  class SubStringAsciiSymbolKey : public HashTableKey {
 diff --git a/src/objects.h b/src/objects.h
-index f7d2180..d96e5f9 100644
+index f7d21802..d96e5f9 100644
 --- a/src/objects.h
 +++ b/src/objects.h
 @@ -6201,6 +6201,9 @@ class String: public HeapObject {
@@ -332,5 +332,5 @@ index f7d2180..d96e5f9 100644
   private:
    DISALLOW_IMPLICIT_CONSTRUCTORS(SeqString);
 -- 
-1.7.6
+1.7.7.3
 

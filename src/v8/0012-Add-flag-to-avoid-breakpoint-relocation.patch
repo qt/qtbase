@@ -1,0 +1,147 @@
+From d28b6a024826aaa48a8b3e69c096d01c91aff2c9 Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@nokia.com>
+Date: Thu, 10 Nov 2011 16:00:37 +0100
+Subject: [PATCH 12/12] Add flag to avoid breakpoint relocation
+
+Add a flag that prevents v8 from relocating breakpoints across
+line boundaries.
+---
+ src/debug.cc              |   29 +++++++++++++++++++---
+ src/flag-definitions.h    |    1 +
+ test/cctest/test-debug.cc |   59 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 85 insertions(+), 4 deletions(-)
+
+diff --git a/src/debug.cc b/src/debug.cc
+index dc9f297..d32574b 100644
+--- a/src/debug.cc
++++ b/src/debug.cc
+@@ -1131,6 +1131,17 @@ Handle<DebugInfo> Debug::GetDebugInfo(Handle<SharedFunctionInfo> shared) {
+   return Handle<DebugInfo>(DebugInfo::cast(shared->debug_info()));
+ }
+ 
++static bool ContainsLineBreak(String *string, int from, int to)
++{
++  ASSERT(from >= 0);
++  ASSERT(from <= to);
++  const int end = (string->length() < to) ? string->length() : to;
++  for (int pos = from; pos < end; ++pos) {
++    if (string->Get(pos) == '\n')
++      return true;
++  }
++  return false;
++}
+ 
+ void Debug::SetBreakPoint(Handle<SharedFunctionInfo> shared,
+                           Handle<Object> break_point_object,
+@@ -1151,12 +1162,22 @@ void Debug::SetBreakPoint(Handle<SharedFunctionInfo> shared,
+   // Find the break point and change it.
+   BreakLocationIterator it(debug_info, SOURCE_BREAK_LOCATIONS);
+   it.FindBreakLocationFromPosition(*source_position);
+-  it.SetBreakPoint(break_point_object);
+ 
+-  *source_position = it.position();
++  bool acceptBreak = true;
++  if (!FLAG_breakpoint_relocation) {
++    if (String *sourceStr = String::cast(shared->GetSourceCode())) {
++      acceptBreak = !ContainsLineBreak(sourceStr, *source_position, it.position());
++    }
++  }
++
++  if (acceptBreak) {
++    it.SetBreakPoint(break_point_object);
+ 
+-  // At least one active break point now.
+-  ASSERT(debug_info->GetBreakPointCount() > 0);
++    *source_position = it.position();
++
++    // At least one active break point now.
++    ASSERT(debug_info->GetBreakPointCount() > 0);
++  }
+ }
+ 
+ 
+diff --git a/src/flag-definitions.h b/src/flag-definitions.h
+index ee6ef01..fe64a96 100644
+--- a/src/flag-definitions.h
++++ b/src/flag-definitions.h
+@@ -233,6 +233,7 @@ DEFINE_bool(trace_debug_json, false, "trace debugging JSON request/response")
+ DEFINE_bool(debugger_auto_break, true,
+             "automatically set the debug break flag when debugger commands are "
+             "in the queue")
++DEFINE_bool(breakpoint_relocation, true, "relocate breakpoints to the next executable line")
+ DEFINE_bool(enable_liveedit, true, "enable liveedit experimental feature")
+ 
+ // execution.cc
+diff --git a/test/cctest/test-debug.cc b/test/cctest/test-debug.cc
+index cf723ba..7e51c34 100644
+--- a/test/cctest/test-debug.cc
++++ b/test/cctest/test-debug.cc
+@@ -2305,6 +2305,65 @@ TEST(ScriptBreakPointTopLevelCrash) {
+   CheckDebuggerUnloaded();
+ }
+ 
++// Test that breakpoint_relocation flag is honored
++TEST(ScriptBreakPointNoRelocation) {
++    i::FLAG_breakpoint_relocation = false;
++
++    v8::HandleScope scope;
++    DebugLocalContext env;
++    env.ExposeDebug();
++
++    // Create a function for checking the function when hitting a break point.
++    frame_function_name = CompileFunction(&env,
++                                          frame_function_name_source,
++                                          "frame_function_name");
++
++    v8::Debug::SetDebugEventListener(DebugEventBreakPointHitCount,
++                                     v8::Undefined());
++
++    v8::Local<v8::String> script1 = v8::String::New(
++      "a = 0                      // line 0\n"
++      "                           // line 1\n"
++      "                           // line 2\n"
++      "                           // line 3\n"
++      "function f() {             // line 4\n"
++      "  return 0;                // line 5\n"
++      "}                          // line 6");
++
++    // Set the script break point on the empty line
++    SetScriptBreakPointByNameFromJS("test.html", 2, -1);
++
++    // Compile the script and call the function.
++    v8::ScriptOrigin origin(v8::String::New("test.html"), v8::Integer::New(0));
++    v8::Script::Compile(script1, &origin)->Run();
++    v8::Local<v8::Function> f
++            = v8::Local<v8::Function>::Cast(env->Global()->Get(v8::String::New("f")));
++    f->Call(env->Global(), 0, NULL);
++
++    // Check that a break point was not hit
++    CHECK_EQ(0, break_point_hit_count);
++
++    v8::Local<v8::String> script2 = v8::String::New(
++      "a = 0                      // line 0\n"
++      "function g() {             // line 1\n"
++      "  return 0;                // line 2\n"
++      "}                          // line 3\n"
++      "function f() {             // line 4\n"
++      "  return 0;                // line 5\n"
++      "}                          // line 6");
++
++    // Compile the script and call the new function
++    v8::Script::Compile(script2, &origin)->Run();
++    v8::Local<v8::Function> g
++            = v8::Local<v8::Function>::Cast(env->Global()->Get(v8::String::New("g")));
++    g->Call(env->Global(), 0, NULL);
++
++    // Check that a break point was not hit
++    CHECK_EQ(1, break_point_hit_count);
++
++    v8::Debug::SetDebugEventListener(NULL);
++    CheckDebuggerUnloaded();
++}
+ 
+ // Test that it is possible to remove the last break point for a function
+ // inside the break handling of that break point.
+-- 
+1.7.7.3
+

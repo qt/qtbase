@@ -1,7 +1,7 @@
-From 5d7801496ea41f9d1cf4260cd2b0508929ebde76 Mon Sep 17 00:00:00 2001
+From 59b3da4073971aa725eea8f303f37948dc3bb376 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 13:40:00 +0100
-Subject: [PATCH 06/11] Add custom object compare callback
+Subject: [PATCH 06/12] Add custom object compare callback
 
 A global custom object comparison callback can be set with:
     V8::SetUserObjectComparisonCallbackFunction()
@@ -390,10 +390,10 @@ index f5b6bee..6a4eff9 100644
    // Resume inobject slack tracking.
    set_initial_map(map);
 diff --git a/src/objects.h b/src/objects.h
-index 73e7f8b..9dcacac 100644
+index b71eaac..3137437 100644
 --- a/src/objects.h
 +++ b/src/objects.h
-@@ -4255,6 +4255,11 @@ class Map: public HeapObject {
+@@ -4258,6 +4258,11 @@ class Map: public HeapObject {
    inline void set_has_external_resource(bool value);
    inline bool has_external_resource();
  
@@ -405,7 +405,7 @@ index 73e7f8b..9dcacac 100644
    // [prototype]: implicit prototype object.
    DECL_ACCESSORS(prototype, Object)
  
-@@ -4502,7 +4507,7 @@ class Map: public HeapObject {
+@@ -4505,7 +4510,7 @@ class Map: public HeapObject {
    static const int kIsExtensible = 0;
    static const int kFunctionWithPrototype = 1;
    static const int kStringWrapperSafeForDefaultValueOf = 2;
@@ -414,7 +414,7 @@ index 73e7f8b..9dcacac 100644
    // No bits can be used after kElementsKindFirstBit, they are all reserved for
    // storing ElementKind.
    static const int kElementsKindShift = 4;
-@@ -4521,6 +4526,7 @@ class Map: public HeapObject {
+@@ -4524,6 +4529,7 @@ class Map: public HeapObject {
    static const int kIsShared = 0;
    static const int kNamedInterceptorIsFallback = 1;
    static const int kHasInstanceCallHandler = 2;
@@ -422,7 +422,7 @@ index 73e7f8b..9dcacac 100644
  
    // Layout of the default cache. It holds alternating name and code objects.
    static const int kCodeCacheEntrySize = 2;
-@@ -7553,6 +7559,7 @@ class ObjectTemplateInfo: public TemplateInfo {
+@@ -7556,6 +7562,7 @@ class ObjectTemplateInfo: public TemplateInfo {
    DECL_ACCESSORS(constructor, Object)
    DECL_ACCESSORS(internal_field_count, Object)
    DECL_ACCESSORS(has_external_resource, Object)
@@ -430,7 +430,7 @@ index 73e7f8b..9dcacac 100644
  
    static inline ObjectTemplateInfo* cast(Object* obj);
  
-@@ -7570,7 +7577,8 @@ class ObjectTemplateInfo: public TemplateInfo {
+@@ -7573,7 +7580,8 @@ class ObjectTemplateInfo: public TemplateInfo {
    static const int kInternalFieldCountOffset =
        kConstructorOffset + kPointerSize;
    static const int kHasExternalResourceOffset = kInternalFieldCountOffset + kPointerSize;
@@ -441,7 +441,7 @@ index 73e7f8b..9dcacac 100644
  
  
 diff --git a/src/runtime.cc b/src/runtime.cc
-index 5746c20..542e62b 100644
+index b64e66b..8010169 100644
 --- a/src/runtime.cc
 +++ b/src/runtime.cc
 @@ -7095,6 +7095,29 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_StringEquals) {
@@ -544,5 +544,5 @@ index f30221f..ff8337f 100644
    ASSERT(GetCondition() == equal);
    __ subq(rax, rdx);
 -- 
-1.7.6
+1.7.7.3
 
