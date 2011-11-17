@@ -2253,6 +2253,13 @@ static int quorem(Bigint *b, Bigint *S)
  *           calculation.
  */
 
+#if defined(Q_OS_WIN) && defined (Q_CC_GNU) && !defined(_clear87) // See QTBUG-7576
+extern "C" {
+__attribute__ ((dllimport)) unsigned int __cdecl __MINGW_NOTHROW _control87 (unsigned int unNew, unsigned int unMask);
+__attribute__ ((dllimport)) unsigned int __cdecl __MINGW_NOTHROW _clearfp (void); /* Clear the FPU status word */
+}
+#  define _clear87 _clearfp
+#endif
 
 /* This actually sometimes returns a pointer to a string literal
    cast to a char*. Do NOT try to modify the return value. */
