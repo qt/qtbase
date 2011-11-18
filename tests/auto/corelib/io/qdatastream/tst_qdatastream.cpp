@@ -1463,9 +1463,6 @@ void tst_QDataStream::readQImage(QDataStream *s)
     QVERIFY(d12.depth() == ref.depth());
     QVERIFY(d12.colorCount() == ref.colorCount());
     QVERIFY(d12.hasAlphaChannel() == ref.hasAlphaChannel());
-
-//     ################ Bug : ref and orig has ff in alpha; readback has 0
-//     ### (Was like this in 1.44 as well)
 }
 
 // ************************************
