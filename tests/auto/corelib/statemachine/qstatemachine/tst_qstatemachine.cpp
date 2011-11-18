@@ -146,12 +146,6 @@ private slots:
 
     void noInitialStateForInitialState();
 
-    //void restorePolicyNotInherited();
-    //void mixedRestoreProperties();
-    //void setRestorePolicyToDoNotRestore();
-    //void setGlobalRestorePolicyToGlobalRestore();
-    //void restorePolicyOnChildState();
-
     void transitionWithParent();
     void transitionsFromParallelStateWithNoChildren();
     void parallelStateTransition();
@@ -2715,55 +2709,6 @@ void tst_QStateMachine::noInitialStateForInitialState()
     QCOMPARE(int(machine.error()), int(QStateMachine::NoInitialStateError));
 }
 
-/*
-void tst_QStateMachine::restorePolicyNotInherited()
-{
-    QStateMachine machine;
-
-    QObject *propertyHolder = new QObject();
-    propertyHolder->setProperty("a", 1);
-    propertyHolder->setProperty("b", 2);
-
-    QState *parentState = new QState(&machine);
-    parentState->setObjectName("parentState");
-    parentState->setRestorePolicy(QState::RestoreProperties);
-
-    QState *s1 = new QState(parentState);
-    s1->setObjectName("s1");
-    s1->assignProperty(propertyHolder, "a", 3);
-    parentState->setInitialState(s1);
-
-    QState *s2 = new QState(parentState);
-    s2->setObjectName("s2");
-    s2->assignProperty(propertyHolder, "b", 4);
-
-    QState *s3 = new QState(parentState);
-    s3->setObjectName("s3");
-
-    s1->addTransition(new EventTransition(QEvent::User, s2));
-    s2->addTransition(new EventTransition(QEvent::User, s3));
-
-    machine.setInitialState(parentState);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 2);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);
-
-}*/
-
 void tst_QStateMachine::globalRestorePolicySetToDontRestore()
 {
     QStateMachine machine;
@@ -2804,127 +2749,6 @@ void tst_QStateMachine::globalRestorePolicySetToDontRestore()
     QCOMPARE(propertyHolder->property("b").toInt(), 4);
 }
 
-/*
-void tst_QStateMachine::setRestorePolicyToDoNotRestore()
-{
-    QObject *object = new QObject();
-    object->setProperty("a", 1);
-    object->setProperty("b", 2);
-
-    QStateMachine machine;
-
-    QState *S1 = new QState();
-    S1->setObjectName("S1");
-    S1->assignProperty(object, "a", 3);
-    S1->setRestorePolicy(QState::DoNotRestoreProperties);
-    machine.addState(S1);
-
-    QState *S2 = new QState();
-    S2->setObjectName("S2");
-    S2->assignProperty(object, "b", 5);
-    S2->setRestorePolicy(QState::DoNotRestoreProperties);
-    machine.addState(S2);
-
-    QState *S3 = new QState();
-    S3->setObjectName("S3");
-    S3->setRestorePolicy(QState::DoNotRestoreProperties);
-    machine.addState(S3);
-
-    QFinalState *S4 = new QFinalState();
-    machine.addState(S4);
-
-    S1->addTransition(new EventTransition(QEvent::User, S2));
-    S2->addTransition(new EventTransition(QEvent::User, S3));
-    S3->addTransition(S4);
-
-    machine.setInitialState(S1);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("a").toInt(), 3);
-    QCOMPARE(object->property("b").toInt(), 2);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("a").toInt(), 3);
-    QCOMPARE(object->property("b").toInt(), 5);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(object->property("a").toInt(), 3);
-    QCOMPARE(object->property("b").toInt(), 5);
-}
-
-void tst_QStateMachine::setGlobalRestorePolicyToGlobalRestore()
-{
-    s_countWarnings = false;
-    QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::GlobalRestorePolicy);
-
-    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::DoNotRestoreProperties);
-    QCOMPARE(s_msgType, QtWarningMsg);
-
-    s_msgType = QtDebugMsg;
-    machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-    machine.setGlobalRestorePolicy(QStateMachine::GlobalRestorePolicy);
-
-    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::RestoreProperties);
-    QCOMPARE(s_msgType, QtWarningMsg);
-}
-
-
-void tst_QStateMachine::restorePolicyOnChildState()
-{
-    QStateMachine machine;
-
-    QObject *propertyHolder = new QObject();
-    propertyHolder->setProperty("a", 1);
-    propertyHolder->setProperty("b", 2);
-
-    QState *parentState = new QState(&machine);
-    parentState->setObjectName("parentState");
-
-    QState *s1 = new QState(parentState);
-    s1->setRestorePolicy(QState::RestoreProperties);
-    s1->setObjectName("s1");
-    s1->assignProperty(propertyHolder, "a", 3);
-    parentState->setInitialState(s1);
-
-    QState *s2 = new QState(parentState);
-    s2->setRestorePolicy(QState::RestoreProperties);
-    s2->setObjectName("s2");
-    s2->assignProperty(propertyHolder, "b", 4);
-
-    QState *s3 = new QState(parentState);
-    s3->setRestorePolicy(QState::RestoreProperties);
-    s3->setObjectName("s3");
-
-    s1->addTransition(new EventTransition(QEvent::User, s2));
-    s2->addTransition(new EventTransition(QEvent::User, s3));
-
-    machine.setInitialState(parentState);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 3);
-    QCOMPARE(propertyHolder->property("b").toInt(), 2);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 1);
-    QCOMPARE(propertyHolder->property("b").toInt(), 4);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    QCOMPARE(propertyHolder->property("a").toInt(), 1);
-    QCOMPARE(propertyHolder->property("b").toInt(), 2);
-}
-*/
-
 void tst_QStateMachine::globalRestorePolicySetToRestore()
 {
     QStateMachine machine;
@@ -2964,75 +2788,6 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     QCOMPARE(propertyHolder->property("a").toInt(), 1);
     QCOMPARE(propertyHolder->property("b").toInt(), 2);
 }
-
-/*
-void tst_QStateMachine::mixedRestoreProperties()
-{
-    QStateMachine machine;
-
-    QObject *propertyHolder = new QObject();
-    propertyHolder->setProperty("a", 1);
-
-    QState *s1 = new QState(&machine);
-    s1->setRestorePolicy(QState::RestoreProperties);
-    s1->assignProperty(propertyHolder, "a", 3);
-
-    QState *s2 = new QState(&machine);
-    s2->assignProperty(propertyHolder, "a", 4);
-
-    QState *s3 = new QState(&machine);
-
-    QState *s4 = new QState(&machine);
-    s4->assignProperty(propertyHolder, "a", 5);
-
-    QState *s5 = new QState(&machine);
-    s5->setRestorePolicy(QState::RestoreProperties);
-    s5->assignProperty(propertyHolder, "a", 6);
-
-    s1->addTransition(new EventTransition(QEvent::User, s2));
-    s2->addTransition(new EventTransition(QEvent::User, s3));
-    s3->addTransition(new EventTransition(QEvent::User, s4));
-    s4->addTransition(new EventTransition(QEvent::User, s5));
-    s5->addTransition(new EventTransition(QEvent::User, s3));
-
-    machine.setInitialState(s1);
-    machine.start();
-    QCoreApplication::processEvents();
-
-    // Enter s1, save current
-    QCOMPARE(propertyHolder->property("a").toInt(), 3);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    // Enter s2, restorePolicy == DoNotRestore, so restore all properties
-    QCOMPARE(propertyHolder->property("a").toInt(), 4);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    // Enter s3
-    QCOMPARE(propertyHolder->property("a").toInt(), 4);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    // Enter s4
-    QCOMPARE(propertyHolder->property("a").toInt(), 5);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    // Enter s5, save current
-    QCOMPARE(propertyHolder->property("a").toInt(), 6);
-
-    machine.postEvent(new QEvent(QEvent::User));
-    QCoreApplication::processEvents();
-
-    // Enter s3, restore
-    QCOMPARE(propertyHolder->property("a").toInt(), 5);
-}
-*/
 
 void tst_QStateMachine::transitionWithParent()
 {
