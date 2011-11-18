@@ -21,14 +21,16 @@ SOURCES = main.cpp \
     qdirectfbconvenience.cpp \
     qdirectfbinput.cpp \
     qdirectfbcursor.cpp \
-    qdirectfbwindow.cpp
+    qdirectfbwindow.cpp \
+    qdirectfbscreen.cpp
 HEADERS = qdirectfbintegration.h \
     qdirectfbbackingstore.h \
     qdirectfbblitter.h \
     qdirectfbconvenience.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \
-    qdirectfbwindow.h
+    qdirectfbwindow.h \
+    qdirectfbscreen.h
 
 # ### port the GL context
 

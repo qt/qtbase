@@ -59,25 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbScreen::QDirectFbScreen(int display)
-    : QPlatformScreen()
-    , m_layer(QDirectFbConvenience::dfbDisplayLayer(display))
-{
-    m_layer->SetCooperativeLevel(m_layer.data(), DLSCL_SHARED);
-
-    DFBDisplayLayerConfig config;
-    m_layer->GetConfiguration(m_layer.data(), &config);
-
-    m_format = QDirectFbConvenience::imageFormatFromSurfaceFormat(config.pixelformat, config.surface_caps);
-    m_geometry = QRect(0,0,config.width,config.height);
-    const int dpi = 72;
-    const qreal inch = 25.4;
-    m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
-    m_physicalSize = QSizeF(config.width, config.height) * inch / dpi;
-
-    m_cursor.reset(new QDirectFBCursor(this));
-}
-
 QDirectFbIntegration::QDirectFbIntegration()
     : m_fontDb(new QGenericUnixFontDatabase())
     , m_eventDispatcher(createUnixEventDispatcher())

@@ -39,12 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QDIRECTFBGLCONTEXT_H
-#define QDIRECTFBGLCONTEXT_H
-
-#include <QPlatformOpenGLContext>
+#ifndef QDIRECTFBSCREEN_H
+#define QDIRECTFBSCREEN_H
 
 #include "qdirectfbconvenience.h"
 
+#include <QtGui/QPlatformIntegration>
 
-#endif // QDIRECTFBGLCONTEXT_H
+#include <directfb.h>
+
+QT_BEGIN_NAMESPACE
+
+class QDirectFBCursor;
+
+class QDirectFbScreen : public QPlatformScreen
+{
+public:
+    QDirectFbScreen(int display);
+
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSizeF physicalSize() const { return m_physicalSize; }
+
+public:
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSizeF m_physicalSize;
+
+    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
+
+private:
+    QScopedPointer<QDirectFBCursor> m_cursor;
+};
+
+QT_END_NAMESPACE
+
+#endif

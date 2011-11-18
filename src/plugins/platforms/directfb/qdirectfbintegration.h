@@ -43,6 +43,7 @@
 #define QPLATFORMINTEGRATION_DIRECTFB_H
 
 #include "qdirectfbinput.h"
+#include "qdirectfbscreen.h"
 
 #include <QtGui/QPlatformIntegration>
 #include <directfb.h>
@@ -52,29 +53,6 @@ QT_BEGIN_NAMESPACE
 
 class QThread;
 class QAbstractEventDispatcher;
-class QDirectFBCursor;
-
-class QDirectFbScreen : public QPlatformScreen
-{
-public:
-    QDirectFbScreen(int display);
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSizeF physicalSize() const { return m_physicalSize; }
-
-public:
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSizeF m_physicalSize;
-
-    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
-
-private:
-    QScopedPointer<QDirectFBCursor> m_cursor;
-};
 
 class QDirectFbIntegration : public QPlatformIntegration
 {
