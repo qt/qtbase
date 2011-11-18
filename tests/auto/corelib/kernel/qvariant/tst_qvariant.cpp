@@ -614,7 +614,6 @@ void tst_QVariant::toInt_data()
     bytearray[1] = 'e';
     bytearray[2] = 's';
     bytearray[3] = 't';
-//    bytearray[4] = '\0';
     QTest::newRow( "QByteArray1" ) << QVariant( bytearray ) << 0 << false;
     bytearray[0] = '4';
     bytearray[1] = '5';
@@ -628,7 +627,6 @@ void tst_QVariant::toInt()
     QFETCH( QVariant, value );
     QFETCH( int, result );
     QFETCH( bool, valueOK );
-//    QEXPECT_FAIL("QByteArray", "Expected to not yet be able to convert QByteArray to int", Abort);
     QVERIFY( value.isValid() == value.canConvert( QVariant::Int ) );
     bool ok;
     int i = value.toInt( &ok );
