@@ -115,8 +115,6 @@ private slots:
     void loadGarbage();
 };
 
-//#define SHOW_ERRORS 1
-
 void tst_QPluginLoader::errorString()
 {
 #if defined(Q_OS_WINCE)
@@ -129,95 +127,62 @@ void tst_QPluginLoader::errorString()
     {
     QPluginLoader loader; // default constructed
     bool loaded = loader.load();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(loaded, false);
     QCOMPARE(loader.errorString(), unknown);
+    QVERIFY(!loaded);
 
     QObject *obj = loader.instance();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(obj, static_cast<QObject*>(0));
     QCOMPARE(loader.errorString(), unknown);
+    QCOMPARE(obj, static_cast<QObject*>(0));
 
     bool unloaded = loader.unload();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(unloaded, false);
     QCOMPARE(loader.errorString(), unknown);
+    QVERIFY(!unloaded);
     }
     {
     QPluginLoader loader( sys_qualifiedLibraryName("tst_qpluginloaderlib"));     //not a plugin
     bool loaded = loader.load();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(loaded, false);
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!loaded);
 
     QObject *obj = loader.instance();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(obj, static_cast<QObject*>(0));
     QVERIFY(loader.errorString() != unknown);
+    QCOMPARE(obj, static_cast<QObject*>(0));
 
     bool unloaded = loader.unload();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(unloaded, false);
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!unloaded);
     }
 
     {
     QPluginLoader loader( sys_qualifiedLibraryName("nosuchfile"));     //not a file
     bool loaded = loader.load();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(loaded, false);
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!loaded);
 
     QObject *obj = loader.instance();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(obj, static_cast<QObject*>(0));
     QVERIFY(loader.errorString() != unknown);
+    QCOMPARE(obj, static_cast<QObject*>(0));
 
     bool unloaded = loader.unload();
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
-    QCOMPARE(unloaded, false);
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!unloaded);
     }
 
 #if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX
     {
     QPluginLoader loader( sys_qualifiedLibraryName("almostplugin"));     //a plugin with unresolved symbols
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
-    QCOMPARE(loader.load(), false);
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
+    bool loaded = loader.load();
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!loaded);
 
-    QCOMPARE(loader.instance(), static_cast<QObject*>(0));
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
+    QObject *obj = loader.instance();
     QVERIFY(loader.errorString() != unknown);
+    QCOMPARE(obj, static_cast<QObject*>(0));
 
-    QCOMPARE(loader.unload(), false);
-#ifdef SHOW_ERRORS
-    qDebug() << loader.errorString();
-#endif
+    bool unloaded = loader.unload();
     QVERIFY(loader.errorString() != unknown);
+    QVERIFY(!unloaded);
     }
 #endif
 
@@ -323,9 +288,7 @@ void tst_QPluginLoader::loadGarbage()
     for (int i=0; i<5; i++) {
         QPluginLoader lib(QString(SRCDIR "elftest/garbage%1.so").arg(i));
         QCOMPARE(lib.load(), false);
-#ifdef SHOW_ERRORS
-        qDebug() << lib.errorString();
-#endif
+        QVERIFY(lib.errorString() != QString("Unknown error"));
     }
 #endif
 }
