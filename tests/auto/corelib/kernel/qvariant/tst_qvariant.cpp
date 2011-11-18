@@ -1431,10 +1431,6 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow( "image_invalid" ) << qVariantFromValue( QImage() ) << true;
     QTest::newRow( "keysequence_valid" ) << qVariantFromValue( QKeySequence( Qt::CTRL + Qt::Key_A ) ) << false;
     QTest::newRow( "int_valid" ) << QVariant( -123 ) << false;
-    typedef QList<QVariant> variantsList;
-//     variantsList valuelist;
-//     valuelist << QVariant( 1 ) << QVariant( QString("Two") ) << QVariant( 3.45 );
-//     QTest::newRow( "list_valid" ) << QVariant( valuelist ) << false;
     typedef QMap<QString, QVariant> variantsMap;
     variantsMap vMap;
     vMap.insert( "int", QVariant( 1 ) );
