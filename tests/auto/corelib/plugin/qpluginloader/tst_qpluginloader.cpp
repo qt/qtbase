@@ -258,27 +258,27 @@ void tst_QPluginLoader::loadDebugObj()
 void tst_QPluginLoader::loadCorruptElf()
 {
 #if defined (__ELF__)
-if (sizeof(void*) == 8) {
-    QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
+    if (sizeof(void*) == 8) {
+        QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
 
-    QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
-    QCOMPARE(lib1.load(), false);
-    QVERIFY(lib1.errorString().contains("not a valid Qt plugin"));
+        QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
+        QCOMPARE(lib1.load(), false);
+        QVERIFY(lib1.errorString().contains("not a valid Qt plugin"));
 
-    QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
-    QCOMPARE(lib2.load(), false);
-    QVERIFY(lib2.errorString().contains("not a valid Qt plugin"));
+        QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
+        QCOMPARE(lib2.load(), false);
+        QVERIFY(lib2.errorString().contains("not a valid Qt plugin"));
 
-    QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
-    QCOMPARE(lib3.load(), false);
-    QVERIFY(lib3.errorString().contains("not a valid Qt plugin"));
-} else if (sizeof(void*) == 4) {
-    QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
-    QCOMPARE(libW.load(), false);
-    QVERIFY(libW.errorString().contains("architecture"));
-} else {
-    QFAIL("Please port QElfParser to this platform or blacklist this test.");
-}
+        QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
+        QCOMPARE(lib3.load(), false);
+        QVERIFY(lib3.errorString().contains("not a valid Qt plugin"));
+    } else if (sizeof(void*) == 4) {
+        QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
+        QCOMPARE(libW.load(), false);
+        QVERIFY(libW.errorString().contains("architecture"));
+    } else {
+        QFAIL("Please port QElfParser to this platform or blacklist this test.");
+    }
 #endif
 }
 
