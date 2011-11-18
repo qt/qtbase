@@ -22,7 +22,6 @@ cross_compile:                              SUBDIRS -= tools
 
 # disable 'make check' on Mac OS X for the following subdirs for the time being
 mac {
-    dbus.CONFIG += no_check_target
     gui.CONFIG += no_check_target
     network.CONFIG += no_check_target
     opengl.CONFIG += no_check_target
