@@ -825,10 +825,6 @@ void QWindow::focusOutEvent(QFocusEvent *)
 {
 }
 
-void QWindow::inputMethodEvent(QInputMethodEvent *)
-{
-}
-
 void QWindow::mousePressEvent(QMouseEvent *)
 {
 }

@@ -68,7 +68,6 @@ class QResizeEvent;
 class QShowEvent;
 class QHideEvent;
 class QKeyEvent;
-class QInputMethodEvent;
 class QMouseEvent;
 #ifndef QT_NO_WHEELEVENT
 class QWheelEvent;
@@ -232,7 +231,6 @@ protected:
     virtual bool event(QEvent *);
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
-    virtual void inputMethodEvent(QInputMethodEvent *);
     virtual void mousePressEvent(QMouseEvent *);
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
