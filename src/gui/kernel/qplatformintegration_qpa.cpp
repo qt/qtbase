@@ -202,6 +202,17 @@ QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenG
 }
 
 /*!
+   Factory function for QPlatformSharedGraphicsCache. This function will return 0 if the platform
+   integration does not support any shared graphics cache mechanism for the given \a cacheId.
+*/
+QPlatformSharedGraphicsCache *QPlatformIntegration::createPlatformSharedGraphicsCache(const char *cacheId) const
+{
+    qWarning("This plugin does not support createPlatformSharedGraphicsBuffer for cacheId: %s!",
+             cacheId);
+    return 0;
+}
+
+/*!
   Returns the platforms input context.
 
   The default implementation returns 0, implying no input method support.

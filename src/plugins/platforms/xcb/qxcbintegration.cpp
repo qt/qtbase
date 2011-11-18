@@ -47,6 +47,7 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
+#include "qxcbsharedgraphicscache.h"
 
 #include <xcb/xcb.h>
 
@@ -107,6 +108,10 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
     m_accessibility.reset(new QPlatformAccessibility());
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    m_sharedGraphicsCache.reset(new QXcbSharedGraphicsCache);
+#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -186,6 +191,10 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    case SharedGraphicsCache: return true;
+#endif
+
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
     case ThreadedOpenGL:
@@ -238,5 +247,25 @@ QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
     return m_accessibility.data();
 }
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+static bool sharedGraphicsCacheDisabled()
+{
+    static const char *environmentVariable = "QT_DISABLE_SHARED_CACHE";
+    static bool cacheDisabled = !qgetenv(environmentVariable).isEmpty()
+            && qgetenv(environmentVariable).toInt() != 0;
+    return cacheDisabled;
+}
+
+QPlatformSharedGraphicsCache *QXcbIntegration::createPlatformSharedGraphicsCache(const char *cacheId) const
+{
+    Q_UNUSED(cacheId);
+
+    if (sharedGraphicsCacheDisabled())
+        return 0;
+
+    return m_sharedGraphicsCache.data();
+}
+#endif
 
 QT_END_NAMESPACE

@@ -77,6 +77,10 @@ public:
 
     QPlatformAccessibility *accessibility() const;
 
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
+#endif
+
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -87,6 +91,10 @@ private:
     QAbstractEventDispatcher *m_eventDispatcher;
 
     QScopedPointer<QPlatformAccessibility> m_accessibility;
+
+#if defined(QT_USE_XCB_SHARED_GRAPHICS_CACHE)
+    QScopedPointer<QPlatformSharedGraphicsCache> m_sharedGraphicsCache;
+#endif
 };
 
 QT_END_NAMESPACE

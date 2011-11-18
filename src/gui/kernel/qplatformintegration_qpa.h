@@ -65,6 +65,8 @@ class QAbstractEventDispatcher;
 class QPlatformInputContext;
 class QPlatformAccessibility;
 class QPlatformTheme;
+class QPlatformDialogHelper;
+class QPlatformSharedGraphicsCache;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -72,7 +74,8 @@ public:
     enum Capability {
         ThreadedPixmaps = 1,
         OpenGL = 2,
-        ThreadedOpenGL = 3
+        ThreadedOpenGL = 3,
+        SharedGraphicsCache = 4
     };
 
     virtual ~QPlatformIntegration() { }
@@ -83,6 +86,7 @@ public:
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    virtual QPlatformSharedGraphicsCache *createPlatformSharedGraphicsCache(const char *cacheId) const;
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;
