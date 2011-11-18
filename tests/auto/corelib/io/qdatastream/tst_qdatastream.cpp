@@ -1539,12 +1539,6 @@ void tst_QDataStream::stream_QPen_data()
 
 void tst_QDataStream::stream_QPen()
 {
-    /*
-    edba:
-    data6 fails because the width is clipped to a byte (max 255) in the datastream.
-    This limitation is not documented.
-    */
-
     STREAM_IMPL(QPen);
 }
 
