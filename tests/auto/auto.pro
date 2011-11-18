@@ -27,7 +27,6 @@ mac {
     network.CONFIG += no_check_target
     opengl.CONFIG += no_check_target
     sql.CONFIG += no_check_target
-    testlib.CONFIG += no_check_target
     v8.CONFIG += no_check_target
     xml.CONFIG += no_check_target
     widgets.CONFIG += no_check_target
