@@ -1082,7 +1082,6 @@ void tst_QFile::permissions_data()
 
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true;
     QTest::newRow("data1") << SRCDIR "tst_qfile.cpp" << uint(QFile::ReadUser) << true;
-//    QTest::newRow("data2") << "tst_qfile.cpp" << int(QFile::WriteUser) << false;
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false;
