@@ -59,6 +59,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDri2ContextPrivate
 {
 public:
@@ -267,3 +269,5 @@ void * QDri2Context::eglContext() const
     Q_D(const QDri2Context);
     return d->eglContext;
 }
+
+QT_END_NAMESPACE

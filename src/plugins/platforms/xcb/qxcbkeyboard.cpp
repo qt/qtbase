@@ -261,6 +261,8 @@
 #define QTOPIAXK_Hangup         0x1100060F
 #define QTOPIAXK_Flip           0x11000610
 
+QT_BEGIN_NAMESPACE
+
 // keyboard mapping table
 static const unsigned int KeyTbl[] = {
 
@@ -1136,3 +1138,5 @@ void QXcbKeyboard::handleMappingNotifyEvent(const xcb_mapping_notify_event_t *ev
     xcb_refresh_keyboard_mapping(m_key_symbols, const_cast<xcb_mapping_notify_event_t *>(event));
     setupModifiers();
 }
+
+QT_END_NAMESPACE

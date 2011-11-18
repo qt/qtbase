@@ -44,6 +44,8 @@
 
 #include "qxcbconnection.h"
 
+QT_BEGIN_NAMESPACE
+
 class QXcbObject
 {
 public:
@@ -58,5 +60,7 @@ public:
 private:
     QXcbConnection *m_connection;
 };
+
+QT_END_NAMESPACE
 
 #endif

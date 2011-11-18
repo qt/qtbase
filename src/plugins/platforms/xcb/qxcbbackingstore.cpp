@@ -58,6 +58,8 @@
 #include <qpainter.h>
 #include <qscreen.h>
 
+QT_BEGIN_NAMESPACE
+
 class QXcbShmImage : public QXcbObject
 {
 public:
@@ -321,3 +323,4 @@ bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
+QT_END_NAMESPACE

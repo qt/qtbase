@@ -58,6 +58,8 @@
 #include <dlfcn.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : QPlatformOpenGLContext()
     , m_screen(screen)
@@ -134,3 +136,5 @@ QSurfaceFormat QGLXContext::format() const
 {
     return m_format;
 }
+
+QT_END_NAMESPACE

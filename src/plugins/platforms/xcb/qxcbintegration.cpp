@@ -80,6 +80,8 @@
 #include <QtGui/QScreen>
 #include <QtGui/QPlatformAccessibility>
 
+QT_BEGIN_NAMESPACE
+
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher())
 {
@@ -239,3 +241,5 @@ QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
     return m_accessibility;
 }
+
+QT_END_NAMESPACE

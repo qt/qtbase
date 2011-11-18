@@ -44,6 +44,8 @@
 
 #include <EGL/egl.h>
 
+QT_BEGIN_NAMESPACE
+
 class QXcbEGLSurface
 {
 public:
@@ -64,5 +66,7 @@ private:
     EGLDisplay m_display;
     EGLSurface m_surface;
 };
+
+QT_END_NAMESPACE
 
 #endif

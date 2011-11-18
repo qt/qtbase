@@ -44,10 +44,12 @@
 
 #include <QtGui/QPlatformOpenGLContext>
 
+struct xcb_dri2_dri2_buffer_t;
+
+QT_BEGIN_NAMESPACE
+
 class QXcbWindow;
 class QDri2ContextPrivate;
-
-struct xcb_dri2_dri2_buffer_t;
 
 class QDri2Context : public QPlatformOpenGLContext
 {
@@ -73,5 +75,7 @@ protected:
 private:
     Q_DISABLE_COPY(QDri2Context)
 };
+
+QT_END_NAMESPACE
 
 #endif // QDRI2CONTEXT_H

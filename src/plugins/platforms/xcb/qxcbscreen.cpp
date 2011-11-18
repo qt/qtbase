@@ -48,6 +48,8 @@
 
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number)
     : QXcbObject(connection)
     , m_screen(screen)
@@ -354,3 +356,5 @@ QString QXcbScreen::name() const
 {
     return connection()->displayName() + QLatin1String(".") + QString::number(screenNumber());
 }
+
+QT_END_NAMESPACE

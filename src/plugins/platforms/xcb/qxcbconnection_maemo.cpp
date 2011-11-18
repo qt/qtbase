@@ -49,6 +49,8 @@
 #include <X11/extensions/XI2proto.h>
 #include <X11/Xatom.h>
 
+QT_BEGIN_NAMESPACE
+
 // Define it here to work around XLib defining Bool and stuff.
 // We can't declare those variables in the header without facing include order headaches.
 struct XInput2Data {
@@ -289,6 +291,8 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
         }
     }
 }
+
+QT_END_NAMESPACE
 
 #endif // XCB_USE_XINPUT2_MAEMO
 

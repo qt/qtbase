@@ -52,6 +52,8 @@
 
 #include <GL/glx.h>
 
+QT_BEGIN_NAMESPACE
+
 class QGLXContext : public QPlatformOpenGLContext
 {
 public:
@@ -72,5 +74,7 @@ private:
     GLXContext m_context;
     QSurfaceFormat m_format;
 };
+
+QT_END_NAMESPACE
 
 #endif

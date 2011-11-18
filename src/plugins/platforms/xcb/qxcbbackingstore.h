@@ -48,6 +48,8 @@
 
 #include "qxcbobject.h"
 
+QT_BEGIN_NAMESPACE
+
 class QXcbShmImage;
 
 class QXcbBackingStore : public QXcbObject, public QPlatformBackingStore
@@ -68,5 +70,7 @@ private:
     QXcbShmImage *m_image;
     bool m_syncingResize;
 };
+
+QT_END_NAMESPACE
 
 #endif
