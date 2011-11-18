@@ -1038,7 +1038,7 @@ void tst_QSslSocket::protocolServerSide()
 
     QFETCH(bool, works);
     QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
-    QCOMPARE(client->state(), expectedState);
+    QCOMPARE(int(client->state()), int(expectedState));
     QCOMPARE(client->isEncrypted(), works);
 }
 
