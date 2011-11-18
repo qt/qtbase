@@ -66,7 +66,7 @@ private slots:
     void index();
     void parent();
     void hasChildren();
-    void _data();
+    void data();
     void headerData();
     void itemData();
     void itemFlags();
@@ -299,7 +299,7 @@ void tst_QAbstractItemModel::hasChildren()
     QVERIFY(model.hasChildren(idx) == false);
 }
 
-void tst_QAbstractItemModel::_data()
+void tst_QAbstractItemModel::data()
 {
     QtTestModel model(1, 1);
     QModelIndex idx = model.index(0, 0, QModelIndex());
