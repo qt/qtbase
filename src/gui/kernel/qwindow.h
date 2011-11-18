@@ -85,6 +85,12 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_DECLARE_PRIVATE(QWindow)
 
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
+    Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
+    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
+    Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
+    Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
 
 public:
     enum SurfaceType { RasterSurface, OpenGLSurface };
@@ -96,7 +102,6 @@ public:
     void setSurfaceType(SurfaceType surfaceType);
     SurfaceType surfaceType() const;
 
-    void setVisible(bool visible);
     bool visible() const;
 
     void create();
@@ -201,6 +206,8 @@ public:
     QPoint mapFromGlobal(const QPoint &pos) const;
 
 public Q_SLOTS:
+    void setVisible(bool visible);
+
     inline void show() { setVisible(true); }
     inline void hide() { setVisible(false); }
 
@@ -215,8 +222,44 @@ public Q_SLOTS:
 
     void setWindowTitle(const QString &);
 
+    void setX(int arg)
+    {
+        if (x() != arg)
+            setGeometry(QRect(arg, y(), width(), height()));
+    }
+
+    void setY(int arg)
+    {
+        if (y() != arg)
+            setGeometry(QRect(x(), arg, width(), height()));
+    }
+
+    void setWidth(int arg)
+    {
+        if (width() != arg)
+            setGeometry(QRect(x(), y(), arg, height()));
+    }
+
+    void setHeight(int arg)
+    {
+        if (height() != arg)
+            setGeometry(QRect(x(), y(), width(), arg));
+    }
+
 Q_SIGNALS:
     void backBufferReady();
+
+    void xChanged(int arg);
+
+    void yChanged(int arg);
+
+    void widthChanged(int arg);
+
+    void heightChanged(int arg);
+
+    void visibleChanged(bool arg);
+
+    void orientationChanged(Qt::ScreenOrientation arg);
 
 protected:
     virtual void exposeEvent(QExposeEvent *);

@@ -790,12 +790,22 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
         window->d_func()->resizeEventPending = false;
+
+        if (cr.width() != newRect.width())
+            window->widthChanged(cr.width());
+        if (cr.height() != newRect.height())
+            window->heightChanged(cr.height());
     }
 
     if (isMove) {
         //### frame geometry
         QMoveEvent e(newRect.topLeft(), cr.topLeft());
         QGuiApplication::sendSpontaneousEvent(window, &e);
+
+        if (cr.x() != newRect.x())
+            window->xChanged(cr.x());
+        if (cr.y() != newRect.y())
+            window->yChanged(cr.y());
     }
 }
 
