@@ -86,9 +86,10 @@ Qt {
     Q_FLAGS(MatchFlags)
     Q_FLAGS(KeyboardModifiers MouseButtons)
     Q_ENUMS(WindowType WindowState WindowModality WidgetAttribute ApplicationAttribute)
+    Q_FLAGS(WindowFlags WindowStates)
+    Q_ENUMS(InputMethodHint InputMethodQuery)
+    Q_FLAGS(InputMethodHints InputMethodQueries)
     Q_ENUMS(ScreenOrientation)
-    Q_ENUMS(InputMethodHint)
-    Q_FLAGS(WindowFlags WindowStates InputMethodHints)
     Q_FLAGS(ScreenOrientations)
     Q_ENUMS(ConnectionType)
 #ifndef QT_NO_GESTURES
