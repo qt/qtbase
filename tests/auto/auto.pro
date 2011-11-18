@@ -25,6 +25,5 @@ mac {
     gui.CONFIG += no_check_target
     network.CONFIG += no_check_target
     opengl.CONFIG += no_check_target
-    v8.CONFIG += no_check_target
     widgets.CONFIG += no_check_target
 }
