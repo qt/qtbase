@@ -470,7 +470,14 @@ QObject::connect(socket, &QTcpSocket::connected, [=] () {
     });
 //! [46]
 
+//! [47]
+disconnect(myObject, &MyObject::mySignal(), 0, 0);
+//! [47]
 
+//! [48]
+QObject::disconnect(lineEdit, &QLineEdit::textChanged,
+                 label,  &QLabel::setText);
+//! [48]
 
 //! [meta data]
 //: This is a comment for the translator.

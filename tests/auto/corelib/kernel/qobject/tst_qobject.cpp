@@ -122,6 +122,7 @@ private slots:
     void autoConnectionBehavior();
     void baseDestroyed();
     void pointerConnect();
+    void pointerDisconnect();
     void emitInDefinedOrderPointer();
     void customTypesPointer();
     void connectCxx0x();
@@ -4103,6 +4104,110 @@ void tst_QObject::pointerConnect()
     delete r1;
     delete r2;
 }
+
+void tst_QObject::pointerDisconnect()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+
+    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+
+    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot2 );
+    connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 );
+    connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 );
+
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->called(1), TRUE );
+    QCOMPARE( r1->called(2), TRUE );
+    QCOMPARE( r1->called(3), TRUE );
+    QCOMPARE( r1->called(4), TRUE );
+    r1->reset();
+
+    // usual disconnect with all parameters given
+    bool ret = QObject::disconnect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+
+    s->emitSignal1();
+
+    QCOMPARE( r1->called(1), FALSE );
+    r1->reset();
+
+    QCOMPARE( ret, TRUE );
+    ret = QObject::disconnect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    QCOMPARE( ret, FALSE  );
+
+    // disconnect all signals from s from all slots from r1
+    QObject::disconnect( s, 0, r1, 0 );
+
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->called(2), FALSE );
+    QCOMPARE( r1->called(3), FALSE );
+    QCOMPARE( r1->called(4), FALSE );
+    r1->reset();
+
+    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot2 );
+    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot3 );
+    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot4 );
+
+    // disconnect s's signal1() from all slots of r1
+    QObject::disconnect( s, &SenderObject::signal1, r1, 0 );
+
+    s->emitSignal1();
+    s->emitSignal2();
+
+    QCOMPARE( r1->called(1), FALSE );
+    QCOMPARE( r1->called(2), FALSE );
+    QCOMPARE( r1->called(3), FALSE );
+    QCOMPARE( r1->called(4), TRUE );
+    r1->reset();
+    // make sure all is disconnected again
+    QObject::disconnect( s, 0, r1, 0 );
+
+    connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
+    connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot1 );
+    connect( s, &SenderObject::signal2, r1, &ReceiverObject::slot2 );
+    connect( s, &SenderObject::signal2, r2, &ReceiverObject::slot2 );
+    connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 );
+    connect( s, &SenderObject::signal3, r2, &ReceiverObject::slot3 );
+
+    // disconnect signal1() from all receivers
+    QObject::disconnect( s, &SenderObject::signal1, 0, 0 );
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+
+    QCOMPARE( r1->called(1), FALSE );
+    QCOMPARE( r2->called(1), FALSE );
+    QCOMPARE( r1->called(2), TRUE );
+    QCOMPARE( r2->called(2), TRUE );
+    QCOMPARE( r1->called(2), TRUE );
+    QCOMPARE( r2->called(2), TRUE );
+
+    r1->reset();
+    r2->reset();
+
+    // disconnect all signals of s from all receivers
+    QObject::disconnect( s, 0, 0, 0 );
+
+    QCOMPARE( r1->called(2), FALSE );
+    QCOMPARE( r2->called(2), FALSE );
+    QCOMPARE( r1->called(2), FALSE );
+    QCOMPARE( r2->called(2), FALSE );
+
+    delete r2;
+    delete r1;
+    delete s;
+
+}
+
 
 void tst_QObject::emitInDefinedOrderPointer()
 {

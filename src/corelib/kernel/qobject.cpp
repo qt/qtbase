@@ -2758,7 +2758,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
         }
 
         if (!method) {
-            res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, -1);
+            res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, -1, 0);
         } else {
             const QMetaObject *rmeta = receiver->metaObject();
             do {
@@ -2768,7 +2768,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                             rmeta = rmeta->superClass();
                 if (method_index < 0)
                     break;
-                res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index);
+                res |= QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index, 0);
                 method_found = true;
             } while ((rmeta = rmeta->superClass()));
         }
@@ -2881,7 +2881,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         return false;
     }
 
-    if (!QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index))
+    if (!QMetaObjectPrivate::disconnect(sender, signal_index, receiver, method_index, 0))
         return false;
 
     const_cast<QObject*>(sender)->disconnectNotify(method.mobj ? signalSignature.constData() : 0);
@@ -3072,7 +3072,7 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
 {
     signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::disconnect(sender, signal_index,
-                                          receiver, method_index);
+                                          receiver, method_index, 0);
 }
 
 /*!\internal
@@ -3086,7 +3086,7 @@ bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
 {
     signal_index = methodIndexToSignalIndex(sender->metaObject(), signal_index);
     return QMetaObjectPrivate::disconnect(sender, signal_index,
-                                          receiver, method_index,
+                                          receiver, method_index, 0,
                                           QMetaObjectPrivate::DisconnectOne);
 }
 
@@ -3094,14 +3094,15 @@ bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
     Helper function to remove the connection from the senders list and setting the receivers to 0
  */
 bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
-                                          const QObject *receiver, int method_index,
+                                          const QObject *receiver, int method_index, void **slot,
                                           QMutex *senderMutex, DisconnectType disconnectType)
 {
     bool success = false;
     while (c) {
         if (c->receiver
             && (receiver == 0 || (c->receiver == receiver
-                           && (method_index < 0 || c->method() == method_index)))) {
+                           && (method_index < 0 || c->method() == method_index)
+                           && (slot == 0 || (c->isSlotObject && c->slotObj->compare(slot)))))) {
             bool needToUnlock = false;
             QMutex *receiverMutex = 0;
             if (!receiver) {
@@ -3134,7 +3135,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
-                                    const QObject *receiver, int method_index,
+                                    const QObject *receiver, int method_index, void **slot,
                                     DisconnectType disconnectType)
 {
     if (!sender)
@@ -3159,7 +3160,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
             QObjectPrivate::Connection *c =
                 (*connectionLists)[signal_index].first;
-            if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
+            if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
                 success = true;
                 connectionLists->dirty = true;
             }
@@ -3167,7 +3168,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
     } else if (signal_index < connectionLists->count()) {
         QObjectPrivate::Connection *c =
             (*connectionLists)[signal_index].first;
-        if (disconnectHelper(c, receiver, method_index, senderMutex, disconnectType)) {
+        if (disconnectHelper(c, receiver, method_index, slot, senderMutex, disconnectType)) {
             success = true;
             connectionLists->dirty = true;
         }
@@ -4212,6 +4213,88 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     return true;
 }
 
+/*! \fn bool QObject::disconnect(const QObject *sender, (T::*signal)(...), const Qbject *receiver, (T::*method)(...))
+    \threadsafe
+    \overload
+
+    Disconnects \a signal in object \a sender from \a method in object
+    \a receiver. Returns true if the connection is successfully broken;
+    otherwise returns false.
+
+    A signal-slot connection is removed when either of the objects
+    involved are destroyed.
+
+    disconnect() is typically used in three ways, as the following
+    examples demonstrate.
+    \list 1
+    \i Disconnect everything connected to an object's signals:
+
+       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 26
+
+    \i Disconnect everything connected to a specific signal:
+
+       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 47
+
+    \i Disconnect a specific receiver:
+
+       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 30
+
+    \i Disconnect a connection from one specific signal to a specific slot:
+
+       \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 48
+
+
+    \endlist
+
+    0 may be used as a wildcard, meaning "any signal", "any receiving
+    object", or "any slot in the receiving object", respectively.
+
+    The \a sender may never be 0. (You cannot disconnect signals from
+    more than one object in a single call.)
+
+    If \a signal is 0, it disconnects \a receiver and \a method from
+    any signal. If not, only the specified signal is disconnected.
+
+    If \a receiver is 0, it disconnects anything connected to \a
+    signal. If not, slots in objects other than \a receiver are not
+    disconnected.
+
+    If \a method is 0, it disconnects anything that is connected to \a
+    receiver. If not, only slots named \a method will be disconnected,
+    and all other slots are left alone. The \a method must be 0 if \a
+    receiver is left out, so you cannot disconnect a
+    specifically-named slot on all objects.
+
+    \note It is not possible to use this overload to diconnect signals
+    connected to functors or lambda expressions. That is because it is not
+    possible to compare them. Instead, use the olverload that take a
+    QMetaObject::Connection
+
+    \sa connect()
+*/
+bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot, const QMetaObject *senderMetaObject)
+{
+    if (sender == 0 || (receiver == 0 && slot != 0)) {
+        qWarning("Object::disconnect: Unexpected null parameter");
+        return false;
+    }
+
+    int signal_index = -1;
+    if (signal) {
+        void *args[] = { &signal_index, signal };
+        senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+        if (signal_index < 0 || signal_index >= QMetaObjectPrivate::get(senderMetaObject)->signalCount) {
+            qWarning("QObject::disconnect: signal not found in %s", senderMetaObject->className());
+            return false;
+        }
+        int signalOffset, methodOffset;
+        computeOffsets(senderMetaObject, &signalOffset, &methodOffset);
+        signal_index += signalOffset;
+    }
+
+    return QMetaObjectPrivate::disconnect(sender, signal_index, receiver, -1, slot);
+}
+
 /*! \class QMetaObject::Connection
      Represents a handle to a signal-slot connection.
      It can be used to disconnect that connection, or check if
@@ -4262,6 +4345,12 @@ QMetaObject::Connection::~Connection()
 QObject::QSlotObjectBase::~QSlotObjectBase()
 {
 }
+
+bool QObject::QSlotObjectBase::compare(void** )
+{
+    return false;
+}
+
 
 QT_END_NAMESPACE
 
