@@ -878,12 +878,6 @@ void tst_QUrl::toString_data()
                          << uint(QUrl::None)
                          << QString::fromLatin1("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
 
-    /*
-    QTest::newRow("data19") << QString::fromLatin1("http://andreas:hemmelig@www.vg.no/a/../?my=query&your=query#yougotfragged")
-                         << uint(QUrl::None)
-                         << QString::fromLatin1("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
-    */
-
     QTest::newRow("nopath_task31320") << QString::fromLatin1("host://protocol")
                                    << uint(QUrl::None)
                                    << QString::fromLatin1("host://protocol");
@@ -3200,7 +3194,6 @@ void tst_QUrl::resolvedWithAbsoluteSchemes_data() const
         << QUrl::fromEncoded("http://example.com/")
         << QUrl::fromEncoded("http://example.com/");
 
-
     QTest::newRow("Absolute file:/// against data scheme.")
         << QUrl::fromEncoded("file:///foo/")
         << QUrl::fromEncoded("data:application/xml,%3Ce%2F%3E")
@@ -3210,6 +3203,11 @@ void tst_QUrl::resolvedWithAbsoluteSchemes_data() const
         << QUrl::fromEncoded("http://www.foo.com:8080/")
         << QUrl::fromEncoded("newfile.html")
         << QUrl::fromEncoded("http://www.foo.com:8080/newfile.html");
+
+    QTest::newRow("Resolve with relative path")
+        << QUrl::fromEncoded("http://example.com/")
+        << QUrl::fromEncoded("http://andreas:hemmelig@www.vg.no/a/../?my=query&your=query#yougotfragged")
+        << QUrl::fromEncoded("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
 }
 
 void tst_QUrl::taskQTBUG_6962()
