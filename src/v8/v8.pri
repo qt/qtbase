@@ -5,16 +5,19 @@ isEmpty(QT_ARCH) {
     load(qt_config)
 }
 
-equals(QT_ARCH, x86_64)|contains(CONFIG, x86_64):CONFIG += arch_x86_64
-else:equals(QT_ARCH, "i386"):CONFIG += arch_i386
-else:equals(QT_ARCH, "arm"):CONFIG += arch_arm
-else:equals(QMAKE_HOST.arch, armv7l):CONFIG += arch_arm
-else:equals(QMAKE_HOST.arch, armv5tel):CONFIG += arch_arm
-else:equals(QMAKE_HOST.arch, x86_64):CONFIG += arch_x86_64
-else:equals(QMAKE_HOST.arch, x86):CONFIG += arch_i386
-else:equals(QMAKE_HOST.arch, i386):CONFIG += arch_i386
-else:equals(QMAKE_HOST.arch, i686):CONFIG += arch_i386
-else:error("Couldn't detect supported architecture ($$QMAKE_HOST.arch/$$QT_ARCH). Currently supported architectures are: x64, x86 and arm")
+isEmpty(V8_TARGET_ARCH) {
+    # Detect target
+    equals(QT_ARCH, x86_64)|contains(CONFIG, x86_64):V8_TARGET_ARCH = x64
+    else:equals(QT_ARCH, "i386"):                    V8_TARGET_ARCH = ia32
+    else:equals(QT_ARCH, "arm"):                     V8_TARGET_ARCH = arm
+    else:equals(QMAKE_HOST.arch, armv7l):            V8_TARGET_ARCH = arm
+    else:equals(QMAKE_HOST.arch, armv5tel):          V8_TARGET_ARCH = arm
+    else:equals(QMAKE_HOST.arch, x86_64):            V8_TARGET_ARCH = x64
+    else:equals(QMAKE_HOST.arch, x86):               V8_TARGET_ARCH = ia32
+    else:equals(QMAKE_HOST.arch, i386):              V8_TARGET_ARCH = ia32
+    else:equals(QMAKE_HOST.arch, i686):              V8_TARGET_ARCH = ia32
+    else:error("Couldn't detect supported v8 architecture ($$QMAKE_HOST.arch/$$QT_ARCH). Currently supported architectures are: x64, x86 and arm")
+}
 
 include($$PWD/v8base.pri)
 
@@ -22,8 +25,6 @@ include($$PWD/v8base.pri)
 # directory, or they could clobber each other in highly parallelized builds
 CONFIG(debug, debug|release):V8_GENERATED_SOURCES_DIR = generated-debug
 else:                        V8_GENERATED_SOURCES_DIR = generated-release
-
-!contains(QT_CONFIG, static): DEFINES += V8_SHARED BUILDING_V8_SHARED
 
 # this maybe removed in future
 DEFINES += ENABLE_DEBUGGER_SUPPORT
@@ -145,10 +146,7 @@ SOURCES += \
     $$V8SRC/extensions/gc-extension.cc \
     $$V8SRC/extensions/externalize-string-extension.cc
 
-SOURCES += \
-    $$V8SRC/snapshot-empty.cc \
-
-arch_arm {
+equals(V8_TARGET_ARCH, arm) {
 DEFINES += V8_TARGET_ARCH_ARM
 SOURCES += \
     $$V8SRC/arm/builtins-arm.cc \
@@ -169,9 +167,7 @@ SOURCES += \
     $$V8SRC/arm/regexp-macro-assembler-arm.cc \
     $$V8SRC/arm/stub-cache-arm.cc \
     $$V8SRC/arm/assembler-arm.cc
-}
-
-arch_i386 {
+} else:equals(V8_TARGET_ARCH, ia32) {
 DEFINES += V8_TARGET_ARCH_IA32
 SOURCES += \
     $$V8SRC/ia32/assembler-ia32.cc \
@@ -191,10 +187,8 @@ SOURCES += \
     $$V8SRC/ia32/macro-assembler-ia32.cc \
     $$V8SRC/ia32/regexp-macro-assembler-ia32.cc \
     $$V8SRC/ia32/stub-cache-ia32.cc
-}
-
-# FIXME Should we use QT_CONFIG instead? What about 32 bit Macs?
-arch_x86_64 {
+} else:equals(V8_TARGET_ARCH, x64) {
+# FIXME What about 32-bit Macs?
 DEFINES += V8_TARGET_ARCH_X64
 SOURCES += \
     $$V8SRC/x64/assembler-x64.cc \

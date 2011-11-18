@@ -22,4 +22,20 @@ INCLUDEPATH -= $$MODULE_INCLUDES $$MODULE_INCLUDES/..
 
 HEADERS += $$QT_SOURCE_TREE/src/v8/qtv8version.h
 
+!contains(QT_CONFIG, static): DEFINES += V8_SHARED BUILDING_V8_SHARED
+
 include(v8.pri)
+
+contains(QT_CONFIG, v8snapshot) {
+    mkv8snapshot.commands = ../../bin/mkv8snapshot ${QMAKE_FILE_OUT}
+    DUMMY_FILE = v8.pro
+    mkv8snapshot.input = DUMMY_FILE
+    mkv8snapshot.output = $$V8_GENERATED_SOURCES_DIR/snapshot.cpp
+    mkv8snapshot.variable_out = SOURCES
+    mkv8snapshot.dependency_type = TYPE_C
+    mkv8snapshot.name = generating[v8] ${QMAKE_FILE_IN}
+    silent:mkv8snapshot.commands = @echo generating[v8] ${QMAKE_FILE_IN} && $$mkv8snapshot.commands
+    QMAKE_EXTRA_COMPILERS += mkv8snapshot
+} else {
+    SOURCES += $$V8SRC/snapshot-empty.cc
+}

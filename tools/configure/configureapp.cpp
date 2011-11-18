@@ -255,6 +255,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "V8" ]              = "yes";
+    dictionary[ "V8SNAPSHOT" ]      = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
@@ -2057,6 +2058,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("wmsdk.h");
     } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "V8" || part == "DECLARATIVE") {
         available = true;
+    } else if (part == "V8SNAPSHOT") {
+        available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-msvc2010") || (dictionary.value("QMAKESPEC") == "win32-g++");
         if (dictionary[ "SHARED" ] == "no") {
@@ -2156,6 +2159,8 @@ void Configure::autoDetection()
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
     if (dictionary["V8"] == "auto")
         dictionary["V8"] = checkAvailability("V8") ? "yes" : "no";
+    if (dictionary["V8SNAPSHOT"] == "auto")
+        dictionary["V8SNAPSHOT"] = (dictionary["V8"] == "yes") && checkAvailability("V8SNAPSHOT") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
         dictionary["DECLARATIVE"] = dictionary["V8"] == "yes" ? "yes" : "no";
     if (dictionary["DECLARATIVE_DEBUG"] == "auto")
@@ -2545,8 +2550,11 @@ void Configure::generateOutputVars()
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
 
-    if (dictionary[ "V8" ] == "yes")
+    if (dictionary[ "V8" ] == "yes") {
         qtConfig += "v8";
+        if (dictionary[ "V8SNAPSHOT" ] == "yes")
+            qtConfig += "v8snapshot";
+    }
 
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()

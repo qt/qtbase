@@ -705,6 +705,7 @@ CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_V8=auto
+CFG_V8SNAPSHOT=auto
 CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_WEBKIT=auto # (yes|no|auto|debug)
@@ -7270,6 +7271,7 @@ canBuildQtXmlPatterns="yes"
 canBuildWebKit="$HAVE_STL"
 canBuildQtConcurrent="yes"
 canBuildV8="yes"
+canUseV8Snapshot="yes"
 
 # WebKit requires stdint.h
 "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -7502,6 +7504,25 @@ if [ "$CFG_V8" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_V8"
 else
     QT_CONFIG="$QT_CONFIG v8"
+    # Detect snapshot support
+    if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
+        case "$CFG_HOST_ARCH,$CFG_ARCH" in
+            i386,arm)
+            ;;
+        *) canUseV8Snapshot="no"
+            ;;
+        esac
+    fi
+    if [ "$CFG_V8SNAPSHOT" = "auto" ]; then
+        CFG_V8SNAPSHOT="$canUseV8Snapshot"
+    fi
+    if [ "$CFG_V8SNAPSHOT" = "yes" -a "$canUseV8Snapshot" = "no" ]; then
+        echo "Error: V8 snapshot was requested, but is not supported on this platform."
+        exit 1
+    fi
+    if [ "$CFG_V8SNAPSHOT" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG v8snapshot"
+    fi
 fi
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
@@ -8666,6 +8687,13 @@ for file in .projects .projects.3; do
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
+        *tools/mkv8snapshot/*)
+            if [ "$CFG_V8" = "yes" -a "$CFG_V8SNAPSHOT" = "yes" ]; then
+                SPEC=$QMAKESPEC
+            else
+                continue
+            fi
+            ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
            else
