@@ -149,15 +149,15 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
  */
 void QLocalServerPrivate::closeServer()
 {
-    if (-1 != listenSocket)
-        QT_CLOSE(listenSocket);
-    listenSocket = -1;
-
     if (socketNotifier) {
         socketNotifier->setEnabled(false); // Otherwise, closed socket is checked before deleter runs
         socketNotifier->deleteLater();
         socketNotifier = 0;
     }
+
+    if (-1 != listenSocket)
+        QT_CLOSE(listenSocket);
+    listenSocket = -1;
 
     if (!fullServerName.isEmpty())
         QFile::remove(fullServerName);
