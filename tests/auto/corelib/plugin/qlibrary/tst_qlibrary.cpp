@@ -568,11 +568,6 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
     QLibrary lib2(lib);
     //lib2 should be loaded because lib1 was loaded and never unloaded
     QCOMPARE(lib2.isLoaded(), true);
-
-/*
-    lib1.setLoadHints(QLibrary::ResolveAllSymbolsHint);
-    lib2.setLoadHints(QLibrary::ExportExternalSymbolHint);
-*/
 }
 
 QTEST_APPLESS_MAIN(tst_QLibrary)
