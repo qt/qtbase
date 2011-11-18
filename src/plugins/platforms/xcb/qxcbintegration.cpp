@@ -103,18 +103,15 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
         foreach (QXcbScreen *screen, connection->screens())
             screenAdded(screen);
 
-    m_fontDatabase = new QGenericUnixFontDatabase();
-    m_nativeInterface = new QXcbNativeInterface;
-
-    m_inputContext = QPlatformInputContextFactory::create();
-
-    m_accessibility = new QPlatformAccessibility();
+    m_fontDatabase.reset(new QGenericUnixFontDatabase());
+    m_nativeInterface.reset(new QXcbNativeInterface);
+    m_inputContext.reset(QPlatformInputContextFactory::create());
+    m_accessibility.reset(new QPlatformAccessibility());
 }
 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
-    delete m_accessibility;
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -214,12 +211,12 @@ void QXcbIntegration::moveToScreen(QWindow *window, int screen)
 
 QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
 {
-    return m_fontDatabase;
+    return m_fontDatabase.data();
 }
 
 QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
 {
-    return m_nativeInterface;
+    return m_nativeInterface.data();
 }
 
 QPlatformClipboard *QXcbIntegration::clipboard() const
@@ -234,12 +231,12 @@ QPlatformDrag *QXcbIntegration::drag() const
 
 QPlatformInputContext *QXcbIntegration::inputContext() const
 {
-    return m_inputContext;
+    return m_inputContext.data();
 }
 
 QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
-    return m_accessibility;
+    return m_accessibility.data();
 }
 
 QT_END_NAMESPACE

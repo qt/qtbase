@@ -79,13 +79,13 @@ public:
 private:
     QList<QXcbConnection *> m_connections;
 
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
+    QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
+    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
 
-    QPlatformInputContext *m_inputContext;
+    QScopedPointer<QPlatformInputContext> m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
 
-    QPlatformAccessibility *m_accessibility;
+    QScopedPointer<QPlatformAccessibility> m_accessibility;
 };
 
 QT_END_NAMESPACE
