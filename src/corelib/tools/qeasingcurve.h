@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_HEADER
 
@@ -94,6 +95,7 @@ public:
 
     void addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint);
     void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
+    QList<QPointF> cubicBezierSpline() const;
 
     Type type() const;
     void setType(Type type);

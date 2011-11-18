@@ -1303,6 +1303,17 @@ void QEasingCurve::addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qre
 }
 
 /*!
+
+    Returns the cubicBezierSpline that defines a custom easing curve.
+    If the easing curve does not have a custom bezier easing curve the list
+    is empty.
+ */
+QList<QPointF> QEasingCurve::cubicBezierSpline() const
+{
+    return d_ptr->config ? d_ptr->config->_bezierCurves.toList() : QList<QPointF>();
+}
+
+/*!
     Returns the type of the easing curve.
 */
 QEasingCurve::Type QEasingCurve::type() const
