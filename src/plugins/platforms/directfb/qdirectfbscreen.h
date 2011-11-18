@@ -62,6 +62,9 @@ public:
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
 
+    // DirectFb helpers
+    IDirectFBDisplayLayer *dfbLayer() const;
+
 public:
     QRect m_geometry;
     int m_depth;

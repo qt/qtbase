@@ -63,5 +63,10 @@ QDirectFbScreen::QDirectFbScreen(int display)
     m_cursor.reset(new QDirectFBCursor(this));
 }
 
+IDirectFBDisplayLayer *QDirectFbScreen::dfbLayer() const
+{
+    return m_layer.data();
+}
+
 
 QT_END_NAMESPACE

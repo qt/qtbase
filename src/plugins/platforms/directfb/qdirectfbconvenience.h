@@ -49,6 +49,9 @@
 
 #include <directfb.h>
 
+
+class QDirectFbScreen;
+
 class QDirectFbKeyMap: public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {
 public:
@@ -105,5 +108,8 @@ public:
         return &this->d;
     }
 };
+
+// Helper conversions from internal to DFB types
+QDirectFbScreen *toDfbScreen(QWindow *window);
 
 #endif // QDIRECTFBCONVENIENCE_H

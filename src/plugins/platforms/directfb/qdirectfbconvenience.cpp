@@ -41,8 +41,12 @@
 
 #include "qdirectfbconvenience.h"
 #include "qdirectfbblitter.h"
+#include "qdirectfbscreen.h"
 
 #include <private/qpixmap_blitter_p.h>
+
+#include <QtGui/QWindow>
+#include <QtGui/QScreen>
 
 IDirectFB *QDirectFbConvenience::dfbInterface()
 {
@@ -377,4 +381,9 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_VERTICAL_BAR          , Qt::Key_Bar);
     insert(DIKS_CURLY_BRACKET_RIGHT   , Qt::Key_BraceRight);
     insert(DIKS_TILDE                 , Qt::Key_AsciiTilde);
+}
+
+QDirectFbScreen *toDfbScreen(QWindow *window)
+{
+    return static_cast<QDirectFbScreen*>(window->screen()->handle());
 }

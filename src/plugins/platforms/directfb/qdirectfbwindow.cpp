@@ -40,18 +40,21 @@
 ****************************************************************************/
 
 #include "qdirectfbwindow.h"
-#include "qdirectfbinput.h"
-
 #include "qdirectfbbackingstore.h"
+#include "qdirectfbinput.h"
+#include "qdirectfbscreen.h"
+
 
 #include <directfb.h>
 
 QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
-    QDirectFBPointer<IDirectFBDisplayLayer> layer(QDirectFbConvenience::dfbDisplayLayer());
     DFBDisplayLayerConfig layerConfig;
-    layer->GetConfiguration(layer.data(), &layerConfig);
+    IDirectFBDisplayLayer *layer;
+
+    layer = toDfbScreen(tlw)->dfbLayer();
+    toDfbScreen(tlw)->dfbLayer()->GetConfiguration(layer, &layerConfig);
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
@@ -75,7 +78,7 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
-    DFBResult result = layer->CreateWindow(layer.data(), &description, m_dfbWindow.outPtr());
+    DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
         DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
     }
