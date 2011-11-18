@@ -697,7 +697,7 @@ void tst_QUrl::resolving_data()
 {
     QTest::addColumn<QString>("baseUrl");
     QTest::addColumn<QString>("relativeUrl");
-    QTest::addColumn<QString>("relsolvedUrl");
+    QTest::addColumn<QString>("resolvedUrl");
 
     // 5.4.1 Normal Examples (http://www.ietf.org/rfc/rfc3986.txt)
     QTest::newRow("g:h")       << QString::fromLatin1("http://a/b/c/d;p?q") << QString::fromLatin1("g:h")      << QString::fromLatin1("g:h");
@@ -790,10 +790,10 @@ void tst_QUrl::resolving()
 {
     QFETCH(QString, baseUrl);
     QFETCH(QString, relativeUrl);
-    QFETCH(QString, relsolvedUrl);
+    QFETCH(QString, resolvedUrl);
 
     QUrl url(baseUrl);
-    QCOMPARE(url.resolved(relativeUrl).toString(), relsolvedUrl);
+    QCOMPARE(url.resolved(relativeUrl).toString(), resolvedUrl);
 }
 
 void tst_QUrl::toString_data()
