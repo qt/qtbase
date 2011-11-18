@@ -263,19 +263,19 @@ void tst_QPluginLoader::loadCorruptElf()
 
         QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
         QCOMPARE(lib1.load(), false);
-        QVERIFY(lib1.errorString().contains("not a valid Qt plugin"));
+        QVERIFY2(lib1.errorString().contains("not a valid Qt plugin"), qPrintable(lib1.errorString()));
 
         QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
         QCOMPARE(lib2.load(), false);
-        QVERIFY(lib2.errorString().contains("not a valid Qt plugin"));
+        QVERIFY2(lib2.errorString().contains("not a valid Qt plugin"), qPrintable(lib2.errorString()));
 
         QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
         QCOMPARE(lib3.load(), false);
-        QVERIFY(lib3.errorString().contains("not a valid Qt plugin"));
+        QVERIFY2(lib3.errorString().contains("not a valid Qt plugin"), qPrintable(lib3.errorString()));
     } else if (sizeof(void*) == 4) {
         QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
         QCOMPARE(libW.load(), false);
-        QVERIFY(libW.errorString().contains("architecture"));
+        QVERIFY2(libW.errorString().contains("architecture"), qPrintable(libW.errorString()));
     } else {
         QFAIL("Please port QElfParser to this platform or blacklist this test.");
     }
