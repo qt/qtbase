@@ -936,7 +936,7 @@ void QOpenGLShaderProgram::release()
 {
     Q_D(QOpenGLShaderProgram);
 #ifndef QT_NO_DEBUG
-    if (d->programGuard->group() != QOpenGLContextGroup::currentContextGroup())
+    if (d->programGuard && d->programGuard->group() != QOpenGLContextGroup::currentContextGroup())
         qWarning("QOpenGLShaderProgram::release: program is not valid in the current context.");
 #endif
     d->glfuncs->glUseProgram(0);
