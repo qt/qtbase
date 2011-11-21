@@ -43,6 +43,7 @@
 #include "qdirectfbintegration.h"
 #include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
+#include "qdirectfbwindow.h"
 #include <private/qpixmap_blitter_p.h>
 
 #include <QtCore/qdebug.h>
@@ -52,15 +53,9 @@ QT_BEGIN_NAMESPACE
 QDirectFbBackingStore::QDirectFbBackingStore(QWindow *window)
     : QPlatformBackingStore(window), m_pixmap(0), m_pmdata(0)
 {
+    IDirectFBWindow *dfbWindow = static_cast<QDirectFbWindow *>(window->handle())->dfbWindow();
+    dfbWindow->GetSurface(dfbWindow, m_dfbSurface.outPtr());
 
-    QDirectFBPointer<IDirectFBDisplayLayer> layer(QDirectFbConvenience::dfbDisplayLayer());
-
-    DFBWindowID id(window->winId());
-    QDirectFBPointer<IDirectFBWindow> dfbWindow;
-
-    layer->GetWindow(layer.data(), id, dfbWindow.outPtr());
-
-    dfbWindow->GetSurface(dfbWindow.data(), m_dfbSurface.outPtr());
 //WRONGSIZE
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface.data());
     m_pmdata = new QDirectFbBlitterPlatformPixmap;

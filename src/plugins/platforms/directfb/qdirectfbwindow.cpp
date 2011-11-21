@@ -194,3 +194,8 @@ bool QDirectFbWindow::setMouseGrabEnabled(bool grab)
 
     return res == DFB_OK;
 }
+
+IDirectFBWindow *QDirectFbWindow::dfbWindow() const
+{
+    return m_dfbWindow.data();
+}

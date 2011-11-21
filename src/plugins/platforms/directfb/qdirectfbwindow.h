@@ -67,6 +67,8 @@ public:
     void lower();
     WId winId() const;
 
+    IDirectFBWindow *dfbWindow() const;
+
 private:
     QDirectFBPointer<IDirectFBWindow> m_dfbWindow;
     QDirectFbInput *m_inputHandler;
