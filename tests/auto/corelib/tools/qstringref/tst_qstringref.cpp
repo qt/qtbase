@@ -790,15 +790,6 @@ void tst_QStringRef::compare_data()
     lower += QChar(QChar::highSurrogate(0x10428));
     lower += QChar(QChar::lowSurrogate(0x10428));
     QTest::newRow("data8") << upper << lower << -1 << 0;
-
-    // embedded nulls
-    // These don't work as of now. It's OK that these don't work since \0 is not a valid unicode
-    /*QTest::newRow("data9") << QString(QByteArray("\0", 1)) << QString(QByteArray("\0", 1)) << 0 << 0;
-      QTest::newRow("data10") << QString(QByteArray("\0", 1)) << QString("") << 1 << 1;
-      QTest::newRow("data11") << QString("") << QString(QByteArray("\0", 1)) << -1 << -1;
-      QTest::newRow("data12") << QString("ab\0c") << QString(QByteArray("ab\0c", 4)) << 0 << 0;
-      QTest::newRow("data13") << QString(QByteArray("ab\0c", 4)) << QString("abc") << -1 << -1;
-      QTest::newRow("data14") << QString("abc") << QString(QByteArray("ab\0c", 4)) << 1 << 1;*/
 }
 
 static bool isLatin(const QString &s)
