@@ -88,7 +88,7 @@ QDirectFbIntegration::QDirectFbIntegration()
     m_primaryScreen.reset(new QDirectFbScreen(0));
     screenAdded(m_primaryScreen.data());
 
-    m_input.reset(new QDirectFbInput());
+    m_input.reset(new QDirectFbInput(m_dfb.data(), m_primaryScreen->dfbLayer()));
     m_input->start();
 }
 

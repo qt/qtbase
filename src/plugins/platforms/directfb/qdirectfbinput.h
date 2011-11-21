@@ -55,7 +55,7 @@ class QDirectFbInput : public QThread
 {
     Q_OBJECT
 public:
-    QDirectFbInput();
+    QDirectFbInput(IDirectFB *dfb, IDirectFBDisplayLayer *dfbLayer);
     void addWindow(IDirectFBWindow *window, QWindow *platformWindow);
     void removeWindow(IDirectFBWindow *window);
 
@@ -74,7 +74,7 @@ private:
 
 
     IDirectFB *m_dfbInterface;
-    QDirectFBPointer<IDirectFBDisplayLayer> m_dfbDisplayLayer;
+    IDirectFBDisplayLayer *m_dfbDisplayLayer;
     QDirectFBPointer<IDirectFBEventBuffer> m_eventBuffer;
 
     bool m_shouldStop;

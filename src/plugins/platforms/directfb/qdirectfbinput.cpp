@@ -50,15 +50,14 @@
 
 #include <directfb.h>
 
-QDirectFbInput::QDirectFbInput()
-    : m_dfbInterface(QDirectFbConvenience::dfbInterface())
+QDirectFbInput::QDirectFbInput(IDirectFB *dfb, IDirectFBDisplayLayer *dfbLayer)
+    : m_dfbInterface(dfb)
+    , m_dfbDisplayLayer(dfbLayer)
     , m_shouldStop(false)
 {
     DFBResult ok = m_dfbInterface->CreateEventBuffer(m_dfbInterface, m_eventBuffer.outPtr());
     if (ok != DFB_OK)
         DirectFBError("Failed to initialise eventbuffer", ok);
-
-    m_dfbInterface->GetDisplayLayer(m_dfbInterface, DLID_PRIMARY, m_dfbDisplayLayer.outPtr());
 }
 
 void QDirectFbInput::run()
@@ -200,7 +199,7 @@ void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
 inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const
 {
     QDirectFBPointer<IDirectFBWindow> window;
-    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer.data() , event.window.window_id, window.outPtr());
+    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer, event.window.window_id, window.outPtr());
     int x,y;
     window->GetPosition(window.data(), &x, &y);
     return QPoint(event.window.cx +x, event.window.cy + y);
