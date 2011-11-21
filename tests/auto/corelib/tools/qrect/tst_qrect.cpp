@@ -92,18 +92,6 @@ private slots:
     void right();
     void bottom_data();
     void bottom();
-    /*
-    The test framework has a problem with implementing QCOORD as a type that can be used, if it's
-    implemented then the 4 tests above have problems.  Ed has been notified.
-    void rLeft_data();
-    void rLeft();
-    void rTop_data();
-    void rTop();
-    void rRight_data();
-    void rRight();
-    void rBottom_data();
-    void rBottom();
-    */
     void x_data();
     void x();
     void y_data();
@@ -152,10 +140,6 @@ private slots:
     void newMoveTopLeft();
     void newMoveBottomRight_data();
     void newMoveBottomRight();
-    /*void newMoveTopRight_data();
-    void newMoveTopRight();
-    void newMoveBottomLeft_data();
-    void newMoveBottomLeft();*/
 
     void translate_data();
     void translate();
@@ -542,116 +526,6 @@ void tst_QRect::bottom()
         return;
     QCOMPARE(QRectF(r).bottom(), qreal(bottom + 1));
 }
-
-/*
-Q_DECLARE_METATYPE(QCOORD)
-
-void tst_QRect::rLeft_data()
-{
-    QTest::addColumn<QRect>("r");
-    QTest::addColumn<QCOORD>("rLeft");
-
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << 0;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << 1;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << int(INT_MIN) / 2;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << 0;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << 100;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << 1;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << -10;
-    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << 5;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << 2;
-}
-
-void tst_QRect::rLeft()
-{
-    QFETCH( QRect, r );
-    QFETCH( QCOORD, rLeft );
-
-    QCOMPARE( r.rLeft(), rLeft );
-}
-
-void tst_QRect::rTop_data()
-{
-    QTest::addColumn<QRect>("r");
-    QTest::addColumn<QCOORD>("rTop");
-
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << 0;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << 1;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << int(INT_MIN) / 2;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << 0;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << 200;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << 1;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << -10;
-    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << 5;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << 2;
-}
-
-void tst_QRect::rTop()
-{
-    QFETCH( QRect, r );
-    QFETCH( QCOORD, rTop );
-
-    QCOMPARE( r.rTop(), rTop );
-}
-
-void tst_QRect::rRight_data()
-{
-    // We don't test the NullQRect case as the return value is undefined.
-
-    QTest::addColumn<QRect>("r");
-    QTest::addColumn<QCOORD>("rRight");
-
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << -1;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << 1;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << int(INT_MAX) / 2;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << int(INT_MAX) - 1;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << int(INT_MAX);
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << 110;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << -10;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << -6;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << 1;
-}
-
-void tst_QRect::rRight()
-{
-    QFETCH( QRect, r );
-    QFETCH( QCOORD, rRight );
-
-    QCOMPARE( r.rRight(), rRight );
-}
-
-void tst_QRect::rBottom_data()
-{
-    // We don't test the NullQRect case as the return value is undefined.
-
-    QTest::addColumn<QRect>("r");
-    QTest::addColumn<QCOORD>("rBottom");
-
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << -1;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << 1;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << int(INT_MAX) / 2;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << int(INT_MAX) - 1;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << int(INT_MIN);
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << int(INT_MAX);
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << 215;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << -10;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << -6;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << 1;
-}
-
-void tst_QRect::rBottom()
-{
-    QFETCH( QRect, r );
-    QFETCH( QCOORD, rBottom );
-
-    QCOMPARE( r.rBottom(), rBottom );
-}
-*/
 
 void tst_QRect::x_data()
 {
