@@ -4017,7 +4017,7 @@ void tst_QString::double_conversion_data()
     QTest::addColumn<QString>("num_str");
     QTest::addColumn<bool>("good");
     QTest::addColumn<double>("num");
-/*
+
     // The good...
 
     QTest::newRow("C 1")         << QString("C") << QString("1")          << true  << 1.0;
@@ -4081,7 +4081,7 @@ void tst_QString::double_conversion_data()
     QTest::newRow("C 1  ")           << QString("C")     << QString("1  ")        << true  << 1.0;
     QTest::newRow("de_DE  1")        << QString("de_DE") << QString(" 1")         << true  << 1.0;
     QTest::newRow("de_DE 1 ")        << QString("de_DE") << QString("1 ")         << true  << 1.0;
-*/
+
     // Let's try some Arabic
     const quint16 arabic_str[] = { 0x0660, 0x066B, 0x0661, 0x0662,
                                     0x0663, 0x0664, 0x0065, 0x0662,
