@@ -61,7 +61,6 @@ private slots:
     void reverse_data();
     void reverse();
     void toggleDirection();
-    //void reset(); ### todo
     void frameChanged();
     void stopped();
     void finished();
@@ -354,8 +353,8 @@ void tst_QTimeLine::interpolation()
     int firstValue = timeLine.currentFrame();
     QTest::qWait(200);
     int endValue = timeLine.currentFrame();
-    timeLine.stop(); // ### todo reset?
-    timeLine.setCurrentTime(0); // ### todo reset?
+    timeLine.stop();
+    timeLine.setCurrentTime(0);
 
     // linear
     timeLine.setCurveShape(QTimeLine::LinearCurve);
@@ -449,37 +448,6 @@ void tst_QTimeLine::toggleDirection()
     QCOMPARE(int(timeLine.direction()), int(QTimeLine::Forward));
 }
 
-/*
-void tst_QTimeLine::reset()
-{
-    QTimeLine timeLine;
-    timeLine.setFrameRange(10,100);
-
-    timeLine.setLoopCount(-1);
-    QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    timeLine.start();
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
-    int wait = timeLine.duration()*5/3;
-    QTest::qWait(wait);
-    QVERIFY(spy.count() >= 1 );
-    QCOMPARE(timeLine.state(), QTimeLine::Running);
-    timeLine.setDirection(QTimeLine::Backward);
-    QVERIFY(timeLine.currentFrame() != 10);
-    QVERIFY(timeLine.currentTime() != 0);
-    QVERIFY(timeLine.state() != QTimeLine::Forward);
-    QVERIFY(timeLine.loopCount() != 0);
-
-    timeLine.reset();
-    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
-    QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
-    QCOMPARE(timeLine.currentTime(), 0);
-    timeLine.setDirection(QTimeLine::Backward);
-    QCOMPARE(timeLine.loopCount(), 1);
-    QCOMPARE(timeLine.startFrame(), 10);
-    QCOMPARE(timeLine.endFrame(), 100);
-}
-*/
 void tst_QTimeLine::frameChanged()
 {
     QTimeLine timeLine;
@@ -492,7 +460,6 @@ void tst_QTimeLine::frameChanged()
     // Probably 10
     QVERIFY(spy.count() <= 10 && spy.count() > 0);
 
-    //timeLine.reset(); ### todo
     timeLine.setUpdateInterval(5);
     spy.clear();
     timeLine.setCurrentTime(0);
@@ -513,15 +480,10 @@ void tst_QTimeLine::stopped()
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
     QCOMPARE(spy.count(), 2);
-    // timeLine.reset(); ### todo
     spy.clear();
-    //int currentFrame = timeLine.currentFrame();
-    //int currentCurrentTime = timeLine.currentTime();
     timeLine.start();
     timeLine.stop();
     QCOMPARE(spy.count(), 2);
-    //QCOMPARE(timeLine.currentFrame(), currentFrame); ### Behavioral change
-    //QCOMPARE(timeLine.currentTime(), currentCurrentTime);
     timeLine.setDirection(QTimeLine::Backward);
     QCOMPARE(timeLine.loopCount(), 1);
 }
