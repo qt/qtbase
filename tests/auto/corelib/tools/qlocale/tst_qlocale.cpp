@@ -691,16 +691,6 @@ void tst_QLocale::long_long_conversion_extra()
     QCOMPARE(l.toString((qulonglong)12345), QString("12,345"));
 }
 
-/*
-void tst_QLocale::languageToString()
-{
-}
-
-void tst_QLocale::setDefault()
-{
-}
-*/
-
 void tst_QLocale::testInfAndNan()
 {
     double neginf = log(0.0);
