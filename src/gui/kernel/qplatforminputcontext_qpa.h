@@ -77,9 +77,6 @@ public:
     virtual void hideInputPanel();
     virtual bool isInputPanelVisible() const;
     void emitInputPanelVisibleChanged();
-
-    // temporary function added to retain compatibility to old functionality, will be deprecated
-    virtual bool handlesInputPanelVisibility() const;
 };
 
 QT_END_NAMESPACE

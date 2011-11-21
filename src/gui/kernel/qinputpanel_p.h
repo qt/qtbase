@@ -56,8 +56,7 @@ QT_BEGIN_NAMESPACE
 class QInputPanelPrivate : public QObjectPrivate
 {
 public:
-    inline QInputPanelPrivate()
-        : visible(false), testContext(0)
+    inline QInputPanelPrivate() : testContext(0)
     {}
     QPlatformInputContext *platformInputContext() const
     {
@@ -70,7 +69,6 @@ public:
 
     QTransform inputItemTransform;
     QWeakPointer<QObject> inputItem;
-    bool visible;
     QPlatformInputContext *testContext;
 };
 

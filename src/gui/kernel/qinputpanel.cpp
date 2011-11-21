@@ -180,12 +180,8 @@ void QInputPanel::show()
 {
     Q_D(QInputPanel);
     QPlatformInputContext *ic = d->platformInputContext();
-    if (ic && ic->handlesInputPanelVisibility())
+    if (ic)
         ic->showInputPanel();
-    else if (!d->visible) {
-        d->visible = true;
-        emit visibleChanged();
-    }
 }
 
 /*!
@@ -199,12 +195,8 @@ void QInputPanel::hide()
 {
     Q_D(QInputPanel);
     QPlatformInputContext *ic = d->platformInputContext();
-    if (ic && ic->handlesInputPanelVisibility())
+    if (ic)
         ic->hideInputPanel();
-    else if (d->visible) {
-        d->visible = false;
-        emit visibleChanged();
-    }
 }
 
 /*!
@@ -220,10 +212,8 @@ bool QInputPanel::visible() const
 {
     Q_D(const QInputPanel);
     QPlatformInputContext *ic = d->platformInputContext();
-    if (ic && ic->handlesInputPanelVisibility())
+    if (ic)
         return ic->isInputPanelVisible();
-    else
-        return d->visible;
     return false;
 }
 

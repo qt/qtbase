@@ -180,12 +180,6 @@ void QIBusPlatformInputContext::inputItemChanged()
         d->context->FocusOut();
 }
 
-// temporary function added to retain compatibility to old functionality, will be deprecated
-bool QIBusPlatformInputContext::handlesInputPanelVisibility() const
-{
-    return true;
-}
-
 void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 {
     QObject *input = qApp->inputPanel()->inputItem();

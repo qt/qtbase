@@ -475,12 +475,6 @@ void QMeeGoPlatformInputContext::inputItemChanged()
         showInputPanel();
 }
 
-// temporary function added to retain compatibility to old functionality, will be deprecated
-bool QMeeGoPlatformInputContext::handlesInputPanelVisibility() const
-{
-    return true;
-}
-
 void QMeeGoPlatformInputContext::showInputPanel()
 {
     if (debug)

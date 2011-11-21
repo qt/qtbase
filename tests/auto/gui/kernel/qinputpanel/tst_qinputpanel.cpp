@@ -51,7 +51,6 @@ public:
     PlatformInputContext() :
         m_animating(false),
         m_visible(false),
-        m_handlesInputPanelVisibility(false),
         m_updateCallCount(0),
         m_resetCallCount(0),
         m_commitCallCount(0),
@@ -92,14 +91,9 @@ public:
     {
         return m_visible;
     }
-    virtual bool handlesInputPanelVisibility() const
-    {
-        return m_handlesInputPanelVisibility;
-    }
 
     bool m_animating;
     bool m_visible;
-    bool m_handlesInputPanelVisibility;
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
@@ -163,22 +157,18 @@ void tst_qinputpanel::initTestCase()
 
 void tst_qinputpanel::visible()
 {
-    QCOMPARE(m_platformInputContext.m_handlesInputPanelVisibility, false);
-    for (int index = 0; index < 2; index++) {
-        m_platformInputContext.m_handlesInputPanelVisibility = index;
-        QCOMPARE(qApp->inputPanel()->visible(), false);
-        qApp->inputPanel()->show();
-        QCOMPARE(qApp->inputPanel()->visible(), true);
+    QCOMPARE(qApp->inputPanel()->visible(), false);
+    qApp->inputPanel()->show();
+    QCOMPARE(qApp->inputPanel()->visible(), true);
 
-        qApp->inputPanel()->hide();
-        QCOMPARE(qApp->inputPanel()->visible(), false);
+    qApp->inputPanel()->hide();
+    QCOMPARE(qApp->inputPanel()->visible(), false);
 
-        qApp->inputPanel()->setVisible(true);
-        QCOMPARE(qApp->inputPanel()->visible(), true);
+    qApp->inputPanel()->setVisible(true);
+    QCOMPARE(qApp->inputPanel()->visible(), true);
 
-        qApp->inputPanel()->setVisible(false);
-        QCOMPARE(qApp->inputPanel()->visible(), false);
-    }
+    qApp->inputPanel()->setVisible(false);
+    QCOMPARE(qApp->inputPanel()->visible(), false);
 }
 
 void tst_qinputpanel::animating()

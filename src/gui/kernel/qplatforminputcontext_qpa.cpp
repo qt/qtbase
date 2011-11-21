@@ -207,10 +207,4 @@ void QPlatformInputContext::emitInputPanelVisibleChanged()
     emit qApp->inputPanel()->visibleChanged();
 }
 
-//  temporary function added to retain compatibility to old functionality, will be deprecated
-bool QPlatformInputContext::handlesInputPanelVisibility() const
-{
-    return false;
-}
-
 QT_END_NAMESPACE

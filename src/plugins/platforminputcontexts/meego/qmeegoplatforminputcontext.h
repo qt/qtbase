@@ -64,8 +64,6 @@ public:
     void update(Qt::InputMethodQueries);
     virtual QRectF keyboardRect() const;
 
-    virtual bool handlesInputPanelVisibility() const;
-
     virtual void showInputPanel();
     virtual void hideInputPanel();
     virtual bool isInputPanelVisible() const;
