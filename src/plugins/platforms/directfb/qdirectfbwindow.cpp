@@ -87,14 +87,12 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
 
     setVisible(window()->visible());
 
-    DFBWindowID id;
-    m_dfbWindow->GetID(m_dfbWindow.data(), &id);
-    m_inputHandler->addWindow(id,tlw);
+    m_inputHandler->addWindow(m_dfbWindow.data(), tlw);
 }
 
 QDirectFbWindow::~QDirectFbWindow()
 {
-    m_inputHandler->removeWindow(winId());
+    m_inputHandler->removeWindow(m_dfbWindow.data());
     m_dfbWindow->Destroy(m_dfbWindow.data());
 }
 

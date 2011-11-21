@@ -75,22 +75,34 @@ void QDirectFbInput::stopInputEventLoop()
     m_eventBuffer->WakeUp(m_eventBuffer.data());
 }
 
-void QDirectFbInput::addWindow(DFBWindowID id, QWindow *qt_window)
+void QDirectFbInput::addWindow(IDirectFBWindow *window, QWindow *platformWindow)
 {
-    m_tlwMap.insert(id,qt_window);
-    QDirectFBPointer<IDirectFBWindow> window;
-    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer.data(), id, window.outPtr());
+    DFBResult res;
+    DFBWindowID id;
 
-    window->AttachEventBuffer(window.data(), m_eventBuffer.data());
+    res = window->GetID(window, &id);
+    if (res != DFB_OK) {
+        DirectFBError("QDirectFbInput::addWindow", res);
+        return;
+    }
+
+    m_tlwMap.insert(id, platformWindow);
+    window->AttachEventBuffer(window, m_eventBuffer.data());
 }
 
-void QDirectFbInput::removeWindow(WId wId)
+void QDirectFbInput::removeWindow(IDirectFBWindow *window)
 {
-    QDirectFBPointer<IDirectFBWindow> window;
-    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer.data(), wId, window.outPtr());
+    DFBResult res;
+    DFBWindowID id;
 
-    window->DetachEventBuffer(window.data(), m_eventBuffer.data());
-    m_tlwMap.remove(wId);
+    res = window->GetID(window, &id);
+    if (res != DFB_OK) {
+        DirectFBError("QDirectFbInput::removeWindow", res);
+        return;
+    }
+
+    window->DetachEventBuffer(window, m_eventBuffer.data());
+    m_tlwMap.remove(id);
 }
 
 void QDirectFbInput::handleEvents()

@@ -56,8 +56,8 @@ class QDirectFbInput : public QThread
     Q_OBJECT
 public:
     QDirectFbInput();
-    void addWindow(DFBWindowID id, QWindow *window);
-    void removeWindow(WId wId);
+    void addWindow(IDirectFBWindow *window, QWindow *platformWindow);
+    void removeWindow(IDirectFBWindow *window);
 
     void stopInputEventLoop();
 
