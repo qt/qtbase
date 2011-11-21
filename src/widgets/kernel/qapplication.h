@@ -75,9 +75,7 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
-#define QApplicationBase QGuiApplication
-
-class Q_WIDGETS_EXPORT QApplication : public QApplicationBase
+class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 {
     Q_OBJECT
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)

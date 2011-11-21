@@ -660,11 +660,11 @@ void QApplicationPrivate::process_cmdline()
 */
 
 QApplication::QApplication(int &argc, char **argv)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, int _internal)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 { Q_D(QApplication); d->construct(); }
 
 
@@ -694,11 +694,11 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 */
 
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled )
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, 0x040000))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _internal)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
 { Q_D(QApplication); d->construct();}
 
 
@@ -717,11 +717,11 @@ QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _intern
     \c -qws option).
 */
 QApplication::QApplication(int &argc, char **argv, Type type)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, type, 0x040000))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, type, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, _internal))
 { Q_D(QApplication); d->construct(); }
 
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
@@ -803,7 +803,7 @@ static char *aargv[] = { (char*)"unknown", 0 };
     This function is only available on X11.
 */
 QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QApplicationBase(*new QApplicationPrivate(aargc, aargv, GuiClient, 0x040000))
+    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, 0x040000))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -812,7 +812,7 @@ QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
 }
 
 QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QApplicationBase(*new QApplicationPrivate(aargc, aargv, GuiClient, _internal))
+    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, _internal))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -837,7 +837,7 @@ QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap,
 */
 QApplication::QApplication(Display *dpy, int &argc, char **argv,
                            Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -847,7 +847,7 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 QApplication::QApplication(Display *dpy, int &argc, char **argv,
                            Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -1164,7 +1164,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
         }
         return false;
     }
-    return QApplicationBase::compressEvent(event, receiver, postedEvents);
+    return QGuiApplication::compressEvent(event, receiver, postedEvents);
 }
 
 /*!
@@ -2235,7 +2235,7 @@ bool QApplication::event(QEvent *e)
         }
     }
 
-    return QApplicationBase::event(e);
+    return QGuiApplication::event(e);
 }
 
 #if !defined(Q_WS_X11)
@@ -3378,7 +3378,7 @@ int QApplication::exec()
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::setRootObject(qApp);
 #endif
-    return QApplicationBase::exec();
+    return QGuiApplication::exec();
 }
 
 /*! \reimp
@@ -4999,7 +4999,7 @@ QInputContext *QApplication::inputContext() const
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
-    return QApplicationBase::sendSpontaneousEvent(receiver, event);
+    return QGuiApplication::sendSpontaneousEvent(receiver, event);
 }
 
 
