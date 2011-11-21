@@ -9,6 +9,7 @@ isEmpty(V8_TARGET_ARCH) {
     # Detect target
     equals(QT_ARCH, x86_64)|contains(CONFIG, x86_64):V8_TARGET_ARCH = x64
     else:equals(QT_ARCH, "i386"):                    V8_TARGET_ARCH = ia32
+    else:equals(QT_ARCH, "mips"):                    V8_TARGET_ARCH = mips
     else:equals(QT_ARCH, "arm"):                     V8_TARGET_ARCH = arm
     else:equals(QMAKE_HOST.arch, armv7l):            V8_TARGET_ARCH = arm
     else:equals(QMAKE_HOST.arch, armv5tel):          V8_TARGET_ARCH = arm
@@ -209,6 +210,27 @@ SOURCES += \
     $$V8SRC/x64/macro-assembler-x64.cc \
     $$V8SRC/x64/regexp-macro-assembler-x64.cc \
     $$V8SRC/x64/stub-cache-x64.cc
+}
+
+arch_mips {
+DEFINES += V8_TARGET_MIPS
+SOURCES += \
+    $$V8SRC/mips/assembler-mips.cc \
+    $$V8SRC/mips/builtins-mips.cc \
+    $$V8SRC/mips/codegen-mips.cc \
+    $$V8SRC/mips/code-stubs-mips.cc \
+    $$V8SRC/mips/constants-mips.cc \
+    $$V8SRC/mips/cpu-mips.cc \
+    $$V8SRC/mips/debug-mips.cc \
+    $$V8SRC/mips/deoptimizer-mips.cc \
+    $$V8SRC/mips/disasm-mips.cc \
+    $$V8SRC/mips/frames-mips.cc \
+    $$V8SRC/mips/full-codegen-mips.cc \
+    $$V8SRC/mips/ic-mips.cc \
+    $$V8SRC/mips/macro-assembler-mips.cc \
+    $$V8SRC/mips/regexp-macro-assembler-mips.cc \
+    $$V8SRC/mips/simulator-mips.cc \
+    $$V8SRC/mips/stub-cache-mips.cc
 }
 
 unix:!symbian:!macx {
