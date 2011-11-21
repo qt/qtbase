@@ -386,3 +386,8 @@ QDirectFbScreen *toDfbScreen(QWindow *window)
 {
     return static_cast<QDirectFbScreen*>(window->screen()->handle());
 }
+
+IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen)
+{
+    return static_cast<QDirectFbScreen*>(screen)->dfbLayer();
+}

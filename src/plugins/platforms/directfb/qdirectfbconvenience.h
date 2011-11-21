@@ -51,6 +51,7 @@
 
 
 class QDirectFbScreen;
+class QPlatformScreen;
 
 class QDirectFbKeyMap: public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {
@@ -111,5 +112,6 @@ public:
 
 // Helper conversions from internal to DFB types
 QDirectFbScreen *toDfbScreen(QWindow *window);
+IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen);
 
 #endif // QDIRECTFBCONVENIENCE_H

@@ -57,7 +57,6 @@ public:
     void changeCursor(QCursor *cursor, QWindow *window);
 
 private:
-    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
     QScopedPointer<QPlatformCursorImage> m_image;
 };
 
