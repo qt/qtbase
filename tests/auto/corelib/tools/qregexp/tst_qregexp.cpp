@@ -70,23 +70,8 @@ private slots:
     void swap();
     void operator_eq();
 
-    /*
-    void isValid();
-    void pattern();
-    void setPattern();
-    void caseSensitive();
-    void setCaseSensitive();
-    void minimal();
-    void setMinimal();
-*/
     void exactMatch();
     void capturedTexts();
-/*
-    void cap();
-    void pos();
-    void errorString();
-    void escape();
-*/
     void staticRegExp();
     void rainersSlowRegExpCopyBug();
     void nonExistingBackReferenceBug();
@@ -491,40 +476,6 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
                                 << QStringList();
 }
 
-/*
-void tst_QRegExp::isEmpty()
-{
-}
-
-void tst_QRegExp::isValid()
-{
-}
-
-void tst_QRegExp::pattern()
-{
-}
-
-void tst_QRegExp::setPattern()
-{
-}
-
-void tst_QRegExp::caseSensitive()
-{
-}
-
-void tst_QRegExp::setCaseSensitive()
-{
-}
-
-void tst_QRegExp::minimal()
-{
-}
-
-void tst_QRegExp::setMinimal()
-{
-}
-*/
-
 void tst_QRegExp::exactMatch()
 {
     QRegExp rx_d( "\\d" );
@@ -603,24 +554,6 @@ void tst_QRegExp::capturedTexts()
     QCOMPARE(rx7.cap(1), QString("d"));
     QCOMPARE(rx7.cap(2), QString("elta4"));
 }
-
-/*
-void tst_QRegExp::cap()
-{
-}
-
-void tst_QRegExp::pos()
-{
-}
-
-void tst_QRegExp::errorString()
-{
-}
-
-void tst_QRegExp::escape()
-{
-}
-*/
 
 void tst_QRegExp::indexIn()
 {
