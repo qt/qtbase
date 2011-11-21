@@ -60,7 +60,7 @@ private slots:
     void interpolation();
     void reverse_data();
     void reverse();
-    //void toggle();
+    void toggleDirection();
     //void reset(); ### todo
     void frameChanged();
     void stopped();
@@ -437,17 +437,18 @@ void tst_QTimeLine::reverse()
 
 }
 
-/*
-void tst_QTimeLine::toggle()
+void tst_QTimeLine::toggleDirection()
 {
+    // Note: enum values are cast to int so that QCOMPARE will show
+    // the values if they don't match.
     QTimeLine timeLine;
-    QCOMPARE(timeLine.isReverse(), false);
-    timeLine.toggle();
-    QCOMPARE(timeLine.isReverse(), true);
-    timeLine.toggle();
-    QCOMPARE(timeLine.isReverse(), false);
+    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Forward));
+    timeLine.toggleDirection();
+    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Backward));
+    timeLine.toggleDirection();
+    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Forward));
 }
-*/
+
 /*
 void tst_QTimeLine::reset()
 {
