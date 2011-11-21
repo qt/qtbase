@@ -53,7 +53,7 @@ class QDirectFbBlitter;
 class QDirectFBCursor : public QPlatformCursor
 {
 public:
-    QDirectFBCursor(QPlatformScreen *screem);
+    QDirectFBCursor(QPlatformScreen *screen);
     void changeCursor(QCursor *cursor, QWindow *window);
 
 private:
