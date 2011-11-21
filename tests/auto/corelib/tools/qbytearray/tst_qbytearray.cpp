@@ -1206,12 +1206,12 @@ void tst_QByteArray::toFromHex()
 void tst_QByteArray::toFromPercentEncoding()
 {
     QByteArray arr("Qt is great!");
-/*
+
     QByteArray data = arr.toPercentEncoding();
     QCOMPARE(QString(data), QString("Qt%20is%20great%21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
-*/
-    QByteArray data = arr.toPercentEncoding("! ", "Qt");
+
+    data = arr.toPercentEncoding("! ", "Qt");
     QCOMPARE(QString(data), QString("%51%74 is grea%74!"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
 
