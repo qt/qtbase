@@ -227,6 +227,17 @@ public:
     bool isAdopted;
 };
 
+class QScopedLoopLevelCounter
+{
+    QThreadData *threadData;
+public:
+    inline QScopedLoopLevelCounter(QThreadData *threadData)
+        : threadData(threadData)
+    { ++threadData->loopLevel; }
+    inline ~QScopedLoopLevelCounter()
+    { --threadData->loopLevel; }
+};
+
 // thread wrapper for the main() thread
 class QAdoptedThread : public QThread
 {

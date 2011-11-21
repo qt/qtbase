@@ -809,16 +809,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     // call overhead.
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
-
-    // Exception-safety without try/catch
-    struct Incrementer {
-        int &variable;
-        inline Incrementer(int &variable) : variable(variable)
-        { ++variable; }
-        inline ~Incrementer()
-        { --variable; }
-    };
-    Incrementer inc(threadData->loopLevel);
+    QScopedLoopLevelCounter loopLevelCounter(threadData);
 
 #ifdef QT_JAMBI_BUILD
     int deleteWatch = 0;

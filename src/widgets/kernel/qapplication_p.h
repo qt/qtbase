@@ -68,7 +68,6 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qpointer.h"
 #include "private/qcoreapplication_p.h"
-#include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
 #include <QTime>
 #include <QWindowSystemInterface>
@@ -262,17 +261,6 @@ typedef struct tagGESTURECONFIG
 #endif // QT_NO_GESTURES
 
 #endif // Q_WS_WIN
-
-class QScopedLoopLevelCounter
-{
-    QThreadData *threadData;
-public:
-    QScopedLoopLevelCounter(QThreadData *threadData)
-        : threadData(threadData)
-    { ++threadData->loopLevel; }
-    ~QScopedLoopLevelCounter()
-    { --threadData->loopLevel; }
-};
 
 struct FontHash : public QHash<QByteArray, QFont>
 {
