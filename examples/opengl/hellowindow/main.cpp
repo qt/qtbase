@@ -48,6 +48,8 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
+    bool multipleWindows = !QGuiApplication::arguments().contains(QLatin1String("--single"));
+
     QScreen *screen = QGuiApplication::primaryScreen();
 
     QRect screenGeometry = screen->availableGeometry();
@@ -60,31 +62,35 @@ int main(int argc, char **argv)
     QSize windowSize(400, 320);
     int delta = 40;
 
-    Renderer rendererA(format);
-    Renderer rendererB(format, &rendererA);
+    Renderer *rendererA = new Renderer(format);
+    HelloWindow *windowA = new HelloWindow(rendererA);
+    windowA->setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
+    windowA->setWindowTitle(QLatin1String("Thread A - Context A"));
+    windowA->setVisible(true);
 
-    QThread renderThread;
-    rendererB.moveToThread(&renderThread);
-    renderThread.start();
+    QThread *renderThread = 0;
+    if (multipleWindows) {
+        Renderer *rendererB = new Renderer(format, rendererA);
 
-    QObject::connect(qGuiApp, SIGNAL(lastWindowClosed()), &renderThread, SLOT(quit()));
+        renderThread = new QThread;
+        rendererB->moveToThread(renderThread);
+        renderThread->start();
 
-    HelloWindow windowA(&rendererA);
-    windowA.setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
-    windowA.setWindowTitle(QLatin1String("Thread A - Context A"));
-    windowA.setVisible(true);
+        QObject::connect(qGuiApp, SIGNAL(lastWindowClosed()), renderThread, SLOT(quit()));
 
-    HelloWindow windowB(&rendererA);
-    windowB.setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
-    windowB.setWindowTitle(QLatin1String("Thread A - Context A"));
-    windowB.setVisible(true);
+        HelloWindow *windowB = new HelloWindow(rendererA);
+        windowB->setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
+        windowB->setWindowTitle(QLatin1String("Thread A - Context A"));
+        windowB->setVisible(true);
 
-    HelloWindow windowC(&rendererB);
-    windowC.setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
-    windowC.setWindowTitle(QLatin1String("Thread B - Context B"));
-    windowC.setVisible(true);
+        HelloWindow *windowC = new HelloWindow(rendererB);
+        windowC->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
+        windowC->setWindowTitle(QLatin1String("Thread B - Context B"));
+        windowC->setVisible(true);
+    }
 
     app.exec();
 
-    renderThread.wait();
+    if (multipleWindows)
+        renderThread->wait();
 }
