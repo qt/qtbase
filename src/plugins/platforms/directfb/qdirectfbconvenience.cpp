@@ -54,7 +54,7 @@ IDirectFB *QDirectFbConvenience::dfbInterface()
     if (!dfb) {
         DFBResult result = DirectFBCreate(&dfb);
         if (result != DFB_OK) {
-            DirectFBError("QDirectFBConvenience: error creating DirectFB interface",result);
+            DirectFBErrorFatal("QDirectFBConvenience: error creating DirectFB interface", result);
             return 0;
         }
     }
@@ -65,10 +65,9 @@ IDirectFBDisplayLayer *QDirectFbConvenience::dfbDisplayLayer(int display)
 {
     IDirectFBDisplayLayer *layer;
     DFBResult result = QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),display,&layer);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFbConvenience: "
-                      "Unable to get primary display layer!", result);
-    }
+    if (result != DFB_OK)
+        DirectFBErrorFatal("QDirectFbConvenience: "
+                           "Unable to get primary display layer!", result);
     return layer;
 }
 
