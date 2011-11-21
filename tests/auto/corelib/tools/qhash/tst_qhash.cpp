@@ -594,7 +594,7 @@ void tst_QHash::find()
     QString compareString;
     int i,count=0;
 
-    //QVERIFY(map1.find(1) == map1.end());
+    QVERIFY(map1.find(1) == map1.end());
 
     map1.insert(1,"Mensch");
     map1.insert(1,"Mayer");
