@@ -43,6 +43,7 @@
 #include <QtCore/QtCore>
 
 #include <QtWidgets/QSortFilterProxyModel>
+#include <QtWidgets/QStringListModel>
 
 //TESTED_CLASS=QAbstractListModel QAbstractTableModel
 //TESTED_FILES=
@@ -108,6 +109,8 @@ private slots:
     void testMoveThroughProxy();
 
     void testReset();
+
+    void testDataChanged();
 
 private:
     DynamicTreeModel *m_model;
@@ -1778,6 +1781,64 @@ void tst_QAbstractItemModel::testReset()
     QModelIndex destIndex = m_model->index(4, 0);
     QVERIFY(m_model->rowCount(destIndex) == 11);
 
+}
+
+class CustomRoleModel : public QStringListModel
+{
+    Q_OBJECT
+    Q_ENUMS(Roles)
+public:
+    enum Roles {
+        Custom1 = Qt::UserRole + 1,
+        Custom2,
+        UserRole
+    };
+
+    CustomRoleModel(QObject *parent = 0)
+      : QStringListModel(QStringList() << "a" << "b" << "c", parent)
+    {
+
+    }
+
+    void emitSignals()
+    {
+        const QModelIndex top = index(0, 0);
+        const QModelIndex bottom = index(2, 0);
+
+        emit dataChanged(top, bottom);
+        emit dataChanged(top, bottom, QSet<int>() << Qt::ToolTipRole);
+        emit dataChanged(top, bottom, QSet<int>() << Qt::ToolTipRole << Custom1);
+    }
+};
+
+Q_DECLARE_METATYPE(QSet<int>)
+
+void tst_QAbstractItemModel::testDataChanged()
+{
+    qRegisterMetaType<QSet<int> >();
+
+    CustomRoleModel model;
+
+    QSignalSpy withRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
+    QSignalSpy withoutRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+
+    model.emitSignals();
+
+    QCOMPARE(withRoles.size(), withoutRoles.size());
+    QCOMPARE(withRoles.size(), 3);
+
+    const QVariantList secondEmission = withRoles.at(1);
+    const QVariantList thirdEmission = withRoles.at(2);
+
+    const QSet<int> secondRoles = secondEmission.at(2).value<QSet<int> >();
+    const QSet<int> thirdRoles = thirdEmission.at(2).value<QSet<int> >();
+
+    QCOMPARE(secondRoles.size(), 1);
+    QVERIFY(secondRoles.contains(Qt::ToolTipRole));
+
+    QCOMPARE(thirdRoles.size(), 2);
+    QVERIFY(thirdRoles.contains(Qt::ToolTipRole));
+    QVERIFY(thirdRoles.contains(CustomRoleModel::Custom1));
 }
 
 

@@ -45,6 +45,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_HEADER
 
@@ -230,7 +231,7 @@ public:
 #endif
 
 Q_SIGNALS:
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
     void layoutChanged();
     void layoutAboutToBeChanged();
