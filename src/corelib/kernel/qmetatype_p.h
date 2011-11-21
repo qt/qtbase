@@ -111,6 +111,72 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 #undef QT_DECLARE_GUI_MODULE_TYPES_ITER
 #undef QT_DECLARE_WIDGETS_MODULE_TYPES_ITER
 
+class QMetaTypeInterface
+{
+private:
+    template<typename T>
+    struct Impl {
+        static void *creator(const T *t)
+        {
+            if (t)
+                return new T(*t);
+            return new T();
+        }
+
+        static void deleter(T *t) { delete t; }
+    #ifndef QT_NO_DATASTREAM
+        static void saver(QDataStream &stream, const T *t) { stream << *t; }
+        static void loader(QDataStream &stream, T *t) { stream >> *t; }
+    #endif // QT_NO_DATASTREAM
+        static void destructor(T *t)
+        {
+            Q_UNUSED(t) // Silence MSVC that warns for POD types.
+            t->~T();
+        }
+        static void *constructor(void *where, const T *t)
+        {
+            if (t)
+                return new (where) T(*static_cast<const T*>(t));
+            return new (where) T;
+        }
+    };
+public:
+    template<typename T>
+    QMetaTypeInterface(T * = 0)
+        : creator(reinterpret_cast<QMetaType::Creator>(Impl<T>::creator))
+              , deleter(reinterpret_cast<QMetaType::Deleter>(Impl<T>::deleter))
+          #ifndef QT_NO_DATASTREAM
+              , saveOp(reinterpret_cast<QMetaType::SaveOperator>(Impl<T>::saver))
+              , loadOp(reinterpret_cast<QMetaType::LoadOperator>(Impl<T>::loader))
+          #endif
+              , constructor(reinterpret_cast<QMetaType::Constructor>(Impl<T>::constructor))
+              , destructor(reinterpret_cast<QMetaType::Destructor>(Impl<T>::destructor))
+              , size(sizeof(T))
+    {}
+
+    QMetaTypeInterface()
+        : creator(0)
+        , deleter(0)
+    #ifndef QT_NO_DATASTREAM
+        , saveOp(0)
+        , loadOp(0)
+    #endif
+        , constructor(0)
+        , destructor(0)
+        , size(0)
+    {}
+
+    QMetaType::Creator creator;
+    QMetaType::Deleter deleter;
+#ifndef QT_NO_DATASTREAM
+    QMetaType::SaveOperator saveOp;
+    QMetaType::LoadOperator loadOp;
+#endif
+    QMetaType::Constructor constructor;
+    QMetaType::Destructor destructor;
+    int size;
+};
+
 QT_END_NAMESPACE
 
 #endif // QMETATYPE_P_H

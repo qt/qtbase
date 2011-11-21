@@ -287,42 +287,14 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     {0, 0, QMetaType::Void}
 };
 
-struct QMetaTypeGuiHelper
-{
-    QMetaType::Creator creator;
-    QMetaType::Deleter deleter;
-#ifndef QT_NO_DATASTREAM
-    QMetaType::SaveOperator saveOp;
-    QMetaType::LoadOperator loadOp;
-#endif
-    QMetaType::Constructor constructor;
-    QMetaType::Destructor destructor;
-    int size;
-};
-Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper = 0;
-Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper = 0;
+Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper = 0;
+Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper = 0;
 
-class QCustomTypeInfo
+class QCustomTypeInfo : public QMetaTypeInterface
 {
 public:
-    QCustomTypeInfo() : typeName(), creator(0), deleter(0)
-#ifndef QT_NO_DATASTREAM
-    , saveOp(0), loadOp(0)
-#endif
-    , constructor(0), destructor(0), size(0)
-    {}
-
     QByteArray typeName;
-    QMetaType::Creator creator;
-    QMetaType::Deleter deleter;
-#ifndef QT_NO_DATASTREAM
-    QMetaType::SaveOperator saveOp;
-    QMetaType::LoadOperator loadOp;
-#endif
     int alias;
-    QMetaType::Constructor constructor;
-    QMetaType::Destructor destructor;
-    int size;
 };
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);

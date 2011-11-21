@@ -45,6 +45,7 @@
 #include "qsizepolicy.h"
 
 #include "private/qvariant_p.h"
+#include <private/qmetatype_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -137,81 +138,16 @@ static const QVariant::Handler widgets_handler = {
 #endif
 };
 
-struct QMetaTypeGuiHelper
-{
-    QMetaType::Creator creator;
-    QMetaType::Deleter deleter;
-#ifndef QT_NO_DATASTREAM
-    QMetaType::SaveOperator saveOp;
-    QMetaType::LoadOperator loadOp;
-#endif
-    QMetaType::Constructor constructor;
-    QMetaType::Destructor destructor;
-    int size;
+extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
+
+#define QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES(MetaTypeName, MetaTypeId, RealName) \
+    QMetaTypeInterface(static_cast<RealName*>(0)),
+
+static const QMetaTypeInterface qVariantWidgetsHelper[] = {
+    QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES)
 };
 
-extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper;
-
-
-#ifdef QT_NO_DATASTREAM
-#  define Q_DECL_METATYPE_HELPER(TYPE) \
-     typedef void *(*QCreate##TYPE)(const TYPE *); \
-     static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
-     typedef void (*QDelete##TYPE)(TYPE *); \
-     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
-     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
-     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
-     typedef void (*QDestruct##TYPE)(TYPE *); \
-     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>;
-#else
-#  define Q_DECL_METATYPE_HELPER(TYPE) \
-     typedef void *(*QCreate##TYPE)(const TYPE *); \
-     static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
-     typedef void (*QDelete##TYPE)(TYPE *); \
-     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
-     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
-     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
-     typedef void (*QDestruct##TYPE)(TYPE *); \
-     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>; \
-     typedef void (*QSave##TYPE)(QDataStream &, const TYPE *); \
-     static const QSave##TYPE qSave##TYPE = qMetaTypeSaveHelper<TYPE>; \
-     typedef void (*QLoad##TYPE)(QDataStream &, TYPE *); \
-     static const QLoad##TYPE qLoad##TYPE = qMetaTypeLoadHelper<TYPE>;
-#endif
-
-#ifndef QT_NO_ICON
-Q_DECL_METATYPE_HELPER(QIcon)
-#endif
-Q_DECL_METATYPE_HELPER(QSizePolicy)
-
-#ifdef QT_NO_DATASTREAM
-#  define Q_IMPL_METATYPE_HELPER(TYPE) \
-     { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
-       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
-       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
-       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
-       sizeof(TYPE) \
-     }
-#else
-#  define Q_IMPL_METATYPE_HELPER(TYPE) \
-     { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
-       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
-       reinterpret_cast<QMetaType::SaveOperator>(qSave##TYPE), \
-       reinterpret_cast<QMetaType::LoadOperator>(qLoad##TYPE), \
-       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
-       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
-       sizeof(TYPE) \
-     }
-#endif
-
-static const QMetaTypeGuiHelper qVariantWidgetsHelper[] = {
-#ifdef QT_NO_ICON
-    {0, 0, 0, 0},
-#else
-    Q_IMPL_METATYPE_HELPER(QIcon),
-#endif
-    Q_IMPL_METATYPE_HELPER(QSizePolicy),
-};
+#undef QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES
 
 extern Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler;
 

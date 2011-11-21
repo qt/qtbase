@@ -474,157 +474,16 @@ const QVariant::Handler qt_gui_variant_handler = {
 #endif
 };
 
-struct QMetaTypeGuiHelper
-{
-    QMetaType::Creator creator;
-    QMetaType::Deleter deleter;
-#ifndef QT_NO_DATASTREAM
-    QMetaType::SaveOperator saveOp;
-    QMetaType::LoadOperator loadOp;
-#endif
-    QMetaType::Constructor constructor;
-    QMetaType::Destructor destructor;
-    int size;
+extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
+
+#define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
+    QMetaTypeInterface(static_cast<RealName*>(0)),
+
+static const QMetaTypeInterface qVariantGuiHelper[] = {
+    QT_FOR_EACH_STATIC_GUI_CLASS(QT_IMPL_METATYPEINTERFACE_GUI_TYPES)
 };
 
-extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper;
-
-
-#ifdef QT_NO_DATASTREAM
-#  define Q_DECL_METATYPE_HELPER(TYPE) \
-     typedef void *(*QCreate##TYPE)(const TYPE *); \
-     static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
-     typedef void (*QDelete##TYPE)(TYPE *); \
-     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
-     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
-     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
-     typedef void (*QDestruct##TYPE)(TYPE *); \
-     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>;
-#else
-#  define Q_DECL_METATYPE_HELPER(TYPE) \
-     typedef void *(*QCreate##TYPE)(const TYPE *); \
-     static const QCreate##TYPE qCreate##TYPE = qMetaTypeCreateHelper<TYPE>; \
-     typedef void (*QDelete##TYPE)(TYPE *); \
-     static const QDelete##TYPE qDelete##TYPE = qMetaTypeDeleteHelper<TYPE>; \
-     typedef void *(*QConstruct##TYPE)(void *, const TYPE *); \
-     static const QConstruct##TYPE qConstruct##TYPE = qMetaTypeConstructHelper<TYPE>; \
-     typedef void (*QDestruct##TYPE)(TYPE *); \
-     static const QDestruct##TYPE qDestruct##TYPE = qMetaTypeDestructHelper<TYPE>; \
-     typedef void (*QSave##TYPE)(QDataStream &, const TYPE *); \
-     static const QSave##TYPE qSave##TYPE = qMetaTypeSaveHelper<TYPE>; \
-     typedef void (*QLoad##TYPE)(QDataStream &, TYPE *); \
-     static const QLoad##TYPE qLoad##TYPE = qMetaTypeLoadHelper<TYPE>;
-#endif
-
-Q_DECL_METATYPE_HELPER(QFont)
-Q_DECL_METATYPE_HELPER(QPixmap)
-Q_DECL_METATYPE_HELPER(QBrush)
-Q_DECL_METATYPE_HELPER(QColor)
-Q_DECL_METATYPE_HELPER(QPalette)
-Q_DECL_METATYPE_HELPER(QImage)
-Q_DECL_METATYPE_HELPER(QPolygon)
-Q_DECL_METATYPE_HELPER(QRegion)
-Q_DECL_METATYPE_HELPER(QBitmap)
-#ifndef QT_NO_CURSOR
-Q_DECL_METATYPE_HELPER(QCursor)
-#endif
-#ifndef QT_NO_SHORTCUT
-Q_DECL_METATYPE_HELPER(QKeySequence)
-#endif
-Q_DECL_METATYPE_HELPER(QPen)
-Q_DECL_METATYPE_HELPER(QTextLength)
-Q_DECL_METATYPE_HELPER(QTextFormat)
-Q_DECL_METATYPE_HELPER(QMatrix)
-Q_DECL_METATYPE_HELPER(QTransform)
-#ifndef QT_NO_MATRIX4X4
-Q_DECL_METATYPE_HELPER(QMatrix4x4)
-#endif
-#ifndef QT_NO_VECTOR2D
-Q_DECL_METATYPE_HELPER(QVector2D)
-#endif
-#ifndef QT_NO_VECTOR3D
-Q_DECL_METATYPE_HELPER(QVector3D)
-#endif
-#ifndef QT_NO_VECTOR4D
-Q_DECL_METATYPE_HELPER(QVector4D)
-#endif
-#ifndef QT_NO_QUATERNION
-Q_DECL_METATYPE_HELPER(QQuaternion)
-#endif
-Q_DECL_METATYPE_HELPER(QPolygonF)
-
-#ifdef QT_NO_DATASTREAM
-#  define Q_IMPL_METATYPE_HELPER(TYPE) \
-     { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
-       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
-       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
-       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
-       sizeof(TYPE) \
-     }
-#else
-#  define Q_IMPL_METATYPE_HELPER(TYPE) \
-     { reinterpret_cast<QMetaType::Creator>(qCreate##TYPE), \
-       reinterpret_cast<QMetaType::Deleter>(qDelete##TYPE), \
-       reinterpret_cast<QMetaType::SaveOperator>(qSave##TYPE), \
-       reinterpret_cast<QMetaType::LoadOperator>(qLoad##TYPE), \
-       reinterpret_cast<QMetaType::Constructor>(qConstruct##TYPE), \
-       reinterpret_cast<QMetaType::Destructor>(qDestruct##TYPE), \
-       sizeof(TYPE) \
-     }
-#endif
-
-static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
-    Q_IMPL_METATYPE_HELPER(QFont),
-    Q_IMPL_METATYPE_HELPER(QPixmap),
-    Q_IMPL_METATYPE_HELPER(QBrush),
-    Q_IMPL_METATYPE_HELPER(QColor),
-    Q_IMPL_METATYPE_HELPER(QPalette),
-    Q_IMPL_METATYPE_HELPER(QImage),
-    Q_IMPL_METATYPE_HELPER(QPolygon),
-    Q_IMPL_METATYPE_HELPER(QRegion),
-    Q_IMPL_METATYPE_HELPER(QBitmap),
-#ifdef QT_NO_CURSOR
-    {0, 0, 0, 0, 0, 0, 0},
-#else
-    Q_IMPL_METATYPE_HELPER(QCursor),
-#endif
-#ifdef QT_NO_SHORTCUT
-    {0, 0, 0, 0, 0, 0, 0},
-#else
-    Q_IMPL_METATYPE_HELPER(QKeySequence),
-#endif
-    Q_IMPL_METATYPE_HELPER(QPen),
-    Q_IMPL_METATYPE_HELPER(QTextLength),
-    Q_IMPL_METATYPE_HELPER(QTextFormat),
-    Q_IMPL_METATYPE_HELPER(QMatrix),
-    Q_IMPL_METATYPE_HELPER(QTransform),
-#ifndef QT_NO_MATRIX4X4
-    Q_IMPL_METATYPE_HELPER(QMatrix4x4),
-#else
-    {0, 0, 0, 0, 0, 0, 0},
-#endif
-#ifndef QT_NO_VECTOR2D
-    Q_IMPL_METATYPE_HELPER(QVector2D),
-#else
-    {0, 0, 0, 0, 0, 0, 0},
-#endif
-#ifndef QT_NO_VECTOR3D
-    Q_IMPL_METATYPE_HELPER(QVector3D),
-#else
-    {0, 0, 0, 0, 0, 0, 0},
-#endif
-#ifndef QT_NO_VECTOR4D
-    Q_IMPL_METATYPE_HELPER(QVector4D),
-#else
-    {0, 0, 0, 0, 0, 0, 0},
-#endif
-#ifndef QT_NO_QUATERNION
-    Q_IMPL_METATYPE_HELPER(QQuaternion),
-#else
-    {0, 0, 0, 0, 0, 0, 0},
-#endif
-    Q_IMPL_METATYPE_HELPER(QPolygonF)
-};
+#undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
 
 static const QVariant::Handler *qt_guivariant_last_handler = 0;
 int qRegisterGuiVariant()
