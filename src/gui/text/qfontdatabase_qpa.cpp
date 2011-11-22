@@ -256,7 +256,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     QFontCache::Key key(request, script, multi ? 1 : 0);
     engine = QFontCache::instance()->findEngine(key);
     if (engine) {
-        qDebug() << "Cache hit level 1";
+        FM_DEBUG("Cache hit level 1");
         return engine;
     }
 
