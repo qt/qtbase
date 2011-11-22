@@ -66,7 +66,7 @@ public:
     QArrayDataPointer(const QArrayDataPointer &other)
         : d(other.d->ref.ref()
             ? other.d
-            : other.clone())
+            : other.clone(other.d->cloneFlags()))
     {
     }
 
@@ -115,7 +115,9 @@ public:
     void setSharable(bool sharable)
     {
         if (d->alloc == 0 && d->size == 0) {
-            d = Data::allocate(0, false, sharable);
+            d = Data::allocate(0, sharable
+                    ? QArrayData::Default
+                    : QArrayData::Unsharable);
             return;
         }
 
@@ -137,7 +139,7 @@ public:
     bool detach()
     {
         if (d->ref.isShared()) {
-            Data *copy = clone();
+            Data *copy = clone(d->detachFlags());
             QArrayDataPointer old(d);
             d = copy;
             return true;
@@ -147,10 +149,10 @@ public:
     }
 
 private:
-    Data *clone() const Q_REQUIRED_RESULT
+    Data *clone(QArrayData::AllocateOptions options) const Q_REQUIRED_RESULT
     {
         QArrayDataPointer copy(Data::allocate(d->alloc ? d->alloc : d->size,
-                    d->capacityReserved));
+                    options));
         if (d->size)
             copy->copyAppend(d->begin(), d->end());
 

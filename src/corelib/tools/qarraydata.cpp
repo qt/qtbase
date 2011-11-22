@@ -49,7 +49,7 @@ static const QArrayData qt_array_empty = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0
 static const QArrayData qt_array_unsharable_empty = { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, 0 };
 
 QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
-        size_t capacity, bool reserve, bool sharable)
+        size_t capacity, AllocateOptions options)
 {
     // Alignment is a power of two
     Q_ASSERT(alignment >= Q_ALIGNOF(QArrayData)
@@ -57,7 +57,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
 
     // Don't allocate empty headers
     if (!capacity)
-        return sharable
+        return !(options & Unsharable)
             ? const_cast<QArrayData *>(&qt_array_empty)
             : const_cast<QArrayData *>(&qt_array_unsharable_empty);
 
@@ -73,10 +73,10 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);
 
-        header->ref.atomic.store(sharable ? 1 : 0);
+        header->ref.atomic.store(bool(!(options & Unsharable)));
         header->size = 0;
         header->alloc = capacity;
-        header->capacityReserved = reserve;
+        header->capacityReserved = bool(options & CapacityReserved);
         header->offset = data - quintptr(header);
     }
 

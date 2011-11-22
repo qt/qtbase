@@ -140,7 +140,8 @@ public:
                 || (n
                 && !d->capacityReserved
                 && (d->ref != 1 || (d->capacityReserved = 1, false)))) {
-            SimpleVector detached(Data::allocate(n, true));
+            SimpleVector detached(Data::allocate(n,
+                        d->detachFlags() | Data::CapacityReserved));
             detached.d->copyAppend(constBegin(), constEnd());
             detached.swap(*this);
         }
@@ -160,7 +161,8 @@ public:
         if (d->ref != 1
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)), d->capacityReserved));
+                        qMax(capacity(), size() + (last - first)),
+                        d->detachFlags()));
 
             detached.d->copyAppend(first, last);
             detached.d->copyAppend(begin, begin + d->size);
@@ -180,7 +182,8 @@ public:
         if (d->ref != 1
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)), d->capacityReserved));
+                        qMax(capacity(), size() + (last - first)),
+                        d->detachFlags()));
 
             if (d->size) {
                 const T *const begin = constBegin();
@@ -219,7 +222,8 @@ public:
         if (d->ref != 1
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
-                        qMax(capacity(), size() + (last - first)), d->capacityReserved));
+                        qMax(capacity(), size() + (last - first)),
+                        d->detachFlags()));
 
             if (position)
                 detached.d->copyAppend(begin, where);
