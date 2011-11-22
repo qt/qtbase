@@ -278,6 +278,13 @@ void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen)
+{
+    QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e =
+            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);

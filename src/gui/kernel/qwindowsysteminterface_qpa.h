@@ -117,6 +117,7 @@ public:
     static void handleScreenOrientationChange(QScreen *screen);
     static void handleScreenGeometryChange(QScreen *screen);
     static void handleScreenAvailableGeometryChange(QScreen *screen);
+    static void handleScreenLogicalDotsPerInchChange(QScreen *screen);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);

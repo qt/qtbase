@@ -63,6 +63,7 @@ public:
         ScreenOrientation,
         ScreenGeometry,
         ScreenAvailableGeometry,
+        ScreenLogicalDotsPerInch,
         Map,
         Unmap,
         Expose
@@ -212,6 +213,13 @@ public:
     public:
         ScreenAvailableGeometryEvent(QScreen *s)
             : WindowSystemEvent(ScreenAvailableGeometry), screen(s) { }
+        QWeakPointer<QScreen> screen;
+    };
+
+    class ScreenLogicalDotsPerInchEvent : public WindowSystemEvent {
+    public:
+        ScreenLogicalDotsPerInchEvent(QScreen *s)
+            : WindowSystemEvent(ScreenLogicalDotsPerInch), screen(s) { }
         QWeakPointer<QScreen> screen;
     };
 

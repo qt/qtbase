@@ -586,6 +586,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportAvailableGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInch:
+        QGuiApplicationPrivate::reportLogicalDotsPerInchChange(
+                static_cast<QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Map:
         QGuiApplicationPrivate::processMapEvent(static_cast<QWindowSystemInterfacePrivate::MapEvent *>(e));
         break;
@@ -998,9 +1002,6 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
     emit s->physicalDotsPerInchXChanged(s->physicalDotsPerInchX());
     emit s->physicalDotsPerInchYChanged(s->physicalDotsPerInchY());
     emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
-    emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
-    emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());
-    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
     emit s->availableSizeChanged(s->availableSize());
     emit s->availableGeometryChanged(s->availableGeometry());
 }
@@ -1019,6 +1020,22 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
 
     emit s->availableSizeChanged(s->availableSize());
     emit s->availableGeometryChanged(s->availableGeometry());
+}
+
+void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e)
+{
+    // This operation only makes sense after the QGuiApplication constructor runs
+    if (QCoreApplication::startingUp())
+        return;
+
+    if (!e->screen)
+        return;
+
+    QScreen *s = e->screen.data();
+
+    emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
+    emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());
+    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
 }
 
 void QGuiApplicationPrivate::processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e)
