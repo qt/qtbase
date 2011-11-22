@@ -832,9 +832,6 @@ my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 
 $isunix = checkUnix; #cache checkUnix
 
-# create path
-make_path("$out_basedir/include/Qt", "<outdir>", $verbose_level);
-
 foreach my $lib (@modules_to_sync) {
     #iteration info
     my $dir = $modules{$lib};
@@ -1024,31 +1021,6 @@ foreach my $lib (@modules_to_sync) {
                             my @headers;
                             if ($public_header) {
                                 @headers = ( "$out_basedir/include/$lib/$header" );
-
-                                # write forwarding headers to include/Qt
-                                if ($lib ne "phonon" && $subdir =~ /^$quoted_basedir\/src/) {
-                                    my $file_name = "$out_basedir/include/Qt/$header";
-                                    my $file_op = '>';
-                                    my $header_content = '';
-                                    if (exists $colliding_headers{$file_name}) {
-                                        $file_op = '>>';
-                                    } else {
-                                        $colliding_headers{$file_name} = 1;
-                                        my $warning_msg = 'Inclusion of header files from include/Qt is deprecated.';
-                                        $header_content = "#ifndef QT_NO_QT_INCLUDE_WARN\n" .
-                                                          "    #if defined(__GNUC__)\n" .
-                                                          "        #warning \"$warning_msg\"\n" .
-                                                          "    #elif defined(_MSC_VER)\n" .
-                                                          "        #pragma message(\"WARNING: $warning_msg\")\n" .
-                                                          "    #endif\n".
-                                                          "#endif\n\n";
-                                    }
-                                    $header_content .= '#include "' . "../$lib/$header" . "\"\n";
-                                    open HEADERFILE, $file_op, $file_name or die "unable to open '$file_name' : $!\n";
-                                    print HEADERFILE $header_content;
-                                    close HEADERFILE;
-                                }
-
                                 foreach my $full_class (@classes) {
                                     my $header_base = basename($header);
                                     # Strip namespaces:
