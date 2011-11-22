@@ -62,6 +62,29 @@ information about a particular change.
 
 - The QSsl::TlsV1 enum value was renamed to QSsl::TlsV1_0 .
 
+- QAccessible:
+  * Internal QAccessible::State enum value HasInvokeExtension removed
+- QAccessibleInterface:
+  * The "child" integer parameters have been removed. This moves the api
+    to be closer to IAccessible2.
+    This means several functions lose their integer parameter:
+    text(Text t, int child) -> text(Text t), rect(int child) -> rect()
+    setText(Text t, int child, const QString &text) -> setText(Text t, const QString &text)
+    role(int child) -> role(), state(int child) -> state()
+    relationTo(int child, const QAccessibleInterface *other, int otherChild) ->
+      relationTo(const QAccessibleInterface *other)
+  * Accessible-Action related functions have been removed. QAccessibleInterface
+    subclasses are expected to implement the QAccessibleActionInterface instead.
+    These functions have been removed:
+    QAccessibleInterface::userActionCount, QAccessibleInterface::actionText,
+    QAccessibleInterface::doAction
+- QAccessibleEvent also loses the child parameter.
+    QAccessibleEvent(Type type, int child) -> QAccessibleEvent(Type type)
+    QAccessibleEvent::child() removed.
+- QAccessibleActionInterface:
+  * Refactored to be based on action names. All functions have been changed from using
+    int parameters to strings.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
@@ -90,6 +113,10 @@ QtCore
 
 QtGui
 -----
+* Accessibility has been refactored. The hierachy of accessible objects is implemented via
+  proper parent/child functions instead of using navigate which has been deprecated for this purpose.
+  Table and cell interfaces have been added to qaccessible2.h
+
 
 QtWidgets
 ---------
@@ -133,6 +160,7 @@ Qt for Linux/X11
 
 Qt for Windows
 --------------
+* Accessibility framework uses IAccessible2
 
 
 Qt for Mac OS X
