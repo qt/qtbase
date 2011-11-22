@@ -77,6 +77,7 @@ unix:!symbian {
 			$(DEL_FILE) src/corelib/global/qconfig.h; \
 			$(DEL_FILE) src/corelib/global/qconfig.cpp; \
 			$(DEL_FILE) mkspecs/qconfig.pri; \
+			$(DEL_FILE) mkspecs/qmodule.pri; \
 			$(DEL_FILE) .qmake.cache; \
  			(cd qmake && $(MAKE) distclean);
 }
@@ -84,6 +85,7 @@ win32 {
   confclean.commands += -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
 			(cd qmake && $(MAKE) distclean)
 }
@@ -97,6 +99,7 @@ symbian {
             -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
             -$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
             -$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
             -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
             (cd qmake && $(MAKE) distclean)
   } else {
@@ -107,6 +110,7 @@ symbian {
             -$(DEL_FILE) src/corelib/global/qconfig.h $$escape_expand(\\n\\t) \
             -$(DEL_FILE) src/corelib/global/qconfig.cpp $$escape_expand(\\n\\t) \
             -$(DEL_FILE) mkspecs/qconfig.pri $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) mkspecs/qmodule.pri $$escape_expand(\\n\\t) \
             -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
             (cd qmake && $(MAKE) distclean)
   }
@@ -142,7 +146,7 @@ INSTALLS += configtests
 
 #mkspecs
 mkspecs.path=$$[QT_INSTALL_DATA]/mkspecs
-mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$files($$QT_SOURCE_TREE/mkspecs/*)
+mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$QT_BUILD_TREE/mkspecs/qmodule.pri $$files($$QT_SOURCE_TREE/mkspecs/*)
 mkspecs.files -= $$QT_SOURCE_TREE/mkspecs/modules
 unix { 
    DEFAULT_QMAKESPEC = $$QMAKESPEC
