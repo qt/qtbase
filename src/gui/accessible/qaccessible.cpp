@@ -709,7 +709,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     about accessible objects.
 
     \ingroup accessibility
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     Accessibility tools (also called AT Clients), such as screen readers
     or braille displays, require high-level information about
@@ -772,39 +772,25 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     accessible object. This information is usually only available for
     visual objects.
 
-    \section1 Actions and Selection
+    \section1 Interfaces
 
     To enable the user to interact with an accessible object the
-    object must expose information about the actions that it can
-    perform. userActionCount() returns the number of actions supported by
-    an accessible object, and actionText() returns textual information
-    about those actions. doAction() invokes an action.
-
+    object must implement QAccessibleActionInterface in addition to
+    QAccessibleInterface.
     Objects that support selections can define actions to change the selection.
 
-    \section2 Objects and children
+    There are several other interfaces that should be implemented as required.
+    QAccessibleTextInterface should be used for bigger texts edits such as document views.
+    This interface should not be implemented for labels/single line edits.
+    The complementary QAccessibleEditableTextInterface should be added when the
+    Text is editable.
 
-    A QAccessibleInterface provides information about the accessible
-    object, and can also provide information for the children of that
-    object if those children don't provide a QAccessibleInterface
-    implementation themselves. This is practical if the object has
-    many similar children (e.g. items in a list view), or if the
-    children are an integral part of the object itself, for example, the
-    different sections in a scroll bar.
+    For sliders, scrollbars and other numerical value selectors QAccessibleValueInterface
+    should be implemented.
 
-    If an accessible object provides information about its children
-    through one QAccessibleInterface, the children are referenced
-    using indexes. The index is 1-based for the children, i.e. 0
-    refers to the object itself, 1 to the first child, 2 to the second
-    child, and so on.
+    Lists, tables and trees should implement QAccessibleTableInterface.
 
-    All functions in QAccessibleInterface that take a child index
-    relate to the object itself if the index is 0, or to the child
-    specified. If a child provides its own interface implementation
-    (which can be retrieved through navigation) asking the parent for
-    information about that child will usually not succeed.
-
-    \sa QAccessible
+    \sa QAccessible, QAccessibleActionInterface, QAccessibleTextInterface, QAccessibleEditableTextInterface, QAccessibleValueInterface, QAccessibleTableInterface
 */
 
 /*!
