@@ -183,7 +183,6 @@ public:
     static int *setDeleteWatch(QObjectPrivate *d, int *newWatch);
     static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
 #endif
-    static void clearGuards(QObject *);
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();

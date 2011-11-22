@@ -341,11 +341,6 @@ struct Q_CORE_EXPORT QMetaObject
     static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
 
-    // internal guarded pointers
-    static void addGuard(QObject **ptr);
-    static void removeGuard(QObject **ptr);
-    static void changeGuard(QObject **ptr, QObject *o);
-
     static bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType,
                              QGenericReturnArgument ret,

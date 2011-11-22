@@ -42,7 +42,7 @@
 #ifndef QPOINTER_H
 #define QPOINTER_H
 
-#include <QtCore/qobject.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -50,34 +50,35 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#if QT_DEPRECATED_SINCE(5,0)
+
 template <class T>
-class QPointer
+class QT_DEPRECATED QPointer
 {
-    QObject *o;
+    QWeakPointer<T> wp;
+
 public:
-    inline QPointer() : o(0) {}
-    inline QPointer(T *p) : o(p)
-        { QMetaObject::addGuard(&o); }
-    inline QPointer(const QPointer<T> &p) : o(p.o)
-        { QMetaObject::addGuard(&o); }
-    inline ~QPointer()
-        { QMetaObject::removeGuard(&o); }
+    inline QPointer() : wp() { }
+    inline QPointer(T *p) : wp(p) { }
+    inline QPointer(const QPointer<T> &p) : wp(p.wp) { }
+    inline ~QPointer() { }
+
     inline QPointer<T> &operator=(const QPointer<T> &p)
-        { if (this != &p) QMetaObject::changeGuard(&o, p.o); return *this; }
+    { wp = p.wp; return *this; }
     inline QPointer<T> &operator=(T* p)
-        { if (o != p) QMetaObject::changeGuard(&o, p); return *this; }
+    { wp = p; return *this; }
 
     inline bool isNull() const
-        { return !o; }
+    { return wp.isNull(); }
 
     inline T* operator->() const
-        { return static_cast<T*>(const_cast<QObject*>(o)); }
+    { return wp.data(); }
     inline T& operator*() const
-        { return *static_cast<T*>(const_cast<QObject*>(o)); }
+    { return *wp.data(); }
     inline operator T*() const
-        { return static_cast<T*>(const_cast<QObject*>(o)); }
+    { return wp.data(); }
     inline T* data() const
-        { return static_cast<T*>(const_cast<QObject*>(o)); }
+    { return wp.data(); }
 };
 
 
@@ -160,6 +161,8 @@ template<class T>
 inline bool operator!= (int i, const QPointer<T> &p)
 { Q_ASSERT(i == 0); return !i && !p.isNull(); }
 #endif
+
+#endif // QT_DEPRECATED_SINCE(5,0)
 
 QT_END_NAMESPACE
 

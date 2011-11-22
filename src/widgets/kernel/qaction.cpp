@@ -1185,22 +1185,19 @@ void QAction::activate(ActionEvent event)
 {
     Q_D(QAction);
     if(event == Trigger) {
-        QObject *guard = this;
-        QMetaObject::addGuard(&guard);
+        QWeakPointer<QObject> guard = this;
         if(d->checkable) {
             // the checked action of an exclusive group cannot be  unchecked
             if (d->checked && (d->group && d->group->isExclusive()
                                && d->group->checkedAction() == this)) {
-                if (guard)
+                if (!guard.isNull())
                     emit triggered(true);
-                QMetaObject::removeGuard(&guard);
                 return;
             }
             setChecked(!d->checked);
         }
-        if (guard)
+        if (!guard.isNull())
             emit triggered(d->checked);
-        QMetaObject::removeGuard(&guard);
     } else if(event == Hover) {
         emit hovered();
     }

@@ -177,7 +177,6 @@ QObjectPrivate::QObjectPrivate(int version)
     deleteWatch = 0;
 #endif
     metaObject = 0;
-    hasGuards = false;
     isWindow = false;
 }
 
@@ -406,113 +405,6 @@ void QObjectPrivate::cleanConnectionLists()
             connectionList.last = last;
         }
         connectionLists->dirty = false;
-    }
-}
-
-typedef QMultiHash<QObject *, QObject **> GuardHash;
-Q_GLOBAL_STATIC(GuardHash, guardHash)
-Q_GLOBAL_STATIC(QMutex, guardHashLock)
-
-/*!\internal
- */
-void QMetaObject::addGuard(QObject **ptr)
-{
-    if (!*ptr)
-        return;
-    GuardHash *hash = guardHash();
-    if (!hash) {
-        *ptr = 0;
-        return;
-    }
-    QMutexLocker locker(guardHashLock());
-    QObjectPrivate::get(*ptr)->hasGuards = true;
-    hash->insert(*ptr, ptr);
-}
-
-/*!\internal
- */
-void QMetaObject::removeGuard(QObject **ptr)
-{
-    if (!*ptr)
-        return;
-    GuardHash *hash = guardHash();
-    /* check that the hash is empty - otherwise we might detach
-       the shared_null hash, which will alloc, which is not nice */
-    if (!hash || hash->isEmpty())
-        return;
-    QMutexLocker locker(guardHashLock());
-    if (!*ptr) //check again, under the lock
-        return;
-    GuardHash::iterator it = hash->find(*ptr);
-    const GuardHash::iterator end = hash->end();
-    bool more = false; //if the QObject has more pointer attached to it.
-    for (; it.key() == *ptr && it != end; ++it) {
-        if (it.value() == ptr) {
-            it = hash->erase(it);
-            if (!more) more = (it != end && it.key() == *ptr);
-            break;
-        }
-        more = true;
-    }
-    if (!more)
-        QObjectPrivate::get(*ptr)->hasGuards = false;
-}
-
-/*!\internal
- */
-void QMetaObject::changeGuard(QObject **ptr, QObject *o)
-{
-    GuardHash *hash = guardHash();
-    if (!hash) {
-        *ptr = 0;
-        return;
-    }
-    QMutexLocker locker(guardHashLock());
-    if (o) {
-        hash->insert(o, ptr);
-        QObjectPrivate::get(o)->hasGuards = true;
-    }
-    if (*ptr) {
-        bool more = false; //if the QObject has more pointer attached to it.
-        GuardHash::iterator it = hash->find(*ptr);
-        const GuardHash::iterator end = hash->end();
-        for (; it.key() == *ptr && it != end; ++it) {
-            if (it.value() == ptr) {
-                it = hash->erase(it);
-                if (!more) more = (it != end && it.key() == *ptr);
-                break;
-            }
-            more = true;
-        }
-        if (!more)
-            QObjectPrivate::get(*ptr)->hasGuards = false;
-    }
-    *ptr = o;
-}
-
-/*! \internal
- */
-void QObjectPrivate::clearGuards(QObject *object)
-{
-    GuardHash *hash = 0;
-    QMutex *mutex = 0;
-    QT_TRY {
-        hash = guardHash();
-        mutex = guardHashLock();
-    } QT_CATCH(const std::bad_alloc &) {
-        // do nothing in case of OOM - code below is safe
-    }
-
-    /* check that the hash is empty - otherwise we might detach
-       the shared_null hash, which will alloc, which is not nice */
-    if (hash && !hash->isEmpty()) {
-        QMutexLocker locker(mutex);
-        GuardHash::iterator it = hash->find(object);
-        const GuardHash::iterator end = hash->end();
-        while (it.key() == object && it != end) {
-            *it.value() = 0;
-            it = hash->erase(it);
-        }
     }
 }
 
@@ -839,12 +731,6 @@ QObject::~QObject()
     Q_D(QObject);
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
-
-    if (d->hasGuards && !d->isWidget) {
-        // set all QPointers for this object to zero - note that
-        // ~QWidget() does this for us, so we don't have to do it twice
-        QObjectPrivate::clearGuards(this);
-    }
 
     QtSharedPointer::ExternalRefCountData *sharedRefcount = d->sharedRefcount.load();
     if (sharedRefcount) {

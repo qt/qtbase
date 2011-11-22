@@ -241,8 +241,8 @@ public:
 
 ChildWidget::~ChildWidget()
 {
-    QCOMPARE(static_cast<QWidget *>(guardedPointer), static_cast<QWidget *>(0));
-    QCOMPARE(qobject_cast<QWidget *>(guardedPointer), static_cast<QWidget *>(0));
+    QCOMPARE(static_cast<QWidget *>(guardedPointer), parentWidget());
+    QCOMPARE(qobject_cast<QWidget *>(guardedPointer), parentWidget());
 }
 
 class DerivedChild;

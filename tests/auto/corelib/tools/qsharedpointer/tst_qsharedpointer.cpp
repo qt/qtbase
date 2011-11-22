@@ -767,7 +767,6 @@ void tst_QSharedPointer::objectCast()
 
     {
         OtherObject *data = new OtherObject;
-        QPointer<OtherObject> qptr = data;
         QSharedPointer<OtherObject> ptr = QSharedPointer<OtherObject>(data);
         QWeakPointer<QObject> weakptr = ptr;
 
@@ -788,7 +787,6 @@ void tst_QSharedPointer::objectCast()
         // drop the reference:
         ptr.clear();
         QVERIFY(ptr.isNull());
-        QVERIFY(qptr.isNull());
         QVERIFY(weakptr.toStrongRef().isNull());
 
         // verify that the object casts fail without crash

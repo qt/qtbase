@@ -1469,10 +1469,6 @@ QWidget::~QWidget()
     delete d->needsFlush;
     d->needsFlush = 0;
 
-    // set all QPointers for this object to zero
-    if (d->hasGuards)
-        QObjectPrivate::clearGuards(this);
-
     if (d->declarativeData) {
         QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
