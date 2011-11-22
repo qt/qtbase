@@ -293,6 +293,67 @@ void tst_QArrayData::simpleVector()
         QVERIFY(v5.isSharedWith(v6));
         QVERIFY(!v1.isSharedWith(v5));
     }
+
+    v1.prepend(array, array + sizeof(array)/sizeof(array[0]));
+    QCOMPARE(v1.size(), size_t(10));
+    QVERIFY(v1 == v8);
+
+    v6 = v1;
+    QVERIFY(v1.isSharedWith(v6));
+
+    v1.prepend(array, array + sizeof(array)/sizeof(array[0]));
+    QVERIFY(!v1.isSharedWith(v6));
+    QCOMPARE(v1.size(), size_t(20));
+    QCOMPARE(v6.size(), size_t(10));
+
+    for (int i = 0; i < 20; ++i)
+        QCOMPARE(v1[i], v6[i % 10]);
+
+    v1.clear();
+
+    v1.append(array, array + sizeof(array)/sizeof(array[0]));
+    QCOMPARE(v1.size(), size_t(10));
+    QVERIFY(v1 == v8);
+
+    v6 = v1;
+    QVERIFY(v1.isSharedWith(v6));
+
+    v1.append(array, array + sizeof(array)/sizeof(array[0]));
+    QVERIFY(!v1.isSharedWith(v6));
+    QCOMPARE(v1.size(), size_t(20));
+    QCOMPARE(v6.size(), size_t(10));
+
+    for (int i = 0; i < 20; ++i)
+        QCOMPARE(v1[i], v6[i % 10]);
+
+    v1.insert(0, v6.constBegin(), v6.constEnd());
+    QCOMPARE(v1.size(), size_t(30));
+
+    v6 = v1;
+    QVERIFY(v1.isSharedWith(v6));
+
+    v1.insert(10, v6.constBegin(), v6.constEnd());
+    QVERIFY(!v1.isSharedWith(v6));
+    QCOMPARE(v1.size(), size_t(60));
+    QCOMPARE(v6.size(), size_t(30));
+
+    for (int i = 0; i < 30; ++i)
+        QCOMPARE(v6[i], v8[i % 10]);
+
+    v1.insert(v1.size(), v6.constBegin(), v6.constEnd());
+    QCOMPARE(v1.size(), size_t(90));
+
+    v1.insert(-1, v8.constBegin(), v8.constEnd());
+    QCOMPARE(v1.size(), size_t(100));
+
+    v1.insert(-11, v8.constBegin(), v8.constEnd());
+    QCOMPARE(v1.size(), size_t(110));
+
+    v1.insert(-200, v8.constBegin(), v8.constEnd());
+    QCOMPARE(v1.size(), size_t(120));
+
+    for (int i = 0; i < 120; ++i)
+        QCOMPARE(v1[i], v8[i % 10]);
 }
 
 struct Deallocator
@@ -669,8 +730,78 @@ void tst_QArrayData::arrayOps()
     vs = SimpleVector<QString>(5, referenceString);
     vo = SimpleVector<CountedObject>(5, referenceObject);
 
+    QCOMPARE(vi.size(), size_t(5));
+    QCOMPARE(vs.size(), size_t(5));
+    QCOMPARE(vo.size(), size_t(5));
+
     QCOMPARE(CountedObject::liveCount, size_t(11));
     for (int i = 0; i < 5; ++i) {
+        QCOMPARE(vi[i], referenceInt);
+        QVERIFY(vs[i].isSharedWith(referenceString));
+        QCOMPARE(vo[i].id, referenceObject.id);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // insert
+    vi.reserve(30);
+    vs.reserve(30);
+    vo.reserve(30);
+
+    QCOMPARE(vi.size(), size_t(5));
+    QCOMPARE(vs.size(), size_t(5));
+    QCOMPARE(vo.size(), size_t(5));
+
+    QVERIFY(vi.capacity() >= 30);
+    QVERIFY(vs.capacity() >= 30);
+    QVERIFY(vo.capacity() >= 30);
+
+    // Displace as many elements as array is extended by
+    vi.insert(0, intArray, intArray + 5);
+    vs.insert(0, stringArray, stringArray + 5);
+    vo.insert(0, objArray, objArray + 5);
+
+    QCOMPARE(vi.size(), size_t(10));
+    QCOMPARE(vs.size(), size_t(10));
+    QCOMPARE(vo.size(), size_t(10));
+
+    // Displace more elements than array is extended by
+    vi.insert(0, intArray, intArray + 5);
+    vs.insert(0, stringArray, stringArray + 5);
+    vo.insert(0, objArray, objArray + 5);
+
+    QCOMPARE(vi.size(), size_t(15));
+    QCOMPARE(vs.size(), size_t(15));
+    QCOMPARE(vo.size(), size_t(15));
+
+    // Displace less elements than array is extended by
+    vi.insert(5, vi.constBegin(), vi.constEnd());
+    vs.insert(5, vs.constBegin(), vs.constEnd());
+    vo.insert(5, vo.constBegin(), vo.constEnd());
+
+    QCOMPARE(vi.size(), size_t(30));
+    QCOMPARE(vs.size(), size_t(30));
+    QCOMPARE(vo.size(), size_t(30));
+
+    QCOMPARE(CountedObject::liveCount, size_t(36));
+    for (int i = 0; i < 15; ++i) {
+        QCOMPARE(vi[i], intArray[i % 5]);
+        QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
+        QCOMPARE(vo[i].id, objArray[i % 5].id);
+    }
+
+    for (int i = 15; i < 20; ++i) {
+        QCOMPARE(vi[i], referenceInt);
+        QVERIFY(vs[i].isSharedWith(referenceString));
+        QCOMPARE(vo[i].id, referenceObject.id);
+    }
+
+    for (int i = 20; i < 25; ++i) {
+        QCOMPARE(vi[i], intArray[i % 5]);
+        QVERIFY(vs[i].isSharedWith(stringArray[i % 5]));
+        QCOMPARE(vo[i].id, objArray[i % 5].id);
+    }
+
+    for (int i = 25; i < 30; ++i) {
         QCOMPARE(vi[i], referenceInt);
         QVERIFY(vs[i].isSharedWith(referenceString));
         QCOMPARE(vo[i].id, referenceObject.id);

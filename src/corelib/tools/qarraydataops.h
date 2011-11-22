@@ -88,6 +88,19 @@ struct QPodArrayOps
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
     }
+
+    void insert(T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(b < e);
+        Q_ASSERT(e <= where || b > this->end()); // No overlap
+        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+
+        ::memmove(where + (e - b), where, (this->end() - where) * sizeof(T));
+        ::memcpy(where, b, (e - b) * sizeof(T));
+        this->size += (e - b);
+    }
 };
 
 template <class T>
@@ -133,6 +146,71 @@ struct QGenericArrayOps
         while (i != b)
             (--i)->~T();
     }
+
+    void insert(T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(b < e);
+        Q_ASSERT(e <= where || b > this->end()); // No overlap
+        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+
+        // Array may be truncated at where in case of exceptions
+
+        T *const end = this->end();
+        const T *readIter = end;
+        T *writeIter = end + (e - b);
+
+        const T *const step1End = where + qMax(e - b, end - where);
+
+        struct Destructor
+        {
+            Destructor(T *&iter)
+                : iter(&iter)
+                , end(iter)
+            {
+            }
+
+            void commit()
+            {
+                iter = &end;
+            }
+
+            ~Destructor()
+            {
+                for (; *iter != end; --*iter)
+                    (*iter)->~T();
+            }
+
+            T **iter;
+            T *end;
+        } destroyer(writeIter);
+
+        // Construct new elements in array
+        do {
+            --readIter, --writeIter;
+            new (writeIter) T(*readIter);
+        } while (writeIter != step1End);
+
+        while (writeIter != end) {
+            --e, --writeIter;
+            new (writeIter) T(*e);
+        }
+
+        destroyer.commit();
+        this->size += destroyer.end - end;
+
+        // Copy assign over existing elements
+        while (readIter != where) {
+            --readIter, --writeIter;
+            *writeIter = *readIter;
+        }
+
+        while (writeIter != where) {
+            --e, --writeIter;
+            *writeIter = *e;
+        }
+    }
 };
 
 template <class T>
@@ -141,6 +219,70 @@ struct QMovableArrayOps
 {
     // using QGenericArrayOps<T>::copyAppend;
     // using QGenericArrayOps<T>::destroyAll;
+
+    void insert(T *where, const T *b, const T *e)
+    {
+        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
+        Q_ASSERT(b < e);
+        Q_ASSERT(e <= where || b > this->end()); // No overlap
+        Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
+
+        // Provides strong exception safety guarantee,
+        // provided T::~T() nothrow
+
+        struct ReversibleDisplace
+        {
+            ReversibleDisplace(T *begin, T *end, size_t displace)
+                : begin(begin)
+                , end(end)
+                , displace(displace)
+            {
+                ::memmove(begin + displace, begin, (end - begin) * sizeof(T));
+            }
+
+            void commit() { displace = 0; }
+
+            ~ReversibleDisplace()
+            {
+                if (displace)
+                    ::memmove(begin, begin + displace, (end - begin) * sizeof(T));
+            }
+
+            T *const begin;
+            T *const end;
+            size_t displace;
+
+        } displace(where, this->end(), size_t(e - b));
+
+        struct CopyConstructor
+        {
+            CopyConstructor(T *where) : where(where) {}
+
+            void copy(const T *src, const T *const srcEnd)
+            {
+                n = 0;
+                for (; src != srcEnd; ++src) {
+                    new (where + n) T(*src);
+                    ++n;
+                }
+                n = 0;
+            }
+
+            ~CopyConstructor()
+            {
+                while (n)
+                    where[--n].~T();
+            }
+
+            T *const where;
+            size_t n;
+        } copier(where);
+
+        copier.copy(b, e);
+        displace.commit();
+        this->size += (e - b);
+    }
 };
 
 template <class T, class = void>
