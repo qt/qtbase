@@ -70,17 +70,17 @@ class Q_GUI_EXPORT QScreen : public QObject
 
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(int depth READ depth CONSTANT)
-    Q_PROPERTY(QSize size READ size CONSTANT)
-    Q_PROPERTY(QRect geometry READ geometry CONSTANT)
+    Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
+    Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
     Q_PROPERTY(QSizeF physicalSize READ physicalSize CONSTANT)
-    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX CONSTANT)
-    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY CONSTANT)
-    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX CONSTANT)
-    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY CONSTANT)
-    Q_PROPERTY(QSize availableSize READ availableSize CONSTANT)
-    Q_PROPERTY(QRect availableGeometry READ availableGeometry CONSTANT)
-    Q_PROPERTY(QSize virtualSize READ virtualSize CONSTANT)
-    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry CONSTANT)
+    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX NOTIFY physicalDotsPerInchXChanged)
+    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY NOTIFY physicalDotsPerInchYChanged)
+    Q_PROPERTY(qreal physicalDotsPerInch READ physicalDotsPerInch NOTIFY physicalDotsPerInchChanged)
+    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX NOTIFY logicalDotsPerInchXChanged)
+    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY NOTIFY logicalDotsPerInchYChanged)
+    Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
+    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableSizeChanged)
+    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
     Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation CONSTANT)
     Q_PROPERTY(Qt::ScreenOrientation currentOrientation READ currentOrientation NOTIFY currentOrientationChanged)
 
@@ -98,9 +98,11 @@ public:
 
     qreal physicalDotsPerInchX() const;
     qreal physicalDotsPerInchY() const;
+    qreal physicalDotsPerInch() const;
 
     qreal logicalDotsPerInchX() const;
     qreal logicalDotsPerInchY() const;
+    qreal logicalDotsPerInch() const;
 
     QSize availableSize() const;
     QRect availableGeometry() const;
@@ -121,6 +123,16 @@ public:
     static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
 
 Q_SIGNALS:
+    void sizeChanged(const QSize &size);
+    void geometryChanged(const QRect &geometry);
+    void physicalDotsPerInchXChanged(qreal dpi);
+    void physicalDotsPerInchYChanged(qreal dpi);
+    void physicalDotsPerInchChanged(qreal dpi);
+    void logicalDotsPerInchXChanged(qreal dpi);
+    void logicalDotsPerInchYChanged(qreal dpi);
+    void logicalDotsPerInchChanged(qreal dpi);
+    void availableSizeChanged(const QSize &size);
+    void availableGeometryChanged(const QRect &rect);
     void currentOrientationChanged(Qt::ScreenOrientation orientation);
 
 private:

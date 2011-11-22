@@ -982,19 +982,43 @@ void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfac
     QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 }
 
-void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *)
+void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
+
+    if (!e->screen)
+        return;
+
+    QScreen *s = e->screen.data();
+
+    emit s->sizeChanged(s->size());
+    emit s->geometryChanged(s->geometry());
+    emit s->physicalDotsPerInchXChanged(s->physicalDotsPerInchX());
+    emit s->physicalDotsPerInchYChanged(s->physicalDotsPerInchY());
+    emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
+    emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
+    emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());
+    emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+    emit s->availableSizeChanged(s->availableSize());
+    emit s->availableGeometryChanged(s->availableGeometry());
 }
 
 void QGuiApplicationPrivate::reportAvailableGeometryChange(
-        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *)
+        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
+
+    if (!e->screen)
+        return;
+
+    QScreen *s = e->screen.data();
+
+    emit s->availableSizeChanged(s->availableSize());
+    emit s->availableGeometryChanged(s->availableGeometry());
 }
 
 void QGuiApplicationPrivate::processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e)

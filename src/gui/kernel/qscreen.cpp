@@ -134,7 +134,7 @@ QSize QScreen::size() const
 */
 qreal QScreen::physicalDotsPerInchX() const
 {
-    return size().width() / physicalSize().width() * 25.4;
+    return size().width() / physicalSize().width() * qreal(25.4);
 }
 
 /*!
@@ -149,7 +149,28 @@ qreal QScreen::physicalDotsPerInchX() const
 */
 qreal QScreen::physicalDotsPerInchY() const
 {
-    return size().height() / physicalSize().height() * 25.4;
+    return size().height() / physicalSize().height() * qreal(25.4);
+}
+
+/*!
+  \property QScreen::physicalDotsPerInch
+  \brief the number of physical dots or pixels per inch
+
+  This value represents the pixel density on the screen's display.
+  Depending on what information the underlying system provides the value might not be
+  entirely accurate.
+
+  This is a convenience property that's simply the average of the physicalDotsPerInchX
+  and physicalDotsPerInchY properties.
+
+  \sa physicalDotsPerInchX()
+  \sa physicalDotsPerInchY()
+*/
+qreal QScreen::physicalDotsPerInch() const
+{
+    QSize sz = size();
+    QSizeF psz = physicalSize();
+    return ((sz.height() / psz.height()) + (sz.width() / psz.width())) * qreal(25.4 * 0.5);
 }
 
 /*!
@@ -178,6 +199,25 @@ qreal QScreen::logicalDotsPerInchY() const
 {
     Q_D(const QScreen);
     return d->platformScreen->logicalDpi().second;
+}
+
+/*!
+  \property QScreen::logicalDotsPerInch
+  \brief the number of logical dots or pixels per inch
+
+  This value can be used to convert font point sizes to pixel sizes.
+
+  This is a convenience property that's simply the average of the logicalDotsPerInchX
+  and logicalDotsPerInchY properties.
+
+  \sa logicalDotsPerInchX()
+  \sa logicalDotsPerInchY()
+*/
+qreal QScreen::logicalDotsPerInch() const
+{
+    Q_D(const QScreen);
+    QDpi dpi = d->platformScreen->logicalDpi();
+    return (dpi.first + dpi.second) * qreal(0.5);
 }
 
 /*!
