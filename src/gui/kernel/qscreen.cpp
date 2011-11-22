@@ -335,6 +335,20 @@ Qt::ScreenOrientation QScreen::currentOrientation() const
     return d->platformScreen->currentOrientation();
 }
 
+// i must be power of two
+static int log2(uint i)
+{
+    if (i == 0)
+        return -1;
+
+    int result = 0;
+    while (!(i & 1)) {
+        ++result;
+        i >>= 1;
+    }
+    return result;
+}
+
 /*!
     Convenience function to compute the angle of rotation to get from
     rotation \a a to rotation \a b.
@@ -346,7 +360,10 @@ int QScreen::angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b)
     if (a == Qt::UnknownOrientation || b == Qt::UnknownOrientation || a == b)
         return 0;
 
-    int delta = int(b) - int(a);
+    int ia = log2(uint(a));
+    int ib = log2(uint(b));
+
+    int delta = ia - ib;
 
     if (delta < 0)
         delta = delta + 4;
