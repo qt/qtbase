@@ -263,15 +263,15 @@ void tst_QPluginLoader::loadCorruptElf()
 
         QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
         QCOMPARE(lib1.load(), false);
-        QVERIFY2(lib1.errorString().contains("not a valid Qt plugin"), qPrintable(lib1.errorString()));
+        QVERIFY2(lib1.errorString().contains("not an ELF object"), qPrintable(lib1.errorString()));
 
         QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
         QCOMPARE(lib2.load(), false);
-        QVERIFY2(lib2.errorString().contains("not a valid Qt plugin"), qPrintable(lib2.errorString()));
+        QVERIFY2(lib2.errorString().contains("invalid"), qPrintable(lib2.errorString()));
 
         QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
         QCOMPARE(lib3.load(), false);
-        QVERIFY2(lib3.errorString().contains("not a valid Qt plugin"), qPrintable(lib3.errorString()));
+        QVERIFY2(lib3.errorString().contains("invalid"), qPrintable(lib3.errorString()));
     } else if (sizeof(void*) == 4) {
         QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
         QCOMPARE(libW.load(), false);
