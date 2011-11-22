@@ -59,7 +59,7 @@ public:
     explicit QAccessibleMenu(QWidget *w);
 
     int childCount() const;
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
 
     QString text(QAccessible::Text t) const;
     QAccessible::Role role() const;
@@ -95,13 +95,13 @@ class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActio
 public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
-    virtual ~QAccessibleMenuItem();
-
+    ~QAccessibleMenuItem();
     void *interface_cast(QAccessible::InterfaceType t);
-    int childAt(int x, int y) const;
+
     int childCount() const;
-    int indexOfChild(const QAccessibleInterface * child) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     bool isValid() const;
+    int indexOfChild(const QAccessibleInterface * child) const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;

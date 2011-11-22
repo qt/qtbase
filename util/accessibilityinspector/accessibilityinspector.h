@@ -64,8 +64,6 @@ public:
     void saveWindowGeometry();
 signals:
 
-public slots:
-
 private:
     OptionsWidget *optionsWidget;
     MouseInterceptingGraphicsScene *accessibilityScene;

@@ -71,7 +71,7 @@ public:
     QString text(QAccessible::Text t) const;
     QRect rect() const;
 
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *) const;
 
@@ -153,7 +153,7 @@ public:
 
     virtual ~QAccessibleTree() {}
 
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *) const;
 
@@ -184,7 +184,7 @@ public:
     QRect rect() const;
     bool isValid() const;
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -231,7 +231,7 @@ public:
     QRect rect() const;
     bool isValid() const;
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -268,7 +268,7 @@ public:
     QRect rect() const { return QRect(); }
     bool isValid() const { return true; }
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 

@@ -122,7 +122,7 @@ public:
     explicit QAccessibleStackedWidget(QWidget *widget);
 
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface *child(int index) const;
@@ -173,7 +173,6 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QRect rect() const;
-    int childAt(int x, int y) const;
 
 protected:
     QMdiSubWindow *mdiSubWindow() const;
@@ -261,12 +260,12 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     void setText(QAccessible::Text t, const QString &text);
     QString text(QAccessible::Text t) const;
     QAccessible::Role role() const;
     QRect rect () const;
     QAccessible::State state() const;
-    int childAt(int x, int y) const;
     QObject *object() const;
     bool isValid() const;
 
@@ -287,7 +286,7 @@ public:
     QAccessibleInterface *child(int index) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *iface) const;
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     QMainWindow *mainWindow() const;
 
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);

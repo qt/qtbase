@@ -740,8 +740,11 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 
     The functions childCount() and indexOfChild() return the number of
     children of an accessible object and the index a child object has
-    in its parent. The childAt() function returns the index of a child
-    at a given position.
+    in its parent. The childAt() function returns a child QAccessibleInterface
+    that is found at a position. The child does not have to be a direct
+    child. This allows bypassing intermediate layers when the parent already knows the
+    top-most child. childAt() is used for hit testing (finding the object
+    under the mouse).
 
     The relationTo() function provides information about how two
     different objects relate to each other, and navigate() allows
@@ -875,17 +878,20 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 }
 
 /*!
-    \fn int QAccessibleInterface::childAt(int x, int y) const
+    \fn QAccessibleInterface *QAccessibleInterface::childAt(int x, int y) const
 
-    Returns the 1-based index of the child that contains the screen
-    coordinates (\a x, \a y). This function returns 0 if the point is
-    positioned on the object itself. If the tested point is outside
-    the boundaries of the object this function returns -1.
+    Returns the QAccessibleInterface of a child that contains the screen coordinates (\a x, \a y).
+    If there are no children at this position this function returns 0.
+    The returned accessible must be a child, but not necessarily a direct child.
 
     This function is only relyable for visible objects (invisible
     object might not be laid out correctly).
 
     All visual objects provide this information.
+
+    A default implementation is provided for objects inheriting QAccessibleObject. This will iterate
+    over all children. If the widget manages its children (e.g. a table) it will be more efficient
+    to write a specialized implementation.
 
     \sa rect()
 */

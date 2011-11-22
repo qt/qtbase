@@ -722,17 +722,17 @@ QVariant QAccessibleStackedWidget::invokeMethod(QAccessible::Method, const QVari
 }
 
 
-int QAccessibleStackedWidget::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleStackedWidget::childAt(int x, int y) const
 {
     if (!stackedWidget()->isVisible())
-        return -1;
+        return 0;
     QWidget *currentWidget = stackedWidget()->currentWidget();
     if (!currentWidget)
-        return -1;
+        return 0;
     QPoint position = currentWidget->mapFromGlobal(QPoint(x, y));
     if (currentWidget->rect().contains(position))
-        return 1;
-    return -1;
+        return child(stackedWidget()->currentIndex());
+    return 0;
 }
 
 int QAccessibleStackedWidget::childCount() const
@@ -951,25 +951,6 @@ QRect QAccessibleMdiSubWindow::rect() const
         return QAccessibleWidget::rect();
     const QPoint pos = mdiSubWindow()->mapToGlobal(QPoint(0, 0));
     return QRect(pos, mdiSubWindow()->size());
-}
-
-int QAccessibleMdiSubWindow::childAt(int x, int y) const
-{
-    if (!mdiSubWindow()->isVisible())
-        return -1;
-    if (!mdiSubWindow()->parent())
-        return QAccessibleWidget::childAt(x, y);
-    const QRect globalGeometry = rect();
-    if (!globalGeometry.isValid())
-        return -1;
-    QAccessibleInterface *childIface = child(0);
-    const QRect globalChildGeometry = childIface->rect();
-    delete childIface;
-    if (globalChildGeometry.isValid() && globalChildGeometry.contains(QPoint(x, y)))
-        return 1;
-    if (globalGeometry.contains(QPoint(x, y)))
-        return 0;
-    return -1;
 }
 
 QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
@@ -1344,17 +1325,16 @@ QRect QAccessibleTitleBar::rect() const
     return rect;
 }
 
-int QAccessibleTitleBar::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleTitleBar::childAt(int x, int y) const
 {
-    for (int i = childCount(); i >= 0; --i) {
-        QAccessibleInterface *childIface = child(i - 1);
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
         if (childIface->rect().contains(x,y)) {
-            delete childIface;
-            return i;
+            return childIface;
         }
         delete childIface;
     }
-    return -1;
+    return 0;
 }
 
 QObject *QAccessibleTitleBar::object() const
@@ -1463,21 +1443,21 @@ int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
     return childIndex == -1 ? -1 : ++childIndex;
 }
 
-int QAccessibleMainWindow::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
 {
     QWidget *w = widget();
     if (!w->isVisible())
-        return -1;
+        return 0;
     QPoint gp = w->mapToGlobal(QPoint(0, 0));
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
-        return -1;
+        return 0;
 
     QWidgetList kids = childWidgets(mainWindow(), true);
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
     for (int i = 0; i < kids.size(); ++i) {
         QWidget *child = kids.at(i);
         if (!child->isWindow() && !child->isHidden() && child->geometry().contains(rp)) {
-            return i + 1;
+            return QAccessible::queryAccessibleInterface(child);
         }
     }
     return 0;

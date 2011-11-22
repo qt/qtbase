@@ -80,7 +80,7 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
-//    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
 
 //protected:
     QAbstractScrollArea *abstractScrollArea() const;
@@ -255,7 +255,7 @@ public:
     explicit QAccessibleComboBox(QWidget *w);
 
     int childCount() const;
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface* child(int index) const;
 

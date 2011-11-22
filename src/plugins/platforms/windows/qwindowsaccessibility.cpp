@@ -753,21 +753,23 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
     if (!accessible->isValid())
         return E_FAIL;
 
-    int control = accessible->childAt(xLeft, yTop);
-    if (control == -1) {
+    QAccessibleInterface *child = accessible->childAt(xLeft, yTop);
+    if (child == 0) {
+        // no child found, return this item if it contains the coordinates
+        if (accessible->rect().contains(xLeft, yTop)) {
+            IDispatch *iface = 0;
+            QueryInterface(IID_IDispatch, (void**)&iface);
+            if (iface) {
+                (*pvarID).vt = VT_DISPATCH;
+                (*pvarID).pdispVal = iface;
+                return S_OK;
+            }
+        }
         (*pvarID).vt = VT_EMPTY;
         return S_FALSE;
     }
-    QAccessibleInterface *acc = 0;
-    if (control)
-        accessible->navigate(QAccessible::Child, control, &acc);
-    if (!acc) {
-        (*pvarID).vt = VT_I4;
-        (*pvarID).lVal = control;
-        return S_OK;
-    }
 
-    QWindowsAccessible* wacc = new QWindowsAccessible(acc);
+    QWindowsAccessible* wacc = new QWindowsAccessible(child);
     IDispatch *iface = 0;
     wacc->QueryInterface(IID_IDispatch, (void**)&iface);
     if (iface) {

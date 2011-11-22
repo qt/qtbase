@@ -366,7 +366,7 @@ QAccessible::State QAccessibleTable::state() const
     return QAccessible::Normal;
 }
 
-int QAccessibleTable::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleTable::childAt(int x, int y) const
 {
     QPoint viewportOffset = view->viewport()->mapTo(view, QPoint(0,0));
     QPoint indexPosition = view->mapFromGlobal(QPoint(x, y) - viewportOffset);
@@ -374,9 +374,9 @@ int QAccessibleTable::childAt(int x, int y) const
 
     QModelIndex index = view->indexAt(indexPosition);
     if (index.isValid()) {
-        return logicalIndex(index);
+        return childFromLogical(logicalIndex(index));
     }
-    return -1;
+    return 0;
 }
 
 int QAccessibleTable::childCount() const
@@ -489,14 +489,14 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
     return modelIndex;
 }
 
-int QAccessibleTree::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleTree::childAt(int x, int y) const
 {
     QPoint viewportOffset = view->viewport()->mapTo(view, QPoint(0,0));
     QPoint indexPosition = view->mapFromGlobal(QPoint(x, y) - viewportOffset);
 
     QModelIndex index = view->indexAt(indexPosition);
     if (!index.isValid())
-        return -1;
+        return 0;
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
     int row = treeView->d_func()->viewIndex(index) + (horizontalHeader() ? 1 : 0);
@@ -504,7 +504,7 @@ int QAccessibleTree::childAt(int x, int y) const
 
     int i = row * view->model()->columnCount() + column + 1;
     Q_ASSERT(i > view->model()->columnCount());
-    return i;
+    return child(i - 1);
 }
 
 int QAccessibleTree::childCount() const

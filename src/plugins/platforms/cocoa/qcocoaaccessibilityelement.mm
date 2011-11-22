@@ -197,21 +197,19 @@ static QAccessibleInterface *acast(void *ptr)
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-    int index = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
-    // hit outside
-    if (index == -1) {
-        return 0;
-    }
+    if (!accessibleInterface)
+        return NSAccessibilityUnignoredAncestor(self);
+    QAccessibleInterface *childInterface = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
-    // hit this element
-    if (index == 0) {
+    // No child found, meaning we hit this element.
+    if (!childInterface) {
         return NSAccessibilityUnignoredAncestor(self);
     }
 
     // hit a child, forward to child accessible interface.
-    QAccessibleInterface *childInterface = acast(accessibleInterface)->child(index - 1);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index - 1 parent:self accessibleInterface: childInterface];
+    int childIndex = acast(accessibleInterface)->indexOfChild(childInterface);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex  -1 parent:self accessibleInterface: childInterface];
     return [accessibleElement accessibilityHitTest:point];
 }
 

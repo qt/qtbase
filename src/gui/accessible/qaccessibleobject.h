@@ -67,6 +67,7 @@ public:
     // properties
     QRect rect() const;
     void setText(QAccessible::Text t, const QString &text);
+    QAccessibleInterface *childAt(int x, int y) const;
 
 protected:
     virtual ~QAccessibleObject();
@@ -89,7 +90,6 @@ public:
 
     // navigation
     QAccessibleInterface *parent() const;
-    int childAt(int x, int y) const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag, int, QAccessibleInterface **) const;
 

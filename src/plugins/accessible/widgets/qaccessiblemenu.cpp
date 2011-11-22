@@ -71,12 +71,12 @@ int QAccessibleMenu::childCount() const
     return menu()->actions().count();
 }
 
-int QAccessibleMenu::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleMenu::childAt(int x, int y) const
 {
     QAction *act = menu()->actionAt(menu()->mapFromGlobal(QPoint(x,y)));
     if(act && act->isSeparator())
         act = 0;
-    return menu()->actions().indexOf(act) + 1;
+    return act ? new QAccessibleMenuItem(menu(), act) : 0;
 }
 
 QString QAccessibleMenu::text(QAccessible::Text t) const
@@ -193,17 +193,16 @@ QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action)
 QAccessibleMenuItem::~QAccessibleMenuItem()
 {}
 
-int QAccessibleMenuItem::childAt(int x, int y ) const
+QAccessibleInterface *QAccessibleMenuItem::childAt(int x, int y ) const
 {
     for (int i = childCount(); i >= 0; --i) {
         QAccessibleInterface *childInterface = child(i);
         if (childInterface->rect().contains(x,y)) {
-            delete childInterface;
-            return i;
+            return childInterface;
         }
         delete childInterface;
     }
-    return -1;
+    return 0;
 }
 
 int QAccessibleMenuItem::childCount() const

@@ -83,34 +83,19 @@
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
+    if (!m_accessibleRoot)
+        return [super accessibilityHitTest:point];
     NSPoint windowPoint = [[self window] convertScreenToBase:point];
-    NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
 
-    int index = -1;
-    if (m_accessibleRoot) {
-        index = m_accessibleRoot->childAt(point.x, qt_mac_flipYCoordinate(point.y));
-
-        // qDebug() << "root rect" << m_accessibleRoot->rect();
-        // qDebug() << "hit screen" << point.x << qt_mac_flipYCoordinate(point.y)  << index;
-        // if (index > 0) {
-        //      qDebug() << "child name" << m_accessibleRoot->child(index - 1)->text(QAccessible::Name);
-        //      qDebug() << "child rect" << m_accessibleRoot->child(index - 1)->rect();
-        // }
-    }
-
-    // hit outside
-    if (index == -1) {
+    QAccessibleInterface *childInterface = m_accessibleRoot->childAt(point.x, qt_mac_flipYCoordinate(point.y));
+    // No child found, meaning we hit the NSView
+    if (!childInterface) {
         return [super accessibilityHitTest:point];
     }
 
-    // hit the NSView / top-level window
-    if (index == 0) {
-        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index parent:self accessibleInterface:(void*)m_accessibleRoot];
-        return [accessibleElement accessibilityHitTest:point];
-    }
-
-    // hit a child, forward to child accessible interface.
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index - 1 parent:self accessibleInterface:(void*)m_accessibleRoot->child(index -1)];
+    // Hit a child, forward to child accessible interface.
+    int childIndex = m_accessibleRoot->indexOfChild(childInterface);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex -1 parent:self accessibleInterface: childInterface];
     return [accessibleElement accessibilityHitTest:point];
 }
 

@@ -1483,7 +1483,7 @@ public:
 
     bool isValid() const { return true; }// (!m_parent.isNull()) && m_parent->count() > m_index; }
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -1661,7 +1661,7 @@ QComboBox *QAccessibleComboBox::comboBox() const
     return qobject_cast<QComboBox*>(object());
 }
 
-QAccessibleInterface* QAccessibleComboBox::child(int index) const
+QAccessibleInterface *QAccessibleComboBox::child(int index) const
 {
     if (index == 0) {
         QAbstractItemView *view = comboBox()->view();
@@ -1679,10 +1679,10 @@ int QAccessibleComboBox::childCount() const
     return comboBox()->isEditable() ? 2 : 1;
 }
 
-int QAccessibleComboBox::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleComboBox::childAt(int x, int y) const
 {
     if (comboBox()->isEditable() && comboBox()->lineEdit()->rect().contains(x, y))
-        return 1;
+        return child(1);
     return 0;
 }
 
@@ -1925,31 +1925,19 @@ int QAccessibleAbstractScrollArea::navigate(QAccessible::RelationFlag relation, 
     return *target ? 0: -1;
 }
 
-//int QAccessibleAbstractScrollArea::childAt(int x, int y) const
-//{
-//    if (!abstractScrollArea()->isVisible())
-//        return -1;
-//#if 0
-//    const QRect globalSelfGeometry = rect(Self);
-//    if (!globalSelfGeometry.isValid() || !globalSelfGeometry.contains(QPoint(x, y)))
-//        return -1;
-//    const QWidgetList children = accessibleChildren();
-//    for (int i = 0; i < children.count(); ++i) {
-//        const QWidget *child = children.at(i);
-//        const QRect globalChildGeometry = QRect(child->mapToGlobal(QPoint(0, 0)), child->size());
-//        if (globalChildGeometry.contains(QPoint(x, y))) {
-//            return ++i;
-//        }
-//    }
-//    return 0;
-//#else
-//    for (int i = childCount(); i >= 0; --i) {
-//        if (rect().contains(x, y))
-//            return i;
-//    }
-//    return -1;
-//#endif
-//}
+QAccessibleInterface *QAccessibleAbstractScrollArea::childAt(int x, int y) const
+{
+    if (!abstractScrollArea()->isVisible())
+        return 0;
+
+    for (int i = 0; i < childCount(); ++i) {
+        QPoint wpos = accessibleChildren().at(i)->mapToGlobal(QPoint(0, 0));
+        QRect rect = QRect(wpos, accessibleChildren().at(i)->size());
+        if (rect.contains(x, y))
+            return child(i);
+    }
+    return 0;
+}
 
 QAbstractScrollArea *QAccessibleAbstractScrollArea::abstractScrollArea() const
 {

@@ -64,7 +64,6 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
-    int childAt(int x, int y) const;
     QRect rect() const;
 
     QAccessibleInterface *parent() const;

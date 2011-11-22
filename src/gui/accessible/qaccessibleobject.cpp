@@ -154,6 +154,18 @@ void QAccessibleObject::setText(QAccessible::Text, const QString &)
 {
 }
 
+/*! \reimp */
+QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
+{
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
+        if (childIface->rect().contains(x,y)) {
+            return childIface;
+        }
+    }
+    return 0;
+}
+
 /*!
     \class QAccessibleApplication
     \brief The QAccessibleApplication class implements the QAccessibleInterface for QApplication.
@@ -211,19 +223,6 @@ int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) cons
     if (index != -1)
         ++index;
     return index;
-}
-
-/*! \reimp */
-int QAccessibleApplication::childAt(int x, int y) const
-{
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
-        QRect geom = childIface->rect();
-        if (geom.contains(x,y))
-            return i+1;
-        delete childIface;
-    }
-    return rect().contains(x,y) ? 0 : -1;
 }
 
 /*! \reimp */

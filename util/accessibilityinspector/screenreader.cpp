@@ -103,7 +103,7 @@ void ScreenReader::processTouchPoint()
             qDebug() << "touchPoint exit recursion overflow";
             return; // outside
         }
-
+/*
         hit = currentInterface->childAt(m_currentTouchPoint.x(), m_currentTouchPoint.y());
         //qDebug() << "hit" << hit;
         if (hit == -1) {
@@ -121,6 +121,7 @@ void ScreenReader::processTouchPoint()
                 delete currentInterface;
             currentInterface = childInterface;
         }
+*/
     }
 
     m_selectedInterface = currentInterface;

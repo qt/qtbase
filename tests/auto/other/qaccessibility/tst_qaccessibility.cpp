@@ -89,7 +89,6 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     // QAccessibleInterface::indexOfChild():
     // Verify that indexOfChild() returns an index equal to the index passed in
     int indexFromIndexOfChild = interface->indexOfChild(childInterface);
-    delete childInterface;
     if (indexFromIndexOfChild != index) {
         qWarning("tst_QAccessibility::verifyChild (indexOfChild()):");
         qWarning() << "Expected:" << index;
@@ -109,13 +108,21 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     // Calculate global child position and check that the interface
     // returns the correct index for that position.
     QPoint globalChildPos = child->mapToGlobal(QPoint(0, 0));
-    int indexFromChildAt = interface->childAt(globalChildPos.x(), globalChildPos.y());
-    if (indexFromChildAt != index) {
+    QAccessibleInterface *childAtInterface = interface->childAt(globalChildPos.x(), globalChildPos.y());
+    if (!childAtInterface) {
         qWarning("tst_QAccessibility::verifyChild (childAt()):");
-        qWarning() << "Expected:" << index;
-        qWarning() << "Actual:  " << indexFromChildAt;
+        qWarning() << "Expected:" << childInterface;
+        qWarning() << "Actual:  no child";
         return false;
     }
+    if (childAtInterface->object() != childInterface->object()) {
+        qWarning("tst_QAccessibility::verifyChild (childAt()):");
+        qWarning() << "Expected:" << childInterface;
+        qWarning() << "Actual:  " << childAtInterface;
+        return false;
+    }
+    delete childInterface;
+    delete childAtInterface;
 
     // QAccessibleInterface::rect():
     // Calculate global child geometry and check that the interface
@@ -1931,11 +1938,14 @@ void tst_QAccessibility::mdiSubWindowTest()
     QCOMPARE(childRect(interface), QRect(globalWidgetPos, widgetGeometry.size()));
 
     // childAt
-    QCOMPARE(interface->childAt(-10, 0), -1);
-    QCOMPARE(interface->childAt(globalPos.x(), globalPos.y()), 0);
-    QCOMPARE(interface->childAt(globalWidgetPos.x(), globalWidgetPos.y()), 1);
+    QCOMPARE(interface->childAt(-10, 0), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->childAt(globalPos.x(), globalPos.y()), static_cast<QAccessibleInterface*>(0));
+    QAccessibleInterface *child = interface->childAt(globalWidgetPos.x(), globalWidgetPos.y());
+    QCOMPARE(child->role(), QAccessible::PushButton);
+    QCOMPARE(child->text(QAccessible::Name), QString("QAccessibilityTest"));
+    delete child;
     testWindow->widget()->hide();
-    QCOMPARE(interface->childAt(globalWidgetPos.x(), globalWidgetPos.y()), 0);
+    QCOMPARE(interface->childAt(globalWidgetPos.x(), globalWidgetPos.y()), static_cast<QAccessibleInterface*>(0));
 
     }
     QTestAccessibility::clearEvents();
@@ -2288,7 +2298,7 @@ void tst_QAccessibility::abstractScrollAreaTest()
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&abstractScrollArea);
     QVERIFY(interface);
     QVERIFY(!interface->rect().isValid());
-    QCOMPARE(interface->childAt(200, 200), -1);
+    QCOMPARE(interface->childAt(200, 200), static_cast<QAccessibleInterface*>(0));
 
     abstractScrollArea.resize(400, 400);
     abstractScrollArea.show();
@@ -2767,7 +2777,7 @@ void tst_QAccessibility::calendarWidgetTest()
     QVERIFY(interface);
     QCOMPARE(interface->role(), QAccessible::Table);
     QVERIFY(!interface->rect().isValid());
-    QCOMPARE(interface->childAt(200, 200), -1);
+    QCOMPARE(interface->childAt(200, 200), static_cast<QAccessibleInterface*>(0));
 
     calendarWidget.resize(400, 300);
     calendarWidget.show();
@@ -2903,9 +2913,11 @@ void tst_QAccessibility::dockWidgetTest()
     QPoint globalPos = dock1->mapToGlobal(QPoint(0,0));
     globalPos.rx()+=5;  //### query style
     globalPos.ry()+=5;
-    int entry = accDock1->childAt(globalPos.x(), globalPos.y());    //###
-    QCOMPARE(entry, 1);
-    QAccessibleInterface *accTitleBar = accDock1->child(entry - 1);
+    QAccessibleInterface *childAt = accDock1->childAt(globalPos.x(), globalPos.y());    //###
+    QCOMPARE(childAt->role(), QAccessible::TitleBar);
+    int index = accDock1->indexOfChild(childAt);
+    delete childAt;
+    QAccessibleInterface *accTitleBar = accDock1->child(index - 1);
 
     QCOMPARE(accTitleBar->role(), QAccessible::TitleBar);
     QCOMPARE(accDock1->indexOfChild(accTitleBar), 1);

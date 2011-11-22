@@ -222,28 +222,6 @@ QObject *QAccessibleWidget::parentObject() const
 }
 
 /*! \reimp */
-int QAccessibleWidget::childAt(int x, int y) const
-{
-    QWidget *w = widget();
-    if (!w->isVisible())
-        return -1;
-    QPoint gp = w->mapToGlobal(QPoint(0, 0));
-    if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
-        return -1;
-
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
-        bool found = false;
-        if (childIface->rect().contains(x, y))
-            found = true;
-        delete childIface;
-        if (found)
-            return i + 1;
-    }
-    return 0;
-}
-
-/*! \reimp */
 QRect QAccessibleWidget::rect() const
 {
     QWidget *w = widget();
