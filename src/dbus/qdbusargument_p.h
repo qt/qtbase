@@ -213,6 +213,7 @@ private:
     QDBusObjectPath toObjectPathUnchecked();
     QDBusSignature toSignatureUnchecked();
     QStringList toStringListUnchecked();
+    QByteArray toByteArrayUnchecked();
 };
 
 inline QDBusMarshaller *QDBusArgumentPrivate::marshaller()

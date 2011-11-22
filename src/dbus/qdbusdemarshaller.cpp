@@ -272,7 +272,7 @@ QVariant QDBusDemarshaller::toVariantInternal()
         switch (q_dbus_message_iter_get_element_type(&iterator)) {
         case DBUS_TYPE_BYTE:
             // QByteArray
-            return toByteArray();
+            return toByteArrayUnchecked();
         case DBUS_TYPE_STRING:
             return toStringListUnchecked();
         case DBUS_TYPE_DICT_ENTRY:
@@ -339,7 +339,7 @@ QStringList QDBusDemarshaller::toStringList()
         return QStringList();
 }
 
-QByteArray QDBusDemarshaller::toByteArray()
+QByteArray QDBusDemarshaller::toByteArrayUnchecked()
 {
     DBusMessageIter sub;
     q_dbus_message_iter_recurse(&iterator, &sub);
@@ -348,6 +348,15 @@ QByteArray QDBusDemarshaller::toByteArray()
     char* data;
     q_dbus_message_iter_get_fixed_array(&sub,&data,&len);
     return QByteArray(data,len);
+}
+
+QByteArray QDBusDemarshaller::toByteArray()
+{
+    if (q_dbus_message_iter_get_arg_type(&iterator) == DBUS_TYPE_ARRAY
+            && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_BYTE) {
+        return toByteArrayUnchecked();
+    }
+    return QByteArray();
 }
 
 bool QDBusDemarshaller::atEnd()

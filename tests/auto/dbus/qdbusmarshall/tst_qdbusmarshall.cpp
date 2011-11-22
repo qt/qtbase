@@ -102,6 +102,9 @@ private slots:
     void demarshallInvalidStringList_data();
     void demarshallInvalidStringList();
 
+    void demarshallInvalidByteArray_data();
+    void demarshallInvalidByteArray();
+
 private:
     int fileDescriptorForTest();
 
@@ -1422,6 +1425,56 @@ void tst_QDBusMarshall::demarshallInvalidStringList()
     QStringList receiveValue;
     receiveArg >> receiveValue;
     QCOMPARE(receiveValue, QStringList());
+
+    receiveArg.endStructure();
+    QVERIFY(receiveArg.atEnd());
+}
+
+void tst_QDBusMarshall::demarshallInvalidByteArray_data()
+{
+    addBasicTypesColumns();
+
+    // None of the basic types should demarshall to a QByteArray
+    basicNumericTypes_data();
+    basicStringTypes_data();
+
+    // Arrays of other types than byte should not demarshall to a QByteArray
+    QList<bool> bools;
+    QTest::newRow("empty array of bool") << qVariantFromValue(bools);
+    bools << true << false << true;
+    QTest::newRow("non-empty array of bool") << qVariantFromValue(bools);
+
+    // Structures should not demarshall to a QByteArray
+    QTest::newRow("struct of bytes")
+            << qVariantFromValue(QVariantList() << uchar(1) << uchar(2));
+
+    QTest::newRow("struct of mixed types")
+            << qVariantFromValue(QVariantList() << int(42) << QString("foo") << double(3.14));
+}
+
+void tst_QDBusMarshall::demarshallInvalidByteArray()
+{
+    QFETCH(QVariant, value);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                      interfaceName, "ping");
+    QDBusArgument sendArg;
+    sendArg.beginStructure();
+    sendArg.appendVariant(value);
+    sendArg.endStructure();
+    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    QDBusMessage reply = con.call(msg);
+
+    const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+    receiveArg.beginStructure();
+
+    QByteArray receiveValue;
+    receiveArg >> receiveValue;
+    QCOMPARE(receiveValue, QByteArray());
 
     receiveArg.endStructure();
     QVERIFY(receiveArg.atEnd());
