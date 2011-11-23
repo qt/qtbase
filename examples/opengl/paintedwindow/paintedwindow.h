@@ -44,7 +44,10 @@
 #include <QtGui/qopenglshaderprogram.h>
 #include <QtGui/qopenglframebufferobject.h>
 
+#include <QPropertyAnimation>
+
 #include <QColor>
+#include <QImage>
 #include <QTime>
 
 QT_BEGIN_NAMESPACE
@@ -54,16 +57,39 @@ QT_END_NAMESPACE
 class PaintedWindow : public QWindow
 {
     Q_OBJECT
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+
 public:
     PaintedWindow();
 
+    qreal rotation() const { return m_rotation; }
+
+signals:
+    void rotationChanged(qreal rotation);
+
 private slots:
     void paint();
+    void setRotation(qreal r);
+    void orientationChanged(Qt::ScreenOrientation newOrientation);
+    void rotationDone();
 
 private:
     void resizeEvent(QResizeEvent *);
     void exposeEvent(QExposeEvent *);
     void mousePressEvent(QMouseEvent *);
 
+    void paint(QPainter *painter, const QRect &rect);
+
     QOpenGLContext *m_context;
+    qreal m_rotation;
+
+    QImage m_prevImage;
+    QImage m_nextImage;
+    qreal m_deltaRotation;
+
+    Qt::ScreenOrientation m_targetOrientation;
+    Qt::ScreenOrientation m_nextTargetOrientation;
+
+    QPropertyAnimation *m_animation;
+    QTimer *m_paintTimer;
 };

@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     QRect screenGeometry = screen->availableGeometry();
 
     QPoint center = screenGeometry.center();
-    QRect windowRect(0, 0, 640, 480);
+    QRect windowRect(0, 0, 480, 640);
 
     PaintedWindow window;
     window.setGeometry(QRect(center - windowRect.center(), windowRect.size()));
@@ -61,3 +61,4 @@ int main(int argc, char **argv)
 
     app.exec();
 }
+
