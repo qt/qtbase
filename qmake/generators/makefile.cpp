@@ -638,7 +638,7 @@ MakefileGenerator::init()
         }
     }
 
-    if(noIO() || !doDepends())
+    if(noIO() || !doDepends() || project->isActiveConfig("GNUmake"))
         QMakeSourceFileInfo::setDependencyMode(QMakeSourceFileInfo::NonRecursive);
     for(x = 0; x < compilers.count(); ++x)
         initCompiler(compilers.at(x));
