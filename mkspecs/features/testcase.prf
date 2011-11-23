@@ -97,7 +97,7 @@ contains(INSTALLS, target) {
     #   ...
     #
     for(file, TESTDATA) {
-        tdi = testdata_install_$${elem}
+        tdi = testdata_install_$${file}
         tdif = $${tdi}.files
         tdip = $${tdi}.path
 
