@@ -805,7 +805,7 @@ QString QAccessibleTable2Cell::text(Text t, int child) const
 void QAccessibleTable2Cell::setText(Text /*t*/, int child, const QString &text)
 {
     Q_ASSERT(child == 0);
-    if (!m_index.flags() & Qt::ItemIsEditable)
+    if (!(m_index.flags() & Qt::ItemIsEditable))
         return;
     view->model()->setData(m_index, text);
 }
