@@ -69,8 +69,13 @@
         #if QT_DEPRECATED_SINCE(5,1)
             QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
         #endif
- */
-#define QT_DEPRECATED_SINCE(major, minor) (defined(QT_DEPRECATED) &&  QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+
+*/
+#ifdef QT_DEPRECATED
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+#else
+#define QT_DEPRECATED_SINCE(major, minor) 0
+#endif
 
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
