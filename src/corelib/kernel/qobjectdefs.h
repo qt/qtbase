@@ -66,10 +66,10 @@ class QString;
 #  define QT_NO_EMIT
 # else
 #   define slots
-#   define signals protected
+#   define signals public
 # endif
 # define Q_SLOTS
-# define Q_SIGNALS protected
+# define Q_SIGNALS public
 # define Q_PRIVATE_SLOT(d, signature)
 # define Q_EMIT
 #ifndef QT_NO_EMIT

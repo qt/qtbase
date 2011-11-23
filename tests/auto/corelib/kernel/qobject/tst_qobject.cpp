@@ -121,6 +121,12 @@ private slots:
     void disconnectNotSignalMetaMethod();
     void autoConnectionBehavior();
     void baseDestroyed();
+    void pointerConnect();
+    void emitInDefinedOrderPointer();
+    void customTypesPointer();
+    void connectConvert();
+    void connectWithReference();
+    void connectManyArguments();
 };
 
 class SenderObject : public QObject
@@ -1094,6 +1100,14 @@ void tst_QObject::emitInDefinedOrder()
 
 static int instanceCount = 0;
 
+struct CheckInstanceCount
+{
+    const int saved;
+    CheckInstanceCount() : saved(instanceCount) {}
+    ~CheckInstanceCount() { QCOMPARE(saved, instanceCount); }
+};
+
+
 struct CustomType
 {
     CustomType(int l1 = 0, int l2 = 0, int l3 = 0): i1(l1), i2(l2), i3(l3)
@@ -1107,6 +1121,7 @@ struct CustomType
 };
 
 Q_DECLARE_METATYPE(CustomType*)
+Q_DECLARE_METATYPE(CustomType)
 
 class QCustomTypeChecker: public QObject
 {
@@ -4009,6 +4024,400 @@ void tst_QObject::baseDestroyed()
     //When d goes out of scope, slotUseList should not be called as the BaseDestroyed has
     // already been destroyed while ~QObject emit destroyed
 }
+
+void tst_QObject::pointerConnect()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot1 ) );
+    QVERIFY( connect( s, &SenderObject::signal1 , r2, &ReceiverObject::slot1 ) );
+    QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot3 ) );
+    QVERIFY( connect( s, &SenderObject::signal3 , r1, &ReceiverObject::slot3 ) );
+
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 2 );
+    QCOMPARE( r1->count_slot4, 0 );
+    QCOMPARE( r2->count_slot1, 1 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+    QCOMPARE( r2->count_slot4, 0 );
+    QCOMPARE( r1->sequence_slot1, 1 );
+    QCOMPARE( r2->sequence_slot1, 2 );
+    QCOMPARE( r1->sequence_slot3, 4 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 ) );
+    QVERIFY( connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 ) );
+    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot4 ) );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 1 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 1 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    connect( s, &SenderObject::signal4 , r1, &ReceiverObject::slot4  );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 2 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 3 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    QMetaObject::Connection con;
+    QVERIFY(!con);
+    QVERIFY(!QObject::disconnect(con));
+
+    //connect a slot to a signal (== error)
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in ReceiverObject");
+    con = connect(r1, &ReceiverObject::slot4 , s, &SenderObject::signal4 );
+    QVERIFY(!con);
+    QVERIFY(!QObject::disconnect(con));
+
+    delete s;
+    delete r1;
+    delete r2;
+}
+
+void tst_QObject::emitInDefinedOrderPointer()
+{
+    SenderObject sender;
+    ReceiverObject receiver1, receiver2, receiver3, receiver4;
+
+    QMetaObject::Connection h0 = connect(&sender, &SenderObject::signal1, &receiver1, &SequenceObject::slot1);
+    QMetaObject::Connection h1 = connect(&sender, &SenderObject::signal1, &receiver2, &SequenceObject::slot1);
+    QVERIFY(h0);
+    QVERIFY(h1);
+    connect(&sender, &SenderObject::signal1, &receiver3, &SequenceObject::slot1);
+    connect(&sender, &SenderObject::signal1, &receiver4, &SequenceObject::slot1);
+    connect(&sender, &SenderObject::signal1, &receiver1, &SequenceObject::slot2);
+    connect(&sender, &SenderObject::signal1, &receiver2, &SequenceObject::slot2);
+    connect(&sender, &SenderObject::signal1, &receiver3, &SequenceObject::slot2);
+    connect(&sender, &SenderObject::signal1, &receiver4, &SequenceObject::slot2);
+
+    int sequence;
+    ReceiverObject::sequence = sequence = 0;
+    sender.emitSignal1();
+    QCOMPARE(receiver1.sequence_slot1, ++sequence);
+    QCOMPARE(receiver2.sequence_slot1, ++sequence);
+    QCOMPARE(receiver3.sequence_slot1, ++sequence);
+    QCOMPARE(receiver4.sequence_slot1, ++sequence);
+    QCOMPARE(receiver1.sequence_slot2, ++sequence);
+    QCOMPARE(receiver2.sequence_slot2, ++sequence);
+    QCOMPARE(receiver3.sequence_slot2, ++sequence);
+    QCOMPARE(receiver4.sequence_slot2, ++sequence);
+
+    QObject::disconnect(h1);
+    h1 = connect(&sender, &SenderObject::signal1, &receiver2, &SequenceObject::slot1);
+
+    ReceiverObject::sequence = sequence =  0;
+    sender.emitSignal1();
+    QCOMPARE(receiver1.sequence_slot1, ++sequence);
+    QCOMPARE(receiver3.sequence_slot1, ++sequence);
+    QCOMPARE(receiver4.sequence_slot1, ++sequence);
+    QCOMPARE(receiver1.sequence_slot2, ++sequence);
+    QCOMPARE(receiver2.sequence_slot2, ++sequence);
+    QCOMPARE(receiver3.sequence_slot2, ++sequence);
+    QCOMPARE(receiver4.sequence_slot2, ++sequence);
+    QCOMPARE(receiver2.sequence_slot1, ++sequence);
+
+    QObject::disconnect(h0);
+    h0 = connect(&sender, &SenderObject::signal1, &receiver1, &SequenceObject::slot1);
+
+    ReceiverObject::sequence = sequence =  0;
+    sender.emitSignal1();
+    QCOMPARE(receiver3.sequence_slot1, ++sequence);
+    QCOMPARE(receiver4.sequence_slot1, ++sequence);
+    QCOMPARE(receiver1.sequence_slot2, ++sequence);
+    QCOMPARE(receiver2.sequence_slot2, ++sequence);
+    QCOMPARE(receiver3.sequence_slot2, ++sequence);
+    QCOMPARE(receiver4.sequence_slot2, ++sequence);
+    QCOMPARE(receiver2.sequence_slot1, ++sequence);
+    QCOMPARE(receiver1.sequence_slot1, ++sequence);
+
+    QVERIFY(QObject::disconnect(h0));
+    QVERIFY(!QObject::disconnect(h0));
+}
+
+
+void tst_QObject::customTypesPointer()
+{
+    CustomType t0;
+    CustomType t1(1, 2, 3);
+    CustomType t2(2, 3, 4);
+
+    {
+        QCustomTypeChecker checker;
+        QCOMPARE(instanceCount, 4);
+
+        connect(&checker, &QCustomTypeChecker::signal1, &checker, &QCustomTypeChecker::slot1,
+                Qt::DirectConnection);
+        QCOMPARE(checker.received.value(), 0);
+        checker.doEmit(t1);
+        QCOMPARE(checker.received.value(), t1.value());
+    }
+    QCOMPARE(instanceCount, 3);
+}
+
+class StringVariant : public QObject
+{ Q_OBJECT
+signals:
+    void stringSignal(const QString &str);
+public slots:
+    void variantSlot(const QVariant &v) { var = v; }
+public:
+    QVariant var;
+    friend class tst_QObject;
+};
+
+struct Functor {
+    QVariant *var;
+    void operator() (const QVariant &v) {
+        *var = v;
+    }
+};
+
+void tst_QObject::connectConvert()
+{
+    StringVariant obj;
+    QVERIFY(connect(&obj, &StringVariant::stringSignal, &obj, &StringVariant::variantSlot));
+    QString s = QString::fromLatin1("Hello World");
+    emit obj.stringSignal(s);
+    QCOMPARE(obj.var.toString(), s);
+    QVERIFY(obj.var.toString().isSharedWith(s));
+
+    QVariant var;
+    Functor f;
+    f.var = &var;
+    QVERIFY(connect(&obj, &StringVariant::stringSignal, f));
+    s = QString::fromLatin1("GoodBye");
+    emit obj.stringSignal(s);
+    QCOMPARE(obj.var.toString(), s);
+    QVERIFY(obj.var.toString().isSharedWith(s));
+    QCOMPARE(var, obj.var);
+}
+
+class ConnectWithReferenceObject : public QObject {
+    Q_OBJECT
+    friend class tst_QObject;
+signals:
+    void boolRef(bool &, bool);
+    void stringRef(QString &, const QString &);
+    void boolPtr(bool *, bool);
+    void stringPtr(QString *, const QString &);
+public slots:
+    void boolRefSlot(bool &b1, bool b2) {  b1 = b2; }
+    void stringRefSlot(QString &s1, const QString &s2) {  s1 = s2; }
+    void boolPtrSlot(bool *b1, bool b2) {  *b1 = b2; }
+    void stringPtrSlot(QString *s1, const QString &s2) {  *s1 = s2; }
+
+    void stringSlot1(QString s) { last = s; }
+    void stringSlot2(const QString &s) { last = s; }
+    void stringSlot3(QString &s) { last = s; }
+public:
+    QString last;
+};
+
+void tst_QObject::connectWithReference()
+{
+    ConnectWithReferenceObject o;
+    bool b1 = true;
+    QString s1 = QString::fromLatin1("str1");
+    const QString s2 = QString::fromLatin1("str2");
+    const QString s3 = QString::fromLatin1("str3");
+    o.boolRef(b1, false);
+    o.stringRef(s1, s2);
+    QCOMPARE(b1, true);
+    QCOMPARE(s1, QString::fromLatin1("str1"));
+    o.boolPtr(&b1, false);
+    o.stringPtr(&s1, s2);
+    QCOMPARE(b1, true);
+    QCOMPARE(s1, QString::fromLatin1("str1"));
+
+    QVERIFY(connect(&o, &ConnectWithReferenceObject::boolRef, &o, &ConnectWithReferenceObject::boolRefSlot));
+    QVERIFY(connect(&o, &ConnectWithReferenceObject::stringRef, &o, &ConnectWithReferenceObject::stringRefSlot));
+    QVERIFY(connect(&o, &ConnectWithReferenceObject::boolPtr, &o, &ConnectWithReferenceObject::boolPtrSlot));
+    QVERIFY(connect(&o, &ConnectWithReferenceObject::stringPtr, &o, &ConnectWithReferenceObject::stringPtrSlot));
+    o.boolRef(b1, false);
+    o.stringRef(s1, s2);
+    QCOMPARE(b1, false);
+    QCOMPARE(s1, QString::fromLatin1("str2"));
+
+    o.boolPtr(&b1, true);
+    o.stringPtr(&s1, s3);
+    QCOMPARE(b1, true);
+    QCOMPARE(s1, QString::fromLatin1("str3"));
+
+    {
+        ConnectWithReferenceObject o2;
+        QVERIFY(connect(&o2, &ConnectWithReferenceObject::stringRef, &o2, &ConnectWithReferenceObject::stringSlot1));
+        o2.stringRef(s1, s2);
+        QCOMPARE(s1, s3);
+        QCOMPARE(o2.last, s3);
+    }
+    {
+        ConnectWithReferenceObject o2;
+        QVERIFY(connect(&o2, &ConnectWithReferenceObject::stringRef, &o2, &ConnectWithReferenceObject::stringSlot2));
+        o2.stringRef(s1, s2);
+        QCOMPARE(s1, s3);
+        QCOMPARE(o2.last, s3);
+    }
+    {
+        ConnectWithReferenceObject o2;
+        QVERIFY(connect(&o2, &ConnectWithReferenceObject::stringRef, &o2, &ConnectWithReferenceObject::stringSlot3));
+        o2.stringRef(s1, s2);
+        QCOMPARE(s1, s3);
+        QCOMPARE(o2.last, s3);
+    }
+}
+
+class ManyArgumentObject : public QObject {
+    Q_OBJECT
+signals:
+    void signal1(const QString &);
+    void signal2(const QString &, const QString &);
+    void signal3(const QString &, const QString &, const QString &);
+    void signal4(const QString &, const QString &, const QString &, const QString&);
+    void signal5(const QString &, const QString &, const QString &, const QString&, const QString&);
+    void signal6(const QString &, const QString &, const QString &, const QString&, const QString&, const QString&);
+
+public slots:
+#define MANYARGUMENT_COMPARE(L) QCOMPARE(L, QString(#L))
+    void slot1(const QString &a) {
+        MANYARGUMENT_COMPARE(a);
+        count++;
+    }
+    void slot2(const QString &a, const QString &b) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b);
+        count++;
+    }
+    void slot3(const QString &a, const QString &b, const QString &c) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        count++;
+    }
+    void slot4(const QString &a, const QString &b, const QString &c, const QString&d) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d);
+        count++;
+    }
+    void slot5(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e);
+        count++;
+    }
+    void slot6(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e, const QString&f) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e); MANYARGUMENT_COMPARE(f);
+        count++;
+    }
+public:
+    int count;
+
+};
+
+namespace ManyArgumentNamespace {
+    int count;
+    void slot1(const QString &a) {
+        MANYARGUMENT_COMPARE(a);
+        count++;
+    }
+    void slot2(const QString &a, const QString &b) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b);
+        count++;
+    }
+    void slot3(const QString &a, const QString &b, const QString &c) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        count++;
+    }
+    void slot4(const QString &a, const QString &b, const QString &c, const QString&d) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d);
+        count++;
+    }
+    void slot5(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e);
+        count++;
+    }
+    void slot6(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e, const QString&f) {
+        MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+        MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e); MANYARGUMENT_COMPARE(f);
+        count++;
+    }
+}
+
+void tst_QObject::connectManyArguments()
+{
+#ifdef Q_COMPILER_VARIADIC_TEMPLATES
+    ManyArgumentObject ob;
+    ob.count = 0;
+    ManyArgumentNamespace::count = 0;
+    connect(&ob, &ManyArgumentObject::signal1, &ob, &ManyArgumentObject::slot1);
+    connect(&ob, &ManyArgumentObject::signal2, &ob, &ManyArgumentObject::slot2);
+    connect(&ob, &ManyArgumentObject::signal3, &ob, &ManyArgumentObject::slot3);
+    connect(&ob, &ManyArgumentObject::signal4, &ob, &ManyArgumentObject::slot4);
+    connect(&ob, &ManyArgumentObject::signal5, &ob, &ManyArgumentObject::slot5);
+    connect(&ob, &ManyArgumentObject::signal6, &ob, &ManyArgumentObject::slot6);
+    connect(&ob, &ManyArgumentObject::signal1, ManyArgumentNamespace::slot1);
+    connect(&ob, &ManyArgumentObject::signal2, ManyArgumentNamespace::slot2);
+    connect(&ob, &ManyArgumentObject::signal3, ManyArgumentNamespace::slot3);
+    connect(&ob, &ManyArgumentObject::signal4, ManyArgumentNamespace::slot4);
+    connect(&ob, &ManyArgumentObject::signal5, ManyArgumentNamespace::slot5);
+    connect(&ob, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot6);
+
+
+    connect(&ob, &ManyArgumentObject::signal6, &ob, &ManyArgumentObject::signal5);
+    connect(&ob, &ManyArgumentObject::signal5, &ob, &ManyArgumentObject::signal4);
+    connect(&ob, &ManyArgumentObject::signal4, &ob, &ManyArgumentObject::signal3);
+    connect(&ob, &ManyArgumentObject::signal3, &ob, &ManyArgumentObject::signal2);
+    connect(&ob, &ManyArgumentObject::signal2, &ob, &ManyArgumentObject::signal1);
+
+    emit ob.signal6("a", "b", "c", "d", "e", "f");
+    QCOMPARE(ob.count, 6);
+    QCOMPARE(ManyArgumentNamespace::count, 6);
+
+
+    ManyArgumentObject ob2;
+    ob2.count = 0;
+    ManyArgumentNamespace::count = 0;
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot1);
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot2);
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot3);
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot4);
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot5);
+    connect(&ob2, &ManyArgumentObject::signal6, &ob2, &ManyArgumentObject::slot6);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot1);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot2);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot3);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot4);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot5);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot6);
+
+    emit ob2.signal6("a", "b", "c", "d", "e", "f");
+    QCOMPARE(ob2.count, 6);
+    QCOMPARE(ManyArgumentNamespace::count, 6);
+#endif
+}
+
+
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"

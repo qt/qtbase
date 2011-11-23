@@ -52,6 +52,9 @@
 #include <QtCore/qcoreevent.h>
 #endif
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qmetatype.h>
+
+#include <QtCore/qobject_impl.h>
 
 QT_BEGIN_HEADER
 
@@ -204,6 +207,58 @@ public:
     inline QMetaObject::Connection connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
+    //Connect a signal to a pointer to qobject member function
+    template <typename Func1, typename Func2>
+    static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+                                     const typename QtPrivate::FunctionPointer<Func2>::Object *receiver, Func2 slot,
+                                     Qt::ConnectionType type = Qt::AutoConnection)
+    {
+        typedef QtPrivate::FunctionPointer<Func1> SignalType;
+        typedef QtPrivate::FunctionPointer<Func2> SlotType;
+        reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<typename SignalType::Object *>(0));
+
+        //compilation error if the arguments does not match.
+        typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
+
+        const int *types = 0;
+        return connectImpl(sender, reinterpret_cast<void **>(&signal),
+                           receiver, new QSlotObject<Func2,
+                                                     typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                                                     typename SignalType::ReturnType>(slot),
+                            type, types, &SignalType::Object::staticMetaObject);
+    }
+
+    //connect to a function pointer  (not a member)
+    template <typename Func1, typename Func2>
+    static inline typename QtPrivate::QEnableIf<int(QtPrivate::FunctionPointer<Func2>::ArgumentCount) >= 0, QMetaObject::Connection>::Type
+            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+    {
+        typedef QtPrivate::FunctionPointer<Func1> SignalType;
+        typedef QtPrivate::FunctionPointer<Func2> SlotType;
+
+        //compilation error if the arguments does not match.
+        typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
+        typedef typename QtPrivate::QEnableIf<(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount))>::Type EnsureArgumentsCount;
+
+        return connectImpl(sender, reinterpret_cast<void **>(&signal), sender,
+                           new QStaticSlotObject<Func2,
+                                                 typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                                                 typename SignalType::ReturnType>(slot),
+                           Qt::DirectConnection, 0, &SignalType::Object::staticMetaObject);
+    }
+
+    //connect to a functor
+    template <typename Func1, typename Func2>
+    static inline typename QtPrivate::QEnableIf<QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1, QMetaObject::Connection>::Type
+            connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
+    {
+        typedef QtPrivate::FunctionPointer<Func1> SignalType;
+
+        return connectImpl(sender, reinterpret_cast<void **>(&signal),
+                           sender, new QFunctorSlotObject<Func2, SignalType::ArgumentCount, typename SignalType::Arguments, typename SignalType::ReturnType>(slot),
+                           Qt::DirectConnection, 0, &SignalType::Object::staticMetaObject);
+    }
+
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
     static bool disconnect(const QObject *sender, const QMetaMethod &signal,
@@ -273,6 +328,52 @@ protected:
 private:
     Q_DISABLE_COPY(QObject)
     Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
+
+    private:
+    // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
+    struct QSlotObjectBase {
+        QAtomicInt ref;
+        QSlotObjectBase() : ref(1) {}
+        virtual ~QSlotObjectBase();
+        virtual void call(QObject *receiver, void **a) = 0;
+    };
+    // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, typename Args, typename R> struct QSlotObject : QSlotObjectBase
+    {
+        typedef QtPrivate::FunctionPointer<Func> FuncType;
+        Func function;
+        QSlotObject(Func f) : function(f) {};
+        virtual void call(QObject *receiver, void **a) {
+            FuncType::template call<Args, R>(function, static_cast<typename FuncType::Object *>(receiver), a);
+        }
+    };
+    // implementation of QSlotObjectBase for which the slot is a static function
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, typename Args, typename R> struct QStaticSlotObject : QSlotObjectBase
+    {
+        typedef QtPrivate::FunctionPointer<Func> FuncType;
+        Func function;
+        QStaticSlotObject(Func f) : function(f) {}
+        virtual void call(QObject *receiver, void **a) {
+            FuncType::template call<Args, R>(function, receiver, a);
+        }
+    };
+    // implementation of QSlotObjectBase for which the slot is a functor (or lambda)
+    // N is the number of arguments
+    // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+    template<typename Func, int N, typename Args, typename R> struct QFunctorSlotObject : QSlotObjectBase
+    {
+        typedef QtPrivate::Functor<Func, N> FuncType;
+        Func function;
+        QFunctorSlotObject(const Func &f) : function(f) {}
+        virtual void call(QObject *receiver, void **a) {
+            FuncType::template call<Args, R>(function, receiver, a);
+        }
+    };
+
+    static QMetaObject::Connection connectImpl(const QObject *sender, void **signal, const QObject *receiver, QSlotObjectBase *slot,
+                                               Qt::ConnectionType type, const int *types, const QMetaObject *senderMetaObject);
 };
 
 inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,

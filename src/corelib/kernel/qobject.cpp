@@ -923,9 +923,13 @@ QObject::~QObject()
 
 QObjectPrivate::Connection::~Connection()
 {
-    int *v = argumentTypes.load();
-    if (v != &DIRECT_CONNECTION_ONLY)
-        delete [] v;
+    if (ownArgumentTypes) {
+        const int *v = argumentTypes.load();
+        if (v != &DIRECT_CONNECTION_ONLY)
+            delete [] v;
+    }
+    if (isSlotObject && !slotObj->ref.deref())
+        delete slotObj;
 }
 
 
@@ -3022,6 +3026,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, i
     c->method_relative = method_index;
     c->method_offset = method_offset;
     c->connectionType = type;
+    c->isSlotObject = false;
     c->argumentTypes.store(types);
     c->nextConnectionList = 0;
     c->callFunction = callFunction;
@@ -3231,7 +3236,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
 
 static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connection *c, void **argv)
 {
-    int *argumentTypes = c->argumentTypes.load();
+    const int *argumentTypes = c->argumentTypes.load();
     if (!argumentTypes && argumentTypes != &DIRECT_CONNECTION_ONLY) {
         QMetaMethod m = sender->metaObject()->method(signal);
         argumentTypes = queuedConnectionTypes(m.parameterTypes());
@@ -3392,7 +3397,12 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
             }
             const QObjectPrivate::StaticMetaCallFunction callFunction = c->callFunction;
             const int method_relative = c->method_relative;
-            if (callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
+            if (c->isSlotObject) {
+                QExplicitlySharedDataPointer<QObject::QSlotObjectBase> obj(c->slotObj);
+                locker.unlock();
+                obj->call(receiver, argv ? argv : empty_argv);
+                locker.relock();
+            } else if (callFunction && c->method_offset <= receiver->metaObject()->methodOffset()) {
                 //we compare the vtable to make sure we are not in the destructor of the object.
                 locker.unlock();
                 if (qt_signal_spy_callback_set.slot_begin_callback != 0)
@@ -4043,6 +4053,146 @@ void qDeleteInEventHandler(QObject *o)
 }
 
 /*!
+    \fn QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), const QObject *receiver, (T::*method)(...), Qt::ConnectionType type)
+
+    \threadsafe
+
+    Creates a connection of the given \a type from the \a signal in
+    the \a sender object to the \a method in the \a receiver object.
+    Returns a handle to the connection that can be used to disconnect
+    it later.
+
+    The signal must be a function declared as a signal in the header.
+    The slot function can be any member function that can be connected
+    to the signal.
+    A slot can be connected to a given signal if the signal has at
+    least as many arguments as the slot, and there is an implicit
+    conversion between the types of the corresponding arguments in the
+    signal and the slot.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 44
+
+    This example ensures that the label always displays the current
+    line edit text.
+
+    A signal can be connected to many slots and signals. Many signals
+    can be connected to one slot.
+
+    If a signal is connected to several slots, the slots are activated
+    in the same order as the order the connection was made, when the
+    signal is emitted
+
+    The function returns an handle to a connection if it successfully
+    connects the signal to the slot. The Connection handle will be invalid
+    if it cannot create the connection, for example, if QObject is unable
+    to verify the existence of \a signal (if it was not declared as a signal)
+    You can check if the QMetaObject::Connection is valid by casting it to a bool.
+
+    The optional \a type parameter describes the type of connection
+    to establish. In particular, it determines whether a particular
+    signal is delivered to a slot immediately or queued for delivery
+    at a later time. If the signal is queued, the parameters must be
+    of types that are known to Qt's meta-object system, because Qt
+    needs to copy the arguments to store them in an event behind the
+    scenes. If you try to use a queued connection and get the error
+    message
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 25
+
+    make sure to declare the argument type with Q_DECLARE_METATYPE
+
+    A signal is emitted for every connection you make;
+    two signals are emitted for duplicate connections.
+    This overload does not support the type Qt::UniqueConnection
+ */
+
+
+/*!
+    \fn QMetaObject::Connection QObject::connect(const QObject *sender, (T::*signal)(...), Functor functor)
+
+    \threadsafe
+    \overload
+
+    Creates a connection of the given \a type from the \a signal in
+    the \a sender object to the \a functor and returns a handle to the connection
+
+    The signal must be a function declared as a signal in the header.
+    The slot function can be any function or functor that can be connected
+    to the signal.
+    A function can be connected to a given signal if the signal as at
+    least as many argument as the slot. A functor can be connected to a signal
+    if they have exactly the same number of arguments. There must exist implicit
+    conversion between the types of the corresponding arguments in the
+    signal and the slot.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 45
+
+    If your compiler support C++11 lambda expressions, you can use them:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 46
+
+    The connection will automatically disconnect if the sender is destroyed.
+ */
+QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signal, const QObject *receiver, QObject::QSlotObjectBase *slotObj,
+                                             Qt::ConnectionType type, const int* types, const QMetaObject* senderMetaObject)
+{
+    int signal_index = -1;
+    void *args[] = { &signal_index, signal };
+    senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+    if (signal_index < 0 || signal_index >= QMetaObjectPrivate::get(senderMetaObject)->signalCount) {
+        qWarning("QObject::connect: signal not found in %s", senderMetaObject->className());
+        return QMetaObject::Connection(0);
+    }
+    int signalOffset, methodOffset;
+    computeOffsets(senderMetaObject, &signalOffset, &methodOffset);
+    signal_index += signalOffset;
+
+    // duplicated from QMetaObjectPrivate::connect
+    QObject *s = const_cast<QObject *>(sender);
+    QObject *r = const_cast<QObject *>(receiver);
+
+    QOrderedMutexLocker locker(signalSlotLock(sender),
+                               signalSlotLock(receiver));
+
+    if (type & Qt::UniqueConnection) {
+        qWarning() << "QObject::connect: Qt::UniqueConnection not supported when connecting function pointers";
+        type = static_cast<Qt::ConnectionType>(type & (Qt::UniqueConnection - 1));
+    }
+
+    QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
+    c->sender = s;
+    c->receiver = r;
+    c->slotObj = slotObj;
+    c->connectionType = type;
+    c->isSlotObject = true;
+    if (types) {
+        c->argumentTypes.store(types);
+        c->ownArgumentTypes = false;
+    }
+
+    QObjectPrivate::get(s)->addConnection(signal_index, c.data());
+
+    c->prev = &(QObjectPrivate::get(r)->senders);
+    c->next = *c->prev;
+    *c->prev = c.data();
+    if (c->next)
+        c->next->prev = &c->next;
+
+    QObjectPrivate *const sender_d = QObjectPrivate::get(s);
+    if (signal_index < 0) {
+        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
+    } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
+        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
+    }
+
+    return QMetaObject::Connection(c.take());
+}
+
+/*!
     Disconnect a connection.
 
     If the \a connection is invalid or has already been disconnected, do nothing
@@ -4118,6 +4268,10 @@ QMetaObject::Connection::~Connection()
     The connection is invalid if QObject::connect was not able to find
     the signal or the slot, or if the arguments do not match.
  */
+
+QObject::QSlotObjectBase::~QSlotObjectBase()
+{
+}
 
 QT_END_NAMESPACE
 

@@ -114,18 +114,23 @@ public:
     {
         QObject *sender;
         QObject *receiver;
-        StaticMetaCallFunction callFunction;
+        union {
+            StaticMetaCallFunction callFunction;
+            QObject::QSlotObjectBase *slotObj;
+        };
         // The next pointer for the singly-linked ConnectionList
         Connection *nextConnectionList;
         //senders linked list
         Connection *next;
         Connection **prev;
-        QAtomicPointer<int> argumentTypes;
+        QAtomicPointer<const int> argumentTypes;
         QAtomicInt ref_;
         ushort method_offset;
         ushort method_relative;
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
-        Connection() : nextConnectionList(0), ref_(2) {
+        ushort isSlotObject : 1;
+        ushort ownArgumentTypes : 1;
+        Connection() : nextConnectionList(0), ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
         ~Connection();
