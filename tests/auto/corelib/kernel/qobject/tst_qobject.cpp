@@ -2812,6 +2812,10 @@ void tst_QObject::blockingQueuedConnection()
         QVERIFY(QMetaObject::invokeMethod(&receiver, "slot1", Qt::BlockingQueuedConnection));
         QVERIFY(receiver.called(1));
 
+        connect(&sender, &SenderObject::signal2, &receiver, &ReceiverObject::slot2, Qt::BlockingQueuedConnection);
+        sender.emitSignal2();
+        QVERIFY(receiver.called(2));
+
         thread.quit();
         QVERIFY(thread.wait());
     }
@@ -4173,6 +4177,29 @@ void tst_QObject::customTypesPointer()
         QCOMPARE(checker.received.value(), 0);
         checker.doEmit(t1);
         QCOMPARE(checker.received.value(), t1.value());
+        checker.received = t0;
+
+
+        checker.disconnect();
+
+        int idx = qRegisterMetaType<CustomType>("CustomType");
+        QCOMPARE(QMetaType::type("CustomType"), idx);
+
+        connect(&checker, &QCustomTypeChecker::signal1, &checker, &QCustomTypeChecker::slot1,
+                Qt::QueuedConnection);
+        QCOMPARE(instanceCount, 4);
+        checker.doEmit(t2);
+        QCOMPARE(instanceCount, 5);
+        QCOMPARE(checker.received.value(), t0.value());
+
+        QCoreApplication::processEvents();
+        QCOMPARE(checker.received.value(), t2.value());
+        QCOMPARE(instanceCount, 4);
+
+        QVERIFY(QMetaType::isRegistered(idx));
+        QCOMPARE(qRegisterMetaType<CustomType>("CustomType"), idx);
+        QCOMPARE(QMetaType::type("CustomType"), idx);
+        QVERIFY(QMetaType::isRegistered(idx));
     }
     QCOMPARE(instanceCount, 3);
 }

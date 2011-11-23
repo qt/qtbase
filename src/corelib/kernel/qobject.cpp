@@ -498,10 +498,22 @@ void QObjectPrivate::clearGuards(QObject *object)
 QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction,
                                const QObject *sender, int signalId,
                                int nargs, int *types, void **args, QSemaphore *semaphore)
-    : QEvent(MetaCall), sender_(sender), signalId_(signalId),
+    : QEvent(MetaCall), slotObj_(0), sender_(sender), signalId_(signalId),
       nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
       callFunction_(callFunction), method_offset_(method_offset), method_relative_(method_relative)
 { }
+
+/*! \internal
+ */
+QMetaCallEvent::QMetaCallEvent(QObject::QSlotObjectBase *slotO, const QObject *sender, int signalId,
+                               int nargs, int *types, void **args, QSemaphore *semaphore)
+    : QEvent(MetaCall), slotObj_(slotO), sender_(sender), signalId_(signalId),
+      nargs_(nargs), types_(types), args_(args), semaphore_(semaphore),
+      callFunction_(0), method_offset_(0), method_relative_(-1)
+{
+    if (slotObj_)
+        slotObj_->ref.ref();
+}
 
 /*! \internal
  */
@@ -519,13 +531,17 @@ QMetaCallEvent::~QMetaCallEvent()
     if (semaphore_)
         semaphore_->release();
 #endif
+    if (slotObj_ && !slotObj_->ref.deref())
+        delete slotObj_;
 }
 
 /*! \internal
  */
 void QMetaCallEvent::placeMetaCall(QObject *object)
 {
-    if (callFunction_) {
+    if (slotObj_) {
+        slotObj_->call(object, args_);
+    } else if (callFunction_) {
         callFunction_(object, QMetaObject::InvokeMetaMethod, method_relative_, args_);
     } else {
         QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, method_offset_ + method_relative_, args_);
@@ -3261,11 +3277,10 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     args[0] = 0; // return value
     for (int n = 1; n < nargs; ++n)
         args[n] = QMetaType::create((types[n] = argumentTypes[n-1]), argv[n]);
-    QCoreApplication::postEvent(c->receiver, new QMetaCallEvent(c->method_offset,
-                                                                c->method_relative,
-                                                                c->callFunction,
-                                                                sender, signal, nargs,
-                                                                types, args));
+    QMetaCallEvent *ev = c->isSlotObject ?
+        new QMetaCallEvent(c->slotObj, sender, signal, nargs, types, args) :
+        new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal, nargs, types, args);
+    QCoreApplication::postEvent(c->receiver, ev);
 }
 
 
@@ -3378,12 +3393,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                     receiver->metaObject()->className(), receiver);
                 }
                 QSemaphore semaphore;
-                QCoreApplication::postEvent(receiver, new QMetaCallEvent(c->method_offset, c->method_relative,
-                                                                         c->callFunction,
-                                                                         sender, signal_absolute_index,
-                                                                         0, 0,
-                                                                         argv ? argv : empty_argv,
-                                                                         &semaphore));
+                QMetaCallEvent *ev = c->isSlotObject ?
+                    new QMetaCallEvent(c->slotObj, sender, signal_absolute_index, 0, 0, argv ? argv : empty_argv, &semaphore) :
+                    new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal_absolute_index, 0, 0, argv ? argv : empty_argv, &semaphore);
+                QCoreApplication::postEvent(receiver, ev);
                 semaphore.acquire();
                 locker.relock();
                 continue;

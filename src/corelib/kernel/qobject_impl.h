@@ -344,6 +344,43 @@ namespace QtPrivate {
 
 #endif
 
+    /*
+        Logic to statically generate the array of qMetaTypeId
+        ConnectionTypes<FunctionPointer<Signal>::Arguments>::types() returns an array
+        of int that is suitable for the types arguments of the connection functions.
+
+        The array only exist of all the types are declared as a metatype
+        (detected using the TypesAreDeclaredMetaType helper struct)
+        If one of the type is not declared, the function return 0 and the signal
+        cannot be used in queued connection.
+    */
+#ifndef Q_COMPILER_VARIADIC_TEMPLATES
+    template <typename ArgList> struct TypesAreDeclaredMetaType { enum { Value = false }; };
+    template <> struct TypesAreDeclaredMetaType<void> { enum { Value = true }; };
+    template <typename Arg, typename Tail> struct TypesAreDeclaredMetaType<List<Arg, Tail> > { enum { Value = QMetaTypeId2<Arg>::Defined && TypesAreDeclaredMetaType<Tail>::Value }; };
+
+    template <typename ArgList, bool Declared = TypesAreDeclaredMetaType<ArgList>::Value > struct ConnectionTypes
+    { static const int *types() { return 0; } };
+    template <> struct ConnectionTypes<void, true>
+    { static const int *types() { static const int t[1] = { 0 }; return t; } };
+    template <typename Arg1> struct ConnectionTypes<List<Arg1, void>, true>
+    { static const int *types() { static const int t[2] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), 0 }; return t; } };
+    template <typename Arg1, typename Arg2> struct ConnectionTypes<List<Arg1, List<Arg2, void> >, true>
+    { static const int *types() { static const int t[3] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(), 0 }; return t; } };
+    template <typename Arg1, typename Arg2, typename Arg3> struct ConnectionTypes<List<Arg1, List<Arg2,  List<Arg3, void> > >, true>
+    { static const int *types() { static const int t[4] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
+                                                            QtPrivate::QMetaTypeIdHelper<Arg3>::qt_metatype_id(), 0 }; return t; } };
+#else
+    template <typename ArgList> struct TypesAreDeclaredMetaType { enum { Value = false }; };
+    template <> struct TypesAreDeclaredMetaType<List<>> { enum { Value = true }; };
+    template <typename Arg, typename... Tail> struct TypesAreDeclaredMetaType<List<Arg, Tail...> >
+    { enum { Value = QMetaTypeId2<Arg>::Defined && TypesAreDeclaredMetaType<List<Tail...>>::Value }; };
+
+    template <typename ArgList, bool Declared = TypesAreDeclaredMetaType<ArgList>::Value > struct ConnectionTypes
+    { static const int *types() { return 0; } };
+    template <typename... Args> struct ConnectionTypes<List<Args...>, true>
+    { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
+#endif
 }
 
 

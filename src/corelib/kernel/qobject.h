@@ -221,6 +221,9 @@ public:
         typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
 
         const int *types = 0;
+        if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
+            types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
+
         return connectImpl(sender, reinterpret_cast<void **>(&signal),
                            receiver, new QSlotObject<Func2,
                                                      typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
@@ -318,6 +321,7 @@ protected:
     static const QMetaObject staticQtMetaObject;
 
     friend struct QMetaObject;
+    friend class QMetaCallEvent;
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QCoreApplication;

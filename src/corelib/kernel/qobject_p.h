@@ -264,6 +264,9 @@ class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 public:
     QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
                    int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+    QMetaCallEvent(QObject::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
+                   int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+
     ~QMetaCallEvent();
 
     inline int id() const { return method_offset_ + method_relative_; }
@@ -274,6 +277,7 @@ public:
     virtual void placeMetaCall(QObject *object);
 
 private:
+    QObject::QSlotObjectBase *slotObj_;
     const QObject *sender_;
     int signalId_;
     int nargs_;
