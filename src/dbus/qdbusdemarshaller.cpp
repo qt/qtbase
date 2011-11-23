@@ -48,10 +48,28 @@ QT_BEGIN_NAMESPACE
 template <typename T>
 static inline T qIterGet(DBusMessageIter *it)
 {
-    T t;
-    q_dbus_message_iter_get_basic(it, &t);
+    // Use a union of expected and largest type q_dbus_message_iter_get_basic
+    // will return to ensure reading the wrong basic type does not result in
+    // stack overwrite
+    union {
+        // The value to be extracted
+        T t;
+        // Largest type that q_dbus_message_iter_get_basic will return
+        // according to dbus_message_iter_get_basic API documentation
+        dbus_uint64_t maxValue;
+        // A pointer to ensure no stack overwrite in case there is a platform
+        // where sizeof(void*) > sizeof(dbus_uint64_t)
+        void* ptr;
+    } value;
+
+    // Initialize the value in case a narrower type is extracted to it.
+    // Note that the result of extracting a narrower type in place of a wider
+    // one and vice-versa will be platform-dependent.
+    value.t = T();
+
+    q_dbus_message_iter_get_basic(it, &value);
     q_dbus_message_iter_next(it);
-    return t;
+    return value.t;
 }
 
 QDBusDemarshaller::~QDBusDemarshaller()
