@@ -73,7 +73,9 @@ public:
     virtual void platformNativeDialogModalHelp();
     virtual void _q_platformRunNativeAppModalPanel();
     virtual void deleteNativeDialog_sys();
-    virtual bool show_sys(QWindow *parent);
+    virtual bool show_sys(QPlatformDialogHelper::ShowFlags flags,
+                          Qt::WindowFlags windowFlags,
+                          QWindow *parent);
     virtual void hide_sys();
     virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;
 
@@ -82,14 +84,13 @@ public:
     virtual bool supportsNonModalDialog() const { return true; }
 
 protected:
-    explicit QWindowsDialogHelperBase(QDialog *dialog);
+    QWindowsDialogHelperBase();
     QWindowsNativeDialogBase *nativeDialog() const;
 
 private:
     virtual QWindowsNativeDialogBase *createNativeDialog() = 0;
     inline QWindowsNativeDialogBase *ensureNativeDialog();
 
-    QDialog *m_dialog;
     QWindowsNativeDialogBase *m_nativeDialog;
     HWND m_ownerWindow;
 };

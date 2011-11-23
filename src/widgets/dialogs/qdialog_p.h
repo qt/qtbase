@@ -79,6 +79,7 @@ public:
           nativeDialogInUse(false), m_platformHelper(0), m_platformHelperCreated(false)
         {}
     ~QDialogPrivate() { delete m_platformHelper; }
+    void _q_platformRunNativeAppModalPanel();
 
     QWindow *parentWindow() const;
     bool setNativeDialogVisible(bool visible);
@@ -115,6 +116,8 @@ public:
 
 private:
     virtual void initHelper(QPlatformDialogHelper *) {}
+    virtual void helperPrepareShow(QPlatformDialogHelper *) {}
+    virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *) {}
 
     mutable QPlatformDialogHelper *m_platformHelper;
     mutable bool m_platformHelperCreated;

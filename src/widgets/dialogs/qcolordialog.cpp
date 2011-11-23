@@ -425,34 +425,13 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
 
 //////////// QWellArray END
 
-static bool initrgb = false;
-static QRgb stdrgb[6*8];
-static QRgb cusrgb[2*8];
-static bool customSet = false;
-
-
-static void initRGB()
-{
-    if (initrgb)
-        return;
-    initrgb = true;
-    int i = 0;
-    for (int g = 0; g < 4; g++)
-        for (int r = 0;  r < 4; r++)
-            for (int b = 0; b < 3; b++)
-                stdrgb[i++] = qRgb(r * 255 / 3, g * 255 / 3, b * 255 / 2);
-
-    for (i = 0; i < 2*8; i++)
-        cusrgb[i] = 0xffffffff;
-}
-
 /*!
     Returns the number of custom colors supported by QColorDialog. All
     color dialogs share the same custom colors.
 */
 int QColorDialog::customCount()
 {
-    return 2 * 8;
+    return QColorDialogOptions::customColorCount();
 }
 
 /*!
@@ -462,10 +441,7 @@ int QColorDialog::customCount()
 */
 QRgb QColorDialog::customColor(int index)
 {
-    if (uint(index) >= uint(customCount()))
-        return qRgb(255, 255, 255);
-    initRGB();
-    return cusrgb[index];
+    return QColorDialogOptions::customColor(index);
 }
 
 /*!
@@ -477,11 +453,7 @@ QRgb QColorDialog::customColor(int index)
 */
 void QColorDialog::setCustomColor(int index, QRgb color)
 {
-    if (uint(index) >= uint(customCount()))
-        return;
-    initRGB();
-    customSet = true;
-    cusrgb[index] = color;
+    QColorDialogOptions::setCustomColor(index, color);
 }
 
 /*!
@@ -494,10 +466,7 @@ void QColorDialog::setCustomColor(int index, QRgb color)
 
 void QColorDialog::setStandardColor(int index, QRgb color)
 {
-    if (uint(index) >= uint(6 * 8))
-        return;
-    initRGB();
-    stdrgb[index] = color;
+    QColorDialogOptions::setStandardColor(index, color);
 }
 
 static inline void rgb2hsv(QRgb rgb, int &h, int &s, int &v)
@@ -1421,9 +1390,10 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
     int i = 0, j = 0;
     // Check standard colors
     if (standard) {
+        const QRgb *standardColors = QColorDialogOptions::standardColors();
         for (i = 0; i < 6; i++) {
             for (j = 0; j < 8; j++) {
-                if (color == stdrgb[i + j*6]) {
+                if (color == standardColors[i + j*6]) {
                     _q_newStandard(i, j);
                     standard->setCurrent(i, j);
                     standard->setSelected(i, j);
@@ -1435,9 +1405,10 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
     }
     // Check custom colors
     if (custom) {
+        const QRgb *customColors = QColorDialogOptions::customColors();
         for (i = 0; i < 2; i++) {
             for (j = 0; j < 8; j++) {
-                if (color == cusrgb[i + j*2]) {
+                if (color == customColors[i + j*2]) {
                     _q_newCustom(i, j);
                     custom->setCurrent(i, j);
                     custom->setSelected(i, j);
@@ -1461,8 +1432,8 @@ void QColorDialogPrivate::_q_newColorTypedIn(QRgb rgb)
 
 void QColorDialogPrivate::_q_newCustom(int r, int c)
 {
-    int i = r+2*c;
-    setCurrentColor(cusrgb[i]);
+    const int i = r + 2 * c;
+    setCurrentColor(QColorDialogOptions::customColor(i));
     nextCust = i;
     if (standard)
         standard->setSelected(-1,-1);
@@ -1470,7 +1441,7 @@ void QColorDialogPrivate::_q_newCustom(int r, int c)
 
 void QColorDialogPrivate::_q_newStandard(int r, int c)
 {
-    setCurrentColor(stdrgb[r+c*6]);
+    setCurrentColor(QColorDialogOptions::standardColor(r + c * 6));
     if (custom)
         custom->setSelected(-1,-1);
 }
@@ -1509,21 +1480,6 @@ void QColorDialogPrivate::init(const QColor &initial)
         topLay->addLayout(leftLay);
     }
 
-    initRGB();
-
-#ifndef QT_NO_SETTINGS
-    if (!customSet) {
-        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
-        for (int i = 0; i < 2*8; ++i) {
-            QVariant v = settings.value(QLatin1String("Qt/customColors/") + QString::number(i));
-            if (v.isValid()) {
-                QRgb rgb = v.toUInt();
-                cusrgb[i] = rgb;
-            }
-        }
-    }
-#endif
-
 #if defined(QT_SMALL_COLORDIALOG)
 #  if defined(Q_WS_S60)
     const bool nonTouchUI = !S60->hasTouchscreen;
@@ -1533,7 +1489,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 #endif
 
     if (!smallDisplay) {
-        standard = new QColorWell(q, 6, 8, stdrgb);
+        standard = new QColorWell(q, 6, 8, QColorDialogOptions::standardColors());
         lblBasicColors = new QLabel(q);
 #ifndef QT_NO_SHORTCUT
         lblBasicColors->setBuddy(standard);
@@ -1546,7 +1502,7 @@ void QColorDialogPrivate::init(const QColor &initial)
         leftLay->addStretch();
 #endif
 
-        custom = new QColorWell(q, 2, 8, cusrgb);
+        custom = new QColorWell(q, 2, 8, QColorDialogOptions::customColors());
         custom->setAcceptDrops(true);
 
         q->connect(custom, SIGNAL(selected(int,int)), SLOT(_q_newCustom(int,int)));
@@ -1657,20 +1613,20 @@ void QColorDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QColorDialog *d = q_func();
     QObject::connect(h, SIGNAL(currentColorChanged(QColor)), d, SIGNAL(currentColorChanged(QColor)));
     QObject::connect(h, SIGNAL(colorSelected(QColor)), d, SIGNAL(colorSelected(QColor)));
+    static_cast<QPlatformColorDialogHelper *>(h)->setOptions(options);
+}
+
+void QColorDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
+{
+    options->setWindowTitle(q_func()->windowTitle());
 }
 
 void QColorDialogPrivate::_q_addCustom()
 {
-    cusrgb[nextCust] = cs->currentColor();
+    QColorDialogOptions::setCustomColor(nextCust, cs->currentColor());
     if (custom)
         custom->update();
     nextCust = (nextCust+1) % 16;
-}
-
-void QColorDialogPrivate::_q_platformRunNativeAppModalPanel()
-{
-    if (nativeDialogInUse)
-        platformHelper()->_q_platformRunNativeAppModalPanel();
 }
 
 void QColorDialogPrivate::retranslateStrings()
@@ -1800,8 +1756,7 @@ QColor QColorDialog::selectedColor() const
 void QColorDialog::setOption(ColorDialogOption option, bool on)
 {
     Q_D(QColorDialog);
-    if (!(d->opts & option) != !on)
-        setOptions(d->opts ^ option);
+    d->options->setOption(static_cast<QColorDialogOptions::ColorDialogOption>(option), on);
 }
 
 /*!
@@ -1815,7 +1770,7 @@ void QColorDialog::setOption(ColorDialogOption option, bool on)
 bool QColorDialog::testOption(ColorDialogOption option) const
 {
     Q_D(const QColorDialog);
-    return (d->opts & option) != 0;
+    return d->options->testOption(static_cast<QColorDialogOptions::ColorDialogOption>(option));
 }
 
 /*!
@@ -1834,11 +1789,10 @@ void QColorDialog::setOptions(ColorDialogOptions options)
 {
     Q_D(QColorDialog);
 
-    ColorDialogOptions changed = (options ^ d->opts);
-    if (!changed)
+    if (QColorDialog::options() == options)
         return;
 
-    d->opts = options;
+    d->options->setOptions(QColorDialogOptions::ColorDialogOptions(int(options)));
     d->buttons->setVisible(!(options & NoButtons));
     d->showAlpha(options & ShowAlphaChannel);
 }
@@ -1846,7 +1800,7 @@ void QColorDialog::setOptions(ColorDialogOptions options)
 QColorDialog::ColorDialogOptions QColorDialog::options() const
 {
     Q_D(const QColorDialog);
-    return d->opts;
+    return QColorDialog::ColorDialogOptions(int(d->options->options()));
 }
 
 /*!
@@ -1922,7 +1876,7 @@ void QColorDialog::setVisible(bool visible)
     }
 #else
 
-    if (!(d->opts & DontUseNativeDialog))
+    if (!(options() & DontUseNativeDialog))
         d->setNativeDialogVisible(visible);
 
     if (d->nativeDialogInUse) {
@@ -2024,14 +1978,6 @@ QColorDialog::~QColorDialog()
     if (d->delegate) {
         d->releaseCocoaColorPanelDelegate();
         QColorDialogPrivate::sharedColorPanelAvailable = true;
-    }
-#endif
-
-#ifndef QT_NO_SETTINGS
-    if (!customSet) {
-        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
-        for (int i = 0; i < 2*8; ++i)
-            settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), cusrgb[i]);
     }
 #endif
 }

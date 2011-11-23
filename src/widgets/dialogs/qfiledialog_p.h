@@ -130,6 +130,9 @@ public:
     QStringList typedFiles() const;
     QStringList addDefaultSuffixToFiles(const QStringList filesToFix) const;
     bool removeDirectory(const QString &path);
+    void setLabelTextControl(QFileDialog::DialogLabel label, const QString &text);
+    inline void updateFileNameLabel();
+    void updateOkButtonText(bool saveAsOnFolder = false);
 
     inline QModelIndex mapToSource(const QModelIndex &index) const;
     inline QModelIndex mapFromSource(const QModelIndex &index) const;
@@ -170,6 +173,7 @@ public:
 
     QDir::Filters filterForMode(QDir::Filters filters) const
     {
+        const QFileDialog::FileMode fileMode = q_func()->fileMode();
         if (fileMode == QFileDialog::DirectoryOnly) {
             filters |= QDir::Drives | QDir::AllDirs | QDir::Dirs;
             filters &= ~QDir::Files;
@@ -224,7 +228,6 @@ public:
     void _q_autoCompleteFileName(const QString &);
     void _q_rowsInserted(const QModelIndex & parent);
     void _q_fileRenamed(const QString &path, const QString oldName, const QString newName);
-    void _q_platformRunNativeAppModalPanel();
 
     static QStringList qt_clean_filter_list(const QString &filter);
     static const char *qt_file_dialog_filter_reg_exp;
@@ -242,10 +245,6 @@ public:
     QFSCompleter *completer;
 #endif //QT_NO_FSCOMPLETER
 
-    QFileDialog::FileMode fileMode;
-    QFileDialog::AcceptMode acceptMode;
-    bool confirmOverwrite;
-    QString defaultSuffix;
     QString setWindowTitle;
 
     QStringList currentHistory;
@@ -258,8 +257,6 @@ public:
 
     bool useDefaultCaption;
     bool defaultFileTypes;
-    bool fileNameLabelExplicitlySat;
-    QStringList nameFilters;
 
     // setVisible_sys returns true if it ends up showing a native
     // dialog. Returning false means that a non-native dialog must be
@@ -273,7 +270,6 @@ public:
     void selectFile_sys(const QString &filename);
     QStringList selectedFiles_sys() const;
     void setFilter_sys();
-    void setNameFilters_sys(const QStringList &filters);
     void selectNameFilter_sys(const QString &filter);
     QString selectedNameFilter_sys() const;
     //////////////////////////////////////////////
@@ -286,12 +282,14 @@ public:
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
 
-    QFileDialog::Options opts;
+    QSharedPointer<QFileDialogOptions> options;
 
     ~QFileDialogPrivate();
 
 private:
     virtual void initHelper(QPlatformDialogHelper *);
+    virtual void helperPrepareShow(QPlatformDialogHelper *);
+    virtual void helperDone(QDialog::DialogCode, QPlatformDialogHelper *);
 
     Q_DISABLE_COPY(QFileDialogPrivate)
 };
@@ -347,16 +345,6 @@ protected:
 private:
     QFileDialogPrivate *d_ptr;
 };
-
-void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
-{
-    QFileDialog *d = q_func();
-    QObject::connect(h, SIGNAL(fileSelected(QString)), d, SIGNAL(fileSelected(QString)));
-    QObject::connect(h, SIGNAL(filesSelected(QStringList)), d, SIGNAL(filesSelected(QStringList)));
-    QObject::connect(h, SIGNAL(currentChanged(QString)), d, SIGNAL(currentChanged(QString)));
-    QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SIGNAL(directoryEntered(QString)));
-    QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
-}
 
 inline QModelIndex QFileDialogPrivate::mapToSource(const QModelIndex &index) const {
 #ifdef QT_NO_PROXYMODEL
@@ -425,12 +413,6 @@ inline void QFileDialogPrivate::setFilter_sys()
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         helper->setFilter_sys();
-}
-
-inline void QFileDialogPrivate::setNameFilters_sys(const QStringList &filters)
-{
-    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
-        helper->setNameFilters_sys(filters);
 }
 
 inline void QFileDialogPrivate::selectNameFilter_sys(const QString &filter)
