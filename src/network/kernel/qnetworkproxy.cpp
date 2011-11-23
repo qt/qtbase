@@ -221,6 +221,7 @@
 #ifndef QT_NO_NETWORKPROXY
 
 #include "private/qnetworkproxy_p.h"
+#include "private/qnetworkrequest_p.h"
 #include "private/qsocks5socketengine_p.h"
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
@@ -385,6 +386,7 @@ public:
     quint16 port;
     QNetworkProxy::ProxyType type;
     bool capabilitiesSet;
+    QNetworkHeadersPrivate headers;
 
     inline QNetworkProxyPrivate(QNetworkProxy::ProxyType t = QNetworkProxy::DefaultProxy,
                                 const QString &h = QString(), quint16 p = 0,
@@ -701,6 +703,116 @@ QNetworkProxy QNetworkProxy::applicationProxy()
     if (globalNetworkProxy())
         return globalNetworkProxy()->applicationProxy();
     return QNetworkProxy();
+}
+
+/*!
+    Returns the value of the known network header \a header if it is
+    in use for this proxy. If it is not present, returns QVariant()
+    (i.e., an invalid variant).
+
+    \sa QNetworkRequest::KnownHeaders, rawHeader(), setHeader()
+*/
+QVariant QNetworkProxy::header(QNetworkRequest::KnownHeaders header) const
+{
+    if (d->type != HttpProxy && d->type != HttpCachingProxy)
+        return QVariant();
+    return d->headers.cookedHeaders.value(header);
+}
+
+/*!
+    Sets the value of the known header \a header to be \a value,
+    overriding any previously set headers. This operation also sets
+    the equivalent raw HTTP header.
+
+    If the proxy is not of type HttpProxy or HttpCachingProxy this has no
+    effect.
+
+    \sa QNetworkRequest::KnownHeaders, setRawHeader(), header()
+*/
+void QNetworkProxy::setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value)
+{
+    if (d->type == HttpProxy || d->type == HttpCachingProxy)
+        d->headers.setCookedHeader(header, value);
+}
+
+/*!
+    Returns true if the raw header \a headerName is in use for this
+    proxy. Returns false if the proxy is not of type HttpProxy or
+    HttpCachingProxy.
+
+    \sa rawHeader(), setRawHeader()
+*/
+bool QNetworkProxy::hasRawHeader(const QByteArray &headerName) const
+{
+    if (d->type != HttpProxy && d->type != HttpCachingProxy)
+        return false;
+    return d->headers.findRawHeader(headerName) != d->headers.rawHeaders.constEnd();
+}
+
+/*!
+    Returns the raw form of header \a headerName. If no such header is
+    present or the proxy is not of type HttpProxy or HttpCachingProxy,
+    an empty QByteArray is returned, which may be indistinguishable
+    from a header that is present but has no content (use hasRawHeader()
+    to find out if the header exists or not).
+
+    Raw headers can be set with setRawHeader() or with setHeader().
+
+    \sa header(), setRawHeader()
+*/
+QByteArray QNetworkProxy::rawHeader(const QByteArray &headerName) const
+{
+    if (d->type != HttpProxy && d->type != HttpCachingProxy)
+        return QByteArray();
+    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
+        d->headers.findRawHeader(headerName);
+    if (it != d->headers.rawHeaders.constEnd())
+        return it->second;
+    return QByteArray();
+}
+
+/*!
+    Returns a list of all raw headers that are set in this network
+    proxy. The list is in the order that the headers were set.
+
+    If the proxy is not of type HttpProxy or HttpCachingProxy an empty
+    QList is returned.
+
+    \sa hasRawHeader(), rawHeader()
+*/
+QList<QByteArray> QNetworkProxy::rawHeaderList() const
+{
+    if (d->type != HttpProxy && d->type != HttpCachingProxy)
+        return QList<QByteArray>();
+    return d->headers.rawHeadersKeys();
+}
+
+/*!
+    Sets the header \a headerName to be of value \a headerValue. If \a
+    headerName corresponds to a known header (see
+    QNetworkRequest::KnownHeaders), the raw format will be parsed and
+    the corresponding "cooked" header will be set as well.
+
+    For example:
+    \snippet doc/src/snippets/code/src_network_access_qnetworkrequest.cpp 0
+
+    will also set the known header LastModifiedHeader to be the
+    QDateTime object of the parsed date.
+
+    Note: setting the same header twice overrides the previous
+    setting. To accomplish the behaviour of multiple HTTP headers of
+    the same name, you should concatenate the two values, separating
+    them with a comma (",") and set one single raw header.
+
+    If the proxy is not of type HttpProxy or HttpCachingProxy this has no
+    effect.
+
+    \sa QNetworkRequest::KnownHeaders, setHeader(), hasRawHeader(), rawHeader()
+*/
+void QNetworkProxy::setRawHeader(const QByteArray &headerName, const QByteArray &headerValue)
+{
+    if (d->type == HttpProxy || d->type == HttpCachingProxy)
+        d->headers.setRawHeader(headerName, headerValue);
 }
 
 class QNetworkProxyQueryPrivate: public QSharedData

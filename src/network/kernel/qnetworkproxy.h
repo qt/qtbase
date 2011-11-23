@@ -43,6 +43,7 @@
 #define QNETWORKPROXY_H
 
 #include <QtNetwork/qhostaddress.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <QtCore/qshareddata.h>
 
 #ifndef QT_NO_NETWORKPROXY
@@ -173,6 +174,16 @@ public:
 
     static void setApplicationProxy(const QNetworkProxy &proxy);
     static QNetworkProxy applicationProxy();
+
+    // "cooked" headers
+    QVariant header(QNetworkRequest::KnownHeaders header) const;
+    void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
+
+    // raw headers:
+    bool hasRawHeader(const QByteArray &headerName) const;
+    QList<QByteArray> rawHeaderList() const;
+    QByteArray rawHeader(const QByteArray &headerName) const;
+    void setRawHeader(const QByteArray &headerName, const QByteArray &value);
 
 private:
     QSharedDataPointer<QNetworkProxyPrivate> d;
