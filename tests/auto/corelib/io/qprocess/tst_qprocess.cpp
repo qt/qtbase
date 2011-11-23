@@ -48,7 +48,6 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
-// Network test unnecessary?
 #include <QtNetwork/QHostInfo>
 #include <stdlib.h>
 
