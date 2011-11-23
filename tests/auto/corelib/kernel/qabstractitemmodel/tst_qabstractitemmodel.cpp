@@ -112,6 +112,8 @@ private slots:
 
     void testDataChanged();
 
+    void testChildrenLayoutsChanged();
+
 private:
     DynamicTreeModel *m_model;
 };
@@ -1841,6 +1843,176 @@ void tst_QAbstractItemModel::testDataChanged()
     QVERIFY(thirdRoles.contains(CustomRoleModel::Custom1));
 }
 
+Q_DECLARE_METATYPE(QList<QPersistentModelIndex>)
+
+class SignalArgumentChecker : public QObject
+{
+    Q_OBJECT
+public:
+    SignalArgumentChecker(const QModelIndex &p1, const QModelIndex &p2, QObject *parent = 0)
+      : QObject(parent), m_p1(p1), m_p2(p2), m_p1Persistent(p1), m_p2Persistent(p2)
+    {
+      connect(p1.model(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)), SLOT(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+      connect(p1.model(), SIGNAL(layoutChanged(QList<QPersistentModelIndex>)), SLOT(layoutChanged(QList<QPersistentModelIndex>)));
+    }
+
+private slots:
+    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents)
+    {
+        QCOMPARE(parents.size(), 2);
+        QVERIFY(parents.first() != parents.at(1));
+        QVERIFY(parents.contains(m_p1));
+        QVERIFY(parents.contains(m_p2));
+    }
+
+    void layoutChanged(const QList<QPersistentModelIndex> &parents)
+    {
+        QCOMPARE(parents.size(), 2);
+        QVERIFY(parents.first() != parents.at(1));
+        QVERIFY(parents.contains(m_p1Persistent));
+        QVERIFY(parents.contains(m_p2Persistent));
+        QVERIFY(!parents.contains(m_p2)); // Has changed
+    }
+
+private:
+    QModelIndex m_p1;
+    QModelIndex m_p2;
+    QPersistentModelIndex m_p1Persistent;
+    QPersistentModelIndex m_p2Persistent;
+};
+
+void tst_QAbstractItemModel::testChildrenLayoutsChanged()
+{
+    DynamicTreeModel model;
+
+    ModelInsertCommand *insertCommand = new ModelInsertCommand(&model, this);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    insertCommand->doCommand();
+
+    insertCommand = new ModelInsertCommand(&model, this);
+    insertCommand->setAncestorRowNumbers(QList<int>() << 2);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    insertCommand->doCommand();
+
+    insertCommand = new ModelInsertCommand(&model, this);
+    insertCommand->setAncestorRowNumbers(QList<int>() << 5);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    insertCommand->doCommand();
+
+    qRegisterMetaType<QList<QPersistentModelIndex> >();
+
+    {
+        const QModelIndex p1 = model.index(2, 0);
+        const QModelIndex p2 = model.index(5, 0);
+
+        const QPersistentModelIndex p1FirstPersistent = model.index(0, 0, p1);
+        const QPersistentModelIndex p1LastPersistent = model.index(9, 0, p1);
+        const QPersistentModelIndex p2FirstPersistent = model.index(0, 0, p2);
+        const QPersistentModelIndex p2LastPersistent = model.index(9, 0, p2);
+
+        QVERIFY(p1.isValid());
+        QVERIFY(p2.isValid());
+
+        QCOMPARE(model.rowCount(), 10);
+        QCOMPARE(model.rowCount(p1), 10);
+        QCOMPARE(model.rowCount(p2), 10);
+
+        QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+        QSignalSpy afterSpy(&model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+        ModelChangeChildrenLayoutsCommand *changeCommand = new ModelChangeChildrenLayoutsCommand(&model, this);
+        changeCommand->setAncestorRowNumbers(QList<int>() << 2);
+        changeCommand->setSecondAncestorRowNumbers(QList<int>() << 5);
+        changeCommand->doCommand();
+
+        QCOMPARE(beforeSpy.size(), 1);
+        QCOMPARE(afterSpy.size(), 1);
+
+        const QVariantList beforeSignal = beforeSpy.first();
+        const QVariantList afterSignal = afterSpy.first();
+        QCOMPARE(beforeSignal.size(), 1);
+        QCOMPARE(afterSignal.size(), 1);
+
+        const QList<QPersistentModelIndex> beforeParents = beforeSignal.first().value<QList<QPersistentModelIndex> >();
+        QCOMPARE(beforeParents.size(), 2);
+        QVERIFY(beforeParents.first() != beforeParents.at(1));
+        QVERIFY(beforeParents.contains(p1));
+        QVERIFY(beforeParents.contains(p2));
+
+        const QList<QPersistentModelIndex> afterParents = afterSignal.first().value<QList<QPersistentModelIndex> >();
+        QCOMPARE(afterParents.size(), 2);
+        QVERIFY(afterParents.first() != afterParents.at(1));
+        QVERIFY(afterParents.contains(p1));
+        QVERIFY(afterParents.contains(p2));
+
+        // The first will be the last, and the lest will be the first.
+        QVERIFY(p1FirstPersistent.row() == 1);
+        QVERIFY(p1LastPersistent.row() == 0);
+        QVERIFY(p2FirstPersistent.row() == 9);
+        QVERIFY(p2LastPersistent.row() == 8);
+
+    }
+
+    insertCommand = new ModelInsertCommand(&model, this);
+    insertCommand->setAncestorRowNumbers(QList<int>() << 5 << 4);
+    insertCommand->setStartRow(0);
+    insertCommand->setEndRow(9);
+    insertCommand->doCommand();
+
+    delete insertCommand;
+
+    // Even when p2 itself is moved around, signal emission remains correct for its children.
+    {
+        const QModelIndex p1 = model.index(5, 0);
+        const QModelIndex p2 = model.index(4, 0, p1);
+
+        QVERIFY(p1.isValid());
+        QVERIFY(p2.isValid());
+
+        QCOMPARE(model.rowCount(), 10);
+        QCOMPARE(model.rowCount(p1), 10);
+        QCOMPARE(model.rowCount(p2), 10);
+
+        const QPersistentModelIndex p1Persistent = p1;
+        const QPersistentModelIndex p2Persistent = p2;
+
+        const QPersistentModelIndex p1FirstPersistent = model.index(0, 0, p1);
+        const QPersistentModelIndex p1LastPersistent = model.index(9, 0, p1);
+        const QPersistentModelIndex p2FirstPersistent = model.index(0, 0, p2);
+        const QPersistentModelIndex p2LastPersistent = model.index(9, 0, p2);
+
+        QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+        QSignalSpy afterSpy(&model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+        // Because the arguments in the signal are persistent, we need to check them for the aboutToBe
+        // case at emission time - before they get updated.
+        SignalArgumentChecker checker(p1, p2);
+
+        ModelChangeChildrenLayoutsCommand *changeCommand = new ModelChangeChildrenLayoutsCommand(&model, this);
+        changeCommand->setAncestorRowNumbers(QList<int>() << 5);
+        changeCommand->setSecondAncestorRowNumbers(QList<int>() << 5 << 4);
+        changeCommand->doCommand();
+
+        // p2 has been moved.
+        QCOMPARE(p2Persistent.row(), p2.row() + 1);
+
+        QCOMPARE(beforeSpy.size(), 1);
+        QCOMPARE(afterSpy.size(), 1);
+
+        const QVariantList beforeSignal = beforeSpy.first();
+        const QVariantList afterSignal = afterSpy.first();
+        QCOMPARE(beforeSignal.size(), 1);
+        QCOMPARE(afterSignal.size(), 1);
+
+        QVERIFY(p1FirstPersistent.row() == 1);
+        QVERIFY(p1LastPersistent.row() == 0);
+        QVERIFY(p2FirstPersistent.row() == 9);
+        QVERIFY(p2LastPersistent.row() == 8);
+    }
+}
 
 QTEST_MAIN(tst_QAbstractItemModel)
 #include "tst_qabstractitemmodel.moc"

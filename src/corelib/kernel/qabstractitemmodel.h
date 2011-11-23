@@ -233,8 +233,8 @@ public:
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
-    void layoutChanged();
-    void layoutAboutToBeChanged();
+    void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
+    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
 
 #if !defined(Q_MOC_RUN) && !defined(qdoc)
 private: // can only be emitted by QAbstractItemModel

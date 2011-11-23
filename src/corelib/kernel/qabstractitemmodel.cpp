@@ -1306,7 +1306,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 */
 
 /*!
-    \fn void QAbstractItemModel::layoutAboutToBeChanged()
+    \fn void QAbstractItemModel::layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>())
     \since 4.2
 
     This signal is emitted just before the layout of a model is changed.
@@ -1316,11 +1316,15 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     Subclasses should update any persistent model indexes after emitting
     layoutAboutToBeChanged().
 
+    The optional @p parents parameter is used to give a more specific notification
+    about what parts of the layout of the model are changing. An empty list indicates
+    a change to the layout of the entire model.
+
     \sa layoutChanged(), changePersistentIndex()
 */
 
 /*!
-    \fn void QAbstractItemModel::layoutChanged()
+    \fn void QAbstractItemModel::layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>())
 
     This signal is emitted whenever the layout of items exposed by the model
     has changed; for example, when the model has been sorted. When this signal
@@ -1331,6 +1335,10 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     emit layoutAboutToBeChanged() before changing the order of items or
     altering the structure of the data you expose to views, and emit
     layoutChanged() after changing the layout.
+
+    The optional @p parents parameter is used to give a more specific notification
+    about what parts of the layout of the model are changing. An empty list indicates
+    a change to the layout of the entire model.
 
     Subclasses should update any persistent model indexes before emitting
     layoutChanged(). In other words, when the structure changes:

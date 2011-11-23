@@ -89,6 +89,7 @@ private:
   friend class ModelMoveCommand;
   friend class ModelResetCommand;
   friend class ModelResetCommandFixed;
+  friend class ModelChangeChildrenLayoutsCommand;
 
 };
 
@@ -193,5 +194,21 @@ public:
 
 };
 
+class ModelChangeChildrenLayoutsCommand : public ModelChangeCommand
+{
+  Q_OBJECT
+public:
+  ModelChangeChildrenLayoutsCommand(DynamicTreeModel *model, QObject *parent);
+
+  virtual ~ModelChangeChildrenLayoutsCommand() {}
+
+  virtual void doCommand();
+
+  void setSecondAncestorRowNumbers( QList<int> rows ) { m_secondRowNumbers = rows; }
+
+protected:
+  QList<int> m_secondRowNumbers;
+  int m_destRow;
+};
 
 #endif

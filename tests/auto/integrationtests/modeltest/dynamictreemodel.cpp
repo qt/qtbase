@@ -338,3 +338,55 @@ void ModelResetCommandFixed::emitPostSignal()
     m_model->endResetModel();
 }
 
+ModelChangeChildrenLayoutsCommand::ModelChangeChildrenLayoutsCommand(DynamicTreeModel* model, QObject* parent)
+  : ModelChangeCommand(model, parent)
+{
+
+}
+
+void ModelChangeChildrenLayoutsCommand::doCommand()
+{
+    const QPersistentModelIndex parent1 = findIndex(m_rowNumbers);
+    const QPersistentModelIndex parent2 = findIndex(m_secondRowNumbers);
+
+    QList<QPersistentModelIndex> parents;
+    parents << parent1;
+    parents << parent2;
+
+    emit m_model->layoutAboutToBeChanged(parents);
+
+    int rowSize1 = -1;
+    int rowSize2 = -1;
+
+    for (int column = 0; column < m_numCols; ++column)
+    {
+        {
+          QList<qint64> &l = m_model->m_childItems[parent1.internalId()][column];
+          rowSize1 = l.size();
+          l.prepend(l.takeLast());
+        }
+        {
+          QList<qint64> &l = m_model->m_childItems[parent2.internalId()][column];
+          rowSize2 = l.size();
+          l.append(l.takeFirst());
+        }
+    }
+
+    foreach (const QModelIndex &idx, m_model->persistentIndexList()) {
+        if (idx.parent() == parent1) {
+            if (idx.row() == rowSize1 - 1) {
+                m_model->changePersistentIndex(idx, m_model->createIndex(0, idx.column(), idx.internalPointer()));
+            } else {
+                m_model->changePersistentIndex(idx, m_model->createIndex(idx.row() + 1, idx.column(), idx.internalPointer()));
+            }
+        } else if (idx.parent() == parent2) {
+            if (idx.row() == 0) {
+                m_model->changePersistentIndex(idx, m_model->createIndex(rowSize2 - 1, idx.column(), idx.internalPointer()));
+            } else {
+                m_model->changePersistentIndex(idx, m_model->createIndex(idx.row() - 1, idx.column(), idx.internalPointer()));
+            }
+        }
+    }
+
+    emit m_model->layoutChanged(parents);
+}
