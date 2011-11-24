@@ -86,6 +86,7 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     setActiveWindow(window);
 
     [m_context makeCurrentContext];
+    update();
     return true;
 }
 

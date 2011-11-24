@@ -125,9 +125,6 @@ void QCocoaWindow::setGeometry(const QRect &rect)
     [[m_nsWindow contentView] setFrameSize:bounds.size];
     [m_nsWindow setContentSize : bounds.size];
     [m_nsWindow setFrameOrigin : bounds.origin];
-
-    if (m_glContext)
-        m_glContext->update();
 }
 
 void QCocoaWindow::setVisible(bool visible)
@@ -215,9 +212,6 @@ NSView *QCocoaWindow::contentView() const
 
 void QCocoaWindow::windowDidMove()
 {
-    if (m_glContext)
-        m_glContext->update();
-
     NSRect rect = [[m_nsWindow contentView]frame];
     NSRect windowRect = [m_nsWindow frame];
 
@@ -228,9 +222,6 @@ void QCocoaWindow::windowDidMove()
 
 void QCocoaWindow::windowDidResize()
 {
-    if (m_glContext)
-        m_glContext->update();
-
     NSRect rect = [[m_nsWindow contentView]frame];
     NSRect windowRect = [m_nsWindow frame];
 
