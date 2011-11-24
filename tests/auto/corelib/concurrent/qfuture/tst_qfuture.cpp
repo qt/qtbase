@@ -83,7 +83,7 @@ private slots:
     void voidConversions();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
-    void exceptions_QTBUG18149();
+    void nestedExceptions();
 #endif
 };
 
@@ -1421,7 +1421,10 @@ public:
 
 bool MyClass::caught = false;
 
-void tst_QFuture::exceptions_QTBUG18149()
+// This is a regression test for QTBUG-18149. where QFuture did not throw
+// exceptions if called from destructors when the stack was already unwinding
+// due to an exception having been thrown.
+void tst_QFuture::nestedExceptions()
 {
     try {
         MyClass m;

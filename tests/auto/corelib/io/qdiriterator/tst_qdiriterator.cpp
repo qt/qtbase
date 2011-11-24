@@ -121,7 +121,7 @@ private slots:
     void uncPaths_data();
     void uncPaths();
 #endif
-    void qtbug15421_hiddenDirs_hiddenFiles();
+    void hiddenDirs_hiddenFiles();
 };
 
 tst_QDirIterator::tst_QDirIterator()
@@ -171,19 +171,19 @@ tst_QDirIterator::tst_QDirIterator()
 #endif
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalFile");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenFile");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/normalFile");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/.hiddenFile");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/normalFile");
-    createFile("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenFile");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/normalDirectory");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/normalDirectory/.hiddenDirectory");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/normalDirectory");
-    createDirectory("qtbug15421_hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenDirectory");
+    createDirectory("hiddenDirs_hiddenFiles");
+    createFile("hiddenDirs_hiddenFiles/normalFile");
+    createFile("hiddenDirs_hiddenFiles/.hiddenFile");
+    createDirectory("hiddenDirs_hiddenFiles/normalDirectory");
+    createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory");
+    createFile("hiddenDirs_hiddenFiles/normalDirectory/normalFile");
+    createFile("hiddenDirs_hiddenFiles/normalDirectory/.hiddenFile");
+    createFile("hiddenDirs_hiddenFiles/.hiddenDirectory/normalFile");
+    createFile("hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenFile");
+    createDirectory("hiddenDirs_hiddenFiles/normalDirectory/normalDirectory");
+    createDirectory("hiddenDirs_hiddenFiles/normalDirectory/.hiddenDirectory");
+    createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/normalDirectory");
+    createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenDirectory");
 #endif
 }
 
@@ -590,7 +590,7 @@ void tst_QDirIterator::uncPaths()
 }
 #endif
 
-void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
+void tst_QDirIterator::hiddenDirs_hiddenFiles()
 {
     // In Unix it is easy to create hidden files, but in Windows it requires
     // a special call since hidden files need to be "marked" while in Unix
@@ -603,7 +603,7 @@ void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
     {
         int matches = 0;
         int failures = 0;
-        QDirIterator di("qtbug15421_hiddenDirs_hiddenFiles", QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        QDirIterator di("hiddenDirs_hiddenFiles", QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while (di.hasNext()) {
             ++matches;
             QString filename = di.next();
@@ -617,7 +617,7 @@ void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
     {
         int matches = 0;
         int failures = 0;
-        QDirIterator di("qtbug15421_hiddenDirs_hiddenFiles", QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        QDirIterator di("hiddenDirs_hiddenFiles", QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while (di.hasNext()) {
             ++matches;
             QString filename = di.next();

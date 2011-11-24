@@ -83,7 +83,7 @@ private slots:
 
     void cleanup();
 
-    void QTBUG15255_deadlock();
+    void destroyAfterQCoreApplication();
 private:
     QStringList do_force_engines;
     bool do_force_native;
@@ -543,13 +543,15 @@ public:
 
 Q_GLOBAL_STATIC(SomeSingleton, someSingleton)
 
-void tst_QFileSystemWatcher::QTBUG15255_deadlock()
+// This is a regression test for QTBUG-15255, where a deadlock occurred if a
+// QFileSystemWatcher was destroyed after the QCoreApplication instance had
+// been destroyed.  There are no explicit verification steps in this test --
+// it is sufficient that the test terminates.
+void tst_QFileSystemWatcher::destroyAfterQCoreApplication()
 {
     someSingleton()->bla();
-    //the test must still finish
     QTest::qWait(30);
 }
-
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"

@@ -1838,7 +1838,7 @@ void tst_QSharedPointer::invalidConstructs()
     }
 }
 
-namespace QTBUG11730 {
+namespace ReentrancyWhileDestructing {
     struct IB
     {
         virtual ~IB() {}
@@ -1881,17 +1881,14 @@ namespace QTBUG11730 {
     };
 }
 
+// This is a regression test for QTBUG-11730, where there would be a crash if
+// the destructor of a QSharedPointer object being deleted recursed back into
+// the same QSharedPointer object.  There are no explicit verification steps
+// in this test -- it is sufficient that the code does not crash.
 void tst_QSharedPointer::reentrancyWhileDestructing()
 {
-    // this bug is about recursing back into QSharedPointer::clear()
-    // from inside it
-    // that is, the destructor of the object being deleted recurses
-    // into the same QSharedPointer object.
-    // First reported as QTBUG-11730
-    QTBUG11730::A obj;
+    ReentrancyWhileDestructing::A obj;
 }
 
-
 QTEST_MAIN(tst_QSharedPointer)
-
 #include "tst_qsharedpointer.moc"

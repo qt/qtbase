@@ -59,7 +59,7 @@ private slots:
     void lock_unlock_locked_tryLock();
     void stressTest();
     void tryLockRace();
-    void qtbug16115_trylock();
+    void tryLockDeadlock();
     void moreStress();
 };
 
@@ -510,14 +510,17 @@ void tst_QMutex::tryLockRace()
     TryLockRaceThread::mutex.unlock();
 }
 
+// The following is a regression test for QTBUG-16115, where QMutex could
+// deadlock after calling tryLock repeatedly.
+
 // Variable that will be protected by the mutex. Volatile so that the
 // the optimiser doesn't mess with it based on the increment-then-decrement
 // usage pattern.
-static volatile int qtbug16115_trylock_counter;
+static volatile int tryLockDeadlockCounter;
 // Counter for how many times the protected variable has an incorrect value.
-static int qtbug16115_failure_count = 0;
+static int tryLockDeadlockFailureCount = 0;
 
-void tst_QMutex::qtbug16115_trylock()
+void tst_QMutex::tryLockDeadlock()
 {
     //Used to deadlock on unix
     struct TrylockThread : QThread {
@@ -526,10 +529,10 @@ void tst_QMutex::qtbug16115_trylock()
         void run() {
             for (int i = 0; i < 100000; ++i) {
                 if (mut.tryLock(0)) {
-                    if ((++qtbug16115_trylock_counter) != 1)
-                        ++qtbug16115_failure_count;
-                    if ((--qtbug16115_trylock_counter) != 0)
-                        ++qtbug16115_failure_count;
+                    if ((++tryLockDeadlockCounter) != 1)
+                        ++tryLockDeadlockFailureCount;
+                    if ((--tryLockDeadlockCounter) != 0)
+                        ++tryLockDeadlockFailureCount;
                     mut.unlock();
                 }
             }
@@ -545,16 +548,16 @@ void tst_QMutex::qtbug16115_trylock()
 
     for (int i = 0; i < 100000; ++i) {
         mut.lock();
-        if ((++qtbug16115_trylock_counter) != 1)
-            ++qtbug16115_failure_count;
-        if ((--qtbug16115_trylock_counter) != 0)
-            ++qtbug16115_failure_count;
+        if ((++tryLockDeadlockCounter) != 1)
+            ++tryLockDeadlockFailureCount;
+        if ((--tryLockDeadlockCounter) != 0)
+            ++tryLockDeadlockFailureCount;
         mut.unlock();
     }
     t1.wait();
     t2.wait();
     t3.wait();
-    QCOMPARE(qtbug16115_failure_count, 0);
+    QCOMPARE(tryLockDeadlockFailureCount, 0);
 }
 
 

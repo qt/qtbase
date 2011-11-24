@@ -86,8 +86,7 @@ private slots:
     void isRegistered_data();
     void isRegistered();
     void unregisterType();
-    void QTBUG11316_registerStreamBuiltin();
-
+    void registerStreamBuiltin();
 };
 
 struct Foo { int i; };
@@ -805,7 +804,7 @@ void tst_QMetaType::unregisterType()
     QCOMPARE(QMetaType::isRegistered(typeId), false);
 }
 
-void tst_QMetaType::QTBUG11316_registerStreamBuiltin()
+void tst_QMetaType::registerStreamBuiltin()
 {
     //should not crash;
     qRegisterMetaTypeStreamOperators<QString>("QString");

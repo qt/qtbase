@@ -214,8 +214,8 @@ private slots:
     void repeated() const;
     void repeated_data() const;
     void task262677remove();
-    void QTBUG10404_compareRef();
-    void QTBUG9281_arg_locale();
+    void compareRef();
+    void arg_locale();
 
     void toUpperLower_icu();
     void literals();
@@ -4962,7 +4962,7 @@ void tst_QString::task262677remove()
     QVERIFY(driveName == QLatin1String("V:"));
 }
 
-void tst_QString::QTBUG10404_compareRef()
+void tst_QString::compareRef()
 {
     QString a = "ABCDEFGH";
 
@@ -4993,7 +4993,7 @@ void tst_QString::QTBUG10404_compareRef()
     QVERIFY(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 3), Qt::CaseInsensitive) < 0);
 }
 
-void tst_QString::QTBUG9281_arg_locale()
+void tst_QString::arg_locale()
 {
     QLocale l(QLocale::English, QLocale::UnitedKingdom);
     l.setNumberOptions(QLocale::OmitGroupSeparator);

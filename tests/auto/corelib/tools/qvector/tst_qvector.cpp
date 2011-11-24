@@ -82,9 +82,9 @@ private slots:
     void testOperators() const;
 
     void outOfMemory();
-    void QTBUG6416_reserve();
-    void QTBUG11763_data();
-    void QTBUG11763();
+    void reserve();
+    void reallocAfterCopy_data();
+    void reallocAfterCopy();
     void initializeList();
 
     void const_shared_null();
@@ -832,7 +832,7 @@ void tst_QVector::outOfMemory()
     }
 }
 
-void tst_QVector::QTBUG6416_reserve()
+void tst_QVector::reserve()
 {
     fooCtor = 0;
     fooDtor = 0;
@@ -845,7 +845,9 @@ void tst_QVector::QTBUG6416_reserve()
     QCOMPARE(fooCtor, fooDtor);
 }
 
-void tst_QVector::QTBUG11763_data()
+// This is a regression test for QTBUG-11763, where memory would be reallocated
+// soon after copying a QVector.
+void tst_QVector::reallocAfterCopy_data()
 {
     QTest::addColumn<int>("capacity");
     QTest::addColumn<int>("fill_size");
@@ -881,12 +883,12 @@ void tst_QVector::QTBUG11763_data()
                 result3 = i - 10;
                 result4 = i - 20;
             }
-            QTest::newRow(qPrintable(QString("QTBUG11763:%1,%2").arg(i).arg(j))) << i << fill_size << j << result1 << result2 << result3 << result4;
+            QTest::newRow(qPrintable(QString("reallocAfterCopy:%1,%2").arg(i).arg(j))) << i << fill_size << j << result1 << result2 << result3 << result4;
         }
     }
 }
 
-void tst_QVector::QTBUG11763()
+void tst_QVector::reallocAfterCopy()
 {
     QFETCH(int, capacity);
     QFETCH(int, fill_size);

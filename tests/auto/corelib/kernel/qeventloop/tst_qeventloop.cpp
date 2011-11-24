@@ -192,7 +192,7 @@ private slots:
     void quit();
     void processEventsExcludeSocket();
     void processEventsExcludeTimers();
-    void deliverInDefinedOrder_QTBUG19637();
+    void deliverInDefinedOrder();
 
     // keep this test last:
     void nestedLoops();
@@ -566,7 +566,7 @@ void tst_QEventLoop::processEventsExcludeTimers()
 
 Q_DECLARE_METATYPE(QThread*)
 
-namespace DeliverInDefinedOrder_QTBUG19637 {
+namespace DeliverInDefinedOrder {
     enum { NbThread = 3,  NbObject = 500, NbEventQueue = 5, NbEvent = 50 };
 
     struct CustomEvent : public QEvent {
@@ -601,9 +601,9 @@ namespace DeliverInDefinedOrder_QTBUG19637 {
 
 }
 
-void tst_QEventLoop::deliverInDefinedOrder_QTBUG19637()
+void tst_QEventLoop::deliverInDefinedOrder()
 {
-    using namespace DeliverInDefinedOrder_QTBUG19637;
+    using namespace DeliverInDefinedOrder;
     qMetaTypeId<QThread*>();
     QThread threads[NbThread];
     Object objects[NbObject];

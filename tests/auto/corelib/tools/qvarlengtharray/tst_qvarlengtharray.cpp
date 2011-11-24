@@ -56,8 +56,8 @@ private slots:
     void removeLast();
     void oldTests();
     void task214223();
-    void QTBUG6718_resize();
-    void QTBUG10978_realloc();
+    void resize();
+    void realloc();
 };
 
 int fooCtor = 0;
@@ -258,7 +258,7 @@ void tst_QVarLengthArray::task214223()
         d.append(i);
 }
 
-void tst_QVarLengthArray::QTBUG6718_resize()
+void tst_QVarLengthArray::resize()
 {
     //MOVABLE
     {
@@ -400,7 +400,7 @@ Q_DECLARE_TYPEINFO(MyComplex, Q_COMPLEX_TYPE);
 
 QT_END_NAMESPACE
 
-bool QTBUG10978_proceed = true;
+bool reallocTestProceed = true;
 
 template <class T, int PreAlloc>
 int countMoved(QVarLengthArray<T, PreAlloc> const &c)
@@ -414,9 +414,9 @@ int countMoved(QVarLengthArray<T, PreAlloc> const &c)
 }
 
 template <class T>
-void QTBUG10978_test()
+void reallocTest()
 {
-    QTBUG10978_proceed = false;
+    reallocTestProceed = false;
 
     typedef QVarLengthArray<T, 16> Container;
     enum {
@@ -578,22 +578,22 @@ void QTBUG10978_test()
     QCOMPARE(MyBase::liveCount, 0);
 
     // All done
-    QTBUG10978_proceed = true;
+    reallocTestProceed = true;
 }
 
-void tst_QVarLengthArray::QTBUG10978_realloc()
+void tst_QVarLengthArray::realloc()
 {
-    QTBUG10978_test<MyBase>();
-    QVERIFY(QTBUG10978_proceed);
+    reallocTest<MyBase>();
+    QVERIFY(reallocTestProceed);
 
-    QTBUG10978_test<MyPrimitive>();
-    QVERIFY(QTBUG10978_proceed);
+    reallocTest<MyPrimitive>();
+    QVERIFY(reallocTestProceed);
 
-    QTBUG10978_test<MyMovable>();
-    QVERIFY(QTBUG10978_proceed);
+    reallocTest<MyMovable>();
+    QVERIFY(reallocTestProceed);
 
-    QTBUG10978_test<MyComplex>();
-    QVERIFY(QTBUG10978_proceed);
+    reallocTest<MyComplex>();
+    QVERIFY(reallocTestProceed);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

@@ -79,8 +79,8 @@ private slots:
     void reentrancy();
     void threadsafeEngineCache();
 
-    void QTBUG_7049_data();
-    void QTBUG_7049();
+    void posAndCapConsistency_data();
+    void posAndCapConsistency();
     void interval();
 };
 
@@ -1237,7 +1237,9 @@ void tst_QRegExp::operator_eq()
     }
 }
 
-void tst_QRegExp::QTBUG_7049_data()
+// This test aims to ensure that the values returned by pos() and cap()
+// are consistent.
+void tst_QRegExp::posAndCapConsistency_data()
 {
     QTest::addColumn<QString>("reStr");
     QTest::addColumn<QString>("text");
@@ -1297,7 +1299,7 @@ void tst_QRegExp::QTBUG_7049_data()
 
 }
 
-void tst_QRegExp::QTBUG_7049()
+void tst_QRegExp::posAndCapConsistency()
 {
     QFETCH( QString, reStr );
     QFETCH( QString, text );

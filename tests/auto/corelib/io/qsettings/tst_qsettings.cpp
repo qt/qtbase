@@ -129,7 +129,7 @@ private slots:
     void dontReorderIniKeysNeedlessly();
 #endif
 #if defined(Q_OS_WIN)
-    void qtbug_13249();
+    void consistentRegistryStorage();
 #endif
 
     void testVariantTypes_data();
@@ -3114,19 +3114,21 @@ static DWORD readKeyType(HKEY handle, const QString &rSubKey)
     return 0;
 }
 
-void tst_QSettings::qtbug_13249()
+// This is a regression test for QTBUG-13249, where QSettings was storing
+// signed integers as numeric values and unsigned integers as strings.
+void tst_QSettings::consistentRegistryStorage()
 {
     QSettings settings1(QSettings::UserScope, "software.org", "KillerAPP");
 
     qint32 x = 1024;
-    settings1.setValue("qtbug_13249_a", (qint32)x);
-    QCOMPARE(settings1.value("qtbug_13249_a").toInt(), (qint32)1024);
-    settings1.setValue("qtbug_13249_b", (quint32)x);
-    QCOMPARE(settings1.value("qtbug_13249_b").toUInt(), (quint32)1024);
-    settings1.setValue("qtbug_13249_c", (qint64)x);
-    QCOMPARE(settings1.value("qtbug_13249_c").toLongLong(), (qint64)1024);
-    settings1.setValue("qtbug_13249_d", (quint64)x);
-    QCOMPARE(settings1.value("qtbug_13249_d").toULongLong(), (quint64)1024);
+    settings1.setValue("qint32_value", (qint32)x);
+    QCOMPARE(settings1.value("qint32_value").toInt(), (qint32)1024);
+    settings1.setValue("quint32_value", (quint32)x);
+    QCOMPARE(settings1.value("quint32_value").toUInt(), (quint32)1024);
+    settings1.setValue("qint64_value", (qint64)x);
+    QCOMPARE(settings1.value("qint64_value").toLongLong(), (qint64)1024);
+    settings1.setValue("quint64_value", (quint64)x);
+    QCOMPARE(settings1.value("quint64_value").toULongLong(), (quint64)1024);
     settings1.sync();
 
     HKEY handle;
@@ -3136,19 +3138,19 @@ void tst_QSettings::qtbug_13249()
     if (res == ERROR_SUCCESS)
     {
         DWORD dataType;
-        dataType = readKeyType(handle, QString("qtbug_13249_a"));
+        dataType = readKeyType(handle, QString("qint32_value"));
         if (dataType != 0) {
             QCOMPARE((int)REG_DWORD, (int)dataType);
         }
-        dataType = readKeyType(handle, QString("qtbug_13249_b"));
+        dataType = readKeyType(handle, QString("quint32_value"));
         if (dataType != 0) {
             QCOMPARE((int)REG_DWORD, (int)dataType);
         }
-        dataType = readKeyType(handle, QString("qtbug_13249_c"));
+        dataType = readKeyType(handle, QString("qint64_value"));
         if (dataType != 0) {
             QCOMPARE((int)REG_QWORD, (int)dataType);
         }
-        dataType = readKeyType(handle, QString("qtbug_13249_d"));
+        dataType = readKeyType(handle, QString("quint64_value"));
         if (dataType != 0) {
             QCOMPARE((int)REG_QWORD, (int)dataType);
         }

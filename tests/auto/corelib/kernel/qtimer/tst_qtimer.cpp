@@ -74,7 +74,7 @@ private slots:
     void singleShotStaticFunctionZeroTimeout();
     void recurseOnTimeoutAndStopTimer();
 
-    void QTBUG13633_dontBlockEvents();
+    void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
 };
 
@@ -634,7 +634,7 @@ DontBlockEvents::DontBlockEvents()
     count = 0;
     total = 0;
 
-    //QTBUG-13633 need few unrelated timer running to reproduce the bug.
+    // need a few unrelated timers running to reproduce the bug.
     (new QTimer(this))->start(2000);
     (new QTimer(this))->start(2500);
     (new QTimer(this))->start(3000);
@@ -662,8 +662,9 @@ void DontBlockEvents::paintEvent()
     QCOMPARE(count, 0);
 }
 
-
-void tst_QTimer::QTBUG13633_dontBlockEvents()
+// This is a regression test for QTBUG-13633, where a timer with a zero
+// timeout that was restarted by the event handler could starve other timers.
+void tst_QTimer::dontBlockEvents()
 {
     DontBlockEvents t;
     QTest::qWait(60);

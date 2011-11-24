@@ -72,7 +72,7 @@ private slots:
     void autoAdd();
     void pauseResume();
 
-    void QTBUG8910_crashWhenRemovingUncontrolledAnimation();
+    void crashWhenRemovingUncontrolledAnimation();
 };
 
 void tst_QParallelAnimationGroup::initTestCase()
@@ -991,8 +991,9 @@ void tst_QParallelAnimationGroup::pauseResume()
     QCOMPARE(spy.count(), 2); //this shouldn't have changed
 }
 
-
-void tst_QParallelAnimationGroup::QTBUG8910_crashWhenRemovingUncontrolledAnimation()
+// This is a regression test for QTBUG-8910, where a crash occurred when the
+// last animation was removed from a group.
+void tst_QParallelAnimationGroup::crashWhenRemovingUncontrolledAnimation()
 {
     QParallelAnimationGroup group;
     TestAnimation *anim = new TestAnimation;

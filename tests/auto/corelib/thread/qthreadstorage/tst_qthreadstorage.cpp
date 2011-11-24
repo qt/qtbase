@@ -71,9 +71,9 @@ private slots:
     void autoDelete();
     void adoptedThreads();
     void ensureCleanupOrder();
-    void QTBUG13877_crashOnExit();
-    void QTBUG14579_leakInDestructor();
-    void QTBUG14579_resetInDestructor();
+    void crashOnExit();
+    void leakInDestructor();
+    void resetInDestructor();
     void valueBased();
 };
 
@@ -288,7 +288,7 @@ void tst_QThreadStorage::ensureCleanupOrder()
     QVERIFY(First::order < Second::order);
 }
 
-void tst_QThreadStorage::QTBUG13877_crashOnExit()
+void tst_QThreadStorage::crashOnExit()
 {
     QProcess process;
 #ifdef Q_OS_WIN
@@ -315,45 +315,45 @@ public:
 };
 QBasicAtomicInt SPointer::count = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, QTBUG14579_pointers1)
-Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, QTBUG14579_pointers2)
+Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, threadStoragePointers1)
+Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, threadStoragePointers2)
 
-class QTBUG14579_class
+class ThreadStorageLocalDataTester
 {
 public:
     SPointer member;
-    inline ~QTBUG14579_class() {
-        QVERIFY(!QTBUG14579_pointers1()->hasLocalData());
-        QVERIFY(!QTBUG14579_pointers2()->hasLocalData());
-        QTBUG14579_pointers2()->setLocalData(new SPointer);
-        QTBUG14579_pointers1()->setLocalData(new SPointer);
-        QVERIFY(QTBUG14579_pointers1()->hasLocalData());
-        QVERIFY(QTBUG14579_pointers2()->hasLocalData());
+    inline ~ThreadStorageLocalDataTester() {
+        QVERIFY(!threadStoragePointers1()->hasLocalData());
+        QVERIFY(!threadStoragePointers2()->hasLocalData());
+        threadStoragePointers2()->setLocalData(new SPointer);
+        threadStoragePointers1()->setLocalData(new SPointer);
+        QVERIFY(threadStoragePointers1()->hasLocalData());
+        QVERIFY(threadStoragePointers2()->hasLocalData());
     }
 };
 
 
-void tst_QThreadStorage::QTBUG14579_leakInDestructor()
+void tst_QThreadStorage::leakInDestructor()
 {
     class Thread : public QThread
     {
     public:
-        QThreadStorage<QTBUG14579_class *> &tls;
+        QThreadStorage<ThreadStorageLocalDataTester *> &tls;
 
-        Thread(QThreadStorage<QTBUG14579_class *> &t) : tls(t) { }
+        Thread(QThreadStorage<ThreadStorageLocalDataTester *> &t) : tls(t) { }
 
         void run()
         {
             QVERIFY(!tls.hasLocalData());
-            tls.setLocalData(new QTBUG14579_class);
+            tls.setLocalData(new ThreadStorageLocalDataTester);
             QVERIFY(tls.hasLocalData());
         }
     };
     int c = SPointer::count.load();
 
-    QThreadStorage<QTBUG14579_class *> tls;
+    QThreadStorage<ThreadStorageLocalDataTester *> tls;
 
-    QVERIFY(!QTBUG14579_pointers1()->hasLocalData());
+    QVERIFY(!threadStoragePointers1()->hasLocalData());
     QThreadStorage<int *> tls2; //add some more tls to make sure ids are not following each other too much
     QThreadStorage<int *> tls3;
     QVERIFY(!tls2.hasLocalData());
@@ -376,29 +376,29 @@ void tst_QThreadStorage::QTBUG14579_leakInDestructor()
     QCOMPARE(int(SPointer::count.load()), c);
 }
 
-class QTBUG14579_reset {
+class ThreadStorageResetLocalDataTester {
 public:
     SPointer member;
-    ~QTBUG14579_reset();
+    ~ThreadStorageResetLocalDataTester();
 };
 
-Q_GLOBAL_STATIC(QThreadStorage<QTBUG14579_reset *>, QTBUG14579_resetTls)
+Q_GLOBAL_STATIC(QThreadStorage<ThreadStorageResetLocalDataTester *>, ThreadStorageResetLocalDataTesterTls)
 
-QTBUG14579_reset::~QTBUG14579_reset() {
+ThreadStorageResetLocalDataTester::~ThreadStorageResetLocalDataTester() {
     //Quite stupid, but WTF::ThreadSpecific<T>::destroy does it.
-    QTBUG14579_resetTls()->setLocalData(this);
+    ThreadStorageResetLocalDataTesterTls()->setLocalData(this);
 }
 
-void tst_QThreadStorage::QTBUG14579_resetInDestructor()
+void tst_QThreadStorage::resetInDestructor()
 {
     class Thread : public QThread
     {
     public:
         void run()
         {
-            QVERIFY(!QTBUG14579_resetTls()->hasLocalData());
-            QTBUG14579_resetTls()->setLocalData(new QTBUG14579_reset);
-            QVERIFY(QTBUG14579_resetTls()->hasLocalData());
+            QVERIFY(!ThreadStorageResetLocalDataTesterTls()->hasLocalData());
+            ThreadStorageResetLocalDataTesterTls()->setLocalData(new ThreadStorageResetLocalDataTester);
+            QVERIFY(ThreadStorageResetLocalDataTesterTls()->hasLocalData());
         }
     };
     int c = SPointer::count.load();

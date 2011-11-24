@@ -188,10 +188,10 @@ private slots:
     void binaryData();
     void fromUserInput_data();
     void fromUserInput();
-    void task_199967();
-    void task_240612();
-    void taskQTBUG_6962();
-    void taskQTBUG_8701();
+    void isEmptyForEncodedUrl();
+    void toEncodedNotUsingUninitializedPath();
+    void emptyAuthorityRemovesExistingAuthority();
+    void acceptEmptyAuthoritySegments();
     void removeAllEncodedQueryItems_data();
     void removeAllEncodedQueryItems();
 };
@@ -3131,7 +3131,10 @@ void tst_QUrl::fromUserInput()
     QCOMPARE(url, guessUrlFromString);
 }
 
-void tst_QUrl::task_199967()
+// This is a regression test for a previously fixed bug where isEmpty didn't
+// work for an encoded URL that was yet to be decoded.  The test checks that
+// isEmpty works for an encoded URL both after and before decoding.
+void tst_QUrl::isEmptyForEncodedUrl()
 {
     {
         QUrl url;
@@ -3149,7 +3152,9 @@ void tst_QUrl::task_199967()
     }
 }
 
-void tst_QUrl::task_240612()
+// This test verifies that the QUrl::toEncoded() does not rely on the
+// potentially uninitialized unencoded path.
+void tst_QUrl::toEncodedNotUsingUninitializedPath()
 {
     QUrl url;
     url.setEncodedPath("test.txt");
@@ -3210,23 +3215,22 @@ void tst_QUrl::resolvedWithAbsoluteSchemes_data() const
         << QUrl::fromEncoded("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
 }
 
-void tst_QUrl::taskQTBUG_6962()
+void tst_QUrl::emptyAuthorityRemovesExistingAuthority()
 {
-    //bug 6962: empty authority ignored by setAuthority
     QUrl url("http://example.com/something");
     url.setAuthority(QString());
     QCOMPARE(url.authority(), QString());
 }
 
-void tst_QUrl::taskQTBUG_8701()
+void tst_QUrl::acceptEmptyAuthoritySegments()
 {
-    //bug 8701: foo:///bar mangled to foo:/bar
+    // Verify that foo:///bar is not mangled to foo:/bar
     QString foo_triple_bar("foo:///bar"), foo_uni_bar("foo:/bar");
 
     QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar).toString());
     QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar).toString());
 
-    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString()); // fails
+    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString());
     QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar, QUrl::StrictMode).toString());
 }
 

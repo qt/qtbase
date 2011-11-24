@@ -570,7 +570,7 @@ private slots:
     void clear() const;
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
-    void qtbug9196_crash() const;
+    void crashInXmlStreamReader() const;
     void hasError() const;
 
 private:
@@ -1479,9 +1479,10 @@ void tst_QXmlStream::checkCommentIndentation() const // task 256468
     QCOMPARE(output, expectedOutput);
 }
 
-void tst_QXmlStream::qtbug9196_crash() const
+// This is a regression test for QTBUG-9196, where the series of tags used
+// in the test caused a crash in the XML stream reader.
+void tst_QXmlStream::crashInXmlStreamReader() const
 {
-    // the following input used to produce a crash in the stream reader
     QByteArray ba("<a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a>"
                   "<a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a><a></a>");
     QXmlStreamReader xml(ba);

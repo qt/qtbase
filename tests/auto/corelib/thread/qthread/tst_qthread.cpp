@@ -96,8 +96,8 @@ private slots:
     void adoptMultipleThreads();
     void adoptMultipleThreadsOverlap();
 
-    void QTBUG13810_exitAndStart();
-    void QTBUG15378_exitAndExec();
+    void exitAndStart();
+    void exitAndExec();
 
     void connectThreadFinishedSignalToObjectDeleteLaterSlot();
     void wait2();
@@ -980,7 +980,7 @@ public:
     int m_prop;
 };
 
-void tst_QThread::QTBUG13810_exitAndStart()
+void tst_QThread::exitAndStart()
 {
     QThread thread;
     thread.exit(555); //should do nothing
@@ -1002,7 +1002,7 @@ void tst_QThread::QTBUG13810_exitAndStart()
     QCOMPARE(sync1.m_prop, 89);
 }
 
-void tst_QThread::QTBUG15378_exitAndExec()
+void tst_QThread::exitAndExec()
 {
     class Thread : public QThread {
     public:
