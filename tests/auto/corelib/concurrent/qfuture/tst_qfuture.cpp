@@ -1404,33 +1404,33 @@ void tst_QFuture::exceptions()
     }
 }
 
+class MyClass
+{
+public:
+    ~MyClass()
+    {
+        QFuture<void> f = createExceptionFuture();
+        try {
+            f.waitForFinished();
+        } catch (Exception &) {
+            caught = true;
+        }
+    }
+    static bool caught;
+};
+
+bool MyClass::caught = false;
 
 void tst_QFuture::exceptions_QTBUG18149()
 {
-    class MyClass
-    {
-    public:
-        ~MyClass()
-        {
-            QFuture<void> f = createExceptionFuture();
-            bool caught = false;
-            try {
-                f.waitForFinished();
-            } catch (Exception &) {
-                caught = true;
-            }
-            QVERIFY(caught);
-        }
-    };
-
     try {
         MyClass m;
         Q_UNUSED(m);
         throw 0;
     } catch (int) {}
 
+    QVERIFY(MyClass::caught);
 }
-
 
 #endif // QT_NO_EXCEPTIONS
 
