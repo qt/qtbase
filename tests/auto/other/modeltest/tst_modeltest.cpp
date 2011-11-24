@@ -207,8 +207,8 @@ public:
     , storePersistentFailureCount(0)
     , checkPersistentFailureCount(0)
     {
-        connect(m_proxy, SIGNAL(layoutAboutToBeChanged()), SLOT(storePersistent()));
-        connect(m_proxy, SIGNAL(layoutChanged()), SLOT(checkPersistent()));
+        connect(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(storePersistent()));
+        connect(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(checkPersistent()));
     }
 
 public slots:
@@ -235,7 +235,7 @@ public slots:
 
     void storePersistent()
     {
-        // This method is called from layoutAboutToBeChanged. Persistent indexes should be valid
+        // This method is called from rowsAboutToBeMoved. Persistent indexes should be valid
         foreach(const QModelIndex &idx, m_persistentProxyIndexes)
             if (!idx.isValid()) {
                 qWarning("%s: persistentProxyIndexes contains invalid index", Q_FUNC_INFO);

@@ -148,6 +148,7 @@ private slots:
     void filteredColumns();
 
     void testParentLayoutChanged();
+    void moveSourceRows();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -3274,6 +3275,135 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
 
     QVERIFY(beforeParents.first() == proxy.mapFromSource(model.indexFromItem(model.invisibleRootItem()->child(1))));
 
+}
+
+class SignalArgumentChecker : public QObject
+{
+    Q_OBJECT
+public:
+    SignalArgumentChecker(QAbstractItemModel *model, QAbstractProxyModel *proxy, QObject *parent = 0)
+      : QObject(parent), m_model(model), m_proxy(proxy)
+    {
+        connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+        connect(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), SLOT(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+        connect(proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)), SLOT(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+        connect(proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)), SLOT(layoutChanged(QList<QPersistentModelIndex>)));
+    }
+
+private slots:
+    void rowsAboutToBeMoved(const QModelIndex &source, int, int, const QModelIndex &destination, int)
+    {
+        m_p1PersistentBefore = source;
+        m_p2PersistentBefore = destination;
+        m_p2FirstProxyChild = m_proxy->index(0, 0, m_proxy->mapFromSource(destination));
+    }
+
+    void rowsMoved(const QModelIndex &source, int, int, const QModelIndex &destination, int)
+    {
+        m_p1PersistentAfter = source;
+        m_p2PersistentAfter = destination;
+    }
+
+    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents)
+    {
+        QVERIFY(m_p1PersistentBefore.isValid());
+        QVERIFY(m_p2PersistentBefore.isValid());
+        QCOMPARE(parents.size(), 2);
+        QVERIFY(parents.first() != parents.at(1));
+        QVERIFY(parents.contains(m_proxy->mapFromSource(m_p1PersistentBefore)));
+        QVERIFY(parents.contains(m_proxy->mapFromSource(m_p2PersistentBefore)));
+    }
+
+    void layoutChanged(const QList<QPersistentModelIndex> &parents)
+    {
+        QVERIFY(m_p1PersistentAfter.isValid());
+        QVERIFY(m_p2PersistentAfter.isValid());
+        QCOMPARE(parents.size(), 2);
+        QVERIFY(parents.first() != parents.at(1));
+        QVERIFY(parents.contains(m_proxy->mapFromSource(m_p1PersistentAfter)));
+        QVERIFY(parents.contains(m_proxy->mapFromSource(m_p2PersistentAfter)));
+
+        // In the source model, the rows were moved to row 1 in the parent.
+        // m_p2FirstProxyChild was created with row 0 in the proxy.
+        // The moved rows in the proxy do not appear at row 1 because of sorting.
+        // Sorting causes them to appear at row 0 instead, pushing what used to
+        // be row 0 in the proxy down by two rows.
+        QCOMPARE(m_p2FirstProxyChild.row(), 2);
+    }
+
+private:
+    QAbstractItemModel *m_model;
+    QAbstractProxyModel *m_proxy;
+    QPersistentModelIndex m_p1PersistentBefore;
+    QPersistentModelIndex m_p2PersistentBefore;
+    QPersistentModelIndex m_p1PersistentAfter;
+    QPersistentModelIndex m_p2PersistentAfter;
+
+    QPersistentModelIndex m_p2FirstProxyChild;
+};
+
+void tst_QSortFilterProxyModel::moveSourceRows()
+{
+    qRegisterMetaType<QList<QPersistentModelIndex> >();
+
+    DynamicTreeModel model;
+
+    {
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(9);
+        insertCommand.doCommand();
+    }
+    {
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(QList<int>() << 2);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(9);
+        insertCommand.doCommand();
+    }
+    {
+        ModelInsertCommand insertCommand(&model);
+        insertCommand.setAncestorRowNumbers(QList<int>() << 5);
+        insertCommand.setStartRow(0);
+        insertCommand.setEndRow(9);
+        insertCommand.doCommand();
+    }
+
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    proxy.sort(0, Qt::AscendingOrder);
+
+    // We need to check the arguments at emission time
+    SignalArgumentChecker checker(&model, &proxy);
+
+    proxy.setSourceModel(&model);
+
+    QSignalSpy modelBeforeSpy(&model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy modelAfterSpy(&model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy proxyBeforeMoveSpy(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy proxyAfterMoveSpy(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy proxyBeforeParentLayoutSpy(&proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy proxyAfterParentLayoutSpy(&proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+    {
+        ModelMoveCommand moveCommand(&model, 0);
+        moveCommand.setAncestorRowNumbers(QList<int>() << 2);
+        moveCommand.setDestAncestors(QList<int>() << 5);
+        moveCommand.setStartRow(3);
+        moveCommand.setEndRow(4);
+        moveCommand.setDestRow(1);
+        moveCommand.doCommand();
+    }
+
+    // Proxy notifies layout change
+    QCOMPARE(modelBeforeSpy.size(), 1);
+    QCOMPARE(proxyBeforeParentLayoutSpy.size(), 1);
+    QCOMPARE(modelAfterSpy.size(), 1);
+    QCOMPARE(proxyAfterParentLayoutSpy.size(), 1);
+
+    // But it doesn't notify a move.
+    QCOMPARE(proxyBeforeMoveSpy.size(), 0);
+    QCOMPARE(proxyAfterMoveSpy.size(), 0);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
