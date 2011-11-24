@@ -661,6 +661,7 @@ bool QFSFileEngine::link(const QString &newName)
 #endif // QT_NO_LIBRARY
 #else
     QString linkName = newName;
+    linkName.replace(QLatin1Char('/'), QLatin1Char('\\'));
     if (!linkName.endsWith(QLatin1String(".lnk")))
         linkName += QLatin1String(".lnk");
     QString orgName = fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\'));
