@@ -277,7 +277,11 @@ bool QSslSocketBackendPrivate::initSslContext()
 init_context:
     switch (configuration.protocol) {
     case QSsl::SslV2:
+#ifndef OPENSSL_NO_SSL2
         ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());
+#else
+        ctx = 0; // SSL 2 not supported by the system, but chosen deliberately -> error
+#endif
         break;
     case QSsl::SslV3:
         ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());

@@ -230,11 +230,15 @@ DEFINEFUNC(void, SSL_set_accept_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(void, SSL_set_connect_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(int, SSL_shutdown, SSL *a, a, return -1, return)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 DEFINEFUNC(const SSL_METHOD *, SSLv3_client_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_server_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 DEFINEFUNC(const SSL_METHOD *, SSLv3_server_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, SSLv23_server_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_server_method, DUMMYARG, DUMMYARG, return 0, return)
@@ -605,11 +609,15 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_set_connect_state)
     RESOLVEFUNC(SSL_shutdown)
     RESOLVEFUNC(SSL_write)
+#ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_client_method)
+#endif
     RESOLVEFUNC(SSLv3_client_method)
     RESOLVEFUNC(SSLv23_client_method)
     RESOLVEFUNC(TLSv1_client_method)
+#ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_server_method)
+#endif
     RESOLVEFUNC(SSLv3_server_method)
     RESOLVEFUNC(SSLv23_server_method)
     RESOLVEFUNC(TLSv1_server_method)
