@@ -238,8 +238,8 @@ QAccessibleInterface *QAccessibleMenuItem::child(int index) const
 
 int QAccessibleMenuItem::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
+    *target = 0;
     if (entry < 0) {
-        *target = 0;
         return -1;
     }
 
