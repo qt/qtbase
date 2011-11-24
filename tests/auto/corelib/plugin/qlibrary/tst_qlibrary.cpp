@@ -193,13 +193,12 @@ void tst_QLibrary::version()
 #if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
     QString currDir = QDir::currentPath();
     QLibrary library( currDir + QLatin1Char('/') + lib, loadversion );
-    bool ok = library.load();
-    QVERIFY(ok);
+    QVERIFY2(library.load(), qPrintable(library.errorString()));
 
     VersionFunction fnVersion = (VersionFunction)library.resolve("mylibversion");
     QVERIFY(fnVersion);
     QCOMPARE(fnVersion(), resultversion);
-    QVERIFY(library.unload());
+    QVERIFY2(library.unload(), qPrintable(library.errorString()));
 #else
     Q_UNUSED(lib);
     Q_UNUSED(loadversion);
@@ -241,8 +240,8 @@ void tst_QLibrary::load()
     QLibrary library( lib );
     bool ok = library.load();
     if ( result ) {
-        QVERIFY( ok );
-        QVERIFY(library.unload());
+        QVERIFY2( ok, qPrintable(library.errorString()) );
+        QVERIFY2( library.unload(), qPrintable(library.errorString()) );
     } else {
         QVERIFY( !ok );
     }
@@ -272,7 +271,7 @@ void tst_QLibrary::unload()
     library.load();
     bool ok = library.unload();
     if ( result ) {
-        QVERIFY( ok );
+        QVERIFY2( ok, qPrintable(library.errorString()) );
     } else {
         QVERIFY( !ok );
     }
