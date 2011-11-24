@@ -1167,18 +1167,18 @@ QColor QAccessibleInterface::backgroundColor() const
     For instance, QAccessibleWidget reimplements this and returns
     the windowHandle() of the QWidget.
 
-    The default implementation returns the window() of the parent interface.
-
     It is used on some platforms to be able to notify the AT client about
     state changes.
+    The backend will traverse up all ancestors until it finds a window.
+    (This means that at least one interface among the ancestors should
+    return a valid QWindow pointer).
+
+    The default implementation of this returns 0.
     \preliminary
   */
 QWindow *QAccessibleInterface::window() const
 {
-    QAccessibleInterface *par = parent();
-    QWindow *w = par ? par->window() : 0;
-    delete par;
-    return w;
+    return 0;
 }
 
 /*!

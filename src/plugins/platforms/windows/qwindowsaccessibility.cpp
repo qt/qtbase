@@ -1285,13 +1285,28 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
     return S_OK;
 }
 
+static QWindow *window_helper(const QAccessibleInterface *iface)
+{
+    QWindow *window = iface->window();
+    if (!window) {
+        QAccessibleInterface *acc = iface->parent();
+        while (acc && !window) {
+            window = acc->window();
+            QAccessibleInterface *par = acc->parent();
+            delete acc;
+            acc = par;
+        }
+    }
+    return window;
+}
+
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
 {
     *phwnd = 0;
     if (!accessible->isValid())
         return E_UNEXPECTED;
 
-    QWindow *window = accessible->window();
+    QWindow *window = window_helper(accessible);
     if (!window)
         return E_FAIL;
 
@@ -1387,7 +1402,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
-    QWindow *window = iface->window();
+    QWindow *window = window_helper(iface);
 
     if (!window) {
         window = QGuiApplication::activeWindow();
