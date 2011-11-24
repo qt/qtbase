@@ -52,8 +52,6 @@
 #include <QtCore/qmap.h>
 #include <QtNetwork/qssl.h>
 
-typedef struct x509_st X509; // ### check if this works
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
