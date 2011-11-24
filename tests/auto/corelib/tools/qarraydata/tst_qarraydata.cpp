@@ -81,6 +81,8 @@ private slots:
     void arrayOps();
 };
 
+template <class T> const T &const_(const T &t) { return t; }
+
 void tst_QArrayData::referenceCounting()
 {
     {
@@ -320,13 +322,36 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v6 >= v1);
     QVERIFY(!(v1 >= v6));
 
-    QCOMPARE(v6.front(), 0);
-    QCOMPARE(v6.back(), 6);
+    {
+        SimpleVector<int> temp(v6);
 
-    for (size_t i = 0; i < v6.size(); ++i) {
-        QCOMPARE(v6[i], int(i));
-        QCOMPARE(v6.at(i), int(i));
-        QCOMPARE(&v6[i], &v6.at(i));
+        QCOMPARE(const_(v6).front(), 0);
+        QCOMPARE(const_(v6).back(), 6);
+
+        QVERIFY(temp.isShared());
+        QVERIFY(temp.isSharedWith(v6));
+
+        QCOMPARE(temp.front(), 0);
+        QCOMPARE(temp.back(), 6);
+
+        // Detached
+        QVERIFY(!temp.isShared());
+        const int *const tempBegin = temp.begin();
+
+        for (size_t i = 0; i < v6.size(); ++i) {
+            QCOMPARE(const_(v6)[i], int(i));
+            QCOMPARE(const_(v6).at(i), int(i));
+            QCOMPARE(&const_(v6)[i], &const_(v6).at(i));
+
+            QCOMPARE(const_(v8)[i], const_(v6)[i]);
+
+            QCOMPARE(temp[i], int(i));
+            QCOMPARE(temp.at(i), int(i));
+            QCOMPARE(&temp[i], &temp.at(i));
+        }
+
+        // A single detach should do
+        QCOMPARE(temp.begin(), tempBegin);
     }
 
     {

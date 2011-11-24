@@ -93,14 +93,34 @@ public:
     size_t size() const { return d->size; }
     size_t capacity() const { return d->alloc; }
 
+    iterator begin() { detach(); return d->begin(); }
+    iterator end() { detach(); return d->end(); }
+
     const_iterator begin() const { return d->begin(); }
     const_iterator end() const { return d->end(); }
 
     const_iterator constBegin() const { return begin(); }
     const_iterator constEnd() const { return end(); }
 
+    T &operator[](size_t i) { Q_ASSERT(i < size_t(d->size)); detach(); return begin()[i]; }
+    T &at(size_t i) { Q_ASSERT(i < size_t(d->size)); detach(); return begin()[i]; }
+
     const T &operator[](size_t i) const { Q_ASSERT(i < size_t(d->size)); return begin()[i]; }
     const T &at(size_t i) const { Q_ASSERT(i < size_t(d->size)); return begin()[i]; }
+
+    T &front()
+    {
+        Q_ASSERT(!isEmpty());
+        detach();
+        return *begin();
+    }
+
+    T &back()
+    {
+        Q_ASSERT(!isEmpty());
+        detach();
+        return *(end() - 1);
+    }
 
     const T &front() const
     {
@@ -229,6 +249,11 @@ public:
     void clear()
     {
         d.clear();
+    }
+
+    void detach()
+    {
+        d.detach();
     }
 
 private:

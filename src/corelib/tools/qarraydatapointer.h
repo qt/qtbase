@@ -121,7 +121,31 @@ public:
         d = Data::sharedEmpty();
     }
 
+    bool detach()
+    {
+        if (d->ref.isShared()) {
+            Data *copy = clone();
+            QArrayDataPointer old(d);
+            d = copy;
+            return true;
+        }
+
+        return false;
+    }
+
 private:
+    Data *clone() const Q_REQUIRED_RESULT
+    {
+        QArrayDataPointer copy(Data::allocate(d->alloc ? d->alloc : d->size,
+                    d->capacityReserved));
+        if (d->size)
+            copy->copyAppend(d->begin(), d->end());
+
+        Data *result = copy.d;
+        copy.d = Data::sharedNull();
+        return result;
+    }
+
     Data *d;
 };
 
