@@ -104,7 +104,20 @@ contains(INSTALLS, target) {
         # TESTDATA consists of the files to install (source)...
         $$tdif = $$file
 
-        # ... and the destination preserves the relative path
+        # ... and the destination preserves the relative path.
+        # Strip any leading ../ from the testdata, so that installation does not escape
+        # the test's directory in the case of e.g.
+        #
+        #  TARGET   = ../tst_qprocess
+        #  TESTDATA = ../thing1 ../thing2
+        #
+        # The testdata should end up at $$[QT_INSTALL_TESTS]/tst_qprocess/thing1,
+        # rather than $$[QT_INSTALL_TESTS]/tst_qprocess/../thing1.
+        #
+        # Note that this does not guarantee the same relative path between test binary
+        # and testdata in the build and install tree, but should cover most cases.
+        #
+        file = $$replace(file, ^(\\.\\./)+, )
         $$tdip = $${target.path}/$$dirname(file)
 
         INSTALLS += $$tdi
