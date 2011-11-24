@@ -3,9 +3,8 @@ CONFIG -= qt app_bundle
 CONFIG += console
 DESTDIR = ./
 
-TARGET = "one space"
+TARGET = one space
 
-# no install rule for application used by test
-INSTALLS =
-
-
+# This app is testdata for tst_qprocess
+target.path = $$[QT_INSTALL_TESTS]/tst_qprocess/testProcessSpacesArgs
+INSTALLS += target

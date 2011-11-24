@@ -56,6 +56,8 @@ public:
 protected:
     bool event(QEvent *event);
 private slots:
+    void initTestCase();
+
     void load();
     void load2();
     void threadLoad();
@@ -74,6 +76,14 @@ tst_QTranslator::tst_QTranslator()
 {
     show();
     hide();
+}
+
+void tst_QTranslator::initTestCase()
+{
+    // chdir into the directory containing our testdata,
+    // to make the code simpler (load testdata via relative paths)
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("hellotr_la.qm")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 }
 
 bool tst_QTranslator::event(QEvent *event)
@@ -228,10 +238,11 @@ void tst_QTranslator::loadFromResource()
 
 void tst_QTranslator::loadDirectory()
 {
-    QVERIFY(QFileInfo("../qtranslator").isDir());
+    QString current_base = QDir::current().dirName();
+    QVERIFY(QFileInfo("../" + current_base).isDir());
 
     QTranslator tor;
-    tor.load("qtranslator", "..");
+    tor.load(current_base, "..");
     QVERIFY(tor.isEmpty());
 }
 

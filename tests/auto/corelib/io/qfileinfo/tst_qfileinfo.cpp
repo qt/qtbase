@@ -286,7 +286,7 @@ void tst_QFileInfo::isFile_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << false;
-    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << true;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfileinfo.cpp") << true;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << true;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
@@ -319,13 +319,13 @@ void tst_QFileInfo::isDir_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << true;
-    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << false;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfileinfo.cpp") << false;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << false;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 
-    QTest::newRow("simple dir") << SRCDIR "resources" << true;
-    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
+    QTest::newRow("simple dir") << QFINDTESTDATA("resources") << true;
+    QTest::newRow("simple dir with slash") << QFINDTESTDATA("resources/") << true;
 
     QTest::newRow("broken link") << "brokenlink.lnk" << false;
 
@@ -365,8 +365,8 @@ void tst_QFileInfo::isRoot_data()
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data5") << ":/" << true;
 
-    QTest::newRow("simple dir") << SRCDIR "resources" << false;
-    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << false;
+    QTest::newRow("simple dir") << QFINDTESTDATA("resources") << false;
+    QTest::newRow("simple dir with slash") << QFINDTESTDATA("resources/") << false;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
@@ -397,21 +397,21 @@ void tst_QFileInfo::exists_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QDir::currentPath() << true;
-    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << true;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfileinfo.cpp") << true;
     QTest::newRow("data2") << "/I/do_not_expect_this_path_to_exist/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data4") << ":/tst_qfileinfo/resources/file1" << true;
     QTest::newRow("data5") << ":/I/do_not_expect_this_path_to_exist/" << false;
-    QTest::newRow("data6") << SRCDIR "resources/*" << false;
-    QTest::newRow("data7") << SRCDIR "resources/*.foo" << false;
-    QTest::newRow("data8") << SRCDIR "resources/*.ext1" << false;
-    QTest::newRow("data9") << SRCDIR "resources/file?.ext1" << false;
+    QTest::newRow("data6") << (QFINDTESTDATA("resources/") + "*") << false;
+    QTest::newRow("data7") << (QFINDTESTDATA("resources/") + "*.foo") << false;
+    QTest::newRow("data8") << (QFINDTESTDATA("resources/") + "*.ext1") << false;
+    QTest::newRow("data9") << (QFINDTESTDATA("resources/") + "file?.ext1") << false;
     QTest::newRow("data10") << "." << true;
     QTest::newRow("data11") << ". " << false;
     QTest::newRow("empty") << "" << false;
 
-    QTest::newRow("simple dir") << SRCDIR "resources" << true;
-    QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
+    QTest::newRow("simple dir") << QFINDTESTDATA("resources") << true;
+    QTest::newRow("simple dir with slash") << QFINDTESTDATA("resources/") << true;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
@@ -557,7 +557,7 @@ void tst_QFileInfo::canonicalFilePath()
     // test symlinks
     QFile::remove("link.lnk");
     {
-        QFile file(SRCDIR "tst_qfileinfo.cpp");
+        QFile file(QFINDTESTDATA("tst_qfileinfo.cpp"));
         if (file.link("link.lnk")) {
             QFileInfo info1(file);
             QFileInfo info2("link.lnk");
@@ -583,7 +583,7 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
 
             QFileInfo info3(link + QDir::separator() + "link.lnk");
-            QFileInfo info4(SRCDIR "tst_qfileinfo.cpp");
+            QFileInfo info4(QFINDTESTDATA("tst_qfileinfo.cpp"));
             QVERIFY(!info3.canonicalFilePath().isEmpty());
             QCOMPARE(info4.canonicalFilePath(), info3.canonicalFilePath());
 
@@ -830,7 +830,7 @@ void tst_QFileInfo::permission_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << int(QFile::ExeUser) << true;
-    QTest::newRow("data1") << SRCDIR "tst_qfileinfo.cpp" << int(QFile::ReadUser) << true;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfileinfo.cpp") << int(QFile::ReadUser) << true;
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ReadUser) << true;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::WriteUser) << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ExeUser) << false;
@@ -898,11 +898,11 @@ void tst_QFileInfo::compare_data()
 #endif
 
     QTest::newRow("data0")
-        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
-        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << QFINDTESTDATA("tst_qfileinfo.cpp")
+        << QFINDTESTDATA("tst_qfileinfo.cpp")
         << true;
     QTest::newRow("data1")
-        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << QFINDTESTDATA("tst_qfileinfo.cpp")
         << QString::fromLatin1("/tst_qfileinfo.cpp")
         << false;
     QTest::newRow("data2")
@@ -910,8 +910,8 @@ void tst_QFileInfo::compare_data()
         << QDir::currentPath() + QString::fromLatin1("/tst_qfileinfo.cpp")
         << true;
     QTest::newRow("casesense1")
-        << QString::fromLatin1(SRCDIR "tst_qfileInfo.cpp")
-        << QString::fromLatin1(SRCDIR "tst_qfileinfo.cpp")
+        << QFINDTESTDATA("tst_qfileinfo.cpp").replace("info", "Info")
+        << QFINDTESTDATA("tst_qfileinfo.cpp")
 #if defined(Q_OS_WIN)
         << true;
 #elif defined(Q_OS_MAC)
@@ -1098,7 +1098,7 @@ void tst_QFileInfo::isSymLink_data()
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
 
-    QFile file1(SRCDIR "tst_qfileinfo.cpp");
+    QFile file1(QFINDTESTDATA("tst_qfileinfo.cpp"));
     QVERIFY(file1.link("link.lnk"));
 
     QFile file2("dummyfile");
@@ -1110,8 +1110,8 @@ void tst_QFileInfo::isSymLink_data()
     QTest::addColumn<bool>("isSymLink");
     QTest::addColumn<QString>("linkTarget");
 
-    QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
-    QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
+    QTest::newRow("existent file") << QFINDTESTDATA("tst_qfileinfo.cpp") << false << "";
+    QTest::newRow("link") << "link.lnk" << true << QFileInfo(QFINDTESTDATA("tst_qfileinfo.cpp")).absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
 }
 
@@ -1347,7 +1347,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     }
     {
         //File symlinks
-        QFileInfo target(SRCDIR "tst_qfileinfo.cpp");
+        QFileInfo target(QFINDTESTDATA("tst_qfileinfo.cpp"));
         QString absTarget = QDir::toNativeSeparators(target.absoluteFilePath());
         QString absSymlink = QDir::toNativeSeparators(pwd.absolutePath()).append("\\abs_symlink.cpp");
         QString relTarget = QDir::toNativeSeparators(pwd.relativeFilePath(target.absoluteFilePath()));
@@ -1462,7 +1462,7 @@ void tst_QFileInfo::isExecutable()
     QFileInfo fi(appPath);
     QCOMPARE(fi.isExecutable(), true);
 
-    QCOMPARE(QFileInfo(SRCDIR "qfileinfo.pro").isExecutable(), false);
+    QCOMPARE(QFileInfo(QFINDTESTDATA("qfileinfo.pro")).isExecutable(), false);
 
 #ifdef Q_OS_UNIX
     QFile::remove("link.lnk");
@@ -1474,7 +1474,7 @@ void tst_QFileInfo::isExecutable()
     QFile::remove("link.lnk");
 
     // Symlink to .pro file
-    QFile proFile(SRCDIR "qfileinfo.pro");
+    QFile proFile(QFINDTESTDATA("qfileinfo.pro"));
     QVERIFY(proFile.link("link.lnk"));
     QCOMPARE(QFileInfo("link.lnk").isExecutable(), false);
     QFile::remove("link.lnk");

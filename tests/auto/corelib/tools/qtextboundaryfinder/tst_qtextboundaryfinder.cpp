@@ -69,7 +69,9 @@ private slots:
 void tst_QTextBoundaryFinder::init()
 {
 #ifndef Q_OS_IRIX
-    QDir::setCurrent(SRCDIR);
+    // chdir into the top-level data dir, then refer to our testdata using relative paths
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("data")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 #endif
 }
 

@@ -12,15 +12,12 @@ win32 {
     }
 }
 
-wince* {
-    addFiles.files = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp
-    addFiles.path = .
-    res.files = ../resources
-    res.path = .
-    DEPLOYMENT += addFiles
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
-}
+TESTDATA += \
+    ../rfc3261.txt \
+    ../shift-jis.txt \
+    ../task113817.txt \
+    ../qtextstream.qrc \
+    ../tst_qtextstream.cpp \
+    ../resources
 
 mac: CONFIG += insignificant_test # QTBUG-22767

@@ -10,26 +10,14 @@ runtime_resource.commands = $$QMAKE_RCC -root /runtime_resource/ -binary $${runt
 QMAKE_EXTRA_TARGETS = runtime_resource
 PRE_TARGETDEPS += $${runtime_resource.target}
 
-wince* {
-    deploy.files += runtime_resource.rcc parentdir.txt
-    test.files = testqrc/*
-    test.path = testqrc
-    alias.files = testqrc/aliasdir/*
-    alias.path = testqrc/aliasdir
-    other.files = testqrc/otherdir/*
-    other.path = testqrc/otherdir
-    search1.files = testqrc/searchpath1/*
-    search1.path = testqrc/searchpath1
-    search2.files = testqrc/searchpath2/*
-    search2.path = testqrc/searchpath2
-    sub.files = testqrc/subdir/*
-    sub.path = testqrc/subdir
-    testsub.files = testqrc/test/*
-    testsub.path = testqrc/test
-    testsub2.files = testqrc/test/test/*
-    testsub2.path = testqrc/test/test
-    DEPLOYMENT += deploy test alias other search1 search2 sub testsub testsub2
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+TESTDATA += \
+    parentdir.txt \
+    testqrc/*
+
+# Special case needed for runtime_resource.rcc installation,
+# since it does not exist at qmake runtime.
+load(testcase)  # to get value of target.path
+runtime_resource_install.CONFIG = no_check_exist
+runtime_resource_install.files = $$OUT_PWD/$${runtime_resource.target}
+runtime_resource_install.path = $${target.path}
+INSTALLS += runtime_resource_install

@@ -10,6 +10,6 @@ SOURCES = tst_qsharedpointer.cpp \
 HEADERS = forwarddeclared.h \
     wrapper.h
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+TESTDATA += forwarddeclared.cpp forwarddeclared.h
 
 include(externaltests.pri)

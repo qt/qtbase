@@ -47,7 +47,6 @@
 
 #include <QBuffer>
 #include <QByteArray>
-#include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
 #include <QTcpSocket>
@@ -247,16 +246,16 @@ private:
 void tst_QTextStream::initTestCase()
 {
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+
+    // chdir into the testdata dir and refer to our helper apps with relative paths
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("stdinProcess")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 }
 
 // Testing get/set functions
 void tst_QTextStream::getSetCheck()
 {
     // Initialize codecs
-    int argc = 0;
-    char **argv = 0;
-    QCoreApplication app(argc, argv);
-
     QTextStream obj1;
     // QTextCodec * QTextStream::codec()
     // void QTextStream::setCodec(QTextCodec *)
@@ -753,7 +752,7 @@ void tst_QTextStream::generateAllData(bool for_QString)
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readLineUntilNull()
 {
-    QFile file(SRCDIR "rfc3261.txt");
+    QFile file(QFINDTESTDATA("rfc3261.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QTextStream stream(&file);
@@ -872,7 +871,7 @@ void tst_QTextStream::lineCount_data()
     QTest::newRow("buffersize+1 line") << QByteArray(16384, '\n') << 16384;
     QTest::newRow("buffersize+2 line") << QByteArray(16385, '\n') << 16385;
 
-    QFile file(SRCDIR "rfc3261.txt"); file.open(QFile::ReadOnly);
+    QFile file(QFINDTESTDATA("rfc3261.txt")); file.open(QFile::ReadOnly);
     QTest::newRow("rfc3261") << file.readAll() << 15067;
 }
 
@@ -908,7 +907,7 @@ void tst_QTextStream::performance()
 
         stopWatch.restart();
         int nlines1 = 0;
-        QFile file(SRCDIR "rfc3261.txt");
+        QFile file(QFINDTESTDATA("rfc3261.txt"));
         QVERIFY(file.open(QFile::ReadOnly));
 
         while (!file.atEnd()) {
@@ -920,7 +919,7 @@ void tst_QTextStream::performance()
         stopWatch.restart();
 
         int nlines2 = 0;
-        QFile file2(SRCDIR "rfc3261.txt");
+        QFile file2(QFINDTESTDATA("rfc3261.txt"));
         QVERIFY(file2.open(QFile::ReadOnly));
 
         QTextStream stream(&file2);
@@ -1089,11 +1088,7 @@ void tst_QTextStream::ws_manipulator()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::stillOpenWhenAtEnd()
 {
-    int argc = 0;
-    char **argv = 0;
-    QCoreApplication app(argc, argv);
-
-    QFile file(SRCDIR "tst_qtextstream.cpp");
+    QFile file(QFINDTESTDATA("tst_qtextstream.cpp"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QTextStream stream(&file);
@@ -1141,7 +1136,7 @@ void tst_QTextStream::readNewlines()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::seek()
 {
-    QFile file(SRCDIR "rfc3261.txt");
+    QFile file(QFINDTESTDATA("rfc3261.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QTextStream stream(&file);
@@ -1189,8 +1184,6 @@ void tst_QTextStream::seek()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos()
 {
-    int argc = 1;
-    QCoreApplication app(argc, 0);
     {
         // Strings
         QString str("this is a test");
@@ -1236,7 +1229,7 @@ void tst_QTextStream::pos()
     }
     {
         // Latin1 device
-        QFile file(SRCDIR "rfc3261.txt");
+        QFile file(QFINDTESTDATA("rfc3261.txt"));
         QVERIFY(file.open(QIODevice::ReadOnly));
 
         QTextStream stream(&file);
@@ -1268,7 +1261,7 @@ void tst_QTextStream::pos()
     {
         // Shift-JIS device
         for (int i = 0; i < 2; ++i) {
-            QFile file(SRCDIR "shift-jis.txt");
+            QFile file(QFINDTESTDATA("shift-jis.txt"));
             if (i == 0)
                 QVERIFY(file.open(QIODevice::ReadOnly));
             else
@@ -2870,22 +2863,6 @@ void tst_QTextStream::int_write_with_locale()
 
 // ------------------------------------------------------------------------------
 
-// like QTEST_APPLESS_MAIN, but initialising the locale on Unix
-#if defined (Q_OS_UNIX)
-QT_BEGIN_NAMESPACE
-extern bool qt_locale_initialized;
-QT_END_NAMESPACE
-#endif
-
-int main(int argc, char *argv[])
-{
-#if defined (Q_OS_UNIX)
-    ::setlocale(LC_ALL, "");
-    qt_locale_initialized = true;
-#endif
-    tst_QTextStream tc;
-    return QTest::qExec(&tc, argc, argv);
-}
-
+QTEST_MAIN(tst_QTextStream)
 #include "tst_qtextstream.moc"
 

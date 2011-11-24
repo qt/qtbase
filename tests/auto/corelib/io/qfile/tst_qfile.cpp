@@ -348,6 +348,10 @@ void tst_QFile::cleanup()
 
 void tst_QFile::initTestCase()
 {
+    // chdir to testdata directory and use relative paths.
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("testfile.txt")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+
     QFile::remove("noreadfile");
 
     // create a file and make it read-only
@@ -404,7 +408,7 @@ void tst_QFile::cleanupTestCase()
 
 void tst_QFile::exists()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     QCOMPARE( f.exists(), (bool)TRUE );
 
     QFile file("nobodyhassuchafile");
@@ -443,7 +447,7 @@ void tst_QFile::open_data()
     static const QString denied("Permission denied");
 #endif
     QTest::newRow( "exist_readOnly"  )
-        << QString(SRCDIR "testfile.txt") << int(QIODevice::ReadOnly)
+        << QString(QFINDTESTDATA("testfile.txt")) << int(QIODevice::ReadOnly)
         << (bool)TRUE << QFile::NoError;
 
     QTest::newRow( "exist_writeOnly" )
@@ -469,7 +473,7 @@ void tst_QFile::open_data()
     QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << (bool)FALSE
         << QFile::OpenError;
 
-    QTest::newRow("two-dots") << QString(SRCDIR "two.dots.file") << int(QIODevice::ReadOnly) << (bool)TRUE
+    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << (bool)TRUE
         << QFile::NoError;
 
     QTest::newRow("readonlyfile") << QString("readonlyfile") << int(QIODevice::WriteOnly)
@@ -512,7 +516,7 @@ void tst_QFile::open()
 
 void tst_QFile::openUnbuffered()
 {
-    QFile file(SRCDIR "testfile.txt");
+    QFile file(QFINDTESTDATA("testfile.txt"));
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Unbuffered));
     char c = '\0';
     QVERIFY(file.seek(1));
@@ -545,7 +549,7 @@ void tst_QFile::size_data()
     QTest::addColumn<QString>("filename");
     QTest::addColumn<qint64>("size");
 
-    QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
+    QTest::newRow( "exist01" ) << QString(QFINDTESTDATA("testfile.txt")) << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
     QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
@@ -687,7 +691,7 @@ void tst_QFile::setSizeSeek()
 
 void tst_QFile::atEnd()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     QVERIFY(f.open( QIODevice::ReadOnly ));
 
     int size = f.size();
@@ -700,7 +704,7 @@ void tst_QFile::atEnd()
 
 void tst_QFile::readLine()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     QVERIFY(f.open( QIODevice::ReadOnly ));
 
     int i = 0;
@@ -720,7 +724,7 @@ void tst_QFile::readLine()
 
 void tst_QFile::readLine2()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     f.open( QIODevice::ReadOnly );
 
     char p[128];
@@ -755,13 +759,13 @@ void tst_QFile::readAll_data()
 {
     QTest::addColumn<bool>("textMode");
     QTest::addColumn<QString>("fileName");
-    QTest::newRow( "TextMode unixfile" ) <<  true << SRCDIR "testfile.txt";
-    QTest::newRow( "BinaryMode unixfile" ) <<  false << SRCDIR "testfile.txt";
-    QTest::newRow( "TextMode dosfile" ) <<  true << SRCDIR "dosfile.txt";
-    QTest::newRow( "BinaryMode dosfile" ) <<  false << SRCDIR "dosfile.txt";
-    QTest::newRow( "TextMode bigfile" ) <<  true << SRCDIR "tst_qfile.cpp";
-    QTest::newRow( "BinaryMode  bigfile" ) <<  false << SRCDIR "tst_qfile.cpp";
-    QVERIFY(QFile(SRCDIR "tst_qfile.cpp").size() > 64*1024);
+    QTest::newRow( "TextMode unixfile" ) <<  true << QFINDTESTDATA("testfile.txt");
+    QTest::newRow( "BinaryMode unixfile" ) <<  false << QFINDTESTDATA("testfile.txt");
+    QTest::newRow( "TextMode dosfile" ) <<  true << QFINDTESTDATA("dosfile.txt");
+    QTest::newRow( "BinaryMode dosfile" ) <<  false << QFINDTESTDATA("dosfile.txt");
+    QTest::newRow( "TextMode bigfile" ) <<  true << QFINDTESTDATA("tst_qfile.cpp");
+    QTest::newRow( "BinaryMode  bigfile" ) <<  false << QFINDTESTDATA("tst_qfile.cpp");
+    QVERIFY(QFile(QFINDTESTDATA("tst_qfile.cpp")).size() > 64*1024);
 }
 
 void tst_QFile::readAll()
@@ -923,7 +927,7 @@ void tst_QFile::readLineStdin_lineByLine()
 void tst_QFile::text()
 {
     // dosfile.txt is a binary CRLF file
-    QFile file(SRCDIR "dosfile.txt");
+    QFile file(QFINDTESTDATA("dosfile.txt"));
     QVERIFY(file.open(QFile::Text | QFile::ReadOnly));
     QCOMPARE(file.readLine(),
             QByteArray("/dev/system/root     /                    reiserfs   acl,user_xattr        1 1\n"));
@@ -936,7 +940,7 @@ void tst_QFile::text()
 
 void tst_QFile::missingEndOfLine()
 {
-    QFile file(SRCDIR "noendofline.txt");
+    QFile file(QFINDTESTDATA("noendofline.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     int nlines = 0;
@@ -950,7 +954,7 @@ void tst_QFile::missingEndOfLine()
 
 void tst_QFile::readBlock()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     f.open( QIODevice::ReadOnly );
 
     int length = 0;
@@ -965,7 +969,7 @@ void tst_QFile::readBlock()
 
 void tst_QFile::getch()
 {
-    QFile f( SRCDIR "testfile.txt" );
+    QFile f( QFINDTESTDATA("testfile.txt") );
     f.open( QIODevice::ReadOnly );
 
     char c;
@@ -982,7 +986,7 @@ void tst_QFile::getch()
 
 void tst_QFile::ungetChar()
 {
-    QFile f(SRCDIR "testfile.txt");
+    QFile f(QFINDTESTDATA("testfile.txt"));
     QVERIFY(f.open(QIODevice::ReadOnly));
 
     QByteArray array = f.readLine();
@@ -1083,7 +1087,7 @@ void tst_QFile::permissions_data()
     QTest::addColumn<bool>("expected");
 
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true;
-    QTest::newRow("data1") << SRCDIR "tst_qfile.cpp" << uint(QFile::ReadUser) << true;
+    QTest::newRow("data1") << QFINDTESTDATA("tst_qfile.cpp") << uint(QFile::ReadUser) << true;
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ReadUser) << true;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::WriteUser) << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << uint(QFile::ExeUser) << false;
@@ -1121,8 +1125,8 @@ void tst_QFile::copy()
     QFile::setPermissions("tst_qfile_copy.cpp", QFile::WriteUser);
     QFile::remove("tst_qfile_copy.cpp");
     QFile::remove("test2");
-    QVERIFY(QFile::copy(SRCDIR "tst_qfile.cpp", "tst_qfile_copy.cpp"));
-    QFile in1(SRCDIR "tst_qfile.cpp"), in2("tst_qfile_copy.cpp");
+    QVERIFY(QFile::copy(QFINDTESTDATA("tst_qfile.cpp"), "tst_qfile_copy.cpp"));
+    QFile in1(QFINDTESTDATA("tst_qfile.cpp")), in2("tst_qfile_copy.cpp");
     QVERIFY(in1.open(QFile::ReadOnly));
     QVERIFY(in2.open(QFile::ReadOnly));
     QByteArray data1 = in1.readAll(), data2 = in2.readAll();
@@ -1169,9 +1173,9 @@ void tst_QFile::copyAfterFail()
 void tst_QFile::copyRemovesTemporaryFile() const
 {
     const QString newName(QLatin1String("copyRemovesTemporaryFile"));
-    QVERIFY(QFile::copy(SRCDIR "forCopying.txt", newName));
+    QVERIFY(QFile::copy(QFINDTESTDATA("forCopying.txt"), newName));
 
-    QVERIFY(!QFile::exists(QLatin1String( SRCDIR "qt_temp.XXXXXX")));
+    QVERIFY(!QFile::exists(QFINDTESTDATA("qt_temp.XXXXXX")));
     QVERIFY(QFile::remove(newName));
 }
 
@@ -1179,7 +1183,7 @@ void tst_QFile::copyShouldntOverwrite()
 {
     // Copy should not overwrite existing files.
     QFile::remove("tst_qfile.cpy");
-    QFile file(SRCDIR "tst_qfile.cpp");
+    QFile file(QFINDTESTDATA("tst_qfile.cpp"));
     QVERIFY(file.copy("tst_qfile.cpy"));
 
     bool ok = QFile::setPermissions("tst_qfile.cpy", QFile::WriteOther);
@@ -1271,10 +1275,10 @@ void tst_QFile::link()
 {
     QFile::remove("myLink.lnk");
 
-    QFileInfo info1(SRCDIR "tst_qfile.cpp");
+    QFileInfo info1(QFINDTESTDATA("tst_qfile.cpp"));
     QString referenceTarget = QDir::cleanPath(info1.absoluteFilePath());
 
-    QVERIFY(QFile::link(SRCDIR "tst_qfile.cpp", "myLink.lnk"));
+    QVERIFY(QFile::link(QFINDTESTDATA("tst_qfile.cpp"), "myLink.lnk"));
 
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
@@ -1386,13 +1390,13 @@ void tst_QFile::readTextFile()
 void tst_QFile::readTextFile2()
 {
     {
-        QFile file(SRCDIR "testlog.txt");
+        QFile file(QFINDTESTDATA("testlog.txt"));
         QVERIFY(file.open(QIODevice::ReadOnly));
         file.read(4097);
     }
 
     {
-        QFile file(SRCDIR "testlog.txt");
+        QFile file(QFINDTESTDATA("testlog.txt"));
         QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
         file.read(4097);
     }
@@ -2015,7 +2019,7 @@ public:
     {
         if (fileName.startsWith(":!")) {
             QDir dir;
-            QString realFile = SRCDIR + fileName.mid(2);
+            QString realFile = QFINDTESTDATA(fileName.mid(2));
             if (dir.exists(realFile))
                 return new QFSFileEngine(realFile);
         }
@@ -2379,7 +2383,7 @@ void tst_QFile::renameWithAtEndSpecialFile() const
     /* Cleanup, so we're a bit more robust. */
     QFile::remove(newName);
 
-    const QString originalName(QString(SRCDIR "forRenaming.txt"));
+    const QString originalName(QString(QFINDTESTDATA("forRenaming.txt")));
 
     PeculiarAtEnd file;
     file.setFileName(originalName);
@@ -2502,7 +2506,7 @@ void tst_QFile::handle()
 {
     int fd;
 #if !defined(Q_OS_WINCE)
-    QFile file(SRCDIR "tst_qfile.cpp");
+    QFile file(QFINDTESTDATA("tst_qfile.cpp"));
     QVERIFY(file.open(QIODevice::ReadOnly));
     fd = int(file.handle());
     QVERIFY(fd > 2);
@@ -2533,7 +2537,7 @@ void tst_QFile::handle()
 
     //test round trip of adopted stdio file handle
     QFile file2;
-    FILE *fp = fopen(SRCDIR "tst_qfile.cpp", "r");
+    FILE *fp = fopen(qPrintable(QFINDTESTDATA("tst_qfile.cpp")), "r");
     file2.open(fp, QIODevice::ReadOnly);
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
@@ -2542,7 +2546,7 @@ void tst_QFile::handle()
     //test round trip of adopted posix file handle
 #ifdef Q_OS_UNIX
     QFile file3;
-    fd = QT_OPEN(SRCDIR "tst_qfile.cpp", QT_OPEN_RDONLY);
+    fd = QT_OPEN(qPrintable(QFINDTESTDATA("tst_qfile.cpp")), QT_OPEN_RDONLY);
     file3.open(fd, QIODevice::ReadOnly);
     QCOMPARE(int(file3.handle()), fd);
     QT_CLOSE(fd);
@@ -2599,8 +2603,8 @@ void tst_QFile::readEof_data()
     QTest::addColumn<QString>("filename");
     QTest::addColumn<int>("imode");
 
-    QTest::newRow("buffered") << SRCDIR "testfile.txt" << 0;
-    QTest::newRow("unbuffered") << SRCDIR "testfile.txt" << int(QIODevice::Unbuffered);
+    QTest::newRow("buffered") << QFINDTESTDATA("testfile.txt") << 0;
+    QTest::newRow("unbuffered") << QFINDTESTDATA("testfile.txt") << int(QIODevice::Unbuffered);
 
 #if defined(Q_OS_UNIX)
     QTest::newRow("sequential,buffered") << "/dev/null" << 0;
@@ -2945,7 +2949,7 @@ void tst_QFile::mapOpenMode()
 
 void tst_QFile::openDirectory()
 {
-    QFile f1(SRCDIR "resources");
+    QFile f1(QFINDTESTDATA("resources"));
     // it's a directory, it must exist
     QVERIFY(f1.exists());
 
@@ -3070,7 +3074,7 @@ void tst_QFile::resize()
 void tst_QFile::objectConstructors()
 {
     QObject ob;
-    QFile* file1 = new QFile(SRCDIR "testfile.txt", &ob);
+    QFile* file1 = new QFile(QFINDTESTDATA("testfile.txt"), &ob);
     QFile* file2 = new QFile(&ob);
     QVERIFY(file1->exists());
     QVERIFY(!file2->exists());

@@ -1,8 +1,10 @@
 SOURCES += syslocaleapp.cpp
 DESTDIR = ./
 
+CONFIG -= app_bundle
+
 QT = core
 
-# no install rule for application used by test
-INSTALLS =
-CONFIG -= app_bundle
+# This app is testdata for tst_qlocale
+target.path = $$[QT_INSTALL_TESTS]/tst_qlocale/$$TARGET
+INSTALLS += target

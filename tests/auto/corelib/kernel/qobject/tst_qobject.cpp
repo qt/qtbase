@@ -2796,7 +2796,8 @@ void tst_QObject::dynamicProperties()
 void tst_QObject::recursiveSignalEmission()
 {
     QProcess proc;
-    proc.start("./signalbug");
+    // signalbug helper app should always be next to this test binary
+    proc.start(QCoreApplication::applicationDirPath() + "/signalbug");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);

@@ -3,11 +3,4 @@ TARGET = tst_qdatastream
 QT += widgets testlib
 SOURCES = tst_qdatastream.cpp
 
-wince* {
-    addFiles.files = datastream.q42
-    addFiles.path = .
-    DEPLOYMENT += addFiles
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+TESTDATA += datastream.q42

@@ -11,11 +11,4 @@ win32 {
     }
 }
 
-wince* {
-    addFiles.files = ../*.dll ../*.dl2 ../mylib_noextension
-    addFiles.path = .
-    DEPLOYMENT += addFiles
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
-}
+TESTDATA += ../library_path/invalid.so

@@ -2917,7 +2917,7 @@ void tst_QDataStream::streamRealDataTypes()
     for (int i = 0; i < 2; ++i) {
         QFile file;
         if (i == 0) {
-            file.setFileName(SRCDIR "datastream.q42");
+            file.setFileName(QFINDTESTDATA("datastream.q42"));
         } else {
             file.setFileName("datastream.tmp");
 

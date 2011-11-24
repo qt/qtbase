@@ -147,7 +147,7 @@ void tst_QIODevice::constructing_QFile()
 
     QVERIFY(!device->isOpen());
 
-    file.setFileName(SRCDIR "tst_qiodevice.cpp");
+    file.setFileName(QFINDTESTDATA("tst_qiodevice.cpp"));
     QVERIFY(file.open(QFile::ReadOnly));
     QVERIFY(device->isOpen());
     QCOMPARE((int) device->openMode(), (int) QFile::ReadOnly);
@@ -176,7 +176,7 @@ void tst_QIODevice::constructing_QFile()
 
 void tst_QIODevice::read_QByteArray()
 {
-    QFile f(SRCDIR "tst_qiodevice.cpp");
+    QFile f(QFINDTESTDATA("tst_qiodevice.cpp"));
     f.open(QIODevice::ReadOnly);
 
     QByteArray b = f.read(10);

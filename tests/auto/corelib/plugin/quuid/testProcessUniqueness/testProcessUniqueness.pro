@@ -3,6 +3,6 @@ CONFIG += console
 
 DESTDIR = ./
 
-# no install rule for application used by test
-INSTALLS =
-
+# This app is testdata for tst_quuid
+target.path = $$[QT_INSTALL_TESTS]/tst_quuid/$$TARGET
+INSTALLS += target

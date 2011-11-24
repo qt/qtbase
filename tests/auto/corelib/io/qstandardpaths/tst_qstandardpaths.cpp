@@ -73,8 +73,7 @@ private slots:
 
 private:
     void setCustomLocations() {
-        m_thisDir = QFile::decodeName(SRCDIR);
-        m_thisDir.chop(1); // remove trailing slash!
+        m_thisDir = QFileInfo(QFINDTESTDATA("tst_qstandardpaths.cpp")).absolutePath();
 
         qputenv("XDG_CONFIG_HOME", QFile::encodeName(m_thisDir));
         QDir parent(m_thisDir);
@@ -116,6 +115,8 @@ void tst_qstandardpaths::testCustomLocations()
     // test writableLocation()
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), m_thisDir);
 
+    QString thisDir_base = QFileInfo(m_thisDir).fileName();
+
     // test locate()
     const QString thisFileName = QString::fromLatin1("tst_qstandardpaths.cpp");
     QVERIFY(QFile::exists(m_thisDir + '/' + thisFileName));
@@ -123,9 +124,9 @@ void tst_qstandardpaths::testCustomLocations()
     QVERIFY(!thisFile.isEmpty());
     QVERIFY(thisFile.endsWith(thisFileName));
 
-    const QString dir = QStandardPaths::locate(QStandardPaths::ConfigLocation, QString::fromLatin1("../qstandardpaths"), QStandardPaths::LocateDirectory);
+    const QString dir = QStandardPaths::locate(QStandardPaths::ConfigLocation, QString::fromLatin1("../") + thisDir_base, QStandardPaths::LocateDirectory);
     QVERIFY(!dir.isEmpty());
-    const QString thisDirAsFile = QStandardPaths::locate(QStandardPaths::ConfigLocation, QString::fromLatin1("../qstandardpaths"));
+    const QString thisDirAsFile = QStandardPaths::locate(QStandardPaths::ConfigLocation, QString::fromLatin1("../") + thisDir_base);
     QVERIFY(thisDirAsFile.isEmpty()); // not a file
 
     const QStringList dirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);

@@ -291,15 +291,9 @@ void tst_QThreadStorage::ensureCleanupOrder()
 void tst_QThreadStorage::crashOnExit()
 {
     QProcess process;
-#ifdef Q_OS_WIN
-# ifdef QT_NO_DEBUG
-    process.start("release/crashOnExit");
-# else
-    process.start("debug/crashOnExit");
-# endif
-#else
-    process.start("./crashOnExit");
-#endif
+    // crashOnExit is always expected to be in the same directory
+    // as this test binary
+    process.start(QCoreApplication::applicationDirPath() + "/crashOnExit");
     QVERIFY(process.waitForFinished());
     QVERIFY(process.exitStatus() != QProcess::CrashExit);
 }

@@ -7,6 +7,6 @@ mac {
   CONFIG -= app_bundle
 }
 
-# no install rule for application used by test
-INSTALLS =
-
+# This app is testdata for tst_qprocess
+target.path = $$[QT_INSTALL_TESTS]/tst_qprocess/$$TARGET
+INSTALLS += target

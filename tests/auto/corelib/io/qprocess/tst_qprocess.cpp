@@ -73,10 +73,9 @@ class tst_QProcess : public QObject
 {
     Q_OBJECT
 
-#ifdef QT_NO_PROCESS
 public slots:
     void initTestCase();
-#else
+#ifndef QT_NO_PROCESS
 private slots:
     void getSetCheck();
     void constructing();
@@ -166,13 +165,18 @@ private:
 #endif
 };
 
-#ifdef QT_NO_PROCESS
 void tst_QProcess::initTestCase()
 {
+#ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess support");
+#else
+    // chdir to our testdata path and execute helper apps relative to that.
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+#endif
 }
 
-#else
+#ifndef QT_NO_PROCESS
 
 // Testing get/set functions
 void tst_QProcess::getSetCheck()

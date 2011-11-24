@@ -172,7 +172,7 @@ void tst_QByteArray::qCompress_data()
     char** tmpArgv = 0;
     QCoreApplication app(tmpArgc, tmpArgv);
 #endif
-    QFile file( SRCDIR "rfc3252.txt" );
+    QFile file( QFINDTESTDATA("rfc3252.txt") );
     QVERIFY( file.open(QIODevice::ReadOnly) );
     QTest::newRow( "04" ) << file.readAll();
 }

@@ -115,10 +115,6 @@ class tst_QLibrary : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QLibrary();
-    virtual ~tst_QLibrary();
-
 enum QLibraryOperation {
     Load = 1,
     Unload = 2,
@@ -127,6 +123,8 @@ enum QLibraryOperation {
     DontSetFileName = 0x100
 };
 private slots:
+    void initTestCase();
+
     void load();
     void load_data();
     void library_data();
@@ -146,32 +144,16 @@ private slots:
     void fileName_data();
     void fileName();
     void multipleInstancesForOneLibrary();
-
-#ifdef Q_OS_WINCE
-private:
-    QCoreApplication* app;
-#endif
 };
 
-tst_QLibrary::tst_QLibrary()
-
-{
-#ifdef Q_OS_WINCE
-    char* argv = "app";
-    int argc = 1;
-    app = new QCoreApplication(argc,&argv);
-#endif
-}
-
-tst_QLibrary::~tst_QLibrary()
-{
-#ifdef Q_OS_WINCE
-    app->quit();
-#endif
-}
-
-
 typedef int (*VersionFunction)(void);
+
+void tst_QLibrary::initTestCase()
+{
+    // chdir to our testdata directory, and use relative paths in some tests.
+    QString testdatadir = QFileInfo(QFINDTESTDATA("library_path")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdatadir), qPrintable("Could not chdir to " + testdatadir));
+}
 
 void tst_QLibrary::version_data()
 {
@@ -376,10 +358,6 @@ void tst_QLibrary::errorString_data()
 
     QString currDir = QDir::currentPath();
 
-    QString srcDir = SRCDIR;
-    if (srcDir.isEmpty())
-        srcDir = currDir;
-
     QTest::newRow("bad load()") << (int)Load << QString("nosuchlib") << false << QString("Cannot load library nosuchlib: .*");
     QTest::newRow("call errorString() on QLibrary with no d-pointer (crashtest)") << (int)(Load | DontSetFileName) << QString() << false << QString("Unknown error");
 #ifdef Q_OS_WINCE
@@ -394,7 +372,7 @@ void tst_QLibrary::errorString_data()
 //    QTest::newRow("bad unload") << (int)Unload << QString("nosuchlib.dll") << false << QString("QLibrary::unload_sys: Cannot unload nosuchlib.dll (The specified module could not be found.)");
 #elif defined Q_OS_MAC
 #else
-    QTest::newRow("load invalid file") << (int)Load << srcDir + "/library_path/invalid.so" << false << QString("Cannot load library.*");
+    QTest::newRow("load invalid file") << (int)Load << QFINDTESTDATA("library_path/invalid.so") << false << QString("Cannot load library.*");
 #endif
 }
 
@@ -569,5 +547,5 @@ void tst_QLibrary::multipleInstancesForOneLibrary()
     QCOMPARE(lib2.isLoaded(), true);
 }
 
-QTEST_APPLESS_MAIN(tst_QLibrary)
+QTEST_MAIN(tst_QLibrary)
 #include "tst_qlibrary.moc"

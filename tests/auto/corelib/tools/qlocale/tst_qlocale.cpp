@@ -372,7 +372,7 @@ void tst_QLocale::emptyCtor()
     /* because of caching of the system locale. */ \
     QProcess process; \
     process.setEnvironment(QStringList(env) << QString("LANG=%1").arg(req_lc)); \
-    process.start("syslocaleapp/syslocaleapp"); \
+    process.start(syslocaleapp_dir + "syslocaleapp"); \
     process.waitForReadyRead(); \
     QString ret = QString(process.readAll()); \
     process.waitForFinished(); \
@@ -389,10 +389,12 @@ void tst_QLocale::emptyCtor()
         env << entry;
     }
 
+    QString syslocaleapp_dir = QFINDTESTDATA("syslocaleapp/");
+
     // Get default locale.
     QProcess p;
     p.setEnvironment(env);
-    p.start("syslocaleapp/syslocaleapp");
+    p.start(syslocaleapp_dir + "syslocaleapp");
     p.waitForReadyRead();
     QString defaultLoc = QString(p.readAll());
     p.waitForFinished();

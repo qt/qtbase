@@ -583,7 +583,7 @@ void tst_QChar::normalization_data()
     int linenum = 0;
     int part = 0;
 
-    QFile f(SRCDIR "NormalizationTest.txt");
+    QFile f(QFINDTESTDATA("NormalizationTest.txt"));
     QVERIFY(f.exists());
 
     f.open(QIODevice::ReadOnly);

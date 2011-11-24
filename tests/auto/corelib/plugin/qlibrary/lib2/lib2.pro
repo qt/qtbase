@@ -26,13 +26,17 @@ win32 {
     src = $(DESTDIR)$(TARGET)
     files = libmylib.so2 system.trolltech.test.mylib.so
 }
+
+# This project is testdata for tst_qlibrary
+target.path = $$[QT_INSTALL_TESTS]$${QMAKE_DIR_SEP}tst_qlibrary
+renamed_target.path = $$target.path
+
 for(file, files) {
     QMAKE_POST_LINK += $$QMAKE_COPY $$src ..$$QMAKE_DIR_SEP$$file &&
+    renamed_target.extra += $$QMAKE_COPY $$src $(INSTALL_ROOT)$${target.path}$$QMAKE_DIR_SEP$$file &&
     CLEAN_FILES += ../$$file
 }
+renamed_target.extra = $$member(renamed_target.extra, 0, -2)
 QMAKE_POST_LINK = $$member(QMAKE_POST_LINK, 0, -2)
 
-#no special install rule for the library used by test
-INSTALLS =
-
-
+INSTALLS += target renamed_target

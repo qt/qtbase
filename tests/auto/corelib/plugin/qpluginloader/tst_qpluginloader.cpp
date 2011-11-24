@@ -95,8 +95,7 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
-    QString currDir = QDir::currentPath();
-    return currDir + "/bin/" + PREFIX + fileName + SUFFIX;
+    return QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
 }
 
 //TESTED_CLASS=
@@ -249,8 +248,8 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
 void tst_QPluginLoader::loadDebugObj()
 {
 #if defined (__ELF__)
-    QVERIFY(QFile::exists(SRCDIR "elftest/debugobj.so"));
-    QPluginLoader lib1(SRCDIR "elftest/debugobj.so");
+    QVERIFY(QFile::exists(QFINDTESTDATA("elftest/debugobj.so")));
+    QPluginLoader lib1(QFINDTESTDATA("elftest/debugobj.so"));
     QCOMPARE(lib1.load(), false);
 #endif
 }
@@ -259,21 +258,21 @@ void tst_QPluginLoader::loadCorruptElf()
 {
 #if defined (__ELF__)
     if (sizeof(void*) == 8) {
-        QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
+        QVERIFY(QFile::exists(QFINDTESTDATA("elftest/corrupt1.elf64.so")));
 
-        QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
+        QPluginLoader lib1(QFINDTESTDATA("elftest/corrupt1.elf64.so"));
         QCOMPARE(lib1.load(), false);
         QVERIFY2(lib1.errorString().contains("not an ELF object"), qPrintable(lib1.errorString()));
 
-        QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
+        QPluginLoader lib2(QFINDTESTDATA("elftest/corrupt2.elf64.so"));
         QCOMPARE(lib2.load(), false);
         QVERIFY2(lib2.errorString().contains("invalid"), qPrintable(lib2.errorString()));
 
-        QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
+        QPluginLoader lib3(QFINDTESTDATA("elftest/corrupt3.elf64.so"));
         QCOMPARE(lib3.load(), false);
         QVERIFY2(lib3.errorString().contains("invalid"), qPrintable(lib3.errorString()));
     } else if (sizeof(void*) == 4) {
-        QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
+        QPluginLoader libW(QFINDTESTDATA("elftest/corrupt3.elf64.so"));
         QCOMPARE(libW.load(), false);
         QVERIFY2(libW.errorString().contains("architecture"), qPrintable(libW.errorString()));
     } else {
@@ -286,12 +285,12 @@ void tst_QPluginLoader::loadGarbage()
 {
 #if defined (Q_OS_UNIX)
     for (int i=0; i<5; i++) {
-        QPluginLoader lib(QString(SRCDIR "elftest/garbage%1.so").arg(i));
+        QPluginLoader lib(QFINDTESTDATA(QString("elftest/garbage%1.so").arg(i)));
         QCOMPARE(lib.load(), false);
         QVERIFY(lib.errorString() != QString("Unknown error"));
     }
 #endif
 }
 
-QTEST_APPLESS_MAIN(tst_QPluginLoader)
+QTEST_MAIN(tst_QPluginLoader)
 #include "tst_qpluginloader.moc"

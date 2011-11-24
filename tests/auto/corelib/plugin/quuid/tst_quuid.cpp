@@ -56,10 +56,9 @@ class tst_QUuid : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QUuid();
-
 private slots:
+    void initTestCase();
+
     void fromChar();
     void toString();
     void fromString();
@@ -90,13 +89,17 @@ public:
     QUuid uuidB;
 };
 
-tst_QUuid::tst_QUuid()
+void tst_QUuid::initTestCase()
 {
     //"{fc69b59e-cc34-4436-a43c-ee95d128b8c5}";
     uuidA = QUuid(0xfc69b59e, 0xcc34 ,0x4436 ,0xa4 ,0x3c ,0xee ,0x95 ,0xd1 ,0x28 ,0xb8 ,0xc5);
 
     //"{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
     uuidB = QUuid(0x1ab6e93a ,0xb1cb ,0x4a87 ,0xba ,0x47 ,0xec ,0x7e ,0x99 ,0x03 ,0x9a ,0x7b);
+
+    // chdir to the directory containing our testdata, then refer to it with relative paths
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
 }
 
 void tst_QUuid::fromChar()

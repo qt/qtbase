@@ -418,7 +418,7 @@ void tst_QTemporaryFile::renameFdLeak()
     static const int count = 10;
     int bunch_of_files[count];
     for (int i = 0; i < count; ++i) {
-        bunch_of_files[i] = ::open(SRCDIR "tst_qtemporaryfile.cpp", O_RDONLY);
+        bunch_of_files[i] = ::open(qPrintable(QFINDTESTDATA("tst_qtemporaryfile.cpp")), O_RDONLY);
         QVERIFY(bunch_of_files[i] != -1);
     }
 

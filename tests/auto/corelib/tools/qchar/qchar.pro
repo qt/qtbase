@@ -3,9 +3,4 @@ TARGET = tst_qchar
 QT = core-private testlib
 SOURCES = tst_qchar.cpp
 
-wince* {
-    deploy.files += NormalizationTest.txt
-    DEPLOYMENT += deploy
-}
-
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+TESTDATA += NormalizationTest.txt

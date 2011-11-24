@@ -66,10 +66,6 @@ class tst_QDirIterator : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QDirIterator();
-    virtual ~tst_QDirIterator();
-
 private: // convenience functions
     QStringList createdDirectories;
     QStringList createdFiles;
@@ -106,6 +102,8 @@ private: // convenience functions
     }
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
     void iterateRelativeDirectory_data();
     void iterateRelativeDirectory();
     void iterateResource_data();
@@ -124,8 +122,12 @@ private slots:
     void hiddenDirs_hiddenFiles();
 };
 
-tst_QDirIterator::tst_QDirIterator()
+void tst_QDirIterator::initTestCase()
 {
+    // chdir into testdata directory, then find testdata by relative paths.
+    QString testdata_dir = QFileInfo(QFINDTESTDATA("entrylist")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+
     QFile::remove("entrylist/entrylist1.lnk");
     QFile::remove("entrylist/entrylist2.lnk");
     QFile::remove("entrylist/entrylist3.lnk");
@@ -187,7 +189,7 @@ tst_QDirIterator::tst_QDirIterator()
 #endif
 }
 
-tst_QDirIterator::~tst_QDirIterator()
+void tst_QDirIterator::cleanupTestCase()
 {
     Q_FOREACH(QString fileName, createdFiles)
         QFile::remove(fileName);
