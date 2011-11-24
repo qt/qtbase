@@ -1,3 +1,13 @@
+defineReplace(qtPlatformTargetSuffix) {
+    CONFIG(debug, debug|release) {
+        !debug_and_release|build_pass {
+           mac:return(_debug)
+           win32:return(d)
+        }
+    }
+    return()
+}
+
 defineReplace(qtLibraryTarget) {
    unset(LIBRARY_NAME)
    LIBRARY_NAME = $$1
@@ -5,14 +15,10 @@ defineReplace(qtLibraryTarget) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
    }
-   contains(TEMPLATE, .*lib):CONFIG(debug, debug|release) {
-      !debug_and_release|build_pass {
-          mac:RET = $$member(LIBRARY_NAME, 0)_debug
-   	      else:win32:RET = $$member(LIBRARY_NAME, 0)d
-      }
-   }
-   isEmpty(RET):RET = $$LIBRARY_NAME
-   return($$RET)
+   unset(LIBRARY_SUFFIX)
+   contains(TEMPLATE, .*lib):LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
+   isEmpty(LIBRARY_SUFFIX):return($$LIBRARY_NAME)
+   else:return($$member(LIBRARY_NAME, 0)$$LIBRARY_SUFFIX)
 }
 
 defineTest(qtAddLibrary) {

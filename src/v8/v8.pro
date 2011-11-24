@@ -27,7 +27,7 @@ HEADERS += $$QT_SOURCE_TREE/src/v8/qtv8version.h
 include(v8.pri)
 
 contains(QT_CONFIG, v8snapshot) {
-    mkv8snapshot.commands = ../../bin/mkv8snapshot ${QMAKE_FILE_OUT}
+    mkv8snapshot.commands = ../../bin/mkv8snapshot$$qtPlatformTargetSuffix() ${QMAKE_FILE_OUT}
     DUMMY_FILE = v8.pro
     mkv8snapshot.input = DUMMY_FILE
     mkv8snapshot.output = $$V8_GENERATED_SOURCES_DIR/snapshot.cpp
