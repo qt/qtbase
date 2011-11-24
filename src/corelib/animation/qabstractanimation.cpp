@@ -466,8 +466,8 @@ QAnimationDriver::QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent)
 
 QAnimationDriver::~QAnimationDriver()
 {
-    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
-    if (timer->canUninstallAnimationDriver(this))
+    QUnifiedTimer *timer = QUnifiedTimer::instance(false);
+    if (timer && timer->canUninstallAnimationDriver(this))
         uninstall();
 }
 
