@@ -61,7 +61,7 @@ struct QPodArrayOps
 {
     void copyAppend(const T *b, const T *e)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
 
@@ -71,7 +71,7 @@ struct QPodArrayOps
 
     void copyAppend(size_t n, const T &t)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(n <= this->alloc - uint(this->size));
 
         T *iter = this->end();
@@ -91,7 +91,7 @@ struct QPodArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
@@ -109,7 +109,7 @@ struct QGenericArrayOps
 {
     void copyAppend(const T *b, const T *e)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
 
@@ -122,7 +122,7 @@ struct QGenericArrayOps
 
     void copyAppend(size_t n, const T &t)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(n <= this->alloc - uint(this->size));
 
         T *iter = this->end();
@@ -149,7 +149,7 @@ struct QGenericArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap
@@ -222,7 +222,7 @@ struct QMovableArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
-        Q_ASSERT(this->ref == 1);
+        Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end()); // No overlap

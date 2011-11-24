@@ -64,7 +64,9 @@ public:
     }
 
     QArrayDataPointer(const QArrayDataPointer &other)
-        : d((other.d->ref.ref(), other.d))
+        : d(other.d->ref.ref()
+            ? other.d
+            : other.clone())
     {
     }
 
@@ -108,6 +110,22 @@ public:
     Data *data() const
     {
         return d;
+    }
+
+    void setSharable(bool sharable)
+    {
+        if (d->alloc == 0 && d->size == 0) {
+            Q_ASSERT(Data::sharedNull() == d
+                    || Data::sharedEmpty() == d
+                    || Data::unsharableEmpty() == d);
+            d = sharable
+                ? Data::sharedEmpty()
+                : Data::unsharableEmpty();
+            return;
+        }
+
+        detach();
+        d->ref.setSharable(sharable);
     }
 
     void swap(QArrayDataPointer &other)
