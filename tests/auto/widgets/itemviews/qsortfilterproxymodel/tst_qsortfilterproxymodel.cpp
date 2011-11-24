@@ -150,6 +150,8 @@ private slots:
     void mapSelectionFromSource();
     void filteredColumns();
 
+    void testParentLayoutChanged();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -3208,6 +3210,73 @@ void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate()
             ok = false;
     }
     QCOMPARE(ok, works);
+}
+
+Q_DECLARE_METATYPE(QList<QPersistentModelIndex>)
+
+void tst_QSortFilterProxyModel::testParentLayoutChanged()
+{
+    QStandardItemModel model;
+    QStandardItem *parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 4; ++i) {
+        {
+            QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+            parentItem->appendRow(item);
+        }
+        {
+            QStandardItem *item = new QStandardItem(QString("item 1%0").arg(i));
+            parentItem->appendRow(item);
+            parentItem = item;
+        }
+    }
+
+    QSortFilterProxyModel proxy;
+    proxy.sort(0, Qt::AscendingOrder);
+    proxy.setDynamicSortFilter(true);
+
+    proxy.setSourceModel(&model);
+
+    qRegisterMetaType<QList<QPersistentModelIndex> >();
+
+    QSignalSpy dataChangedSpy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+
+    // Verify that the no-arg signal is still emitted.
+    QSignalSpy layoutAboutToBeChangedSpy(&proxy, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy layoutChangedSpy(&proxy, SIGNAL(layoutChanged()));
+
+    QSignalSpy parentsAboutToBeChangedSpy(&proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy parentsChangedSpy(&proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+    QStandardItem *item = model.invisibleRootItem()->child(1)->child(1);
+
+    // Ensure mapped:
+    proxy.mapFromSource(model.indexFromItem(item));
+
+    item->setData("Changed");
+
+    QCOMPARE(dataChangedSpy.size(), 1);
+    QCOMPARE(layoutAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(layoutChangedSpy.size(), 1);
+    QCOMPARE(parentsAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(parentsChangedSpy.size(), 1);
+
+    QVariantList beforeSignal = parentsAboutToBeChangedSpy.first();
+    QVariantList afterSignal = parentsChangedSpy.first();
+
+    QCOMPARE(beforeSignal.size(), 1);
+    QCOMPARE(afterSignal.size(), 1);
+
+    QList<QPersistentModelIndex> beforeParents = beforeSignal.first().value<QList<QPersistentModelIndex> >();
+    QList<QPersistentModelIndex> afterParents = afterSignal.first().value<QList<QPersistentModelIndex> >();
+
+    QCOMPARE(beforeParents.size(), 1);
+    QCOMPARE(afterParents.size(), 1);
+
+    QVERIFY(beforeParents.first().isValid());
+    QVERIFY(beforeParents.first() == afterParents.first());
+
+    QVERIFY(beforeParents.first() == proxy.mapFromSource(model.indexFromItem(model.invisibleRootItem()->child(1))));
+
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

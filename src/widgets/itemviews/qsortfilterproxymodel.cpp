@@ -1155,8 +1155,10 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
     }
 
     if (!source_rows_resort.isEmpty()) {
-        // Re-sort the rows
-        emit q->layoutAboutToBeChanged();
+        // Re-sort the rows of this level
+        QList<QPersistentModelIndex> parents;
+        parents << q->mapFromSource(source_parent);
+        emit q->layoutAboutToBeChanged(parents);
         QModelIndexPairList source_indexes = store_persistent_indexes();
         remove_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
                             source_parent, Qt::Vertical, false);
@@ -1164,7 +1166,7 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         insert_source_items(m->proxy_rows, m->source_rows, source_rows_resort,
                             source_parent, Qt::Vertical, false);
         update_persistent_indexes(source_indexes);
-        emit q->layoutChanged();
+        emit q->layoutChanged(parents);
 	// Make sure we also emit dataChanged for the rows
 	source_rows_change += source_rows_resort;
     }
