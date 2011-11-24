@@ -116,6 +116,11 @@ QtCore
 * drop a bogus QChar::NoCategory enum value; the proper QChar::Other_NotAssigned
   value is returned for an unassigned codepoints now.
 
+* layoutAboutToBeChanged is no longer emitted by QAbstractItemModel::beginMoveRows.
+  layoutChanged is no longer emitted by QAbstractItemModel::endMoveRows. Proxy models
+  should now also connect to (and disconnect from) the rowsAboutToBeMoved and
+  rowsMoved signals.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

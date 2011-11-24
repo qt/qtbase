@@ -1582,6 +1582,18 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     disconnect(d->model, SIGNAL(layoutChanged()),
                this, SLOT(_q_sourceLayoutChanged()));
 
+    disconnect(d->model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+               this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+
+    disconnect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+               this, SLOT(_q_sourceLayoutChanged()));
+
+    disconnect(d->model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+               this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+
+    disconnect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+               this, SLOT(_q_sourceLayoutChanged()));
+
     disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     disconnect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
@@ -1621,6 +1633,18 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
             this, SLOT(_q_sourceLayoutAboutToBeChanged()));
 
     connect(d->model, SIGNAL(layoutChanged()),
+            this, SLOT(_q_sourceLayoutChanged()));
+
+    connect(d->model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+            this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+
+    connect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+            this, SLOT(_q_sourceLayoutChanged()));
+
+    connect(d->model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+            this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+
+    connect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
             this, SLOT(_q_sourceLayoutChanged()));
 
     connect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));

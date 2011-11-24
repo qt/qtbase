@@ -565,6 +565,14 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *model)
                 q, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
         QObject::connect(model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
                 q, SLOT(_q_columnsAboutToBeInserted(QModelIndex,int,int)));
+        QObject::connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                q, SLOT(_q_layoutAboutToBeChanged()));
+        QObject::connect(model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                q, SLOT(_q_layoutAboutToBeChanged()));
+        QObject::connect(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                q, SLOT(_q_layoutChanged()));
+        QObject::connect(model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+                q, SLOT(_q_layoutChanged()));
         QObject::connect(model, SIGNAL(layoutAboutToBeChanged()),
                 q, SLOT(_q_layoutAboutToBeChanged()));
         QObject::connect(model, SIGNAL(layoutChanged()),
