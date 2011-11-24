@@ -604,6 +604,8 @@ MakefileGenerator::init()
                     compiler.flags |= Compiler::CompilerRemoveNoExist;
                 if(v[(*it) + ".CONFIG"].indexOf("no_dependencies") != -1)
                     compiler.flags |= Compiler::CompilerNoCheckDeps;
+                if(v[(*it) + ".CONFIG"].indexOf("add_inputs_as_makefile_deps") != -1)
+                    compiler.flags |= Compiler::CompilerAddInputsAsMakefileDeps;
 
                 QString dep_type;
                 if(!project->isEmpty((*it) + ".dependency_type"))
@@ -766,9 +768,18 @@ MakefileGenerator::init()
         //add to dependency engine
         for(x = 0; x < compilers.count(); ++x) {
             const MakefileGenerator::Compiler &comp = compilers.at(x);
-            if(!(comp.flags & Compiler::CompilerNoCheckDeps))
+            if(!(comp.flags & Compiler::CompilerNoCheckDeps)) {
                 addSourceFiles(v[comp.variable_in], QMakeSourceFileInfo::SEEK_DEPS,
                                (QMakeSourceFileInfo::SourceFileType)comp.type);
+
+                if (comp.flags & Compiler::CompilerAddInputsAsMakefileDeps) {
+                    QStringList &l = v[comp.variable_in];
+                    for (int i=0; i < l.size(); ++i) {
+                        if(v["QMAKE_INTERNAL_INCLUDED_FILES"].indexOf(l.at(i)) == -1)
+                            v["QMAKE_INTERNAL_INCLUDED_FILES"].append(l.at(i));
+                    }
+                }
+            }
         }
     }
 

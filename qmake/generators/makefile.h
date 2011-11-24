@@ -159,10 +159,11 @@ protected:
     {
         QString variable_in;
         enum CompilerFlag {
-            CompilerNoFlags       = 0x00,
-            CompilerBuiltin       = 0x01,
-            CompilerNoCheckDeps   = 0x02,
-            CompilerRemoveNoExist = 0x04
+            CompilerNoFlags                 = 0x00,
+            CompilerBuiltin                 = 0x01,
+            CompilerNoCheckDeps             = 0x02,
+            CompilerRemoveNoExist           = 0x04,
+            CompilerAddInputsAsMakefileDeps = 0x08
         };
         uint flags, type;
     };
