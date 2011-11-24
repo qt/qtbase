@@ -881,7 +881,7 @@ void tst_QVector::QTBUG11763_data()
                 result3 = i - 10;
                 result4 = i - 20;
             }
-            QTest::newRow(qPrintable(QString("QTBUG11763:%1").arg(i))) << i << fill_size << j << result1 << result2 << result3 << result4;
+            QTest::newRow(qPrintable(QString("QTBUG11763:%1,%2").arg(i).arg(j))) << i << fill_size << j << result1 << result2 << result3 << result4;
         }
     }
 }
