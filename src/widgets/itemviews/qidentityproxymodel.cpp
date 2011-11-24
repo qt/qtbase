@@ -50,41 +50,41 @@ QT_BEGIN_NAMESPACE
 
 class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
 {
-  QIdentityProxyModelPrivate()
-    : ignoreNextLayoutAboutToBeChanged(false),
-      ignoreNextLayoutChanged(false)
-  {
+    QIdentityProxyModelPrivate()
+      : ignoreNextLayoutAboutToBeChanged(false),
+        ignoreNextLayoutChanged(false)
+    {
 
-  }
+    }
 
-  Q_DECLARE_PUBLIC(QIdentityProxyModel)
+    Q_DECLARE_PUBLIC(QIdentityProxyModel)
 
-  bool ignoreNextLayoutAboutToBeChanged;
-  bool ignoreNextLayoutChanged;
-  QList<QPersistentModelIndex> layoutChangePersistentIndexes;
-  QModelIndexList proxyIndexes;
+    bool ignoreNextLayoutAboutToBeChanged;
+    bool ignoreNextLayoutChanged;
+    QList<QPersistentModelIndex> layoutChangePersistentIndexes;
+    QModelIndexList proxyIndexes;
 
-  void _q_sourceRowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-  void _q_sourceRowsInserted(const QModelIndex &parent, int start, int end);
-  void _q_sourceRowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-  void _q_sourceRowsRemoved(const QModelIndex &parent, int start, int end);
-  void _q_sourceRowsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-  void _q_sourceRowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
+    void _q_sourceRowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
+    void _q_sourceRowsInserted(const QModelIndex &parent, int start, int end);
+    void _q_sourceRowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    void _q_sourceRowsRemoved(const QModelIndex &parent, int start, int end);
+    void _q_sourceRowsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
+    void _q_sourceRowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
 
-  void _q_sourceColumnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-  void _q_sourceColumnsInserted(const QModelIndex &parent, int start, int end);
-  void _q_sourceColumnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
-  void _q_sourceColumnsRemoved(const QModelIndex &parent, int start, int end);
-  void _q_sourceColumnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
-  void _q_sourceColumnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
+    void _q_sourceColumnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
+    void _q_sourceColumnsInserted(const QModelIndex &parent, int start, int end);
+    void _q_sourceColumnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
+    void _q_sourceColumnsRemoved(const QModelIndex &parent, int start, int end);
+    void _q_sourceColumnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
+    void _q_sourceColumnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
 
-  void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-  void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
+    void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
 
-  void _q_sourceLayoutAboutToBeChanged();
-  void _q_sourceLayoutChanged();
-  void _q_sourceModelAboutToBeReset();
-  void _q_sourceModelReset();
+    void _q_sourceLayoutAboutToBeChanged();
+    void _q_sourceLayoutChanged();
+    void _q_sourceModelAboutToBeReset();
+    void _q_sourceModelReset();
 
 };
 
