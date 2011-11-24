@@ -1320,90 +1320,88 @@ QFuture<void> createDerivedExceptionFuture()
 
 void tst_QFuture::exceptions()
 {
-
-// test throwing from waitForFinished
-{
-    QFuture<void> f = createExceptionFuture();
-    bool caught = false;
-    try {
-        f.waitForFinished();
-    } catch (Exception &) {
-        caught = true;
-    }
-    QVERIFY(caught);
-}
-
-// test result()
-{
-    QFuture<int> f = createExceptionResultFuture();
-    bool caught = false;
-    try {
-        f.result();
-    } catch (Exception &) {
-        caught = true;
-    }
-    QVERIFY(caught);
-}
-
-// test result() and destroy
-{
-    bool caught = false;
-    try {
-        createExceptionResultFuture().result();
-    } catch (Exception &) {
-        caught = true;
-    }
-    QVERIFY(caught);
-}
-
-// test results()
-{
-    QFuture<int> f = createExceptionResultFuture();
-    bool caught = false;
-    try {
-        f.results();
-    } catch (Exception &) {
-        caught = true;
-    }
-    QVERIFY(caught);
-}
-
-// test foreach
-{
-    QFuture<int> f = createExceptionResultFuture();
-    bool caught = false;
-    try {
-        foreach (int e, f.results()) {
-            Q_UNUSED(e);
-            QFAIL("did not get exception");
+    // test throwing from waitForFinished
+    {
+        QFuture<void> f = createExceptionFuture();
+        bool caught = false;
+        try {
+            f.waitForFinished();
+        } catch (Exception &) {
+            caught = true;
         }
-    } catch (Exception &) {
-        caught = true;
+        QVERIFY(caught);
     }
-    QVERIFY(caught);
-}
 
-// catch derived exceptions
-{
-    bool caught = false;
-    try {
-        createDerivedExceptionFuture().waitForFinished();
-    } catch (Exception &) {
-        caught = true;
+    // test result()
+    {
+        QFuture<int> f = createExceptionResultFuture();
+        bool caught = false;
+        try {
+            f.result();
+        } catch (Exception &) {
+            caught = true;
+        }
+        QVERIFY(caught);
     }
-    QVERIFY(caught);
-}
 
-{
-    bool caught = false;
-    try {
-        createDerivedExceptionFuture().waitForFinished();
-    } catch (DerivedException &) {
-        caught = true;
+    // test result() and destroy
+    {
+        bool caught = false;
+        try {
+            createExceptionResultFuture().result();
+        } catch (Exception &) {
+            caught = true;
+        }
+        QVERIFY(caught);
     }
-    QVERIFY(caught);
-}
 
+    // test results()
+    {
+        QFuture<int> f = createExceptionResultFuture();
+        bool caught = false;
+        try {
+            f.results();
+        } catch (Exception &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    // test foreach
+    {
+        QFuture<int> f = createExceptionResultFuture();
+        bool caught = false;
+        try {
+            foreach (int e, f.results()) {
+                Q_UNUSED(e);
+                QFAIL("did not get exception");
+            }
+        } catch (Exception &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    // catch derived exceptions
+    {
+        bool caught = false;
+        try {
+            createDerivedExceptionFuture().waitForFinished();
+        } catch (Exception &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    {
+        bool caught = false;
+        try {
+            createDerivedExceptionFuture().waitForFinished();
+        } catch (DerivedException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
 }
 
 
