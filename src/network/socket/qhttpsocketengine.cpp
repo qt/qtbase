@@ -504,15 +504,8 @@ void QHttpSocketEngine::slotSocketConnected()
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n";
     data += "Host: " + peerAddress + "\r\n";
-    if (!d->proxy.hasRawHeader("User-Agent")) {
-        data += "User-Agent: ";
-        QVariant v = property("_q_user-agent");
-        if (v.isValid())
-            data += v.toByteArray();
-        else
-            data += "Mozilla/5.0";
-        data += "\r\n";
-    }
+    if (!d->proxy.hasRawHeader("User-Agent"))
+        data += "User-Agent: Mozilla/5.0\r\n";
     foreach (const QByteArray &header, d->proxy.rawHeaderList()) {
         data += header + ": " + d->proxy.rawHeader(header) + "\r\n";
     }

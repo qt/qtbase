@@ -595,10 +595,6 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
     //copy network session down to the socket engine (if it has been set)
     socketEngine->setProperty("_q_networksession", q->property("_q_networksession"));
 #endif
-#ifndef QT_NO_NETWORKPROXY
-    //copy user agent to socket engine (if it has been set)
-    socketEngine->setProperty("_q_user-agent", q->property("_q_user-agent"));
-#endif
     if (!socketEngine->initialize(q->socketType(), protocol)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::initSocketLayer(%s, %s) failed (%s)",

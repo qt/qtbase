@@ -581,7 +581,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             else
                 value = request.headerField("user-agent");
             if (!value.isEmpty())
-                socket->setProperty("_q_user-agent", value);
+                socket->proxy().setRawHeader("User-Agent", value);
         }
 #endif
         if (ssl) {
