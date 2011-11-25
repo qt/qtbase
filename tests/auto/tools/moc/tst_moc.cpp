@@ -410,6 +410,24 @@ public:
     inline PropertyTestClass::TestEnum foo() const { return PropertyTestClass::One; }
 };
 
+class EnumSourceClass : public QObject
+{
+    Q_OBJECT
+
+public:
+    enum TestEnum { Value = 37 };
+
+    Q_ENUMS(TestEnum)
+};
+
+class EnumUserClass : public QObject
+{
+    Q_OBJECT
+
+public:
+    Q_ENUMS(EnumSourceClass::TestEnum)
+};
+
 #if defined(Q_MOC_RUN)
 // Task #119503
 #define _TASK_119503
@@ -483,6 +501,7 @@ private slots:
     void blackslashNewlines();
     void slotWithSillyConst();
     void testExtraData();
+    void testExtraDataForEnum();
     void namespaceTypeProperty();
     void slotsWithVoidTemplate();
     void structQObject();
@@ -808,6 +827,25 @@ void tst_Moc::testExtraData()
     QVERIFY(prop.isEnumType());
     const QMetaEnum en = prop.enumerator();
     QCOMPARE(QByteArray(en.name()), QByteArray("TestEnum"));
+}
+
+// QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.
+void tst_Moc::testExtraDataForEnum()
+{
+    const QMetaObject *mobjSource = &EnumSourceClass::staticMetaObject;
+    QCOMPARE(mobjSource->enumeratorCount(), 1);
+    QCOMPARE(QByteArray(mobjSource->enumerator(0).name()), QByteArray("TestEnum"));
+
+    const QMetaObject *mobjUser = &EnumUserClass::staticMetaObject;
+    QCOMPARE(mobjUser->enumeratorCount(), 0);
+
+    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(mobjUser->d.extradata);
+    QVERIFY(extra);
+
+    const QMetaObject **objects = extra->objects;
+    QVERIFY(objects);
+    QVERIFY(objects[0] == mobjSource);
+    QVERIFY(objects[1] == 0);
 }
 
 void tst_Moc::namespaceTypeProperty()

@@ -313,6 +313,21 @@ void Generator::generateCode()
             }
         }
     }
+
+    // QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.
+    // Look for any scoped enum declarations, and add those to the list
+    // of extra/related metaobjects for this object.
+    QList<QByteArray> enumKeys = cdef->enumDeclarations.keys();
+    for (int i = 0; i < enumKeys.count(); ++i) {
+        const QByteArray &enumKey = enumKeys[i];
+        int s = enumKey.lastIndexOf("::");
+        if (s > 0) {
+            QByteArray scope = enumKey.left(s);
+            if (scope != "Qt" && scope != cdef->classname && !extraList.contains(scope))
+                extraList += scope;
+        }
+    }
+
     if (!extraList.isEmpty()) {
         fprintf(out, "#ifdef Q_NO_DATA_RELOCATION\n");
         fprintf(out, "static const QMetaObjectAccessor qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
