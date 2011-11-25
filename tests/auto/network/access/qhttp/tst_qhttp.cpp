@@ -209,6 +209,7 @@ void tst_QHttp::initTestCase_data()
 
 void tst_QHttp::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QHttp::cleanupTestCase()

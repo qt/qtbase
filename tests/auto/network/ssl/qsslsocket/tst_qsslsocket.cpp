@@ -118,6 +118,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
@@ -268,6 +269,11 @@ void tst_QSslSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
     // uncomment the line below when NTLM works
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm);
+}
+
+void tst_QSslSocket::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QSslSocket::init()

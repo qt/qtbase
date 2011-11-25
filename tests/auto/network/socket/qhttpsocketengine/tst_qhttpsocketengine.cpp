@@ -66,6 +66,7 @@ public:
 
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -147,6 +148,10 @@ tst_QHttpSocketEngine::~tst_QHttpSocketEngine()
 {
 }
 
+void tst_QHttpSocketEngine::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+}
 
 void tst_QHttpSocketEngine::init()
 {

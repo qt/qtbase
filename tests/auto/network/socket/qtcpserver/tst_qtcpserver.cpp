@@ -155,6 +155,7 @@ void tst_QTcpServer::initTestCase_data()
 
 void tst_QTcpServer::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager man;
     networkSession = new QNetworkSession(man.defaultConfiguration(), this);

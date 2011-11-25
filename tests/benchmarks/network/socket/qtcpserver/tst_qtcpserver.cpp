@@ -70,6 +70,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -93,6 +94,11 @@ void tst_QTcpServer::initTestCase_data()
 
     QTest::newRow("WithoutProxy") << false << 0;
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+}
+
+void tst_QTcpServer::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QTcpServer::init()

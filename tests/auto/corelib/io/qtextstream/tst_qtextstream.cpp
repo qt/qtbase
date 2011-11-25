@@ -76,6 +76,7 @@ class tst_QTextStream : public QObject
     Q_OBJECT
 
 public slots:
+    void initTestCase();
     void cleanup();
 
 private slots:
@@ -242,6 +243,11 @@ private:
     void generateStringData(bool for_QString);
     void generateRealNumbersDataWrite();
 };
+
+void tst_QTextStream::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+}
 
 // Testing get/set functions
 void tst_QTextStream::getSetCheck()

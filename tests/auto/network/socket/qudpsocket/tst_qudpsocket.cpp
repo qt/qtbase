@@ -80,6 +80,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -157,6 +158,11 @@ void tst_QUdpSocket::initTestCase_data()
         QVERIFY(networkSession->waitForOpened(30000));
     }
 #endif
+}
+
+void tst_QUdpSocket::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QUdpSocket::init()

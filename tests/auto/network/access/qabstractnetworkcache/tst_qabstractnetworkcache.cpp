@@ -137,6 +137,7 @@ Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
 
 void tst_QAbstractNetworkCache::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();

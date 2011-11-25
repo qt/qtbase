@@ -58,6 +58,7 @@ class tst_QNetworkAccessManager_And_QProgressDialog : public QObject
 public:
     tst_QNetworkAccessManager_And_QProgressDialog();
 private slots:
+    void initTestCase();
     void downloadCheck();
     void downloadCheck_data();
 };
@@ -123,6 +124,11 @@ private:
 
 tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QProgressDialog()
 {
+}
+
+void tst_QNetworkAccessManager_And_QProgressDialog::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck_data()

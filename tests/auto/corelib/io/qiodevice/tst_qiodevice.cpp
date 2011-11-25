@@ -53,6 +53,7 @@ class tst_QIODevice : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void getSetCheck();
     void constructing_QTcpSocket();
     void constructing_QFile();
@@ -69,6 +70,11 @@ private slots:
 
     void peekBug();
 };
+
+void tst_QIODevice::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+}
 
 // Testing get/set functions
 void tst_QIODevice::getSetCheck()

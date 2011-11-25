@@ -73,6 +73,7 @@ public:
 
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -155,6 +156,11 @@ tst_QSocks5SocketEngine::tst_QSocks5SocketEngine()
 
 tst_QSocks5SocketEngine::~tst_QSocks5SocketEngine()
 {
+}
+
+void tst_QSocks5SocketEngine::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QSocks5SocketEngine::init()

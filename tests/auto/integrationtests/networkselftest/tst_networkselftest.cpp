@@ -363,6 +363,7 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
 
 void tst_NetworkSelfTest::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();

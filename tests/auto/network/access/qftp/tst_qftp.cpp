@@ -216,6 +216,7 @@ void tst_QFtp::initTestCase_data()
 
 void tst_QFtp::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager manager;
     networkSessionImplicit = QSharedPointer<QNetworkSession>(new QNetworkSession(manager.defaultConfiguration()));

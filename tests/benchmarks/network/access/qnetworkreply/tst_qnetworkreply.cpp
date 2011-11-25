@@ -454,6 +454,7 @@ class tst_qnetworkreply : public QObject
 
     QNetworkAccessManager manager;
 private slots:
+    void initTestCase();
     void httpLatency();
 
 #ifndef QT_NO_OPENSSL
@@ -471,6 +472,11 @@ private slots:
     void httpDownloadPerformanceDownloadBuffer();
     void httpsRequestChain();
 };
+
+void tst_qnetworkreply::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+}
 
 void tst_qnetworkreply::httpLatency()
 {

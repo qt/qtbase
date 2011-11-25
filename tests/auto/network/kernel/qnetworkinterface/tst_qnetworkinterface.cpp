@@ -87,6 +87,7 @@ tst_QNetworkInterface::~tst_QNetworkInterface()
 
 void tst_QNetworkInterface::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();

@@ -194,6 +194,7 @@ tst_QHostInfo::~tst_QHostInfo()
 
 void tst_QHostInfo::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     //start the default network
     netConfMan = new QNetworkConfigurationManager(this);

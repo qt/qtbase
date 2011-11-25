@@ -93,6 +93,7 @@ private:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
 
     void slotReadAll() { byteCounter += static_cast<QIODevice *>(sender())->readAll().size(); }
@@ -131,6 +132,11 @@ void tst_NetworkStressTest::initTestCase_data()
 
     QTest::newRow("localhost") << true << "localhost" << server.port();
     QTest::newRow("remote") << false << QtNetworkSettings::serverName() << 80;
+}
+
+void tst_NetworkStressTest::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_NetworkStressTest::init()

@@ -133,6 +133,7 @@ public:
 
 public slots:
     void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -346,6 +347,11 @@ void tst_QTcpSocket::initTestCase_data()
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
 //    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
+}
+
+void tst_QTcpSocket::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QTcpSocket::init()

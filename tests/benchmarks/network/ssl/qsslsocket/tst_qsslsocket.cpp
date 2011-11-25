@@ -61,7 +61,7 @@ public:
 
 
 public slots:
-    void initTestCase_data();
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -77,8 +77,9 @@ tst_QSslSocket::~tst_QSslSocket()
 {
 }
 
-void tst_QSslSocket::initTestCase_data()
+void tst_QSslSocket::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QSslSocket::init()

@@ -78,6 +78,7 @@ public:
 
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -104,6 +105,11 @@ tst_PlatformSocketEngine::tst_PlatformSocketEngine()
 
 tst_PlatformSocketEngine::~tst_PlatformSocketEngine()
 {
+}
+
+void tst_PlatformSocketEngine::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_PlatformSocketEngine::init()

@@ -54,10 +54,10 @@
 class tst_qnetworkreply : public QObject
 {
     Q_OBJECT
-    private slots:
+private slots:
+    void initTestCase();
     void limiting_data();
     void limiting();
-
 };
 
 QNetworkReply *reply;
@@ -89,6 +89,11 @@ protected:
     QTimer *timer;
     QTime stopwatch;
 };
+
+void tst_qnetworkreply::initTestCase()
+{
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+}
 
 void tst_qnetworkreply::limiting_data()
 {

@@ -122,6 +122,7 @@ tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
 
 void tst_QHttpNetworkConnection::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 }
 
 void tst_QHttpNetworkConnection::cleanupTestCase()

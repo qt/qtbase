@@ -1275,6 +1275,7 @@ void tst_QNetworkReply::gotError()
 
 void tst_QNetworkReply::initTestCase()
 {
+    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #if !defined Q_OS_WIN
     wronlyFileName = QDir::currentPath() + "/write-only";
     QFile wr(wronlyFileName);
