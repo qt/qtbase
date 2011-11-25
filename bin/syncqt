@@ -69,7 +69,7 @@ $qtbasedir = dirname(dirname($0)) if (!$qtbasedir);
 $qtbasedir =~ s=\\=/=g if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %mastercontent, %modulepris, %explicitheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %mastercontent, %modulepris, %explicitheaders, %deprecatedheaders);
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -1119,6 +1119,64 @@ foreach my $lib (@modules_to_sync) {
     $master_contents .= "#endif\n";
 
     unless($showonly) {
+        # create deprecated headers
+        my $first = 1;
+        while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
+            my $public_header = 0;
+            $public_header = 1 unless ($allheadersprivate || ($header =~ /_p\.h$/));
+            next unless ($public_header || $create_private_headers);
+
+            my $header_path = "$out_basedir/include/$lib/";
+            unless ($public_header) {
+                if ($module_version) {
+                    $header_path .= "$module_version/$lib/private/";
+                } else {
+                    $header_path .= "private/";
+                }
+            }
+            $header_path .= "$header";
+
+            unless (-e $header_path) {
+                my $guard = "DEPRECATED_HEADER_" . $lib . "_" . $header;
+                $guard =~ s/([^a-zA-Z0-9_])/_/g;
+
+                open HEADER, ">$header_path" || die "Could not open $header_path for writing!\n";
+                print HEADER "#ifndef $guard\n";
+                print HEADER "#define $guard\n";
+                my $warning = "Header <$lib/";
+                $warning .= "private/" unless ($public_header);
+                $warning .= "$header> is deprecated. Please include <$include> instead.";
+                print HEADER "#warning $warning\n";
+                print HEADER "#include <$include>\n";
+                if ($public_header) {
+                    print HEADER "#if 0\n";
+                    print HEADER "#pragma qt_no_master_include\n";
+                    print HEADER "#endif\n";
+                }
+                print HEADER "#endif\n";
+                close HEADER;
+
+                if ($verbose_level < 3) {
+                    my $line_prefix = ",";
+                    $line_prefix = "$lib: created deprecated header(s) {" if ($first);
+                    print "$line_prefix $header";
+                } else {
+                    print "$lib: created deprecated header $header => $include\n";
+                }
+
+                my $addendum = fixPaths($header_path, $dir) . " ";
+                if ($public_header) {
+                    $pri_install_files .=  $addendum;
+                } else {
+                    $pri_install_pfiles .=  $addendum;
+                }
+                $first = 0;
+            }
+        }
+        if ($verbose_level < 3) {
+            print " }\n" unless ($first);
+        }
+
         my @master_includes;
         push @master_includes, "$out_basedir/include/$lib/$lib";
         push @master_includes, "$out_basedir/include/phonon_compat/Phonon/Phonon" if ($lib eq "phonon");
