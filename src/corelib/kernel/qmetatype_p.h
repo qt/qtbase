@@ -142,7 +142,7 @@ private:
     };
 public:
     template<typename T>
-    QMetaTypeInterface(T * = 0)
+    explicit QMetaTypeInterface(T *)
         : creator(reinterpret_cast<QMetaType::Creator>(Impl<T>::creator))
               , deleter(reinterpret_cast<QMetaType::Deleter>(Impl<T>::deleter))
           #ifndef QT_NO_DATASTREAM
