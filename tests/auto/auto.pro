@@ -4,7 +4,6 @@ SUBDIRS += \
     corelib \
     dbus \
     gui \
-    integrationtests \
     network \
     opengl \
     sql \
