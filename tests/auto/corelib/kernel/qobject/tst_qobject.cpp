@@ -107,6 +107,7 @@ private slots:
     void connectToSender();
     void qobjectConstCast();
     void uniqConnection();
+    void uniqConnectionPtr();
     void interfaceIid();
     void deleteQObjectWhenDeletingEvent();
     void overloads();
@@ -3257,6 +3258,70 @@ void tst_QObject::uniqConnection()
     ReceiverObject::sequence = 0;
 
     connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 2 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 3 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    delete s;
+    delete r1;
+    delete r2;
+}
+
+void tst_QObject::uniqConnectionPtr()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 , Qt::UniqueConnection) );
+    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot1 , Qt::UniqueConnection) );
+    QVERIFY( connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot3 , Qt::UniqueConnection) );
+    QVERIFY( connect( s, &SenderObject::signal3, r1, &ReceiverObject::slot3 , Qt::UniqueConnection) );
+
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 2 );
+    QCOMPARE( r1->count_slot4, 0 );
+    QCOMPARE( r2->count_slot1, 1 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+    QCOMPARE( r2->count_slot4, 0 );
+    QCOMPARE( r1->sequence_slot1, 1 );
+    QCOMPARE( r2->sequence_slot1, 2 );
+    QCOMPARE( r1->sequence_slot3, 4 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+    QVERIFY( connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, &SenderObject::signal4, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+    QVERIFY( connect( s, &SenderObject::signal1, r2, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 , Qt::UniqueConnection) );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 1 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 1 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    connect( s, &SenderObject::signal4, r1, &ReceiverObject::slot4 );
 
     s->emitSignal4();
     QCOMPARE( r1->count_slot4, 2 );

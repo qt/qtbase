@@ -2366,7 +2366,7 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     If you pass the Qt::UniqueConnection \a type, the connection will only
     be made if it is not a duplicate. If there is already a duplicate
     (exact same signal to the exact same slot on the same objects),
-    the connection will fail and connect will return false.
+    the connection will fail and connect will return an invalid QMetaObject::Connection.
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -4089,6 +4089,14 @@ void qDeleteInEventHandler(QObject *o)
     to verify the existence of \a signal (if it was not declared as a signal)
     You can check if the QMetaObject::Connection is valid by casting it to a bool.
 
+    By default, a signal is emitted for every connection you make;
+    two signals are emitted for duplicate connections. You can break
+    all of these connections with a single disconnect() call.
+    If you pass the Qt::UniqueConnection \a type, the connection will only
+    be made if it is not a duplicate. If there is already a duplicate
+    (exact same signal to the exact same slot on the same objects),
+    the connection will fail and connect will return an invalid QMetaObject::Connection.
+
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
     signal is delivered to a slot immediately or queued for delivery
@@ -4136,9 +4144,35 @@ void qDeleteInEventHandler(QObject *o)
 
     The connection will automatically disconnect if the sender is destroyed.
  */
-QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signal, const QObject *receiver, QObject::QSlotObjectBase *slotObj,
-                                             Qt::ConnectionType type, const int* types, const QMetaObject* senderMetaObject)
+
+/** \internal
+
+    Implementation of the template version of connect
+
+    \a sender is the sender object
+    \a signal is a pointer to a pointer to a member signal of the sender
+    \a receiver is the receiver object, may not be null, will be equal to sender when
+                connecting to a static function or a functor
+    \a slot a pointer only used when using Qt::UniqueConnection
+    \a type the Qt::ConnctionType passed as argument to connect
+    \a types an array of integer with the metatype id of the parametter of the signal
+             to be used with queued connection
+             must stay valid at least for the whole time of the connection, this function
+             do not take ownership. typically static data.
+             If null, then the types will be computed when the signal is emit in a queued
+             connection from the types from the signature.
+    \a senderMetaObject is the metaobject used to lookup the signal, the signal must be in
+                        this metaobject
+ */
+QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signal,
+                                             const QObject *receiver, void **slot,
+                                             QObject::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                             const int *types, const QMetaObject *senderMetaObject)
 {
+    if (!sender || !signal || !slotObj || !senderMetaObject) {
+        qWarning("QObject::connect: invalid null parametter");
+        return QMetaObject::Connection();
+    }
     int signal_index = -1;
     void *args[] = { &signal_index, signal };
     senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
@@ -4157,8 +4191,18 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                                signalSlotLock(receiver));
 
     if (type & Qt::UniqueConnection) {
-        qWarning() << "QObject::connect: Qt::UniqueConnection not supported when connecting function pointers";
-        type = static_cast<Qt::ConnectionType>(type & (Qt::UniqueConnection - 1));
+        QObjectConnectionListVector *connectionLists = QObjectPrivate::get(s)->connectionLists;
+        if (connectionLists && connectionLists->count() > signal_index) {
+            const QObjectPrivate::Connection *c2 =
+                (*connectionLists)[signal_index].first;
+
+            while (c2) {
+                if (c2->receiver == receiver && c2->isSlotObject && c2->slotObj->compare(slot))
+                    return QMetaObject::Connection();
+                c2 = c2->nextConnectionList;
+            }
+        }
+        type = static_cast<Qt::ConnectionType>(type ^ Qt::UniqueConnection);
     }
 
     QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);

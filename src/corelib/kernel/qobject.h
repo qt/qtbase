@@ -225,9 +225,9 @@ public:
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal),
-                           receiver, new QSlotObject<Func2,
-                                                     typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
-                                                     typename SignalType::ReturnType>(slot),
+                           receiver, reinterpret_cast<void **>(&slot),
+                           new QSlotObject<Func2, typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                                           typename SignalType::ReturnType>(slot),
                             type, types, &SignalType::Object::staticMetaObject);
     }
 
@@ -243,7 +243,7 @@ public:
         typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
         typedef typename QtPrivate::QEnableIf<(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount))>::Type EnsureArgumentsCount;
 
-        return connectImpl(sender, reinterpret_cast<void **>(&signal), sender,
+        return connectImpl(sender, reinterpret_cast<void **>(&signal), sender, 0,
                            new QStaticSlotObject<Func2,
                                                  typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
                                                  typename SignalType::ReturnType>(slot),
@@ -257,8 +257,8 @@ public:
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
 
-        return connectImpl(sender, reinterpret_cast<void **>(&signal),
-                           sender, new QFunctorSlotObject<Func2, SignalType::ArgumentCount, typename SignalType::Arguments, typename SignalType::ReturnType>(slot),
+        return connectImpl(sender, reinterpret_cast<void **>(&signal), sender, 0,
+                           new QFunctorSlotObject<Func2, SignalType::ArgumentCount, typename SignalType::Arguments, typename SignalType::ReturnType>(slot),
                            Qt::DirectConnection, 0, &SignalType::Object::staticMetaObject);
     }
 
@@ -407,8 +407,10 @@ private:
         }
     };
 
-    static QMetaObject::Connection connectImpl(const QObject *sender, void **signal, const QObject *receiver, QSlotObjectBase *slot,
-                                               Qt::ConnectionType type, const int *types, const QMetaObject *senderMetaObject);
+    static QMetaObject::Connection connectImpl(const QObject *sender, void **signal,
+                                               const QObject *receiver, void **slotPtr,
+                                               QSlotObjectBase *slot, Qt::ConnectionType type,
+                                               const int *types, const QMetaObject *senderMetaObject);
 
     static bool disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot,
                                const QMetaObject *senderMetaObject);
