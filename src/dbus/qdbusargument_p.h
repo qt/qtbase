@@ -201,6 +201,7 @@ public:
 
     QVariant toVariantInternal();
     QDBusArgument::ElementType currentType();
+    bool isCurrentTypeStringLike();
 
 public:
     DBusMessageIter iterator;
@@ -208,6 +209,9 @@ public:
 
 private:
     Q_DISABLE_COPY(QDBusDemarshaller)
+    QString toStringUnchecked();
+    QDBusObjectPath toObjectPathUnchecked();
+    QDBusSignature toSignatureUnchecked();
 };
 
 inline QDBusMarshaller *QDBusArgumentPrivate::marshaller()
