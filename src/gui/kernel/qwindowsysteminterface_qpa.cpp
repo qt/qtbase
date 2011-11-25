@@ -95,8 +95,8 @@ void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &new
 
 void QWindowSystemInterface::handleSynchronousGeometryChange(QWindow *tlw, const QRect &newRect)
 {
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
-    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
+    QWindowSystemInterfacePrivate::GeometryChangeEvent e(tlw,newRect);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e); // send event immediately.
 }
 
 void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
@@ -284,8 +284,8 @@ void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
 
 void QWindowSystemInterface::handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region)
 {
-    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
-    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
+    QWindowSystemInterfacePrivate::ExposeEvent e(tlw, region);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e); // send event immediately.
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags)
