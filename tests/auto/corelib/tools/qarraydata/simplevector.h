@@ -89,6 +89,9 @@ public:
     bool isStatic() const { return d->ref.isStatic(); }
     bool isShared() const { return d->ref.isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
+    bool isSharable() const { return d->ref.isSharable(); }
+
+    void setSharable(bool sharable) { d.setSharable(sharable); }
 
     size_t size() const { return d->size; }
     size_t capacity() const { return d->alloc; }
@@ -139,7 +142,7 @@ public:
         if (n > capacity()
                 || (n
                 && !d->capacityReserved
-                && (d->ref != 1 || (d->capacityReserved = 1, false)))) {
+                && (d->ref.isShared() || (d->capacityReserved = 1, false)))) {
             SimpleVector detached(Data::allocate(n,
                         d->detachFlags() | Data::CapacityReserved));
             detached.d->copyAppend(constBegin(), constEnd());
@@ -158,7 +161,7 @@ public:
             return;
 
         T *const begin = d->begin();
-        if (d->ref != 1
+        if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),
@@ -179,7 +182,7 @@ public:
         if (first == last)
             return;
 
-        if (d->ref != 1
+        if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),
@@ -219,7 +222,7 @@ public:
         T *const begin = d->begin();
         T *const where = begin + position;
         const T *const end = begin + d->size;
-        if (d->ref != 1
+        if (d->ref.isShared()
                 || capacity() - size() < size_t(last - first)) {
             SimpleVector detached(Data::allocate(
                         qMax(capacity(), size() + (last - first)),

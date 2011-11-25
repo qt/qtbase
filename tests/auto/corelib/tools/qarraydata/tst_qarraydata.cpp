@@ -292,6 +292,15 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v7.isShared());
     QVERIFY(!v8.isShared());
 
+    QVERIFY(v1.isSharable());
+    QVERIFY(v2.isSharable());
+    QVERIFY(v3.isSharable());
+    QVERIFY(v4.isSharable());
+    QVERIFY(v5.isSharable());
+    QVERIFY(v6.isSharable());
+    QVERIFY(v7.isSharable());
+    QVERIFY(v8.isSharable());
+
     QVERIFY(v1.isSharedWith(v2));
     QVERIFY(v1.isSharedWith(v3));
     QVERIFY(!v1.isSharedWith(v4));
@@ -451,6 +460,69 @@ void tst_QArrayData::simpleVector()
 
     for (int i = 0; i < 120; ++i)
         QCOMPARE(v1[i], v8[i % 10]);
+
+    {
+        v7.setSharable(true);
+        QVERIFY(v7.isSharable());
+
+        SimpleVector<int> copy1(v7);
+        QVERIFY(copy1.isSharedWith(v7));
+
+        v7.setSharable(false);
+        QVERIFY(!v7.isSharable());
+
+        QVERIFY(!copy1.isSharedWith(v7));
+        QCOMPARE(v7.size(), copy1.size());
+        for (size_t i = 0; i < copy1.size(); ++i)
+            QCOMPARE(v7[i], copy1[i]);
+
+        SimpleVector<int> clone(v7);
+        QVERIFY(!clone.isSharedWith(v7));
+        QCOMPARE(clone.size(), copy1.size());
+        for (size_t i = 0; i < copy1.size(); ++i)
+            QCOMPARE(clone[i], copy1[i]);
+
+        v7.setSharable(true);
+        QVERIFY(v7.isSharable());
+
+        SimpleVector<int> copy2(v7);
+        QVERIFY(copy2.isSharedWith(v7));
+    }
+
+    {
+        SimpleVector<int> null;
+        SimpleVector<int> empty(0, 5);
+
+        QVERIFY(null.isSharable());
+        QVERIFY(empty.isSharable());
+
+        null.setSharable(true);
+        empty.setSharable(true);
+
+        QVERIFY(null.isSharable());
+        QVERIFY(empty.isSharable());
+
+        QVERIFY(null.isEmpty());
+        QVERIFY(empty.isEmpty());
+
+        null.setSharable(false);
+        empty.setSharable(false);
+
+        QVERIFY(!null.isSharable());
+        QVERIFY(!empty.isSharable());
+
+        QVERIFY(null.isEmpty());
+        QVERIFY(empty.isEmpty());
+
+        null.setSharable(true);
+        empty.setSharable(true);
+
+        QVERIFY(null.isSharable());
+        QVERIFY(empty.isSharable());
+
+        QVERIFY(null.isEmpty());
+        QVERIFY(empty.isEmpty());
+    }
 }
 
 struct Deallocator
