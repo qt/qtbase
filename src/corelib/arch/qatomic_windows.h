@@ -219,13 +219,13 @@ extern "C" {
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     QT_INTERLOCKED_FUNCTION( CompareExchangePointer )( \
-            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
+            (void * QT_INTERLOCKED_VOLATILE *)( QT_INTERLOCKED_REMOVE_VOLATILE(value) ), \
             newValue, \
             expectedValue )
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
     QT_INTERLOCKED_FUNCTION( ExchangePointer )( \
-            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
+            (void * QT_INTERLOCKED_VOLATILE *)( QT_INTERLOCKED_REMOVE_VOLATILE(value) ), \
             newValue )
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
@@ -345,7 +345,7 @@ inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
 {
-    return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue)
+    return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, (void*)newValue, (void*)expectedValue)
             == expectedValue;
 }
 
@@ -353,7 +353,7 @@ template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T* newValue)
 {
     return reinterpret_cast<T *>(
-            QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, newValue));
+            QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, (void*)newValue));
 }
 
 template <typename T>
