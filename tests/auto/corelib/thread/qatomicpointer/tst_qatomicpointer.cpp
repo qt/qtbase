@@ -599,9 +599,10 @@ void tst_QAtomicPointer::fetchAndAdd()
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(pointer1.fetchAndAddRelaxed(valueToAdd), pc);
-        QCOMPARE(pointer1.fetchAndAddRelaxed(-valueToAdd), pc + valueToAdd);
-        QCOMPARE(pointer1.load(), pc);
+        // cast to void* in order to avoid QCOMPARE to compare string content of the char*
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddRelaxed(valueToAdd)), static_cast<void*>(pc));
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddRelaxed(-valueToAdd)), static_cast<void*>(pc + valueToAdd));
+        QCOMPARE(static_cast<void*>(pointer1.load()), static_cast<void*>(pc));
         QAtomicPointer<short> pointer2 = ps;
         QCOMPARE(pointer2.fetchAndAddRelaxed(valueToAdd), ps);
         QCOMPARE(pointer2.fetchAndAddRelaxed(-valueToAdd), ps + valueToAdd);
@@ -614,9 +615,9 @@ void tst_QAtomicPointer::fetchAndAdd()
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(pointer1.fetchAndAddAcquire(valueToAdd), pc);
-        QCOMPARE(pointer1.fetchAndAddAcquire(-valueToAdd), pc + valueToAdd);
-        QCOMPARE(pointer1.load(), pc);
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddAcquire(valueToAdd)), static_cast<void*>(pc));
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddAcquire(-valueToAdd)), static_cast<void*>(pc + valueToAdd));
+        QCOMPARE(static_cast<void*>(pointer1.load()), static_cast<void*>(pc));
         QAtomicPointer<short> pointer2 = ps;
         QCOMPARE(pointer2.fetchAndAddAcquire(valueToAdd), ps);
         QCOMPARE(pointer2.fetchAndAddAcquire(-valueToAdd), ps + valueToAdd);
@@ -629,9 +630,9 @@ void tst_QAtomicPointer::fetchAndAdd()
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(pointer1.fetchAndAddRelease(valueToAdd), pc);
-        QCOMPARE(pointer1.fetchAndAddRelease(-valueToAdd), pc + valueToAdd);
-        QCOMPARE(pointer1.load(), pc);
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddRelease(valueToAdd)), static_cast<void*>(pc));
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddRelease(-valueToAdd)), static_cast<void*>(pc + valueToAdd));
+        QCOMPARE(static_cast<void*>(pointer1.load()), static_cast<void*>(pc));
         QAtomicPointer<short> pointer2 = ps;
         QCOMPARE(pointer2.fetchAndAddRelease(valueToAdd), ps);
         QCOMPARE(pointer2.fetchAndAddRelease(-valueToAdd), ps + valueToAdd);
@@ -644,9 +645,9 @@ void tst_QAtomicPointer::fetchAndAdd()
 
     {
         QAtomicPointer<char> pointer1 = pc;
-        QCOMPARE(pointer1.fetchAndAddOrdered(valueToAdd), pc);
-        QCOMPARE(pointer1.fetchAndAddOrdered(-valueToAdd), pc + valueToAdd);
-        QCOMPARE(pointer1.load(), pc);
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddOrdered(valueToAdd)), static_cast<void*>(pc));
+        QCOMPARE(static_cast<void*>(pointer1.fetchAndAddOrdered(-valueToAdd)), static_cast<void*>(pc + valueToAdd));
+        QCOMPARE(static_cast<void*>(pointer1.load()), static_cast<void*>(pc));
         QAtomicPointer<short> pointer2 = ps;
         QCOMPARE(pointer2.fetchAndAddOrdered(valueToAdd), ps);
         QCOMPARE(pointer2.fetchAndAddOrdered(-valueToAdd), ps + valueToAdd);
