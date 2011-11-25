@@ -72,13 +72,16 @@ void tst_QArrayData::referenceCounting()
 
         QCOMPARE(int(array.ref), 1);
 
-        array.ref.ref();
+        QVERIFY(!array.ref.isStatic());
+        QVERIFY(array.ref.isSharable());
+
+        QVERIFY(array.ref.ref());
         QCOMPARE(int(array.ref), 2);
 
         QVERIFY(array.ref.deref());
         QCOMPARE(int(array.ref), 1);
 
-        array.ref.ref();
+        QVERIFY(array.ref.ref());
         QCOMPARE(int(array.ref), 2);
 
         QVERIFY(array.ref.deref());
@@ -91,12 +94,34 @@ void tst_QArrayData::referenceCounting()
     }
 
     {
+        // Reference counting initialized to 0 (non-sharable)
+        QArrayData array = { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, 0 };
+
+        QCOMPARE(int(array.ref), 0);
+
+        QVERIFY(!array.ref.isStatic());
+        QVERIFY(!array.ref.isSharable());
+
+        QVERIFY(!array.ref.ref());
+        // Reference counting fails, data should be copied
+        QCOMPARE(int(array.ref), 0);
+
+        QVERIFY(!array.ref.deref());
+        QCOMPARE(int(array.ref), 0);
+
+        // Free/release data
+    }
+
+    {
         // Reference counting initialized to -1 (static read-only data)
         QArrayData array = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
 
         QCOMPARE(int(array.ref), -1);
 
-        array.ref.ref();
+        QVERIFY(array.ref.isStatic());
+        QVERIFY(array.ref.isSharable());
+
+        QVERIFY(array.ref.ref());
         QCOMPARE(int(array.ref), -1);
 
         QVERIFY(array.ref.deref());
@@ -109,11 +134,19 @@ void tst_QArrayData::sharedNullEmpty()
     QArrayData *null = const_cast<QArrayData *>(&QArrayData::shared_null);
     QArrayData *empty = const_cast<QArrayData *>(&QArrayData::shared_empty);
 
+    QVERIFY(null->ref.isStatic());
+    QVERIFY(null->ref.isSharable());
+    QVERIFY(null->ref.isShared());
+
+    QVERIFY(empty->ref.isStatic());
+    QVERIFY(empty->ref.isSharable());
+    QVERIFY(empty->ref.isShared());
+
     QCOMPARE(int(null->ref), -1);
     QCOMPARE(int(empty->ref), -1);
 
-    null->ref.ref();
-    empty->ref.ref();
+    QVERIFY(null->ref.ref());
+    QVERIFY(empty->ref.ref());
 
     QCOMPARE(int(null->ref), -1);
     QCOMPARE(int(empty->ref), -1);
@@ -217,6 +250,26 @@ void tst_QArrayData::simpleVector()
     // v6.capacity() is unspecified, for now
     QVERIFY(v7.capacity() >= size_t(10));
     QVERIFY(v8.capacity() >= size_t(10));
+
+    QVERIFY(v1.isStatic());
+    QVERIFY(v2.isStatic());
+    QVERIFY(v3.isStatic());
+    QVERIFY(v4.isStatic());
+    QVERIFY(v5.isStatic());
+    QVERIFY(v6.isStatic());
+    QVERIFY(!v7.isStatic());
+    QVERIFY(!v8.isStatic());
+
+    QVERIFY(v1.isShared());
+    QVERIFY(v2.isShared());
+    QVERIFY(v3.isShared());
+    QVERIFY(v4.isShared());
+    QVERIFY(v5.isShared());
+    QVERIFY(v6.isShared());
+    QVERIFY(!v7.isShared());
+    QVERIFY((SimpleVector<int>(v7), v7.isShared()));
+    QVERIFY(!v7.isShared());
+    QVERIFY(!v8.isShared());
 
     QVERIFY(v1.isSharedWith(v2));
     QVERIFY(v1.isSharedWith(v3));

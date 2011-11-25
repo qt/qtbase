@@ -56,15 +56,49 @@ namespace QtPrivate
 class RefCount
 {
 public:
-    inline void ref() {
-        if (atomic.load() > 0)
+    inline bool ref() {
+        int count = atomic.load();
+        if (count == 0) // !isSharable
+            return false;
+        if (count != -1) // !isStatic
             atomic.ref();
+        return true;
     }
 
     inline bool deref() {
-        if (atomic.load() <= 0)
+        int count = atomic.load();
+        if (count == 0) // !isSharable
+            return false;
+        if (count == -1) // isStatic
             return true;
         return atomic.deref();
+    }
+
+    bool setSharable(bool sharable)
+    {
+        Q_ASSERT(!isShared());
+        if (sharable)
+            return atomic.testAndSetRelaxed(0, 1);
+        else
+            return atomic.testAndSetRelaxed(1, 0);
+    }
+
+    bool isStatic() const
+    {
+        // Persistent object, never deleted
+        return atomic.load() == -1;
+    }
+
+    bool isSharable() const
+    {
+        // Sharable === Shared ownership.
+        return atomic.load() != 0;
+    }
+
+    bool isShared() const
+    {
+        int count = atomic.load();
+        return (count != 1) && (count != 0);
     }
 
     inline bool operator==(int value) const
