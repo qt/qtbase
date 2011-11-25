@@ -74,6 +74,7 @@ private slots:
     void fetchAndAdd_data();
     void fetchAndAdd();
 
+    void constAndVolatile();
 private:
     static void warningFreeHelper();
 };
@@ -655,6 +656,57 @@ void tst_QAtomicPointer::fetchAndAdd()
         QCOMPARE(pointer3.fetchAndAddOrdered(-valueToAdd), pi + valueToAdd);
         QCOMPARE(pointer3.load(), pi);
     }
+}
+
+template <typename T> void constAndVolatile_helper()
+{
+    T *one = 0;
+    T *two = &one;
+    T *three = &two;
+
+    {
+        QAtomicPointer<T> atomic1 = one;
+        QAtomicPointer<T> atomic2 = two;
+        QAtomicPointer<T> atomic3 = three;
+
+        QVERIFY(atomic1.load() == one);
+        QVERIFY(atomic2.load() == two);
+        QVERIFY(atomic3.load() == three);
+
+        QVERIFY(atomic1.fetchAndStoreRelaxed(two) == one);
+        QVERIFY(atomic2.fetchAndStoreRelaxed(three) == two);
+        QVERIFY(atomic3.fetchAndStoreRelaxed(one) == three);
+
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
+    }
+    {
+        QAtomicPointer<T> atomic1 = one;
+        QAtomicPointer<T> atomic2 = two;
+        QAtomicPointer<T> atomic3 = three;
+
+        QVERIFY(atomic1.load() == one);
+        QVERIFY(atomic2.load() == two);
+        QVERIFY(atomic3.load() == three);
+
+        QVERIFY(atomic1.testAndSetRelaxed(one, two));
+        QVERIFY(atomic2.testAndSetRelaxed(two, three));
+        QVERIFY(atomic3.testAndSetRelaxed(three, one));
+
+        QVERIFY(atomic1.load() == two);
+        QVERIFY(atomic2.load() == three);
+        QVERIFY(atomic3.load() == one);
+    }
+
+}
+
+void tst_QAtomicPointer::constAndVolatile()
+{
+    constAndVolatile_helper<void>();
+    constAndVolatile_helper<const void>();
+    constAndVolatile_helper<volatile void>();
+    constAndVolatile_helper<const volatile void>();
 }
 
 QTEST_APPLESS_MAIN(tst_QAtomicPointer)
