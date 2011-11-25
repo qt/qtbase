@@ -233,7 +233,7 @@ void QCocoaWindow::windowDidResize()
 
 void QCocoaWindow::windowWillClose()
 {
-    QWindowSystemInterface::handleCloseEvent(window());
+    QWindowSystemInterface::handleSynchronousCloseEvent(window());
 }
 
 void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)

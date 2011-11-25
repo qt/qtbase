@@ -108,6 +108,14 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
     }
 }
 
+void QWindowSystemInterface::handleSynchronousCloseEvent(QWindow *tlw)
+{
+    if (tlw) {
+        QWindowSystemInterfacePrivate::CloseEvent e(tlw);
+        QGuiApplicationPrivate::processWindowSystemEvent(&e);
+    }
+}
+
 /*!
 
 \a tlw == 0 means that \a ev is in global coords only
