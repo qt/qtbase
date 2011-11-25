@@ -207,8 +207,8 @@ public:
     void _q_sourceAboutToBeReset();
     void _q_sourceReset();
 
-    void _q_sourceLayoutAboutToBeChanged();
-    void _q_sourceLayoutChanged();
+    void _q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents);
+    void _q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents);
 
     void _q_sourceRowsAboutToBeInserted(const QModelIndex &source_parent,
                                         int start, int end);
@@ -1247,21 +1247,40 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
         sort();
 }
 
-void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
+void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents)
 {
     Q_Q(QSortFilterProxyModel);
     saved_persistent_indexes.clear();
-    emit q->layoutAboutToBeChanged();
+
+    QList<QPersistentModelIndex> parents;
+    foreach (const QPersistentModelIndex &parent, sourceParents) {
+        if (!parent.isValid()) {
+            parents << QModelIndex();
+            continue;
+        }
+        const QModelIndex mappedParent = q->mapFromSource(parent);
+        // Might be filtered out.
+        if (mappedParent.isValid())
+            parents << mappedParent;
+    }
+
+    // All parents filtered out.
+    if (!sourceParents.isEmpty() && parents.isEmpty())
+        return;
+
+    emit q->layoutAboutToBeChanged(parents);
     if (persistent.indexes.isEmpty())
         return;
 
     saved_persistent_indexes = store_persistent_indexes();
 }
 
-void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
+void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents)
 {
     Q_Q(QSortFilterProxyModel);
 
+    // Optimize: We only actually have to clear the mapping related to the contents of
+    // sourceParents, not everything.
     qDeleteAll(source_index_mapping);
     source_index_mapping.clear();
 
@@ -1274,7 +1293,21 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
         source_index_mapping.clear();
     }
 
-    emit q->layoutChanged();
+    QList<QPersistentModelIndex> parents;
+    foreach (const QPersistentModelIndex &parent, sourceParents) {
+        if (!parent.isValid()) {
+            parents << QModelIndex();
+            continue;
+        }
+        const QModelIndex mappedParent = q->mapFromSource(parent);
+        if (mappedParent.isValid())
+            parents << mappedParent;
+    }
+
+    if (!sourceParents.isEmpty() && parents.isEmpty())
+        return;
+
+    emit q->layoutChanged(parents);
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeInserted(
@@ -1689,11 +1722,11 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     disconnect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
                this, SLOT(_q_sourceColumnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
-    disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
-               this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+    disconnect(d->model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)),
+               this, SLOT(_q_sourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>)));
 
-    disconnect(d->model, SIGNAL(layoutChanged()),
-               this, SLOT(_q_sourceLayoutChanged()));
+    disconnect(d->model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)),
+               this, SLOT(_q_sourceLayoutChanged(QList<QPersistentModelIndex>)));
 
     disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     disconnect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
@@ -1742,11 +1775,11 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
             this, SLOT(_q_sourceColumnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
-    connect(d->model, SIGNAL(layoutAboutToBeChanged()),
-            this, SLOT(_q_sourceLayoutAboutToBeChanged()));
+    connect(d->model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)),
+            this, SLOT(_q_sourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>)));
 
-    connect(d->model, SIGNAL(layoutChanged()),
-            this, SLOT(_q_sourceLayoutChanged()));
+    connect(d->model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)),
+            this, SLOT(_q_sourceLayoutChanged(QList<QPersistentModelIndex>)));
 
     connect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));

@@ -3233,6 +3233,16 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
     proxy.setDynamicSortFilter(true);
 
     proxy.setSourceModel(&model);
+    proxy.setObjectName("proxy");
+
+    // When Proxy1 emits layoutChanged(QList<QPersistentModelIndex>) this
+    // one will too, with mapped indexes.
+    QSortFilterProxyModel proxy2;
+    proxy2.sort(0, Qt::AscendingOrder);
+    proxy2.setDynamicSortFilter(true);
+
+    proxy2.setSourceModel(&proxy);
+    proxy2.setObjectName("proxy2");
 
     qRegisterMetaType<QList<QPersistentModelIndex> >();
 
@@ -3244,6 +3254,9 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
 
     QSignalSpy parentsAboutToBeChangedSpy(&proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
     QSignalSpy parentsChangedSpy(&proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+    QSignalSpy proxy2ParentsAboutToBeChangedSpy(&proxy2, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy proxy2ParentsChangedSpy(&proxy2, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
 
     QStandardItem *item = model.invisibleRootItem()->child(1)->child(1);
 
@@ -3257,6 +3270,8 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
     QCOMPARE(layoutChangedSpy.size(), 1);
     QCOMPARE(parentsAboutToBeChangedSpy.size(), 1);
     QCOMPARE(parentsChangedSpy.size(), 1);
+    QCOMPARE(proxy2ParentsAboutToBeChangedSpy.size(), 1);
+    QCOMPARE(proxy2ParentsChangedSpy.size(), 1);
 
     QVariantList beforeSignal = parentsAboutToBeChangedSpy.first();
     QVariantList afterSignal = parentsChangedSpy.first();
@@ -3274,6 +3289,16 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
     QVERIFY(beforeParents.first() == afterParents.first());
 
     QVERIFY(beforeParents.first() == proxy.mapFromSource(model.indexFromItem(model.invisibleRootItem()->child(1))));
+
+    QList<QPersistentModelIndex> proxy2BeforeList = proxy2ParentsAboutToBeChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
+    QList<QPersistentModelIndex> proxy2AfterList = proxy2ParentsChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
+
+    QCOMPARE(proxy2BeforeList.size(), beforeParents.size());
+    QCOMPARE(proxy2AfterList.size(), afterParents.size());
+    foreach (const QPersistentModelIndex &idx, proxy2BeforeList)
+        QVERIFY(beforeParents.contains(proxy2.mapToSource(idx)));
+    foreach (const QPersistentModelIndex &idx, proxy2AfterList)
+        QVERIFY(afterParents.contains(proxy2.mapToSource(idx)));
 
 }
 
@@ -3378,12 +3403,28 @@ void tst_QSortFilterProxyModel::moveSourceRows()
 
     proxy.setSourceModel(&model);
 
+    QSortFilterProxyModel filterProxy;
+    filterProxy.setDynamicSortFilter(true);
+    filterProxy.sort(0, Qt::AscendingOrder);
+    filterProxy.setSourceModel(&proxy);
+    filterProxy.setFilterRegExp("6"); // One of the parents
+
+    QSortFilterProxyModel filterBothProxy;
+    filterBothProxy.setDynamicSortFilter(true);
+    filterBothProxy.sort(0, Qt::AscendingOrder);
+    filterBothProxy.setSourceModel(&proxy);
+    filterBothProxy.setFilterRegExp("5"); // The parents are 6 and 3. This filters both out.
+
     QSignalSpy modelBeforeSpy(&model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy modelAfterSpy(&model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy proxyBeforeMoveSpy(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy proxyAfterMoveSpy(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy proxyBeforeParentLayoutSpy(&proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
     QSignalSpy proxyAfterParentLayoutSpy(&proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy filterBeforeParentLayoutSpy(&filterProxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy filterAfterParentLayoutSpy(&filterProxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy filterBothBeforeParentLayoutSpy(&filterBothProxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
+    QSignalSpy filterBothAfterParentLayoutSpy(&filterBothProxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
 
     {
         ModelMoveCommand moveCommand(&model, 0);
@@ -3404,6 +3445,18 @@ void tst_QSortFilterProxyModel::moveSourceRows()
     // But it doesn't notify a move.
     QCOMPARE(proxyBeforeMoveSpy.size(), 0);
     QCOMPARE(proxyAfterMoveSpy.size(), 0);
+
+    QCOMPARE(filterBeforeParentLayoutSpy.size(), 1);
+    QCOMPARE(filterAfterParentLayoutSpy.size(), 1);
+
+    QList<QPersistentModelIndex> filterBeforeParents = filterBeforeParentLayoutSpy.first().first().value<QList<QPersistentModelIndex> >();
+    QList<QPersistentModelIndex> filterAfterParents = filterAfterParentLayoutSpy.first().first().value<QList<QPersistentModelIndex> >();
+
+    QCOMPARE(filterBeforeParents.size(), 1);
+    QCOMPARE(filterAfterParents.size(), 1);
+
+    QCOMPARE(filterBothBeforeParentLayoutSpy.size(), 0);
+    QCOMPARE(filterBothAfterParentLayoutSpy.size(), 0);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
