@@ -10,5 +10,5 @@ QT.widgets.sources = $$QT_MODULE_BASE/src/widgets
 QT.widgets.libs = $$QT_MODULE_LIB_BASE
 QT.widgets.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.widgets.imports = $$QT_MODULE_IMPORT_BASE
-QT.widgets.depends = core network gui
+QT.widgets.depends = core gui
 QT.widgets.DEFINES = QT_WIDGETS_LIB
