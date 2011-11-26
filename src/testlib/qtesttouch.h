@@ -213,7 +213,7 @@ namespace QTest
         {
             QList<struct QWindowSystemInterface::TouchPoint> newList;
 
-            foreach(QTouchEvent::TouchPoint p, pointList)
+            Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
             {
                 newList.append(touchPoint(p));
             }
