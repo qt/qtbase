@@ -56,64 +56,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-// QXmlStream* was originally in the QtXml module
-// since we've moved it to QtCore in Qt 4.4.0, we need to
-// keep binary compatibility
-//
-// The list of supported platforms is in:
-//   http://qt.nokia.com/doc/supported_platforms.html
-//
-// These platforms do not support symbol moving nor duplication
-// (because duplicate symbols cause warnings when linking):
-//   Apple MacOS X (Mach-O executable format)
-//       special case: 64-bit on Mac wasn't supported before 4.5.0
-//   IBM AIX (XCOFF executable format)
-//
-// These platforms do not support symbol moving but allow it to be duplicated:
-//   Microsoft Windows (COFF PE executable format)
-//      special case: Windows CE wasn't supported before 4.4.0
-//
-// These platforms support symbol moving:
-//   HP HP-UX (PA-RISC2.0 shared executables)
-//   HP HP-UXi (ELF executable format)
-//   FreeBSD (ELF executable format)
-//   Linux (ELF executable format)
-//   SGI IRIX (ELF executable format)
-//   Sun Solaris (ELF executable format)
-//
-// Other platforms are supported through community contributions only.
-// We are taking the optimist scenario here to avoid creating more
-// symbols to be supported.
-
-#if defined(Q_OS_MAC32) || defined(Q_OS_AIX)
-# if !defined QT_BUILD_XML_LIB
-#  define Q_XMLSTREAM_RENAME_SYMBOLS
-# endif
-#endif
-
-#if defined QT_BUILD_XML_LIB
-# define Q_XMLSTREAM_EXPORT     Q_XML_EXPORT
-#else
-# define Q_XMLSTREAM_EXPORT     Q_CORE_EXPORT
-#endif
-
-#if defined Q_XMLSTREAM_RENAME_SYMBOLS
-// don't worry, we'll undef and change to typedef at the bottom of the file
-# define QXmlStreamAttribute QCoreXmlStreamAttribute
-# define QXmlStreamAttributes QCoreXmlStreamAttributes
-# define QXmlStreamEntityDeclaration QCoreXmlStreamEntityDeclaration
-# define QXmlStreamEntityDeclarations QCoreXmlStreamEntityDeclarations
-# define QXmlStreamEntityResolver QCoreXmlStreamEntityResolver
-# define QXmlStreamNamespaceDeclaration QCoreXmlStreamNamespaceDeclaration
-# define QXmlStreamNamespaceDeclarations QCoreXmlStreamNamespaceDeclarations
-# define QXmlStreamNotationDeclaration QCoreXmlStreamNotationDeclaration
-# define QXmlStreamNotationDeclarations QCoreXmlStreamNotationDeclarations
-# define QXmlStreamReader QCoreXmlStreamReader
-# define QXmlStreamStringRef QCoreXmlStreamStringRef
-# define QXmlStreamWriter QCoreXmlStreamWriter
-#endif
-
-class Q_XMLSTREAM_EXPORT QXmlStreamStringRef {
+class Q_CORE_EXPORT QXmlStreamStringRef {
     QString m_string;
     int m_position, m_size;
 public:
@@ -132,7 +75,7 @@ public:
 
 class QXmlStreamReaderPrivate;
 class QXmlStreamAttributes;
-class Q_XMLSTREAM_EXPORT QXmlStreamAttribute {
+class Q_CORE_EXPORT QXmlStreamAttribute {
     QXmlStreamStringRef m_name, m_namespaceUri, m_qualifiedName, m_value;
     void *reserved;
     uint m_isDefault : 1;
@@ -166,7 +109,7 @@ public:
 
 Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_MOVABLE_TYPE);
 
-class Q_XMLSTREAM_EXPORT QXmlStreamAttributes : public QVector<QXmlStreamAttribute>
+class Q_CORE_EXPORT QXmlStreamAttributes : public QVector<QXmlStreamAttribute>
 {
 public:
     inline QXmlStreamAttributes() {}
@@ -201,7 +144,7 @@ public:
 #endif
 };
 
-class Q_XMLSTREAM_EXPORT QXmlStreamNamespaceDeclaration {
+class Q_CORE_EXPORT QXmlStreamNamespaceDeclaration {
     QXmlStreamStringRef m_prefix, m_namespaceUri;
     void *reserved;
 
@@ -224,7 +167,7 @@ public:
 Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_MOVABLE_TYPE);
 typedef QVector<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
-class Q_XMLSTREAM_EXPORT QXmlStreamNotationDeclaration {
+class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
     QXmlStreamStringRef m_name, m_systemId, m_publicId;
     void *reserved;
 
@@ -248,7 +191,7 @@ public:
 Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_MOVABLE_TYPE);
 typedef QVector<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
-class Q_XMLSTREAM_EXPORT QXmlStreamEntityDeclaration {
+class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
     QXmlStreamStringRef m_name, m_notationName, m_systemId, m_publicId, m_value;
     void *reserved;
 
@@ -278,7 +221,7 @@ Q_DECLARE_TYPEINFO(QXmlStreamEntityDeclaration, Q_MOVABLE_TYPE);
 typedef QVector<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
 
 
-class Q_XMLSTREAM_EXPORT QXmlStreamEntityResolver
+class Q_CORE_EXPORT QXmlStreamEntityResolver
 {
 public:
     virtual ~QXmlStreamEntityResolver();
@@ -287,7 +230,7 @@ public:
 };
 
 #ifndef QT_NO_XMLSTREAMREADER
-class Q_XMLSTREAM_EXPORT QXmlStreamReader {
+class Q_CORE_EXPORT QXmlStreamReader {
     QDOC_PROPERTY(bool namespaceProcessing READ namespaceProcessing WRITE setNamespaceProcessing)
 public:
     enum TokenType {
@@ -413,7 +356,7 @@ private:
 
 class QXmlStreamWriterPrivate;
 
-class Q_XMLSTREAM_EXPORT QXmlStreamWriter
+class Q_CORE_EXPORT QXmlStreamWriter
 {
     QDOC_PROPERTY(bool autoFormatting READ autoFormatting WRITE setAutoFormatting)
     QDOC_PROPERTY(int autoFormattingIndent READ autoFormattingIndent WRITE setAutoFormattingIndent)
