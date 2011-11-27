@@ -60,6 +60,8 @@ public:
     QDirectFbIntegration();
     ~QDirectFbIntegration();
 
+    void initialize();
+
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
@@ -67,7 +69,12 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const;
 
-private:
+protected:
+    virtual void initializeDirectFB();
+    virtual void initializeScreen();
+    virtual void initializeInput();
+
+protected:
     QDirectFBPointer<IDirectFB> m_dfb;
     QScopedPointer<QDirectFbScreen> m_primaryScreen;
     QScopedPointer<QDirectFbInput> m_input;

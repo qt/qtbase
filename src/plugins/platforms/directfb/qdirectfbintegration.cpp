@@ -64,7 +64,17 @@ QDirectFbIntegration::QDirectFbIntegration()
     , m_eventDispatcher(createUnixEventDispatcher())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
+}
 
+void QDirectFbIntegration::initialize()
+{
+    initializeDirectFB();
+    initializeScreen();
+    initializeInput();
+}
+
+void QDirectFbIntegration::initializeDirectFB()
+{
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
     char **argv = new char*[argc];
@@ -84,10 +94,16 @@ QDirectFbIntegration::QDirectFbIntegration()
 
     // This must happen after DirectFBInit.
     m_dfb.reset(QDirectFbConvenience::dfbInterface());
+}
 
+void QDirectFbIntegration::initializeScreen()
+{
     m_primaryScreen.reset(new QDirectFbScreen(0));
     screenAdded(m_primaryScreen.data());
+}
 
+void QDirectFbIntegration::initializeInput()
+{
     m_input.reset(new QDirectFbInput(m_dfb.data(), m_primaryScreen->dfbLayer()));
     m_input->start();
 }

@@ -202,4 +202,15 @@ IDirectFBWindow *QDirectFbWindow::dfbWindow() const
     return m_dfbWindow.data();
 }
 
+IDirectFBSurface *QDirectFbWindow::dfbSurface()
+{
+    if (!m_dfbSurface) {
+        DFBResult res = m_dfbWindow->GetSurface(m_dfbWindow.data(), m_dfbSurface.outPtr());
+        if (res != DFB_OK)
+            DirectFBError(QDFB_PRETTY, res);
+    }
+
+    return m_dfbSurface.data();
+}
+
 QT_END_NAMESPACE

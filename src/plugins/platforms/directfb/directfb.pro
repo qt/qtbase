@@ -33,6 +33,12 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbscreen.h
 
 # ### port the GL context
+directfbegl: {
+    HEADERS += qdirectfb_egl.h
+    SOURCES += qdirectfb_egl.cpp
+    DEFINES += DIRECTFB_GL_EGL
+}
+
 
 CONFIG += qpa/genericunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

@@ -39,53 +39,25 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QPlatformIntegrationPlugin>
+#ifndef QDIRECTFB_EGL_H
+#define QDIRECTFB_EGL_H
+
 #include "qdirectfbintegration.h"
-#include "qdirectfb_egl.h"
+
+#ifdef DIRECTFB_GL_EGL
 
 QT_BEGIN_NAMESPACE
 
-#ifdef DIRECTFB_GL_EGL
-#define QT_EGL_BACKEND_STRING(list) list << "directfbegl";
-#define QT_EGL_BACKEND_CREATE(list, out) \
-    if (list.toLower() == "directfbegl") \
-        out = new QDirectFbIntegrationEGL;
-#else
-#define QT_EGL_BACKEND_STRING(list)
-#define QT_EGL_BACKEND_CREATE(system, out)
-#endif
-
-class QDirectFbIntegrationPlugin : public QPlatformIntegrationPlugin
-{
+class QDirectFbIntegrationEGL : public QDirectFbIntegration {
 public:
-    QStringList keys() const;
-    QPlatformIntegration *create(const QString&, const QStringList&);
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+
+protected:
+    void initializeScreen();
 };
 
-QStringList QDirectFbIntegrationPlugin::keys() const
-{
-    QStringList list;
-    list << "directfb";
-    QT_EGL_BACKEND_STRING(list);
-    return list;
-}
-
-QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-    QDirectFbIntegration *integration = 0;
-
-    if (system.toLower() == "directfb")
-        integration = new QDirectFbIntegration;
-    QT_EGL_BACKEND_CREATE(system, integration)
-
-    if (!integration)
-        return 0;
-
-    integration->initialize();
-    return integration;
-}
-
-Q_EXPORT_PLUGIN2(directfb, QDirectFbIntegrationPlugin)
-
 QT_END_NAMESPACE
+
+#endif
+#endif

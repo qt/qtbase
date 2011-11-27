@@ -69,7 +69,11 @@ public:
 
     IDirectFBWindow *dfbWindow() const;
 
+    // helper to get access to DirectFB types
+    IDirectFBSurface *dfbSurface();
+
 private:
+    QDirectFBPointer<IDirectFBSurface> m_dfbSurface;
     QDirectFBPointer<IDirectFBWindow> m_dfbWindow;
     QDirectFbInput *m_inputHandler;
 };
