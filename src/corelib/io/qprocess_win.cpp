@@ -51,7 +51,7 @@
 #include <qthread.h>
 #include <qmutex.h>
 #include <qwaitcondition.h>
-#include <private/qwineventnotifier_p.h>
+#include <qwineventnotifier.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
 

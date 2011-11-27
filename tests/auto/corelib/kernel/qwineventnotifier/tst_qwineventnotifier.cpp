@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <private/qwineventnotifier_p.h>
+#include <qwineventnotifier.h>
 #include <qtimer.h>
 
 //TESTED_CLASS=

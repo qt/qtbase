@@ -94,7 +94,7 @@ QT_END_NAMESPACE
 #include <qtimer.h>
 
 #ifdef Q_OS_WIN
-#include <private/qwineventnotifier_p.h>
+#include <qwineventnotifier.h>
 #endif
 
 #ifdef Q_OS_SYMBIAN

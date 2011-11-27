@@ -65,7 +65,7 @@
 #elif defined(Q_OS_WIN)
 #   include "private/qwindowspipewriter_p.h"
 #   include "private/qringbuffer_p.h"
-#   include <private/qwineventnotifier_p.h>
+#   include <qwineventnotifier.h>
 #else
 #   include "private/qabstractsocketengine_p.h"
 #   include <qtcpsocket.h>

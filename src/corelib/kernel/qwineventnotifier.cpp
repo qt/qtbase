@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qwineventnotifier_p.h"
+#include "qwineventnotifier.h"
 
 #include "qeventdispatcher_win_p.h"
 #include "qcoreapplication.h"
@@ -58,12 +58,63 @@ QT_BEGIN_NAMESPACE
     that event becomes signalled. The state of the event is not modified
     in the process so if it is a manual reset event you will need to
     reset it after the notification.
+
+    Once you have created a event object using Windows API such as
+    CreateEvent() or OpenEvent(), you can create an event notifier to
+    monitor the event handle. If the event notifier is enabled, it will
+    emit the activated() signal whenever the corresponding event object
+    is signalled.
+
+    The setEnabled() function allows you to disable as well as enable the
+    event notifier. It is generally advisable to explicitly enable or
+    disable the event notifier. A disabled notifier does nothing when the
+    event object is signalled(the same effect as not creating the
+    event notifier).  Use the isEnabled() function to determine the
+    notifier's current status.
+
+    Finally, you can use the setHandle() function to register a new event
+    object, and the handle() function to retrieve the event handle.
+
+    \bold{Further information:}
+    Although the class is called QWinEventNotifier, it can be used for
+    certain other objects which are so-called synchronization
+    objects, such as Processes, Threads, Waitable timers.
+
+    \warning This Class is only available on Windows.
 */
 
+/*!
+    \fn void QWinEventNotifier::activated(HANDLE hEvent)
+
+    This signal is emitted whenever the event notifier is enabled and
+    the corresponding HANDLE is signalled.
+
+    The state of the event is not modified in the process, so if it is a
+    manual reset event, you will need to reset it after the notification.
+
+    The object is passed in the \a hEvent parameter.
+
+    \sa handle()
+*/
+
+/*!
+    Constructs an event notifier with the given \a parent.
+*/
 
 QWinEventNotifier::QWinEventNotifier(QObject *parent)
   : QObject(parent), handleToEvent(0), enabled(false)
 {}
+
+/*!
+    Constructs an event notifier with the given \a parent. It enables
+    the \a notifier, and watches for the event \a hEvent.
+
+    The notifier is enabled by default, i.e. it emits the activated() signal
+    whenever the corresponding event is signalled. However, it is generally
+    advisable to explicitly enable or disable the event notifier.
+
+    \sa setEnabled(), isEnabled()
+*/
 
 QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
  : QObject(parent), handleToEvent(hEvent), enabled(false)
@@ -76,10 +127,24 @@ QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
     enabled = true;
 }
 
+/*!
+    Destroys this notifier.
+*/
+
 QWinEventNotifier::~QWinEventNotifier()
 {
     setEnabled(false);
 }
+
+/*!
+    Register the HANDLE \a hEvent. The old HANDLE will be automatically
+    unregistered.
+
+    \bold Note: The notifier will be disabled as a side effect and needs
+    to be re-enabled.
+
+    \sa handle(), setEnabled()
+*/
 
 void QWinEventNotifier::setHandle(HANDLE hEvent)
 {
@@ -87,15 +152,34 @@ void QWinEventNotifier::setHandle(HANDLE hEvent)
     handleToEvent = hEvent;
 }
 
+/*!
+    Returns the HANDLE that has been registered in the notifier.
+
+    \sa setHandle()
+*/
+
 HANDLE  QWinEventNotifier::handle() const
 {
     return handleToEvent;
 }
 
+/*!
+    Returns true if the notifier is enabled; otherwise returns false.
+
+    \sa setEnabled()
+*/
+
 bool QWinEventNotifier::isEnabled() const
 {
     return enabled;
 }
+
+/*!
+    If \a enable is true, the notifier is enabled; otherwise the notifier
+    is disabled.
+
+    \sa isEnabled(), activated()
+*/
 
 void QWinEventNotifier::setEnabled(bool enable)
 {
@@ -113,6 +197,9 @@ void QWinEventNotifier::setEnabled(bool enable)
     else
         eventDispatcher->unregisterEventNotifier(this);
 }
+
+/*!\reimp
+*/
 
 bool QWinEventNotifier::event(QEvent * e)
 {

@@ -69,12 +69,12 @@ win32 {
         SOURCES += \
                 kernel/qeventdispatcher_win.cpp \
                 kernel/qcoreapplication_win.cpp \
-                kernel/qwineventnotifier_p.cpp \
+                kernel/qwineventnotifier.cpp \
                 kernel/qsharedmemory_win.cpp \
                 kernel/qsystemsemaphore_win.cpp
         HEADERS += \
                 kernel/qeventdispatcher_win_p.h \
-                kernel/qwineventnotifier_p.h
+                kernel/qwineventnotifier.h
 }
 
 

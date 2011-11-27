@@ -63,7 +63,7 @@
 #   include <qtcpserver.h>
 #elif defined(Q_OS_WIN)
 #   include <qt_windows.h>
-#   include <private/qwineventnotifier_p.h>
+#   include <qwineventnotifier.h>
 #else
 #   include <private/qabstractsocketengine_p.h>
 #   include <qsocketnotifier.h>
