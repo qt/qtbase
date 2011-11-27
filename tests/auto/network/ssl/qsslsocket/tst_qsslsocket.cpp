@@ -58,6 +58,7 @@
 #ifndef QT_NO_OPENSSL
 #include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"
+#include "private/qsslconfiguration_p.h"
 #endif
 
 #include "../../../network-settings.h"
@@ -2079,6 +2080,10 @@ void tst_QSslSocket::sslOptions()
 {
     if (!QSslSocket::supportsSsl())
         return;
+
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSslConfigurationPrivate::defaultSslOptions),
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2));
 
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments

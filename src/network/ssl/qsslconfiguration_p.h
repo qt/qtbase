@@ -83,7 +83,7 @@ public:
         : protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
           peerVerifyDepth(0),
-          sslOptions(QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation)
+          sslOptions(QSslConfigurationPrivate::defaultSslOptions)
     { }
 
     QSslCertificate peerCertificate;
@@ -100,6 +100,8 @@ public:
     int peerVerifyDepth;
 
     QSsl::SslOptions sslOptions;
+
+    Q_AUTOTEST_EXPORT static const QSsl::SslOptions defaultSslOptions;
 
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();

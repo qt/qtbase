@@ -47,6 +47,9 @@
 
 QT_BEGIN_NAMESPACE
 
+const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOptionDisableEmptyFragments
+                                                                    |QSsl::SslOptionDisableLegacyRenegotiation;
+
 /*!
     \class QSslConfiguration
     \brief The QSslConfiguration class holds the configuration and state of an SSL connection
@@ -201,7 +204,7 @@ bool QSslConfiguration::isNull() const
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
             d->peerCertificateChain.count() == 0 &&
-            d->sslOptions == (QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation));
+            d->sslOptions == QSslConfigurationPrivate::defaultSslOptions);
 }
 
 /*!
