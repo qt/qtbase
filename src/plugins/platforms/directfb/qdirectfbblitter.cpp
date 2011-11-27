@@ -49,6 +49,7 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
 
 static QBlittable::Capabilities dfb_blitter_capabilities()
 {
@@ -271,3 +272,5 @@ void QDirectFbBlitter::doUnlock()
 {
     m_surface->Unlock(m_surface.data());
 }
+
+QT_END_NAMESPACE

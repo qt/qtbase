@@ -47,6 +47,8 @@
 
 #include "qdirectfbconvenience.h"
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFbScreen;
 class QDirectFbBlitter;
 
@@ -59,5 +61,7 @@ public:
 private:
     QScopedPointer<QPlatformCursorImage> m_image;
 };
+
+QT_END_NAMESPACE
 
 #endif // QDIRECTFBCURSOR_H

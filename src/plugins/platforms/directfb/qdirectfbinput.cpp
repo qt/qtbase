@@ -50,6 +50,8 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 QDirectFbInput::QDirectFbInput(IDirectFB *dfb, IDirectFBDisplayLayer *dfbLayer)
     : m_dfbInterface(dfb)
     , m_dfbDisplayLayer(dfbLayer)
@@ -205,3 +207,4 @@ inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const
     return QPoint(event.window.cx +x, event.window.cy + y);
 }
 
+QT_END_NAMESPACE

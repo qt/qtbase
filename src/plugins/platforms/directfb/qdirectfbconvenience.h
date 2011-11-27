@@ -49,6 +49,7 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
 
 class QDirectFbScreen;
 class QPlatformScreen;
@@ -118,6 +119,8 @@ IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen);
 #define QDFB_TOSTRING(x) QDFB_STRINGIFY(x)
 #define QDFB_PRETTY \
     (__FILE__ ":" QDFB_TOSTRING(__LINE__))
+
+QT_END_NAMESPACE
 
 
 #endif // QDIRECTFBCONVENIENCE_H

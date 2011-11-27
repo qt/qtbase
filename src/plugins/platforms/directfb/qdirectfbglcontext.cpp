@@ -45,6 +45,8 @@
 
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 QDirectFbGLContext::QDirectFbGLContext(IDirectFBGL *glContext)
     : m_dfbGlContext(glContext)
 {
@@ -99,3 +101,5 @@ QPlatformWindowFormat QDirectFbGLContext::platformWindowFormat() const
 {
     return m_windowFormat;
 }
+
+QT_END_NAMESPACE

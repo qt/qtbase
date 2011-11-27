@@ -48,6 +48,8 @@
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
 
+QT_BEGIN_NAMESPACE
+
 IDirectFB *QDirectFbConvenience::dfbInterface()
 {
     static IDirectFB *dfb = 0;
@@ -391,3 +393,5 @@ IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen)
 {
     return static_cast<QDirectFbScreen*>(screen)->dfbLayer();
 }
+
+QT_END_NAMESPACE

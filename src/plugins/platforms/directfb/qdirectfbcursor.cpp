@@ -42,6 +42,7 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbconvenience.h"
 
+QT_BEGIN_NAMESPACE
 
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
     : QPlatformCursor(screen)
@@ -81,3 +82,5 @@ void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
     layer->SetCursorShape(layer, surface, xSpot, ySpot);
     layer->SetCooperativeLevel(layer, DLSCL_SHARED);
 }
+
+QT_END_NAMESPACE

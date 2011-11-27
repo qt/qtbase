@@ -47,6 +47,8 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
@@ -199,3 +201,5 @@ IDirectFBWindow *QDirectFbWindow::dfbWindow() const
 {
     return m_dfbWindow.data();
 }
+
+QT_END_NAMESPACE

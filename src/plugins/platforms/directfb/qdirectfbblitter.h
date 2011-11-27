@@ -48,6 +48,8 @@
 
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFbBlitter : public QBlittable
 {
 public:
@@ -102,5 +104,7 @@ inline IDirectFBSurface *QDirectFbBlitter::dfbSurface() const
 {
     return m_surface.data();
 }
+
+QT_END_NAMESPACE
 
 #endif // QDIRECTFBBLITTER_H
