@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWindow;
+class QTouchDevice;
 
 class QWindowsMouseHandler
 {
@@ -76,6 +77,7 @@ private:
 
     QPointer<QWindow> m_windowUnderMouse;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
+    QTouchDevice *m_touchDevice;
 };
 
 Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)

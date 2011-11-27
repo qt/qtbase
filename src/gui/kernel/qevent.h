@@ -54,7 +54,8 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qset.h>
 #include <QtCore/qfile.h>
-
+#include <QtGui/qvector2d.h>
+#include <QtGui/qtouchdevice.h>
 
 QT_BEGIN_HEADER
 
@@ -692,6 +693,11 @@ public:
     class Q_GUI_EXPORT TouchPoint
     {
     public:
+        enum InfoFlag {
+            Pen = 0x0001
+        };
+        Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
+
         TouchPoint(int id = -1);
         TouchPoint(const QTouchEvent::TouchPoint &other);
         ~TouchPoint();
@@ -722,6 +728,9 @@ public:
         QRectF screenRect() const;
 
         qreal pressure() const;
+        QVector2D velocity() const;
+        InfoFlags flags() const;
+        QList<QPointF> rawScreenPositions() const;
 
         // internal
         void setId(int id);
@@ -742,6 +751,9 @@ public:
         void setSceneRect(const QRectF &sceneRect);
         void setScreenRect(const QRectF &screenRect);
         void setPressure(qreal pressure);
+        void setVelocity(const QVector2D &v);
+        void setFlags(InfoFlags flags);
+        void setRawScreenPositions(const QList<QPointF> &positions);
         QTouchEvent::TouchPoint &operator=(const QTouchEvent::TouchPoint &other);
 
     private:
@@ -752,32 +764,36 @@ public:
         friend class QApplicationPrivate;
     };
 
-    enum DeviceType {
+    QT_DEPRECATED enum DeviceType {
         TouchScreen,
         TouchPad
     };
 
     QTouchEvent(QEvent::Type eventType,
-                QTouchEvent::DeviceType deviceType = TouchScreen,
+                QTouchDevice *device = 0,
                 Qt::KeyboardModifiers modifiers = Qt::NoModifier,
                 Qt::TouchPointStates touchPointStates = 0,
                 const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
     inline QWidget *widget() const { return _widget; }
-    inline QTouchEvent::DeviceType deviceType() const { return _deviceType; }
+    inline QWindow *window() const { return _window; }
+    QT_DEPRECATED inline QTouchEvent::DeviceType deviceType() const { return static_cast<DeviceType>(int(_device->type())); }
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
+    inline QTouchDevice *device() const { return _device; }
 
     // internal
     inline void setWidget(QWidget *awidget) { _widget = awidget; }
-    inline void setDeviceType(DeviceType adeviceType) { _deviceType = adeviceType; }
+    inline void setWindow(QWindow *awindow) { _window = awindow; }
     inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
+    inline void setDevice(QTouchDevice *device) { _device = device; }
 
 protected:
     QWidget *_widget;
-    QTouchEvent::DeviceType _deviceType;
+    QWindow *_window;
+    QTouchDevice *_device;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 
@@ -787,6 +803,7 @@ protected:
     friend class QApplicationPrivate;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchEvent::TouchPoint::InfoFlags)
 
 class QScrollPrepareEventPrivate;
 class Q_GUI_EXPORT QScrollPrepareEvent : public QEvent

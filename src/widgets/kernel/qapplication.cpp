@@ -5214,7 +5214,7 @@ int QApplicationPrivate::findClosestTouchPointId(const QPointF &screenPos)
 }
 
 void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
-                                                 QTouchEvent::DeviceType deviceType,
+                                                 QTouchDevice *device,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints,
                                                  ulong timestamp)
 {
@@ -5234,7 +5234,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
         {
-            if (deviceType == QTouchEvent::TouchPad) {
+            if (device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 widget = d->widgetForTouchPointId.isEmpty()
                          ? QWeakPointer<QWidget>()
@@ -5252,7 +5252,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                     widget = window;
             }
 
-            if (deviceType == QTouchEvent::TouchScreen) {
+            if (device->type() == QTouchDevice::TouchScreen) {
                 int closestTouchPointId = d->findClosestTouchPointId(touchPoint.screenPos());
                 QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId).data();
                 if (closestWidget
@@ -5348,12 +5348,13 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         }
 
         QTouchEvent touchEvent(eventType,
-                               deviceType,
+                               device,
                                QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);
         touchEvent.setTimestamp(timestamp);
+        touchEvent.setWindow(window->windowHandle());
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:
@@ -5376,11 +5377,11 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 }
 
 Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                                QTouchEvent::DeviceType deviceType,
+                                                QTouchDevice *device,
                                                 const QList<QTouchEvent::TouchPoint> &touchPoints,
                                                 ulong timestamp)
 {
-    QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints, timestamp);
+    QApplicationPrivate::translateRawTouchEvent(window, device, touchPoints, timestamp);
 }
 
 #ifndef QT_NO_GESTURES

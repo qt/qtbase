@@ -90,6 +90,32 @@ information about a particular change.
 
 - QSound has been moved from QtGui to QtMultimedia
 
+- QTouchEvent:
+
+  * The DeviceType enum and deviceType() have been deprecated due to
+    the introduction of QTouchDevice.
+
+  * The signature of the constructor has changed. It now takes a
+    QTouchDevice pointer instead of just a DeviceType value.
+
+  * TouchPointState no longer includes TouchPointStateMask and
+    TouchPointPrimary. The primary flag is now stored together with
+    other touch point flags and is accessible through
+    TouchPoint::isPrimary() or TouchPoint::flags(). As a result the
+    internally used state mask is no longer necessary.
+
+  * QWidget *widget() has been removed and is replaced by QObject
+    *target() in order to avoid QWidget dependencies.
+
+- QWindowSystemInterface:
+
+  * The signature of all handleTouchEvent() variants have changed,
+    taking a QTouchDevice* instead of just a DeviceType value.
+    Platform or generic plug-ins have to create and register at least
+    one QTouchDevice before sending the first touch event.
+
+  * The event type parameter is removed from handleTouchEvent().
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
@@ -127,6 +153,9 @@ QtGui
   proper parent/child functions instead of using navigate which has been deprecated for this purpose.
   Table and cell interfaces have been added to qaccessible2.h
 
+* Touch events and points have been extended to hold additional
+  information like capability flags, point-specific flags, velocity,
+  and raw positions.
 
 QtWidgets
 ---------

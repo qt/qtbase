@@ -551,7 +551,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
         if (!inputType)
             inputType = QScroller::InputMove;
 
-        if (te->deviceType() == QTouchEvent::TouchPad) {
+        if (te->device()->type() == QTouchDevice::TouchPad) {
             if (te->touchPoints().count() != 2)  // 2 fingers on pad
                 return Ignore;
 

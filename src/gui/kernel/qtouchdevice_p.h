@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,35 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHEVENTSENDERQPA_H
-#define QTOUCHEVENTSENDERQPA_H
+#ifndef QTOUCHDEVICE_P_H
+#define QTOUCHDEVICE_P_H
 
-#include "qtouchscreen.h"
+#include <QtCore/qobject.h>
+#include <QtGui/qtouchdevice.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTouchDevice;
+QT_MODULE(Gui)
 
-class QTouchEventSenderQPA : public QTouchScreenObserver
+class QTouchDevicePrivate
 {
 public:
-    QTouchEventSenderQPA(const QString &spec = QString());
-    void touch_configure(int x_min, int x_max, int y_min, int y_max);
-    void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points);
+    QTouchDevicePrivate()
+        : type(QTouchDevice::TouchScreen),
+          caps(QTouchDevice::Position)
+    { }
 
-private:
-    bool m_forceToActiveWindow;
-    int hw_range_x_min;
-    int hw_range_x_max;
-    int hw_range_y_min;
-    int hw_range_y_max;
-    QTouchDevice *m_device;
+    QTouchDevice::DeviceType type;
+    QTouchDevice::Capabilities caps;
+    QString name;
+
+    static void registerDevice(QTouchDevice *dev);
+    static bool isRegistered(QTouchDevice *dev);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTOUCHEVENTSENDERQPA_H
+#endif // QTOUCHDEVICE_P_H

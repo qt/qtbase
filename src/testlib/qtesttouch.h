@@ -64,7 +64,7 @@ QT_MODULE(Test)
 
 #ifdef QT_WIDGETS_LIB
 extern Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                                   QTouchEvent::DeviceType deviceType,
+                                                   QTouchDevice *device,
                                                    const QList<QTouchEvent::TouchPoint> &touchPoints,
                                                    ulong timestamp);
 #endif
@@ -136,13 +136,13 @@ namespace QTest
             if (!points.isEmpty()) {
                 if (targetWindow)
                 {
-                    QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None,deviceType, touchPointList(points.values()));
+                    QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None, device, touchPointList(points.values()));
                     QTest::qWait(10);
                 }
 #ifdef QT_WIDGETS_LIB
                 else if (targetWidget)
                 {
-                    qt_translateRawTouchEvent(targetWidget, deviceType, points.values(), 0);
+                    qt_translateRawTouchEvent(targetWidget, device, points.values(), 0);
                 }
 #endif
             }
@@ -152,17 +152,17 @@ namespace QTest
 
     private:
 #ifdef QT_WIDGETS_LIB
-        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
-            : targetWidget(widget), targetWindow(0), deviceType(aDeviceType)
+        QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice)
+            : targetWidget(widget), targetWindow(0), device(aDevice)
         {
         }
 #endif
-        QTouchEventSequence(QWindow *window, QTouchEvent::DeviceType aDeviceType)
+        QTouchEventSequence(QWindow *window, QTouchDevice *aDevice)
             :
 #ifdef QT_WIDGETS_LIB
               targetWidget(0),
 #endif
-              targetWindow(window), deviceType(aDeviceType)
+              targetWindow(window), device(aDevice)
         {
         }
 
@@ -226,26 +226,26 @@ namespace QTest
         QWidget *targetWidget;
 #endif
         QWindow *targetWindow;
-        QTouchEvent::DeviceType deviceType;
+        QTouchDevice *device;
 #ifdef QT_WIDGETS_LIB
-        friend QTouchEventSequence touchEvent(QWidget *, QTouchEvent::DeviceType);
+        friend QTouchEventSequence touchEvent(QWidget *, QTouchDevice*);
 #endif
-        friend QTouchEventSequence touchEvent(QWindow *, QTouchEvent::DeviceType);
+        friend QTouchEventSequence touchEvent(QWindow *, QTouchDevice*);
     };
 
 #ifdef QT_WIDGETS_LIB
     inline
-    QTouchEventSequence touchEvent(QWidget *widget = 0,
-                                   QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
+    QTouchEventSequence touchEvent(QWidget *widget,
+                                   QTouchDevice *device)
     {
-        return QTouchEventSequence(widget, deviceType);
+        return QTouchEventSequence(widget, device);
     }
 #endif
     inline
-    QTouchEventSequence touchEvent(QWindow *window = 0,
-                                   QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
+    QTouchEventSequence touchEvent(QWindow *window,
+                                   QTouchDevice *device)
     {
-        return QTouchEventSequence(window, deviceType);
+        return QTouchEventSequence(window, device);
     }
 
 }

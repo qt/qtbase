@@ -289,7 +289,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
 void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
 {
-    QApplicationPrivate::translateRawTouchEvent(m_widget, event->deviceType(), event->touchPoints(), event->timestamp());
+    QApplicationPrivate::translateRawTouchEvent(m_widget, event->device(), event->touchPoints(), event->timestamp());
 }
 
 void QWidgetWindow::handleKeyEvent(QKeyEvent *event)

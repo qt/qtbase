@@ -162,8 +162,11 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     touchPoint.setPos(touchStart);
     touchPoint.setScenePos(touchStart);
     touchPoint.setScreenPos(touchStart);
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
     QTouchEvent touchEvent1(QEvent::TouchBegin,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointPressed,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
@@ -177,7 +180,7 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     touchPoint.setScenePos(touchUpdate);
     touchPoint.setScreenPos(touchUpdate);
     QTouchEvent touchEvent2(QEvent::TouchUpdate,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointMoved,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
@@ -202,7 +205,7 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     touchPoint.setScenePos(touchEnd);
     touchPoint.setScreenPos(touchEnd);
     QTouchEvent touchEvent5(QEvent::TouchEnd,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointReleased,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
@@ -233,8 +236,11 @@ void tst_QScroller::kineticScrollNoTest( tst_QScrollerWidget *sw, QPointF from, 
     touchPoint.setPos(touchStart);
     touchPoint.setScenePos(touchStart);
     touchPoint.setScreenPos(touchStart);
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
     QTouchEvent touchEvent1(QEvent::TouchBegin,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointPressed,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
@@ -246,7 +252,7 @@ void tst_QScroller::kineticScrollNoTest( tst_QScrollerWidget *sw, QPointF from, 
     touchPoint.setScenePos(touchUpdate);
     touchPoint.setScreenPos(touchUpdate);
     QTouchEvent touchEvent2(QEvent::TouchUpdate,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointMoved,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));
@@ -259,7 +265,7 @@ void tst_QScroller::kineticScrollNoTest( tst_QScrollerWidget *sw, QPointF from, 
     touchPoint.setScenePos(touchEnd);
     touchPoint.setScreenPos(touchEnd);
     QTouchEvent touchEvent5(QEvent::TouchEnd,
-                            QTouchEvent::TouchScreen,
+                            device,
                             Qt::NoModifier,
                             Qt::TouchPointReleased,
                             (QList<QTouchEvent::TouchPoint>() << touchPoint));

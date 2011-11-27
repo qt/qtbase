@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,35 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHEVENTSENDERQPA_H
-#define QTOUCHEVENTSENDERQPA_H
+#ifndef QTOUCHDEVICE_H
+#define QTOUCHDEVICE_H
 
-#include "qtouchscreen.h"
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTouchDevice;
+QT_MODULE(Gui)
 
-class QTouchEventSenderQPA : public QTouchScreenObserver
+class QTouchDevicePrivate;
+
+class Q_GUI_EXPORT QTouchDevice
 {
 public:
-    QTouchEventSenderQPA(const QString &spec = QString());
-    void touch_configure(int x_min, int x_max, int y_min, int y_max);
-    void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points);
+    enum DeviceType {
+        TouchScreen,
+        TouchPad
+    };
+
+    enum CapabilityFlag {
+        Position = 0x0001,
+        Area = 0x0002,
+        Pressure = 0x0004,
+        Velocity = 0x0008,
+        RawPositions = 0x0010,
+        NormalizedPosition = 0x0020
+    };
+    Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
+
+    QTouchDevice();
+    ~QTouchDevice();
+
+    static QList<const QTouchDevice *> devices();
+
+    QString name() const;
+    DeviceType type() const;
+    Capabilities capabilities() const;
+
+    void setName(const QString &name);
+    void setType(DeviceType devType);
+    void setCapabilities(Capabilities caps);
 
 private:
-    bool m_forceToActiveWindow;
-    int hw_range_x_min;
-    int hw_range_x_max;
-    int hw_range_y_min;
-    int hw_range_y_max;
-    QTouchDevice *m_device;
+    QTouchDevicePrivate *d;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTOUCHEVENTSENDERQPA_H
+#endif // QTOUCHDEVICE_H

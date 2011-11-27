@@ -8251,7 +8251,7 @@ bool QWidget::event(QEvent *event)
 #ifndef Q_WS_MAC
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
         const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
-        if (touchPoint.isPrimary() || touchEvent->deviceType() == QTouchEvent::TouchPad)
+        if (touchPoint.isPrimary() || touchEvent->device()->type() == QTouchDevice::TouchPad)
             break;
 
         // fake a mouse event!

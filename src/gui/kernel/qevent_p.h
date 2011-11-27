@@ -105,6 +105,9 @@ public:
             startPos, startScenePos, startScreenPos, startNormalizedPos,
             lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
     qreal pressure;
+    QVector2D velocity;
+    QTouchEvent::TouchPoint::InfoFlags flags;
+    QList<QPointF> rawScreenPositions;
 };
 
 class QFileOpenEventPrivate

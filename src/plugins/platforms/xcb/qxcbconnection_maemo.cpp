@@ -62,6 +62,7 @@ struct XInput2Data {
     , xideviceinfo(0)
     , xibuttonclassinfo(0)
     , xiMaxContacts(0)
+    , qtTouchDevice(0)
     {
     }
     // true if Qt is compiled w/ XInput2 or Tablet support and we have a tablet.
@@ -74,6 +75,7 @@ struct XInput2Data {
     XIButtonClassInfo *xibuttonclassinfo;
     int xiMaxContacts;
     QList<QWindowSystemInterface::TouchPoint> allTouchPoints;
+    QTouchDevice *qtTouchDevice;
 };
 
 bool QXcbConnection::isUsingXInput2()
@@ -277,8 +279,17 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                 if (!(active & (1 << i)) && touchPoints.at(i).state != Qt::TouchPointReleased)
                     touchPoints[i].state = Qt::TouchPointReleased;
 
-            if (QXcbWindow *platformWindow = platformWindowFromId(xideviceevent->event))
-                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, QTouchEvent::TouchScreen, touchPoints);
+            if (QXcbWindow *platformWindow = platformWindowFromId(xideviceevent->event)) {
+                QTouchDevice *dev = m_xinputData->qtTouchDevice;
+                if (!dev) {
+                    dev = new QTouchDevice;
+                    dev->setType(QTouchDevice::TouchScreen);
+                    dev->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::Pressure | QTouchDevice::NormalizedPosition);
+                    QWindowSystemInterface::registerTouchDevice(dev);
+                    m_xinputData->qtTouchDevice = dev;
+                }
+                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, dev, touchPoints);
+            }
 
             if (xideviceevent->evtype == XI_ButtonRelease) {
                 // final event, forget touch state
