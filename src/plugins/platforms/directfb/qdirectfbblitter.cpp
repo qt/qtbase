@@ -50,11 +50,6 @@
 #include <directfb.h>
 
 
-#define QDFB_STRINGIFY(x) #x
-#define QDFB_TOSTRING(x) QDFB_STRINGIFY(x)
-#define QDFB_PRETTY \
-    (__FILE__ ":" QDFB_TOSTRING(__LINE__))
-
 static QBlittable::Capabilities dfb_blitter_capabilities()
 {
     return QBlittable::Capabilities(QBlittable::SolidRectCapability

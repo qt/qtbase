@@ -114,4 +114,10 @@ public:
 QDirectFbScreen *toDfbScreen(QWindow *window);
 IDirectFBDisplayLayer *toDfbLayer(QPlatformScreen *screen);
 
+#define QDFB_STRINGIFY(x) #x
+#define QDFB_TOSTRING(x) QDFB_STRINGIFY(x)
+#define QDFB_PRETTY \
+    (__FILE__ ":" QDFB_TOSTRING(__LINE__))
+
+
 #endif // QDIRECTFBCONVENIENCE_H
