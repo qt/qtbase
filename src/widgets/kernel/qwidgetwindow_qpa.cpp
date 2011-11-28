@@ -267,7 +267,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     if (event->type() == QEvent::MouseButtonPress && !qt_button_down)
         qt_button_down = widget;
 
-    QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->globalPos(), &mapped, event->type(), event->buttons(),
+    QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
                                                                qt_button_down, widget);
 
     if (!receiver) {

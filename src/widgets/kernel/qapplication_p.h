@@ -443,7 +443,7 @@ public:
     static QString styleSheet;
 #endif
     static QPointer<QWidget> leaveAfterRelease;
-    static QWidget *pickMouseReceiver(QWidget *candidate, const QPoint &globalPos, QPoint *pos,
+    static QWidget *pickMouseReceiver(QWidget *candidate, const QPoint &windowPos, QPoint *pos,
                                       QEvent::Type type, Qt::MouseButtons buttons,
                                       QWidget *buttonDown, QWidget *alienWidget);
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
