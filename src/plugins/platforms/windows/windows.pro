@@ -43,7 +43,6 @@ SOURCES += \
     qwindowsmime.cpp \
     qwindowsdrag.cpp \
     qwindowscursor.cpp \
-    pixmaputils.cpp \
     qwindowsinputcontext.cpp \
     qwindowsaccessibility.cpp \
     qwindowstheme.cpp \
@@ -70,7 +69,6 @@ HEADERS += \
     qwindowsdrag.h \
     qwindowsinternalmimedata.h \
     qwindowscursor.h \
-    pixmaputils.h \
     array.h \
     qwindowsinputcontext.h \
     qwindowsaccessibility.h \

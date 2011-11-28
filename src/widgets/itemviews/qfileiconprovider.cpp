@@ -46,11 +46,14 @@
 #include <qapplication.h>
 #include <qdir.h>
 #include <qpixmapcache.h>
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
 #  include <qt_windows.h>
 #  include <commctrl.h>
 #  include <objbase.h>
+
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+
 #elif defined(Q_WS_MAC)
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -96,7 +99,7 @@ class QFileIconProviderPrivate
 public:
     QFileIconProviderPrivate();
     QIcon getIcon(QStyle::StandardPixmap name) const;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     QIcon getWinIcon(const QFileInfo &fi) const;
 #elif defined(Q_WS_MAC)
     QIcon getMacIcon(const QFileInfo &fi) const;
@@ -229,7 +232,7 @@ QIcon QFileIconProvider::icon(IconType type) const
     return QIcon();
 }
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 {
     QIcon retIcon;
@@ -284,7 +287,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
         }
         if (pixmap.isNull()) {
 #ifndef Q_OS_WINCE
-            pixmap = QPixmap::fromWinHICON(info.hIcon);
+            pixmap = qt_pixmapFromWinHICON(info.hIcon);
 #else
             pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
@@ -314,7 +317,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
             key = QString::fromLatin1("qt_dir_%1").arg(info.iIcon);
         }
 #ifndef Q_OS_WINCE
-        pixmap = QPixmap::fromWinHICON(info.hIcon);
+        pixmap = qt_pixmapFromWinHICON(info.hIcon);
 #else
         pixmap = QPixmap::fromWinHICON(ImageList_GetIcon((HIMAGELIST) val, info.iIcon, ILD_NORMAL));
 #endif
@@ -418,13 +421,13 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     QIcon retIcon = d->getMacIcon(info);
     if (!retIcon.isNull())
         return retIcon;
-#elif defined Q_WS_WIN
+#elif defined Q_OS_WIN
     QIcon icon = d->getWinIcon(info);
     if (!icon.isNull())
         return icon;
 #endif
     if (info.isRoot())
-#if defined (Q_WS_WIN) && !defined(Q_WS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_WS_WINCE)
     {
         UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
 
@@ -482,7 +485,7 @@ QString QFileIconProvider::type(const QFileInfo &info) const
     }
 
     if (info.isDir())
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         return QApplication::translate("QFileDialog", "File Folder", "Match Windows Explorer");
 #else
         return QApplication::translate("QFileDialog", "Folder", "All other platforms");

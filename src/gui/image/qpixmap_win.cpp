@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,21 +39,24 @@
 **
 ****************************************************************************/
 
-#include "pixmaputils.h"
+#include "qpixmap.h"
+#include "qplatformpixmap_qpa.h"
+#include "qpixmap_raster_p.h"
 
-#include <QtGui/QBitmap>
-#include <QtGui/QImage>
-#include <QtGui/QPlatformPixmap>
-#include <QtGui/private/qpixmap_raster_p.h>
-
-#include <QtCore/QScopedArrayPointer>
-#include <QtCore/QDebug>
-
-#include <string.h>
+#include <qglobal.h>
+#include <qt_windows.h>
+#include <QScopedArrayPointer>
 
 QT_BEGIN_NAMESPACE
 
-HBITMAP createIconMask(const QBitmap &bitmap)
+enum HBitmapFormat
+{
+    HBitmapNoAlpha,
+    HBitmapPremultipliedAlpha,
+    HBitmapAlpha
+};
+
+Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap)
 {
     QImage bm = bitmap.toImage().convertToFormat(QImage::Format_Mono);
     const int w = bm.width();
@@ -67,7 +70,7 @@ HBITMAP createIconMask(const QBitmap &bitmap)
     return hbm;
 }
 
-HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
+Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0)
 {
     if (p.isNull())
         return 0;
@@ -77,7 +80,7 @@ HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
         QRasterPlatformPixmap *data = new QRasterPlatformPixmap(p.depth() == 1 ?
             QRasterPlatformPixmap::BitmapType : QRasterPlatformPixmap::PixmapType);
         data->fromImage(p.toImage(), Qt::AutoColor);
-        return qPixmapToWinHBITMAP(QPixmap(data), format);
+        return qt_pixmapToWinHBITMAP(QPixmap(data), hbitmapFormat);
     }
 
     QRasterPlatformPixmap *d = static_cast<QRasterPlatformPixmap*>(p.handle());
@@ -113,9 +116,9 @@ HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
 
     // Copy over the data
     QImage::Format imageFormat = QImage::Format_ARGB32;
-    if (format == HBitmapAlpha)
+    if (hbitmapFormat == HBitmapAlpha)
         imageFormat = QImage::Format_RGB32;
-    else if (format == HBitmapPremultipliedAlpha)
+    else if (hbitmapFormat == HBitmapPremultipliedAlpha)
         imageFormat = QImage::Format_ARGB32_Premultiplied;
     const QImage image = rasterImage->convertToFormat(imageFormat);
     const int bytes_per_line = w * 4;
@@ -125,7 +128,7 @@ HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
     return bitmap;
 }
 
-QPixmap qPixmapFromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0)
 {
     // Verify size
     BITMAP bitmap_info;
@@ -160,7 +163,7 @@ QPixmap qPixmapFromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
 
     QImage::Format imageFormat = QImage::Format_ARGB32_Premultiplied;
     uint mask = 0;
-    if (format == HBitmapNoAlpha) {
+    if (hbitmapFormat == HBitmapNoAlpha) {
         imageFormat = QImage::Format_RGB32;
         mask = 0xff000000;
     }
@@ -188,7 +191,7 @@ QPixmap qPixmapFromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
     return QPixmap::fromImage(image);
 }
 
-HICON qPixmapToWinHICON(const QPixmap &p)
+Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
     QBitmap maskBitmap = p.mask();
     if (maskBitmap.isNull()) {
@@ -198,8 +201,8 @@ HICON qPixmapToWinHICON(const QPixmap &p)
 
     ICONINFO ii;
     ii.fIcon    = true;
-    ii.hbmMask  = createIconMask(maskBitmap);
-    ii.hbmColor = qPixmapToWinHBITMAP(p, HBitmapAlpha);
+    ii.hbmMask  = qt_createIconMask(maskBitmap);
+    ii.hbmColor = qt_pixmapToWinHBITMAP(p, HBitmapAlpha);
     ii.xHotspot = 0;
     ii.yHotspot = 0;
 
@@ -211,7 +214,7 @@ HICON qPixmapToWinHICON(const QPixmap &p)
     return hIcon;
 }
 
-static QImage qImageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
+Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
 {
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
@@ -228,7 +231,7 @@ static QImage qImageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
         return image;
 
     // Get bitmap bits
-    QScopedPointer<uchar> data(new uchar [bmi.bmiHeader.biSizeImage]);
+    QScopedArrayPointer<uchar> data(new uchar [bmi.bmiHeader.biSizeImage]);
     if (!GetDIBits(hdc, bitmap, 0, h, data.data(), &bmi, DIB_RGB_COLORS)) {
         qErrnoWarning("%s: failed to get bitmap bits", __FUNCTION__);
         return QImage();
@@ -242,7 +245,7 @@ static QImage qImageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
     return image;
 }
 
-QPixmap qPixmapFromWinHICON(HICON icon)
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon)
 {
     bool foundAlpha = false;
     HDC screenDevice = GetDC(0);
@@ -276,7 +279,7 @@ QPixmap qPixmapFromWinHICON(HICON icon)
     HBITMAP winBitmap = CreateDIBSection(hdc, (BITMAPINFO*)&bitmapInfo, DIB_RGB_COLORS, (VOID**)&bits, NULL, 0);
     HGDIOBJ oldhdc = (HBITMAP)SelectObject(hdc, winBitmap);
     DrawIconEx( hdc, 0, 0, icon, iconinfo.xHotspot * 2, iconinfo.yHotspot * 2, 0, 0, DI_NORMAL);
-    QImage image = qImageFromWinHBITMAP(hdc, winBitmap, w, h);
+    QImage image = qt_imageFromWinHBITMAP(hdc, winBitmap, w, h);
 
     for (int y = 0 ; y < h && !foundAlpha ; y++) {
         const QRgb *scanLine= reinterpret_cast<const QRgb *>(image.scanLine(y));
@@ -290,7 +293,7 @@ QPixmap qPixmapFromWinHICON(HICON icon)
     if (!foundAlpha) {
         //If no alpha was found, we use the mask to set alpha values
         DrawIconEx( hdc, 0, 0, icon, w, h, 0, 0, DI_MASK);
-        const QImage mask = qImageFromWinHBITMAP(hdc, winBitmap, w, h);
+        const QImage mask = qt_imageFromWinHBITMAP(hdc, winBitmap, w, h);
 
         for (int y = 0 ; y < h ; y++){
             QRgb *scanlineImage = reinterpret_cast<QRgb *>(image.scanLine(y));

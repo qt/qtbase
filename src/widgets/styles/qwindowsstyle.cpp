@@ -79,7 +79,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
@@ -109,7 +109,9 @@ typedef struct
 typedef HRESULT (WINAPI *PtrSHGetStockIconInfo)(int siid, int uFlags, QSHSTOCKICONINFO *psii);
 static PtrSHGetStockIconInfo pSHGetStockIconInfo = 0;
 
-#endif //Q_WS_WIN
+Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+#endif //Q_OS_WIN
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <limits.h>
@@ -123,7 +125,7 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 QWindowsStylePrivate::QWindowsStylePrivate()
     : alt_down(false), menuBarTimer(0), animationFps(10), animateTimer(0), animateStep(0)
 {
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
         && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
         QSystemLibrary shellLib(QLatin1String("shell32"));
@@ -290,7 +292,7 @@ QWindowsStyle::~QWindowsStyle()
 {
 }
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 static inline QRgb colorref2qrgb(COLORREF col)
 {
     return qRgb(GetRValue(col), GetGValue(col), GetBValue(col));
@@ -312,7 +314,7 @@ void QWindowsStyle::polish(QApplication *app)
     d->inactiveGradientCaptionColor = app->palette().dark().color();
     d->inactiveCaptionText = app->palette().background().color();
 
-#if defined(Q_WS_WIN) //fetch native title bar colors
+#if defined(Q_OS_WIN) //fetch native title bar colors
     if(app->desktopSettingsAware()){
         DWORD activeCaption = GetSysColor(COLOR_ACTIVECAPTION);
         DWORD gradientActiveCaption = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
@@ -390,7 +392,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 #endif
     case PM_MaximumDragDistance:
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
         {
             HDC hdcScreen = GetDC(0);
             int dpi = GetDeviceCaps(hdcScreen, LOGPIXELSX);
@@ -487,7 +489,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 #endif // QT_NO_MENU
 
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     case PM_TitleBarHeight:
         if (widget && (widget->windowType() == Qt::Tool)) {
             // MS always use one less than they say
@@ -514,13 +516,13 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
                 ret = QCommonStyle::pixelMetric(pm, opt, widget);
         }
         break;
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
 
     case PM_SplitterWidth:
         ret = qMax(4, QApplication::globalStrut().width());
         break;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     case PM_MdiSubWindowFrameWidth:
 #if defined(Q_OS_WINCE)
         ret = GetSystemMetrics(SM_CYDLGFRAME);
@@ -926,7 +928,7 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 static QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
@@ -937,7 +939,7 @@ static QPixmap loadIconFromShell32( int resourceId, int size )
     if( hmod ) {
         HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
         if( iconHandle ) {
-            QPixmap iconpixmap = QPixmap::fromWinHICON( iconHandle );
+            QPixmap iconpixmap = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
             return iconpixmap;
         }
@@ -952,7 +954,7 @@ static QPixmap loadIconFromShell32( int resourceId, int size )
 QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                       const QWidget *widget) const
 {
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QPixmap desktopIcon;
     switch(standardPixmap) {
     case SP_DriveCDIcon:
@@ -1035,28 +1037,28 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     case SP_MessageBoxInformation:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_INFORMATION);
-            desktopIcon = QPixmap::fromWinHICON( iconHandle );
+            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxWarning:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_WARNING);
-            desktopIcon = QPixmap::fromWinHICON( iconHandle );
+            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxCritical:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_ERROR);
-            desktopIcon = QPixmap::fromWinHICON( iconHandle );
+            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
             break;
         }
     case SP_MessageBoxQuestion:
         {
             HICON iconHandle = LoadIcon(NULL, IDI_QUESTION);
-            desktopIcon = QPixmap::fromWinHICON( iconHandle );
+            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
             DestroyIcon(iconHandle);
             break;
         }
@@ -1071,7 +1073,7 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_SMALLICON, &iconInfo) == S_OK) {
-                    pixmap = QPixmap::fromWinHICON(iconInfo.hIcon);
+                    pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
                     DestroyIcon(iconInfo.hIcon);
                     return pixmap;
                 }
@@ -1154,7 +1156,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         ret = 0;
         break;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     case SH_UnderlineShortcut:
     {
         ret = 1;
@@ -1204,7 +1206,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 #endif // QT_NO_RUBBERBAND
     case SH_LineEdit_PasswordCharacter:
         {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
             if (widget && (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
                 const QFontMetrics &fm = widget->fontMetrics();
                 if (fm.inFont(QChar(0x25CF)))
@@ -3105,7 +3107,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
 {
     QIcon icon;
     QPixmap pixmap;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     switch (standardIcon) {
     case SP_FileDialogNewFolder:
     {
@@ -3216,7 +3218,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
                 memset(&iconInfo, 0, sizeof(iconInfo));
                 iconInfo.cbSize = sizeof(iconInfo);
                 if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_LARGEICON, &iconInfo) == S_OK) {
-                    icon.addPixmap(QPixmap::fromWinHICON(iconInfo.hIcon));
+                    icon.addPixmap(qt_pixmapFromWinHICON(iconInfo.hIcon));
                     DestroyIcon(iconInfo.hIcon);
                 }
             }

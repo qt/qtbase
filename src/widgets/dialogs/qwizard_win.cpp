@@ -320,6 +320,8 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
+    Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
+
     Q_ASSERT(backButton_);
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
     QBackingStore *backingStore = backButton_->backingStore();
@@ -351,9 +353,10 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         QRect(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight),
         hdc);
 
-    if (!wizard->windowIcon().isNull()) {
+    const QIcon windowIcon = wizard->windowIcon();
+    if (!windowIcon.isNull()) {
         QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
-        HICON hIcon = 0; //###FIXME wizard->windowIcon().pixmap(iconSize()).toWinHICON();
+        const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(iconSize()));
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
     }

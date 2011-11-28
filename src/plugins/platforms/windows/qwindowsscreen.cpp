@@ -42,7 +42,6 @@
 #include "qwindowsscreen.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
-#include "pixmaputils.h"
 #include "qwindowscursor.h"
 
 #include "qtwindows_additional.h"
@@ -150,6 +149,8 @@ QList<QPlatformScreen *> QWindowsScreen::screens()
 
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
+    Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
+
     if (QWindowsContext::verboseIntegration)
         qDebug() << __FUNCTION__ << window << x << y << width << height;
     RECT r;
@@ -174,7 +175,7 @@ QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int heig
     SelectObject(bitmap_dc, null_bitmap);
     DeleteDC(bitmap_dc);
 
-    const QPixmap pixmap = qPixmapFromWinHBITMAP(bitmap, HBitmapNoAlpha);
+    const QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
 
     DeleteObject(bitmap);
     ReleaseDC(0, display_dc);

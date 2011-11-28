@@ -43,7 +43,6 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsscreen.h"
-#include "pixmaputils.h"
 
 #include <QtGui/QPixmap>
 #include <QtGui/QImage>
@@ -56,6 +55,9 @@
 #include <QtCore/QScopedArrayPointer>
 
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
+Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
 
 /*!
     \class QWindowsCursor
@@ -84,8 +86,8 @@ HCURSOR QWindowsCursor::createPixmapCursor(const QPixmap &pixmap, int hotX, int 
         mask.fill(Qt::color1);
     }
 
-    HBITMAP ic = qPixmapToWinHBITMAP(pixmap, HBitmapAlpha);
-    const HBITMAP im = createIconMask(mask);
+    HBITMAP ic = qt_pixmapToWinHBITMAP(pixmap, /* HBitmapAlpha */ 2);
+    const HBITMAP im = qt_createIconMask(mask);
 
     ICONINFO ii;
     ii.fIcon     = 0;

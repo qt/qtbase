@@ -60,6 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 extern QPainterPath qt_regionToPath(const QRegion &region);
 
 // #define QT_DEBUG_DRAW
@@ -626,64 +627,6 @@ enum HBitmapFormat
     HBitmapAlpha
 };
 
-HBITMAP qPixmapToWinHBITMAP(const QPixmap &p, HBitmapFormat format)
-{
-    if (p.isNull())
-        return 0;
-
-    HBITMAP bitmap = 0;
-    if (p.handle()->classId() != QPlatformPixmap::RasterClass) {
-        QRasterPlatformPixmap *data = new QRasterPlatformPixmap(p.depth() == 1 ?
-            QRasterPlatformPixmap::BitmapType : QRasterPlatformPixmap::PixmapType);
-        data->fromImage(p.toImage(), Qt::AutoColor);
-        return qPixmapToWinHBITMAP(QPixmap(data), format);
-    }
-
-    QRasterPlatformPixmap *d = static_cast<QRasterPlatformPixmap*>(p.handle());
-    const QImage *rasterImage = d->buffer();
-    const int w = rasterImage->width();
-    const int h = rasterImage->height();
-
-    HDC display_dc = GetDC(0);
-
-    // Define the header
-    BITMAPINFO bmi;
-    memset(&bmi, 0, sizeof(bmi));
-    bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth       = w;
-    bmi.bmiHeader.biHeight      = -h;
-    bmi.bmiHeader.biPlanes      = 1;
-    bmi.bmiHeader.biBitCount    = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-    bmi.bmiHeader.biSizeImage   = w * h * 4;
-
-    // Create the pixmap
-    uchar *pixels = 0;
-    bitmap = CreateDIBSection(display_dc, &bmi, DIB_RGB_COLORS, (void **) &pixels, 0, 0);
-    ReleaseDC(0, display_dc);
-    if (!bitmap) {
-        qErrnoWarning("%s, failed to create dibsection", __FUNCTION__);
-        return 0;
-    }
-    if (!pixels) {
-        qErrnoWarning("%s, did not allocate pixel data", __FUNCTION__);
-        return 0;
-    }
-
-    // Copy over the data
-    QImage::Format imageFormat = QImage::Format_ARGB32;
-    if (format == HBitmapAlpha)
-        imageFormat = QImage::Format_RGB32;
-    else if (format == HBitmapPremultipliedAlpha)
-        imageFormat = QImage::Format_ARGB32_Premultiplied;
-    const QImage image = rasterImage->convertToFormat(imageFormat);
-    const int bytes_per_line = w * 4;
-    for (int y=0; y < h; ++y)
-        memcpy(pixels + y * bytes_per_line, image.scanLine(y), bytes_per_line);
-
-    return bitmap;
-}
-
 void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
                                    const QPixmap &originalPixmap,
                                    const QRectF &sourceRect)
@@ -760,7 +703,7 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
             }
 
             QPixmap p = pixmap.copy(tileSize * x, tileSize * y, imgw, imgh);
-            HBITMAP hbitmap = qPixmapToWinHBITMAP(p, HBitmapNoAlpha);
+            HBITMAP hbitmap = qt_pixmapToWinHBITMAP(p, HBitmapNoAlpha);
             HDC display_dc = GetDC(0);
             HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
             HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
@@ -795,7 +738,7 @@ void QWin32PrintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, cons
         int dc_state = SaveDC(d->hdc);
 
         HDC display_dc = GetDC(0);
-        HBITMAP hbitmap = qPixmapToWinHBITMAP(pm, HBitmapNoAlpha);
+        HBITMAP hbitmap = qt_pixmapToWinHBITMAP(pm, HBitmapNoAlpha);
         HDC hbitmap_hdc = CreateCompatibleDC(display_dc);
         HGDIOBJ null_bitmap = SelectObject(hbitmap_hdc, hbitmap);
 
