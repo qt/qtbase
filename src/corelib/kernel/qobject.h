@@ -335,7 +335,7 @@ private:
 
     private:
     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
-    struct QSlotObjectBase {
+    struct Q_CORE_EXPORT QSlotObjectBase {
         QAtomicInt ref;
         QSlotObjectBase() : ref(1) {}
         virtual ~QSlotObjectBase();
@@ -347,7 +347,7 @@ private:
     {
         typedef QtPrivate::FunctionPointer<Func> FuncType;
         Func function;
-        QSlotObject(Func f) : function(f) {};
+        QSlotObject(Func f) : function(f) {}
         virtual void call(QObject *receiver, void **a) {
             FuncType::template call<Args, R>(function, static_cast<typename FuncType::Object *>(receiver), a);
         }
