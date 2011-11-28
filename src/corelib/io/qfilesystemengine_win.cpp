@@ -589,8 +589,6 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
 bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                         QFileSystemMetaData::MetaDataFlags what)
 {
-    QAbstractFileEngine::FileFlags ret = 0;
-
 #if !defined(QT_NO_LIBRARY)
     if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         resolveLibs();

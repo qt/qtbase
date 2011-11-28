@@ -167,7 +167,7 @@ private:
         size_t newCapacity = qMax(capacity, size_t(QIODEVICE_BUFFERSIZE));
         while (newCapacity < required)
             newCapacity *= 2;
-        int moveOffset = (where == freeSpaceAtEnd) ? 0 : newCapacity - len;
+        const size_t moveOffset = (where == freeSpaceAtEnd) ? 0 : newCapacity - size_t(len);
         if (newCapacity > capacity) {
             // allocate more space
             char* newBuf = new char[newCapacity];

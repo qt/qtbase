@@ -282,7 +282,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     // This is not the case the other way round.
     if (wchar_t *envStrings = GetEnvironmentStringsW()) {
         for (const wchar_t *entry = envStrings; *entry; ) {
-            int entryLen = wcslen(entry);
+            const int entryLen = int(wcslen(entry));
             if (const wchar_t *equal = wcschr(entry, L'=')) {
                 int nameLen = equal - entry;
                 QString name = QString::fromWCharArray(entry, nameLen);
