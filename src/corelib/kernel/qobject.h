@@ -132,14 +132,10 @@ public:
     static const QMetaObject staticMetaObject;
 #endif
 #ifdef QT_NO_TRANSLATION
-    static QString tr(const char *sourceText, const char *, int)
-        { return QString::fromLatin1(sourceText); }
-    static QString tr(const char *sourceText, const char * = 0)
+    static QString tr(const char *sourceText, const char * = 0, int = -1)
         { return QString::fromLatin1(sourceText); }
 #ifndef QT_NO_TEXTCODEC
-    static QString trUtf8(const char *sourceText, const char *, int)
-        { return QString::fromUtf8(sourceText); }
-    static QString trUtf8(const char *sourceText, const char * = 0)
+    static QString trUtf8(const char *sourceText, const char * = 0, int = -1)
         { return QString::fromUtf8(sourceText); }
 #endif
 #endif //QT_NO_TRANSLATION

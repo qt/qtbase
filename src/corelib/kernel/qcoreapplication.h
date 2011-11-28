@@ -139,15 +139,11 @@ public:
     static void removeTranslator(QTranslator * messageFile);
 #endif
     enum Encoding { CodecForTr, UnicodeUTF8, DefaultCodec = CodecForTr };
-    // ### Qt 5: merge
     static QString translate(const char * context,
                              const char * key,
                              const char * disambiguation = 0,
-                             Encoding encoding = CodecForTr);
-    static QString translate(const char * context,
-                             const char * key,
-                             const char * disambiguation,
-                             Encoding encoding, int n);
+                             Encoding encoding = CodecForTr,
+                             int n = -1);
 
     static void flush();
 
@@ -240,18 +236,12 @@ inline QString QCoreApplication::translate(const char *, const char *sourceText,
 }
 #endif
 
-// ### merge the four functions into two (using "int n = -1")
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
-    static inline QString tr(const char *sourceText, const char *disambiguation = 0) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation); } \
-    static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, \
-                                             QCoreApplication::UnicodeUTF8); } \
-    static inline QString tr(const char *sourceText, const char *disambiguation, int n) \
+    static inline QString tr(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, \
                                              QCoreApplication::CodecForTr, n); } \
-    static inline QString trUtf8(const char *sourceText, const char *disambiguation, int n) \
+    static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, \
                                              QCoreApplication::UnicodeUTF8, n); } \
 private:

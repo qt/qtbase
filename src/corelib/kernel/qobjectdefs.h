@@ -91,23 +91,15 @@ class QString;
 #ifndef QT_NO_TRANSLATION
 # ifndef QT_NO_TEXTCODEC
 // full set of tr functions
-// ### Qt 5: merge overloads
 #  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0) \
-        { return staticMetaObject.tr(s, c); } \
-    static inline QString trUtf8(const char *s, const char *c = 0) \
-        { return staticMetaObject.trUtf8(s, c); } \
-    static inline QString tr(const char *s, const char *c, int n) \
+    static inline QString tr(const char *s, const char *c = 0, int n = -1) \
         { return staticMetaObject.tr(s, c, n); } \
-    static inline QString trUtf8(const char *s, const char *c, int n) \
+    static inline QString trUtf8(const char *s, const char *c = 0, int n = -1) \
         { return staticMetaObject.trUtf8(s, c, n); }
 # else
 // no QTextCodec, no utf8
-// ### Qt 5: merge overloads
 #  define QT_TR_FUNCTIONS \
-    static inline QString tr(const char *s, const char *c = 0) \
-        { return staticMetaObject.tr(s, c); } \
-    static inline QString tr(const char *s, const char *c, int n) \
+    static inline QString tr(const char *s, const char *c = 0, int n = -1) \
         { return staticMetaObject.tr(s, c, n); }
 # endif
 #else
@@ -299,11 +291,8 @@ struct Q_CORE_EXPORT QMetaObject
     const QObject *cast(const QObject *obj) const;
 
 #ifndef QT_NO_TRANSLATION
-    // ### Qt 4: Merge overloads
-    QString tr(const char *s, const char *c) const;
-    QString trUtf8(const char *s, const char *c) const;
-    QString tr(const char *s, const char *c, int n) const;
-    QString trUtf8(const char *s, const char *c, int n) const;
+    QString tr(const char *s, const char *c, int n = -1) const;
+    QString trUtf8(const char *s, const char *c, int n = -1) const;
 #endif // QT_NO_TRANSLATION
 
     int methodOffset() const;

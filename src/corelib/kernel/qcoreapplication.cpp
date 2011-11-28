@@ -1728,15 +1728,6 @@ void QCoreApplication::removeTranslator(QTranslator *translationFile)
     }
 }
 
-/*!
-    \overload translate()
-*/
-QString QCoreApplication::translate(const char *context, const char *sourceText,
-                                    const char *disambiguation, Encoding encoding)
-{
-    return translate(context, sourceText, disambiguation, encoding, -1);
-}
-
 static void replacePercentN(QString *result, int n)
 {
     if (n >= 0) {
