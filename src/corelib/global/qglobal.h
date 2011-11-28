@@ -373,23 +373,6 @@ namespace QT_NAMESPACE {}
    Should be sorted most to least authoritative.
 */
 
-#if defined(__ghs)
-# define Q_OUTOFLINE_TEMPLATE inline
-
-/* the following are necessary because the GHS C++ name mangling relies on __*/
-# define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
-   static const int AFUNC ## _init_variable_ = AFUNC();
-# define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
-# define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
-    class AFUNC ## _dest_class_ { \
-    public: \
-       inline AFUNC ## _dest_class_() { } \
-       inline ~ AFUNC ## _dest_class_() { AFUNC(); } \
-    } AFUNC ## _dest_instance_;
-# define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
-
-#endif
-
 /* Symantec C++ is now Digital Mars */
 #if defined(__DMC__) || defined(__SC__)
 #  define Q_CC_SYM
@@ -827,17 +810,23 @@ namespace QT_NAMESPACE {}
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
 # define Q_CONSTRUCTOR_FUNCTION0(AFUNC) \
-   static const int AFUNC ## __init_variable__ = AFUNC();
+    namespace { \
+    static const struct AFUNC ## _ctor_class_ { \
+        inline AFUNC ## _ctor_class_() { AFUNC(); } \
+    } AFUNC ## _ctor_instance_; \
+    }
+
 # define Q_CONSTRUCTOR_FUNCTION(AFUNC) Q_CONSTRUCTOR_FUNCTION0(AFUNC)
 #endif
 
 #ifndef Q_DESTRUCTOR_FUNCTION
 # define Q_DESTRUCTOR_FUNCTION0(AFUNC) \
-    class AFUNC ## __dest_class__ { \
-    public: \
-       inline AFUNC ## __dest_class__() { } \
-       inline ~ AFUNC ## __dest_class__() { AFUNC(); } \
-    } AFUNC ## __dest_instance__;
+    namespace { \
+    static const struct AFUNC ## _dtor_class_ { \
+        inline AFUNC ## _dtor_class_() { } \
+        inline ~ AFUNC ## _dtor_class_() { AFUNC(); } \
+    } AFUNC ## _dtor_instance_; \
+    }
 # define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
 #endif
 

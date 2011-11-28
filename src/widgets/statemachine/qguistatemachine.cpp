@@ -474,18 +474,16 @@ const QStateMachinePrivate::Handler qt_gui_statemachine_handler = {
 };
 
 static const QStateMachinePrivate::Handler *qt_guistatemachine_last_handler = 0;
-int qRegisterGuiStateMachine()
+void qRegisterGuiStateMachine()
 {
     qt_guistatemachine_last_handler = QStateMachinePrivate::handler;
     QStateMachinePrivate::handler = &qt_gui_statemachine_handler;
-    return 1;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiStateMachine)
 
-int qUnregisterGuiStateMachine()
+void qUnregisterGuiStateMachine()
 {
     QStateMachinePrivate::handler = qt_guistatemachine_last_handler;
-    return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiStateMachine)
 

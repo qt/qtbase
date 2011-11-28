@@ -151,19 +151,17 @@ static const QMetaTypeInterface qVariantWidgetsHelper[] = {
 
 extern Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler;
 
-int qRegisterWidgetsVariant()
+void qRegisterWidgetsVariant()
 {
     qt_widgets_variant_handler = &widgets_handler;
     qMetaTypeWidgetsHelper = qVariantWidgetsHelper;
-    return 1;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)
 
-int qUnregisterWidgetsVariant()
+void qUnregisterWidgetsVariant()
 {
     qt_widgets_variant_handler = 0;
     qMetaTypeWidgetsHelper = 0;
-    return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterWidgetsVariant)
 

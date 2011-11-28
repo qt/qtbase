@@ -64,18 +64,17 @@ template<> Q_INLINE_TEMPLATE QQuaternion _q_interpolate(const QQuaternion &f,con
     return QQuaternion::slerp(f, t, progress);
 }
 
-static int qRegisterGuiGetInterpolator()
+static void qRegisterGuiGetInterpolator()
 {
     qRegisterAnimationInterpolator<QColor>(_q_interpolateVariant<QColor>);
     qRegisterAnimationInterpolator<QVector2D>(_q_interpolateVariant<QVector2D>);
     qRegisterAnimationInterpolator<QVector3D>(_q_interpolateVariant<QVector3D>);
     qRegisterAnimationInterpolator<QVector4D>(_q_interpolateVariant<QVector4D>);
     qRegisterAnimationInterpolator<QQuaternion>(_q_interpolateVariant<QQuaternion>);
-    return 1;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
-static int qUnregisterGuiGetInterpolator()
+static void qUnregisterGuiGetInterpolator()
 {
     // casts required by Sun CC 5.5
     qRegisterAnimationInterpolator<QColor>(
@@ -88,8 +87,6 @@ static int qUnregisterGuiGetInterpolator()
         (QVariant (*)(const QVector4D &, const QVector4D &, qreal))0);
     qRegisterAnimationInterpolator<QQuaternion>(
         (QVariant (*)(const QQuaternion &, const QQuaternion &, qreal))0);
-
-    return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)
 

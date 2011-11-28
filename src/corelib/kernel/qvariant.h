@@ -371,8 +371,8 @@ class Q_CORE_EXPORT QVariant
 
 protected:
     friend inline bool qvariant_cast_helper(const QVariant &, QVariant::Type, void *);
-    friend int qRegisterGuiVariant();
-    friend int qUnregisterGuiVariant();
+    friend void qRegisterGuiVariant();
+    friend void qUnregisterGuiVariant();
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);

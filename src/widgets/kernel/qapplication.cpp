@@ -859,8 +859,8 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 #endif // Q_WS_X11
 
 #ifndef QT_NO_STATEMACHINE
-extern int qRegisterGuiStateMachine();
-extern int qUnregisterGuiStateMachine();
+void qRegisterGuiStateMachine();
+void qUnregisterGuiStateMachine();
 #endif
 
 /*!

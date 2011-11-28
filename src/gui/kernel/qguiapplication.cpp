@@ -126,8 +126,8 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
 
-extern int qRegisterGuiVariant();
-extern int qUnregisterGuiVariant();
+extern void qRegisterGuiVariant();
+extern void qUnregisterGuiVariant();
 extern void qInitDrawhelperAsm();
 extern void qInitImageConversions();
 

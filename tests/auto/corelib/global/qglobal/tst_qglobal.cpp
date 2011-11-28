@@ -53,6 +53,7 @@ private slots:
     void qtry();
     void checkptr();
     void qstaticassert();
+    void qConstructorFunction();
 };
 
 void tst_QGlobal::qIsNull()
@@ -351,6 +352,18 @@ void tst_QGlobal::qstaticassert()
     Q_UNUSED(tmp2);
     Q_UNUSED(tmp3);
     QVERIFY(true); // if the test compiles it has passed.
+}
+
+static int qConstructorFunctionValue;
+static void qConstructorFunctionCtor()
+{
+    qConstructorFunctionValue = 123;
+}
+Q_CONSTRUCTOR_FUNCTION(qConstructorFunctionCtor);
+
+void tst_QGlobal::qConstructorFunction()
+{
+    QCOMPARE(qConstructorFunctionValue, 123);
 }
 
 QTEST_MAIN(tst_QGlobal)

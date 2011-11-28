@@ -486,20 +486,18 @@ static const QMetaTypeInterface qVariantGuiHelper[] = {
 #undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
 
 static const QVariant::Handler *qt_guivariant_last_handler = 0;
-int qRegisterGuiVariant()
+void qRegisterGuiVariant()
 {
     qt_guivariant_last_handler = QVariant::handler;
     QVariant::handler = &qt_gui_variant_handler;
     qMetaTypeGuiHelper = qVariantGuiHelper;
-    return 1;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
 
-int qUnregisterGuiVariant()
+void qUnregisterGuiVariant()
 {
     QVariant::handler = qt_guivariant_last_handler;
     qMetaTypeGuiHelper = 0;
-    return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiVariant)
 
