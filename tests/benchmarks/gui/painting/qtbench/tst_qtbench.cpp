@@ -41,7 +41,8 @@
 
 #include <qtest.h>
 
-#include <QtGui>
+#include <QtCore/qmath.h>
+#include <QtWidgets/QWidget>
 
 #include "benchmarktests.h"
 

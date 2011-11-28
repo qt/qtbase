@@ -49,6 +49,7 @@
 #include <QFontMetrics>
 #include <QDebug>
 #include <QStaticText>
+#include <QPainter>
 
 class Benchmark
 {
