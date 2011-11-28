@@ -62,7 +62,6 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QPlatformFontDatabase *fontDatabase() const;
-    QPlatformPrinterSupport *printerSupport() const;
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     void addScreen(QKmsScreen *screen);
@@ -73,7 +72,6 @@ private:
     QList<QPlatformScreen *> m_screens;
     QList<QKmsDevice *> m_devices;
     QPlatformFontDatabase *m_fontDatabase;
-    QPlatformPrinterSupport *m_printerSupport;
     QAbstractEventDispatcher *m_eventDispatcher;
 };
 

@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
 QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
-      m_printerSupport(new QGenericUnixPrinterSupport()),
       m_eventDispatcher(createUnixEventDispatcher())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
@@ -77,7 +76,6 @@ QKmsIntegration::~QKmsIntegration()
     foreach (QPlatformScreen *screen, m_screens) {
         delete screen;
     }
-    delete m_printerSupport;
     delete m_fontDatabase;
 }
 
@@ -129,11 +127,6 @@ void QKmsIntegration::addScreen(QKmsScreen *screen)
 QAbstractEventDispatcher *QKmsIntegration::guiThreadEventDispatcher() const
 {
     return m_eventDispatcher;
-}
-
-QPlatformPrinterSupport *QKmsIntegration::printerSupport() const
-{
-    return m_printerSupport;
 }
 
 QT_END_NAMESPACE
