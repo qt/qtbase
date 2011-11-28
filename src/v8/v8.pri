@@ -148,6 +148,7 @@ SOURCES += \
 
 equals(V8_TARGET_ARCH, arm) {
 DEFINES += V8_TARGET_ARCH_ARM
+DEFINES += USE_EABI_HARDFLOAT=1 CAN_USE_VFP_INSTRUCTIONS
 SOURCES += \
     $$V8SRC/arm/builtins-arm.cc \
     $$V8SRC/arm/code-stubs-arm.cc \
