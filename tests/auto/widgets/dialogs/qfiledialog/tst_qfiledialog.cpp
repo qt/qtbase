@@ -68,8 +68,6 @@
 #include <QFileDialog>
 #include <QFileSystemModel>
 
-#include "../../../network-settings.h"
-
 //TESTED_CLASS=
 //TESTED_FILES=
 

@@ -45,7 +45,6 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
-#include "../../auto/network-settings.h"
 #include <QtNetwork>
 #include <QDebug>
 #include <private/qabstractsocketengine_p.h>

@@ -73,7 +73,10 @@
 
 #include <stdio.h>
 #include <errno.h>
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include "../../../network-settings.h"
+#endif
 
 #ifndef STDIN_FILENO
 #define STDIN_FILENO 0

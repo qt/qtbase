@@ -63,7 +63,9 @@
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include "../../../network-settings.h"
+#endif
 #include <private/qfileinfo_p.h>
 #include "../../../../shared/filesystem.h"
 

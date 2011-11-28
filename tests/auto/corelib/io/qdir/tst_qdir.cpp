@@ -47,7 +47,10 @@
 #include <qfileinfo.h>
 #include <qregexp.h>
 #include <qstringlist.h>
+
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE))
 #include "../../../network-settings.h"
+#endif
 
 #if defined(Q_OS_WIN)
 #define _WIN32_WINNT  0x500

@@ -46,7 +46,6 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
-#include "../../auto/network-settings.h"
 
 class tst_qhttpnetworkconnection : public QObject
 {
