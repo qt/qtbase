@@ -50,8 +50,6 @@
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
 
-QT_BEGIN_NAMESPACE
-
 @interface QNSWindow : NSWindow {
 
 }
@@ -65,6 +63,8 @@ QT_BEGIN_NAMESPACE
 }
 - (BOOL)canBecomeKeyWindow;
 @end
+
+QT_BEGIN_NAMESPACE
 
 class QCocoaWindow : public QPlatformWindow
 {

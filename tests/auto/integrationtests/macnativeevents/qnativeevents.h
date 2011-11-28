@@ -44,10 +44,12 @@
 
 #include <QtCore>
 
+QT_BEGIN_NAMESPACE
 namespace Qt {
 namespace Native {
     enum Status {Success, Failure};
 }}
+QT_END_NAMESPACE
 
 // ----------------------------------------------------------------------------
 // Declare a set of native events that can be used to communicate with

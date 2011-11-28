@@ -46,6 +46,8 @@
 #include <QtCore>
 #include <QtGui>
 
+QT_BEGIN_NAMESPACE
+
 //
 // Conversion Functions
 //
@@ -457,3 +459,4 @@ NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
     return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
 }
 
+QT_END_NAMESPACE

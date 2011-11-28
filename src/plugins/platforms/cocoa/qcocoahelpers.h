@@ -57,6 +57,8 @@
 #include <private/qguiapplication_p.h>
 #include <QtGui/qscreen.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPixmap;
 class QString;
 
@@ -105,6 +107,8 @@ inline NSPoint qt_mac_flipPoint(const QPointF &p)
 { return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
 
 NSRect qt_mac_flipRect(const QRect &rect, QWindow *window);
+
+QT_END_NAMESPACE
 
 #endif //QCOCOAHELPERS_H
 

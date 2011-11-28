@@ -45,6 +45,8 @@
 #include <QObject>
 #include <qplatformdialoghelper_qpa.h>
 
+QT_BEGIN_NAMESPACE
+
 class QFileDialog;
 class QFileDialogPrivate;
 
@@ -86,5 +88,7 @@ private:
     QFileDialog *qtFileDialog;
     void *mDelegate;
 };
+
+QT_END_NAMESPACE
 
 #endif // QCOCOAFILEDIALOGHELPER_H

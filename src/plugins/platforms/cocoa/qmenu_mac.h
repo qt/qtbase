@@ -46,6 +46,9 @@
 #include <QtWidgets/qplatformmenu_qpa.h>
 
 @class NSMenuItem;
+
+QT_BEGIN_NAMESPACE
+
 class QCocoaMenuAction : public QPlatformMenuAction
 {
 public:
@@ -123,3 +126,5 @@ public:
     QList<QCocoaMenuAction*> actionItems;
     QMenuBar *qtMenuBar;
 };
+
+QT_END_NAMESPACE
