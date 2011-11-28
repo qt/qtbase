@@ -2340,6 +2340,10 @@ static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qop
 
 QOpenGLFunctionsPrivate::QOpenGLFunctionsPrivate(QOpenGLContext *)
 {
+    /* Assign a pointer to an above defined static function
+     * which on first call resolves the function from the current
+     * context, assigns it to the member variable and executes it
+     * (see Resolver template) */
 #ifndef QT_OPENGL_ES_2
     ActiveTexture = qopenglfResolveActiveTexture;
     AttachShader = qopenglfResolveAttachShader;
