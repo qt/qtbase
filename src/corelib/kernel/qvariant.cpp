@@ -942,9 +942,9 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value Pen  a QPen
     \value Pixmap  a QPixmap
     \value Point  a QPoint
-    \value PointArray  a QPointArray
     \value PointF  a QPointF
     \value Polygon a QPolygon
+    \value PolygonF a QPolygonF
     \value Quaternion  a QQuaternion
     \value Rect  a QRect
     \value RectF  a QRectF
