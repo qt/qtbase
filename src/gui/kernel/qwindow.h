@@ -248,6 +248,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void backBufferReady();
+    void screenChanged(QScreen *screen);
 
     void xChanged(int arg);
 
@@ -260,6 +261,9 @@ Q_SIGNALS:
     void visibleChanged(bool arg);
 
     void orientationChanged(Qt::ScreenOrientation arg);
+
+private Q_SLOTS:
+    void screenDestroyed(QObject *screen);
 
 protected:
     virtual void exposeEvent(QExposeEvent *);

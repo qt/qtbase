@@ -69,6 +69,7 @@ QWindow::QWindow(QScreen *targetScreen)
     //screen list is populated.
     Q_ASSERT(d->screen);
 
+    connect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
@@ -674,11 +675,32 @@ void QWindow::setScreen(QScreen *newScreen)
         const bool wasCreated = d->platformWindow != 0;
         if (wasCreated)
             destroy();
+        if (d->screen)
+            disconnect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
         d->screen = newScreen;
-        if (wasCreated)
-            create();
+        if (newScreen) {
+            connect(d->screen, SIGNAL(destroyed(QObject *)), this, SLOT(screenDestroyed(QObject *)));
+            if (wasCreated)
+                create();
+        }
+        emit screenChanged(newScreen);
     }
 }
+
+void QWindow::screenDestroyed(QObject *object)
+{
+    Q_D(QWindow);
+    if (object == static_cast<QObject *>(d->screen))
+        setScreen(0);
+}
+
+/*!
+    \fn QWindow::screenChanged(QScreen *screen)
+
+    This signal is emitted when a window's screen changes, either
+    by being set explicitly with setScreen(), or automatically when
+    the window's screen is removed.
+*/
 
 /*!
   Returns the accessibility interface for the object that the window represents
