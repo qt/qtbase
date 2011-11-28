@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include <QGuiApplication>
+#include <QPlatformIntegration>
+#include <private/qguiapplication_p.h>
 #include <QScreen>
 #include <QThread>
 
@@ -48,7 +50,9 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
-    bool multipleWindows = !QGuiApplication::arguments().contains(QLatin1String("--single"));
+    const bool multipleWindows =
+        QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL)
+        && !QGuiApplication::arguments().contains(QLatin1String("--single"));
 
     QScreen *screen = QGuiApplication::primaryScreen();
 

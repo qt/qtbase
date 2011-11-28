@@ -62,7 +62,7 @@ HelloWindow::HelloWindow(Renderer *renderer)
     , m_renderer(renderer)
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
     setGeometry(QRect(10, 10, 640, 480));
 

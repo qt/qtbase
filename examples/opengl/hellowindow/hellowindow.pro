@@ -5,7 +5,7 @@
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
-
+QT += gui-private core-private
 # Input
 HEADERS += hellowindow.h
 SOURCES += hellowindow.cpp main.cpp
