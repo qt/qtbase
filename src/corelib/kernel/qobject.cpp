@@ -3283,17 +3283,6 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     QCoreApplication::postEvent(c->receiver, ev);
 }
 
-
-/*!\internal
-   \obsolete.
-   Used to be called from QMetaObject::activate(QObject *, QMetaObject *, int, int, void **) before Qt 4.6
- */
-void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal_index, void **argv)
-{
-    Q_UNUSED(to_signal_index);
-    activate(sender, from_signal_index, argv);
-}
-
 /*!\internal
  */
 void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_signal_index,
@@ -3462,7 +3451,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 }
 
 /*!\internal
-   Obsolete.  (signal_index comes from indexOfMethod())
+   signal_index comes from indexOfMethod()
 */
 void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
 {
@@ -3470,18 +3459,6 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     while (mo->methodOffset() > signal_index)
         mo = mo->superClass();
     activate(sender, mo, signal_index - mo->methodOffset(), argv);
-}
-
-/*!\internal
-   Obsolete, called by moc generated code before Qt 4.6 for cloned signals
-   But since Qt 4.6, all clones are connected to their original
- */
-void QMetaObject::activate(QObject *sender, const QMetaObject *m,
-                           int from_local_signal_index, int to_local_signal_index, void **argv)
-{
-    Q_UNUSED(to_local_signal_index);
-    Q_ASSERT(from_local_signal_index == QMetaObjectPrivate::originalClone(m, to_local_signal_index));
-    activate(sender, m, from_local_signal_index, argv);
 }
 
 /*! \internal

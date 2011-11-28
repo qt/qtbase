@@ -349,10 +349,8 @@ struct Q_CORE_EXPORT QMetaObject
     static void connectSlotsByName(QObject *o);
 
     // internal index-based signal activation
-    static void activate(QObject *sender, int signal_index, void **argv);  //obsolete
-    static void activate(QObject *sender, int from_signal_index, int to_signal_index, void **argv); //obsolete
+    static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
-    static void activate(QObject *sender, const QMetaObject *, int from_local_signal_index, int to_local_signal_index, void **argv); //obsolete
 
     // internal guarded pointers
     static void addGuard(QObject **ptr);
