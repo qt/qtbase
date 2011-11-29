@@ -370,19 +370,21 @@ class Q_CORE_EXPORT QVariant
     { return !cmp(v); }
 
 protected:
-    friend inline bool qvariant_cast_helper(const QVariant &, QVariant::Type, void *);
-    friend void qRegisterGuiVariant();
-    friend void qUnregisterGuiVariant();
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 #endif
     Private d;
-
-    static const Handler *handler;
-
+#ifndef Q_NO_TEMPLATE_FRIENDS
+    template<typename T>
+    friend inline T qvariant_cast(const QVariant &);
+private:
+#else
+public:
+#endif
     void create(int type, const void *copy);
     bool cmp(const QVariant &other) const;
+    bool convert(const int t, void *ptr) const;
 
 private:
     // force compile error, prevent QVariant(bool) to be called
@@ -395,9 +397,6 @@ public:
     typedef Private DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
-
-inline bool qvariant_cast_helper(const QVariant &v, QVariant::Type tp, void *ptr)
-{ return QVariant::handler->convert(&v.d, tp, ptr, 0); }
 
 template <typename T>
 inline QVariant qVariantFromValue(const T &t)
@@ -488,7 +487,7 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
         return *reinterpret_cast<const T *>(v.constData());
     if (vid < int(QMetaType::User)) {
         T t;
-        if (qvariant_cast_helper(v, QVariant::Type(vid), &t))
+        if (v.convert(vid, &t))
             return t;
     }
     return T();

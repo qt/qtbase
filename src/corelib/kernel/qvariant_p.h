@@ -58,8 +58,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/private/qmetatype_p.h>
-
 #include "qmetatypeswitcher_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -172,24 +170,7 @@ class QVariantComparator {
     };
     template<typename T>
     struct FilteredComparator<T, /* IsAcceptedType = */ false> {
-        static bool compare(const QVariant::Private *m_a, const QVariant::Private *m_b)
-        {
-            const char *const typeName = QMetaType::typeName(m_a->type);
-            if (Q_UNLIKELY(!typeName) && Q_LIKELY(!QMetaType::isRegistered(m_a->type)))
-                qFatal("QVariant::compare: type %d unknown to QVariant.", m_a->type);
-
-            const void *a_ptr = m_a->is_shared ? m_a->data.shared->ptr : &(m_a->data.ptr);
-            const void *b_ptr = m_b->is_shared ? m_b->data.shared->ptr : &(m_b->data.ptr);
-
-            uint typeNameLen = qstrlen(typeName);
-            if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
-                return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
-
-            if (m_a->is_null && m_b->is_null)
-                return true;
-
-            return !memcmp(a_ptr, b_ptr, QMetaType::sizeOf(m_a->type));
-        }
+        static bool compare(const QVariant::Private *, const QVariant::Private *) { return false; }
     };
 public:
     QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
@@ -372,22 +353,8 @@ public:
             m_x->is_shared = false;
             return;
         }
-        const uint size = QMetaType::sizeOf(m_x->type);
-        if (!size) {
-            m_x->type = QVariant::Invalid;
-            return;
-        }
-
-        // this logic should match with QVariantIntegrator::CanUseInternalSpace
-        if (size <= sizeof(QVariant::Private::Data)
-                && (QMetaType::typeFlags(m_x->type) & QMetaType::MovableType)) {
-            QMetaType::construct(m_x->type, &m_x->data.ptr, m_copy);
-            m_x->is_shared = false;
-        } else {
-            void *ptr = QMetaType::create(m_x->type, m_copy);
-            m_x->is_shared = true;
-            m_x->data.shared = new QVariant::PrivateShared(ptr);
-        }
+        qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
+        m_x->type = QVariant::Invalid;
     }
 
     void delegate(const void*)
@@ -436,19 +403,20 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        // This is not a static type, so lets delegate everyting to QMetaType
-        if (!m_d->is_shared) {
-            QMetaType::destruct(m_d->type, &m_d->data.ptr);
-        } else {
-            QMetaType::destroy(m_d->type, m_d->data.shared->ptr);
-            delete m_d->data.shared;
-        }
+        if (m_d->type == QVariant::UserType)
+            return;
+        qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
     // Ignore nonconstructible type
     void delegate(const void*) {}
 private:
     QVariant::Private *m_d;
 };
+
+namespace QVariantPrivate {
+Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
+Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
+}
 
 QT_END_NAMESPACE
 

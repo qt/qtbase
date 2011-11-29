@@ -1376,8 +1376,29 @@ void tst_QVariant::quaternion()
     QMetaType::destroy(QVariant::Quaternion, pquaternion);
 }
 
+struct CustomStreamableClass
+{
+    int i;
+    bool operator==(const CustomStreamableClass& other) const
+    {
+        return i == other.i;
+    }
+};
+Q_DECLARE_METATYPE(CustomStreamableClass);
+
+QDataStream &operator<<(QDataStream &out, const CustomStreamableClass &myObj)
+{
+    return out << myObj.i;
+}
+
+QDataStream &operator>>(QDataStream &in, CustomStreamableClass &myObj)
+{
+    return in >> myObj.i;
+}
+
 void tst_QVariant::writeToReadFromDataStream_data()
 {
+    qRegisterMetaTypeStreamOperators<CustomStreamableClass>();
 
     QTest::addColumn<QVariant>("writeVariant");
     QTest::addColumn<bool>("isNull");
@@ -1484,6 +1505,8 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow("QMetaType::Float invalid") << QVariant(QMetaType::Float, (void *) 0) << false;
     float f = 1.234f;
     QTest::newRow("QMetaType::Float") << QVariant(QMetaType::Float, &f) << false;
+    CustomStreamableClass custom = {123};
+    QTest::newRow("Custom type") << QVariant::fromValue(custom) << false;
 }
 
 void tst_QVariant::writeToReadFromDataStream()
@@ -1502,8 +1525,10 @@ void tst_QVariant::writeToReadFromDataStream()
     // Best way to confirm the readVariant contains the same data?
     // Since only a few won't match since the serial numbers are different
     // I won't bother adding another bool in the data test.
-    QVariant::Type writeType = writeVariant.type();
-    if ( writeType != QVariant::Invalid && writeType != QVariant::Bitmap && writeType != QVariant::Pixmap
+    const int writeType = writeVariant.userType();
+    if (writeType == qMetaTypeId<CustomStreamableClass>())
+        QCOMPARE(qvariant_cast<CustomStreamableClass>(readVariant), qvariant_cast<CustomStreamableClass>(writeVariant));
+    else if ( writeType != QVariant::Invalid && writeType != QVariant::Bitmap && writeType != QVariant::Pixmap
         && writeType != QVariant::Image) {
         switch (writeType) {
         default:
@@ -1563,6 +1588,7 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
+    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 46");
     const QByteArray settingsHex("0000002effffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);

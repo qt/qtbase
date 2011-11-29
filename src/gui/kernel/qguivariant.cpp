@@ -94,8 +94,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler = 0;
-
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
 namespace {
@@ -136,53 +134,35 @@ template<> struct TypeDefiniton<QVector4D> { static const bool IsAvailable = fal
 template<> struct TypeDefiniton<QQuaternion> { static const bool IsAvailable = false; };
 #endif
 
-struct CoreAndGuiTypesFilter {
+struct GuiTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = (QTypeModuleInfo<T>::IsCore || QTypeModuleInfo<T>::IsGui) && TypeDefiniton<T>::IsAvailable;
+        static const bool IsAccepted = QTypeModuleInfo<T>::IsGui && TypeDefiniton<T>::IsAvailable;
     };
 };
-} // namespace
+} // namespace used to hide TypeDefinition
 
+namespace {
 static void construct(QVariant::Private *x, const void *copy)
 {
     const int type = x->type;
-    QVariantConstructor<CoreAndGuiTypesFilter> constructor(x, copy);
-    QMetaTypeSwitcher::switcher<void>(constructor, type, 0);
-
-    // FIXME This is an ugly hack if QVariantConstructor fails to build a value it constructs an invalid type
-    if (Q_UNLIKELY(x->type == QVariant::Invalid)) {
-        if (type == 62) {
-            // small 'trick' to let a QVariant(Qt::blue) create a variant
-            // of type QColor
-            // TODO Get rid of this hack.
-            x->type = QVariant::Color;
-            QColor color(*reinterpret_cast<const Qt::GlobalColor *>(copy));
-            v_construct<QColor>(x, &color);
-            return;
-        }
-        if (type == QVariant::Icon || type == QVariant::SizePolicy) {
-            // TODO we need to clean up variant handlers, so they are replacament, not extension
-            x->type = type;
-            if (qt_widgets_variant_handler) {
-                qt_widgets_variant_handler->construct(x, copy);
-            }
-        }
+    if (Q_UNLIKELY(type == 62)) {
+        // small 'trick' to let a QVariant(Qt::blue) create a variant
+        // of type QColor
+        // TODO Get rid of this hack.
+        x->type = QVariant::Color;
+        QColor color(*reinterpret_cast<const Qt::GlobalColor *>(copy));
+        v_construct<QColor>(x, &color);
+        return;
     }
+    QVariantConstructor<GuiTypesFilter> constructor(x, copy);
+    QMetaTypeSwitcher::switcher<void>(constructor, type, 0);
 }
 
 static void clear(QVariant::Private *d)
 {
-    const int type = d->type;
-    if (type == QVariant::Icon || type == QVariant::SizePolicy) {
-        // TODO we need to clean up variant handlers, so they are replacament, not extension
-        if (qt_widgets_variant_handler) {
-            qt_widgets_variant_handler->clear(d);
-            return;
-        }
-    }
-    QVariantDestructor<CoreAndGuiTypesFilter> destructor(d);
-    QMetaTypeSwitcher::switcher<void>(destructor, type, 0);
+    QVariantDestructor<GuiTypesFilter> destructor(d);
+    QMetaTypeSwitcher::switcher<void>(destructor, d->type, 0);
 }
 
 // This class is a hack that customizes access to QPolygon
@@ -200,7 +180,7 @@ public:
 };
 static bool isNull(const QVariant::Private *d)
 {
-    QGuiVariantIsNull<CoreAndGuiTypesFilter> isNull(d);
+    QGuiVariantIsNull<GuiTypesFilter> isNull(d);
     return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
 }
 
@@ -215,11 +195,6 @@ public:
     template<typename T>
     bool delegate(const T *p)
     {
-        if (Q_UNLIKELY(Base::m_a->type == QVariant::Icon || Base::m_a->type == QVariant::SizePolicy)) {
-            // TODO we need to clean up variant handlers, so they are replacament, not extension
-            if (Q_LIKELY(qt_widgets_variant_handler))
-                return qt_widgets_variant_handler->compare(Base::m_a, Base::m_b);
-        }
         return Base::delegate(p);
     }
     bool delegate(const QPixmap*)
@@ -241,7 +216,7 @@ public:
 
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
-    QGuiVariantComparator<CoreAndGuiTypesFilter> comparator(a, b);
+    QGuiVariantComparator<GuiTypesFilter> comparator(a, b);
     return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
 }
 
@@ -474,8 +449,6 @@ const QVariant::Handler qt_gui_variant_handler = {
 #endif
 };
 
-extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
-
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
     QT_METATYPE_INTERFACE_INIT(RealName),
 
@@ -484,19 +457,20 @@ static const QMetaTypeInterface qVariantGuiHelper[] = {
 };
 
 #undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
+} // namespace used to hide QVariant handler
 
-static const QVariant::Handler *qt_guivariant_last_handler = 0;
+extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
+
 void qRegisterGuiVariant()
 {
-    qt_guivariant_last_handler = QVariant::handler;
-    QVariant::handler = &qt_gui_variant_handler;
+    QVariantPrivate::registerHandler(QModulesPrivate::Gui, &qt_gui_variant_handler);
     qMetaTypeGuiHelper = qVariantGuiHelper;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
 
 void qUnregisterGuiVariant()
 {
-    QVariant::handler = qt_guivariant_last_handler;
+    QVariantPrivate::unregisterHandler(QModulesPrivate::Gui);
     qMetaTypeGuiHelper = 0;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiVariant)
