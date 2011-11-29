@@ -58,6 +58,7 @@ private slots:
     void allocate();
     void alignment_data();
     void alignment();
+    void typedData();
 };
 
 void tst_QArrayData::referenceCounting()
@@ -165,10 +166,11 @@ void tst_QArrayData::simpleVector()
 
     SimpleVector<int> v1;
     SimpleVector<int> v2(v1);
-    SimpleVector<int> v3(&data0);
-    SimpleVector<int> v4(&data1.header);
-    SimpleVector<int> v5(&data0);
-    SimpleVector<int> v6(&data1.header);
+    SimpleVector<int> v3(static_cast<QTypedArrayData<int> *>(&data0));
+    SimpleVector<int> v4(static_cast<QTypedArrayData<int> *>(&data1.header));
+    SimpleVector<int> v5(static_cast<QTypedArrayData<int> *>(&data0));
+    SimpleVector<int> v6(static_cast<QTypedArrayData<int> *>(&data1.header));
+    SimpleVector<int> v7(10, 5);
 
     v3 = v1;
     v1.swap(v3);
@@ -180,6 +182,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(!v4.isNull());
     QVERIFY(!v5.isNull());
     QVERIFY(!v6.isNull());
+    QVERIFY(!v7.isNull());
 
     QVERIFY(v1.isEmpty());
     QVERIFY(v2.isEmpty());
@@ -187,6 +190,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v4.isEmpty());
     QVERIFY(v5.isEmpty());
     QVERIFY(!v6.isEmpty());
+    QVERIFY(!v7.isEmpty());
 
     QCOMPARE(v1.size(), size_t(0));
     QCOMPARE(v2.size(), size_t(0));
@@ -194,6 +198,7 @@ void tst_QArrayData::simpleVector()
     QCOMPARE(v4.size(), size_t(0));
     QCOMPARE(v5.size(), size_t(0));
     QCOMPARE(v6.size(), size_t(7));
+    QCOMPARE(v7.size(), size_t(10));
 
     QCOMPARE(v1.capacity(), size_t(0));
     QCOMPARE(v2.capacity(), size_t(0));
@@ -201,6 +206,7 @@ void tst_QArrayData::simpleVector()
     QCOMPARE(v4.capacity(), size_t(0));
     QCOMPARE(v5.capacity(), size_t(0));
     // v6.capacity() is unspecified, for now
+    QVERIFY(v7.capacity() >= size_t(10));
 
     QVERIFY(v1.isSharedWith(v2));
     QVERIFY(v1.isSharedWith(v3));
@@ -211,6 +217,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v1.constBegin() == v1.constEnd());
     QVERIFY(v4.constBegin() == v4.constEnd());
     QVERIFY(v6.constBegin() + v6.size() == v6.constEnd());
+    QVERIFY(v7.constBegin() + v7.size() == v7.constEnd());
 
     QVERIFY(v1 == v2);
     QVERIFY(v1 == v3);
@@ -239,6 +246,16 @@ void tst_QArrayData::simpleVector()
         QCOMPARE(v6[i], int(i));
         QCOMPARE(v6.at(i), int(i));
         QCOMPARE(&v6[i], &v6.at(i));
+    }
+
+    {
+        int count = 0;
+        Q_FOREACH (int value, v7) {
+            QCOMPARE(value, 5);
+            ++count;
+        }
+
+        QCOMPARE(count, 10);
     }
 
     v5 = v6;
@@ -394,6 +411,114 @@ void tst_QArrayData::alignment()
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
         ::memset(data->data(), 'A', sizeof(Unaligned) * 8);
+    }
+}
+
+void tst_QArrayData::typedData()
+{
+    QStaticArrayData<int, 10> data = {
+            Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(int, 10),
+            { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+        };
+    QCOMPARE(data.header.size, 10);
+
+    {
+        QTypedArrayData<int> *array =
+            static_cast<QTypedArrayData<int> *>(&data.header);
+        QCOMPARE(array->data(), data.data);
+
+        int j = 0;
+        for (QTypedArrayData<int>::iterator iter = array->begin();
+                iter != array->end(); ++iter, ++j)
+            QCOMPARE(iter, data.data + j);
+        QCOMPARE(j, 10);
+    }
+
+    {
+        const QTypedArrayData<int> *array =
+            static_cast<const QTypedArrayData<int> *>(&data.header);
+
+        QCOMPARE(array->data(), data.data);
+
+        int j = 0;
+        for (QTypedArrayData<int>::const_iterator iter = array->begin();
+                iter != array->end(); ++iter, ++j)
+            QCOMPARE(iter, data.data + j);
+        QCOMPARE(j, 10);
+    }
+
+    {
+        QTypedArrayData<int> *null = QTypedArrayData<int>::sharedNull();
+        QTypedArrayData<int> *empty = QTypedArrayData<int>::sharedEmpty();
+
+        QVERIFY(null != empty);
+
+        QCOMPARE(null->size, 0);
+        QCOMPARE(empty->size, 0);
+
+        QCOMPARE(null->begin(), null->end());
+        QCOMPARE(empty->begin(), empty->end());
+    }
+
+
+    {
+        Deallocator keeper(sizeof(char),
+                Q_ALIGNOF(QTypedArrayData<char>::AlignmentDummy));
+        QArrayData *array = QTypedArrayData<char>::allocate(10, false);
+        keeper.headers.append(array);
+
+        QVERIFY(array);
+        QCOMPARE(array->size, 0);
+        QCOMPARE(array->alloc, 10u);
+
+        // Check that the allocated array can be used. Best tested with a
+        // memory checker, such as valgrind, running.
+        ::memset(array->data(), 0, 10 * sizeof(char));
+
+        keeper.headers.clear();
+        QTypedArrayData<short>::deallocate(array);
+
+        QVERIFY(true);
+    }
+
+    {
+        Deallocator keeper(sizeof(short),
+                Q_ALIGNOF(QTypedArrayData<short>::AlignmentDummy));
+        QArrayData *array = QTypedArrayData<short>::allocate(10, false);
+        keeper.headers.append(array);
+
+        QVERIFY(array);
+        QCOMPARE(array->size, 0);
+        QCOMPARE(array->alloc, 10u);
+
+        // Check that the allocated array can be used. Best tested with a
+        // memory checker, such as valgrind, running.
+        ::memset(array->data(), 0, 10 * sizeof(short));
+
+        keeper.headers.clear();
+        QTypedArrayData<short>::deallocate(array);
+
+        QVERIFY(true);
+    }
+
+    {
+        Deallocator keeper(sizeof(double),
+                Q_ALIGNOF(QTypedArrayData<double>::AlignmentDummy));
+        QArrayData *array = QTypedArrayData<double>::allocate(10, false);
+        keeper.headers.append(array);
+
+        QVERIFY(array);
+        QCOMPARE(array->size, 0);
+        QCOMPARE(array->alloc, 10u);
+
+        // Check that the allocated array can be used. Best tested with a
+        // memory checker, such as valgrind, running.
+        ::memset(array->data(), 0, 10 * sizeof(double));
+
+        keeper.headers.clear();
+        QTypedArrayData<double>::deallocate(array);
+
+        QVERIFY(true);
     }
 }
 

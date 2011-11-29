@@ -50,15 +50,15 @@ template <class T>
 struct SimpleVector
 {
 private:
-    typedef QArrayData Data;
+    typedef QTypedArrayData<T> Data;
 
 public:
     typedef T value_type;
-    typedef T *iterator;
-    typedef const T *const_iterator;
+    typedef typename Data::iterator iterator;
+    typedef typename Data::const_iterator const_iterator;
 
     SimpleVector()
-        : d(const_cast<QArrayData *>(&Data::shared_null))
+        : d(Data::sharedNull())
     {
     }
 
@@ -68,6 +68,15 @@ public:
         d->ref.ref();
     }
 
+    SimpleVector(size_t n, const T &t)
+        : d(Data::allocate(n))
+    {
+        for (size_t i = 0; i < n; ++i) {
+            new (d->end()) T(t);
+            ++d->size;
+        }
+    }
+
     explicit SimpleVector(Data *ptr)
         : d(ptr)
     {
@@ -75,9 +84,12 @@ public:
 
     ~SimpleVector()
     {
-        if (!d->ref.deref())
-            // Not implemented
-            Q_ASSERT(false);
+        if (!d->ref.deref()) {
+            const T *const data = d->data();
+            while (d->size--)
+                data[d->size].~T();
+            Data::deallocate(d);
+        }
     }
 
     SimpleVector &operator=(const SimpleVector &vec)
@@ -88,7 +100,7 @@ public:
     }
 
     bool empty() const { return d->size == 0; }
-    bool isNull() const { return d == &Data::shared_null; }
+    bool isNull() const { return d == Data::sharedNull(); }
     bool isEmpty() const { return this->empty(); }
 
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
@@ -96,8 +108,8 @@ public:
     size_t size() const { return d->size; }
     size_t capacity() const { return d->alloc; }
 
-    const_iterator begin() const { return static_cast<T *>(d->data()); }
-    const_iterator end() const { return static_cast<T *>(d->data()) + d->size; }
+    const_iterator begin() const { return d->begin(); }
+    const_iterator end() const { return d->end(); }
 
     const_iterator constBegin() const { return begin(); }
     const_iterator constEnd() const { return end(); }
@@ -125,7 +137,7 @@ public:
     void clear()
     {
         SimpleVector tmp(d);
-        d = const_cast<QArrayData *>(&Data::shared_empty);
+        d = Data::sharedEmpty();
     }
 
 private:

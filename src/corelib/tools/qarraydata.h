@@ -82,6 +82,48 @@ struct Q_CORE_EXPORT QArrayData
     static const QArrayData shared_empty;
 };
 
+template <class T>
+struct QTypedArrayData
+    : QArrayData
+{
+    typedef T *iterator;
+    typedef const T *const_iterator;
+
+    T *data() { return static_cast<T *>(QArrayData::data()); }
+    const T *data() const { return static_cast<const T *>(QArrayData::data()); }
+
+    T *begin() { return data(); }
+    T *end() { return data() + size; }
+    const T *begin() const { return data(); }
+    const T *end() const { return data() + size; }
+
+    class AlignmentDummy { QArrayData header; T data; };
+
+    static QTypedArrayData *allocate(size_t capacity, bool reserve = false)
+            Q_REQUIRED_RESULT
+    {
+        return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
+                    Q_ALIGNOF(AlignmentDummy), capacity, reserve));
+    }
+
+    static void deallocate(QArrayData *data)
+    {
+        QArrayData::deallocate(data, sizeof(T), Q_ALIGNOF(AlignmentDummy));
+    }
+
+    static QTypedArrayData *sharedNull()
+    {
+        return static_cast<QTypedArrayData *>(
+                const_cast<QArrayData *>(&QArrayData::shared_null));
+    }
+
+    static QTypedArrayData *sharedEmpty()
+    {
+        return static_cast<QTypedArrayData *>(
+                const_cast<QArrayData *>(&QArrayData::shared_empty));
+    }
+};
+
 template <class T, size_t N>
 struct QStaticArrayData
 {
