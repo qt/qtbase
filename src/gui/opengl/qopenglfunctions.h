@@ -78,6 +78,10 @@ typedef ptrdiff_t qopengl_GLintptr;
 typedef ptrdiff_t qopengl_GLsizeiptr;
 
 
+#if defined(APIENTRY) && !defined(QOPENGLF_APIENTRY)
+#   define QOPENGLF_APIENTRY APIENTRY
+#endif
+
 # ifndef QOPENGLF_APIENTRYP
 #   ifdef QOPENGLF_APIENTRY
 #     define QOPENGLF_APIENTRYP QOPENGLF_APIENTRY *
