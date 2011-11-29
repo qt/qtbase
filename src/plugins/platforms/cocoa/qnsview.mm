@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #include <Carbon/Carbon.h>
 
 #include "qnsview.h"

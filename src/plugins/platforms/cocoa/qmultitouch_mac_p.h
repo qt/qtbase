@@ -53,6 +53,8 @@
 #ifndef QMULTITOUCH_MAC_P_H
 #define QMULTITOUCH_MAC_P_H
 
+#include <QtCore/qglobal.h>
+
 #import <Cocoa/Cocoa.h>
 
 #include <QtGui/QWindowSystemInterface>
