@@ -1430,10 +1430,12 @@ private:
     {
         QMetaType::Constructor ctor = 0;
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        QReadLocker locker(customTypesLock());
-        if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
-            return 0;
-        ctor = ct->at(type - QMetaType::User).constructor;
+        {
+            QReadLocker locker(customTypesLock());
+            if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
+                return 0;
+            ctor = ct->at(type - QMetaType::User).constructor;
+        }
         return ctor ? ctor(where, copy) : 0;
     }
 
@@ -1519,10 +1521,12 @@ private:
     {
         QMetaType::Destructor dtor = 0;
         const QVector<QCustomTypeInfo> * const ct = customTypes();
-        QReadLocker locker(customTypesLock());
-        if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
-            return;
-        dtor = ct->at(type - QMetaType::User).destructor;
+        {
+            QReadLocker locker(customTypesLock());
+            if (type < QMetaType::User || !ct || ct->count() <= type - QMetaType::User)
+                return;
+            dtor = ct->at(type - QMetaType::User).destructor;
+        }
         if (!dtor)
             return;
         dtor(where);
