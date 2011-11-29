@@ -541,7 +541,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
-        if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+        if (len  >= (1u << 31u) - sizeof(QByteArray::Data)) {
             //QByteArray does not support that huge size anyway.
             qWarning("qUncompress: Input data is corrupted");
             return QByteArray();
@@ -562,7 +562,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
-                if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+                if (len  >= (1u << 31u) - sizeof(QByteArray::Data)) {
                     //QByteArray does not support that huge size anyway.
                     qWarning("qUncompress: Input data is corrupted");
                     return QByteArray();
