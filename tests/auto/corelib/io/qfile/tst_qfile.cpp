@@ -213,8 +213,7 @@ private slots:
 
     void autocloseHandle();
 
-    // --- Task related tests below this line
-    void task167217();
+    void posAfterFailedStat();
 
     void openDirectory();
     void writeNothing();
@@ -2724,10 +2723,10 @@ void tst_QFile::readEof()
     }
 }
 
-void tst_QFile::task167217()
+void tst_QFile::posAfterFailedStat()
 {
-    // Regression introduced in 4.3.0; after a failed stat, pos() could no
-    // longer be calculated correctly.
+    // Regression test for a bug introduced in 4.3.0; after a failed stat,
+    // pos() could no longer be calculated correctly.
     QFile::remove("tmp.txt");
     QFile file("tmp.txt");
     QVERIFY(!file.exists());

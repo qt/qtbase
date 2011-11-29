@@ -230,9 +230,9 @@ private slots:
     void generateBOM();
     void readBomSeekBackReadBomAgain();
 
-    // task-specific tests
-    void task180679_alignAccountingStyle();
-    void task178772_setCodec();
+    // Regression tests for old bugs
+    void alignAccountingStyle();
+    void setCodec();
 
 private:
     void generateLineData(bool for_QString);
@@ -2682,7 +2682,7 @@ void tst_QTextStream::status_write_error()
     QCOMPARE(fb.data(), QByteArray("hello"));
 }
 
-void tst_QTextStream::task180679_alignAccountingStyle()
+void tst_QTextStream::alignAccountingStyle()
 {
     {
     QString result;
@@ -2725,7 +2725,7 @@ void tst_QTextStream::task180679_alignAccountingStyle()
     }
 }
 
-void tst_QTextStream::task178772_setCodec()
+void tst_QTextStream::setCodec()
 {
     QByteArray ba("\xe5 v\xe6r\n\xc3\xa5 v\xc3\xa6r\n");
     QString res = QLatin1String("\xe5 v\xe6r");

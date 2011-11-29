@@ -242,7 +242,7 @@ private slots:
     void loadUnknownUserType();
     void loadBrokenUserType();
 
-    void task172061_invalidDate() const;
+    void invalidDate() const;
     void compareCustomTypes() const;
     void timeToDateTime() const;
     void copyingUserTypes() const;
@@ -252,7 +252,7 @@ private slots:
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
     void toIntFromDouble() const;
-    void task256984_setValue();
+    void setValue();
 
     void numericalConvert();
     void moreCustomTypes();
@@ -2677,7 +2677,7 @@ void tst_QVariant::loadBrokenUserType()
     QCOMPARE(ds.status(), QDataStream::ReadPastEnd);
 }
 
-void tst_QVariant::task172061_invalidDate() const
+void tst_QVariant::invalidDate() const
 {
     QString foo("Hello");
     QVariant variant(foo);
@@ -2889,7 +2889,7 @@ void tst_QVariant::toIntFromDouble() const
     QCOMPARE(result, 2147483630);
 }
 
-void tst_QVariant::task256984_setValue()
+void tst_QVariant::setValue()
 {
     QTransform t; //we just take a value so that we're sure that it will be shared
     QVariant v1 = t;

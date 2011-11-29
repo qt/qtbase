@@ -55,7 +55,7 @@ private slots:
     void append();
     void removeLast();
     void oldTests();
-    void task214223();
+    void appendCausingRealloc();
     void resize();
     void realloc();
 };
@@ -248,11 +248,11 @@ void tst_QVarLengthArray::oldTests()
     }
 }
 
-void tst_QVarLengthArray::task214223()
+void tst_QVarLengthArray::appendCausingRealloc()
 {
-    //creating a QVarLengthArray of the same size as the prealloc size
-    // will make the next call to append(const T&) corrupt the memory
-    // you should get a segfault pretty soon after that :-)
+    // This is a regression test for an old bug where creating a
+    // QVarLengthArray of the same size as the prealloc size would make
+    // the next call to append(const T&) corrupt the memory.
     QVarLengthArray<float, 1> d(1);
     for (int i=0; i<30; i++)
         d.append(i);

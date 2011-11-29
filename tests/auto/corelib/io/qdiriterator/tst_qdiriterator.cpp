@@ -115,7 +115,7 @@ private slots:
     void absoluteFilePathsFromRelativeIteratorPath();
     void recurseWithFilters() const;
     void longPath();
-    void task185502_dirorder();
+    void dirorder();
     void relativePaths();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void uncPaths_data();
@@ -550,7 +550,7 @@ void tst_QDirIterator::longPath()
     dir.rmdir("longpaths");
 }
 
-void tst_QDirIterator::task185502_dirorder()
+void tst_QDirIterator::dirorder()
 {
     QDirIterator iterator("foo", QDirIterator::Subdirectories);
     while (iterator.hasNext() && iterator.next() != "foo/bar")

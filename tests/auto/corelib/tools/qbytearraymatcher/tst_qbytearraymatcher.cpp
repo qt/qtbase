@@ -55,7 +55,7 @@ class tst_QByteArrayMatcher : public QObject
 
 private slots:
     void interface();
-    void task251958();
+    void indexIn();
 };
 
 static QByteArrayMatcher matcher1;
@@ -106,7 +106,7 @@ void tst_QByteArrayMatcher::interface()
 
 static QByteArrayMatcher matcher;
 
-void tst_QByteArrayMatcher::task251958()
+void tst_QByteArrayMatcher::indexIn()
 {
     const char p_data[] = { 0x0, 0x0, 0x1 };
     QByteArray pattern(p_data, sizeof(p_data));

@@ -171,7 +171,7 @@ private slots:
     void goToState();
     void goToStateFromSourceWithTransition();
 
-    void task260403_clonedSignals();
+    void clonedSignals();
     void postEventFromOtherThread();
     void eventFilterForApplication();
     void eventClassesExported();
@@ -3646,7 +3646,7 @@ public:
     int eventSignalIndex;
 };
 
-void tst_QStateMachine::task260403_clonedSignals()
+void tst_QStateMachine::clonedSignals()
 {
     SignalEmitter emitter;
     QStateMachine machine;

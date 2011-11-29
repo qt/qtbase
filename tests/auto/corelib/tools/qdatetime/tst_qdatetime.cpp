@@ -75,7 +75,7 @@ private slots:
     void timeSpec();
     void toTime_t_data();
     void toTime_t();
-    void task_137698();
+    void daylightSavingsTimeChange();
     void setDate();
     void setTime();
     void setTimeSpec();
@@ -1131,15 +1131,16 @@ void tst_QDateTime::toTime_t()
     }
 }
 
-void tst_QDateTime::task_137698()
+void tst_QDateTime::daylightSavingsTimeChange()
 {
-    // This bug is caused by QDateTime knowing more than it lets show
-    // Internally, if it knows, QDateTime stores a flag indicating if the time is
-    // DST or not. If it doesn't, it sets to "LocalUnknown"
+    // This is a regression test for an old bug where starting with a date in
+    // DST and then moving to a date outside it (or vice-versa) caused 1-hour
+    // jumps in time when addSecs() was called.
     //
-    // The problem happens if you start with a date in DST and then move to a date
-    // outside it (or vice-versa). Some functions did not reset the flag, which caused
-    // weird 1-hour jumps in time when addSecs() was called.
+    // The bug was caused by QDateTime knowing more than it lets show.
+    // Internally, if it knows, QDateTime stores a flag indicating if the time is
+    // DST or not. If it doesn't, it sets to "LocalUnknown".  The problem happened
+    // because some functions did not reset the flag when moving in or out of DST.
 
     // WARNING: This test only works if there's a Daylight Savings Time change
     // in the current locale between 2006-11-06 and 2006-10-16
