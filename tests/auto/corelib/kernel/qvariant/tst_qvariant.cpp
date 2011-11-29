@@ -2592,21 +2592,28 @@ template<typename T> void convertMetaType()
     QCOMPARE(qVariantFromValue<T>(10), qVariantFromValue<T>(10));
 }
 
+#define CONVERT_META_TYPE(Type) \
+    convertMetaType<Type>(); \
+    if (QTest::currentTestFailed()) \
+        QFAIL("convertMetaType<" #Type "> failed");
+
 void tst_QVariant::canConvertMetaTypeToInt() const
 {
-    convertMetaType<long>();
-    convertMetaType<short>();
-    convertMetaType<short>();
-    convertMetaType<unsigned short>();
-    convertMetaType<ushort>();
-    convertMetaType<ulong>();
-    convertMetaType<unsigned long>();
-    convertMetaType<uchar>();
-    convertMetaType<unsigned char>();
-    convertMetaType<char>();
-    convertMetaType<uint>();
-    convertMetaType<unsigned int>();
+    CONVERT_META_TYPE(long);
+    CONVERT_META_TYPE(short);
+    CONVERT_META_TYPE(short);
+    CONVERT_META_TYPE(unsigned short);
+    CONVERT_META_TYPE(ushort);
+    CONVERT_META_TYPE(ulong);
+    CONVERT_META_TYPE(unsigned long);
+    CONVERT_META_TYPE(uchar);
+    CONVERT_META_TYPE(unsigned char);
+    CONVERT_META_TYPE(char);
+    CONVERT_META_TYPE(uint);
+    CONVERT_META_TYPE(unsigned int);
 }
+
+#undef CONVERT_META_TYPE
 
 /*!
  These calls should not produce any warnings.
