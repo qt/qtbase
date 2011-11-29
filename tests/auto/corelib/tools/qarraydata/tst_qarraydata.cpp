@@ -54,6 +54,10 @@ private slots:
     void sharedNullEmpty();
     void staticData();
     void simpleVector();
+    void allocate_data();
+    void allocate();
+    void alignment_data();
+    void alignment();
 };
 
 void tst_QArrayData::referenceCounting()
@@ -250,6 +254,146 @@ void tst_QArrayData::simpleVector()
         swap(v1, v6);
         QVERIFY(v5.isSharedWith(v6));
         QVERIFY(!v1.isSharedWith(v5));
+    }
+}
+
+struct Deallocator
+{
+    Deallocator(size_t objectSize, size_t alignment)
+        : objectSize(objectSize)
+        , alignment(alignment)
+    {
+    }
+
+    ~Deallocator()
+    {
+        Q_FOREACH (QArrayData *data, headers)
+            QArrayData::deallocate(data, objectSize, alignment);
+    }
+
+    size_t objectSize;
+    size_t alignment;
+    QVector<QArrayData *> headers;
+};
+
+Q_DECLARE_METATYPE(const QArrayData *)
+
+void tst_QArrayData::allocate_data()
+{
+    QTest::addColumn<size_t>("objectSize");
+    QTest::addColumn<size_t>("alignment");
+    QTest::addColumn<bool>("isCapacityReserved");
+    QTest::addColumn<const QArrayData *>("commonEmpty");
+
+    struct {
+        char const *typeName;
+        size_t objectSize;
+        size_t alignment;
+    } types[] = {
+        { "char", sizeof(char), Q_ALIGNOF(char) },
+        { "short", sizeof(short), Q_ALIGNOF(short) },
+        { "void *", sizeof(void *), Q_ALIGNOF(void *) }
+    };
+
+    struct {
+        char const *description;
+        bool isCapacityReserved;
+        const QArrayData *commonEmpty;
+    } options[] = {
+        { "Default", false, &QArrayData::shared_empty },
+        { "Reserved", true, &QArrayData::shared_empty },
+    };
+
+    for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
+        for (size_t j = 0; j < sizeof(options)/sizeof(options[0]); ++j)
+            QTest::newRow(qPrintable(
+                        QLatin1String(types[i].typeName)
+                        + QLatin1String(": ")
+                        + QLatin1String(options[j].description)))
+                << types[i].objectSize << types[i].alignment
+                << options[j].isCapacityReserved << options[j].commonEmpty;
+}
+
+void tst_QArrayData::allocate()
+{
+    QFETCH(size_t, objectSize);
+    QFETCH(size_t, alignment);
+    QFETCH(bool, isCapacityReserved);
+    QFETCH(const QArrayData *, commonEmpty);
+
+    // Minimum alignment that can be requested is that of QArrayData.
+    // Typically, this alignment is sizeof(void *) and ensured by malloc.
+    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+
+    // Shared Empty
+    QCOMPARE(QArrayData::allocate(objectSize, minAlignment, 0,
+                isCapacityReserved), commonEmpty);
+
+    Deallocator keeper(objectSize, minAlignment);
+    keeper.headers.reserve(1024);
+
+    for (int capacity = 1; capacity <= 1024; capacity <<= 1) {
+        QArrayData *data = QArrayData::allocate(objectSize, minAlignment,
+                capacity, isCapacityReserved);
+        keeper.headers.append(data);
+
+        QCOMPARE(data->size, 0);
+        QVERIFY(data->alloc >= uint(capacity));
+        QCOMPARE(data->capacityReserved, uint(isCapacityReserved));
+
+        // Check that the allocated array can be used. Best tested with a
+        // memory checker, such as valgrind, running.
+        ::memset(data->data(), 'A', objectSize * capacity);
+    }
+}
+
+class Unaligned
+{
+    char dummy[8];
+};
+
+void tst_QArrayData::alignment_data()
+{
+    QTest::addColumn<size_t>("alignment");
+
+    for (int i = 1; i < 10; ++i) {
+        size_t alignment = 1u << i;
+        QTest::newRow(qPrintable(QString::number(alignment))) << alignment;
+    }
+}
+
+void tst_QArrayData::alignment()
+{
+    QFETCH(size_t, alignment);
+
+    // Minimum alignment that can be requested is that of QArrayData.
+    // Typically, this alignment is sizeof(void *) and ensured by malloc.
+    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+
+    Deallocator keeper(sizeof(Unaligned), minAlignment);
+    keeper.headers.reserve(100);
+
+    for (int i = 0; i < 100; ++i) {
+        QArrayData *data = QArrayData::allocate(sizeof(Unaligned),
+                minAlignment, 8, false);
+        keeper.headers.append(data);
+
+        QVERIFY(data);
+        QCOMPARE(data->size, 0);
+        QVERIFY(data->alloc >= uint(8));
+
+        // These conditions should hold as long as header and array are
+        // allocated together
+        QVERIFY(data->offset >= qptrdiff(sizeof(QArrayData)));
+        QVERIFY(data->offset <= qptrdiff(sizeof(QArrayData)
+                    + minAlignment - Q_ALIGNOF(QArrayData)));
+
+        // Data is aligned
+        QCOMPARE(quintptr(data->data()) % alignment, quintptr(0u));
+
+        // Check that the allocated array can be used. Best tested with a
+        // memory checker, such as valgrind, running.
+        ::memset(data->data(), 'A', sizeof(Unaligned) * 8);
     }
 }
 

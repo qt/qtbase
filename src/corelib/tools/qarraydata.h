@@ -73,6 +73,11 @@ struct Q_CORE_EXPORT QArrayData
         return reinterpret_cast<const char *>(this) + offset;
     }
 
+    static QArrayData *allocate(size_t objectSize, size_t alignment,
+            size_t capacity, bool reserve) Q_REQUIRED_RESULT;
+    static void deallocate(QArrayData *data, size_t objectSize,
+            size_t alignment);
+
     static const QArrayData shared_null;
     static const QArrayData shared_empty;
 };
