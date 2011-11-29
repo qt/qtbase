@@ -47,7 +47,6 @@ class tst_QGlobal: public QObject
     Q_OBJECT
 private slots:
     void qIsNull();
-    void qInternalCallbacks();
     void for_each();
     void qassert();
     void qtry();
@@ -69,78 +68,6 @@ void tst_QGlobal::qIsNull()
 
     QVERIFY(!::qIsNull(d));
     QVERIFY(!::qIsNull(f));
-}
-
-struct ConnectInfo {
-    QObject *sender;
-    QObject *receiver;
-    QString signal, slot;
-    int type;
-    void reset() {
-        sender = receiver = 0;
-        signal = slot = QString();
-        type = -1;
-    }
-} connect_info;
-
-bool disconnect_callback(void **data)
-{
-    connect_info.sender = (QObject *)(data[0]);
-    connect_info.receiver = (QObject *)(data[2]);
-    connect_info.signal = QString::fromLatin1((const char *) data[1]);
-    connect_info.slot = QString::fromLatin1((const char *) data[3]);
-    return true;
-}
-
-bool connect_callback(void **data)
-{
-    disconnect_callback(data);
-    connect_info.type = *(int *) data[4];
-    return true;
-}
-
-void tst_QGlobal::qInternalCallbacks()
-{
-    QInternal::registerCallback(QInternal::ConnectCallback, connect_callback);
-    QInternal::registerCallback(QInternal::DisconnectCallback, disconnect_callback);
-
-    QObject a, b;
-    QString signal = QLatin1String("2mysignal(x)");
-    QString slot = QLatin1String("1myslot(x)");
-
-    // Test that connect works as expected...
-    connect_info.reset();
-    bool ok = QObject::connect(&a, signal.toLatin1(), &b, slot.toLatin1(), Qt::AutoConnection);
-    QVERIFY(!ok); // our dummy callback do not return a valid QMetaObject::Connection
-    QCOMPARE(&a, connect_info.sender);
-    QCOMPARE(&b, connect_info.receiver);
-    QCOMPARE(signal, connect_info.signal);
-    QCOMPARE(slot, connect_info.slot);
-    QCOMPARE((int) Qt::AutoConnection, connect_info.type);
-
-    // Test that disconnect works as expected
-    connect_info.reset();
-    ok = QObject::disconnect(&a, signal.toLatin1(), &b, slot.toLatin1());
-    QVERIFY(ok);
-    QCOMPARE(&a, connect_info.sender);
-    QCOMPARE(&b, connect_info.receiver);
-    QCOMPARE(signal, connect_info.signal);
-    QCOMPARE(slot, connect_info.slot);
-
-    // Unregister callbacks and verify that they are not triggered...
-    QInternal::unregisterCallback(QInternal::ConnectCallback, connect_callback);
-    QInternal::unregisterCallback(QInternal::DisconnectCallback, disconnect_callback);
-
-    connect_info.reset();
-    QTest::ignoreMessage(QtWarningMsg, "Object::connect: No such signal QObject::mysignal(x)");
-    ok = QObject::connect(&a, signal.toLatin1(), &b, slot.toLatin1(), Qt::AutoConnection);
-    QVERIFY(!ok);
-    QCOMPARE(connect_info.sender, (QObject *) 0);
-
-    QTest::ignoreMessage(QtWarningMsg, "Object::disconnect: No such signal QObject::mysignal(x)");
-    ok = QObject::disconnect(&a, signal.toLatin1(), &b, slot.toLatin1());
-    QVERIFY(!ok);
-    QCOMPARE(connect_info.sender, (QObject *) 0);
 }
 
 void tst_QGlobal::for_each()

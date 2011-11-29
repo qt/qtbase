@@ -152,13 +152,6 @@ QAdoptedThread::~QAdoptedThread()
     // fprintf(stderr, "~QAdoptedThread = %p\n", this);
 }
 
-QThread *QAdoptedThread::createThreadForAdoption()
-{
-    QScopedPointer<QThread> t(new QAdoptedThread(0));
-    t->moveToThread(t.data());
-    return t.take();
-}
-
 void QAdoptedThread::run()
 {
     // this function should never be called

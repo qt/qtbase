@@ -101,29 +101,19 @@ QThreadData *QThreadData::current()
     qt_create_tls();
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
     if (!threadData) {
-        QThread *adopted = 0;
-        if (QInternal::activateCallbacks(QInternal::AdoptCurrentThread, (void **) &adopted)) {
-            Q_ASSERT(adopted);
-            threadData = QThreadData::get2(adopted);
-            TlsSetValue(qt_current_thread_data_tls_index, threadData);
-            adopted->d_func()->running = true;
-            adopted->d_func()->finished = false;
-            static_cast<QAdoptedThread *>(adopted)->init();
-        } else {
-            threadData = new QThreadData;
-            // This needs to be called prior to new AdoptedThread() to
-            // avoid recursion.
-            TlsSetValue(qt_current_thread_data_tls_index, threadData);
-            QT_TRY {
-                threadData->thread = new QAdoptedThread(threadData);
-            } QT_CATCH(...) {
-                TlsSetValue(qt_current_thread_data_tls_index, 0);
-                threadData->deref();
-                threadData = 0;
-                QT_RETHROW;
-            }
+        threadData = new QThreadData;
+        // This needs to be called prior to new AdoptedThread() to
+        // avoid recursion.
+        TlsSetValue(qt_current_thread_data_tls_index, threadData);
+        QT_TRY {
+            threadData->thread = new QAdoptedThread(threadData);
+        } QT_CATCH(...) {
+            TlsSetValue(qt_current_thread_data_tls_index, 0);
             threadData->deref();
+            threadData = 0;
+            QT_RETHROW;
         }
+        threadData->deref();
         threadData->isAdopted = true;
         threadData->threadId = (Qt::HANDLE)GetCurrentThreadId();
 

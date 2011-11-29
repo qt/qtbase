@@ -248,7 +248,6 @@ public:
     ~QAdoptedThread();
     void init();
 
-    static QThread *createThreadForAdoption();
 private:
     void run();
 };

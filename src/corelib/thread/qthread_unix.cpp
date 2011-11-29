@@ -199,28 +199,17 @@ QThreadData *QThreadData::current()
 {
     QThreadData *data = get_thread_data();
     if (!data) {
-        void *a;
-        if (QInternal::activateCallbacks(QInternal::AdoptCurrentThread, &a)) {
-            QThread *adopted = static_cast<QThread*>(a);
-            Q_ASSERT(adopted);
-            data = QThreadData::get2(adopted);
+        data = new QThreadData;
+        QT_TRY {
             set_thread_data(data);
-            adopted->d_func()->running = true;
-            adopted->d_func()->finished = false;
-            static_cast<QAdoptedThread *>(adopted)->init();
-        } else {
-            data = new QThreadData;
-            QT_TRY {
-                set_thread_data(data);
-                data->thread = new QAdoptedThread(data);
-            } QT_CATCH(...) {
-                clear_thread_data();
-                data->deref();
-                data = 0;
-                QT_RETHROW;
-            }
+            data->thread = new QAdoptedThread(data);
+        } QT_CATCH(...) {
+            clear_thread_data();
             data->deref();
+            data = 0;
+            QT_RETHROW;
         }
+        data->deref();
         data->isAdopted = true;
         data->threadId = (Qt::HANDLE)pthread_self();
         if (!QCoreApplicationPrivate::theMainThread)

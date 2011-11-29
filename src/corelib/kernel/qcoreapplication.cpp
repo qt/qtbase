@@ -298,14 +298,6 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
 }
 
-
-void qt_set_current_thread_to_main_thread()
-{
-    QCoreApplicationPrivate::theMainThread = QThread::currentThread();
-}
-
-
-
 QCoreApplication *QCoreApplication::self = 0;
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
 uint QCoreApplicationPrivate::attribs;
@@ -795,14 +787,6 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
-    // Make it possible for Qt Jambi and QSA to hook into events even
-    // though QApplication is subclassed...
-    bool result = false;
-    void *cbdata[] = { receiver, event, &result };
-    if (QInternal::activateCallbacks(QInternal::EventNotifyCallback, cbdata)) {
-        return result;
-    }
-
     // Qt enforces the rule that events can only be sent to objects in
     // the current thread, so receiver->d_func()->threadData is
     // equivalent to QThreadData::current(), just without the function
