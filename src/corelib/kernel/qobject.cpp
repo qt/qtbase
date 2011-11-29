@@ -332,8 +332,18 @@ QObjectList QObjectPrivate::senderList() const
     return returnValue;
 }
 
+/*! \internal
+  Add the connection \a c to to the list of connections of the sender's object
+  for the specified \a signal
+
+  The signalSlotLock() of the sender and receiver must be locked while calling
+  this function
+
+  Will also add the connection in the sender's list of the receiver.
+ */
 void QObjectPrivate::addConnection(int signal, Connection *c)
 {
+    Q_ASSERT(c->sender == q_ptr);
     if (!connectionLists)
         connectionLists = new QObjectConnectionListVector();
     if (signal >= connectionLists->count())
@@ -348,6 +358,18 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
     connectionList.last = c;
 
     cleanConnectionLists();
+
+    c->prev = &(QObjectPrivate::get(c->receiver)->senders);
+    c->next = *c->prev;
+    *c->prev = c;
+    if (c->next)
+        c->next->prev = &c->next;
+
+    if (signal < 0) {
+        connectedSignals[0] = connectedSignals[1] = ~0;
+    } else if (signal < (int)sizeof(connectedSignals) * 8) {
+        connectedSignals[signal >> 5] |= (1 << (signal & 0x1f));
+    }
 }
 
 void QObjectPrivate::cleanConnectionLists()
@@ -3048,20 +3070,6 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, i
     c->callFunction = callFunction;
 
     QObjectPrivate::get(s)->addConnection(signal_index, c.data());
-
-    c->prev = &(QObjectPrivate::get(r)->senders);
-    c->next = *c->prev;
-    *c->prev = c.data();
-    if (c->next)
-        c->next->prev = &c->next;
-
-    QObjectPrivate *const sender_d = QObjectPrivate::get(s);
-    if (signal_index < 0) {
-        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
-    } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
-        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
-    }
-
     return c.take();
 }
 
@@ -4142,7 +4150,6 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     computeOffsets(senderMetaObject, &signalOffset, &methodOffset);
     signal_index += signalOffset;
 
-    // duplicated from QMetaObjectPrivate::connect
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
 
@@ -4166,20 +4173,6 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
     }
 
     QObjectPrivate::get(s)->addConnection(signal_index, c.data());
-
-    c->prev = &(QObjectPrivate::get(r)->senders);
-    c->next = *c->prev;
-    *c->prev = c.data();
-    if (c->next)
-        c->next->prev = &c->next;
-
-    QObjectPrivate *const sender_d = QObjectPrivate::get(s);
-    if (signal_index < 0) {
-        sender_d->connectedSignals[0] = sender_d->connectedSignals[1] = ~0;
-    } else if (signal_index < (int)sizeof(sender_d->connectedSignals) * 8) {
-        sender_d->connectedSignals[signal_index >> 5] |= (1 << (signal_index & 0x1f));
-    }
-
     return QMetaObject::Connection(c.take());
 }
 
