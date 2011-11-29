@@ -1218,18 +1218,22 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     }
     d.nospace();
     d << "QAccessibleInterface(" << hex << (void *) iface << dec;
-    d << " name=" << iface->text(QAccessible::Name) << " ";
-    d << "role=" << iface->role() << " ";
-    if (iface->childCount())
-        d << "childc=" << iface->childCount() << " ";
-    if (iface->object()) {
-        d << "obj=" << iface->object();
-    }
-    bool invisible = iface->state() & QAccessible::Invisible;
-    if (invisible) {
-        d << "invisible";
+    if (iface->isValid()) {
+        d << " name=" << iface->text(QAccessible::Name) << " ";
+        d << "role=" << iface->role() << " ";
+        if (iface->childCount())
+            d << "childc=" << iface->childCount() << " ";
+        if (iface->object()) {
+            d << "obj=" << iface->object();
+        }
+        bool invisible = iface->state() & QAccessible::Invisible;
+        if (invisible) {
+            d << "invisible";
+        } else {
+            d << "rect=" << iface->rect();
+        }
     } else {
-        d << "rect=" << iface->rect();
+        d << " invalid";
     }
     d << ")";
     return d.space();
