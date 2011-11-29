@@ -44,7 +44,6 @@
 
 #ifdef Q_OS_WIN
 #   include <windows.h>
-#   include <atlbase.h>
 #else
 #   include <sys/stat.h>
 #   include <sys/types.h>
@@ -176,7 +175,9 @@ void tst_qdiriterator::posix()
     QString path(dirpath);
     QBENCHMARK {
 #ifdef Q_OS_WIN
-        count = posix_helper(path.utf16());
+        wchar_t wPath[MAX_PATH];
+        path.toWCharArray(wPath);
+        count = posix_helper(wPath);
 #else
         count = posix_helper(dirpath.constData());
 #endif

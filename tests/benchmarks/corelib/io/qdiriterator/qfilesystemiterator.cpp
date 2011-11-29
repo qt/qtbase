@@ -98,7 +98,6 @@
 
 #ifdef Q_OS_WIN
 #   include <windows.h>
-#   include <atlbase.h>
 #else
 #   include <sys/stat.h>
 #   include <sys/types.h>
@@ -229,7 +228,7 @@ void QFileSystemIteratorPrivate::pushSubDirectory(const QByteArray &path)
 
 #ifdef Q_OS_WIN
     wchar_t szSearchPath[MAX_PATH];
-    wcscpy(szSearchPath, QString(path).utf16());
+    QString::fromAscii(path).toWCharArray(szSearchPath);
     wcscat(szSearchPath, L"\\*");
     HANDLE dir = FindFirstFile(szSearchPath, &m_fileSearchResult);
     m_bFirstSearchResult = true;

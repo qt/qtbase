@@ -51,7 +51,6 @@
 
 #ifdef Q_OS_WIN
 # include <windows.h>
-# include <atlbase.h>
 #endif
 
 #define BUFSIZE 1024*512

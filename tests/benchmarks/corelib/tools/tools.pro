@@ -11,3 +11,5 @@ SUBDIRS = \
         qstringbuilder \
         qstringlist \
         qvector
+
+!*g++*: SUBDIRS -= qstring
