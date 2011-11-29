@@ -52,7 +52,7 @@
 
 #include <math.h>
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
@@ -222,8 +222,8 @@ void tst_QPrinter::testPageSetupDialog()
 
 void tst_QPrinter::testPageSize()
 {
-#ifndef Q_OS_WIN
-    QSKIP("QPrinter::winPageSize() does not exist for non-Windows platforms");
+#if 1
+    QSKIP("QPrinter::winPageSize(): Windows only and currently not implemented / QTBUG-22927");
 #else
     QPrinter prn;
 
