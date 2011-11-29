@@ -1388,11 +1388,19 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option,
     option->showDecorationSelected = (selectionBehavior & QTreeView::SelectRows)
                                      || option->showDecorationSelected;
 
-    QVector<int> logicalIndices;
-    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    QVector<int> logicalIndices; // index = visual index of visible columns only. data = logical index.
+    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns only.
     calcLogicalIndices(&logicalIndices, &viewItemPosList);
-    int logicalIndex = header->logicalIndex(current.column());
-    option->viewItemPosition = viewItemPosList.at(logicalIndex);
+
+    int columnIndex = 0;
+    for (int visualIndex = 0; visualIndex < current.column(); ++visualIndex) {
+        int logicalIndex = header->logicalIndex(visualIndex);
+        if (!header->isSectionHidden(logicalIndex)) {
+            ++columnIndex;
+        }
+    }
+
+    option->viewItemPosition = viewItemPosList.at(columnIndex);
 }
 
 
