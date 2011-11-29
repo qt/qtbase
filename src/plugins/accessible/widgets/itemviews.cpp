@@ -220,7 +220,7 @@ QAccessibleTable2Cell *QAccessibleTable2::cell(const QModelIndex &index) const
     return 0;
 }
 
-QAccessibleTable2CellInterface *QAccessibleTable2::cellAt(int row, int column) const
+QAccessibleInterface *QAccessibleTable2::cellAt(int row, int column) const
 {
     Q_ASSERT(role() != QAccessible::Tree);
     QModelIndex index = view->model()->index(row, column);
@@ -272,9 +272,9 @@ QString QAccessibleTable2::rowDescription(int row) const
     return view->model()->headerData(row, Qt::Vertical).toString();
 }
 
-QList<QAccessibleTable2CellInterface*> QAccessibleTable2::selectedCells() const
+QList<QAccessibleInterface *> QAccessibleTable2::selectedCells() const
 {
-    QList<QAccessibleTable2CellInterface*> cells;
+    QList<QAccessibleInterface*> cells;
     Q_FOREACH (const QModelIndex &index, view->selectionModel()->selectedIndexes()) {
         cells.append(cell(index));
     }
@@ -588,7 +588,7 @@ QAccessible::Relation QAccessibleTree::relationTo(const QAccessibleInterface *) 
     return QAccessible::Unrelated;
 }
 
-QAccessibleTable2CellInterface *QAccessibleTree::cellAt(int row, int column) const
+QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
 {
     QModelIndex index = indexFromLogical(row, column);
     if (!index.isValid()) {
@@ -624,6 +624,13 @@ QAccessibleTable2Cell::QAccessibleTable2Cell(QAbstractItemView *view_, const QMo
     : /* QAccessibleSimpleEditableTextInterface(this), */ view(view_), m_index(index_), m_role(role_)
 {
     Q_ASSERT(index_.isValid());
+}
+
+void *QAccessibleTable2Cell::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::Table2CellInterface)
+        return static_cast<QAccessibleTable2CellInterface*>(this);
+    return 0;
 }
 
 int QAccessibleTable2Cell::columnExtent() const { return 1; }
@@ -705,9 +712,9 @@ void QAccessibleTable2Cell::rowColumnExtents(int *row, int *column, int *rowExte
     *selected = isSelected();
 }
 
-QAccessibleTable2Interface* QAccessibleTable2Cell::table() const
+QAccessibleInterface *QAccessibleTable2Cell::table() const
 {
-    return QAccessible::queryAccessibleInterface(view)->table2Interface();
+    return QAccessible::queryAccessibleInterface(view);
 }
 
 QAccessible::Role QAccessibleTable2Cell::role() const

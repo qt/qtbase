@@ -2517,16 +2517,19 @@ void tst_QAccessibility::table2ListTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 1);
     QCOMPARE(table2->rowCount(), 4);
-    QAccessibleTable2CellInterface *cell1;
+    QAccessibleInterface *cell1;
     QVERIFY(cell1 = table2->cellAt(0,0));
     QCOMPARE(cell1->text(QAccessible::Name), QString("Oslo"));
-    QAccessibleTable2CellInterface *cell4;
+    QAccessibleInterface *cell4;
     QVERIFY(cell4 = table2->cellAt(3,0));
     QCOMPARE(cell4->text(QAccessible::Name), QString("Munich"));
     QCOMPARE(cell4->role(), QAccessible::ListItem);
-    QCOMPARE(cell4->rowIndex(), 3);
-    QCOMPARE(cell4->columnIndex(), 0);
-    QVERIFY(!cell4->isExpandable());
+
+    QAccessibleTable2CellInterface *cellInterface = cell4->table2CellInterface();
+    QVERIFY(cellInterface);
+    QCOMPARE(cellInterface->rowIndex(), 3);
+    QCOMPARE(cellInterface->columnIndex(), 0);
+    QVERIFY(!cellInterface->isExpandable());
 
     delete cell4;
     delete cell1;
@@ -2611,16 +2614,16 @@ void tst_QAccessibility::table2TreeTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 2);
     QCOMPARE(table2->rowCount(), 2);
-    QAccessibleTable2CellInterface *cell1;
+    QAccessibleInterface *cell1;
     QVERIFY(cell1 = table2->cellAt(0,0));
     QCOMPARE(cell1->text(QAccessible::Name), QString("Spain"));
-    QAccessibleTable2CellInterface *cell2;
+    QAccessibleInterface *cell2;
     QVERIFY(cell2 = table2->cellAt(1,0));
     QCOMPARE(cell2->text(QAccessible::Name), QString("Austria"));
     QCOMPARE(cell2->role(), QAccessible::TreeItem);
-    QCOMPARE(cell2->rowIndex(), 1);
-    QCOMPARE(cell2->columnIndex(), 0);
-    QVERIFY(cell2->isExpandable());
+    QCOMPARE(cell2->table2CellInterface()->rowIndex(), 1);
+    QCOMPARE(cell2->table2CellInterface()->columnIndex(), 0);
+    QVERIFY(cell2->table2CellInterface()->isExpandable());
     QCOMPARE(iface->indexOfChild(cell2), 5);
     QVERIFY(!(cell2->state() & QAccessible::Expanded));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
@@ -2642,9 +2645,9 @@ void tst_QAccessibility::table2TreeTest()
     cell2 = table2->cellAt(4,0);
     QCOMPARE(cell2->text(QAccessible::Name), QString("Klimt"));
     QCOMPARE(cell2->role(), QAccessible::TreeItem);
-    QCOMPARE(cell2->rowIndex(), 4);
-    QCOMPARE(cell2->columnIndex(), 0);
-    QVERIFY(!cell2->isExpandable());
+    QCOMPARE(cell2->table2CellInterface()->rowIndex(), 4);
+    QCOMPARE(cell2->table2CellInterface()->columnIndex(), 0);
+    QVERIFY(!cell2->table2CellInterface()->isExpandable());
     QCOMPARE(iface->indexOfChild(cell2), 11);
 
     QCOMPARE(table2->columnDescription(0), QString("Artist"));
@@ -2703,7 +2706,7 @@ void tst_QAccessibility::table2TableTest()
     QVERIFY(child2);
     QCOMPARE(iface->indexOfChild(child2), 11);
     QCOMPARE(child2->text(QAccessible::Name), QString("1.1"));
-    QAccessibleTable2CellInterface *cell2Iface = static_cast<QAccessibleTable2CellInterface*>(child2);
+    QAccessibleTable2CellInterface *cell2Iface = child2->table2CellInterface();
     QCOMPARE(cell2Iface->rowIndex(), 1);
     QCOMPARE(cell2Iface->columnIndex(), 1);
     delete child2;
@@ -2720,26 +2723,26 @@ void tst_QAccessibility::table2TableTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 3);
     QCOMPARE(table2->rowCount(), 3);
-    QAccessibleTable2CellInterface *cell1;
+    QAccessibleInterface *cell1;
     QVERIFY(cell1 = table2->cellAt(0,0));
     QCOMPARE(cell1->text(QAccessible::Name), QString("0.0"));
     QCOMPARE(iface->indexOfChild(cell1), 6);
 
-    QAccessibleTable2CellInterface *cell2;
+    QAccessibleInterface *cell2;
     QVERIFY(cell2 = table2->cellAt(0,1));
     QCOMPARE(cell2->text(QAccessible::Name), QString("0.1"));
     QCOMPARE(cell2->role(), QAccessible::Cell);
-    QCOMPARE(cell2->rowIndex(), 0);
-    QCOMPARE(cell2->columnIndex(), 1);
+    QCOMPARE(cell2->table2CellInterface()->rowIndex(), 0);
+    QCOMPARE(cell2->table2CellInterface()->columnIndex(), 1);
     QCOMPARE(iface->indexOfChild(cell2), 7);
     delete cell2;
 
-    QAccessibleTable2CellInterface *cell3;
+    QAccessibleInterface *cell3;
     QVERIFY(cell3 = table2->cellAt(1,2));
     QCOMPARE(cell3->text(QAccessible::Name), QString("1.2"));
     QCOMPARE(cell3->role(), QAccessible::Cell);
-    QCOMPARE(cell3->rowIndex(), 1);
-    QCOMPARE(cell3->columnIndex(), 2);
+    QCOMPARE(cell3->table2CellInterface()->rowIndex(), 1);
+    QCOMPARE(cell3->table2CellInterface()->columnIndex(), 2);
     QCOMPARE(iface->indexOfChild(cell3), 12);
     delete cell3;
 

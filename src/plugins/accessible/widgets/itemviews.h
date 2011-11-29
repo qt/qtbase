@@ -84,7 +84,7 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // table2 interface
-    virtual QAccessibleTable2CellInterface *cellAt(int row, int column) const;
+    virtual QAccessibleInterface *cellAt(int row, int column) const;
     virtual QAccessibleInterface *caption() const;
     virtual QAccessibleInterface *summary() const;
     virtual QString columnDescription(int column) const;
@@ -97,7 +97,7 @@ public:
     virtual int selectedCellCount() const;
     virtual int selectedColumnCount() const;
     virtual int selectedRowCount() const;
-    virtual QList<QAccessibleTable2CellInterface*> selectedCells() const;
+    virtual QList<QAccessibleInterface*> selectedCells() const;
     virtual QList<int> selectedColumns() const;
     virtual QList<int> selectedRows() const;
     virtual bool isColumnSelected(int column) const;
@@ -163,7 +163,7 @@ public:
     Relation relationTo(const QAccessibleInterface *other) const;
 
     // table2 interface
-    QAccessibleTable2CellInterface *cellAt(int row, int column) const;
+    QAccessibleInterface *cellAt(int row, int column) const;
     QString rowDescription(int row) const;
     bool isRowSelected(int row) const;
     bool selectRow(int row);
@@ -172,11 +172,12 @@ private:
     QModelIndex indexFromLogical(int row, int column = 0) const;
 };
 
-class QAccessibleTable2Cell: public QAccessibleTable2CellInterface /*), public QAccessibleTextInterface, public QAccessibleSimpleEditableTextInterface*/
+class QAccessibleTable2Cell: public QAccessibleInterface, public QAccessibleTable2CellInterface
 {
 public:
     QAccessibleTable2Cell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
 
+    void *interface_cast(QAccessible::InterfaceType t);
     QObject *object() const { return 0; }
     Role role() const;
     State state() const;
@@ -206,7 +207,7 @@ public:
     virtual int rowIndex() const;
     virtual bool isSelected() const;
     virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const;
-    virtual QAccessibleTable2Interface* table() const;
+    virtual QAccessibleInterface* table() const;
 
 private:
     QHeaderView *verticalHeader() const;
@@ -220,7 +221,7 @@ friend class QAccessibleTree;
 };
 
 
-class QAccessibleTable2HeaderCell: public QAccessibleInterface /*), public QAccessibleTextInterface, public QAccessibleSimpleEditableTextInterface*/
+class QAccessibleTable2HeaderCell: public QAccessibleInterface
 {
 public:
     // For header cells, pass the header view in addition

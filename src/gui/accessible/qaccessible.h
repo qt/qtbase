@@ -317,7 +317,8 @@ public:
         TableInterface,
         ActionInterface,
         ImageInterface,
-        Table2Interface
+        Table2Interface,
+        Table2CellInterface
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
@@ -355,6 +356,7 @@ class QAccessibleTableInterface;
 class QAccessibleActionInterface;
 class QAccessibleImageInterface;
 class QAccessibleTable2Interface;
+class QAccessibleTable2CellInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
@@ -413,6 +415,9 @@ public:
 
     inline QAccessibleTable2Interface *table2Interface()
     { return reinterpret_cast<QAccessibleTable2Interface *>(interface_cast(QAccessible::Table2Interface)); }
+
+    inline QAccessibleTable2CellInterface *table2CellInterface()
+    { return reinterpret_cast<QAccessibleTable2CellInterface *>(interface_cast(QAccessible::Table2CellInterface)); }
 
     // FIXME
     virtual QVariant virtual_hook(const QVariant &data);

@@ -163,8 +163,6 @@ public:
 class Q_GUI_EXPORT QAccessibleTableInterface
 {
 public:
-
-
     virtual QAccessibleInterface *accessibleAt(int row, int column) = 0;
     virtual QAccessibleInterface *caption() = 0;
     virtual int childIndex(int rowIndex, int columnIndex) = 0;
@@ -194,7 +192,7 @@ public:
                              int *columnSpan, bool *isSelected) = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleTable2CellInterface: public QAccessibleInterface
+class Q_GUI_EXPORT QAccessibleTable2CellInterface
 {
 public:
     //            Returns the number of columns occupied by this cell accessible.
@@ -217,7 +215,7 @@ public:
     //            Gets the row and column indexes and extents of this cell accessible and whether or not it is selected.
     virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const = 0;
     //            Returns a reference to the accessbile of the containing table.
-    virtual QAccessibleTable2Interface* table() const = 0;
+    virtual QAccessibleInterface* table() const = 0;
 
     // #### Qt5 this should not be here but part of the state
     virtual bool isExpandable() const = 0;
@@ -228,7 +226,7 @@ class Q_GUI_EXPORT QAccessibleTable2Interface
 public:
 
     // Returns the cell at the specified row and column in the table.
-    virtual QAccessibleTable2CellInterface *cellAt (int row, int column) const = 0;
+    virtual QAccessibleInterface *cellAt (int row, int column) const = 0;
     // Returns the caption for the table.
     virtual QAccessibleInterface *caption() const = 0;
     // Returns the description text of the specified column in the table.
@@ -246,7 +244,7 @@ public:
     // Returns the description text of the specified row in the table.
     virtual QString rowDescription(int row) const = 0;
     // Returns a list of accessibles currently selected.
-    virtual QList<QAccessibleTable2CellInterface*> selectedCells() const = 0;
+    virtual QList<QAccessibleInterface*> selectedCells() const = 0;
     // Returns a list of column indexes currently selected (0 based).
     virtual QList<int> selectedColumns() const = 0;
     // Returns a list of row indexes currently selected (0 based).
