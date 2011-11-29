@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qmimedata
-QT = gui testlib
+QT += testlib
 SOURCES = tst_qmimedata.cpp

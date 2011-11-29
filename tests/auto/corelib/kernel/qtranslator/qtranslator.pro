@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qtranslator
-QT = widgets testlib
+QT += widgets testlib
 SOURCES = tst_qtranslator.cpp
 RESOURCES += qtranslator.qrc
 

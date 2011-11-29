@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qabstractitemmodel
-QT = widgets testlib
+QT += widgets testlib
 
 mtdir = ../../../integrationtests/modeltest
 INCLUDEPATH += $$PWD/$${mtdir}

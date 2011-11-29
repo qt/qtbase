@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qdatastream
-QT = gui widgets testlib
+QT += widgets testlib
 SOURCES = tst_qdatastream.cpp
 
 wince* {
