@@ -753,7 +753,7 @@ void tst_QEasingCurve::testCbrtFloat()
         const float t_cubic = t * t * t;
         t = t * (t_cubic + f + f) / (t_cubic + t_cubic + f);
 
-        float expected = pow(f, 1.0/3.0);
+        float expected = pow(f, float(1.0/3.0));
 
         const qreal error = qAbs(expected - t);
 
