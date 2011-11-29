@@ -2707,7 +2707,7 @@ void Configure::generateCachefile()
         moduleStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
         moduleStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
         QStringList buildParts;
-        buildParts << "libs" << "examples";
+        buildParts << QStringLiteral("libs") << QStringLiteral("examples") << QStringLiteral("tests");
         foreach (const QString &item, disabledBuildParts) {
             buildParts.removeAll(item);
         }
