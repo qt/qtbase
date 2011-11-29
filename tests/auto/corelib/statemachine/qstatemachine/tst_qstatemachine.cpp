@@ -1794,7 +1794,7 @@ void tst_QStateMachine::parallelRootState()
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
     machine.start();
     QCoreApplication::processEvents();
-    QEXPECT_FAIL("", "parallel root state is not supported (task 256587)", Continue);
+    QEXPECT_FAIL("", "parallel root state is not supported (QTBUG-22931)", Continue);
     QCOMPARE(startedSpy.count(), 1);
 }
 

@@ -460,8 +460,6 @@ void tst_QMap::operator_eq()
     }
 
     {
-        // task 102658
-
         QMap<QString, int> a;
         QMap<QString, int> b;
 

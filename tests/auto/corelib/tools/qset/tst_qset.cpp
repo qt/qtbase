@@ -135,7 +135,6 @@ void tst_QSet::operator_eq()
     }
 
     {
-        // Task 102658
         QSet<QString> a;
         QSet<QString> b;
 

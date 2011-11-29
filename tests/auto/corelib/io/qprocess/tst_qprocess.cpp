@@ -1867,7 +1867,6 @@ void tst_QProcess::atEnd2()
 //-----------------------------------------------------------------------------
 void tst_QProcess::waitForReadyReadForNonexistantProcess()
 {
-    // This comes from task 108968
     // Start a program that doesn't exist, process events and then try to waitForReadyRead
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");

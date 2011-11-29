@@ -3346,8 +3346,8 @@ void tst_QObject::interfaceIid()
 
 void tst_QObject::deleteQObjectWhenDeletingEvent()
 {
-    //this is related to task 259514
-    //before the fix this used to dead lock when the QObject from the event was destroyed
+    // This is a regression test for an old bug that used to deadlock
+    // when the QObject from the event was destroyed.
 
     struct MyEvent : public QEvent
     {

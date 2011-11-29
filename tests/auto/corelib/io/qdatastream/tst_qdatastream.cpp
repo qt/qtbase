@@ -3057,7 +3057,6 @@ void tst_QDataStream::compatibility_Qt3()
         QDataStream in(stream);
         in.setVersion(QDataStream::Qt_3_3);
 
-        //task 196100
         quint32 type;
         in >> type;
         //29 is the type of a QByteArray in Qt3
@@ -3066,7 +3065,6 @@ void tst_QDataStream::compatibility_Qt3()
         in >> ba2;
         QCOMPARE(ba2, ba);
 
-        //task196415
         quint32 color;
         in >> color;
         QCOMPARE(color, invalidColor);

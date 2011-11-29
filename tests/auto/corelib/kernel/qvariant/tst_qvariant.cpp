@@ -1490,8 +1490,6 @@ void tst_QVariant::writeToReadFromDataStream_data()
 
 void tst_QVariant::writeToReadFromDataStream()
 {
-    // See #15831 for more information on the bug
-
     QFETCH( QVariant, writeVariant );
     QFETCH( bool, isNull );
     QByteArray data;
@@ -1567,7 +1565,6 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
-    // test fix for task 215610
     const QByteArray settingsHex("0000002effffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);
@@ -1816,7 +1813,7 @@ void tst_QVariant::operator_eq_eq()
     QFETCH( QVariant, left );
     QFETCH( QVariant, right );
     QFETCH( bool, equal );
-    QEXPECT_FAIL("nullint", "See task 118496", Continue);
+    QEXPECT_FAIL("nullint", "See QTBUG-22933", Continue);
     QCOMPARE( left == right, equal );
 }
 
@@ -1929,9 +1926,6 @@ void tst_QVariant::typeToName()
 
 void tst_QVariant::streamInvalidVariant()
 {
-    // I wasn't sure where this test belonged, so it's here
-    // See #17423 for more details
-
     int writeX = 1;
     int writeY = 2;
     int readX;
@@ -2451,8 +2445,6 @@ Q_DECLARE_METATYPE(qint8);
 
 void tst_QVariant::convertToQUint8() const
 {
-    // See task 158470.
-
     /* qint8. */
     {
         const qint8 anInt = 32;
@@ -2846,9 +2838,7 @@ void tst_QVariant::convertByteArrayToBool_data() const
 
   Rationale: "9.9" is not a valid int. However, doubles are by definition not
   ints and therefore it makes more sense to perform conversion for those.
-
-  See task 237252.
- */
+*/
 void tst_QVariant::toIntFromQString() const
 {
     QVariant first("9.9");
@@ -2871,9 +2861,7 @@ void tst_QVariant::toIntFromQString() const
 
   Rationale: if 2147483630 is set in float and then converted to int,
   there will be overflow and the result will be -2147483648.
-
-  See task 250267.
- */
+*/
 void tst_QVariant::toIntFromDouble() const
 {
     double d = 2147483630;  // max int 2147483647

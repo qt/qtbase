@@ -872,7 +872,7 @@ void tst_QXmlStream::setEntityResolver()
     }
 }
 
-void tst_QXmlStream::testFalsePrematureError() const // task 179320
+void tst_QXmlStream::testFalsePrematureError() const
 {
     const char *illegal_start = "illegal<sta";
     const char *legal_start = "<sta";
@@ -907,9 +907,7 @@ void tst_QXmlStream::testFalsePrematureError() const // task 179320
     }
 }
 
-/*!
- See task 188737. Crash due to using empty QStack.
- */
+// Regression test for crash due to using empty QStack.
 void tst_QXmlStream::writerHangs() const
 {
     QFile file("test.xml");
@@ -925,9 +923,7 @@ void tst_QXmlStream::writerHangs() const
     writer.writeEndElement();
     writer.writeEndDocument();
 }
-/*!
-  Task 189611
-*/
+
 void tst_QXmlStream::writerAutoFormattingWithComments() const
 {
     QBuffer buffer;
@@ -942,10 +938,6 @@ void tst_QXmlStream::writerAutoFormattingWithComments() const
     QCOMPARE(buffer.buffer().data(), str);
 }
 
-
-/*!
-  Task 206782
-*/
 void tst_QXmlStream::writerAutoFormattingWithTabs() const
 {
     QBuffer buffer;
@@ -980,9 +972,6 @@ void tst_QXmlStream::writerAutoFormattingWithProcessingInstructions() const
     QCOMPARE(buffer.buffer().data(), str);
 }
 
-/*!
-  Task 204822
-*/
 void tst_QXmlStream::writeAttributesWithSpace() const
 {
     QBuffer buffer;
@@ -998,9 +987,6 @@ void tst_QXmlStream::writeAttributesWithSpace() const
     QCOMPARE(buffer.buffer().data(), s.toUtf8().data());
 }
 
-/*!
-  Task 209340
-*/
 void tst_QXmlStream::writerAutoEmptyTags() const
 {
     QBuffer buffer;
@@ -1394,7 +1380,7 @@ void tst_QXmlStream::garbageInXMLPrologUTF8Explicitly() const
     QCOMPARE(out.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Foo/>\n"));
 }
 
-void tst_QXmlStream::clear() const // task 228768
+void tst_QXmlStream::clear() const
 {
     QString xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><body></body>";
     QXmlStreamReader reader;
@@ -1458,7 +1444,7 @@ void tst_QXmlStream::checkCommentIndentation_data() const
     QTest::newRow("advanced-comment") << advancedInput << advancedOutput;
 }
 
-void tst_QXmlStream::checkCommentIndentation() const // task 256468
+void tst_QXmlStream::checkCommentIndentation() const
 {
     QFETCH(QString, input);
     QFETCH(QString, expectedOutput);

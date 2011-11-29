@@ -552,7 +552,8 @@ public:
 
 };
 
-// This is a testcase for the bug fixed with bd287865
+// This is a regression test for an old bug where peeking at
+// more than one character failed to put them back.
 void tst_QIODevice::peekBug()
 {
     PeekBug peekBug;

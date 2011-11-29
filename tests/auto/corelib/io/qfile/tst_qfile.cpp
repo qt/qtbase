@@ -2363,9 +2363,7 @@ void tst_QFile::rename()
 
  Here, we reproduce that condition by having a QFile sub-class with this
  peculiar atEnd() behavior.
-
- See task 231583.
- */
+*/
 void tst_QFile::renameWithAtEndSpecialFile() const
 {
     class PeculiarAtEnd : public QFile

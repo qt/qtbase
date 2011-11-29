@@ -871,7 +871,6 @@ void tst_QDateTime::toUTC()
         QSKIP("Not tested with timezone other than Central European (CET/CST)");
     }
 
-    // To make sure bug 72713 never happens again
     QDateTime dt = QDateTime::currentDateTime();
     if(dt.time().msec() == 0){
         dt.setTime(dt.time().addMSecs(1));
@@ -1246,39 +1245,39 @@ void tst_QDateTime::fromStringTextDate_data()
     QTest::addColumn<int>("msec");
     QTest::addColumn<int>("timeSpec");
 
-    QTest::newRow("task27910") << QString("Tue Jun 17 08:00:10 2003")
+    QTest::newRow("text date") << QString("Tue Jun 17 08:00:10 2003")
                             << int(Qt::TextDate)
                             << 17 << 6 << 2003 << 8 << 0 << 10 << 0
                             << int(Qt::LocalTime);
-    QTest::newRow("task77042") << QString("2005-06-28T07:57:30.0010000000Z")
+    QTest::newRow("ISO date") << QString("2005-06-28T07:57:30.0010000000Z")
                             << int(Qt::ISODate)
                             << 28 << 6 << 2005 << 7 << 57 << 30 << 1
                             << int(Qt::UTC);
 
-    QTest::newRow("task77042-2") << QString("2005-06-28T07:57:30,0040000000Z")
-                              << int(Qt::ISODate)
-                              << 28 << 6 << 2005 << 7 << 57 << 30 << 4
-                              << int(Qt::UTC);
+    QTest::newRow("ISO date with comma 1") << QString("2005-06-28T07:57:30,0040000000Z")
+                            << int(Qt::ISODate)
+                            << 28 << 6 << 2005 << 7 << 57 << 30 << 4
+                            << int(Qt::UTC);
 
-    QTest::newRow("task77042-3") << QString("2005-06-28T07:57:30,0015Z")
-                              << int(Qt::ISODate)
-                              << 28 << 6 << 2005 << 7 << 57 << 30 << 2
-                              << int(Qt::UTC);
+    QTest::newRow("ISO date with comma 2") << QString("2005-06-28T07:57:30,0015Z")
+                            << int(Qt::ISODate)
+                            << 28 << 6 << 2005 << 7 << 57 << 30 << 2
+                            << int(Qt::UTC);
 
-    QTest::newRow("task77042-4") << QString("2005-06-28T07:57:30,0014Z")
-                              << int(Qt::ISODate)
-                              << 28 << 6 << 2005 << 7 << 57 << 30 << 1
-                              << int(Qt::UTC);
+    QTest::newRow("ISO date with comma 3") << QString("2005-06-28T07:57:30,0014Z")
+                            << int(Qt::ISODate)
+                            << 28 << 6 << 2005 << 7 << 57 << 30 << 1
+                            << int(Qt::UTC);
 
-    QTest::newRow("task77042-5") << QString("2005-06-28T07:57:30,1Z")
-                              << int(Qt::ISODate)
-                              << 28 << 6 << 2005 << 7 << 57 << 30 << 100
-                              << int(Qt::UTC);
+    QTest::newRow("ISO date with comma 4") << QString("2005-06-28T07:57:30,1Z")
+                            << int(Qt::ISODate)
+                            << 28 << 6 << 2005 << 7 << 57 << 30 << 100
+                            << int(Qt::UTC);
 
-    QTest::newRow("task77042-6") << QString("2005-06-28T07:57:30,11")
-                              << int(Qt::ISODate)
-                              << 28 << 6 << 2005 << 7 << 57 << 30 << 110
-                              << int(Qt::LocalTime);
+    QTest::newRow("ISO date with comma 5") << QString("2005-06-28T07:57:30,11")
+                            << int(Qt::ISODate)
+                            << 28 << 6 << 2005 << 7 << 57 << 30 << 110
+                            << int(Qt::LocalTime);
 
     QTest::newRow("Year 0999") << QString("Tue Jun 17 08:00:10 0999")
                             << int(Qt::TextDate)

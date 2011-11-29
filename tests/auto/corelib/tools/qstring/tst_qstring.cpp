@@ -3186,8 +3186,8 @@ void tst_QString::fromUtf8_data()
     str += QChar::ReplacementCharacter;
     str += " Netscape";
 
-    QTest::newRow("task28417") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << str << -1;
-    QTest::newRow("task28417-len") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << QString("") << 0;
+    QTest::newRow("invalid utf8 2") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << str << -1;
+    QTest::newRow("invalid utf8-len 2") << QByteArray("Prohl\355\276e\350 plugin\371 Netscape") << QString("") << 0;
 
     QTest::newRow("null-1") << QByteArray() << QString() << -1;
     QTest::newRow("null0") << QByteArray() << QString() << 0;
@@ -3621,7 +3621,6 @@ void tst_QString::arg()
     str2 = str2.arg("A", "B", "C", "D", "E", "F");
     QCOMPARE(str2, QString("A B C D E F %1000 %1230"));
 
-    // task 201185
     QCOMPARE(QString("%1").arg(-1, 3, 10, QChar('0')), QString("-01"));
     QCOMPARE(QString("%1").arg(-100, 3, 10, QChar('0')), QString("-100"));
     QCOMPARE(QString("%1").arg(-1, 3, 10, QChar(' ')), QString(" -1"));
@@ -3694,15 +3693,15 @@ void tst_QString::section_data()
     QTest::newRow( "data2" ) << QString("/usr/local/bin/myapp") << QString("/") << 3 << 3 << int(QString::SectionSkipEmpty) << QString("myapp") << false;
     QTest::newRow( "data3" ) << QString("forename**middlename**surname**phone") << QString("**") << 2 << 2 << int(QString::SectionDefault) << QString("surname") << false;
     QTest::newRow( "data4" ) << QString("forename**middlename**surname**phone") << QString("**") << -3 << -2 << int(QString::SectionDefault) << QString("middlename**surname") << false;
-    QTest::newRow( "task-21749-1" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("Datt") << false;
-    QTest::newRow( "task-21749-2" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 1 << 1 << int(QString::SectionSkipEmpty) << QString("wollen") << false;
-    QTest::newRow( "task-21749-3" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 2 << 2 << int(QString::SectionSkipEmpty) << QString("wir") << false;
-    QTest::newRow( "task-21749-4" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 3 << 3 << int(QString::SectionSkipEmpty) << QString("mal") << false;
-    QTest::newRow( "task-21749-5" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 4 << 4 << int(QString::SectionSkipEmpty) << QString("sehen") << false;
+    QTest::newRow( "data5" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("Datt") << false;
+    QTest::newRow( "data6" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 1 << 1 << int(QString::SectionSkipEmpty) << QString("wollen") << false;
+    QTest::newRow( "data7" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 2 << 2 << int(QString::SectionSkipEmpty) << QString("wir") << false;
+    QTest::newRow( "data8" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 3 << 3 << int(QString::SectionSkipEmpty) << QString("mal") << false;
+    QTest::newRow( "data9" ) << QString("##Datt######wollen######wir######mal######sehen##") << QString("#") << 4 << 4 << int(QString::SectionSkipEmpty) << QString("sehen") << false;
     // not fixed for 3.1
-    QTest::newRow( "task-27269" ) << QString("a/b/c/d") << QString("/") << 1 << -1 << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep) << QString("/b/c/d") << false;
-    QTest::newRow( "task-43641" ) << QString("aoLoboLocolod") << QString("olo") << -1 << -1 << int(QString::SectionCaseInsensitiveSeps) << QString("d") << false;
-    QTest::newRow( "task-27593" ) << QString("F0") << QString("F") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("0") << false;
+    QTest::newRow( "data10" ) << QString("a/b/c/d") << QString("/") << 1 << -1 << int(QString::SectionIncludeLeadingSep | QString::SectionIncludeTrailingSep) << QString("/b/c/d") << false;
+    QTest::newRow( "data11" ) << QString("aoLoboLocolod") << QString("olo") << -1 << -1 << int(QString::SectionCaseInsensitiveSeps) << QString("d") << false;
+    QTest::newRow( "data12" ) << QString("F0") << QString("F") << 0 << 0 << int(QString::SectionSkipEmpty) << QString("0") << false;
     QTest::newRow( "foo1" ) << QString("foo;foo;") << QString(";") << 0 << 0
                          << int(QString::SectionIncludeLeadingSep) << QString("foo") << false;
     QTest::newRow( "foo2" ) << QString("foo;foo;") << QString(";") << 1 << 1
@@ -3722,19 +3721,18 @@ void tst_QString::section_data()
     QTest::newRow( "qmake_pathrx" ) << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode/")
                                  << QString("/") << 0 << -2 << int(QString::SectionDefault)
                                  << QString("/Users/sam/troll/qt4.0/src/corelib/QtCore_debug.xcode") << true;
-    QTest::newRow( "task72972" ) << QString("||2|3|||")
+    QTest::newRow( "data13" ) << QString("||2|3|||")
                               << QString("|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                               << QString("||") << false;
-    QTest::newRow( "task72972rx" ) << QString("||2|3|||")
+    QTest::newRow( "data14" ) << QString("||2|3|||")
                                 << QString("\\|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                                 << QString("||") << true;
-    QTest::newRow( "task72972-2" ) << QString("|1|2|")
+    QTest::newRow( "data15" ) << QString("|1|2|")
                                 << QString("|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                                 << QString("|1|") << false;
-    QTest::newRow( "task72972-2rx" ) << QString("|1|2|")
-                                  << QString("\\|") << 0 << 1
-                                  << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
-                                  << QString("|1|") << true;
+    QTest::newRow( "data16" ) << QString("|1|2|")
+                                << QString("\\|") << 0 << 1 << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
+                                << QString("|1|") << true;
     QTest::newRow( "normal1" ) << QString("o1o2o")
                             << QString("o") << 0 << 0
                             << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
@@ -3775,11 +3773,11 @@ void tst_QString::section_data()
                         << QString("[a-z]") << 1 << 2
                         << int(QString::SectionIncludeLeadingSep|QString::SectionIncludeTrailingSep)
                         << QString("o1o2o") << true;
-    QTest::newRow( "task45855-rx" ) << QString("This is a story, a small story")
+    QTest::newRow( "data17" ) << QString("This is a story, a small story")
                         << QString("\\b") << 3 << 3
                         << int(QString::SectionDefault)
                         << QString("is") << true;
-    QTest::newRow( "task257941-rx" ) << QString("99.0 42.3")
+    QTest::newRow( "data18" ) << QString("99.0 42.3")
                         << QString("\\s*[AaBb]\\s*") << 1 << 1
                         << int(QString::SectionIncludeLeadingSep)
                         << QString() << true;

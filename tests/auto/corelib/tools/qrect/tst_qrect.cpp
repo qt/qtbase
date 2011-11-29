@@ -389,13 +389,13 @@ void tst_QRect::normalized_data()
     QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << QRect( -10, -10, 5, 5 );
     QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << getQRectCase( NullQRect );
     QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << getQRectCase( EmptyQRect );
-    QTest::newRow( "Task80908") << QRect(100, 200, 100, 0) << QRect(100, 200, 100, 0);
+    QTest::newRow( "ZeroWidth" ) << QRect(100, 200, 100, 0) << QRect(100, 200, 100, 0);
     // Since "NegativeSizeQRect passes, I expect both of these to pass too.
     // This passes, since height() returns -1 before normalization
-    QTest::newRow( "Task85023") << QRect(QPoint(100,201), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,201));
+    QTest::newRow( "NegativeHeight") << QRect(QPoint(100,201), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,201));
     // This, on the other hand height() returns 0 before normalization.
-    QTest::newRow( "Task85023.1") << QRect(QPoint(100,200), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,200));
-    QTest::newRow( "Task188109" ) << QRect(QPoint(263, 113), QPoint(136, 112)) << QRect(QPoint(136, 113), QPoint(263, 112));
+    QTest::newRow( "ZeroHeight1" ) << QRect(QPoint(100,200), QPoint(199,199)) << QRect(QPoint(100,199), QPoint(199,200));
+    QTest::newRow( "ZeroHeight2" ) << QRect(QPoint(263,113), QPoint(136,112)) << QRect(QPoint(136,113), QPoint(263,112));
 }
 
 void tst_QRect::normalized()
@@ -403,8 +403,7 @@ void tst_QRect::normalized()
     QFETCH(QRect, r);
     QFETCH(QRect, nr);
 
-    if (QTest::currentDataTag() == QString("Task85023.1"))
-        QEXPECT_FAIL("", "due to broken QRect definition (not possible to change)", Continue);
+    QEXPECT_FAIL("ZeroHeight1", "due to broken QRect definition (not possible to change, see QTBUG-22934)", Continue);
     QCOMPARE(r.normalized(), nr);
 }
 

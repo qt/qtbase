@@ -1646,7 +1646,7 @@ void tst_QSettings::testChildKeysAndGroups()
     settings1.endGroup();
     settings1.endGroup();
 
-    { // task 53792
+    {
         QSettings settings2("other.software.org");
         settings2.setValue("viewbar/foo/test1", "1");
         settings2.setValue("viewbar/foo/test2", "2");

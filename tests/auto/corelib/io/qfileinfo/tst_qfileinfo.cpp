@@ -447,7 +447,7 @@ void tst_QFileInfo::absolutePath_data()
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
-    // Make sure drive-relative paths return correct absolute paths (task 255326)
+    // Make sure drive-relative paths return correct absolute paths.
     QTest::newRow("<current drive>:my.dll") << drivePrefix + "my.dll" << QDir::currentPath() << "my.dll";
     QTest::newRow("<not current drive>:my.dll") << nonCurrentDrivePrefix + "my.dll"
                                                 << nonCurrentDrivePrefix + "/"
@@ -460,7 +460,6 @@ void tst_QFileInfo::absolutePath_data()
     QTest::newRow("/test") << "/test" << drivePrefix + "/" << "test";
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    // see task 102898
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
 #endif
@@ -498,7 +497,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow(".")            << curr << QDir::currentPath();
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
 
-    // Make sure drive-relative paths return correct absolute paths (task 255326)
+    // Make sure drive-relative paths return correct absolute paths.
     drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
@@ -866,7 +865,7 @@ void tst_QFileInfo::size()
     QFETCH(QString, file);
 
     QFileInfo fi(file);
-    (void)fi.permissions();     // see task 104198
+    (void)fi.permissions();
     QTEST(int(fi.size()), "size");
 }
 
@@ -876,8 +875,8 @@ void tst_QFileInfo::systemFiles()
     QSKIP("This is a Windows only test");
 #endif
     QFileInfo fi("c:\\pagefile.sys");
-    QVERIFY(fi.exists());      // task 167099
-    QVERIFY(fi.size() > 0);    // task 189202
+    QVERIFY(fi.exists());
+    QVERIFY(fi.size() > 0);
     QVERIFY(fi.lastModified().isValid());
 }
 

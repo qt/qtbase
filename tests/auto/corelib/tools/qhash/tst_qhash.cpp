@@ -751,8 +751,6 @@ void tst_QHash::operator_eq()
     }
 
     {
-        // task 102658
-
         QHash<QString, int> a;
         QHash<QString, int> b;
 

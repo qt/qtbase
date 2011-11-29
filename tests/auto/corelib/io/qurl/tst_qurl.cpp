@@ -878,13 +878,13 @@ void tst_QUrl::toString_data()
                          << uint(QUrl::None)
                          << QString::fromLatin1("http://andreas:hemmelig@www.vg.no/?my=query&your=query#yougotfragged");
 
-    QTest::newRow("nopath_task31320") << QString::fromLatin1("host://protocol")
-                                   << uint(QUrl::None)
-                                   << QString::fromLatin1("host://protocol");
+    QTest::newRow("nopath") << QString::fromLatin1("host://protocol")
+                         << uint(QUrl::None)
+                         << QString::fromLatin1("host://protocol");
 
-    QTest::newRow("underscore_QTBUG-7434") << QString::fromLatin1("http://foo_bar.host.com/rss.php")
-                                   << uint(QUrl::None)
-                                   << QString::fromLatin1("http://foo_bar.host.com/rss.php");
+    QTest::newRow("underscore") << QString::fromLatin1("http://foo_bar.host.com/rss.php")
+                         << uint(QUrl::None)
+                         << QString::fromLatin1("http://foo_bar.host.com/rss.php");
 }
 
 void tst_QUrl::toString()
@@ -1192,7 +1192,7 @@ void tst_QUrl::compat_constructor_03_data()
     QTest::newRow( "windowsDrive04" )  << QString( "c:WinNT/" ) << QString( "c:WinNT/" );
     QTest::newRow( "windowsDrive05" )  << QString( "c:autoexec.bat" ) << QString( "c:autoexec.bat" );
 
-    QTest::newRow("task31280") << QString("protocol://host") << QString("protocol://host");
+    QTest::newRow("nopath") << QString("protocol://host") << QString("protocol://host");
 }
 
 void tst_QUrl::compat_constructor_03()
@@ -1923,13 +1923,11 @@ void tst_QUrl::tolerantParser()
     }
 
     {
-        // task 243557
         QByteArray tsdgeos("http://google.com/c?c=Translation+%C2%BB+trunk|");
         QUrl tsdgeosQUrl;
         tsdgeosQUrl.setEncodedUrl(tsdgeos, QUrl::TolerantMode);
         QVERIFY(tsdgeosQUrl.isValid()); // failed in Qt-4.4, works in Qt-4.5
         QByteArray tsdgeosExpected("http://google.com/c?c=Translation+%C2%BB+trunk%7C");
-        //QCOMPARE(tsdgeosQUrl.toEncoded(), tsdgeosExpected); // unusable output from qtestlib...
         QCOMPARE(QString(tsdgeosQUrl.toEncoded()), QString(tsdgeosExpected));
     }
 

@@ -345,7 +345,6 @@ void tst_QBuffer::seekTest()
     }
 
     // Special case 2: seeking to an arbitrary position beyond the buffer auto-expands it
-    // (see Task 184730)
     {
         char c;
         const int offset = 1; // any positive integer will do

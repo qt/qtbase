@@ -1595,7 +1595,6 @@ void tst_QTextStream::numeralCase_data()
     QTest::newRow("oct 2") << oct_  << base  << noop_ << noop_ << 31 << "037";
 }
 
-// From Task 125496
 void tst_QTextStream::numeralCase()
 {
     QFETCH(QTextStreamFunction, func1);

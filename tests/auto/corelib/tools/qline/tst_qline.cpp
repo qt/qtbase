@@ -167,14 +167,14 @@ void tst_QLine::testIntersection_data()
                                        << 10.0000000000001 << 0.0 << 10.0 << 20.0
                                        << int(QLineF::BoundedIntersection) << 10.0 << 10.0;
 
-    QTest::newRow("task 241464") << 100.1599256468623
-                                 << 100.7861905065196
-                                 << 100.1599256468604
-                                 << -9999.78619050651
-                                 << 10.0 << 50.0 << 190.0 << 50.0
-                                 << int(QLineF::BoundedIntersection)
-                                 << 100.1599256468622
-                                 << 50.0;
+    QTest::newRow("long vertical") << 100.1599256468623
+                                   << 100.7861905065196
+                                   << 100.1599256468604
+                                   << -9999.78619050651
+                                   << 10.0 << 50.0 << 190.0 << 50.0
+                                   << int(QLineF::BoundedIntersection)
+                                   << 100.1599256468622
+                                   << 50.0;
 
     QLineF baseA(0, -50, 0, 50);
     QLineF baseB(-50, 0, 50, 0);
