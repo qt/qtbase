@@ -124,6 +124,10 @@
         <file>expected_subtest.txt</file>
         <file>expected_subtest.xml</file>
         <file>expected_subtest.xunitxml</file>
+        <file>expected_findtestdata.lightxml</file>
+        <file>expected_findtestdata.txt</file>
+        <file>expected_findtestdata.xml</file>
+        <file>expected_findtestdata.xunitxml</file>
         <file>expected_warnings.lightxml</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>

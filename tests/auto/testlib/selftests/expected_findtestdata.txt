@@ -1,0 +1,9 @@
+********* Start testing of FindTestData *********
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+PASS   : FindTestData::initTestCase()
+WARNING: FindTestData::paths() testdata testfile could not be located!
+   Loc: [findtestdata.cpp(131)]
+PASS   : FindTestData::paths()
+PASS   : FindTestData::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of FindTestData *********

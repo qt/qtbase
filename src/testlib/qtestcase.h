@@ -44,6 +44,7 @@
 
 #include <QtTest/qtest_global.h>
 
+#include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmetatype.h>
 
@@ -151,6 +152,14 @@ do {\
 #define QWARN(msg)\
     QTest::qWarn(msg, __FILE__, __LINE__)
 
+#ifdef QT_TESTCASE_BUILDDIR
+# define QFINDTESTDATA(basepath)\
+    QTest::qFindTestData(basepath, __FILE__, __LINE__, QT_TESTCASE_BUILDDIR)
+#else
+# define QFINDTESTDATA(basepath)\
+    QTest::qFindTestData(basepath, __FILE__, __LINE__)
+#endif
+
 class QObject;
 class QTestData;
 
@@ -181,6 +190,9 @@ namespace QTest
                            const char *file, int line);
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = 0, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
+
+    Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = 0, int line = 0, const char* builddir = 0);
+    Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = 0, int line = 0, const char* builddir = 0);
 
     Q_TESTLIB_EXPORT void *qData(const char *tagName, int typeId);
     Q_TESTLIB_EXPORT void *qGlobalData(const char *tagName, int typeId);

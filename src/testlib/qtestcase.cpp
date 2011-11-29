@@ -54,6 +54,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qlibraryinfo.h>
 
 #include <QtTest/private/qtestlog_p.h>
 #include <QtTest/private/qtesttable_p.h>
@@ -333,6 +334,54 @@ QT_BEGIN_NAMESPACE
    entry \c{data27}.
 
    \sa QTest::TestFailMode, QVERIFY(), QCOMPARE()
+*/
+
+/*! \macro QFINDTESTDATA(filename)
+
+   \relates QTest
+
+   Returns a QString for the testdata file referred to by \a filename, or an
+   empty QString if the testdata file could not be found.
+
+   This macro allows the test to load data from an external file without
+   hardcoding an absolute filename into the test, or using relative paths
+   which may be error prone.
+
+   The returned path will be the first path from the following list which
+   resolves to an existing file or directory:
+
+   \list
+   \o \a filename relative to QCoreApplication::applicationDirPath()
+      (only if a QCoreApplication or QApplication object has been created).
+   \o \a filename relative to the test's standard install directory
+      (QLibraryInfo::TestsPath with the lowercased testcase name appended).
+   \o \a filename relative to the directory containing the source file from which
+      QFINDTESTDATA is invoked.
+   \endlist
+
+   If the named file/directory does not exist at any of these locations,
+   a warning is printed to the test log.
+
+   For example, in this code:
+   \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 26
+
+   The testdata file will be resolved as the first existing file from:
+
+   \list
+   \o \c{/home/user/build/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
+   \o \c{/usr/local/Qt-5.0.0/tests/tst_myxmlparser/testxml/simple1.xml}
+   \o \c{/home/user/sources/myxmlparser/tests/tst_myxmlparser/testxml/simple1.xml}
+   \endlist
+
+   This allows the test to find its testdata regardless of whether the
+   test has been installed, and regardless of whether the test's build tree
+   is equal to the test's source tree.
+
+   \bold {Note:} reliable detection of testdata from the source directory requires
+   either that qmake is used, or the \c{QT_TESTCASE_BUILDDIR} macro is defined to
+   point to the working directory from which the compiler is invoked, or only
+   absolute paths to the source files are passed to the compiler. Otherwise, the
+   absolute path of the source directory cannot be determined.
 */
 
 /*! \macro QTEST_MAIN(TestClass)
@@ -2079,6 +2128,96 @@ void QTest::qWarn(const char *message, const char *file, int line)
 void QTest::ignoreMessage(QtMsgType type, const char *message)
 {
     QTestResult::ignoreMessage(type, message);
+}
+
+/*! \internal
+ */
+QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir)
+{
+    QString found;
+
+    // Testdata priorities:
+
+    //  1. relative to test binary.
+    if (qApp) {
+        QString binpath = QCoreApplication::applicationDirPath();
+        QString candidate = QString::fromLatin1("%1/%2").arg(binpath).arg(base);
+        if (QFileInfo(candidate).exists()) {
+            found = candidate;
+        }
+        else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found relative to test binary [%2]; "
+                                    "checking next location")
+                    .arg(base).arg(candidate)),
+                file, line);
+        }
+    }
+
+    //  2. installed path.
+    if (found.isEmpty()) {
+        const char *testObjectName = QTestResult::currentTestObjectName();
+        if (testObjectName) {
+            QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
+            QString candidate = QString::fromLatin1("%1/%2/%3")
+                .arg(testsPath)
+                .arg(QFile::decodeName(testObjectName).toLower())
+                .arg(base);
+            if (QFileInfo(candidate).exists()) {
+                found = candidate;
+            }
+            else if (QTestLog::verboseLevel() >= 2) {
+                QTestLog::info(qPrintable(
+                    QString::fromLatin1("testdata %1 not found in tests install path [%2]; "
+                                        "checking next location")
+                        .arg(base).arg(candidate)),
+                    file, line);
+            }
+        }
+    }
+
+    //  3. relative to test source.
+    if (found.isEmpty()) {
+        // srcdir is the directory containing the calling source file.
+        QFileInfo srcdir = QFileInfo(QFile::decodeName(file)).path();
+
+        // If the srcdir is relative, that means it is relative to the current working
+        // directory of the compiler at compile time, which should be passed in as `builddir'.
+        if (!srcdir.isAbsolute() && builddir) {
+            srcdir.setFile(QFile::decodeName(builddir) + QLatin1String("/") + srcdir.filePath());
+        }
+
+        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath()).arg(base);
+        if (QFileInfo(candidate).exists()) {
+            found = candidate;
+        }
+        else if (QTestLog::verboseLevel() >= 2) {
+            QTestLog::info(qPrintable(
+                QString::fromLatin1("testdata %1 not found relative to source path [%2]")
+                    .arg(base).arg(candidate)),
+                file, line);
+        }
+    }
+
+    if (found.isEmpty()) {
+        QTest::qWarn(qPrintable(
+            QString::fromLatin1("testdata %1 could not be located!").arg(base)),
+            file, line);
+    }
+    else if (QTestLog::verboseLevel() >= 1) {
+        QTestLog::info(qPrintable(
+            QString::fromLatin1("testdata %1 was located at %2").arg(base).arg(found)),
+            file, line);
+    }
+
+    return found;
+}
+
+/*! \internal
+ */
+QString QTest::qFindTestData(const char *base, const char *file, int line, const char *builddir)
+{
+    return qFindTestData(QFile::decodeName(base), file, line, builddir);
 }
 
 /*! \internal

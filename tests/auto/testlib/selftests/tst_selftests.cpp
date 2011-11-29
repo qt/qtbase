@@ -335,6 +335,7 @@ void tst_Selftests::runSubTest_data()
         << "sleep"
         << "strcmp"
         << "subtest"
+        << "findtestdata"
         << "warnings"
         << "xunit"
     ;

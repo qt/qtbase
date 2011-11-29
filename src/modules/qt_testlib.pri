@@ -13,4 +13,4 @@ QT.testlib.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.testlib.imports = $$QT_MODULE_IMPORT_BASE
 QT.testlib.depends = core
 QT.testlib.CONFIG = console
-QT.testlib.DEFINES = QT_TESTLIB_LIB
+QT.testlib.DEFINES = QT_TESTLIB_LIB QT_TESTCASE_BUILDDIR=\\\"$$OUT_PWD\\\"

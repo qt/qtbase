@@ -236,5 +236,18 @@ QTest::touchEvent(&widget)
     .release(1);
 //! [25]
 
+
+//! [26]
+// Source: /home/user/sources/myxmlparser/tests/tst_myxmlparser/tst_myxmlparser.cpp
+// Build:  /home/user/build/myxmlparser/tests/tst_myxmlparser
+// Qt:     /usr/local/Qt-5.0.0
+void tst_MyXmlParser::parse()
+{
+    MyXmlParser parser;
+    QString input = QFINDTESTDATA("testxml/simple1.xml");
+    QVERIFY(parser.parse(input));
+}
+//! [26]
+
 }
 
