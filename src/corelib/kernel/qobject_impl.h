@@ -96,12 +96,14 @@ namespace QtPrivate {
     };
     template<typename T, typename U>
     void operator,(const T &value, const ApplyReturnValue<U> &container) {
-        *reinterpret_cast<U*>(container.data) = value;
+        if (container.data)
+            *reinterpret_cast<U*>(container.data) = value;
     }
 #ifdef Q_COMPILER_RVALUE_REFS
     template<typename T, typename U>
     void operator,(T &&value, const ApplyReturnValue<U> &container) {
-        *reinterpret_cast<U*>(container.data) = value;
+        if (container.data)
+            *reinterpret_cast<U*>(container.data) = value;
     }
 #endif
     template<typename T>
