@@ -566,6 +566,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         if (proc) {
             XESetWireToEvent((Display*)m_xlib_display, response_type, proc);
             XEvent dummy;
+            event->sequence = LastKnownRequestProcessed(m_xlib_display);
             proc((Display*)m_xlib_display, &dummy, (xEvent*)event);
         }
     }
