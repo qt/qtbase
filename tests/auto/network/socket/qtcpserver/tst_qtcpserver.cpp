@@ -116,6 +116,8 @@ private slots:
 
     void qtbug14268_peek();
 
+    void serverAddress_data();
+    void serverAddress();
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkSession *networkSession;
@@ -787,6 +789,40 @@ void tst_QTcpServer::qtbug14268_peek()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(helper.lastDataPeeked == QByteArray("6162630a6465660a6768690a"));
+}
+
+void tst_QTcpServer::serverAddress_data()
+{
+    QTest::addColumn<QHostAddress>("listenAddress");
+    QTest::addColumn<QHostAddress>("serverAddress");
+#ifdef Q_OS_WIN
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_6_0)
+        QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4); //windows XP doesn't support dual stack sockets
+    else
+#endif
+    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::Any);
+    QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::AnyIPv4);
+    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6);
+    foreach (const QHostAddress& addr, QNetworkInterface::allAddresses()) {
+        if (addr.isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
+            || addr.isInSubnet(QHostAddress::parseSubnet("169.254/16")))
+            continue; //cannot bind on link local addresses
+        QTest::newRow(qPrintable(addr.toString())) << addr << addr;
+    }
+}
+
+void tst_QTcpServer::serverAddress()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QFETCH(QHostAddress, listenAddress);
+    QFETCH(QHostAddress, serverAddress);
+    QTcpServer server;
+    if (!server.listen(listenAddress))
+        QSKIP(qPrintable(server.errorString()));
+    QCOMPARE(server.serverAddress(), serverAddress);
 }
 
 QTEST_MAIN(tst_QTcpServer)

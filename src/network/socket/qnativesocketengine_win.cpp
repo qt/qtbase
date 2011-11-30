@@ -554,6 +554,22 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         }
     }
 
+#if defined (IPV6_V6ONLY)
+    // determine if local address is dual mode
+    DWORD ipv6only = 0;
+    int optlen = sizeof(ipv6only);
+    if (localAddress == QHostAddress::AnyIPv6
+        && QSysInfo::windowsVersion() >= QSysInfo::WV_6_0
+        && !getsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, &optlen )) {
+            if (optlen != sizeof(ipv6only))
+                qWarning("unexpected size of IPV6_V6ONLY socket option");
+            if (!ipv6only) {
+                socketProtocol = QAbstractSocket::AnyIPProtocol;
+                localAddress = QHostAddress::Any;
+            }
+    }
+#endif
+
     memset(&sa, 0, sizeof(sa));
     if (::getpeername(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
         qt_socket_getPortAndAddress(socketDescriptor, &sa, &peerPort, &peerAddress);
