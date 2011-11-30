@@ -1146,7 +1146,11 @@ foreach my $lib (@modules_to_sync) {
                 my $warning = "Header <$lib/";
                 $warning .= "private/" unless ($public_header);
                 $warning .= "$header> is deprecated. Please include <$include> instead.";
-                print HEADER "#warning $warning\n";
+                print HEADER "#if defined(__GNUC__)\n";
+                print HEADER "#  warning $warning\n";
+                print HEADER "#elif defined(_MSC_VER)\n";
+                print HEADER "#  pragma message (\"$warning\")\n";
+                print HEADER "#endif\n";
                 print HEADER "#include <$include>\n";
                 if ($public_header) {
                     print HEADER "#if 0\n";
