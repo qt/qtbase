@@ -875,6 +875,13 @@ QColor QAccessibleWidget::backgroundColor() const
     return widget()->palette().color(widget()->backgroundRole());
 }
 
+void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ActionInterface)
+       return static_cast<QAccessibleActionInterface*>(this);
+    return 0;
+}
+
 QT_END_NAMESPACE
 
 #endif //QT_NO_ACCESSIBILITY

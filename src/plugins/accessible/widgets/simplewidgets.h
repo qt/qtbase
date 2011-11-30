@@ -57,7 +57,6 @@ class QProgressBar;
 
 class QAccessibleButton : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
 public:
     QAccessibleButton(QWidget *w, Role r);
@@ -99,7 +98,6 @@ protected:
 
 class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleDisplay(QWidget *w, Role role = StaticText);
 
@@ -108,6 +106,7 @@ public:
 
     Relation relationTo(const QAccessibleInterface *other) const;
     int navigate(RelationFlag, int entry, QAccessibleInterface **target) const;
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleImageInterface
     QString imageDescription();
@@ -119,7 +118,6 @@ public:
 class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface,
                             public QAccessibleSimpleEditableTextInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());
 
@@ -127,6 +125,7 @@ public:
     void setText(Text t, const QString &text);
     State state() const;
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
@@ -157,9 +156,9 @@ protected:
 #ifndef QT_NO_PROGRESSBAR
 class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleProgressBar(QWidget *o);
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
     QVariant currentValue();

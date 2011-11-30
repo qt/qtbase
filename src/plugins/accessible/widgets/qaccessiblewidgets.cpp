@@ -302,6 +302,15 @@ QVariant QAccessibleTextEdit::invokeMethod(QAccessible::Method method,
     }
 }
 
+void *QAccessibleTextEdit::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::TextInterface)
+        return static_cast<QAccessibleTextInterface*>(this);
+    else if (t == QAccessible::EditableTextInterface)
+        return static_cast<QAccessibleEditableTextInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+
 void QAccessibleTextEdit::addSelection(int startOffset, int endOffset)
 {
     setSelection(0, startOffset, endOffset);

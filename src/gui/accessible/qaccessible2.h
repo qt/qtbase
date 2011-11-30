@@ -91,50 +91,9 @@ namespace QAccessible2
     };
 }
 
-class Q_GUI_EXPORT QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleTextInterface
 {
 public:
-    virtual ~QAccessible2Interface() {}
-};
-
-// catch-all functions. If an accessible class doesn't implement interface T, return 0
-inline QAccessible2Interface *qAccessibleValueCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleTextCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleEditableTextCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleTableCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleActionCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleImageCastHelper() { return 0; }
-inline QAccessible2Interface *qAccessibleTable2CastHelper() { return 0; }
-
-#define Q_ACCESSIBLE_OBJECT \
-    public: \
-    QAccessible2Interface *interface_cast(QAccessible2::InterfaceType t) \
-    { \
-        switch (t) { \
-        case QAccessible2::TextInterface: \
-            return qAccessibleTextCastHelper(); \
-        case QAccessible2::EditableTextInterface: \
-            return qAccessibleEditableTextCastHelper(); \
-        case QAccessible2::ValueInterface: \
-            return qAccessibleValueCastHelper(); \
-        case QAccessible2::TableInterface: \
-            return qAccessibleTableCastHelper(); \
-        case QAccessible2::ActionInterface: \
-            return qAccessibleActionCastHelper(); \
-        case QAccessible2::ImageInterface: \
-            return qAccessibleImageCastHelper(); \
-        case QAccessible2::Table2Interface: \
-            return qAccessibleTable2CastHelper(); \
-        } \
-        return 0; \
-    } \
-    private:
-
-class Q_GUI_EXPORT QAccessibleTextInterface: public QAccessible2Interface
-{
-public:
-    inline QAccessible2Interface *qAccessibleTextCastHelper() { return this; }
-
     virtual ~QAccessibleTextInterface() {}
 
     virtual void addSelection(int startOffset, int endOffset) = 0;
@@ -158,11 +117,9 @@ public:
     virtual void scrollToSubstring(int startIndex, int endIndex) = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleEditableTextInterface: public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleEditableTextInterface
 {
 public:
-    inline QAccessible2Interface *qAccessibleEditableTextCastHelper() { return this; }
-
     virtual ~QAccessibleEditableTextInterface() {}
 
     virtual void copyText(int startOffset, int endOffset) = 0;
@@ -177,7 +134,7 @@ public:
 class Q_GUI_EXPORT QAccessibleSimpleEditableTextInterface: public QAccessibleEditableTextInterface
 {
 public:
-    QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);
+    QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);  //###
 
     void copyText(int startOffset, int endOffset);
     void deleteText(int startOffset, int endOffset);
@@ -191,10 +148,9 @@ private:
     QAccessibleInterface *iface;
 };
 
-class Q_GUI_EXPORT QAccessibleValueInterface: public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleValueInterface
 {
 public:
-    inline QAccessible2Interface *qAccessibleValueCastHelper() { return this; }
 
     virtual ~QAccessibleValueInterface() {}
 
@@ -204,10 +160,10 @@ public:
     virtual QVariant minimumValue() = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleTableInterface: public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleTableInterface
 {
 public:
-    inline QAccessible2Interface *qAccessibleTableCastHelper() { return this; }
+
 
     virtual QAccessibleInterface *accessibleAt(int row, int column) = 0;
     virtual QAccessibleInterface *caption() = 0;
@@ -267,10 +223,9 @@ public:
     virtual bool isExpandable() const = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleTable2Interface: public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleTable2Interface
 {
 public:
-    inline QAccessible2Interface *qAccessibleTable2CastHelper() { return this; }
 
     // Returns the cell at the specified row and column in the table.
     virtual QAccessibleTable2CellInterface *cellAt (int row, int column) const = 0;
@@ -327,11 +282,10 @@ friend class QAbstractItemView;
 friend class QAbstractItemViewPrivate;
 };
 
-class Q_GUI_EXPORT QAccessibleActionInterface: public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleActionInterface
 {
     Q_DECLARE_TR_FUNCTIONS(QAccessibleActionInterface)
 public:
-    inline QAccessible2Interface *qAccessibleActionCastHelper() { return this; }
 
     virtual QStringList actionNames() const = 0;
     virtual QString localizedActionName(const QString &name) const;
@@ -348,10 +302,9 @@ public:
     static const QString &uncheckAction();
 };
 
-class Q_GUI_EXPORT QAccessibleImageInterface : public QAccessible2Interface
+class Q_GUI_EXPORT QAccessibleImageInterface
 {
 public:
-    inline QAccessible2Interface *qAccessibleImageCastHelper() { return this; }
 
     virtual QString imageDescription() = 0;
     virtual QSize imageSize() = 0;

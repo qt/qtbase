@@ -56,7 +56,6 @@ class QAccessibleWidgetPrivate;
 
 class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAccessibleActionInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleWidget(QWidget *o, Role r = Client, const QString& name = QString());
 
@@ -79,6 +78,7 @@ public:
     QColor foregroundColor() const;
     QColor backgroundColor() const;
 
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleActionInterface
     QStringList actionNames() const;

@@ -474,6 +474,13 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
     return QAccessibleWidget::navigate(rel, entry, target);
 }
 
+void *QAccessibleDisplay::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ImageInterface)
+        return static_cast<QAccessibleImageInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+
 /*! \internal */
 QString QAccessibleDisplay::imageDescription()
 {
@@ -614,6 +621,15 @@ QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method,
     }
 }
 
+void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::TextInterface)
+        return static_cast<QAccessibleTextInterface*>(this);
+    else if (t == QAccessible::EditableTextInterface)
+        return static_cast<QAccessibleEditableTextInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+
 void QAccessibleLineEdit::addSelection(int startOffset, int endOffset)
 {
     setSelection(0, startOffset, endOffset);
@@ -741,6 +757,13 @@ QAccessibleProgressBar::QAccessibleProgressBar(QWidget *o)
     : QAccessibleDisplay(o)
 {
     Q_ASSERT(progressBar());
+}
+
+void *QAccessibleProgressBar::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ValueInterface)
+        return static_cast<QAccessibleValueInterface*>(this);
+    return QAccessibleDisplay::interface_cast(t);
 }
 
 QVariant QAccessibleProgressBar::currentValue()

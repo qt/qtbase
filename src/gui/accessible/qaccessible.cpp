@@ -1203,12 +1203,6 @@ QVariant QAccessibleInterface::virtual_hook(const QVariant &)
     return QVariant();
 }
 
-/*! \internal */
-QAccessible2Interface *QAccessibleInterface::cast_helper(QAccessible2::InterfaceType t)
-{
-    return interface_cast(t);
-}
-
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
 {

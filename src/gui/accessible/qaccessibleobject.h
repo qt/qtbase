@@ -78,7 +78,6 @@ private:
 
 class Q_GUI_EXPORT QAccessibleApplication : public QAccessibleObject
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     QAccessibleApplication();
 

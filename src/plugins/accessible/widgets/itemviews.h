@@ -60,7 +60,6 @@ class QAccessibleTable2HeaderCell;
 
 class QAccessibleTable2 :public QAccessibleTable2Interface, public QAccessibleObject
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleTable2(QWidget *w);
 
@@ -82,6 +81,7 @@ public:
     Relation relationTo(const QAccessibleInterface *other) const;
 
     QVariant invokeMethod(Method, const QVariantList &) { return QVariant(); }
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // table2 interface
     virtual QAccessibleTable2CellInterface *cellAt(int row, int column) const;

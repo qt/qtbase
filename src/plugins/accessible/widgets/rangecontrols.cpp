@@ -87,6 +87,13 @@ QString QAccessibleAbstractSpinBox::text(Text t) const
     return QAccessibleWidget::text(t);
 }
 
+void *QAccessibleAbstractSpinBox::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ValueInterface)
+        return static_cast<QAccessibleValueInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+
 QVariant QAccessibleAbstractSpinBox::currentValue()
 {
     QVariant result = abstractSpinBox()->property("value");
@@ -242,6 +249,13 @@ QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)
     : QAccessibleWidget(w, r)
 {
     Q_ASSERT(qobject_cast<QAbstractSlider *>(w));
+}
+
+void *QAccessibleAbstractSlider::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ValueInterface)
+        return static_cast<QAccessibleValueInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
 }
 
 QVariant QAccessibleAbstractSlider::currentValue()

@@ -470,6 +470,13 @@ QAccessible::Relation QAccessibleTable2::relationTo(const QAccessibleInterface *
     return QAccessible::Unrelated;
 }
 
+void *QAccessibleTable2::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::Table2Interface)
+       return static_cast<QAccessibleTable2Interface*>(this);
+   return 0;
+}
+
 // TREE VIEW
 
 QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const

@@ -103,7 +103,6 @@ public:
 #ifndef QT_NO_ITEMVIEWS
 class QAccessibleHeader : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleHeader(QWidget *w);
 
@@ -162,7 +161,6 @@ private:
 
 class QAccessibleItemView: public QAccessibleAbstractScrollArea, public QAccessibleTableInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleItemView(QWidget *w);
 
@@ -232,7 +230,6 @@ private:
 #ifndef QT_NO_TABBAR
 class QAccessibleTabBar : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleTabBar(QWidget *w);
 
@@ -254,7 +251,6 @@ protected:
 #ifndef QT_NO_COMBOBOX
 class QAccessibleComboBox : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleComboBox(QWidget *w);
 

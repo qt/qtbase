@@ -309,6 +309,17 @@ public:
         BackgroundColor           = 4
     };
 
+    enum InterfaceType
+    {
+        TextInterface,
+        EditableTextInterface,
+        ValueInterface,
+        TableInterface,
+        ActionInterface,
+        ImageInterface,
+        Table2Interface
+    };
+
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
     typedef void(*UpdateHandler)(QObject*, int who, Event reason);
     typedef void(*RootObjectHandler)(QObject*);
@@ -335,20 +346,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSet<QAccessible::Method>)
 QT_BEGIN_NAMESPACE
-
-namespace QAccessible2
-{
-    enum InterfaceType
-    {
-        TextInterface,
-        EditableTextInterface,
-        ValueInterface,
-        TableInterface,
-        ActionInterface,
-        ImageInterface,
-        Table2Interface
-    };
-}
 
 class QAccessible2Interface;
 class QAccessibleTextInterface;
@@ -397,33 +394,31 @@ public:
     { return qvariant_cast<QSet<Method> >(invokeMethod(ListSupportedMethods)); }
 
     inline QAccessibleTextInterface *textInterface()
-    { return reinterpret_cast<QAccessibleTextInterface *>(cast_helper(QAccessible2::TextInterface)); }
+    { return reinterpret_cast<QAccessibleTextInterface *>(interface_cast(QAccessible::TextInterface)); }
 
     inline QAccessibleEditableTextInterface *editableTextInterface()
-    { return reinterpret_cast<QAccessibleEditableTextInterface *>(cast_helper(QAccessible2::EditableTextInterface)); }
+    { return reinterpret_cast<QAccessibleEditableTextInterface *>(interface_cast(QAccessible::EditableTextInterface)); }
 
     inline QAccessibleValueInterface *valueInterface()
-    { return reinterpret_cast<QAccessibleValueInterface *>(cast_helper(QAccessible2::ValueInterface)); }
+    { return reinterpret_cast<QAccessibleValueInterface *>(interface_cast(QAccessible::ValueInterface)); }
 
     inline QAccessibleTableInterface *tableInterface()
-    { return reinterpret_cast<QAccessibleTableInterface *>(cast_helper(QAccessible2::TableInterface)); }
+    { return reinterpret_cast<QAccessibleTableInterface *>(interface_cast(QAccessible::TableInterface)); }
 
     inline QAccessibleActionInterface *actionInterface()
-    { return reinterpret_cast<QAccessibleActionInterface *>(cast_helper(QAccessible2::ActionInterface)); }
+    { return reinterpret_cast<QAccessibleActionInterface *>(interface_cast(QAccessible::ActionInterface)); }
 
     inline QAccessibleImageInterface *imageInterface()
-    { return reinterpret_cast<QAccessibleImageInterface *>(cast_helper(QAccessible2::ImageInterface)); }
+    { return reinterpret_cast<QAccessibleImageInterface *>(interface_cast(QAccessible::ImageInterface)); }
 
     inline QAccessibleTable2Interface *table2Interface()
-    { return reinterpret_cast<QAccessibleTable2Interface *>(cast_helper(QAccessible2::Table2Interface)); }
+    { return reinterpret_cast<QAccessibleTable2Interface *>(interface_cast(QAccessible::Table2Interface)); }
 
     // FIXME
     virtual QVariant virtual_hook(const QVariant &data);
-    virtual QAccessible2Interface *interface_cast(QAccessible2::InterfaceType)
+    virtual void *interface_cast(QAccessible::InterfaceType)
     { return 0; }
-
 private:
-    QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);
 };
 
 class QAccessibleEvent : public QEvent

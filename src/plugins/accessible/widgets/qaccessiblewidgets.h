@@ -69,7 +69,6 @@ class QMainWindow;
 class QAccessibleTextEdit : public QAccessibleWidget, public QAccessibleTextInterface,
                             public QAccessibleEditableTextInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleTextEdit(QWidget *o);
 
@@ -77,6 +76,7 @@ public:
     void setText(Text t, const QString &text);
 
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
+    void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
@@ -118,7 +118,6 @@ private:
 
 class QAccessibleStackedWidget : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleStackedWidget(QWidget *widget);
 
@@ -135,7 +134,6 @@ protected:
 
 class QAccessibleToolBox : public QAccessibleWidget
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleToolBox(QWidget *widget);
 

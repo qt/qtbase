@@ -92,11 +92,12 @@ protected:
 
 class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
     virtual ~QAccessibleMenuItem();
+
+    void *interface_cast(QAccessible::InterfaceType t);
     virtual int childAt(int x, int y) const;
     virtual int childCount() const;
     virtual int indexOfChild(const QAccessibleInterface * child) const;

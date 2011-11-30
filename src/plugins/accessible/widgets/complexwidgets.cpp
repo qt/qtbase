@@ -1451,11 +1451,17 @@ QAccessible::State QAccessibleHeader::state(int child) const
 
 class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActionInterface
 {
-    Q_ACCESSIBLE_OBJECT
 public:
     QAccessibleTabButton(QTabBar *parent, int index)
         : m_parent(parent), m_index(index)
     {}
+
+    void *interface_cast(QAccessible::InterfaceType t) {
+        if (t == QAccessible::ActionInterface) {
+            return static_cast<QAccessibleActionInterface*>(this);
+        }
+        return 0;
+    }
 
     QObject *object() const { return 0; }
     Role role() const { return QAccessible::PageTab; }

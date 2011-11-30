@@ -277,6 +277,13 @@ int QAccessibleMenuItem::navigate(RelationFlag relation, int entry, QAccessibleI
     return *target ? 0 : -1;
 }
 
+void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::ActionInterface)
+        return static_cast<QAccessibleActionInterface*>(this);
+    return 0;
+}
+
 QObject *QAccessibleMenuItem::object() const
 {
     return m_action;
