@@ -39,55 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QDIR_PRIVATE_H
-#define QDIR_PRIVATE_H
+#ifndef QTEMPORARYDIR_H
+#define QTEMPORARYDIR_H
 
-#include "qfilesystementry_p.h"
-#include "qfilesystemmetadata_p.h"
+#include <QtCore/qdir.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QDirPrivate : public QSharedData
+QT_MODULE(Core)
+
+#ifndef QT_NO_TEMPORARYFILE
+
+class QTemporaryDirPrivate;
+
+class Q_CORE_EXPORT QTemporaryDir
 {
 public:
-    QDirPrivate(const QString &path, const QStringList &nameFilters_ = QStringList(),
-            QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
-            QDir::Filters filters_ = QDir::AllEntries);
+    QTemporaryDir();
+    explicit QTemporaryDir(const QString &templateName);
+    ~QTemporaryDir();
 
-    QDirPrivate(const QDirPrivate &copy);
+    bool isValid() const;
 
-    bool exists() const;
+    bool autoRemove() const;
+    void setAutoRemove(bool b);
+    bool remove();
 
-    void initFileEngine();
-    void initFileLists(const QDir &dir) const;
+    QString path() const;
 
-    static void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *);
+private:
+    QTemporaryDirPrivate* const d_ptr;
 
-    static inline QChar getFilterSepChar(const QString &nameFilter);
-
-    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = 0);
-
-    void setPath(const QString &path);
-
-    void clearFileLists();
-
-    void resolveAbsoluteEntry() const;
-
-    QStringList nameFilters;
-    QDir::SortFlags sort;
-    QDir::Filters filters;
-
-    QScopedPointer<QAbstractFileEngine> fileEngine;
-
-    mutable bool fileListsInitialized;
-    mutable QStringList files;
-    mutable QFileInfoList fileInfos;
-
-    QFileSystemEntry dirEntry;
-    mutable QFileSystemEntry absoluteDirEntry;
-    mutable QFileSystemMetaData metaData;
+    Q_DISABLE_COPY(QTemporaryDir)
 };
+
+#endif // QT_NO_TEMPORARYFILE
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QTEMPORARYDIR_H

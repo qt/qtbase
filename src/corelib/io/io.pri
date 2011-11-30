@@ -20,6 +20,7 @@ HEADERS +=  \
         io/qprocess.h \
         io/qprocess_p.h \
         io/qtextstream.h \
+        io/qtemporarydir.h \
         io/qtemporaryfile.h \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
@@ -54,6 +55,7 @@ SOURCES += \
         io/qnoncontiguousbytedevice.cpp \
         io/qprocess.cpp \
         io/qtextstream.cpp \
+        io/qtemporarydir.cpp \
         io/qtemporaryfile.cpp \
         io/qresource.cpp \
         io/qresource_iterator.cpp \
