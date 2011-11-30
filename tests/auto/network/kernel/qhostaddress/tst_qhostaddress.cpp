@@ -285,6 +285,10 @@ void tst_QHostAddress::specialAddresses()
     QFETCH(bool, result);
     QVERIFY((QHostAddress(text) == (QHostAddress::SpecialAddress)address) == result);
 
+    //check special address equal to itself (QTBUG-22898), note two overloads of operator==
+    QVERIFY(QHostAddress((QHostAddress::SpecialAddress)address) == QHostAddress((QHostAddress::SpecialAddress)address));
+    QVERIFY(QHostAddress((QHostAddress::SpecialAddress)address) == (QHostAddress::SpecialAddress)address);
+
     QHostAddress setter;
     setter.setAddress(text);
     if (result) {

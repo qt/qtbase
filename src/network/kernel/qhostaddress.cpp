@@ -899,6 +899,8 @@ bool QHostAddress::operator ==(SpecialAddress other) const
         return otherAddress.d->protocol == QAbstractSocket::IPv6Protocol
                && memcmp(&d->a6, &otherAddress.d->a6, sizeof(Q_IPV6ADDR)) == 0;
     }
+    if (d->protocol == QAbstractSocket::AnyIPProtocol)
+        return other == QHostAddress::Any;
     return int(other) == int(Null);
 }
 
