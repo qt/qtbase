@@ -213,11 +213,12 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
         QSupportedWritingSystems writingSystems;
         if (QCFType<CFArrayRef> languages = (CFArrayRef) CTFontDescriptorCopyAttribute(font, kCTFontLanguagesAttribute)) {
+            CFIndex length = CFArrayGetCount(languages);
             for (int i = 1; i < LanguageCount; ++i) {
                 if (!languageForWritingSystem[i])
                     continue;
                 QCFString lang = CFStringCreateWithCString(NULL, languageForWritingSystem[i], kCFStringEncodingASCII);
-                if (CFArrayContainsValue(languages, CFRangeMake(0, 0), lang))
+                if (CFArrayContainsValue(languages, CFRangeMake(0, length), lang))
                     writingSystems.setSupported(QFontDatabase::WritingSystem(i));
             }
         }
