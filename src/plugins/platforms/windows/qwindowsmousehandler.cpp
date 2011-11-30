@@ -280,14 +280,13 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
 
     if (!m_touchDevice) {
         m_touchDevice = new QTouchDevice;
+        // TODO: Device used to be hardcoded to screen in previous code.
         m_touchDevice->setType(QTouchDevice::TouchScreen);
         m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
         QWindowSystemInterface::registerTouchDevice(m_touchDevice);
     }
 
-    // TODO: Device used to be hardcoded to screen in previous code.
-    // What is the correct event type? Which parts of translateRawTouchEvent() are required?
-    QWindowSystemInterface::handleTouchEvent(window, QEvent::TouchBegin,
+    QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,
                                              touchPoints);
     return true;

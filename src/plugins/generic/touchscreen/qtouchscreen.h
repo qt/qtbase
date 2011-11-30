@@ -59,7 +59,7 @@ class QTouchScreenObserver
 {
 public:
     virtual void touch_configure(int x_min, int x_max, int y_min, int y_max) = 0;
-    virtual void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
+    virtual void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
 };
 
 class QTouchScreenHandler : public QObject

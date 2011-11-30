@@ -219,16 +219,15 @@ void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
     QTouchDevicePrivate::registerDevice(device);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
-                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent(w, time, type, device, points, mods);
+    handleTouchEvent(w, time, device, points, mods);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type,
-                                              QTouchDevice *device,
-                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
         return;
@@ -267,6 +266,13 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
         touchPoints.append(p);
         ++point;
     }
+
+    // Determine the event type based on the combined point states.
+    QEvent::Type type = QEvent::TouchUpdate;
+    if (states == Qt::TouchPointPressed)
+        type = QEvent::TouchBegin;
+    else if (states == Qt::TouchPointReleased)
+        type = QEvent::TouchEnd;
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);

@@ -136,7 +136,7 @@ namespace QTest
             if (!points.isEmpty()) {
                 if (targetWindow)
                 {
-                    QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None, device, touchPointList(points.values()));
+                    QWindowSystemInterface::handleTouchEvent(targetWindow, device, touchPointList(points.values()));
                     QTest::qWait(10);
                 }
 #ifdef QT_WIDGETS_LIB

@@ -291,7 +291,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
 
         if (!skip && !(m_state == m_prevState && m_state == QEvent::TouchEnd))
             for (int i = 0; i < m_observers.count(); ++i)
-                m_observers.at(i)->touch_point(m_state, m_touchPoints);
+                m_observers.at(i)->touch_point(m_touchPoints);
 
         m_prevState = m_state;
         if (m_state == QEvent::TouchBegin)

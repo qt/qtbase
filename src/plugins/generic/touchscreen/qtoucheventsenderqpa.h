@@ -55,7 +55,7 @@ class QTouchEventSenderQPA : public QTouchScreenObserver
 public:
     QTouchEventSenderQPA(const QString &spec = QString());
     void touch_configure(int x_min, int x_max, int y_min, int y_max);
-    void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points);
+    void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points);
 
 private:
     bool m_forceToActiveWindow;

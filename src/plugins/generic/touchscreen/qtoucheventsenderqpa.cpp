@@ -66,8 +66,7 @@ void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int 
     hw_range_y_max = y_max;
 }
 
-void QTouchEventSenderQPA::touch_point(QEvent::Type state,
-                                       const QList<QWindowSystemInterface::TouchPoint> &points)
+void QTouchEventSenderQPA::touch_point(const QList<QWindowSystemInterface::TouchPoint> &points)
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
@@ -107,7 +106,7 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
 #endif
     }
 
-    QWindowSystemInterface::handleTouchEvent(0, state, m_device, touchPoints);
+    QWindowSystemInterface::handleTouchEvent(0, m_device, touchPoints);
 }
 
 QT_END_NAMESPACE

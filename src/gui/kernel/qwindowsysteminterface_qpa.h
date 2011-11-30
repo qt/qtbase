@@ -99,9 +99,9 @@ public:
     };
 
     static void registerTouchDevice(QTouchDevice *device);
-    static void handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
+    static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchDevice *device,
+    static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);

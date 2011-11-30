@@ -295,28 +295,28 @@ static QTouchDevice *touchDevice = 0;
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchBegin, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchUpdate, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 #ifndef QT_NO_WHEELEVENT

@@ -288,7 +288,7 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                     QWindowSystemInterface::registerTouchDevice(dev);
                     m_xinputData->qtTouchDevice = dev;
                 }
-                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, dev, touchPoints);
+                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, dev, touchPoints);
             }
 
             if (xideviceevent->evtype == XI_ButtonRelease) {
