@@ -282,6 +282,29 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QUnicodeTables
     return NULL;
 }
 
+QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
+{
+    Q_UNUSED(hintingPreference);
+
+    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
+            fontData.constData(), fontData.size(), NULL);
+
+    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
+
+    QFontEngine *fontEngine = NULL;
+    if (cgFont == NULL) {
+        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
+    } else {
+        QFontDef def;
+        def.pixelSize = pixelSize;
+        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+        fontEngine = new QCoreTextFontEngine(cgFont, def);
+        CFRelease(cgFont);
+    }
+
+    return fontEngine;
+}
+
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     Q_UNUSED(family);
