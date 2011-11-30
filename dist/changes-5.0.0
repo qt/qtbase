@@ -85,6 +85,8 @@ information about a particular change.
   * Refactored to be based on action names. All functions have been changed from using
     int parameters to strings.
 
+- QSound has been moved from QtGui to QtMultimedia
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
