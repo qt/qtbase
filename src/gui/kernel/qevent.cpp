@@ -3467,7 +3467,8 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(eventType, modifiers),
-      _widget(0),
+      _window(0),
+      _target(0),
       _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
@@ -3479,17 +3480,18 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 QTouchEvent::~QTouchEvent()
 { }
 
-/*! \fn QWidget *QTouchEvent::widget() const
-
-    Returns the widget on which the event occurred.
-*/
-
 /*! \fn QWindow *QTouchEvent::window() const
 
     Returns the window on which the event occurred. Useful for doing
     global-local mapping on data like rawScreenPositions() which,
     for performance reasons, only stores the global positions in the
     touch event.
+*/
+
+/*! \fn QObject *QTouchEvent::target() const
+
+    Returns the target object within the window on which the event occurred.
+    This is typically a QWidget or a QQuickItem. May be 0 when no specific target is available.
 */
 
 /*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
@@ -3521,18 +3523,18 @@ QTouchEvent::~QTouchEvent()
     Returns the touch device from which this touch event originates.
 */
 
-/*! \fn void QTouchEvent::setWidget(QWidget *widget)
-
-    \internal
-
-    Sets the widget for this event.
-*/
-
 /*! \fn void QTouchEvent::setWindow(QWindow *window)
 
     \internal
 
     Sets the window for this event.
+*/
+
+/*! \fn void QTouchEvent::setTarget(QObject *target)
+
+    \internal
+
+    Sets the target within the window (typically a widget) for this event.
 */
 
 /*! \fn void QTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)

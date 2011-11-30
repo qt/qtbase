@@ -3896,7 +3896,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         while (widget) {
             // first, try to deliver the touch event
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
-            touchEvent->setWidget(widget);
+            touchEvent->setTarget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
             QWeakPointer<QWidget> p = widget;
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
@@ -3920,7 +3920,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             }
             QPoint offset = widget->pos();
             widget = widget->parentWidget();
-            touchEvent->setWidget(widget);
+            touchEvent->setTarget(widget);
             for (int i = 0; i < touchEvent->_touchPoints.size(); ++i) {
                 QTouchEvent::TouchPoint &pt = touchEvent->_touchPoints[i];
                 QRectF rect = pt.rect();
@@ -5355,6 +5355,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         updateTouchPointsForWidget(widget, &touchEvent);
         touchEvent.setTimestamp(timestamp);
         touchEvent.setWindow(window->windowHandle());
+        touchEvent.setTarget(window);
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:

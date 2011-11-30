@@ -776,23 +776,23 @@ public:
                 const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
-    inline QWidget *widget() const { return _widget; }
     inline QWindow *window() const { return _window; }
+    inline QObject *target() const { return _target; }
     QT_DEPRECATED inline QTouchEvent::DeviceType deviceType() const { return static_cast<DeviceType>(int(_device->type())); }
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
     inline QTouchDevice *device() const { return _device; }
 
     // internal
-    inline void setWidget(QWidget *awidget) { _widget = awidget; }
     inline void setWindow(QWindow *awindow) { _window = awindow; }
+    inline void setTarget(QObject *atarget) { _target = atarget; }
     inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
     inline void setDevice(QTouchDevice *device) { _device = device; }
 
 protected:
-    QWidget *_widget;
     QWindow *_window;
+    QObject *_target;
     QTouchDevice *_device;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
