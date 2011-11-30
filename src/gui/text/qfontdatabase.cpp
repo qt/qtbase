@@ -759,14 +759,14 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     fontDef->ignorePitch   = false;
 }
 
-static void getEngineData(const QFontPrivate *d, const QFontCache::Key &key)
+static void getEngineData(const QFontPrivate *d, const QFontDef &def)
 {
     // look for the requested font in the engine data cache
-    d->engineData = QFontCache::instance()->findEngineData(key);
+    d->engineData = QFontCache::instance()->findEngineData(def);
     if (!d->engineData) {
         // create a new one
         d->engineData = new QFontEngineData;
-        QFontCache::instance()->insertEngineData(key, d->engineData);
+        QFontCache::instance()->insertEngineData(def, d->engineData);
     } else {
         d->engineData->ref.ref();
     }

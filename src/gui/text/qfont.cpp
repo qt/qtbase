@@ -2696,9 +2696,9 @@ void QFontCache::clear()
 }
 
 
-QFontEngineData *QFontCache::findEngineData(const Key &key) const
+QFontEngineData *QFontCache::findEngineData(const QFontDef &def) const
 {
-    EngineDataCache::ConstIterator it = engineDataCache.find(key),
+    EngineDataCache::ConstIterator it = engineDataCache.find(def),
                                   end = engineDataCache.end();
     if (it == end) return 0;
 
@@ -2706,11 +2706,11 @@ QFontEngineData *QFontCache::findEngineData(const Key &key) const
     return it.value();
 }
 
-void QFontCache::insertEngineData(const Key &key, QFontEngineData *engineData)
+void QFontCache::insertEngineData(const QFontDef &def, QFontEngineData *engineData)
 {
     FC_DEBUG("QFontCache: inserting new engine data %p", engineData);
 
-    engineDataCache.insert(key, engineData);
+    engineDataCache.insert(def, engineData);
     increaseCost(sizeof(QFontEngineData));
 }
 

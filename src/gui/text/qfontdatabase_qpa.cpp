@@ -348,7 +348,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     QFontCache::Key key(req, script, multi ? 1 : 0);
 
     if (!d->engineData)
-        getEngineData(d, key);
+        getEngineData(d, req);
 
     // the cached engineData could have already loaded the engine we want
     if (d->engineData->engines[script])

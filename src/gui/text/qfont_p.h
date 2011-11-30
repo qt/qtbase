@@ -222,11 +222,11 @@ public:
     };
 
     // QFontEngineData cache
-    typedef QMap<Key,QFontEngineData*> EngineDataCache;
+    typedef QMap<QFontDef, QFontEngineData*> EngineDataCache;
     EngineDataCache engineDataCache;
 
-    QFontEngineData *findEngineData(const Key &key) const;
-    void insertEngineData(const Key &key, QFontEngineData *engineData);
+    QFontEngineData *findEngineData(const QFontDef &def) const;
+    void insertEngineData(const QFontDef &def, QFontEngineData *engineData);
 
     // QFontEngine cache
     struct Engine {
