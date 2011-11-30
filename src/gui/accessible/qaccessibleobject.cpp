@@ -150,7 +150,7 @@ QRect QAccessibleObject::rect() const
 }
 
 /*! \reimp */
-void QAccessibleObject::setText(Text, const QString &)
+void QAccessibleObject::setText(QAccessible::Text, const QString &)
 {
 }
 
@@ -231,13 +231,13 @@ QAccessible::Relation QAccessibleApplication::relationTo(const QAccessibleInterf
 {
     QObject *o = other ? other->object() : 0;
     if (!o)
-        return Unrelated;
+        return QAccessible::Unrelated;
 
     if(o == object()) {
-        return Self;
+        return QAccessible::Self;
     }
 
-    return Unrelated;
+    return QAccessible::Unrelated;
 }
 
 QAccessibleInterface *QAccessibleApplication::parent() const
@@ -254,7 +254,7 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
 }
 
 /*! \reimp */
-int QAccessibleApplication::navigate(RelationFlag relation, int,
+int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
                                      QAccessibleInterface **target) const
 {
     if (!target)
@@ -264,16 +264,16 @@ int QAccessibleApplication::navigate(RelationFlag relation, int,
     QObject *targetObject = 0;
 
     switch (relation) {
-    case Self:
+    case QAccessible::Self:
         targetObject = object();
         break;
-    case FocusChild:
+    case QAccessible::FocusChild:
         if (QWindow *window = QGuiApplication::activeWindow()) {
             *target = window->accessibleRoot();
             return 0;
         }
         break;
-    case Ancestor:
+    case QAccessible::Ancestor:
         *target = parent();
         return 0;
     default:
@@ -284,12 +284,12 @@ int QAccessibleApplication::navigate(RelationFlag relation, int,
 }
 
 /*! \reimp */
-QString QAccessibleApplication::text(Text t) const
+QString QAccessibleApplication::text(QAccessible::Text t) const
 {
     switch (t) {
-    case Name:
+    case QAccessible::Name:
         return QGuiApplication::applicationName();
-    case Description:
+    case QAccessible::Description:
         return QGuiApplication::applicationFilePath();
     default:
         break;
@@ -300,13 +300,13 @@ QString QAccessibleApplication::text(Text t) const
 /*! \reimp */
 QAccessible::Role QAccessibleApplication::role() const
 {
-    return Application;
+    return QAccessible::Application;
 }
 
 /*! \reimp */
 QAccessible::State QAccessibleApplication::state() const
 {
-    return QGuiApplication::activeWindow() ? Focused : Normal;
+    return QGuiApplication::activeWindow() ? QAccessible::Focused : QAccessible::Normal;
 }
 
 

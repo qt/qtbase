@@ -178,7 +178,7 @@ public:
     \a role and \a name are optional parameters that set the object's
     role and name properties.
 */
-QAccessibleWidget::QAccessibleWidget(QWidget *w, Role role, const QString &name)
+QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const QString &name)
 : QAccessibleObject(w)
 {
     Q_ASSERT(widget());
@@ -350,7 +350,7 @@ static inline bool isAncestor(const QObject *obj, const QObject *child)
 /*! \reimp */
 QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *other) const
 {
-    Relation relation = Unrelated;
+    QAccessible::Relation relation = QAccessible::Unrelated;
     if (d->asking == this) // recursive call
         return relation;
 
@@ -360,12 +360,12 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
 
     QWidget *focus = widget()->focusWidget();
     if (object() == focus && isAncestor(o, focus))
-        relation |= FocusChild;
+        relation |= QAccessible::FocusChild;
 
     QACConnectionObject *connectionObject = (QACConnectionObject*)object();
     for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
         if (connectionObject->isSender(o, d->primarySignals.at(sig).toAscii())) {
-            relation |= Controller;
+            relation |= QAccessible::Controller;
             break;
         }
     }
@@ -375,21 +375,21 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     int inverse = other->relationTo(this);
     d->asking = 0;
 
-    if (inverse & Controller)
-        relation |= Controlled;
-    if (inverse & Label)
-        relation |= Labelled;
+    if (inverse & QAccessible::Controller)
+        relation |= QAccessible::Controlled;
+    if (inverse & QAccessible::Label)
+        relation |= QAccessible::Labelled;
 
     if(o == object()) {
-        return relation | Self;
+        return relation | QAccessible::Self;
     }
 
     QObject *parent = object()->parent();
     if (o == parent)
-        return relation | Child;
+        return relation | QAccessible::Child;
 
     if (o->parent() == parent) {
-        relation |= Sibling;
+        relation |= QAccessible::Sibling;
         QAccessibleInterface *sibIface = QAccessible::queryAccessibleInterface(o);
         Q_ASSERT(sibIface);
         QRect wg = rect();
@@ -397,7 +397,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
         if (wg.intersects(sg)) {
             QAccessibleInterface *pIface = 0;
             pIface = sibIface->parent();
-            if (pIface && !((sibIface->state() | state()) & Invisible)) {
+            if (pIface && !((sibIface->state() | state()) & QAccessible::Invisible)) {
                 int wi = pIface->indexOfChild(this);
                 int si = pIface->indexOfChild(sibIface);
 
@@ -425,9 +425,9 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     }
 
     if (isAncestor(o, object()))
-        return relation | Descendent;
+        return relation | QAccessible::Descendent;
     if (isAncestor(object(), o))
-        return relation | Ancestor;
+        return relation | QAccessible::Ancestor;
 
     return relation;
 }
@@ -449,7 +449,7 @@ QAccessibleInterface *QAccessibleWidget::child(int index) const
 }
 
 /*! \reimp */
-int QAccessibleWidget::navigate(RelationFlag relation, int entry,
+int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
                                 QAccessibleInterface **target) const
 {
     if (!target)
@@ -460,18 +460,18 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
 
     switch (relation) {
     // Hierarchical
-    case Self:
+    case QAccessible::Self:
         targetObject = object();
         break;
-    case Child:
+    case QAccessible::Child:
         qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Child in:" << object()->metaObject()->className();
         *target = child(entry - 1);
         return *target ? 0 : -1;
-    case Ancestor:
+    case QAccessible::Ancestor:
         qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Ancestor in:" << object()->metaObject()->className();
         *target = parent();
         return *target ? 0 : -1;
-    case Sibling:
+    case QAccessible::Sibling:
         {
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parentObject());
             if (!iface)
@@ -506,7 +506,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             QAccessibleInterface *sibling = 0;
             sibling = pIface->child(i);
             Q_ASSERT(sibling);
-            if ((relationTo(sibling) & Self) || (sibling->state() & QAccessible::Invisible)) {
+            if ((relationTo(sibling) & QAccessible::Self) || (sibling->state() & QAccessible::Invisible)) {
                 //ignore ourself and invisible siblings
                 delete sibling;
                 continue;
@@ -573,7 +573,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             return 0;
     }
         break;
-    case Covers:
+    case QAccessible::Covers:
         if (entry > 0) {
             QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
             if (!pIface)
@@ -584,7 +584,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             QAccessibleInterface *sibling = 0;
             for (int i = pIface->indexOfChild(this) + 1; i <= sibCount && entry; ++i) {
                 sibling = pIface->child(i - 1);
-                if (!sibling || (sibling->state() & Invisible)) {
+                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -602,7 +602,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
                 return 0;
         }
         break;
-    case Covered:
+    case QAccessible::Covered:
         if (entry > 0) {
             QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
             if (!pIface)
@@ -614,7 +614,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             for (int i = 1; i < index && entry; ++i) {
                 sibling = pIface->child(i - 1);
                 Q_ASSERT(sibling);
-                if (!sibling || (sibling->state() & Invisible)) {
+                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -634,7 +634,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
         break;
 
     // Logical
-    case FocusChild:
+    case QAccessible::FocusChild:
         {
             if (widget()->hasFocus()) {
                 targetObject = object();
@@ -657,7 +657,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             */
         }
         break;
-    case Label:
+    case QAccessible::Label:
         if (entry > 0) {
             QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
             if (!pIface)
@@ -671,7 +671,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             for (int i = 0; i < sibCount && entry; ++i) {
                 candidate = pIface->child(i);
                 Q_ASSERT(candidate);
-                if (candidate->relationTo(this) & Label)
+                if (candidate->relationTo(this) & QAccessible::Label)
                     --entry;
                 if (!entry)
                     break;
@@ -680,7 +680,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
                 candidate = 0;
             }
             if (!candidate) {
-                if (pIface->relationTo(this) & Label)
+                if (pIface->relationTo(this) & QAccessible::Label)
                     --entry;
                 if (!entry)
                     candidate = pIface;
@@ -693,9 +693,9 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
                 return 0;
         }
         break;
-    case Labelled: // only implemented in subclasses
+    case QAccessible::Labelled: // only implemented in subclasses
         break;
-    case Controller:
+    case QAccessible::Controller:
         if (entry > 0) {
             // check all senders we are connected to,
             // and figure out which one are controllers to us
@@ -707,7 +707,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
                 QAccessibleInterface *candidate = QAccessible::queryAccessibleInterface(sender);
                 if (!candidate)
                     continue;
-                if (candidate->relationTo(this) & Controller)
+                if (candidate->relationTo(this) & QAccessible::Controller)
                     senders << sender;
                 delete candidate;
             }
@@ -715,7 +715,7 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
                 targetObject = senders.at(entry-1);
         }
         break;
-    case Controlled:
+    case QAccessible::Controlled:
         if (entry > 0) {
             QObjectList allReceivers;
             QACConnectionObject *connectionObject = (QACConnectionObject*)object();
@@ -756,12 +756,12 @@ int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 extern QString qt_setWindowTitle_helperHelper(const QString &, const QWidget*);
 
 /*! \reimp */
-QString QAccessibleWidget::text(Text t) const
+QString QAccessibleWidget::text(QAccessible::Text t) const
 {
     QString str;
 
     switch (t) {
-    case Name:
+    case QAccessible::Name:
         if (!d->name.isEmpty()) {
             str = d->name;
         } else if (!widget()->accessibleName().isEmpty()) {
@@ -775,7 +775,7 @@ QString QAccessibleWidget::text(Text t) const
             str = qt_accStripAmp(buddyString(widget()));
         }
         break;
-    case Description:
+    case QAccessible::Description:
         if (!d->description.isEmpty())
             str = d->description;
         else if (!widget()->accessibleDescription().isEmpty())
@@ -785,7 +785,7 @@ QString QAccessibleWidget::text(Text t) const
             str = widget()->toolTip();
 #endif
         break;
-    case Help:
+    case QAccessible::Help:
         if (!d->help.isEmpty())
             str = d->help;
 #ifndef QT_NO_WHATSTHIS
@@ -793,13 +793,13 @@ QString QAccessibleWidget::text(Text t) const
             str = widget()->whatsThis();
 #endif
         break;
-    case Accelerator:
+    case QAccessible::Accelerator:
         if (!d->accelerator.isEmpty())
             str = d->accelerator;
         else
             str = qt_accHotKey(buddyString(widget()));
         break;
-    case Value:
+    case QAccessible::Value:
         str = d->value;
         break;
     default:
@@ -844,22 +844,22 @@ QAccessible::Role QAccessibleWidget::role() const
 /*! \reimp */
 QAccessible::State QAccessibleWidget::state() const
 {
-    QAccessible::State state = Normal;
+    QAccessible::State state = QAccessible::Normal;
 
     QWidget *w = widget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state |= Invisible;
+        state |= QAccessible::Invisible;
     if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state |= Focusable;
+        state |= QAccessible::Focusable;
     if (w->hasFocus())
-        state |= Focused;
+        state |= QAccessible::Focused;
     if (!w->isEnabled())
-        state |= Unavailable;
+        state |= QAccessible::Unavailable;
     if (w->isWindow()) {
         if (w->windowFlags() & Qt::WindowSystemMenuHint)
-            state |= Movable;
+            state |= QAccessible::Movable;
         if (w->minimumSize() != w->maximumSize())
-            state |= Sizeable;
+            state |= QAccessible::Sizeable;
     }
 
     return state;

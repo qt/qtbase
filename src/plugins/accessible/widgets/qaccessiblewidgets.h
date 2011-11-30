@@ -72,8 +72,8 @@ class QAccessibleTextEdit : public QAccessibleWidget, public QAccessibleTextInte
 public:
     explicit QAccessibleTextEdit(QWidget *o);
 
-    QString text(Text t) const;
-    void setText(Text t, const QString &text);
+    QString text(QAccessible::Text t) const;
+    void setText(QAccessible::Text t, const QString &text);
 
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     void *interface_cast(QAccessible::InterfaceType t);
@@ -126,7 +126,7 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QStackedWidget *stackedWidget() const;
@@ -155,7 +155,7 @@ public:
 
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QMdiArea *mdiArea() const;
@@ -166,12 +166,12 @@ class QAccessibleMdiSubWindow : public QAccessibleWidget
 public:
     explicit QAccessibleMdiSubWindow(QWidget *widget);
 
-    QString text(Text textType) const;
-    void setText(Text textType, const QString &text);
-    State state() const;
+    QString text(QAccessible::Text textType) const;
+    void setText(QAccessible::Text textType, const QString &text);
+    QAccessible::State state() const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QRect rect() const;
     int childAt(int x, int y) const;
 
@@ -188,7 +188,7 @@ public:
 
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QWorkspace *workspace() const;
@@ -209,7 +209,7 @@ class QAccessibleTextBrowser : public QAccessibleTextEdit
 public:
     explicit QAccessibleTextBrowser(QWidget *widget);
 
-    Role role() const;
+    QAccessible::Role role() const;
 };
 #endif // QT_NO_TEXTBROWSER
 
@@ -221,7 +221,7 @@ public:
 
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
     QAccessibleInterface *child(int index) const;
 
@@ -245,7 +245,7 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
     QRect rect () const;
-    Role role() const;
+    QAccessible::Role role() const;
 
     QDockWidget *dockWidget() const;
 };
@@ -257,15 +257,15 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
-    Relation relationTo(const QAccessibleInterface *other) const;
-    void setText(Text t, const QString &text);
-    QString text(Text t) const;
-    Role role() const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    void setText(QAccessible::Text t, const QString &text);
+    QString text(QAccessible::Text t) const;
+    QAccessible::Role role() const;
     QRect rect () const;
-    State state() const;
+    QAccessible::State state() const;
     int childAt(int x, int y) const;
     QObject *object() const;
     bool isValid() const;

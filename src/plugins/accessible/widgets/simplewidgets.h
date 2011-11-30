@@ -59,10 +59,10 @@ class QAccessibleButton : public QAccessibleWidget
 {
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
 public:
-    QAccessibleButton(QWidget *w, Role r);
+    QAccessibleButton(QWidget *w, QAccessible::Role r);
 
-    QString text(Text t) const;
-    State state() const;
+    QString text(QAccessible::Text t) const;
+    QAccessible::State state() const;
 
     QStringList actionNames() const;
     void doAction(const QString &actionName);
@@ -76,14 +76,14 @@ protected:
 class QAccessibleToolButton : public QAccessibleButton
 {
 public:
-    QAccessibleToolButton(QWidget *w, Role role);
+    QAccessibleToolButton(QWidget *w, QAccessible::Role role);
 
-    State state() const;
+    QAccessible::State state() const;
 
     int childCount() const;
     QAccessibleInterface *child(int index) const;
 
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;
@@ -99,13 +99,13 @@ protected:
 class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInterface
 {
 public:
-    explicit QAccessibleDisplay(QWidget *w, Role role = StaticText);
+    explicit QAccessibleDisplay(QWidget *w, QAccessible::Role role = QAccessible::StaticText);
 
-    QString text(Text t) const;
-    Role role() const;
+    QString text(QAccessible::Text t) const;
+    QAccessible::Role role() const;
 
-    Relation relationTo(const QAccessibleInterface *other) const;
-    int navigate(RelationFlag, int entry, QAccessibleInterface **target) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    int navigate(QAccessible::RelationFlag, int entry, QAccessibleInterface **target) const;
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleImageInterface
@@ -121,9 +121,9 @@ class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInte
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());
 
-    QString text(Text t) const;
-    void setText(Text t, const QString &text);
-    State state() const;
+    QString text(QAccessible::Text t) const;
+    void setText(QAccessible::Text t, const QString &text);
+    QAccessible::State state() const;
     QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     void *interface_cast(QAccessible::InterfaceType t);
 

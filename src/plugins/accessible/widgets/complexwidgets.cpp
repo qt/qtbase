@@ -270,7 +270,7 @@ QString QAccessibleItemRow::text_helper(int child) const
     return value;
 }
 
-QString QAccessibleItemRow::text(Text t, int child) const
+QString QAccessibleItemRow::text(QAccessible::Text t, int child) const
 {
     QString value;
     if (t == Name) {
@@ -339,7 +339,7 @@ QString QAccessibleItemRow::text(Text t, int child) const
     return value;
 }
 
-void QAccessibleItemRow::setText(Text t, int child, const QString &text)
+void QAccessibleItemRow::setText(QAccessible::Text t, int child, const QString &text)
 {
     if (m_header) {
         if (child)
@@ -966,7 +966,7 @@ int QAccessibleItemView::childCount() const
     }
 }
 
-QString QAccessibleItemView::text(Text t, int child) const
+QString QAccessibleItemView::text(QAccessible::Text t, int child) const
 {
     if (atViewport()) {
         if (!child)
@@ -983,7 +983,7 @@ QString QAccessibleItemView::text(Text t, int child) const
     }
 }
 
-void QAccessibleItemView::setText(Text t, int child, const QString &text)
+void QAccessibleItemView::setText(QAccessible::Text t, int child, const QString &text)
 {
     if (atViewport()) {
         if (!child) {
@@ -1386,7 +1386,7 @@ int QAccessibleHeader::childCount() const
     return header()->count();
 }
 
-QString QAccessibleHeader::text(Text t, int child) const
+QString QAccessibleHeader::text(QAccessible::Text t, int child) const
 {
     QString str;
 
@@ -1464,10 +1464,10 @@ public:
     }
 
     QObject *object() const { return 0; }
-    Role role() const { return QAccessible::PageTab; }
-    State state() const {
+    QAccessible::Role role() const { return QAccessible::PageTab; }
+    QAccessible::State state() const {
         QAccessibleInterface *parentInterface = parent();
-        State state = parentInterface->state();
+        QAccessible::State state = parentInterface->state();
         delete parentInterface;
         return state;
     }
@@ -1487,14 +1487,14 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
-    void setText(Text, const QString &) {}
+    QString text(QAccessible::Text) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
+    void setText(QAccessible::Text, const QString &) {}
 
     QAccessibleInterface *parent() const {
         return QAccessible::queryAccessibleInterface(m_parent);
     }
     QAccessibleInterface *child(int) const { return 0; }
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
     {
         if (relation == QAccessible::Ancestor && index == 1) {
             *iface = parent();
@@ -1502,7 +1502,7 @@ public:
         }
         return -1;
     }
-    Relation relationTo(const QAccessibleInterface *) const
+    QAccessible::Relation relationTo(const QAccessibleInterface *) const
     {
         return QAccessible::Unrelated;
     }
@@ -1533,7 +1533,7 @@ private:
   Constructs a QAccessibleTabBar object for \a w.
 */
 QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
-: QAccessibleWidget(w, PageTabList)
+: QAccessibleWidget(w, QAccessible::PageTabList)
 {
     Q_ASSERT(tabBar());
 }
@@ -1544,7 +1544,7 @@ QTabBar *QAccessibleTabBar::tabBar() const
     return qobject_cast<QTabBar*>(object());
 }
 
-int QAccessibleTabBar::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
+int QAccessibleTabBar::navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const
 {
     if (rel == QAccessible::Child) {
         *target = child(entry - 1);
@@ -1590,7 +1590,7 @@ int QAccessibleTabBar::childCount() const
     return tabBar()->count() + 2;
 }
 
-QString QAccessibleTabBar::text(Text t) const
+QString QAccessibleTabBar::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Name) {
         return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
@@ -1648,7 +1648,7 @@ QVector<int> QAccessibleTabBar::selection() const
   Constructs a QAccessibleComboBox object for \a w.
 */
 QAccessibleComboBox::QAccessibleComboBox(QWidget *w)
-: QAccessibleWidget(w, ComboBox)
+: QAccessibleWidget(w, QAccessible::ComboBox)
 {
     Q_ASSERT(comboBox());
 }
@@ -1696,24 +1696,24 @@ int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
 }
 
 /*! \reimp */
-QString QAccessibleComboBox::text(Text t) const
+QString QAccessibleComboBox::text(QAccessible::Text t) const
 {
     QString str;
 
     switch (t) {
-    case Name:
+    case QAccessible::Name:
 #ifndef Q_OS_UNIX // on Linux we use relations for this, name is text (fall through to Value)
         str = QAccessibleWidget::text(t);
         break;
 #endif
-    case Value:
+    case QAccessible::Value:
         if (comboBox()->isEditable())
             str = comboBox()->lineEdit()->text();
         else
             str = comboBox()->currentText();
         break;
 #ifndef QT_NO_SHORTCUT
-    case Accelerator:
+    case QAccessible::Accelerator:
         str = (QString)QKeySequence(Qt::Key_Down);
         break;
 #endif
@@ -1770,7 +1770,7 @@ static inline void removeInvisibleWidgetsFromList(QWidgetList *list)
 #ifndef QT_NO_SCROLLAREA
 // ======================= QAccessibleAbstractScrollArea =======================
 QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
-    : QAccessibleWidget(widget, Client)
+    : QAccessibleWidget(widget, QAccessible::Client)
 {
     Q_ASSERT(qobject_cast<QAbstractScrollArea *>(widget));
 }
@@ -1805,7 +1805,7 @@ bool QAccessibleAbstractScrollArea::isValid() const
     return (QAccessibleWidget::isValid() && abstractScrollArea() && abstractScrollArea()->viewport());
 }
 
-int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
+int QAccessibleAbstractScrollArea::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
     if (!target)
         return -1;
@@ -1815,8 +1815,8 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
     QWidget *targetWidget = 0;
     QWidget *entryWidget = 0;
 
-    if (relation == Child ||
-        relation == Left || relation == Up || relation == Right || relation == Down) {
+    if (relation == QAccessible::Child ||
+        relation == QAccessible::Left || relation == QAccessible::Up || relation == QAccessible::Right || relation == QAccessible::Down) {
         QWidgetList children = accessibleChildren();
         if (entry < 0 || entry > children.count())
             return -1;
@@ -1832,12 +1832,12 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
         // It might be possible to make it more general, but I'll leave that as an exercise
         // to the reader. :-)
         switch (relation) {
-        case Child:
+        case QAccessible::Child:
             if (entry > 0) {
                 *target = child(entry - 1);
                 return *target ? 0 : -1;
             }
-        case Left:
+        case QAccessible::Left:
             if (entry < 1)
                 break;
             switch (entryElement) {
@@ -1861,7 +1861,7 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
                 break;
             }
             break;
-        case Right:
+        case QAccessible::Right:
             if (entry < 1)
                 break;
             switch (entryElement) {
@@ -1884,7 +1884,7 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
                 break;
             }
             break;
-        case Up:
+        case QAccessible::Up:
             if (entry < 1)
                 break;
             switch (entryElement) {
@@ -1898,7 +1898,7 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
                 break;
             }
             break;
-        case Down:
+        case QAccessible::Down:
             if (entry < 1)
                 break;
             switch (entryElement) {

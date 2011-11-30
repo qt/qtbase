@@ -411,7 +411,7 @@ int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
     return -1;
 }
 
-QString QAccessibleTable::text(Text t) const
+QString QAccessibleTable::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Description)
         return view->accessibleDescription();
@@ -443,11 +443,11 @@ QAccessibleInterface *QAccessibleTable::child(int index) const
     return childFromLogical(index + 1);
 }
 
-int QAccessibleTable::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+int QAccessibleTable::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     *iface = 0;
     switch (relation) {
-    case Ancestor: {
+    case QAccessible::Ancestor: {
         *iface = parent();
         return *iface ? 0 : -1;
     }
@@ -551,7 +551,7 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
     return -1;
 }
 
-int QAccessibleTree::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+int QAccessibleTree::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     switch (relation) {
     case QAccessible::Child: {
@@ -724,41 +724,38 @@ QAccessible::Role QAccessibleTableCell::role() const
 
 QAccessible::State QAccessibleTableCell::state() const
 {
-    State st = Normal;
-
+    QAccessible::State st = QAccessible::Normal;
     QRect globalRect = view->rect();
     globalRect.translate(view->mapToGlobal(QPoint(0,0)));
     if (!globalRect.intersects(rect()))
-        st |= Invisible;
+        st |= QAccessible::Invisible;
 
     if (view->selectionModel()->isSelected(m_index))
-        st |= Selected;
+        st |= QAccessible::Selected;
     if (view->selectionModel()->currentIndex() == m_index)
-        st |= Focused;
+        st |= QAccessible::Focused;
     if (m_index.model()->data(m_index, Qt::CheckStateRole).toInt() == Qt::Checked)
-        st |= Checked;
+        st |= QAccessible::Checked;
 
     Qt::ItemFlags flags = m_index.flags();
     if (flags & Qt::ItemIsSelectable) {
-        st |= Selectable;
-        st |= Focusable;
+        st |= QAccessible::Selectable;
+        st |= QAccessible::Focusable;
         if (view->selectionMode() == QAbstractItemView::MultiSelection)
-            st |= MultiSelectable;
+            st |= QAccessible::MultiSelectable;
         if (view->selectionMode() == QAbstractItemView::ExtendedSelection)
-            st |= ExtSelectable;
+            st |= QAccessible::ExtSelectable;
     }
     if (m_role == QAccessible::TreeItem) {
         const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
+        if (treeView->model()->hasChildren(m_index))
+            st |= QAccessible::Expandable;
         if (treeView->isExpanded(m_index))
-            st |= Expanded;
+            st |= QAccessible::Expanded;
     }
     return st;
 }
 
-bool QAccessibleTableCell::isExpandable() const
-{
-    return view->model()->hasChildren(m_index);
-}
 
 QRect QAccessibleTableCell::rect() const
 {
@@ -771,7 +768,7 @@ QRect QAccessibleTableCell::rect() const
     return r;
 }
 
-QString QAccessibleTableCell::text(Text t) const
+QString QAccessibleTableCell::text(QAccessible::Text t) const
 {
     QAbstractItemModel *model = view->model();
     QString value;
@@ -791,7 +788,7 @@ QString QAccessibleTableCell::text(Text t) const
     return value;
 }
 
-void QAccessibleTableCell::setText(Text /*t*/, const QString &text)
+void QAccessibleTableCell::setText(QAccessible::Text /*t*/, const QString &text)
 {
     if (!(m_index.flags() & Qt::ItemIsEditable))
         return;
@@ -820,9 +817,9 @@ QAccessibleInterface *QAccessibleTableCell::child(int) const
     return 0;
 }
 
-int QAccessibleTableCell::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+int QAccessibleTableCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
-    if (relation == Ancestor && index == 1) {
+    if (relation == QAccessible::Ancestor && index == 1) {
         *iface = parent();
         return 0;
     }
@@ -833,12 +830,12 @@ int QAccessibleTableCell::navigate(RelationFlag relation, int index, QAccessible
 
     switch (relation) {
 
-    case Child: {
+    case QAccessible::Child: {
         return -1;
     }
-    case Sibling:
+    case QAccessible::Sibling:
         if (index > 0) {
-            QAccessibleInterface *parent = queryAccessibleInterface(view);
+            QAccessibleInterface *parent = QAccessible::queryAccessibleInterface(view);
             *iface = parent->child(index - 1);
             delete parent;
             return *iface ? 0 : -1;
@@ -934,7 +931,7 @@ QRect QAccessibleTableHeaderCell::rect() const
             : QRect(zero.x(), zero.y() + sectionPos, header->width(), sectionSize);
 }
 
-QString QAccessibleTableHeaderCell::text(Text t) const
+QString QAccessibleTableHeaderCell::text(QAccessible::Text t) const
 {
     QAbstractItemModel *model = view->model();
     QString value;
@@ -954,7 +951,7 @@ QString QAccessibleTableHeaderCell::text(Text t) const
     return value;
 }
 
-void QAccessibleTableHeaderCell::setText(Text, const QString &)
+void QAccessibleTableHeaderCell::setText(QAccessible::Text, const QString &)
 {
     return;
 }
@@ -981,7 +978,7 @@ QAccessibleInterface *QAccessibleTableHeaderCell::child(int) const
     return 0;
 }
 
-int QAccessibleTableHeaderCell::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+int QAccessibleTableHeaderCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     if (relation == QAccessible::Ancestor && index == 1) {
         *iface = parent();

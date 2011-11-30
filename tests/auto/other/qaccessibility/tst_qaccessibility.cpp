@@ -141,7 +141,7 @@ static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *c
 {
     if (!parentInterface || !childWidget)
         return -1;
-    QAccessibleInterface *childInterface = QAccessibleInterface::queryAccessibleInterface(childWidget);
+    QAccessibleInterface *childInterface = QAccessible::queryAccessibleInterface(childWidget);
     if (!childInterface)
         return -1;
     int index = parentInterface->indexOfChild(childInterface);
@@ -344,9 +344,9 @@ class QtTestAccessibleWidgetIface: public QAccessibleWidget
 {
 public:
     QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
-    QString text(Text t) const
+    QString text(QAccessible::Text t) const
     {
-        if (t == Help)
+        if (t == QAccessible::Help)
             return QString::fromLatin1("Help yourself");
         return QAccessibleWidget::text(t);
     }
@@ -1877,8 +1877,8 @@ void tst_QAccessibility::mdiSubWindowTest()
     QCOMPARE(interface->state(), state);
     const QRect originalGeometry = testWindow->geometry();
     testWindow->showMaximized();
-    state &= ~QAccessible::Sizeable;
-    state &= ~QAccessible::Movable;
+    state &= (uint)~QAccessible::Sizeable;
+    state &= (uint)~QAccessible::Movable;
     QCOMPARE(interface->state(), state);
     testWindow->showNormal();
     testWindow->move(-10, 0);
@@ -2526,7 +2526,7 @@ void tst_QAccessibility::listTest()
     QVERIFY(cellInterface);
     QCOMPARE(cellInterface->rowIndex(), 3);
     QCOMPARE(cellInterface->columnIndex(), 0);
-    QVERIFY(!cellInterface->isExpandable());
+    QVERIFY(!(cell4->state() & QAccessible::Expandable));
 
     delete cell4;
     delete cell1;
@@ -2620,7 +2620,7 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(cell2->role(), QAccessible::TreeItem);
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 1);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 0);
-    QVERIFY(cell2->tableCellInterface()->isExpandable());
+    QVERIFY(cell2->state() & QAccessible::Expandable);
     QCOMPARE(iface->indexOfChild(cell2), 5);
     QVERIFY(!(cell2->state() & QAccessible::Expanded));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
@@ -2644,7 +2644,7 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(cell2->role(), QAccessible::TreeItem);
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 4);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 0);
-    QVERIFY(!cell2->tableCellInterface()->isExpandable());
+    QVERIFY(!(cell2->state() & QAccessible::Expandable));
     QCOMPARE(iface->indexOfChild(cell2), 11);
 
     QCOMPARE(table2->columnDescription(0), QString("Artist"));

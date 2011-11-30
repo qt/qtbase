@@ -63,7 +63,7 @@ class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleVa
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
@@ -92,7 +92,7 @@ class QAccessibleDoubleSpinBox : public QAccessibleAbstractSpinBox
 public:
     explicit QAccessibleDoubleSpinBox(QWidget *widget);
 
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
@@ -102,7 +102,7 @@ protected:
 class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleValueInterface
 {
 public:
-    explicit QAccessibleAbstractSlider(QWidget *w, Role r = Slider);
+    explicit QAccessibleAbstractSlider(QWidget *w, QAccessible::Role r = QAccessible::Slider);
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
@@ -120,7 +120,7 @@ class QAccessibleScrollBar : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleScrollBar(QWidget *w);
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
 protected:
     QScrollBar *scrollBar() const;
@@ -132,7 +132,7 @@ class QAccessibleSlider : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleSlider(QWidget *w);
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
 protected:
     QSlider *slider() const;
@@ -145,7 +145,7 @@ class QAccessibleDial : public QAccessibleAbstractSlider
 public:
     explicit QAccessibleDial(QWidget *w);
 
-    QString text(Text textType) const;
+    QString text(QAccessible::Text textType) const;
 
 protected:
     QDial *dial() const;

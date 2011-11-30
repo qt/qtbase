@@ -184,9 +184,6 @@ public:
     virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const = 0;
     //            Returns a reference to the accessbile of the containing table.
     virtual QAccessibleInterface* table() const = 0;
-
-    // #### Qt5 this should not be here but part of the state
-    virtual bool isExpandable() const = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleTableInterface

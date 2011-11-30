@@ -57,23 +57,23 @@ class QAccessibleWidgetPrivate;
 class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAccessibleActionInterface
 {
 public:
-    explicit QAccessibleWidget(QWidget *o, Role r = Client, const QString& name = QString());
+    explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client, const QString& name = QString());
 
     QWindow *window() const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     int childAt(int x, int y) const;
     QRect rect() const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
-    QString text(Text t) const;
-    Role role() const;
-    State state() const;
+    QString text(QAccessible::Text t) const;
+    QAccessible::Role role() const;
+    QAccessible::State state() const;
 
     QColor foregroundColor() const;
     QColor backgroundColor() const;

@@ -67,7 +67,7 @@ extern QStyleOptionSlider Q_GUI_EXPORT qt_qsliderStyleOption(QSlider *slider);
 
 #ifndef QT_NO_SPINBOX
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
-: QAccessibleWidget(w, SpinBox)
+: QAccessibleWidget(w, QAccessible::SpinBox)
 {
     Q_ASSERT(abstractSpinBox());
 }
@@ -80,7 +80,7 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
     return qobject_cast<QAbstractSpinBox*>(object());
 }
 
-QString QAccessibleAbstractSpinBox::text(Text t) const
+QString QAccessibleAbstractSpinBox::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Value)
         return abstractSpinBox()->text();
@@ -167,9 +167,9 @@ QDoubleSpinBox *QAccessibleDoubleSpinBox::doubleSpinBox() const
     return static_cast<QDoubleSpinBox*>(object());
 }
 
-QString QAccessibleDoubleSpinBox::text(Text textType) const
+QString QAccessibleDoubleSpinBox::text(QAccessible::Text textType) const
 {
-    if (textType == Value)
+    if (textType == QAccessible::Value)
         return doubleSpinBox()->textFromValue(doubleSpinBox()->value());
     return QAccessibleWidget::text(textType);
 }
@@ -190,7 +190,7 @@ QString QAccessibleDoubleSpinBox::text(Text textType) const
   \a name is propagated to the QAccessibleWidget constructor.
 */
 QAccessibleScrollBar::QAccessibleScrollBar(QWidget *w)
-: QAccessibleAbstractSlider(w, ScrollBar)
+: QAccessibleAbstractSlider(w, QAccessible::ScrollBar)
 {
     Q_ASSERT(scrollBar());
     addControllingSignal(QLatin1String("valueChanged(int)"));
@@ -202,9 +202,9 @@ QScrollBar *QAccessibleScrollBar::scrollBar() const
     return qobject_cast<QScrollBar*>(object());
 }
 
-QString QAccessibleScrollBar::text(Text t) const
+QString QAccessibleScrollBar::text(QAccessible::Text t) const
 {
-    if (t == Value)
+    if (t == QAccessible::Value)
         return QString::number(scrollBar()->value());
     return QAccessibleAbstractSlider::text(t);
 }
@@ -237,15 +237,15 @@ QSlider *QAccessibleSlider::slider() const
     return qobject_cast<QSlider*>(object());
 }
 
-QString QAccessibleSlider::text(Text t) const
+QString QAccessibleSlider::text(QAccessible::Text t) const
 {
-    if (t == Value)
+    if (t == QAccessible::Value)
         return QString::number(slider()->value());
 
     return QAccessibleAbstractSlider::text(t);
 }
 
-QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)
+QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, QAccessible::Role r)
     : QAccessibleWidget(w, r)
 {
     Q_ASSERT(qobject_cast<QAbstractSlider *>(w));
@@ -288,15 +288,15 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
 #ifndef QT_NO_DIAL
 // ======================================= QAccessibleDial ======================================
 QAccessibleDial::QAccessibleDial(QWidget *widget)
-    : QAccessibleAbstractSlider(widget, Dial)
+    : QAccessibleAbstractSlider(widget, QAccessible::Dial)
 {
     Q_ASSERT(qobject_cast<QDial *>(widget));
     addControllingSignal(QLatin1String("valueChanged(int)"));
 }
 
-QString QAccessibleDial::text(Text textType) const
+QString QAccessibleDial::text(QAccessible::Text textType) const
 {
-    if (textType == Value)
+    if (textType == QAccessible::Value)
         return QString::number(dial()->value());
 
     return QAccessibleAbstractSlider::text(textType);

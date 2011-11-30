@@ -66,7 +66,7 @@ public:
 
     // properties
     QRect rect() const;
-    void setText(Text t, const QString &text);
+    void setText(QAccessible::Text t, const QString &text);
 
 protected:
     virtual ~QAccessibleObject();
@@ -85,18 +85,18 @@ public:
     // relations
     int childCount() const;
     int indexOfChild(const QAccessibleInterface*) const;
-    Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // navigation
     QAccessibleInterface *parent() const;
     int childAt(int x, int y) const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag, int, QAccessibleInterface **) const;
+    int navigate(QAccessible::RelationFlag, int, QAccessibleInterface **) const;
 
     // properties and state
-    QString text(Text t) const;
-    Role role() const;
-    State state() const;
+    QString text(QAccessible::Text t) const;
+    QAccessible::Role role() const;
+    QAccessible::State state() const;
 };
 
 #endif // QT_NO_ACCESSIBILITY
