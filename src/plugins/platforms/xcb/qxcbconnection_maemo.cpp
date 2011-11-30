@@ -222,7 +222,8 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                 for (int i = 0; i < m_xinputData->xiMaxContacts; ++i) {
                     QWindowSystemInterface::TouchPoint tp;
                     tp.id = i;
-                    tp.isPrimary = (i == 0);
+                    if (i == 0)
+                        tp.flags |= QTouchEvent::TouchPoint::Primary;
                     tp.state = Qt::TouchPointReleased;
                     touchPoints << tp;
                 }

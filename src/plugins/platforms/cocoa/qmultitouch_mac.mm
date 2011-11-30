@@ -73,7 +73,8 @@ QCocoaTouch::~QCocoaTouch()
 void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 {
     _touchPoint.state = toTouchPointState(phase);
-    _touchPoint.isPrimary = (_touchCount == 1);
+    if (_touchCount == 1)
+        _touchPoint.flags |= QTouchEvent::TouchPoint::Primary;
 
     // From the normalized position on the trackpad, calculate
     // where on screen the touchpoint should be according to the

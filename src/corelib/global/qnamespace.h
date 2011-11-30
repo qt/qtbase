@@ -1495,10 +1495,7 @@ public:
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,
         TouchPointStationary = 0x04,
-        TouchPointReleased   = 0x08,
-        TouchPointStateMask  = 0x0f,
-
-        TouchPointPrimary    = 0x10
+        TouchPointReleased   = 0x08
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 

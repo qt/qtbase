@@ -102,7 +102,7 @@ void QTouchEventSenderQPA::touch_point(const QList<QWindowSystemInterface::Touch
         tp.area = QRect(wx, wy, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
 
 #ifdef POINT_DEBUG
-        qDebug() << "    " << i << tp.area << tp.state << tp.id << tp.isPrimary << tp.pressure;
+        qDebug() << "    " << i << tp.area << tp.state << tp.id << tp.flags << tp.pressure;
 #endif
     }
 

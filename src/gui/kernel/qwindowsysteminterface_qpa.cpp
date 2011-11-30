@@ -245,11 +245,7 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
         p.setId(point->id);
         p.setPressure(point->pressure);
         states |= point->state;
-        Qt::TouchPointStates state = point->state;
-        if (point->isPrimary) {
-            state |= Qt::TouchPointPrimary;
-        }
-        p.setState(state);
+        p.setState(point->state);
 
         const QPointF screenPos = point->area.center();
         p.setScreenPos(screenPos);

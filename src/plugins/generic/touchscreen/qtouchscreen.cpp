@@ -72,8 +72,8 @@ public:
         int y;
         int maj;
         Qt::TouchPointState state;
-        bool primary;
-        Contact() : trackingId(0), x(0), y(0), maj(1), state(Qt::TouchPointPressed), primary(false) { }
+        QTouchEvent::TouchPoint::InfoFlags flags;
+        Contact() : trackingId(0), x(0), y(0), maj(1), state(Qt::TouchPointPressed), flags(0) { }
     };
     QMap<int, Contact> m_contacts, m_lastContacts;
     Contact m_currentData;
@@ -219,7 +219,8 @@ void QTouchScreenData::processInputEvent(input_event *data)
              m_currentData.y = data->value;
          } else if (data->code == ABS_MT_TRACKING_ID) {
              m_currentData.trackingId = data->value;
-             m_currentData.primary = m_contacts.isEmpty();
+             if (m_contacts.isEmpty())
+                 m_currentData.flags |= QTouchEvent::TouchPoint::Primary;
          } else if (data->code == ABS_MT_TOUCH_MAJOR) {
              m_currentData.maj = data->value;
              if (data->value == 0)
@@ -238,7 +239,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
              it != ite; ++it) {
             QWindowSystemInterface::TouchPoint tp;
             tp.id = it->trackingId;
-            tp.isPrimary = it->primary;
+            tp.flags = it->flags;
             tp.pressure = it->state == Qt::TouchPointReleased ? 0 : 1;
 
             if (m_lastContacts.contains(it->trackingId)) {
@@ -323,7 +324,7 @@ void QTouchScreenData::dump()
     qDebug() << "touch event" << eventType;
     foreach (const QWindowSystemInterface::TouchPoint &tp, m_touchPoints) {
         const char *pointState;
-        switch (tp.state & Qt::TouchPointStateMask) {
+        switch (tp.state) {
         case Qt::TouchPointPressed:
             pointState = "pressed";
             break;
@@ -341,7 +342,7 @@ void QTouchScreenData::dump()
             break;
         }
         qDebug() << "  " << tp.id << tp.area << pointState << tp.normalPosition
-                 << tp.pressure << tp.isPrimary << tp.area.center();
+                 << tp.pressure << tp.flags << tp.area.center();
     }
 }
 

@@ -694,7 +694,8 @@ public:
     {
     public:
         enum InfoFlag {
-            Pen = 0x0001
+            Primary = 0x0001,
+            Pen = 0x0002
         };
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 

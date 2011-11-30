@@ -914,8 +914,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         StatesAndTouchPoints &maskAndPoints = windowsNeedingEvents[w.data()];
         maskAndPoints.first |= touchPoint.state();
-        if (touchPoint.isPrimary())
-            maskAndPoints.first |= Qt::TouchPointPrimary;
         maskAndPoints.second.append(touchPoint);
     }
 
@@ -928,7 +926,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QWindow *w = it.key();
 
         QEvent::Type eventType;
-        switch (it.value().first & Qt::TouchPointStateMask) {
+        switch (it.value().first) {
         case Qt::TouchPointPressed:
             eventType = QEvent::TouchBegin;
             break;

@@ -86,9 +86,8 @@ public:
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
-        TouchPoint() : id(0), isPrimary(false), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
+        TouchPoint() : id(0), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
         int id;                 // for application use
-        bool isPrimary;         // for application use
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
         qreal pressure;         // 0 to 1

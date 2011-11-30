@@ -202,7 +202,7 @@ namespace QTest
         {
             QWindowSystemInterface::TouchPoint p;
             p.id = pt.id();
-            p.isPrimary = pt.isPrimary();
+            p.flags = pt.flags();
             p.normalPosition = pt.screenRect().topLeft();
             p.area = pt.screenRect();
             p.pressure = pt.pressure();

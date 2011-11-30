@@ -5316,8 +5316,6 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget.data()];
         maskAndPoints.first |= touchPoint.state();
-        if (touchPoint.isPrimary())
-            maskAndPoints.first |= Qt::TouchPointPrimary;
         maskAndPoints.second.append(touchPoint);
     }
 
@@ -5332,7 +5330,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             continue;
 
         QEvent::Type eventType;
-        switch (it.value().first & Qt::TouchPointStateMask) {
+        switch (it.value().first) {
         case Qt::TouchPointPressed:
             eventType = QEvent::TouchBegin;
             break;

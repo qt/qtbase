@@ -3441,9 +3441,6 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     \value TouchPointMoved The touch point moved.
     \value TouchPointStationary The touch point did not move.
     \value TouchPointReleased The touch point was released.
-
-    \omitvalue TouchPointStateMask
-    \omitvalue TouchPointPrimary
 */
 
 /*! \enum QTouchEvent::DeviceType
@@ -3623,7 +3620,7 @@ int QTouchEvent::TouchPoint::id() const
 */
 Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 {
-    return Qt::TouchPointState(int(d->state) & Qt::TouchPointStateMask);
+    return Qt::TouchPointState(int(d->state));
 }
 
 /*!
@@ -3632,7 +3629,7 @@ Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 */
 bool QTouchEvent::TouchPoint::isPrimary() const
 {
-    return (d->state & Qt::TouchPointPrimary) != 0;
+    return (d->flags & Primary) != 0;
 }
 
 /*!
