@@ -126,7 +126,7 @@ int QAccessibleMenu::navigate(RelationFlag relation, int entry, QAccessibleInter
     }
 }
 
-int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child ) const
+int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child) const
 {
     int index = -1;
     Role r = child->role();
@@ -185,7 +185,8 @@ int QAccessibleMenuBar::indexOfChild(const QAccessibleInterface *child) const
 
 #endif // QT_NO_MENUBAR
 
-QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action) : m_action(action), m_owner(owner)
+QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action)
+: m_action(action), m_owner(owner)
 {
 }
 

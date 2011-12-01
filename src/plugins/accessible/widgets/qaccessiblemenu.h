@@ -98,21 +98,21 @@ public:
     virtual ~QAccessibleMenuItem();
 
     void *interface_cast(QAccessible::InterfaceType t);
-    virtual int childAt(int x, int y) const;
-    virtual int childCount() const;
-    virtual int indexOfChild(const QAccessibleInterface * child) const;
-    virtual bool isValid() const;
+    int childAt(int x, int y) const;
+    int childCount() const;
+    int indexOfChild(const QAccessibleInterface * child) const;
+    bool isValid() const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    virtual int navigate(RelationFlag relation, int entry, QAccessibleInterface ** target) const;
-    virtual QObject * object() const;
-    virtual QRect rect() const;
-    virtual Relation relationTo(const QAccessibleInterface *other) const;
-    virtual Role role() const;
-    virtual void setText(Text t, const QString & text );
-    virtual State state() const;
-    virtual QString text(Text t) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface ** target) const;
+    QObject * object() const;
+    QRect rect() const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessible::Role role() const;
+    void setText(QAccessible::Text t, const QString & text);
+    QAccessible::State state() const;
+    QString text(QAccessible::Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;
