@@ -22,3 +22,6 @@ SUBDIRS=\
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfileinfo
+
+win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
+    qfilesystementry
