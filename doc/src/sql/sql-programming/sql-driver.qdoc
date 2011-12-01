@@ -637,7 +637,7 @@
     If you don't want to use the SQLite library included with Qt, you
     can pass \c{-system-sqlite} to the configure script to use sqlite
     libraries in the operating system. Alternatively, you can build
-    it manually (replace \c $SQLITE by the directory where
+    it manually (replace \c $SQLITE with the directory where
     SQLite resides):
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 21

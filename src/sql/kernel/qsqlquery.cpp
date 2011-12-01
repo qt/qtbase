@@ -339,7 +339,7 @@ bool QSqlQuery::isNull(int field) const
   called.
 
   For SQLite, the query string can contain only one statement at a time.
-  If more than one statements is give, the function returns false.
+  If more than one statement is given, the function returns false.
 
   Example:
 
@@ -891,7 +891,7 @@ void QSqlQuery::clear()
   will fail.
 
   For SQLite, the query string can contain only one statement at a time.
-  If more than one statements are give, the function returns false.
+  If more than one statement is given, the function returns false.
 
   Example:
 
