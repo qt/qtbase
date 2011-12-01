@@ -213,7 +213,6 @@ private slots:
     void repeatedSignature() const;
     void repeated() const;
     void repeated_data() const;
-    void task262677remove();
     void compareRef();
     void arg_locale();
 
@@ -450,6 +449,11 @@ void tst_QString::replace_uint_uint_data()
     QTest::newRow( "rep13" ) << QString("short") << 0 << 10 << QString("X") << QString("X");
     QTest::newRow( "rep14" ) << QString() << 0 << 10 << QString("XX") << QString("XX");
     QTest::newRow( "rep15" ) << QString("short") << 0 << 10 << QString("XX") << QString("XX");
+
+    // This is a regression test for an old bug where QString would add index and len parameters,
+    // potentially causing integer overflow.
+    QTest::newRow( "no overflow" ) << QString("ACABCAB") << 1 << INT_MAX - 1 << QString("") << QString("A");
+    QTest::newRow( "overflow" ) << QString("ACABCAB") << 1 << INT_MAX << QString("") << QString("A");
 }
 
 void tst_QString::replace_string_data()
@@ -1884,6 +1888,8 @@ void tst_QString::replace_uint_uint()
     QFETCH( int, index );
     QFETCH( int, len );
     QFETCH( QString, after );
+
+    QEXPECT_FAIL("overflow", "QTBUG-22967: integer overflow if (index + len) > INT_MAX", Abort);
 
     QString s1 = string;
     s1.replace( (uint) index, (int) len, after );
@@ -4951,13 +4957,6 @@ void tst_QString::repeated_data() const
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabcabc"))
         << 4;
-}
-
-void tst_QString::task262677remove()
-{
-    QString driveName = QLatin1String("V:\\blahblah\\more_blahblah\\");
-    driveName.remove(2, INT_MAX); // should be "V:" - instead, it's "V::\\blahblah\\more_blahblah\\"
-    QVERIFY(driveName == QLatin1String("V:"));
 }
 
 void tst_QString::compareRef()
