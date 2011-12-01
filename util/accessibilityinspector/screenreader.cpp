@@ -126,7 +126,7 @@ void ScreenReader::processTouchPoint()
     m_selectedInterface = currentInterface;
     emit selected(m_selectedInterface->object());
     if (m_optionsWidget->enableTextToSpeach())
-        speak(m_selectedInterface->text(QAccessible::Name, 0)
+        speak(m_selectedInterface->text(QAccessible::Name)
               /*+ "," + translateRole(m_selectedInterface->role(0)) */);
 
 //    qDebug() << "touchPoint exit found" << m_selectedInterface->text(QAccessible::Name, 0) << m_selectedInterface->object() << m_selectedInterface->rect(0);
@@ -137,7 +137,7 @@ void ScreenReader::activate()
     qDebug() << "ScreenReader::activate";
     m_activateCalled = true;
     if (m_selectedInterface) {
-        m_selectedInterface->doAction(QAccessible::Press, 0);
+        m_selectedInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
     }
 }
 

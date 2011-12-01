@@ -60,7 +60,7 @@ void AccessibilitySceneManager::populateAccessibilityScene()
     if (!rootInterface)
         return;
 
-    populateAccessibilityScene(rootInterface, 0, m_scene);
+    populateAccessibilityScene(rootInterface, m_scene);
 }
 
 void AccessibilitySceneManager::updateAccessibilitySceneItemFlags()
@@ -81,10 +81,12 @@ void AccessibilitySceneManager::populateAccessibilityTreeScene()
 {
     m_treeScene->clear();
     QAccessibleInterface * rootInterface = m_window->accessibleRoot();
-    if (!rootInterface)
+    if (!rootInterface) {
+        qWarning("QWindow::accessibleRoot returned 0");
         return;
+    }
 
-    populateAccessibilityTreeScene(rootInterface, 0);
+    populateAccessibilityTreeScene(rootInterface);
 }
 
 void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event reason)
@@ -93,11 +95,11 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
     if (!interface)
         return;
 
-    QString name = interface->text(QAccessible::Name, 0);
+    QString name = interface->text(QAccessible::Name);
 
     if (reason == QAccessible::ObjectCreated) {
   //      qDebug() << "ObjectCreated" << object << name;
-        populateAccessibilityScene(interface, 0, m_scene);
+        populateAccessibilityScene(interface, m_scene);
     }
 
     QGraphicsRectItem *item = m_graphicsItems.value(object);
@@ -110,7 +112,7 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
     if (reason == QAccessible::LocationChanged) {
 
         //if (name.startsWith("List"))
-            qDebug() << "locationChange" << object << name << interface->rect(0);
+            qDebug() << "locationChange" << object << name << interface->rect();
 
         updateItem(item, interface);
         for (int i = 0; i < interface->childCount(); ++i) {
@@ -221,7 +223,7 @@ void AccessibilitySceneManager::updateItem(QGraphicsRectItem *item, QAccessibleI
     if (!item)
         return;
 
-    QRect rect = interface->rect(0);
+    QRect rect = interface->rect();
     item->setPos(rect.topLeft());
     item->setRect(QRect(QPoint(0,0), rect.size()));
 
@@ -241,13 +243,13 @@ void AccessibilitySceneManager::updateItemFlags(QGraphicsRectItem *item, QAccess
     }
 
     if (m_optionsWidget->hideOffscreenItems()) {
-        if (interface->state(0) & QAccessible::Offscreen) {
+        if (interface->state() & QAccessible::Offscreen) {
             shouldShow = false;
         }
     }
 
     if (m_optionsWidget->hidePaneItems()) {
-        if (interface->role(0) & QAccessible::Pane) {
+        if (interface->role() & QAccessible::Pane) {
             shouldShow = false;
         }
     }
@@ -262,7 +264,7 @@ void AccessibilitySceneManager::updateItemFlags(QGraphicsRectItem *item, QAccess
     m_view->update();
 }
 
-QGraphicsRectItem * AccessibilitySceneManager::processInterface(QAccessibleInterface * interface, int child, QGraphicsScene *scene)
+QGraphicsRectItem * AccessibilitySceneManager::processInterface(QAccessibleInterface * interface, QGraphicsScene *scene)
 {
     // Process this interface
 
@@ -271,9 +273,9 @@ QGraphicsRectItem * AccessibilitySceneManager::processInterface(QAccessibleInter
     if (!m_rootItem)
         m_rootItem = item;
 
-    QString name = interface->text(QAccessibleInterface::Name, child);
+    QString name = interface->text(QAccessibleInterface::Name);
     QString description; // = interface->text(QAccessibleInterface::Description, child);
-    QString role = translateRole(interface->role(child));
+    QString role = translateRole(interface->role());
     int childCount = interface->childCount();
 
     /* qDebug() << "name:" << name << "local pos" <<
@@ -303,26 +305,22 @@ QGraphicsRectItem * AccessibilitySceneManager::processInterface(QAccessibleInter
     return item;
 }
 
-void AccessibilitySceneManager::populateAccessibilityScene(QAccessibleInterface * interface, int child, QGraphicsScene *scene)
+void AccessibilitySceneManager::populateAccessibilityScene(QAccessibleInterface * interface, QGraphicsScene *scene)
 {
     if (!interface)
         return;
 
-    QGraphicsRectItem *item = processInterface(interface, child, scene);
+    QGraphicsRectItem *item = processInterface(interface, scene);
 
     QObject *object = interface->object();
     if (object) {
         m_graphicsItems.insert(object, item);
     }
 
-    // Possibly process children
-    if (child != 0)
-        return;
-
     for (int i = 0; i < interface->childCount(); ++i) {
         QAccessibleInterface *child = interface->child(i);
         updateItems(child->object());
-        populateAccessibilityScene(child, 0, scene);
+        populateAccessibilityScene(child, scene);
         delete child;
     }
 }
@@ -352,17 +350,17 @@ AccessibilitySceneManager::TreeItem AccessibilitySceneManager::computeLevels(QAc
     }
 
     // capture information:
-    currentLevel.name = interface->text(QAccessible::Name, 0);
-    //currentLevel.description += interface->text(QAccessible::DebugDescription, 0);
-    currentLevel.role = translateRole(interface->role(0));
-    currentLevel.rect = interface->rect(0);
-    currentLevel.state = interface->state(0);
+    currentLevel.name = interface->text(QAccessible::Name);
+    //currentLevel.description += interface->text(QAccessible::DebugDescription);
+    currentLevel.role = translateRole(interface->role());
+    currentLevel.rect = interface->rect();
+    currentLevel.state = interface->state();
     currentLevel.object = interface->object();
 
     return currentLevel;
 }
 
-void AccessibilitySceneManager::populateAccessibilityTreeScene(QAccessibleInterface * interface, int child)
+void AccessibilitySceneManager::populateAccessibilityTreeScene(QAccessibleInterface * interface)
 {
     if (!interface)
         return;
@@ -472,7 +470,7 @@ bool AccessibilitySceneManager::isHidden(QAccessibleInterface *interface)
     QAccessibleInterface *current = interface;
     while (current) {
 
-        if (current->state(0) & QAccessible::Invisible) {
+        if (current->state() & QAccessible::Invisible) {
             return true;
         }
 

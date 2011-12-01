@@ -67,7 +67,7 @@ void accessibilityUpdateHandler(QObject *object, int who, QAccessible::Event rea
     if (updateHandlerRecursion)
         return;
 
-    if (!qobject_cast<QSGItem *>(object))
+    if (!qobject_cast<QQuickItem *>(object))
         return;
 
     updateHandlerRecursion = true;

@@ -73,12 +73,12 @@ private:
     void updateItem(QGraphicsRectItem *item, QAccessibleInterface *interface);
     void updateItemFlags(QGraphicsRectItem *item, QAccessibleInterface *interface);
 
-    void populateAccessibilityScene(QAccessibleInterface * interface, int child, QGraphicsScene *scene);
-    QGraphicsRectItem * processInterface(QAccessibleInterface * interface, int child, QGraphicsScene *scene);
+    void populateAccessibilityScene(QAccessibleInterface * interface, QGraphicsScene *scene);
+    QGraphicsRectItem * processInterface(QAccessibleInterface * interface, QGraphicsScene *scene);
 
     struct TreeItem;
     TreeItem computeLevels(QAccessibleInterface * interface, int level);
-    void populateAccessibilityTreeScene(QAccessibleInterface * interface, int child);
+    void populateAccessibilityTreeScene(QAccessibleInterface * interface);
     void addGraphicsItems(TreeItem item, int row, int xPos);
 
     bool isHidden(QAccessibleInterface *interface);
