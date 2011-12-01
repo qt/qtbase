@@ -297,11 +297,10 @@ public:
         TextInterface,
         EditableTextInterface,
         ValueInterface,
-        TableInterface,
         ActionInterface,
         ImageInterface,
-        Table2Interface,
-        Table2CellInterface
+        TableInterface,
+        TableCellInterface
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
@@ -335,11 +334,10 @@ class QAccessible2Interface;
 class QAccessibleTextInterface;
 class QAccessibleEditableTextInterface;
 class QAccessibleValueInterface;
-class QAccessibleTableInterface;
 class QAccessibleActionInterface;
 class QAccessibleImageInterface;
-class QAccessibleTable2Interface;
-class QAccessibleTable2CellInterface;
+class QAccessibleTableInterface;
+class QAccessibleTableCellInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
@@ -387,20 +385,17 @@ public:
     inline QAccessibleValueInterface *valueInterface()
     { return reinterpret_cast<QAccessibleValueInterface *>(interface_cast(QAccessible::ValueInterface)); }
 
-    inline QAccessibleTableInterface *tableInterface()
-    { return reinterpret_cast<QAccessibleTableInterface *>(interface_cast(QAccessible::TableInterface)); }
-
     inline QAccessibleActionInterface *actionInterface()
     { return reinterpret_cast<QAccessibleActionInterface *>(interface_cast(QAccessible::ActionInterface)); }
 
     inline QAccessibleImageInterface *imageInterface()
     { return reinterpret_cast<QAccessibleImageInterface *>(interface_cast(QAccessible::ImageInterface)); }
 
-    inline QAccessibleTable2Interface *table2Interface()
-    { return reinterpret_cast<QAccessibleTable2Interface *>(interface_cast(QAccessible::Table2Interface)); }
+    inline QAccessibleTableInterface *tableInterface()
+    { return reinterpret_cast<QAccessibleTableInterface *>(interface_cast(QAccessible::TableInterface)); }
 
-    inline QAccessibleTable2CellInterface *table2CellInterface()
-    { return reinterpret_cast<QAccessibleTable2CellInterface *>(interface_cast(QAccessible::Table2CellInterface)); }
+    inline QAccessibleTableCellInterface *tableCellInterface()
+    { return reinterpret_cast<QAccessibleTableCellInterface *>(interface_cast(QAccessible::TableCellInterface)); }
 
     // FIXME
     virtual QVariant virtual_hook(const QVariant &data);

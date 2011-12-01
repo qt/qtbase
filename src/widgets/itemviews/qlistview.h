@@ -187,7 +187,6 @@ protected:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
-    friend class QAccessibleItemView;
     int visualIndex(const QModelIndex &index) const;
 
     Q_DECLARE_PRIVATE(QListView)

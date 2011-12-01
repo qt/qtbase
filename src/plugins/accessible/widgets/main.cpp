@@ -259,7 +259,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         if (qobject_cast<const QTreeView*>(widget)) {
             iface = new QAccessibleTree(widget);
         } else {
-            iface = new QAccessibleTable2(widget);
+            iface = new QAccessibleTable(widget);
         }
     } else if (classname == QLatin1String("QWidget")
                && widget->objectName() == QLatin1String("qt_scrollarea_viewport")
@@ -267,7 +267,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         if (qobject_cast<const QTreeView*>(widget->parentWidget())) {
             iface = new QAccessibleTree(widget->parentWidget());
         } else {
-            iface = new QAccessibleTable2(widget->parentWidget());
+            iface = new QAccessibleTable(widget->parentWidget());
         }
 #endif // QT_NO_ITEMVIEWS
 #ifndef QT_NO_TABBAR

@@ -160,39 +160,7 @@ public:
     virtual QVariant minimumValue() = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleTableInterface
-{
-public:
-    virtual QAccessibleInterface *accessibleAt(int row, int column) = 0;
-    virtual QAccessibleInterface *caption() = 0;
-    virtual int childIndex(int rowIndex, int columnIndex) = 0;
-    virtual QString columnDescription(int column) = 0;
-    virtual int columnSpan(int row, int column) = 0;
-    virtual QAccessibleInterface *columnHeader() = 0;
-    virtual int columnIndex(int childIndex) = 0;
-    virtual int columnCount() = 0;
-    virtual int rowCount() = 0;
-    virtual int selectedColumnCount() = 0;
-    virtual int selectedRowCount() = 0;
-    virtual QString rowDescription(int row) = 0;
-    virtual int rowSpan(int row, int column) = 0;
-    virtual QAccessibleInterface *rowHeader() = 0;
-    virtual int rowIndex(int childIndex) = 0;
-    virtual int selectedRows(int maxRows, QList<int> *rows) = 0;
-    virtual int selectedColumns(int maxColumns, QList<int> *columns) = 0;
-    virtual QAccessibleInterface *summary() = 0;
-    virtual bool isColumnSelected(int column) = 0;
-    virtual bool isRowSelected(int row) = 0;
-    virtual bool isSelected(int row, int column) = 0;
-    virtual void selectRow(int row) = 0;
-    virtual void selectColumn(int column) = 0;
-    virtual void unselectRow(int row) = 0;
-    virtual void unselectColumn(int column) = 0;
-    virtual void cellAtIndex(int index, int *row, int *column, int *rowSpan,
-                             int *columnSpan, bool *isSelected) = 0;
-};
-
-class Q_GUI_EXPORT QAccessibleTable2CellInterface
+class Q_GUI_EXPORT QAccessibleTableCellInterface
 {
 public:
     //            Returns the number of columns occupied by this cell accessible.
@@ -221,7 +189,7 @@ public:
     virtual bool isExpandable() const = 0;
 };
 
-class Q_GUI_EXPORT QAccessibleTable2Interface
+class Q_GUI_EXPORT QAccessibleTableInterface
 {
 public:
 

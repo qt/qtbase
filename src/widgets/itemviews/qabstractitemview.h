@@ -365,7 +365,6 @@ private:
 #endif
 
     friend class QTreeViewPrivate; // needed to compile with MSVC
-    friend class QAccessibleItemRow;
     friend class QListModeViewBase;
     friend class QListViewPrivate; // needed to compile for Symbian emulator
 };

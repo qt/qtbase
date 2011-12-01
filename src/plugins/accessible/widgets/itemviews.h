@@ -55,15 +55,15 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ITEMVIEWS
 
-class QAccessibleTable2Cell;
-class QAccessibleTable2HeaderCell;
+class QAccessibleTableCell;
+class QAccessibleTableHeaderCell;
 
-class QAccessibleTable2 :public QAccessibleTable2Interface, public QAccessibleObject
+class QAccessibleTable :public QAccessibleTableInterface, public QAccessibleObject
 {
 public:
-    explicit QAccessibleTable2(QWidget *w);
+    explicit QAccessibleTable(QWidget *w);
 
-    virtual ~QAccessibleTable2();
+    virtual ~QAccessibleTable();
 
     QObject *object() const { return view; }
     Role role() const;
@@ -83,7 +83,7 @@ public:
     QVariant invokeMethod(Method, const QVariantList &) { return QVariant(); }
     void *interface_cast(QAccessible::InterfaceType t);
 
-    // table2 interface
+    // table interface
     virtual QAccessibleInterface *cellAt(int row, int column) const;
     virtual QAccessibleInterface *caption() const;
     virtual QAccessibleInterface *summary() const;
@@ -119,7 +119,7 @@ protected:
 protected:
     QAbstractItemView* view;
     QAccessible2::TableModelChange lastChange;
-    inline QAccessibleTable2Cell *cell(const QModelIndex &index) const;
+    inline QAccessibleTableCell *cell(const QModelIndex &index) const;
     inline QAccessible::Role cellRole() const {
         switch (m_role) {
         case QAccessible::List:
@@ -144,11 +144,11 @@ private:
     QAccessible::Role m_role;
 };
 
-class QAccessibleTree :public QAccessibleTable2
+class QAccessibleTree :public QAccessibleTable
 {
 public:
     explicit QAccessibleTree(QWidget *w)
-        : QAccessibleTable2(w)
+        : QAccessibleTable(w)
     {}
 
     virtual ~QAccessibleTree() {}
@@ -162,7 +162,7 @@ public:
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
     Relation relationTo(const QAccessibleInterface *other) const;
 
-    // table2 interface
+    // table interface
     QAccessibleInterface *cellAt(int row, int column) const;
     QString rowDescription(int row) const;
     bool isRowSelected(int row) const;
@@ -172,10 +172,10 @@ private:
     QModelIndex indexFromLogical(int row, int column = 0) const;
 };
 
-class QAccessibleTable2Cell: public QAccessibleInterface, public QAccessibleTable2CellInterface
+class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface
 {
 public:
-    QAccessibleTable2Cell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
+    QAccessibleTableCell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
 
     void *interface_cast(QAccessible::InterfaceType t);
     QObject *object() const { return 0; }
@@ -216,16 +216,16 @@ private:
     QModelIndex m_index;
     QAccessible::Role m_role;
 
-friend class QAccessibleTable2;
+friend class QAccessibleTable;
 friend class QAccessibleTree;
 };
 
 
-class QAccessibleTable2HeaderCell: public QAccessibleInterface
+class QAccessibleTableHeaderCell: public QAccessibleInterface
 {
 public:
     // For header cells, pass the header view in addition
-    QAccessibleTable2HeaderCell(QAbstractItemView *view, int index, Qt::Orientation orientation);
+    QAccessibleTableHeaderCell(QAbstractItemView *view, int index, Qt::Orientation orientation);
 
     QObject *object() const { return 0; }
     Role role() const;
@@ -250,17 +250,17 @@ private:
     int index;
     Qt::Orientation orientation;
 
-friend class QAccessibleTable2;
+friend class QAccessibleTable;
 friend class QAccessibleTree;
 };
 
 // This is the corner button on the top left of a table.
 // It can be used to select all cells or it is not active at all.
 // For now it is ignored.
-class QAccessibleTable2CornerButton: public QAccessibleInterface
+class QAccessibleTableCornerButton: public QAccessibleInterface
 {
 public:
-    QAccessibleTable2CornerButton(QAbstractItemView *view_)
+    QAccessibleTableCornerButton(QAbstractItemView *view_)
         :view(view_)
     {}
 

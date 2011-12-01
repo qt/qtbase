@@ -218,10 +218,9 @@ protected:
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
-    //friend class QAccessibleItemView;
-    friend class QAccessibleTable2;
+    friend class QAccessibleTable;
     friend class QAccessibleTree;
-    friend class QAccessibleTable2Cell;
+    friend class QAccessibleTableCell;
     int visualIndex(const QModelIndex &index) const;
 
     Q_DECLARE_PRIVATE(QTreeView)
