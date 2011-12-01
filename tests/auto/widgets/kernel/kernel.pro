@@ -15,3 +15,5 @@ SUBDIRS=\
    qwidget \
    qwidget_window \
    qwidgetaction \
+
+SUBDIRS -= qsound
