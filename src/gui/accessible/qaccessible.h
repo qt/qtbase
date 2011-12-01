@@ -287,9 +287,7 @@ public:
     enum Method {
         ListSupportedMethods      = 0,
         SetCursorPosition         = 1,
-        GetCursorPosition         = 2,
-        ForegroundColor           = 3,
-        BackgroundColor           = 4
+        GetCursorPosition         = 2
     };
 
     enum InterfaceType
