@@ -105,6 +105,7 @@ static QAccessibleInterface *acast(void *ptr)
         attributes = [[NSArray alloc] initWithObjects:
         NSAccessibilityRoleAttribute,
         NSAccessibilityRoleDescriptionAttribute,
+        NSAccessibilityChildrenAttribute,
         NSAccessibilityFocusedAttribute,
         NSAccessibilityParentAttribute,
         NSAccessibilityWindowAttribute,
@@ -122,6 +123,16 @@ static QAccessibleInterface *acast(void *ptr)
         return role;
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescription(role, nil);
+    } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+        int numKids = acast(accessibleInterface)->childCount();
+
+        NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
+        for (int i = 0; i < numKids; ++i) {
+            QAccessibleInterface *childInterface = acast(accessibleInterface)->child(i);
+            [kids addObject:[QCocoaAccessibleElement elementWithIndex:i parent:self accessibleInterface:(void*)childInterface]];
+        }
+
+        return NSAccessibilityUnignoredChildren(kids);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
@@ -186,8 +197,22 @@ static QAccessibleInterface *acast(void *ptr)
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-    Q_UNUSED(point);
-    return NSAccessibilityUnignoredAncestor(self);
+    int index = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
+
+    // hit outside
+    if (index == -1) {
+        return 0;
+    }
+
+    // hit this element
+    if (index == 0) {
+        return NSAccessibilityUnignoredAncestor(self);
+    }
+
+    // hit a child, forward to child accessible interface.
+    QAccessibleInterface *childInterface = acast(accessibleInterface)->child(index - 1);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index - 1 parent:self accessibleInterface: childInterface];
+    return [accessibleElement accessibilityHitTest:point];
 }
 
 - (id)accessibilityFocusedUIElement {
