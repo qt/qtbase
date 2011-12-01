@@ -400,7 +400,7 @@ void QCoreTextFontEngineMulti::loadEngine(int)
     Q_ASSERT(false);
 }
 
-extern int qt_antialiasing_threshold; // from qapplication.cpp
+extern int qt_antialiasing_threshold, qt_enable_font_smoothing;
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
@@ -469,6 +469,9 @@ void QCoreTextFontEngine::init()
 {
     Q_ASSERT(ctfont != NULL);
     Q_ASSERT(cgFont != NULL);
+
+    glyphFormat = qt_enable_font_smoothing ? QFontEngineGlyphCache::Raster_RGBMask
+                                           : QFontEngineGlyphCache::Raster_A8;
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;

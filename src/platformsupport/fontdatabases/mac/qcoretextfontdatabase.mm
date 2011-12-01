@@ -88,6 +88,7 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 { return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
 
 int qt_antialiasing_threshold = 0;
+bool qt_enable_font_smoothing = true;
 
 QFont::StyleHint styleHintFromNSString(NSString *style)
 {
@@ -123,6 +124,12 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
     if (appleValue.isValid())
         qt_antialiasing_threshold = appleValue.toInt();
+
+    appleValue = appleSettings.value(QLatin1String("AppleFontSmoothing"));
+    // Only disable font smoothing when AppleFontSmoothing is set to 0,
+    // empty or non-zero means enabled
+    if (appleValue.isValid() && appleValue.toInt() == 0)
+        qt_enable_font_smoothing = false;
 }
 
 QCoreTextFontDatabase::~QCoreTextFontDatabase()
