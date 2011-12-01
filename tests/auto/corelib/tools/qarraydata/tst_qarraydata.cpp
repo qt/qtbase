@@ -59,6 +59,7 @@ private slots:
     void alignment_data();
     void alignment();
     void typedData();
+    void gccBug43247();
 };
 
 void tst_QArrayData::referenceCounting()
@@ -519,6 +520,33 @@ void tst_QArrayData::typedData()
         QTypedArrayData<double>::deallocate(array);
 
         QVERIFY(true);
+    }
+}
+
+void tst_QArrayData::gccBug43247()
+{
+    // This test tries to verify QArrayData is not affected by GCC optimizer
+    // bug #43247.
+    // Reported on GCC 4.4.3, Linux, affects QVector
+
+    QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (3)");
+    QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (4)");
+    QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (5)");
+    QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (6)");
+    QTest::ignoreMessage(QtDebugMsg, "GCC Optimization bug #43247 not triggered (7)");
+
+    SimpleVector<int> array(10, 0);
+    // QVector<int> vector(10, 0);
+
+    for (int i = 0; i < 10; ++i) {
+        if (i >= 3 && i < 8)
+            qDebug("GCC Optimization bug #43247 not triggered (%i)", i);
+
+        // When access to data is implemented through an array of size 1, this
+        // line lets the compiler assume i == 0, and the conditional above is
+        // skipped.
+        QVERIFY(array.at(i) == 0);
+        // QVERIFY(vector.at(i) == 0);
     }
 }
 
