@@ -63,7 +63,7 @@ QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     const QRect geo = window->geometry();
     NSRect rect = NSMakeRect(geo.x(),geo.y(),geo.width(),geo.height());
 
-    m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32);
+    m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32_Premultiplied);
 }
 
 QCocoaBackingStore::~QCocoaBackingStore()

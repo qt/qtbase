@@ -70,7 +70,7 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
     NSRect rect = [m_screen frame];
     m_geometry = QRect(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
 
-    m_format = QImage::Format_ARGB32;
+    m_format = QImage::Format_RGB32;
 
     m_depth = NSBitsPerPixelFromDepth([m_screen depth]);
 
