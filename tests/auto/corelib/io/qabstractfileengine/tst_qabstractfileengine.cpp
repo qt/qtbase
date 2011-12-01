@@ -598,11 +598,25 @@ void tst_QAbstractFileEngine::fileIO()
     {
         // Reading
         QFile file(fileName);
-
         QVERIFY(!file.isOpen());
-        QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Unbuffered));
 
+        /* For an exact match, this test requires the repository to
+         * be checked out with UNIX-style line endings on Windows.
+         * Try to succeed also for the common case of checking out with autocrlf
+         * by reading the file as text and checking if the size matches
+         * the original size + the '\r' characters added by autocrlf. */
+
+        QFile::OpenMode openMode = QIODevice::ReadOnly | QIODevice::Unbuffered;
+#ifdef Q_OS_WIN
+        openMode |= QIODevice::Text;
+#endif
+        QVERIFY(file.open(openMode));
         QVERIFY(file.isOpen());
+#ifdef Q_OS_WIN
+        const qint64 convertedSize = fileSize + readContent.count('\n');
+        if (file.size() == convertedSize)
+            fileSize = convertedSize;
+#endif
         QCOMPARE(file.size(), fileSize);
         QCOMPARE(file.pos(), qint64(0));
 
