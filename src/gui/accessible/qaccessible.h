@@ -284,23 +284,6 @@ public:
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
 
-    enum Action {
-        DefaultAction       = 0,
-        Press               = -1,
-        FirstStandardAction = Press,
-        SetFocus            = -2,
-        Increase            = -3,
-        Decrease            = -4,
-        Accept              = -5,
-        Cancel              = -6,
-        Select              = -7,
-        ClearSelection      = -8,
-        RemoveSelection     = -9,
-        ExtendSelection     = -10,
-        AddToSelection      = -11,
-        LastStandardAction  = AddToSelection
-    };
-
     enum Method {
         ListSupportedMethods      = 0,
         SetCursorPosition         = 1,
