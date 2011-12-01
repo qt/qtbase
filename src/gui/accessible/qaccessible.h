@@ -255,6 +255,7 @@ public:
         Value,
         Help,
         Accelerator,
+        DebugDescription,
         UserText     = 0x0000ffff
     };
 

@@ -351,7 +351,7 @@ AccessibilitySceneManager::TreeItem AccessibilitySceneManager::computeLevels(QAc
 
     // capture information:
     currentLevel.name = interface->text(QAccessible::Name);
-    //currentLevel.description += interface->text(QAccessible::DebugDescription);
+    currentLevel.description += interface->text(QAccessible::DebugDescription);
     currentLevel.role = translateRole(interface->role());
     currentLevel.rect = interface->rect();
     currentLevel.state = interface->state();
