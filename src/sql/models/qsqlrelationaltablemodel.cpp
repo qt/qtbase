@@ -430,7 +430,7 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
 {
     Q_D(const QSqlRelationalTableModel);
 
-    if (role == Qt::DisplayRole && index.column() > 0 && index.column() < d->relations.count() &&
+    if (role == Qt::DisplayRole && index.column() >= 0 && index.column() < d->relations.count() &&
             d->relations.value(index.column()).isValid()) {
         QRelation &relation = d->relations[index.column()];
         if (!relation.isDictionaryInitialized())

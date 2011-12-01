@@ -93,6 +93,7 @@ private slots:
     void whiteSpaceInIdentifiers();
     void psqlSchemaTest();
     void selectAfterUpdate();
+    void relationOnFirstColumn();
 
 private:
     void dropTestTables( QSqlDatabase db );
@@ -1485,6 +1486,60 @@ void tst_QSqlRelationalTableModel::selectAfterUpdate()
     QVERIFY(model.setData(model.index(0,2), 3));
     QVERIFY(model.submitAll());
     QCOMPARE(model.data(model.index(0,2)), QVariant("mrs"));
+}
+
+/**
+  This test case verifies bug fix for QTBUG-20038.
+  */
+void tst_QSqlRelationalTableModel::relationOnFirstColumn()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString testTable1 = qTableName("QTBUG_20038_test1", __FILE__);
+    QString testTable2 = qTableName("QTBUG_20038_test2", __FILE__);
+    tst_Databases::safeDropTables(db, QStringList() << testTable1 << testTable2);
+
+    //prepare test1 table
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + testTable1 + " (val1 INTEGER, id1 INTEGER PRIMARY KEY);"));
+    QVERIFY_SQL(q, exec("DELETE FROM " + testTable1 + ";"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(1, 10);"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(2, 20);"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable1 + " (id1, val1) VALUES(3, 30);"));
+
+    //prepare test2 table
+    QVERIFY_SQL(q, exec("CREATE TABLE " + testTable2 + " (id INTEGER PRIMARY KEY, name TEXT);"));
+    QVERIFY_SQL(q, exec("DELETE FROM " + testTable2 + ";"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (10, 'Hervanta');"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (20, 'Keskusta');"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (30, 'Annala');"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (40, 'Tammela');"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + testTable2 + " (id, name) VALUES (50, 'Amuri');"));
+
+    //set test model
+    QSqlRelationalTableModel model(NULL, db);
+    model.setTable(testTable1);
+    model.setRelation(0, QSqlRelation(testTable2, "id", "name"));
+    QVERIFY_SQL(model, select());
+
+    //verify the data
+    QCOMPARE(model.data(model.index(0, 0)), QVariant("Hervanta"));
+    QCOMPARE(model.data(model.index(1, 0)), QVariant("Keskusta"));
+    QCOMPARE(model.data(model.index(2, 0)), QVariant("Annala"));
+
+    //modify the model data
+    QVERIFY_SQL(model, setData(model.index(0, 0), 40));
+    QVERIFY_SQL(model, setData(model.index(1, 0), 50));
+    QVERIFY_SQL(model, setData(model.index(2, 0), 30));
+
+    //verify the data after modificaiton
+    QCOMPARE(model.data(model.index(0, 0)), QVariant("Tammela"));
+    QCOMPARE(model.data(model.index(1, 0)), QVariant("Amuri"));
+    QCOMPARE(model.data(model.index(2, 0)), QVariant("Annala"));
+
+    tst_Databases::safeDropTables(db, QStringList() << testTable1 << testTable2);
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)
