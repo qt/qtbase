@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+project(pass2)
+
 find_package(Qt5Core REQUIRED)
 
 include_directories(${Qt5Core_INCLUDE_DIRS})

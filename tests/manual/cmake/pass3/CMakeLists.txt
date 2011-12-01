@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+project(pass3)
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
