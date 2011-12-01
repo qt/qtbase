@@ -298,9 +298,7 @@ public:
     Q_DECLARE_FLAGS(Relation, RelationFlag)
 
     enum Method {
-        ListSupportedMethods      = 0,
-        SetCursorPosition         = 1,
-        GetCursorPosition         = 2
+        ListSupportedMethods      = 0
     };
 
     enum InterfaceType

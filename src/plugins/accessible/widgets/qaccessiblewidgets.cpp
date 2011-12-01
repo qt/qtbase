@@ -282,26 +282,6 @@ void QAccessibleTextEdit::setText(QAccessible::Text t, const QString &text)
     textEdit()->setText(text);
 }
 
-QVariant QAccessibleTextEdit::invokeMethod(QAccessible::Method method,
-                                                     const QVariantList &params)
-{
-    switch (method) {
-    case QAccessible::ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << QAccessible::ListSupportedMethods << QAccessible::SetCursorPosition << QAccessible::GetCursorPosition;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidget::invokeMethod(method, params)));
-    }
-    case QAccessible::SetCursorPosition:
-        setCursorPosition(params.value(0).toInt());
-        return true;
-    case QAccessible::GetCursorPosition:
-        return textEdit()->textCursor().position();
-    default:
-        return QAccessibleWidget::invokeMethod(method, params);
-    }
-}
-
 void *QAccessibleTextEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)

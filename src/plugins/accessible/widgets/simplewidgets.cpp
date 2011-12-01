@@ -601,26 +601,6 @@ QAccessible::State QAccessibleLineEdit::state() const
     return state;
 }
 
-QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method,
-                                                     const QVariantList &params)
-{
-    switch (method) {
-    case QAccessible::ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << QAccessible::ListSupportedMethods << QAccessible::SetCursorPosition << QAccessible::GetCursorPosition;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                QAccessibleWidget::invokeMethod(method, params)));
-    }
-    case QAccessible::SetCursorPosition:
-        setCursorPosition(params.value(0).toInt());
-        return true;
-    case QAccessible::GetCursorPosition:
-        return cursorPosition();
-    default:
-        return QAccessibleWidget::invokeMethod(method, params);
-    }
-}
-
 void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)

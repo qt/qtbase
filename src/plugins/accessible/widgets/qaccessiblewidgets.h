@@ -75,7 +75,6 @@ public:
     QString text(QAccessible::Text t) const;
     void setText(QAccessible::Text t, const QString &text);
 
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
