@@ -610,7 +610,7 @@ void tst_QDir::entryList()
     // Note we are using capital L in entryList on one side here, to test case-insensitivity
     QFile::link((m_dataPath + "/entryList/") + "file", entrylistPath + "linktofile.lnk");
     QFile::link((m_dataPath + "/entryList/") + "directory", entrylistPath + "linktodirectory.lnk");
-    QFile::link((m_dataPath + "/entryList/") + "nothing"), entrylistPath + "brokenlink.lnk");
+    QFile::link((m_dataPath + "/entryList/") + "nothing", entrylistPath + "brokenlink.lnk");
 #else
     QFile::link("file", entrylistPath + "linktofile.lnk");
     QFile::link("directory", entrylistPath + "linktodirectory.lnk");
