@@ -48,12 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
+/*!
     \class QWinEventNotifier
     \brief The QWinEventNotifier class provides support for the Windows Wait functions.
 
     The QWinEventNotifier class makes it possible to use the wait
-    functions on windows in a asynchronous manner. With this class
+    functions on windows in a asynchronous manner. With this class,
     you can register a HANDLE to an event and get notification when
     that event becomes signalled. The state of the event is not modified
     in the process so if it is a manual reset event you will need to
@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
     The setEnabled() function allows you to disable as well as enable the
     event notifier. It is generally advisable to explicitly enable or
     disable the event notifier. A disabled notifier does nothing when the
-    event object is signalled(the same effect as not creating the
+    event object is signalled (the same effect as not creating the
     event notifier).  Use the isEnabled() function to determine the
     notifier's current status.
 
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     certain other objects which are so-called synchronization
     objects, such as Processes, Threads, Waitable timers.
 
-    \warning This Class is only available on Windows.
+    \warning This class is only available on Windows.
 */
 
 /*!
@@ -198,7 +198,8 @@ void QWinEventNotifier::setEnabled(bool enable)
         eventDispatcher->unregisterEventNotifier(this);
 }
 
-/*!\reimp
+/*!
+    \reimp
 */
 
 bool QWinEventNotifier::event(QEvent * e)

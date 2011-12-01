@@ -81,8 +81,6 @@ protected:
     bool event(QEvent * e);
 
 private:
-    Q_DISABLE_COPY(QWinEventNotifier)
-
     HANDLE handleToEvent;
     bool enabled;
 };
