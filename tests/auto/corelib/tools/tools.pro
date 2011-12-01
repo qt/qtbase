@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qalgorithms \
+    qarraydata \
     qbitarray \
     qbytearray \
     qbytearraymatcher \
