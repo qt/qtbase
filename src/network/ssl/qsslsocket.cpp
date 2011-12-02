@@ -1630,6 +1630,10 @@ void QSslSocket::startClientEncryption()
         qWarning("QSslSocket::startClientEncryption: cannot start handshake on non-plain connection");
         return;
     }
+    if (state() != ConnectedState) {
+        qWarning("QSslSocket::startClientEncryption: cannot start handshake when not connected");
+        return;
+    }
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::startClientEncryption()";
 #endif

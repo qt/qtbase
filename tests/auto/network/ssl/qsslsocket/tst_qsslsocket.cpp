@@ -195,6 +195,7 @@ private slots:
     void setEmptyDefaultConfiguration();
     void versionAccessors();
     void sslOptions();
+    void encryptWithoutConnecting();
 
     static void exitLoop()
     {
@@ -2120,6 +2121,18 @@ void tst_QSslSocket::sslOptions()
              long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION)));
 #endif
 #endif
+}
+
+void tst_QSslSocket::encryptWithoutConnecting()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QSslSocket::startClientEncryption: cannot start handshake when not connected");
+
+    QSslSocket sock;
+    sock.startClientEncryption();
 }
 
 #endif // QT_NO_OPENSSL
