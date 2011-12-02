@@ -76,6 +76,7 @@ Q_OBJECT
 
 private slots:
     void init();
+    void cleanupTestCase();
 
     void getSetCheck();
     void construction();
@@ -98,6 +99,10 @@ private slots:
 
     void rmdir_data();
     void rmdir();
+
+    void removeRecursively_data();
+    void removeRecursively();
+    void removeRecursivelyFailure();
 
     void exists_data();
     void exists();
@@ -199,6 +204,11 @@ void tst_QDir::init()
 
     // Some tests want to use "." as relative path to data.
     QVERIFY2(QDir::setCurrent(m_dataPath), qPrintable("Could not chdir to " + m_dataPath));
+}
+
+void tst_QDir::cleanupTestCase()
+{
+    QDir(QDir::currentPath() + "/tmpdir").removeRecursively();
 }
 
 // Testing get/set functions
@@ -330,6 +340,79 @@ void tst_QDir::rmdir()
     //make sure it really doesn't exist (ie that rmdir returns the right value)
     QFileInfo fi(path);
     QVERIFY(!fi.exists());
+}
+
+void tst_QDir::removeRecursively_data()
+{
+    QTest::addColumn<QString>("path");
+
+    // Create dirs and files
+    const QString tmpdir = QDir::currentPath() + "/tmpdir/";
+    QStringList dirs;
+    dirs << tmpdir + "empty"
+         << tmpdir + "one"
+         << tmpdir + "two/three"
+         << "relative";
+    QDir dir;
+    for (int i = 0; i < dirs.count(); ++i)
+        dir.mkpath(dirs.at(i));
+    QStringList files;
+    files << tmpdir + "one/file";
+    files << tmpdir + "two/three/file";
+    for (int i = 0; i < files.count(); ++i) {
+        QFile file(files.at(i));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("Hello");
+    }
+
+    QTest::newRow("empty") << tmpdir + "empty";
+    QTest::newRow("one") << tmpdir + "one";
+    QTest::newRow("two") << tmpdir + "two";
+    QTest::newRow("does not exist") << tmpdir + "doesnotexist";
+    QTest::newRow("relative") << "relative";
+}
+
+void tst_QDir::removeRecursively()
+{
+    QFETCH(QString, path);
+
+    QDir dir(path);
+    QVERIFY(dir.removeRecursively());
+
+    //make sure it really doesn't exist (ie that remove worked)
+    QVERIFY(!dir.exists());
+}
+
+void tst_QDir::removeRecursivelyFailure()
+{
+    const QString tmpdir = QDir::currentPath() + "/tmpdir/";
+    const QString path = tmpdir + "undeletable";
+    QDir().mkpath(path);
+
+    // Need a file in there, otherwise rmdir works even w/o permissions
+    QFile file(path + "/file");
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.write("Hello");
+    file.close();
+
+#ifdef Q_OS_UNIX
+    QFile dirAsFile(path); // yay, I have to use QFile to change a dir's permissions...
+    QVERIFY(dirAsFile.setPermissions(QFile::Permissions(0))); // no permissions
+#else
+    QVERIFY(file.setPermissions(QFile::ReadOwner));
+#endif
+    QVERIFY(!QDir().rmdir(path));
+    QDir dir(path);
+    QVERIFY(!dir.removeRecursively()); // didn't work
+    QVERIFY(dir.exists()); // still exists
+
+#ifdef Q_OS_UNIX
+    QVERIFY(dirAsFile.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner)));
+#else
+    QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
+#endif
+    QVERIFY(dir.removeRecursively());
+    QVERIFY(!dir.exists());
 }
 
 void tst_QDir::exists_data()

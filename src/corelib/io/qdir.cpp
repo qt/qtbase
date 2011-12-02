@@ -1471,6 +1471,52 @@ bool QDir::rmpath(const QString &dirPath) const
 }
 
 /*!
+    Removes the directory, including all its contents.
+
+    Returns true if successful, otherwise false.
+
+    If a file or directory cannot be removed, removeRecursively() keeps going
+    and attempts to delete as many files and sub-directories as possible,
+    then returns false.
+
+    If the directory was already removed, the method returns true
+    (expected result already reached).
+
+    Note: this function is meant for removing a small application-internal
+    directory (such as a temporary directory), but not user-visible
+    directories. For user-visible operations, it is rather recommended
+    to report errors more precisely to the user, to offer solutions
+    in case of errors, to show progress during the deletion since it
+    could take several minutes, etc.
+*/
+bool QDir::removeRecursively()
+{
+    if (!d_ptr->exists())
+        return true;
+
+    bool success = true;
+    const QString dirPath = path();
+    // not empty -- we must empty it first
+    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
+    while (di.hasNext()) {
+        di.next();
+        const QFileInfo& fi = di.fileInfo();
+        bool ok;
+        if (fi.isDir())
+            ok = QDir(di.filePath()).removeRecursively(); // recursive
+        else
+            ok = QFile::remove(di.filePath());
+        if (!ok)
+            success = false;
+    }
+
+    if (success)
+        success = rmdir(absolutePath());
+
+    return success;
+}
+
+/*!
     Returns true if the directory is readable \e and we can open files
     by name; otherwise returns false.
 

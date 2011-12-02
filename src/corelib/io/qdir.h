@@ -166,6 +166,8 @@ public:
     bool mkpath(const QString &dirPath) const;
     bool rmpath(const QString &dirPath) const;
 
+    bool removeRecursively();
+
     bool isReadable() const;
     bool exists() const;
     bool isRoot() const;
