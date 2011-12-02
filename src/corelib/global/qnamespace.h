@@ -293,6 +293,7 @@ public:
         WindowStaysOnTopHint = 0x00040000,
         WindowTransparentForInput = 0x00080000,
         WindowOverridesSystemGestures = 0x00100000,
+        WindowDoesNotAcceptFocus = 0x00200000,
 
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
