@@ -1914,19 +1914,24 @@ FatalSignalHandler::~FatalSignalHandler()
     Optionally, the command line arguments \a argc and \a argv can be provided.
     For a list of recognized arguments, read \l {QTestLib Command Line Arguments}.
 
-    For stand-alone tests, the convenience macro \l QTEST_MAIN() can
-    be used to declare a main method that parses the command line arguments
-    and executes the tests.
-
-    Returns 0 if all tests passed. Returns a value other than 0 if tests failed
-    or in case of unhandled exceptions. The return value from this function is
-    also the exit code of the test application when the \l QTEST_MAIN() macro
-    is used.
-
-    The following example will run all tests in \c MyFirstTestObject and
-    \c{MySecondTestObject}:
+    The following example will run all tests in \c MyTestObject:
 
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 18
+
+    This function returns 0 if no tests failed, or a value other than 0 if one
+    or more tests failed or in case of unhandled exceptions.  (Skipped tests do
+    not influence the return value.)
+
+    For stand-alone test applications, the convenience macro \l QTEST_MAIN() can
+    be used to declare a main() function that parses the command line arguments
+    and executes the tests, avoiding the need to call this function explicitly.
+
+    The return value from this function is also the exit code of the test
+    application when the \l QTEST_MAIN() macro is used.
+
+    For stand-alone test applications, this function should not be called more
+    than once, as command-line options for logging test output to files and
+    executing individual test functions will not behave correctly.
 
     Note: This function is not reentrant, only one test can run at a time. A
     test that was executed with qExec() can't run another test via qExec() and

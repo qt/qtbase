@@ -162,11 +162,8 @@ while (myNetworkServerNotResponding() && i++ < 50)
 
 
 //! [18]
-MyFirstTestObject test1;
+MyTestObject test1;
 QTest::qExec(&test1);
-
-MySecondTestObject test2;
-QTest::qExec(&test2);
 //! [18]
 
 
