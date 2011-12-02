@@ -379,16 +379,21 @@ void QSqlRelationalTableModelPrivate::clearCache()
        keys will not be exposed through the model. The user or the
        database is responsible for keeping referential integrity.
     \li If a relation's display column name is also used as a column
-       name in the main table, or if it is used as display column
+       name in the relational table, or if it is used as display column
        name in more than one relation it will be aliased. The alias is
-       is the relation's table name and display column name joined
-       by an underscore (e.g. tablename_columnname). All occurrences
-       of the duplicate display column name are aliased when
+       the relation's table name, display column name and a unique id
+       joined by an underscore (e.g. tablename_columnname_id).
+       QSqlRecord::fieldName() will return the aliased column name.
+       All occurrences of the duplicate display column name are aliased when
        duplication is detected, but no aliasing is done to the column
        names in the main table. The aliasing doesn't affect
        QSqlRelation, so QSqlRelation::displayColumn() will return the
-       original display column name, but QSqlRecord::fieldName() will
-       return aliases.
+       original display column name.
+    \li The reference table name is aliased. The alias is the word "relTblAl"
+       and the relationed column index joined by an underscore
+       (e.g. relTblAl_2). The alias can be used to filter the table
+       (For example, setFilter("relTblAl_2='Oslo' OR
+       relTblAl_3='USA'")).
     \li When using setData() the role should always be Qt::EditRole,
        and when using data() the role should always be Qt::DisplayRole.
     \endlist
