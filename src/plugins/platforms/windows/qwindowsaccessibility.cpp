@@ -395,7 +395,7 @@ HRESULT STDMETHODCALLTYPE QWindowsEnumerate::Skip(unsigned long celt)
 
 /*
 */
-class QWindowsAccessible : public IAccessible, IOleWindow, QAccessible
+class QWindowsAccessible : public IAccessible, IOleWindow
 {
 public:
     QWindowsAccessible(QAccessibleInterface *a)
@@ -760,7 +760,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
     }
     QAccessibleInterface *acc = 0;
     if (control)
-        accessible->navigate(Child, control, &acc);
+        accessible->navigate(QAccessible::Child, control, &acc);
     if (!acc) {
         (*pvarID).vt = VT_I4;
         (*pvarID).lVal = control;
@@ -826,10 +826,10 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
     int control = -1;
     switch (navDir) {
     case NAVDIR_FIRSTCHILD:
-        control = accessible->navigate(Child, 1, &acc);
+        control = accessible->navigate(QAccessible::Child, 1, &acc);
         break;
     case NAVDIR_LASTCHILD:
-        control = accessible->navigate(Child, accessible->childCount(), &acc);
+        control = accessible->navigate(QAccessible::Child, accessible->childCount(), &acc);
         break;
     case NAVDIR_NEXT:
     case NAVDIR_PREVIOUS:
@@ -839,27 +839,27 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
                 if (index > 0 && index <= parent->childCount())
-                    control = parent->navigate(Child, index, &acc);
+                    control = parent->navigate(QAccessible::Child, index, &acc);
                 delete parent;
             }
         } else {
             int index = varStart.lVal;
             index += (navDir == NAVDIR_NEXT) ? 1 : -1;
             if (index > 0 && index <= accessible->childCount())
-                control = accessible->navigate(Child, index, &acc);
+                control = accessible->navigate(QAccessible::Child, index, &acc);
         }
         break;
     case NAVDIR_UP:
-        control = accessible->navigate(Up, varStart.lVal, &acc);
+        control = accessible->navigate(QAccessible::Up, varStart.lVal, &acc);
         break;
     case NAVDIR_DOWN:
-        control = accessible->navigate(Down, varStart.lVal, &acc);
+        control = accessible->navigate(QAccessible::Down, varStart.lVal, &acc);
         break;
     case NAVDIR_LEFT:
-        control = accessible->navigate(Left, varStart.lVal, &acc);
+        control = accessible->navigate(QAccessible::Left, varStart.lVal, &acc);
         break;
     case NAVDIR_RIGHT:
-        control = accessible->navigate(Right, varStart.lVal, &acc);
+        control = accessible->navigate(QAccessible::Right, varStart.lVal, &acc);
         break;
     default:
         break;
@@ -908,11 +908,11 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
         const int entry = childIndex;
         QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entry);
         if (ref.first) {
-            acc = queryAccessibleInterface(ref.first);
+            acc = QAccessible::queryAccessibleInterface(ref.first);
             if (acc && ref.second) {
                 if (ref.second) {
                     QAccessibleInterface *res;
-                    int index = acc->navigate(Child, ref.second, &res);
+                    int index = acc->navigate(QAccessible::Child, ref.second, &res);
                     delete acc;
                     if (index == -1)
                         return E_INVALIDARG;
@@ -921,7 +921,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
             }
         }
     } else {
-        RelationFlag rel = childIndex ? Child : Self;
+        QAccessible::RelationFlag rel = childIndex ? QAccessible::Child : QAccessible::Self;
         accessible->navigate(rel, childIndex, &acc);
     }
 
@@ -1014,9 +1014,9 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accDescription(VARIANT varID, 
         QAIPointer child = childPointer(varID);
         if (!child)
             return E_FAIL;
-        descr = child->text(Description);
+        descr = child->text(QAccessible::Description);
     } else {
-        descr = accessible->text(Description);
+        descr = accessible->text(QAccessible::Description);
     }
     if (descr.size()) {
         *pszDescription = QStringToBSTR(descr);
@@ -1038,9 +1038,9 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accHelp(VARIANT varID, BSTR *p
         QAIPointer child = childPointer(varID);
         if (!child)
             return E_FAIL;
-        help = child->text(Help);
+        help = child->text(QAccessible::Help);
     } else {
-        help = accessible->text(Help);
+        help = accessible->text(QAccessible::Help);
     }
     if (help.size()) {
         *pszHelp = QStringToBSTR(help);
@@ -1065,7 +1065,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accKeyboardShortcut(VARIANT va
 
     *pszKeyboardShortcut = 0;
     if (QAccessibleActionInterface *actionIface = accessible->actionInterface()) {
-        const QString def = actionIface->actionNames().value(0); // I CRASH YOU
+        const QString def = actionIface->actionNames().value(0);
         if (!def.isEmpty()) {
             const QString keyBoardShortCut = actionIface->keyBindingsForAction(def).value(0);
             if (!keyBoardShortCut.isEmpty())
@@ -1087,9 +1087,9 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accName(VARIANT varID, BSTR* p
         QAIPointer child = childPointer(varID);
         if (!child)
             return E_FAIL;
-        name = child->text(Name);
+        name = child->text(QAccessible::Name);
     } else {
-        name = accessible->text(Name);
+        name = accessible->text(QAccessible::Name);
     }
     if (name.size()) {
         *pszName = QStringToBSTR(name);
@@ -1113,7 +1113,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
     if (!accessible->isValid())
         return E_FAIL;
 
-    Role role;
+    QAccessible::Role role;
     if (varID.lVal) {
         QAIPointer child = childPointer(varID);
         if (!child)
@@ -1123,8 +1123,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accRole(VARIANT varID, VARIANT
         role = accessible->role();
     }
 
-    if (role != NoRole) {
-        if (role == LayeredPane)
+    if (role != QAccessible::NoRole) {
+        if (role == QAccessible::LayeredPane)
             role = QAccessible::Pane;
         (*pvarRole).vt = VT_I4;
         (*pvarRole).lVal = role;
@@ -1141,7 +1141,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
     if (!accessible->isValid())
         return E_FAIL;
 
-    State state;
+    QAccessible::State state;
     if (varID.lVal) {
         QAIPointer child = childPointer(varID);
         if (!child.data())
@@ -1167,7 +1167,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accValue(VARIANT varID, BSTR* 
     if (accessible->valueInterface()) {
         value = QString::number(accessible->valueInterface()->currentValue().toDouble());
     } else {
-        value = accessible->text(Value);
+        value = accessible->text(QAccessible::Value);
     }
     if (!value.isNull()) {
         *pszValue = QStringToBSTR(value);
@@ -1221,7 +1221,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
         return E_FAIL;
 
     QAccessibleInterface *acc = 0;
-    int control = accessible->navigate(FocusChild, 1, &acc);
+    int control = accessible->navigate(QAccessible::FocusChild, 1, &acc);
     if (control == -1) {
         (*pvarID).vt = VT_EMPTY;
         return S_FALSE;
@@ -1260,7 +1260,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
         bool isSelected = false;
         QAccessibleInterface *child = accessible->child(i);
         if (child) {
-            isSelected = child->state() & Selected;
+            isSelected = child->state() & QAccessible::Selected;
             delete child;
         }
         if (isSelected)
