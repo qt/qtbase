@@ -583,6 +583,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     QVERIFY(socket->setSocketDescriptor(sock, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), (int)sock);
 
+    qt_qhostinfo_clear_cache(); //avoid the HostLookupState being skipped due to address being in cache from previous test.
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
     QCOMPARE(socket->state(), QTcpSocket::HostLookupState);
     QCOMPARE(socket->socketDescriptor(), (int)sock);
