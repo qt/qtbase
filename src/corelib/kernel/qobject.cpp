@@ -1096,20 +1096,13 @@ QString QObject::objectName() const
 void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
-    if (d->objectName != name) {
-        d->objectName = name;
-        if (d->declarativeData)
-            d->declarativeData->objectNameChanged(d->declarativeData, this);
-        emit objectNameChanged(d->objectName);
-    }
+    bool objectNameChanged = d->declarativeData && d->objectName != name;
+
+    d->objectName = name;
+
+    if (objectNameChanged) 
+        d->declarativeData->objectNameChanged(d->declarativeData, this);
 }
-
-/*! \fn void QObject::objectNameChanged(const QString &objectName)
-
-    This signal is emitted after the object's name has been changed. The new object name is passed as \a objectName.
-
-    \sa QObject::objectName
-*/
 
 /*!
     \fn bool QObject::isWidgetType() const
