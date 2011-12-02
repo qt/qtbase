@@ -253,6 +253,7 @@ private slots:
 
     void numericalConvert();
     void moreCustomTypes();
+    void movabilityTest();
     void variantInVariant();
 
     void colorInteger();
@@ -2006,7 +2007,7 @@ void tst_QVariant::userType()
 
             QVariant userVar3;
             qVariantSetValue(userVar3, data2);
-            QVERIFY(userVar2 == userVar3);
+
             userVar3 = userVar2;
             QVERIFY(userVar2 == userVar3);
         }
@@ -2049,7 +2050,7 @@ void tst_QVariant::userType()
         QCOMPARE(instanceCount, 3);
         {
             QVariant second = myCarrier;
-            QCOMPARE(instanceCount, 4);
+            QCOMPARE(instanceCount, 3);
             second.detach();
             QCOMPARE(instanceCount, 4);
         }
@@ -3220,6 +3221,27 @@ void tst_QVariant::moreCustomTypes()
     QCOMPARE(MyMovable::count, 0);
 }
 
+void tst_QVariant::movabilityTest()
+{
+    // This test checks if QVariant is movable even if an internal data is not movable.
+    QVERIFY(!MyNotMovable::count);
+    {
+        QVariant variant = QVariant::fromValue(MyNotMovable());
+        QVERIFY(MyNotMovable::count);
+
+        // prepare destination memory space to which variant will be moved
+        QVariant buffer[1];
+        QCOMPARE(buffer[0].type(), QVariant::Invalid);
+        buffer[0].~QVariant();
+
+        memcpy(buffer, &variant, sizeof(QVariant));
+        QCOMPARE(buffer[0].type(), QVariant::UserType);
+        MyNotMovable tmp(buffer[0].value<MyNotMovable>());
+
+        new (&variant) QVariant();
+    }
+    QVERIFY(!MyNotMovable::count);
+}
 
 void tst_QVariant::variantInVariant()
 {

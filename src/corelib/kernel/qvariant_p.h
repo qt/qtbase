@@ -58,10 +58,23 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qmetatype_p.h>
 
 #include "qmetatypeswitcher_p.h"
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+template<typename T>
+struct QVariantIntegrator
+{
+    static const bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data)
+                                            && (!QTypeInfo<T>::isStatic);
+};
+Q_STATIC_ASSERT(QVariantIntegrator<double>::CanUseInternalSpace);
+Q_STATIC_ASSERT(QVariantIntegrator<long int>::CanUseInternalSpace);
+Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
+} // namespace
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
@@ -69,9 +82,9 @@ template <typename T>
 inline T *v_cast(const QVariant::Private *nd, T * = 0)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(nd);
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+            : static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #else // every other compiler in this world
@@ -79,17 +92,17 @@ inline T *v_cast(const QVariant::Private *nd, T * = 0)
 template <typename T>
 inline const T *v_cast(const QVariant::Private *d, T * = 0)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<const T *>(d->data.shared->ptr)
-            : static_cast<const T *>(static_cast<const void *>(&d->data.c)));
+            : static_cast<const T *>(static_cast<const void *>(&d->data.c));
 }
 
 template <typename T>
 inline T *v_cast(QVariant::Private *d, T * = 0)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+            : static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #endif
@@ -110,7 +123,7 @@ private:
 template <class T>
 inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         x->data.shared = copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T *>(copy))
                               : new QVariantPrivateSharedEx<T>;
         x->is_shared = true;
@@ -125,7 +138,7 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 template <class T>
 inline void v_construct(QVariant::Private *x, const T &t)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         x->data.shared = new QVariantPrivateSharedEx<T>(t);
         x->is_shared = true;
     } else {
@@ -138,7 +151,7 @@ template <class T>
 inline void v_clear(QVariant::Private *d, T* = 0)
 {
     
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         //now we need to cast
         //because QVariant::PrivateShared doesn't have a virtual destructor
         delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
@@ -293,11 +306,11 @@ protected:
 template<class Filter>
 class QVariantConstructor
 {
-    template<typename T, bool IsSmall = (sizeof(T) <= sizeof(QVariant::Private::Data))>
+    template<typename T, bool CanUseInternalSpace = QVariantIntegrator<T>::CanUseInternalSpace>
     struct CallConstructor {};
 
     template<typename T>
-    struct CallConstructor<T, /* IsSmall = */ true>
+    struct CallConstructor<T, /* CanUseInternalSpace = */ true>
     {
         CallConstructor(const QVariantConstructor &tc)
         {
@@ -310,7 +323,7 @@ class QVariantConstructor
     };
 
     template<typename T>
-    struct CallConstructor<T, /* IsSmall = */ false>
+    struct CallConstructor<T, /* CanUseInternalSpace = */ false>
     {
         CallConstructor(const QVariantConstructor &tc)
         {
@@ -359,23 +372,21 @@ public:
             m_x->is_shared = false;
             return;
         }
-        // it is not a static known type, lets ask QMetaType if it can be constructed for us.
         const uint size = QMetaType::sizeOf(m_x->type);
+        if (!size) {
+            m_x->type = QVariant::Invalid;
+            return;
+        }
 
-        if (size && size <= sizeof(QVariant::Private::Data)) {
-            void *ptr = QMetaType::construct(m_x->type, &m_x->data.ptr, m_copy);
-            if (!ptr) {
-                m_x->type = QVariant::Invalid;
-            }
+        // this logic should match with QVariantIntegrator::CanUseInternalSpace
+        if (size <= sizeof(QVariant::Private::Data)
+                && (QMetaType::typeFlags(m_x->type) & QMetaType::MovableType)) {
+            QMetaType::construct(m_x->type, &m_x->data.ptr, m_copy);
             m_x->is_shared = false;
         } else {
             void *ptr = QMetaType::create(m_x->type, m_copy);
-            if (!ptr) {
-                m_x->type = QVariant::Invalid;
-            } else {
-                m_x->is_shared = true;
-                m_x->data.shared = new QVariant::PrivateShared(ptr);
-            }
+            m_x->is_shared = true;
+            m_x->data.shared = new QVariant::PrivateShared(ptr);
         }
     }
 
