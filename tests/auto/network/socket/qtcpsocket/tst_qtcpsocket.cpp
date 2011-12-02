@@ -489,7 +489,8 @@ void tst_QTcpSocket::bind_data()
             continue;
 
         foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
-            if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10")))
+            if (entry.ip().isInSubnet(QHostAddress::parseSubnet("fe80::/10"))
+                || entry.ip().isInSubnet(QHostAddress::parseSubnet("169.254/16")))
                 continue; // link-local bind will fail, at least on Linux, so skip it.
 
             QString ip(entry.ip().toString());
@@ -511,6 +512,9 @@ void tst_QTcpSocket::bind_data()
 
 void tst_QTcpSocket::bind()
 {
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("QTBUG-22964");
     QFETCH(QString, stringAddr);
     QFETCH(bool, successExpected);
     QFETCH(QString, stringExpectedLocalAddress);
