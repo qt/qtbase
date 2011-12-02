@@ -8,5 +8,3 @@ SUBDIRS=\
    qsqlrecord \
    qsqlthread \
    qsql \
-
-mac: qsql.CONFIG = no_check_target # QTBUG-22811
