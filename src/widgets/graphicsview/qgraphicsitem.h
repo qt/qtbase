@@ -1159,7 +1159,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QGraphicsItem *)
-Q_DECLARE_METATYPE(QGraphicsScene *)
 
 QT_BEGIN_NAMESPACE
 
