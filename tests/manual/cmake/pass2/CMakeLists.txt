@@ -10,4 +10,4 @@ include_directories(${Qt5Core_INCLUDE_DIRS})
 qt5_wrap_cpp(moc_files myobject.h)
 
 add_executable(myobject myobject.cpp ${moc_files})
-target_link_libraries(myobject ${Qt5Core_LIBRARY})
+target_link_libraries(myobject ${Qt5Core_LIBRARIES})

@@ -15,4 +15,4 @@ qt5_wrap_cpp(moc_files mywidget.h)
 qt5_wrap_ui(ui_files mywidget.ui)
 
 add_executable(mywidget mywidget.cpp ${moc_files} ${ui_files})
-target_link_libraries(mywidget ${Qt5Core_LIBRARY} ${Qt5Gui_LIBRARY} ${Qt5Widgets_LIBRARY})
+target_link_libraries(mywidget ${Qt5Widgets_LIBRARIES})
