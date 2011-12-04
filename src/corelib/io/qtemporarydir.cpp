@@ -45,7 +45,6 @@
 
 #include "qdiriterator.h"
 #include "qplatformdefs.h"
-#include "private/qdir_p.h"
 #include <QDebug>
 
 #if defined(QT_BUILD_CORE_LIB)
