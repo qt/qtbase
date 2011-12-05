@@ -9,5 +9,7 @@ include_directories(${Qt5Core_INCLUDE_DIRS})
 
 qt5_wrap_cpp(moc_files myobject.h)
 
-add_executable(myobject myobject.cpp ${moc_files})
+qt5_add_resources(rcc_files "pass2.qrc")
+
+add_executable(myobject myobject.cpp ${moc_files} ${rcc_files})
 target_link_libraries(myobject ${Qt5Core_LIBRARIES})
