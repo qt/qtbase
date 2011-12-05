@@ -731,104 +731,9 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    switch (v.userType()) {
-    case QVariant::Int:
-        dbg.nospace() << v.toInt();
-        break;
-    case QVariant::UInt:
-        dbg.nospace() << v.toUInt();
-        break;
-    case QVariant::LongLong:
-        dbg.nospace() << v.toLongLong();
-        break;
-    case QVariant::ULongLong:
-        dbg.nospace() << v.toULongLong();
-        break;
-    case QMetaType::Float:
-        dbg.nospace() << v.toFloat();
-        break;
-    case QMetaType::QObjectStar:
-        dbg.nospace() << qvariant_cast<QObject *>(v);
-        break;
-    case QVariant::Double:
-        dbg.nospace() << v.toDouble();
-        break;
-    case QVariant::Bool:
-        dbg.nospace() << v.toBool();
-        break;
-    case QVariant::String:
-        dbg.nospace() << v.toString();
-        break;
-    case QVariant::Char:
-        dbg.nospace() << v.toChar();
-        break;
-    case QVariant::StringList:
-        dbg.nospace() << v.toStringList();
-        break;
-    case QVariant::Map:
-        dbg.nospace() << v.toMap();
-        break;
-    case QVariant::Hash:
-        dbg.nospace() << v.toHash();
-        break;
-    case QVariant::List:
-        dbg.nospace() << v.toList();
-        break;
-    case QVariant::Date:
-        dbg.nospace() << v.toDate();
-        break;
-    case QVariant::Time:
-        dbg.nospace() << v.toTime();
-        break;
-    case QVariant::DateTime:
-        dbg.nospace() << v.toDateTime();
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-        dbg.nospace() << v.toEasingCurve();
-        break;
-#endif
-    case QVariant::ByteArray:
-        dbg.nospace() << v.toByteArray();
-        break;
-    case QVariant::Url:
-        dbg.nospace() << v.toUrl();
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Point:
-        dbg.nospace() << v.toPoint();
-        break;
-    case QVariant::PointF:
-        dbg.nospace() << v.toPointF();
-        break;
-    case QVariant::Rect:
-        dbg.nospace() << v.toRect();
-        break;
-    case QVariant::Size:
-        dbg.nospace() << v.toSize();
-        break;
-    case QVariant::SizeF:
-        dbg.nospace() << v.toSizeF();
-        break;
-    case QVariant::Line:
-        dbg.nospace() << v.toLine();
-        break;
-    case QVariant::LineF:
-        dbg.nospace() << v.toLineF();
-        break;
-    case QVariant::RectF:
-        dbg.nospace() << v.toRectF();
-        break;
-#endif
-    case QVariant::Uuid:
-        dbg.nospace() << v.value<QUuid>().toString();
-        break;
-    case QVariant::BitArray:
-        //dbg.nospace() << v.toBitArray();
-        break;
-    default:
-        break;
-    }
+    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    QVariantDebugStream<CoreTypesFilter> stream(dbg, d);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
 }
 #endif
 
@@ -2707,7 +2612,7 @@ bool QVariant::isNull() const
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QVariant(" << v.typeName() << ", ";
+    dbg.nospace() << "QVariant(" << QMetaType::typeName(v.userType()) << ", ";
     handlerManager[v.d.type]->debugStream(dbg, v);
     dbg.nospace() << ')';
     return dbg.space();
@@ -2721,7 +2626,7 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QVariant::" << QVariant::typeToName(p);
+    dbg.nospace() << "QVariant::" << QMetaType::typeName(p);
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QVariant::Type to QDebug");

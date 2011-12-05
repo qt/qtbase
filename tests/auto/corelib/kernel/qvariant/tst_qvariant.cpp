@@ -63,6 +63,7 @@
 #include <qvector3d.h>
 #include <qvector4d.h>
 #include <qquaternion.h>
+#include <qdebug.h>
 
 #include <limits.h>
 
@@ -259,6 +260,8 @@ private slots:
     void colorInteger();
 
     void forwardDeclare();
+    void debugStream_data();
+    void debugStream();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -3328,6 +3331,65 @@ void tst_QVariant::forwardDeclare()
     Forward *f = 0;
     QVariant v = QVariant::fromValue(f);
     QCOMPARE(qvariant_cast<Forward*>(v), f);
+}
+
+
+class MessageHandler {
+public:
+    MessageHandler(const int typeId)
+        : oldMsgHandler(qInstallMsgHandler(handler))
+    {
+        currentId = typeId;
+    }
+
+    ~MessageHandler()
+    {
+        qInstallMsgHandler(oldMsgHandler);
+    }
+
+    bool testPassed() const
+    {
+        return ok;
+    }
+private:
+    static void handler(QtMsgType, const char *txt)
+    {
+        QString msg = QString::fromLatin1(txt);
+        // Format itself is not important, but basic data as a type name should be included in the output
+        ok = msg.startsWith("QVariant(") + QMetaType::typeName(currentId);
+        QVERIFY2(ok, (QString::fromLatin1("Message is not valid: '") + msg + '\'').toLatin1().constData());
+    }
+
+    QtMsgHandler oldMsgHandler;
+    static int currentId;
+    static bool ok;
+};
+bool MessageHandler::ok;
+int MessageHandler::currentId;
+
+void tst_QVariant::debugStream_data()
+{
+    QTest::addColumn<QVariant>("variant");
+    QTest::addColumn<int>("typeId");
+    for (int id = QMetaType::Void; id < QMetaType::User; ++id) {
+        const char *tagName = QMetaType::typeName(id);
+        if (!tagName)
+            continue;
+        QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+    }
+    QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
+    QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
+    QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
+}
+
+void tst_QVariant::debugStream()
+{
+    QFETCH(QVariant, variant);
+    QFETCH(int, typeId);
+
+    MessageHandler msgHandler(typeId);
+    qDebug() << variant;
+    QVERIFY(msgHandler.testPassed());
 }
 
 

@@ -58,6 +58,9 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qmetatype_p.h>
+#include <QtCore/qdebug.h>
+
 #include "qmetatypeswitcher_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -417,6 +420,54 @@ namespace QVariantPrivate {
 Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
 Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
 }
+
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+template<class Filter>
+class QVariantDebugStream
+{
+    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    struct Filtered {
+        Filtered(QDebug dbg, QVariant::Private *d)
+        {
+            dbg.nospace() << *v_cast<T>(d);
+        }
+    };
+    template<typename T>
+    struct Filtered<T, /* IsAcceptedType = */ false> {
+        Filtered(QDebug dbg, QVariant::Private *d)
+        {
+            dbg.nospace() << "QVariant::Type(" << d->type << ")";
+        }
+    };
+
+public:
+    QVariantDebugStream(QDebug dbg, QVariant::Private *d)
+        : m_debugStream(dbg)
+        , m_d(d)
+    {}
+
+    template<typename T>
+    void delegate(const T*)
+    {
+        Filtered<T> streamIt(m_debugStream, m_d);
+    }
+
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        if (m_d->type == QVariant::UserType)
+            m_debugStream.nospace() << "QVariant::UserType";
+        else
+            qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+    }
+    void delegate(const void*)
+    {
+        m_debugStream.nospace() << "QVariant::Invalid";
+    }
+private:
+    QDebug m_debugStream;
+    QVariant::Private *m_d;
+};
+#endif
 
 QT_END_NAMESPACE
 

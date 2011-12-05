@@ -127,6 +127,23 @@ static bool convert(const QVariant::Private *d, QVariant::Type type, void *resul
     return false;
 }
 
+static void streamDebug(QDebug dbg, const QVariant &v)
+{
+    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    switch (d->type) {
+#ifndef QT_NO_ICON
+    case QVariant::Icon:
+        dbg.nospace() << *v_cast<QIcon>(d);
+        break;
+#endif
+    case QVariant::SizePolicy:
+        dbg.nospace() << *v_cast<QSizePolicy>(d);
+        break;
+    default:
+        dbg.nospace() << "QVariant::Type(" << d->type << ")";
+    }
+}
+
 static const QVariant::Handler widgets_handler = {
     construct,
     clear,
@@ -139,7 +156,7 @@ static const QVariant::Handler widgets_handler = {
     convert,
     0,
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
-    0
+    streamDebug
 #else
     0
 #endif

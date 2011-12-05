@@ -345,90 +345,9 @@ static bool convert(const QVariant::Private *d, QVariant::Type t,
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    switch(v.type()) {
-    case QVariant::Cursor:
-#ifndef QT_NO_CURSOR
-//        dbg.nospace() << qvariant_cast<QCursor>(v); //FIXME
-#endif
-        break;
-    case QVariant::Bitmap:
-//        dbg.nospace() << qvariant_cast<QBitmap>(v); //FIXME
-        break;
-    case QVariant::Polygon:
-        dbg.nospace() << qvariant_cast<QPolygon>(v);
-        break;
-    case QVariant::Region:
-        dbg.nospace() << qvariant_cast<QRegion>(v);
-        break;
-    case QVariant::Font:
-//        dbg.nospace() << qvariant_cast<QFont>(v);  //FIXME
-        break;
-    case QVariant::Matrix:
-        dbg.nospace() << qvariant_cast<QMatrix>(v);
-        break;
-    case QVariant::Transform:
-        dbg.nospace() << qvariant_cast<QTransform>(v);
-        break;
-    case QVariant::Pixmap:
-//        dbg.nospace() << qvariant_cast<QPixmap>(v); //FIXME
-        break;
-    case QVariant::Image:
-//        dbg.nospace() << qvariant_cast<QImage>(v); //FIXME
-        break;
-    case QVariant::Brush:
-        dbg.nospace() << qvariant_cast<QBrush>(v);
-        break;
-    case QVariant::Color:
-        dbg.nospace() << qvariant_cast<QColor>(v);
-        break;
-    case QVariant::Palette:
-//        dbg.nospace() << qvariant_cast<QPalette>(v); //FIXME
-        break;
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-//        dbg.nospace() << qvariant_cast<QIcon>(v); // FIXME
-        break;
-#endif
-    case QVariant::SizePolicy:
-//        dbg.nospace() << qvariant_cast<QSizePolicy>(v); //FIXME
-        break;
-#ifndef QT_NO_SHORTCUT
-    case QVariant::KeySequence:
-        dbg.nospace() << qvariant_cast<QKeySequence>(v);
-        break;
-#endif
-    case QVariant::Pen:
-        dbg.nospace() << qvariant_cast<QPen>(v);
-        break;
-#ifndef QT_NO_MATRIX4X4
-    case QVariant::Matrix4x4:
-        dbg.nospace() << qvariant_cast<QMatrix4x4>(v);
-        break;
-#endif
-#ifndef QT_NO_VECTOR2D
-    case QVariant::Vector2D:
-        dbg.nospace() << qvariant_cast<QVector2D>(v);
-        break;
-#endif
-#ifndef QT_NO_VECTOR3D
-    case QVariant::Vector3D:
-        dbg.nospace() << qvariant_cast<QVector3D>(v);
-        break;
-#endif
-#ifndef QT_NO_VECTOR4D
-    case QVariant::Vector4D:
-        dbg.nospace() << qvariant_cast<QVector4D>(v);
-        break;
-#endif
-#ifndef QT_NO_QUATERNION
-    case QVariant::Quaternion:
-        dbg.nospace() << qvariant_cast<QQuaternion>(v);
-        break;
-#endif
-    default:
-        qcoreVariantHandler()->debugStream(dbg, v);
-        break;
-    }
+    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    QVariantDebugStream<GuiTypesFilter> stream(dbg, d);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
 }
 #endif
 

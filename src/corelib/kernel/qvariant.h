@@ -397,6 +397,7 @@ private:
 public:
     typedef Private DataPtr;
     inline DataPtr &data_ptr() { return d; }
+    inline const DataPtr &data_ptr() const { return d; }
 };
 
 template <typename T>
