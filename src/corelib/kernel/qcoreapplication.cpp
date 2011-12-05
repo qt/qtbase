@@ -787,6 +787,14 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
+    // Make it possible for QtScript to hook into events even
+    // though QApplication is subclassed...
+    bool result = false;
+    void *cbdata[] = { receiver, event, &result };
+    if (QInternal::activateCallbacks(QInternal::EventNotifyCallback, cbdata)) {
+        return result;
+    }
+
     // Qt enforces the rule that events can only be sent to objects in
     // the current thread, so receiver->d_func()->threadData is
     // equivalent to QThreadData::current(), just without the function

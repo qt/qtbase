@@ -1599,6 +1599,14 @@ public:
         BottomDock,
         DockCount
     };
+
+    enum Callback {
+        EventNotifyCallback,
+        LastCallback
+    };
+    static bool registerCallback(Callback, qInternalCallback);
+    static bool unregisterCallback(Callback, qInternalCallback);
+    static bool activateCallbacks(Callback, void **);
 };
 
 QT_END_NAMESPACE
