@@ -36,23 +36,7 @@
 #
 ######################################
 
-MACRO (QT5_EXTRACT_OPTIONS _qt5_files _qt5_options)
-  SET(${_qt5_files})
-  SET(${_qt5_options})
-  SET(_QT5_DOING_OPTIONS FALSE)
-  FOREACH(_currentArg ${ARGN})
-    IF ("${_currentArg}" STREQUAL "OPTIONS")
-      SET(_QT5_DOING_OPTIONS TRUE)
-    ELSE ("${_currentArg}" STREQUAL "OPTIONS")
-      IF(_QT5_DOING_OPTIONS)
-        LIST(APPEND ${_qt5_options} "${_currentArg}")
-      ELSE(_QT5_DOING_OPTIONS)
-        LIST(APPEND ${_qt5_files} "${_currentArg}")
-      ENDIF(_QT5_DOING_OPTIONS)
-    ENDIF ("${_currentArg}" STREQUAL "OPTIONS")
-  ENDFOREACH(_currentArg)
-ENDMACRO (QT5_EXTRACT_OPTIONS)
-
+include(CMakeParseArguments)
 
 # macro used to create the names of output files preserving relative dirs
 MACRO (QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
@@ -156,8 +140,15 @@ ENDMACRO (QT5_GENERATE_MOC)
 MACRO (QT5_WRAP_CPP outfiles )
   # get include dirs
   QT5_GET_MOC_FLAGS(moc_flags)
-  QT5_EXTRACT_OPTIONS(moc_files moc_options ${ARGN})
 
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs OPTIONS)
+
+  cmake_parse_arguments(_WRAP_CPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(moc_files ${_WRAP_CPP_UNPARSED_ARGUMENTS})
+  set(moc_options ${_WRAP_CPP_OPTIONS})
   FOREACH (it ${moc_files})
     GET_FILENAME_COMPONENT(it ${it} ABSOLUTE)
     QT5_MAKE_OUTPUT_FILE(${it} moc_ cxx outfile)
@@ -171,7 +162,15 @@ ENDMACRO (QT5_WRAP_CPP)
 # QT5_ADD_RESOURCES(outfiles inputfile ... )
 
 MACRO (QT5_ADD_RESOURCES outfiles )
-  QT5_EXTRACT_OPTIONS(rcc_files rcc_options ${ARGN})
+
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs OPTIONS)
+
+  cmake_parse_arguments(_RCC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
+  set(rcc_options ${_RCC_OPTIONS})
 
   FOREACH (it ${rcc_files})
     GET_FILENAME_COMPONENT(outfilename ${it} NAME_WE)

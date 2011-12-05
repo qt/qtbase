@@ -36,28 +36,20 @@
 #
 ######################################
 
-MACRO (QT5_EXTRACT_OPTIONS _qt5_files _qt5_options)
-  SET(${_qt5_files})
-  SET(${_qt5_options})
-  SET(_QT5_DOING_OPTIONS FALSE)
-  FOREACH(_currentArg ${ARGN})
-    IF ("${_currentArg}" STREQUAL "OPTIONS")
-      SET(_QT5_DOING_OPTIONS TRUE)
-    ELSE ("${_currentArg}" STREQUAL "OPTIONS")
-      IF(_QT5_DOING_OPTIONS)
-        LIST(APPEND ${_qt5_options} "${_currentArg}")
-      ELSE(_QT5_DOING_OPTIONS)
-        LIST(APPEND ${_qt5_files} "${_currentArg}")
-      ENDIF(_QT5_DOING_OPTIONS)
-    ENDIF ("${_currentArg}" STREQUAL "OPTIONS")
-  ENDFOREACH(_currentArg)
-ENDMACRO (QT5_EXTRACT_OPTIONS)
+include(CMakeParseArguments)
 
 
 # QT5_WRAP_UI(outfiles inputfile ... )
 
 MACRO (QT5_WRAP_UI outfiles )
-  QT5_EXTRACT_OPTIONS(ui_files ui_options ${ARGN})
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs OPTIONS)
+
+  cmake_parse_arguments(_WRAP_UI "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  set(ui_files ${_WRAP_UI_UNPARSED_ARGUMENTS})
+  set(ui_options ${_WRAP_UI_OPTIONS})
 
   FOREACH (it ${ui_files})
     GET_FILENAME_COMPONENT(outfile ${it} NAME_WE)
