@@ -1804,13 +1804,14 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 */
 
 template <typename T>
-inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t, const HandlersManager &handlerManager)
+inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &handlerManager)
 {
-    if (d.type == t)
+    const QVariant::Type targetType = static_cast<const QVariant::Type>(qMetaTypeId<T>());
+    if (d.type == targetType)
         return *v_cast<T>(&d);
 
     T ret;
-    handlerManager[d.type]->convert(&d, t, &ret, 0);
+    handlerManager[d.type]->convert(&d, targetType, &ret, 0);
     return ret;
 }
 
@@ -1825,7 +1826,7 @@ inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t, const Ha
 */
 QStringList QVariant::toStringList() const
 {
-    return qVariantToHelper<QStringList>(d, StringList, handlerManager);
+    return qVariantToHelper<QStringList>(d, handlerManager);
 }
 
 /*!
@@ -1838,7 +1839,7 @@ QStringList QVariant::toStringList() const
 */
 QString QVariant::toString() const
 {
-    return qVariantToHelper<QString>(d, String, handlerManager);
+    return qVariantToHelper<QString>(d, handlerManager);
 }
 
 /*!
@@ -1849,7 +1850,7 @@ QString QVariant::toString() const
 */
 QVariantMap QVariant::toMap() const
 {
-    return qVariantToHelper<QVariantMap>(d, Map, handlerManager);
+    return qVariantToHelper<QVariantMap>(d, handlerManager);
 }
 
 /*!
@@ -1860,7 +1861,7 @@ QVariantMap QVariant::toMap() const
 */
 QVariantHash QVariant::toHash() const
 {
-    return qVariantToHelper<QVariantHash>(d, Hash, handlerManager);
+    return qVariantToHelper<QVariantHash>(d, handlerManager);
 }
 
 /*!
@@ -1876,7 +1877,7 @@ QVariantHash QVariant::toHash() const
 */
 QDate QVariant::toDate() const
 {
-    return qVariantToHelper<QDate>(d, Date, handlerManager);
+    return qVariantToHelper<QDate>(d, handlerManager);
 }
 
 /*!
@@ -1892,7 +1893,7 @@ QDate QVariant::toDate() const
 */
 QTime QVariant::toTime() const
 {
-    return qVariantToHelper<QTime>(d, Time, handlerManager);
+    return qVariantToHelper<QTime>(d, handlerManager);
 }
 
 /*!
@@ -1909,7 +1910,7 @@ QTime QVariant::toTime() const
 */
 QDateTime QVariant::toDateTime() const
 {
-    return qVariantToHelper<QDateTime>(d, DateTime, handlerManager);
+    return qVariantToHelper<QDateTime>(d, handlerManager);
 }
 
 /*!
@@ -1924,7 +1925,7 @@ QDateTime QVariant::toDateTime() const
 #ifndef QT_BOOTSTRAPPED
 QEasingCurve QVariant::toEasingCurve() const
 {
-    return qVariantToHelper<QEasingCurve>(d, EasingCurve, handlerManager);
+    return qVariantToHelper<QEasingCurve>(d, handlerManager);
 }
 #endif
 
@@ -1939,7 +1940,7 @@ QEasingCurve QVariant::toEasingCurve() const
 */
 QByteArray QVariant::toByteArray() const
 {
-    return qVariantToHelper<QByteArray>(d, ByteArray, handlerManager);
+    return qVariantToHelper<QByteArray>(d, handlerManager);
 }
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -1953,7 +1954,7 @@ QByteArray QVariant::toByteArray() const
 */
 QPoint QVariant::toPoint() const
 {
-    return qVariantToHelper<QPoint>(d, Point, handlerManager);
+    return qVariantToHelper<QPoint>(d, handlerManager);
 }
 
 /*!
@@ -1966,7 +1967,7 @@ QPoint QVariant::toPoint() const
 */
 QRect QVariant::toRect() const
 {
-    return qVariantToHelper<QRect>(d, Rect, handlerManager);
+    return qVariantToHelper<QRect>(d, handlerManager);
 }
 
 /*!
@@ -1979,7 +1980,7 @@ QRect QVariant::toRect() const
 */
 QSize QVariant::toSize() const
 {
-    return qVariantToHelper<QSize>(d, Size, handlerManager);
+    return qVariantToHelper<QSize>(d, handlerManager);
 }
 
 /*!
@@ -1992,7 +1993,7 @@ QSize QVariant::toSize() const
 */
 QSizeF QVariant::toSizeF() const
 {
-    return qVariantToHelper<QSizeF>(d, SizeF, handlerManager);
+    return qVariantToHelper<QSizeF>(d, handlerManager);
 }
 
 /*!
@@ -2005,7 +2006,7 @@ QSizeF QVariant::toSizeF() const
 */
 QRectF QVariant::toRectF() const
 {
-    return qVariantToHelper<QRectF>(d, RectF, handlerManager);
+    return qVariantToHelper<QRectF>(d, handlerManager);
 }
 
 /*!
@@ -2018,7 +2019,7 @@ QRectF QVariant::toRectF() const
 */
 QLineF QVariant::toLineF() const
 {
-    return qVariantToHelper<QLineF>(d, LineF, handlerManager);
+    return qVariantToHelper<QLineF>(d, handlerManager);
 }
 
 /*!
@@ -2031,7 +2032,7 @@ QLineF QVariant::toLineF() const
 */
 QLine QVariant::toLine() const
 {
-    return qVariantToHelper<QLine>(d, Line, handlerManager);
+    return qVariantToHelper<QLine>(d, handlerManager);
 }
 
 /*!
@@ -2044,7 +2045,7 @@ QLine QVariant::toLine() const
 */
 QPointF QVariant::toPointF() const
 {
-    return qVariantToHelper<QPointF>(d, PointF, handlerManager);
+    return qVariantToHelper<QPointF>(d, handlerManager);
 }
 
 #endif // QT_NO_GEOM_VARIANT
@@ -2059,7 +2060,7 @@ QPointF QVariant::toPointF() const
 */
 QUrl QVariant::toUrl() const
 {
-    return qVariantToHelper<QUrl>(d, Url, handlerManager);
+    return qVariantToHelper<QUrl>(d, handlerManager);
 }
 
 /*!
@@ -2072,7 +2073,7 @@ QUrl QVariant::toUrl() const
 */
 QLocale QVariant::toLocale() const
 {
-    return qVariantToHelper<QLocale>(d, Locale, handlerManager);
+    return qVariantToHelper<QLocale>(d, handlerManager);
 }
 
 /*!
@@ -2087,7 +2088,7 @@ QLocale QVariant::toLocale() const
 #ifndef QT_NO_REGEXP
 QRegExp QVariant::toRegExp() const
 {
-    return qVariantToHelper<QRegExp>(d, RegExp, handlerManager);
+    return qVariantToHelper<QRegExp>(d, handlerManager);
 }
 #endif
 
@@ -2101,7 +2102,7 @@ QRegExp QVariant::toRegExp() const
 */
 QChar QVariant::toChar() const
 {
-    return qVariantToHelper<QChar>(d, Char, handlerManager);
+    return qVariantToHelper<QChar>(d, handlerManager);
 }
 
 /*!
@@ -2112,7 +2113,7 @@ QChar QVariant::toChar() const
 */
 QBitArray QVariant::toBitArray() const
 {
-    return qVariantToHelper<QBitArray>(d, BitArray, handlerManager);
+    return qVariantToHelper<QBitArray>(d, handlerManager);
 }
 
 template <typename T>
@@ -2281,7 +2282,7 @@ qreal QVariant::toReal(bool *ok) const
 */
 QVariantList QVariant::toList() const
 {
-    return qVariantToHelper<QVariantList>(d, List, handlerManager);
+    return qVariantToHelper<QVariantList>(d, handlerManager);
 }
 
 
