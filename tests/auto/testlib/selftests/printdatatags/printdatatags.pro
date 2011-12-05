@@ -1,4 +1,3 @@
-CONFIG += testcase
 SOURCES += tst_printdatatags.cpp
 QT = core testlib
 
