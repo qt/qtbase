@@ -54,29 +54,6 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#ifndef QT_DISABLE_DEPRECATED_BEFORE
-// ### Qt5: remember to change that to 5 when we reach feature freeze
-#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(4, 9, 0)
-#endif
-
-/*
-    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
-    the deprecation point specified.
-
-    Use it to specify from which version of Qt a function or class has been deprecated
-
-    Example:
-        #if QT_DEPRECATED_SINCE(5,1)
-            QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
-        #endif
-
-*/
-#ifdef QT_DEPRECATED
-#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
-#else
-#define QT_DEPRECATED_SINCE(major, minor) 0
-#endif
-
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
 #define QT_PACKAGE_TAG ""
@@ -1012,6 +989,29 @@ redefine to built-in booleans to make autotests work properly */
 #  define QT_DEPRECATED_VARIABLE
 #  undef QT_DEPRECATED_CONSTRUCTOR
 #  define QT_DEPRECATED_CONSTRUCTOR
+#endif
+
+#ifndef QT_DISABLE_DEPRECATED_BEFORE
+// ### Qt5: remember to change that to 5 when we reach feature freeze
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(4, 9, 0)
+#endif
+
+/*
+    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
+    the deprecation point specified.
+
+    Use it to specify from which version of Qt a function or class has been deprecated
+
+    Example:
+        #if QT_DEPRECATED_SINCE(5,1)
+            QT_DEPRECATED void deprecatedFunction(); //function deprecated since Qt 5.1
+        #endif
+
+*/
+#ifdef QT_DEPRECATED
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+#else
+#define QT_DEPRECATED_SINCE(major, minor) 0
 #endif
 
 /* moc compats (signals/slots) */
