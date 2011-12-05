@@ -115,9 +115,9 @@ Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat =
     }
 
     // Copy over the data
-    QImage::Format imageFormat = QImage::Format_ARGB32;
+    QImage::Format imageFormat = QImage::Format_RGB32;
     if (hbitmapFormat == HBitmapAlpha)
-        imageFormat = QImage::Format_RGB32;
+        imageFormat = QImage::Format_ARGB32;
     else if (hbitmapFormat == HBitmapPremultipliedAlpha)
         imageFormat = QImage::Format_ARGB32_Premultiplied;
     const QImage image = rasterImage->convertToFormat(imageFormat);
