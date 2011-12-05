@@ -45,6 +45,9 @@ runs.
  src/ia32/lithium-ia32.cc         |    4 +-
  src/ia32/lithium-ia32.h          |   12 +++++-
  src/ia32/macro-assembler-ia32.h  |    3 +
+ src/mips/code-stubs-mips.cc      |    5 ++
+ src/mips/full-codegen-mips.cc    |   30 ++++++++-----
+ src/mips/macro-assembler-mips.h  |    5 ++
  src/objects-inl.h                |    2 +
  src/objects.h                    |    7 +++
  src/parser.cc                    |   28 +++++++++++--
@@ -64,7 +67,7 @@ runs.
  src/x64/lithium-x64.cc           |    4 +-
  src/x64/lithium-x64.h            |   12 +++++
  src/x64/macro-assembler-x64.h    |    5 ++
- 49 files changed, 531 insertions(+), 129 deletions(-)
+ 52 files changed, 559 insertions(+), 141 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
 index 3ef4dd6..193e2fe 100644
@@ -1260,6 +1263,138 @@ index 8528c55..de3c3a0 100644
  
  // Generates an Operand for saving parameters after PrepareCallApiFunction.
  Operand ApiParameterOperand(int index);
+diff --git a/src/mips/code-stubs-mips.cc b/src/mips/code-stubs-mips.cc
+index 85e929d..a534b78 100644
+--- a/src/mips/code-stubs-mips.cc
++++ b/src/mips/code-stubs-mips.cc
+@@ -173,6 +173,11 @@ void FastNewContextStub::Generate(MacroAssembler* masm) {
+   __ lw(a1, MemOperand(cp, Context::SlotOffset(Context::GLOBAL_INDEX)));
+   __ sw(a1, MemOperand(v0, Context::SlotOffset(Context::GLOBAL_INDEX)));
+ 
++  // Copy the qml global object from the surrounding context.
++  __ lw(a1, MemOperand(cp, Context::SlotOffset(Context::QML_GLOBAL_INDEX)));
++  __ sw(a1, MemOperand(v0, Context::SlotOffset(Context::QML_GLOBAL_INDEX)));
++
++
+   // Initialize the rest of the slots to undefined.
+   __ LoadRoot(a1, Heap::kUndefinedValueRootIndex);
+   for (int i = Context::MIN_CONTEXT_SLOTS; i < length; i++) {
+diff --git a/src/mips/full-codegen-mips.cc b/src/mips/full-codegen-mips.cc
+index 2f989bc..b6bd407 100644
+--- a/src/mips/full-codegen-mips.cc
++++ b/src/mips/full-codegen-mips.cc
+@@ -191,12 +191,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
+ 
+   // Possibly allocate a local context.
+   int heap_slots = info->scope()->num_heap_slots() - Context::MIN_CONTEXT_SLOTS;
+-  if (heap_slots > 0) {
++  if (heap_slots > 0 ||
++      (scope()->is_qml_mode() && scope()->is_global_scope())) {
+     Comment cmnt(masm_, "[ Allocate local context");
+     // Argument to NewContext is the function, which is in a1.
+     __ push(a1);
+     if (heap_slots <= FastNewContextStub::kMaximumSlots) {
+-      FastNewContextStub stub(heap_slots);
++      FastNewContextStub stub((heap_slots < 0)?0:heap_slots);
+       __ CallStub(&stub);
+     } else {
+       __ CallRuntime(Runtime::kNewFunctionContext, 1);
+@@ -1199,9 +1200,9 @@ void FullCodeGenerator::EmitLoadGlobalCheckExtensions(Variable* var,
+     __ bind(&fast);
+   }
+ 
+-  __ lw(a0, GlobalObjectOperand());
++  __ lw(a0, var->is_qml_global() ? QmlGlobalObjectOperand():GlobalObjectOperand());
+   __ li(a2, Operand(var->name()));
+-  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF)
++  RelocInfo::Mode mode = (typeof_state == INSIDE_TYPEOF || var->is_qml_global())
+       ? RelocInfo::CODE_TARGET
+       : RelocInfo::CODE_TARGET_CONTEXT;
+   Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+@@ -1286,10 +1287,10 @@ void FullCodeGenerator::EmitVariableLoad(VariableProxy* proxy) {
+       Comment cmnt(masm_, "Global variable");
+       // Use inline caching. Variable name is passed in a2 and the global
+       // object (receiver) in a0.
+-      __ lw(a0, GlobalObjectOperand());
++      __ lw(a0, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+       __ li(a2, Operand(var->name()));
+       Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+-      __ Call(ic, RelocInfo::CODE_TARGET_CONTEXT);
++      __ Call(ic, var->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+       context()->Plug(v0);
+       break;
+     }
+@@ -1937,7 +1938,7 @@ void FullCodeGenerator::EmitVariableAssignment(Variable* var,
+     // Global var, const, or let.
+     __ mov(a0, result_register());
+     __ li(a2, Operand(var->name()));
+-    __ lw(a1, GlobalObjectOperand());
++    __ lw(a1, var->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+     Handle<Code> ic = is_strict_mode()
+         ? isolate()->builtins()->StoreIC_Initialize_Strict()
+         : isolate()->builtins()->StoreIC_Initialize();
+@@ -2246,9 +2247,14 @@ void FullCodeGenerator::EmitResolvePossiblyDirectEval(ResolveEvalFlag flag,
+   __ li(a1, Operand(Smi::FromInt(strict_mode)));
+   __ push(a1);
+ 
++
++  // Push the qml mode flag.
++  __ li(a1, Operand(Smi::FromInt(is_qml_mode())));
++  __ push(a1);
++
+   __ CallRuntime(flag == SKIP_CONTEXT_LOOKUP
+                  ? Runtime::kResolvePossiblyDirectEvalNoLookup
+-                 : Runtime::kResolvePossiblyDirectEval, 4);
++                 : Runtime::kResolvePossiblyDirectEval, 5);
+ }
+ 
+ 
+@@ -2320,9 +2326,9 @@ void FullCodeGenerator::VisitCall(Call* expr) {
+     context()->DropAndPlug(1, v0);
+   } else if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     // Push global object as receiver for the call IC.
+-    __ lw(a0, GlobalObjectOperand());
++    __ lw(a0, proxy->var()->is_qml_global()?QmlGlobalObjectOperand():GlobalObjectOperand());
+     __ push(a0);
+-    EmitCallWithIC(expr, proxy->name(), RelocInfo::CODE_TARGET_CONTEXT);
++    EmitCallWithIC(expr, proxy->name(), proxy->var()->is_qml_global()?RelocInfo::CODE_TARGET:RelocInfo::CODE_TARGET_CONTEXT);
+   } else if (proxy != NULL && proxy->var()->IsLookupSlot()) {
+     // Call to a lookup slot (dynamically introduced variable).
+     Label slow, done;
+@@ -3743,7 +3749,7 @@ void FullCodeGenerator::VisitUnaryOperation(UnaryOperation* expr) {
+         // but "delete this" is allowed.
+         ASSERT(strict_mode_flag() == kNonStrictMode || var->is_this());
+         if (var->IsUnallocated()) {
+-          __ lw(a2, GlobalObjectOperand());
++          __ lw(a2, var->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+           __ li(a1, Operand(var->name()));
+           __ li(a0, Operand(Smi::FromInt(kNonStrictMode)));
+           __ Push(a2, a1, a0);
+@@ -4032,7 +4038,7 @@ void FullCodeGenerator::VisitForTypeofValue(Expression* expr) {
+   VariableProxy* proxy = expr->AsVariableProxy();
+   if (proxy != NULL && proxy->var()->IsUnallocated()) {
+     Comment cmnt(masm_, "Global variable");
+-    __ lw(a0, GlobalObjectOperand());
++    __ lw(a0, proxy->var()->is_qml_global() ? QmlGlobalObjectOperand() : GlobalObjectOperand());
+     __ li(a2, Operand(proxy->name()));
+     Handle<Code> ic = isolate()->builtins()->LoadIC_Initialize();
+     // Use a regular load, not a contextual load, to avoid a reference
+diff --git a/src/mips/macro-assembler-mips.h b/src/mips/macro-assembler-mips.h
+index 84c55f7..5224db9 100644
+--- a/src/mips/macro-assembler-mips.h
++++ b/src/mips/macro-assembler-mips.h
+@@ -112,6 +112,11 @@ static inline MemOperand GlobalObjectOperand()  {
+ }
+ 
+ 
++static inline MemOperand QmlGlobalObjectOperand()  {
++  return ContextOperand(cp, Context::QML_GLOBAL_INDEX);
++}
++
++
+ // Generate a MemOperand for loading a field from an object.
+ static inline MemOperand FieldMemOperand(Register object, int offset) {
+   return MemOperand(object, offset - kHeapObjectTag);
 diff --git a/src/objects-inl.h b/src/objects-inl.h
 index 6a80c9c..2e83fb7 100644
 --- a/src/objects-inl.h
