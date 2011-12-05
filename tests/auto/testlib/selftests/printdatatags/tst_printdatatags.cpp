@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 
-class tst_MyTestCase: public QObject
+class tst_PrintDataTags: public QObject
 {
     Q_OBJECT
 private slots:
@@ -55,7 +55,7 @@ private slots:
     void c() const;
 };
 
-void tst_MyTestCase::a_data() const
+void tst_PrintDataTags::a_data() const
 {
     QTest::addColumn<int>("x");
     QTest::addColumn<int>("y");
@@ -64,15 +64,15 @@ void tst_MyTestCase::a_data() const
     QTest::newRow("data tag a2") << 1 << 2;
 }
 
-void tst_MyTestCase::a() const
+void tst_PrintDataTags::a() const
 {
 }
 
-void tst_MyTestCase::b() const
+void tst_PrintDataTags::b() const
 {
 }
 
-void tst_MyTestCase::c_data() const
+void tst_PrintDataTags::c_data() const
 {
     QTest::addColumn<int>("x");
 
@@ -81,10 +81,10 @@ void tst_MyTestCase::c_data() const
     QTest::newRow("data tag c3") << 1;
 }
 
-void tst_MyTestCase::c() const
+void tst_PrintDataTags::c() const
 {
 }
 
-QTEST_MAIN(tst_MyTestCase)
+QTEST_MAIN(tst_PrintDataTags)
 
 #include "tst_printdatatags.moc"

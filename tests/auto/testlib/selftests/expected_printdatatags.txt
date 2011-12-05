@@ -1,6 +1,6 @@
-tst_MyTestCase a data tag a1 
-tst_MyTestCase a data tag a2
-tst_MyTestCase b
-tst_MyTestCase c data tag c1
-tst_MyTestCase c data tag c2
-tst_MyTestCase c data tag c3
+tst_PrintDataTags a data tag a1 
+tst_PrintDataTags a data tag a2
+tst_PrintDataTags b
+tst_PrintDataTags c data tag c1
+tst_PrintDataTags c data tag c2
+tst_PrintDataTags c data tag c3
