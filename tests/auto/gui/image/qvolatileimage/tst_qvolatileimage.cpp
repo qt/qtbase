@@ -202,12 +202,5 @@ void tst_QVolatileImage::copy()
     QVERIFY(fuzzyCompareImages(imgA, imgB, 0));
 }
 
-int main(int argc, char *argv[])
-{
-    QApplication::setGraphicsSystem("openvg");
-    QApplication app(argc, argv);
-    tst_QVolatileImage tc;
-    return QTest::qExec(&tc, argc, argv);
-}
-
+QTEST_MAIN(tst_QVolatileImage)
 #include "tst_qvolatileimage.moc"
