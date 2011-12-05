@@ -5,7 +5,7 @@ Subject: [PATCH 04/12] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
-present on the JS global object, it is resolve on the QML global
+present on the JS global object, it is resolved on the QML global
 object.
 
 This global object behavior is only enabled if a script is being
