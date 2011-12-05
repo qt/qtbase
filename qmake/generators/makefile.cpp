@@ -1487,6 +1487,29 @@ MakefileGenerator::createObjectList(const QStringList &sources)
             int dl = fName.lastIndexOf(Option::dir_sep);
             if(dl != -1)
                 dir = fName.left(dl + 1);
+        } else if (project->isActiveConfig("object_parallel_to_source")) {
+            // The source paths are relative to the output dir, but we need source-relative paths
+            QString sourceRelativePath = fileFixify(*it, qmake_getpwd(), Option::output_dir);
+            sourceRelativePath = Option::fixPathToTargetOS(sourceRelativePath, false);
+
+            if (sourceRelativePath.startsWith(".." + Option::dir_sep))
+                sourceRelativePath = fileFixify(sourceRelativePath, FileFixifyAbsolute);
+
+            if (QDir::isAbsolutePath(sourceRelativePath))
+                sourceRelativePath.remove(0, sourceRelativePath.indexOf(Option::dir_sep) + 1);
+
+            dir = objdir; // We still respect OBJECTS_DIR
+
+            int lastDirSepPosition = sourceRelativePath.lastIndexOf(Option::dir_sep);
+            if (lastDirSepPosition != -1)
+                dir += sourceRelativePath.leftRef(lastDirSepPosition + 1);
+
+            if (!noIO()) {
+                // Ensure that the final output directory of each object exists
+                QString outRelativePath = fileFixify(dir, qmake_getpwd(), Option::output_dir);
+                if (!mkdir(outRelativePath))
+                    warn_msg(WarnLogic, "Cannot create directory '%s'", outRelativePath.toLatin1().constData());
+            }
         } else {
             dir = objdir;
         }
