@@ -152,6 +152,14 @@ if (-d $qtdir . '/include/QtQuick1') {
     print "Warning - cannot find QtQuick1 headers\n";
 }
 
+# Support porting from "Qt 4.99" QtDeclarative to QtQuick (QQuickItem et al)
+if (-d $qtdir . '/include/QtQuick') {
+    findQtHeaders('QtQuick', $qtdir);
+} elsif (-d $qtdir . '/../qtdeclarative' ) {
+    # This is the case if QTDIR points to a source tree instead of an installed Qt
+    findQtHeaders('QtQuick', $qtdir . '/../qtdeclarative');
+}
+
 # special case
 $headerSubst{'QtGui'} = 'QtWidgets/QtWidgets';
 
