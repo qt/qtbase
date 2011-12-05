@@ -56,9 +56,6 @@
 
 Q_DECLARE_METATYPE(QPushButton*)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPushButton : public QObject
 {
 Q_OBJECT

@@ -44,10 +44,6 @@
 
 #include <qtoolbox.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QToolBox)
 
 class tst_QToolBoxPrivate;

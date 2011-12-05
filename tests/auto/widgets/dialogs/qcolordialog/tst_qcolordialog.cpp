@@ -44,9 +44,6 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QColorDialog>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QtTestEventThread)
 
 class tst_QColorDialog : public QObject

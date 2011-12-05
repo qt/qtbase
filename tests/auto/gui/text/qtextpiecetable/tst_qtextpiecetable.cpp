@@ -54,8 +54,6 @@
 #include <qtextcursor.h>
 #include "../qtextdocument/common.h"
 
-//TESTED_FILES=gui/text/qtextdocument_p.cpp gui/text/qtextdocument_p.h
-
 class tst_QTextPieceTable : public QObject
 {
     Q_OBJECT

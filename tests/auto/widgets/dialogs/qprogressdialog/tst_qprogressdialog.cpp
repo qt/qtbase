@@ -47,10 +47,6 @@
 #include <qprogressdialog.h>
 #include <qlabel.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QProgressDialog : public QObject
 {
 Q_OBJECT

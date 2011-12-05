@@ -46,9 +46,6 @@
 #include <QTreeView>
 #include <private/qtreeview_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStandardItemModel : public QObject
 {
     Q_OBJECT

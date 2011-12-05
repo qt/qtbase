@@ -67,9 +67,6 @@
 #include <QGraphicsLinearLayout>
 #include <float.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QPainterPath)

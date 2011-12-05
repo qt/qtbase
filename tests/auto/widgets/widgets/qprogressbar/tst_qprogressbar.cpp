@@ -48,9 +48,6 @@
 #include <qtimer.h>
 #include <QStyleFactory>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QProgressBar : public QObject
 {
 Q_OBJECT

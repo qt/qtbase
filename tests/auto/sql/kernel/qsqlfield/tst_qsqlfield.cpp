@@ -46,10 +46,6 @@
 #include <qvariant.h>
 #include <qsqlfield.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSqlField : public QObject
 {
 Q_OBJECT

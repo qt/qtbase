@@ -68,9 +68,6 @@
 #include "../../../network-settings.h"
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #if defined QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT bool qt_test_isFetchedRoot();

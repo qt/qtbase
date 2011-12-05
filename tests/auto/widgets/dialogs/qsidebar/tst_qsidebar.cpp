@@ -44,9 +44,6 @@
 #include <QtWidgets/private/qsidebar_p.h>
 #include <QtWidgets/private/qfilesystemmodel_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSidebar : public QObject {
   Q_OBJECT
 

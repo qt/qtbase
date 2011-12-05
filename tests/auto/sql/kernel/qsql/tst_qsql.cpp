@@ -54,8 +54,6 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
-//TESTED_FILES=
-
 class tst_QSql : public QObject
 {
 Q_OBJECT

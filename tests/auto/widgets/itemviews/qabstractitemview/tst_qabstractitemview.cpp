@@ -59,9 +59,6 @@
 #include <qboxlayout.h>
 #include <qlineedit.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 // Will try to wait for the condition while allowing event processing
 // for a maximum of 5 seconds.
 #define TRY_COMPARE(expr, expected) \

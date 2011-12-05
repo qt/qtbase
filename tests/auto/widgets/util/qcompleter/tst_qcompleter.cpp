@@ -49,9 +49,6 @@
 
 #include "../../../../shared/filesystem.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class CsvCompleter : public QCompleter
 {
     Q_OBJECT

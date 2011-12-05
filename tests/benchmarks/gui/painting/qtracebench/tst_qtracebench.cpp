@@ -46,8 +46,6 @@
 #include <private/qpaintengineex_p.h>
 #include <private/qpaintbuffer_p.h>
 
-//TESTED_FILES=
-
 class ReplayWidget : public QWidget
 {
     Q_OBJECT

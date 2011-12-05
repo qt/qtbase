@@ -46,9 +46,6 @@
 
 #include <qmap.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QMap : public QObject
 {
     Q_OBJECT

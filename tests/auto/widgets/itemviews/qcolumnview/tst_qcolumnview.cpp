@@ -53,9 +53,6 @@
 #include <qscrollbar.h>
 #include <private/qcolumnview_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #define ANIMATION_DELAY 300
 
 class tst_QColumnView : public QObject {

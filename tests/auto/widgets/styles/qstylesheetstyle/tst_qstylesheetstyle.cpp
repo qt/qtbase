@@ -48,9 +48,6 @@
 #include <private/qstylesheetstyle_p.h>
 #include "../../../platformquirks.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStyleSheetStyle : public QObject
 {
     Q_OBJECT

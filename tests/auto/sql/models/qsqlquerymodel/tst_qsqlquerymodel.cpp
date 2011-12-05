@@ -56,9 +56,6 @@
 
 #include "../../kernel/qsqldatabase/tst_databases.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(Qt::Orientation)
 
 class tst_QSqlQueryModel : public QObject

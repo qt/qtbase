@@ -42,8 +42,6 @@
 #include <qtest.h>
 #include <QtCore/qmetatype.h>
 
-//TESTED_FILES=
-
 class tst_QMetaType : public QObject
 {
     Q_OBJECT

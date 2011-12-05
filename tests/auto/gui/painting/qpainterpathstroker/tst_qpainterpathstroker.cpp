@@ -48,9 +48,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPainterPathStroker : public QObject
 {
     Q_OBJECT

@@ -42,8 +42,6 @@
 #include <qtest.h>
 #include <QTransform>
 
-//TESTED_FILES=
-
 class tst_QTransform : public QObject
 {
     Q_OBJECT

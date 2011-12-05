@@ -45,9 +45,6 @@
 #include <qset.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 int toNumber(const QString &str)
 {
     int res = 0;

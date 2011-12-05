@@ -46,10 +46,6 @@
 #include <qdebug.h>
 #include <qfocusframe.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFocusFrame : public QObject
 {
 Q_OBJECT

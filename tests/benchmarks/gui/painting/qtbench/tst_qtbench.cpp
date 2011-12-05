@@ -46,8 +46,6 @@
 
 #include "benchmarktests.h"
 
-//TESTED_FILES=
-
 class BenchWidget : public QWidget
 {
 public:

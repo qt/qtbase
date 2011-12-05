@@ -55,9 +55,6 @@
 #include <QCleanlooksStyle>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #define CONVENIENCE_FUNC_SYMS(func) \
     { \
         int x1 = QMessageBox::func(0, "Foo", "Bar"); \

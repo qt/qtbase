@@ -49,9 +49,6 @@
 #include <QDialogButtonBox>
 #include <qinputdialog.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QInputDialog : public QObject
 {
     Q_OBJECT

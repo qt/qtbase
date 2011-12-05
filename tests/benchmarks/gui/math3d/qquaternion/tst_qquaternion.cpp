@@ -42,8 +42,6 @@
 #include <qtest.h>
 #include <QQuaternion>
 
-//TESTED_FILES=
-
 class tst_QQuaternion : public QObject
 {
     Q_OBJECT

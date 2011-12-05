@@ -46,9 +46,6 @@
 #include <qdebug.h>
 #include <qabstractsocket.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAbstractSocket : public QObject
 {
 Q_OBJECT

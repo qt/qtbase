@@ -60,9 +60,6 @@ QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class QtTestSlot : public QObject
 {
     Q_OBJECT

@@ -53,9 +53,6 @@
 #define Q_XDG_PLATFORM
 #endif
 
-//TESTED_CLASS=QStandardPaths
-//TESTED_FILES=qstandardpaths.cpp
-
 class tst_qstandardpaths : public QObject
 {
     Q_OBJECT

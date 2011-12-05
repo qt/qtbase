@@ -47,9 +47,6 @@
 #include <qlabel.h>
 #include <QtWidgets/qboxlayout.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include <qt_windows.h>
 #define Q_CHECK_PAINTEVENTS \

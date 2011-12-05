@@ -41,7 +41,6 @@
 
 #include <qtest.h>
 #include <QPixmapCache>
-//TESTED_FILES=
 
 class tst_QPixmapCache : public QObject
 {

@@ -47,9 +47,6 @@
 
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPen : public QObject
 {
     Q_OBJECT

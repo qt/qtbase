@@ -53,9 +53,6 @@
 
 Q_DECLARE_METATYPE(qlonglong)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #define CREATE_REF(string)                                              \
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
     QStringRef ref = padded.midRef(1, padded.size() - 2);

@@ -82,9 +82,6 @@ Q_DECLARE_METATYPE(QFont)
 Q_DECLARE_METATYPE(QColor)
 Q_DECLARE_METATYPE(QKeySequence)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QVariant : public QObject
 {
     Q_OBJECT

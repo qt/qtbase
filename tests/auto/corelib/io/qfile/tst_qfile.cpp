@@ -96,9 +96,6 @@
 
 Q_DECLARE_METATYPE(QFile::FileError)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFile : public QObject
 {
     Q_OBJECT

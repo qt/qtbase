@@ -46,9 +46,6 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QGraphicsSceneIndex : public QObject
 {
     Q_OBJECT

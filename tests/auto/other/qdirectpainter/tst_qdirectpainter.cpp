@@ -42,9 +42,6 @@
 
 #include <QtTest/QtTest>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #include <qwindowsystem_qws.h>
 #include <qpainter.h>
 #include <qdesktopwidget.h>

@@ -52,9 +52,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class EventLoopExiter : public QObject
 {
     Q_OBJECT

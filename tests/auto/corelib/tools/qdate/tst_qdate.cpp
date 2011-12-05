@@ -43,9 +43,6 @@
 #include <qdatetime.h>
 #include <qlocale.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/tools/qdatetime.h corelib/tools/qdatetime.cpp
-
 class tst_QDate : public QObject
 {
     Q_OBJECT

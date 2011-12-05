@@ -51,9 +51,6 @@
 #include "qfontdialog.h"
 #include <private/qfontdialog_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QtTestEventThread)
 
 class tst_QFontDialog : public QObject

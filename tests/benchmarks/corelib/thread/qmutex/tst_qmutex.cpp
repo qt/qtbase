@@ -105,8 +105,6 @@ void NativeMutexUnlock(NativeMutexType *mutex)
 }
 #endif
 
-//TESTED_FILES=
-
 class tst_QMutex : public QObject
 {
     Q_OBJECT

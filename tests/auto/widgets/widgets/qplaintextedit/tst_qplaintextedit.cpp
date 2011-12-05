@@ -72,9 +72,6 @@ Q_DECLARE_METATYPE(QList<bool>);
 
 QT_FORWARD_DECLARE_CLASS(QPlainTextEdit)
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/widgets/qtextedit.h gui/widgets/qtextedit.cpp
-
 class tst_QPlainTextEdit : public QObject
 {
     Q_OBJECT

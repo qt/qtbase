@@ -48,9 +48,6 @@
 #include <qpushbutton.h>
 #include <QHBoxLayout>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStackedWidget : public QObject
 {
 Q_OBJECT

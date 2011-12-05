@@ -42,9 +42,6 @@
 #include <QtTest/QtTest>
 #include "qdatetime.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/thread/qthreadstorage.h corelib/thread/qthreadstorage.cpp
-
 class tst_QTime : public QObject
 {
     Q_OBJECT

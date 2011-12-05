@@ -45,9 +45,6 @@
 #include <QtCore/qsequentialanimationgroup.h>
 #include <QtCore/qparallelanimationgroup.h>
 
-//TESTED_CLASS=QAnimationGroup
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
 class tst_QAnimationGroup : public QObject

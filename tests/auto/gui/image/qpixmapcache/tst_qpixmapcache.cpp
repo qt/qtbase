@@ -47,10 +47,6 @@
 #include <qpixmapcache.h>
 #include "private/qpixmapcache_p.h"
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPixmapCache : public QObject
 {
     Q_OBJECT

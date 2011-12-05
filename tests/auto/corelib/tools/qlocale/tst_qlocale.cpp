@@ -76,9 +76,6 @@ Q_DECLARE_METATYPE(qlonglong)
 Q_DECLARE_METATYPE(QDate)
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QLocale : public QObject
 {
     Q_OBJECT

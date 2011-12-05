@@ -49,9 +49,6 @@
 #include <qtextbrowser.h>
 #include <qtextobject.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class TestBrowser : public QTextBrowser
 {
 public:

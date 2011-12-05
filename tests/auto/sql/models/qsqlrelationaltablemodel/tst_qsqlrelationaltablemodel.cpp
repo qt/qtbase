@@ -51,10 +51,6 @@ const QString reltest1(qTableName("reltest1", __FILE__)),
         reltest4(qTableName("reltest4", __FILE__)),
         reltest5(qTableName("reltest5", __FILE__));
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSqlRelationalTableModel : public QObject
 {
     Q_OBJECT

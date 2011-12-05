@@ -72,9 +72,6 @@ struct ushortarray {
 Q_DECLARE_METATYPE(ushortarray)
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QUrl : public QObject
 {
     Q_OBJECT

@@ -50,10 +50,6 @@
 #include <private/qt_x11_p.h>
 #endif
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QRegion : public QObject
 {
     Q_OBJECT

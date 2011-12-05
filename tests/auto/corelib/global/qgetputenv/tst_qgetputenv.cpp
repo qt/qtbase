@@ -44,9 +44,6 @@
 
 #include <qglobal.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/global/qglobal.h corelib/global/qglobal.cpp
-
 class tst_QGetPutEnv : public QObject
 {
 Q_OBJECT

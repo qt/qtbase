@@ -48,9 +48,6 @@
 
 #define COND_WAIT_TIME 1
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWaitCondition : public QObject
 {
     Q_OBJECT

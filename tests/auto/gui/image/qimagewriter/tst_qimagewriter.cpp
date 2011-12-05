@@ -61,8 +61,6 @@ Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
 Q_DECLARE_METATYPE(QIODevice *)
 Q_DECLARE_METATYPE(QImage::Format)
 
-//TESTED_FILES=
-
 class tst_QImageWriter : public QObject
 {
     Q_OBJECT

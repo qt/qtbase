@@ -44,9 +44,6 @@
 #include <QtCore/qvariantanimation.h>
 #include <QtWidgets/qwidget.h>
 
-//TESTED_CLASS=QPropertyAnimation
-//TESTED_FILES=
-
 class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT

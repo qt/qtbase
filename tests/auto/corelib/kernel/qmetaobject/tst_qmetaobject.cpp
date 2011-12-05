@@ -45,9 +45,6 @@
 #include <qmetaobject.h>
 #include <qlabel.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 struct MyStruct
 {
     int i;

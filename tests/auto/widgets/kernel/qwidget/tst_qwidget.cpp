@@ -156,9 +156,6 @@ bool macHasAccessToWindowsServer()
 #undef Bool
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWidget : public QObject
 {
     Q_OBJECT

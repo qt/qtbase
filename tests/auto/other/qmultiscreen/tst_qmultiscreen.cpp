@@ -42,9 +42,6 @@
 
 #include <QtTest/QtTest>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #include <qdesktopwidget.h>
 #include <qscreen_qws.h>
 #include <qscreendriverfactory_qws.h>

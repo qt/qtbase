@@ -50,9 +50,6 @@
 #include <qevent.h>
 #include <qwidget.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/widgets/qmenubar.h gui/widgets/qmenubar.cpp
-
 class MouseEventWidget : public QWidget
 {
 public:

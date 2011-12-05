@@ -45,9 +45,6 @@
 #include <QtWidgets>
 #include <math.h>
 
-//TESTED_CLASS=QGraphicsLayout
-//TESTED_FILES=
-
 class tst_QGraphicsLayout : public QObject
 {
 Q_OBJECT

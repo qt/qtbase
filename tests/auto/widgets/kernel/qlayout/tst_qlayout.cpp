@@ -60,9 +60,6 @@
 # include <QtGui/QMacStyle>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QLayout : public QObject
 {
 Q_OBJECT

@@ -81,9 +81,6 @@
 #include <qwindowsstyle.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QComboBox : public QObject
 {
     Q_OBJECT

@@ -43,9 +43,6 @@
 #include <qtextcodec.h>
 #include <qsharedpointer.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 static const char utf8bom[] = "\xEF\xBB\xBF";
 
 class tst_Utf8 : public QObject

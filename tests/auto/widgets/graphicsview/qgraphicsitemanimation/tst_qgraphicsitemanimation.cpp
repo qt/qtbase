@@ -46,9 +46,6 @@
 #include <QtCore/qtimeline.h>
 #include <QtGui/qmatrix.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QGraphicsItemAnimation : public QObject
 {
     Q_OBJECT

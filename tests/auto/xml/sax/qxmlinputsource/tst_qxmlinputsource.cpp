@@ -51,9 +51,6 @@
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QXmlInputSource : public QObject
 {
     Q_OBJECT

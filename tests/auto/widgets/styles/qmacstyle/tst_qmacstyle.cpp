@@ -47,9 +47,6 @@
 
 const int N = 1;
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/styles/qmacstyle_mac.h gui/styles/qmacstyle_mac.cpp
-
 enum Size { Normal, Small, Mini };
 
 Q_DECLARE_METATYPE(Size);

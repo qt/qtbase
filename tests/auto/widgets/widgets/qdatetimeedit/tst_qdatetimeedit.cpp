@@ -120,10 +120,6 @@ bool qt_wince_is_mobile() {
 }
 #endif
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class EditorDateEdit : public QDateTimeEdit
 {
     Q_OBJECT

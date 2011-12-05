@@ -65,9 +65,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextDocument : public QObject
 {
     Q_OBJECT

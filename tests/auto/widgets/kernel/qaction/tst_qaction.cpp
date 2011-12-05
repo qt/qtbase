@@ -47,9 +47,6 @@
 #include <qaction.h>
 #include <qmenu.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAction : public QObject
 {
     Q_OBJECT

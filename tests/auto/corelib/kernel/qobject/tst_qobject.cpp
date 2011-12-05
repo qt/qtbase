@@ -61,9 +61,6 @@
 
 #include <math.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QObject : public QObject
 {
     Q_OBJECT

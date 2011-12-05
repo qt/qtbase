@@ -48,9 +48,6 @@
 #include <qwaitcondition.h>
 #include "qthreadonce.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/thread/qthreadonce.h corelib/thread/qthreadonce.cpp
-
 class tst_QThreadOnce : public QObject
 {
     Q_OBJECT

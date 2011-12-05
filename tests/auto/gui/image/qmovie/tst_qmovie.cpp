@@ -47,8 +47,6 @@
 #include <QLabel>
 #include <QMovie>
 
-//TESTED_FILES=
-
 class tst_QMovie : public QObject
 {
     Q_OBJECT

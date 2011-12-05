@@ -48,9 +48,6 @@
 #include <qimage.h>
 #include <qtextobject.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAbstractTextDocumentLayout : public QObject
 {
 Q_OBJECT

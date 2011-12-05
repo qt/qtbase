@@ -48,9 +48,6 @@
 #include <qthread.h>
 #include <qwaitcondition.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QMutex : public QObject
 {
     Q_OBJECT

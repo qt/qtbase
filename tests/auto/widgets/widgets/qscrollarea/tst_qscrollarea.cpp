@@ -47,9 +47,6 @@
 #include <qscrollarea.h>
 #include <qlayout.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QScrollArea : public QObject
 {
 Q_OBJECT

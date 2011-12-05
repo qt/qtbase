@@ -44,9 +44,6 @@
 #include <QAction>
 #include <QUndoStack>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 /******************************************************************************
 ** Commands
 */

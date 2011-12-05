@@ -47,9 +47,6 @@
 #include <qsystemtrayicon.h>
 #include <qmenu.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSystemTrayIcon: public QObject
 {
 Q_OBJECT

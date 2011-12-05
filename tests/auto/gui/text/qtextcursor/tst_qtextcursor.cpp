@@ -52,8 +52,6 @@
 #include <qtextcursor.h>
 #include <qdebug.h>
 
-//TESTED_FILES=gui/text/qtextcursor.cpp gui/text/qtextcursor_p.h
-
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
 class tst_QTextCursor : public QObject

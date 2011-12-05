@@ -52,9 +52,6 @@
 #include <QtXml>
 #include <QVariant>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QDomDocument)
 QT_FORWARD_DECLARE_CLASS(QDomNode)
 

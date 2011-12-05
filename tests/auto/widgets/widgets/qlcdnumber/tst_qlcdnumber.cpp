@@ -46,10 +46,6 @@
 #include <qdebug.h>
 #include <qlcdnumber.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QLCDNumber : public QObject
 {
 Q_OBJECT

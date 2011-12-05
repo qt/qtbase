@@ -59,9 +59,6 @@
 
 #include "../../../network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QHttpResponseHeader)
 
 class tst_QHttp : public QObject

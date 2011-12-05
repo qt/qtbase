@@ -46,9 +46,6 @@
 #include <qdebug.h>
 #include <qnetworkproxy.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QNetworkProxy : public QObject
 {
 Q_OBJECT

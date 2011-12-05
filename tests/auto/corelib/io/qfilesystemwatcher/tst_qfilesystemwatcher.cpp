@@ -52,9 +52,6 @@
 # endif
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFileSystemWatcher : public QObject
 {
     Q_OBJECT

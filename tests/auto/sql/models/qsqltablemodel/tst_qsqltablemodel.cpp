@@ -48,9 +48,6 @@ const QString test(qTableName("test", __FILE__)),
                    test2(qTableName("test2", __FILE__)),
                    test3(qTableName("test3", __FILE__));
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QModelIndex)
 
 class tst_QSqlTableModel : public QObject

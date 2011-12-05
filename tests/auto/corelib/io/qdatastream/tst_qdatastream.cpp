@@ -45,9 +45,6 @@
 Q_DECLARE_METATYPE(QBitArray)
 Q_DECLARE_METATYPE(qint64)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDataStream : public QObject
 {
 Q_OBJECT

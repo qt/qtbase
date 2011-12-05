@@ -51,10 +51,6 @@
 
 #include <qdialog.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=gui/widgets/qmenubar.h gui/widgets/qmenubar.cpp
-
 class TstWidget;
 class TstDialog;
 QT_FORWARD_DECLARE_CLASS(QPushButton)

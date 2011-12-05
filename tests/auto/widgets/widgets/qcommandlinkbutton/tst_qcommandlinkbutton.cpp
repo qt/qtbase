@@ -55,9 +55,6 @@
 
 Q_DECLARE_METATYPE(QCommandLinkButton*)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QCommandLinkButton : public QObject
 {
 Q_OBJECT

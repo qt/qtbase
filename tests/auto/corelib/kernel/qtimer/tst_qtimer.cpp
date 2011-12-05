@@ -48,9 +48,6 @@
 #include <unistd.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTimer : public QObject
 {
     Q_OBJECT

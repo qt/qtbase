@@ -48,9 +48,6 @@
 #include <Carbon/Carbon.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QClipboard : public QObject
 {
     Q_OBJECT

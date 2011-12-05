@@ -48,9 +48,6 @@
 
 #include "../../../../auto/network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSslSocket : public QObject
 {
     Q_OBJECT

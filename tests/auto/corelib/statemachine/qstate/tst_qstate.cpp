@@ -45,9 +45,6 @@
 #include "qstatemachine.h"
 #include "qsignaltransition.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QState : public QObject
 {
     Q_OBJECT

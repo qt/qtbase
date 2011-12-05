@@ -43,9 +43,6 @@
 #include <QtTest/QtTest>
 #include <QList>
 
-//TESTED_CLASS=QList
-//TESTED_FILES=corelib/tools/qlist.h corelib/tools/qlist.cpp
-
 /*!
   \class tst_QVector
   \internal

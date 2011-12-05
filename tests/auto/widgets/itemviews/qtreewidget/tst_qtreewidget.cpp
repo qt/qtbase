@@ -51,9 +51,6 @@
 #include <QScrollBar>
 #include <QStyledItemDelegate>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class CustomTreeWidget : public QTreeWidget
 {
     Q_OBJECT

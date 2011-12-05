@@ -50,10 +50,6 @@
 
 #include "bidireorderstring.h"
 
-
-//TESTED_CLASS=
-//TESTED_FILES=gui/widgets/qcombobox.h gui/widgets/qcombobox.cpp
-
 class tst_QComplexText : public QObject
 {
 Q_OBJECT

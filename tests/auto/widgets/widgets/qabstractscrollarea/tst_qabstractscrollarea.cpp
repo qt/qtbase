@@ -51,9 +51,6 @@
 #include <qwidget.h>
 #include <qdialog.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAbstractScrollArea : public QObject
 {
 Q_OBJECT

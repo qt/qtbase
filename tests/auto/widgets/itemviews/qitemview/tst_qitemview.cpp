@@ -79,9 +79,6 @@ bool qt_wince_is_mobile() {
 #endif
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/itemviews/qtreeview.h gui/itemviews/qtreeview.cpp
-
 /*!
     See viewstotest.cpp for instructions on how to have your view tested with these tests.
 

@@ -50,9 +50,6 @@
 #include "qmodellistener.h"
 #include <qstringlistmodel.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 void QModelListener::rowsAboutToBeRemovedOrInserted(const QModelIndex & parent, int start, int end )
 {
     int i;

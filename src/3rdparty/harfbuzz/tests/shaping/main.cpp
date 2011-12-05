@@ -153,9 +153,6 @@ const HB_FontClass hb_fontClass = {
 };
 
 
-//TESTED_CLASS=
-//TESTED_FILES= gui/text/qscriptengine.cpp
-
 class tst_QScriptEngine : public QObject
 {
 Q_OBJECT

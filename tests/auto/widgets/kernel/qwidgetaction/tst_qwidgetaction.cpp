@@ -51,9 +51,6 @@
 #include <qmainwindow.h>
 #include <qmenubar.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWidgetAction : public QObject
 {
     Q_OBJECT

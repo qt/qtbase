@@ -51,10 +51,6 @@
 #include <qpainter.h>
 #include <private/qdrawhelper_p.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QImage::Format)
 Q_DECLARE_METATYPE(Qt::GlobalColor)
 

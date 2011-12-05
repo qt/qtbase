@@ -46,9 +46,6 @@
 #include <qdebug.h>
 #include <qslider.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSlider : public QObject
 {
 Q_OBJECT

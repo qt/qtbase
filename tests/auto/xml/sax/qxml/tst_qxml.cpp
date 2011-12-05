@@ -46,10 +46,6 @@
 #include <qdebug.h>
 #include <qxml.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QXml : public QObject
 {
 Q_OBJECT

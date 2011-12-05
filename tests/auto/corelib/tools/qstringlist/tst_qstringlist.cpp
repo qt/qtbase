@@ -43,9 +43,6 @@
 #include <qregexp.h>
 #include <qstringlist.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStringList : public QObject
 {
     Q_OBJECT

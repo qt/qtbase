@@ -66,8 +66,6 @@
 
 #include "../../../network-settings.h"
 
-//TESTED_FILES=network/qnativesocketengine.cpp network/qnativesocketengine_p.h network/qnativesocketengine_unix.cpp
-
 class tst_PlatformSocketEngine : public QObject
 {
     Q_OBJECT

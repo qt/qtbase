@@ -45,9 +45,6 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QItemSelectionModel : public QObject
 {
     Q_OBJECT

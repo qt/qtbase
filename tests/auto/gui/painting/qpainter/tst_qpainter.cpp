@@ -77,9 +77,6 @@ Q_DECLARE_METATYPE(QSize)
 Q_DECLARE_METATYPE(QPoint)
 Q_DECLARE_METATYPE(QPainterPath)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPainter : public QObject
 {
 Q_OBJECT

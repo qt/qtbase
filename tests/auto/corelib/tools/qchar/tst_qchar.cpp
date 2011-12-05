@@ -48,9 +48,6 @@
 #include <qcoreapplication.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QChar : public QObject
 {
     Q_OBJECT

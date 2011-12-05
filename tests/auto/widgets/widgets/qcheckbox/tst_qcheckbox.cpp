@@ -49,9 +49,6 @@
 #include <qdatetime.h>
 #include <qcheckbox.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QCheckBox : public QObject
 {
 Q_OBJECT

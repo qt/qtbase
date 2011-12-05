@@ -45,9 +45,6 @@
 #include <qfontinfo.h>
 #include <qfontmetrics.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFontDatabase : public QObject
 {
 Q_OBJECT

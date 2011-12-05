@@ -46,9 +46,6 @@
 #include <QtTest/QtTest>
 #include "private/qapplication_p.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 // Will try to wait for the condition while allowing event processing
 // for a maximum of 2 seconds.
 #define WAIT_FOR_CONDITION(expr, expected) \

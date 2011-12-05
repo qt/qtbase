@@ -46,9 +46,6 @@
 
 #include <qobject.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/kernel/qobject.h corelib/kernel/qobject.cpp
-
 class tst_QObjectPerformance : public QObject
 {
     Q_OBJECT

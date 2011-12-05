@@ -55,9 +55,6 @@
 #include <windows.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QApplication : public QObject
 {
 Q_OBJECT

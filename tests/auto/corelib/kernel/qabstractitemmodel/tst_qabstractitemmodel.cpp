@@ -45,9 +45,6 @@
 #include <QtWidgets/QSortFilterProxyModel>
 #include <QtWidgets/QStringListModel>
 
-//TESTED_CLASS=QAbstractListModel QAbstractTableModel
-//TESTED_FILES=
-
 #include "dynamictreemodel.h"
 
 Q_DECLARE_METATYPE(QModelIndex)

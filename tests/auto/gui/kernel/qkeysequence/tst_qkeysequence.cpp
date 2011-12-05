@@ -47,9 +47,6 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>
 struct MacSpecialKey {

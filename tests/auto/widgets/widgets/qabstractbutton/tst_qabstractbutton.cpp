@@ -50,13 +50,7 @@
 #include <qkeysequence.h>
 #include <qevent.h>
 #include <qgridlayout.h>
-
-
-
 #include <qabstractbutton.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=
 
 class tst_QAbstractButton : public QObject
 {

@@ -49,9 +49,6 @@
 #include <qtextedit.h>
 #include <qtextcursor.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextObject : public QObject
 {
 Q_OBJECT

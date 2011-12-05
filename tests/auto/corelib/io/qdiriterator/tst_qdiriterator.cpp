@@ -59,9 +59,6 @@
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDirIterator : public QObject
 {
     Q_OBJECT

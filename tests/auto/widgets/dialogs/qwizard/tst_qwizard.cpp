@@ -54,9 +54,6 @@
 #include <QPlastiqueStyle>
 #include <QTreeWidget>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 static QImage grabWidget(QWidget *window)
 {
     return QPixmap::grabWidget(window).toImage();

@@ -63,8 +63,6 @@ Q_DECLARE_METATYPE(QStringMap)
 Q_DECLARE_METATYPE(QIntList)
 Q_DECLARE_METATYPE(QIODevice *)
 
-//TESTED_FILES=
-
 class tst_QImageReader : public QObject
 {
     Q_OBJECT

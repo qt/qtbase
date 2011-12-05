@@ -47,9 +47,6 @@
 #include <private/qfreelist_p.h>
 #include <QtTest/QtTest>
 
-//TESTED_CLASS=QFreeList
-//TESTED_FILES=corelib/tools/qfreelist_p.h
-
 class tst_QFreeList : public QObject
 {
     Q_OBJECT

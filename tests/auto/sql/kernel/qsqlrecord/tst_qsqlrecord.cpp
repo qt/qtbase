@@ -46,13 +46,7 @@
 #include "qsqlfield.h"
 #include "qstringlist.h"
 
-
-
-
 #include <qsqlrecord.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=
 
 #define NUM_FIELDS 4
 

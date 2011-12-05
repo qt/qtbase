@@ -53,10 +53,6 @@
 #include <qlineedit.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/widgets/qspinbox.h gui/widgets/qspinbox.cpp gui/widgets/qabstractspinbox.cpp gui/widgets/qabstractspinbox_p.h gui/widgets/qabstractspinbox.h
-
-
 class DoubleSpinBox : public QDoubleSpinBox
 {
     Q_OBJECT

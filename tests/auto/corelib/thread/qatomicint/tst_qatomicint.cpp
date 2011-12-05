@@ -46,9 +46,6 @@
 
 #include <limits.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAtomicInt : public QObject
 {
     Q_OBJECT

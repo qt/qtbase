@@ -50,9 +50,6 @@
 
 #include <qdebug.h>
 
-//TESTED CLASS=
-//TESTED_FILES=
-
 typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> IntPairList;

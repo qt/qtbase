@@ -46,9 +46,6 @@
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
-//TESTED_CLASS=QLocalServer, QLocalSocket
-//TESTED_FILES=network/socket/qlocalserver.cpp network/socket/qlocalsocket.cpp
-
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
 

@@ -107,9 +107,6 @@ static QString sys_qualifiedLibraryName(const QString &fileName)
     return currDir + "/" + PREFIX + fileName + SUFFIX;
 }
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QLibrary)
 class tst_QLibrary : public QObject
 {

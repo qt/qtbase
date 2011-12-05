@@ -44,9 +44,6 @@
 
 #include <qstandarditemmodel.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/itemviews/qstandarditemmodel.h gui/itemviews/qstandarditemmodel.cpp
-
 class tst_QStandardItem : public QObject
 {
     Q_OBJECT

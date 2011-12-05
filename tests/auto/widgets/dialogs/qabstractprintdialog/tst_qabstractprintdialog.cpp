@@ -47,9 +47,6 @@
 #include <qabstractprintdialog.h>
 #include <qprinter.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAbstractPrintDialog : public QObject
 {
 Q_OBJECT

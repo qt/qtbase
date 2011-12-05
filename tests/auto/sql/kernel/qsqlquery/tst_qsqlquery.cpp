@@ -46,8 +46,6 @@
 
 const QString qtest(qTableName( "qtest", __FILE__ ));
 
-//TESTED_FILES=
-
 class tst_QSqlQuery : public QObject
 {
     Q_OBJECT

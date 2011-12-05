@@ -47,9 +47,6 @@
 #include <qcolor.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QColor : public QObject
 {
     Q_OBJECT

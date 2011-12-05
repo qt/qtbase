@@ -61,9 +61,6 @@
 #include <QtGui/private/qimagepixmapcleanuphooks_p.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QGL : public QObject
 {
 Q_OBJECT

@@ -51,8 +51,6 @@
 #include <qtextdocument.h>
 #include <qtextedit.h>
 
-//TESTED_FILES=
-
 typedef QList<int> IntList;
 Q_DECLARE_METATYPE(IntList)
 

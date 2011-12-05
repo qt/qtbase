@@ -48,9 +48,6 @@
 
 #include <private/qgraphicseffect_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class CustomItem : public QGraphicsRectItem
 {
 public:

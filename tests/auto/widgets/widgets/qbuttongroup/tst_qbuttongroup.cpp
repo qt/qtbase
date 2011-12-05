@@ -73,9 +73,6 @@ protected:
 
 #include <qbuttongroup.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QButtonGroup : public QObject
 {
 Q_OBJECT

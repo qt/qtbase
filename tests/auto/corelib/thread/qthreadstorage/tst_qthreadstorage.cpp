@@ -57,9 +57,6 @@
 #include <windows.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QThreadStorage : public QObject
 {
     Q_OBJECT

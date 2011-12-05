@@ -49,9 +49,6 @@
 #include <qtextcursor.h>
 #include "../qtextdocument/common.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextList : public QObject
 {
     Q_OBJECT

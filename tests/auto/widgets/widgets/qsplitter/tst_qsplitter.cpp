@@ -56,9 +56,6 @@
 #include <qlabel.h>
 #include <qdebug.h> // for file error messages
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QSplitter)
 QT_FORWARD_DECLARE_CLASS(QWidget)
 class tst_QSplitter : public QObject

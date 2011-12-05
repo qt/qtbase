@@ -67,9 +67,6 @@
 #define Q_NO_SYMLINKS
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDir : public QObject
 {
 Q_OBJECT

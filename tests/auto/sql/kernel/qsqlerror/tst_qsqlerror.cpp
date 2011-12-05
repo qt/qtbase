@@ -46,10 +46,6 @@
 #include <qdebug.h>
 #include <qsqlerror.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSqlError : public QObject
 {
 Q_OBJECT

@@ -49,9 +49,6 @@
 #include <qcoreapplication.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QByteArray : public QObject
 {
     Q_OBJECT

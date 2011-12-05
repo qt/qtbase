@@ -45,9 +45,6 @@
 #include <qfile.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/text/qtextlayout.h corelib/tools/qtextboundaryfinder.cpp
-
 class tst_QTextBoundaryFinder : public QObject
 {
     Q_OBJECT

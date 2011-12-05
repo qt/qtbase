@@ -44,9 +44,6 @@
 #include <QtGui>
 #include <QtWidgets>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QBoxLayout : public QObject
 {
     Q_OBJECT

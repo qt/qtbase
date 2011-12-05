@@ -55,9 +55,6 @@ Q_DECLARE_METATYPE(QSize)
 
 QT_FORWARD_DECLARE_CLASS(QDialog)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDialog : public QObject
 {
     Q_OBJECT

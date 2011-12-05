@@ -55,9 +55,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/text/qtextdocumentfragment.h gui/text/qtextdocumentfragment.cpp gui/text/qtexthtmlparser.cpp gui/text/qtexthtmlparser_p.h
-
 class tst_QTextDocumentFragment : public QObject
 {
     Q_OBJECT

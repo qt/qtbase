@@ -45,9 +45,6 @@
 #include <private/qpixmapfilter_p.h>
 #include <qpainter.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPixmapFilter : public QObject
 {
     Q_OBJECT

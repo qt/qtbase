@@ -43,9 +43,6 @@
 #include <QtTest/QtTest>
 #include <qtooltip.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QToolTip : public QObject
 {
     Q_OBJECT

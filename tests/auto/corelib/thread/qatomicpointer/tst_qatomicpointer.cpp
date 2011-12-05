@@ -44,9 +44,6 @@
 #include <qatomic.h>
 #include <limits.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAtomicPointer : public QObject
 {
     Q_OBJECT

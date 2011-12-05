@@ -43,9 +43,6 @@
 
 #include <qeasingcurve.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QEasingCurve : public QObject
 {
     Q_OBJECT

@@ -58,9 +58,6 @@
 # include <unistd.h>            // close(2)
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTemporaryFile : public QObject
 {
     Q_OBJECT

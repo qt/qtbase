@@ -102,8 +102,6 @@ void foo()
 
 template class QList<int>;
 
-//TESTED_FILES=
-
 class tst_Collections : public QObject
 {
     Q_OBJECT

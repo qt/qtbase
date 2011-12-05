@@ -60,9 +60,6 @@ Q_DECLARE_METATYPE(QRect)
 
 QT_FORWARD_DECLARE_CLASS(QPrinter)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPrinter : public QObject
 {
     Q_OBJECT

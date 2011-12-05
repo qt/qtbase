@@ -57,9 +57,6 @@
 
 #include "../../../network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #ifndef QT_NO_BEARERMANAGEMENT
 Q_DECLARE_METATYPE(QNetworkConfiguration)
 #endif

@@ -52,9 +52,6 @@
 #include <qtextlayout.h>
 #include <qabstracttextdocumentlayout.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextFormat : public QObject
 {
 Q_OBJECT

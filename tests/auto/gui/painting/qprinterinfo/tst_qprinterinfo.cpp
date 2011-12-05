@@ -54,9 +54,6 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPrinterInfo : public QObject
 {
     Q_OBJECT

@@ -89,9 +89,6 @@ bool nativeClipboardWorking()
 
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextEdit : public QObject
 {
     Q_OBJECT

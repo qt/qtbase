@@ -51,9 +51,6 @@
 #include <qwidget.h>
 #include <qlist.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFont : public QObject
 {
 Q_OBJECT

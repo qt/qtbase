@@ -96,9 +96,6 @@
 
 #include "../../../network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 const char * const lupinellaIp = "10.3.4.6";
 
 

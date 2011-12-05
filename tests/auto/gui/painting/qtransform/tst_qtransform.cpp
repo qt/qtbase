@@ -48,9 +48,6 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTransform : public QObject
 {
     Q_OBJECT

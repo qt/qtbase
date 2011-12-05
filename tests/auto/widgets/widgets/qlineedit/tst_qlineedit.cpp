@@ -64,9 +64,6 @@
 #include <qspinbox.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #include "qcommonstyle.h"
 #include "qstyleoption.h"
 

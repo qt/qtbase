@@ -45,9 +45,6 @@
 #include <qdebug.h>
 #include <qdesktopservices.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_qdesktopservices : public QObject
 {
     Q_OBJECT

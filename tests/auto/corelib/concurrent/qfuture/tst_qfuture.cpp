@@ -57,9 +57,6 @@ using namespace QtConcurrent;
 #  undef interface
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFuture: public QObject
 {
     Q_OBJECT

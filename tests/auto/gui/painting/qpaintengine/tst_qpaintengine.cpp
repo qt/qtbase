@@ -47,9 +47,6 @@
 #include <qpaintengine.h>
 #include <qpixmap.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPaintEngine : public QObject
 {
 Q_OBJECT

@@ -46,9 +46,6 @@
 #include <qdebug.h>
 #include <qdrag.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDrag : public QObject
 {
 Q_OBJECT

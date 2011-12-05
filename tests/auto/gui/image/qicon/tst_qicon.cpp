@@ -47,9 +47,6 @@
 
 Q_DECLARE_METATYPE(QSize)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QIcon : public QObject
 {
     Q_OBJECT

@@ -44,9 +44,6 @@
 
 const int N = 1;
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QRegExp : public QObject
 {
     Q_OBJECT

@@ -160,9 +160,6 @@ Q_DECLARE_METATYPE(Qt::WindowStates);
 Q_DECLARE_METATYPE(Qt::WindowType);
 Q_DECLARE_METATYPE(Qt::WindowFlags);
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QMdiSubWindow : public QObject
 {
     Q_OBJECT

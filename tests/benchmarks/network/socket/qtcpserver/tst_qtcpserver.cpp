@@ -56,9 +56,6 @@ Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 
 #include "../../../../auto/network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTcpServer : public QObject
 {
     Q_OBJECT

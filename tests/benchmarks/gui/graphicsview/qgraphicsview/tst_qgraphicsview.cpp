@@ -54,8 +54,6 @@
 #include "valgrind/callgrind.h"
 #endif
 
-//TESTED_FILES=
-
 static inline void processEvents()
 {
     QPixmapCache::clear();

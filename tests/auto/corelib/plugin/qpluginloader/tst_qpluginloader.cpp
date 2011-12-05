@@ -98,9 +98,6 @@ static QString sys_qualifiedLibraryName(const QString &fileName)
     return QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
 }
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QPluginLoader)
 class tst_QPluginLoader : public QObject
 {

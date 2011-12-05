@@ -43,9 +43,6 @@
 
 #include <QtCore/private/qfilesystementry_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFileSystemEntry : public QObject
 {
     Q_OBJECT

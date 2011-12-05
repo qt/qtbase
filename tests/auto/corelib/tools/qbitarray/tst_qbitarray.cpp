@@ -64,10 +64,6 @@ static QBitArray QStringToQBitArray(const QString &str)
     return ba;
 }
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QBitArray : public QObject
 {
     Q_OBJECT

@@ -54,8 +54,6 @@
 
 #include "tst_databases.h"
 
-//TESTED_FILES=
-
 QT_FORWARD_DECLARE_CLASS(QSqlDatabase)
 struct FieldDef;
 

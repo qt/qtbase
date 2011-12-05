@@ -65,9 +65,6 @@
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
 #define Q_CHECK_PAINTEVENTS \

@@ -44,9 +44,6 @@
 #include <qsignalmapper.h>
 #include <qspinbox.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSignalMapper : public QObject
 {
     Q_OBJECT

@@ -69,13 +69,6 @@
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 
-
-
-
-
-//TESTED_CLASS=
-//TESTED_FILES= gui/text/qscriptengine.cpp
-
 class tst_QTextScriptEngine : public QObject
 {
 Q_OBJECT

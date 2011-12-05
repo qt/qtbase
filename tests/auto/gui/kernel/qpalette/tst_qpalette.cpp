@@ -45,9 +45,6 @@
 #include "qpalette.h"
 #include <qapplication.h>
 
-//TESTED_CLASS=QPalette
-//TESTED_FILES=qpalette.h qpalette.cpp
-
 class tst_QPalette : public QObject
 {
 Q_OBJECT

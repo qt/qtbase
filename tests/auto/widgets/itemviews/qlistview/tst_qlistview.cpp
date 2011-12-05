@@ -60,9 +60,6 @@
 #  include <QtGui/QPlatformNativeInterface>
 #endif // Q_OS_WIN
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 static inline HWND getHWNDForWidget(const QWidget *widget)
 {

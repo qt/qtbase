@@ -49,9 +49,6 @@
 #include <qapplication.h>
 #include <limits.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPicture : public QObject
 {
     Q_OBJECT

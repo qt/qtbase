@@ -48,9 +48,6 @@
 #include <qeventloop.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTreeWidgetItemIterator : public QObject
 {
     Q_OBJECT

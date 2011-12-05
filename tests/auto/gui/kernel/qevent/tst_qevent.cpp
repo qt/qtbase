@@ -45,9 +45,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcoreevent.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QEvent : public QObject
 {
     Q_OBJECT

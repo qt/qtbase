@@ -67,9 +67,6 @@ template<> struct QMetaTypeId<QIODevice::OpenModeFlag>
 { enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
 QT_END_NAMESPACE
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextStream : public QObject
 {
     Q_OBJECT

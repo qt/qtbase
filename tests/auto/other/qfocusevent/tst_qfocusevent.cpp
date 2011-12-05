@@ -52,9 +52,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/kernel/qevent.h gui/kernel/qevent.cpp
-
 class FocusLineEdit : public QLineEdit
 {
 public:

@@ -46,9 +46,6 @@
 #include <QtGui/QFontInfo>
 #include <QtGui/QFontMetrics>
 
-//TESTED_CLASS=QCss
-//TESTED_FILES=gui/text/qcssparser.cpp gui/text/qcssparser_p.h
-
 #include "private/qcssparser_p.h"
 
 class tst_QCssParser : public QObject

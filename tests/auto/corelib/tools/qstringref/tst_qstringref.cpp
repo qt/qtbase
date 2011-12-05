@@ -48,9 +48,6 @@
 
 Q_DECLARE_METATYPE(qlonglong)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStringRef : public QObject
 {
     Q_OBJECT

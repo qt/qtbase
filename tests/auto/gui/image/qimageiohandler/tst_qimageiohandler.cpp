@@ -47,9 +47,6 @@
 #include <qimageiohandler.h>
 #include <qfile.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QImageIOHandler : public QObject
 {
 Q_OBJECT

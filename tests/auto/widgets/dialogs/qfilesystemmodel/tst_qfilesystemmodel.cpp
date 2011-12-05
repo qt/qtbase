@@ -52,9 +52,6 @@
 #include <QStyle>
 #include <QtGlobal>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #define WAITTIME 1000
 
 // Will try to wait for the condition while allowing event processing

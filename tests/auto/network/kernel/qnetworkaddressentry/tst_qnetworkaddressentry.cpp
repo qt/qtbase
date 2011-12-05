@@ -44,7 +44,6 @@
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
 
-// TESTED_FILES=qnetworkinterface.cpp qnetworkinterface.h
 Q_DECLARE_METATYPE(QHostAddress)
 
 class tst_QNetworkAddressEntry: public QObject

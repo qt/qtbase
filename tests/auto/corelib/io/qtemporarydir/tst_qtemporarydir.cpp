@@ -51,9 +51,6 @@
 # include <windows.h>
 #endif
 
-//TESTED_CLASS=QTemporaryDir
-//TESTED_FILES=qtemporarydir.cpp
-
 class tst_QTemporaryDir : public QObject
 {
     Q_OBJECT

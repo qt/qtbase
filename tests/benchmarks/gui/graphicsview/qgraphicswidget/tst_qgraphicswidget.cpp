@@ -44,7 +44,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsWidget>
-//TESTED_FILES=
 
 class tst_QGraphicsWidget : public QObject
 {

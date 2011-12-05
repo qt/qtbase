@@ -61,8 +61,6 @@ void setFeature(QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature,
     dockwidget->setFeatures(on ? features | feature : features & ~feature);
 }
 
-//TESTED_FILES=
-
 class tst_QDockWidget : public QObject
 {
      Q_OBJECT

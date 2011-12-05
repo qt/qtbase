@@ -57,9 +57,6 @@ class QMainWindow;
 class QTextEdit;
 QT_END_NAMESPACE
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QShortcut : public QObject
 {
     Q_OBJECT

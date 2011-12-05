@@ -52,9 +52,6 @@
 #include <private/qgraphicseffect_p.h>
 #include "../../../platformquirks.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QGraphicsEffect : public QObject
 {
     Q_OBJECT

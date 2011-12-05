@@ -54,9 +54,6 @@
 #include "private/qstate_p.h"
 #include "private/qstatemachine_p.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 static int globalTick;
 
 // Run exec for a maximum of TIMEOUT msecs

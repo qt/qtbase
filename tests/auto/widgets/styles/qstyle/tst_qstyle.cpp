@@ -104,9 +104,6 @@ static bool qt_wince_is_smartphone() {
 
 #include <qwidget.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/styles/qstyle.h gui/styles/qstyle.cpp gui/styles/qplastiquestyle.cpp gui/styles/qwindowsstyle.cpp gui/styles/qwindowsxpstyle.cpp gui/styles/qwindowsvistastyle.cpp gui/styles/qmotifstyle.cpp
-
 class tst_QStyle : public QObject
 {
     Q_OBJECT

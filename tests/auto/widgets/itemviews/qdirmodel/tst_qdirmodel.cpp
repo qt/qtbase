@@ -46,9 +46,6 @@
 #include <qdir.h>
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QDirModel : public QObject
 {
     Q_OBJECT

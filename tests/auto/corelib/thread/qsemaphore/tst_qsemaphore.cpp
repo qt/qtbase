@@ -45,9 +45,6 @@
 #include <qthread.h>
 #include <qsemaphore.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSemaphore : public QObject
 {
     Q_OBJECT

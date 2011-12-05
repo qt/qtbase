@@ -54,8 +54,6 @@
 
 using namespace std;
 
-//TESTED_FILES=
-
 class tst_QAlgorithms : public QObject
 {
     Q_OBJECT

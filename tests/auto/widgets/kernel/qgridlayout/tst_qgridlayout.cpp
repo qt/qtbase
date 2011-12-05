@@ -56,10 +56,6 @@
 
 #include "../../../platformquirks.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
-
-
 class tst_QGridLayout : public QObject
 {
 Q_OBJECT

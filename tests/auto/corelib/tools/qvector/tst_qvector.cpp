@@ -42,9 +42,6 @@
 #include <QtTest/QtTest>
 #include <qvector.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=corelib/tools/qregexp.h corelib/tools/qregexp.cpp
-
 class tst_QVector : public QObject
 {
     Q_OBJECT

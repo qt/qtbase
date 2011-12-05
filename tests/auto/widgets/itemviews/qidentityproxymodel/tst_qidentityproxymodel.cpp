@@ -48,9 +48,6 @@
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"
 
-//TESTED CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QModelIndex)
 
 class tst_QIdentityProxyModel : public QObject

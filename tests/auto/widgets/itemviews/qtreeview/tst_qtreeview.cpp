@@ -44,9 +44,6 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QModelIndex)
 #ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)

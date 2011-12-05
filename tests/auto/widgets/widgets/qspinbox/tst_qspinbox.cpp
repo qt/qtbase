@@ -68,9 +68,6 @@
 #include <QStackedWidget>
 #include <QDebug>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class SpinBox : public QSpinBox
 {
 public:

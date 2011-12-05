@@ -64,9 +64,6 @@
 
 #include <stdio.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QReadWriteLock : public QObject
 {
     Q_OBJECT

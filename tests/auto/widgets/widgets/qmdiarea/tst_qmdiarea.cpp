@@ -73,9 +73,6 @@ Q_DECLARE_METATYPE(QMdiSubWindow *)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QTabWidget::TabPosition)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool reverse = false)
 {
     if (!mdiArea) {

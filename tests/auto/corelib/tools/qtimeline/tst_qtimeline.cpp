@@ -43,9 +43,6 @@
 
 #include <qtimeline.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTimeLine : public QObject
 {
   Q_OBJECT

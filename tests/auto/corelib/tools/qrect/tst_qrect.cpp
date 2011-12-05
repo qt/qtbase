@@ -49,9 +49,6 @@ Q_DECLARE_METATYPE(QPointF)
 Q_DECLARE_METATYPE(QRect)
 Q_DECLARE_METATYPE(QPoint)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QRect : public QObject
 {
     Q_OBJECT

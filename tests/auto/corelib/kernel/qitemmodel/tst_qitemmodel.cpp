@@ -47,9 +47,6 @@
 
 Q_DECLARE_METATYPE(QModelIndex)
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/itemviews/qstandarditemmodel.h gui/itemviews/qstandarditemmodel.cpp
-
 /*!
     See modelstotest.cpp for instructions on how to have your model tested with these tests.
 

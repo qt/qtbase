@@ -42,8 +42,6 @@
 #include <qtest.h>
 #include <QtCore>
 
-//TESTED_FILES=
-
 QThreadStorage<int *> dummy[8];
 
 QThreadStorage<QString *> tls1;

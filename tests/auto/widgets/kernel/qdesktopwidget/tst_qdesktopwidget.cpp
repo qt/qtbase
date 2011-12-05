@@ -44,8 +44,6 @@
 #include <QtWidgets/QDesktopWidget>
 #include <QDebug>
 
-//TESTED_CLASS=
-
 class tst_QDesktopWidget : public QObject
 {
     Q_OBJECT

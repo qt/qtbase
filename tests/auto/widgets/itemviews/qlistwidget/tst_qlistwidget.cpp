@@ -49,9 +49,6 @@
 #include <qlistwidget.h>
 #include <private/qlistwidget_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QListWidget : public QObject
 {
     Q_OBJECT

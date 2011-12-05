@@ -56,9 +56,6 @@
 
 #include <qformlayout.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFormLayout : public QObject
 {
     Q_OBJECT

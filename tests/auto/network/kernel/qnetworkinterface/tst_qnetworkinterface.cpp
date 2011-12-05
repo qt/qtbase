@@ -49,8 +49,6 @@
 #include <QNetworkSession>
 #include "../../../network-settings.h"
 
-//TESTED_FILES=qnetworkinterface.cpp qnetworkinterface.h qnetworkinterface_unix.cpp qnetworkinterface_win.cpp
-
 class tst_QNetworkInterface : public QObject
 {
     Q_OBJECT

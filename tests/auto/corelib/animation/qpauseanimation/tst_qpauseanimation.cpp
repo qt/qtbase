@@ -47,9 +47,6 @@
 
 #include <private/qabstractanimation_p.h>
 
-//TESTED_CLASS=QPauseAnimation
-//TESTED_FILES=
-
 #ifdef Q_OS_WIN
 static const char winTimerError[] = "On windows, consistent timing is not working properly due to bad timer resolution";
 #endif

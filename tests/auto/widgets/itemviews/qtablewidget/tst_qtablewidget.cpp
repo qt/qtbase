@@ -48,9 +48,6 @@
 
 #include <qtablewidget.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class QObjectTableItem : public QObject, public QTableWidgetItem
 {
     Q_OBJECT

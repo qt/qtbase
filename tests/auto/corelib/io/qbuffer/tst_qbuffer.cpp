@@ -44,9 +44,6 @@
 #include <QBuffer>
 #include <QByteArray>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QBuffer : public QObject
 {
     Q_OBJECT

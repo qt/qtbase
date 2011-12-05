@@ -50,9 +50,6 @@
 #include <qwindowsstyle.h>
 #include <qstyleoption.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QToolButton : public QObject
 {
 Q_OBJECT

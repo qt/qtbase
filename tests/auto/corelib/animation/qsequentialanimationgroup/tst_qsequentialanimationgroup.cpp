@@ -43,9 +43,6 @@
 #include <QtCore/qanimationgroup.h>
 #include <QtCore/qsequentialanimationgroup.h>
 
-//TESTED_CLASS=QSequentialAnimationGroup
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
 Q_DECLARE_METATYPE(QAbstractAnimation*)
 

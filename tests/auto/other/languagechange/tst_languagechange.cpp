@@ -51,10 +51,6 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QDesktopWidget>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_languageChange : public QObject
 {
     Q_OBJECT

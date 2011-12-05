@@ -204,8 +204,6 @@ QRect childRect(QAccessibleInterface *iface, int index = 0)
     return rect;
 }
 
-//TESTED_FILES=
-
 class tst_QAccessibility : public QObject
 {
     Q_OBJECT

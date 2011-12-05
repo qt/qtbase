@@ -55,9 +55,6 @@
 
 #include <qdebug.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 static QPointF mapToGlobal(const QPointF &pt, QGraphicsItem *item, QGraphicsView *view)
 {
     return view->viewport()->mapToGlobal(view->mapFromScene(item->mapToScene(pt)));

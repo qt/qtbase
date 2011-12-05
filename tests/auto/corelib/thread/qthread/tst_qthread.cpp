@@ -60,9 +60,6 @@
 #include <windows.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QThread : public QObject
 {
     Q_OBJECT

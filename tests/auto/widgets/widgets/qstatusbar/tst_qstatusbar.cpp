@@ -48,9 +48,6 @@
 #include <QMainWindow>
 #include <QSizeGrip>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QStatusBar: public QObject
 {
     Q_OBJECT

@@ -46,9 +46,6 @@
 #include <QSemaphore>
 #include <QThread>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWriteLockerThread : public QThread
 {
 public:

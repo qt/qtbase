@@ -44,9 +44,6 @@
 
 Q_DECLARE_METATYPE(QMargins)
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QMargins : public QObject
 {
     Q_OBJECT

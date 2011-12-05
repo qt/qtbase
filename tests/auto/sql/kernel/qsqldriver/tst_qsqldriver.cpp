@@ -45,11 +45,6 @@
 
 #include "../qsqldatabase/tst_databases.h"
 
-
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QSqlDriver : public QObject
 {
     Q_OBJECT

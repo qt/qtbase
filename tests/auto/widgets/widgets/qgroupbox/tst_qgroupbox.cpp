@@ -49,9 +49,6 @@
 
 #include "qgroupbox.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QGroupBox : public QObject
 {
     Q_OBJECT

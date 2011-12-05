@@ -44,9 +44,6 @@
 #include <qtranslator.h>
 #include <qfile.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTranslator : public QWidget
 {
     Q_OBJECT

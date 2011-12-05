@@ -47,11 +47,6 @@
 #include <qstringlist.h>
 #include <qlist.h>
 
-
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QFontMetrics : public QObject
 {
 Q_OBJECT

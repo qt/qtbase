@@ -47,9 +47,6 @@
 #include <qwidget.h>
 #include <QPushButton>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
-
 class tst_QStackedLayout : public QObject
 {
     Q_OBJECT

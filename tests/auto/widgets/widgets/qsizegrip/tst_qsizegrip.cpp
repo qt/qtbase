@@ -62,9 +62,6 @@ static inline Qt::Corner sizeGripCorner(QWidget *parent, QSizeGrip *sizeGrip)
 
 }
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(Qt::WindowType);
 
 class tst_QSizeGrip : public QObject

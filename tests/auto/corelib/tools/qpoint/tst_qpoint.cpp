@@ -45,9 +45,6 @@
 #include <qdebug.h>
 #include <qpoint.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QPoint : public QObject
 {
     Q_OBJECT

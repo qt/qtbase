@@ -53,9 +53,6 @@
 #include <qmessagebox.h>
 #include <private/qlabel_p.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class Widget : public QWidget
 {
 public:

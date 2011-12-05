@@ -46,9 +46,6 @@
 #include <qmenubar.h>
 #include <qworkspace.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWorkspace : public QObject
 {
     Q_OBJECT

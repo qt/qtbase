@@ -44,9 +44,6 @@
 #include <qhash.h>
 #include <qmap.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QHash : public QObject
 {
     Q_OBJECT

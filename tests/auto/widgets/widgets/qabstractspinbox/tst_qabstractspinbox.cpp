@@ -48,10 +48,6 @@
 #include <qlineedit.h>
 #include <qspinbox.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QAbstractSpinBox : public QObject
 {
 Q_OBJECT

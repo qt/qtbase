@@ -45,8 +45,6 @@
 #include <QImage>
 #include <QPainter>
 
-//TESTED_FILES=
-
 class QtTestTableModel: public QAbstractTableModel
 {
     Q_OBJECT

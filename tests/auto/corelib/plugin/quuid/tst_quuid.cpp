@@ -45,13 +45,6 @@
 #include <qcoreapplication.h>
 #include <quuid.h>
 
-
-
-#include <quuid.h>
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QUuid : public QObject
 {
     Q_OBJECT

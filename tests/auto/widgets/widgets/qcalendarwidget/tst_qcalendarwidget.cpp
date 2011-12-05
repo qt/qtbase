@@ -50,10 +50,6 @@
 #include <qdatetime.h>
 #include <qtextformat.h>
 
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QCalendarWidget : public QObject
 {
     Q_OBJECT

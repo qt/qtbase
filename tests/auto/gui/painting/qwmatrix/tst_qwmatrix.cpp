@@ -47,9 +47,6 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/painting/qmatrix.h gui/painting/qmatrix.cpp
-
 class tst_QWMatrix : public QObject
 {
     Q_OBJECT

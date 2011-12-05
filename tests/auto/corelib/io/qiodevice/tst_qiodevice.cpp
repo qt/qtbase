@@ -45,9 +45,6 @@
 
 #include "../../../network-settings.h"
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QIODevice : public QObject
 {
     Q_OBJECT

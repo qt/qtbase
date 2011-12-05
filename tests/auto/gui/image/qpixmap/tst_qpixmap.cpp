@@ -65,9 +65,6 @@
 #include <qscreen_qws.h>
 #endif
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QPixmap : public QObject

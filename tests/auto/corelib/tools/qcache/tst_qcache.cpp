@@ -43,9 +43,6 @@
 
 #include <qcache.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QCache : public QObject
 {
     Q_OBJECT

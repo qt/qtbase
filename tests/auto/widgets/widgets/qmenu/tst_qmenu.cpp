@@ -59,9 +59,6 @@
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QMenu : public QObject
 {
     Q_OBJECT

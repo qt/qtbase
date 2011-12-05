@@ -51,9 +51,6 @@
 
 #include <QtTest/QtTest>
 
-//TESTED_CLASS=QStringBuilder
-//TESTED_FILES=qstringbuilder.cpp
-
 #define LITERAL "some literal"
 
 void runScenario(); // Defined in stringbuilder.cpp #included below.

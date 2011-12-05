@@ -68,9 +68,6 @@
 #include <QFileDialog>
 #include <QFileSystemModel>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 #if defined(Q_OS_UNIX)
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE

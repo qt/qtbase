@@ -57,9 +57,6 @@
 
 #define TESTFONT_SIZE 12
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QTextLayout : public QObject
 {
     Q_OBJECT

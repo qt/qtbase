@@ -47,9 +47,6 @@
 #include <QAbstractTextDocumentLayout>
 #include <QSyntaxHighlighter>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-//
 class QTestDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_OBJECT

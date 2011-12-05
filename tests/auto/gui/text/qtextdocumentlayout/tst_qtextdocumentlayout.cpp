@@ -50,9 +50,6 @@
 #include <qtextedit.h>
 #include <qscrollbar.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=gui/text/qtextdocumentlayout_p.h gui/text/qtextdocumentlayout.cpp
-
 class tst_QTextDocumentLayout : public QObject
 {
     Q_OBJECT

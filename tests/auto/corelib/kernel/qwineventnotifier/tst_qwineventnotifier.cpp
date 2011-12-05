@@ -43,9 +43,6 @@
 #include <qwineventnotifier.h>
 #include <qtimer.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QWinEventNotifier : public QObject
 {
     Q_OBJECT

@@ -49,9 +49,6 @@
 #include <qbytearray.h>
 #include <qdatastream.h>
 
-//TESTED_CLASS=
-//TESTED_FILES=
-
 class tst_QHostAddress : public QObject
 {
     Q_OBJECT

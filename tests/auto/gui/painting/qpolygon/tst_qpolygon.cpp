@@ -49,11 +49,6 @@
 #include <qpainter.h>
 #include <qdialog.h>
 
-
-
-//TESTED_CLASS=
-//TESTED_FILES=gui/painting/qpolygon.h gui/painting/qpolygon.cpp
-
 class tst_QPolygon : public QObject
 {
     Q_OBJECT
