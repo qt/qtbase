@@ -48,6 +48,7 @@
 #include <QtGui/QScreen>
 
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 #include <EGL/egl.h>
 
@@ -156,6 +157,20 @@ QDirectFbWindowEGL::~QDirectFbWindowEGL()
         dfbScreen = static_cast<QDirectFbScreenEGL*>(screen());
         eglDestroySurface(dfbScreen->eglDisplay(), m_eglSurface);
     }
+}
+
+EGLSurface QDirectFbWindowEGL::eglSurface()
+{
+    if (m_eglSurface == EGL_NO_SURFACE) {
+        QDirectFbScreenEGL *dfbScreen = static_cast<QDirectFbScreenEGL *>(screen());
+        EGLConfig config = q_configFromGLFormat(dfbScreen->eglDisplay(), format(), true);
+        m_eglSurface = eglCreateWindowSurface(dfbScreen->eglDisplay(), config, dfbSurface(), NULL);
+
+        if (m_eglSurface == EGL_NO_SURFACE)
+            eglGetError();
+    }
+
+    return m_eglSurface;
 }
 
 QSurfaceFormat QDirectFbWindowEGL::format() const
