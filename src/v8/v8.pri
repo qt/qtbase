@@ -210,9 +210,7 @@ SOURCES += \
     $$V8SRC/x64/macro-assembler-x64.cc \
     $$V8SRC/x64/regexp-macro-assembler-x64.cc \
     $$V8SRC/x64/stub-cache-x64.cc
-}
-
-arch_mips {
+} else:equals(V8_TARGET_ARCH, mips) {
 DEFINES += V8_TARGET_MIPS
 SOURCES += \
     $$V8SRC/mips/assembler-mips.cc \
