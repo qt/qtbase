@@ -163,7 +163,8 @@ void QEglFSScreen::createAndSetPlatformContext()
         m_depth = 16;
         m_format = QImage::Format_RGB16;
     } else {
-        platformFormat.setDepthBufferSize(32);
+        platformFormat.setDepthBufferSize(24);
+        platformFormat.setStencilBufferSize(8);
         platformFormat.setRedBufferSize(8);
         platformFormat.setGreenBufferSize(8);
         platformFormat.setBlueBufferSize(8);
