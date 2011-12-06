@@ -1392,16 +1392,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-        } else if (strcmp(argv[i], "-qws") == 0) {
-            // do nothing
-        } else if (strcmp(argv[i], "-graphicssystem") == 0) {
-            // do nothing
-            if (i + 1 >= argc) {
-                fprintf(stderr, "-graphicssystem needs an extra parameter specifying the graphics system\n");
-                exit(1);
-            } else {
-                ++i;
-            }
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
             if (qml) {
