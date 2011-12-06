@@ -1652,6 +1652,8 @@ QRect QPrinter::paperRect() const
     This function sets the \a left, \a top, \a right and \a bottom
     page margins for this printer. The unit of the margins are
     specified with the \a unit parameter.
+
+    \sa getPageMargins
 */
 void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, QPrinter::Unit unit)
 {
@@ -1683,6 +1685,8 @@ void QPrinter::setMargins(const Margins &m)
     Returns the page margins for this printer in \a left, \a top, \a
     right, \a bottom. The unit of the returned margins are specified
     with the \a unit parameter.
+
+    \sa setPageMargins
 */
 void QPrinter::getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, QPrinter::Unit unit) const
 {
