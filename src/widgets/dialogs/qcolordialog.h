@@ -95,10 +95,10 @@ public:
 
     void setVisible(bool visible);
 
-    // ### Qt 5: merge overloads with title = QString()
-    static QColor getColor(const QColor &initial, QWidget *parent, const QString &title,
+    static QColor getColor(const QColor &initial = Qt::white,
+                           QWidget *parent = 0,
+                           const QString &title = QString(),
                            ColorDialogOptions options = 0);
-    static QColor getColor(const QColor &initial = Qt::white, QWidget *parent = 0);
 
     // obsolete
     static QRgb getRgba(QRgb rgba = 0xffffffff, bool *ok = 0, QWidget *parent = 0);

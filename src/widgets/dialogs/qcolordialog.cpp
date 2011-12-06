@@ -1966,12 +1966,6 @@ void QColorDialog::open(QObject *receiver, const char *member)
     \sa QDialog::open()
 */
 
-/*
-    For Symbian color dialogs
-*/
-#ifdef Q_WS_S60
-extern QColor qtSymbianGetColor(const QColor &initial);
-#endif
 /*!
     \since 4.5
 
@@ -1981,19 +1975,10 @@ extern QColor qtSymbianGetColor(const QColor &initial);
     QColor::isValid()) color if the user cancels the dialog.
 
     The \a options argument allows you to customize the dialog.
-
-    On Symbian, this static function will use the native color dialog and not a QColorDialog.
-    On Symbian the parameters \a title and \a parent has no relevance and the
-    \a options parameter is only used to define if the native color dialog is
-    used or not.
 */
 QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QString &title,
                               ColorDialogOptions options)
 {
-#ifdef Q_WS_S60
-    if (!(options & DontUseNativeDialog))
-        return qtSymbianGetColor(initial);
-#endif
     QColorDialog dlg(parent);
     if (!title.isEmpty())
         dlg.setWindowTitle(title);
@@ -2002,25 +1987,6 @@ QColor QColorDialog::getColor(const QColor &initial, QWidget *parent, const QStr
     dlg.exec();
     return dlg.selectedColor();
 }
-
-/*!
-    Pops up a modal color dialog, lets the user choose a color, and
-    returns that color. The color is initially set to \a initial. The
-    dialog is a child of \a parent. It returns an invalid (see
-    QColor::isValid()) color if the user cancels the dialog.
-
-    On Symbian, this static function will use the native
-    color dialog and not a QColorDialog.
-*/
-
-QColor QColorDialog::getColor(const QColor &initial, QWidget *parent)
-{
-#ifdef Q_WS_S60
-    return qtSymbianGetColor(initial);
-#endif
-    return getColor(initial, parent, QString(), ColorDialogOptions(0));
-}
-
 
 /*!
     \obsolete
