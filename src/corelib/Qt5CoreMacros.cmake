@@ -117,7 +117,7 @@ MACRO (QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
     ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
                        COMMAND ${QT_MOC_EXECUTABLE}
                        ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
-                       DEPENDS ${infile})
+                       DEPENDS ${infile} VERBATIM)
   ENDIF (WIN32)
 ENDMACRO (QT5_CREATE_MOC_COMMAND)
 
@@ -198,7 +198,7 @@ MACRO (QT5_ADD_RESOURCES outfiles )
       COMMAND ${QT_RCC_EXECUTABLE}
       ARGS ${rcc_options} -name ${outfilename} -o ${outfile} ${infile}
       MAIN_DEPENDENCY ${infile}
-      DEPENDS ${_RC_DEPENDS} "${out_depends}")
+      DEPENDS ${_RC_DEPENDS} "${out_depends}" VERBATIM)
     SET(${outfiles} ${${outfiles}} ${outfile})
   ENDFOREACH (it)
 
