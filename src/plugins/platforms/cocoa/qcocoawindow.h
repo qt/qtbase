@@ -65,6 +65,25 @@
 @end
 
 QT_BEGIN_NAMESPACE
+// QCocoaWindow
+//
+// QCocoaWindow is an NSView (not an NSWindow!) in the sense
+// that it relies on a NSView for all event handling and
+// graphics output and does not require a NSWindow, except for
+// for the window-related functions like setWindowTitle.
+//
+// As a consequence of this it is possible to embed the QCocoaWindow
+// in an NSView hierarchy by getting a pointer to the "backing"
+// NSView and not calling QCocoaWindow::show():
+//
+// QWindow *qtWindow = new MyWindow();
+// qtWindow->create();
+// QPlatformNativeInterface *platformNativeInterface = QGuiApplication::platformNativeInterface();
+// NSView *qtView = (NSView *)platformNativeInterface->nativeResourceForWindow("nsview", qtWindow);
+// [parentView addSubview:qtView];
+//
+// See the qt_on_cocoa manual tests for a working example, located
+// in tests/manual/cocoa at the time of writing.
 
 class QCocoaWindow : public QPlatformWindow
 {
@@ -97,12 +116,17 @@ protected:
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
 
-private:
+// private:
+public: // for QNSView
     friend class QCocoaBackingStore;
-    NSWindow *m_nsWindow;
+    friend class QCocoaNativeInterface;
+
     QNSView *m_contentView;
+    QNSWindow *m_nsWindow;
+
     quint32 m_windowAttributes;
     quint32 m_windowClass;
+    bool m_inConstructor;
     QCocoaGLContext *m_glContext;
 };
 

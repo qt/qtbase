@@ -81,6 +81,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_windowAttributes(0)
     , m_windowClass(0)
     , m_glContext(0)
+    , m_inConstructor(true)
 {
     QCocoaAutoReleasePool pool;
 
@@ -97,7 +98,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     // QCocoaWindow is deleted by Qt.
     [m_nsWindow setReleasedWhenClosed : NO];
 
-    m_contentView = [[QNSView alloc] initWithQWindow:tlw];
+    m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
 
     // ### Accept touch events by default.
     // Beware that enabling touch events has a negative impact on the overall performance.
@@ -107,6 +108,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     setGeometry(tlw->geometry());
 
     [m_nsWindow setContentView:m_contentView];
+    m_inConstructor = false;
 }
 
 QCocoaWindow::~QCocoaWindow()
@@ -124,8 +126,6 @@ void QCocoaWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 
     NSRect bounds = qt_mac_flipRect(rect, window());
-
-    [[m_nsWindow contentView] setFrameSize:bounds.size];
     [m_nsWindow setContentSize : bounds.size];
     [m_nsWindow setFrameOrigin : bounds.origin];
 }
@@ -232,22 +232,16 @@ void QCocoaWindow::windowDidMove()
 {
     NSRect rect = [[m_nsWindow contentView]frame];
     NSRect windowRect = [m_nsWindow frame];
-
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    setGeometry(geo);
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
+    [[m_nsWindow contentView] setFrameSize:rect.size];
 }
 
 void QCocoaWindow::windowDidResize()
 {
     NSRect rect = [[m_nsWindow contentView]frame];
     NSRect windowRect = [m_nsWindow frame];
-
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    setGeometry(geo);
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
+    // Call setFrameSize which will trigger a frameDidChangeNotificatio on QNSView.
+    [[m_nsWindow contentView] setFrameSize:rect.size];
 }
-
 
 void QCocoaWindow::windowWillClose()
 {

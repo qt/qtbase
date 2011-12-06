@@ -52,8 +52,15 @@
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
+    if (!window->handle()) {
+        qWarning("QCocoaNativeInterface::nativeResourceForWindow: Native window has not been created.");
+        return 0;
+    }
+
     if (resourceString == "nsopenglcontext") {
         return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
+    } else if (resourceString == "nsview") {
+        return static_cast<QCocoaWindow *>(window->handle())->m_contentView;
     }
     return 0;
 }

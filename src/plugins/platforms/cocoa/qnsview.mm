@@ -44,6 +44,7 @@
 #include <Carbon/Carbon.h>
 
 #include "qnsview.h"
+#include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include "qmultitouch_mac_p.h"
 
@@ -81,12 +82,14 @@ static QTouchDevice *touchDevice = 0;
     return self;
 }
 
-- (id)initWithQWindow:(QWindow *)window {
+- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow
+{
     self = [self init];
     if (!self)
         return 0;
 
     m_window = window;
+    m_platformWindow = platformWindow;
     m_accessibleRoot = 0;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
@@ -106,7 +109,29 @@ static QTouchDevice *touchDevice = 0;
     m_accessibleRoot = window->accessibleRoot();
 #endif
 
+    [self setPostsFrameChangedNotifications : YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(frameDidChangeNotification:)
+                                          name:NSViewFrameDidChangeNotification
+                                          object:self];
+
     return self;
+}
+
+- (void) frameDidChangeNotification: (NSNotification *) notification
+{
+    NSRect rect = [self frame];
+    NSRect windowRect = [[self window] frame];
+    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+
+    // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
+    // doing that will initiate a geometry change it and possibly create
+    // an infinite loop when this notification is triggered again.)
+    m_platformWindow->QPlatformWindow::setGeometry(geo);
+
+    // Send a geometry change event to Qt, if it's ready to handle events
+    if (!m_platformWindow->m_inConstructor)
+        QWindowSystemInterface::handleSynchronousGeometryChange(m_window, geo);
 }
 
 - (void) setImage:(QImage *)image

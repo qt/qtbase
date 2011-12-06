@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,52 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QNSVIEW_H
-#define QNSVIEW_H
+#include <QWindow>
+#include <QImage>
 
-#include <Cocoa/Cocoa.h>
+class Window : public QWindow
+{
+public:
+    Window(QWindow *parent = 0);
+    Window(QScreen *screen);
 
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
+protected:
+    void mousePressEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
 
-class QCocoaWindow;
-@interface QNSView : NSView {
-    CGImageRef m_cgImage;
-    QWindow *m_window;
-    QCocoaWindow *m_platformWindow;
-    Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
-}
+    void keyPressEvent(QKeyEvent *);
 
-- (id)init;
-- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
+    void exposeEvent(QExposeEvent *);
+    void resizeEvent(QResizeEvent *);
 
-- (void)setImage:(QImage *)image;
-- (void)drawRect:(NSRect)dirtyRect;
+    void timerEvent(QTimerEvent *);
 
-- (BOOL)isFlipped;
-- (BOOL)acceptsFirstResponder;
+private:
+    void render();
+    void scheduleRender();
+    void initialize();
 
-- (void)handleMouseEvent:(NSEvent *)theEvent;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseEntered:(NSEvent *)theEvent;
-- (void)mouseExited:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)rightMouseDragged:(NSEvent *)theEvent;
-- (void)rightMouseUp:(NSEvent *)theEvent;
-- (void)otherMouseDown:(NSEvent *)theEvent;
-- (void)otherMouseDragged:(NSEvent *)theEvent;
-- (void)otherMouseUp:(NSEvent *)theEvent;
-
-- (int) convertKeyCode : (QChar)keyCode;
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
-- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
-
-@end
-
-#endif //QNSVIEW_H
+    QString m_text;
+    QImage m_image;
+    QPoint m_lastPos;
+    int m_backgroundColorIndex;
+    QBackingStore *m_backingStore;
+    int m_renderTimer;
+};
