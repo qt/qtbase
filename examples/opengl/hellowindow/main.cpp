@@ -72,15 +72,13 @@ int main(int argc, char **argv)
     windowA->setWindowTitle(QLatin1String("Thread A - Context A"));
     windowA->setVisible(true);
 
-    QThread *renderThread = 0;
+    QList<QThread *> renderThreads;
     if (multipleWindows) {
         Renderer *rendererB = new Renderer(format, rendererA);
 
-        renderThread = new QThread;
+        QThread *renderThread = new QThread;
         rendererB->moveToThread(renderThread);
-        renderThread->start();
-
-        QObject::connect(qGuiApp, SIGNAL(lastWindowClosed()), renderThread, SLOT(quit()));
+        renderThreads << renderThread;
 
         HelloWindow *windowB = new HelloWindow(rendererA);
         windowB->setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
@@ -91,10 +89,37 @@ int main(int argc, char **argv)
         windowC->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
         windowC->setWindowTitle(QLatin1String("Thread B - Context B"));
         windowC->setVisible(true);
+
+        for (int i = 1; i < QGuiApplication::screens().size(); ++i) {
+            QScreen *screen = QGuiApplication::screens().at(i);
+            Renderer *renderer = new Renderer(format, rendererA, screen);
+
+            renderThread = new QThread;
+            renderer->moveToThread(renderThread);
+            renderThreads << renderThread;
+
+            QRect screenGeometry = screen->availableGeometry();
+            QPoint center = screenGeometry.center();
+
+            QSize windowSize = screenGeometry.size() * 0.8;
+
+            HelloWindow *window = new HelloWindow(renderer);
+            window->setScreen(screen);
+            window->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, -windowSize.height() / 2));
+
+            QChar id = QChar('B' + i);
+            window->setWindowTitle(QLatin1String("Thread ") + id + QLatin1String(" - Context ") + id);
+            window->setVisible(true);
+        }
+    }
+
+    for (int i = 0; i < renderThreads.size(); ++i) {
+        QObject::connect(qGuiApp, SIGNAL(lastWindowClosed()), renderThreads.at(i), SLOT(quit()));
+        renderThreads.at(i)->start();
     }
 
     app.exec();
 
-    if (multipleWindows)
-        renderThread->wait();
+    for (int i = 0; i < renderThreads.size(); ++i)
+        renderThreads.at(i)->wait();
 }
