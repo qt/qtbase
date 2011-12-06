@@ -164,6 +164,8 @@ bool QOpenGLContext::create()
     Q_D(QOpenGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformOpenGLContext(this);
     d->platformGLContext->setContext(this);
+    if (!d->platformGLContext->isSharing())
+        d->shareContext = 0;
     d->shareGroup = d->shareContext ? d->shareContext->shareGroup() : new QOpenGLContextGroup;
     d->shareGroup->d_func()->addContext(this);
     return d->platformGLContext;
@@ -197,7 +199,7 @@ QOpenGLContext::~QOpenGLContext()
 bool QOpenGLContext::isValid() const
 {
     Q_D(const QOpenGLContext);
-    return d->platformGLContext != 0;
+    return d->platformGLContext && d->platformGLContext->isValid();
 }
 
 /*!
@@ -225,7 +227,7 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 bool QOpenGLContext::makeCurrent(QSurface *surface)
 {
     Q_D(QOpenGLContext);
-    if (!d->platformGLContext)
+    if (!isValid())
         return false;
 
     if (thread() != QThread::currentThread())
@@ -257,7 +259,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 void QOpenGLContext::doneCurrent()
 {
     Q_D(QOpenGLContext);
-    if (!d->platformGLContext)
+    if (!isValid())
         return;
 
     if (QOpenGLContext::currentContext() == this)
@@ -282,7 +284,7 @@ QSurface *QOpenGLContext::surface() const
 void QOpenGLContext::swapBuffers(QSurface *surface)
 {
     Q_D(QOpenGLContext);
-    if (!d->platformGLContext)
+    if (!isValid())
         return;
 
     if (!surface) {

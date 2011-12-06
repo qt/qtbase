@@ -86,6 +86,11 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+static int nullErrorHandler(Display *, XErrorEvent *)
+{
+    return 0;
+}
+
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
 #ifdef XCB_USE_XINPUT2_MAEMO
@@ -106,6 +111,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_primaryScreen = DefaultScreen(dpy);
     m_connection = XGetXCBConnection(dpy);
     XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+    XSetErrorHandler(nullErrorHandler);
     m_xlib_display = dpy;
 #ifdef XCB_USE_EGL
     EGLDisplay eglDisplay = eglGetDisplay(dpy);
@@ -1002,7 +1008,6 @@ void QXcbConnection::initializeXFixes()
         xfixes_first_event = 0;
     }
     free(xfixes_query);
-
 }
 
 void QXcbConnection::initializeXRender()

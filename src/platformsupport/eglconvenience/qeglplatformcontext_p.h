@@ -59,6 +59,8 @@ public:
     void (*getProcAddress(const QByteArray &procName)) ();
 
     QSurfaceFormat format() const;
+    bool isSharing() const { return m_shareContext != EGL_NO_CONTEXT; }
+    bool isValid() const { return m_eglContext != EGL_NO_CONTEXT; }
 
     EGLContext eglContext() const;
 
@@ -67,6 +69,7 @@ protected:
 
 private:
     EGLContext m_eglContext;
+    EGLContext m_shareContext;
     EGLDisplay m_eglDisplay;
     EGLenum m_eglApi;
 

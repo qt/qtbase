@@ -66,12 +66,15 @@ public:
     void (*getProcAddress(const QByteArray &procName)) ();
 
     QSurfaceFormat format() const;
+    bool isSharing() const;
+    bool isValid() const;
 
     GLXContext glxContext() const { return m_context; }
 
 private:
     QXcbScreen *m_screen;
     GLXContext m_context;
+    GLXContext m_shareContext;
     QSurfaceFormat m_format;
 };
 

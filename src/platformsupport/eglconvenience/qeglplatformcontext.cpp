@@ -56,7 +56,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     EGLConfig config = q_configFromGLFormat(display, format, true);
     m_format = q_glFormatFromConfig(display, config);
 
-    EGLContext shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
+    m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
 
     QVector<EGLint> contextAttrs;
     contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
@@ -64,11 +64,10 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     contextAttrs.append(EGL_NONE);
 
     eglBindAPI(m_eglApi);
-    m_eglContext = eglCreateContext(m_eglDisplay, config, shareContext, contextAttrs.constData());
-    if (m_eglContext == EGL_NO_CONTEXT) {
-        qWarning("Could not create the egl context\n");
-        eglTerminate(m_eglDisplay);
-        qFatal("EGL error");
+    m_eglContext = eglCreateContext(m_eglDisplay, config, m_shareContext, contextAttrs.constData());
+    if (m_eglContext == EGL_NO_CONTEXT && m_shareContext != EGL_NO_CONTEXT) {
+        m_shareContext = 0;
+        m_eglContext = eglCreateContext(m_eglDisplay, config, 0, contextAttrs.constData());
     }
 }
 
