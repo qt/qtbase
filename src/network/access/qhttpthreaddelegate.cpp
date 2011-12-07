@@ -472,11 +472,15 @@ void QHttpThreadDelegate::headerChangedSlot()
 
     // Is using a zerocopy buffer allowed by user and possible with this reply?
     if (httpReply->supportsUserProvidedDownloadBuffer()
-        && downloadBufferMaximumSize > 0) {
-        char *buf = new char[httpReply->contentLength()]; // throws if allocation fails
-        if (buf) {
-            downloadBuffer = QSharedPointer<char>(buf, downloadBufferDeleter);
-            httpReply->setUserProvidedDownloadBuffer(buf);
+        && (downloadBufferMaximumSize > 0) && (httpReply->contentLength() <= downloadBufferMaximumSize)) {
+        QT_TRY {
+            char *buf = new char[httpReply->contentLength()]; // throws if allocation fails
+            if (buf) {
+                downloadBuffer = QSharedPointer<char>(buf, downloadBufferDeleter);
+                httpReply->setUserProvidedDownloadBuffer(buf);
+            }
+        } QT_CATCH(const std::bad_alloc &) {
+            // in out of memory situations, don't use downloadbuffer.
         }
     }
 
