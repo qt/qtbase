@@ -236,6 +236,9 @@
 #define XF86XK_TopMenu             0x1008FFA2
 #define XF86XK_Suspend             0x1008FFA7
 #define XF86XK_Hibernate           0x1008FFA8
+#define XF86XK_TouchpadToggle      0x1008FFA9
+#define XF86XK_TouchpadOn          0x1008FFB0
+#define XF86XK_TouchpadOff         0x1008FFB1
 
 
 // end of XF86keysyms.h
@@ -544,6 +547,9 @@ static const unsigned int KeyTbl[] = {
     XF86XK_Bluetooth,           Qt::Key_Bluetooth,
     XF86XK_Suspend,             Qt::Key_Suspend,
     XF86XK_Hibernate,           Qt::Key_Hibernate,
+    XF86XK_TouchpadToggle,      Qt::Key_TouchpadToggle,
+    XF86XK_TouchpadOn,          Qt::Key_TouchpadOn,
+    XF86XK_TouchpadOff,         Qt::Key_TouchpadOff,
     XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 5: remap properly
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,

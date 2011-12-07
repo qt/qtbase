@@ -970,6 +970,10 @@ public:
         Key_LaunchG  = 0x0100010e,
         Key_LaunchH  = 0x0100010f,
 
+        Key_TouchpadToggle = 0x01000110,
+        Key_TouchpadOn = 0x01000111,
+        Key_TouchpadOff = 0x01000112,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
