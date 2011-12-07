@@ -60,16 +60,6 @@ Q_DECLARE_METATYPE(IntList)
 typedef QList<bool> BoolList;
 Q_DECLARE_METATYPE(BoolList)
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 2 seconds.
-#define WAIT_FOR_CONDITION(expr, expected) \
-    do { \
-        const int step = 100; \
-        for (int i = 0; i < 2000 && expr != expected; i+=step) { \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 class protected_QHeaderView : public QHeaderView
 {
     Q_OBJECT
@@ -1447,23 +1437,12 @@ void tst_QHeaderView::focusPolicy()
     QApplication::setActiveWindow(&widget);
     QTest::qWaitForWindowShown(&widget);
     widget.activateWindow();
-    QTest::qWait(100);
-
-    qApp->processEvents();
-
-    WAIT_FOR_CONDITION(widget.hasFocus(), true);
-
-    QVERIFY(widget.hasFocus());
+    QTRY_VERIFY(widget.hasFocus());
     QVERIFY(!widget.header()->hasFocus());
 
     widget.setFocusPolicy(Qt::NoFocus);
     widget.clearFocus();
-
-    qApp->processEvents();
-    qApp->processEvents();
-
-    WAIT_FOR_CONDITION(widget.hasFocus(), false);
-    QVERIFY(!widget.hasFocus());
+    QTRY_VERIFY(!widget.hasFocus());
     QVERIFY(!widget.header()->hasFocus());
 
     QTest::keyPress(&widget, Qt::Key_Tab);
