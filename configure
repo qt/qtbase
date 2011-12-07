@@ -762,7 +762,6 @@ CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
-CFG_PTMALLOC=no
 CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
@@ -1040,7 +1039,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2069,14 +2068,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    ptmalloc)
-        if [ "$VAL" = "yes" ]; then
-            CFG_PTMALLOC="yes"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-
     xmlpatterns)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
             CFG_XMLPATTERNS="yes"
@@ -3976,9 +3967,6 @@ Third Party Libraries:
     -no-openssl ........ Do not compile support for OpenSSL.
  +  -openssl ........... Enable run-time OpenSSL support.
     -openssl-linked .... Enabled linked OpenSSL support.
-
-    -ptmalloc .......... Override the system memory allocator with ptmalloc.
-                         (Experimental.)
 
 Additional options:
 
@@ -6708,15 +6696,6 @@ if [ -n "$CFG_RUNTIME_SYSTEM" -a "$CFG_GRAPHICS_SYSTEM" != "runtime" ] || [ "$CF
     CFG_RUNTIME_SYSTEM=
 fi
 
-if [ "$CFG_PTMALLOC" != "no" ]; then
-    # build ptmalloc, copy .a file to lib/
-    echo "Building ptmalloc. Please wait..."
-    (cd "$relpath/src/3rdparty/ptmalloc/"; "$MAKE" "clean" ; "$MAKE" "posix"
-     mkdir "$outpath/lib/" ; cp "libptmalloc3.a" "$outpath/lib/")
-
-    QMakeVar add QMAKE_LFLAGS "$outpath/lib/libptmalloc3.a"
-fi
-
 if [ "$CFG_ALSA" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/alsa "alsa" $L_FLAGS $I_FLAGS $l_FLAGS; then
         CFG_ALSA=yes
@@ -8504,8 +8483,6 @@ if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "XInput2 support ........ $CFG_XINPUT2"
 fi
 echo
-
-[ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
 
 # complain about not being able to use dynamic plugins if we are using a static build
 if [ "$CFG_SHARED" = "no" ]; then
