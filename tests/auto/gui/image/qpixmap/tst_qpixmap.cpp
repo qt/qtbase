@@ -167,32 +167,28 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
     QImage expectedImage = expected.toImage().convertToFormat(QImage::Format_RGB32);
     QImage actualImage = actual.toImage().convertToFormat(QImage::Format_RGB32);
 
-    if (expectedImage.size() != actualImage.size())
+    if (expectedImage.size() != actualImage.size()) {
+        qWarning("Image size comparison failed: expected: %dx%d, got %dx%d",
+                 expectedImage.size().width(), expectedImage.size().height(),
+                 actualImage.size().width(), actualImage.size().height());
         return false;
+    }
 
-    int size = actual.width() * actual.height();
-
-    int threshold = 2;
-    if (QPixmap::defaultDepth() == 16)
-        threshold = 10;
+    const int size = actual.width() * actual.height();
+    const int threshold = QPixmap::defaultDepth() == 16 ? 10 : 2;
 
     QRgb *a = (QRgb *)actualImage.bits();
     QRgb *e = (QRgb *)expectedImage.bits();
     for (int i = 0; i < size; ++i) {
-        QColor ca(a[i]);
-        QColor ce(e[i]);
-
-        bool result = true;
-
-        if (qAbs(ca.red() - ce.red()) > threshold)
-            result = false;
-        if (qAbs(ca.green() - ce.green()) > threshold)
-            result = false;
-        if (qAbs(ca.blue() - ce.blue()) > threshold)
-            result = false;
-
-        if (!result)
+        const QColor ca(a[i]);
+        const QColor ce(e[i]);
+        if (qAbs(ca.red() - ce.red()) > threshold
+            || qAbs(ca.green() - ce.green()) > threshold
+            || qAbs(ca.blue() - ce.blue()) > threshold) {
+            qWarning("Color mismatch at pixel #%d: Expected: %d,%d,%d, got %d,%d,%d",
+                     i, ce.red(), ce.green(), ce.blue(), ca.red(), ca.green(), ca.blue());
             return false;
+        }
     }
 
     return true;
