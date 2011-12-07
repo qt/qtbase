@@ -50,6 +50,7 @@
 #include <QObject>
 #include <QThread>
 #include <QVector>
+#include <QVarLengthArray>
 
 #ifdef XCB_USE_XINPUT2_MAEMO
 struct XInput2Data;
@@ -249,6 +250,8 @@ namespace QXcbAtom {
     };
 }
 
+typedef QVarLengthArray<xcb_generic_event_t *, 64> QXcbEventArray;
+
 class QXcbConnection;
 class QXcbEventReader : public QThread
 {
@@ -263,7 +266,7 @@ public:
     void run();
 #endif
 
-    QList<xcb_generic_event_t *> *lock();
+    QXcbEventArray *lock();
     void unlock();
 
 signals:
@@ -273,7 +276,7 @@ private:
     void addEvent(xcb_generic_event_t *event);
 
     QMutex m_mutex;
-    QList<xcb_generic_event_t *> m_events;
+    QXcbEventArray m_events;
     QXcbConnection *m_connection;
 };
 
@@ -427,7 +430,7 @@ private:
 template<typename T>
 xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);

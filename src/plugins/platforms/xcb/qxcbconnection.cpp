@@ -615,7 +615,7 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
     m_events << event;
 }
 
-QList<xcb_generic_event_t *> *QXcbEventReader::lock()
+QXcbEventArray *QXcbEventReader::lock()
 {
     m_mutex.lock();
 #ifndef XCB_POLL_FOR_QUEUED_EVENT
@@ -648,7 +648,7 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
 
 void QXcbConnection::processXcbEvents()
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for(int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
@@ -711,7 +711,7 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
 
 xcb_generic_event_t *QXcbConnection::checkEvent(int type)
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
