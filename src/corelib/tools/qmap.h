@@ -77,10 +77,8 @@ struct Q_CORE_EXPORT QMapData
     uint strictAlignment : 1;
     uint reserved : 29;
 
-    static QMapData *createData(); // ### Qt5 remove me
     static QMapData *createData(int alignment);
     void continueFreeData(int offset);
-    Node *node_create(Node *update[], int offset); // ### Qt5 remove me
     Node *node_create(Node *update[], int offset, int alignment);
     void node_delete(Node *update[], int offset, Node *node);
 #ifdef QT_QMAP_DEBUG
