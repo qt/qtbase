@@ -825,8 +825,6 @@ OPT_FAST=auto
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
-CFG_GRAPHICS_SYSTEM=default
-CFG_RUNTIME_SYSTEM=
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
@@ -1142,16 +1140,6 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL="$1"
         ;;
-    -graphicssystem)
-	VAR="graphicssystem"
-	shift
-	VAL=$1
-	;;
-    -runtimegraphicssystem)
-	VAR="runtimegraphicssystem"
-	shift
-	VAL=$1
-	;;
     -qtlibinfix)
         VAR="qtlibinfix"
         shift
@@ -1401,33 +1389,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    graphicssystem)
-        if [ "$PLATFORM_QWS" = "yes" ]; then
-            echo "Error: Graphics System plugins are not supported on QWS."
-            echo "   On QWS, the graphics system API is part of the QScreen plugin architecture "
-            echo "   rather than existing as a separate plugin."
-            echo ""
-            UNKNOWN_OPT=yes
-        else
-            if  [ "$VAL" = "opengl" ]; then
-                CFG_GRAPHICS_SYSTEM="opengl"
-            elif [ "$VAL" = "openvg" ]; then
-                CFG_GRAPHICS_SYSTEM="openvg"
-            elif [ "$VAL" = "raster" ]; then
-                CFG_GRAPHICS_SYSTEM="raster"
-            elif [ "$VAL" = "runtime" ]; then
-                CFG_GRAPHICS_SYSTEM="runtime"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-	;;
-    runtimegraphicssystem)
-        if  [ "$VAL" != "runtime" ]; then
-            CFG_RUNTIME_SYSTEM="$VAL"
-        fi
-	;;
-
     qvfb) # left for commandline compatibility, not documented
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             if [ "$VAL" = "yes" ]; then
@@ -5771,12 +5732,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
             ;;
         esac
     fi
-
-    # if opengl is disabled and the user specified graphicssystem gl, disable it...
-    if [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && [ "$CFG_OPENGL" = "no" ]; then
-	echo "OpenGL Graphics System is disabled due to missing OpenGL support..."
-	CFG_GRAPHICS_SYSTEM=default
-    fi
 fi # X11/MINGW OpenGL
 
 # X11
@@ -6686,17 +6641,6 @@ if [ "$CFG_OPENVG" != "no" ]; then
     if [ "$CFG_OPENVG" = "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/shivavg" "ShivaVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
         CFG_OPENVG_SHIVA=yes
     fi
-fi
-
-# if openvg is disabled and the user specified graphicssystem vg, disable it...
-if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
-    echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
-    CFG_GRAPHICS_SYSTEM=default
-fi
-
-if [ -n "$CFG_RUNTIME_SYSTEM" -a "$CFG_GRAPHICS_SYSTEM" != "runtime" ] || [ "$CFG_RUNTIME_SYSTEM" = "runtime" ]; then
-    echo "Argument to -runtimegraphicssystem is invalid so ignoring..."
-    CFG_RUNTIME_SYSTEM=
 fi
 
 if [ "$CFG_ALSA" = "auto" ]; then
@@ -7864,13 +7808,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 
-if [ "$PLATFORM_QWS" != "yes" -a "$PLATFORM_QPA" != "yes" ]; then
-    [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
-    [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
-    [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
-    [ "$CFG_GRAPHICS_SYSTEM" = "runtime" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RUNTIME"
-fi
-
 # ATM we need this define to compile Qt. Remove later!
 QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_S60"
 
@@ -7972,13 +7909,6 @@ fi
 if [ -n "$QT_LIBINFIX" ]; then
 cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 #define QT_LIBINFIX "$QT_LIBINFIX"
-
-EOF
-fi
-
-if [ -n "$CFG_RUNTIME_SYSTEM" ]; then
-cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
-#define QT_DEFAULT_RUNTIME_SYSTEM "$CFG_RUNTIME_SYSTEM"
 
 EOF
 fi
@@ -8356,7 +8286,6 @@ if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
 fi
-[ "${PLATFORM_QWS}" != "yes" -a "${PLATFORM_QPA}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
 echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
 echo "getaddrinfo support .... $CFG_GETADDRINFO"
 echo "getifaddrs support ..... $CFG_GETIFADDRS"

@@ -345,7 +345,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SQL_SQLITE_LIB" ]  = "qt";
     dictionary[ "SQL_SQLITE2" ]     = "no";
     dictionary[ "SQL_IBASE" ]       = "no";
-    dictionary[ "GRAPHICS_SYSTEM" ] = "raster";
 
     QString tmp = dictionary[ "QMAKESPEC" ];
     if (tmp.contains("\\")) {
@@ -1140,25 +1139,6 @@ void Configure::parseCmdLine()
             dictionary[ "MAKE" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-graphicssystem") {
-            ++i;
-            if (i == argCount)
-                break;
-            QString system = configCmdLine.at(i);
-            if (system == QLatin1String("raster")
-                || system == QLatin1String("opengl")
-                || system == QLatin1String("openvg")
-                || system == QLatin1String("runtime"))
-                dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-runtimegraphicssystem") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary["RUNTIME_SYSTEM"] = configCmdLine.at(i);
-        }
-
         else if (configCmdLine.at(i).indexOf(QRegExp("^-(en|dis)able-")) != -1) {
             // Scan to see if any specific modules and drivers are enabled or disabled
             for (QStringList::Iterator module = modules.begin(); module != modules.end(); ++module) {
@@ -1581,7 +1561,6 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-graphicssystem raster|opengl|openvg]\n"
                     "[-no-directwrite] [-directwrite] [-qpa]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
@@ -1683,11 +1662,6 @@ bool Configure::displayHelp()
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
         desc(                   "-l <libraryname>",     "Add an explicit library name, residing in a librarypath.\n");
 #endif
-        desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
-                                "Available values for <sys>:");
-        desc("GRAPHICS_SYSTEM", "raster", "",  "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "",  "  opengl - Using OpenGL acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!\n", ' ');
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
@@ -2926,8 +2900,6 @@ void Configure::generateConfigfiles()
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
-        if (dictionary["GRAPHICS_SYSTEM"] == "runtime" && dictionary["RUNTIME_SYSTEM"] != "runtime")
-            tmpStream << "#define QT_DEFAULT_RUNTIME_SYSTEM \"" << dictionary["RUNTIME_SYSTEM"] << "\"" << endl;
 
         QStringList qconfigList;
         if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
@@ -2994,11 +2966,6 @@ void Configure::generateConfigfiles()
         if (dictionary["SQL_SQLITE"] == "yes")       qconfigList += "QT_SQL_SQLITE";
         if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
-
-        if (dictionary["GRAPHICS_SYSTEM"] == "openvg")  qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
-        if (dictionary["GRAPHICS_SYSTEM"] == "opengl")  qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
-        if (dictionary["GRAPHICS_SYSTEM"] == "raster")  qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
-        if (dictionary["GRAPHICS_SYSTEM"] == "runtime") qconfigList += "QT_GRAPHICSSYSTEM_RUNTIME";
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
@@ -3256,7 +3223,6 @@ void Configure::displayConfig()
     cout << "V8 support.................." << dictionary[ "V8" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
-    cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
     cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
