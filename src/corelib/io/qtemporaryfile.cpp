@@ -439,8 +439,6 @@ protected:
     QTemporaryFilePrivate();
     ~QTemporaryFilePrivate();
 
-    QString defaultTemplateName() const;
-
     bool autoRemove;
     QString templateName;
 };
@@ -453,7 +451,7 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
 {
 }
 
-QString QTemporaryFilePrivate::defaultTemplateName() const
+static QString defaultTemplateName()
 {
     QString baseName;
 #if defined(QT_BUILD_CORE_LIB)
@@ -518,7 +516,7 @@ QTemporaryFile::QTemporaryFile()
     : QFile(*new QTemporaryFilePrivate)
 {
     Q_D(QTemporaryFile);
-    d->templateName = d->defaultTemplateName();
+    d->templateName = defaultTemplateName();
 }
 
 QTemporaryFile::QTemporaryFile(const QString &templateName)
@@ -541,7 +539,7 @@ QTemporaryFile::QTemporaryFile()
     : QFile(*new QTemporaryFilePrivate, 0)
 {
     Q_D(QTemporaryFile);
-    d->templateName = d->defaultTemplateName();
+    d->templateName = defaultTemplateName();
 }
 
 /*!
@@ -577,7 +575,7 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
     : QFile(*new QTemporaryFilePrivate, parent)
 {
     Q_D(QTemporaryFile);
-    d->templateName = d->defaultTemplateName();
+    d->templateName = defaultTemplateName();
 }
 
 /*!
