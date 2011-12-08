@@ -1272,6 +1272,7 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
     } else {
         socket->disconnectFromHost();
         QVERIFY(socket->openMode() == QIODevice::ReadWrite);
+        QVERIFY(socket->waitForDisconnected(5000));
     }
 
     // let anything queued happen

@@ -24,5 +24,3 @@ win32 {
 } else {
     DESTDIR = ../
 }
-
-CONFIG+=insignificant_test  # unstable, QTBUG-21043
