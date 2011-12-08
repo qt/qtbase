@@ -224,7 +224,6 @@ QAccessibleInterface *QAccessibleTable::cellAt(int row, int column) const
 {
     Q_ASSERT(role() != QAccessible::Tree);
     QModelIndex index = view->model()->index(row, column);
-    //Q_ASSERT(index.isValid());
     if (!index.isValid()) {
         qWarning() << "QAccessibleTable::cellAt: invalid index: " << index << " for " << view;
         return 0;
@@ -623,7 +622,8 @@ bool QAccessibleTree::selectRow(int row)
 QAccessibleTableCell::QAccessibleTableCell(QAbstractItemView *view_, const QModelIndex &index_, QAccessible::Role role_)
     : /* QAccessibleSimpleEditableTextInterface(this), */ view(view_), m_index(index_), m_role(role_)
 {
-    Q_ASSERT(index_.isValid());
+    if (!index_.isValid())
+        qWarning() << "QAccessibleTableCell::QAccessibleTableCell with invalid index: " << index_;
 }
 
 void *QAccessibleTableCell::interface_cast(QAccessible::InterfaceType t)
@@ -797,10 +797,6 @@ void QAccessibleTableCell::setText(QAccessible::Text /*t*/, const QString &text)
 
 bool QAccessibleTableCell::isValid() const
 {
-    if (!m_index.isValid()) {
-        qDebug() << "Interface is not valid";
-    }
-
     return m_index.isValid();
 }
 
