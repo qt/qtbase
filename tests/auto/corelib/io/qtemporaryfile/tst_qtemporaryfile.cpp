@@ -256,7 +256,16 @@ void tst_QTemporaryFile::autoRemove()
 void tst_QTemporaryFile::nonWritableCurrentDir()
 {
 #ifdef Q_OS_UNIX
-    QString cwd = QDir::currentPath();
+    struct ChdirOnReturn
+    {
+        ChdirOnReturn(const QString& d) : dir(d) {}
+        ~ChdirOnReturn() {
+            QDir::setCurrent(dir);
+        }
+        QString dir;
+    };
+    ChdirOnReturn cor(QDir::currentPath());
+
     QDir::setCurrent("/");
     // QTemporaryFile("tempXXXXXX") is probably a bad idea in any app
     // where the current dir could anything...
@@ -265,7 +274,6 @@ void tst_QTemporaryFile::nonWritableCurrentDir()
     file.setAutoRemove(true);
     QVERIFY(!file.open());
     fileName = file.fileName();
-    QDir::setCurrent(cwd);
 #endif
 }
 
