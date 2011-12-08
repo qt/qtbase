@@ -577,6 +577,21 @@ QString QAbstractTextDocumentLayout::anchorAt(const QPointF& pos) const
     if (cursorPos == -1)
         return QString();
 
+    // compensate for preedit in the hit text block
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        QRectF blockBr = blockBoundingRect(block);
+        if (blockBr.contains(pos)) {
+            QTextLayout *layout = block.layout();
+            int relativeCursorPos = cursorPos - block.position();
+            const int preeditLength = layout ? layout->preeditAreaText().length() : 0;
+            if (preeditLength > 0 && relativeCursorPos > layout->preeditAreaPosition())
+                cursorPos -= qMin(cursorPos - layout->preeditAreaPosition(), preeditLength);
+            break;
+        }
+        block = block.next();
+    }
+
     QTextDocumentPrivate *pieceTable = qobject_cast<const QTextDocument *>(parent())->docHandle();
     QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
     QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);

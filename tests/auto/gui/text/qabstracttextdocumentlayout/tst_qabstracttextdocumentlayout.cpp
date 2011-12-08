@@ -47,6 +47,7 @@
 #include <qabstracttextdocumentlayout.h>
 #include <qimage.h>
 #include <qtextobject.h>
+#include <qfontmetrics.h>
 
 class tst_QAbstractTextDocumentLayout : public QObject
 {
@@ -59,6 +60,7 @@ public:
 private slots:
     void getSetCheck();
     void maximumBlockCount();
+    void anchorAt();
 };
 
 tst_QAbstractTextDocumentLayout::tst_QAbstractTextDocumentLayout()
@@ -150,6 +152,36 @@ void tst_QAbstractTextDocumentLayout::maximumBlockCount()
     QVERIFY(!layout.gotFullLayout);
 
     QCOMPARE(layout.blockCount, 10);
+}
+
+void tst_QAbstractTextDocumentLayout::anchorAt()
+{
+    QTextDocument doc;
+    doc.setHtml("<a href=\"link\">foo</a>");
+    QAbstractTextDocumentLayout *documentLayout = doc.documentLayout();
+    QTextBlock firstBlock = doc.begin();
+    QTextLayout *layout = firstBlock.layout();
+    layout->setPreeditArea(doc.toPlainText().length(), "xxx");
+
+    doc.setPageSize(QSizeF(1000, 1000));
+    QFontMetrics metrics(layout->font());
+    QPointF blockStart = documentLayout->blockBoundingRect(firstBlock).topLeft();
+
+    // anchorAt on start returns link
+    QRect linkBr = metrics.boundingRect("foo");
+    QPointF linkPoint(linkBr.width() + blockStart.x(), (linkBr.height() / 2) + blockStart.y());
+    QCOMPARE(documentLayout->anchorAt(linkPoint), QString("link"));
+
+    // anchorAt() on top of preedit at end should not assert
+    QRect preeditBr = metrics.boundingRect(doc.toPlainText() + "xx");
+    QPointF preeditPoint(preeditBr.width() + blockStart.x(), (preeditBr.height() / 2) + blockStart.y());
+    QCOMPARE(documentLayout->anchorAt(preeditPoint), QString());
+
+    // preedit at start should not return link
+    layout->setPreeditArea(0, "xxx");
+    preeditBr = metrics.boundingRect("xx");
+    preeditPoint = QPointF(preeditBr.width() + blockStart.x(), (preeditBr.height() / 2) + blockStart.y());
+    QCOMPARE(documentLayout->anchorAt(preeditPoint), QString());
 }
 
 QTEST_MAIN(tst_QAbstractTextDocumentLayout)
