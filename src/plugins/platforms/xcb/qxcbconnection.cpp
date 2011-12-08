@@ -86,10 +86,12 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+#ifdef XCB_USE_XLIB
 static int nullErrorHandler(Display *, XErrorEvent *)
 {
     return 0;
 }
+#endif
 
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
