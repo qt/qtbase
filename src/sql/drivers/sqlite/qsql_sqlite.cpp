@@ -292,7 +292,9 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
 
 QSQLiteResult::~QSQLiteResult()
 {
-    qobject_cast<const QSQLiteDriver *>(driver())->d->results.removeOne(this);
+    const QSqlDriver *sqlDriver = driver();
+    if (sqlDriver)
+        qobject_cast<const QSQLiteDriver *>(sqlDriver)->d->results.removeOne(this);
     d->cleanup();
     delete d;
 }

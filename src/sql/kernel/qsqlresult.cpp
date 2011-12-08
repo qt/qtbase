@@ -48,6 +48,7 @@
 #include "qsqlresult.h"
 #include "qvector.h"
 #include "qsqldriver.h"
+#include "qpointer.h"
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +65,7 @@ class QSqlResultPrivate
 {
 public:
     QSqlResultPrivate(QSqlResult* d)
-    : q(d), sqldriver(0), idx(QSql::BeforeFirstRow), active(false),
+    : q(d), idx(QSql::BeforeFirstRow), active(false),
       isSel(false), forwardOnly(false), precisionPolicy(QSql::LowPrecisionDouble), bindCount(0), binds(QSqlResult::PositionalBinding)
     {}
 
@@ -98,7 +99,7 @@ public:
 
 public:
     QSqlResult* q;
-    const QSqlDriver* sqldriver;
+    QPointer<QSqlDriver> sqldriver;
     int idx;
     QString sql;
     bool active;
@@ -250,7 +251,7 @@ QString QSqlResultPrivate::namedToPositionalBinding()
 QSqlResult::QSqlResult(const QSqlDriver *db)
 {
     d = new QSqlResultPrivate(this);
-    d->sqldriver = db;
+    d->sqldriver = const_cast<QSqlDriver *>(db);
     if(db) {
         setNumericalPrecisionPolicy(db->numericalPrecisionPolicy());
     }

@@ -3135,6 +3135,7 @@ void tst_QSqlQuery::QTBUG_21884()
   */
 void tst_QSqlQuery::QTBUG_16967()
 {
+    QSqlQuery q2;
     QFETCH(QString, dbName);
     {
         QSqlDatabase db = QSqlDatabase::database(dbName);
@@ -3146,6 +3147,7 @@ void tst_QSqlQuery::QTBUG_16967()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
+        q2 = q;
         q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
@@ -3154,8 +3156,9 @@ void tst_QSqlQuery::QTBUG_16967()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
-        q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
-        q.exec();
+        q2 = q;
+        q2.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        q2.exec();
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
@@ -3163,6 +3166,7 @@ void tst_QSqlQuery::QTBUG_16967()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
+        q2 = q;
         q.exec("INSERT INTO t1 (id, str) VALUES(1, \"test1\");");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
@@ -3171,6 +3175,7 @@ void tst_QSqlQuery::QTBUG_16967()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         CHECK_DATABASE(db);
         QSqlQuery q(db);
+        q2 = q;
         q.exec("SELECT * FROM t1;");
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
