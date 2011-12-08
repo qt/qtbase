@@ -142,10 +142,12 @@ void tst_QTemporaryDir::fileTemplate_data()
     QTest::newRow("constructor with xxx sufix") << "qt_XXXXXXxxx" << "qt_XXXXXXxxx";
     QTest::newRow("constructor with xXx sufix") << "qt_XXXXXXxXx" << "qt_XXXXXXxXx";
     QTest::newRow("constructor with no suffix") << "qt_XXXXXX" << "qt_";
-    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "qt_XXXX";
+    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "qt_";
+    // When more than 6 X are present at the end, linux and windows will only replace the last 6,
+    // while Mac OS will actually replace all of them so we can only expect "qt_" (and check isValid).
     QTest::newRow("constructor with XXXX suffix") << "qt_XXXXXX_XXXX" << "qt_";
-    QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_XXXX";
-    QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_XXXXX";
+    QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_";
+    QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_";
 }
 
 void tst_QTemporaryDir::fileTemplate()
@@ -380,7 +382,7 @@ void tst_QTemporaryDir::QTBUG_4796_data()
     QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
 }
 
-void tst_QTemporaryDir::QTBUG_4796()
+void tst_QTemporaryDir::QTBUG_4796() // unicode support
 {
     QVERIFY(QDir("test-XXXXXX").exists());
 
@@ -443,9 +445,9 @@ void tst_QTemporaryDir::QTBUG_4796()
             QString fileName5 = currentDir.relativeFilePath(dir5.path());
             QString fileName6 = currentDir.relativeFilePath(dir6.path());
 
-            QVERIFY(fileName1.startsWith(fileTemplate1));
-            QVERIFY(fileName2.startsWith(fileTemplate2));
-            QVERIFY(fileName5.startsWith("test-XXXXXX/" + fileTemplate1));
+            QVERIFY(fileName1.startsWith(prefix));
+            QVERIFY(fileName2.startsWith(prefix));
+            QVERIFY(fileName5.startsWith("test-XXXXXX/" + prefix));
             QVERIFY(fileName6.startsWith("test-XXXXXX/" + prefix));
 
             if (!prefix.isEmpty()) {
