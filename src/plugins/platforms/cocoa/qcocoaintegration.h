@@ -93,7 +93,6 @@ private:
     QPlatformFontDatabase *mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
-    QCocoaAutoReleasePool *mPool;
     QPlatformAccessibility *mAccessibility;
     QPlatformTheme *mPlatformTheme;
 };
