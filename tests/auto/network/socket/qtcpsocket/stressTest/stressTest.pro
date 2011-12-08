@@ -1,6 +1,6 @@
 HEADERS += Test.h
 SOURCES += main.cpp Test.cpp
-QT += network
+QT = core network testlib
 
 CONFIG -= app_bundle
 CONFIG += console

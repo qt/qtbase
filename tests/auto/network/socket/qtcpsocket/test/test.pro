@@ -1,7 +1,6 @@
 CONFIG += testcase
 
-QT += widgets testlib
-QT += core-private network-private
+QT = core-private network-private testlib
 SOURCES += ../tst_qtcpsocket.cpp
 win32: {
 wince*: {
@@ -10,8 +9,6 @@ wince*: {
 	LIBS += -lws2_32
 }
 }
-QT += network
-vxworks:QT -= gui
 
 TARGET = tst_qtcpsocket
 
