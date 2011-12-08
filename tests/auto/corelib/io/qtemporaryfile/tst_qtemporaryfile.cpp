@@ -266,14 +266,13 @@ void tst_QTemporaryFile::nonWritableCurrentDir()
     };
     ChdirOnReturn cor(QDir::currentPath());
 
-    QDir::setCurrent("/");
+    QDir::setCurrent("/home");
     // QTemporaryFile("tempXXXXXX") is probably a bad idea in any app
     // where the current dir could anything...
-    QString fileName;
     QTemporaryFile file("tempXXXXXX");
     file.setAutoRemove(true);
     QVERIFY(!file.open());
-    fileName = file.fileName();
+    QVERIFY(file.fileName().isEmpty());
 #endif
 }
 
