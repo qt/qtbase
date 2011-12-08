@@ -48,9 +48,6 @@
 #include <qfileinfo.h>
 #include <qregexp.h>
 #include <qtimer.h>
-#include <qthread.h>
-#include <qmutex.h>
-#include <qwaitcondition.h>
 #include <qwineventnotifier.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
@@ -66,30 +63,63 @@ QT_BEGIN_NAMESPACE
 
 #define NOTIFYTIMEOUT 100
 
-static void qt_create_pipe(Q_PIPE *pipe, bool in)
+static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
 {
-    // Open the pipes.  Make non-inheritable copies of input write and output
-    // read handles to avoid non-closable handles (this is done by the
-    // DuplicateHandle() call).
+    // Anomymous pipes do not support asynchronous I/O. Thus we
+    // create named pipes for redirecting stdout, stderr and stdin.
 
-    SECURITY_ATTRIBUTES secAtt = { sizeof( SECURITY_ATTRIBUTES ), NULL, TRUE };
+    SECURITY_ATTRIBUTES secAtt = { 0 };
+    secAtt.nLength = sizeof(secAtt);
+    secAtt.bInheritHandle = isInputPipe;    // The read handle must be non-inheritable for output pipes.
 
-    HANDLE tmpHandle;
-    if (in) {                   // stdin
-        if (!CreatePipe(&pipe[0], &tmpHandle, &secAtt, 1024 * 1024))
+    HANDLE hRead;
+    wchar_t pipeName[256];
+    unsigned int attempts = 1000;
+    forever {
+        // ### The user must make sure to call qsrand() to make the pipe names less predictable.
+        // ### Replace the call to qrand() with a secure version, once we have it in Qt.
+        swprintf_s(pipeName, sizeof(pipeName) / sizeof(wchar_t), L"\\\\.\\pipe\\qt-%X", qrand());
+
+        const DWORD dwPipeBufferSize = 1024 * 1024;
+        hRead = CreateNamedPipe(pipeName,
+                                PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
+                                PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
+                                1,                      // only one pipe instance
+                                0,                      // output buffer size
+                                dwPipeBufferSize,       // input buffer size
+                                0,
+                                &secAtt);
+        if (hRead != INVALID_HANDLE_VALUE)
+            break;
+        DWORD dwError = GetLastError();
+        if (dwError != ERROR_PIPE_BUSY || !--attempts) {
+            qErrnoWarning(dwError, "QProcess: CreateNamedPipe failed.", GetLastError());
             return;
-        if (!DuplicateHandle(GetCurrentProcess(), tmpHandle, GetCurrentProcess(),
-                             &pipe[1], 0, FALSE, DUPLICATE_SAME_ACCESS))
-            return;
-    } else {                    // stdout or stderr
-        if (!CreatePipe(&tmpHandle, &pipe[1], &secAtt, 1024 * 1024))
-            return;
-        if (!DuplicateHandle(GetCurrentProcess(), tmpHandle, GetCurrentProcess(),
-                             &pipe[0], 0, FALSE, DUPLICATE_SAME_ACCESS))
-            return;
+        }
     }
 
-    CloseHandle(tmpHandle);
+    // The write handle must be non-inheritable for input pipes.
+    secAtt.bInheritHandle = !isInputPipe;
+
+    HANDLE hWrite = INVALID_HANDLE_VALUE;
+    hWrite = CreateFile(pipeName,
+                        GENERIC_WRITE,
+                        0,
+                        &secAtt,
+                        OPEN_EXISTING,
+                        FILE_FLAG_OVERLAPPED,
+                        NULL);
+    if (hWrite == INVALID_HANDLE_VALUE) {
+        qWarning("QProcess: CreateFile failed with error code %d.\n", GetLastError());
+        CloseHandle(hRead);
+        return;
+    }
+
+    // Wait until connection is in place.
+    ConnectNamedPipe(hRead, NULL);
+
+    pipe[0] = hRead;
+    pipe[1] = hWrite;
 }
 
 static void duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
