@@ -199,7 +199,8 @@ private slots:
     void mapOpenMode_data();
     void mapOpenMode();
 
-    void openStandardStreams();
+    void openStandardStreamsFileDescriptors();
+    void openStandardStreamsBufferedStreams();
 
     void resize_data();
     void resize();
@@ -227,9 +228,6 @@ private:
         OpenStream,
         NumberOfFileTypes
     };
-
-    void openStandardStreamsFileDescriptors();
-    void openStandardStreamsBufferedStreams();
 
     bool openFd(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
@@ -3032,12 +3030,6 @@ void tst_QFile::openStandardStreamsBufferedStreams()
         QCOMPARE( err.size(), (qint64)0 );
         QVERIFY( err.isSequential() );
     }
-}
-
-void tst_QFile::openStandardStreams()
-{
-    openStandardStreamsFileDescriptors();
-    openStandardStreamsBufferedStreams();
 }
 
 void tst_QFile::writeNothing()
