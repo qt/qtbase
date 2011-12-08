@@ -2971,29 +2971,35 @@ void tst_QFile::openStandardStreamsFileDescriptors()
     //it does not have functions to simply open them like below .
     QSKIP("Opening standard streams on Windows CE via descriptor not implemented");
 #endif
-    // Using file descriptors
+    /* in/out/err.isSequential() are only true when run in a console (CI);
+     * it is false when they are redirected from/to files.
+     * Prevent failures in case someone runs tests with stdout/stderr redirected. */
+
     {
         QFile in;
         in.open(STDIN_FILENO, QIODevice::ReadOnly);
+        if (!in.isSequential())
+            QSKIP("Standard input redirected.");
         QCOMPARE( in.pos(), (qint64)0 );
         QCOMPARE( in.size(), (qint64)0 );
-        QVERIFY( in.isSequential() );
     }
 
     {
         QFile out;
-        out.open(STDOUT_FILENO, QIODevice::WriteOnly);
+        QVERIFY(out.open(STDOUT_FILENO, QIODevice::WriteOnly));
+        if (!out.isSequential())
+            QSKIP("Standard output redirected.");
         QCOMPARE( out.pos(), (qint64)0 );
         QCOMPARE( out.size(), (qint64)0 );
-        QVERIFY( out.isSequential() );
     }
 
     {
         QFile err;
         err.open(STDERR_FILENO, QIODevice::WriteOnly);
+        if (!err.isSequential())
+            QSKIP("Standard error redirected.");
         QCOMPARE( err.pos(), (qint64)0 );
         QCOMPARE( err.size(), (qint64)0 );
-        QVERIFY( err.isSequential() );
     }
 }
 
