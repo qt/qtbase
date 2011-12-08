@@ -66,6 +66,8 @@ inline bool IsValidCEPlatform() {
 }
 #endif
 
+typedef QSharedPointer<QAccessibleInterface> QAIPtr;
+
 static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
                                int index, const QRect &domain)
 {
@@ -2469,6 +2471,7 @@ void tst_QAccessibility::scrollAreaTest()
 
 void tst_QAccessibility::listTest()
 {
+    {
     QListWidget *listView = new QListWidget;
     listView->addItem("Oslo");
     listView->addItem("Berlin");
@@ -2479,33 +2482,29 @@ void tst_QAccessibility::listTest()
     QCoreApplication::processEvents();
     QTest::qWait(100);
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(listView);
-    QCOMPARE(verifyHierarchy(iface), 0);
+    QAIPtr iface = QAIPtr(QAccessible::queryAccessibleInterface(listView));
+    QCOMPARE(verifyHierarchy(iface.data()), 0);
 
     QCOMPARE((int)iface->role(), (int)QAccessible::List);
     QCOMPARE(iface->childCount(), 3);
 
-    QAccessibleInterface *child1 = 0;
-    child1 = iface->child(0);
+    {
+    QAIPtr child1 = QAIPtr(iface->child(0));
     QVERIFY(child1);
-    QCOMPARE(iface->indexOfChild(child1), 1);
+    QCOMPARE(iface->indexOfChild(child1.data()), 1);
     QCOMPARE(child1->text(QAccessible::Name), QString("Oslo"));
     QCOMPARE(child1->role(), QAccessible::ListItem);
-    delete child1;
 
-    QAccessibleInterface *child2 = 0;
-    child2 = iface->child(1);
+    QAIPtr child2 = QAIPtr(iface->child(1));
     QVERIFY(child2);
-    QCOMPARE(iface->indexOfChild(child2), 2);
+    QCOMPARE(iface->indexOfChild(child2.data()), 2);
     QCOMPARE(child2->text(QAccessible::Name), QString("Berlin"));
-    delete child2;
 
-    QAccessibleInterface *child3 = 0;
-    child3 = iface->child(2);
+    QAIPtr child3 = QAIPtr(iface->child(2));
     QVERIFY(child3);
-    QCOMPARE(iface->indexOfChild(child3), 3);
+    QCOMPARE(iface->indexOfChild(child3.data()), 3);
     QCOMPARE(child3->text(QAccessible::Name), QString("Brisbane"));
-    delete child3;
+    }
     QTestAccessibility::clearEvents();
 
     // Check for events
@@ -2524,11 +2523,12 @@ void tst_QAccessibility::listTest()
     QVERIFY(table2);
     QCOMPARE(table2->columnCount(), 1);
     QCOMPARE(table2->rowCount(), 4);
-    QAccessibleInterface *cell1;
-    QVERIFY(cell1 = table2->cellAt(0,0));
+    QAIPtr cell1 = QAIPtr(table2->cellAt(0,0));
+    QVERIFY(cell1);
     QCOMPARE(cell1->text(QAccessible::Name), QString("Oslo"));
-    QAccessibleInterface *cell4;
-    QVERIFY(cell4 = table2->cellAt(3,0));
+
+    QAIPtr cell4 = QAIPtr(table2->cellAt(3,0));
+    QVERIFY(cell4);
     QCOMPARE(cell4->text(QAccessible::Name), QString("Munich"));
     QCOMPARE(cell4->role(), QAccessible::ListItem);
 
@@ -2536,12 +2536,30 @@ void tst_QAccessibility::listTest()
     QVERIFY(cellInterface);
     QCOMPARE(cellInterface->rowIndex(), 3);
     QCOMPARE(cellInterface->columnIndex(), 0);
-    QVERIFY(!(cell4->state() & QAccessible::Expandable));
+    QCOMPARE(cellInterface->rowExtent(), 1);
+    QCOMPARE(cellInterface->columnExtent(), 1);
+    QCOMPARE(cellInterface->rowHeaderCells(), QList<QAccessibleInterface*>());
+    QCOMPARE(cellInterface->columnHeaderCells(), QList<QAccessibleInterface*>());
 
-    delete cell4;
-    delete cell1;
-    delete iface;
+    QCOMPARE(QAIPtr(cellInterface->table())->object(), listView);
+
+    listView->clearSelection();
+    QVERIFY(!(cell4->state() & QAccessible::Expandable));
+    QVERIFY( (cell4->state() & QAccessible::Selectable));
+    QVERIFY(!(cell4->state() & QAccessible::Selected));
+    table2->selectRow(3);
+    QCOMPARE(listView->selectedItems().size(), 1);
+    QCOMPARE(listView->selectedItems().at(0)->text(), QLatin1String("Munich"));
+    QVERIFY(cell4->state() & QAccessible::Selected);
+    QVERIFY(cellInterface->isSelected());
+
+    QVERIFY(table2->cellAt(-1, 0) == 0);
+    QVERIFY(table2->cellAt(0, -1) == 0);
+    QVERIFY(table2->cellAt(0, 1) == 0);
+    QVERIFY(table2->cellAt(4, 0) == 0);
+
     delete listView;
+    }
     QTestAccessibility::clearEvents();
 }
 
