@@ -4017,6 +4017,9 @@ Additional options:
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
                               experimental; needs GNU ld >= 2.18).
+
+    -force-asserts ........ Force Q_ASSERT to be enabled even in release builds.
+
 EOF
 
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "auto" ]; then
