@@ -72,7 +72,6 @@ SOURCES += \
 
 win32 {
         SOURCES += io/qsettings_win.cpp
-        SOURCES += io/qprocess_win.cpp
         SOURCES += io/qfsfileengine_win.cpp
 
         SOURCES += io/qfilesystemwatcher_win.cpp
@@ -84,6 +83,12 @@ win32 {
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
         SOURCES += io/qstandardpaths_win.cpp
+
+    wince* {
+        SOURCES += io/qprocess_wince.cpp
+    } else {
+        SOURCES += io/qprocess_win.cpp
+    }
 } else:unix|integrity {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \

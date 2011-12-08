@@ -72,7 +72,6 @@ static void qt_create_pipe(Q_PIPE *pipe, bool in)
     // read handles to avoid non-closable handles (this is done by the
     // DuplicateHandle() call).
 
-#if !defined(Q_OS_WINCE)
     SECURITY_ATTRIBUTES secAtt = { sizeof( SECURITY_ATTRIBUTES ), NULL, TRUE };
 
     HANDLE tmpHandle;
@@ -91,10 +90,6 @@ static void qt_create_pipe(Q_PIPE *pipe, bool in)
     }
 
     CloseHandle(tmpHandle);
-#else
-	Q_UNUSED(pipe);
-	Q_UNUSED(in);
-#endif
 }
 
 /*
@@ -277,7 +272,6 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
-#if !defined(Q_OS_WINCE)
     // Calls to setenv() affect the low-level environment as well.
     // This is not the case the other way round.
     if (wchar_t *envStrings = GetEnvironmentStringsW()) {
@@ -293,11 +287,9 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
         }
         FreeEnvironmentStringsW(envStrings);
     }
-#endif
     return env;
 }
 
-#if !defined(Q_OS_WINCE)
 static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
@@ -357,7 +349,6 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &
     }
     return envlist;
 }
-#endif
 
 void QProcessPrivate::startProcess()
 {
@@ -381,14 +372,10 @@ void QProcessPrivate::startProcess()
         !createChannel(stderrChannel))
         return;
 
-#if defined(Q_OS_WINCE)
-    QString args = qt_create_commandline(QString(), arguments);
-#else
     QString args = qt_create_commandline(program, arguments);
     QByteArray envlist;
     if (environment.d.constData())
         envlist = qt_create_environment(environment.d.constData()->hash);
-#endif
     if (!nativeArguments.isEmpty()) {
         if (!args.isEmpty())
              args += QLatin1Char(' ');
@@ -402,15 +389,6 @@ void QProcessPrivate::startProcess()
     qDebug("   pass environment : %s", environment.isEmpty() ? "no" : "yes");
 #endif
 
-#if defined(Q_OS_WINCE)
-    QString fullPathProgram = program;
-    if (!QDir::isAbsolutePath(fullPathProgram))
-        fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
-    fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
-    success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
-                            (wchar_t*)args.utf16(),
-                            0, 0, false, 0, 0, 0, 0, pid);
-#else
     DWORD dwCreationFlags = CREATE_NO_WINDOW;
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
@@ -443,7 +421,6 @@ void QProcessPrivate::startProcess()
         CloseHandle(stderrChannel.pipe[1]);
         stderrChannel.pipe[1] = INVALID_Q_PIPE;
     }
-#endif // Q_OS_WINCE
 
     if (!success) {
         cleanup();
@@ -484,7 +461,6 @@ qint64 QProcessPrivate::bytesAvailableFromStdout() const
         return 0;
 
     DWORD bytesAvail = 0;
-#if !defined(Q_OS_WINCE)
 	PeekNamedPipe(stdoutChannel.pipe[0], 0, 0, 0, &bytesAvail, 0);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStdout() == %d", bytesAvail);
@@ -501,7 +477,6 @@ qint64 QProcessPrivate::bytesAvailableFromStdout() const
         }
         bytesAvail = 0;
     }
-#endif
     return bytesAvail;
 }
 
@@ -511,7 +486,6 @@ qint64 QProcessPrivate::bytesAvailableFromStderr() const
         return 0;
 
     DWORD bytesAvail = 0;
-#if !defined(Q_OS_WINCE)
 	PeekNamedPipe(stderrChannel.pipe[0], 0, 0, 0, &bytesAvail, 0);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStderr() == %d", bytesAvail);
@@ -528,7 +502,6 @@ qint64 QProcessPrivate::bytesAvailableFromStderr() const
         }
         bytesAvail = 0;
     }
-#endif
     return bytesAvail;
 }
 
@@ -596,13 +569,6 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 {
     Q_Q(QProcess);
 
-#if defined(Q_OS_WINCE)
-    processError = QProcess::ReadError;
-    q->setErrorString(QProcess::tr("Error reading from process"));
-    emit q->error(processError);
-    return false;
-#endif
-
     QIncrementalSleepTimer timer(msecs);
 
     forever {
@@ -645,13 +611,6 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
 bool QProcessPrivate::waitForBytesWritten(int msecs)
 {
     Q_Q(QProcess);
-
-#if defined(Q_OS_WINCE)
-    processError = QProcess::ReadError;
-    q->setErrorString(QProcess::tr("Error reading from process"));
-    emit q->error(processError);
-    return false;
-#endif
 
     QIncrementalSleepTimer timer(msecs);
 
@@ -786,13 +745,6 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 {
     Q_Q(QProcess);
 
-#if defined(Q_OS_WINCE)
-    processError = QProcess::WriteError;
-    q->setErrorString(QProcess::tr("Error writing to process"));
-    emit q->error(processError);
-    return -1;
-#endif
-
     if (!pipeWriter) {
         pipeWriter = new QWindowsPipeWriter(stdinChannel.pipe[1], q);
         pipeWriter->start();
@@ -832,36 +784,19 @@ void QProcessPrivate::_q_notified()
 
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDir, qint64 *pid)
 {
-#if defined(Q_OS_WINCE)
-    Q_UNUSED(workingDir);
-    QString args = qt_create_commandline(QString(), arguments);
-#else
     QString args = qt_create_commandline(program, arguments);
-#endif
-
     bool success = false;
-
     PROCESS_INFORMATION pinfo;
 
-#if defined(Q_OS_WINCE)
-        QString fullPathProgram = program;
-        if (!QDir::isAbsolutePath(fullPathProgram))
-            fullPathProgram.prepend(QDir::currentPath().append(QLatin1Char('/')));
-        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
-        success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
-                                (wchar_t*)args.utf16(),
-                                0, 0, false, CREATE_NEW_CONSOLE, 0, 0, 0, &pinfo);
-#else
-        STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
-                                     (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                     (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                                   };
-        success = CreateProcess(0, (wchar_t*)args.utf16(),
-                                0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0,
-                                workingDir.isEmpty() ? 0 : (wchar_t*)workingDir.utf16(),
-                                &startupInfo, &pinfo);
-#endif // Q_OS_WINCE
+    STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
+                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                               };
+    success = CreateProcess(0, (wchar_t*)args.utf16(),
+                            0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0,
+                            workingDir.isEmpty() ? 0 : (wchar_t*)workingDir.utf16(),
+                            &startupInfo, &pinfo);
 
     if (success) {
         CloseHandle(pinfo.hThread);
