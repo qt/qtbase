@@ -92,81 +92,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <qdebug.h>
 QT_END_INCLUDE_NAMESPACE
 
-static const char *roleString(QAccessible::Role role)
-{
-    static const char *roles[] = {
-       "NoRole"         /* = 0x00000000 */,
-       "TitleBar"       /* = 0x00000001 */,
-       "MenuBar"        /* = 0x00000002 */,
-       "ScrollBar"      /* = 0x00000003 */,
-       "Grip"           /* = 0x00000004 */,
-       "Sound"          /* = 0x00000005 */,
-       "Cursor"         /* = 0x00000006 */,
-       "Caret"          /* = 0x00000007 */,
-       "AlertMessage"   /* = 0x00000008 */,
-       "Window"         /* = 0x00000009 */,
-       "Client"         /* = 0x0000000A */,
-       "PopupMenu"      /* = 0x0000000B */,
-       "MenuItem"       /* = 0x0000000C */,
-       "ToolTip"        /* = 0x0000000D */,
-       "Application"    /* = 0x0000000E */,
-       "Document"       /* = 0x0000000F */,
-       "Pane"           /* = 0x00000010 */,
-       "Chart"          /* = 0x00000011 */,
-       "Dialog"         /* = 0x00000012 */,
-       "Border"         /* = 0x00000013 */,
-       "Grouping"       /* = 0x00000014 */,
-       "Separator"      /* = 0x00000015 */,
-       "ToolBar"        /* = 0x00000016 */,
-       "StatusBar"      /* = 0x00000017 */,
-       "Table"          /* = 0x00000018 */,
-       "ColumnHeader"   /* = 0x00000019 */,
-       "RowHeader"      /* = 0x0000001A */,
-       "Column"         /* = 0x0000001B */,
-       "Row"            /* = 0x0000001C */,
-       "Cell"           /* = 0x0000001D */,
-       "Link"           /* = 0x0000001E */,
-       "HelpBalloon"    /* = 0x0000001F */,
-       "Assistant"      /* = 0x00000020 */,
-       "List"           /* = 0x00000021 */,
-       "ListItem"       /* = 0x00000022 */,
-       "Tree"           /* = 0x00000023 */,
-       "TreeItem"       /* = 0x00000024 */,
-       "PageTab"        /* = 0x00000025 */,
-       "PropertyPage"   /* = 0x00000026 */,
-       "Indicator"      /* = 0x00000027 */,
-       "Graphic"        /* = 0x00000028 */,
-       "StaticText"     /* = 0x00000029 */,
-       "EditableText"   /* = 0x0000002A */,  // Editable, selectable, etc.
-       "PushButton"     /* = 0x0000002B */,
-       "CheckBox"       /* = 0x0000002C */,
-       "RadioButton"    /* = 0x0000002D */,
-       "ComboBox"       /* = 0x0000002E */,
-       "DropList"       /* = 0x0000002F */,    // commented out
-       "ProgressBar"    /* = 0x00000030 */,
-       "Dial"           /* = 0x00000031 */,
-       "HotkeyField"    /* = 0x00000032 */,
-       "Slider"         /* = 0x00000033 */,
-       "SpinBox"        /* = 0x00000034 */,
-       "Canvas"         /* = 0x00000035 */,
-       "Animation"      /* = 0x00000036 */,
-       "Equation"       /* = 0x00000037 */,
-       "ButtonDropDown" /* = 0x00000038 */,
-       "ButtonMenu"     /* = 0x00000039 */,
-       "ButtonDropGrid" /* = 0x0000003A */,
-       "Whitespace"     /* = 0x0000003B */,
-       "PageTabList"    /* = 0x0000003C */,
-       "Clock"          /* = 0x0000003D */,
-       "Splitter"       /* = 0x0000003E */,
-       "LayeredPane"    /* = 0x0000003F */,
-       "UserRole"       /* = 0x0000ffff*/
-   };
-
-   if (role >=0x40)
-        role = QAccessible::UserRole;
-   return roles[int(role)];
-}
-
 static const char *eventString(QAccessible::Event ev)
 {
     static const char *events[] = {
@@ -269,7 +194,7 @@ static const char *eventString(QAccessible::Event ev)
 
 void showDebug(const char* funcName, const QAccessibleInterface *iface)
 {
-    qDebug() << "Role:" << roleString(iface->role(0))
+    qDebug() << "Role:" << qAccessibleRoleString(iface->role(0))
              << "Name:" << iface->text(QAccessible::Name, 0)
              << "State:" << QString::number(int(iface->state(0)), 16)
              << QLatin1String(funcName);

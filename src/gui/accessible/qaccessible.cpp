@@ -50,10 +50,8 @@
 #include <private/qguiapplication_p.h>
 #include "qplatformaccessibility_qpa.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QHash>
-#include <QtCore/QMetaObject>
-#include <QtCore/QMutex>
+#include <QtCore/qdebug.h>
+#include <QtCore/qmetaobject.h>
 #include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -1209,6 +1207,22 @@ QVariant QAccessibleInterface::virtual_hook(const QVariant &)
     return QVariant();
 }
 
+/*! \internal */
+const char *qAccessibleRoleString(QAccessible::Role role)
+{
+    if (role >=0x40)
+         role = QAccessible::UserRole;
+    static int roleEnum = QAccessible::staticMetaObject.indexOfEnumerator("Role");
+    return QAccessible::staticMetaObject.enumerator(roleEnum).valueToKey(role);
+}
+
+/*! \internal */
+const char *qAccessibleEventString(QAccessible::Event event)
+{
+    static int eventEnum = QAccessible::staticMetaObject.indexOfEnumerator("Event");
+    return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
 {
@@ -1220,7 +1234,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     d << "QAccessibleInterface(" << hex << (void *) iface << dec;
     if (iface->isValid()) {
         d << " name=" << iface->text(QAccessible::Name) << " ";
-        d << "role=" << iface->role() << " ";
+        d << "role=" << qAccessibleRoleString(iface->role()) << " ";
         if (iface->childCount())
             d << "childc=" << iface->childCount() << " ";
         if (iface->object()) {
