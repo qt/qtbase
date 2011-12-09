@@ -4,4 +4,5 @@ SUBDIRS = \
         qmetaobject \
         qmetatype \
         qobject \
-        qvariant
+        qvariant \
+        qcoreapplication

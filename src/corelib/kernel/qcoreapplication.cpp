@@ -1405,9 +1405,18 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
             if (!allowDeferredDelete) {
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
-                    // don't lose the event
-                    data->postEventList.addEvent(pe);
+                    // we must copy it first; we want to re-post the event
+                    // with the event pointer intact, but we can't delay
+                    // nulling the event ptr until after re-posting, as
+                    // addEvent may invalidate pe.
+                    QPostEvent pe_copy = pe;
+
+                    // null out the event so if sendPostedEvents recurses, it
+                    // will ignore this one, as it's been re-posted.
                     const_cast<QPostEvent &>(pe).event = 0;
+
+                    // re-post the copied event so it isn't lost
+                    data->postEventList.addEvent(pe_copy);
                 }
                 continue;
             }
@@ -1509,7 +1518,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             const_cast<QPostEvent &>(pe).event = 0;
         } else if (!data->postEventList.recursion) {
             if (i != j)
-                data->postEventList.swap(i, j);
+                qSwap(data->postEventList[i], data->postEventList[j]);
             ++j;
         }
     }
