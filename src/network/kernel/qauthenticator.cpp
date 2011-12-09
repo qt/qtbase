@@ -220,12 +220,6 @@ void QAuthenticator::setUser(const QString &user)
             d->userDomain = user.left(separatorPosn);
             d->extractedUser = user.mid(separatorPosn + 1);
             d->user = user;
-        } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
-            //domain name is present
-            d->realm.clear();
-            d->userDomain = user.mid(separatorPosn + 1);
-            d->extractedUser = user.left(separatorPosn);
-            d->user = user;
         } else {
             d->extractedUser = user;
             d->user = user;
@@ -1381,8 +1375,9 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
     int offset = QNtlmPhase3BlockBase::Size;
     Q_ASSERT(QNtlmPhase3BlockBase::Size == sizeof(QNtlmPhase3BlockBase));
-    
-    if(ctx->userDomain.isEmpty()) {
+
+    // for kerberos style user@domain logins, NTLM domain string should be left empty
+    if (ctx->userDomain.isEmpty() && !ctx->extractedUser.contains(QLatin1Char('@'))) {
         offset = qEncodeNtlmString(pb.domain, offset, ch.targetNameStr, unicode);
         pb.domainStr = ch.targetNameStr;
     } else {
