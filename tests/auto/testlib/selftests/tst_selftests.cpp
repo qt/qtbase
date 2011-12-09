@@ -327,6 +327,7 @@ void tst_Selftests::runSubTest_data()
         << "multiexec"
         << "printdatatags"
         << "printdatatagswithglobaltags"
+        << "qexecstringlist"
         << "singleskip"
         << "skip"
         << "skipinit"
@@ -389,6 +390,9 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
                 if (subtest == "multiexec") {
+                    continue;
+                }
+                if (subtest == "qexecstringlist") {
                     continue;
                 }
                 if (subtest == "benchliboptions") {

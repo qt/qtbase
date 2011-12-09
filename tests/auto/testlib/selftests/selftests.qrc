@@ -95,6 +95,7 @@
         <file>expected_multiexec.xunitxml</file>
         <file>expected_printdatatags.txt</file>
         <file>expected_printdatatagswithglobaltags.txt</file>
+        <file>expected_qexecstringlist.txt</file>
         <file>expected_singleskip.lightxml</file>
         <file>expected_singleskip.txt</file>
         <file>expected_singleskip.xml</file>

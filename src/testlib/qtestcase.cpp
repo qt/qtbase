@@ -1903,6 +1903,10 @@ FatalSignalHandler::~FatalSignalHandler()
     test that was executed with qExec() can't run another test via qExec() and
     threads are not allowed to call qExec() simultaneously.
 
+    If you have programatically created the arguments, as opposed to getting them
+    from the arguments in \c main(), it is likely of interest to use
+    QTest::qExec(QObject *, const QStringList &) since it is Unicode safe.
+
     \sa QTEST_MAIN()
 */
 
@@ -2010,6 +2014,30 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     // make sure our exit code is never going above 127
     // since that could wrap and indicate 0 test fails
     return qMin(QTestResult::failCount(), 127);
+}
+
+/*!
+  \overload
+  \since 4.4
+
+  Behaves identically to qExec(QObject *, int, char**) but takes a
+  QStringList of \a arguments instead of a \c char** list.
+ */
+int QTest::qExec(QObject *testObject, const QStringList &arguments)
+{
+    const int argc = arguments.count();
+    QVarLengthArray<char *> argv(argc);
+
+    QVector<QByteArray> args;
+    args.reserve(argc);
+
+    for (int i = 0; i < argc; ++i)
+    {
+        args.append(arguments.at(i).toLocal8Bit().constData());
+        argv[i] = args.last().data();
+    }
+
+    return qExec(testObject, argc, argv.data());
 }
 
 /*! \internal

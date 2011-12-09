@@ -59,9 +59,6 @@ information about a particular change.
     like SkipSingle -- skipping a non-data-driven test function or skipping
     only the current data row of a data-driven test function.  Every skipped
     data row is now reported in the test log.
-  * The QTest::qExec(QObject*, const QStringList&) overload has been removed
-    from the API.  This function was not used in any of Qt's autotests and did
-    not provide significant benefits over QTest::qExec(QObject*, int, char**).
 
 - The QSsl::TlsV1 enum value was renamed to QSsl::TlsV1_0 .
 
