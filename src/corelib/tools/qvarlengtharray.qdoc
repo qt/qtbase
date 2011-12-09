@@ -118,6 +118,13 @@
     \sa isEmpty(), resize()
 */
 
+/*! \fn int QVarLengthArray::length() const
+
+    Same as size().
+
+    \sa isEmpty(), resize()
+*/
+
 /*! \fn bool QVarLengthArray::isEmpty() const
 
     Returns true if the array has size 0; otherwise returns false.

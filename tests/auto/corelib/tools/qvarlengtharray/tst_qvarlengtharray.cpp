@@ -55,6 +55,7 @@ private slots:
     void appendCausingRealloc();
     void resize();
     void realloc();
+    void count();
 };
 
 int fooCtor = 0;
@@ -591,6 +592,67 @@ void tst_QVarLengthArray::realloc()
 
     reallocTest<MyComplex>();
     QVERIFY(reallocTestProceed);
+}
+
+void tst_QVarLengthArray::count()
+{
+    // tests size(), count() and length(), since they're the same thing
+    {
+        const QVarLengthArray<int> list;
+        QCOMPARE(list.length(), 0);
+        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        QCOMPARE(list.length(), 1);
+        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(1);
+        QCOMPARE(list.length(), 2);
+        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(0);
+        list.append(0);
+        QCOMPARE(list.length(), 3);
+        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+    }
+
+    // test removals too
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(0);
+        list.append(0);
+        QCOMPARE(list.length(), 3);
+        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+        list.removeLast();
+        QCOMPARE(list.length(), 2);
+        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+        list.removeLast();
+        QCOMPARE(list.length(), 1);
+        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+        list.removeLast();
+        QCOMPARE(list.length(), 0);
+        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

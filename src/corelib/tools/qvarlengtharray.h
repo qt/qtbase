@@ -95,6 +95,7 @@ public:
     }
     inline int size() const { return s; }
     inline int count() const { return s; }
+    inline int length() const { return s; }
     inline bool isEmpty() const { return (s == 0); }
     inline void resize(int size);
     inline void clear() { resize(0); }
