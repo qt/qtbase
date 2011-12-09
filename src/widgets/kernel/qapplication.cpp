@@ -2326,13 +2326,6 @@ void QApplication::setActiveWindow(QWidget* act)
     QEvent windowActivate(QEvent::WindowActivate);
     QEvent windowDeactivate(QEvent::WindowDeactivate);
 
-#if !defined(Q_WS_MAC)
-    if (!previousActiveWindow) {
-        QEvent appActivate(QEvent::ApplicationActivate);
-        sendSpontaneousEvent(qApp, &appActivate);
-    }
-#endif
-
     for (int i = 0; i < toBeActivated.size(); ++i) {
         QWidget *w = toBeActivated.at(i);
         sendSpontaneousEvent(w, &windowActivate);
@@ -2351,13 +2344,6 @@ void QApplication::setActiveWindow(QWidget* act)
         sendSpontaneousEvent(w, &windowDeactivate);
         sendSpontaneousEvent(w, &activationChange);
     }
-
-#if !defined(Q_WS_MAC)
-    if (!QApplicationPrivate::active_window) {
-        QEvent appDeactivate(QEvent::ApplicationDeactivate);
-        sendSpontaneousEvent(qApp, &appDeactivate);
-    }
-#endif
 
     if (QApplicationPrivate::popupWidgets == 0) { // !inPopupMode()
         // then focus events

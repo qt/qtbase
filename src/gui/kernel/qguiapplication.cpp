@@ -753,9 +753,6 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
-    if (!e->activated)
-        return;
-
     QWindow *previous = QGuiApplicationPrivate::focus_window;
     QGuiApplicationPrivate::focus_window = e->activated.data();
 
@@ -765,10 +762,18 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
+    } else {
+        QEvent appActivate(QEvent::ApplicationActivate);
+        qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
 
-    QFocusEvent focusIn(QEvent::FocusIn);
-    QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+    if (QGuiApplicationPrivate::focus_window) {
+        QFocusEvent focusIn(QEvent::FocusIn);
+        QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+    } else {
+        QEvent appActivate(QEvent::ApplicationDeactivate);
+        qApp->sendSpontaneousEvent(qApp, &appActivate);
+    }
 
     if (self)
         self->notifyActiveWindowChange(previous);
