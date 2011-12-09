@@ -84,7 +84,7 @@ void tst_QSidebar::setUrls()
     QList<QUrl> urls;
     QFileSystemModel fsmodel;
     QSidebar qsidebar;
-    qsidebar.init(&fsmodel, urls);
+    qsidebar.setModelAndUrls(&fsmodel, urls);
     QAbstractItemModel *model = qsidebar.model();
 
     urls << QUrl::fromLocalFile(QDir::rootPath())
@@ -105,7 +105,7 @@ void tst_QSidebar::selectUrls()
          << QUrl::fromLocalFile(QDir::temp().absolutePath());
     QFileSystemModel fsmodel;
     QSidebar qsidebar;
-    qsidebar.init(&fsmodel, urls);
+    qsidebar.setModelAndUrls(&fsmodel, urls);
 
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(const QUrl &)));
     qsidebar.selectUrl(urls.at(0));
@@ -117,7 +117,7 @@ void tst_QSidebar::addUrls()
     QList<QUrl> emptyUrls;
     QFileSystemModel fsmodel;
     QSidebar qsidebar;
-    qsidebar.init(&fsmodel, emptyUrls);
+    qsidebar.setModelAndUrls(&fsmodel, emptyUrls);
     QAbstractItemModel *model = qsidebar.model();
     QDir testDir = QDir::home();
 
@@ -214,7 +214,7 @@ void tst_QSidebar::goToUrl()
          << QUrl::fromLocalFile(QDir::temp().absolutePath());
     QFileSystemModel fsmodel;
     QSidebar qsidebar;
-    qsidebar.init(&fsmodel, urls);
+    qsidebar.setModelAndUrls(&fsmodel, urls);
     qsidebar.show();
 
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(const QUrl &)));

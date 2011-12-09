@@ -371,7 +371,7 @@ QSidebar::QSidebar(QWidget *parent) : QListView(parent)
 {
 }
 
-void QSidebar::init(QFileSystemModel *model, const QList<QUrl> &newUrls)
+void QSidebar::setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls)
 {
     // ### TODO make icon size dynamic
     setIconSize(QSize(24,24));

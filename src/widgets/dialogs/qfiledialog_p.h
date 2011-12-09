@@ -300,7 +300,7 @@ class QFileDialogLineEdit : public QLineEdit
 {
 public:
     QFileDialogLineEdit(QWidget *parent = 0) : QLineEdit(parent), hideOnEsc(false), d_ptr(0){}
-    void init(QFileDialogPrivate *d_pointer) {d_ptr = d_pointer; }
+    void setFileDialogPrivate(QFileDialogPrivate *d_pointer) {d_ptr = d_pointer; }
     void keyPressEvent(QKeyEvent *e);
     bool hideOnEsc;
 private:
@@ -311,7 +311,7 @@ class QFileDialogComboBox : public QComboBox
 {
 public:
     QFileDialogComboBox(QWidget *parent = 0) : QComboBox(parent), urlModel(0) {}
-    void init(QFileDialogPrivate *d_pointer);
+    void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     void showPopup();
     void setHistory(const QStringList &paths);
     QStringList history() const { return m_history; }
@@ -327,7 +327,7 @@ class QFileDialogListView : public QListView
 {
 public:
     QFileDialogListView(QWidget *parent = 0);
-    void init(QFileDialogPrivate *d_pointer);
+    void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     QSize sizeHint() const;
 protected:
     void keyPressEvent(QKeyEvent *e);
@@ -339,7 +339,7 @@ class QFileDialogTreeView : public QTreeView
 {
 public:
     QFileDialogTreeView(QWidget *parent);
-    void init(QFileDialogPrivate *d_pointer);
+    void setFileDialogPrivate(QFileDialogPrivate *d_pointer);
     QSize sizeHint() const;
 
 protected:

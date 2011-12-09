@@ -931,7 +931,7 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
     QCOMPARE(qvariant_cast<bool>(value), false);
 
     MyQSideBar mySideBar;
-    mySideBar.init(model, urls);
+    mySideBar.setModelAndUrls(model, urls);
     mySideBar.show();
     mySideBar.selectUrl(QUrl::fromLocalFile(testSubDir.absolutePath()));
     QTest::qWait(1000);

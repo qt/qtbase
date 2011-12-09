@@ -121,7 +121,7 @@ Q_SIGNALS:
 
 public:
     QSidebar(QWidget *parent = 0);
-    void init(QFileSystemModel *model, const QList<QUrl> &newUrls);
+    void setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls);
     ~QSidebar();
 
     QSize sizeHint() const;

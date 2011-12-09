@@ -2290,22 +2290,21 @@ void QFileDialogPrivate::createWidgets()
     QList<QUrl> initialBookmarks;
     initialBookmarks << QUrl::fromLocalFile(QLatin1String(""))
                      << QUrl::fromLocalFile(QDir::homePath());
-    qFileDialogUi->sidebar->init(model, initialBookmarks);
+    qFileDialogUi->sidebar->setModelAndUrls(model, initialBookmarks);
     QFileDialog::connect(qFileDialogUi->sidebar, SIGNAL(goToUrl(QUrl)),
                          q, SLOT(_q_goToUrl(QUrl)));
 
     QObject::connect(qFileDialogUi->buttonBox, SIGNAL(accepted()), q, SLOT(accept()));
     QObject::connect(qFileDialogUi->buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
 
-
-    qFileDialogUi->lookInCombo->init(this);
+    qFileDialogUi->lookInCombo->setFileDialogPrivate(this);
     QObject::connect(qFileDialogUi->lookInCombo, SIGNAL(activated(QString)), q, SLOT(_q_goToDirectory(QString)));
 
     qFileDialogUi->lookInCombo->setInsertPolicy(QComboBox::NoInsert);
     qFileDialogUi->lookInCombo->setDuplicatesEnabled(false);
 
     // filename
-    qFileDialogUi->fileNameEdit->init(this);
+    qFileDialogUi->fileNameEdit->setFileDialogPrivate(this);
 #ifndef QT_NO_SHORTCUT
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
@@ -2329,7 +2328,7 @@ void QFileDialogPrivate::createWidgets()
     QObject::connect(qFileDialogUi->fileTypeCombo, SIGNAL(activated(QString)),
                      q, SIGNAL(filterSelected(QString)));
 
-    qFileDialogUi->listView->init(this);
+    qFileDialogUi->listView->setFileDialogPrivate(this);
     qFileDialogUi->listView->setModel(model);
     QObject::connect(qFileDialogUi->listView, SIGNAL(activated(QModelIndex)),
                      q, SLOT(_q_enterDirectory(QModelIndex)));
@@ -2341,7 +2340,7 @@ void QFileDialogPrivate::createWidgets()
     QObject::connect(shortcut, SIGNAL(activated()), q, SLOT(_q_deleteCurrent()));
 #endif
 
-    qFileDialogUi->treeView->init(this);
+    qFileDialogUi->treeView->setFileDialogPrivate(this);
     qFileDialogUi->treeView->setModel(model);
     QHeaderView *treeHeader = qFileDialogUi->treeView->header();
     QFontMetrics fm(q->font());
@@ -3181,7 +3180,7 @@ QString QFileDialogPrivate::getEnvironmentVariable(const QString &string)
     return string;
 }
 
-void QFileDialogComboBox::init(QFileDialogPrivate *d_pointer) {
+void QFileDialogComboBox::setFileDialogPrivate(QFileDialogPrivate *d_pointer) {
     d_ptr = d_pointer;
     urlModel = new QUrlModel(this);
     urlModel->showFullPath = true;
@@ -3257,7 +3256,7 @@ QFileDialogListView::QFileDialogListView(QWidget *parent) : QListView(parent)
 {
 }
 
-void QFileDialogListView::init(QFileDialogPrivate *d_pointer)
+void QFileDialogListView::setFileDialogPrivate(QFileDialogPrivate *d_pointer)
 {
     d_ptr = d_pointer;
     setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -3294,7 +3293,7 @@ QFileDialogTreeView::QFileDialogTreeView(QWidget *parent) : QTreeView(parent)
 {
 }
 
-void QFileDialogTreeView::init(QFileDialogPrivate *d_pointer)
+void QFileDialogTreeView::setFileDialogPrivate(QFileDialogPrivate *d_pointer)
 {
     d_ptr = d_pointer;
     setSelectionBehavior(QAbstractItemView::SelectRows);
