@@ -165,6 +165,7 @@ QObjectPrivate::QObjectPrivate(int version)
     pendTimer = false;                          // no timers yet
     blockSig = false;                           // not blocking signals
     wasDeleted = false;                         // double-delete catcher
+    isDeletingChildren = false;                 // set by deleteChildren()
     sendChildEvents = true;                     // if we should send ChildInsert and ChildRemove events to parent
     receiveChildEvents = true;
     postedEvents = 0;
@@ -1774,8 +1775,8 @@ void QObject::setParent(QObject *parent)
 
 void QObjectPrivate::deleteChildren()
 {
-    const bool reallyWasDeleted = wasDeleted;
-    wasDeleted = true;
+    Q_ASSERT_X(!isDeletingChildren, "QObjectPrivate::deleteChildren()", "isDeletingChildren already set, did this function recurse?");
+    isDeletingChildren = true;
     // delete children objects
     // don't use qDeleteAll as the destructor of the child might
     // delete siblings
@@ -1786,7 +1787,7 @@ void QObjectPrivate::deleteChildren()
     }
     children.clear();
     currentChildBeingDeleted = 0;
-    wasDeleted = reallyWasDeleted;
+    isDeletingChildren = false;
 }
 
 void QObjectPrivate::setParent_helper(QObject *o)
@@ -1796,13 +1797,13 @@ void QObjectPrivate::setParent_helper(QObject *o)
         return;
     if (parent) {
         QObjectPrivate *parentD = parent->d_func();
-        if (parentD->wasDeleted && wasDeleted
+        if (parentD->isDeletingChildren && wasDeleted
             && parentD->currentChildBeingDeleted == q) {
             // don't do anything since QObjectPrivate::deleteChildren() already
             // cleared our entry in parentD->children.
         } else {
             const int index = parentD->children.indexOf(q);
-            if (parentD->wasDeleted) {
+            if (parentD->isDeletingChildren) {
                 parentD->children[index] = 0;
             } else {
                 parentD->children.removeAt(index);
@@ -1829,7 +1830,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!wasDeleted && declarativeData)
+    if (!isDeletingChildren && declarativeData)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 

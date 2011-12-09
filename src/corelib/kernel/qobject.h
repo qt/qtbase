@@ -99,6 +99,7 @@ public:
     uint pendTimer : 1;
     uint blockSig : 1;
     uint wasDeleted : 1;
+    uint isDeletingChildren : 1;
     uint ownObjectName : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
