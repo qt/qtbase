@@ -38,17 +38,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
-#include <QClipboard>
-#include <QStringList>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QClipboard>
+#include <QtCore/QStringList>
 
 int main(int argc, char **argv)
 {
-    QApplication app(argc, argv);
-    QClipboard *board = QApplication::clipboard();
-#ifdef Q_OS_WINCE
-    return (board->text() == QLatin1String("testString.!")) ? 0 : 1;
-#else
-    return (board->text() == app.arguments().at(1)) ? 0 : 1;
+    QGuiApplication app(argc, argv);
+    QString expected = QStringLiteral("testString.!");
+#ifndef Q_OS_WINCE
+    const QStringList arguments = app.arguments();
+    if (arguments.size() > 1)
+        expected = arguments.at(1);
 #endif
+    return QGuiApplication::clipboard()->text() == expected ? 0 : 1;
 }
