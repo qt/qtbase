@@ -168,6 +168,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), consistentTiming(false), slowMode(false),
+    startAnimationPending(false), stopTimerPending(false),
     slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0), profilerCallback(0)
 {
     time.invalidate();
@@ -284,30 +285,41 @@ void QUnifiedTimer::setTimingInterval(int interval)
     }
 }
 
+void QUnifiedTimer::startAnimations()
+{
+    startAnimationPending = false;
+    //we transfer the waiting animations into the "really running" state
+    animations += animationsToStart;
+    animationsToStart.clear();
+    if (!animations.isEmpty()) {
+        restartAnimationTimer();
+        if (!time.isValid()) {
+            lastTick = 0;
+            time.start();
+        }
+    }
+}
+
+void QUnifiedTimer::stopTimer()
+{
+    stopTimerPending = false;
+    if (animations.isEmpty()) {
+        animationTimer.stop();
+        isPauseTimerActive = false;
+        // invalidate the start reference time
+        time.invalidate();
+    }
+}
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //in the case of consistent timing we make sure the orders in which events come is always the same
-   //for that purpose we do as if the startstoptimer would always fire before the animation timer
-    if ((consistentTiming && startStopAnimationTimer.isActive()) ||
-        event->timerId() == startStopAnimationTimer.timerId()) {
-        startStopAnimationTimer.stop();
-
-        //we transfer the waiting animations into the "really running" state
-        animations += animationsToStart;
-        animationsToStart.clear();
-        if (animations.isEmpty()) {
-            animationTimer.stop();
-            isPauseTimerActive = false;
-            // invalidate the start reference time
-            time.invalidate();
-        } else {
-            restartAnimationTimer();
-            if (!time.isValid()) {
-                lastTick = 0;
-                time.start();
-            }
-        }
+    //for that purpose we do as if the startstoptimer would always fire before the animation timer
+    if (consistentTiming) {
+        if (stopTimerPending)
+            stopTimer();
+        if (startAnimationPending)
+            startAnimations();
     }
 
     if (event->timerId() == animationTimer.timerId()) {
@@ -325,8 +337,10 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
         inst->animationsToStart << animation;
-        if (!inst->startStopAnimationTimer.isActive())
-            inst->startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, inst);
+        if (!inst->startAnimationPending) {
+            inst->startAnimationPending = true;
+            QMetaObject::invokeMethod(inst, "startAnimations", Qt::QueuedConnection);
+        }
     }
 }
 
@@ -349,8 +363,10 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
             if (idx <= inst->currentAnimationIdx)
                 --inst->currentAnimationIdx;
 
-            if (inst->animations.isEmpty() && !inst->startStopAnimationTimer.isActive())
-                inst->startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, inst);
+            if (inst->animations.isEmpty() && !inst->stopTimerPending) {
+                inst->stopTimerPending = true;
+                QMetaObject::invokeMethod(inst, "stopTimer", Qt::QueuedConnection);
+            }
         } else {
             inst->animationsToStart.removeOne(animation);
         }
