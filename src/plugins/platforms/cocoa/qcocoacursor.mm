@@ -113,7 +113,7 @@ void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
     }
 }
 
-QPoint QCocoaCursor::pos()
+QPoint QCocoaCursor::pos() const
 {
     return qt_mac_flipPoint([NSEvent mouseLocation]).toPoint();
 }
