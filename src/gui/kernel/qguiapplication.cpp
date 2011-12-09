@@ -841,7 +841,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QTouchEvent::TouchPoint previousTouchPoint;
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
-            if (e->devType == QTouchEvent::TouchPad) {
+            if (e->device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
                 w = d->windowForTouchPointId.isEmpty()
                     ? QWeakPointer<QWindow>()
@@ -944,13 +944,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QTouchEvent touchEvent(eventType,
-                               e->devType,
+                               e->device,
                                e->modifiers,
                                it.value().first,
                                it.value().second);
         touchEvent.setTimestamp(e->timestamp);
+        touchEvent.setWindow(w);
 
-        for (int i = 0; i < touchEvent.touchPoints().count(); ++i) {
+        const int pointCount = touchEvent.touchPoints().count();
+        for (int i = 0; i < pointCount; ++i) {
             QTouchEvent::TouchPoint &touchPoint = touchEvent._touchPoints[i];
 
             // preserve the sub-pixel resolution

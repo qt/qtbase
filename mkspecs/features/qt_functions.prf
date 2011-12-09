@@ -76,6 +76,7 @@ defineTest(qtAddModule) {
     MODULE_INCLUDES = $$eval(QT.$${1}.includes)
     MODULE_LIBS = $$eval(QT.$${1}.libs)
     MODULE_CONFIG = $$eval(QT.$${1}.module_config)
+    MODULE_MAJOR_VERSION = $$eval(QT.$${1}.MAJOR_VERSION)
 
     CONFIG += $$eval(QT.$${1}.CONFIG)
     DEFINES += $$eval(QT.$${1}.DEFINES)
@@ -117,6 +118,16 @@ defineTest(qtAddModule) {
               }
            }
         }
+    }
+
+    win32 {
+        # Make sure we link against the version pulled from the module's .pri
+        ver_var    = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE
+        dver_var   = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE
+        $$ver_var  = $$MODULE_MAJOR_VERSION
+        $$dver_var = $$MODULE_MAJOR_VERSION
+        export($$ver_var)
+        export($$dver_var)
     }
 
     isEmpty(LINKAGE) {

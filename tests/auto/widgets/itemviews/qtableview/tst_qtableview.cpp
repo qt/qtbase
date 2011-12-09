@@ -46,16 +46,6 @@
 #include <QtTest/QtTest>
 #include "private/qapplication_p.h"
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 2 seconds.
-#define WAIT_FOR_CONDITION(expr, expected) \
-    do { \
-        const int step = 100; \
-        for (int i = 0; i < 2000 && expr != expected; i+=step) { \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 #ifdef QT_BUILD_INTERNAL
 #define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) \
     QVERIFY(static_cast<QTableViewPrivate*>(QObjectPrivate::get(TEST_VIEW_))->spans.checkConsistency())
@@ -3358,16 +3348,9 @@ void tst_QTableView::tabFocus()
     window.setFocus();
     QTest::qWait(100);
     window.activateWindow();
-    QTest::qWait(100);
-
-    qApp->processEvents();
-
-    WAIT_FOR_CONDITION(window.hasFocus(), true);
-
-    qApp->processEvents();
 
     // window
-    QVERIFY(window.hasFocus());
+    QTRY_VERIFY(window.hasFocus());
     QVERIFY(!view->hasFocus());
     QVERIFY(!edit->hasFocus());
 

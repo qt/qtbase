@@ -3499,6 +3499,16 @@ void QAbstractItemViewPrivate::_q_layoutChanged()
 #endif
 }
 
+void QAbstractItemViewPrivate::_q_rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
+{
+  _q_layoutChanged();
+}
+
+void QAbstractItemViewPrivate::_q_columnsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
+{
+  _q_layoutChanged();
+}
+
 /*!
     This slot is called when the selection is changed. The previous
     selection (which may be empty), is specified by \a deselected, and the

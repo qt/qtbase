@@ -90,8 +90,6 @@ QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
 {
-    mPool = new QCocoaAutoReleasePool;
-
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
     NSApplication *cocoaApplication = [NSApplication sharedApplication];
@@ -141,7 +139,6 @@ QCocoaIntegration::QCocoaIntegration()
 QCocoaIntegration::~QCocoaIntegration()
 {
     delete mAccessibility;
-    delete mPool;
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const

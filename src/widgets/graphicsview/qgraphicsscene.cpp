@@ -5808,7 +5808,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         // update state
         QGraphicsItem *item = 0;
         if (touchPoint.state() == Qt::TouchPointPressed) {
-            if (sceneTouchEvent->deviceType() == QTouchEvent::TouchPad) {
+            if (sceneTouchEvent->device()->type() == QTouchDevice::TouchPad) {
                 // on touch-pad devices, send all touch points to the same item
                 item = itemForTouchPointId.isEmpty()
                        ? 0
@@ -5823,7 +5823,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
                 item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.first();
             }
 
-            if (sceneTouchEvent->deviceType() == QTouchEvent::TouchScreen) {
+            if (sceneTouchEvent->device()->type() == QTouchDevice::TouchScreen) {
                 // on touch-screens, combine this touch point with the closest one we find
                 int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
@@ -5889,10 +5889,12 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
 
         QTouchEvent touchEvent(eventType);
         touchEvent.setWidget(sceneTouchEvent->widget());
-        touchEvent.setDeviceType(sceneTouchEvent->deviceType());
+        touchEvent.setDevice(sceneTouchEvent->device());
         touchEvent.setModifiers(sceneTouchEvent->modifiers());
         touchEvent.setTouchPointStates(it.value().first);
         touchEvent.setTouchPoints(it.value().second);
+        touchEvent.setTimestamp(sceneTouchEvent->timestamp());
+        touchEvent.setWindow(sceneTouchEvent->window());
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:

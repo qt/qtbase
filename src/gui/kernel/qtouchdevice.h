@@ -39,62 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QSOUND_P_H
-#define QSOUND_P_H
+#ifndef QTOUCHDEVICE_H
+#define QTOUCHDEVICE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qobject.h>
 
-#include "QtCore/qobject.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_SOUND
+QT_MODULE(Gui)
 
-class QSound;
-/*
-  QAuServer is an INTERNAL class.  If you wish to provide support for
-  additional audio servers, you can make a subclass of QAuServer to do
-  so, HOWEVER, your class may need to be re-engineered to some degree
-  with each new Qt release, including minor releases.
+class QTouchDevicePrivate;
 
-  QAuBucket is whatever you want.
-*/
-
-class QAuBucket {
+class Q_GUI_EXPORT QTouchDevice
+{
 public:
-    virtual ~QAuBucket();
+    enum DeviceType {
+        TouchScreen,
+        TouchPad
+    };
+
+    enum CapabilityFlag {
+        Position = 0x0001,
+        Area = 0x0002,
+        Pressure = 0x0004,
+        Velocity = 0x0008,
+        RawPositions = 0x0010,
+        NormalizedPosition = 0x0020
+    };
+    Q_DECLARE_FLAGS(Capabilities, CapabilityFlag)
+
+    QTouchDevice();
+    ~QTouchDevice();
+
+    static QList<const QTouchDevice *> devices();
+
+    QString name() const;
+    DeviceType type() const;
+    Capabilities capabilities() const;
+
+    void setName(const QString &name);
+    void setType(DeviceType devType);
+    void setCapabilities(Capabilities caps);
+
+private:
+    QTouchDevicePrivate *d;
 };
 
-class QAuServer : public QObject {
-    Q_OBJECT
-
-public:
-    explicit QAuServer(QObject* parent);
-    ~QAuServer();
-
-    virtual void init(QSound*);
-    virtual void play(const QString& filename);
-    virtual void play(QSound*)=0;
-    virtual void stop(QSound*)=0;
-    virtual bool okay()=0;
-
-protected:
-    void setBucket(QSound*, QAuBucket*);
-    QAuBucket* bucket(QSound*);
-    int decLoop(QSound*);
-};
-
-#endif // QT_NO_SOUND
+Q_DECLARE_OPERATORS_FOR_FLAGS(QTouchDevice::Capabilities)
 
 QT_END_NAMESPACE
 
-#endif // QSOUND_P_H
+QT_END_HEADER
+
+#endif // QTOUCHDEVICE_H

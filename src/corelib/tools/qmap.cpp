@@ -56,11 +56,6 @@ const QMapData QMapData::shared_null = {
     Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, false, true, false, 0
 };
 
-QMapData *QMapData::createData()
-{
-    return createData(0);
-}
-
 QMapData *QMapData::createData(int alignment)
 {
     QMapData *d = new QMapData;
@@ -93,11 +88,6 @@ void QMapData::continueFreeData(int offset)
             qFree(reinterpret_cast<char *>(prev) - offset);
     }
     delete this;
-}
-
-QMapData::Node *QMapData::node_create(Node *update[], int offset)
-{
-    return node_create(update, offset, 0);
 }
 
 /*!

@@ -66,9 +66,9 @@ public:
     virtual ~QAccessibleTable();
 
     QObject *object() const { return view; }
-    Role role() const;
-    State state() const;
-    QString text(Text t) const;
+    QAccessible::Role role() const;
+    QAccessible::State state() const;
+    QString text(QAccessible::Text t) const;
     QRect rect() const;
 
     int childAt(int x, int y) const;
@@ -77,10 +77,10 @@ public:
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    Relation relationTo(const QAccessibleInterface *other) const;
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
-    QVariant invokeMethod(Method, const QVariantList &) { return QVariant(); }
+    QVariant invokeMethod(QAccessible::Method, const QVariantList &) { return QVariant(); }
     void *interface_cast(QAccessible::InterfaceType t);
 
     // table interface
@@ -159,8 +159,8 @@ public:
 
     int rowCount() const;
 
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    Relation relationTo(const QAccessibleInterface *other) const;
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // table interface
     QAccessibleInterface *cellAt(int row, int column) const;
@@ -179,8 +179,8 @@ public:
 
     void *interface_cast(QAccessible::InterfaceType t);
     QObject *object() const { return 0; }
-    Role role() const;
-    State state() const;
+    QAccessible::Role role() const;
+    QAccessible::State state() const;
     QRect rect() const;
     bool isValid() const;
 
@@ -188,15 +188,13 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text t) const;
-    void setText(Text t, const QString &text);
+    QString text(QAccessible::Text t) const;
+    void setText(QAccessible::Text t, const QString &text);
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int) const;
-    int navigate(RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
-    Relation relationTo(const QAccessibleInterface *other) const;
-
-    bool isExpandable() const;
+    int navigate(QAccessible::RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // cell interface
     virtual int columnExtent() const;
@@ -228,8 +226,8 @@ public:
     QAccessibleTableHeaderCell(QAbstractItemView *view, int index, Qt::Orientation orientation);
 
     QObject *object() const { return 0; }
-    Role role() const;
-    State state() const;
+    QAccessible::Role role() const;
+    QAccessible::State state() const;
     QRect rect() const;
     bool isValid() const;
 
@@ -237,13 +235,13 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text t) const;
-    void setText(Text t, const QString &text);
+    QString text(QAccessible::Text t) const;
+    void setText(QAccessible::Text t, const QString &text);
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
+    QAccessible::Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
 
 private:
     QAbstractItemView *view;
@@ -265,8 +263,8 @@ public:
     {}
 
     QObject *object() const { return 0; }
-    Role role() const { return QAccessible::Pane; }
-    State state() const { return QAccessible::Normal; }
+    QAccessible::Role role() const { return QAccessible::Pane; }
+    QAccessible::State state() const { return QAccessible::Normal; }
     QRect rect() const { return QRect(); }
     bool isValid() const { return true; }
 
@@ -274,8 +272,8 @@ public:
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
-    QString text(Text) const { return QString(); }
-    void setText(Text, const QString &) {}
+    QString text(QAccessible::Text) const { return QString(); }
+    void setText(QAccessible::Text, const QString &) {}
 
     QAccessibleInterface *parent() const {
         return QAccessible::queryAccessibleInterface(view);
@@ -283,7 +281,7 @@ public:
     QAccessibleInterface *child(int) const {
         return 0;
     }
-    int navigate(RelationFlag relation, int, QAccessibleInterface **iface) const
+    int navigate(QAccessible::RelationFlag relation, int, QAccessibleInterface **iface) const
     {
         if (relation == QAccessible::Ancestor) {
             *iface = parent();
@@ -291,7 +289,7 @@ public:
         }
         return -1;
     }
-    Relation relationTo(int, const QAccessibleInterface *, int) const
+    QAccessible::Relation relationTo(int, const QAccessibleInterface *, int) const
     {
         return QAccessible::Unrelated;
     }

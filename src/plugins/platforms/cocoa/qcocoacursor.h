@@ -55,7 +55,7 @@ public:
     explicit QCocoaCursor(QPlatformScreen *);
 
     virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
-    virtual QPoint pos();
+    virtual QPoint pos() const;
     virtual void setPos(const QPoint &position);
 private:
     QHash<Qt::CursorShape, NSCursor *> m_cursors;

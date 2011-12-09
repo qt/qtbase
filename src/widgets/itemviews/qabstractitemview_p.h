@@ -114,6 +114,9 @@ public:
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
+    virtual void _q_rowsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
+    virtual void _q_columnsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
+
     void _q_headerDataChanged() { doDelayedItemsLayout(); }
     void _q_scrollerStateChanged();
 

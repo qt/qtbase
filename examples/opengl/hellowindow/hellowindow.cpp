@@ -46,11 +46,13 @@
 
 #include <qmath.h>
 
-Renderer::Renderer(const QSurfaceFormat &format, Renderer *share)
+Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
     : m_initialized(false)
     , m_format(format)
 {
     m_context = new QOpenGLContext(this);
+    if (screen)
+        m_context->setScreen(screen);
     m_context->setFormat(format);
     if (share)
         m_context->setShareContext(share->m_context);

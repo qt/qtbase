@@ -1238,7 +1238,7 @@ foreach my $lib (@modules_to_sync) {
                 my $modulepriname = basename($modulepri);
                 make_path($module_fwd, $lib, $verbose_level);
                 my $moduleprifwd = "$module_fwd/$modulepriname";
-                my $mod_base = $developer_build ? $basedir : $out_basedir;
+                my $mod_base = $basedir;
                 my $mod_component_base = $developer_build ? $qtbasedir : $out_basedir;
                 open MODULE_PRI_FILE, ">$moduleprifwd" or die("Could not open $moduleprifwd for writing");
                 print MODULE_PRI_FILE "QT_MODULE_BASE = $mod_base\n";

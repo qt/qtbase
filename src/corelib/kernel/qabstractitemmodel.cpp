@@ -2522,8 +2522,6 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
     layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility
-    reasons.
 
     The \a sourceParent index corresponds to the parent from which the
     rows are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -2623,7 +2621,6 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     d->changes.push(destinationChange);
 
     emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
-    emit layoutAboutToBeChanged();
     d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
     return true;
 }
@@ -2634,8 +2631,6 @@ bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sour
     When implementing a subclass, you must call this
     function \e after moving data within the model's underlying data
     store.
-
-    layoutChanged is emitted by this method for compatibility reasons.
 
     \sa beginMoveRows()
 
@@ -2661,7 +2656,6 @@ void QAbstractItemModel::endMoveRows()
     d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Vertical);
 
     emit rowsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
-    emit layoutChanged();
 }
 
 /*!
@@ -2795,8 +2789,6 @@ void QAbstractItemModel::endRemoveColumns()
     required to do yourself. Using beginMoveRows and endMoveRows
     is an alternative to emitting layoutAboutToBeChanged and
     layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility
-    reasons.
 
     The \a sourceParent index corresponds to the parent from which the
     columns are moved; \a sourceFirst and \a sourceLast are the first and last
@@ -2848,7 +2840,6 @@ bool QAbstractItemModel::beginMoveColumns(const QModelIndex &sourceParent, int s
     d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Horizontal);
 
     emit columnsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
-    emit layoutAboutToBeChanged();
     return true;
 }
 
@@ -2858,8 +2849,6 @@ bool QAbstractItemModel::beginMoveColumns(const QModelIndex &sourceParent, int s
     When implementing a subclass, you must call this
     function \e after moving data within the model's underlying data
     store.
-
-    layoutChanged is emitted by this method for compatibility reasons.
 
     \sa beginMoveColumns()
 
@@ -2885,7 +2874,6 @@ void QAbstractItemModel::endMoveColumns()
     d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Horizontal);
 
     emit columnsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
-    emit layoutChanged();
 }
 
 /*!

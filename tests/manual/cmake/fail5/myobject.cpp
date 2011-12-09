@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,58 +39,16 @@
 **
 ****************************************************************************/
 
+#include "myobject.h"
 
-#include <QtCore>
-#include <QtTest/QtTest>
-
-class tst_QExecStringList: public QObject
+MyObject::MyObject(QObject *parent)
+    : QObject(parent)
 {
-    Q_OBJECT
-
-private slots:
-    void testA() const;
-    void testB() const;
-    void testB_data() const;
-    void testC() const;
-};
-
-void tst_QExecStringList::testA() const
-{
+    emit someSignal();
 }
 
-void tst_QExecStringList::testB() const
+int main(int argc, char **argv)
 {
-    QFETCH(bool, dummy);
-    Q_UNUSED(dummy);
-}
-
-void tst_QExecStringList::testB_data() const
-{
-    QTest::addColumn<bool>("dummy");
-
-    QTest::newRow("Data1") << false;
-    QTest::newRow("Data2") << false;
-    QTest::newRow("Data3") << false;
-}
-
-void tst_QExecStringList::testC() const
-{
-}
-
-int main(int argc,char *argv[])
-{
-    QCoreApplication app(argc, argv);
-
-    tst_QExecStringList test;
-
-    QTest::qExec(&test, app.arguments());
-    QTest::qExec(&test, QStringList("appName"));
-    QTest::qExec(&test, QStringList("appName") << "testA");
-    QTest::qExec(&test, QStringList("appName") << "testB");
-    QTest::qExec(&test, QStringList("appName") << "testB:Data2");
-    QTest::qExec(&test, QStringList("appName") << "testC");
-
+    MyObject myObject;
     return 0;
 }
-
-#include "tst_qexecstringlist.moc"

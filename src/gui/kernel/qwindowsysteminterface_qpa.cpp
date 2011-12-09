@@ -41,6 +41,7 @@
 #include "qwindowsysteminterface_qpa.h"
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
+#include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
 #include <qdebug.h>
 
@@ -213,14 +214,26 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
         dispatcher->wakeUp();
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods) {
-    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent(w, time, type, devType, points, mods);
+void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
+{
+    QTouchDevicePrivate::registerDevice(device);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
+                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleTouchEvent(w, time, type, device, points, mods);
+}
+
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type,
+                                              QTouchDevice *device,
+                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     if (!points.size()) // Touch events must have at least one point
+        return;
+
+    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
         return;
 
     QList<QTouchEvent::TouchPoint> touchPoints;
@@ -247,13 +260,16 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
         // when the event gets processed by QGuiApplication.
 
         p.setNormalizedPos(point->normalPosition);
+        p.setVelocity(point->velocity);
+        p.setFlags(point->flags);
+        p.setRawScreenPositions(point->rawPositions);
 
         touchPoints.append(p);
         ++point;
     }
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
-            new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, devType, touchPoints, mods);
+            new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

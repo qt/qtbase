@@ -62,9 +62,16 @@ QT_MODULE(Gui)
 class QAccessibleInterface;
 class QWindow;
 
+// We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
+#ifndef qdoc
+        :public QObject
+#endif
 {
+    Q_OBJECT
+    Q_ENUMS(Role Event State)
 public:
+
     enum Event {
         SoundPlayed          = 0x0001,
         Alert                = 0x0002,
@@ -141,6 +148,7 @@ public:
         AcceleratorChanged   = 0x80C0
     };
 
+
     enum StateFlag {
         Normal          = 0x00000000,
         Unavailable     = 0x00000001,
@@ -152,11 +160,11 @@ public:
         ReadOnly        = 0x00000040,
         HotTracked      = 0x00000080,
         DefaultButton   = 0x00000100,
-        // #### Qt5 Expandable
         Expanded        = 0x00000200,
         Collapsed       = 0x00000400,
         Busy            = 0x00000800,
         // Floating        = 0x00001000,
+        Expandable      = 0x00001000,
         Marqueed        = 0x00002000,
         Animated        = 0x00004000,
         Invisible       = 0x00008000,
@@ -179,6 +187,7 @@ public:
 
     };
     Q_DECLARE_FLAGS(State, StateFlag)
+
 
     enum Role {
         NoRole         = 0x00000000,
@@ -224,7 +233,10 @@ public:
         Graphic        = 0x00000028,
         StaticText     = 0x00000029,
         EditableText   = 0x0000002A,  // Editable, selectable, etc.
-        PushButton     = 0x0000002B,
+        Button         = 0x0000002B,
+#ifndef qdoc
+        PushButton     = Button, // deprecated
+#endif
         CheckBox       = 0x0000002C,
         RadioButton    = 0x0000002D,
         ComboBox       = 0x0000002E,
@@ -255,6 +267,7 @@ public:
         Value,
         Help,
         Accelerator,
+        DebugDescription,
         UserText     = 0x0000ffff
     };
 
@@ -320,6 +333,12 @@ public:
 private:
     static UpdateHandler updateHandler;
     static RootObjectHandler rootObjectHandler;
+
+    /*! @internal
+      This class is purely a collection of enums and static functions,
+      it is not supposed to be instantiated.
+    */
+    QAccessible() {}
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::State)
@@ -337,7 +356,7 @@ class QAccessibleImageInterface;
 class QAccessibleTableInterface;
 class QAccessibleTableCellInterface;
 
-class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
+class Q_GUI_EXPORT QAccessibleInterface
 {
 public:
     virtual ~QAccessibleInterface() {}
@@ -347,8 +366,8 @@ public:
     virtual QWindow *window() const;
 
     // relations
-    virtual Relation relationTo(const QAccessibleInterface *other) const;
-    virtual QVector<QPair<QAccessibleInterface*, Relation> > relations() const;
+    virtual QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations() const;
 
     virtual int childAt(int x, int y) const = 0;
 
@@ -357,22 +376,23 @@ public:
     virtual QAccessibleInterface *child(int index) const = 0;
     virtual int childCount() const = 0;
     virtual int indexOfChild(const QAccessibleInterface *) const = 0;
-    virtual int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
+    virtual int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
 
     // properties and state
-    virtual QString text(Text t) const = 0;
-    virtual void setText(Text t, const QString &text) = 0;
+    virtual QString text(QAccessible::Text t) const = 0;
+    virtual void setText(QAccessible::Text t, const QString &text) = 0;
     virtual QRect rect() const = 0;
-    virtual Role role() const = 0;
-    virtual State state() const = 0;
+    virtual QAccessible::Role role() const = 0;
+    virtual QAccessible::State state() const = 0;
+    // FIXME virtual QSet<QAccessible::State> states() const = 0;
 
     virtual QColor foregroundColor() const;
     virtual QColor backgroundColor() const;
 
-    virtual QVariant invokeMethod(Method method, const QVariantList &params = QVariantList());
+    virtual QVariant invokeMethod(QAccessible::Method method, const QVariantList &params = QVariantList());
 
-    inline QSet<Method> supportedMethods()
-    { return qvariant_cast<QSet<Method> >(invokeMethod(ListSupportedMethods)); }
+    inline QSet<QAccessible::Method> supportedMethods()
+    { return qvariant_cast<QSet<QAccessible::Method> >(invokeMethod(QAccessible::ListSupportedMethods)); }
 
     inline QAccessibleTextInterface *textInterface()
     { return reinterpret_cast<QAccessibleTextInterface *>(interface_cast(QAccessible::TextInterface)); }

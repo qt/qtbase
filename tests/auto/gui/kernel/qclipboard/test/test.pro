@@ -19,3 +19,5 @@ wince* {
   
   DEPLOYMENT += copier paster rsc reg_resource
 }
+
+mac: CONFIG += insignificant_test # QTBUG-23057

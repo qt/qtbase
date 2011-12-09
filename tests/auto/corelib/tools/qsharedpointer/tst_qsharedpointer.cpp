@@ -1663,7 +1663,13 @@ void tst_QSharedPointer::invalidConstructs_data()
 
     // use of forward-declared class
     QTest::newRow("forward-declaration")
+#ifdef Q_CC_CLANG
+        // Deleting a forward declaration is undefined, which results in a linker error with clang
+        << &QTest::QExternalTest::tryLinkFail
+#else
+        // Other compilers accept the code, but do not call the destructor at run-time
         << &QTest::QExternalTest::tryRun
+#endif
         << "forwardDeclaredDestructorRunCount = 0;\n"
            "{ QSharedPointer<ForwardDeclared> ptr = QSharedPointer<ForwardDeclared>(forwardPointer()); }\n"
            "exit(forwardDeclaredDestructorRunCount);";

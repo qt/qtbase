@@ -13,7 +13,6 @@ fetchbogus/tst_fetchbogus
 globaldata/tst_globaldata
 maxwarnings/tst_maxwarnings
 multiexec/tst_multiexec
-qexecstringlist/tst_qexecstringlist
 singleskip/tst_singleskip
 skip/tst_skip
 skipglobal/tst_skipglobal

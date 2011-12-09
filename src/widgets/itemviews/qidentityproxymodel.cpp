@@ -51,16 +51,12 @@ QT_BEGIN_NAMESPACE
 class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
 {
     QIdentityProxyModelPrivate()
-      : ignoreNextLayoutAboutToBeChanged(false),
-        ignoreNextLayoutChanged(false)
     {
 
     }
 
     Q_DECLARE_PUBLIC(QIdentityProxyModel)
 
-    bool ignoreNextLayoutAboutToBeChanged;
-    bool ignoreNextLayoutChanged;
     QList<QPersistentModelIndex> layoutChangePersistentIndexes;
     QModelIndexList proxyIndexes;
 
@@ -481,9 +477,6 @@ void QIdentityProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation orie
 
 void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
 {
-    if (ignoreNextLayoutAboutToBeChanged)
-        return;
-
     Q_Q(QIdentityProxyModel);
 
     foreach(const QPersistentModelIndex &proxyPersistentIndex, q->persistentIndexList()) {
@@ -499,9 +492,6 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
 
 void QIdentityProxyModelPrivate::_q_sourceLayoutChanged()
 {
-    if (ignoreNextLayoutChanged)
-        return;
-
     Q_Q(QIdentityProxyModel);
 
     for (int i = 0; i < proxyIndexes.size(); ++i) {

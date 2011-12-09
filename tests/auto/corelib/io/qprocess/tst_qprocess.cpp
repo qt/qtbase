@@ -1421,6 +1421,15 @@ void tst_QProcess::spaceArgsTest_data()
                                                                                  << QString::fromLatin1(" \"\"\"\"\"\"\" \"\" \"\"\"\"\"\"\"   ");
 }
 
+static QByteArray startFailMessage(const QString &program, const QProcess &process)
+{
+    QByteArray result = "Process '";
+    result += program.toLocal8Bit();
+    result += "' failed to start: ";
+    result += process.errorString().toLocal8Bit();
+    return result;
+}
+
 //-----------------------------------------------------------------------------
 void tst_QProcess::spaceArgsTest()
 {
@@ -1438,13 +1447,17 @@ void tst_QProcess::spaceArgsTest()
         QString program = programs.at(i);
         process->start(program, args);
 
-#if !defined(Q_OS_WINCE)
-        QVERIFY(process->waitForStarted(5000));
-        QVERIFY(process->waitForFinished(5000));
+#if defined(Q_OS_WINCE)
+        const int timeOutMS = 10000;
 #else
-        QVERIFY(process->waitForStarted(10000));
-        QVERIFY(process->waitForFinished(10000));
+        const int timeOutMS = 5000;
 #endif
+        QByteArray errorMessage;
+        bool started = process->waitForStarted(timeOutMS);
+        if (!started)
+            errorMessage = startFailMessage(program, *process);
+        QVERIFY2(started, errorMessage.constData());
+        QVERIFY(process->waitForFinished(timeOutMS));
 
 #if !defined(Q_OS_WINCE)
         QStringList actual = QString::fromLatin1(process->readAll()).split("|");
@@ -1463,9 +1476,13 @@ void tst_QProcess::spaceArgsTest()
         if (!stringArgs.isEmpty())
             program += QString::fromLatin1(" ") + stringArgs;
 
+        errorMessage.clear();
         process->start(program);
+        started = process->waitForStarted(5000);
+        if (!started)
+            errorMessage = startFailMessage(program, *process);
 
-        QVERIFY(process->waitForStarted(5000));
+        QVERIFY2(started, errorMessage.constData());
         QVERIFY(process->waitForFinished(5000));
 
 #if !defined(Q_OS_WINCE)

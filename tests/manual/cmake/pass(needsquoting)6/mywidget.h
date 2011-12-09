@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,45 +39,27 @@
 **
 ****************************************************************************/
 
+#ifndef MYWIDGET_H
+#define MYWIDGET_H
 
-#include <QtTest/QtTest>
-#include <QtWidgets>
+#include <QWidget>
 
-class tst_QSound : public QObject
+namespace Ui
+{
+class MyWidget;
+}
+
+class MyWidget : public QWidget
 {
     Q_OBJECT
-
 public:
-    tst_QSound( QObject* parent=0) : QObject(parent) {}
+    MyWidget(QWidget *parent = 0);
 
-private slots:
-    void checkFinished();
+signals:
+    void someSignal();
 
-    // Manual tests
-    void staticPlay();
+private:
+    Ui::MyWidget *ui;
 };
 
-void tst_QSound::checkFinished()
-{
-    QSKIP("QSound is not implemented on Lighthouse");
-    QSound sound(SRCDIR"4.wav");
-    sound.setLoops(3);
-    sound.play();
-    QTest::qWait(5000);
-
-#if defined(Q_WS_QWS)
-    QEXPECT_FAIL("", "QSound buggy on embedded (task QTBUG-157)", Abort);
 #endif
-    QVERIFY(sound.isFinished() );
-}
-
-void tst_QSound::staticPlay()
-{
-    QSKIP("Test disabled -- only for manual purposes");
-    // Check that you hear sound with static play also.
-    QSound::play(SRCDIR"4.wav");
-    QTest::qWait(2000);
-}
-
-QTEST_MAIN(tst_QSound);
-#include "tst_qsound.moc"

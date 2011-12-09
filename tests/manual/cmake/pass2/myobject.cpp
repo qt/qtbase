@@ -50,5 +50,7 @@ MyObject::MyObject(QObject *parent)
 int main(int argc, char **argv)
 {
     MyObject myObject;
+    // Compile error if the resource file was not created.
+    Q_INIT_RESOURCE(pass2);
     return 0;
 }

@@ -50,7 +50,9 @@ HEADERS += \
         kernel/qsessionmanager.h \
         kernel/qwindowdefs.h \
         kernel/qscreen.h \
-        kernel/qstylehints.h
+        kernel/qstylehints.h \
+        kernel/qtouchdevice.h \
+        kernel/qtouchdevice_p.h
 
 SOURCES += \
         kernel/qclipboard_qpa.cpp \
@@ -91,6 +93,7 @@ SOURCES += \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
         kernel/qshortcutmap.cpp \
-        kernel/qstylehints.cpp
+        kernel/qstylehints.cpp \
+        kernel/qtouchdevice.cpp
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

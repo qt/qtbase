@@ -51,12 +51,14 @@
 #include <QtCore/QMutex>
 #include <QtGui/QTouchEvent>
 #include <QtCore/QEventLoop>
+#include <QtGui/QVector2D>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 class QMimeData;
+class QTouchDevice;
 
 QT_MODULE(Gui)
 
@@ -84,16 +86,23 @@ public:
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
+        TouchPoint() : id(0), isPrimary(false), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
         int id;                 // for application use
         bool isPrimary;         // for application use
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
         qreal pressure;         // 0 to 1
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
+        QVector2D velocity;     // in screen coordinate system, pixels / seconds
+        QTouchEvent::TouchPoint::InfoFlags flags;
+        QList<QPointF> rawPositions; // in screen coordinates
     };
 
-    static void handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void registerTouchDevice(QTouchDevice *device);
+    static void handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
+                                 const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchDevice *device,
+                                 const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);
     static void handleSynchronousGeometryChange(QWindow *w, const QRect &newRect);

@@ -57,7 +57,7 @@
 
 #include <QSet>
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
@@ -117,7 +117,7 @@ private slots:
     void convertFromImageNoDetach();
     void convertFromImageDetach();
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
     void fromWinHBITMAP_data();
@@ -167,32 +167,28 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
     QImage expectedImage = expected.toImage().convertToFormat(QImage::Format_RGB32);
     QImage actualImage = actual.toImage().convertToFormat(QImage::Format_RGB32);
 
-    if (expectedImage.size() != actualImage.size())
+    if (expectedImage.size() != actualImage.size()) {
+        qWarning("Image size comparison failed: expected: %dx%d, got %dx%d",
+                 expectedImage.size().width(), expectedImage.size().height(),
+                 actualImage.size().width(), actualImage.size().height());
         return false;
+    }
 
-    int size = actual.width() * actual.height();
-
-    int threshold = 2;
-    if (QPixmap::defaultDepth() == 16)
-        threshold = 10;
+    const int size = actual.width() * actual.height();
+    const int threshold = QPixmap::defaultDepth() == 16 ? 10 : 2;
 
     QRgb *a = (QRgb *)actualImage.bits();
     QRgb *e = (QRgb *)expectedImage.bits();
     for (int i = 0; i < size; ++i) {
-        QColor ca(a[i]);
-        QColor ce(e[i]);
-
-        bool result = true;
-
-        if (qAbs(ca.red() - ce.red()) > threshold)
-            result = false;
-        if (qAbs(ca.green() - ce.green()) > threshold)
-            result = false;
-        if (qAbs(ca.blue() - ce.blue()) > threshold)
-            result = false;
-
-        if (!result)
+        const QColor ca(a[i]);
+        const QColor ce(e[i]);
+        if (qAbs(ca.red() - ce.red()) > threshold
+            || qAbs(ca.green() - ce.green()) > threshold
+            || qAbs(ca.blue() - ce.blue()) > threshold) {
+            qWarning("Color mismatch at pixel #%d: Expected: %d,%d,%d, got %d,%d,%d",
+                     i, ce.red(), ce.green(), ce.blue(), ca.red(), ca.green(), ca.blue());
             return false;
+        }
     }
 
     return true;
@@ -855,7 +851,15 @@ void tst_QPixmap::convertFromImageDetach()
     QVERIFY(copy.isDetached());
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
+
+Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
+Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
+Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p);
+Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h);
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+
 void tst_QPixmap::toWinHBITMAP_data()
 {
     QTest::addColumn<int>("red");
@@ -876,7 +880,7 @@ void tst_QPixmap::toWinHBITMAP()
     QPixmap pm(100, 100);
     pm.fill(QColor(red, green, blue));
 
-    HBITMAP bitmap = pm.toWinHBITMAP();
+    HBITMAP bitmap = qt_pixmapToWinHBITMAP(pm);
 
     QVERIFY(bitmap != 0);
 
@@ -931,7 +935,7 @@ void tst_QPixmap::fromWinHBITMAP()
 #ifdef Q_OS_WINCE //the device context has to be deleted before QPixmap::fromWinHBITMAP()
     DeleteDC(bitmap_dc);
 #endif
-    QPixmap pixmap = QPixmap::fromWinHBITMAP(bitmap);
+    QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
     QCOMPARE(pixmap.width(), 100);
     QCOMPARE(pixmap.height(), 100);
 
@@ -949,30 +953,39 @@ void tst_QPixmap::fromWinHBITMAP()
     ReleaseDC(0, display_dc);
 }
 
-static void compareImages(const QImage &image1, const QImage &image2)
+static bool compareImages(const QImage &actualImage, const QImage &expectedImage)
 {
-    QCOMPARE(image1.width(), image2.width());
-    QCOMPARE(image1.height(), image2.height());
-    QCOMPARE(image1.format(), image2.format());
+    if (actualImage.width() != expectedImage.width()
+        || actualImage.height() != expectedImage.height()) {
+        qWarning("Image size comparison failed: expected: %dx%d, got %dx%d",
+                 expectedImage.size().width(), expectedImage.size().height(),
+                 actualImage.size().width(), actualImage.size().height());
+        return false;
+    }
+    if (actualImage.format() != expectedImage.format()) {
+        qWarning("Image format comparison failed: expected: %d, got %d",
+                 expectedImage.format(), actualImage.format());
+        return false;
+    }
 
     static const int fuzz = 1;
 
-    for (int y = 0; y < image1.height(); y++)
-    {
-        for (int x = 0; x < image2.width(); x++)
-        {
-            QRgb p1 = image1.pixel(x, y);
-            QRgb p2 = image2.pixel(x, y);
+    for (int y = 0; y < actualImage.height(); ++y) {
+        for (int x = 0; x < expectedImage.width(); ++x) {
+            const QRgb p1 = actualImage.pixel(x, y);
+            const QRgb p2 = expectedImage.pixel(x, y);
 
-            bool pixelMatches =
-                qAbs(qRed(p1) - qRed(p2)) <= fuzz
-                && qAbs(qGreen(p1) - qGreen(p2)) <= fuzz
-                && qAbs(qBlue(p1) - qBlue(p2)) <= fuzz
-                && qAbs(qAlpha(p1) - qAlpha(p2)) <= fuzz;
-
-            QVERIFY(pixelMatches);
+            if (qAbs(qRed(p1) - qRed(p2)) > fuzz
+                || qAbs(qGreen(p1) - qGreen(p2)) > fuzz
+                || qAbs(qBlue(p1)  - qBlue(p2))  > fuzz
+                || qAbs(qAlpha(p1) - qAlpha(p2)) > fuzz) {
+                qWarning("Color mismatch at pixel %d,%d: Expected: 0x%x. got 0x%x",
+                         x, y, p2, p1);
+                return false;
+            }
         }
     }
+    return true;
 }
 
 void tst_QPixmap::toWinHICON_data()
@@ -995,9 +1008,7 @@ void tst_QPixmap::toWinHICON_data()
 
 void tst_QPixmap::toWinHICON()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Test shall be enabled for Windows CE shortly.");
-#endif
+    enum { Alpha = 2 };
 
     QFETCH(int, width);
     QFETCH(int, height);
@@ -1008,28 +1019,27 @@ void tst_QPixmap::toWinHICON()
 
     HDC display_dc = GetDC(0);
     HDC bitmap_dc = CreateCompatibleDC(display_dc);
-    HBITMAP bitmap = empty.toWinHBITMAP(QPixmap::Alpha);
+    HBITMAP bitmap = qt_pixmapToWinHBITMAP(empty, Alpha);
     SelectObject(bitmap_dc, bitmap);
 
     QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
     imageFromFile = imageFromFile.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
-    HICON icon = QPixmap::fromImage(imageFromFile).toWinHICON();
+    HICON icon = qt_pixmapToWinHICON(QPixmap::fromImage(imageFromFile));
 
     DrawIconEx(bitmap_dc, 0, 0, icon, width, height, 0, 0, DI_NORMAL);
 
     DestroyIcon(icon);
     DeleteDC(bitmap_dc);
 
-    QImage imageFromHICON = QPixmap::fromWinHBITMAP(bitmap, QPixmap::Alpha).toImage();
+    QImage imageFromHICON = qt_pixmapFromWinHBITMAP(bitmap, Alpha).toImage();
 
     ReleaseDC(0, display_dc);
 
     // fuzzy comparison must be used, as the pixel values change slightly during conversion
     // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
 
-    // QVERIFY(imageFromHICON == imageFromFile);
-    compareImages(imageFromHICON, imageFromFile);
+    QVERIFY(compareImages(imageFromHICON, imageFromFile));
 }
 
 void tst_QPixmap::fromWinHICON_data()
@@ -1039,16 +1049,12 @@ void tst_QPixmap::fromWinHICON_data()
 
 void tst_QPixmap::fromWinHICON()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Test shall be enabled for Windows CE shortly.");
-
-#else
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
 
     HICON icon = (HICON)LoadImage(0, (wchar_t*)(image + QLatin1String(".ico")).utf16(), IMAGE_ICON, width, height, LR_LOADFROMFILE);
-    QImage imageFromHICON = QPixmap::fromWinHICON(icon).toImage();
+    QImage imageFromHICON = qt_pixmapFromWinHICON(icon).toImage();
     DestroyIcon(icon);
 
     QImage imageFromFile(image + QString(QLatin1String("_%1x%2.png")).arg(width).arg(height));
@@ -1057,12 +1063,10 @@ void tst_QPixmap::fromWinHICON()
     // fuzzy comparison must be used, as the pixel values change slightly during conversion
     // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
 
-    // QVERIFY(imageFromHICON == imageFromFile);
-    compareImages(imageFromHICON, imageFromFile);
-#endif
+    QVERIFY(compareImages(imageFromHICON, imageFromFile));
 }
 
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {

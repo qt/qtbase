@@ -2335,7 +2335,10 @@ void tst_Gestures::bug_13501_gesture_not_accepted()
     w.show();
     QTest::qWaitForWindowShown(&w);
     //QTest::mousePress(&ignoreEvent, Qt::LeftButton);
-    QTest::touchEvent(&w).press(0, QPoint(10, 10), &w);
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+    QTest::touchEvent(&w, device).press(0, QPoint(10, 10), &w);
 }
 
 QTEST_MAIN(tst_Gestures)

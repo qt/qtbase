@@ -79,7 +79,7 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 //    int childAt(int x, int y) const;
 
 //protected:
@@ -109,7 +109,7 @@ public:
     int childCount() const;
 
     QRect rect(int child) const;
-    QString text(Text t, int child) const;
+    QString text(QAccessible::Text t, int child) const;
     Role role(int child) const;
     State state(int child) const;
 
@@ -123,8 +123,8 @@ class QAccessibleItemRow: public QAccessibleInterface
 public:
     QAccessibleItemRow(QAbstractItemView *view, const QModelIndex &index = QModelIndex(), bool isHeader = false);
     QRect rect(int child) const;
-    QString text(Text t, int child) const;
-    void setText(Text t, int child, const QString &text);
+    QString text(QAccessible::Text t, int child) const;
+    void setText(QAccessible::Text t, int child, const QString &text);
     bool isValid() const;
     QObject *object() const;
     Role role(int child) const;
@@ -138,7 +138,7 @@ public:
     int childAt(int x, int y) const;
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     int userActionCount(int child) const;
     QString actionText(int action, Text t, int child) const;
@@ -170,14 +170,14 @@ public:
     QRect rect(int child) const;
     int childAt(int x, int y) const;
     int childCount() const;
-    QString text(Text t, int child) const;
-    void setText(Text t, int child, const QString &text);
+    QString text(QAccessible::Text t, int child) const;
+    void setText(QAccessible::Text t, int child, const QString &text);
     int indexOfChild(const QAccessibleInterface *iface) const;
 
     QModelIndex childIndex(int child) const;
     int entryFromIndex(const QModelIndex &index) const;
     bool isValid() const;
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
+    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     QAccessibleInterface *accessibleAt(int row, int column);
     QAccessibleInterface *caption();
@@ -234,14 +234,14 @@ public:
     explicit QAccessibleTabBar(QWidget *w);
 
     int childCount() const;
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
 
     QAccessibleInterface* child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
 protected:
     QTabBar *tabBar() const;
@@ -259,7 +259,7 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface* child(int index) const;
 
-    QString text(Text t) const;
+    QString text(QAccessible::Text t) const;
 
     // QAccessibleActionInterface
     QStringList actionNames() const;

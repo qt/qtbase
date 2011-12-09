@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,52 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef QSOUND_H
-#define QSOUND_H
+#include "myobject.h"
 
-#include <QtCore/qobject.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-#ifndef QT_NO_SOUND
-
-class QSoundPrivate;
-
-class Q_WIDGETS_EXPORT QSound : public QObject
+MyObject::MyObject(QObject *parent)
+    : QObject(parent)
 {
-    Q_OBJECT
+    emit someSignal();
+}
 
-public:
-    static bool isAvailable();
-    static void play(const QString& filename);
-
-    explicit QSound(const QString& filename, QObject* parent = 0);
-    ~QSound();
-
-    int loops() const;
-    int loopsRemaining() const;
-    void setLoops(int);
-    QString fileName() const;
-
-    bool isFinished() const;
-
-public Q_SLOTS:
-    void play();
-    void stop();
-
-private:
-    Q_DECLARE_PRIVATE(QSound)
-    friend class QAuServer;
-};
-
-#endif // QT_NO_SOUND
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QSOUND_H
+int main(int argc, char **argv)
+{
+    MyObject myObject;
+    return 0;
+}

@@ -61,11 +61,11 @@ public:
     int childCount() const;
     int childAt(int x, int y) const;
 
-    QString text(Text t) const;
-    Role role() const;
+    QString text(QAccessible::Text t) const;
+    QAccessible::Role role() const;
     QAccessibleInterface *child(int index) const;
     QAccessibleInterface *parent() const;
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild( const QAccessibleInterface *child ) const;
 
 protected:
@@ -81,7 +81,7 @@ public:
     QAccessibleInterface *child(int index) const;
     int childCount() const;
 
-    int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
+    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild(const QAccessibleInterface *child) const;
 
 protected:

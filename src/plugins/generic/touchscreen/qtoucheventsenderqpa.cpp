@@ -52,6 +52,10 @@ QT_BEGIN_NAMESPACE
 QTouchEventSenderQPA::QTouchEventSenderQPA(const QString &spec)
 {
     m_forceToActiveWindow = spec.split(QLatin1Char(':')).contains(QLatin1String("force_window"));
+    m_device = new QTouchDevice;
+    m_device->setType(QTouchDevice::TouchScreen);
+    m_device->setCapabilities(QTouchDevice::Position | QTouchDevice::Area);
+    QWindowSystemInterface::registerTouchDevice(m_device);
 }
 
 void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int y_max)
@@ -103,7 +107,7 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
 #endif
     }
 
-    QWindowSystemInterface::handleTouchEvent(0, state, QTouchEvent::TouchScreen, touchPoints);
+    QWindowSystemInterface::handleTouchEvent(0, state, m_device, touchPoints);
 }
 
 QT_END_NAMESPACE

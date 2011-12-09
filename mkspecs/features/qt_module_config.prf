@@ -33,19 +33,6 @@ for(include_path, MODULE_INCLUDES):LAST_MODULE_INCLUDE=$${include_path}
 HEADERS_PRI = $$LAST_MODULE_INCLUDE/headers.pri
 include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
-#version overriding
-win32 {
-    #because libnetwork.pro could be qmake'd (qmade?) before libqcore.pro we
-    #need to override the version of libq* in all other libq*'s just to be
-    #sure the same version is used
-        VERSIONS_LIST = $$split(VERSION, ".")
-    QT_LIBS_OVERRIDE = $$member(VERSIONS_LIST, 0)
-        for(lib, $$list(qtcore qtgui qtnetwork qtxml qtopengl qtsql qt3support)) {
-        eval(QMAKE_$${upper($$lib)}_VERSION_OVERRIDE = $$QT_LIBS_OVERRIDE)
-        eval(QMAKE_$${upper($$lib)}D_VERSION_OVERRIDE = $$QT_LIBS_OVERRIDE)
-    }
-}
-
 #other
 DESTDIR          = $$eval(QT.$${MODULE}.libs)
 win32:!wince*:DLLDESTDIR = $$[QT_INSTALL_PREFIX]/bin

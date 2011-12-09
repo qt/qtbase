@@ -83,6 +83,7 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
+class QTouchDevice;
 #ifndef QT_NO_GESTURES
 class QGestureManager;
 #endif
@@ -482,7 +483,7 @@ public:
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     static void translateRawTouchEvent(QWidget *widget,
-                                       QTouchEvent::DeviceType deviceType,
+                                       QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);
 
@@ -554,8 +555,9 @@ private:
 };
 
 Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                            QTouchEvent::DeviceType deviceType,
-                                            const QList<QTouchEvent::TouchPoint> &touchPoints);
+                                                QTouchDevice *device,
+                                                const QList<QTouchEvent::TouchPoint> &touchPoints,
+                                                ulong timestamp);
 
 #if defined(Q_WS_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);

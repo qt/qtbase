@@ -54,7 +54,7 @@ class Renderer : public QObject
 {
     Q_OBJECT
 public:
-    Renderer(const QSurfaceFormat &format, Renderer *share = 0);
+    Renderer(const QSurfaceFormat &format, Renderer *share = 0, QScreen *screen = 0);
 
     QSurfaceFormat format() const { return m_format; }
 

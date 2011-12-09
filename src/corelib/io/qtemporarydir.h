@@ -43,6 +43,7 @@
 #define QTEMPORARYDIR_H
 
 #include <QtCore/qdir.h>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 
@@ -70,7 +71,7 @@ public:
     QString path() const;
 
 private:
-    QTemporaryDirPrivate* const d_ptr;
+    QScopedPointer<QTemporaryDirPrivate> d_ptr;
 
     Q_DISABLE_COPY(QTemporaryDir)
 };

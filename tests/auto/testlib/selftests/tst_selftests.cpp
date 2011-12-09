@@ -327,7 +327,6 @@ void tst_Selftests::runSubTest_data()
         << "multiexec"
         << "printdatatags"
         << "printdatatagswithglobaltags"
-        << "qexecstringlist"
         << "singleskip"
         << "skip"
         << "skipinit"
@@ -392,9 +391,6 @@ void tst_Selftests::runSubTest_data()
                 if (subtest == "multiexec") {
                     continue;
                 }
-                if (subtest == "qexecstringlist") {
-                    continue;
-                }
                 if (subtest == "benchliboptions") {
                     continue;
                 }
@@ -430,11 +426,20 @@ void tst_Selftests::runSubTest_data()
     }
 }
 
+static inline QProcessEnvironment processEnvironment()
+{
+    QProcessEnvironment result;
+    const QString path = QStringLiteral("PATH");
+    result.insert(path, QProcessEnvironment::systemEnvironment().value(path));
+    return result;
+}
+
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments)
 {
     QProcess proc;
-    proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, arguments);
+    static const QProcessEnvironment environment = processEnvironment();
+    proc.setProcessEnvironment(environment);
+    proc.start(subdir + QLatin1Char('/') + subdir, arguments);
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     QList<QByteArray> actualOutputs;
@@ -473,6 +478,15 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         QString logger = loggers[n];
         QList<QByteArray> res = splitLines(actualOutputs[n]);
         QList<QByteArray> exp = expectedResult(subdir, logger);
+#ifdef Q_CC_MSVC
+        // MSVC formats double numbers differently
+        if (n == 0 && subdir == QStringLiteral("float")) {
+            for (int i = 0; i < exp.size(); ++i) {
+                exp[i].replace("e-07", "e-007");
+                exp[i].replace("e+07", "e+007");
+            }
+        }
+#endif
 
         // For the "crashes" test, there are multiple versions of the
         // expected output.  Load the one with the same line count as

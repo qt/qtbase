@@ -187,12 +187,12 @@ public:
 
     class TouchEvent : public InputEvent {
     public:
-        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p, Qt::KeyboardModifiers mods)
-            :InputEvent(w, time, Touch, mods), devType(d), points(p), touchType(t) { }
-        QTouchEvent::DeviceType devType;
+        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchDevice *dev,
+                   const QList<QTouchEvent::TouchPoint> &p, Qt::KeyboardModifiers mods)
+            :InputEvent(w, time, Touch, mods), device(dev), points(p), touchType(t) { }
+        QTouchDevice *device;
         QList<QTouchEvent::TouchPoint> points;
         QEvent::Type touchType;
-
     };
 
     class ScreenOrientationEvent : public WindowSystemEvent {

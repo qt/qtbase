@@ -43,6 +43,7 @@
 #include "externaltests.h"
 
 #include <QtCore/QTemporaryFile>
+#include <QtCore/QTemporaryDir>
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
@@ -75,42 +76,6 @@ static QString makespec()
     return QString::fromLatin1(p + 1);
 }
 
-static bool removeRecursive(const QString &pathname)
-{
-    QFileInfo fi(pathname);
-    if (!fi.exists())
-        return true;
-
-    if (fi.isFile())
-        return QFile::remove(pathname);
-
-    if (!fi.isDir()) {
-        //  not a file or directory. How do I remove it?
-        return false;
-    }
-
-    // not empty -- we must empty it first
-    QDirIterator di(pathname, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-    while (di.hasNext()) {
-        di.next();
-        if (!di.fileInfo().exists() && !di.fileInfo().isSymLink())
-            continue;
-        bool ok;
-        if (di.fileInfo().isFile() || di.fileInfo().isSymLink())
-            ok = QFile::remove(di.filePath());
-        else
-            ok = removeRecursive(di.filePath());
-        if (!ok) {
-            return false;
-        }
-    }
-
-    QDir dir(pathname);
-    QString dirname = dir.dirName();
-    dir.cdUp();
-    return dir.rmdir(dirname);
-}
-
 QT_BEGIN_NAMESPACE
 namespace QTest {
     class QExternalProcess: public QProcess
@@ -140,7 +105,7 @@ namespace QTest {
         QExternalTestPrivate()
             : qtModules(QExternalTest::QtCore | QExternalTest::QtGui | QExternalTest::QtTest),
               appType(QExternalTest::AutoApplication),
-              exitCode(-1)
+              temporaryDir(0), exitCode(-1)
         {
         }
         ~QExternalTestPrivate()
@@ -156,7 +121,8 @@ namespace QTest {
         QExternalTest::QtModules qtModules;
         QExternalTest::ApplicationType appType;
 
-        QString temporaryDir;
+        QString temporaryDirPath;
+        QTemporaryDir *temporaryDir;
         QByteArray sourceCode;
         QByteArray std_out;
         QByteArray std_err;
@@ -330,22 +296,13 @@ namespace QTest {
     // actual execution code
     void QExternalTestPrivate::clear()
     {
-        if (!temporaryDir.isEmpty())
-            removeTemporaryDirectory();
-
+        delete temporaryDir;
+        temporaryDir = 0;
         sourceCode.clear();
         std_out.clear();
         std_err.clear();
         exitCode = -1;
         failedStage = QExternalTest::FileStage;
-    }
-
-    void QExternalTestPrivate::removeTemporaryDirectory()
-    {
-        if (temporaryDir.isEmpty())
-            qWarning() << "Temporary directory is expected to be non-empty";
-        removeRecursive(temporaryDir);
-        temporaryDir.clear();
     }
 
     bool QExternalTestPrivate::prepareSourceCode(const QByteArray &body)
@@ -448,7 +405,7 @@ namespace QTest {
             "    return 0;\n"
             "}\n";
 
-        QFile sourceFile(temporaryDir + QLatin1String("/project.cpp"));
+        QFile sourceFile(temporaryDirPath + QLatin1String("/project.cpp"));
         if (!sourceFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
             std_err = sourceFile.errorString().toLocal8Bit();
             return false;
@@ -457,7 +414,7 @@ namespace QTest {
         sourceFile.write(sourceCode);
         sourceFile.close();
 
-        sourceFile.setFileName(temporaryDir + QLatin1String("/user_code.cpp"));
+        sourceFile.setFileName(temporaryDirPath + QLatin1String("/user_code.cpp"));
         if (!sourceFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
             std_err = sourceFile.errorString().toLocal8Bit();
             return false;
@@ -469,27 +426,24 @@ namespace QTest {
 
     bool QExternalTestPrivate::createTemporaryDirectory()
     {
-        QDir temp = QDir::temp();
-        QString subdir = QString::fromLatin1("qexternaltest-%1-%2-%3")
-                        .arg(QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss")))
-                        .arg(quintptr(this), 0, 16)
-                        .arg(qrand());
-        if (!temp.mkdir(subdir))
+        delete temporaryDir;
+        temporaryDir = new QTemporaryDir;
+        if (temporaryDir->isValid()) {
+            temporaryDirPath = temporaryDir->path();
+            return true;
+        } else {
+            delete temporaryDir;
+            temporaryDir = 0;
             return false;
-
-        if (!temp.cd(subdir))
-            return false;
-
-        temporaryDir = temp.absolutePath();
-        return true;
+        }
     }
 
     bool QExternalTestPrivate::createProjectFile()
     {
-        if (temporaryDir.isEmpty())
+        if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
-        QFile projectFile(temporaryDir + QLatin1String("/project.pro"));
+        QFile projectFile(temporaryDirPath + QLatin1String("/project.pro"));
         if (!projectFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
             std_err = projectFile.errorString().toLocal8Bit();
             return false;
@@ -597,7 +551,7 @@ namespace QTest {
 
     bool QExternalTestPrivate::runQmake()
     {
-        if (temporaryDir.isEmpty())
+        if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
         if (!createProjectFile())
@@ -610,7 +564,7 @@ namespace QTest {
              << QLatin1String("-spec")
              << makespec()
              << QLatin1String("project.pro");
-        qmake.setWorkingDirectory(temporaryDir);
+        qmake.setWorkingDirectory(temporaryDirPath);
         qmake.start(QLatin1String("qmake"), args);
 
         std_out += "### --- stdout from qmake --- ###\n";
@@ -633,11 +587,11 @@ namespace QTest {
 
     bool QExternalTestPrivate::runMake(Target target)
     {
-        if (temporaryDir.isEmpty())
+        if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
         QExternalProcess make;
-        make.setWorkingDirectory(temporaryDir);
+        make.setWorkingDirectory(temporaryDirPath);
 
         QStringList environment = QProcess::systemEnvironment();
         environment += QLatin1String("LC_ALL=C");

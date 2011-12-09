@@ -3450,34 +3450,25 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     This enum represents the type of device that generated a QTouchEvent.
 
-    \value TouchScreen In this type of device, the touch surface and display are integrated. This
-                       means the surface and display typically have the same size, such that there
-                       is a direct relationship between the touch points' physical positions and the
-                       coordinate reported by QTouchEvent::TouchPoint. As a result, Qt allows the
-                       user to interact directly with multiple QWidgets and QGraphicsItems at the
-                       same time.
+    This enum has been deprecated. Use QTouchDevice::DeviceType instead.
 
-    \value TouchPad In this type of device, the touch surface is separate from the display. There
-                    is not a direct relationship between the physical touch location and the
-                    on-screen coordinates. Instead, they are calculated relative to the current
-                    mouse position, and the user must use the touch-pad to move this reference
-                    point. Unlike touch-screens, Qt allows users to only interact with a single
-                    QWidget or QGraphicsItem at a time.
+    \sa QTouchDevice::DeviceType, QTouchDevice::type(), QTouchEvent::device()
 */
 
 /*!
-    Constructs a QTouchEvent with the given \a eventType, \a deviceType, and \a touchPoints.
-    The \a touchPointStates and \a modifiers are the current touch point states and keyboard
-    modifiers at the time of the event.
+    Constructs a QTouchEvent with the given \a eventType, \a deviceType, \a
+    touchPoints and \a device. The \a touchPointStates and \a modifiers
+    are the current touch point states and keyboard modifiers at the time of
+    the event.
 */
 QTouchEvent::QTouchEvent(QEvent::Type eventType,
-                         QTouchEvent::DeviceType deviceType,
+                         QTouchDevice *device,
                          Qt::KeyboardModifiers modifiers,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(eventType, modifiers),
       _widget(0),
-      _deviceType(deviceType),
+      _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
 { }
@@ -3493,6 +3484,22 @@ QTouchEvent::~QTouchEvent()
     Returns the widget on which the event occurred.
 */
 
+/*! \fn QWindow *QTouchEvent::window() const
+
+    Returns the window on which the event occurred. Useful for doing
+    global-local mapping on data like rawScreenPositions() which,
+    for performance reasons, only stores the global positions in the
+    touch event.
+*/
+
+/*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
+
+    Returns the touch device Type, which is of type \l {QTouchEvent::DeviceType} {DeviceType}.
+
+    This function has been deprecated. Use QTouchDevice::type() instead.
+
+    \sa QTouchDevice::type(), QTouchEvent::device()
+*/
 
 /*! \fn Qt::TouchPointStates QTouchEvent::touchPointStates() const
 
@@ -3509,11 +3516,23 @@ QTouchEvent::~QTouchEvent()
     Returns the touch device Type, which is of type \l {QTouchEvent::DeviceType} {DeviceType}.
 */
 
+/*! \fn QTouchDevice* QTouchEvent::device() const
+
+    Returns the touch device from which this touch event originates.
+*/
+
 /*! \fn void QTouchEvent::setWidget(QWidget *widget)
 
     \internal
 
     Sets the widget for this event.
+*/
+
+/*! \fn void QTouchEvent::setWindow(QWindow *window)
+
+    \internal
+
+    Sets the window for this event.
 */
 
 /*! \fn void QTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)
@@ -3538,9 +3557,23 @@ QTouchEvent::~QTouchEvent()
     {DeviceType}.
 */
 
+/*! \fn void QTouchEvent::setTouchDevice(QTouchDevice *device)
+
+    \internal
+
+    Sets the touch event's device to the given one.
+*/
+
 /*! \class QTouchEvent::TouchPoint
     \brief The TouchPoint class provides information about a touch point in a QTouchEvent.
     \since 4.6
+*/
+
+/*! \enum QTouchEvent::TouchPoint::InfoFlags
+
+    The values of this enum describe additional information about a touch point.
+
+    \value Pen Indicates that the contact has been made by a designated pointing device (e.g. a pen) instead of a finger.
 */
 
 /*! \internal
@@ -3795,6 +3828,42 @@ qreal QTouchEvent::TouchPoint::pressure() const
     return d->pressure;
 }
 
+/*!
+    Returns a velocity vector for this touch point.
+    The vector is in the screen's coordinate system, using pixels per seconds for the magnitude.
+
+    \note The returned vector is only valid if the touch device's capabilities include QTouchDevice::Velocity.
+
+    \sa QTouchDevice::capabilities(), device()
+*/
+QVector2D QTouchEvent::TouchPoint::velocity() const
+{
+    return d->velocity;
+}
+
+/*!
+  Returns additional information about the touch point.
+
+  \sa QTouchEvent::TouchPoint::InfoFlags
+  */
+QTouchEvent::TouchPoint::InfoFlags QTouchEvent::TouchPoint::flags() const
+{
+    return d->flags;
+}
+
+/*!
+  Returns the raw, unfiltered positions for the touch point. The positions are in screen coordinates.
+  To get local coordinates you can use mapFromGlobal() of the QWindow returned by QTouchEvent::window().
+
+  \note Returns an empty list if the touch device's capabilities do not include QTouchDevice::RawPositions.
+
+  \sa QTouchDevice::capabilities(), device(), window()
+  */
+QList<QPointF> QTouchEvent::TouchPoint::rawScreenPositions() const
+{
+    return d->rawScreenPositions;
+}
+
 /*! \internal */
 void QTouchEvent::TouchPoint::setId(int id)
 {
@@ -3937,6 +4006,30 @@ void QTouchEvent::TouchPoint::setPressure(qreal pressure)
     if (d->ref.load() != 1)
         d = d->detach();
     d->pressure = pressure;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setVelocity(const QVector2D &v)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->velocity = v;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setRawScreenPositions(const QList<QPointF> &positions)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->rawScreenPositions = positions;
+}
+
+/* \internal */
+void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
+{
+    if (d->ref.load() != 1)
+        d = d->detach();
+    d->flags = flags;
 }
 
 /*! \internal */

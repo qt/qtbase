@@ -48,6 +48,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QTouchDevice;
+
 class QTouchEventSenderQPA : public QTouchScreenObserver
 {
 public:
@@ -61,6 +63,7 @@ private:
     int hw_range_x_max;
     int hw_range_y_min;
     int hw_range_y_max;
+    QTouchDevice *m_device;
 };
 
 QT_END_NAMESPACE

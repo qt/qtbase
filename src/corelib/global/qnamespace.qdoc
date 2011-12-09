@@ -1649,6 +1649,9 @@
     \value Key_PowerDown
     \value Key_Suspend
     \value Key_ContrastAdjust
+    \value Key_TouchpadToggle
+    \value Key_TouchpadOn
+    \value Key_TouchpadOff
     \value Key_MediaLast
     \value Key_unknown
 

@@ -65,13 +65,21 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_screen(screen)
     , m_context(0)
 {
-    GLXContext shareGlxContext = 0;
+    m_shareContext = 0;
     if (share)
-        shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
+        m_shareContext = static_cast<const QGLXContext*>(share)->glxContext();
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
-    m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, shareGlxContext, TRUE);
-    m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+
+    m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, TRUE);
+    if (!m_context && m_shareContext) {
+        // re-try without a shared glx context
+        m_shareContext = 0;
+        m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, TRUE);
+    }
+
+    if (m_context)
+        m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
 }
 
 QGLXContext::~QGLXContext()
@@ -135,6 +143,16 @@ void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
 QSurfaceFormat QGLXContext::format() const
 {
     return m_format;
+}
+
+bool QGLXContext::isSharing() const
+{
+    return m_shareContext != 0;
+}
+
+bool QGLXContext::isValid() const
+{
+    return m_context != 0;
 }
 
 QT_END_NAMESPACE

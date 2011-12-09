@@ -43,6 +43,7 @@
 #define QDIRECTFBSCREEN_H
 
 #include "qdirectfbconvenience.h"
+#include "qdirectfbcursor.h"
 
 #include <QtGui/QPlatformIntegration>
 
@@ -50,7 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
 {

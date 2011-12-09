@@ -55,12 +55,7 @@ class tst_QTemporaryDir : public QObject
 {
     Q_OBJECT
 public:
-    tst_QTemporaryDir();
-    virtual ~tst_QTemporaryDir();
 public slots:
-    void init();
-    void cleanup();
-
     void initTestCase();
     void cleanupTestCase();
 
@@ -75,7 +70,6 @@ private slots:
     void openOnRootDrives();
     void stressTest();
     void rename();
-    void autoRemoveAfterFailedRename();
 
     void QTBUG_4796_data();
     void QTBUG_4796();
@@ -115,23 +109,6 @@ void tst_QTemporaryDir::getSetCheck()
     QCOMPARE(true, obj1.autoRemove());
 }
 
-tst_QTemporaryDir::tst_QTemporaryDir()
-{
-}
-
-tst_QTemporaryDir::~tst_QTemporaryDir()
-{
-
-}
-
-void tst_QTemporaryDir::init()
-{
-}
-
-void tst_QTemporaryDir::cleanup()
-{
-}
-
 void tst_QTemporaryDir::fileTemplate_data()
 {
     QTest::addColumn<QString>("constructorTemplate");
@@ -142,10 +119,12 @@ void tst_QTemporaryDir::fileTemplate_data()
     QTest::newRow("constructor with xxx sufix") << "qt_XXXXXXxxx" << "qt_XXXXXXxxx";
     QTest::newRow("constructor with xXx sufix") << "qt_XXXXXXxXx" << "qt_XXXXXXxXx";
     QTest::newRow("constructor with no suffix") << "qt_XXXXXX" << "qt_";
-    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "qt_XXXX";
+    QTest::newRow("constructor with >6 X's, no suffix") << "qt_XXXXXXXXXX" << "qt_";
+    // When more than 6 X are present at the end, linux and windows will only replace the last 6,
+    // while Mac OS will actually replace all of them so we can only expect "qt_" (and check isValid).
     QTest::newRow("constructor with XXXX suffix") << "qt_XXXXXX_XXXX" << "qt_";
-    QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_XXXX";
-    QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_XXXXX";
+    QTest::newRow("constructor with XXXX prefix") << "qt_XXXX" << "qt_";
+    QTest::newRow("constructor with XXXXX prefix") << "qt_XXXXX" << "qt_";
 }
 
 void tst_QTemporaryDir::fileTemplate()
@@ -175,7 +154,7 @@ void tst_QTemporaryDir::fileName()
     dir.setAutoRemove(true);
     QString fileName = dir.path();
     QVERIFY2(fileName.contains("/tst_qtemporarydir-"), qPrintable(fileName));
-    QVERIFY(QFile::exists(fileName));
+    QVERIFY(QDir(fileName).exists());
     // Get path to the temp dir, without the file name.
     QString absoluteFilePath = QFileInfo(fileName).absolutePath();
 #if defined(Q_OS_WIN)
@@ -198,9 +177,9 @@ void tst_QTemporaryDir::autoRemove()
 #ifdef Q_OS_WIN
     // Windows seems unreliable here: sometimes it says the directory still exists,
     // immediately after we deleted it.
-    QTRY_VERIFY(!QFile::exists(dirName));
+    QTRY_VERIFY(!QDir(dirName).exists());
 #else
-    QVERIFY(!QFile::exists(dirName));
+    QVERIFY(!QDir(dirName).exists());
 #endif
 
     // Test if disabling auto remove works.
@@ -210,9 +189,9 @@ void tst_QTemporaryDir::autoRemove()
         QVERIFY(dir.isValid());
         dirName = dir.path();
     }
-    QVERIFY(QFile::exists(dirName));
+    QVERIFY(QDir(dirName).exists());
     QVERIFY(QDir().rmdir(dirName));
-    QVERIFY(!QFile::exists(dirName));
+    QVERIFY(!QDir(dirName).exists());
 
     // Do not explicitly call setAutoRemove (tests if it really is the default as documented)
     {
@@ -221,9 +200,9 @@ void tst_QTemporaryDir::autoRemove()
         dirName = dir.path();
     }
 #ifdef Q_OS_WIN
-    QTRY_VERIFY(!QFile::exists(dirName));
+    QTRY_VERIFY(!QDir(dirName).exists());
 #else
-    QVERIFY(!QFile::exists(dirName));
+    QVERIFY(!QDir(dirName).exists());
 #endif
 
     // Test autoremove with files and subdirs in the temp dir
@@ -240,25 +219,32 @@ void tst_QTemporaryDir::autoRemove()
         QCOMPARE(file.write("Hello"), 5LL);
     }
 #ifdef Q_OS_WIN
-    QTRY_VERIFY(!QFile::exists(dirName));
+    QTRY_VERIFY(!QDir(dirName).exists());
 #else
-    QVERIFY(!QFile::exists(dirName));
+    QVERIFY(!QDir(dirName).exists());
 #endif
 }
 
 void tst_QTemporaryDir::nonWritableCurrentDir()
 {
 #ifdef Q_OS_UNIX
-    QString cwd = QDir::currentPath();
-    QDir::setCurrent("/");
+    struct ChdirOnReturn
+    {
+        ChdirOnReturn(const QString& d) : dir(d) {}
+        ~ChdirOnReturn() {
+            QDir::setCurrent(dir);
+        }
+        QString dir;
+    };
+    ChdirOnReturn cor(QDir::currentPath());
+
+    QDir::setCurrent("/home");
     // QTemporaryDir("tempXXXXXX") is probably a bad idea in any app
     // where the current dir could anything...
-    QString fileName;
     QTemporaryDir dir("tempXXXXXX");
     dir.setAutoRemove(true);
     QVERIFY(!dir.isValid());
-    fileName = dir.path();
-    QDir::setCurrent(cwd);
+    QVERIFY(dir.path().isEmpty());
 #endif
 }
 
@@ -267,13 +253,13 @@ void tst_QTemporaryDir::openOnRootDrives()
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     unsigned int lastErrorMode = SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif
-    // If it's possible to create a dir in the root directory, it
+    // If it's possible to create a file in the root directory, it
     // must be possible to create a temp dir there too.
     foreach (const QFileInfo &driveInfo, QDir::drives()) {
-        QFile testFile(driveInfo.filePath() + "XXXXXX.txt");
+        QFile testFile(driveInfo.filePath() + "XXXXXX");
         if (testFile.open(QIODevice::ReadWrite)) {
             testFile.remove();
-            QTemporaryDir dir(driveInfo.filePath() + "XXXXXX.txt");
+            QTemporaryDir dir(driveInfo.filePath() + "XXXXXX");
             dir.setAutoRemove(true);
             QVERIFY(dir.isValid());
         }
@@ -328,41 +314,6 @@ void tst_QTemporaryDir::rename()
     QVERIFY(!dir.exists());
 }
 
-void tst_QTemporaryDir::autoRemoveAfterFailedRename()
-{
-    struct CleanOnReturn
-    {
-        ~CleanOnReturn()
-        {
-            if (!tempName.isEmpty())
-                QVERIFY(QDir(tempName).removeRecursively());
-        }
-
-        void reset()
-        {
-            tempName.clear();
-        }
-
-        QString tempName;
-    };
-
-    CleanOnReturn cleaner;
-
-    {
-        QTemporaryDir dir;
-        QVERIFY(dir.isValid());
-        cleaner.tempName = dir.path();
-
-        QVERIFY(QFile::exists(cleaner.tempName));
-        QVERIFY(!QFileInfo("i-do-not-exist").isDir());
-        QVERIFY(!QDir().rename(cleaner.tempName, "i-do-not-exist/dir.txt"));
-        QVERIFY(QFile::exists(cleaner.tempName));
-    }
-
-    QVERIFY(!QFile::exists(cleaner.tempName));
-    cleaner.reset();
-}
-
 void tst_QTemporaryDir::QTBUG_4796_data()
 {
     QTest::addColumn<QString>("prefix");
@@ -380,7 +331,7 @@ void tst_QTemporaryDir::QTBUG_4796_data()
     QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
 }
 
-void tst_QTemporaryDir::QTBUG_4796()
+void tst_QTemporaryDir::QTBUG_4796() // unicode support
 {
     QVERIFY(QDir("test-XXXXXX").exists());
 
@@ -443,9 +394,9 @@ void tst_QTemporaryDir::QTBUG_4796()
             QString fileName5 = currentDir.relativeFilePath(dir5.path());
             QString fileName6 = currentDir.relativeFilePath(dir6.path());
 
-            QVERIFY(fileName1.startsWith(fileTemplate1));
-            QVERIFY(fileName2.startsWith(fileTemplate2));
-            QVERIFY(fileName5.startsWith("test-XXXXXX/" + fileTemplate1));
+            QVERIFY(fileName1.startsWith(prefix));
+            QVERIFY(fileName2.startsWith(prefix));
+            QVERIFY(fileName5.startsWith("test-XXXXXX/" + prefix));
             QVERIFY(fileName6.startsWith("test-XXXXXX/" + prefix));
 
             if (!prefix.isEmpty()) {
@@ -459,7 +410,7 @@ void tst_QTemporaryDir::QTBUG_4796()
     QTest::qWait(20);
 #endif
     foreach (const QString &tempName, cleaner.tempNames)
-        QVERIFY2(!QFile::exists(tempName), qPrintable(tempName));
+        QVERIFY2(!QDir(tempName).exists(), qPrintable(tempName));
 
     cleaner.reset();
 }

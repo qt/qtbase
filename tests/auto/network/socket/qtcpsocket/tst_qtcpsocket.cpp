@@ -63,10 +63,6 @@
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QMap>
-#ifndef Q_OS_VXWORKS
-#include <QMessageBox>
-#include <QPushButton>
-#endif
 #include <QPointer>
 #include <QProcess>
 #include <QStringList>
@@ -175,7 +171,7 @@ private slots:
     void socketsInThreads();
     void waitForReadyReadInASlot();
     void remoteCloseError();
-    void openMessageBoxInErrorSlot();
+    void nestedEventLoopInErrorSlot();
 #ifndef Q_OS_WIN
     void connectToLocalHostNoService();
 #endif
@@ -217,7 +213,7 @@ protected slots:
     void downloadBigFileSlot();
     void recursiveReadyReadSlot();
     void waitForReadyReadInASlotSlot();
-    void messageBoxSlot();
+    void enterLoopSlot();
     void hostLookupSlot();
     void abortiveClose_abortSlot();
     void remoteCloseErrorSlot();
@@ -583,6 +579,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     QVERIFY(socket->setSocketDescriptor(sock, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), (int)sock);
 
+    qt_qhostinfo_clear_cache(); //avoid the HostLookupState being skipped due to address being in cache from previous test.
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
     QCOMPARE(socket->state(), QTcpSocket::HostLookupState);
     QCOMPARE(socket->socketDescriptor(), (int)sock);
@@ -1271,6 +1268,7 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
     } else {
         socket->disconnectFromHost();
         QVERIFY(socket->openMode() == QIODevice::ReadWrite);
+        QVERIFY(socket->waitForDisconnected(5000));
     }
 
     // let anything queued happen
@@ -1827,35 +1825,29 @@ void tst_QTcpSocket::remoteCloseErrorSlot()
     static_cast<QTcpSocket *>(sender())->close();
 }
 
-void tst_QTcpSocket::messageBoxSlot()
+void tst_QTcpSocket::enterLoopSlot()
 {
-#if !defined(Q_OS_VXWORKS) // no gui
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     socket->deleteLater();
-    QMessageBox box;
-    QTimer::singleShot(100, &box, SLOT(close()));
 
-    // This should not delete the socket
-    box.exec();
+    // enter nested event loop
+    QEventLoop loop;
+    QTimer::singleShot(100, &loop, SLOT(quit()));
+    loop.exec();
 
     // Fire a non-0 singleshot to leave time for the delete
     QTimer::singleShot(250, this, SLOT(exitLoopSlot()));
-#endif
 }
 //----------------------------------------------------------------------------------
-void tst_QTcpSocket::openMessageBoxInErrorSlot()
+void tst_QTcpSocket::nestedEventLoopInErrorSlot()
 {
-#if defined(Q_OS_VXWORKS) // no gui
-    QSKIP("no default gui available on VxWorks");
-#else
     QTcpSocket *socket = newSocket();
     QPointer<QTcpSocket> p(socket);
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(messageBoxSlot()));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(enterLoopSlot()));
 
     socket->connectToHost("hostnotfoundhostnotfound.troll.no", 9999); // Host not found, fyi
     enterLoop(30);
     QVERIFY(!p);
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -1979,16 +1971,9 @@ public slots:
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_VXWORKS)
-    QSKIP("waitForConnectedInHostLookupSlot2 is not run on Windows and VxWorks");
-#else
-
     Foo foo;
-    QPushButton top("Go", 0);
-    top.show();
-    connect(&top, SIGNAL(clicked()), &foo, SLOT(doIt()));
 
-    QTimer::singleShot(100, &top, SLOT(animateClick()));
+    QTimer::singleShot(100, &foo, SLOT(doIt()));
     QTimer::singleShot(5000, &foo, SLOT(exitLoop()));
 
     enterLoop(30);
@@ -1997,7 +1982,6 @@ void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
 
     QVERIFY(foo.attemptedToConnect);
     QCOMPARE(foo.count, 1);
-#endif
 }
 
 //----------------------------------------------------------------------------------

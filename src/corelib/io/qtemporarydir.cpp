@@ -45,7 +45,6 @@
 
 #include "qdiriterator.h"
 #include "qplatformdefs.h"
-#include "private/qdir_p.h"
 #include <QDebug>
 
 #if defined(QT_BUILD_CORE_LIB)
@@ -67,7 +66,6 @@ public:
     QTemporaryDirPrivate();
     ~QTemporaryDirPrivate();
 
-    QString defaultTemplateName() const;
     void create(const QString &templateName);
 
     QString path;
@@ -85,7 +83,7 @@ QTemporaryDirPrivate::~QTemporaryDirPrivate()
 {
 }
 
-QString QTemporaryDirPrivate::defaultTemplateName() const
+static QString defaultTemplateName()
 {
     QString baseName;
 #if defined(QT_BUILD_CORE_LIB)
@@ -168,14 +166,14 @@ void QTemporaryDirPrivate::create(const QString &templateName)
 QTemporaryDir::QTemporaryDir()
     : d_ptr(new QTemporaryDirPrivate)
 {
-    d_ptr->create(d_ptr->defaultTemplateName());
+    d_ptr->create(defaultTemplateName());
 }
 
 QTemporaryDir::QTemporaryDir(const QString &templateName)
     : d_ptr(new QTemporaryDirPrivate)
 {
     if (templateName.isEmpty())
-        d_ptr->create(d_ptr->defaultTemplateName());
+        d_ptr->create(defaultTemplateName());
     else
         d_ptr->create(templateName);
 }
@@ -189,9 +187,8 @@ QTemporaryDir::QTemporaryDir(const QString &templateName)
 */
 QTemporaryDir::~QTemporaryDir()
 {
-    if (d_ptr->success && d_ptr->autoRemove)
+    if (d_ptr->autoRemove)
         remove();
-    delete d_ptr;
 }
 
 /*!

@@ -124,7 +124,8 @@ static inline void compressMouseMove(MSG *msg)
 */
 
 QWindowsMouseHandler::QWindowsMouseHandler() :
-    m_windowUnderMouse(0)
+    m_windowUnderMouse(0),
+    m_touchDevice(0)
 {
 }
 
@@ -277,10 +278,17 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased)
         m_touchInputIDToTouchPointID.clear();
 
+    if (!m_touchDevice) {
+        m_touchDevice = new QTouchDevice;
+        m_touchDevice->setType(QTouchDevice::TouchScreen);
+        m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
+        QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+    }
+
     // TODO: Device used to be hardcoded to screen in previous code.
     // What is the correct event type? Which parts of translateRawTouchEvent() are required?
     QWindowSystemInterface::handleTouchEvent(window, QEvent::TouchBegin,
-                                             QTouchEvent::TouchScreen,
+                                             m_touchDevice,
                                              touchPoints);
     return true;
 }

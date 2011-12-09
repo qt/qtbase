@@ -44,6 +44,7 @@
 
 #include <qapplication.h>
 #include <QtCore/QSet>
+#include <QtCore/QFile>
 #include <QtCore/QTranslator>
 #include <private/qthread_p.h>
 #include <QtWidgets/QInputDialog>
@@ -88,14 +89,15 @@ class TransformTranslator : public QTranslator
 public:
     TransformTranslator() : QTranslator() {}
     TransformTranslator(QObject *parent) : QTranslator(parent) {}
-    virtual QString translate(const char *context, const char *sourceText, const char *comment = 0) const
+    QString translate(const char *context, const char *sourceText,
+                              const char *disambiguation = 0, int = -1) const
     {
         QByteArray total(context);
         total.append("::");
         total.append(sourceText);
-        if (comment) {
+        if (disambiguation) {
             total.append("::");
-            total.append(comment);
+            total.append(disambiguation);
         }
         m_translations.insert(total);
         QString res;
@@ -201,9 +203,10 @@ void tst_languageChange::retranslatability()
     QFETCH( TranslationSet, expected);
 
     // This will always be queried for when a language changes
-    expected.insert("QApplication::QT_LAYOUT_DIRECTION::Translate this string to the string 'LTR' in left-to-right "
-                       "languages or to 'RTL' in right-to-left languages (such as Hebrew and Arabic) to "
-                       "get proper widget layout.");
+    expected.insert("QCoreApplication::QT_LAYOUT_DIRECTION::Translate this string to the string 'LTR' in left-to-right "
+                    "languages or to 'RTL' in right-to-left languages (such as Hebrew and Arabic) to "
+                    "get proper widget layout.");
+
     TransformTranslator translator;
     QTimer::singleShot(500, &translator, SLOT(install()));
     switch (dialogType) {
@@ -212,25 +215,30 @@ void tst_languageChange::retranslatability()
         break;
 
     case ColorDialog:
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         QSKIP("The native color dialog is used on Mac OS");
 #else
         (void)QColorDialog::getColor();
 #endif
         break;
     case FileDialog: {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         QSKIP("The native file dialog is used on Mac OS");
 #endif
         QFileDialog dlg;
         dlg.setOption(QFileDialog::DontUseNativeDialog);
-        QString tmpParentDir = QDir::tempPath() + "/languagechangetestdir";
-        QString tmpDir = tmpParentDir + "/finaldir";
-        QString fooName = tmpParentDir + "/foo";
+        QString tmpParentDir = QDir::tempPath();
+        if (!tmpParentDir.endsWith(QLatin1Char('/')))
+            tmpParentDir += QLatin1Char('/');
+        tmpParentDir += QStringLiteral("languagechangetestdir");
+        const QString tmpDir = tmpParentDir + QStringLiteral("/finaldir");
+        const QString fooName = tmpParentDir + QStringLiteral("/foo");
         QDir dir;
         QCOMPARE(dir.mkpath(tmpDir), true);
-        QCOMPARE(QFile::copy(QApplication::applicationFilePath(), fooName), true);
-
+        QFile fooFile(fooName);
+        QVERIFY(fooFile.open(QIODevice::WriteOnly|QIODevice::Text));
+        fooFile.write("test");
+        fooFile.close();
         dlg.setDirectory(tmpParentDir);
 #ifdef Q_OS_WINCE
         dlg.setDirectory("\\Windows");

@@ -107,7 +107,6 @@ false:!x11:mac {
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \
                 kernel/qdnd_mac.mm \
-                kernel/qsound_mac.mm  \
                 kernel/qapplication_mac.mm \
 		        kernel/qwidget_mac.mm \
 		        kernel/qcocoapanel_mac.mm \

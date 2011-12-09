@@ -9,7 +9,6 @@ SUBDIRS=\
    qgridlayout \
    qinputcontext \
    qlayout \
-   qsound \
    qstackedlayout \
    qtooltip \
    qwidget \
