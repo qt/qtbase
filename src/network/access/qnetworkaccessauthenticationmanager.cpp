@@ -283,9 +283,12 @@ QNetworkAccessAuthenticationManager::fetchCachedCredentials(const QUrl &url,
 
     QNetworkAuthenticationCache *auth =
         static_cast<QNetworkAuthenticationCache *>(authenticationCache.requestEntryNow(cacheKey));
-    QNetworkAuthenticationCredential cred = *auth->findClosestMatch(url.path());
+    QNetworkAuthenticationCredential *cred = auth->findClosestMatch(url.path());
+    QNetworkAuthenticationCredential ret;
+    if (cred)
+        ret = *cred;
     authenticationCache.releaseEntry(cacheKey);
-    return cred;
+    return ret;
 }
 
 void QNetworkAccessAuthenticationManager::clearCache()
