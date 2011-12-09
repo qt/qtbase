@@ -363,9 +363,9 @@ inline QString QImage::text(const QImageTextKeyLang&kl) const
 {
     if (!d)
         return QString();
-    QString k = QString::fromAscii(kl.key);
+    QString k = QString::fromAscii(kl.key.constData());
     if (!kl.lang.isEmpty())
-        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
+        k += QLatin1Char('/') + QString::fromAscii(kl.lang.constData());
     return text(k);
 }
 
