@@ -47,10 +47,10 @@ public:
 class DerivedGadgetWithEnums : public GadgetWithNoEnums
 {
     Q_GADGET
-    Q_ENUMS( FooEnum )
 
 public:
     enum FooEnum { FooValue };
+    Q_ENUM( FooEnum )
     DerivedGadgetWithEnums() {}
     ~DerivedGadgetWithEnums() {}
 };

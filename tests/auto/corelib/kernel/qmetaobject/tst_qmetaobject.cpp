@@ -46,15 +46,13 @@ struct MyStruct
 };
 
 namespace MyNamespace {
+    // Used in tst_QMetaObject::checkScope
     class MyClass : public QObject
     {
         Q_OBJECT
         Q_PROPERTY(MyEnum myEnum READ myEnum WRITE setMyEnum)
         Q_PROPERTY(MyFlags myFlags READ myFlags WRITE setMyFlags)
 
-        Q_ENUMS(MyEnum)
-        Q_ENUMS(MyAnotherEnum)
-        Q_FLAGS(MyFlags)
     public:
         enum MyEnum {
             MyEnum1,
@@ -85,17 +83,65 @@ namespace MyNamespace {
               m_flags(MyFlag1|MyFlag2)
                 { }
     private:
+        Q_ENUM(MyEnum)
+        Q_ENUM(MyAnotherEnum)
+        Q_FLAG(MyFlags)
+
         MyEnum m_enum;
         MyFlags m_flags;
     };
     Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::MyFlags)
+
+
+    // test the old Q_ENUMS macro
+    class MyClass2 : public QObject
+    {
+        Q_OBJECT
+        Q_PROPERTY(MyEnum myEnum READ myEnum WRITE setMyEnum)
+        Q_PROPERTY(MyFlags myFlags READ myFlags WRITE setMyFlags)
+
+    public:
+        enum MyEnum {
+            MyEnum1,
+            MyEnum2,
+            MyEnum3
+        };
+        enum MyAnotherEnum {
+            MyAnotherEnum1 = 1,
+            MyAnotherEnum2 = 2,
+            MyAnotherEnum3 = -1
+        };
+        enum MyFlag {
+            MyFlag1 = 0x01,
+            MyFlag2 = 0x02,
+            MyFlag3 = 0x04
+        };
+        Q_DECLARE_FLAGS(MyFlags, MyFlag)
+
+        MyEnum myEnum() const { return m_enum; }
+        void setMyEnum(MyEnum val) { m_enum = val; }
+
+        MyFlags myFlags() const { return m_flags; }
+        void setMyFlags(MyFlags val) { m_flags = val; }
+
+        MyClass2(QObject *parent = 0)
+            : QObject(parent),
+              m_enum(MyEnum1),
+              m_flags(MyFlag1|MyFlag2)
+        { }
+    private:
+        Q_ENUMS(MyEnum MyAnotherEnum)
+        Q_FLAGS(MyFlags)
+
+        MyEnum m_enum;
+        MyFlags m_flags;
+    };
 }
 
 
 class tst_QMetaObject : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(EnumType)
     Q_PROPERTY(EnumType value WRITE setValue READ getValue)
     Q_PROPERTY(EnumType value2 WRITE set_value READ get_value)
     Q_PROPERTY(MyStruct value3 WRITE setVal3 READ val3)
@@ -109,6 +155,7 @@ class tst_QMetaObject : public QObject
 
 public:
     enum EnumType { EnumType1 };
+    Q_ENUM(EnumType);
 
     void setValue(EnumType) {}
     EnumType getValue() const { return EnumType1; }
@@ -154,6 +201,7 @@ private slots:
     void normalizedType_data();
     void normalizedType();
     void customPropertyType();
+    void checkScope_data();
     void checkScope();
     void propertyNotify();
     void propertyConstant();
@@ -990,19 +1038,35 @@ void tst_QMetaObject::customPropertyType()
     QCOMPARE(prop.type(), QVariant::List);
 }
 
+void tst_QMetaObject::checkScope_data()
+{
+    QTest::addColumn<QObject *>("object");
+    QTest::addColumn<QByteArray>("name");
+
+    static MyNamespace::MyClass obj1;
+    static MyNamespace::MyClass2 obj2;
+
+    QTest::newRow("MyClass") << static_cast<QObject*>(&obj1) << QByteArray("MyClass");
+    QTest::newRow("MyClass2") << static_cast<QObject*>(&obj2) << QByteArray("MyClass2");
+
+}
+
+
 void tst_QMetaObject::checkScope()
 {
-    MyNamespace::MyClass obj;
+    QFETCH(QObject *, object);
+    QFETCH(QByteArray, name);
+    QObject  &obj = *object;
     bool ok;
 
     const QMetaObject *mo = obj.metaObject();
     QMetaEnum me = mo->enumerator(mo->indexOfEnumerator("MyEnum"));
     QVERIFY(me.isValid());
     QVERIFY(!me.isFlag());
-    QCOMPARE(QLatin1String(me.scope()), QLatin1String("MyNamespace::MyClass"));
-    QCOMPARE(me.keyToValue("MyNamespace::MyClass::MyEnum2", &ok), 1);
+    QCOMPARE(QByteArray(me.scope()), QByteArray("MyNamespace::" + name));
+    QCOMPARE(me.keyToValue("MyNamespace::" + name + "::MyEnum2", &ok), 1);
     QCOMPARE(ok, true);
-    QCOMPARE(me.keyToValue("MyClass::MyEnum2", &ok), -1);
+    QCOMPARE(me.keyToValue(name + "::MyEnum2", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(me.keyToValue("MyNamespace::MyEnum2", &ok), -1);
     QCOMPARE(ok, false);
@@ -1027,10 +1091,10 @@ void tst_QMetaObject::checkScope()
     QMetaEnum mf = mo->enumerator(mo->indexOfEnumerator("MyFlags"));
     QVERIFY(mf.isValid());
     QVERIFY(mf.isFlag());
-    QCOMPARE(QLatin1String(mf.scope()), QLatin1String("MyNamespace::MyClass"));
-    QCOMPARE(mf.keysToValue("MyNamespace::MyClass::MyFlag2", &ok), 2);
+    QCOMPARE(QByteArray(mf.scope()), QByteArray("MyNamespace::" + name));
+    QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
-    QCOMPARE(mf.keysToValue("MyClass::MyFlag2", &ok), -1);
+    QCOMPARE(mf.keysToValue(name + "::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(mf.keysToValue("MyNamespace::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
@@ -1039,9 +1103,9 @@ void tst_QMetaObject::checkScope()
     QCOMPARE(mf.keysToValue("MyFlag", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(QLatin1String(mf.valueToKey(2)), QLatin1String("MyFlag2"));
-    QCOMPARE(mf.keysToValue("MyNamespace::MyClass::MyFlag1|MyNamespace::MyClass::MyFlag2", &ok), 3);
+    QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag1|MyNamespace::" + name + "::MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
-    QCOMPARE(mf.keysToValue("MyClass::MyFlag1|MyClass::MyFlag2", &ok), -1);
+    QCOMPARE(mf.keysToValue(name + "::MyFlag1|" + name + "::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
     QCOMPARE(mf.keysToValue("MyNamespace::MyFlag1|MyNamespace::MyFlag2", &ok), -1);
     QCOMPARE(ok, false);
@@ -1049,9 +1113,9 @@ void tst_QMetaObject::checkScope()
     QCOMPARE(ok, true);
     QCOMPARE(mf.keysToValue("MyFlag2|MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
-    QCOMPARE(mf.keysToValue("MyFlag1|MyNamespace::MyClass::MyFlag2", &ok), 3);
+    QCOMPARE(mf.keysToValue("MyFlag1|MyNamespace::" + name + "::MyFlag2", &ok), 3);
     QCOMPARE(ok, true);
-    QCOMPARE(mf.keysToValue("MyNamespace::MyClass::MyFlag2|MyNamespace::MyClass::MyFlag2", &ok), 2);
+    QCOMPARE(mf.keysToValue("MyNamespace::" + name + "::MyFlag2|MyNamespace::" + name + "::MyFlag2", &ok), 2);
     QCOMPARE(ok, true);
     QCOMPARE(QLatin1String(mf.valueToKeys(3)), QLatin1String("MyFlag1|MyFlag2"));
 }

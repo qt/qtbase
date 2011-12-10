@@ -38,13 +38,14 @@
 namespace Foo {
     class Bar : public QObject {
         Q_OBJECT
-        Q_FLAGS( Flags )
         Q_PROPERTY( Flags flags READ flags WRITE setFlags )
     public:
         explicit Bar( QObject * parent=0 ) : QObject( parent ), mFlags() {}
 
         enum Flag { Read=1, Write=2 };
         Q_DECLARE_FLAGS( Flags, Flag )
+        Q_FLAG(Flags)
+
 
         void setFlags( Flags f ) { mFlags = f; }
         Flags flags() const { return mFlags; }

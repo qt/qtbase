@@ -75,6 +75,9 @@
 #include "non-gadget-parent-class.h"
 #include "grand-parent-gadget-class.h"
 
+Q_DECLARE_METATYPE(const QMetaObject*);
+
+
 QT_USE_NAMESPACE
 
 template <bool b> struct QTBUG_31218 {};
@@ -418,7 +421,7 @@ public:
 
     enum TestEnum { One, Two, Three };
 
-    Q_ENUMS(TestEnum)
+    Q_ENUM(TestEnum)
 };
 
 class PropertyUseClass : public QObject
@@ -437,7 +440,7 @@ class EnumSourceClass : public QObject
 public:
     enum TestEnum { Value = 37 };
 
-    Q_ENUMS(TestEnum)
+    Q_ENUM(TestEnum)
 };
 
 class EnumUserClass : public QObject
@@ -1142,12 +1145,18 @@ void tst_Moc::frameworkSearchPath()
 void tst_Moc::cstyleEnums()
 {
     const QMetaObject &obj = CStyleEnums::staticMetaObject;
-    QCOMPARE(obj.enumeratorCount(), 1);
+    QCOMPARE(obj.enumeratorCount(), 2);
     QMetaEnum metaEnum = obj.enumerator(0);
     QCOMPARE(metaEnum.name(), "Baz");
     QCOMPARE(metaEnum.keyCount(), 2);
     QCOMPARE(metaEnum.key(0), "Foo");
     QCOMPARE(metaEnum.key(1), "Bar");
+
+    QMetaEnum metaEnum2 = obj.enumerator(1);
+    QCOMPARE(metaEnum2.name(), "Baz2");
+    QCOMPARE(metaEnum2.keyCount(), 2);
+    QCOMPARE(metaEnum2.key(0), "Foo2");
+    QCOMPARE(metaEnum2.key(1), "Bar2");
 }
 
 void tst_Moc::templateGtGt()
@@ -1644,7 +1653,6 @@ class VersionTest : public QObject
     Q_OBJECT
     Q_PROPERTY(int prop1 READ foo)
     Q_PROPERTY(int prop2 READ foo REVISION 2)
-    Q_ENUMS(TestEnum);
 
 public:
     int foo() const { return 0; }
@@ -1653,6 +1661,8 @@ public:
     Q_INVOKABLE Q_REVISION(4) void method2() {}
 
     enum TestEnum { One, Two };
+    Q_ENUM(TestEnum);
+
 
 public slots:
     void slot1() {}
@@ -1677,7 +1687,6 @@ class VersionTestNotify : public QObject
     Q_OBJECT
     Q_PROPERTY(int prop1 READ foo NOTIFY fooChanged)
     Q_PROPERTY(int prop2 READ foo REVISION 2)
-    Q_ENUMS(TestEnum);
 
 public:
     int foo() const { return 0; }
@@ -1686,6 +1695,7 @@ public:
     Q_INVOKABLE Q_REVISION(4) void method2() {}
 
     enum TestEnum { One, Two };
+    Q_ENUM(TestEnum);
 
 public slots:
     void slot1() {}
@@ -1915,19 +1925,26 @@ void tst_Moc::privateClass()
 
 void tst_Moc::cxx11Enums_data()
 {
+    QTest::addColumn<const QMetaObject *>("meta");
     QTest::addColumn<QByteArray>("enumName");
     QTest::addColumn<char>("prefix");
 
-    QTest::newRow("EnumClass") << QByteArray("EnumClass") << 'A';
-    QTest::newRow("TypedEnum") << QByteArray("TypedEnum") << 'B';
-    QTest::newRow("TypedEnumClass") << QByteArray("TypedEnumClass") << 'C';
-    QTest::newRow("NormalEnum") << QByteArray("NormalEnum") << 'D';
-}
+    const QMetaObject *meta1 = &CXX11Enums::staticMetaObject;
+    const QMetaObject *meta2 = &CXX11Enums2::staticMetaObject;
 
+    QTest::newRow("EnumClass") << meta1 << QByteArray("EnumClass") << 'A';
+    QTest::newRow("EnumClass 2") << meta2 << QByteArray("EnumClass") << 'A';
+    QTest::newRow("TypedEnum") << meta1 << QByteArray("TypedEnum") << 'B';
+    QTest::newRow("TypedEnum 2") << meta2 << QByteArray("TypedEnum") << 'B';
+    QTest::newRow("TypedEnumClass") << meta1 << QByteArray("TypedEnumClass") << 'C';
+    QTest::newRow("TypedEnumClass 2") << meta2 << QByteArray("TypedEnumClass") << 'C';
+    QTest::newRow("NormalEnum") << meta1 << QByteArray("NormalEnum") << 'D';
+    QTest::newRow("NormalEnum 2") << meta2 << QByteArray("NormalEnum") << 'D';
+}
 
 void tst_Moc::cxx11Enums()
 {
-    const QMetaObject *meta = &CXX11Enums::staticMetaObject;
+    QFETCH(const QMetaObject *,meta);
     QCOMPARE(meta->enumeratorOffset(), 0);
 
     QFETCH(QByteArray, enumName);
@@ -2534,8 +2551,6 @@ void tst_Moc::finalClasses()
 
     QCOMPARE(className, expected);
 }
-
-Q_DECLARE_METATYPE(const QMetaObject*);
 
 void tst_Moc::explicitOverrideControl_data()
 {

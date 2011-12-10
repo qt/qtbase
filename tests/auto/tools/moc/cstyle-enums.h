@@ -39,8 +39,10 @@ class CStyleEnums
 {
     Q_GADGET
 public:
-    Q_ENUMS(Baz)
     typedef enum { Foo, Bar } Baz;
+    typedef enum { Foo2, Bar2 } Baz2;
+    Q_ENUM(Baz)
+    Q_ENUMS(Baz2)
 };
 
 #endif // CSTYLE_ENUMS_H

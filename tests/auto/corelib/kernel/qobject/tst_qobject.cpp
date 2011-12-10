@@ -1502,7 +1502,6 @@ typedef QString CustomString;
 class PropertyObject : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Alpha Priority)
 
     Q_PROPERTY(Alpha alpha READ alpha WRITE setAlpha)
     Q_PROPERTY(Priority priority READ priority WRITE setPriority)
@@ -1564,6 +1563,9 @@ private:
     float m_float;
     qreal m_qreal;
     CustomString m_customString;
+
+    Q_ENUM(Alpha)
+    Q_ENUM(Priority)
 };
 
 Q_DECLARE_METATYPE(PropertyObject::Priority)

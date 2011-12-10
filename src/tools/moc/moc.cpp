@@ -696,9 +696,11 @@ void Moc::parse()
                     parsePluginData(&def);
                     break;
                 case Q_ENUMS_TOKEN:
+                case Q_ENUM_TOKEN:
                     parseEnumOrFlag(&def, false);
                     break;
                 case Q_FLAGS_TOKEN:
+                case Q_FLAG_TOKEN:
                     parseEnumOrFlag(&def, true);
                     break;
                 case Q_DECLARE_FLAGS_TOKEN:

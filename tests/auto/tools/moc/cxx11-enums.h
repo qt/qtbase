@@ -40,11 +40,26 @@ class CXX11Enums
 {
     Q_GADGET
 public:
-    Q_ENUMS(EnumClass TypedEnum TypedEnumClass NormalEnum)
     enum class EnumClass { A0, A1, A2, A3 };
     enum TypedEnum : char { B0, B1 , B2, B3 };
     enum class TypedEnumClass : char { C0, C1, C2, C3 };
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
+    Q_ENUM(EnumClass)
+    Q_ENUM(TypedEnum)
+    Q_ENUM(TypedEnumClass)
+    Q_ENUM(NormalEnum)
+};
+
+// Also test the Q_ENUMS macro
+class CXX11Enums2
+{
+    Q_GADGET
+public:
+    enum class EnumClass { A0, A1, A2, A3 };
+    enum TypedEnum : char { B0, B1 , B2, B3 };
+    enum class TypedEnumClass : char { C0, C1, C2, C3 };
+    enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
+    Q_ENUMS(EnumClass TypedEnum TypedEnumClass NormalEnum)
 };
 
 #else
@@ -57,6 +72,11 @@ public:
     struct TypedEnumClass { enum { C0, C1, C2, C3 }; };
     enum NormalEnum { D2 = 2, D3, D0 =0 , D1 };
     enum TypedEnum { B0, B1 , B2, B3 };
+};
+
+class CXX11Enums2 : public CXX11Enums
+{
+    Q_GADGET
 };
 #endif
 #endif // CXX11_ENUMS_H

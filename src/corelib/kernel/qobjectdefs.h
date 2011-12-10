@@ -84,6 +84,10 @@ class QString;
 #define Q_OVERRIDE(text)
 #define Q_ENUMS(x)
 #define Q_FLAGS(x)
+#define Q_ENUM(ENUM) \
+    friend Q_DECL_CONSTEXPR const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return &staticMetaObject; } \
+    friend Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
+#define Q_FLAG(ENUM) Q_ENUM(ENUM)
 #define Q_SCRIPTABLE
 #define Q_INVOKABLE
 #define Q_SIGNAL
@@ -185,6 +189,8 @@ private: \
 #define Q_REVISION(v) Q_REVISION(v)
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
+#define Q_FLAGS(x) Q_FLAGS(x)
+#define Q_ENUM(x) Q_ENUM(x)
 #define Q_FLAGS(x) Q_FLAGS(x)
  /* qmake ignore Q_OBJECT */
 #define Q_OBJECT Q_OBJECT
