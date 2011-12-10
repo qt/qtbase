@@ -225,6 +225,7 @@ private slots:
     void signal();
     void signalIndex_data();
     void signalIndex();
+    void enumDebugStream();
 
 signals:
     void value6Changed();
@@ -1206,7 +1207,6 @@ void tst_QMetaObject::metaMethod()
     QCOMPARE(str, QString("foo"));
     QCOMPARE(ret, QString("bar"));
 
-
     QtTestObject obj;
     QString t1("1"); QString t2("2"); QString t3("3"); QString t4("4"); QString t5("5");
     QString t6("6"); QString t7("7"); QString t8("8"); QString t9("9"); QString t10("X");
@@ -1410,6 +1410,13 @@ void tst_QMetaObject::signalIndex()
     QMetaMethod mm = SignalTestHelper::signal(metaObject, index);
     QCOMPARE(QMetaObjectPrivate::signalIndex(mm),
              SignalTestHelper::signalIndex(mm));
+}
+
+void tst_QMetaObject::enumDebugStream()
+{
+    QTest::ignoreMessage(QtDebugMsg, "hello MyNamespace::MyClass::MyEnum(MyEnum2) world ");
+    MyNamespace::MyClass::MyEnum e = MyNamespace::MyClass::MyEnum2;
+    qDebug() << "hello" << e << "world";
 }
 
 QTEST_MAIN(tst_QMetaObject)
