@@ -62,13 +62,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-#ifdef QT_WIDGETS_LIB
-extern Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                                   QTouchDevice *device,
-                                                   const QList<QTouchEvent::TouchPoint> &touchPoints,
-                                                   ulong timestamp);
-#endif
-
 namespace QTest
 {
 
@@ -137,17 +130,41 @@ namespace QTest
                 if (targetWindow)
                 {
                     QWindowSystemInterface::handleTouchEvent(targetWindow, device, touchPointList(points.values()));
-                    QTest::qWait(10);
                 }
 #ifdef QT_WIDGETS_LIB
                 else if (targetWidget)
                 {
-                    qt_translateRawTouchEvent(targetWidget, device, points.values(), 0);
+                    QWindowSystemInterface::handleTouchEvent(targetWidget->windowHandle(), device, touchPointList(points.values()));
                 }
 #endif
             }
+            QCoreApplication::processEvents();
             previousPoints = points;
             points.clear();
+        }
+
+        static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
+        {
+            QWindowSystemInterface::TouchPoint p;
+            p.id = pt.id();
+            p.flags = pt.flags();
+            p.normalPosition = pt.normalizedPos();
+            p.area = pt.screenRect();
+            p.pressure = pt.pressure();
+            p.state = pt.state();
+            p.velocity = pt.velocity();
+            p.rawPositions = pt.rawScreenPositions();
+            return p;
+        }
+        static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
+        {
+            QList<struct QWindowSystemInterface::TouchPoint> newList;
+
+            Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
+            {
+                newList.append(touchPoint(p));
+            }
+            return newList;
         }
 
     private:
@@ -197,27 +214,6 @@ namespace QTest
             if(window)
                 return window->mapToGlobal(pt);
             return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
-        }
-        QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-        {
-            QWindowSystemInterface::TouchPoint p;
-            p.id = pt.id();
-            p.flags = pt.flags();
-            p.normalPosition = pt.screenRect().topLeft();
-            p.area = pt.screenRect();
-            p.pressure = pt.pressure();
-            p.state = pt.state();
-            return p;
-        }
-        QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-        {
-            QList<struct QWindowSystemInterface::TouchPoint> newList;
-
-            Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-            {
-                newList.append(touchPoint(p));
-            }
-            return newList;
         }
 
         QMap<int, QTouchEvent::TouchPoint> previousPoints;

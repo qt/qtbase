@@ -823,6 +823,18 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
 }
 
+Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)
+{
+    return qHash(k.device) + k.touchPointId;
+}
+
+Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
+                             const QGuiApplicationPrivate::ActiveTouchPointsKey &b)
+{
+    return a.device == b.device
+            && a.touchPointId == b.touchPointId;
+}
+
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
     QWindow *window = e->window.data();
@@ -840,13 +852,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // update state
         QWeakPointer<QWindow> w;
         QTouchEvent::TouchPoint previousTouchPoint;
+        ActiveTouchPointsKey touchInfoKey(e->device, touchPoint.id());
+        ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
             if (e->device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
-                w = d->windowForTouchPointId.isEmpty()
+                w = d->activeTouchPoints.isEmpty()
                     ? QWeakPointer<QWindow>()
-                    : d->windowForTouchPointId.constBegin().value();
+                    : d->activeTouchPoints.constBegin().value().window;
             }
 
             if (!w) {
@@ -858,7 +872,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 w = window;
             }
 
-            d->windowForTouchPointId[touchPoint.id()] = w;
+            touchInfo.window = w;
             touchPoint.d->startScreenPos = touchPoint.screenPos();
             touchPoint.d->lastScreenPos = touchPoint.screenPos();
             touchPoint.d->startNormalizedPos = touchPoint.normalizedPos();
@@ -866,14 +880,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.pressure() < qreal(0.))
                 touchPoint.d->pressure = qreal(1.);
 
-            d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
+            touchInfo.touchPoint = touchPoint;
             break;
 
         case Qt::TouchPointReleased:
-            w = d->windowForTouchPointId.take(touchPoint.id());
+            w = touchInfo.window;
             if (!w)
                 continue;
-            previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
+
+            previousTouchPoint = touchInfo.touchPoint;
             touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
             touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
             touchPoint.d->startPos = previousTouchPoint.startPos();
@@ -882,14 +897,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
                 touchPoint.d->pressure = qreal(0.);
+
             break;
 
         default:
-            w = d->windowForTouchPointId.value(touchPoint.id());
+            w = touchInfo.window;
             if (!w)
                 continue;
-            Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
-            previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
+
+            previousTouchPoint = touchInfo.touchPoint;
             touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
             touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
             touchPoint.d->startPos = previousTouchPoint.startPos();
@@ -902,7 +918,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // Stationary points might not be delivered down to the receiving item
             // and get their position transformed, keep the old values instead.
             if (touchPoint.state() != Qt::TouchPointStationary)
-                d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
+                touchInfo.touchPoint = touchPoint;
             break;
         }
 
@@ -968,6 +984,16 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+    }
+
+    // Remove released points from the hash table only after the event is
+    // delivered. When the receiver is a widget, QApplication will access
+    // activeTouchPoints during delivery and therefore nothing can be removed
+    // before sending the event.
+    for (int i = 0; i < e->points.count(); ++i) {
+        QTouchEvent::TouchPoint touchPoint = e->points.at(i);
+        if (touchPoint.state() == Qt::TouchPointReleased)
+            d->activeTouchPoints.remove(ActiveTouchPointsKey(e->device, touchPoint.id()));
     }
 }
 

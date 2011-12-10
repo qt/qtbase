@@ -113,6 +113,10 @@ information about a particular change.
 
   * The event type parameter is removed from handleTouchEvent().
 
+- The previously exported function qt_translateRawTouchEvent() has been removed.
+  Use QWindowSystemInterface::handleTouchEvent() instead.
+
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

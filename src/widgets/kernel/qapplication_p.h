@@ -472,14 +472,12 @@ public:
     QPixmap *ignore_cursor;
 #endif
 
-    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
-    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
     void initializeMultitouch_sys();
     void cleanupMultitouch();
     void cleanupMultitouch_sys();
-    int findClosestTouchPointId(const QPointF &screenPos);
+    QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     static void translateRawTouchEvent(QWidget *widget,
@@ -553,11 +551,6 @@ private:
 
     static bool isAlien(QWidget *);
 };
-
-Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                                QTouchDevice *device,
-                                                const QList<QTouchEvent::TouchPoint> &touchPoints,
-                                                ulong timestamp);
 
 #if defined(Q_WS_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);
