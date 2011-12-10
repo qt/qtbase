@@ -39,53 +39,42 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
-#include "qcoreapplication.h"
-#include "qeventdispatcher_qpa_p.h"
-#include "private/qguiapplication_p.h"
+#ifndef QUNIXEVENTDISPATCHER_QPA_H
+#define QUNIXEVENTDISPATCHER_QPA_H
 
-#include <QWindowSystemInterface>
-#include <QtCore/QElapsedTimer>
-#include <QtCore/QAtomicInt>
-#include <QtCore/QSemaphore>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtCore/QDebug>
-
-#include <errno.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/private/qeventdispatcher_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
+class QUnixEventDispatcherQPAPrivate;
 
-
-QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
-    : QEventDispatcherUNIX(parent)
-{ }
-
-QEventDispatcherQPA::~QEventDispatcherQPA()
-{ }
-
-bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
+class Q_PLATFORMSUPPORT_EXPORT QUnixEventDispatcherQPA : public QEventDispatcherUNIX
 {
-    bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(this, flags);
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QUnixEventDispatcherQPA)
 
-    if (QEventDispatcherUNIX::processEvents(flags)) {
-        return true;
-    }
+public:
+    explicit QUnixEventDispatcherQPA(QObject *parent = 0);
+    ~QUnixEventDispatcherQPA();
 
-    return didSendEvents;
-}
+    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool hasPendingEvents();
 
-bool QEventDispatcherQPA::hasPendingEvents()
-{
-    extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued();
-}
-
-void QEventDispatcherQPA::flush()
-{
-    if(qApp)
-        qApp->sendPostedEvents();
-}
+    void flush();
+};
 
 QT_END_NAMESPACE
+
+#endif // QUNIXEVENTDISPATCHER_QPA_H

@@ -39,42 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTDISPATCHER_QPA_H
-#define QEVENTDISPATCHER_QPA_H
+#include "qplatformdefs.h"
+#include "qcoreapplication.h"
+#include "qunixeventdispatcher_qpa_p.h"
+#include "private/qguiapplication_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QWindowSystemInterface>
+#include <QtCore/QElapsedTimer>
+#include <QtCore/QAtomicInt>
+#include <QtCore/QSemaphore>
 
-#include <QtCore/qglobal.h>
-#include <QtCore/private/qeventdispatcher_unix_p.h>
+#include <QtCore/QDebug>
+
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEventDispatcherQPAPrivate;
+QT_USE_NAMESPACE
 
-class Q_PLATFORMSUPPORT_EXPORT QEventDispatcherQPA : public QEventDispatcherUNIX
+
+QUnixEventDispatcherQPA::QUnixEventDispatcherQPA(QObject *parent)
+    : QEventDispatcherUNIX(parent)
+{ }
+
+QUnixEventDispatcherQPA::~QUnixEventDispatcherQPA()
+{ }
+
+bool QUnixEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherQPA)
+    bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(this, flags);
 
-public:
-    explicit QEventDispatcherQPA(QObject *parent = 0);
-    ~QEventDispatcherQPA();
+    if (QEventDispatcherUNIX::processEvents(flags)) {
+        return true;
+    }
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
+    return didSendEvents;
+}
 
-    void flush();
-};
+bool QUnixEventDispatcherQPA::hasPendingEvents()
+{
+    extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
+    return qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued();
+}
+
+void QUnixEventDispatcherQPA::flush()
+{
+    if(qApp)
+        qApp->sendPostedEvents();
+}
 
 QT_END_NAMESPACE
-
-#endif // QEVENTDISPATCHER_QPA_H

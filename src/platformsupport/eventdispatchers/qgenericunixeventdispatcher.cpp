@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qgenericunixeventdispatcher_p.h"
-#include "qeventdispatcher_qpa_p.h"
+#include "qunixeventdispatcher_qpa_p.h"
 #include "qeventdispatcher_glib_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -52,7 +52,7 @@ class QAbstractEventDispatcher *createUnixEventDispatcher()
         return new QPAEventDispatcherGlib();
     else
 #endif
-        return new QEventDispatcherQPA();
+        return new QUnixEventDispatcherQPA();
 }
 
 QT_END_NAMESPACE
