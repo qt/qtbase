@@ -42,8 +42,8 @@
 #ifndef QSTRINGLISTMODEL_H
 #define QSTRINGLISTMODEL_H
 
+#include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qstringlist.h>
-#include <QtWidgets/qabstractitemview.h>
 
 QT_BEGIN_HEADER
 

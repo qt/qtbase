@@ -45,6 +45,8 @@
 
 #include "qstringlistmodel.h"
 
+#include <QtCore/qvector.h>
+
 #ifndef QT_NO_STRINGLISTMODEL
 
 QT_BEGIN_NAMESPACE
