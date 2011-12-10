@@ -48,14 +48,14 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+QT_MODULE(Core)
 
 #ifndef QT_NO_PROXYMODEL
 
 class QAbstractProxyModelPrivate;
 class QItemSelection;
 
-class Q_WIDGETS_EXPORT QAbstractProxyModel : public QAbstractItemModel
+class Q_CORE_EXPORT QAbstractProxyModel : public QAbstractItemModel
 {
     Q_OBJECT
 

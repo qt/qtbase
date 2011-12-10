@@ -43,7 +43,7 @@
 #ifndef QIDENTITYPROXYMODEL_H
 #define QIDENTITYPROXYMODEL_H
 
-#include <QtWidgets/qabstractproxymodel.h>
+#include <QtCore/qabstractproxymodel.h>
 
 #ifndef QT_NO_IDENTITYPROXYMODEL
 
@@ -51,11 +51,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+QT_MODULE(Core)
 
 class QIdentityProxyModelPrivate;
 
-class Q_WIDGETS_EXPORT QIdentityProxyModel : public QAbstractProxyModel
+class Q_CORE_EXPORT QIdentityProxyModel : public QAbstractProxyModel
 {
     Q_OBJECT
 public:

@@ -42,7 +42,7 @@
 #ifndef QSORTFILTERPROXYMODEL_H
 #define QSORTFILTERPROXYMODEL_H
 
-#include <QtWidgets/qabstractproxymodel.h>
+#include <QtCore/qabstractproxymodel.h>
 
 #ifndef QT_NO_SORTFILTERPROXYMODEL
 
@@ -52,13 +52,13 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+QT_MODULE(Core)
 
 class QSortFilterProxyModelPrivate;
 class QSortFilterProxyModelLessThan;
 class QSortFilterProxyModelGreaterThan;
 
-class Q_WIDGETS_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
+class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
 {
     friend class QSortFilterProxyModelLessThan;
     friend class QSortFilterProxyModelGreaterThan;

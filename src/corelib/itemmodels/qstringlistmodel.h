@@ -39,38 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTPROXYMODEL_P_H
-#define QABSTRACTPROXYMODEL_P_H
+#ifndef QSTRINGLISTMODEL_H
+#define QSTRINGLISTMODEL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of QAbstractItemModel*.  This header file may change from version
-// to version without notice, or even be removed.
-//
-// We mean it.
-//
-//
+#include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qstringlist.h>
 
-#include "private/qabstractitemmodel_p.h"
-
-#ifndef QT_NO_PROXYMODEL
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QAbstractProxyModelPrivate : public QAbstractItemModelPrivate
+QT_MODULE(Core)
+
+#ifndef QT_NO_STRINGLISTMODEL
+
+class Q_CORE_EXPORT QStringListModel : public QAbstractListModel
 {
-    Q_DECLARE_PUBLIC(QAbstractProxyModel)
+    Q_OBJECT
 public:
-    QAbstractProxyModelPrivate() : QAbstractItemModelPrivate(), model(0) {}
-    QAbstractItemModel *model;
-    virtual void _q_sourceModelDestroyed();
+    explicit QStringListModel(QObject *parent = 0);
+    QStringListModel(const QStringList &strings, QObject *parent = 0);
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+    QVariant data(const QModelIndex &index, int role) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+
+    QStringList stringList() const;
+    void setStringList(const QStringList &strings);
+
+    Qt::DropActions supportedDropActions() const;
+
+private:
+    Q_DISABLE_COPY(QStringListModel)
+    QStringList lst;
 };
+
+#endif // QT_NO_STRINGLISTMODEL
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PROXYMODEL
+QT_END_HEADER
 
-#endif // QABSTRACTPROXYMODEL_P_H
+#endif // QSTRINGLISTMODEL_H

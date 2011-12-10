@@ -147,7 +147,7 @@
 #ifndef QT_NO_COMPLETER
 
 #include "QtWidgets/qscrollbar.h"
-#include "QtWidgets/qstringlistmodel.h"
+#include "QtCore/qstringlistmodel.h"
 #include "QtWidgets/qdirmodel.h"
 #include "QtWidgets/qfilesystemmodel.h"
 #include "QtWidgets/qheaderview.h"

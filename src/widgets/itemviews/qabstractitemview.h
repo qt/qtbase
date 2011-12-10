@@ -44,7 +44,7 @@
 
 #include <QtWidgets/qabstractscrollarea.h>
 #include <QtCore/qabstractitemmodel.h>
-#include <QtWidgets/qitemselectionmodel.h>
+#include <QtCore/qitemselectionmodel.h>
 #include <QtWidgets/qabstractitemdelegate.h>
 
 QT_BEGIN_HEADER

@@ -1,23 +1,18 @@
 TEMPLATE=subdirs
 SUBDIRS=\
    qabstractitemview \
-   qabstractproxymodel \
    qcolumnview \
    qdatawidgetmapper \
    qdirmodel \
    qfileiconprovider \
    qheaderview \
-   qidentityproxymodel \
    qitemdelegate \
    qitemeditorfactory \
-   qitemselectionmodel \
    qitemview \
    qlistview \
    qlistwidget \
-   qsortfilterproxymodel \
    qstandarditem \
    qstandarditemmodel \
-   qstringlistmodel \
    qtableview \
    qtablewidget \
    qtreeview \

@@ -45,7 +45,7 @@
 #include <QtWidgets/qlistview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-#include <QtWidgets/qitemselectionmodel.h>
+#include <QtCore/qitemselectionmodel.h>
 
 QT_BEGIN_HEADER
 

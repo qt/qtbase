@@ -59,7 +59,7 @@
 #ifndef QT_NO_COMPLETER
 
 #include "QtWidgets/qtreeview.h"
-#include "QtWidgets/qabstractproxymodel.h"
+#include "QtCore/qabstractproxymodel.h"
 #include "qcompleter.h"
 #include "QtWidgets/qitemdelegate.h"
 #include "QtGui/qpainter.h"

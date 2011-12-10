@@ -42,8 +42,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 
-#include <QtWidgets/QSortFilterProxyModel>
-#include <QtWidgets/QStringListModel>
+#include <QtCore/QSortFilterProxyModel>
+#include <QtCore/QStringListModel>
 
 #include "dynamictreemodel.h"
 
