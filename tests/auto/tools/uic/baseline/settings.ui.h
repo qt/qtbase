@@ -51,14 +51,14 @@ public:
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QString::fromUtf8("Dialog"));
+            Dialog->setObjectName(QStringLiteral("Dialog"));
         Dialog->resize(392, 176);
         verticalLayout = new QVBoxLayout(Dialog);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         label = new QLabel(Dialog);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
         QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -70,7 +70,7 @@ public:
         hboxLayout->addWidget(label);
 
         deviceCombo = new QComboBox(Dialog);
-        deviceCombo->setObjectName(QString::fromUtf8("deviceCombo"));
+        deviceCombo->setObjectName(QStringLiteral("deviceCombo"));
         QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
@@ -83,9 +83,9 @@ public:
         verticalLayout->addLayout(hboxLayout);
 
         hboxLayout1 = new QHBoxLayout();
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         label_6 = new QLabel(Dialog);
-        label_6->setObjectName(QString::fromUtf8("label_6"));
+        label_6->setObjectName(QStringLiteral("label_6"));
         sizePolicy.setHeightForWidth(label_6->sizePolicy().hasHeightForWidth());
         label_6->setSizePolicy(sizePolicy);
         label_6->setMinimumSize(QSize(90, 0));
@@ -94,7 +94,7 @@ public:
         hboxLayout1->addWidget(label_6);
 
         audioEffectsCombo = new QComboBox(Dialog);
-        audioEffectsCombo->setObjectName(QString::fromUtf8("audioEffectsCombo"));
+        audioEffectsCombo->setObjectName(QStringLiteral("audioEffectsCombo"));
         sizePolicy1.setHeightForWidth(audioEffectsCombo->sizePolicy().hasHeightForWidth());
         audioEffectsCombo->setSizePolicy(sizePolicy1);
 
@@ -104,9 +104,9 @@ public:
         verticalLayout->addLayout(hboxLayout1);
 
         hboxLayout2 = new QHBoxLayout();
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName(QStringLiteral("hboxLayout2"));
         crossFadeLabel = new QLabel(Dialog);
-        crossFadeLabel->setObjectName(QString::fromUtf8("crossFadeLabel"));
+        crossFadeLabel->setObjectName(QStringLiteral("crossFadeLabel"));
         sizePolicy.setHeightForWidth(crossFadeLabel->sizePolicy().hasHeightForWidth());
         crossFadeLabel->setSizePolicy(sizePolicy);
         crossFadeLabel->setMinimumSize(QSize(90, 0));
@@ -115,9 +115,9 @@ public:
         hboxLayout2->addWidget(crossFadeLabel);
 
         vboxLayout = new QVBoxLayout();
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         crossFadeSlider = new QSlider(Dialog);
-        crossFadeSlider->setObjectName(QString::fromUtf8("crossFadeSlider"));
+        crossFadeSlider->setObjectName(QStringLiteral("crossFadeSlider"));
         sizePolicy1.setHeightForWidth(crossFadeSlider->sizePolicy().hasHeightForWidth());
         crossFadeSlider->setSizePolicy(sizePolicy1);
         crossFadeSlider->setMinimum(-20);
@@ -131,9 +131,9 @@ public:
         vboxLayout->addWidget(crossFadeSlider);
 
         hboxLayout3 = new QHBoxLayout();
-        hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
+        hboxLayout3->setObjectName(QStringLiteral("hboxLayout3"));
         label_3 = new QLabel(Dialog);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName(QStringLiteral("label_3"));
         QFont font;
         font.setPointSize(9);
         label_3->setFont(font);
@@ -145,7 +145,7 @@ public:
         hboxLayout3->addItem(spacerItem);
 
         label_5 = new QLabel(Dialog);
-        label_5->setObjectName(QString::fromUtf8("label_5"));
+        label_5->setObjectName(QStringLiteral("label_5"));
         label_5->setFont(font);
 
         hboxLayout3->addWidget(label_5);
@@ -155,7 +155,7 @@ public:
         hboxLayout3->addItem(spacerItem1);
 
         label_4 = new QLabel(Dialog);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setObjectName(QStringLiteral("label_4"));
         label_4->setFont(font);
 
         hboxLayout3->addWidget(label_4);
@@ -170,7 +170,7 @@ public:
         verticalLayout->addLayout(hboxLayout2);
 
         buttonBox = new QDialogButtonBox(Dialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

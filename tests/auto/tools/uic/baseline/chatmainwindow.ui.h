@@ -51,16 +51,16 @@ public:
     void setupUi(QMainWindow *ChatMainWindow)
     {
         if (ChatMainWindow->objectName().isEmpty())
-            ChatMainWindow->setObjectName(QString::fromUtf8("ChatMainWindow"));
+            ChatMainWindow->setObjectName(QStringLiteral("ChatMainWindow"));
         ChatMainWindow->resize(800, 600);
         actionQuit = new QAction(ChatMainWindow);
-        actionQuit->setObjectName(QString::fromUtf8("actionQuit"));
+        actionQuit->setObjectName(QStringLiteral("actionQuit"));
         actionAboutQt = new QAction(ChatMainWindow);
-        actionAboutQt->setObjectName(QString::fromUtf8("actionAboutQt"));
+        actionAboutQt->setObjectName(QStringLiteral("actionAboutQt"));
         actionChangeNickname = new QAction(ChatMainWindow);
-        actionChangeNickname->setObjectName(QString::fromUtf8("actionChangeNickname"));
+        actionChangeNickname->setObjectName(QStringLiteral("actionChangeNickname"));
         centralwidget = new QWidget(ChatMainWindow);
-        centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
+        centralwidget->setObjectName(QStringLiteral("centralwidget"));
         hboxLayout = new QHBoxLayout(centralwidget);
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -68,7 +68,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         vboxLayout = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -76,9 +76,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         chatHistory = new QTextBrowser(centralwidget);
-        chatHistory->setObjectName(QString::fromUtf8("chatHistory"));
+        chatHistory->setObjectName(QStringLiteral("chatHistory"));
         chatHistory->setAcceptDrops(false);
         chatHistory->setAcceptRichText(true);
 
@@ -89,19 +89,19 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         label = new QLabel(centralwidget);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         hboxLayout1->addWidget(label);
 
         messageLineEdit = new QLineEdit(centralwidget);
-        messageLineEdit->setObjectName(QString::fromUtf8("messageLineEdit"));
+        messageLineEdit->setObjectName(QStringLiteral("messageLineEdit"));
 
         hboxLayout1->addWidget(messageLineEdit);
 
         sendButton = new QPushButton(centralwidget);
-        sendButton->setObjectName(QString::fromUtf8("sendButton"));
+        sendButton->setObjectName(QStringLiteral("sendButton"));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(0));
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -118,15 +118,15 @@ public:
 
         ChatMainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(ChatMainWindow);
-        menubar->setObjectName(QString::fromUtf8("menubar"));
+        menubar->setObjectName(QStringLiteral("menubar"));
         menubar->setGeometry(QRect(0, 0, 800, 31));
         menuQuit = new QMenu(menubar);
-        menuQuit->setObjectName(QString::fromUtf8("menuQuit"));
+        menuQuit->setObjectName(QStringLiteral("menuQuit"));
         menuFile = new QMenu(menubar);
-        menuFile->setObjectName(QString::fromUtf8("menuFile"));
+        menuFile->setObjectName(QStringLiteral("menuFile"));
         ChatMainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(ChatMainWindow);
-        statusbar->setObjectName(QString::fromUtf8("statusbar"));
+        statusbar->setObjectName(QStringLiteral("statusbar"));
         ChatMainWindow->setStatusBar(statusbar);
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(messageLineEdit);

@@ -44,7 +44,7 @@ public:
     void setupUi(QWidget *WorldTimeForm)
     {
         if (WorldTimeForm->objectName().isEmpty())
-            WorldTimeForm->setObjectName(QString::fromUtf8("WorldTimeForm"));
+            WorldTimeForm->setObjectName(QStringLiteral("WorldTimeForm"));
         WorldTimeForm->resize(400, 300);
         hboxLayout = new QHBoxLayout(WorldTimeForm);
 #ifndef Q_OS_MAC
@@ -53,9 +53,9 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         worldTimeClock = new WorldTimeClock(WorldTimeForm);
-        worldTimeClock->setObjectName(QString::fromUtf8("worldTimeClock"));
+        worldTimeClock->setObjectName(QStringLiteral("worldTimeClock"));
 
         hboxLayout->addWidget(worldTimeClock);
 
@@ -64,7 +64,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(1, 1, 1, 1);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         vboxLayout->addItem(spacerItem);
@@ -74,14 +74,14 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(1, 1, 1, 1);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         label = new QLabel(WorldTimeForm);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         hboxLayout1->addWidget(label);
 
         timeEdit = new QTimeEdit(WorldTimeForm);
-        timeEdit->setObjectName(QString::fromUtf8("timeEdit"));
+        timeEdit->setObjectName(QStringLiteral("timeEdit"));
         timeEdit->setReadOnly(true);
 
         hboxLayout1->addWidget(timeEdit);
@@ -94,14 +94,14 @@ public:
         hboxLayout2->setSpacing(6);
 #endif
         hboxLayout2->setContentsMargins(1, 1, 1, 1);
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName(QStringLiteral("hboxLayout2"));
         label_2 = new QLabel(WorldTimeForm);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName(QStringLiteral("label_2"));
 
         hboxLayout2->addWidget(label_2);
 
         spinBox = new QSpinBox(WorldTimeForm);
-        spinBox->setObjectName(QString::fromUtf8("spinBox"));
+        spinBox->setObjectName(QStringLiteral("spinBox"));
         spinBox->setMaximum(12);
         spinBox->setMinimum(-12);
 

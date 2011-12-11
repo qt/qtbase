@@ -109,19 +109,19 @@ public:
     void setupUi(QDialog *FormWindowSettings)
     {
         if (FormWindowSettings->objectName().isEmpty())
-            FormWindowSettings->setObjectName(QString::fromUtf8("FormWindowSettings"));
+            FormWindowSettings->setObjectName(QStringLiteral("FormWindowSettings"));
         FormWindowSettings->resize(433, 465);
         gridLayout = new QGridLayout(FormWindowSettings);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         buttonBox = new QDialogButtonBox(FormWindowSettings);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 
         gridLayout->addWidget(buttonBox, 6, 0, 1, 2);
 
         line = new QFrame(FormWindowSettings);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName(QStringLiteral("line"));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
@@ -132,33 +132,33 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         layoutDefaultGroupBox = new QGroupBox(FormWindowSettings);
-        layoutDefaultGroupBox->setObjectName(QString::fromUtf8("layoutDefaultGroupBox"));
+        layoutDefaultGroupBox->setObjectName(QStringLiteral("layoutDefaultGroupBox"));
         layoutDefaultGroupBox->setCheckable(true);
         gridLayout1 = new QGridLayout(layoutDefaultGroupBox);
 #ifndef Q_OS_MAC
         gridLayout1->setSpacing(6);
 #endif
         gridLayout1->setContentsMargins(8, 8, 8, 8);
-        gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
+        gridLayout1->setObjectName(QStringLiteral("gridLayout1"));
         label_2 = new QLabel(layoutDefaultGroupBox);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName(QStringLiteral("label_2"));
 
         gridLayout1->addWidget(label_2, 1, 0, 1, 1);
 
         label = new QLabel(layoutDefaultGroupBox);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         gridLayout1->addWidget(label, 0, 0, 1, 1);
 
         defaultSpacingSpinBox = new QSpinBox(layoutDefaultGroupBox);
-        defaultSpacingSpinBox->setObjectName(QString::fromUtf8("defaultSpacingSpinBox"));
+        defaultSpacingSpinBox->setObjectName(QStringLiteral("defaultSpacingSpinBox"));
 
         gridLayout1->addWidget(defaultSpacingSpinBox, 1, 1, 1, 1);
 
         defaultMarginSpinBox = new QSpinBox(layoutDefaultGroupBox);
-        defaultMarginSpinBox->setObjectName(QString::fromUtf8("defaultMarginSpinBox"));
+        defaultMarginSpinBox->setObjectName(QStringLiteral("defaultMarginSpinBox"));
 
         gridLayout1->addWidget(defaultMarginSpinBox, 0, 1, 1, 1);
 
@@ -166,31 +166,31 @@ public:
         hboxLayout->addWidget(layoutDefaultGroupBox);
 
         layoutFunctionGroupBox = new QGroupBox(FormWindowSettings);
-        layoutFunctionGroupBox->setObjectName(QString::fromUtf8("layoutFunctionGroupBox"));
+        layoutFunctionGroupBox->setObjectName(QStringLiteral("layoutFunctionGroupBox"));
         layoutFunctionGroupBox->setCheckable(true);
         gridLayout2 = new QGridLayout(layoutFunctionGroupBox);
 #ifndef Q_OS_MAC
         gridLayout2->setSpacing(6);
 #endif
         gridLayout2->setContentsMargins(8, 8, 8, 8);
-        gridLayout2->setObjectName(QString::fromUtf8("gridLayout2"));
+        gridLayout2->setObjectName(QStringLiteral("gridLayout2"));
         spacingFunctionLineEdit = new QLineEdit(layoutFunctionGroupBox);
-        spacingFunctionLineEdit->setObjectName(QString::fromUtf8("spacingFunctionLineEdit"));
+        spacingFunctionLineEdit->setObjectName(QStringLiteral("spacingFunctionLineEdit"));
 
         gridLayout2->addWidget(spacingFunctionLineEdit, 1, 1, 1, 1);
 
         marginFunctionLineEdit = new QLineEdit(layoutFunctionGroupBox);
-        marginFunctionLineEdit->setObjectName(QString::fromUtf8("marginFunctionLineEdit"));
+        marginFunctionLineEdit->setObjectName(QStringLiteral("marginFunctionLineEdit"));
 
         gridLayout2->addWidget(marginFunctionLineEdit, 0, 1, 1, 1);
 
         label_3 = new QLabel(layoutFunctionGroupBox);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName(QStringLiteral("label_3"));
 
         gridLayout2->addWidget(label_3, 0, 0, 1, 1);
 
         label_3_2 = new QLabel(layoutFunctionGroupBox);
-        label_3_2->setObjectName(QString::fromUtf8("label_3_2"));
+        label_3_2->setObjectName(QStringLiteral("label_3_2"));
 
         gridLayout2->addWidget(label_3_2, 1, 0, 1, 1);
 
@@ -201,15 +201,15 @@ public:
         gridLayout->addLayout(hboxLayout, 2, 0, 1, 2);
 
         pixmapFunctionGroupBox_2 = new QGroupBox(FormWindowSettings);
-        pixmapFunctionGroupBox_2->setObjectName(QString::fromUtf8("pixmapFunctionGroupBox_2"));
+        pixmapFunctionGroupBox_2->setObjectName(QStringLiteral("pixmapFunctionGroupBox_2"));
         vboxLayout = new QVBoxLayout(pixmapFunctionGroupBox_2);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
         vboxLayout->setContentsMargins(8, 8, 8, 8);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         authorLineEdit = new QLineEdit(pixmapFunctionGroupBox_2);
-        authorLineEdit->setObjectName(QString::fromUtf8("authorLineEdit"));
+        authorLineEdit->setObjectName(QStringLiteral("authorLineEdit"));
 
         vboxLayout->addWidget(authorLineEdit);
 
@@ -217,15 +217,15 @@ public:
         gridLayout->addWidget(pixmapFunctionGroupBox_2, 0, 0, 1, 2);
 
         includeHintsGroupBox = new QGroupBox(FormWindowSettings);
-        includeHintsGroupBox->setObjectName(QString::fromUtf8("includeHintsGroupBox"));
+        includeHintsGroupBox->setObjectName(QStringLiteral("includeHintsGroupBox"));
         vboxLayout1 = new QVBoxLayout(includeHintsGroupBox);
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
 #endif
         vboxLayout1->setContentsMargins(8, 8, 8, 8);
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
         includeHintsTextEdit = new QTextEdit(includeHintsGroupBox);
-        includeHintsTextEdit->setObjectName(QString::fromUtf8("includeHintsTextEdit"));
+        includeHintsTextEdit->setObjectName(QStringLiteral("includeHintsTextEdit"));
 
         vboxLayout1->addWidget(includeHintsTextEdit);
 
@@ -237,18 +237,18 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         pixmapFunctionGroupBox = new QGroupBox(FormWindowSettings);
-        pixmapFunctionGroupBox->setObjectName(QString::fromUtf8("pixmapFunctionGroupBox"));
+        pixmapFunctionGroupBox->setObjectName(QStringLiteral("pixmapFunctionGroupBox"));
         pixmapFunctionGroupBox->setCheckable(true);
         vboxLayout2 = new QVBoxLayout(pixmapFunctionGroupBox);
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
         vboxLayout2->setContentsMargins(8, 8, 8, 8);
-        vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
+        vboxLayout2->setObjectName(QStringLiteral("vboxLayout2"));
         pixmapFunctionLineEdit = new QLineEdit(pixmapFunctionGroupBox);
-        pixmapFunctionLineEdit->setObjectName(QString::fromUtf8("pixmapFunctionLineEdit"));
+        pixmapFunctionLineEdit->setObjectName(QStringLiteral("pixmapFunctionLineEdit"));
 
         vboxLayout2->addWidget(pixmapFunctionLineEdit);
 
@@ -263,7 +263,7 @@ public:
         gridLayout->addItem(spacerItem, 4, 1, 1, 1);
 
         gridPanel = new qdesigner_internal::GridPanel(FormWindowSettings);
-        gridPanel->setObjectName(QString::fromUtf8("gridPanel"));
+        gridPanel->setObjectName(QStringLiteral("gridPanel"));
 
         gridLayout->addWidget(gridPanel, 1, 0, 1, 2);
 

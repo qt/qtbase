@@ -93,28 +93,28 @@ public:
     void setupUi(QWidget *TabbedBrowser)
     {
         if (TabbedBrowser->objectName().isEmpty())
-            TabbedBrowser->setObjectName(QString::fromUtf8("TabbedBrowser"));
+            TabbedBrowser->setObjectName(QStringLiteral("TabbedBrowser"));
         TabbedBrowser->resize(710, 664);
         vboxLayout = new QVBoxLayout(TabbedBrowser);
         vboxLayout->setSpacing(0);
         vboxLayout->setContentsMargins(0, 0, 0, 0);
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         tab = new QTabWidget(TabbedBrowser);
-        tab->setObjectName(QString::fromUtf8("tab"));
+        tab->setObjectName(QStringLiteral("tab"));
         frontpage = new QWidget();
-        frontpage->setObjectName(QString::fromUtf8("frontpage"));
+        frontpage->setObjectName(QStringLiteral("frontpage"));
         gridLayout = new QGridLayout(frontpage);
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
         gridLayout->setContentsMargins(8, 8, 8, 8);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         tab->addTab(frontpage, QString());
 
         vboxLayout->addWidget(tab);
 
         frameFind = new QFrame(TabbedBrowser);
-        frameFind->setObjectName(QString::fromUtf8("frameFind"));
+        frameFind->setObjectName(QStringLiteral("frameFind"));
         frameFind->setFrameShape(QFrame::StyledPanel);
         frameFind->setFrameShadow(QFrame::Raised);
         hboxLayout = new QHBoxLayout(frameFind);
@@ -122,9 +122,9 @@ public:
         hboxLayout->setSpacing(6);
 #endif
         hboxLayout->setContentsMargins(0, 0, 0, 0);
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         toolClose = new QToolButton(frameFind);
-        toolClose->setObjectName(QString::fromUtf8("toolClose"));
+        toolClose->setObjectName(QStringLiteral("toolClose"));
         const QIcon icon = QIcon(QString::fromUtf8(":/trolltech/assistant/images/close.png"));
         toolClose->setIcon(icon);
         toolClose->setAutoRaise(true);
@@ -132,7 +132,7 @@ public:
         hboxLayout->addWidget(toolClose);
 
         editFind = new QLineEdit(frameFind);
-        editFind->setObjectName(QString::fromUtf8("editFind"));
+        editFind->setObjectName(QStringLiteral("editFind"));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(0), static_cast<QSizePolicy::Policy>(0));
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -143,7 +143,7 @@ public:
         hboxLayout->addWidget(editFind);
 
         toolPrevious = new QToolButton(frameFind);
-        toolPrevious->setObjectName(QString::fromUtf8("toolPrevious"));
+        toolPrevious->setObjectName(QStringLiteral("toolPrevious"));
         const QIcon icon1 = QIcon(QString::fromUtf8(":/trolltech/assistant/images/win/previous.png"));
         toolPrevious->setIcon(icon1);
         toolPrevious->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -152,7 +152,7 @@ public:
         hboxLayout->addWidget(toolPrevious);
 
         toolNext = new QToolButton(frameFind);
-        toolNext->setObjectName(QString::fromUtf8("toolNext"));
+        toolNext->setObjectName(QStringLiteral("toolNext"));
         toolNext->setMinimumSize(QSize(0, 0));
         const QIcon icon2 = QIcon(QString::fromUtf8(":/trolltech/assistant/images/win/next.png"));
         toolNext->setIcon(icon2);
@@ -163,17 +163,17 @@ public:
         hboxLayout->addWidget(toolNext);
 
         checkCase = new QCheckBox(frameFind);
-        checkCase->setObjectName(QString::fromUtf8("checkCase"));
+        checkCase->setObjectName(QStringLiteral("checkCase"));
 
         hboxLayout->addWidget(checkCase);
 
         checkWholeWords = new QCheckBox(frameFind);
-        checkWholeWords->setObjectName(QString::fromUtf8("checkWholeWords"));
+        checkWholeWords->setObjectName(QStringLiteral("checkWholeWords"));
 
         hboxLayout->addWidget(checkWholeWords);
 
         labelWrapped = new QLabel(frameFind);
-        labelWrapped->setObjectName(QString::fromUtf8("labelWrapped"));
+        labelWrapped->setObjectName(QStringLiteral("labelWrapped"));
         labelWrapped->setMinimumSize(QSize(0, 20));
         labelWrapped->setMaximumSize(QSize(105, 20));
         labelWrapped->setTextFormat(Qt::RichText);

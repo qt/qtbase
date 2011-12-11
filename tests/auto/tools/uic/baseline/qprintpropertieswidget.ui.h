@@ -39,30 +39,30 @@ public:
     void setupUi(QWidget *QPrintPropertiesWidget)
     {
         if (QPrintPropertiesWidget->objectName().isEmpty())
-            QPrintPropertiesWidget->setObjectName(QString::fromUtf8("QPrintPropertiesWidget"));
+            QPrintPropertiesWidget->setObjectName(QStringLiteral("QPrintPropertiesWidget"));
         QPrintPropertiesWidget->resize(396, 288);
         verticalLayout_4 = new QVBoxLayout(QPrintPropertiesWidget);
         verticalLayout_4->setContentsMargins(0, 0, 0, 0);
-        verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
+        verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
         tabs = new QTabWidget(QPrintPropertiesWidget);
-        tabs->setObjectName(QString::fromUtf8("tabs"));
+        tabs->setObjectName(QStringLiteral("tabs"));
         tabPage = new QWidget();
-        tabPage->setObjectName(QString::fromUtf8("tabPage"));
+        tabPage->setObjectName(QStringLiteral("tabPage"));
         tabPage->setGeometry(QRect(0, 0, 392, 261));
         horizontalLayout = new QHBoxLayout(tabPage);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         pageSetup = new QPageSetupWidget(tabPage);
-        pageSetup->setObjectName(QString::fromUtf8("pageSetup"));
+        pageSetup->setObjectName(QStringLiteral("pageSetup"));
 
         horizontalLayout->addWidget(pageSetup);
 
         tabs->addTab(tabPage, QString());
         cupsPropertiesPage = new QWidget();
-        cupsPropertiesPage->setObjectName(QString::fromUtf8("cupsPropertiesPage"));
+        cupsPropertiesPage->setObjectName(QStringLiteral("cupsPropertiesPage"));
         horizontalLayout_2 = new QHBoxLayout(cupsPropertiesPage);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         treeView = new QTreeView(cupsPropertiesPage);
-        treeView->setObjectName(QString::fromUtf8("treeView"));
+        treeView->setObjectName(QStringLiteral("treeView"));
         treeView->setAlternatingRowColors(true);
 
         horizontalLayout_2->addWidget(treeView);

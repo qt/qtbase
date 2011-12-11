@@ -73,15 +73,15 @@ public:
     void setupUi(QWidget *QPageSetupWidget)
     {
         if (QPageSetupWidget->objectName().isEmpty())
-            QPageSetupWidget->setObjectName(QString::fromUtf8("QPageSetupWidget"));
+            QPageSetupWidget->setObjectName(QStringLiteral("QPageSetupWidget"));
         QPageSetupWidget->resize(416, 488);
         gridLayout_3 = new QGridLayout(QPageSetupWidget);
         gridLayout_3->setContentsMargins(0, 0, 0, 0);
-        gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
+        gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
         horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
         unit = new QComboBox(QPageSetupWidget);
-        unit->setObjectName(QString::fromUtf8("unit"));
+        unit->setObjectName(QStringLiteral("unit"));
 
         horizontalLayout_4->addWidget(unit);
 
@@ -93,39 +93,39 @@ public:
         gridLayout_3->addLayout(horizontalLayout_4, 0, 0, 1, 2);
 
         groupBox_2 = new QGroupBox(QPageSetupWidget);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         gridLayout_2 = new QGridLayout(groupBox_2);
-        gridLayout_2->setObjectName(QString::fromUtf8("gridLayout_2"));
+        gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
         pageSizeLabel = new QLabel(groupBox_2);
-        pageSizeLabel->setObjectName(QString::fromUtf8("pageSizeLabel"));
+        pageSizeLabel->setObjectName(QStringLiteral("pageSizeLabel"));
 
         gridLayout_2->addWidget(pageSizeLabel, 0, 0, 1, 1);
 
         paperSize = new QComboBox(groupBox_2);
-        paperSize->setObjectName(QString::fromUtf8("paperSize"));
+        paperSize->setObjectName(QStringLiteral("paperSize"));
 
         gridLayout_2->addWidget(paperSize, 0, 1, 1, 1);
 
         widthLabel = new QLabel(groupBox_2);
-        widthLabel->setObjectName(QString::fromUtf8("widthLabel"));
+        widthLabel->setObjectName(QStringLiteral("widthLabel"));
 
         gridLayout_2->addWidget(widthLabel, 1, 0, 1, 1);
 
         horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
         paperWidth = new QDoubleSpinBox(groupBox_2);
-        paperWidth->setObjectName(QString::fromUtf8("paperWidth"));
+        paperWidth->setObjectName(QStringLiteral("paperWidth"));
         paperWidth->setMaximum(9999.99);
 
         horizontalLayout_3->addWidget(paperWidth);
 
         heightLabel = new QLabel(groupBox_2);
-        heightLabel->setObjectName(QString::fromUtf8("heightLabel"));
+        heightLabel->setObjectName(QStringLiteral("heightLabel"));
 
         horizontalLayout_3->addWidget(heightLabel);
 
         paperHeight = new QDoubleSpinBox(groupBox_2);
-        paperHeight->setObjectName(QString::fromUtf8("paperHeight"));
+        paperHeight->setObjectName(QStringLiteral("paperHeight"));
         paperHeight->setMaximum(9999.99);
 
         horizontalLayout_3->addWidget(paperHeight);
@@ -134,12 +134,12 @@ public:
         gridLayout_2->addLayout(horizontalLayout_3, 1, 1, 1, 1);
 
         paperSourceLabel = new QLabel(groupBox_2);
-        paperSourceLabel->setObjectName(QString::fromUtf8("paperSourceLabel"));
+        paperSourceLabel->setObjectName(QStringLiteral("paperSourceLabel"));
 
         gridLayout_2->addWidget(paperSourceLabel, 2, 0, 1, 1);
 
         paperSource = new QComboBox(groupBox_2);
-        paperSource->setObjectName(QString::fromUtf8("paperSource"));
+        paperSource->setObjectName(QStringLiteral("paperSource"));
 
         gridLayout_2->addWidget(paperSource, 2, 1, 1, 1);
 
@@ -151,27 +151,27 @@ public:
         gridLayout_3->addWidget(groupBox_2, 1, 0, 1, 2);
 
         groupBox_3 = new QGroupBox(QPageSetupWidget);
-        groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
+        groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
         verticalLayout = new QVBoxLayout(groupBox_3);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         portrait = new QRadioButton(groupBox_3);
-        portrait->setObjectName(QString::fromUtf8("portrait"));
+        portrait->setObjectName(QStringLiteral("portrait"));
         portrait->setChecked(true);
 
         verticalLayout->addWidget(portrait);
 
         landscape = new QRadioButton(groupBox_3);
-        landscape->setObjectName(QString::fromUtf8("landscape"));
+        landscape->setObjectName(QStringLiteral("landscape"));
 
         verticalLayout->addWidget(landscape);
 
         reverseLandscape = new QRadioButton(groupBox_3);
-        reverseLandscape->setObjectName(QString::fromUtf8("reverseLandscape"));
+        reverseLandscape->setObjectName(QStringLiteral("reverseLandscape"));
 
         verticalLayout->addWidget(reverseLandscape);
 
         reversePortrait = new QRadioButton(groupBox_3);
-        reversePortrait->setObjectName(QString::fromUtf8("reversePortrait"));
+        reversePortrait->setObjectName(QStringLiteral("reversePortrait"));
 
         verticalLayout->addWidget(reversePortrait);
 
@@ -183,31 +183,31 @@ public:
         gridLayout_3->addWidget(groupBox_3, 2, 0, 1, 1);
 
         preview = new QWidget(QPageSetupWidget);
-        preview->setObjectName(QString::fromUtf8("preview"));
+        preview->setObjectName(QStringLiteral("preview"));
 
         gridLayout_3->addWidget(preview, 2, 1, 2, 1);
 
         groupBox = new QGroupBox(QPageSetupWidget);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName(QStringLiteral("groupBox"));
         horizontalLayout_2 = new QHBoxLayout(groupBox);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         gridLayout = new QGridLayout();
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
         topMargin = new QDoubleSpinBox(groupBox);
-        topMargin->setObjectName(QString::fromUtf8("topMargin"));
+        topMargin->setObjectName(QStringLiteral("topMargin"));
         topMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         topMargin->setMaximum(999.99);
 
         gridLayout->addWidget(topMargin, 0, 1, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         horizontalSpacer_7 = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer_7);
 
         leftMargin = new QDoubleSpinBox(groupBox);
-        leftMargin->setObjectName(QString::fromUtf8("leftMargin"));
+        leftMargin->setObjectName(QStringLiteral("leftMargin"));
         leftMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         leftMargin->setMaximum(999.99);
 
@@ -218,7 +218,7 @@ public:
         horizontalLayout->addItem(horizontalSpacer);
 
         rightMargin = new QDoubleSpinBox(groupBox);
-        rightMargin->setObjectName(QString::fromUtf8("rightMargin"));
+        rightMargin->setObjectName(QStringLiteral("rightMargin"));
         rightMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         rightMargin->setMaximum(999.99);
 
@@ -232,7 +232,7 @@ public:
         gridLayout->addLayout(horizontalLayout, 1, 0, 1, 3);
 
         bottomMargin = new QDoubleSpinBox(groupBox);
-        bottomMargin->setObjectName(QString::fromUtf8("bottomMargin"));
+        bottomMargin->setObjectName(QStringLiteral("bottomMargin"));
         bottomMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         bottomMargin->setMaximum(999.99);
 

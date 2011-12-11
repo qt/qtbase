@@ -48,7 +48,7 @@ public:
     void setupUi(QDialog *PreviewDialogBase)
     {
         if (PreviewDialogBase->objectName().isEmpty())
-            PreviewDialogBase->setObjectName(QString::fromUtf8("PreviewDialogBase"));
+            PreviewDialogBase->setObjectName(QStringLiteral("PreviewDialogBase"));
         PreviewDialogBase->resize(733, 479);
         vboxLayout = new QVBoxLayout(PreviewDialogBase);
 #ifndef Q_OS_MAC
@@ -57,7 +57,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
@@ -65,14 +65,14 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
-        hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
+        hboxLayout->setObjectName(QStringLiteral("hboxLayout"));
         label = new QLabel(PreviewDialogBase);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         hboxLayout->addWidget(label);
 
         paperSizeCombo = new QComboBox(PreviewDialogBase);
-        paperSizeCombo->setObjectName(QString::fromUtf8("paperSizeCombo"));
+        paperSizeCombo->setObjectName(QStringLiteral("paperSizeCombo"));
         QSizePolicy sizePolicy(static_cast<QSizePolicy::Policy>(1), static_cast<QSizePolicy::Policy>(0));
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -82,12 +82,12 @@ public:
         hboxLayout->addWidget(paperSizeCombo);
 
         label_2 = new QLabel(PreviewDialogBase);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName(QStringLiteral("label_2"));
 
         hboxLayout->addWidget(label_2);
 
         paperOrientationCombo = new QComboBox(PreviewDialogBase);
-        paperOrientationCombo->setObjectName(QString::fromUtf8("paperOrientationCombo"));
+        paperOrientationCombo->setObjectName(QStringLiteral("paperOrientationCombo"));
         sizePolicy.setHeightForWidth(paperOrientationCombo->sizePolicy().hasHeightForWidth());
         paperOrientationCombo->setSizePolicy(sizePolicy);
 
@@ -105,9 +105,9 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
         hboxLayout1->setContentsMargins(0, 0, 0, 0);
-        hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
+        hboxLayout1->setObjectName(QStringLiteral("hboxLayout1"));
         pageList = new QTreeWidget(PreviewDialogBase);
-        pageList->setObjectName(QString::fromUtf8("pageList"));
+        pageList->setObjectName(QStringLiteral("pageList"));
         pageList->setIndentation(0);
         pageList->setRootIsDecorated(false);
         pageList->setUniformRowHeights(true);
@@ -117,7 +117,7 @@ public:
         hboxLayout1->addWidget(pageList);
 
         previewArea = new QScrollArea(PreviewDialogBase);
-        previewArea->setObjectName(QString::fromUtf8("previewArea"));
+        previewArea->setObjectName(QStringLiteral("previewArea"));
         QSizePolicy sizePolicy1(static_cast<QSizePolicy::Policy>(5), static_cast<QSizePolicy::Policy>(5));
         sizePolicy1.setHorizontalStretch(1);
         sizePolicy1.setVerticalStretch(0);
@@ -134,9 +134,9 @@ public:
         hboxLayout2->setSpacing(6);
 #endif
         hboxLayout2->setContentsMargins(0, 0, 0, 0);
-        hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
+        hboxLayout2->setObjectName(QStringLiteral("hboxLayout2"));
         progressBar = new QProgressBar(PreviewDialogBase);
-        progressBar->setObjectName(QString::fromUtf8("progressBar"));
+        progressBar->setObjectName(QStringLiteral("progressBar"));
         progressBar->setEnabled(false);
         QSizePolicy sizePolicy2(static_cast<QSizePolicy::Policy>(7), static_cast<QSizePolicy::Policy>(0));
         sizePolicy2.setHorizontalStretch(1);
@@ -150,7 +150,7 @@ public:
         hboxLayout2->addWidget(progressBar);
 
         buttonBox = new QDialogButtonBox(PreviewDialogBase);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok);
 

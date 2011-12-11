@@ -42,31 +42,31 @@ public:
     void setupUi(QDialog *AddLinkDialog)
     {
         if (AddLinkDialog->objectName().isEmpty())
-            AddLinkDialog->setObjectName(QString::fromUtf8("AddLinkDialog"));
+            AddLinkDialog->setObjectName(QStringLiteral("AddLinkDialog"));
         AddLinkDialog->setSizeGripEnabled(false);
         AddLinkDialog->setModal(true);
         verticalLayout = new QVBoxLayout(AddLinkDialog);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         formLayout = new QFormLayout();
-        formLayout->setObjectName(QString::fromUtf8("formLayout"));
+        formLayout->setObjectName(QStringLiteral("formLayout"));
         label = new QLabel(AddLinkDialog);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         formLayout->setWidget(0, QFormLayout::LabelRole, label);
 
         titleInput = new QLineEdit(AddLinkDialog);
-        titleInput->setObjectName(QString::fromUtf8("titleInput"));
+        titleInput->setObjectName(QStringLiteral("titleInput"));
         titleInput->setMinimumSize(QSize(337, 0));
 
         formLayout->setWidget(0, QFormLayout::FieldRole, titleInput);
 
         label_2 = new QLabel(AddLinkDialog);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        label_2->setObjectName(QStringLiteral("label_2"));
 
         formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
 
         urlInput = new QLineEdit(AddLinkDialog);
-        urlInput->setObjectName(QString::fromUtf8("urlInput"));
+        urlInput->setObjectName(QStringLiteral("urlInput"));
 
         formLayout->setWidget(1, QFormLayout::FieldRole, urlInput);
 
@@ -78,14 +78,14 @@ public:
         verticalLayout->addItem(verticalSpacer);
 
         line = new QFrame(AddLinkDialog);
-        line->setObjectName(QString::fromUtf8("line"));
+        line->setObjectName(QStringLiteral("line"));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
 
         verticalLayout->addWidget(line);
 
         buttonBox = new QDialogButtonBox(AddLinkDialog);
-        buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
+        buttonBox->setObjectName(QStringLiteral("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 

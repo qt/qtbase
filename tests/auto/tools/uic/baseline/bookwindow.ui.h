@@ -52,10 +52,10 @@ public:
     void setupUi(QMainWindow *BookWindow)
     {
         if (BookWindow->objectName().isEmpty())
-            BookWindow->setObjectName(QString::fromUtf8("BookWindow"));
+            BookWindow->setObjectName(QStringLiteral("BookWindow"));
         BookWindow->resize(601, 420);
         centralWidget = new QWidget(BookWindow);
-        centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
+        centralWidget->setObjectName(QStringLiteral("centralWidget"));
         vboxLayout = new QVBoxLayout(centralWidget);
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
@@ -63,9 +63,9 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
+        vboxLayout->setObjectName(QStringLiteral("vboxLayout"));
         groupBox = new QGroupBox(centralWidget);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        groupBox->setObjectName(QStringLiteral("groupBox"));
         vboxLayout1 = new QVBoxLayout(groupBox);
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
@@ -73,57 +73,57 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
-        vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
+        vboxLayout1->setObjectName(QStringLiteral("vboxLayout1"));
         bookTable = new QTableView(groupBox);
-        bookTable->setObjectName(QString::fromUtf8("bookTable"));
+        bookTable->setObjectName(QStringLiteral("bookTable"));
         bookTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
         vboxLayout1->addWidget(bookTable);
 
         groupBox_2 = new QGroupBox(groupBox);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
+        groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         formLayout = new QFormLayout(groupBox_2);
-        formLayout->setObjectName(QString::fromUtf8("formLayout"));
+        formLayout->setObjectName(QStringLiteral("formLayout"));
         label_5 = new QLabel(groupBox_2);
-        label_5->setObjectName(QString::fromUtf8("label_5"));
+        label_5->setObjectName(QStringLiteral("label_5"));
 
         formLayout->setWidget(0, QFormLayout::LabelRole, label_5);
 
         titleEdit = new QLineEdit(groupBox_2);
-        titleEdit->setObjectName(QString::fromUtf8("titleEdit"));
+        titleEdit->setObjectName(QStringLiteral("titleEdit"));
         titleEdit->setEnabled(true);
 
         formLayout->setWidget(0, QFormLayout::FieldRole, titleEdit);
 
         label_2_2_2_2 = new QLabel(groupBox_2);
-        label_2_2_2_2->setObjectName(QString::fromUtf8("label_2_2_2_2"));
+        label_2_2_2_2->setObjectName(QStringLiteral("label_2_2_2_2"));
 
         formLayout->setWidget(1, QFormLayout::LabelRole, label_2_2_2_2);
 
         authorEdit = new QComboBox(groupBox_2);
-        authorEdit->setObjectName(QString::fromUtf8("authorEdit"));
+        authorEdit->setObjectName(QStringLiteral("authorEdit"));
         authorEdit->setEnabled(true);
 
         formLayout->setWidget(1, QFormLayout::FieldRole, authorEdit);
 
         label_3 = new QLabel(groupBox_2);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
+        label_3->setObjectName(QStringLiteral("label_3"));
 
         formLayout->setWidget(2, QFormLayout::LabelRole, label_3);
 
         genreEdit = new QComboBox(groupBox_2);
-        genreEdit->setObjectName(QString::fromUtf8("genreEdit"));
+        genreEdit->setObjectName(QStringLiteral("genreEdit"));
         genreEdit->setEnabled(true);
 
         formLayout->setWidget(2, QFormLayout::FieldRole, genreEdit);
 
         label_4 = new QLabel(groupBox_2);
-        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setObjectName(QStringLiteral("label_4"));
 
         formLayout->setWidget(3, QFormLayout::LabelRole, label_4);
 
         yearEdit = new QSpinBox(groupBox_2);
-        yearEdit->setObjectName(QString::fromUtf8("yearEdit"));
+        yearEdit->setObjectName(QStringLiteral("yearEdit"));
         yearEdit->setEnabled(true);
         yearEdit->setMaximum(2100);
         yearEdit->setMinimum(-1000);
@@ -131,12 +131,12 @@ public:
         formLayout->setWidget(3, QFormLayout::FieldRole, yearEdit);
 
         label = new QLabel(groupBox_2);
-        label->setObjectName(QString::fromUtf8("label"));
+        label->setObjectName(QStringLiteral("label"));
 
         formLayout->setWidget(4, QFormLayout::LabelRole, label);
 
         ratingEdit = new QSpinBox(groupBox_2);
-        ratingEdit->setObjectName(QString::fromUtf8("ratingEdit"));
+        ratingEdit->setObjectName(QStringLiteral("ratingEdit"));
         ratingEdit->setMaximum(5);
 
         formLayout->setWidget(4, QFormLayout::FieldRole, ratingEdit);
