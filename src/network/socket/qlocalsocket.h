@@ -131,9 +131,9 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(QAbstractSocket::SocketState))
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
 #elif defined(Q_OS_WIN)
-    Q_PRIVATE_SLOT(d_func(), void _q_notified())
     Q_PRIVATE_SLOT(d_func(), void _q_canWrite())
     Q_PRIVATE_SLOT(d_func(), void _q_pipeClosed())
+    Q_PRIVATE_SLOT(d_func(), void _q_winError(ulong, const QString &))
 #else
     Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(QAbstractSocket::SocketState))
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))

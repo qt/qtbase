@@ -75,6 +75,8 @@ win32 {
 
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
+        HEADERS += io/qwindowspipereader_p.h
+        SOURCES += io/qwindowspipereader.cpp
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
