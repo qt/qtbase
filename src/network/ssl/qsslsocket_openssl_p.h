@@ -105,8 +105,6 @@ public:
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;
-    X509_STORE *certificateStore;
-    X509_STORE_CTX *certificateStoreCtx;
     QList<QPair<int, int> > errorList;
 
     // Platform specific functions
