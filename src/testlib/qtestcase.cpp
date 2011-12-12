@@ -975,7 +975,6 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
-    static int keyVerbose = -1;
 #if defined(Q_OS_UNIX)
     static bool noCrashHandler = false;
 #endif
@@ -1006,14 +1005,6 @@ static void invokeMethod(QObject *obj, const char *methodName)
         QMetaMethod method = metaObject->method(funcIndex);
         method.invoke(obj, Qt::DirectConnection);
     }
-}
-
-bool Q_TESTLIB_EXPORT defaultKeyVerbose()
-{
-    if (keyVerbose == -1) {
-        keyVerbose = qgetenv("QTEST_KEYEVENT_VERBOSE").isEmpty() ? 0 : 1;
-    }
-    return keyVerbose == 1;
 }
 
 int defaultEventDelay()
@@ -1197,7 +1188,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -eventdelay ms      : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
          " -keydelay ms        : Set default delay for keyboard simulation to ms milliseconds\n"
          " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
-         " -keyevent-verbose   : Turn on verbose messages for keyboard simulation\n"
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
 #if defined(Q_OS_UNIX)
@@ -1331,8 +1321,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
 #endif
-        } else if (strcmp(argv[i], "-keyevent-verbose") == 0) {
-            QTest::keyVerbose = 1;
 #ifdef QTESTLIB_USE_VALGRIND
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (QBenchmarkValgrindUtils::haveValgrind())
