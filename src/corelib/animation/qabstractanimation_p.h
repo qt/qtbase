@@ -206,7 +206,7 @@ private:
     QAnimationDriver *driver;
     QDefaultAnimationDriver defaultDriver;
 
-    QBasicTimer animationTimer;
+    QBasicTimer pauseTimer;
     // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
 
@@ -225,9 +225,6 @@ private:
     // when slowMode is enabled. Setting it to 0 or higher than DEFAULT_TIMER_INTERVAL (16)
     // stops all animations.
     qreal slowdownFactor;
-
-    // bool to indicate that only pause animations are active
-    bool isPauseTimerActive;
 
     QList<QAbstractAnimation*> animations, animationsToStart;
 

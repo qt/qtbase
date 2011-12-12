@@ -169,7 +169,7 @@ QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), consistentTiming(false), slowMode(false),
     startAnimationPending(false), stopTimerPending(false),
-    slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0), profilerCallback(0)
+    slowdownFactor(5.0f), runningLeafAnimations(0), profilerCallback(0)
 {
     time.invalidate();
     driver = &defaultDriver;
@@ -201,7 +201,7 @@ QUnifiedTimer *QUnifiedTimer::instance()
 void QUnifiedTimer::ensureTimerUpdate()
 {
     QUnifiedTimer *inst = QUnifiedTimer::instance(false);
-    if (inst && inst->isPauseTimerActive)
+    if (inst && inst->pauseTimer.isActive())
         inst->updateAnimationsTime(-1);
 }
 
@@ -214,7 +214,7 @@ void QUnifiedTimer::updateAnimationsTime(qint64 timeStep)
     qint64 totalElapsed = timeStep >= 0 ? timeStep : time.elapsed();
 
     // ignore consistentTiming in case the pause timer is active
-    int delta = (consistentTiming && !isPauseTimerActive) ?
+    int delta = (consistentTiming && !pauseTimer.isActive()) ?
                         timingInterval : totalElapsed - lastTick;
     if (slowMode) {
         if (slowdownFactor > 0)
@@ -265,11 +265,11 @@ void QUnifiedTimer::restartAnimationTimer()
             qDebug() << closestPauseAnimationTimeToFinish();
         }
         driver->stop();
-        animationTimer.start(closestTimeToFinish, this);
-        isPauseTimerActive = true;
-    } else if (!driver->isRunning() || isPauseTimerActive) {
+        pauseTimer.start(closestTimeToFinish, this);
+    } else if (!driver->isRunning()) {
+        if (pauseTimer.isActive())
+            pauseTimer.stop();
         driver->start();
-        isPauseTimerActive = false;
     } else if (runningLeafAnimations == 0)
         driver->stop();
 }
@@ -278,7 +278,7 @@ void QUnifiedTimer::setTimingInterval(int interval)
 {
     timingInterval = interval;
 
-    if (driver->isRunning() && !isPauseTimerActive) {
+    if (driver->isRunning() && !pauseTimer.isActive()) {
         //we changed the timing interval
         driver->stop();
         driver->start();
@@ -304,8 +304,7 @@ void QUnifiedTimer::stopTimer()
 {
     stopTimerPending = false;
     if (animations.isEmpty()) {
-        animationTimer.stop();
-        isPauseTimerActive = false;
+        pauseTimer.stop();
         // invalidate the start reference time
         time.invalidate();
     }
@@ -322,7 +321,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
             startAnimations();
     }
 
-    if (event->timerId() == animationTimer.timerId()) {
+    if (event->timerId() == pauseTimer.timerId()) {
         // update current time on all top level animations
         updateAnimationsTime(-1);
         restartAnimationTimer();
