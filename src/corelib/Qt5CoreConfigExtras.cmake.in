@@ -2,9 +2,9 @@
 get_filename_component(_qt5_corelib_install_prefix ${CMAKE_CURRENT_LIST_DIR}/$${CMAKE_RELATIVE_INSTALL_DIR} ABSOLUTE)
 
 # Required by default:
-set(QT_QMAKE_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/qmake\")
-set(QT_MOC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/moc\")
-set(QT_RCC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/rcc\")
+set(QT_QMAKE_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/qmake$$CMAKE_BIN_SUFFIX\")
+set(QT_MOC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/moc$$CMAKE_BIN_SUFFIX\")
+set(QT_RCC_EXECUTABLE \"${_qt5_corelib_install_prefix}/$$CMAKE_BIN_DIR/rcc$$CMAKE_BIN_SUFFIX\")
 
 set(Qt5Core_PLUGIN_TYPES codecs)
 
