@@ -4,6 +4,7 @@ QT              =
 CONFIG          -= app_bundle
 CONFIG          -= qt
 CONFIG          += console
+CONFIG          += warn_off
 
 DESTDIR         = ../../../bin
 INCLUDEPATH     += .
