@@ -160,6 +160,8 @@ void QIBusPlatformInputContext::cursorRectChanged()
         return;
 
     QWindow *inputWindow = qApp->inputPanel()->inputWindow();
+    if (!inputWindow)
+        return;
     r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
     if (debug)
         qDebug() << "microFocus" << r;
