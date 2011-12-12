@@ -269,8 +269,7 @@ void QUnifiedTimer::restartAnimationTimer()
         if (pauseTimer.isActive())
             pauseTimer.stop();
         driver->start();
-    } else if (runningLeafAnimations == 0)
-        driver->stop();
+    }
 }
 
 void QUnifiedTimer::setTimingInterval(int interval)
@@ -303,6 +302,7 @@ void QUnifiedTimer::stopTimer()
 {
     stopTimerPending = false;
     if (animations.isEmpty()) {
+        driver->stop();
         pauseTimer.stop();
         // invalidate the start reference time
         time.invalidate();
