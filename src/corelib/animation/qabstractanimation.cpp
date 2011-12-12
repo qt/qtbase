@@ -230,14 +230,13 @@ void QUnifiedTimer::updateAnimationsTime(qint64 timeStep)
     //when the CPU load is high
     if (delta) {
         insideTick = true;
+        if (profilerCallback)
+            profilerCallback(delta);
         for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
-
-            if (profilerCallback)
-                profilerCallback(delta);
         }
         insideTick = false;
         currentAnimationIdx = 0;
