@@ -93,6 +93,7 @@ void QAbstractTestLogger::filterUnprintable(char *str) const
 void QAbstractTestLogger::outputString(const char *msg)
 {
     QTEST_ASSERT(stream);
+    QTEST_ASSERT(msg);
 
     char *filtered = new char[strlen(msg) + 1];
     strcpy(filtered, msg);
