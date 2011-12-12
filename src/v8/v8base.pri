@@ -1,6 +1,11 @@
 V8DIR = $$(V8DIR)
 isEmpty(V8DIR) {
     V8DIR = $$PWD/../3rdparty/v8
+    !exists($$V8DIR/src):error("$$V8DIR/src does not exist! $$escape_expand(\\n)\
+        If you are building from git, please ensure you have the v8 submodule available, e.g. $$escape_expand(\\n\\n)\
+        git submodule update --init src/3rdparty/v8 $$escape_expand(\\n\\n)\
+        Alternatively, Qt may be configured with -no-v8 to disable v8.\
+    ")
 } else {
     message(using external V8 from $$V8DIR)
 }
