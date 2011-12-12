@@ -1759,18 +1759,19 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     Returns true if the data and action can be handled by the model; otherwise
     returns false.
 
-    Although the specified \a row, \a column and \a parent indicate the
-    location of an item in the model where the operation ended, it is the
-    responsibility of the view to provide a suitable location for where the
-    data should be inserted.
+    The specified \a row, \a column and \a parent indicate the location of an
+    item in the model where the operation ended. It is the responsibility of
+    the model to complete the action at the correct location.
 
     For instance, a drop action on an item in a QTreeView can result in new
     items either being inserted as children of the item specified by \a row,
     \a column, and \a parent, or as siblings of the item.
 
-    When row and column are -1 it means that it is up to the model to decide
-    where to place the data. This can occur in a tree when data is dropped on
-    a parent. Models will usually append the data to the parent in this case.
+    When \a row and \a column are -1 it means that the dropped data should be
+    considered as dropped directly on \a parent. Usually this will mean
+    appending the data as child items of \a parent. If \a row and column are
+    greater than or equal zero, it means that the drop occurred just before the
+    specified \a row and \a column in the specified \a parent.
 
     \sa supportedDropActions(), {Using drag and drop with item views}
 */
