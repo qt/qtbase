@@ -54,6 +54,7 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QTimer>
+#include <QTemporaryDir>
 
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
@@ -176,6 +177,9 @@ private slots:
 
     void preserveTexts_data();
     void preserveTexts();
+
+private:
+    QTemporaryDir m_temporaryDir;
 };
 
 static const QLatin1String prefix(SRCDIR "/images/");
@@ -203,8 +207,10 @@ void tst_QImageReader::getSetCheck()
     delete var1;
 }
 
-tst_QImageReader::tst_QImageReader()
+tst_QImageReader::tst_QImageReader() :
+    m_temporaryDir(QStringLiteral("tst_qimagereaderXXXXXX"))
 {
+    m_temporaryDir.setAutoRemove(true);
 }
 
 tst_QImageReader::~tst_QImageReader()
@@ -214,6 +220,7 @@ tst_QImageReader::~tst_QImageReader()
 
 void tst_QImageReader::init()
 {
+   QVERIFY(m_temporaryDir.isValid());
 }
 
 void tst_QImageReader::cleanup()
@@ -1046,6 +1053,17 @@ void tst_QImageReader::readFromDevice_data()
 #endif
 }
 
+static QByteArray msgReadFromDeviceFail(const QString &sourceFileName,
+                                        const QByteArray &detectedFormat)
+{
+    QByteArray result = "Failure for '";
+    result += sourceFileName.toLocal8Bit();
+    result += "', detected as: '";
+    result += detectedFormat;
+    result += '\'';
+    return result;
+}
+
 void tst_QImageReader::readFromDevice()
 {
     QFETCH(QString, fileName);
@@ -1053,9 +1071,9 @@ void tst_QImageReader::readFromDevice()
 
     SKIP_IF_UNSUPPORTED(format);
 
-    QImage expectedImage(prefix + fileName, format);
-
-    QFile file(prefix + fileName);
+    const QString imageFileName = prefix + fileName;
+    QImage expectedImage(imageFileName, format);
+    QFile file(imageFileName);
     QVERIFY(file.open(QFile::ReadOnly));
     QByteArray imageData = file.readAll();
     QVERIFY(!imageData.isEmpty());
@@ -1068,6 +1086,7 @@ void tst_QImageReader::readFromDevice()
         QVERIFY(reader.canRead());
         QImage imageReaderImage = reader.read();
 
+        QVERIFY2(!imageReaderImage.isNull(), msgReadFromDeviceFail(imageFileName, reader.format()).constData());
         QCOMPARE(imageReaderImage, expectedImage);
 
         buffer.seek(0);
@@ -1849,6 +1868,19 @@ void tst_QImageReader::testIgnoresFormatAndExtension_data()
     QTest::newRow("rect.svgz") << "rect" << "svgz" << "svgz";
 }
 
+static QByteArray msgIgnoreFormatAndExtensionFail(const QString &sourceFileName,
+                                                  const QString &targetFileName,
+                                                  const QString &detectedFormat)
+{
+    QByteArray result = "Failure for '";
+    result += sourceFileName.toLocal8Bit();
+    result += "' as '";
+    result += targetFileName;
+    result += "', detected as: '";
+    result += detectedFormat.toLocal8Bit();
+    result += '\'';
+    return result;
+}
 
 void tst_QImageReader::testIgnoresFormatAndExtension()
 {
@@ -1859,21 +1891,26 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
     SKIP_IF_UNSUPPORTED(expected.toLatin1());
 
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
-    QString fileNameBase = prefix + name + ".";
+    QString fileNameBase = prefix + name + QLatin1Char('.');
+    QString tempPath = m_temporaryDir.path();
+    if (!tempPath.endsWith(QLatin1Char('/')))
+        tempPath += QLatin1Char('/');
 
     foreach (const QByteArray &f, formats) {
         if (f == extension)
             continue;
-        QFile tmp(QDir::tempPath() + "/" + name + "_" + expected + "." + f);
 
-        QVERIFY(QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath()));
+        QFile tmp(tempPath + name + QLatin1Char('_') + expected + QLatin1Char('.') + f);
+        const QString sourceFileName = fileNameBase + extension;
+        const QString tempFileName = QFileInfo(tmp).absoluteFilePath();
+        QVERIFY(QFile::copy(sourceFileName, tempFileName));
 
         QString format;
         QImage image;
         {
             // image reader needs to be scoped for the remove() to work..
             QImageReader r;
-            r.setFileName(QFileInfo(tmp).absoluteFilePath());
+            r.setFileName(tempFileName);
             r.setDecideFormatFromContent(true);
             format = r.format();
             r.read(&image);
@@ -1881,7 +1918,7 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
 
         tmp.remove();
 
-        QVERIFY(!image.isNull());
+        QVERIFY2(!image.isNull(), msgIgnoreFormatAndExtensionFail(sourceFileName, tempFileName, format).constData());
         QCOMPARE(format, expected);
     }
 }
