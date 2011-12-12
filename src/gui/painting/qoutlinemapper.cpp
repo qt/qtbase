@@ -42,6 +42,7 @@
 #include "qoutlinemapper_p.h"
 #include <private/qpainterpath_p.h>
 #include "qmath.h"
+#include <private/qbezier_p.h>
 
 #include <stdlib.h>
 
@@ -72,6 +73,19 @@ static const QRectF boundingRect(const QPointF *points, int pointCount)
             maxy = e->y();
     }
     return QRectF(QPointF(minx, miny), QPointF(maxx, maxy));
+}
+
+void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPointF &ep) {
+#ifdef QT_DEBUG_CONVERT
+    printf("QOutlineMapper::curveTo() (%f, %f)\n", ep.x(), ep.y());
+#endif
+
+    QBezier bezier = QBezier::fromPoints(m_elements.last(), cp1, cp2, ep);
+    bezier.addToPolygon(m_elements, m_curve_threshold);
+    m_element_types.reserve(m_elements.size());
+    for (int i = m_elements.size() - m_element_types.size(); i; --i)
+        m_element_types << QPainterPath::LineToElement;
+    Q_ASSERT(m_elements.size() == m_element_types.size());
 }
 
 
@@ -169,51 +183,47 @@ void QOutlineMapper::endOutline()
 {
     closeSubpath();
 
-    int element_count = m_elements.size();
-
-    if (element_count == 0) {
+    if (m_elements.isEmpty()) {
         memset(&m_outline, 0, sizeof(m_outline));
         return;
     }
 
-    QPointF *elements;
+    QPointF *elements = m_elements.data();
 
     // Transform the outline
     if (m_txop == QTransform::TxNone) {
-        elements = m_elements.data();
-    } else {
-        if (m_txop == QTransform::TxTranslate) {
-            for (int i=0; i<m_elements.size(); ++i) {
-                const QPointF &e = m_elements.at(i);
-                m_elements_dev << QPointF(e.x() + m_dx, e.y() + m_dy);
-            }
-        } else if (m_txop == QTransform::TxScale) {
-            for (int i=0; i<m_elements.size(); ++i) {
-                const QPointF &e = m_elements.at(i);
-                m_elements_dev << QPointF(m_m11 * e.x() + m_dx, m_m22 * e.y() + m_dy);
-            }
-        } else if (m_txop < QTransform::TxProject) {
-            for (int i=0; i<m_elements.size(); ++i) {
-                const QPointF &e = m_elements.at(i);
-                m_elements_dev << QPointF(m_m11 * e.x() + m_m21 * e.y() + m_dx,
-                                          m_m22 * e.y() + m_m12 * e.x() + m_dy);
-            }
-        } else {
-            const QVectorPath vp((qreal *)m_elements.data(), m_elements.size(), m_element_types.size() ? m_element_types.data() : 0);
-            QPainterPath path = vp.convertToPainterPath();
-            path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
-            if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
-                path.setFillRule(Qt::WindingFill);
-            uint old_txop = m_txop;
-            m_txop = QTransform::TxNone;
-            if (path.isEmpty())
-                m_valid = false;
-            else
-                convertPath(path);
-            m_txop = old_txop;
-            return;
+        // Nothing to do.
+    } else if (m_txop == QTransform::TxTranslate) {
+        for (int i = 0; i < m_elements.size(); ++i) {
+            QPointF &e = elements[i];
+            e = QPointF(e.x() + m_dx, e.y() + m_dy);
         }
-        elements = m_elements_dev.data();
+    } else if (m_txop == QTransform::TxScale) {
+        for (int i = 0; i < m_elements.size(); ++i) {
+            QPointF &e = elements[i];
+            e = QPointF(m_m11 * e.x() + m_dx, m_m22 * e.y() + m_dy);
+        }
+    } else if (m_txop < QTransform::TxProject) {
+        for (int i = 0; i < m_elements.size(); ++i) {
+            QPointF &e = elements[i];
+            e = QPointF(m_m11 * e.x() + m_m21 * e.y() + m_dx,
+                        m_m22 * e.y() + m_m12 * e.x() + m_dy);
+        }
+    } else {
+        const QVectorPath vp((qreal *)elements, m_elements.size(),
+                             m_element_types.size() ? m_element_types.data() : 0);
+        QPainterPath path = vp.convertToPainterPath();
+        path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
+        if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
+            path.setFillRule(Qt::WindingFill);
+        uint old_txop = m_txop;
+        m_txop = QTransform::TxNone;
+        if (path.isEmpty())
+            m_valid = false;
+        else
+            convertPath(path);
+        m_txop = old_txop;
+        return;
     }
 
     if (m_round_coords) {
@@ -223,7 +233,7 @@ void QOutlineMapper::endOutline()
                                   qFloor(elements[i].y() + aliasedCoordinateDelta));
     }
 
-    controlPointRect = boundingRect(elements, element_count);
+    controlPointRect = boundingRect(elements, m_elements.size());
 
 #ifdef QT_DEBUG_CONVERT
     printf(" - control point rect (%.2f, %.2f) %.2f x %.2f, clip=(%d,%d, %dx%d)\n",
@@ -242,9 +252,9 @@ void QOutlineMapper::endOutline()
                           || controlPointRect.height() > QT_RASTER_COORD_LIMIT));
 
     if (do_clip) {
-        clipElements(elements, elementTypes(), element_count);
+        clipElements(elements, elementTypes(), m_elements.size());
     } else {
-        convertElements(elements, elementTypes(), element_count);
+        convertElements(elements, elementTypes(), m_elements.size());
     }
 }
 
