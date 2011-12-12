@@ -337,9 +337,20 @@ static QTouchDevice *touchDevice = 0;
         // It looks like 1/4 degrees per pixel behaves most native.
         // (NB: Qt expects the unit for delta to be 8 per degree):
         const int pixelsToDegrees = 2; // 8 * 1/4
-        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
-        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
-        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
+            deltaX = [theEvent scrollingDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent scrollingDeltaY] * pixelsToDegrees;
+            //  scrollingDeltaZ API is missing.
+        } else
+#endif
+        {
+            deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+            deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+        }
+
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
