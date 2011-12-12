@@ -53,6 +53,10 @@ information about a particular change.
   * The DEPENDS_ON macro has been removed from the API.  This macro did nothing
     and misled some users to believe that they could make test functions depend
     on each other or impose an execution order on test functions.
+  * The QTest::qt_snprintf function has been removed from the API.  This was an
+    internal testlib function that was exposed in the public API due to its use
+    in a public macro.  Any calls to this function should be replaced by a call
+    to qsnprintf(), which comes from the <QtCore/QByteArray> header.
   * The QSKIP macro no longer has the "mode" parameter, which caused problems
     for calculating test metrics, as the SkipAll mode hid information about
     what test data was skipped.  Calling QSKIP in a test function now behaves

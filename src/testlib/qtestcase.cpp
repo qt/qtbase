@@ -987,21 +987,6 @@ namespace QTest
 #endif
 
 /*! \internal
- */
-int qt_snprintf(char *str, int size, const char *format, ...)
-{
-    va_list ap;
-    int res = 0;
-
-    va_start(ap, format);
-    qvsnprintf(str, size, format, ap);
-    va_end(ap);
-    str[size - 1] = '\0';
-
-    return res;
-}
-
-/*! \internal
     Invoke a method of the object without generating warning if the method does not exist
  */
 static void invokeMethod(QObject *obj, const char *methodName)
