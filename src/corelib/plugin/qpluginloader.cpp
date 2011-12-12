@@ -48,11 +48,6 @@
 #include "qdebug.h"
 #include "qdir.h"
 
-#if defined(Q_OS_SYMBIAN)
-# include <f32file.h>
-# include "private/qcore_symbian_p.h"
-#endif
-
 #ifndef QT_NO_LIBRARY
 
 QT_BEGIN_NAMESPACE
@@ -106,16 +101,6 @@ QT_BEGIN_NAMESPACE
     link to plugins statically. You can use QLibrary if you need to
     load dynamic libraries in a statically linked application.
 
-    \note In Symbian the plugin stub files must be used whenever a
-    path to plugin is needed. For the purposes of loading plugins,
-    the stubs can be considered to have the same name as the actual
-    plugin binary. In practice they have ".qtplugin" extension
-    instead of ".dll", but this difference is handled transparently
-    by QPluginLoader and QLibrary to avoid need for Symbian specific
-    plugin handling in most Qt applications. Plugin stubs are needed
-    because Symbian Platform Security denies all access to the directory
-    where the actual plugin binaries are located.
-
     \sa QLibrary, {Plug & Paint Example}
 */
 
@@ -135,8 +120,6 @@ QPluginLoader::QPluginLoader(QObject *parent)
     loadable library in accordance with the platform, e.g. \c .so on
     Unix, - \c .dylib on Mac OS X, and \c .dll on Windows. The suffix
     can be verified with QLibrary::isLibrary().
-
-    Note: In Symbian the \a fileName must point to plugin stub file.
 
     \sa setFileName()
 */
@@ -263,8 +246,6 @@ bool QPluginLoader::isLoaded() const
 
     By default, this property contains an empty string.
 
-    Note: In Symbian the \a fileName must point to plugin stub file.
-
     \sa load()
 */
 void QPluginLoader::setFileName(const QString &fileName)
@@ -278,48 +259,7 @@ void QPluginLoader::setFileName(const QString &fileName)
         did_load = false;
     }
 
-#if defined(Q_OS_SYMBIAN)
-    // In Symbian we actually look for plugin stub, so modify the filename
-    // to make canonicalFilePath find the file, if .dll is specified.
-    QFileInfo fi(fileName);
-
-    if (fi.suffix() == QLatin1String("dll")) {
-        QString stubName = fileName;
-        stubName.chop(3);
-        stubName += QLatin1String("qtplugin");
-        fi = QFileInfo(stubName);
-    }
-
-    QString fn = fi.canonicalFilePath();
-    // If not found directly, check also all the available drives
-    if (!fn.length()) {
-        QString stubPath(fi.fileName().length() ? fi.absoluteFilePath() : QString());
-        if (stubPath.length() > 1) {
-            if (stubPath.at(1).toAscii() == ':')
-                stubPath.remove(0,2);
-            QFileInfoList driveList(QDir::drives());
-            RFs rfs = qt_s60GetRFs();
-            foreach(const QFileInfo& drive, driveList) {
-                QString testFilePath(drive.absolutePath() + stubPath);
-                testFilePath = QDir::cleanPath(testFilePath);
-                // Use native Symbian code to check for file existence, because checking
-                // for file from under non-existent protected dir like E:/private/<uid> using
-                // QFile::exists causes platform security violations on most apps.
-                QString nativePath = QDir::toNativeSeparators(testFilePath);
-                TPtrC ptr(qt_QString2TPtrC(nativePath));
-                TUint attributes;
-                TInt err = rfs.Att(ptr, attributes);
-                if (err == KErrNone) {
-                    fn = testFilePath;
-                    break;
-                }
-            }
-        }
-    }
-
-#else
     QString fn = QFileInfo(fileName).canonicalFilePath();
-#endif
 
     d = QLibraryPrivate::findOrCreate(fn);
     d->loadHints = lh;
