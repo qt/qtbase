@@ -90,6 +90,8 @@ QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
 {
+    QCocoaAutoReleasePool pool;
+
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
     NSApplication *cocoaApplication = [NSApplication sharedApplication];

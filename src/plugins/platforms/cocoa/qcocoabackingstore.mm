@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qcocoabackingstore.h"
+#include "qcocoaautoreleasepool.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/QPainter>
@@ -80,6 +81,7 @@ void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPo
 {
     Q_UNUSED(widget);
     Q_UNUSED(offset);
+    QCocoaAutoReleasePool pool;
 
     QRect geo = region.boundingRect();
 

@@ -129,6 +129,7 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 
 void QCocoaWindow::setVisible(bool visible)
 {
+    QCocoaAutoReleasePool pool;
     if (visible) {
         // The parent window might have moved while this window was hidden,
         // update the window geometry if there is a parent.
@@ -146,6 +147,8 @@ void QCocoaWindow::setVisible(bool visible)
 
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
+    QCocoaAutoReleasePool pool;
+
     CFStringRef windowTitle = QCFString::toCFStringRef(title);
     [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
     CFRelease(windowTitle);
@@ -164,6 +167,8 @@ void QCocoaWindow::lower()
 
 void QCocoaWindow::propagateSizeHints()
 {
+    QCocoaAutoReleasePool pool;
+
     [m_nsWindow setMinSize : qt_mac_toNSSize(window()->minimumSize())];
     [m_nsWindow setMaxSize : qt_mac_toNSSize(window()->maximumSize())];
 
