@@ -980,16 +980,6 @@ namespace QTest
     static bool noCrashHandler = false;
 #endif
 
-void filter_unprintable(char *str)
-{
-    char *idx = str;
-    while (*idx) {
-        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
-            *idx = '?';
-        ++idx;
-    }
-}
-
 /*! \internal
  */
 int qt_snprintf(char *str, int size, const char *format, ...)
@@ -1001,8 +991,6 @@ int qt_snprintf(char *str, int size, const char *format, ...)
     qvsnprintf(str, size, format, ap);
     va_end(ap);
     str[size - 1] = '\0';
-
-    filter_unprintable(str);
 
     return res;
 }

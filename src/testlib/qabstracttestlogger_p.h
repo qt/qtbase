@@ -99,6 +99,7 @@ public:
     void outputString(const char *msg);
 
 protected:
+    void filterUnprintable(char *str) const;
     FILE *stream;
 };
 

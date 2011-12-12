@@ -80,12 +80,28 @@ QAbstractTestLogger::~QAbstractTestLogger()
     stream = 0;
 }
 
+void QAbstractTestLogger::filterUnprintable(char *str) const
+{
+    char *idx = str;
+    while (*idx) {
+        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
+            *idx = '?';
+        ++idx;
+    }
+}
+
 void QAbstractTestLogger::outputString(const char *msg)
 {
     QTEST_ASSERT(stream);
 
-    ::fputs(msg, stream);
+    char *filtered = new char[strlen(msg) + 1];
+    strcpy(filtered, msg);
+    filterUnprintable(filtered);
+
+    ::fputs(filtered, stream);
     ::fflush(stream);
+
+    delete [] filtered;
 }
 
 void QAbstractTestLogger::startLogging()
@@ -134,8 +150,6 @@ int qt_asprintf(QTestCharBuffer *str, const char *format, ...)
         if (!str->reset(size))
             break; // out of memory - take what we have
     }
-
-    filter_unprintable(str->data());
 
     return res;
 }
