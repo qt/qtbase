@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = tst_qobject.pro signalbug.pro
+SUBDIRS = signalbug tst_qobject.pro
 CONFIG += parallel_test

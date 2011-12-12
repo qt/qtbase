@@ -65,6 +65,7 @@ class tst_QObject : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void disconnect();
     void connectByName();
     void connectSignalsToSignalsWithDefaultArguments();
@@ -235,6 +236,12 @@ public slots:
 };
 
 int ReceiverObject::sequence = 0;
+
+void tst_QObject::initTestCase()
+{
+    const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testDataDir), qPrintable("Could not chdir to " + testDataDir));
+}
 
 void tst_QObject::disconnect()
 {
@@ -2794,7 +2801,9 @@ void tst_QObject::recursiveSignalEmission()
 {
     QProcess proc;
     // signalbug helper app should always be next to this test binary
-    proc.start(QCoreApplication::applicationDirPath() + "/signalbug");
+    const QString path = QStringLiteral("signalbug/signalbug");
+    proc.start(path);
+    QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
