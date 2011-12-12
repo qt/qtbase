@@ -251,7 +251,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         QTest::benchmarkResultFormatString(),
         quotedMetric.constData(),
         quotedTag.constData(),
-        QByteArray::number(result.value).constData(),  //no 64-bit qt_snprintf support
+        QByteArray::number(result.value).constData(),  //no 64-bit qsnprintf support
         result.iterations);
     outputString(buf.constData());
 }

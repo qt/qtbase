@@ -291,7 +291,7 @@ void QTestLog::printUnhandledIgnoreMessages()
     char msg[1024];
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
-        QTest::qt_snprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
+        qsnprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
         QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
 
         list = list->next;

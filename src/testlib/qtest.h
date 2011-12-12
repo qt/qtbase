@@ -195,18 +195,18 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
     msg[0] = '\0';
     bool isOk = true;
     if (t1.count() != t2.count()) {
-        qt_snprintf(msg, 1024, "Compared QStringLists have different sizes.\n"
-                    "   Actual (%s) size  : '%d'\n"
-                    "   Expected (%s) size: '%d'", actual, t1.count(), expected, t2.count());
+        qsnprintf(msg, 1024, "Compared QStringLists have different sizes.\n"
+                  "   Actual (%s) size  : '%d'\n"
+                  "   Expected (%s) size: '%d'", actual, t1.count(), expected, t2.count());
         isOk = false;
     }
     const int min = qMin(t1.count(), t2.count());
     for (int i = 0; isOk && i < min; ++i) {
         if (t1.at(i) != t2.at(i)) {
-            qt_snprintf(msg, 1024, "Compared QStringLists differ at index %d.\n"
-                        "   Actual (%s) : '%s'\n"
-                        "   Expected (%s) : '%s'", i, actual, t1.at(i).toLatin1().constData(),
-                        expected, t2.at(i).toLatin1().constData());
+            qsnprintf(msg, 1024, "Compared QStringLists differ at index %d.\n"
+                      "   Actual (%s) : '%s'\n"
+                      "   Expected (%s) : '%s'", i, actual, t1.at(i).toLatin1().constData(),
+                      expected, t2.at(i).toLatin1().constData());
             isOk = false;
         }
     }

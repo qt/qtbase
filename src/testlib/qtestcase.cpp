@@ -1106,7 +1106,7 @@ static void qPrintDataTags(FILE *stream)
             slot[strlen(slot) - 2] = '\0';
             QByteArray member;
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
-            QTest::qt_snprintf(member.data(), member.size(), "%s_data()", slot);
+            qsnprintf(member.data(), member.size(), "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member.constData());
             for (int j = 0; j < table.dataCount(); ++j)
                 localTags << QLatin1String(table.testData(j)->dataTag());
@@ -1436,8 +1436,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             if (colon != -1) {
                 data = qstrdup(argv[i]+colon+1);
             }
-            QTest::qt_snprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
-            QTest::qt_snprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
+            qsnprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
+            qsnprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
             int idx = QTest::currentTestObject->metaObject()->indexOfMethod(buf);
             if (idx < 0 || !isValidSlot(QTest::currentTestObject->metaObject()->method(idx))) {
                 fprintf(stderr, "Unknown testfunction: '%s'\n", buf);
@@ -1589,7 +1589,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
         if (curGlobalDataIndex == 0) {
             QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
-            QTest::qt_snprintf(member, 512, "%s_data()", slot);
+            qsnprintf(member, 512, "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member);
         }
 
@@ -2374,7 +2374,7 @@ Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
-    qt_snprintf(msg, 128, #FORMAT, t); \
+    qsnprintf(msg, 128, #FORMAT, t); \
     return msg; \
 }
 
@@ -2411,7 +2411,7 @@ char *QTest::toString(const char *str)
 char *QTest::toString(const void *p)
 {
     char *msg = new char[128];
-    qt_snprintf(msg, 128, "%p", p);
+    qsnprintf(msg, 128, "%p", p);
     return msg;
 }
 
