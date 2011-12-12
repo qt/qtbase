@@ -43,6 +43,8 @@
 
 #include <QtTest/QtTest>
 
+#include <QEvent>
+
 class tst_QWindow: public QObject
 {
     Q_OBJECT
@@ -51,6 +53,7 @@ private slots:
     void mapGlobal();
     void positioning();
     void isActive();
+    void testInputEvents();
 };
 
 
@@ -219,6 +222,85 @@ void tst_QWindow::isActive()
 
     // parent has focus
     QVERIFY(child.isActive());
+}
+
+class InputTestWindow : public QWindow
+{
+public:
+    void keyPressEvent(QKeyEvent *event) {
+        keyPressCode = event->key();
+    }
+    void keyReleaseEvent(QKeyEvent *event) {
+        keyReleaseCode = event->key();
+    }
+    void mousePressEvent(QMouseEvent *event) {
+        mousePressButton = event->button();
+    }
+    void mouseReleaseEvent(QMouseEvent *event) {
+        mouseReleaseButton = event->button();
+    }
+    void touchEvent(QTouchEvent *event) {
+        QList<QTouchEvent::TouchPoint> points = event->touchPoints();
+        for (int i = 0; i < points.count(); ++i) {
+            switch (points.at(i).state()) {
+            case Qt::TouchPointPressed:
+                ++touchPressedCount;
+                break;
+            case Qt::TouchPointReleased:
+                ++touchReleasedCount;
+                break;
+            }
+        }
+    }
+
+    InputTestWindow() {
+        keyPressCode = keyReleaseCode = 0;
+        mousePressButton = mouseReleaseButton = 0;
+        touchPressedCount = touchReleasedCount = 0;
+    }
+
+    int keyPressCode, keyReleaseCode;
+    int mousePressButton, mouseReleaseButton;
+    int touchPressedCount, touchReleasedCount;
+};
+
+void tst_QWindow::testInputEvents()
+{
+    InputTestWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
+    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyRelease, Qt::Key_A, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.keyPressCode, int(Qt::Key_A));
+    QCOMPARE(window.keyReleaseCode, int(Qt::Key_A));
+
+    QPointF local(12, 34);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+
+    QTouchDevice *device = new QTouchDevice;
+    device->setType(QTouchDevice::TouchScreen);
+    QWindowSystemInterface::registerTouchDevice(device);
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1, tp2;
+    tp1.id = 1;
+    tp1.state = Qt::TouchPointPressed;
+    tp2.id = 2;
+    tp2.state = Qt::TouchPointPressed;
+    points << tp1 << tp2;
+    QWindowSystemInterface::handleTouchEvent(&window, device, points);
+    points[0].state = Qt::TouchPointReleased;
+    points[1].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, device, points);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.touchPressedCount, 2);
+    QCOMPARE(window.touchReleasedCount, 2);
 }
 
 #include <tst_qwindow.moc>

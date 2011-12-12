@@ -72,6 +72,7 @@ class QMouseEvent;
 #ifndef QT_NO_WHEELEVENT
 class QWheelEvent;
 #endif
+class QTouchEvent;
 
 class QPlatformSurface;
 class QPlatformWindow;
@@ -285,6 +286,7 @@ protected:
 #ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
 #endif
+    virtual void touchEvent(QTouchEvent *);
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 

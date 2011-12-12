@@ -813,6 +813,12 @@ bool QWindow::event(QEvent *event)
         mouseDoubleClickEvent(static_cast<QMouseEvent*>(event));
         break;
 
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        touchEvent(static_cast<QTouchEvent *>(event));
+        break;
+
     case QEvent::Move:
         moveEvent(static_cast<QMoveEvent*>(event));
         break;
@@ -907,6 +913,9 @@ void QWindow::wheelEvent(QWheelEvent *)
 }
 #endif //QT_NO_WHEELEVENT
 
+void QWindow::touchEvent(QTouchEvent *)
+{
+}
 
 
 /*!
