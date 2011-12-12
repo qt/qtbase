@@ -98,7 +98,6 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
 public:
-    enum Type { Tty, GuiClient, GuiServer };
 
 #ifndef qdoc
     QApplication(int &argc, char **argv, int = ApplicationFlags);

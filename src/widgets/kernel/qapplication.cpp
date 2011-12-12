@@ -139,7 +139,6 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT void qt_call_post_routines();
 
-QApplication::Type qt_appType=QApplication::Tty;
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
 QInputContext *QApplicationPrivate::inputContext = 0;
@@ -157,7 +156,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     : QApplicationPrivateBase(argc, argv, flags)
 {
     application_type = type;
-    qt_appType = type;
 
 #ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
@@ -363,14 +361,6 @@ QApplicationPrivate::~QApplicationPrivate()
     \endtable
 
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
-*/
-
-/*!
-    \enum QApplication::Type
-
-    \value Tty a console application
-    \value GuiClient a GUI client application
-    \value GuiServer a GUI server application (for Qt for Embedded Linux)
 */
 
 /*!
@@ -743,11 +733,11 @@ void QApplicationPrivate::construct(
 {
     initResources();
 
-    qt_is_gui_used = (qt_appType != QApplication::Tty);
+    qt_is_gui_used = (application_type != QApplication::Tty);
     process_cmdline();
 
     // Must be called before initialize()
-    qt_init(this, qt_appType
+    qt_init(this, application_type
 #ifdef Q_WS_X11
             , dpy, visual, cmap
 #endif
@@ -873,7 +863,7 @@ void QApplicationPrivate::initialize()
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
-    if (qt_appType != QApplication::Tty)
+    if (application_type != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
@@ -917,7 +907,9 @@ void QApplicationPrivate::initialize()
 */
 QApplication::Type QApplication::type()
 {
-    return qt_appType;
+    if (QApplicationPrivate::instance())
+        return (QCoreApplication::Type)QApplicationPrivate::instance()->application_type;
+    return Tty;
 }
 
 /*****************************************************************************
@@ -1275,7 +1267,7 @@ QStyle *QApplication::style()
 {
     if (QApplicationPrivate::app_style)
         return QApplicationPrivate::app_style;
-    if (!qt_is_gui_used) {
+    if (qApp->type() == QApplication::Tty) {
         Q_ASSERT(!"No style available in non-gui applications!");
         return 0;
     }

@@ -186,6 +186,7 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
       inputPanel(0)
 {
     self = this;
+    application_type = QCoreApplication::GuiClient;
 }
 
 QWindow *QGuiApplication::focusWindow()

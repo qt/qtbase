@@ -2587,6 +2587,14 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
 */
 
+/*!
+    \enum QCoreApplication::Type
+
+    \value Tty a console application
+    \value GuiClient a GUI application
+    \value GuiServer \e{Deprecated.} this value is only left for compatibility.
+*/
+
 QT_END_NAMESPACE
 
 #include "moc_qcoreapplication.cpp"

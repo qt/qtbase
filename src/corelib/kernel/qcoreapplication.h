@@ -78,6 +78,12 @@ public:
     enum { ApplicationFlags = QT_VERSION
     };
 
+    enum Type {
+        Tty,
+        GuiClient,
+        GuiServer // # deprecated
+    };
+
     QCoreApplication(int &argc, char **argv, int = ApplicationFlags);
 
     ~QCoreApplication();
