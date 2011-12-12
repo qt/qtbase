@@ -105,10 +105,17 @@ public:
 
     bool dragBeingCancelled() const { return m_dragBeingCancelled; }
 
+    QPixmap defaultCursor(Qt::DropAction action) const;
+
 private:
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject;
     bool m_dragBeingCancelled;
+
+    mutable QPixmap m_copyDragCursor;
+    mutable QPixmap m_moveDragCursor;
+    mutable QPixmap m_linkDragCursor;
+    mutable QPixmap m_ignoreDragCursor;
 };
 
 QT_END_NAMESPACE
