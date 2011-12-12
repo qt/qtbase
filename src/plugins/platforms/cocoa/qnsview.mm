@@ -229,14 +229,19 @@ static QTouchDevice *touchDevice = 0;
     QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
     QPoint qtScreenPoint;
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
-    NSRect screenRect = [[self window] convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
-    qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));                     // Qt screen coordinates
-#else
-    NSPoint screenPoint = [[self window] convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
-    qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
-#endif
 
+    NSWindow *window = [self window];
+    // Use convertRectToScreen if available (added in 10.7).
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
+        NSRect screenRect = [window convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
+        qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
+    } else
+#endif
+    {
+        NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
+        qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    }
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
