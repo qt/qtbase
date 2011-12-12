@@ -322,7 +322,9 @@ void tst_QEventLoop::throwInExec()
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash
     QSKIP("This platform doesn't support propagating exceptions through the event loop");
-#elif defined(Q_OS_LINUX)
+#else
+    // exceptions compiled in, runtime tests follow.
+#if defined(Q_OS_LINUX)
     // C++ exceptions can't be passed through glib callbacks.  Skip the test if
     // we're using the glib event loop.
     QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
@@ -357,6 +359,7 @@ void tst_QEventLoop::throwInExec()
         }
         QCOMPARE(caughtExceptions, 2);
     }
+#endif
 }
 
 void tst_QEventLoop::reexec()
