@@ -101,7 +101,7 @@ public:
 
     inline QPainterState *state() { return raster()->state(); }
     inline const QPainterState *state() const { const QPainterState *state = raster()->state(); return state;}
-    inline const QClipData *clip(){return raster()->d_func()->clip();}
+    inline const QClipData *clipData(){return raster()->d_func()->clip();}
 
 private:
     QRasterPaintEngine *raster() const;

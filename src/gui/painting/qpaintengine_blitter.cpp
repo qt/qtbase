@@ -222,7 +222,7 @@ public:
         if (hasXForm) {
             targetRect = q->state()->matrix.mapRect(rect);
         }
-        const QClipData *clipData = q->clip();
+        const QClipData *clipData = q->clipData();;
         if (clipData) {
             if (clipData->hasRectClip) {
                 unlock();
@@ -269,7 +269,7 @@ public:
 
     void updateClip() {
         Q_Q(QBlitterPaintEngine);
-        const QClipData *clip = q->clip();
+        const QClipData *clip = q->clipData();
         bool complex = clip && !(clip->hasRectClip || clip->hasRegionClip);
         capabillities->updateState(STATE_CLIP_COMPLEX, complex);
     }
@@ -388,7 +388,7 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                 blitWidth = transformedRect.right() -x;
             if (y + blitHeight > transformedRect.bottom())
                 blitHeight = transformedRect.bottom() - y;
-            const QClipData *clipData = clip();
+            const QClipData *clipData = this->clipData();
             if (clipData->hasRectClip) {
                 QRect targetRect = QRect(x,y,blitWidth,blitHeight).intersected(clipData->clipRect);
                 if (targetRect.isValid()) {
@@ -573,7 +573,7 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
         if (d->hasXForm) {
             targetRect = state()->matrix.mapRect(r);
         }
-        const QClipData *clipData = clip();
+        const QClipData *clipData = this->clipData();
         if (clipData) {
             if (clipData->hasRectClip) {
                 d->clipAndDrawPixmap(clipData->clipRect,targetRect,pm,sr);
