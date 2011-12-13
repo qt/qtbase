@@ -832,7 +832,7 @@ void tst_QFile::readAllStdin()
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
-    process.start("stdinprocess/stdinprocess all");
+    process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+" all");
     QVERIFY( process.waitForStarted() );
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -867,7 +867,7 @@ void tst_QFile::readLineStdin()
 
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start((QFINDTESTDATA("stdinprocess/stdinprocess")+QString(" line %1").arg(i)), QIODevice::Text | QIODevice::ReadWrite);
         for (int i = 0; i < 5; ++i) {
             QTest::qWait(1000);
             process.write(lotsOfData);
@@ -901,7 +901,7 @@ void tst_QFile::readLineStdin_lineByLine()
 #else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+ QString(" line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY(process.waitForStarted());
 
         for (int j = 0; j < 3; ++j) {
