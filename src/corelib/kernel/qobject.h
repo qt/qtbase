@@ -103,10 +103,9 @@ public:
     uint ownObjectName : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
-    uint inEventHandler : 1; //only used if QT_JAMBI_BUILD
     uint inThreadChangeEvent : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 21;
+    uint unused : 22;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };

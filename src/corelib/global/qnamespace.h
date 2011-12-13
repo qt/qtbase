@@ -61,7 +61,7 @@ Qt {
     Q_OBJECT
 #endif
 
-#if (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
+#if defined(Q_MOC_RUN)
     // NOTE: Generally, do not add Q_ENUMS if a corresponding Q_FLAGS exists.
     Q_ENUMS(ScrollBarPolicy FocusPolicy ContextMenuPolicy)
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
@@ -97,7 +97,7 @@ Qt {
     Q_ENUMS(GestureType)
 #endif
     Q_ENUMS(CursorMoveStyle)
-#endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
+#endif // defined(Q_MOC_RUN)
 
 #if defined(Q_MOC_RUN)
 public:

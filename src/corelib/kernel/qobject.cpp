@@ -172,10 +172,6 @@ QObjectPrivate::QObjectPrivate(int version)
     extraData = 0;
     connectedSignals[0] = connectedSignals[1] = 0;
     inThreadChangeEvent = false;
-#ifdef QT_JAMBI_BUILD
-    inEventHandler = false;
-    deleteWatch = 0;
-#endif
     metaObject = 0;
     isWindow = false;
 }
@@ -194,35 +190,12 @@ QObjectPrivate::~QObjectPrivate()
     threadData->deref();
 
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
-#ifdef QT_JAMBI_BUILD
-    if (deleteWatch)
-        *deleteWatch = 1;
-#endif
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);
     delete extraData;
 #endif
 }
-
-
-#ifdef QT_JAMBI_BUILD
-int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
-    int *old = d->deleteWatch;
-    d->deleteWatch = w;
-    return old;
-}
-
-
-void QObjectPrivate::resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch) {
-    if (!deleteWatch)
-        d->deleteWatch = oldWatch;
-
-    if (oldWatch)
-        *oldWatch = deleteWatch;
-}
-#endif
-
 
 /*!\internal
   For a given metaobject, compute the signal offset, and the method offset (including signals)
@@ -837,13 +810,6 @@ QObject::~QObject()
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
-
-#ifdef QT_JAMBI_BUILD
-    if (d->inEventHandler) {
-        qWarning("QObject: Do not delete object, '%s', during its event handler!",
-                 objectName().isNull() ? "unnamed" : qPrintable(objectName()));
-    }
-#endif
 }
 
 QObjectPrivate::Connection::~Connection()
@@ -1031,9 +997,6 @@ bool QObject::event(QEvent *e)
 
     case QEvent::MetaCall:
         {
-#ifdef QT_JAMBI_BUILD
-            d_func()->inEventHandler = false;
-#endif
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
 
             QConnectionSenderSwitcher sw(this, const_cast<QObject*>(mce->sender()), mce->signalId());
@@ -1337,15 +1300,6 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
     if (currentSender)
         currentSender->ref = 0;
     currentSender = 0;
-
-#ifdef QT_JAMBI_BUILD
-    // the current event thread also shouldn't restore the delete watch
-    inEventHandler = false;
-
-    if (deleteWatch)
-        *deleteWatch = 1;
-    deleteWatch = 0;
-#endif
 
     // set new thread data
     targetData->ref();
@@ -3891,11 +3845,6 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
 void qDeleteInEventHandler(QObject *o)
 {
-#ifdef QT_JAMBI_BUILD
-    if (!o)
-        return;
-    QObjectPrivate::get(o)->inEventHandler = false;
-#endif
     delete o;
 }
 

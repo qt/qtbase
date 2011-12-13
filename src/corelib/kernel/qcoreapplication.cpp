@@ -802,26 +802,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
     QScopedLoopLevelCounter loopLevelCounter(threadData);
-
-#ifdef QT_JAMBI_BUILD
-    int deleteWatch = 0;
-    int *oldDeleteWatch = QObjectPrivate::setDeleteWatch(d, &deleteWatch);
-
-    bool inEvent = d->inEventHandler;
-    d->inEventHandler = true;
-#endif
-
-    bool returnValue;
-    returnValue = notify(receiver, event);
-
-#ifdef QT_JAMBI_BUILD
-    // Restore the previous state if the object was not deleted..
-    if (!deleteWatch) {
-        d->inEventHandler = inEvent;
-    }
-    QObjectPrivate::resetDeleteWatch(d, oldDeleteWatch, deleteWatch);
-#endif
-    return returnValue;
+    return notify(receiver, event);
 }
 
 
