@@ -224,26 +224,13 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
     }
 
     if (!d->pipeClosed) {
+        if (!d->actualReadBufferSize)
+            d->emitReadyReadTimer->stop();
         if (!d->readSequenceStarted)
             d->startAsyncRead();
-        d->checkReadyRead();
     }
 
     return readSoFar;
-}
-
-/*!
-    \internal
-    Schedules or cancels a readyRead() emission depending on actual data availability
- */
-void QLocalSocketPrivate::checkReadyRead()
-{
-    if (actualReadBufferSize > 0) {
-        if (!emitReadyReadTimer->isActive())
-            emitReadyReadTimer->start();
-    } else {
-        emitReadyReadTimer->stop();
-    }
 }
 
 /*!
@@ -333,6 +320,8 @@ bool QLocalSocketPrivate::completeAsyncRead()
 
     actualReadBufferSize += bytesRead;
     readBuffer.truncate(actualReadBufferSize);
+    if (!emitReadyReadTimer->isActive())
+        emitReadyReadTimer->start();
     return true;
 }
 
@@ -493,10 +482,8 @@ bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
     d->state = socketState;
     d->pipeClosed = false;
     emit stateChanged(d->state);
-    if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly)) {
+    if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly))
         d->startAsyncRead();
-        d->checkReadyRead();
-    }
     return true;
 }
 
