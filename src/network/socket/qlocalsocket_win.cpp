@@ -50,6 +50,9 @@ QT_BEGIN_NAMESPACE
 void QLocalSocketPrivate::init()
 {
     Q_Q(QLocalSocket);
+    emitReadyReadTimer = new QTimer(q);
+    emitReadyReadTimer->setSingleShot(true);
+    QObject::connect(emitReadyReadTimer, SIGNAL(timeout()), q, SIGNAL(readyRead()));
     memset(&overlapped, 0, sizeof(overlapped));
     overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     dataReadNotifier = new QWinEventNotifier(overlapped.hEvent, q);
@@ -108,7 +111,7 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        actualReadBufferSize(0),
        error(QLocalSocket::UnknownSocketError),
        readSequenceStarted(false),
-       pendingReadyRead(false),
+       emitReadyReadTimer(0),
        pipeClosed(false),
        state(QLocalSocket::UnconnectedState)
 {
@@ -236,13 +239,10 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 void QLocalSocketPrivate::checkReadyRead()
 {
     if (actualReadBufferSize > 0) {
-        if (!pendingReadyRead) {
-            Q_Q(QLocalSocket);
-            QTimer::singleShot(0, q, SLOT(_q_emitReadyRead()));
-            pendingReadyRead = true;
-        }
+        if (!emitReadyReadTimer->isActive())
+            emitReadyReadTimer->start();
     } else {
-        pendingReadyRead = false;
+        emitReadyReadTimer->stop();
     }
 }
 
@@ -516,17 +516,8 @@ void QLocalSocketPrivate::_q_notified()
         return;
     }
     startAsyncRead();
-    pendingReadyRead = false;
+    emitReadyReadTimer->stop();
     emit q->readyRead();
-}
-
-void QLocalSocketPrivate::_q_emitReadyRead()
-{
-    if (pendingReadyRead) {
-        Q_Q(QLocalSocket);
-        pendingReadyRead = false;
-        emit q->readyRead();
-    }
 }
 
 quintptr QLocalSocket::socketDescriptor() const

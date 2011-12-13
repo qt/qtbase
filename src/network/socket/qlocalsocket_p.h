@@ -134,7 +134,6 @@ public:
     void _q_notified();
     void _q_canWrite();
     void _q_pipeClosed();
-    void _q_emitReadyRead();
     DWORD checkPipeState();
     void startAsyncRead();
     bool completeAsyncRead();
@@ -148,7 +147,7 @@ public:
     QWinEventNotifier *dataReadNotifier;
     QLocalSocket::LocalSocketError error;
     bool readSequenceStarted;
-    bool pendingReadyRead;
+    QTimer *emitReadyReadTimer;
     bool pipeClosed;
     static const qint64 initialReadBufferSize = 4096;
 #else
