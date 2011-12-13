@@ -78,6 +78,8 @@ private slots:
     void createCopy();
     void sizeOf_data();
     void sizeOf();
+    void flags_data();
+    void flags();
     void construct_data();
     void construct();
     void constructCopy_data();
@@ -129,6 +131,10 @@ protected:
 #ifdef Q_OS_LINUX
             pthread_yield();
 #endif
+            if (QMetaType::typeFlags(tp) != (QMetaType::NeedsConstruction | QMetaType::NeedsDestruction)) {
+                ++failureCount;
+                qWarning() << "Wrong typeInfo returned for" << tp;
+            }
             if (!QMetaType::isRegistered(tp)) {
                 ++failureCount;
                 qWarning() << name << "is not a registered metatype";
@@ -576,6 +582,40 @@ void tst_QMetaType::sizeOf()
     QFETCH(QMetaType::Type, type);
     QFETCH(int, size);
     QCOMPARE(QMetaType::sizeOf(type), size);
+}
+
+struct CustomMovable {};
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(CustomMovable);
+
+void tst_QMetaType::flags_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<bool>("isMovable");
+    QTest::addColumn<bool>("isComplex");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex);
+QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
+QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
+QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true;
+    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true;
+}
+
+void tst_QMetaType::flags()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isMovable);
+    QFETCH(bool, isComplex);
+
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
 }
 
 void tst_QMetaType::construct_data()

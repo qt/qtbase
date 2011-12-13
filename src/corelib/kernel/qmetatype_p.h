@@ -150,6 +150,7 @@ public:
     QMetaType::Constructor constructor;
     QMetaType::Destructor destructor;
     int size;
+    quint32 flags; // same as QMetaType::TypeFlags
 };
 
 #ifndef QT_NO_DATASTREAM
@@ -167,7 +168,10 @@ public:
     QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
     /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
     /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
-    /*size*/(sizeof(Type)) \
+    /*size*/(sizeof(Type)), \
+    /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
+            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \
+            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsDestruction) \
 }
 
 QT_END_NAMESPACE

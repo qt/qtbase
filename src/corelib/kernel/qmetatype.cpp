@@ -240,6 +240,16 @@ template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false
 */
 
 /*!
+    \enum QMetaType::TypeFlags
+
+    The enum describes attributes of a type supported by QMetaType.
+
+    \value NeedsConstruction This type has non-trivial constructors. If the flag is not set instances can be safely initialized with memset to 0.
+    \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
+    \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
+*/
+
+/*!
     \class QMetaType
     \brief The QMetaType class manages named types in the meta-object system.
 
@@ -423,7 +433,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
 {
-    return registerType(typeName, deleter, creator, 0, 0, 0);
+    return registerType(typeName, deleter, creator, 0, 0, 0, TypeFlags());
 }
 
 /*! \internal
@@ -438,7 +448,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator,
                             Destructor destructor,
                             Constructor constructor,
-                            int size)
+                            int size, TypeFlags flags)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct || !typeName || !deleter || !creator)
@@ -470,6 +480,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.constructor = constructor;
             inf.destructor = destructor;
             inf.size = size;
+            inf.flags = flags;
             idx = ct->size() + User;
             ct->append(inf);
         }
@@ -1631,6 +1642,73 @@ int QMetaType::sizeOf(int type)
 {
     SizeOf<DefinedTypesFilter> sizeOf(type);
     return QMetaTypeSwitcher::switcher<int>(sizeOf, type, 0);
+}
+
+namespace {
+class Flags
+{
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct FlagsImpl
+    {
+        static quint32 Flags(const int)
+        {
+            return (!QTypeInfo<T>::isStatic * QMetaType::MovableType)
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsConstruction)
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction);
+        }
+    };
+    template<typename T>
+    struct FlagsImpl<T, /* IsAcceptedType = */ false>
+    {
+        static quint32 Flags(const int type)
+        {
+            return Flags::undefinedTypeFlags(type);
+        }
+    };
+public:
+    Flags(const int type)
+        : m_type(type)
+    {}
+    template<typename T>
+    quint32 delegate(const T*) { return FlagsImpl<T>::Flags(m_type); }
+    quint32 delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeFlags(m_type); }
+private:
+    const int m_type;
+    static quint32 customTypeFlags(const int type)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (!ct)
+            return 0;
+        QReadLocker locker(customTypesLock());
+        if (ct->count() <= type - QMetaType::User)
+            return 0;
+        return ct->at(type - QMetaType::User).flags;
+    }
+    static quint32 undefinedTypeFlags(const int type);
+};
+
+quint32 Flags::undefinedTypeFlags(const int type)
+{
+    if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType)
+        return qMetaTypeGuiHelper ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].flags : 0;
+    else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType)
+        return qMetaTypeWidgetsHelper ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].flags : 0;
+    return customTypeFlags(type);
+}
+
+}  // namespace
+
+/*!
+    \since 5.0
+
+    Returns flags of the given \a type.
+
+    \sa TypeFlags()
+*/
+QMetaType::TypeFlags QMetaType::typeFlags(int type)
+{
+    Flags flags(type);
+    return static_cast<QMetaType::TypeFlags>(QMetaTypeSwitcher::switcher<quint32>(flags, type, 0));
 }
 
 /*!
