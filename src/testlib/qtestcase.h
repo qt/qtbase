@@ -209,7 +209,7 @@ namespace QTest
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, const char *file,
                                           int line);
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, char *val1, char *val2,
-                                         const char *expected, const char *actual,
+                                         const char *actual, const char *expected,
                                          const char *file, int line);
     Q_TESTLIB_EXPORT void qSleep(int ms);
     Q_TESTLIB_EXPORT void addColumnInternal(int id, const char *name);
