@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="4" tests="5" name="tst_Cmptest">
+<testsuite errors="0" failures="9" tests="6" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -20,6 +20,23 @@
     <failure tag="both non&#x002D;null user type" message="Compared values are not the same
    Actual (actual): QVariant(PhonyClass,&lt;value not representable as string&gt;)
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQStringLists">
+    <failure message="Compared QStringLists differ at index 2.
+   Actual (opA) : &apos;string3&apos;
+   Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
+    <failure message="Compared QStringLists differ at index 2.
+   Actual (opA) : &apos;string3&apos;
+   Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
+    <failure message="Compared QStringLists have different sizes.
+   Actual (opA) size  : &apos;2&apos;
+   Expected (opB) size: &apos;1&apos;" result="fail"/>
+    <failure message="Compared QStringLists have different sizes.
+   Actual (opA) size  : &apos;12&apos;
+   Expected (opB) size: &apos;1&apos;" result="fail"/>
+    <failure message="Compared QStringLists have different sizes.
+   Actual (opA) size  : &apos;1&apos;
+   Expected (opB) size: &apos;12&apos;" result="fail"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err/>

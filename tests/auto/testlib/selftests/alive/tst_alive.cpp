@@ -52,8 +52,6 @@ class tst_Alive: public QObject
 private slots:
     void alive();
     void addMouseDClick() const;
-    void compareQStringLists() const;
-    void compareQStringLists_data() const;
 };
 
 void tst_Alive::alive()
@@ -93,81 +91,6 @@ void tst_Alive::addMouseDClick() const
     list.simulate(&listener);
     /* Check that we have been called at all. */
     QVERIFY(listener.isTested);
-}
-
-void tst_Alive::compareQStringLists() const
-{
-    QFETCH(QStringList, opA);
-    QFETCH(QStringList, opB);
-
-    QCOMPARE(opA, opB);
-}
-
-void tst_Alive::compareQStringLists_data() const
-{
-    QTest::addColumn<QStringList>("opA");
-    QTest::addColumn<QStringList>("opB");
-
-    {
-        QStringList opA;
-        opA.append(QLatin1String("string1"));
-        opA.append(QLatin1String("string2"));
-
-        QStringList opB(opA);
-        opA.append(QLatin1String("string3"));
-        opB.append(QLatin1String("DIFFERS"));
-
-        QTest::newRow("") << opA << opB;
-    }
-
-    {
-        QStringList opA;
-        opA.append(QLatin1String("string1"));
-        opA.append(QLatin1String("string2"));
-
-        QStringList opB(opA);
-        opA.append(QLatin1String("string3"));
-        opA.append(QLatin1String("string4"));
-
-        opB.append(QLatin1String("DIFFERS"));
-        opB.append(QLatin1String("string4"));
-
-        QTest::newRow("") << opA << opB;
-    }
-
-    {
-        QStringList opA;
-        opA.append(QLatin1String("string1"));
-        opA.append(QLatin1String("string2"));
-
-        QStringList opB;
-        opB.append(QLatin1String("string1"));
-
-        QTest::newRow("") << opA << opB;
-    }
-
-    {
-        QStringList opA;
-        opA.append(QLatin1String("openInNewWindow"));
-        opA.append(QLatin1String("openInNewTab"));
-        opA.append(QLatin1String("separator"));
-        opA.append(QLatin1String("bookmark_add"));
-        opA.append(QLatin1String("savelinkas"));
-        opA.append(QLatin1String("copylinklocation"));
-        opA.append(QLatin1String("separator"));
-        opA.append(QLatin1String("openWith_submenu"));
-        opA.append(QLatin1String("preview1"));
-        opA.append(QLatin1String("actions_submenu"));
-        opA.append(QLatin1String("separator"));
-        opA.append(QLatin1String("viewDocumentSource"));
-
-        QStringList opB;
-        opB.append(QLatin1String("viewDocumentSource"));
-
-        QTest::newRow("") << opA << opB;
-
-        QTest::newRow("") << opB << opA;
-    }
 }
 
 QTEST_MAIN(tst_Alive)

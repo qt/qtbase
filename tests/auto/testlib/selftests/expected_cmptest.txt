@@ -19,6 +19,26 @@ FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values 
    Actual (actual): QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(122)]
+FAIL!  : tst_Cmptest::compareQStringLists() Compared QStringLists differ at index 2.
+   Actual (opA) : 'string3'
+   Expected (opB) : 'DIFFERS'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
+FAIL!  : tst_Cmptest::compareQStringLists() Compared QStringLists differ at index 2.
+   Actual (opA) : 'string3'
+   Expected (opB) : 'DIFFERS'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
+FAIL!  : tst_Cmptest::compareQStringLists() Compared QStringLists have different sizes.
+   Actual (opA) size  : '2'
+   Expected (opB) size: '1'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
+FAIL!  : tst_Cmptest::compareQStringLists() Compared QStringLists have different sizes.
+   Actual (opA) size  : '12'
+   Expected (opB) size: '1'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
+FAIL!  : tst_Cmptest::compareQStringLists() Compared QStringLists have different sizes.
+   Actual (opA) size  : '1'
+   Expected (opB) size: '12'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/alive/tst_alive.cpp(68)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 4 passed, 4 failed, 0 skipped
+Totals: 4 passed, 9 failed, 0 skipped
 ********* Finished testing of tst_Cmptest *********

@@ -52,6 +52,8 @@ private slots:
     void compare_pointerfuncs();
     void compare_tostring();
     void compare_tostring_data();
+    void compareQStringLists();
+    void compareQStringLists_data();
 };
 
 static bool boolfunc() { return true; }
@@ -126,6 +128,80 @@ void tst_Cmptest::compare_tostring()
     QCOMPARE(actual, expected);
 }
 
-QTEST_MAIN(tst_Cmptest)
+void tst_Cmptest::compareQStringLists_data()
+{
+    QTest::addColumn<QStringList>("opA");
+    QTest::addColumn<QStringList>("opB");
 
+    {
+        QStringList opA;
+        opA.append(QLatin1String("string1"));
+        opA.append(QLatin1String("string2"));
+
+        QStringList opB(opA);
+        opA.append(QLatin1String("string3"));
+        opB.append(QLatin1String("DIFFERS"));
+
+        QTest::newRow("") << opA << opB;
+    }
+
+    {
+        QStringList opA;
+        opA.append(QLatin1String("string1"));
+        opA.append(QLatin1String("string2"));
+
+        QStringList opB(opA);
+        opA.append(QLatin1String("string3"));
+        opA.append(QLatin1String("string4"));
+
+        opB.append(QLatin1String("DIFFERS"));
+        opB.append(QLatin1String("string4"));
+
+        QTest::newRow("") << opA << opB;
+    }
+
+    {
+        QStringList opA;
+        opA.append(QLatin1String("string1"));
+        opA.append(QLatin1String("string2"));
+
+        QStringList opB;
+        opB.append(QLatin1String("string1"));
+
+        QTest::newRow("") << opA << opB;
+    }
+
+    {
+        QStringList opA;
+        opA.append(QLatin1String("openInNewWindow"));
+        opA.append(QLatin1String("openInNewTab"));
+        opA.append(QLatin1String("separator"));
+        opA.append(QLatin1String("bookmark_add"));
+        opA.append(QLatin1String("savelinkas"));
+        opA.append(QLatin1String("copylinklocation"));
+        opA.append(QLatin1String("separator"));
+        opA.append(QLatin1String("openWith_submenu"));
+        opA.append(QLatin1String("preview1"));
+        opA.append(QLatin1String("actions_submenu"));
+        opA.append(QLatin1String("separator"));
+        opA.append(QLatin1String("viewDocumentSource"));
+
+        QStringList opB;
+        opB.append(QLatin1String("viewDocumentSource"));
+
+        QTest::newRow("") << opA << opB;
+
+        QTest::newRow("") << opB << opA;
+    }
+}
+
+void tst_Cmptest::compareQStringLists()
+{
+    QFETCH(QStringList, opA);
+    QFETCH(QStringList, opB);
+
+    QCOMPARE(opA, opB);
+}
+
+QTEST_MAIN(tst_Cmptest)
 #include "tst_cmptest.moc"

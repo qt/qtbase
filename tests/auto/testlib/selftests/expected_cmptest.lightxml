@@ -37,6 +37,33 @@
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)]]></Description>
 </Incident>
 </TestFunction>
+<TestFunction name="compareQStringLists">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="203">
+    <Description><![CDATA[Compared QStringLists differ at index 2.
+   Actual (opA) : 'string3'
+   Expected (opB) : 'DIFFERS']]></Description>
+</Incident>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="203">
+    <Description><![CDATA[Compared QStringLists differ at index 2.
+   Actual (opA) : 'string3'
+   Expected (opB) : 'DIFFERS']]></Description>
+</Incident>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="203">
+    <Description><![CDATA[Compared QStringLists have different sizes.
+   Actual (opA) size  : '2'
+   Expected (opB) size: '1']]></Description>
+</Incident>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="203">
+    <Description><![CDATA[Compared QStringLists have different sizes.
+   Actual (opA) size  : '12'
+   Expected (opB) size: '1']]></Description>
+</Incident>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="203">
+    <Description><![CDATA[Compared QStringLists have different sizes.
+   Actual (opA) size  : '1'
+   Expected (opB) size: '12']]></Description>
+</Incident>
+</TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
 </TestFunction>
