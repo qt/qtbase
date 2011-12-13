@@ -297,6 +297,14 @@ public:
     int alias;
 };
 
+namespace
+{
+union CheckThatItIsPod
+{   // This should break if QMetaTypeInterface is not a POD type
+    QMetaTypeInterface iface;
+};
+}
+
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
@@ -454,6 +462,10 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.typeName = normalizedTypeName;
             inf.creator = creator;
             inf.deleter = deleter;
+#ifndef QT_NO_DATASTREAM
+            inf.loadOp = 0;
+            inf.saveOp = 0;
+#endif
             inf.alias = -1;
             inf.constructor = constructor;
             inf.destructor = destructor;

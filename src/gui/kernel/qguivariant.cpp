@@ -477,7 +477,7 @@ const QVariant::Handler qt_gui_variant_handler = {
 extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
 
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
-    QMetaTypeInterface(static_cast<RealName*>(0)),
+    QT_METATYPE_INTERFACE_INIT(RealName),
 
 static const QMetaTypeInterface qVariantGuiHelper[] = {
     QT_FOR_EACH_STATIC_GUI_CLASS(QT_IMPL_METATYPEINTERFACE_GUI_TYPES)

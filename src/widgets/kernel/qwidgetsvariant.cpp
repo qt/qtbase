@@ -141,7 +141,7 @@ static const QVariant::Handler widgets_handler = {
 extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
 
 #define QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES(MetaTypeName, MetaTypeId, RealName) \
-    QMetaTypeInterface(static_cast<RealName*>(0)),
+    QT_METATYPE_INTERFACE_INIT(RealName),
 
 static const QMetaTypeInterface qVariantWidgetsHelper[] = {
     QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES)

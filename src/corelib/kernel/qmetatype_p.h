@@ -113,7 +113,7 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 
 class QMetaTypeInterface
 {
-private:
+public:
     template<typename T>
     struct Impl {
         static void *creator(const T *t)
@@ -140,31 +140,6 @@ private:
             return new (where) T;
         }
     };
-public:
-    template<typename T>
-    explicit QMetaTypeInterface(T *)
-        : creator(reinterpret_cast<QMetaType::Creator>(Impl<T>::creator))
-              , deleter(reinterpret_cast<QMetaType::Deleter>(Impl<T>::deleter))
-          #ifndef QT_NO_DATASTREAM
-              , saveOp(reinterpret_cast<QMetaType::SaveOperator>(Impl<T>::saver))
-              , loadOp(reinterpret_cast<QMetaType::LoadOperator>(Impl<T>::loader))
-          #endif
-              , constructor(reinterpret_cast<QMetaType::Constructor>(Impl<T>::constructor))
-              , destructor(reinterpret_cast<QMetaType::Destructor>(Impl<T>::destructor))
-              , size(sizeof(T))
-    {}
-
-    QMetaTypeInterface()
-        : creator(0)
-        , deleter(0)
-    #ifndef QT_NO_DATASTREAM
-        , saveOp(0)
-        , loadOp(0)
-    #endif
-        , constructor(0)
-        , destructor(0)
-        , size(0)
-    {}
 
     QMetaType::Creator creator;
     QMetaType::Deleter deleter;
@@ -176,6 +151,24 @@ public:
     QMetaType::Destructor destructor;
     int size;
 };
+
+#ifndef QT_NO_DATASTREAM
+#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    /*saveOp*/(reinterpret_cast<QMetaType::SaveOperator>(QMetaTypeInterface::Impl<Type>::saver)), \
+    /*loadOp*/(reinterpret_cast<QMetaType::LoadOperator>(QMetaTypeInterface::Impl<Type>::loader)),
+#else
+#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type)
+#endif
+
+#define QT_METATYPE_INTERFACE_INIT(Type) \
+{ \
+    /*creator*/(reinterpret_cast<QMetaType::Creator>(QMetaTypeInterface::Impl<Type>::creator)), \
+    /*deleter*/(reinterpret_cast<QMetaType::Deleter>(QMetaTypeInterface::Impl<Type>::deleter)), \
+    QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
+    /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
+    /*size*/(sizeof(Type)) \
+}
 
 QT_END_NAMESPACE
 
