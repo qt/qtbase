@@ -223,25 +223,6 @@ void QAlphaPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRe
     }
 }
 
-void QAlphaPaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF &sr)
-{
-    Q_D(QAlphaPaintEngine);
-
-    QRectF tr = d->m_transform.mapRect(r);
-    if (d->m_pass == 0) {
-        d->m_continueCall = false;
-        if (image.hasAlphaChannel() || d->m_alphaOpacity || d->m_complexTransform) {
-            d->addAlphaRect(tr);
-        }
-
-        if (d->m_picengine)
-            d->m_picengine->drawImage(r, image, sr);
-
-    } else {
-        d->m_continueCall = !d->fullyContained(tr);
-    }
-}
-
 void QAlphaPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QAlphaPaintEngine);
