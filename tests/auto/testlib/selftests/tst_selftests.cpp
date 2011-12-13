@@ -40,14 +40,18 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtTest/QtTest>
 #include <QtCore/QXmlStreamReader>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtTest/QtTest>
+
 #include <private/cycle_p.h>
 
 class tst_Selftests: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void runSubTest_data();
     void runSubTest();
     void cleanup();
@@ -285,6 +289,13 @@ static QList<LoggerSet> allLoggerSets()
     ;
 }
 
+void tst_Selftests::initTestCase()
+{
+    // chdir to our testdata path and execute helper apps relative to that.
+    QString testdataDir = QFileInfo(QFINDTESTDATA("float")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+}
+
 void tst_Selftests::runSubTest_data()
 {
     QTest::addColumn<QString>("subdir");
@@ -443,7 +454,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     QProcess proc;
     static const QProcessEnvironment environment = processEnvironment();
     proc.setProcessEnvironment(environment);
-    proc.start(subdir + QLatin1Char('/') + subdir, arguments);
+    const QString path = subdir + QLatin1Char('/') + subdir;
+    proc.start(path, arguments);
+    QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     QList<QByteArray> actualOutputs;
