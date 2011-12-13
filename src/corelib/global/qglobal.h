@@ -2027,6 +2027,19 @@ public:
     };
 };
 
+template<>
+class QTypeInfo<void>
+{
+public:
+    enum {
+        isPointer = false,
+        isComplex = false,
+        isStatic = false,
+        isLarge = false,
+        isDummy = false
+    };
+};
+
 template <typename T>
 class QTypeInfo<T*>
 {
