@@ -90,7 +90,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createWindowSurface %p\n",widget);
+    qWarning("QEglIntegration::createWindowSurface %p\n", window);
 #endif
     return new QEglFSBackingStore(window);
 }
