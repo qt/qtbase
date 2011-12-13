@@ -75,7 +75,7 @@ public:
     };
 
     QAccessibleInterface *child(int index) const;
-    QVariant invokeMethod(QAccessible::Method method, int, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;

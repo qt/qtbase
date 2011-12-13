@@ -984,7 +984,7 @@ int QAccessibleTableHeaderCell::navigate(QAccessible::RelationFlag relation, int
     return -1;
 }
 
-QAccessible::Relation QAccessibleTableHeaderCell::relationTo(int, const QAccessibleInterface *, int) const
+QAccessible::Relation QAccessibleTableHeaderCell::relationTo(const QAccessibleInterface *) const
 {
     return QAccessible::Unrelated;
 }

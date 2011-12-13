@@ -241,7 +241,7 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
 private:
     QAbstractItemView *view;
@@ -289,7 +289,7 @@ public:
         }
         return -1;
     }
-    QAccessible::Relation relationTo(int, const QAccessibleInterface *, int) const
+    QAccessible::Relation relationTo(const QAccessibleInterface *) const
     {
         return QAccessible::Unrelated;
     }
