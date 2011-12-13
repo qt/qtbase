@@ -1,7 +1,7 @@
-From ae1c497cf2235df9d73d3c5d3c2b40bcde7e534f Mon Sep 17 00:00:00 2001
+From c49c39afa016b176c933ff01e748a2eddb26e131 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 13:34:16 +0100
-Subject: [PATCH 04/12] Introduce a QML compilation mode
+Subject: [PATCH 04/13] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
@@ -2058,7 +2058,7 @@ index 3167c4d..6503d07 100644
  
      case DYNAMIC_LOOKUP:
 diff --git a/src/scopes.h b/src/scopes.h
-index a1418874..41e5f5c 100644
+index a141887..41e5f5c 100644
 --- a/src/scopes.h
 +++ b/src/scopes.h
 @@ -228,6 +228,11 @@ class Scope: public ZoneObject {
@@ -2351,5 +2351,5 @@ index f5f81b1..5caa6cf 100644
  static inline Operand StackSpaceOperand(int index) {
  #ifdef _WIN64
 -- 
-1.7.7.3
+1.7.4.1
 

@@ -1,0 +1,68 @@
+From f02e75f4f2fdffcac78317dff38c6ca6e679cf5c Mon Sep 17 00:00:00 2001
+From: Aurindam Jana <aurindam.jana@nokia.com>
+Date: Tue, 13 Dec 2011 13:43:23 +0100
+Subject: [PATCH 13/13] Update ScriptBreakPoints for ScriptRegExp
+
+Update breakpoints of type ScriptRegExpwhen a new script
+is compiled. Solves Issue 1853
+(http://code.google.com/p/v8/issues/detail?id=1853)
+
+Reviewed-by: aaron.kennedy@nokia.com
+---
+ src/debug-debugger.js               |    3 ++-
+ test/mjsunit/debug-setbreakpoint.js |   12 ++++++++++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/src/debug-debugger.js b/src/debug-debugger.js
+index d254ee5..6f80a8b 100644
+--- a/src/debug-debugger.js
++++ b/src/debug-debugger.js
+@@ -477,7 +477,8 @@ ScriptBreakPoint.prototype.clear = function () {
+ // break points set in this script.
+ function UpdateScriptBreakPoints(script) {
+   for (var i = 0; i < script_break_points.length; i++) {
+-    if (script_break_points[i].type() == Debug.ScriptBreakPointType.ScriptName &&
++    if ((script_break_points[i].type() == Debug.ScriptBreakPointType.ScriptName ||
++         script_break_points[i].type() == Debug.ScriptBreakPointType.ScriptRegExp) &&
+         script_break_points[i].matchesScript(script)) {
+       script_break_points[i].set(script);
+     }
+diff --git a/test/mjsunit/debug-setbreakpoint.js b/test/mjsunit/debug-setbreakpoint.js
+index 90dfcd1..03ba28e 100644
+--- a/test/mjsunit/debug-setbreakpoint.js
++++ b/test/mjsunit/debug-setbreakpoint.js
+@@ -49,14 +49,17 @@ function safeEval(code) {
+   }
+ }
+ 
+-function testArguments(dcp, arguments, success, is_script) {
++function testArguments(dcp, arguments, success, is_script, is_script_reg_exp) {
+   var request = '{' + base_request + ',"arguments":' + arguments + '}'
+   var json_response = dcp.processDebugJSONRequest(request);
+   var response = safeEval(json_response);
+   if (success) {
+     assertTrue(response.success, request + ' -> ' + json_response);
+     if (is_script) {
+-      assertEquals('scriptName', response.body.type, request + ' -> ' + json_response);
++      if (is_script_reg_exp)
++        assertEquals('scriptRegExp', response.body.type, request + ' -> ' + json_response);
++      else
++        assertEquals('scriptName', response.body.type, request + ' -> ' + json_response);
+     } else {
+       assertEquals('scriptId', response.body.type, request + ' -> ' + json_response);
+     }
+@@ -108,6 +111,11 @@ function listener(event, exec_state, event_data, data) {
+     testArguments(dcp, '{"type":"script","target":"test","line":1}', true, true);
+     testArguments(dcp, '{"type":"script","target":"test","column":1}', true, true);
+ 
++    testArguments(dcp, '{"type":"scriptRegExp","target":"test"}', true, true, true);
++    testArguments(dcp, '{"type":"scriptRegExp","target":"test"}', true, true, true);
++    testArguments(dcp, '{"type":"scriptRegExp","target":"test","line":1}', true, true, true);
++    testArguments(dcp, '{"type":"scriptRegExp","target":"test","column":1}', true, true, true);
++
+     testArguments(dcp, '{"type":"scriptId","target":' + f_script_id + ',"line":' + f_line + '}', true, false);
+     testArguments(dcp, '{"type":"scriptId","target":' + g_script_id + ',"line":' + g_line + '}', true, false);
+     testArguments(dcp, '{"type":"scriptId","target":' + h_script_id + ',"line":' + h_line + '}', true, false);
+-- 
+1.7.4.1
+

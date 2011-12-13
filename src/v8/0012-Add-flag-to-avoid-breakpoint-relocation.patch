@@ -1,7 +1,7 @@
-From d28b6a024826aaa48a8b3e69c096d01c91aff2c9 Mon Sep 17 00:00:00 2001
+From f37d702159f3e606610b74fb2b56ece63d510a6e Mon Sep 17 00:00:00 2001
 From: Kai Koehne <kai.koehne@nokia.com>
 Date: Thu, 10 Nov 2011 16:00:37 +0100
-Subject: [PATCH 12/12] Add flag to avoid breakpoint relocation
+Subject: [PATCH 12/13] Add flag to avoid breakpoint relocation
 
 Add a flag that prevents v8 from relocating breakpoints across
 line boundaries.
@@ -143,5 +143,5 @@ index cf723ba..7e51c34 100644
  // Test that it is possible to remove the last break point for a function
  // inside the break handling of that break point.
 -- 
-1.7.7.3
+1.7.4.1
 

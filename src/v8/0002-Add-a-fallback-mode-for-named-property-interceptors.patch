@@ -1,7 +1,7 @@
-From 20eca1d4ce4c56b599a052d496f4660f9ca9c978 Mon Sep 17 00:00:00 2001
+From e30b202d683e36731d9674ebf75803990a33816e Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Thu, 27 Oct 2011 11:31:56 +0100
-Subject: [PATCH 02/12] Add a "fallback" mode for named property interceptors
+Subject: [PATCH 02/13] Add a "fallback" mode for named property interceptors
 
 By default interceptors are called before the normal property
 resolution on objects.  When an interceptor is installed as a
@@ -357,5 +357,5 @@ index 9c23c2c..0e256c1 100644
    return isolate->heap()->undefined_value();
  }
 -- 
-1.7.7.3
+1.7.4.1
 

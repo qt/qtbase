@@ -1,7 +1,7 @@
-From 7084bd94a99db246baa4f1d050a6f23cfd6adc14 Mon Sep 17 00:00:00 2001
+From 4a9995fd141e40df2493dc2ef12d91f0a946629a Mon Sep 17 00:00:00 2001
 From: Kent Hansen <kent.hansen@nokia.com>
 Date: Fri, 2 Sep 2011 12:03:09 +0200
-Subject: [PATCH 09/12] Fix deprecated Python code
+Subject: [PATCH 09/13] Fix deprecated Python code
 
 Needed to make the scripts run on Python 3, which is the
 default python interpreter on some newer distros.
@@ -47,5 +47,5 @@ index 646bf14..395441b 100644
        if identifier_second_char != 0:
          new_identifier = (
 -- 
-1.7.7.3
+1.7.4.1
 

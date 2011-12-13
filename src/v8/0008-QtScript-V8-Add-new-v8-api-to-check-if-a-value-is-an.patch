@@ -1,8 +1,7 @@
-From de3e14564f163d808a3d10397a3018e6aaeb727b Mon Sep 17 00:00:00 2001
+From c7850561fcdf333a5b80a50623c7d4507757b315 Mon Sep 17 00:00:00 2001
 From: Jedrzej Nowacki <jedrzej.nowacki@nokia.com>
 Date: Tue, 7 Dec 2010 11:56:42 +0100
-Subject: [PATCH 08/12] QtScript/V8: Add new v8 api to check if a value is an
- error.
+Subject: [PATCH 08/13] QtScript/V8: Add new v8 api to check if a value is an error.
 
 New function v8::Value::IsError was created.
 
@@ -60,5 +59,5 @@ index 5e90964..6166cde 100644
    V(to_string_symbol, "toString")                                        \
    V(char_at_symbol, "CharAt")                                            \
 -- 
-1.7.7.3
+1.7.4.1
 

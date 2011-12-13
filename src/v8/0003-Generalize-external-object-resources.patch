@@ -1,7 +1,7 @@
-From 74974cee335e6c22ea99fd9a4bbb9c7fa7323d80 Mon Sep 17 00:00:00 2001
+From 501255df9cb6241a1f6c8d8a3361b9582fa481ef Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Tue, 4 Oct 2011 16:06:09 +1000
-Subject: [PATCH 03/12] Generalize external object resources
+Subject: [PATCH 03/13] Generalize external object resources
 
 V8 was already able to manage and finalize an external string
 resource.  This change generalizes that mechanism to handle a
@@ -591,5 +591,5 @@ index ed40061..c38d461 100644
  
  
 -- 
-1.7.7.3
+1.7.4.1
 
