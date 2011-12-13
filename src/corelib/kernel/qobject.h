@@ -100,12 +100,11 @@ public:
     uint blockSig : 1;
     uint wasDeleted : 1;
     uint isDeletingChildren : 1;
-    uint ownObjectName : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
     uint inThreadChangeEvent : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 22;
+    uint unused : 23;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };
