@@ -135,6 +135,25 @@ void tst_Cmptest::compareQStringLists_data()
 
     {
         QStringList opA;
+        QStringList opB(opA);
+
+        QTest::newRow("empty lists") << opA << opB;
+    }
+
+    {
+        QStringList opA;
+        opA.append(QLatin1String("string1"));
+        opA.append(QLatin1String("string2"));
+        opA.append(QLatin1String("string3"));
+        opA.append(QLatin1String("string4"));
+
+        QStringList opB(opA);
+
+        QTest::newRow("equal lists") << opA << opB;
+    }
+
+    {
+        QStringList opA;
         opA.append(QLatin1String("string1"));
         opA.append(QLatin1String("string2"));
 
