@@ -22,19 +22,19 @@
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQStringLists">
-    <failure message="Compared QStringLists differ at index 2.
+    <failure tag="last item different" message="Compared QStringLists differ at index 2.
    Actual (opA) : &apos;string3&apos;
    Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
-    <failure message="Compared QStringLists differ at index 2.
+    <failure tag="second&#x002D;last item different" message="Compared QStringLists differ at index 2.
    Actual (opA) : &apos;string3&apos;
    Expected (opB) : &apos;DIFFERS&apos;" result="fail"/>
-    <failure message="Compared QStringLists have different sizes.
+    <failure tag="prefix" message="Compared QStringLists have different sizes.
    Actual (opA) size  : &apos;2&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
-    <failure message="Compared QStringLists have different sizes.
+    <failure tag="short list second" message="Compared QStringLists have different sizes.
    Actual (opA) size  : &apos;12&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
-    <failure message="Compared QStringLists have different sizes.
+    <failure tag="short list first" message="Compared QStringLists have different sizes.
    Actual (opA) size  : &apos;1&apos;
    Expected (opB) size: &apos;12&apos;" result="fail"/>
   </testcase>

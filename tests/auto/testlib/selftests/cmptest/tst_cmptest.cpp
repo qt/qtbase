@@ -142,7 +142,7 @@ void tst_Cmptest::compareQStringLists_data()
         opA.append(QLatin1String("string3"));
         opB.append(QLatin1String("DIFFERS"));
 
-        QTest::newRow("") << opA << opB;
+        QTest::newRow("last item different") << opA << opB;
     }
 
     {
@@ -157,7 +157,7 @@ void tst_Cmptest::compareQStringLists_data()
         opB.append(QLatin1String("DIFFERS"));
         opB.append(QLatin1String("string4"));
 
-        QTest::newRow("") << opA << opB;
+        QTest::newRow("second-last item different") << opA << opB;
     }
 
     {
@@ -168,7 +168,7 @@ void tst_Cmptest::compareQStringLists_data()
         QStringList opB;
         opB.append(QLatin1String("string1"));
 
-        QTest::newRow("") << opA << opB;
+        QTest::newRow("prefix") << opA << opB;
     }
 
     {
@@ -189,9 +189,9 @@ void tst_Cmptest::compareQStringLists_data()
         QStringList opB;
         opB.append(QLatin1String("viewDocumentSource"));
 
-        QTest::newRow("") << opA << opB;
+        QTest::newRow("short list second") << opA << opB;
 
-        QTest::newRow("") << opB << opA;
+        QTest::newRow("short list first") << opB << opA;
     }
 }
 
