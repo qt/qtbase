@@ -717,6 +717,7 @@ void tst_QLocalSocket::threadedConnection()
     server.mutex.lock();
     server.start();
     server.wc.wait(&server.mutex);
+    server.mutex.unlock();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
