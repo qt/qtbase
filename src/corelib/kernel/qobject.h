@@ -106,7 +106,7 @@ public:
     uint inEventHandler : 1; //only used if QT_JAMBI_BUILD
     uint inThreadChangeEvent : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 22;
+    uint unused : 21;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };
