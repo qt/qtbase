@@ -3999,7 +3999,7 @@ void tst_QObject::disconnectNotSignalMetaMethod()
     QMetaMethod slot = s.metaObject()->method(
             s.metaObject()->indexOfMethod("aPublicSlot()"));
 
-    QTest::ignoreMessage(QtWarningMsg,"Object::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
+    QTest::ignoreMessage(QtWarningMsg,"QObject::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
     QVERIFY(!QObject::disconnect(&s, slot, &r, QMetaMethod()));
 }
 
