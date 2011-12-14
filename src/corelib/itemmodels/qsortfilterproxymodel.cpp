@@ -1345,7 +1345,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsRemoved(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeMoved(
-    const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest)
+    const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
     Q_Q(QSortFilterProxyModel);
     // Because rows which are contiguous in the source model might not be contiguous
@@ -1367,7 +1367,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeMoved(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceRowsMoved(
-    const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest)
+    const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
     Q_Q(QSortFilterProxyModel);
 
@@ -1449,7 +1449,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved(
-    const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest)
+    const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
     Q_Q(QSortFilterProxyModel);
 
@@ -1467,7 +1467,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved(
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
-    const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest)
+    const QModelIndex &sourceParent, int /* sourceStart */, int /* sourceEnd */, const QModelIndex &destParent, int /* dest */)
 {
     Q_Q(QSortFilterProxyModel);
 
