@@ -118,6 +118,9 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 {
     if (geometry() == rect)
         return;
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::setGeometry" << this << rect;
+#endif
     QPlatformWindow::setGeometry(rect);
 
     NSRect bounds = qt_mac_flipRect(rect, window());
@@ -130,6 +133,9 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 void QCocoaWindow::setVisible(bool visible)
 {
     QCocoaAutoReleasePool pool;
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::setVisible" << this << visible;
+#endif
     if (visible) {
         // The parent window might have moved while this window was hidden,
         // update the window geometry if there is a parent.
@@ -171,6 +177,13 @@ void QCocoaWindow::propagateSizeHints()
 
     [m_nsWindow setMinSize : qt_mac_toNSSize(window()->minimumSize())];
     [m_nsWindow setMaxSize : qt_mac_toNSSize(window()->maximumSize())];
+
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::propagateSizeHints" << this;
+    qDebug() << "     min/max " << window()->minimumSize() << window()->maximumSize();
+    qDebug() << "     basesize" << window()->baseSize();
+    qDebug() << "     geometry" << geometry();
+#endif
 
     if (!window()->sizeIncrement().isNull())
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
