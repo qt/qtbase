@@ -125,6 +125,36 @@
     \sa isEmpty(), resize()
 */
 
+/*! \fn T& QVarLengthArray::first()
+
+    Returns a reference to the first item in the array. The array must
+    not be empty. If the array can be empty, check isEmpty() before
+    calling this function.
+
+    \sa last(), isEmpty()
+*/
+
+/*! \fn const T& QVarLengthArray::first() const
+
+    \overload
+*/
+
+/*! \fn T& QVarLengthArray::last()
+
+    Returns a reference to the last item in the array.  The array must
+    not be empty. If the array can be empty, check isEmpty() before
+    calling this function.
+
+    \sa first(), isEmpty()
+*/
+
+/*! \fn const T& QVarLengthArray::last() const
+
+    \overload
+*/
+
+
+
 /*! \fn bool QVarLengthArray::isEmpty() const
 
     Returns true if the array has size 0; otherwise returns false.

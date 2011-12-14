@@ -56,6 +56,8 @@ private slots:
     void resize();
     void realloc();
     void count();
+    void first();
+    void last();
 };
 
 int fooCtor = 0;
@@ -653,6 +655,50 @@ void tst_QVarLengthArray::count()
         QCOMPARE(list.count(), 0);
         QCOMPARE(list.size(), 0);
     }
+}
+
+void tst_QVarLengthArray::first()
+{
+    // append some items, make sure it stays sane
+    QVarLengthArray<int> list;
+    list.append(27);
+    QCOMPARE(list.first(), 27);
+    list.append(4);
+    QCOMPARE(list.first(), 27);
+    list.append(1987);
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 3);
+
+    // remove some, make sure it stays sane
+    list.removeLast();
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 2);
+
+    list.removeLast();
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 1);
+}
+
+void tst_QVarLengthArray::last()
+{
+    // append some items, make sure it stays sane
+    QVarLengthArray<int> list;
+    list.append(27);
+    QCOMPARE(list.last(), 27);
+    list.append(4);
+    QCOMPARE(list.last(), 4);
+    list.append(1987);
+    QCOMPARE(list.last(), 1987);
+    QCOMPARE(list.length(), 3);
+
+    // remove some, make sure it stays sane
+    list.removeLast();
+    QCOMPARE(list.last(), 4);
+    QCOMPARE(list.length(), 2);
+
+    list.removeLast();
+    QCOMPARE(list.last(), 27);
+    QCOMPARE(list.length(), 1);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)
