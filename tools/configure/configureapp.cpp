@@ -2666,7 +2666,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp create_prl link_prl depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2740,7 +2740,9 @@ void Configure::generateCachefile()
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            moduleStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            moduleStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"]<<endl;
+
+        moduleStream << "CONFIG += create_prl link_prl" << endl;
 
         moduleStream.flush();
         moduleFile.close();
