@@ -389,14 +389,19 @@ QT_BEGIN_NAMESPACE
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
 
-    If \c QT_GUI_LIB is defined, the application object will be a QApplication,
+    If \c QT_WIDGETS_LIB is defined, the application object will be a QApplication,
+    if \c QT_GUI_LIB is defined, the application object will be a QGuiApplication,
     otherwise it will be a QCoreApplication.  If qmake is used and the configuration
-    includes \c{QT += gui}, then \c QT_GUI_LIB will be defined automatically.
+    includes \c{QT += widgets}, then \c QT_WIDGETS_LIB will be defined automatically.
+    Similarly, if qmake is used and the configuration includes \c{QT += gui}, then
+    \c QT_GUI_LIB will be defined automatically.
 
-    \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
-    this macro will forcfully disable it to simplify the usage of key events when writing
-    autotests. If you wish to write a test case that uses keypad navigation, you should
-    enable it either in the \c {initTestCase()} or \c {init()} functions of your test case.
+    \bold {Note:} On platforms that have keypad navigation enabled by default,
+    this macro will forcefully disable it if \c QT_WIDGETS_LIB is defined.  This is done
+    to simplify the usage of key events when writing autotests. If you wish to write a
+    test case that uses keypad navigation, you should enable it either in the
+    \c {initTestCase()} or \c {init()} functions of your test case by calling
+    \l {QApplication::setNavigationMode()}.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
