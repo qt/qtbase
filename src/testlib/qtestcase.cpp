@@ -514,7 +514,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates clicking of \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 13
@@ -528,7 +529,8 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates clicking of \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
 
     Examples:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 14
@@ -536,7 +538,7 @@ QT_BEGIN_NAMESPACE
     The first example above simulates clicking the \c escape key on \c
     myWidget without any keyboard modifiers and without delay. The
     second example simulates clicking \c shift-escape on \c myWidget
-    with a following 200 ms delay of the test.
+    following a 200 ms delay of the test.
 
     \sa QTest::keyClicks()
 */
@@ -561,7 +563,7 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyPress(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay
-    is larger than 0, the test will wait for \a delay milliseconds.
+    is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -573,7 +575,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates pressing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before pressing the key.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -583,7 +586,8 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyRelease(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates releasing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
 
     \sa QTest::keyPress(), QTest::keyClick()
 */
@@ -593,7 +597,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates releasing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
 
     \sa QTest::keyClick()
 */
