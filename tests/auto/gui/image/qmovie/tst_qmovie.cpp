@@ -152,7 +152,7 @@ void tst_QMovie::playMovie()
     QFETCH(QString, fileName);
     QFETCH(int, frameCount);
 
-    QMovie movie(fileName);
+    QMovie movie(QFINDTESTDATA(fileName));
 
     QCOMPARE(movie.state(), QMovie::NotRunning);
     movie.setSpeed(1000);

@@ -98,6 +98,15 @@ private:
 
 tst_qmake::tst_qmake()
 {
+}
+
+tst_qmake::~tst_qmake()
+{
+
+}
+
+void tst_qmake::initTestCase()
+{
     QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
     QString cmd = QString("%2/qmake \"QT_VERSION=%1\"").arg(QT_VERSION).arg(binpath);
 #ifdef Q_CC_MSVC
@@ -109,17 +118,8 @@ tst_qmake::tst_qmake()
 #else
     test_compiler.setBaseCommands( "make", cmd );
 #endif
-    QDir dir;
-    base_path = dir.currentPath();
-}
-
-tst_qmake::~tst_qmake()
-{
-
-}
-
-void tst_qmake::initTestCase()
-{
+    QString tmpFile = QFINDTESTDATA("testdata");
+    base_path = tmpFile.left(tmpFile.lastIndexOf('/'));
 }
 
 void tst_qmake::cleanupTestCase()

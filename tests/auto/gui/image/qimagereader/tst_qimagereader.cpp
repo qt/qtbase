@@ -179,10 +179,9 @@ private slots:
     void preserveTexts();
 
 private:
+    QString prefix;
     QTemporaryDir m_temporaryDir;
 };
-
-static const QLatin1String prefix(SRCDIR "/images/");
 
 // helper to skip an autotest when the given image format is not supported
 #define SKIP_IF_UNSUPPORTED(format) do {                                                          \
@@ -220,6 +219,7 @@ tst_QImageReader::~tst_QImageReader()
 
 void tst_QImageReader::init()
 {
+    prefix = QFINDTESTDATA("images/");
    QVERIFY(m_temporaryDir.isValid());
 }
 
