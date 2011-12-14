@@ -220,10 +220,7 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
         }
     }
 
-    if (d->pipeClosed) {
-        if (d->actualReadBufferSize == 0)
-            QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
-    } else {
+    if (!d->pipeClosed) {
         if (!d->readSequenceStarted)
             d->startAsyncRead();
         d->checkReadyRead();
@@ -297,7 +294,7 @@ void QLocalSocketPrivate::startAsyncRead()
                         // after writing data. Then we must set the appropriate socket state.
                         pipeClosed = true;
                         Q_Q(QLocalSocket);
-                        emit q->readChannelFinished();
+                        QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
                         return;
                     }
                 default:
@@ -375,9 +372,7 @@ DWORD QLocalSocketPrivate::checkPipeState()
     } else {
         if (!pipeClosed) {
             pipeClosed = true;
-            emit q->readChannelFinished();
-            if (actualReadBufferSize == 0)
-                QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
+            QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         }
     }
     return 0;
@@ -386,7 +381,29 @@ DWORD QLocalSocketPrivate::checkPipeState()
 void QLocalSocketPrivate::_q_pipeClosed()
 {
     Q_Q(QLocalSocket);
-    q->close();
+    if (state == QLocalSocket::UnconnectedState)
+        return;
+
+    emit q->readChannelFinished();
+    if (state != QLocalSocket::ClosingState) {
+        state = QLocalSocket::ClosingState;
+        emit q->stateChanged(state);
+        if (state != QLocalSocket::ClosingState)
+            return;
+    }
+    state = QLocalSocket::UnconnectedState;
+    emit q->stateChanged(state);
+    emit q->disconnected();
+
+    readSequenceStarted = false;
+    destroyPipeHandles();
+    handle = INVALID_HANDLE_VALUE;
+    ResetEvent(overlapped.hEvent);
+
+    if (pipeWriter) {
+        delete pipeWriter;
+        pipeWriter = 0;
+    }
 }
 
 qint64 QLocalSocket::bytesAvailable() const
@@ -406,8 +423,6 @@ qint64 QLocalSocket::bytesToWrite() const
 bool QLocalSocket::canReadLine() const
 {
     Q_D(const QLocalSocket);
-    if (state() != ConnectedState)
-        return false;
     return (QIODevice::canReadLine()
             || d->readBuffer.indexOf('\n', d->actualReadBufferSize) != -1);
 }
@@ -415,33 +430,20 @@ bool QLocalSocket::canReadLine() const
 void QLocalSocket::close()
 {
     Q_D(QLocalSocket);
-    if (state() == UnconnectedState)
+    if (openMode() == NotOpen)
         return;
 
     QIODevice::close();
-    d->state = ClosingState;
-    emit stateChanged(d->state);
-    if (!d->pipeClosed)
-        emit readChannelFinished();
     d->serverName = QString();
     d->fullServerName = QString();
 
-    if (state() != UnconnectedState && bytesToWrite() > 0) {
-        disconnectFromServer();
-        return;
-    }
-    d->readSequenceStarted = false;
-    d->pendingReadyRead = false;
-    d->pipeClosed = false;
-    d->destroyPipeHandles();
-    d->handle = INVALID_HANDLE_VALUE;
-    ResetEvent(d->overlapped.hEvent);
-    d->state = UnconnectedState;
-    emit stateChanged(d->state);
-    emit disconnected();
-    if (d->pipeWriter) {
-        delete d->pipeWriter;
-        d->pipeWriter = 0;
+    if (state() != UnconnectedState) {
+        if (bytesToWrite() > 0) {
+            disconnectFromServer();
+            return;
+        }
+
+        d->_q_pipeClosed();
     }
 }
 
@@ -489,6 +491,7 @@ bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
     QIODevice::open(openMode);
     d->handle = (int*)socketDescriptor;
     d->state = socketState;
+    d->pipeClosed = false;
     emit stateChanged(d->state);
     if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly)) {
         d->startAsyncRead();
@@ -509,9 +512,7 @@ void QLocalSocketPrivate::_q_notified()
     Q_Q(QLocalSocket);
     if (!completeAsyncRead()) {
         pipeClosed = true;
-        emit q->readChannelFinished();
-        if (actualReadBufferSize == 0)
-            QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
+        QTimer::singleShot(0, q, SLOT(_q_pipeClosed()));
         return;
     }
     startAsyncRead();
@@ -565,7 +566,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
     forever {
         d->checkPipeState();
         if (d->pipeClosed)
-            close();
+            d->_q_pipeClosed();
         if (state() == UnconnectedState)
             return true;
         Sleep(timer.nextSleepTime());
@@ -594,7 +595,7 @@ bool QLocalSocket::waitForReadyRead(int msecs)
 
     // We already know that the pipe is gone, but did not enter the event loop yet.
     if (d->pipeClosed) {
-        close();
+        d->_q_pipeClosed();
         return false;
     }
 
@@ -605,7 +606,7 @@ bool QLocalSocket::waitForReadyRead(int msecs)
             d->_q_notified();
             // We just noticed that the pipe is gone.
             if (d->pipeClosed) {
-                close();
+                d->_q_pipeClosed();
                 return false;
             }
             return true;
