@@ -286,6 +286,10 @@ void QUnifiedTimer::setTimingInterval(int interval)
 void QUnifiedTimer::startAnimations()
 {
     startAnimationPending = false;
+    //force timer to update, which prevents large deltas for our newly added animations
+    if (!animations.isEmpty())
+        updateAnimationsTime(-1);
+
     //we transfer the waiting animations into the "really running" state
     animations += animationsToStart;
     animationsToStart.clear();

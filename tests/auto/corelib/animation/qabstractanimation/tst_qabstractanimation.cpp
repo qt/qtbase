@@ -60,6 +60,7 @@ private slots:
     void totalDuration();
     void avoidJumpAtStart();
     void avoidJumpAtStartWithStop();
+    void avoidJumpAtStartWithRunning();
 };
 
 class TestableQAbstractAnimation : public QAbstractAnimation
@@ -180,6 +181,9 @@ void tst_QAbstractAnimation::avoidJumpAtStartWithStop()
     TestableQAbstractAnimation anim2;
     anim2.setDuration(1000);
 
+    TestableQAbstractAnimation anim3;
+    anim3.setDuration(1000);
+
     anim.start();
     QTest::qWait(300);
     anim.stop();
@@ -190,9 +194,38 @@ void tst_QAbstractAnimation::avoidJumpAtStartWithStop()
     */
     anim2.start();
     QTest::qSleep(300);
+    anim3.start();
     QCoreApplication::processEvents();
     QVERIFY(anim2.currentTime() < 50);
+    QVERIFY(anim3.currentTime() < 50);
 }
+
+void tst_QAbstractAnimation::avoidJumpAtStartWithRunning()
+{
+    TestableQAbstractAnimation anim;
+    anim.setDuration(2000);
+
+    TestableQAbstractAnimation anim2;
+    anim2.setDuration(1000);
+
+    TestableQAbstractAnimation anim3;
+    anim3.setDuration(1000);
+
+    anim.start();
+    QTest::qWait(300);  //make sure timer has started
+
+    /*
+        same test as avoidJumpAtStart, but with an
+        existing running animation
+    */
+    anim2.start();
+    QTest::qSleep(300); //force large delta for next tick
+    anim3.start();
+    QCoreApplication::processEvents();
+    QVERIFY(anim2.currentTime() < 50);
+    QVERIFY(anim3.currentTime() < 50);
+}
+
 
 QTEST_MAIN(tst_QAbstractAnimation)
 
