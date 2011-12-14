@@ -148,9 +148,6 @@ QT_BEGIN_NAMESPACE
    unspecified behavior from being introduced; that is behavior that usually
    occurs when the compiler implicitly casts the argument.
 
-   If you use QCOMPARE() to compare two QStringList objects, it will start
-   comparing the objects from the end of the lists.
-
    For your own classes, you can use \l QTest::toString() to format values for
    outputting into the test log.
 
