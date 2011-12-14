@@ -188,15 +188,9 @@ void QCocoaWindow::propagateSizeHints()
     if (!window()->sizeIncrement().isNull())
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
 
-    // We must set the window frame after setting the minimum size to prevent the window
-    // from being resized to the minimum size. Use QWindow::baseSize if set, otherwise
-    // use the current size.
     QSize baseSize = window()->baseSize();
-    QRect rect = geometry();
     if (!baseSize.isNull()) {
-        [m_nsWindow setFrame : NSMakeRect(rect.x(), rect.y(), baseSize.width(), baseSize.height()) display : YES];
-    } else {
-        [m_nsWindow setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) display : YES];
+        [m_nsWindow setFrameSize : NSMakeSize(baseSize.width(), baseSize.height()) display : YES];
     }
 }
 
