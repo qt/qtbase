@@ -45,12 +45,26 @@
 
 #include <QtTest/QtTest>
 
-#include "qabstracteventdispatcher.h"
-#include <QtGui>
-#include <QtWidgets>
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtCore/QProcess>
 
-#include "private/qapplication_p.h"
-#include "private/qstylesheetstyle_p.h"
+#include <QtGui/QFontDatabase>
+#include <QtGui/QClipboard>
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QInputContext>
+#include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/private/qapplication_p.h>
+#include <QtWidgets/private/qstylesheetstyle_p.h>
+
 #ifdef Q_OS_WINCE
 #include <windows.h>
 #endif
@@ -64,6 +78,7 @@ public:
     virtual ~tst_QApplication();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -139,6 +154,13 @@ public:
         return false;
     }
 };
+
+void tst_QApplication::initTestCase()
+{
+    // chdir to our testdata path and execute helper apps relative to that.
+    const QString testdataDir = QFileInfo(QFINDTESTDATA("desktopsettingsaware")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+}
 
 void tst_QApplication::sendEventsOnProcessEvents()
 {
@@ -1463,19 +1485,14 @@ void tst_QApplication::desktopSettingsAware()
 {
 #ifndef QT_NO_PROCESS
     QProcess testProcess;
+    const QString path = QStringLiteral("desktopsettingsaware/desktopsettingsaware");
 #ifdef Q_OS_WINCE
     int argc = 0;
     QApplication tmpApp(argc, 0, QApplication::GuiServer);
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
-#else
-#if defined(Q_OS_WIN) && defined(QT_DEBUG)
-    testProcess.start("desktopsettingsaware/debug/desktopsettingsaware");
-#elif defined(Q_OS_WIN)
-    testProcess.start("desktopsettingsaware/release/desktopsettingsaware");
-#else
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
 #endif
-#endif
+    testProcess.start(path);
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
     QCOMPARE(int(testProcess.state()), int(QProcess::NotRunning));
     QVERIFY(int(testProcess.error()) != int(QProcess::Crashed));
@@ -1866,11 +1883,10 @@ void tst_QApplication::windowsCommandLine()
     QFETCH(QString, expected);
 
     QProcess testProcess;
-#if defined(QT_DEBUG)
-    testProcess.start("wincmdline/debug/wincmdline", QStringList(args));
-#else
-    testProcess.start("wincmdline/release/wincmdline", QStringList(args));
-#endif
+    const QString path = QStringLiteral("wincmdline/wincmdline");
+    testProcess.start(path, QStringList(args));
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
     QByteArray error = testProcess.readAllStandardError();
     QString procError(error);
@@ -2126,11 +2142,10 @@ void tst_QApplication::qtbug_12673()
 {
     QProcess testProcess;
     QStringList arguments;
-#ifdef Q_OS_MAC
-    testProcess.start("modal/modal.app", arguments);
-#else
-    testProcess.start("modal/modal", arguments);
-#endif
+    const QString path = QStringLiteral("modal/modal");
+    testProcess.start(path, arguments);
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 }
