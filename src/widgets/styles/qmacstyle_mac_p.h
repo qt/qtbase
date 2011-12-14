@@ -43,13 +43,13 @@
 #ifndef QMACSTYLE_MAC_P_H
 #define QMACSTYLE_MAC_P_H
 
-#include <qmacstyle_mac.h>
+#include <Carbon/Carbon.h>
+#undef check
+
+#include "qmacstyle_mac.h"
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
-#include <private/qmacstylepixmaps_mac_p.h>
-#include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
-#include <private/qprintengine_mac_p.h>
 #include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
@@ -94,7 +94,8 @@
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+
+
 
 //
 //  W A R N I N G
@@ -108,21 +109,6 @@
 //
 
 QT_BEGIN_NAMESPACE
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
-enum {
-    kThemePushButtonTextured = 31,
-    kThemePushButtonTexturedSmall = 32,
-    kThemePushButtonTexturedMini = 33
-};
-
-/* Search fields */
-enum {
-    kHIThemeFrameTextFieldRound = 1000,
-    kHIThemeFrameTextFieldRoundSmall = 1001,
-    kHIThemeFrameTextFieldRoundMini = 1002
-};
-#endif
 
 /*
     AHIG:

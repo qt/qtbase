@@ -45,17 +45,15 @@
 */
 
 #include "qmacstyle_mac.h"
+#include "qmacstyle_mac_p.h"
+#include "qmacstylepixmaps_mac_p.h"
 
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN
 //#define DEBUG_SIZE_CONSTRAINT
 
-#include <private/qapplication_p.h>
+#include <private/qcore_mac_p.h>
 #include <private/qcombobox_p.h>
-#include <private/qmacstylepixmaps_mac_p.h>
-#include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
-#include <private/qprintengine_mac_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -97,11 +95,10 @@
 #include <qlibrary.h>
 #include <qdatetimeedit.h>
 #include <qmath.h>
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qgraphicsview.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#include "qmacstyle_mac_p.h"
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsview.h>
 #include <private/qstylehelper_p.h>
+#include <QtGui/QPlatformFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
@@ -138,9 +135,6 @@ typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
 static PtrHIShapeGetBounds ptrHIShapeGetBounds = 0;
 
 static int closeButtonSize = 12;
-
-extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
-
 static bool isVerticalTabs(const QTabBar::Shape shape) {
     return (shape == QTabBar::RoundedEast
                 || shape == QTabBar::TriangularEast
@@ -417,18 +411,247 @@ static inline ThemeTabDirection getTabDirection(QTabBar::Shape shape)
     return ttd;
 }
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include "moc_qmacstyle_mac.cpp"
-#include "moc_qmacstyle_mac_p.cpp"
-QT_END_INCLUDE_NAMESPACE
+static QString qt_mac_removeMnemonics(const QString &original)
+{
+    QString returnText(original.size(), 0);
+    int finalDest = 0;
+    int currPos = 0;
+    int l = original.length();
+    while (l) {
+        if (original.at(currPos) == QLatin1Char('&')
+            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
+            ++currPos;
+            --l;
+            if (l == 0)
+                break;
+        }
+        returnText[finalDest] = original.at(currPos);
+        ++currPos;
+        ++finalDest;
+        --l;
+    }
+    returnText.truncate(finalDest);
+    return returnText;
+}
 
-/*****************************************************************************
-  External functions
- *****************************************************************************/
-extern CGContextRef qt_mac_cg_context(const QPaintDevice *); //qpaintdevice_mac.cpp
-extern QRegion qt_mac_convert_mac_region(HIShapeRef); //qregion_mac.cpp
-void qt_mac_dispose_rgn(RgnHandle r); //qregion_mac.cpp
-extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
+class QMacCGContext
+{
+    CGContextRef context;
+public:
+    QMacCGContext(QPainter *p); //qpaintengine_mac.cpp
+    inline QMacCGContext() { context = 0; }
+    inline QMacCGContext(const QPaintDevice *pdev) {
+        extern CGContextRef qt_mac_cg_context(const QPaintDevice *);
+        context = qt_mac_cg_context(pdev);
+    }
+    inline QMacCGContext(CGContextRef cg, bool takeOwnership=false) {
+        context = cg;
+        if (!takeOwnership)
+            CGContextRetain(context);
+    }
+    inline QMacCGContext(const QMacCGContext &copy) : context(0) { *this = copy; }
+    inline ~QMacCGContext() {
+        if (context)
+            CGContextRelease(context);
+    }
+    inline bool isNull() const { return context; }
+    inline operator CGContextRef() { return context; }
+    inline QMacCGContext &operator=(const QMacCGContext &copy) {
+        if (context)
+            CGContextRelease(context);
+        context = copy.context;
+        CGContextRetain(context);
+        return *this;
+    }
+    inline QMacCGContext &operator=(CGContextRef cg) {
+        if (context)
+            CGContextRelease(context);
+        context = cg;
+        CGContextRetain(context); //we do not take ownership
+        return *this;
+    }
+};
+
+static QColor qcolorFromCGColor(CGColorRef cgcolor)
+{
+    QColor pc;
+    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(cgcolor));
+    const CGFloat *components = CGColorGetComponents(cgcolor);
+    if (model == kCGColorSpaceModelRGB) {
+        pc.setRgbF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelCMYK) {
+        pc.setCmykF(components[0], components[1], components[2], components[3]);
+    } else if (model == kCGColorSpaceModelMonochrome) {
+        pc.setRgbF(components[0], components[0], components[0], components[1]);
+    } else {
+        // Colorspace we can't deal with.
+        qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
+        Q_ASSERT(false);
+    }
+    return pc;
+}
+
+static inline QColor leopardBrush(ThemeBrush brush)
+{
+    QCFType<CGColorRef> cgClr = 0;
+    HIThemeBrushCreateCGColor(brush, &cgClr);
+    return qcolorFromCGColor(cgClr);
+}
+
+QColor qcolorForTheme(ThemeBrush brush)
+{
+    return leopardBrush(brush);
+}
+
+OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inRect, void *inRefcon)
+{
+    QRegion *region = static_cast<QRegion *>(inRefcon);
+    if (!region)
+        return paramErr;
+
+    switch (inMessage) {
+    case kHIShapeEnumerateRect:
+        *region += QRect(inRect->origin.x, inRect->origin.y,
+                         inRect->size.width, inRect->size.height);
+        break;
+    case kHIShapeEnumerateInit:
+        // Assume the region is already setup correctly
+    case kHIShapeEnumerateTerminate:
+    default:
+        break;
+    }
+    return noErr;
+}
+
+
+/*!
+    \internal
+     Create's a mutable shape, it's the caller's responsibility to release.
+     WARNING: this function clamps the coordinates to SHRT_MIN/MAX on 10.4 and below.
+*/
+HIMutableShapeRef qt_mac_toHIMutableShape(const QRegion &region)
+{
+    HIMutableShapeRef shape = HIShapeCreateMutable();
+    if (region.rectCount() < 2 ) {
+        QRect qtRect = region.boundingRect();
+        CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
+        HIShapeUnionWithRect(shape, &cgRect);
+    } else {
+        foreach (const QRect &qtRect, region.rects()) {
+            CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
+            HIShapeUnionWithRect(shape, &cgRect);
+        }
+    }
+    return shape;
+}
+
+QRegion qt_mac_fromHIShapeRef(HIShapeRef shape)
+{
+    QRegion returnRegion;
+    //returnRegion.detach();
+    HIShapeEnumerate(shape, kHIShapeParseFromTopLeft, qt_mac_shape2QRegionHelper, &returnRegion);
+    return returnRegion;
+}
+
+CGColorSpaceRef m_genericColorSpace = 0;
+QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
+bool m_postRoutineRegistered = false;
+
+CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
+CGColorSpaceRef qt_mac_genericColorSpace()
+{
+#if 0
+    if (!m_genericColorSpace) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
+            m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+        } else
+#endif
+        {
+            m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
+        }
+        if (!m_postRoutineRegistered) {
+            m_postRoutineRegistered = true;
+            qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
+        }
+    }
+    return m_genericColorSpace;
+#else
+    // Just return the main display colorspace for the moment.
+    return qt_mac_displayColorSpace(0);
+#endif
+}
+
+/*
+    Ideally, we should pass the widget in here, and use CGGetDisplaysWithRect() etc.
+    to support multiple displays correctly.
+*/
+CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
+{
+    CGColorSpaceRef colorSpace;
+
+    CGDirectDisplayID displayID;
+    CMProfileRef displayProfile = 0;
+    if (widget == 0) {
+        displayID = CGMainDisplayID();
+    } else {
+        displayID = CGMainDisplayID();
+        /*
+        ### get correct display
+        const QRect &qrect = widget->window()->geometry();
+        CGRect rect = CGRectMake(qrect.x(), qrect.y(), qrect.width(), qrect.height());
+        CGDisplayCount throwAway;
+        CGDisplayErr dErr = CGGetDisplaysWithRect(rect, 1, &displayID, &throwAway);
+        if (dErr != kCGErrorSuccess)
+            return macDisplayColorSpace(0); // fall back on main display
+        */
+    }
+    if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
+        return colorSpace;
+
+    CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
+    if (err == noErr) {
+        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
+    } else if (widget) {
+        return qt_mac_displayColorSpace(0); // fall back on main display
+    }
+
+    if (colorSpace == 0)
+        colorSpace = CGColorSpaceCreateDeviceRGB();
+
+    m_displayColorSpaceHash.insert(displayID, colorSpace);
+    CMCloseProfile(displayProfile);
+    if (!m_postRoutineRegistered) {
+        m_postRoutineRegistered = true;
+        void qt_mac_cleanUpMacColorSpaces();
+        qAddPostRoutine(qt_mac_cleanUpMacColorSpaces);
+    }
+    return colorSpace;
+}
+
+void qt_mac_cleanUpMacColorSpaces()
+{
+    if (m_genericColorSpace) {
+        CFRelease(m_genericColorSpace);
+        m_genericColorSpace = 0;
+    }
+    QHash<CGDirectDisplayID, CGColorSpaceRef>::const_iterator it = m_displayColorSpaceHash.constBegin();
+    while (it != m_displayColorSpaceHash.constEnd()) {
+        if (it.value())
+            CFRelease(it.value());
+        ++it;
+    }
+    m_displayColorSpaceHash.clear();
+}
+
+bool qt_macWindowIsTextured(const QWidget *window)
+{
+    NSWindow *nswindow = static_cast<NSWindow*>(
+        QApplication::platformNativeInterface()->nativeResourceForWindow("NSWindow", window->windowHandle()));
+    if (!nswindow)
+        return false;
+    return ([nswindow styleMask] & NSTexturedBackgroundWindowMask) ? true : false;
+}
 
 /*****************************************************************************
   QMacCGStyle globals
@@ -467,7 +690,7 @@ inline bool qt_mac_is_metal(const QWidget *w)
         if (w->testAttribute(Qt::WA_MacBrushedMetal))
             return true;
         if (w->isWindow() && w->testAttribute(Qt::WA_WState_Created)) {  // If not created will fall through to the opaque check and be fine anyway.
-			return macWindowIsTextured(qt_mac_window_for(w));
+            return qt_macWindowIsTextured(w);
         }
         if (w->d_func()->isOpaque)
             break;
@@ -1382,7 +1605,6 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
         tdi->trackInfo.scrollbar.viewsize = slider->pageStep;
     }
 }
-#endif
 
 QMacStylePrivate::QMacStylePrivate(QMacStyle *style)
     : timerID(-1), progressFrame(0), q(style), mouseDown(false)
@@ -1750,8 +1972,9 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
     QPoint dummy;
     const QPaintDevice *target = painter->device();
     const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
-    const bool usePainter = redirected && redirected != target;
+    //const bool usePainter = redirected && redirected != target;
 
+#if 0
     if (!usePainter && qt_mac_backgroundPattern
         && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
 
@@ -1772,10 +1995,11 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
 
         CGContextRestoreGState(cg);
     } else {
+#endif
         const QRect rect(rgn.boundingRect());
         painter->setClipRegion(rgn);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-    }
+//    }
 }
 
 void QMacStyle::polish(QPalette &pal)
@@ -1831,8 +2055,9 @@ void QMacStyle::polish(QWidget* w)
             mtinfo.version = qt_mac_hitheme_version;
             mtinfo.menuType = kThemeMenuTypePopUp;
             HIRect rect = CGRectMake(0, 0, px.width(), px.height());
-            HIThemeDrawMenuBackground(&rect, &mtinfo, QCFType<CGContextRef>(qt_mac_cg_context(&px)),
-                                      kHIThemeOrientationNormal);
+            // ###
+            //HIThemeDrawMenuBackground(&rect, &mtinfo, QCFType<CGContextRef>(qt_mac_cg_context(&px)),
+            //                          kHIThemeOrientationNormal);
             QPalette pal = w->palette();
             QBrush background(px);
             pal.setBrush(QPalette::All, QPalette::Window, background);
@@ -2309,11 +2534,12 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = 100;
         break;
     case SH_ScrollBar_LeftClickAbsolutePosition: {
-        extern bool qt_scrollbar_jump_to_pos; //qapplication_mac.cpp
         if(QApplication::keyboardModifiers() & Qt::AltModifier)
-            ret = !qt_scrollbar_jump_to_pos;
+            ret = false;
+            //ret = !qt_scrollbar_jump_to_pos;
         else
-            ret = qt_scrollbar_jump_to_pos;
+            ret = true;
+            //ret = qt_scrollbar_jump_to_pos;
         break; }
     case SH_TabBar_PreferNoArrows:
         ret = true;
@@ -2547,7 +2773,8 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
                     mdi.menuType = kThemeMenuTypePopUp;
                 QCFType<HIShapeRef> shape;
                 HIThemeGetMenuBackgroundShape(&menuRect, &mdi, &shape);
-                mask->region = QRegion::fromHIShapeRef(shape);
+
+                mask->region = qt_mac_fromHIShapeRef(shape);
             }
         }
         break;
@@ -3404,7 +3631,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QColor textColor = btn->palette.buttonText().color();
                     CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
                                           textColor.blueF(), textColor.alphaF() };
-                    CGContextSetFillColorSpace(cg, QCoreGraphicsPaintEngine::macGenericColorSpace());
+                    CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                     CGContextSetFillColor(cg, colorComp);
                     tti.fontID = themeId;
                     tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
@@ -3629,7 +3856,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QColor textColor = myTab.palette.windowText().color();
                 CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
                                         textColor.blueF(), textColor.alphaF() };
-                CGContextSetFillColorSpace(cg, QCoreGraphicsPaintEngine::macGenericColorSpace());
+                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 switch (d->aquaSizeConstrain(opt, w)) {
                 default:
@@ -3810,7 +4037,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QColor textColor = p->pen().color();
                 CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
                                       textColor.blueF(), textColor.alphaF() };
-                CGContextSetFillColorSpace(cg, QCoreGraphicsPaintEngine::macGenericColorSpace());
+                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 HIThemeTextInfo tti;
                 tti.version = qt_mac_hitheme_version;
@@ -4946,7 +5173,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 QColor textColor = groupBox->palette.windowText().color();
                 CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
                                       textColor.blueF(), textColor.alphaF() };
-                CGContextSetFillColorSpace(cg, QCoreGraphicsPaintEngine::macGenericColorSpace());
+                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 tti.fontID = checkable ? kThemeSystemFont : kThemeSmallSystemFont;
                 tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
@@ -6075,4 +6302,135 @@ int QMacStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
     return_SIZE(10, 8, 6);  // guess
 }
 
+void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
+{
+    CGAffineTransform old_xform = CGAffineTransformIdentity;
+    if (orig_xform) { //setup xforms
+        old_xform = CGContextGetCTM(hd);
+        CGContextConcatCTM(hd, CGAffineTransformInvert(old_xform));
+        CGContextConcatCTM(hd, *orig_xform);
+    }
+
+    //do the clipping
+    CGContextBeginPath(hd);
+    if (rgn.isEmpty()) {
+        CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
+    } else {
+        QCFType<HIMutableShapeRef> shape = qt_mac_toHIMutableShape(rgn);
+        Q_ASSERT(!HIShapeIsEmpty(shape));
+        HIShapeReplacePathInCGContext(shape, hd);
+    }
+    CGContextClip(hd);
+
+    if (orig_xform) {//reset xforms
+        CGContextConcatCTM(hd, CGAffineTransformInvert(CGContextGetCTM(hd)));
+        CGContextConcatCTM(hd, old_xform);
+    }
+}
+
+QMacCGContext::QMacCGContext(QPainter *p)
+{
+    QPaintEngine *pe = p->paintEngine();
+    pe->syncState();
+    context = 0;
+
+    int devType = p->device()->devType();
+    if (pe->type() == QPaintEngine::Raster
+            && (devType == QInternal::Widget ||
+                devType == QInternal::Pixmap ||
+                devType == QInternal::Image)) {
+
+        extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
+        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
+        uint flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
+
+        const QImage *image = (const QImage *) pe->paintDevice();
+
+        context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
+                                        8, image->bytesPerLine(), colorspace, flags);
+
+        CGContextTranslateCTM(context, 0, image->height());
+        CGContextScaleCTM(context, 1, -1);
+
+        if (devType == QInternal::Widget) {
+            QRegion clip = p->paintEngine()->systemClip();
+            QTransform native = p->deviceTransform();
+            QTransform logical = p->combinedTransform();
+
+            if (p->hasClipping()) {
+                QRegion r = p->clipRegion();
+                r.translate(native.dx(), native.dy());
+                if (clip.isEmpty())
+                    clip = r;
+                else
+                    clip &= r;
+            }
+            qt_mac_clip_cg(context, clip, 0);
+
+            CGContextTranslateCTM(context, native.dx(), native.dy());
+        }
+    } else {
+        qDebug() << "QMacCGContext:: Unsupported painter devtype type" << devType;
+    }
+}
+
+CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
+{
+    bool isWidget = (paintDevice->devType() == QInternal::Widget);
+    return qt_mac_displayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice) : 0);
+}
+
+/*! \internal
+
+    Returns the CoreGraphics CGContextRef of the paint device. 0 is
+    returned if it can't be obtained. It is the caller's responsibility to
+    CGContextRelease the context when finished using it.
+
+    \warning This function is only available on Mac OS X.
+*/
+
+CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
+{
+    if (pdev->devType() == QInternal::Pixmap) {
+        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
+        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
+        uint flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
+        CGContextRef ret = 0;
+
+        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
+        if (data->classId() == QPlatformPixmap::RasterClass) {
+            QImage *image = data->buffer();
+            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
+                                        8, image->bytesPerLine(), colorspace, flags);
+        } else {
+            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
+        }
+
+        CGContextTranslateCTM(ret, 0, pm->height());
+        CGContextScaleCTM(ret, 1, -1);
+        return ret;
+    } else if (pdev->devType() == QInternal::Widget) {
+        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
+        ///CGContextRetain(ret);
+        //return ret;
+        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
+        return 0;
+    }
+    return 0;
+}
+
+/*
+FontHash::FontHash()
+{
+    QHash<QByteArray, QFont>::operator=(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFonts());
+}
+
+Q_GLOBAL_STATIC(FontHash, app_fonts)
+FontHash *qt_app_fonts_hash()
+{
+    return app_fonts();
+}
+*/
 QT_END_NAMESPACE

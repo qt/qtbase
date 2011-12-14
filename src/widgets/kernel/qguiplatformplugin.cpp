@@ -148,7 +148,7 @@ QString QGuiPlatformPlugin::styleName()
     return QLatin1String("CDE");                        // default style for X11 on Solaris
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
     return QLatin1String("SGI");                        // default style for X11 on IRIX
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
     return QLatin1String("Macintosh");              // default style for all Mac's
 #elif defined(Q_WS_X11)
     QString stylename;

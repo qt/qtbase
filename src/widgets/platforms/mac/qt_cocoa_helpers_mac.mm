@@ -219,12 +219,6 @@ DnDParams *macCurrentDnDParameters()
 }
 #endif
 
-bool macWindowIsTextured( void * /*OSWindowRef*/ window )
-{
-    OSWindowRef wnd = static_cast<OSWindowRef>(window);
-	return ( [wnd styleMask] & NSTexturedBackgroundWindowMask ) ? true : false;
-}
-
 void macWindowToolbarShow(const QWidget *widget, bool show )
 {
     OSWindowRef wnd = qt_mac_window_for(widget);

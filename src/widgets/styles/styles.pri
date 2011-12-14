@@ -37,8 +37,7 @@ contains( styles, all ) {
 	styles = mac windows windowsxp windowsvista
 }
 
-# TODO, re-enable qmacstyle in tests/auto/widgets/styles/sytles.pro when done
-styles -= mac
+!macx-*:styles -= mac
 
 x11{
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE

@@ -75,7 +75,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_STYLE_MAC) && defined(Q_WS_MAC)
+#if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qmacstyle_mac.h"
 QT_END_INCLUDE_NAMESPACE
