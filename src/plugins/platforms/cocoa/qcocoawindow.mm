@@ -224,16 +224,13 @@ NSView *QCocoaWindow::contentView() const
 
 void QCocoaWindow::windowDidMove()
 {
-    NSRect rect = [[m_nsWindow contentView]frame];
-    NSRect windowRect = [m_nsWindow frame];
-    [[m_nsWindow contentView] setFrameSize:rect.size];
+    [m_contentView updateGeometry];
 }
 
 void QCocoaWindow::windowDidResize()
 {
     NSRect rect = [[m_nsWindow contentView]frame];
-    NSRect windowRect = [m_nsWindow frame];
-    // Call setFrameSize which will trigger a frameDidChangeNotificatio on QNSView.
+    // Call setFrameSize which will trigger a frameDidChangeNotification on QNSView.
     [[m_nsWindow contentView] setFrameSize:rect.size];
 }
 

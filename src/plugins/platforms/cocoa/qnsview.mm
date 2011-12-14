@@ -111,18 +111,22 @@ static QTouchDevice *touchDevice = 0;
 
     [self setPostsFrameChangedNotifications : YES];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                          selector:@selector(frameDidChangeNotification:)
+                                          selector:@selector(updateGeometry)
                                           name:NSViewFrameDidChangeNotification
                                           object:self];
 
     return self;
 }
 
-- (void) frameDidChangeNotification: (NSNotification *) notification
+- (void)updateGeometry
 {
     NSRect rect = [self frame];
     NSRect windowRect = [[self window] frame];
     QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QNSView::udpateGeometry" << geo;
+#endif
 
     // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
     // doing that will initiate a geometry change it and possibly create
