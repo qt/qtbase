@@ -429,7 +429,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 {
     if (slotObj_) {
         slotObj_->call(object, args_);
-    } else if (callFunction_) {
+    } else if (callFunction_ && method_offset_ <= object->metaObject()->methodOffset()) {
         callFunction_(object, QMetaObject::InvokeMetaMethod, method_relative_, args_);
     } else {
         QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, method_offset_ + method_relative_, args_);
