@@ -76,6 +76,7 @@
 #include <qurl.h>
 #include <qdesktopservices.h>
 #include <qinputcontext.h>
+#include <qinputpanel.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
@@ -1688,11 +1689,8 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
                 emit q->cursorPositionChanged();
             _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
-            if (contextWidget) {
-                if (QInputContext *ic = qApp->inputContext()) {
-                    ic->update();
-                }
-            }
+            if (contextWidget)
+                qApp->inputPanel()->update(Qt::ImQueryInput);
 #endif //QT_NO_IM
         } else {
             //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
@@ -1821,34 +1819,32 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
         QEvent *e, QEvent::Type eventType, Qt::MouseButton button, const QPointF &pos,
         Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons, const QPoint &globalPos)
 {
-#if !defined(QT_NO_IM)
-    Q_Q(QWidgetTextControl);
-
-    if (contextWidget && isPreediting()) {
-        QTextLayout *layout = cursor.block().layout();
-        QInputContext *ctx = qApp->inputContext();
-        int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
-
-        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
-            cursorPos = -1;
-
-        if (ctx && cursorPos >= 0) {
-            QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos),
-                           contextWidget->topLevelWidget()->mapFromGlobal(globalPos), globalPos,
-                           button, buttons, modifiers);
-            ctx->mouseHandler(cursorPos, &ev);
-            e->setAccepted(ev.isAccepted());
-            return true;
-        }
-    }
-#else
-    Q_UNUSED(e);
     Q_UNUSED(eventType);
     Q_UNUSED(button);
     Q_UNUSED(pos);
     Q_UNUSED(modifiers);
     Q_UNUSED(buttons);
     Q_UNUSED(globalPos);
+#if !defined(QT_NO_IM)
+    Q_Q(QWidgetTextControl);
+
+    if (contextWidget && isPreediting()) {
+        QTextLayout *layout = cursor.block().layout();
+        int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
+
+        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
+            cursorPos = -1;
+
+        if (cursorPos >= 0) {
+            if (e->type() == QEvent::MouseButtonRelease)
+                qApp->inputPanel()->invokeAction(QInputPanel::Click, cursorPos);
+
+            e->setAccepted(true);
+            return true;
+        }
+    }
+#else
+    Q_UNUSED(e);
 #endif
     return false;
 }
