@@ -51,6 +51,8 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../../gui/painting/qpathclipper/pathcompare.h"
+#include "../../shared/platforminputcontext.h"
+#include <private/qinputpanel_p.h>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -186,6 +188,7 @@ class tst_QGraphicsScene : public QObject
     Q_OBJECT
 public slots:
     void initTestCase();
+    void cleanup();
 
 private slots:
     void construction();
@@ -287,6 +290,13 @@ void tst_QGraphicsScene::initTestCase()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
+}
+
+void tst_QGraphicsScene::cleanup()
+{
+    // ensure not even skipped tests with custom input context leave it dangling
+    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
+    inputPanelPrivate->testContext = 0;
 }
 
 void tst_QGraphicsScene::construction()
@@ -3753,25 +3763,12 @@ public:
     mutable int queryCalls;
 };
 
-class TestInputContext : public QInputContext
-{
-public:
-    TestInputContext() {}
-
-    QString identifierName() { return QString(); }
-    QString language() { return QString(); }
-
-    void reset() {
-        ++resetCalls;
-        sendEvent(QInputMethodEvent()); }
-
-    bool isComposing() const { return false; }
-
-    int resetCalls;
-};
-
 void tst_QGraphicsScene::inputMethod()
 {
+    PlatformInputContext inputContext;
+    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
+    inputPanelPrivate->testContext = &inputContext;
+
     QFETCH(int, flags);
     QFETCH(bool, callFocusItem);
 
@@ -3780,21 +3777,19 @@ void tst_QGraphicsScene::inputMethod()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    TestInputContext *inputContext = new TestInputContext;
-    qApp->setInputContext(inputContext);
     view.show();
     QApplication::setActiveWindow(&view);
     view.setFocus();
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
-    inputContext->resetCalls = 0;
+    inputContext.m_resetCallCount = 0;
     scene.addItem(item);
     QInputMethodEvent event;
 
     scene.setFocusItem(item);
     QCOMPARE(!!(item->flags() & QGraphicsItem::ItemIsFocusable), scene.focusItem() == item);
-    QCOMPARE(inputContext->resetCalls, 0);
+    QCOMPARE(inputContext.m_resetCallCount, 0);
 
     item->eventCalls = 0;
     qApp->sendEvent(&scene, &event);
@@ -3807,9 +3802,7 @@ void tst_QGraphicsScene::inputMethod()
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
-    QEXPECT_FAIL("3", "QTBUG-22456", Abort);
-    QCOMPARE(inputContext->resetCalls, callFocusItem ? 2 : 0);
-    QCOMPARE(item->eventCalls, callFocusItem ? 2 : 0); // verify correct delivery of "reset" event
+    QCOMPARE(inputContext.m_resetCallCount, callFocusItem ? 2 : 0);
     QCOMPARE(item->queryCalls, callFocusItem ? 1 : 0); // verify that value is unaffected
 
     item->eventCalls = 0;
