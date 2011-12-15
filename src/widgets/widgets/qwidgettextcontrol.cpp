@@ -75,7 +75,6 @@
 #include <qvariant.h>
 #include <qurl.h>
 #include <qdesktopservices.h>
-#include <qinputcontext.h>
 #include <qinputpanel.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
@@ -2166,17 +2165,6 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         a = menu->addAction(tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll), this, SLOT(selectAll()));
         a->setEnabled(!d->doc->isEmpty());
     }
-
-#if !defined(QT_NO_IM)
-    if (d->contextWidget) {
-        QInputContext *qic = qApp->inputContext();
-        if (qic) {
-            QList<QAction *> imActions = qic->actions();
-            for (int i = 0; i < imActions.size(); ++i)
-                menu->addAction(imActions.at(i));
-        }
-    }
-#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if ((d->interactionFlags & Qt::TextEditable) && qt_use_rtl_extensions) {

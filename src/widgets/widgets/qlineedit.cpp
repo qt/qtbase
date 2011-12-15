@@ -68,10 +68,6 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#ifndef QT_NO_IM
-#include "qinputcontext.h"
-#include "qlist.h"
-#endif
 #include "qabstractitemview.h"
 #include "private/qstylesheetstyle_p.h"
 
@@ -2061,15 +2057,6 @@ QMenu *QLineEdit::createStandardContextMenu()
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());
     d->selectAllAction = action;
     connect(action, SIGNAL(triggered()), SLOT(selectAll()));
-
-#if !defined(QT_NO_IM)
-    QInputContext *qic = inputContext();
-    if (qic) {
-        QList<QAction *> imActions = qic->actions();
-        for (int i = 0; i < imActions.size(); ++i)
-            popup->addAction(imActions.at(i));
-    }
-#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if (!d->control->isReadOnly() && qt_use_rtl_extensions) {
