@@ -1991,6 +1991,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
     currentTestObject = 0;
+
+    QSignalDumper::endDump();
+
 #ifdef Q_WS_MAC
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
