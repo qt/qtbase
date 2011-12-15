@@ -1520,9 +1520,13 @@ static void qInvokeTestMethodDataEntry(char *slot)
         if (QBenchmarkTestMethodData::current->isBenchmark() &&
             QBenchmarkGlobalData::current->verboseOutput) {
                 if (i == -1) {
-                    qDebug() << "warmup stage result      :" << QBenchmarkTestMethodData::current->result.value;
+                    QTestLog::info(qPrintable(
+                        QString::fromLatin1("warmup stage result      : %1")
+                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 } else {
-                    qDebug() << "accumulation stage result:" << QBenchmarkTestMethodData::current->result.value;
+                    QTestLog::info(qPrintable(
+                        QString::fromLatin1("accumulation stage result: %1")
+                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 }
             }
     } while (QBenchmarkTestMethodData::current->isBenchmark()
