@@ -2243,7 +2243,7 @@ QTestData &QTest::newRow(const char *dataTag)
 {
     QTEST_ASSERT_X(dataTag, "QTest::newRow()", "Data tag can not be null");
     QTestTable *tbl = QTestTable::currentTestTable();
-    QTEST_ASSERT_X(tbl, "QTest::addColumn()", "Cannot add testdata outside of a _data slot.");
+    QTEST_ASSERT_X(tbl, "QTest::newRow()", "Cannot add testdata outside of a _data slot.");
 
     return *tbl->newData(dataTag);
 }
