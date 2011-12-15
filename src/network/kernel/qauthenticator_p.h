@@ -77,6 +77,7 @@ public:
     Method method;
     QString realm;
     QByteArray challenge;
+    bool hasFailed; //credentials have been tried but rejected by server.
 
     enum Phase {
         Start,

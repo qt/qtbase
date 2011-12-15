@@ -182,6 +182,7 @@ public:
     bool readNotificationPending;
     bool writeNotificationPending;
     bool connectionNotificationPending;
+    bool credentialsSent;
     uint pendingResponseData;
 };
 

@@ -73,6 +73,8 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , lastStatus(0)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
+    , authenticationCredentialsSent(false)
+    , proxyCredentialsSent(false)
     , authMethod(QAuthenticatorPrivate::None)
     , proxyAuthMethod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
@@ -549,6 +551,14 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 
         // reset state
         pipeliningSupported = PipeliningSupportUnknown;
+        authenticationCredentialsSent = false;
+        proxyCredentialsSent = false;
+        authenticator.detach();
+        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(authenticator);
+        priv->hasFailed = false;
+        proxyAuthenticator.detach();
+        priv = QAuthenticatorPrivate::getPrivate(proxyAuthenticator);
+        priv->hasFailed = false;
 
         // This workaround is needed since we use QAuthenticator for NTLM authentication. The "phase == Done"
         // is the usual criteria for emitting authentication signals. The "phase" is set to "Done" when the
@@ -556,7 +566,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         // check the "phase" for generating the Authorization header. NTLM authentication is a two stage
         // process & needs the "phase". To make sure the QAuthenticator uses the current username/password
         // the phase is reset to Start.
-        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(authenticator);
+        priv = QAuthenticatorPrivate::getPrivate(authenticator);
         if (priv && priv->phase == QAuthenticatorPrivate::Done)
             priv->phase = QAuthenticatorPrivate::Start;
         priv = QAuthenticatorPrivate::getPrivate(proxyAuthenticator);

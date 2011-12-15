@@ -113,6 +113,8 @@ public:
     QAuthenticatorPrivate::Method proxyAuthMethod;
     QAuthenticator authenticator;
     QAuthenticator proxyAuthenticator;
+    bool authenticationCredentialsSent;
+    bool proxyCredentialsSent;
 #ifndef QT_NO_OPENSSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;

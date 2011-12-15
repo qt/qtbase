@@ -326,6 +326,7 @@ bool QAuthenticator::isNull() const
 QAuthenticatorPrivate::QAuthenticatorPrivate()
     : ref(0)
     , method(None)
+    , hasFailed(false)
     , phase(Start)
     , nonceCount(0)
 {

@@ -428,9 +428,23 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             pauseConnection();
             if (!isProxy) {
+                if (channels[i].authenticationCredentialsSent) {
+                    auth->detach();
+                    priv = QAuthenticatorPrivate::getPrivate(*auth);
+                    priv->hasFailed = true;
+                    priv->phase = QAuthenticatorPrivate::Done;
+                    channels[i].authenticationCredentialsSent = false;
+                }
                 emit reply->authenticationRequired(reply->request(), auth);
 #ifndef QT_NO_NETWORKPROXY
             } else {
+                if (channels[i].proxyCredentialsSent) {
+                    auth->detach();
+                    priv = QAuthenticatorPrivate::getPrivate(*auth);
+                    priv->hasFailed = true;
+                    priv->phase = QAuthenticatorPrivate::Done;
+                    channels[i].proxyCredentialsSent = false;
+                }
                 emit reply->proxyAuthenticationRequired(networkProxy, auth);
 #endif
             }
@@ -491,6 +505,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
                 request.setHeaderField("Authorization", response);
+                channels[i].authenticationCredentialsSent = true;
             }
         }
     }
@@ -502,6 +517,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
                 request.setHeaderField("Proxy-Authorization", response);
+                channels[i].proxyCredentialsSent = true;
             }
         }
     }
