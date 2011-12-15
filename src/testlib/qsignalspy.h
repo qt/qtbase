@@ -56,8 +56,6 @@ QT_MODULE(Test)
 
 class QVariant;
 
-/* ### Qt5: change the class to use regular BC mechanisms, such that we can
- * implement things like suggested in task 160192. */
 class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:
