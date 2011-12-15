@@ -380,8 +380,8 @@ void QHeaderView::setModel(QAbstractItemModel *model)
     }
     QObject::disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                         this, SLOT(headerDataChanged(Qt::Orientation,int,int)));
-        QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
-                            this, SLOT(_q_layoutAboutToBeChanged()));
+    QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
+                        this, SLOT(_q_layoutAboutToBeChanged()));
     }
 
     if (model && model != QAbstractItemModelPrivate::staticEmptyModel()) {
@@ -389,9 +389,9 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                              this, SLOT(sectionsInserted(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-                this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
+                             this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+                             this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
         } else {
             QObject::connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                              this, SLOT(sectionsInserted(QModelIndex,int,int)));
