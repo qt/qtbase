@@ -1658,15 +1658,11 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         QStyleOptionViewItemV4 option = d->viewOptionsV4();
         option.rect = visualRect(index);
         option.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
-        bool retval = false;
-        // ### Qt 5: make this a normal function call to a virtual function
-        QMetaObject::invokeMethod(d->delegateForIndex(index), "helpEvent",
-                                  Q_RETURN_ARG(bool, retval),
-                                  Q_ARG(QHelpEvent *, he),
-                                  Q_ARG(QAbstractItemView *, this),
-                                  Q_ARG(QStyleOptionViewItem, option),
-                                  Q_ARG(QModelIndex, index));
-        return retval;
+
+        QAbstractItemDelegate *delegate = d->delegateForIndex(index);
+        if (!delegate)
+            return false;
+        return delegate->helpEvent(he, this, option, index);
     }
     case QEvent::FontChange:
         d->doDelayedItemsLayout(); // the size of the items will change

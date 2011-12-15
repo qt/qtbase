@@ -347,7 +347,6 @@ QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int w
 
     \sa QHelpEvent
 */
-// ### Qt 5: Make this a virtual non-slot function
 bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
                                       QAbstractItemView *view,
                                       const QStyleOptionViewItem &option,

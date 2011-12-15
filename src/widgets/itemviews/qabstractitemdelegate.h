@@ -108,11 +108,10 @@ public:
     static QString elidedText(const QFontMetrics &fontMetrics, int width,
                               Qt::TextElideMode mode, const QString &text);
 
-public Q_SLOTS:
-    bool helpEvent(QHelpEvent *event,
-                   QAbstractItemView *view,
-                   const QStyleOptionViewItem &option,
-                   const QModelIndex &index);
+    virtual bool helpEvent(QHelpEvent *event,
+                           QAbstractItemView *view,
+                           const QStyleOptionViewItem &option,
+                           const QModelIndex &index);
 
 Q_SIGNALS:
     void commitData(QWidget *editor);
