@@ -51,7 +51,7 @@
 #include "qaccessible.h"
 #endif
 #ifndef QT_NO_IM
-#include "qinputcontext.h"
+#include "qinputpanel.h"
 #include "qlist.h"
 #endif
 
@@ -249,23 +249,22 @@ void QLineEditPrivate::resetInputPanel()
 
 /*!
   This function is not intended as polymorphic usage. Just a shared code
-  fragment that calls QInputContext::mouseHandler for this
+  fragment that calls QInputPanel::invokeAction for this
   class.
 */
 bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 {
 #if !defined QT_NO_IM
-    Q_Q(QLineEdit);
     if ( control->composeMode() ) {
         int tmp_cursor = xToPos(e->pos().x());
         int mousePos = tmp_cursor - control->cursor();
         if ( mousePos < 0 || mousePos > control->preeditAreaText().length() )
             mousePos = -1;
 
-        QInputContext *qic = q->inputContext();
-        if (qic && mousePos >= 0) {
-            // may be causing reset() in some input methods
-            qic->mouseHandler(mousePos, e);
+        if (mousePos >= 0) {
+            if (e->type() == QEvent::MouseButtonRelease)
+                qApp->inputPanel()->invokeAction(QInputPanel::Click, mousePos);
+
             return true;
         }
     }
