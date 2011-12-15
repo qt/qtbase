@@ -664,7 +664,7 @@ void QTreeView::setFirstColumnSpanned(int row, const QModelIndex &parent, bool s
 /*!
   \reimp
 */
-void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles)
 {
     Q_D(QTreeView);
 
@@ -706,7 +706,7 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
         d->updateScrollBars();
         d->viewport->update();
     }
-    QAbstractItemView::dataChanged(topLeft, bottomRight);
+    QAbstractItemView::dataChanged(topLeft, bottomRight, roles);
 }
 
 /*!

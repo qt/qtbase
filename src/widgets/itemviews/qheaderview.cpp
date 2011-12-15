@@ -2655,7 +2655,7 @@ void QHeaderView::scrollContentsBy(int dx, int dy)
     \reimp
     \internal
 */
-void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &)
 {
     Q_D(QHeaderView);
     d->invalidateCachedSizeHint();

@@ -175,6 +175,10 @@ QtCore
 * The default value of the property QSortFilterProxyModel::dynamicSortFilter was
   changed from false to true.
 
+* The signature of the virtual QAbstractItemView::dataChanged method has changed to
+  include the roles which have changed. The signature is consistent with the dataChanged
+  signal in the model.
+
 * QFileSystemWatcher is now able to return failure in case of errors whilst
   altering the watchlist in both the singular and QStringList overloads of
   addPath and removePath.

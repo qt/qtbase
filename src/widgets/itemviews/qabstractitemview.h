@@ -241,7 +241,7 @@ public Q_SLOTS:
     void update(const QModelIndex &index);
 
 protected Q_SLOTS:
-    virtual void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    virtual void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
     virtual void rowsInserted(const QModelIndex &parent, int start, int end);
     virtual void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
     virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);

@@ -147,7 +147,7 @@ protected:
     void resizeContents(int width, int height);
     QSize contentsSize() const;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &roles = QSet<int>());
     void rowsInserted(const QModelIndex &parent, int start, int end);
     void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
 
