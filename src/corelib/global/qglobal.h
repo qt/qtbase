@@ -1733,7 +1733,7 @@ template <> class QStaticAssertFailure<true> {};
 #define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
 #define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
 #define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<(bool)(Condition)>)}
+    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<(Condition)>)}
 #define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
