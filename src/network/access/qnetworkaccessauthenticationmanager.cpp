@@ -159,6 +159,11 @@ void QNetworkAccessAuthenticationManager::cacheProxyCredentials(const QNetworkPr
     QString realm = authenticator->realm();
     QNetworkProxy proxy = p;
     proxy.setUser(authenticator->user());
+
+    // don't cache null passwords, empty password may be valid though
+    if (authenticator->password().isNull())
+        return;
+
     // Set two credentials: one with the username and one without
     do {
         // Set two credentials actually: one with and one without the realm

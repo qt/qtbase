@@ -73,7 +73,7 @@ public:
     QString user;
     QString password;
     bool isNull() {
-        return domain.isNull();
+        return domain.isNull() && user.isNull() && password.isNull();
     }
 };
 Q_DECLARE_TYPEINFO(QNetworkAuthenticationCredential, Q_MOVABLE_TYPE);
