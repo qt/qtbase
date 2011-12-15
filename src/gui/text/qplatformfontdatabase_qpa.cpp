@@ -233,6 +233,13 @@ bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSys
 */
 
 /*!
+    \internal
+ */
+QPlatformFontDatabase::~QPlatformFontDatabase()
+{
+}
+
+/*!
   This function is called once at startup by Qt's internal font database.
   Reimplement this function in a subclass for a convenient place to initialize
   the internal font database.
