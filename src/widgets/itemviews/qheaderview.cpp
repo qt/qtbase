@@ -1940,7 +1940,7 @@ void QHeaderView::initializeSections(int start, int end)
 
     if (end + 1 < d->sectionCount) {
         int newCount = end + 1;
-        d->removeSectionsFromSpans(newCount, d->sectionCount);
+        d->removeSectionsFromSpans(newCount, d->sectionCount - 1);
         if (!d->hiddenSectionSize.isEmpty()) {
             if (d->sectionCount - newCount > d->hiddenSectionSize.count()) {
                 for (int i = end + 1; i < d->sectionCount; ++i)
