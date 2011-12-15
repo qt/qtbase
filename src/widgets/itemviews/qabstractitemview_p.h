@@ -200,13 +200,18 @@ public:
     // reimplemented in subclasses
     virtual void adjustViewOptionsForIndex(QStyleOptionViewItemV4*, const QModelIndex&) const {}
 
-    inline void releaseEditor(QWidget *editor) const {
+    inline void releaseEditor(QWidget *editor, const QModelIndex &index = QModelIndex()) const {
         if (editor) {
             QObject::disconnect(editor, SIGNAL(destroyed(QObject*)),
                                 q_func(), SLOT(editorDestroyed(QObject*)));
             editor->removeEventFilter(itemDelegate);
             editor->hide();
-            editor->deleteLater();
+            QAbstractItemDelegate *delegate = delegateForIndex(index);
+
+            if (delegate)
+                delegate->destroyEditor(editor, index);
+            else
+                editor->deleteLater();
         }
     }
 

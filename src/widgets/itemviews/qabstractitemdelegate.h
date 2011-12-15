@@ -88,6 +88,8 @@ public:
                                   const QStyleOptionViewItem &option,
                                   const QModelIndex &index) const;
 
+    virtual void destroyEditor(QWidget *editor, const QModelIndex &index) const;
+
     virtual void setEditorData(QWidget *editor, const QModelIndex &index) const;
 
     virtual void setModelData(QWidget *editor,

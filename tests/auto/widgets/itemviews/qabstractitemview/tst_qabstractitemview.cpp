@@ -224,16 +224,29 @@ private slots:
     void ctrlRubberbandSelection();
     void QTBUG6407_extendedSelection();
     void QTBUG6753_selectOnSelection();
+    void testDelegateDestroyEditor();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
 {
 public:
-    MyAbstractItemDelegate() : QAbstractItemDelegate() {};
+    MyAbstractItemDelegate() : QAbstractItemDelegate() { calledVirtualDtor = false; }
     void paint(QPainter *, const QStyleOptionViewItem &, const QModelIndex &) const {}
     QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(); }
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
-                          const QModelIndex &) const { return new QWidget(parent); }
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+    {
+        openedEditor = new QWidget(parent);
+        return openedEditor;
+    }
+    void destroyEditor(QWidget *editor, const QModelIndex &index) const
+    {
+        calledVirtualDtor = true;
+        // QAbstractItemDelegate::destroyEditor(editor,index);
+        editor->deleteLater();
+    }
+
+    mutable bool calledVirtualDtor;
+    mutable QWidget *openedEditor;
 };
 
 // Testing get/set functions
@@ -1496,6 +1509,19 @@ void tst_QAbstractItemView::QTBUG6753_selectOnSelection()
     QCOMPARE(table.selectedItems().count(), 1);
     QCOMPARE(table.selectedItems().first(), table.item(item.row(), item.column()));
 }
+
+void tst_QAbstractItemView::testDelegateDestroyEditor()
+{
+    QTableWidget table(5, 5);
+    MyAbstractItemDelegate delegate;
+    table.setItemDelegate(&delegate);
+    table.edit(table.model()->index(1, 1));
+    TestView *tv = reinterpret_cast<TestView*>(&table);
+    QVERIFY(!delegate.calledVirtualDtor);
+    tv->tst_closeEditor(delegate.openedEditor, QAbstractItemDelegate::NoHint);
+    QVERIFY(delegate.calledVirtualDtor);
+}
+
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

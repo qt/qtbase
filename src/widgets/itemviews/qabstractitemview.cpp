@@ -1098,7 +1098,7 @@ void QAbstractItemView::reset()
     d->delayedReset.stop(); //make sure we stop the timer
     foreach (const QEditorInfo &info, d->indexEditorHash) {
         if (info.widget)
-            d->releaseEditor(info.widget.data());
+            d->releaseEditor(info.widget.data(), d->indexForEditor(info.widget.data()));
     }
     d->editorIndexHash.clear();
     d->indexEditorHash.clear();
@@ -2778,7 +2778,7 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
         editor = ed;
 
         if (!isPersistent && editor)
-            d->releaseEditor(editor);
+            d->releaseEditor(editor, index);
     }
 
     // The EndEditHint part
@@ -3102,7 +3102,7 @@ void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
             closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
         d->persistent.remove(editor);
         d->removeEditor(editor);
-        d->releaseEditor(editor);
+        d->releaseEditor(editor, index);
     }
 }
 
@@ -3314,7 +3314,7 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
             QEditorInfo info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
             if (info.widget)
-                d->releaseEditor(editor);
+                d->releaseEditor(editor, index);
         } else {
             ++i;
         }
@@ -3393,7 +3393,7 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
             QEditorInfo info = indexEditorHash.take(it.value());
             it = editorIndexHash.erase(it);
             if (info.widget)
-                releaseEditor(editor);
+                releaseEditor(editor, index);
         } else {
             ++it;
         }

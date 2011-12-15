@@ -55,10 +55,14 @@
     create an editor widget, display it at the correct location in a view,
     and communicate with a model. Custom delegates can also provide their
     own painting code by reimplementing the \c paintEvent() function.
+    Furthermore it is also possible to reuse (and avoid deleting) the editor
+    widget by reimplementing the \a destroyEditor() function. A reused widget
+    could be a mutable member created in the constructor and deleted in
+    the destructor.
 
     \section1 SpinBoxDelegate Class Implementation
 
-    Since the delegate is stateless, the constructor only needs to
+    Delegates are often stateless. The constructor only needs to
     call the base class's constructor with the parent QObject as its
     argument:
 

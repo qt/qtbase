@@ -232,13 +232,26 @@ QAbstractItemDelegate::~QAbstractItemDelegate()
     editor paints its own background (e.g., with
     \l{QWidget::}{setAutoFillBackground()}).
 
-    \sa setModelData() setEditorData()
+    \sa destroyEditor() setModelData() setEditorData()
 */
 QWidget *QAbstractItemDelegate::createEditor(QWidget *,
                                              const QStyleOptionViewItem &,
                                              const QModelIndex &) const
 {
     return 0;
+}
+
+
+/*!
+    A function called when the editor is no longer needed and should be
+    destroyed. The default behavior is a call to deleteLater on the editor.
+    It possible e.g. to avoid this delete by reimplementing this function.
+
+    \sa createEditor()
+*/
+void QAbstractItemDelegate::destroyEditor(QWidget *editor, const QModelIndex &) const
+{
+    editor->deleteLater();
 }
 
 /*!
