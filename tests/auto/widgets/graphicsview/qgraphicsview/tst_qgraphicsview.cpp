@@ -68,10 +68,11 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QInputContext>
 #include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsview_p.h>
 #include "../../../platformquirks.h"
+#include "../../shared/platforminputcontext.h"
+#include <private/qinputpanel_p.h>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -141,6 +142,7 @@ class tst_QGraphicsView : public QObject
 
 private slots:
     void initTestCase();
+    void cleanup();
     void construction();
     void renderHints();
     void alignment();
@@ -257,6 +259,13 @@ void tst_QGraphicsView::initTestCase()
 #ifdef Q_OS_WINCE_WM
     qApp->setAutoMaximizeThreshold(-1);
 #endif
+}
+
+void tst_QGraphicsView::cleanup()
+{
+    // ensure not even skipped tests with custom input context leave it dangling
+    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
+    inputPanelPrivate->testContext = 0;
 }
 
 void tst_QGraphicsView::construction()
@@ -4100,25 +4109,15 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 }
 
-class InputContextTester : public QInputContext
-{
-    Q_OBJECT
-public:
-    QString identifierName() { return QString(); }
-    bool isComposing() const { return false; }
-    QString language() { return QString(); }
-    void reset() { ++resets; }
-    int resets;
-};
-
 void tst_QGraphicsView::inputContextReset()
 {
+    PlatformInputContext inputContext;
+    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
+    inputPanelPrivate->testContext = &inputContext;
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
-
-    InputContextTester *inputContext = new InputContextTester;
-    qApp->setInputContext(inputContext);
 
     view.show();
     QTest::qWaitForWindowShown(&view);
@@ -4128,40 +4127,40 @@ void tst_QGraphicsView::inputContextReset()
     QGraphicsItem *item1 = new QGraphicsRectItem;
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
 
-    inputContext->resets = 0;
+    inputContext.m_resetCallCount = 0;
     scene.addItem(item1);
-    QCOMPARE(inputContext->resets, 0);
+    QCOMPARE(inputContext.m_resetCallCount, 0);
 
-    inputContext->resets = 0;
+    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(item1);
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)item1);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
-    QCOMPARE(inputContext->resets, 0);
+    QCOMPARE(inputContext.m_resetCallCount, 0);
 
-    inputContext->resets = 0;
+    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
-    QEXPECT_FAIL("", "QTBUG-22454", Abort);
-    QCOMPARE(inputContext->resets, 2);
+    //    QEXPECT_FAIL("", "QTBUG-22454", Abort);
+    QCOMPARE(inputContext.m_resetCallCount, 2);
 
     // introduce another item that is focusable but does not accept input methods
     QGraphicsItem *item2 = new QGraphicsRectItem;
     item2->setFlags(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item2);
 
-    inputContext->resets = 0;
+    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(item2);
-    QCOMPARE(inputContext->resets, 0);
+    QCOMPARE(inputContext.m_resetCallCount, 0);
 
-    inputContext->resets = 0;
+    inputContext.m_resetCallCount = 0;
     scene.setFocusItem(item1);
-    QCOMPARE(inputContext->resets, 0);
+    QCOMPARE(inputContext.m_resetCallCount, 0);
 
     // test changing between between items that accept input methods.
     item2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
     scene.setFocusItem(item2);
-    QCOMPARE(inputContext->resets, 1);
+    QCOMPARE(inputContext.m_resetCallCount, 1);
 }
 
 void tst_QGraphicsView::indirectPainting()
