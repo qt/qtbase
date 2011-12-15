@@ -10313,45 +10313,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->registerTouchWindow();
 #endif
         break;
-    case Qt::WA_LockPortraitOrientation:
-    case Qt::WA_LockLandscapeOrientation:
-    case Qt::WA_AutoOrientation: {
-        const Qt::WidgetAttribute orientations[3] = {
-            Qt::WA_LockPortraitOrientation,
-            Qt::WA_LockLandscapeOrientation,
-            Qt::WA_AutoOrientation
-        };
-
-        if (on) {
-            // We can only have one of these set at a time
-            for (int i = 0; i < 3; ++i) {
-                if (orientations[i] != attribute)
-                    setAttribute_internal(orientations[i], false, data, d);
-            }
-        }
-
-#ifdef Q_WS_S60
-        CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
-        const CAknAppUiBase::TAppUiOrientation s60orientations[] = {
-            CAknAppUiBase::EAppUiOrientationPortrait,
-            CAknAppUiBase::EAppUiOrientationLandscape,
-            CAknAppUiBase::EAppUiOrientationAutomatic
-        };
-        CAknAppUiBase::TAppUiOrientation s60orientation = CAknAppUiBase::EAppUiOrientationUnspecified;
-        for (int i = 0; i < 3; ++i) {
-            if (testAttribute(orientations[i])) {
-                s60orientation = s60orientations[i];
-                break;
-            }
-        }
-        QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
-        S60->orientationSet = true;
-        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
-        if (window)
-            window->ensureFixNativeOrientation();
-#endif
-        break;
-    }
     default:
         break;
     }

@@ -1158,13 +1158,6 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
-    \value WA_LockPortraitOrientation Locks the widget to a portrait orientation,
-    ignoring changes to the display's orientation with respect to the user.
-    \value WA_LockLandscapeOrientation Locks the widget to a landscape orientation,
-    ignoring changes to the display's orientation with respect to the user.
-    \value WA_AutoOrientation Causes the widget to change orientation whenever the
-    display changes orientation with respect to the user.
-    
     \value WA_MacNoShadow Since Qt 4.8, this attribute disables drop shadows
     for this top level window. Only affects Cocoa builds of Qt for Mac OS X.
 
@@ -1198,7 +1191,6 @@
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
-    \omitvalue WA_SymbianNoSystemRotation
 */
 
 /*! \typedef Qt::HANDLE

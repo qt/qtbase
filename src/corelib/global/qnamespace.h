@@ -466,10 +466,6 @@ public:
         WA_Maemo5StackedWindow = 127,
 #endif
 
-        WA_LockPortraitOrientation = 128,
-        WA_LockLandscapeOrientation = 129,
-        WA_AutoOrientation = 130,
-
 #if 0 // these values are reserved for Maemo5 - do not re-use them
         WA_Maemo5PortraitOrientation = WA_LockPortraitOrientation,
         WA_Maemo5LandscapeOrientation = WA_LockLandscapeOrientation,
@@ -478,7 +474,6 @@ public:
 #endif
 
         WA_X11DoNotAcceptFocus = 132,
-        WA_SymbianNoSystemRotation = 133,
         WA_MacNoShadow = 134,
 
         // Add new attributes before this line
