@@ -461,20 +461,8 @@ public:
         WA_MergeSoftkeys =  124,
         WA_MergeSoftkeysRecursively =  125,
 
-#if 0 // these values are reserved for Maemo5 - do not re-use them
-        WA_Maemo5NonComposited = 126,
-        WA_Maemo5StackedWindow = 127,
-#endif
-
-#if 0 // these values are reserved for Maemo5 - do not re-use them
-        WA_Maemo5PortraitOrientation = WA_LockPortraitOrientation,
-        WA_Maemo5LandscapeOrientation = WA_LockLandscapeOrientation,
-        WA_Maemo5AutoOrientation = WA_AutoOrientation,
-        WA_Maemo5ShowProgressIndicator = 131,
-#endif
-
-        WA_X11DoNotAcceptFocus = 132,
-        WA_MacNoShadow = 134,
+        WA_X11DoNotAcceptFocus = 126,
+        WA_MacNoShadow = 127,
 
         // Add new attributes before this line
         WA_AttributeCount
