@@ -75,6 +75,7 @@ private slots:
     void findChildren();
     void connectDisconnectNotify_data();
     void connectDisconnectNotify();
+    void connectNotifyPtr();
     void emitInDefinedOrder();
     void customTypes();
     void streamCustomTypes();
@@ -844,6 +845,19 @@ void tst_QObject::connectDisconnectNotify()
     QObject::disconnect( (SenderObject*)s, signal, (ReceiverObject*)r, method );
     QCOMPARE( s->org_signal, s->nw_signal );
     QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(a_signal.toLatin1().constData()) );
+
+    delete s;
+    delete r;
+}
+
+void tst_QObject::connectNotifyPtr()
+{
+    NotifyObject *s = new NotifyObject;
+    NotifyObject *r = new NotifyObject;
+
+    connect( (SenderObject*)s, &SenderObject::signal1, (ReceiverObject*)r, &ReceiverObject::slot1 );
+    QCOMPARE( s->org_signal, s->nw_signal );
+    QCOMPARE( s->org_signal.toLatin1(), QMetaObject::normalizedSignature(SIGNAL(signal1())));
 
     delete s;
     delete r;
