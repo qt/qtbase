@@ -63,7 +63,7 @@ QMapData *QMapData::createData(int alignment)
     Node *e = reinterpret_cast<Node *>(d);
     e->backward = e;
     e->forward[0] = e;
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->topLevel = 0;
     d->size = 0;
     d->randomBits = 0;

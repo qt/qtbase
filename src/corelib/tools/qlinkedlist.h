@@ -253,7 +253,7 @@ void QLinkedList<T>::detach_helper()
 {
     union { QLinkedListData *d; Node *e; } x;
     x.d = new QLinkedListData;
-    x.d->ref = 1;
+    x.d->ref.initializeOwned();
     x.d->size = d->size;
     x.d->sharable = true;
     Node *original = e->n;

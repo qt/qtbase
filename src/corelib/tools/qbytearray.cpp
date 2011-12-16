@@ -576,7 +576,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
                 d.take(); // realloc was successful
                 d.reset(p);
             }
-            d->ref = 1;
+            d->ref.initializeOwned();
             d->size = len;
             d->alloc = len;
             d->capacityReserved = false;
@@ -1304,7 +1304,7 @@ QByteArray::QByteArray(const char *str)
         int len = qstrlen(str);
         d = static_cast<Data *>(qMalloc(sizeof(Data) + len + 1));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = len;
         d->alloc = len;
         d->capacityReserved = false;
@@ -1333,7 +1333,7 @@ QByteArray::QByteArray(const char *data, int size)
     } else {
         d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = size;
         d->capacityReserved = false;
@@ -1357,7 +1357,7 @@ QByteArray::QByteArray(int size, char ch)
     } else {
         d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = size;
         d->capacityReserved = false;
@@ -1377,7 +1377,7 @@ QByteArray::QByteArray(int size, Qt::Initialization)
 {
     d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = size;
     d->alloc = size;
     d->capacityReserved = false;
@@ -1424,7 +1424,7 @@ void QByteArray::resize(int size)
         //
         Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = size;
         x->alloc = size;
         x->capacityReserved = false;
@@ -1466,7 +1466,7 @@ void QByteArray::realloc(int alloc)
     if (d->ref != 1 || d->offset) {
         Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + alloc + 1));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = qMin(alloc, d->size);
         x->alloc = alloc;
         x->capacityReserved = d->capacityReserved;
@@ -3887,7 +3887,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     } else {
         x = static_cast<Data *>(qMalloc(sizeof(Data) + 1));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = size;
         x->alloc = 0;
         x->capacityReserved = false;

@@ -1032,7 +1032,7 @@ QString::QString(const QChar *unicode, int size)
     } else {
         d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = (uint) size;
         d->capacityReserved = false;
@@ -1064,7 +1064,7 @@ QString::QString(const QChar *unicode)
          } else {
              d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
              Q_CHECK_PTR(d);
-             d->ref = 1;
+             d->ref.initializeOwned();
              d->size = size;
              d->alloc = (uint) size;
              d->capacityReserved = false;
@@ -1089,7 +1089,7 @@ QString::QString(int size, QChar ch)
     } else {
         d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = (uint) size;
         d->capacityReserved = false;
@@ -1113,7 +1113,7 @@ QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = size;
     d->alloc = (uint) size;
     d->capacityReserved = false;
@@ -1135,7 +1135,7 @@ QString::QString(QChar ch)
 {
     d = (Data *) qMalloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->size = 1;
     d->alloc = 1;
     d->capacityReserved = false;
@@ -1314,7 +1314,7 @@ void QString::realloc(int alloc)
     if (d->ref != 1 || d->offset) {
         Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = qMin(alloc, d->size);
         x->alloc = (uint) alloc;
         x->capacityReserved = d->capacityReserved;
@@ -3758,7 +3758,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
             size = qstrlen(str);
         d = static_cast<Data *>(qMalloc(sizeof(Data) + (size+1) * sizeof(QChar)));
         Q_CHECK_PTR(d);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->size = size;
         d->alloc = (uint) size;
         d->capacityReserved = false;
@@ -7074,7 +7074,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     } else {
         x = static_cast<Data *>(qMalloc(sizeof(Data) + sizeof(ushort)));
         Q_CHECK_PTR(x);
-        x->ref = 1;
+        x->ref.initializeOwned();
         x->size = size;
         x->alloc = 0;
         x->capacityReserved = false;

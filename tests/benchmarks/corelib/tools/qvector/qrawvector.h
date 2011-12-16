@@ -289,7 +289,7 @@ public:
     QVector<T> mutateToVector()
     {
         Data *d = toBase(m_begin);
-        d->ref = 1;
+        d->ref.initializeOwned();
         d->alloc = m_alloc;
         d->size = m_size;
         d->sharable = 0;

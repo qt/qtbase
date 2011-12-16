@@ -75,10 +75,8 @@ public:
     { return !atomic.load(); }
     inline operator int() const
     { return atomic.load(); }
-    inline RefCount &operator=(int value)
-    { atomic.store(value); return *this; }
-    inline RefCount &operator=(const RefCount &other)
-    { atomic.store(other.atomic.load()); return *this; }
+
+    void initializeOwned() { atomic.store(1); }
 
     QBasicAtomicInt atomic;
 };

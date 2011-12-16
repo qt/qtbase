@@ -411,7 +411,7 @@ template <typename T>
 QVector<T>::QVector(int asize)
 {
     d = malloc(asize);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->alloc = d->size = asize;
     d->sharable = true;
     d->capacity = false;
@@ -429,7 +429,7 @@ template <typename T>
 QVector<T>::QVector(int asize, const T &t)
 {
     d = malloc(asize);
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->alloc = d->size = asize;
     d->sharable = true;
     d->capacity = false;
@@ -443,7 +443,7 @@ template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
     d = malloc(int(args.size()));
-    d->ref = 1;
+    d->ref.initializeOwned();
     d->alloc = d->size = int(args.size());
     d->sharable = true;
     d->capacity = false;
@@ -515,7 +515,7 @@ void QVector<T>::realloc(int asize, int aalloc)
                     QT_RETHROW;
             }
         }
-        x.d->ref = 1;
+        x.d->ref.initializeOwned();
         x.d->alloc = aalloc;
         x.d->sharable = true;
         x.d->capacity = d->capacity;

@@ -69,7 +69,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);
 
-        header->ref = 1;
+        header->ref.initializeOwned();
         header->size = 0;
         header->alloc = capacity;
         header->capacityReserved = reserve;
