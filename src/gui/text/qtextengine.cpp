@@ -2692,7 +2692,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
             closestItem--;
         int pos = si->position + clusterStart + closestItem;
         // Jump to the next charStop
-        while (!attrs[pos].charStop && pos < end)
+        while (pos < end && !attrs[pos].charStop)
             pos++;
         return pos;
     }
