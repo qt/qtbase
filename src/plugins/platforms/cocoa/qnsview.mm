@@ -207,6 +207,11 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
+{
+    return YES;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
