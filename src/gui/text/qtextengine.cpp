@@ -53,12 +53,16 @@
 #include "qstring.h"
 #include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
+#include "qrawfont.h"
+#include "qrawfont_p.h"
 #include <qguiapplication.h>
 #include <qinputmethod.h>
 #include <stdlib.h>
 
 
 QT_BEGIN_NAMESPACE
+
+static const float smallCapsFraction = 0.7;
 
 namespace {
 // Helper class used in QTextEngine::itemize
@@ -900,13 +904,25 @@ void QTextEngine::shapeText(int item) const
         return;
     QGlyphLayout glyphs = shapedGlyphs(&si);
 
-    QFont font = this->font(si);
-    bool letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
-    QFixed letterSpacing = font.d->letterSpacing;
-    QFixed wordSpacing = font.d->wordSpacing;
+    bool letterSpacingIsAbsolute;
+    QFixed letterSpacing, wordSpacing;
+#ifndef QT_NO_RAWFONT
+    if (useRawFont) {
+        QTextCharFormat f = format(&si);
+        wordSpacing = QFixed::fromReal(f.fontWordSpacing());
+        letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
+        letterSpacingIsAbsolute = true;
+    } else
+#endif
+    {
+        QFont font = this->font(si);
+        letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
+        letterSpacing = font.d->letterSpacing;
+        wordSpacing = font.d->wordSpacing;
 
-    if (letterSpacingIsAbsolute && letterSpacing.value())
-        letterSpacing *= font.d->dpi / qt_defaultDpiY();
+        if (letterSpacingIsAbsolute && letterSpacing.value())
+            letterSpacing *= font.d->dpi / qt_defaultDpiY();
+    }
 
     if (letterSpacing != 0) {
         for (int i = 1; i < si.num_glyphs; ++i) {
@@ -973,7 +989,14 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
     QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
-    bool kerningEnabled = this->font(si).d->kerning;
+    bool kerningEnabled;
+#ifndef QT_NO_RAWFONT
+    if (useRawFont) {
+        QTextCharFormat f = format(&si);
+        kerningEnabled = f.fontKerning();
+    } else
+#endif
+        kerningEnabled = this->font(si).d->kerning;
 
     HB_ShaperItem entire_shaper_item;
     qMemSet(&entire_shaper_item, 0, sizeof(entire_shaper_item));
@@ -1159,6 +1182,9 @@ static void init(QTextEngine *e)
     e->underlinePositions = 0;
     e->specialData = 0;
     e->stackEngine = false;
+#ifndef QT_NO_RAWFONT
+    e->useRawFont = false;
+#endif
 }
 
 QTextEngine::QTextEngine()
@@ -1401,7 +1427,21 @@ void QTextEngine::itemize() const
             ++it;
         }
     } else {
-        itemizer.generate(0, length, static_cast<QFont::Capitalization> (fnt.d->capital));
+#ifndef QT_NO_RAWFONT
+        if (useRawFont && specialData) {
+            int lastIndex = 0;
+            for (int i = 0; i < specialData->addFormats.size(); ++i) {
+                const QTextLayout::FormatRange &range = specialData->addFormats.at(i);
+                if (range.format.fontCapitalization()) {
+                    itemizer.generate(lastIndex, range.start - lastIndex, QFont::MixedCase);
+                    itemizer.generate(range.start, range.length, range.format.fontCapitalization());
+                    lastIndex = range.start + range.length;
+                }
+            }
+            itemizer.generate(lastIndex, length - lastIndex, QFont::MixedCase);
+        } else
+#endif
+            itemizer.generate(0, length, static_cast<QFont::Capitalization> (fnt.d->capital));
     }
 
     addRequiredBoundaries();
@@ -1663,59 +1703,85 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
     int script = si.analysis.script;
 
     QFont font = fnt;
-    if (hasFormats()) {
-        if (feCache.prevFontEngine && feCache.prevPosition == si.position && feCache.prevLength == length(&si) && feCache.prevScript == script) {
+#ifndef QT_NO_RAWFONT
+    if (useRawFont && rawFont.isValid()) {
+        if (feCache.prevFontEngine && feCache.prevFontEngine->type() == QFontEngine::Multi && feCache.prevScript == script) {
             engine = feCache.prevFontEngine;
-            scaledEngine = feCache.prevScaledFontEngine;
         } else {
-            QTextCharFormat f = format(&si);
-            font = f.font();
-
-            if (block.docHandle() && block.docHandle()->layout()) {
-                // Make sure we get the right dpi on printers
-                QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
-                if (pdev)
-                    font = QFont(font, pdev);
+            engine = QFontDatabase::findFont(script, /*fontPrivate*/0, rawFont.d->fontEngine->fontDef, true);
+            feCache.prevFontEngine = engine;
+            feCache.prevScript = script;
+            engine->ref.ref();
+            if (feCache.prevScaledFontEngine)
+                releaseCachedFontEngine(feCache.prevScaledFontEngine);
+        }
+        if (si.analysis.flags & QFont::SmallCaps) {
+            if (feCache.prevScaledFontEngine) {
+                scaledEngine = feCache.prevScaledFontEngine;
             } else {
-                font = font.resolve(fnt);
-            }
-            engine = font.d->engineForScript(script);
-            QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
-            if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
-                if (font.pointSize() != -1)
-                    font.setPointSize((font.pointSize() * 2) / 3);
-                else
-                    font.setPixelSize((font.pixelSize() * 2) / 3);
-                scaledEngine = font.d->engineForScript(script);
-            }
-            feCache.prevFontEngine = engine;
-            if (engine)
-                engine->ref.ref();
-            feCache.prevScaledFontEngine = scaledEngine;
-            if (scaledEngine)
+                QFontEngine *scEngine = rawFont.d->fontEngine->cloneWithSize(smallCapsFraction * rawFont.pixelSize());
+                scaledEngine = QFontDatabase::findFont(script, /*fontPrivate*/0, scEngine->fontDef, true);
                 scaledEngine->ref.ref();
-            feCache.prevScript = script;
-            feCache.prevPosition = si.position;
-            feCache.prevLength = length(&si);
+                feCache.prevScaledFontEngine = scaledEngine;
+            }
         }
-    } else {
-        if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1)
-            engine = feCache.prevFontEngine;
-        else {
-            engine = font.d->engineForScript(script);
-            feCache.prevFontEngine = engine;
-            if (engine)
-                engine->ref.ref();
-            feCache.prevScript = script;
-            feCache.prevPosition = -1;
-            feCache.prevLength = -1;
-            feCache.prevScaledFontEngine = 0;
-        }
-    }
+    } else
+#endif
+    {
+        if (hasFormats()) {
+            if (feCache.prevFontEngine && feCache.prevPosition == si.position && feCache.prevLength == length(&si) && feCache.prevScript == script) {
+                engine = feCache.prevFontEngine;
+                scaledEngine = feCache.prevScaledFontEngine;
+            } else {
+                QTextCharFormat f = format(&si);
+                font = f.font();
 
-    if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
-        QFontPrivate *p = font.d->smallCapsFontPrivate();
-        scaledEngine = p->engineForScript(script);
+                if (block.docHandle() && block.docHandle()->layout()) {
+                    // Make sure we get the right dpi on printers
+                    QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+                    if (pdev)
+                        font = QFont(font, pdev);
+                } else {
+                    font = font.resolve(fnt);
+                }
+                engine = font.d->engineForScript(script);
+                QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
+                if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
+                    if (font.pointSize() != -1)
+                        font.setPointSize((font.pointSize() * 2) / 3);
+                    else
+                        font.setPixelSize((font.pixelSize() * 2) / 3);
+                    scaledEngine = font.d->engineForScript(script);
+                }
+                feCache.prevFontEngine = engine;
+                if (engine)
+                    engine->ref.ref();
+                feCache.prevScaledFontEngine = scaledEngine;
+                if (scaledEngine)
+                    scaledEngine->ref.ref();
+                feCache.prevScript = script;
+                feCache.prevPosition = si.position;
+                feCache.prevLength = length(&si);
+            }
+        } else {
+            if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1)
+                engine = feCache.prevFontEngine;
+            else {
+                engine = font.d->engineForScript(script);
+                feCache.prevFontEngine = engine;
+                if (engine)
+                    engine->ref.ref();
+                feCache.prevScript = script;
+                feCache.prevPosition = -1;
+                feCache.prevLength = -1;
+                feCache.prevScaledFontEngine = 0;
+            }
+        }
+
+        if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
+            QFontPrivate *p = font.d->smallCapsFontPrivate();
+            scaledEngine = p->engineForScript(script);
+        }
     }
 
     if (ascent) {

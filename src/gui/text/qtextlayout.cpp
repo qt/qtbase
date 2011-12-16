@@ -361,6 +361,22 @@ QTextLayout::~QTextLayout()
         delete d;
 }
 
+#ifndef QT_NO_RAWFONT
+/*!
+    \internal
+    Sets a raw font, to be used with QTextLayout::glyphRuns.
+    Note that this only supports the needs of WebKit.
+    Use of this function with e.g. QTextLayout::draw will result
+    in undefined behaviour.
+*/
+void QTextLayout::setRawFont(const QRawFont &rawFont)
+{
+    d->rawFont = rawFont;
+    d->useRawFont = true;
+    d->resetFontEngineCache();
+}
+#endif
+
 /*!
     Sets the layout's font to the given \a font. The layout is
     invalidated and must be laid out again.
@@ -370,6 +386,9 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
+#ifndef QT_NO_RAWFONT
+    d->useRawFont = false;
+#endif
     d->resetFontEngineCache();
 }
 
@@ -2204,15 +2223,17 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
             continue;
         }
 
-        QFont font = eng->font(si);
-
+        QFont font;
         QGlyphRun::GlyphRunFlags flags;
-        if (font.overline())
-            flags |= QGlyphRun::Overline;
-        if (font.underline())
-            flags |= QGlyphRun::Underline;
-        if (font.strikeOut())
-            flags |= QGlyphRun::StrikeOut;
+        if (!eng->useRawFont) {
+            font = eng->font(si);
+            if (font.overline())
+                flags |= QGlyphRun::Overline;
+            if (font.underline())
+                flags |= QGlyphRun::Underline;
+            if (font.strikeOut())
+                flags |= QGlyphRun::StrikeOut;
+        }
 
         bool rtl = false;
         if (si.analysis.bidiLevel % 2) {
@@ -2264,7 +2285,8 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         iterator.getSelectionBounds(&x, &width);
 
         if (glyphLayout.numGlyphs > 0) {
-            QFontEngine *mainFontEngine = font.d->engineForScript(si.analysis.script);
+            QFontEngine *mainFontEngine = eng->fontEngine(si);
+
             if (mainFontEngine->type() == QFontEngine::Multi) {
                 QFontEngineMulti *multiFontEngine = static_cast<QFontEngineMulti *>(mainFontEngine);
                 int end = rtl ? glyphLayout.numGlyphs : 0;
@@ -2331,6 +2353,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 */
 void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatRange *selection) const
 {
+#ifndef QT_NO_RAWFONT
+    // Not intended to work with rawfont
+    Q_ASSERT(!eng->useRawFont);
+#endif
     const QScriptLine &line = eng->lines[index];
     QPen pen = p->pen();
 

@@ -59,6 +59,9 @@ QT_BEGIN_NAMESPACE
 
 class QTextEngine;
 class QFont;
+#ifndef QT_NO_RAWFONT
+class QRawFont;
+#endif
 class QRect;
 class QRegion;
 class QTextFormat;
@@ -113,6 +116,10 @@ public:
 
     void setFont(const QFont &f);
     QFont font() const;
+
+#ifndef QT_NO_RAWFONT
+    void setRawFont(const QRawFont &rawFont);
+#endif
 
     void setText(const QString& string);
     QString text() const;
