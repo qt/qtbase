@@ -61,6 +61,7 @@
 #include <qauthenticator.h>
 #include <qnetworkproxy.h>
 #include <qbuffer.h>
+#include <qtimer.h>
 
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
@@ -134,6 +135,7 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))
+    Q_PRIVATE_SLOT(d_func(), void _q_connectIPv4Channel())
 };
 
 
@@ -196,6 +198,7 @@ public:
     void _q_startNextRequest(); // send the next request from the queue
 
     void _q_hostLookupFinished(QHostInfo info);
+    void _q_connectIPv4Channel();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
 
@@ -209,6 +212,7 @@ public:
     bool encrypt;
 
     const int channelCount;
+    QTimer ipv4ConnectTimer;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
     bool shouldEmitChannelError(QAbstractSocket *socket);
 

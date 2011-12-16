@@ -951,6 +951,8 @@ void QHttpNetworkConnectionChannel::_q_connected()
     // For the Happy Eyeballs we need to check if this is the first channel to connect.
     if (!pendingEncrypt) {
         if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+            if (connection->d_func()->ipv4ConnectTimer.isActive())
+                connection->d_func()->ipv4ConnectTimer.stop();
             if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
             else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)

@@ -116,6 +116,7 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 
 void QHttpNetworkConnectionPrivate::init()
 {
+    Q_Q(QHttpNetworkConnection);
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
@@ -125,6 +126,8 @@ void QHttpNetworkConnectionPrivate::init()
 #endif
         channels[i].init();
     }
+    ipv4ConnectTimer.setSingleShot(true);
+    QObject::connect(&ipv4ConnectTimer, SIGNAL(timeout()), q, SLOT(_q_connectIPv4Channel()));
 }
 
 void QHttpNetworkConnectionPrivate::pauseConnection()
@@ -184,6 +187,12 @@ bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *sock
     bool emitError = true;
     int i = indexOf(socket);
     int otherSocket = (i == 0 ? 1 : 0);
+
+    // If the IPv4 connection still isn't started we need to start it now.
+    if (ipv4ConnectTimer.isActive()) {
+        ipv4ConnectTimer.stop();
+        channels[0].ensureConnection();
+    }
 
     if (channelCount == 1) {
         if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress)
@@ -1010,7 +1019,18 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
         channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
         channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
 
-        channels[0].ensureConnection(); // Possibly delay this one..
+        int timeout = 300;
+#ifndef QT_NO_BEARERMANAGEMENT
+        if (networkSession->configuration().bearerType() == QNetworkConfiguration::Bearer2G)
+            timeout = 800;
+        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerCDMA2000)
+            timeout = 500;
+        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerWCDMA)
+            timeout = 500;
+        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerHSPA)
+            timeout = 400;
+#endif
+        ipv4ConnectTimer.start(timeout);
         channels[1].ensureConnection();
     } else {
         networkLayerState = InProgress;
@@ -1019,6 +1039,10 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
     }
 }
 
+void QHttpNetworkConnectionPrivate::_q_connectIPv4Channel()
+{
+    channels[0].ensureConnection();
+}
 
 #ifndef QT_NO_BEARERMANAGEMENT
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)
