@@ -88,7 +88,7 @@ class QTouchDevice;
 class QGestureManager;
 #endif
 
-extern bool qt_is_gui_used;
+extern Q_GUI_EXPORT bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
 extern QClipboard *qt_clipboard;
 #endif

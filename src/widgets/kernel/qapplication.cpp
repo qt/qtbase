@@ -431,7 +431,6 @@ bool QApplicationPrivate::obey_desktop_settings = true;        // use winsys res
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
-bool qt_is_gui_used;
 bool Q_WIDGETS_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
