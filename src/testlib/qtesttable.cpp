@@ -73,8 +73,8 @@ public:
     ElementList *list;
     DataList *dataList;
 
-    void append(int elemType, const char *elemName);
-    void append(QTestData *data);
+    void addColumn(int elemType, const char *elemName);
+    void addRow(QTestData *data);
     ElementList *elementAt(int index);
     QTestData *dataAt(int index);
 
@@ -124,7 +124,7 @@ QTestTablePrivate::~QTestTablePrivate()
     }
 }
 
-void QTestTablePrivate::append(int elemType, const char *elemName)
+void QTestTablePrivate::addColumn(int elemType, const char *elemName)
 {
     ElementList *item = new ElementList;
     item->elementName = elemName;
@@ -139,7 +139,7 @@ void QTestTablePrivate::append(int elemType, const char *elemName)
     last->next = item;
 }
 
-void QTestTablePrivate::append(QTestData *data)
+void QTestTablePrivate::addRow(QTestData *data)
 {
     DataList *item = new DataList;
     item->data = data;
@@ -158,7 +158,7 @@ void QTestTable::addColumn(int type, const char *name)
     QTEST_ASSERT(type);
     QTEST_ASSERT(name);
 
-    d->append(type, name);
+    d->addColumn(type, name);
 }
 
 int QTestTable::elementCount() const
@@ -192,7 +192,7 @@ bool QTestTable::isEmpty() const
 QTestData *QTestTable::newData(const char *tag)
 {
     QTestData *dt = new QTestData(tag, this);
-    d->append(dt);
+    d->addRow(dt);
     return dt;
 }
 
