@@ -49,17 +49,17 @@
 
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
+class QCocoaWindow;
 
 @interface QNSWindow : NSWindow {
-
+    @public QCocoaWindow *m_cocoaPlatformWindow;
 }
 
 - (BOOL)canBecomeKeyWindow;
-
 @end
 
 @interface QNSPanel : NSPanel {
-
+    @public QCocoaWindow *m_cocoaPlatformWindow;
 }
 - (BOOL)canBecomeKeyWindow;
 @end
@@ -93,6 +93,7 @@ public:
 
     void setGeometry(const QRect &rect);
     void setVisible(bool visible);
+    Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
@@ -101,8 +102,11 @@ public:
     bool setMouseGrabEnabled(bool grab);
 
     WId winId() const;
+    void setParent(const QPlatformWindow *window);
+
     NSView *contentView() const;
 
+    void windowWillMove();
     void windowDidMove();
     void windowDidResize();
     void windowWillClose();
@@ -111,8 +115,12 @@ public:
     QCocoaGLContext *currentContext() const;
 
 protected:
-    void determineWindowClass();
-    NSWindow *createWindow();
+    // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
+    // in an existing NSWindow or in one created by Qt.
+    NSWindow *createNSWindow();
+    void setNSWindow(NSWindow *window);
+    void clearNSWindow(NSWindow *window);
+
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
 
@@ -123,9 +131,9 @@ public: // for QNSView
 
     QNSView *m_contentView;
     QNSWindow *m_nsWindow;
+    Qt::WindowFlags m_windowFlags;
+    QPointer<QWindow> m_activePopupWindow;
 
-    quint32 m_windowAttributes;
-    quint32 m_windowClass;
     bool m_inConstructor;
     QCocoaGLContext *m_glContext;
 };

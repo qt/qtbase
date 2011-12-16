@@ -909,9 +909,6 @@ void tst_QComboBox::hide()
     QTRY_VERIFY(testWidget->view()->isVisible());
     testWidget->hidePopup();
     //allow combobox effect to complete
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-23678", Continue);
-#endif
     QTRY_VERIFY(!testWidget->view()->isVisible());
     testWidget->hide();
     QVERIFY(!testWidget->isVisible());

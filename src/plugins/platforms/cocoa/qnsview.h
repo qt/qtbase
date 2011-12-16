@@ -44,6 +44,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include <QtCore/QPointer>
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 

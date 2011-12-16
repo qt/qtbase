@@ -58,6 +58,7 @@
 #include <qtreeview.h>
 #include <qheaderview.h>
 #include <qmath.h>
+#include <qmetaobject.h>
 #include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
@@ -2545,17 +2546,25 @@ void QComboBox::hidePopup()
 
         // Fade out.
         bool needFade = style()->styleHint(QStyle::SH_Menu_FadeOutOnHide);
+        bool didFade = false;
         if (needFade) {
-#if defined(Q_WS_MAC)
-            macWindowFade(qt_mac_window_for(d->container));
-#endif // Q_WS_MAC
+#if defined(Q_OS_MAC)
+            QPlatformNativeInterface *platformNativeInterface = qApp->platformNativeInterface();
+            int at = platformNativeInterface->metaObject()->indexOfMethod("fadeWindow()");
+            if (at != -1) {
+                QMetaMethod windowFade = platformNativeInterface->metaObject()->method(at);
+                windowFade.invoke(platformNativeInterface, Q_ARG(QWindow *, d->container->windowHandle()));
+                didFade = true;
+            }
+
+#endif // Q_OS_MAC
             // Other platform implementations welcome :-)
         }
         d->model->blockSignals(false);
         d->container->itemView()->blockSignals(false);
         d->container->blockSignals(false);
 
-        if (!needFade)
+        if (!didFade)
 #endif // QT_NO_EFFECTS
             // Fade should implicitly hide as well ;-)
             d->container->hide();

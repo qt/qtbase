@@ -146,13 +146,26 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)windowDidBecomeKey
 {
-    QWindowSystemInterface::handleWindowActivated(m_window);
+//    QWindowSystemInterface::handleWindowActivated(m_window);
 }
 
 - (void)windowDidResignKey
 {
+//    QWindowSystemInterface::handleWindowActivated(0);
+}
+
+- (void)windowDidBecomeMain
+{
+//    qDebug() << "window did become main" << m_window;
+    QWindowSystemInterface::handleWindowActivated(m_window);
+}
+
+- (void)windowDidResignMain
+{
+//    qDebug() << "window did resign main" << m_window;
     QWindowSystemInterface::handleWindowActivated(0);
 }
+
 
 - (void) setImage:(QImage *)image
 {
@@ -268,12 +281,15 @@ static QTouchDevice *touchDevice = 0;
         qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
     }
     ulong timestamp = [theEvent timestamp] * 1000;
-
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    if (m_platformWindow->m_activePopupWindow) {
+        QWindowSystemInterface::handleSynchronousCloseEvent(m_platformWindow->m_activePopupWindow);
+        m_platformWindow->m_activePopupWindow = 0;
+    }
     if ([self hasMarkedText]) {
         NSInputManager* inputManager = [NSInputManager currentInputManager];
         if ([inputManager wantsToHandleMouseEvents]) {
