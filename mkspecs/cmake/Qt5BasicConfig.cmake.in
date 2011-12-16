@@ -14,14 +14,6 @@ set(Qt5$${CMAKE_MODULE_NAME}_COMPILE_DEFINITIONS QT_\${_CMAKE_MODULE_NAME_UPPER}
 
 set(_Qt5_MODULE_DEPENDENCIES \"$${CMAKE_MODULE_DEPS}\")
 
-if (NOT \"$${CMAKE_MODULE_EXTRAS}\" STREQUAL \"\")
-    include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake\")
-endif()
-
-if (NOT \"$${CMAKE_MODULE_MACROS}\" STREQUAL \"\")
-    include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake\")
-endif()
-
 if (NOT _Qt5$${CMAKE_MODULE_NAME}_target)
     set(_Qt5$${CMAKE_MODULE_NAME}_target 1)
     add_library(Qt5::$${CMAKE_MODULE_NAME} SHARED IMPORTED)
@@ -54,4 +46,12 @@ if (NOT \"$${release_type}\" STREQUAL \"\")
             IMPORTED_IMPLIB_RELEASE \"${_qt5_install_prefix}/$$CMAKE_LIB_DIR/$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\"
         )
     endif()
+endif()
+
+if (NOT \"$${CMAKE_MODULE_EXTRAS}\" STREQUAL \"\")
+    include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}ConfigExtras.cmake\")
+endif()
+
+if (NOT \"$${CMAKE_MODULE_MACROS}\" STREQUAL \"\")
+    include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}Macros.cmake\")
 endif()
