@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 const QMapData QMapData::shared_null = {
     const_cast<QMapData *>(&shared_null),
     { const_cast<QMapData *>(&shared_null), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, false, true, false, 0
+    Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, false, true, false, 0
 };
 
 QMapData *QMapData::createData(int alignment)

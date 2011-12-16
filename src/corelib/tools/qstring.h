@@ -133,7 +133,7 @@ template<int N> struct QConstStringData
 #  define QStringLiteral(str) ([]() -> QConstStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
@@ -146,7 +146,7 @@ template<int N> struct QConstStringData
     __extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif

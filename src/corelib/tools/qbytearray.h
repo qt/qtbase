@@ -149,7 +149,7 @@ template<int N> struct QConstByteArrayDataPtr
 #  define QByteArrayLiteral(str) ([]() -> QConstByteArrayDataPtr<sizeof(str) - 1> { \
         enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
     return holder; }())
 
@@ -162,7 +162,7 @@ template<int N> struct QConstByteArrayDataPtr
     __extension__ ({ \
         enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
         holder; })
 #endif

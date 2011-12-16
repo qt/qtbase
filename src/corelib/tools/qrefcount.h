@@ -81,9 +81,9 @@ public:
     QBasicAtomicInt atomic;
 };
 
-#define Q_REFCOUNT_INITIALIZER(a) { Q_BASIC_ATOMIC_INITIALIZER(a) }
-
 }
+
+#define Q_REFCOUNT_INITIALIZE_STATIC { Q_BASIC_ATOMIC_INITIALIZER(-1) }
 
 QT_END_NAMESPACE
 

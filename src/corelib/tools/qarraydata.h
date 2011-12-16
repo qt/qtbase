@@ -132,7 +132,7 @@ struct QStaticArrayData
 };
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) { \
-    Q_REFCOUNT_INITIALIZER(-1), size, 0, 0, \
+    Q_REFCOUNT_INITIALIZE_STATIC, size, 0, 0, \
     (sizeof(QArrayData) + (Q_ALIGNOF(type) - 1)) \
         & ~(Q_ALIGNOF(type) - 1) } \
     /**/

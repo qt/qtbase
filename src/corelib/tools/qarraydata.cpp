@@ -43,8 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
-const QArrayData QArrayData::shared_null = { Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, 0 };
-const QArrayData QArrayData::shared_empty = { Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, 0 };
+const QArrayData QArrayData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+const QArrayData QArrayData::shared_empty = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
 
 QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         size_t capacity, bool reserve)
