@@ -143,7 +143,7 @@ QT_USE_NAMESPACE
 {
     Q_UNUSED(event);
 /*
-    if (qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
+    if (qApp && qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
         return true;
 
     if ([event type] == NSApplicationDefined) {
