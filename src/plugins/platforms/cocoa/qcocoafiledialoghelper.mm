@@ -138,6 +138,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         mSavePanel = mOpenPanel;
     } else {
         mSavePanel = [NSSavePanel savePanel];
+        [mSavePanel setCanSelectHiddenExtension:YES];
         mOpenPanel = 0;
     }
 
