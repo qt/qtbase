@@ -58,7 +58,8 @@ class QTouchScreenData;
 class QTouchScreenObserver
 {
 public:
-    virtual void touch_configure(int x_min, int x_max, int y_min, int y_max) = 0;
+    virtual void touch_configure(int x_min, int x_max, int y_min, int y_max,
+                                 int pressure_min, int pressure_max, const QString &dev_name) = 0;
     virtual void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
 };
 
