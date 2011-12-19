@@ -1410,9 +1410,8 @@ void QMetaType::destroy(int type, void *data)
 }
 
 namespace {
-template<class Filter>
 class TypeConstructor {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct ConstructorImpl {
         static void *Construct(const int /*type*/, void *where, const T *copy) { return qMetaTypeConstructHelper(where, copy); }
     };
@@ -1497,15 +1496,14 @@ void *QMetaType::construct(int type, void *where, const void *copy)
 {
     if (!where)
         return 0;
-    TypeConstructor<DefinedTypesFilter> constructor(type, where);
+    TypeConstructor constructor(type, where);
     return QMetaTypeSwitcher::switcher<void*>(constructor, type, copy);
 }
 
 
 namespace {
-template<class Filter>
 class TypeDestructor {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestructorImpl {
         static void Destruct(const int /* type */, T *where) { qMetaTypeDestructHelper(where); }
     };
@@ -1573,15 +1571,14 @@ void QMetaType::destruct(int type, void *where)
 {
     if (!where)
         return;
-    TypeDestructor<DefinedTypesFilter> destructor(type);
+    TypeDestructor destructor(type);
     QMetaTypeSwitcher::switcher<void>(destructor, type, where);
 }
 
 
 namespace {
-template<class Filter>
 class SizeOf {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct SizeOfImpl {
         static int Size(const int) { return sizeof(T); }
     };
@@ -1640,7 +1637,7 @@ private:
 */
 int QMetaType::sizeOf(int type)
 {
-    SizeOf<DefinedTypesFilter> sizeOf(type);
+    SizeOf sizeOf(type);
     return QMetaTypeSwitcher::switcher<int>(sizeOf, type, 0);
 }
 
