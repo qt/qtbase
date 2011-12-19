@@ -1383,7 +1383,7 @@ public:
         StatusTipPropertyRole = 30,
         WhatsThisPropertyRole = 31,
         // Reserved
-        UserRole = 32
+        UserRole = 0x0100
     };
 
     enum ItemFlag {
