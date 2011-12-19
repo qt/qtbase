@@ -572,7 +572,7 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();
-        QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
+        setupViewport(widget);
         delete oldViewport;
     }
 }
