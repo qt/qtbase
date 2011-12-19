@@ -789,7 +789,7 @@ public:
     inline void setTarget(QObject *atarget) { _target = atarget; }
     inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
-    inline void setDevice(QTouchDevice *device) { _device = device; }
+    inline void setDevice(QTouchDevice *adevice) { _device = adevice; }
 
 protected:
     QWindow *_window;
