@@ -683,6 +683,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                   this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
@@ -691,6 +693,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(_q_columnsRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_columnsInserted(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+                   this, SLOT(_q_columnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(reset()));
         disconnect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
@@ -721,12 +725,16 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                 this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        connect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         connect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_columnsRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                 this, SLOT(_q_columnsInserted(QModelIndex,int,int)));
+        connect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+                this, SLOT(_q_columnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
         connect(d->model, SIGNAL(modelReset()), this, SLOT(reset()));
         connect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
