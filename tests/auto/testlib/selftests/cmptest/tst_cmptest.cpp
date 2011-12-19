@@ -42,6 +42,88 @@
 
 #include <QtCore>
 #include <QtTest/QtTest>
+#include <QtGui/QImage>
+#include <QtGui/QPixmap>
+
+/* XPM test data for QPixmap, QImage tests (use drag cursors as example) */
+
+static const char * const xpmPixmapData1[] = {
+"11 20 3 1",
+".        c None",
+"a        c #FFFFFF",
+"X        c #000000", // X11 cursor is traditionally black
+"aa.........",
+"aXa........",
+"aXXa.......",
+"aXXXa......",
+"aXXXXa.....",
+"aXXXXXa....",
+"aXXXXXXa...",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+static const char * const xpmPixmapData2[] = {
+"11 20 4 1",
+".        c None",
+"a        c #FFFFFF",
+"b        c #0000FF",
+"X        c #000000",
+"aab........",
+"aXab.......",
+"aXXab......",
+"aXXXab.....",
+"aXXXXab....",
+"aXXXXXab...",
+"aXXXXXXab..",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+static const char * const xpmPixmapData3[] = {
+"20 20 2 1",
+"       c #000000",
+".      c #C32D2D",
+"          ..........",
+"            ........",
+"             .......",
+"              ......",
+"                ....",
+"                  ..",
+"                   .",
+"                    ",
+"                    ",
+".                   ",
+"...                 ",
+".....               ",
+"......              ",
+".......             ",
+".........           ",
+"...........         ",
+"...........         ",
+"............        ",
+"............        ",
+".............       "};
 
 class tst_Cmptest: public QObject
 {
@@ -54,6 +136,10 @@ private slots:
     void compare_tostring_data();
     void compareQStringLists();
     void compareQStringLists_data();
+    void compareQPixmaps();
+    void compareQPixmaps_data();
+    void compareQImages();
+    void compareQImages_data();
 };
 
 static bool boolfunc() { return true; }
@@ -218,6 +304,58 @@ void tst_Cmptest::compareQStringLists()
 {
     QFETCH(QStringList, opA);
     QFETCH(QStringList, opB);
+
+    QCOMPARE(opA, opB);
+}
+
+void tst_Cmptest::compareQPixmaps_data()
+{
+    QTest::addColumn<QPixmap>("opA");
+    QTest::addColumn<QPixmap>("opB");
+
+    const QPixmap pixmap1(xpmPixmapData1);
+    const QPixmap pixmap2(xpmPixmapData2);
+    const QPixmap pixmap3(xpmPixmapData3);
+
+    QTest::newRow("both null") << QPixmap() << QPixmap();
+    QTest::newRow("one null") << QPixmap() << pixmap1;
+    QTest::newRow("other null") << pixmap1 << QPixmap();
+    QTest::newRow("equal") << pixmap1 << pixmap1;
+    QTest::newRow("different size") << pixmap1 << pixmap3;
+    QTest::newRow("different pixels") << pixmap1 << pixmap2;
+}
+
+void tst_Cmptest::compareQPixmaps()
+{
+    QFETCH(QPixmap, opA);
+    QFETCH(QPixmap, opB);
+
+    QCOMPARE(opA, opB);
+}
+
+void tst_Cmptest::compareQImages_data()
+{
+    QTest::addColumn<QImage>("opA");
+    QTest::addColumn<QImage>("opB");
+
+    const QImage image1(QPixmap(xpmPixmapData1).toImage());
+    const QImage image2(QPixmap(xpmPixmapData2).toImage());
+    const QImage image1Indexed = image1.convertToFormat(QImage::Format_Indexed8);
+    const QImage image3(QPixmap(xpmPixmapData3).toImage());
+
+    QTest::newRow("both null") << QImage() << QImage();
+    QTest::newRow("one null") << QImage() << image1;
+    QTest::newRow("other null") << image1 << QImage();
+    QTest::newRow("equal") << image1 << image1;
+    QTest::newRow("different size") << image1 << image3;
+    QTest::newRow("different format") << image1 << image1Indexed;
+    QTest::newRow("different pixels") << image1 << image2;
+}
+
+void tst_Cmptest::compareQImages()
+{
+    QFETCH(QImage, opA);
+    QFETCH(QImage, opB);
 
     QCOMPARE(opA, opB);
 }

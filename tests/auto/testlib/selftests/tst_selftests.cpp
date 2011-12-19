@@ -445,7 +445,15 @@ static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
     const QString path = QStringLiteral("PATH");
-    result.insert(path, QProcessEnvironment::systemEnvironment().value(path));
+    const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+    result.insert(path, systemEnvironment.value(path));
+    // Preserve DISPLAY for X11 as some tests use QtGui.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    const QString display = QStringLiteral("DISPLAY");
+    const QString displayValue = systemEnvironment.value(display);
+    if (!displayValue.isEmpty())
+        result.insert(display, displayValue);
+#endif
     return result;
 }
 
@@ -486,6 +494,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     // newer than the valgrind version, such that valgrind can't understand the
     // debug information on the binary.
     if (subdir != QLatin1String("exceptionthrow")
+        && subdir != QLatin1String("cmptest") // QImage comparison requires QGuiApplication
         && subdir != QLatin1String("fetchbogus")
         && subdir != QLatin1String("xunit")
         && subdir != QLatin1String("benchlibcallgrind"))
@@ -524,7 +533,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                 }
             }
         } else {
-            QCOMPARE(res.count(), exp.count());
+            QVERIFY2(res.count() == exp.count(),
+                     qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3).")
+                                .arg(res.count()).arg(exp.count()).arg(loggers.at(n))));
         }
 
         // For xml output formats, verify that the log is valid XML.
@@ -585,7 +596,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 
                 QCOMPARE(actualResult, expectedResult);
             } else {
-                QCOMPARE(output, expected);
+                QVERIFY2(output == expected,
+                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2): '%3' != '%4'")
+                                    .arg(i).arg(loggers.at(n), output, expected)));
             }
 
             benchmark = line.startsWith("RESULT : ");
@@ -758,9 +771,12 @@ void tst_Selftests::cleanup()
 
     // Remove the test output files
     for (int i = 0; i < loggers.count(); ++i) {
-        QString logFile = logName(loggers[i]);
-        if (!logFile.isEmpty())
-            QVERIFY(QFile::remove(logFile));
+        QString logFileName = logName(loggers[i]);
+        if (!logFileName.isEmpty()) {
+            QFile logFile(logFileName);
+            if (logFile.exists())
+                QVERIFY2(logFile.remove(), qPrintable(QString::fromLatin1("Cannot remove file '%1': %2: ").arg(logFileName, logFile.errorString())));
+        }
     }
 }
 

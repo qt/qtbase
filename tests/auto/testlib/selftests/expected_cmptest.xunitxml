@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="9" tests="6" name="tst_Cmptest">
+<testsuite errors="0" failures="18" tests="8" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -37,6 +37,33 @@
     <failure tag="short list first" message="Compared QStringLists have different sizes.
    Actual (opA) size  : &apos;1&apos;
    Expected (opB) size: &apos;12&apos;" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQPixmaps">
+    <failure tag="one null" message="Compared QPixmaps differ.
+   Actual (opA).isNull()  : 1
+   Expected (opB).isNull(): 0" result="fail"/>
+    <failure tag="other null" message="Compared QPixmaps differ.
+   Actual (opA).isNull()  : 0
+   Expected (opB).isNull(): 1" result="fail"/>
+    <failure tag="different size" message="Compared QPixmaps differ in size.
+   Actual (opA)  : 11x20
+   Expected (opB): 20x20" result="fail"/>
+    <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQImages">
+    <failure tag="one null" message="Compared QImages differ.
+   Actual (opA).isNull()  : 1
+   Expected (opB).isNull(): 0" result="fail"/>
+    <failure tag="other null" message="Compared QImages differ.
+   Actual (opA).isNull()  : 0
+   Expected (opB).isNull(): 1" result="fail"/>
+    <failure tag="different size" message="Compared QImages differ in size.
+   Actual (opA)  : 11x20
+   Expected (opB): 20x20" result="fail"/>
+    <failure tag="different format" message="Compared QImages differ in format.
+   Actual (opA)  : 6
+   Expected (opB): 3" result="fail"/>
+    <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err/>
