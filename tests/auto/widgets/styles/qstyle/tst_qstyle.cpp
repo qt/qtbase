@@ -273,7 +273,7 @@ void tst_QStyle::drawItemPixmap()
     QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
 
-    QVERIFY(pixmapsAreEqual(&actualPix,&p));
+    QCOMPARE(actualPix, p);
     testWidget->hide();
 }
 
@@ -458,7 +458,7 @@ void comparePixmap(const QString &filename, const QPixmap &pixmap)
     QImage oldFile = readImage(filename);
     QPixmap oldPixmap = QPixmap::fromImage(oldFile);
     if (!oldFile.isNull())
-        QVERIFY(pixmapsAreEqual(&pixmap, &oldPixmap));
+        QCOMPARE(pixmap, oldPixmap);
     else
         writeImage(filename, pixmap.toImage());
 }

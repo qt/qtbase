@@ -1100,11 +1100,17 @@ void tst_QDataStream::readQCursor(QDataStream *s)
     QVERIFY(d5.shape() == test.shape()); //## lacks operator==
     QVERIFY(d5.hotSpot() == test.hotSpot());
     QVERIFY((d5.bitmap() != 0 && test.bitmap() != 0) || (d5.bitmap() == 0 && test.bitmap() == 0));
-    if (d5.bitmap() != 0)
-        QVERIFY(pixmapsAreEqual(d5.bitmap(), test.bitmap()));
+    if (d5.bitmap() != 0) {
+        QPixmap actual = *(d5.bitmap());
+        QPixmap expected = *(test.bitmap());
+        QCOMPARE(actual, expected);
+    }
     QVERIFY((d5.mask() != 0 && test.mask() != 0) || (d5.mask() == 0 && test.mask() == 0));
-    if (d5.mask() != 0)
-        QVERIFY(pixmapsAreEqual(d5.mask(), test.mask()));
+    if (d5.mask() != 0) {
+        QPixmap actual = *(d5.mask());
+        QPixmap expected = *(test.mask());
+        QCOMPARE(actual, expected);
+    }
 #endif
 }
 

@@ -94,21 +94,6 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
 
 }
 
-/* compatibility */
-
-inline static bool pixmapsAreEqual(const QPixmap *actual, const QPixmap *expected)
-{
-    if (!actual && !expected)
-        return true;
-    if (!actual || !expected)
-        return false;
-    if (actual->isNull() && expected->isNull())
-        return true;
-    if (actual->isNull() || expected->isNull() || actual->size() != expected->size())
-        return false;
-    return actual->toImage() == expected->toImage();
-}
-
 #ifdef Q_WS_X11
 extern void qt_x11_wait_for_window_manager(QWidget *w);
 #endif

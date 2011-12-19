@@ -57,6 +57,9 @@ information about a particular change.
     internal testlib function that was exposed in the public API due to its use
     in a public macro.  Any calls to this function should be replaced by a call
     to qsnprintf(), which comes from the <QtCore/QByteArray> header.
+  * The QTest::pixmapsAreEqual() function has been removed from the API.
+    Comparison of QPixmap objects should be done using QCOMPARE, which provides
+    more informative output in the event of a failure.
   * The QSKIP macro no longer has the "mode" parameter, which caused problems
     for calculating test metrics, as the SkipAll mode hid information about
     what test data was skipped.  Calling QSKIP in a test function now behaves
