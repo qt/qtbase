@@ -482,7 +482,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             reply->d_func()->errorString = errorDetail(errorCode, socket);
             emit reply->finishedWithError(errorCode, reply->d_func()->errorString);
             // ### at this point the reply could be deleted
-            socket->close();
             return true;
         }
         //resend the request
