@@ -121,7 +121,7 @@ macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
 endmacro()
 
 
-macro(QT5_GENERATE_MOC infile outfile )
+function(QT5_GENERATE_MOC infile outfile )
     # get include dirs and flags
     qt5_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
@@ -131,12 +131,12 @@ macro(QT5_GENERATE_MOC infile outfile )
     endif()
     qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
-endmacro()
+endfunction()
 
 
 # qt5_wrap_cpp(outfiles inputfile ... )
 
-macro(QT5_WRAP_CPP outfiles )
+function(QT5_WRAP_CPP outfiles )
     # get include dirs
     qt5_get_moc_flags(moc_flags)
 
@@ -154,12 +154,13 @@ macro(QT5_WRAP_CPP outfiles )
         qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}")
         list(APPEND ${outfiles} ${outfile})
     endforeach()
-endmacro()
+    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+endfunction()
 
 
 # qt5_add_resources(outfiles inputfile ... )
 
-macro(QT5_ADD_RESOURCES outfiles )
+function(QT5_ADD_RESOURCES outfiles )
 
     set(options)
     set(oneValueArgs)
@@ -187,7 +188,7 @@ macro(QT5_ADD_RESOURCES outfiles )
             endif()
             set(_RC_DEPENDS ${_RC_DEPENDS} "${_RC_FILE}")
         endforeach()
-        # Since this cmake macro is doing the dependency scanning for these files,
+        # Since this cmake function is doing the dependency scanning for these files,
         # let's make a configured file and add it as a dependency so cmake is run
         # again when dependencies need to be recomputed.
         qt5_make_output_file("${infile}" "" "qrc.depends" out_depends)
@@ -199,4 +200,5 @@ macro(QT5_ADD_RESOURCES outfiles )
                            DEPENDS ${_RC_DEPENDS} "${out_depends}" VERBATIM)
         list(APPEND ${outfiles} ${outfile})
     endforeach()
-endmacro()
+    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
+endfunction()
