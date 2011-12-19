@@ -453,11 +453,7 @@ init_context:
         if (!ace.isEmpty()
             && !QHostAddress().setAddress(tlsHostName)
             && !(configuration.sslOptions & QSsl::SslOptionDisableServerNameIndication)) {
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
-#else
-            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
-#endif
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
