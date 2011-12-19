@@ -100,7 +100,7 @@ void QLocalSocketPrivate::_q_winError(ulong windowsError, const QString &functio
 
     if (currentState != state) {
         q->emit stateChanged(state);
-        if (state == QLocalSocket::UnconnectedState)
+        if (state == QLocalSocket::UnconnectedState && currentState != QLocalSocket::ConnectingState)
             q->emit disconnected();
     }
     emit q->error(error);
