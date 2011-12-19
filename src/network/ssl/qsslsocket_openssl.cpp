@@ -870,10 +870,17 @@ void QSslSocketBackendPrivate::transmit()
             int encryptedBytesRead = q_BIO_read(writeBio, data.data(), pendingBytes);
 
             // Write encrypted data from the buffer to the socket.
-            plainSocket->write(data.constData(), encryptedBytesRead);
+            qint64 actualWritten = plainSocket->write(data.constData(), encryptedBytesRead);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket";
+            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket" << actualWritten << "actual.";
 #endif
+            if (actualWritten < 0) {
+                //plain socket write fails if it was in the pending close state.
+                q->setErrorString(plainSocket->errorString());
+                q->setSocketError(plainSocket->error());
+                emit q->error(plainSocket->error());
+                return;
+            }
             transmitting = true;
         }
 
