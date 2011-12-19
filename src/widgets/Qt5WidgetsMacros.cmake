@@ -39,27 +39,26 @@
 include(CMakeParseArguments)
 
 
-# QT5_WRAP_UI(outfiles inputfile ... )
+# qt5_wrap_ui(outfiles inputfile ... )
 
-MACRO (QT5_WRAP_UI outfiles )
-  set(options)
-  set(oneValueArgs)
-  set(multiValueArgs OPTIONS)
+macro(QT5_WRAP_UI outfiles )
+    set(options)
+    set(oneValueArgs)
+    set(multiValueArgs OPTIONS)
 
-  cmake_parse_arguments(_WRAP_UI "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(_WRAP_UI "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(ui_files ${_WRAP_UI_UNPARSED_ARGUMENTS})
-  set(ui_options ${_WRAP_UI_OPTIONS})
+    set(ui_files ${_WRAP_UI_UNPARSED_ARGUMENTS})
+    set(ui_options ${_WRAP_UI_OPTIONS})
 
-  FOREACH (it ${ui_files})
-    GET_FILENAME_COMPONENT(outfile ${it} NAME_WE)
-    GET_FILENAME_COMPONENT(infile ${it} ABSOLUTE)
-    SET(outfile ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
-    ADD_CUSTOM_COMMAND(OUTPUT ${outfile}
-      COMMAND ${QT_UIC_EXECUTABLE}
-      ARGS ${ui_options} -o ${outfile} ${infile}
-      MAIN_DEPENDENCY ${infile} VERBATIM)
-    SET(${outfiles} ${${outfiles}} ${outfile})
-  ENDFOREACH (it)
-
-ENDMACRO (QT5_WRAP_UI)
+    foreach(it ${ui_files})
+        get_filename_component(outfile ${it} NAME_WE)
+        get_filename_component(infile ${it} ABSOLUTE)
+        set(outfile ${CMAKE_CURRENT_BINARY_DIR}/ui_${outfile}.h)
+        add_custom_command(OUTPUT ${outfile}
+          COMMAND ${QT_UIC_EXECUTABLE}
+          ARGS ${ui_options} -o ${outfile} ${infile}
+          MAIN_DEPENDENCY ${infile} VERBATIM)
+        set(${outfiles} ${${outfiles}} ${outfile})
+    endforeach()
+endmacro()
