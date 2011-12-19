@@ -135,7 +135,7 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))
-    Q_PRIVATE_SLOT(d_func(), void _q_connectIPv4Channel())
+    Q_PRIVATE_SLOT(d_func(), void _q_connectDelayedChannel())
 };
 
 
@@ -198,7 +198,7 @@ public:
     void _q_startNextRequest(); // send the next request from the queue
 
     void _q_hostLookupFinished(QHostInfo info);
-    void _q_connectIPv4Channel();
+    void _q_connectDelayedChannel();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
 
@@ -210,9 +210,10 @@ public:
     QString hostName;
     quint16 port;
     bool encrypt;
+    bool delayIpv4;
 
     const int channelCount;
-    QTimer ipv4ConnectTimer;
+    QTimer delayedConnectionTimer;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
     bool shouldEmitChannelError(QAbstractSocket *socket);
 
