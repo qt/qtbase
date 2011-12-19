@@ -580,8 +580,11 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 value = connection->d_func()->predictNextRequest().headerField("user-agent");
             else
                 value = request.headerField("user-agent");
-            if (!value.isEmpty())
-                socket->proxy().setRawHeader("User-Agent", value);
+            if (!value.isEmpty()) {
+                QNetworkProxy proxy(socket->proxy());
+                proxy.setRawHeader("User-Agent", value); //detaches
+                socket->setProxy(proxy);
+            }
         }
 #endif
         if (ssl) {
