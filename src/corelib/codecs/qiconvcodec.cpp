@@ -286,12 +286,16 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
         }
     } while (inBytesLeft != 0);
 
-    QString s = utf16Codec->toUnicode(ba.constData(), ba.size() - outBytesLeft);
+    QString s;
 
     if (convState) {
+        s = utf16Codec->toUnicode(ba.constData(), ba.size() - outBytesLeft, &state->internalState);
+
         convState->invalidChars = invalidCount;
         convState->remainingChars = remainingCount;
     } else {
+        s = utf16Codec->toUnicode(ba.constData(), ba.size() - outBytesLeft);
+
         // reset state
         iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);
     }

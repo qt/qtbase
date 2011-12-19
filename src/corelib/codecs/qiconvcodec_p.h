@@ -87,6 +87,7 @@ public:
     public:
         IconvState(iconv_t x);
         ~IconvState();
+        ConverterState internalState;
         char *buffer;
         int bufferLen;
         iconv_t cd;
