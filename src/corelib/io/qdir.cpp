@@ -1502,7 +1502,7 @@ bool QDir::removeRecursively()
         di.next();
         const QFileInfo& fi = di.fileInfo();
         bool ok;
-        if (fi.isDir())
+        if (fi.isDir() && !fi.isSymLink())
             ok = QDir(di.filePath()).removeRecursively(); // recursive
         else
             ok = QFile::remove(di.filePath());

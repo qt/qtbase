@@ -100,6 +100,7 @@ private slots:
     void removeRecursively_data();
     void removeRecursively();
     void removeRecursivelyFailure();
+    void removeRecursivelySymlink();
 
     void exists_data();
     void exists();
@@ -410,6 +411,31 @@ void tst_QDir::removeRecursivelyFailure()
 #endif
     QVERIFY(dir.removeRecursively());
     QVERIFY(!dir.exists());
+}
+
+void tst_QDir::removeRecursivelySymlink()
+{
+#ifndef Q_NO_SYMLINKS
+    const QString tmpdir = QDir::currentPath() + "/tmpdir/";
+    QDir().mkpath(tmpdir);
+    QDir currentDir;
+    currentDir.mkdir("myDir");
+    QFile("testfile").open(QIODevice::WriteOnly);
+    const QString link = tmpdir + "linkToDir.lnk";
+    const QString linkToFile = tmpdir + "linkToFile.lnk";
+#ifndef Q_NO_SYMLINKS_TO_DIRS
+    QVERIFY(QFile::link("../myDir", link));
+    QVERIFY(QFile::link("../testfile", linkToFile));
+#endif
+
+    QDir dir(tmpdir);
+    QVERIFY(dir.removeRecursively());
+    QVERIFY(QDir("myDir").exists()); // it didn't follow the symlink, good.
+    QVERIFY(QFile::exists("testfile"));
+
+    currentDir.rmdir("myDir");
+    QFile::remove("testfile");
+#endif
 }
 
 void tst_QDir::exists_data()
