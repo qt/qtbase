@@ -463,7 +463,7 @@ public:
         if (useipv6) {
             listen(QHostAddress::AnyIPv6);
         } else {
-            listen();
+            listen(QHostAddress::AnyIPv4);
         }
         if (thread) {
             connect(thread, SIGNAL(started()), this, SLOT(threadStartedSlot()));
