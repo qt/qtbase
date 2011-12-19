@@ -59,6 +59,6 @@ macro(QT5_WRAP_UI outfiles )
           COMMAND ${QT_UIC_EXECUTABLE}
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
-        set(${outfiles} ${${outfiles}} ${outfile})
+        list(APPEND ${outfiles} ${outfile})
     endforeach()
 endmacro()

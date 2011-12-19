@@ -152,7 +152,7 @@ macro(QT5_WRAP_CPP outfiles )
         get_filename_component(it ${it} ABSOLUTE)
         qt5_make_output_file(${it} moc_ cxx outfile)
         qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}")
-        set(${outfiles} ${${outfiles}} ${outfile})
+        list(APPEND ${outfiles} ${outfile})
     endforeach()
 endmacro()
 
@@ -197,6 +197,6 @@ macro(QT5_ADD_RESOURCES outfiles )
                            ARGS ${rcc_options} -name ${outfilename} -o ${outfile} ${infile}
                            MAIN_DEPENDENCY ${infile}
                            DEPENDS ${_RC_DEPENDS} "${out_depends}" VERBATIM)
-        set(${outfiles} ${${outfiles}} ${outfile})
+        list(APPEND ${outfiles} ${outfile})
     endforeach()
 endmacro()
