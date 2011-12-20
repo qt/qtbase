@@ -1753,4 +1753,174 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
     \sa Q_DECLARE_METATYPE(), QMetaType::type()
 */
 
+namespace {
+class TypeInfo {
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct TypeInfoImpl
+    {
+        TypeInfoImpl(const uint /* type */, QMetaTypeInterface &info)
+        {
+            QMetaTypeInterface tmp = QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(T);
+            info = tmp;
+        }
+    };
+
+    template<typename T>
+    struct TypeInfoImpl<T, /* IsAcceptedType = */ false>
+    {
+        TypeInfoImpl(const uint type, QMetaTypeInterface &info)
+        {
+            if (QTypeModuleInfo<T>::IsGui) {
+                if (Q_LIKELY(qMetaTypeGuiHelper))
+                    info = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType];
+                return;
+            }
+            if (QTypeModuleInfo<T>::IsWidget) {
+                if (Q_LIKELY(qMetaTypeWidgetsHelper))
+                    info = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType];
+                return;
+            }
+        }
+    };
+public:
+    QMetaTypeInterface info;
+    TypeInfo(const uint type)
+        : m_type(type)
+    {
+        QMetaTypeInterface tmp = QT_METATYPE_INTERFACE_INIT_EMPTY();
+        info = tmp;
+    }
+    template<typename T>
+    void delegate(const T*) { TypeInfoImpl<T>(m_type, info); }
+    void delegate(const void*) {}
+    void delegate(const QMetaTypeSwitcher::UnknownType*) { customTypeInfo(m_type); }
+private:
+    void customTypeInfo(const uint type)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (Q_UNLIKELY(!ct))
+            return;
+        QReadLocker locker(customTypesLock());
+        if (Q_LIKELY(uint(ct->count()) > type - QMetaType::User))
+            info = ct->at(type - QMetaType::User);
+    }
+
+    const uint m_type;
+};
+} // namespace
+
+QMetaType QMetaType::typeInfo(const int type)
+{
+    TypeInfo typeInfo(type);
+    QMetaTypeSwitcher::switcher<void>(typeInfo, type, 0);
+    return typeInfo.info.creator || !type ? QMetaType(QMetaType::NoExtensionFlags
+                                 , static_cast<const QMetaTypeInterface *>(0) // typeInfo::info is a temporary variable, we can't return address of it.
+                                 , typeInfo.info.creator
+                                 , typeInfo.info.deleter
+                                 , typeInfo.info.saveOp
+                                 , typeInfo.info.loadOp
+                                 , typeInfo.info.constructor
+                                 , typeInfo.info.destructor
+                                 , typeInfo.info.size
+                                 , typeInfo.info.flags
+                                 , type)
+                : QMetaType(-1);
+}
+
+QMetaType::QMetaType(const int typeId)
+    : m_typeId(typeId)
+{
+    if (Q_UNLIKELY(typeId == -1)) {
+        // Constructs invalid QMetaType instance.
+        m_extensionFlags = 0xffffffff;
+        Q_ASSERT(!isValid());
+    } else {
+        // TODO it can be better.
+        *this = QMetaType::typeInfo(typeId);
+        if (m_typeId > 0 && !m_creator) {
+            m_extensionFlags = 0xffffffff;
+            m_typeId = -1;
+        }
+        if (m_typeId ==  QMetaType::Void) {
+            m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
+        }
+    }
+}
+
+QMetaType::QMetaType(const QMetaType &other)
+    : m_creator(other.m_creator)
+    , m_deleter(other.m_deleter)
+    , m_saveOp(other.m_saveOp)
+    , m_loadOp(other.m_loadOp)
+    , m_constructor(other.m_constructor)
+    , m_destructor(other.m_destructor)
+    , m_extension(other.m_extension) // space reserved for future use
+    , m_size(other.m_size)
+    , m_typeFlags(other.m_typeFlags)
+    , m_extensionFlags(other.m_extensionFlags)
+    , m_typeId(other.m_typeId)
+{}
+
+QMetaType &QMetaType::operator =(const QMetaType &other)
+{
+    m_creator = other.m_creator;
+    m_deleter = other.m_deleter;
+    m_saveOp = other.m_saveOp;
+    m_loadOp = other.m_loadOp;
+    m_constructor = other.m_constructor;
+    m_destructor = other.m_destructor;
+    m_size = other.m_size;
+    m_typeFlags = other.m_typeFlags;
+    m_extensionFlags = other.m_extensionFlags;
+    m_extension = other.m_extension; // space reserved for future use
+    m_typeId = other.m_typeId;
+    return *this;
+}
+
+void QMetaType::ctor(const QMetaTypeInterface *info)
+{
+    // Special case for Void type, the type is valid but not constructible.
+    // In future we may consider to remove this assert and extend this function to initialize
+    // differently m_extensionFlags for different types. Currently it is not needed.
+    Q_ASSERT(m_typeId == QMetaType::Void);
+    Q_UNUSED(info);
+    m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
+}
+
+void QMetaType::dtor()
+{}
+
+void *QMetaType::createExtended(const void *copy) const
+{
+    Q_UNUSED(copy);
+    return 0;
+}
+
+void QMetaType::destroyExtended(void *data) const
+{
+    Q_UNUSED(data);
+}
+
+void *QMetaType::constructExtended(void *where, const void *copy) const
+{
+    Q_UNUSED(where);
+    Q_UNUSED(copy);
+    return 0;
+}
+
+void QMetaType::destructExtended(void *data) const
+{
+    Q_UNUSED(data);
+}
+
+uint QMetaType::sizeExtended() const
+{
+    return 0;
+}
+
+QMetaType::TypeFlags QMetaType::flagsExtended() const
+{
+    return 0;
+}
+
 QT_END_NAMESPACE

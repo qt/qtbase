@@ -177,8 +177,16 @@ QT_BEGIN_NAMESPACE
     TypeName = Id,
 
 class QDataStream;
+class QMetaTypeInterface;
 
 class Q_CORE_EXPORT QMetaType {
+    enum ExtensionFlag { NoExtensionFlags,
+                         CreateEx = 0x1, DestroyEx = 0x2,
+                         ConstructEx = 0x4, DestructEx = 0x8,
+                         NameEx = 0x10, SizeEx = 0x20,
+                         CtorEx = 0x40, DtorEx = 0x80,
+                         FlagsEx = 0x100
+                       };
 public:
     enum Type {
         // these are merged with QVariant
@@ -218,9 +226,9 @@ public:
     typedef void (*Destructor)(void *);
     typedef void *(*Constructor)(void *, const void *);
 
-#ifndef QT_NO_DATASTREAM
     typedef void (*SaveOperator)(QDataStream &, const void *);
     typedef void (*LoadOperator)(QDataStream &, void *);
+#ifndef QT_NO_DATASTREAM
     static void registerStreamOperators(const char *typeName, SaveOperator saveOp,
                                         LoadOperator loadOp);
     static void registerStreamOperators(int type, SaveOperator saveOp,
@@ -253,6 +261,56 @@ public:
     static bool save(QDataStream &stream, int type, const void *data);
     static bool load(QDataStream &stream, int type, void *data);
 #endif
+
+    QMetaType(const int type);
+    inline ~QMetaType();
+
+    inline bool isValid() const;
+    inline bool isRegistered() const;
+    inline int sizeOf() const;
+    inline TypeFlags flags() const;
+
+    inline void *create(const void *copy = 0) const;
+    inline void destroy(void *data) const;
+    inline void *construct(void *where, const void *copy = 0) const;
+    inline void destruct(void *data) const;
+private:
+    static QMetaType typeInfo(const int type);
+    inline QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
+                     Creator creator,
+                     Deleter deleter,
+                     SaveOperator saveOp,
+                     LoadOperator loadOp,
+                     Constructor constructor,
+                     Destructor destructor,
+                     uint sizeOf,
+                     uint typeFlags,
+                     int typeId);
+    QMetaType(const QMetaType &other);
+    QMetaType &operator =(const QMetaType &);
+    inline bool isExtended(const ExtensionFlag flag) const { return m_extensionFlags & flag; }
+
+    // Methods used for future binary compatibile extensions
+    void ctor(const QMetaTypeInterface *info);
+    void dtor();
+    uint sizeExtended() const;
+    QMetaType::TypeFlags flagsExtended() const;
+    void *createExtended(const void *copy = 0) const;
+    void destroyExtended(void *data) const;
+    void *constructExtended(void *where, const void *copy = 0) const;
+    void destructExtended(void *data) const;
+
+    Creator m_creator;
+    Deleter m_deleter;
+    SaveOperator m_saveOp;
+    LoadOperator m_loadOp;
+    Constructor m_constructor;
+    Destructor m_destructor;
+    void *m_extension; // space reserved for future use
+    uint m_size;
+    uint m_typeFlags;
+    uint m_extensionFlags;
+    int m_typeId;
 };
 
 #undef QT_DEFINE_METATYPE_ID
@@ -554,6 +612,91 @@ Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
 Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
+
+inline QMetaType::QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
+                            Creator creator,
+                            Deleter deleter,
+                            SaveOperator saveOp,
+                            LoadOperator loadOp,
+                            Constructor constructor,
+                            Destructor destructor,
+                            uint size,
+                            uint typeFlags,
+                            int typeId)
+    : m_creator(creator)
+    , m_deleter(deleter)
+    , m_saveOp(saveOp)
+    , m_loadOp(loadOp)
+    , m_constructor(constructor)
+    , m_destructor(destructor)
+    , m_size(size)
+    , m_typeFlags(typeFlags)
+    , m_extensionFlags(extensionFlags)
+    , m_typeId(typeId)
+{
+    if (Q_UNLIKELY(isExtended(CtorEx) || typeId == QMetaType::Void))
+        ctor(info);
+}
+
+inline QMetaType::~QMetaType()
+{
+    if (Q_UNLIKELY(isExtended(DtorEx)))
+        dtor();
+}
+
+inline bool QMetaType::isValid() const
+{
+    return m_typeId >= 0;
+}
+
+inline bool QMetaType::isRegistered() const
+{
+    return isValid();
+}
+
+inline void *QMetaType::create(const void *copy) const
+{
+    if (Q_UNLIKELY(isExtended(CreateEx)))
+        return createExtended(copy);
+    return m_creator(copy);
+}
+
+inline void QMetaType::destroy(void *data) const
+{
+    if (Q_UNLIKELY(isExtended(DestroyEx)))
+        return destroyExtended(data);
+    m_deleter(data);
+}
+
+inline void *QMetaType::construct(void *where, const void *copy) const
+{
+    if (Q_UNLIKELY(isExtended(ConstructEx)))
+        return constructExtended(where, copy);
+    return m_constructor(where, copy);
+}
+
+inline void QMetaType::destruct(void *data) const
+{
+    if (Q_UNLIKELY(isExtended(DestructEx)))
+        return destructExtended(data);
+    if (Q_UNLIKELY(!data))
+        return;
+    m_destructor(data);
+}
+
+inline int QMetaType::sizeOf() const
+{
+    if (Q_UNLIKELY(isExtended(SizeEx)))
+        return sizeExtended();
+    return m_size;
+}
+
+inline QMetaType::TypeFlags QMetaType::flags() const
+{
+    if (Q_UNLIKELY(isExtended(FlagsEx)))
+        return flagsExtended();
+    return QMetaType::TypeFlags(m_typeFlags);
+}
 
 QT_END_NAMESPACE
 
