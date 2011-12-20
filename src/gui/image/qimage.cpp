@@ -114,17 +114,6 @@ static QImage rotated90(const QImage &src);
 static QImage rotated180(const QImage &src);
 static QImage rotated270(const QImage &src);
 
-// ### Qt 5: remove
-Q_GUI_EXPORT qint64 qt_image_id(const QImage &image)
-{
-    return image.cacheKey();
-}
-
-const QVector<QRgb> *qt_image_colortable(const QImage &image)
-{
-    return &image.d->colortable;
-}
-
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
 QImageData::QImageData()

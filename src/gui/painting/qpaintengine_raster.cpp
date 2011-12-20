@@ -4501,8 +4501,6 @@ void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
     adjustSpanMethods();
 }
 
-extern const QVector<QRgb> *qt_image_colortable(const QImage &image);
-
 void QSpanData::initTexture(const QImage *image, int alpha, QTextureData::Type _type, const QRect &sourceRect)
 {
     const QImageData *d = const_cast<QImage *>(image)->data_ptr();
