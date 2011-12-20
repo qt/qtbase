@@ -266,7 +266,6 @@ public:
     inline bool gotFocus() const { return type() == FocusIn; }
     inline bool lostFocus() const { return type() == FocusOut; }
 
-    Qt::FocusReason reason();
     Qt::FocusReason reason() const;
 
 private:
@@ -639,11 +638,8 @@ public:
     QShortcutEvent(const QKeySequence &key, int id, bool ambiguous = false);
     ~QShortcutEvent();
 
-    inline const QKeySequence &key() { return sequence; }
     inline const QKeySequence &key() const { return sequence; }
-    inline int shortcutId() { return sid; }
     inline int shortcutId() const { return sid; }
-    inline bool isAmbiguous() { return ambig; }
     inline bool isAmbiguous() const { return ambig; }
 protected:
     QKeySequence sequence;
