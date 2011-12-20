@@ -1008,17 +1008,6 @@ int QPicture::metric(PaintDeviceMetric m) const
 \internal
 */
 
-/*! \internal
-### Qt 5 - remove me
- */
-void QPicture::detach_helper()
-{
-    // QExplicitelySharedDataPointer takes care of cloning using
-    // QPicturePrivate's copy constructor. Do not call detach_helper() anymore
-    // and remove in Qt 5, please.
-    Q_ASSERT_X(false, "QPicture::detach_helper()", "Do not call this function");
-}
-
 /*!
     Assigns picture \a p to this picture and returns a reference to
     this picture.
