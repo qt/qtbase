@@ -1823,9 +1823,9 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 /*!
     Returns the directory that contains the application executable.
 
-    For example, if you have installed Qt in the \c{C:\Trolltech\Qt}
+    For example, if you have installed Qt in the \c{C:\Qt}
     directory, and you run the \c{regexp} example, this function will
-    return "C:/Trolltech/Qt/examples/tools/regexp".
+    return "C:/Qt/examples/tools/regexp".
 
     On Mac OS X this will point to the directory actually containing the
     executable, which may be inside of an application bundle (if the
