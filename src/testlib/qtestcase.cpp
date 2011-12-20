@@ -2102,6 +2102,15 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
 
 /*! \internal
  */
+
+#ifdef Q_OS_WIN
+static inline bool isWindowsBuildDirectory(const QString &dirName)
+{
+    return dirName.compare(QStringLiteral("Debug"), Qt::CaseInsensitive) == 0
+           || dirName.compare(QStringLiteral("Release"), Qt::CaseInsensitive) == 0;
+}
+#endif
+
 QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir)
 {
     QString found;
@@ -2110,16 +2119,23 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     //  1. relative to test binary.
     if (qApp) {
-        QString binpath = QCoreApplication::applicationDirPath();
-        QString candidate = QString::fromLatin1("%1/%2").arg(binpath).arg(base);
-        if (QFileInfo(candidate).exists()) {
-            found = candidate;
+        QDir binDirectory(QCoreApplication::applicationDirPath());
+        if (binDirectory.exists(base)) {
+            found = binDirectory.absoluteFilePath(base);
         }
+#ifdef Q_OS_WIN
+        // Windows: The executable is typically located in one of the
+        // 'Release' or 'Debug' directories.
+        else if (isWindowsBuildDirectory(binDirectory.dirName())
+                 && binDirectory.cdUp() && binDirectory.exists(base)) {
+            found = binDirectory.absoluteFilePath(base);
+        }
+#endif // Q_OS_WIN
         else if (QTestLog::verboseLevel() >= 2) {
+            const QString candidate = QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + QLatin1Char('/') + base);
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to test binary [%2]; "
-                                    "checking next location")
-                    .arg(base).arg(candidate)),
+                                    "checking next location").arg(base, candidate)),
                 file, line);
         }
     }
@@ -2130,9 +2146,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         if (testObjectName) {
             QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
             QString candidate = QString::fromLatin1("%1/%2/%3")
-                .arg(testsPath)
-                .arg(QFile::decodeName(testObjectName).toLower())
-                .arg(base);
+                .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
             if (QFileInfo(candidate).exists()) {
                 found = candidate;
             }
@@ -2140,7 +2154,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
                 QTestLog::info(qPrintable(
                     QString::fromLatin1("testdata %1 not found in tests install path [%2]; "
                                         "checking next location")
-                        .arg(base).arg(candidate)),
+                        .arg(base, QDir::toNativeSeparators(candidate))),
                     file, line);
             }
         }
@@ -2157,14 +2171,14 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             srcdir.setFile(QFile::decodeName(builddir) + QLatin1String("/") + srcdir.filePath());
         }
 
-        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath()).arg(base);
+        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath(), base);
         if (QFileInfo(candidate).exists()) {
             found = candidate;
         }
         else if (QTestLog::verboseLevel() >= 2) {
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to source path [%2]")
-                    .arg(base).arg(candidate)),
+                    .arg(base, QDir::toNativeSeparators(candidate))),
                 file, line);
         }
     }
@@ -2176,7 +2190,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     }
     else if (QTestLog::verboseLevel() >= 1) {
         QTestLog::info(qPrintable(
-            QString::fromLatin1("testdata %1 was located at %2").arg(base).arg(found)),
+            QString::fromLatin1("testdata %1 was located at %2").arg(base, QDir::toNativeSeparators(found))),
             file, line);
     }
 
