@@ -190,8 +190,6 @@ bool QCocoaEventDispatcher::unregisterTimer(int identifier)
     if (timerInfo == 0)
         return false;
 
-    if (!QObjectPrivate::get(timerInfo->obj)->inThreadChangeEvent)
-        QAbstractEventDispatcherPrivate::releaseTimerId(identifier);
     CFRunLoopTimerInvalidate(timerInfo->runLoopTimer);
     CFRelease(timerInfo->runLoopTimer);
     delete timerInfo;
@@ -217,8 +215,6 @@ bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
         if (timerInfo->obj != obj) {
             ++it;
         } else {
-            if (!QObjectPrivate::get(timerInfo->obj)->inThreadChangeEvent)
-                QAbstractEventDispatcherPrivate::releaseTimerId(timerInfo->id);
             CFRunLoopTimerInvalidate(timerInfo->runLoopTimer);
             CFRelease(timerInfo->runLoopTimer);
             delete timerInfo;

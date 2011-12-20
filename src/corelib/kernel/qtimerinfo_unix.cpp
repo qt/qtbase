@@ -266,11 +266,6 @@ bool QTimerInfoList::unregisterTimer(int timerId)
                 firstTimerInfo = 0;
             if (t->activateRef)
                 *(t->activateRef) = 0;
-
-            // release the timer id
-            if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
-                QAbstractEventDispatcherPrivate::releaseTimerId(timerId);
-
             delete t;
             return true;
         }
@@ -292,11 +287,6 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
                 firstTimerInfo = 0;
             if (t->activateRef)
                 *(t->activateRef) = 0;
-
-            // release the timer id
-            if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
-                QAbstractEventDispatcherPrivate::releaseTimerId(t->id);
-
             delete t;
             // move back one so that we don't skip the new current item
             --i;

@@ -198,6 +198,7 @@ public:
     Sender *currentSender;   // object currently activating the object
     mutable quint32 connectedSignals[2];
 
+    QVector<int> runningTimers;
     QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;

@@ -161,7 +161,7 @@ public:
     WinTimerVec timerVec;
     WinTimerDict timerDict;
     void registerTimer(WinTimerInfo *t);
-    void unregisterTimer(WinTimerInfo *t, bool closingDown = false);
+    void unregisterTimer(WinTimerInfo *t);
     void sendTimerEvent(int timerId);
 
     // socket notifiers

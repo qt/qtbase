@@ -41,6 +41,7 @@
 
 #include "qbasictimer.h"
 #include "qabstracteventdispatcher.h"
+#include "qabstracteventdispatcher_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -114,9 +115,16 @@ QT_BEGIN_NAMESPACE
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
-   stop();
-   if (obj)
-       id = obj->startTimer(msec);
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    if (!eventDispatcher)
+        return;
+    if (id) {
+        eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
+    }
+    id = 0;
+    if (obj)
+        id = eventDispatcher->registerTimer(msec, Qt::CoarseTimer, obj);
 }
 
 /*!
@@ -132,9 +140,16 @@ void QBasicTimer::start(int msec, QObject *obj)
  */
 void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 {
-    stop();
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    if (!eventDispatcher)
+        return;
+    if (id) {
+        eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
+    }
+    id = 0;
     if (obj)
-        id = obj->startTimer(msec, timerType);
+        id = eventDispatcher->registerTimer(msec, timerType, obj);
 }
 
 /*!
@@ -148,6 +163,7 @@ void QBasicTimer::stop()
         QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
         if (eventDispatcher)
             eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
     }
     id = 0;
 }

@@ -548,12 +548,8 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
 
-void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t, bool closingDown)
+void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
 {
-    // mark timer as unused
-    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent && !closingDown)
-        QAbstractEventDispatcherPrivate::releaseTimerId(t->timerId);
-
     if (t->interval == 0) {
         QCoreApplicationPrivate::removePostedTimerEvent(t->dispatcher, t->timerId);
     } else if (t->fastTimerId != 0) {
@@ -1051,7 +1047,7 @@ void QEventDispatcherWin32::closingDown()
 
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)
-        d->unregisterTimer(d->timerVec.at(i), true);
+        d->unregisterTimer(d->timerVec.at(i));
     d->timerVec.clear();
     d->timerDict.clear();
 

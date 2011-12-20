@@ -96,15 +96,13 @@ public:
     QObjectList children;
 
     uint isWidget : 1;
-    uint pendTimer : 1;
     uint blockSig : 1;
     uint wasDeleted : 1;
     uint isDeletingChildren : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
-    uint inThreadChangeEvent : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 23;
+    uint unused : 25;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };
