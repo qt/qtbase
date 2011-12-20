@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QCryptographicHashPrivate;
+class QIODevice;
 
 class Q_CORE_EXPORT QCryptographicHash
 {
@@ -68,6 +69,7 @@ public:
 
     void addData(const char *data, int length);
     void addData(const QByteArray &data);
+    bool addData(QIODevice* device);
 
     QByteArray result() const;
 
