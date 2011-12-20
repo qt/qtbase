@@ -125,8 +125,6 @@ public:
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode);
 
-    CacheMode cacheMode(); // ### Qt 5: remove me
-
 Q_SIGNALS:
     void started();
     void resized(const QSize &size);
