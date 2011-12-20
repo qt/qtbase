@@ -47,7 +47,6 @@
 Window::Window()
 {
     proxyModel = new MySortFilterProxyModel(this);
-    proxyModel->setDynamicSortFilter(true);
     //! [0]
 
     //! [1]

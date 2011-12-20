@@ -2518,6 +2518,7 @@ void tst_QSortFilterProxyModel::dynamicSorting()
     const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
     model1.setStringList(initial);
     QSortFilterProxyModel proxy1;
+    proxy1.setDynamicSortFilter(false);
     proxy1.sort(0);
     proxy1.setSourceModel(&model1);
 
@@ -2563,7 +2564,6 @@ void tst_QSortFilterProxyModel::dynamicSorting()
 
     //set up the sorting before seting the model up
     QSortFilterProxyModel proxy2;
-    proxy2.setDynamicSortFilter(true);
     proxy2.sort(0);
     proxy2.setSourceModel(&model2);
     for (int row = 0; row < proxy2.rowCount(QModelIndex()); ++row) {

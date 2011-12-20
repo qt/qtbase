@@ -167,6 +167,9 @@ QtCore
   should now also connect to (and disconnect from) the rowsAboutToBeMoved and
   rowsMoved signals.
 
+* The default value of the property QSortFilterProxyModel::dynamicSortFilter was
+  changed from false to true.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

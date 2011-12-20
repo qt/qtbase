@@ -45,7 +45,6 @@
 Window::Window()
 {
     proxyModel = new QSortFilterProxyModel;
-    proxyModel->setDynamicSortFilter(true);
 
     sourceView = new QTreeView;
     sourceView->setRootIsDecorated(false);

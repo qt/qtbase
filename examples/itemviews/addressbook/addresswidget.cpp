@@ -167,8 +167,7 @@ void AddressWidget::setupTabs()
         
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(table);
-        proxyModel->setDynamicSortFilter(true);
-    
+
         QTableView *tableView = new QTableView;
         tableView->setModel(proxyModel);
         tableView->setSortingEnabled(true);

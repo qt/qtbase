@@ -163,7 +163,7 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
         QStandardItemModel *standardItemModel = new QStandardItemModel;
         model->setSourceModel(standardItemModel);
         populateTestArea(model);
-        model->setFilterRegExp(QRegExp("(^$|0.*)"));
+        model->setFilterRegExp(QRegExp("(^$|I.*)"));
         return model;
     }
 

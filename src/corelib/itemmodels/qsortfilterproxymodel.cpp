@@ -1528,7 +1528,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     or vice versa, use mapToSource(), mapFromSource(), mapSelectionToSource(),
     and mapSelectionFromSource().
 
-    \note By default, the model does not dynamically re-sort and re-filter data
+    \note By default, the model dynamically re-sorts and re-filters data
     whenever the original model changes. This behavior can be changed by
     setting the \l{QSortFilterProxyModel::dynamicSortFilter}{dynamicSortFilter}
     property.
@@ -1657,7 +1657,7 @@ QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     d->sort_localeaware = false;
     d->filter_column = 0;
     d->filter_role = Qt::DisplayRole;
-    d->dynamic_sortfilter = false;
+    d->dynamic_sortfilter = true;
     connect(this, SIGNAL(modelReset()), this, SLOT(_q_clearMapping()));
 }
 
@@ -2402,7 +2402,7 @@ void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
     call \l{QSortFilterProxyModel::}{sort()} after adding items to the
     QComboBox.
 
-    The default value is false.
+    The default value is true.
 */
 bool QSortFilterProxyModel::dynamicSortFilter() const
 {
