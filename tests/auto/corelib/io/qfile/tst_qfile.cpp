@@ -1939,7 +1939,7 @@ public:
     virtual ~MyEngine() {}
 
     void setFileName(const QString &) {}
-    bool open(int ) { return false; }
+    bool open(QIODevice::OpenMode) { return false; }
     bool close() { return false; }
     bool flush() { return false; }
     qint64 size() const { return 123 + number; }
