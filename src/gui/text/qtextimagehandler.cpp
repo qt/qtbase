@@ -52,9 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// set by the mime source factory in Qt3Compat
-QTextImageHandler::ExternalImageLoaderFunction QTextImageHandler::externalLoader = 0;
-
 static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
 {
     QPixmap pm;
@@ -79,9 +76,6 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
             context = browser->source().toString();
 #endif
         QImage img;
-        if (QTextImageHandler::externalLoader)
-            img = QTextImageHandler::externalLoader(name, context);
-
         if (img.isNull()) { // try direct loading
             name = format.name(); // remove qrc:/ prefix again
             if (name.isEmpty() || !img.load(name))
@@ -157,9 +151,6 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
         if (browser)
             context = browser->source().toString();
 #endif
-        if (QTextImageHandler::externalLoader)
-            image = QTextImageHandler::externalLoader(name, context);
-
         if (image.isNull()) { // try direct loading
             name = format.name(); // remove qrc:/ prefix again
             if (name.isEmpty() || !image.load(name))

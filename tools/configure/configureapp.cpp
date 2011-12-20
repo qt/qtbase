@@ -317,7 +317,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBMNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
 
-    dictionary[ "QT3SUPPORT" ]      = "no";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENVG" ]          = "no";
@@ -684,10 +683,6 @@ void Configure::parseCmdLine()
             dictionary[ "STYLE_CDE" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-cde")
             dictionary[ "STYLE_CDE" ] = "no";
-
-        // Qt 3 Support ---------------------------------------------
-        else if (configCmdLine.at(i) == "-no-qt3support")
-            dictionary[ "QT3SUPPORT" ] = "no";
 
         // Work around compiler nesting limitation
         else
@@ -1444,7 +1439,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_MOTIF" ]         = "no";
         dictionary[ "STYLE_CDE" ]           = "no";
         dictionary[ "FREETYPE" ]            = "no";
-        dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "STL" ]                 = "no";
@@ -1476,7 +1470,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "KBD_DRIVERS" ]         = "tty";
         dictionary[ "GFX_DRIVERS" ]         = "linuxfb vnc";
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
-        dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "DBUS"]                 = "no";
@@ -1552,7 +1545,7 @@ bool Configure::displayHelp()
                     "[-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng]\n"
                     "[-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-no-libmng] [-qt-libmng] [-system-libmng] [-no-qt3support] [-mmx]\n"
+                    "[-no-libmng] [-qt-libmng] [-system-libmng] [-mmx]\n"
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
@@ -1636,7 +1629,6 @@ bool Configure::displayHelp()
 
         desc(                   "-system-sqlite",       "Use sqlite from the operating system.\n");
 
-        desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
@@ -2438,9 +2430,6 @@ void Configure::generateOutputVars()
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
         qmakeVars += "QT_LFLAGS_SQLITE += " + escapeSeparators(dictionary["QT_LFLAGS_SQLITE"]);
 
-    if (dictionary[ "QT3SUPPORT" ] == "yes")
-        qtConfig += "gui-qt3support";
-
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
 
@@ -3225,7 +3214,6 @@ void Configure::displayConfig()
     cout << "V8 support.................." << dictionary[ "V8" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
-    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;

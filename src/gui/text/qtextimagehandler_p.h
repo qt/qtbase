@@ -71,9 +71,6 @@ public:
     virtual QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format);
     virtual void drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format);
     QImage image(QTextDocument *doc, const QTextImageFormat &imageFormat);
-
-    typedef QImage (*ExternalImageLoaderFunction)(const QString &name, const QString &context);
-    static ExternalImageLoaderFunction externalLoader; //this is needed by Qt3Support
 };
 
 QT_END_NAMESPACE

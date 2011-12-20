@@ -147,7 +147,7 @@ void QFocusFrame::initStyleOption(QStyleOption *option) const
     The focus frame will not monitor \a parent for updates but rather
     can be placed manually or by using QFocusFrame::setWidget. A
     QFocusFrame sets Qt::WA_NoChildEventsForParent attribute; as a
-    result the parent will not receive a QEvent::ChildInserted event,
+    result the parent will not receive a QEvent::ChildAdded event,
     this will make it possible to manually set the geometry of the
     QFocusFrame inside of a QSplitter or other child event monitoring
     widget.

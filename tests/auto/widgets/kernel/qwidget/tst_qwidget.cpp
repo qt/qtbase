@@ -301,7 +301,7 @@ private slots:
     void clean_qt_x11_enforce_cursor();
 #endif
 
-    void compatibilityChildInsertedEvents();
+    void childEvents();
     void render();
     void renderInvisible();
     void renderWithPainter();
@@ -5806,7 +5806,7 @@ private:
     EventList events;
 };
 
-void tst_QWidget::compatibilityChildInsertedEvents()
+void tst_QWidget::childEvents()
 {
     EventRecorder::EventList expected;
     bool accessibilityEnabled = false;

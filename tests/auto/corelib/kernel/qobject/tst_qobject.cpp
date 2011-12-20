@@ -97,7 +97,7 @@ private slots:
     void recursiveSignalEmission();
 #endif
     void blockingQueuedConnection();
-    void compatibilityChildInsertedEvents();
+    void childEvents();
     void installEventFilter();
     void deleteSelfInSlot();
     void disconnectSelfInSlotAndDeleteAfterEmit();
@@ -2868,7 +2868,7 @@ private:
     EventList events;
 };
 
-void tst_QObject::compatibilityChildInsertedEvents()
+void tst_QObject::childEvents()
 {
     EventSpy::EventList expected;
 
@@ -2889,7 +2889,7 @@ void tst_QObject::compatibilityChildInsertedEvents()
     }
 
     {
-        // 2 children, so we expect 2 ChildAdded and 2 ChildInserted events
+        // 2 children, so we expect 2 ChildAdded events
         QObject object;
         EventSpy spy;
         object.installEventFilter(&spy);
@@ -2920,7 +2920,7 @@ void tst_QObject::compatibilityChildInsertedEvents()
 
     {
         // 2 children, but one is reparented away, so we expect:
-        // 2 ChildAdded, 1 ChildRemoved, and 1 ChildInserted
+        // 2 ChildAdded, 1 ChildRemoved
         QObject object;
         EventSpy spy;
         object.installEventFilter(&spy);

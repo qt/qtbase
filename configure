@@ -780,7 +780,6 @@ CFG_REDUCE_RELOCATIONS=auto
 CFG_NAS=no
 CFG_QWS_DEPTHS=all
 CFG_ACCESSIBILITY=auto
-CFG_QT3SUPPORT=no
 CFG_ENDIAN=auto
 CFG_HOST_ENDIAN=auto
 CFG_DOUBLEFORMAT=auto
@@ -1037,7 +1036,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1236,13 +1235,6 @@ while [ "$#" -gt 0 ]; do
 
     UNKNOWN_OPT=no
     case "$VAR" in
-    qt3support)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_QT3SUPPORT="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     accessibility)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_ACCESSIBILITY="$VAL"
@@ -2383,20 +2375,6 @@ while [ "$#" -gt 0 ]; do
         ERROR=yes
     fi
 done
-
-if [ "$CFG_QCONFIG" != "full" ] && [ "$CFG_QT3SUPPORT" = "yes" ]; then
-    echo "Warning: '-qconfig $CFG_QCONFIG' will disable the qt3support library."
-    CFG_QT3SUPPORT="no"
-fi
-if [ "$CFG_GUI" = "no" ]; then
-    echo "Warning: -no-gui will disable the qt3support library."
-    CFG_QT3SUPPORT="no"
-fi
-
-#disable Qt3Support for Lighthouse
-if [ "$PLATFORM_QPA" = "yes" ]; then
-    CFG_QT3SUPPORT="no"
-fi
 
 # update QT_CONFIG to show our current predefined configuration
 case "$CFG_QCONFIG" in
@@ -3665,7 +3643,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
-        [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
+        [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
@@ -3806,9 +3784,6 @@ fi
                          [ $CFG_SQL_AVAILABLE ]
 
     -system-sqlite ..... Use sqlite from the operating system.
-
-    -no-qt3support ..... Disables the Qt 3 support functionality.
- *  -qt3support ........ Enables the Qt 3 support functionality.
 
     -no-xmlpatterns .... Do not build the QtXmlPatterns module.
  +  -xmlpatterns ....... Build the QtXmlPatterns module.
@@ -6791,18 +6766,6 @@ fi
 # but disable Cocoa if cross-building for mingw
 [ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
 
-# disable Qt 3 support on VxWorks
-case "$XPLATFORM" in
-    unsupported/vxworks*)
-	CFG_QT3SUPPORT="no"
-    ;;
-esac
-
-# enable Qt 3 support functionality
-if [ "$CFG_QT3SUPPORT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG gui-qt3support"
-fi
-
 # enable Phonon
 if [ "$CFG_PHONON" = "yes" ]; then
     # No longer needed after modularization
@@ -8249,7 +8212,6 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
 else
    echo "Debug .................. $CFG_DEBUG"
 fi
-echo "Qt 3 compatibility ..... $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"

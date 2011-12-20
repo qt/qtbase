@@ -108,7 +108,6 @@ QT_BEGIN_NAMESPACE
     \value ApplicationPaletteChange         The default application palette has changed.
     \value ApplicationWindowIconChange      The application's icon has changed.
     \value ChildAdded                       An object gets a child (QChildEvent).
-    \value ChildInserted                    An object gets a child (QChildEvent). Qt3Support only, use ChildAdded instead.
     \value ChildPolished                    A widget child gets polished (QChildEvent).
     \value ChildRemoved                     An object loses a child (QChildEvent).
     \value Clipboard                        The clipboard contents have changed (QClipboardEvent).
@@ -252,8 +251,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue AcceptDropsChange
     \omitvalue ActivateControl
     \omitvalue CaptionChange
-    \omitvalue ChildInsertedRequest
-    \omitvalue ChildInserted
     \omitvalue Create
     \omitvalue DeactivateControl
     \omitvalue Destroy
