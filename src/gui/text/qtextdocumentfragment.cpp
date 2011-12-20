@@ -372,17 +372,7 @@ QString QTextDocumentFragment::toPlainText() const
     return d->doc->toPlainText();
 }
 
-// #### Qt 5: merge with other overload
-/*!
-    \overload
-*/
-
 #ifndef QT_NO_TEXTHTMLPARSER
-
-QString QTextDocumentFragment::toHtml() const
-{
-    return toHtml(QByteArray());
-}
 
 /*!
     \since 4.2

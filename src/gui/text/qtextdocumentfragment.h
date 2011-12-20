@@ -69,8 +69,7 @@ public:
 
     QString toPlainText() const;
 #ifndef QT_NO_TEXTHTMLPARSER
-    QString toHtml() const;
-    QString toHtml(const QByteArray &encoding) const;
+    QString toHtml(const QByteArray &encoding = QByteArray()) const;
 #endif // QT_NO_TEXTHTMLPARSER
 
     static QTextDocumentFragment fromPlainText(const QString &plainText);
