@@ -360,6 +360,19 @@
 
     \value MulticastLoopbackOption Set this to 1 to enable the IP_MULTICAST_LOOP (multicast loopback) socket option.
 
+    \value TypeOfServiceOption This option is not supported on Windows. This maps to to the IP_TOS socket option. Possible values are:
+    \table
+    \header \o Value \o Description
+    \row \o 224 \o Network control
+    \row \o 192 \o Internetwork control
+    \row \o 160 \o CRITIC/ECP
+    \row \o 128 \o Flash override
+    \row \o 96 \o Flash
+    \row \o 64 \o Immediate
+    \row \o 32 \o Priority
+    \row \o 0 \o Routine
+    \endtable
+
     \sa QAbstractSocket::setSocketOption(), QAbstractSocket::socketOption()
 */
 
@@ -1805,6 +1818,10 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
         case MulticastLoopbackOption:
                 d_func()->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopbackOption, value.toInt());
                 break;
+
+        case TypeOfServiceOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::TypeOfServiceOption, value.toInt());
+            break;
     }
 }
 
@@ -1840,6 +1857,10 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
                 break;
         case MulticastLoopbackOption:
                 ret = d_func()->socketEngine->option(QAbstractSocketEngine::MulticastLoopbackOption);
+                break;
+
+        case TypeOfServiceOption:
+                ret = d_func()->socketEngine->option(QAbstractSocketEngine::TypeOfServiceOption);
                 break;
     }
     if (ret == -1)

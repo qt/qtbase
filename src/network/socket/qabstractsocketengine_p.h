@@ -99,7 +99,8 @@ public:
         LowDelayOption,
         KeepAliveOption,
         MulticastTtlOption,
-        MulticastLoopbackOption
+        MulticastLoopbackOption,
+        TypeOfServiceOption
     };
 
     virtual bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) = 0;

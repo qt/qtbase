@@ -251,6 +251,12 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
             n = IP_MULTICAST_LOOP;
         }
         break;
+    case QNativeSocketEngine::TypeOfServiceOption:
+        if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+            level = IPPROTO_IP;
+            n = IP_TOS;
+        }
+        break;
     }
 
     int v = -1;
@@ -350,6 +356,12 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         {
             level = IPPROTO_IP;
             n = IP_MULTICAST_LOOP;
+        }
+        break;
+    case QNativeSocketEngine::TypeOfServiceOption:
+        if (socketProtocol == QAbstractSocket::IPv4Protocol) {
+            level = IPPROTO_IP;
+            n = IP_TOS;
         }
         break;
     }

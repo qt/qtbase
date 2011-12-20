@@ -113,7 +113,8 @@ public:
         LowDelayOption, // TCP_NODELAY
         KeepAliveOption, // SO_KEEPALIVE
         MulticastTtlOption, // IP_MULTICAST_TTL
-        MulticastLoopbackOption // IP_MULTICAST_LOOPBACK
+        MulticastLoopbackOption, // IP_MULTICAST_LOOPBACK
+        TypeOfServiceOption //IP_TOS
     };
     enum BindFlag {
         DefaultForPlatform = 0x0,
