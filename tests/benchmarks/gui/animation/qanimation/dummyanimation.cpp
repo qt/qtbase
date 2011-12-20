@@ -55,7 +55,8 @@ void DummyAnimation::updateCurrentValue(const QVariant &value)
         m_dummy->setRect(value.toRect());
 }
 
-void DummyAnimation::updateState(State state)
+void DummyAnimation::updateState(State newstate, State oldstate)
 {
-    Q_UNUSED(state);
+    Q_UNUSED(newstate);
+    Q_UNUSED(oldstate);
 }

@@ -51,7 +51,7 @@ public:
     DummyAnimation(DummyObject *d);
 
     void updateCurrentValue(const QVariant &value);
-    void updateState(State state);
+    void updateState(State newstate, State oldstate);
 
 private:
     DummyObject *m_dummy;
