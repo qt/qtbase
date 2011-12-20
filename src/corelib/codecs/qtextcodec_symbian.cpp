@@ -239,7 +239,7 @@ QString QSymbianTextCodec::convertToUnicode(const char *str, int len, ConverterS
         str2 = helperBA.data();
         if (state->remainingChars > 3) { // doesn't happen usually
             memcpy(str2, state->d, state->remainingChars);
-            qFree(state->d);
+            free(state->d);
             state->d = 0;
         } else {
             char charTbl[3];
@@ -326,7 +326,7 @@ QString QSymbianTextCodec::convertToUnicode(const char *str, int len, ConverterS
         }
         const unsigned char *charPtr = remainderOfForeignText.Right(remainingChars).Ptr();
         if (remainingChars > 3) { // doesn't happen usually
-            state->d = (void*)qMalloc(remainingChars);
+            state->d = (void*)malloc(remainingChars);
             if (!state->d)
                 return QString();
             // copy characters there

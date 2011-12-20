@@ -1377,8 +1377,8 @@ void tst_QGraphicsAnchorLayout::stability()
         //static const int primes[] = {2, 3, 5, 13, 89, 233, 1597, 28657, 514229}; // fibo primes
         //const int primeCount = sizeof(primes)/sizeof(int);
         //int alloc = primes[pass % primeCount] + pass;
-        //void *mem = qMalloc(alloc);
-        //qFree(mem);
+        //void *mem = malloc(alloc);
+        //free(mem);
         QGraphicsAnchorLayout *l = createAmbiguousS60Layout();
         p->setLayout(l);
         QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);

@@ -143,7 +143,7 @@ static inline void qt_init_symbian_apa_arguments(int &argc, char **&argv)
             TPtrC8 apaCmdLine = commandLine->TailEnd();
             int tailLen = apaCmdLine.Length();
             if (tailLen) {
-                apaTail = reinterpret_cast<char *>(qMalloc(tailLen + 1));
+                apaTail = reinterpret_cast<char *>(malloc(tailLen + 1));
                 qMemCopy(apaTail, reinterpret_cast<const char *>(apaCmdLine.Ptr()), tailLen);
                 apaTail[tailLen] = '\0';
                 apaArgv = new QVector<char *>(8);

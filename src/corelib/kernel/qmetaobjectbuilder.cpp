@@ -1444,7 +1444,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
 /*!
     Converts this meta object builder into a concrete QMetaObject.
-    The return value should be deallocated using qFree() once it
+    The return value should be deallocated using free() once it
     is no longer needed.
 
     The returned meta object is a snapshot of the state of the
@@ -1455,7 +1455,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
     int size = buildMetaObject(d, 0, false);
-    char *buf = reinterpret_cast<char *>(qMalloc(size));
+    char *buf = reinterpret_cast<char *>(malloc(size));
     memset(buf, 0, size);
     buildMetaObject(d, buf, false);
     return reinterpret_cast<QMetaObject *>(buf);

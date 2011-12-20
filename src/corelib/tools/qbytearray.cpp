@@ -546,7 +546,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             qWarning("qUncompress: Input data is corrupted");
             return QByteArray();
         }
-        QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc + 1));
+        QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + alloc + 1));
         if (!p) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
             qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -567,7 +567,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
                     qWarning("qUncompress: Input data is corrupted");
                     return QByteArray();
                 }
-                QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len + 1));
+                QByteArray::Data *p = static_cast<QByteArray::Data *>(::realloc(d.data(), sizeof(QByteArray::Data) + len + 1));
                 if (!p) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
                     qWarning("qUncompress: could not allocate enough memory to uncompress data");
@@ -883,7 +883,7 @@ QByteArray &QByteArray::operator=(const QByteArray & other)
 {
     other.d->ref.ref();
     if (!d->ref.deref())
-        qFree(d);
+        free(d);
     d = other.d;
     return *this;
 }
@@ -912,7 +912,7 @@ QByteArray &QByteArray::operator=(const char *str)
     }
     x->ref.ref();
     if (!d->ref.deref())
-         qFree(d);
+         free(d);
     d = x;
     return *this;
 }
@@ -1302,7 +1302,7 @@ QByteArray::QByteArray(const char *str)
         d = const_cast<Data *>(&shared_empty.ba);
     } else {
         int len = qstrlen(str);
-        d = static_cast<Data *>(qMalloc(sizeof(Data) + len + 1));
+        d = static_cast<Data *>(malloc(sizeof(Data) + len + 1));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = len;
@@ -1331,7 +1331,7 @@ QByteArray::QByteArray(const char *data, int size)
     } else if (size <= 0) {
         d = const_cast<Data *>(&shared_empty.ba);
     } else {
-        d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
+        d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = size;
@@ -1355,7 +1355,7 @@ QByteArray::QByteArray(int size, char ch)
     if (size <= 0) {
         d = const_cast<Data *>(&shared_null.ba);
     } else {
-        d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
+        d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = size;
@@ -1375,7 +1375,7 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    d = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
+    d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
     Q_CHECK_PTR(d);
     d->ref = 1;
     d->size = size;
@@ -1411,7 +1411,7 @@ void QByteArray::resize(int size)
     if (size == 0 && !d->capacityReserved) {
         Data *x = const_cast<Data *>(&shared_empty.ba);
         if (!d->ref.deref())
-            qFree(d);
+            free(d);
         d = x;
     } else if (d == &shared_null.ba || d == &shared_empty.ba) {
         //
@@ -1422,7 +1422,7 @@ void QByteArray::resize(int size)
         // which is used in place of the Qt 3 idiom:
         //    QByteArray a(sz);
         //
-        Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + size + 1));
+        Data *x = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(x);
         x->ref = 1;
         x->size = size;
@@ -1464,7 +1464,7 @@ QByteArray &QByteArray::fill(char ch, int size)
 void QByteArray::realloc(int alloc)
 {
     if (d->ref != 1 || d->offset) {
-        Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + alloc + 1));
+        Data *x = static_cast<Data *>(malloc(sizeof(Data) + alloc + 1));
         Q_CHECK_PTR(x);
         x->ref = 1;
         x->size = qMin(alloc, d->size);
@@ -1474,10 +1474,10 @@ void QByteArray::realloc(int alloc)
         ::memcpy(x->data(), d->data(), x->size);
         x->data()[x->size] = '\0';
         if (!d->ref.deref())
-            qFree(d);
+            free(d);
         d = x;
     } else {
-        Data *x = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc + 1));
+        Data *x = static_cast<Data *>(::realloc(d, sizeof(Data) + alloc + 1));
         Q_CHECK_PTR(x);
         x->alloc = alloc;
         x->offset = 0;
@@ -2730,7 +2730,7 @@ QByteArray QByteArray::toUpper() const
 void QByteArray::clear()
 {
     if (!d->ref.deref())
-        qFree(d);
+        free(d);
     d = const_cast<Data *>(&shared_null.ba);
     d->ref.ref();
 }
@@ -3885,7 +3885,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
     } else if (!size) {
         x = const_cast<Data *>(&shared_empty.ba);
     } else {
-        x = static_cast<Data *>(qMalloc(sizeof(Data) + 1));
+        x = static_cast<Data *>(malloc(sizeof(Data) + 1));
         Q_CHECK_PTR(x);
         x->ref = 1;
         x->size = size;

@@ -1030,7 +1030,7 @@ QString::QString(const QChar *unicode, int size)
     } else if (size <= 0) {
         d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = size;
@@ -1062,7 +1062,7 @@ QString::QString(const QChar *unicode)
          if (!size) {
              d = const_cast<Data *>(&shared_empty.str);
          } else {
-             d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
              Q_CHECK_PTR(d);
              d->ref = 1;
              d->size = size;
@@ -1087,7 +1087,7 @@ QString::QString(int size, QChar ch)
    if (size <= 0) {
         d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = size;
@@ -1111,7 +1111,7 @@ QString::QString(int size, QChar ch)
 */
 QString::QString(int size, Qt::Initialization)
 {
-    d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+    d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
     Q_CHECK_PTR(d);
     d->ref = 1;
     d->size = size;
@@ -1133,7 +1133,7 @@ QString::QString(int size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = (Data *) qMalloc(sizeof(Data) + 2*sizeof(QChar));
+    d = (Data *) ::malloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
     d->ref = 1;
     d->size = 1;
@@ -1199,7 +1199,7 @@ QString::QString(QChar ch)
 // ### Qt 5: rename freeData() to avoid confusion. See task 197625.
 void QString::free(Data *d)
 {
-    qFree(d);
+    ::free(d);
 }
 
 /*!
@@ -1312,7 +1312,7 @@ void QString::resize(int size)
 void QString::realloc(int alloc)
 {
     if (d->ref != 1 || d->offset) {
-        Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
+        Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
         x->ref = 1;
         x->size = qMin(alloc, d->size);
@@ -1325,7 +1325,7 @@ void QString::realloc(int alloc)
             QString::free(d);
         d = x;
     } else {
-        Data *p = static_cast<Data *>(qRealloc(d, sizeof(Data) + (alloc+1) * sizeof(QChar)));
+        Data *p = static_cast<Data *>(::realloc(d, sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(p);
         d = p;
         d->alloc = alloc;
@@ -1483,11 +1483,11 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     const ushort *s = (const ushort *)unicode;
     if (s >= d->data() && s < d->data() + d->alloc) {
         // Part of me - take a copy
-        ushort *tmp = static_cast<ushort *>(qMalloc(size * sizeof(QChar)));
+        ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
         Q_CHECK_PTR(tmp);
         memcpy(tmp, s, size * sizeof(QChar));
         insert(i, reinterpret_cast<const QChar *>(tmp), size);
-        qFree(tmp);
+        ::free(tmp);
         return *this;
     }
 
@@ -1843,7 +1843,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     // (which we could possibly invalidate via a realloc or corrupt via memcpy operations.)
     QChar *afterBuffer = const_cast<QChar *>(after);
     if (after >= reinterpret_cast<QChar *>(d->data()) && after < reinterpret_cast<QChar *>(d->data()) + d->size) {
-        afterBuffer = static_cast<QChar *>(qMalloc(alen*sizeof(QChar)));
+        afterBuffer = static_cast<QChar *>(::malloc(alen*sizeof(QChar)));
         Q_CHECK_PTR(afterBuffer);
         ::memcpy(afterBuffer, after, alen*sizeof(QChar));
     }
@@ -1898,11 +1898,11 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
         }
     } QT_CATCH(const std::bad_alloc &) {
         if (afterBuffer != after)
-            qFree(afterBuffer);
+            ::free(afterBuffer);
         QT_RETHROW;
     }
     if (afterBuffer != after)
-        qFree(afterBuffer);
+        ::free(afterBuffer);
 }
 
 /*!
@@ -3756,7 +3756,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
     } else {
         if (size < 0)
             size = qstrlen(str);
-        d = static_cast<Data *>(qMalloc(sizeof(Data) + (size+1) * sizeof(QChar)));
+        d = static_cast<Data *>(::malloc(sizeof(Data) + (size+1) * sizeof(QChar)));
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->size = size;
@@ -7063,7 +7063,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     } else if (!size) {
         x = const_cast<Data *>(&shared_empty.str);
     } else {
-        x = static_cast<Data *>(qMalloc(sizeof(Data) + sizeof(ushort)));
+        x = static_cast<Data *>(::malloc(sizeof(Data) + sizeof(ushort)));
         Q_CHECK_PTR(x);
         x->ref = 1;
         x->size = size;

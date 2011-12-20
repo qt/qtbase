@@ -278,7 +278,7 @@ static QString readSymLink(const QFileSystemEntry &link)
                                0);
     if (handle != INVALID_HANDLE_VALUE) {
         DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
-        REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)qMalloc(bufsize);
+        REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)malloc(bufsize);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
             if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
@@ -296,7 +296,7 @@ static QString readSymLink(const QFileSystemEntry &link)
             if (result.size() > 4 && result.at(0) == QLatin1Char('\\') && result.at(2) == QLatin1Char('?') && result.at(3) == QLatin1Char('\\'))
                 result = result.mid(4);
         }
-        qFree(rdb);
+        free(rdb);
         CloseHandle(handle);
 
 #if !defined(QT_NO_LIBRARY)

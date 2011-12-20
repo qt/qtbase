@@ -957,17 +957,17 @@ void tst_QMetaObjectBuilder::copyMetaObject()
     QMetaObjectBuilder builder(&QObject::staticMetaObject);
     QMetaObject *meta = builder.toMetaObject();
     QVERIFY(sameMetaObject(meta, &QObject::staticMetaObject));
-    qFree(meta);
+    free(meta);
 
     QMetaObjectBuilder builder2(&staticMetaObject);
     meta = builder2.toMetaObject();
     QVERIFY(sameMetaObject(meta, &staticMetaObject));
-    qFree(meta);
+    free(meta);
 
     QMetaObjectBuilder builder3(&SomethingOfEverything::staticMetaObject);
     meta = builder3.toMetaObject();
     QVERIFY(sameMetaObject(meta, &SomethingOfEverything::staticMetaObject));
-    qFree(meta);
+    free(meta);
 }
 
 // Serialize and deserialize a meta object and check that
@@ -992,8 +992,8 @@ void tst_QMetaObjectBuilder::serialize()
     QMetaObject *meta2 = builder2.toMetaObject();
 
     QVERIFY(sameMetaObject(meta, meta2));
-    qFree(meta);
-    qFree(meta2);
+    free(meta);
+    free(meta2);
     }
 
     // Partial QMetaObjectBuilder

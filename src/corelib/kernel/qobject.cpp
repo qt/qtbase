@@ -415,8 +415,8 @@ QMetaCallEvent::~QMetaCallEvent()
             if (types_[i] && args_[i])
                 QMetaType::destroy(types_[i], args_[i]);
         }
-        qFree(types_);
-        qFree(args_);
+        free(types_);
+        free(args_);
     }
 #ifndef QT_NO_THREAD
     if (semaphore_)
@@ -3104,9 +3104,9 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     int nargs = 1; // include return type
     while (argumentTypes[nargs-1])
         ++nargs;
-    int *types = (int *) qMalloc(nargs*sizeof(int));
+    int *types = (int *) malloc(nargs*sizeof(int));
     Q_CHECK_PTR(types);
-    void **args = (void **) qMalloc(nargs*sizeof(void *));
+    void **args = (void **) malloc(nargs*sizeof(void *));
     Q_CHECK_PTR(args);
     types[0] = 0; // return type
     args[0] = 0; // return value

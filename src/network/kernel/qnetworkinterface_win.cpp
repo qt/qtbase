@@ -110,12 +110,12 @@ static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
     DWORD retval = ptrGetAdaptersInfo(pAdapter, &bufSize);
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
-        pAdapter = (IP_ADAPTER_INFO *)qMalloc(bufSize);
+        pAdapter = (IP_ADAPTER_INFO *)malloc(bufSize);
         if (!pAdapter)
             return ipv4netmasks;
         // try again
         if (ptrGetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
-            qFree(pAdapter);
+            free(pAdapter);
             return ipv4netmasks;
         }
     } else if (retval != ERROR_SUCCESS) {
@@ -132,7 +132,7 @@ static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
         }
     }
     if (pAdapter != staticBuf)
-        qFree(pAdapter);
+        free(pAdapter);
 
     return ipv4netmasks;
 
@@ -153,12 +153,12 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     ULONG retval = ptrGetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize);
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
-        pAdapter = (IP_ADAPTER_ADDRESSES *)qMalloc(bufSize);
+        pAdapter = (IP_ADAPTER_ADDRESSES *)malloc(bufSize);
         if (!pAdapter)
             return interfaces;
         // try again
         if (ptrGetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize) != ERROR_SUCCESS) {
-            qFree(pAdapter);
+            free(pAdapter);
             return interfaces;
         }
     } else if (retval != ERROR_SUCCESS) {
@@ -219,7 +219,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     }
 
     if (pAdapter != staticBuf)
-        qFree(pAdapter);
+        free(pAdapter);
 
     return interfaces;
 }
@@ -234,12 +234,12 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWin2k()
     DWORD retval = ptrGetAdaptersInfo(pAdapter, &bufSize);
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
-        pAdapter = (IP_ADAPTER_INFO *)qMalloc(bufSize);
+        pAdapter = (IP_ADAPTER_INFO *)malloc(bufSize);
         if (!pAdapter)
             return interfaces;
         // try again
         if (ptrGetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
-            qFree(pAdapter);
+            free(pAdapter);
             return interfaces;
         }
     } else if (retval != ERROR_SUCCESS) {
@@ -273,7 +273,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWin2k()
     }
 
     if (pAdapter != staticBuf)
-        qFree(pAdapter);
+        free(pAdapter);
 
     return interfaces;
 }
@@ -305,12 +305,12 @@ QString QHostInfo::localDomainName()
     ULONG bufSize = sizeof info;
     pinfo = &info;
     if (ptrGetNetworkParams(pinfo, &bufSize) == ERROR_BUFFER_OVERFLOW) {
-        pinfo = (FIXED_INFO *)qMalloc(bufSize);
+        pinfo = (FIXED_INFO *)malloc(bufSize);
         if (!pinfo)
             return QString();
         // try again
         if (ptrGetNetworkParams(pinfo, &bufSize) != ERROR_SUCCESS) {
-            qFree(pinfo);
+            free(pinfo);
             return QString();   // error
         }
     }
@@ -318,7 +318,7 @@ QString QHostInfo::localDomainName()
     QString domainName = QUrl::fromAce(pinfo->DomainName);
 
     if (pinfo != &info)
-        qFree(pinfo);
+        free(pinfo);
 
     return domainName;
 }

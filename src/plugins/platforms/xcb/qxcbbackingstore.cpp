@@ -124,7 +124,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
         m_shm_info.shmaddr = 0;
 
-        m_xcb_image->data = (uint8_t *)qMalloc(segmentSize);
+        m_xcb_image->data = (uint8_t *)malloc(segmentSize);
     } else {
         if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
             qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
@@ -146,7 +146,7 @@ void QXcbShmImage::destroy()
             shmdt(m_shm_info.shmaddr);
             shmctl(m_shm_info.shmid, IPC_RMID, 0);
         } else {
-            qFree(m_xcb_image->data);
+            free(m_xcb_image->data);
         }
     }
 

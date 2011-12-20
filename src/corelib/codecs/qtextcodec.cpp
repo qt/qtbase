@@ -842,7 +842,7 @@ QTextCodec::ConverterState::~ConverterState()
     if (flags & FreeFunction)
         (QTextCodecUnalignedPointer::decode(state_data))(this);
     else if (d)
-        qFree(d);
+        free(d);
 }
 
 /*!

@@ -85,7 +85,7 @@ void QMapData::continueFreeData(int offset)
         if (strictAlignment)
             qFreeAligned(reinterpret_cast<char *>(prev) - offset);
         else
-            qFree(reinterpret_cast<char *>(prev) - offset);
+            free(reinterpret_cast<char *>(prev) - offset);
     }
     delete this;
 }
@@ -127,7 +127,7 @@ QMapData::Node *QMapData::node_create(Node *update[], int offset, int alignment)
 
     void *concreteNode = strictAlignment ?
                          qMallocAligned(offset + sizeof(Node) + level * sizeof(Node *), alignment) :
-                         qMalloc(offset + sizeof(Node) + level * sizeof(Node *));
+                         malloc(offset + sizeof(Node) + level * sizeof(Node *));
     Q_CHECK_PTR(concreteNode);
 
     Node *abstractNode = reinterpret_cast<Node *>(reinterpret_cast<char *>(concreteNode) + offset);
@@ -157,7 +157,7 @@ void QMapData::node_delete(Node *update[], int offset, Node *node)
     if (strictAlignment)
         qFreeAligned(reinterpret_cast<char *>(node) - offset);
     else
-        qFree(reinterpret_cast<char *>(node) - offset);
+        free(reinterpret_cast<char *>(node) - offset);
 }
 
 #ifdef QT_QMAP_DEBUG
