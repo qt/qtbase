@@ -60,8 +60,7 @@ class Q_CORE_EXPORT QReadWriteLock
 public:
     enum RecursionMode { NonRecursive, Recursive };
 
-    QReadWriteLock(); // ### Qt 5: merge with below
-    QReadWriteLock(RecursionMode recursionMode);
+    explicit QReadWriteLock(RecursionMode recursionMode = NonRecursive);
     ~QReadWriteLock();
 
     void lockForRead();

@@ -107,18 +107,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a QReadWriteLock object in NonRecursive mode.
-
-    \sa lockForRead(), lockForWrite()
-*/
-QReadWriteLock::QReadWriteLock()
-    :d(new QReadWriteLockPrivate(NonRecursive))
-{ }
-
-/*!
     \since 4.4
 
     Constructs a QReadWriteLock object in the given \a recursionMode.
+
+    The default recursion mode is NonRecursive.
 
     \sa lockForRead(), lockForWrite(), RecursionMode
 */
