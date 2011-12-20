@@ -408,7 +408,11 @@ public:
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     static QString fromAscii(const char *, int size = -1);
-    static QString fromLatin1(const char *, int size = -1);
+    static inline QString fromLatin1(const char *str, int size = -1)
+    {
+        // make this inline so we can benefit from strlen() compile time optimization
+        return QString(fromLatin1_helper(str, (str && size == -1) ? int(strlen(str)) : size), 0);
+    }
     static QString fromUtf8(const char *, int size = -1);
     static QString fromLocal8Bit(const char *, int size = -1);
     static QString fromUtf16(const ushort *, int size = -1);

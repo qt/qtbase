@@ -3818,7 +3818,7 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
     return fromLatin1_helper(str, size);
 }
 
-/*!
+/*! \fn QString QString::fromLatin1(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the Latin-1 string \a str.
 
@@ -3827,10 +3827,6 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
 
     \sa toLatin1(), fromAscii(), fromUtf8(), fromLocal8Bit()
 */
-QString QString::fromLatin1(const char *str, int size)
-{
-    return QString(fromLatin1_helper(str, size), 0);
-}
 
 
 /*!
