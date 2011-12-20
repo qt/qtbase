@@ -122,7 +122,7 @@ public:
         source()->draw(painter);
     }
 
-    void sourceChanged()
+    void sourceChanged(ChangeFlags)
     { m_sourceChanged = true; }
 
     void sourceBoundingRectChanged()
