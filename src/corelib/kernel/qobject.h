@@ -113,7 +113,7 @@ public:
 class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName)
+    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
     Q_DECLARE_PRIVATE(QObject)
 
 public:
@@ -322,6 +322,7 @@ public:
 
 Q_SIGNALS:
     void destroyed(QObject * = 0);
+    void objectNameChanged(const QString &objectName);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }
