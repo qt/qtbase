@@ -321,7 +321,7 @@ public:
         return false;
     }
 
-    virtual bool reset() const{
+    virtual bool reset() {
         return false;
     }
 
