@@ -106,14 +106,14 @@ void AccessibilityInspector::inspectWindow(QWindow *window)
 
     accessibilityView = new QGraphicsView();
     accessibilityView->setScene(accessibilityScene);
-    accessibilityView->resize(1024, 768);
+    accessibilityView->resize(640, 480);
     accessibilityView->scale(1.3, 1.3);
 
     accessibilityTreeScene = new QGraphicsScene();
 
     accessibilityTreeView = new QGraphicsView();
     accessibilityTreeView->setScene(accessibilityTreeScene);
-    accessibilityTreeView->resize(1024, 768);
+    accessibilityTreeView->resize(640, 480);
 
     sceneManager = new AccessibilitySceneManager();
     QObject::connect(optionsWidget, SIGNAL(optionsChanged()), sceneManager, SLOT(updateAccessibilitySceneItemFlags()));

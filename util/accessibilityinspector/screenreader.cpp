@@ -97,31 +97,17 @@ void ScreenReader::processTouchPoint()
     int hit = -2;
     int guardCounter = 0;
     const int guardMax = 40;
-    while (hit != 0) {
+    while (currentInterface != 0) {
         ++guardCounter;
         if (guardCounter > guardMax) {
             qDebug() << "touchPoint exit recursion overflow";
             return; // outside
         }
-/*
-        hit = currentInterface->childAt(m_currentTouchPoint.x(), m_currentTouchPoint.y());
-        //qDebug() << "hit" << hit;
-        if (hit == -1) {
-            return; // outside
-        } else if (hit == 0) {
-            break; // found it.
-        } else {
-            QAccessibleInterface *childInterface = 0;
-            int child = currentInterface->navigate(QAccessible::Child, hit, &childInterface);
-            if (childInterface == 0) {
-                return; // navigation error
-            }
 
-            if (currentInterface != m_rootInterface)
-                delete currentInterface;
-            currentInterface = childInterface;
-        }
-*/
+        QAccessibleInterface * hit = currentInterface->childAt(m_currentTouchPoint.x(), m_currentTouchPoint.y());
+        if (!hit)
+            break;
+        currentInterface = hit;
     }
 
     m_selectedInterface = currentInterface;
