@@ -1491,6 +1491,4 @@ bool QResourceFileEnginePrivate::unmap(uchar *ptr)
     return true;
 }
 
-Q_CORE_EXPORT void qInitResourceIO() { } // ### Qt 5: remove
-
 QT_END_NAMESPACE
