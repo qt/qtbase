@@ -509,7 +509,7 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
     }
 }
 
-void QEventDispatcherGlib::registerTimer(int timerId, int interval, QObject *object)
+void QEventDispatcherGlib::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {
@@ -522,7 +522,7 @@ void QEventDispatcherGlib::registerTimer(int timerId, int interval, QObject *obj
 #endif
 
     Q_D(QEventDispatcherGlib);
-    d->timerSource->timerList.registerTimer(timerId, interval, object);
+    d->timerSource->timerList.registerTimer(timerId, interval, timerType, object);
 }
 
 bool QEventDispatcherGlib::unregisterTimer(int timerId)

@@ -228,10 +228,11 @@ bool QTimerInfoList::timerWait(timeval &tm)
     return true;
 }
 
-void QTimerInfoList::registerTimer(int timerId, int interval, QObject *object)
+void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
     QTimerInfo *t = new QTimerInfo;
     t->id = timerId;
+    t->timerType = timerType;
     t->interval.tv_sec  = interval / 1000;
     t->interval.tv_usec = (interval % 1000) * 1000;
     t->timeout = updateCurrentTime() + t->interval;
@@ -292,13 +293,13 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
     return true;
 }
 
-QList<QPair<int, int> > QTimerInfoList::registeredTimers(QObject *object) const
+QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
 {
-    QList<QPair<int, int> > list;
+    QList<QAbstractEventDispatcher::TimerInfo> list;
     for (int i = 0; i < count(); ++i) {
         register const QTimerInfo * const t = at(i);
         if (t->obj == object)
-            list << QPair<int, int>(t->id, t->interval.tv_sec * 1000 + t->interval.tv_usec / 1000);
+            list << QAbstractEventDispatcher::TimerInfo(t->id, t->interval.tv_sec * 1000 + t->interval.tv_usec / 1000, t->timerType);
     }
     return list;
 }

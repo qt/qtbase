@@ -57,8 +57,7 @@ public:
     void interrupt() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) { return false; }
     void registerSocketNotifier(QSocketNotifier*) {}
-    int registerTimer(int,QObject*) { return -1; }
-    void registerTimer(int,int,QObject*) {}
+    void registerTimer(int,int,Qt::TimerType,QObject*) {}
     QList<TimerInfo> registeredTimers(QObject*) const { return QList<TimerInfo>(); }
     void unregisterSocketNotifier(QSocketNotifier*) {}
     bool unregisterTimer(int) { return false; }

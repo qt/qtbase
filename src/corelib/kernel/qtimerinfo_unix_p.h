@@ -53,9 +53,7 @@
 // We mean it.
 //
 
-#include <qobject.h>
-#include <qlist.h>
-#include <qpair.h>
+#include "qabstracteventdispatcher.h"
 
 #include <sys/time.h> // struct timeval
 
@@ -64,6 +62,7 @@ QT_BEGIN_NAMESPACE
 // internal timer info
 struct QTimerInfo {
     int id;           // - timer identifier
+    Qt::TimerType timerType; // - timer type
     timeval interval; // - timer interval
     timeval timeout;  // - when to sent event
     QObject *obj;     // - object to receive event
@@ -97,10 +96,10 @@ public:
     void timerInsert(QTimerInfo *);
     void timerRepair(const timeval &);
 
-    void registerTimer(int timerId, int interval, QObject *object);
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
-    QList<QPair<int, int> > registeredTimers(QObject *object) const;
+    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
 
     int activateTimers();
 };

@@ -123,6 +123,18 @@ information about a particular change.
 - The previously exported function qt_translateRawTouchEvent() has been removed.
   Use QWindowSystemInterface::handleTouchEvent() instead.
 
+- QAbstractEventDispatcher
+
+  * The signature for the pure-virtual registerTimer() has changed. Subclasses
+  of QAbstractEventDispatcher will need to be updated to reimplement the new
+  pure-virtual 'virtual void registerTimer(int timerId, int interval,
+  Qt::TimerType timerType, QObject *object) = 0;'
+
+  * QAbstractEventDispatcher::TimerInfo is no longer a QPair<int, int>. It is
+  now a struct with 3 members: struct TimerInfo { int timerId; int interval;
+  Qt::TimerType timerType; }; Reimplementations of
+  QAbstractEventDispatcher::registeredTimers() will need to be updated to pass
+  3 arguments to the TimerInfo constructor (instead of 2).
 
 ****************************************************************************
 *                           General                                        *

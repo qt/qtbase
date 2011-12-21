@@ -330,7 +330,7 @@ int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd
 /*!
     \internal
 */
-void QEventDispatcherUNIX::registerTimer(int timerId, int interval, QObject *obj)
+void QEventDispatcherUNIX::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {
@@ -343,7 +343,7 @@ void QEventDispatcherUNIX::registerTimer(int timerId, int interval, QObject *obj
 #endif
 
     Q_D(QEventDispatcherUNIX);
-    d->timerList.registerTimer(timerId, interval, obj);
+    d->timerList.registerTimer(timerId, interval, timerType, obj);
 }
 
 /*!

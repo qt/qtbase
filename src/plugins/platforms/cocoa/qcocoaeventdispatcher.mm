@@ -139,7 +139,7 @@ void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
 
 }
 
-void QCocoaEventDispatcher::registerTimer(int timerId, int interval, QObject *obj)
+void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {
@@ -154,6 +154,7 @@ void QCocoaEventDispatcher::registerTimer(int timerId, int interval, QObject *ob
     MacTimerInfo *t = new MacTimerInfo();
     t->id = timerId;
     t->interval = interval;
+    t->timerType = timerType;
     t->obj = obj;
     t->runLoopTimer = 0;
     t->pending = false;
@@ -241,7 +242,7 @@ QCocoaEventDispatcher::registeredTimers(QObject *object) const
     while (it != QCocoaEventDispatcherPrivate::macTimerHash.constEnd()) {
         MacTimerInfo *t = it.value();
         if (t->obj == object)
-            list << TimerInfo(t->id, t->interval);
+            list << TimerInfo(t->id, t->interval, t->timerType);
         ++it;
     }
     return list;

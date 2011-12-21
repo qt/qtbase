@@ -1228,7 +1228,7 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) {}
     void unregisterSocketNotifier(QSocketNotifier *) {}
-    void registerTimer(int , int , QObject *) {}
+    void registerTimer(int, int, Qt::TimerType, QObject *) {}
     bool unregisterTimer(int ) { return false; }
     bool unregisterTimers(QObject *) { return false; }
     QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }

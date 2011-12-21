@@ -1017,7 +1017,7 @@ bool QObject::event(QEvent *e)
         QThreadData *threadData = d->threadData;
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher;
         if (eventDispatcher) {
-            QList<QPair<int, int> > timers = eventDispatcher->registeredTimers(this);
+            QList<QAbstractEventDispatcher::TimerInfo> timers = eventDispatcher->registeredTimers(this);
             if (!timers.isEmpty()) {
                 // set inThreadChangeEvent to true to tell the dispatcher not to release out timer ids
                 // back to the pool (since the timer ids are moving to a new thread).
@@ -1025,7 +1025,7 @@ bool QObject::event(QEvent *e)
                 eventDispatcher->unregisterTimers(this);
                 d->inThreadChangeEvent = false;
                 QMetaObject::invokeMethod(this, "_q_reregisterTimers", Qt::QueuedConnection,
-                                          Q_ARG(void*, (new QList<QPair<int, int> >(timers))));
+                                          Q_ARG(void*, (new QList<QAbstractEventDispatcher::TimerInfo>(timers))));
             }
         }
         break;
@@ -1322,11 +1322,11 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
 void QObjectPrivate::_q_reregisterTimers(void *pointer)
 {
     Q_Q(QObject);
-    QList<QPair<int, int> > *timerList = reinterpret_cast<QList<QPair<int, int> > *>(pointer);
+    QList<QAbstractEventDispatcher::TimerInfo> *timerList = reinterpret_cast<QList<QAbstractEventDispatcher::TimerInfo> *>(pointer);
     QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher;
     for (int i = 0; i < timerList->size(); ++i) {
-        const QPair<int, int> &pair = timerList->at(i);
-        eventDispatcher->registerTimer(pair.first, pair.second, q);
+        const QAbstractEventDispatcher::TimerInfo &ti = timerList->at(i);
+        eventDispatcher->registerTimer(ti.timerId, ti.interval, ti.timerType, q);
     }
     delete timerList;
 }
@@ -1388,7 +1388,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         qWarning("QObject::startTimer: QTimer can only be used with threads started with QThread");
         return 0;
     }
-    return d->threadData->eventDispatcher->registerTimer(interval, this);
+    return d->threadData->eventDispatcher->registerTimer(interval, timerType, this);
 }
 
 /*!

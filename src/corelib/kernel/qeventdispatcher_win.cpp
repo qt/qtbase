@@ -859,7 +859,7 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
         d->doWsaAsyncSelect(sockfd);
 }
 
-void QEventDispatcherWin32::registerTimer(int timerId, int interval, QObject *object)
+void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
     if (timerId < 1 || interval < 0 || !object) {
         qWarning("QEventDispatcherWin32::registerTimer: invalid arguments");
@@ -875,6 +875,7 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, QObject *ob
     t->dispatcher = this;
     t->timerId  = timerId;
     t->interval = interval;
+    t->timerType = timerType;
     t->obj  = object;
     t->inTimerEvent = false;
     t->fastTimerId = 0;
@@ -953,7 +954,7 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
     for (int i = 0; i < d->timerVec.size(); ++i) {
         const WinTimerInfo *t = d->timerVec.at(i);
         if (t && t->obj == object)
-            list << TimerInfo(t->timerId, t->interval);
+            list << TimerInfo(t->timerId, t->interval, t->timerType);
     }
     return list;
 }

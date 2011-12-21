@@ -84,7 +84,7 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
 
-    void registerTimer(int timerId, int interval, QObject *object);
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
     QList<TimerInfo> registeredTimers(QObject *object) const;
@@ -120,6 +120,7 @@ struct WinTimerInfo {                           // internal timer info
     QObject *dispatcher;
     int timerId;
     int interval;
+    Qt::TimerType timerType;
     QObject *obj;                               // - object to receive events
     bool inTimerEvent;
     int fastTimerId;

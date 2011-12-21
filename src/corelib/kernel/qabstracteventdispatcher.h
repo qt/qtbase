@@ -53,7 +53,6 @@ QT_MODULE(Core)
 
 class QAbstractEventDispatcherPrivate;
 class QSocketNotifier;
-template <typename T1, typename T2> struct QPair;
 
 class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
 {
@@ -61,7 +60,16 @@ class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
     Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
 
 public:
-    typedef QPair<int, int> TimerInfo;
+    struct TimerInfo
+    {
+        int timerId;
+        int interval;
+        Qt::TimerType timerType;
+
+        inline TimerInfo(int id, int i, Qt::TimerType t)
+            : timerId(id), interval(i), timerType(t)
+        { }
+    };
 
     explicit QAbstractEventDispatcher(QObject *parent = 0);
     ~QAbstractEventDispatcher();
@@ -74,8 +82,14 @@ public:
     virtual void registerSocketNotifier(QSocketNotifier *notifier) = 0;
     virtual void unregisterSocketNotifier(QSocketNotifier *notifier) = 0;
 
-    int registerTimer(int interval, QObject *object);
-    virtual void registerTimer(int timerId, int interval, QObject *object) = 0;
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED inline int registerTimer(int interval, QObject *object)
+    { return registerTimer(interval, Qt::CoarseTimer, object); }
+    QT_DEPRECATED inline void registerTimer(int timerId, int interval, QObject *object)
+    { registerTimer(timerId, interval, Qt::CoarseTimer, object); }
+#endif
+    int registerTimer(int interval, Qt::TimerType timerType, QObject *object);
+    virtual void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(int timerId) = 0;
     virtual bool unregisterTimers(QObject *object) = 0;
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
