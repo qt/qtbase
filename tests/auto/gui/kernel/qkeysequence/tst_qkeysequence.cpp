@@ -124,6 +124,8 @@ private slots:
     void toString();
     void streamOperators_data();
     void streamOperators();
+    void parseString_data();
+    void parseString();
     void fromString_data();
     void fromString();
     void ensureSorted();
@@ -499,6 +501,31 @@ void tst_QKeySequence::streamOperators()
 
 	// check if detached
 	QVERIFY( orgK != copyOrgK );
+}
+
+
+void tst_QKeySequence::parseString_data()
+{
+    QTest::addColumn<QString>("strSequence");
+    QTest::addColumn<QKeySequence>("keycode");
+
+    QTest::newRow("A") << "A" << QKeySequence(Qt::Key_A);
+    QTest::newRow("a") << "a" << QKeySequence(Qt::Key_A);
+    QTest::newRow("Ctrl+Left") << "Ctrl+Left" << QKeySequence(Qt::CTRL + Qt::Key_Left);
+    QTest::newRow("Ctrl++") << "Ctrl++" << QKeySequence(Qt::CTRL + Qt::Key_Plus);
+    QTest::newRow("Meta+A") << "Meta+a" <<  QKeySequence(Qt::META + Qt::Key_A);
+    QTest::newRow("Win+A") << "Win+a" <<  QKeySequence(Qt::Key_unknown);
+    QTest::newRow("4+3=2") << "4+3=2" <<  QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Super+Meta+A") << "Super+Meta+A" << QKeySequence(Qt::Key_unknown);
+}
+
+void tst_QKeySequence::parseString()
+{
+    QFETCH( QString, strSequence );
+    QFETCH( QKeySequence, keycode );
+
+    QCOMPARE( QKeySequence(strSequence).toString(), keycode.toString() );
+    QVERIFY( QKeySequence(strSequence) == keycode );
 }
 
 void tst_QKeySequence::fromString_data()
