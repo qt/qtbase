@@ -3070,7 +3070,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     item->setFocus();
     item->clearFocus();
 
-    QGraphicsTextItem *item2 = scene.addText("Trolltech rocks!");
+    QGraphicsTextItem *item2 = scene.addText("Qt rocks!");
     item2->setTabChangesFocus(true);
     item2->setTextInteractionFlags(Qt::TextEditorInteraction);
     item2->setPos(0, item->boundingRect().bottom());
