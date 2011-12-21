@@ -62,8 +62,8 @@ QT_BEGIN_NAMESPACE
 // internal timer info
 struct QTimerInfo {
     int id;           // - timer identifier
+    int interval;     // - timer interval in milliseconds
     Qt::TimerType timerType; // - timer type
-    timeval interval; // - timer interval
     timeval timeout;  // - when to sent event
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
