@@ -2865,3 +2865,13 @@
     \sa QApplication::setNavigationMode()
     \sa QApplication::navigationMode()
 */
+
+/*!
+    \enum Qt::TimerType
+
+    The timer type indicates how accurate a timer can be.
+
+    \value PreciseTimer Precise timers try to keep millisecond accuracy
+    \value CoarseTimer Coarse timers try to keep accuracy within 5% of the desired interval
+    \value VeryCoarseTimer Very coarse timers only keep full second accuracy
+*/

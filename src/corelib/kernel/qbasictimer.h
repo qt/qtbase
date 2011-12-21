@@ -43,6 +43,7 @@
 #define QBASICTIMER_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_HEADER
 
@@ -63,6 +64,7 @@ public:
     inline int timerId() const { return id; }
 
     void start(int msec, QObject *obj);
+    void start(int msec, Qt::TimerType timerType, QObject *obj);
     void stop();
 };
 Q_DECLARE_TYPEINFO(QBasicTimer, Q_MOVABLE_TYPE);

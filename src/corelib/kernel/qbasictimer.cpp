@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qbasictimer.h"
-#include "qcoreapplication.h"
 #include "qabstracteventdispatcher.h"
 
 QT_BEGIN_NAMESPACE
@@ -118,6 +117,24 @@ void QBasicTimer::start(int msec, QObject *obj)
    stop();
    if (obj)
        id = obj->startTimer(msec);
+}
+
+/*!
+    \overload
+
+    Starts (or restarts) the timer with a \a msec milliseconds timeout and the
+    given \a timerType. See Qt::TimerType for information on the different
+    timer types.
+
+    The given \a object will receive timer events.
+
+    \sa stop() isActive() QObject::timerEvent() Qt::TimerType
+ */
+void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
+{
+    stop();
+    if (obj)
+        id = obj->startTimer(msec, timerType);
 }
 
 /*!

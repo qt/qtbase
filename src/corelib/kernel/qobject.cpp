@@ -1358,10 +1358,12 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 8
 
-    Note that QTimer's accuracy depends on the underlying operating
-    system and hardware. Most platforms support an accuracy of 20
-    milliseconds; some provide more. If Qt is unable to deliver the
-    requested number of timer events, it will silently discard some.
+    Note that QTimer's accuracy depends on the underlying operating system and
+    hardware. The \a timerType argument allows you to customize the accuracy of
+    the timer. See Qt::TimerType for information on the different timer types.
+    Most platforms support an accuracy of 20 milliseconds; some provide more.
+    If Qt is unable to deliver the requested number of timer events, it will
+    silently discard some.
 
     The QTimer class provides a high-level programming interface with
     single-shot timers and timer signals instead of events. There is
@@ -1371,7 +1373,7 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
     \sa timerEvent(), killTimer(), QTimer::singleShot()
 */
 
-int QObject::startTimer(int interval)
+int QObject::startTimer(int interval, Qt::TimerType timerType)
 {
     Q_D(QObject);
 
