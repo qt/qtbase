@@ -317,7 +317,10 @@ QT_END_INCLUDE_NAMESPACE
 
 void QTimer::singleShot(int msec, QObject *receiver, const char *member)
 {
-    singleShot(msec, Qt::CoarseTimer, receiver, member);
+    // coarse timers are worst in their first firing
+    // so we prefer a high precision timer for something that happens only once
+    // unless the timeout is too big, in which case we go for coarse anyway
+    singleShot(msec, msec >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer, receiver, member);
 }
 
 /*! \overload
