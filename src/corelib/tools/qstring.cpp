@@ -3822,25 +3822,25 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the Latin-1 string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     \sa toLatin1(), fromAscii(), fromUtf8(), fromLocal8Bit()
 */
 
 
-/*!
+/*! \fn QString QString::fromLocal8Bit(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the 8-bit string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     QTextCodec::codecForLocale() is used to perform the conversion.
 
     \sa toLocal8Bit(), fromAscii(), fromLatin1(), fromUtf8()
 */
-QString QString::fromLocal8Bit(const char *str, int size)
+QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
     if (!str)
         return QString();
@@ -3856,11 +3856,11 @@ QString QString::fromLocal8Bit(const char *str, int size)
     return fromLatin1(str, size);
 }
 
-/*!
+/*! \fn QString QString::fromAscii(const char *, int size);
     Returns a QString initialized with the first \a size characters
     from the string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     Note that, despite the name, this function actually uses the codec
@@ -3871,16 +3871,12 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
-QString QString::fromAscii(const char *str, int size)
-{
-    return QString(fromAscii_helper(str, size), 0);
-}
 
-/*!
+/*! \fn QString QString::fromUtf8(const char *str, int size)
     Returns a QString initialized with the first \a size bytes
     of the UTF-8 string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
@@ -3897,13 +3893,12 @@ QString QString::fromAscii(const char *str, int size)
 
     \sa toUtf8(), fromAscii(), fromLatin1(), fromLocal8Bit()
 */
-QString QString::fromUtf8(const char *str, int size)
+QString QString::fromUtf8_helper(const char *str, int size)
 {
     if (!str)
         return QString();
-    if (size < 0)
-        size = qstrlen(str);
 
+    Q_ASSERT(size != -1);
     return QUtf8::convertToUnicode(str, size, 0);
 }
 
