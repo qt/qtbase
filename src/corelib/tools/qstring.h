@@ -49,12 +49,6 @@
 
 #ifndef QT_NO_STL
 #  include <string>
-
-#  ifndef QT_NO_STL_WCHAR
-// workaround for some headers not typedef'ing std::wstring
-typedef std::basic_string<wchar_t> QStdWString;
-#  endif // QT_NO_STL_WCHAR
-
 #endif // QT_NO_STL
 
 #include <stdarg.h>
@@ -576,15 +570,8 @@ public:
 #ifndef QT_NO_STL
     static inline QString fromStdString(const std::string &s);
     inline std::string toStdString() const;
-# ifdef qdoc
     static inline QString fromStdWString(const std::wstring &s);
     inline std::wstring toStdWString() const;
-# else
-#  ifndef QT_NO_STL_WCHAR
-    static inline QString fromStdWString(const QStdWString &s);
-    inline QStdWString toStdWString() const;
-#  endif // QT_NO_STL_WCHAR
-# endif // qdoc
 #endif
 
     // compatibility
@@ -1066,10 +1053,9 @@ inline std::string QString::toStdString() const
 inline QString QString::fromStdString(const std::string &s)
 { return fromAscii(s.data(), int(s.size())); }
 
-# ifndef QT_NO_STL_WCHAR
-inline QStdWString QString::toStdWString() const
+inline std::wstring QString::toStdWString() const
 {
-    QStdWString str;
+    std::wstring str;
     str.resize(length());
 
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -1081,9 +1067,8 @@ inline QStdWString QString::toStdWString() const
     str.resize(toWCharArray(&(*str.begin())));
     return str;
 }
-inline QString QString::fromStdWString(const QStdWString &s)
+inline QString QString::fromStdWString(const std::wstring &s)
 { return fromWCharArray(s.data(), int(s.size())); }
-# endif
 #endif
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))

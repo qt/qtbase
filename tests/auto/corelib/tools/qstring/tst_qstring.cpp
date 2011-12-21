@@ -811,9 +811,6 @@ void tst_QString::constructorQByteArray()
 
 void tst_QString::STL()
 {
-#ifdef Q_CC_HPACC
-    QSKIP("This test crashes on HP-UX with aCC");
-#endif
 #ifndef QT_NO_STL
 #ifndef QT_NO_CAST_TO_ASCII
     QString qt( "QString" );
@@ -851,16 +848,13 @@ void tst_QString::STL()
     QVERIFY( !stdstr3.length() );
 #endif
 
-// Skip the rest of the test if glibc is not compiled with wide character support
-#if !(defined Q_CC_GNU && !defined _GLIBCPP_USE_WCHAR_T) && !defined QT_NO_STL_WCHAR
     const wchar_t arr[] = {'h', 'e', 'l', 'l', 'o', 0};
-    QStdWString stlStr = arr;
+    std::wstring stlStr = arr;
 
     QString s = QString::fromStdWString(stlStr);
 
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
-#endif
 #else
     QSKIP( "Not tested without STL support");
 #endif

@@ -450,7 +450,6 @@ namespace QT_NAMESPACE {}
 /* GCC 2.95 knows "using" but does not support it correctly */
 #  if __GNUC__ == 2 && __GNUC_MINOR__ <= 95
 #    define Q_NO_USING_KEYWORD
-#    define QT_NO_STL_WCHAR
 #  endif
 #  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
 #    define Q_ALIGNOF(type)   __alignof__(type)
