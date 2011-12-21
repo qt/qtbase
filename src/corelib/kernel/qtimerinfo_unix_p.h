@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+// #define QTIMERINFO_DEBUG
+
 #include "qabstracteventdispatcher.h"
 
 #include <sys/time.h> // struct timeval
@@ -64,9 +66,15 @@ struct QTimerInfo {
     int id;           // - timer identifier
     int interval;     // - timer interval in milliseconds
     Qt::TimerType timerType; // - timer type
-    timeval timeout;  // - when to sent event
+    timeval expected; // when timer is expected to fire
+    timeval timeout;  // - when to actually fire
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
+
+#ifdef QTIMERINFO_DEBUG
+    float cumulativeError;
+    uint count;
+#endif
 };
 
 class QTimerInfoList : public QList<QTimerInfo*>
