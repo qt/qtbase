@@ -306,9 +306,9 @@ void tst_QHttp::get_data()
     QByteArray rfc3252 = file.readAll();
     file.close();
 
-    file.setFileName( SRCDIR "trolltech" );
+    file.setFileName( SRCDIR "testhtml" );
     QVERIFY( file.open( QIODevice::ReadOnly ) );
-    QByteArray trolltech = file.readAll();
+    QByteArray testhtml = file.readAll();
     file.close();
 
     // test the two get() modes in one routine
@@ -334,7 +334,7 @@ void tst_QHttp::get_data()
   // qt.nokia.com/doc uses transfer-encoding=chunked
     /* qt.nokia.com/doc no longer seams to be using chuncked encodig.
     QTest::newRow( QString("chunked_01_%1").arg(i).toLatin1() ) << QString("test.troll.no") << 80u
-	    << QString("/") << 1 << 200 << trolltech << (bool)(i==1);
+            << QString("/") << 1 << 200 << testhtml << (bool)(i==1);
     */
 	QTest::newRow( QString("chunked_02_%1").arg(i).toLatin1() ) << QtNetworkSettings::serverName() << 80u
 	    << QString("/qtest/cgi-bin/rfc.cgi") << 1 << 200 << rfc3252 << (bool)(i==1);

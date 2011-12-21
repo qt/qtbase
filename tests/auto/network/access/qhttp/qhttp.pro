@@ -10,7 +10,7 @@ wince*: {
     webFiles.path = webserver
     cgi.files = webserver/cgi-bin/*
     cgi.path = webserver/cgi-bin
-    addFiles.files = rfc3252.txt trolltech
+    addFiles.files = rfc3252.txt testhtml
     addFiles.path = .
     DEPLOYMENT += addFiles webFiles cgi
     DEFINES += SRCDIR=\\\"\\\"
