@@ -465,7 +465,7 @@ void tst_QThreadStorage::valueBased()
     t2.someNumber = -128;
     t3.someNumber = 78;
     t1.someString = "hello";
-    t2.someString = "trolltech";
+    t2.someString = "australia";
     t3.someString = "nokia";
 
     t1.start();
