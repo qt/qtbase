@@ -641,9 +641,13 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 
     // we do not like authentication stuff
     // ### make sure to be OK with this in later releases
-    if (!channels[i].authenticator.isNull() || !channels[i].authenticator.user().isEmpty())
+    if (!channels[i].authenticator.isNull()
+        && (!channels[i].authenticator.user().isEmpty()
+            || !channels[i].authenticator.password().isEmpty()))
         return;
-    if (!channels[i].proxyAuthenticator.isNull() || !channels[i].proxyAuthenticator.user().isEmpty())
+    if (!channels[i].proxyAuthenticator.isNull()
+        && (!channels[i].proxyAuthenticator.user().isEmpty()
+            || !channels[i].proxyAuthenticator.password().isEmpty()))
         return;
 
     // must be in ReadingState or WaitingState
