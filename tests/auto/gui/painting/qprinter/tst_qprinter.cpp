@@ -975,7 +975,8 @@ void tst_QPrinter::testPdfTitle()
         QPainter painter;
         QPrinter printer;
         // This string is just the UTF-8 encoding of the string: \()f &oslash; hiragana o
-        const char title[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
+        const unsigned char titleBuf[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
+        const char *title = reinterpret_cast<const char*>(titleBuf);
         printer.setOutputFileName("file.pdf");
         printer.setDocName(QString::fromUtf8(title));
         painter.begin(&printer);
@@ -986,10 +987,11 @@ void tst_QPrinter::testPdfTitle()
     // The we expect the title to appear in the PDF as:
     // ASCII('\title (') UTF16(\\\(\)f &oslash; hiragana o) ASCII(')').
     // which has the following binary representation
-    const char expected[] = {
+    const unsigned char expectedBuf[] = {
         0x2f, 0x54, 0x69, 0x74, 0x6c, 0x65, 0x20, 0x28, 0xfe,
         0xff, 0x00, 0x5c, 0x5c, 0x00, 0x5c, 0x28, 0x00, 0x5c,
         0x29, 0x00, 0x66, 0x00, 0xf8, 0x30, 0x4a, 0x29};
+    const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
 
