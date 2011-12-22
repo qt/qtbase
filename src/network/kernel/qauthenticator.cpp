@@ -388,8 +388,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
 
     switch(method) {
     case Basic:
-        if(realm.isEmpty())
-            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
@@ -397,8 +396,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         // #### extract from header
         break;
     case DigestMd5: {
-        if(realm.isEmpty())
-            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
         if (user.isEmpty() && password.isEmpty())

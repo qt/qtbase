@@ -382,6 +382,7 @@ private Q_SLOTS:
     void httpUserAgent();
     void authenticationCacheAfterCancel_data();
     void authenticationCacheAfterCancel();
+    void authenticationWithDifferentRealm();
     void synchronousAuthenticationCache();
 
     // NOTE: This test must be last!
@@ -6210,6 +6211,38 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
         proxyAuthSpy.clear();
     }
 
+}
+
+void tst_QNetworkReply::authenticationWithDifferentRealm()
+{
+    AuthenticationCacheHelper helper;
+    QNetworkAccessManager manager;
+#ifndef QT_NO_OPENSSL
+    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+            SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
+#endif
+    connect(&manager, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)), &helper, SLOT(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), &helper, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    helper.httpUserName = "httptest";
+    helper.httpPassword = "httptest";
+
+    QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfcs-auth/rfc3252.txt"));
+    QNetworkReply* reply = manager.get(request);
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    helper.httpUserName = "httptest";
+    helper.httpPassword = "httptest";
+
+    request.setUrl(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/auth-digest/"));
+    reply = manager.get(request);
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
 class QtBug13431Helper : public QObject {
