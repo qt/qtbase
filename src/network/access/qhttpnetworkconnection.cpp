@@ -976,7 +976,7 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(QHostInfo info)
     bool bIpv6 = false;
     bool foundAddress = false;
 
-    foreach (QHostAddress address, info.addresses()) {
+    foreach (const QHostAddress &address, info.addresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
             if (!foundAddress) {
                 foundAddress = true;

@@ -952,7 +952,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
         addresses = hostInfo.addresses();
     } else {
-        foreach (QHostAddress address, hostInfo.addresses())
+        foreach (const QHostAddress &address, hostInfo.addresses())
             if (address.protocol() == preferredNetworkLayerProtocol)
                 addresses += address;
     }
