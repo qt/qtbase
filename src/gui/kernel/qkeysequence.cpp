@@ -1342,6 +1342,11 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 {
     bool nativeText = (format == QKeySequence::NativeText);
     QString s;
+
+    // Handle -1 (Invalid Key) and Qt::Key_unknown gracefully
+    if (key == -1 || key == Qt::Key_unknown)
+        return s;
+
 #if defined(Q_OS_MAC)
     if (nativeText) {
         // On Mac OS X the order (by default) is Meta, Alt, Shift, Control.

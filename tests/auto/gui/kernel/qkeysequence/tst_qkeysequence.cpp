@@ -122,6 +122,8 @@ private slots:
     void mnemonic();
     void toString_data();
     void toString();
+    void toStringFromKeycode_data();
+    void toStringFromKeycode();
     void streamOperators_data();
     void streamOperators();
     void parseString_data();
@@ -474,6 +476,24 @@ void tst_QKeySequence::toString()
     QCOMPARE(ks1.toString(QKeySequence::NativeText), platformString);
     QCOMPARE(ks1.toString(QKeySequence::PortableText), neutralString);
 
+}
+
+void tst_QKeySequence::toStringFromKeycode_data()
+{
+    QTest::addColumn<QKeySequence>("keycode");
+    QTest::addColumn<QString>("expectedString");
+
+    QTest::newRow("A") << QKeySequence(Qt::Key_A) << "A";
+    QTest::newRow("-1") << QKeySequence(-1) << "";
+    QTest::newRow("Unknown") << QKeySequence(Qt::Key_unknown) << "";
+}
+
+void tst_QKeySequence::toStringFromKeycode()
+{
+    QFETCH(QKeySequence, keycode);
+    QFETCH(QString, expectedString);
+
+    QCOMPARE(QKeySequence(keycode).toString(), expectedString);
 }
 
 void tst_QKeySequence::streamOperators_data()
