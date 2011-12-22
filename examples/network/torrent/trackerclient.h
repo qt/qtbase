@@ -45,7 +45,9 @@
 #include <QList>
 #include <QObject>
 #include <QHostAddress>
-#include <QHttp>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QAuthenticator>
 
 #include "metainfo.h"
 #include "torrentclient.h"
@@ -64,7 +66,7 @@ public:
     void startSeeding();
 
 signals:
-    void connectionError(QHttp::Error error);
+    void connectionError(QNetworkReply::NetworkError error);
 
     void failure(const QString &reason);
     void warning(const QString &message);
@@ -80,20 +82,23 @@ protected:
 
 private slots:
     void fetchPeerList();
-    void httpRequestDone(bool error);
+    void httpRequestDone(QNetworkReply *reply);
+    void provideAuthentication(QNetworkReply *reply, QAuthenticator *auth);
 
 private:
     TorrentClient *torrentDownloader;
 
     int requestInterval;
     int requestIntervalTimer;
-    QHttp http;
+    QNetworkAccessManager http;
     MetaInfo metaInfo;
     QByteArray trackerId;
     QList<TorrentPeer> peers;
     qint64 uploadedBytes;
     qint64 downloadedBytes;
     qint64 length;
+    QString uname;
+    QString pwd;
     
     bool firstTrackerRequest;
     bool lastTrackerRequest;

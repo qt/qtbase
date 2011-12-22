@@ -50,7 +50,6 @@
 #include <qhostinfo.h>
 #include <qhostaddress.h>
 #include <qtcpsocket.h>
-#include <qhttp.h>
 #include <qdebug.h>
 #include <qtcpserver.h>
 

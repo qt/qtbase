@@ -45,7 +45,7 @@
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qcryptographichash.h>
-#include <qhttp.h>
+#include <private/qhttpheader_p.h>
 #include <qiodevice.h>
 #include <qdatastream.h>
 #include <qendian.h>

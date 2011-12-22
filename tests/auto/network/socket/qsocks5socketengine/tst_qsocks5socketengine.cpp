@@ -52,7 +52,6 @@
 #include <qhostinfo.h>
 #include <qhostaddress.h>
 #include <qtcpsocket.h>
-#include <qhttp.h>
 #include <qauthenticator.h>
 #include <qdebug.h>
 #include <qtcpserver.h>

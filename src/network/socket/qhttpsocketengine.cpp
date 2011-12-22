@@ -43,7 +43,7 @@
 #include "qtcpsocket.h"
 #include "qhostaddress.h"
 #include "qurl.h"
-#include "qhttp.h"
+#include "private/qhttpheader_p.h"
 #include "qelapsedtimer.h"
 #include "qnetworkinterface.h"
 

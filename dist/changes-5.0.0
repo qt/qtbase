@@ -141,6 +141,10 @@ information about a particular change.
   * Removed implicit conversion operator QUuid::operator QString(), instead
   QUuid::toString() function should be used.
 
+- The QHttp, QHttpHeader, QHttpResponseHeader and QHttpRequestHeader classes have
+  been removed, QNetworkAccessManager should be used instead.
+
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

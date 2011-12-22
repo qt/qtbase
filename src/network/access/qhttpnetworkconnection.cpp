@@ -53,7 +53,6 @@
 
 #include <qbuffer.h>
 #include <qpair.h>
-#include <qhttp.h>
 #include <qdebug.h>
 
 #ifndef QT_NO_HTTP
