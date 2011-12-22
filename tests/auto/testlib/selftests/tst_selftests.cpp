@@ -322,7 +322,7 @@ void tst_Selftests::runSubTest_data()
         << "datatable"
         << "datetime"
         << "differentexec"
-#if !defined(QT_NO_EXCEPTIONS) && (!defined(Q_CC_INTEL) || !defined(Q_OS_WIN))
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_CC_INTEL) && !defined(Q_OS_WIN)
         // Disable this test on Windows and for intel compiler, as the run-times
         // will popup dialogs with warnings that uncaught exceptions were thrown
         << "exceptionthrow"
@@ -330,7 +330,10 @@ void tst_Selftests::runSubTest_data()
         << "expectfail"
         << "failinit"
         << "failinitdata"
+#if !defined(Q_OS_WIN)
+        // Disable this test on Windows, as the run-time will popup dialogs with warnings
         << "fetchbogus"
+#endif
         << "float"
         << "globaldata"
         << "longstring"
