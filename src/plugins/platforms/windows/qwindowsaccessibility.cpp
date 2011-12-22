@@ -746,9 +746,28 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::Invoke(long dispIdMember, const _G
 
 /*
   IAccessible
+
+IAccessible::accHitTest documents the value returned in pvarID like this:
+
+| *Point location*                                       | *vt member* | *Value member*          |
++========================================================+=============+=========================+
+| Outside of the object's boundaries, and either inside  | VT_EMPTY    | None.                   |
+| or outside of the object's bounding rectangle.         |             |                         |
++--------------------------------------------------------+-------------+-------------------------+
+|  Within the object but not within a child element or a | VT_I4       | lVal is CHILDID_SELF    |
+|  child object.                                         |             |                         |
++--------------------------------------------------------+-------------+-------------------------+
+| Within a child element.                                | VT_I4       | lVal contains           |
+|                                                        |             | the child ID.           |
++--------------------------------------------------------+-------------+-------------------------+
+| Within a child object.                                 | VT_DISPATCH | pdispVal is set to the  |
+|                                                        |             | child object's IDispatch|
+|                                                        |             | interface pointer       |
++--------------------------------------------------------+-------------+-------------------------+
 */
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, VARIANT *pvarID)
 {
+
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
@@ -757,29 +776,22 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, 
     if (child == 0) {
         // no child found, return this item if it contains the coordinates
         if (accessible->rect().contains(xLeft, yTop)) {
-            IDispatch *iface = 0;
-            QueryInterface(IID_IDispatch, (void**)&iface);
-            if (iface) {
-                (*pvarID).vt = VT_DISPATCH;
-                (*pvarID).pdispVal = iface;
-                return S_OK;
-            }
+            (*pvarID).vt = VT_I4;
+            (*pvarID).lVal = CHILDID_SELF;
+            return S_OK;
         }
-        (*pvarID).vt = VT_EMPTY;
-        return S_FALSE;
-    }
-
-    QWindowsAccessible* wacc = new QWindowsAccessible(child);
-    IDispatch *iface = 0;
-    wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-    if (iface) {
-        (*pvarID).vt = VT_DISPATCH;
-        (*pvarID).pdispVal = iface;
-        return S_OK;
     } else {
-        delete wacc;
+        QWindowsAccessible* wacc = new QWindowsAccessible(child);
+        IDispatch *iface = 0;
+        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
+        if (iface) {
+            (*pvarID).vt = VT_DISPATCH;
+            (*pvarID).pdispVal = iface;
+            return S_OK;
+        }
     }
 
+    // Did not find anything
     (*pvarID).vt = VT_EMPTY;
     return S_FALSE;
 }
