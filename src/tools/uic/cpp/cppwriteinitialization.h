@@ -58,6 +58,7 @@ class DomBrush;
 class DomFont;
 class DomResourceIcon;
 class DomSizePolicy;
+class DomStringList;
 struct Option;
 
 namespace CPP {
@@ -176,11 +177,13 @@ private:
     QString trCall(DomString *str, const QString &defaultString = QString()) const;
     QString noTrCall(DomString *str, const QString &defaultString = QString()) const;
     QString autoTrCall(DomString *str, const QString &defaultString = QString()) const;
-    QTextStream &autoTrOutput(DomString *str, const QString &defaultString = QString());
+    inline QTextStream &autoTrOutput(const DomProperty *str);
+    QTextStream &autoTrOutput(const DomString *str, const QString &defaultString = QString());
     // Apply a comma-separated list of values using a function "setSomething(int idx, value)"
     void writePropertyList(const QString &varName, const QString &setFunction, const QString &value, const QString &defaultValue);
 
     enum { WritePropertyIgnoreMargin = 1, WritePropertyIgnoreSpacing = 2, WritePropertyIgnoreObjectName = 4 };
+    QString writeStringListProperty(const DomStringList *list) const;
     void writeProperties(const QString &varName, const QString &className, const DomPropertyList &lst, unsigned flags = 0);
     void writeColorGroup(DomColorGroup *colorGroup, const QString &group, const QString &paletteName);
     void writeBrush(const DomBrush *brush, const QString &brushName);

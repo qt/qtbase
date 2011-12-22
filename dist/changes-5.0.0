@@ -302,6 +302,9 @@ Qt for Windows CE
 - Assistant
 
 - Designer
+  * [QTBUG-8926] [QTBUG-20440] Properties of type QStringList now have
+    translation attributes which apply to all items.
+    They are by default translatable.
 
 - Linguist
 

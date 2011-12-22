@@ -2593,6 +2593,21 @@ public:
     inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
+    inline bool hasAttributeNotr() const { return m_has_attr_notr; }
+    inline QString attributeNotr() const { return m_attr_notr; }
+    inline void setAttributeNotr(const QString& a) { m_attr_notr = a; m_has_attr_notr = true; }
+    inline void clearAttributeNotr() { m_has_attr_notr = false; }
+
+    inline bool hasAttributeComment() const { return m_has_attr_comment; }
+    inline QString attributeComment() const { return m_attr_comment; }
+    inline void setAttributeComment(const QString& a) { m_attr_comment = a; m_has_attr_comment = true; }
+    inline void clearAttributeComment() { m_has_attr_comment = false; }
+
+    inline bool hasAttributeExtraComment() const { return m_has_attr_extraComment; }
+    inline QString attributeExtraComment() const { return m_attr_extraComment; }
+    inline void setAttributeExtraComment(const QString& a) { m_attr_extraComment = a; m_has_attr_extraComment = true; }
+    inline void clearAttributeExtraComment() { m_has_attr_extraComment = false; }
+
     // child element accessors
     inline QStringList elementString() const { return m_string; }
     void setElementString(const QStringList& a);
@@ -2602,6 +2617,15 @@ private:
     void clear(bool clear_all = true);
 
     // attribute data
+    QString m_attr_notr;
+    bool m_has_attr_notr;
+
+    QString m_attr_comment;
+    bool m_has_attr_comment;
+
+    QString m_attr_extraComment;
+    bool m_has_attr_extraComment;
+
     // child element data
     uint m_children;
     QStringList m_string;
