@@ -930,13 +930,11 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 }
 
 #ifndef QT_NO_OPENSSL
-QSslConfiguration QNetworkReplyImpl::sslConfigurationImplementation() const
+void QNetworkReplyImpl::sslConfigurationImplementation(QSslConfiguration &configuration) const
 {
     Q_D(const QNetworkReplyImpl);
-    QSslConfiguration config;
     if (d->backend)
-        d->backend->fetchSslConfiguration(config);
-    return config;
+        d->backend->fetchSslConfiguration(configuration);
 }
 
 void QNetworkReplyImpl::setSslConfigurationImplementation(const QSslConfiguration &config)

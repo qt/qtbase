@@ -410,10 +410,10 @@ void QNetworkReplyHttpImpl::setSslConfigurationImplementation(const QSslConfigur
     Q_UNUSED(newconfig);
 }
 
-QSslConfiguration QNetworkReplyHttpImpl::sslConfigurationImplementation() const
+void QNetworkReplyHttpImpl::sslConfigurationImplementation(QSslConfiguration &configuration) const
 {
     Q_D(const QNetworkReplyHttpImpl);
-    return d->sslConfiguration;
+    configuration = d->sslConfiguration;
 }
 #endif
 

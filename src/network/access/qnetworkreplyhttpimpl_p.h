@@ -94,16 +94,6 @@ public:
     void setReadBufferSize(qint64 size);
     bool canReadLine () const;
 
-#ifndef QT_NO_OPENSSL
-    void ignoreSslErrors();
-    // ### Qt5 Add proper virtual
-    Q_INVOKABLE void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
-    // ### Qt5 Add proper virtual
-    Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
-    // ### Qt5 Add proper virtual
-    Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
-#endif
-
     Q_DECLARE_PRIVATE(QNetworkReplyHttpImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
     Q_PRIVATE_SLOT(d_func(), void _q_cacheLoadReadyRead())
@@ -135,6 +125,13 @@ public:
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
 
 
+#ifndef QT_NO_OPENSSL
+protected:
+    void ignoreSslErrors();
+    void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
+    void setSslConfigurationImplementation(const QSslConfiguration &configuration);
+    void sslConfigurationImplementation(QSslConfiguration &configuration) const;
+#endif
 
 signals:
     // To HTTP thread:

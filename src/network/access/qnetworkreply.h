@@ -169,6 +169,10 @@ protected:
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
+    virtual void sslConfigurationImplementation(QSslConfiguration &) const;
+    virtual void setSslConfigurationImplementation(const QSslConfiguration &);
+    virtual void ignoreSslErrorsImplementation(const QList<QSslError> &);
+
 private:
     Q_DECLARE_PRIVATE(QNetworkReply)
 };
