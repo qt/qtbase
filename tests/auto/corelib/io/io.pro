@@ -11,6 +11,7 @@ SUBDIRS=\
     qfilesystementry \
     qfilesystemwatcher \
     qiodevice \
+    qnodebug \
     qprocess \
     qprocessenvironment \
     qresourceengine \

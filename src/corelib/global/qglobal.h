@@ -1683,10 +1683,6 @@ Q_CORE_EXPORT void qFatal(const char *, ...) /* print fatal message and exit */
 Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
 Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 
-#if (defined(QT_NO_DEBUG_OUTPUT) || defined(QT_NO_TEXTSTREAM)) && !defined(QT_NO_DEBUG_STREAM)
-#define QT_NO_DEBUG_STREAM
-#endif
-
 /*
   Forward declarations only.
 
@@ -1694,12 +1690,18 @@ Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 */
 class QDebug;
 class QNoDebug;
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT_INLINE QDebug qDebug();
-Q_CORE_EXPORT_INLINE QDebug qWarning();
-Q_CORE_EXPORT_INLINE QDebug qCritical();
 #else
 inline QNoDebug qDebug();
+#endif
+#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT_INLINE QDebug qWarning();
+#else
+inline QNoDebug qWarning();
+#endif
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT_INLINE QDebug qCritical();
 #endif
 
 #define QT_NO_QDEBUG_MACRO while (false) qDebug
