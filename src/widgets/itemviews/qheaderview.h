@@ -84,6 +84,7 @@ public:
     int offset() const;
     int length() const;
     QSize sizeHint() const;
+    void setVisible(bool v);
     int sectionSizeHint(int logicalIndex) const;
 
     int visualIndexAt(int position) const;

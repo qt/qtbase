@@ -64,6 +64,7 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     toolBar->addWidget(formulaInput);
 
     table = new QTableWidget(rows, cols, this);
+    table->setSizeAdjustPolicy(QTableWidget::AdjustToContents);
     for (int c = 0; c < cols; ++c) {
         QString character(QChar('A' + c));
         table->setHorizontalHeaderItem(c, new QTableWidgetItem(character));

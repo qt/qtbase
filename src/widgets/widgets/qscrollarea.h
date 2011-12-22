@@ -69,6 +69,8 @@ public:
     void setWidgetResizable(bool resizable);
 
     QSize sizeHint() const;
+    QSize viewportSizeHint() const;
+
     bool focusNextPrevChild(bool next);
 
     Qt::Alignment alignment() const;

@@ -335,6 +335,7 @@ void QTreeView::setHeader(QHeaderView *header)
             this, SLOT(updateGeometries()));
 
     setSortingEnabled(d->sortingEnabled);
+    d->updateGeometry();
 }
 
 /*!
@@ -2616,6 +2617,35 @@ void QTreeView::selectAll()
                   QItemSelectionModel::ClearAndSelect
                   |QItemSelectionModel::Rows);
     }
+}
+
+/*!
+  \reimp
+*/
+QSize QTreeView::viewportSizeHint() const
+{
+    Q_D(const QTreeView);
+    d->executePostedLayout(); // Make sure that viewItems are up to date.
+
+    if (d->viewItems.size() == 0)
+        return QAbstractItemView::viewportSizeHint();
+
+    // Get rect for last item
+    const QRect deepestRect = visualRect(d->viewItems.last().index);
+
+    if (!deepestRect.isValid())
+        return QAbstractItemView::viewportSizeHint();
+
+    QSize result = QSize(d->header->length(), deepestRect.bottom() + 1);
+
+    // add size for header
+    result += QSize(0, d->header->isVisible() ? d->header->height() : 0);
+
+    // add size for scrollbars
+    result += QSize(verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0,
+                    horizontalScrollBar()->isVisible() ? horizontalScrollBar()->height() : 0);
+
+    return result;
 }
 
 /*!

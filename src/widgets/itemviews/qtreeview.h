@@ -144,6 +144,8 @@ public:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void selectAll();
 
+    QSize viewportSizeHint() const;
+
 Q_SIGNALS:
     void expanded(const QModelIndex &index);
     void collapsed(const QModelIndex &index);

@@ -550,6 +550,22 @@ QSize QHeaderView::sizeHint() const
 }
 
 /*!
+    \reimp
+*/
+
+void QHeaderView::setVisible(bool v)
+{
+    bool actualChange = (v != isVisible());
+    QAbstractItemView::setVisible(v);
+    if (actualChange) {
+        QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea*>(parentWidget());
+        if (parent)
+            parent->updateGeometry();
+    }
+}
+
+
+/*!
     Returns a suitable size hint for the section specified by \a logicalIndex.
 
     \sa sizeHint(), defaultSectionSize(), minimumSectionSize(),
@@ -918,6 +934,18 @@ void QHeaderView::resizeSection(int logical, int size)
         d->doDelayedResizeSections();
         r = d->viewport->rect();
     }
+
+    // If the parent is a QAbstractScrollArea with QAbstractScrollArea::AdjustToContents
+    // then we want to change the geometry on that widget. Not doing it at once can/will
+    // cause scrollbars flicker as they would be shown at first but then removed.
+    // In the same situation it will also allow shrinking the whole view when stretchLastSection is set
+    // (It is default on QTreeViews - and it wouldn't shrink since the last stretch was made before the
+    // viewport was resized)
+
+    QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());
+    if (parent && parent->sizeAdjustPolicy() == QAbstractScrollArea::AdjustToContents)
+        parent->updateGeometry();
+
     d->viewport->update(r.normalized());
     emit sectionResized(logical, oldSize, size);
 }

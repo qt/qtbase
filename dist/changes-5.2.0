@@ -1,0 +1,27 @@
+Qt 5.2 introduces many new features and improvements as well as bugfixes
+over the 5.1.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+  http://qt-project.org/doc/qt-5.2
+
+The Qt version 5.2 series is binary compatible with the 5.1.x series.
+Applications compiled for 5.1 will continue to run with 5.2.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt-project.org/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtWidgets
+---------
+
+- QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to AdjustToContents
+  it will make use of the new protected viewportSizeHint() (binary compatible since it
+  was reserved in Qt5). This function returns a suggested size based on contents.

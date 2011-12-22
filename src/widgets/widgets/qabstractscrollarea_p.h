@@ -75,6 +75,10 @@ public:
     QScrollBar *hbar, *vbar;
     Qt::ScrollBarPolicy vbarpolicy, hbarpolicy;
 
+    bool shownOnce;
+    mutable QSize sizeHint;
+    QAbstractScrollArea::SizeAdjustPolicy sizeAdjustPolicy;
+
     QWidget *viewport;
     QWidget *cornerWidget;
     QRect cornerPaintingRect;

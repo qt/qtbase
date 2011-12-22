@@ -1108,6 +1108,7 @@ void QAbstractItemView::reset()
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    d->updateGeometry();
 }
 
 /*!
@@ -1124,6 +1125,7 @@ void QAbstractItemView::setRootIndex(const QModelIndex &index)
     }
     d->root = index;
     d->doDelayedItemsLayout();
+    d->updateGeometry();
 }
 
 /*!
@@ -2668,8 +2670,10 @@ void QAbstractItemView::updateEditorGeometries()
 */
 void QAbstractItemView::updateGeometries()
 {
+    Q_D(QAbstractItemView);
     updateEditorGeometries();
-    d_func()->fetchMoreTimer.start(0, this); //fetch more later
+    d->fetchMoreTimer.start(0, this); //fetch more later
+    d->updateGeometry();
 }
 
 /*!
@@ -3231,6 +3235,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    d->updateGeometry();
 }
 
 /*!
@@ -3332,6 +3337,7 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    updateGeometry();
 }
 
 /*!
@@ -3412,6 +3418,7 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    updateGeometry();
 }
 
 
@@ -3435,6 +3442,7 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    updateGeometry();
 }
 
 /*!
@@ -3459,6 +3467,7 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
         QAccessible::updateAccessibility(&accessibleEvent);
     }
 #endif
+    updateGeometry();
 }
 
 /*!
@@ -4084,7 +4093,14 @@ void QAbstractItemViewPrivate::interruptDelayedItemsLayout() const
     delayedPendingLayout = false;
 }
 
-
+void QAbstractItemViewPrivate::updateGeometry()
+{
+    Q_Q(QAbstractItemView);
+    if (sizeAdjustPolicy == QAbstractScrollArea::AdjustIgnored)
+        return;
+    if (sizeAdjustPolicy == QAbstractScrollArea::AdjustToContents || !shownOnce)
+        q->updateGeometry();
+}
 
 QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                                           const QStyleOptionViewItem &options)

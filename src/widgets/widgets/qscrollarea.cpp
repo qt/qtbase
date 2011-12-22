@@ -407,6 +407,18 @@ QSize QScrollArea::sizeHint() const
     return sz.boundedTo(QSize(36 * h, 24 * h));
 }
 
+/*!
+    \reimp
+ */
+QSize QScrollArea::viewportSizeHint() const
+{
+    Q_D(const QScrollArea);
+    if (d->widget) {
+        return d->resizable ? d->widget->sizeHint() : d->widget->size();
+    }
+    const int h = fontMetrics().height();
+    return QSize(6 * h, 4 * h);
+}
 
 
 /*!

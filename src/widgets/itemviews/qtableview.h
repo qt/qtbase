@@ -118,6 +118,8 @@ public:
 
     void sortByColumn(int column, Qt::SortOrder order);
 
+    QSize viewportSizeHint() const;
+
 public Q_SLOTS:
     void selectRow(int row);
     void selectColumn(int column);

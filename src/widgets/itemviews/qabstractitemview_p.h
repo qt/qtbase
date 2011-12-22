@@ -127,6 +127,8 @@ public:
     void doDelayedItemsLayout(int delay = 0);
     void interruptDelayedItemsLayout() const;
 
+    void updateGeometry();
+
     void startAutoScroll()
     {   // ### it would be nice to make this into a style hint one day
         int scrollInterval = (verticalScrollMode == QAbstractItemView::ScrollPerItem) ? 150 : 50;
