@@ -138,6 +138,7 @@ void tst_QAnimationGroup::emptyGroup()
 {
     QSequentialAnimationGroup group;
     QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QVERIFY(groupStateChangedSpy.isValid());
 
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     group.start();

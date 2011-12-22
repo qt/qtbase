@@ -720,6 +720,9 @@ void tst_QAbstractItemModel::removeRows()
     QSignalSpy rowsAboutToBeRemovedSpy(&model, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )));
     QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved( const QModelIndex &, int, int )));
 
+    QVERIFY(rowsAboutToBeRemovedSpy.isValid());
+    QVERIFY(rowsRemovedSpy.isValid());
+
     QCOMPARE(model.removeRows(6, 4), true);
     QCOMPARE(rowsAboutToBeRemovedSpy.count(), 1);
     QCOMPARE(rowsRemovedSpy.count(), 1);
@@ -731,6 +734,9 @@ void tst_QAbstractItemModel::removeColumns()
 
     QSignalSpy columnsAboutToBeRemovedSpy(&model, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )));
     QSignalSpy columnsRemovedSpy(&model, SIGNAL(columnsRemoved( const QModelIndex &, int, int )));
+
+    QVERIFY(columnsAboutToBeRemovedSpy.isValid());
+    QVERIFY(columnsRemovedSpy.isValid());
 
     QCOMPARE(model.removeColumns(6, 4), true);
     QCOMPARE(columnsAboutToBeRemovedSpy.count(), 1);
@@ -744,6 +750,9 @@ void tst_QAbstractItemModel::insertRows()
     QSignalSpy rowsAboutToBeInsertedSpy(&model, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )));
     QSignalSpy rowsInsertedSpy(&model, SIGNAL(rowsInserted( const QModelIndex &, int, int )));
 
+    QVERIFY(rowsAboutToBeInsertedSpy.isValid());
+    QVERIFY(rowsInsertedSpy.isValid());
+
     QCOMPARE(model.insertRows(6, 4), true);
     QCOMPARE(rowsAboutToBeInsertedSpy.count(), 1);
     QCOMPARE(rowsInsertedSpy.count(), 1);
@@ -756,6 +765,9 @@ void tst_QAbstractItemModel::insertColumns()
     QSignalSpy columnsAboutToBeInsertedSpy(&model, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )));
     QSignalSpy columnsInsertedSpy(&model, SIGNAL(columnsInserted( const QModelIndex &, int, int )));
 
+    QVERIFY(columnsAboutToBeInsertedSpy.isValid());
+    QVERIFY(columnsInsertedSpy.isValid());
+
     QCOMPARE(model.insertColumns(6, 4), true);
     QCOMPARE(columnsAboutToBeInsertedSpy.count(), 1);
     QCOMPARE(columnsInsertedSpy.count(), 1);
@@ -766,6 +778,7 @@ void tst_QAbstractItemModel::reset()
     QtTestModel model(10, 10);
 
     QSignalSpy resetSpy(&model, SIGNAL(modelReset()));
+    QVERIFY(resetSpy.isValid());
     model.reset();
     QCOMPARE(resetSpy.count(), 1);
 }
@@ -894,6 +907,9 @@ void tst_QAbstractItemModel::testMoveSameParentDown()
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
 
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
+
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setNumCols(4);
     if (!topLevel)
@@ -1019,6 +1035,8 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
 
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
 
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setNumCols(4);
@@ -1180,6 +1198,9 @@ void tst_QAbstractItemModel::testMoveToGrandParent()
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
 
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
+
     QPersistentModelIndex persistentSource = sourceIndex;
 
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
@@ -1328,6 +1349,9 @@ void tst_QAbstractItemModel::testMoveToSibling()
 
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
+
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
 
     QPersistentModelIndex persistentDest = destIndex;
 
@@ -1489,6 +1513,9 @@ void tst_QAbstractItemModel::testMoveToUncle()
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
 
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
+
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setAncestorRowNumbers(QList<int>() << 9);
     moveCommand->setNumCols(4);
@@ -1604,6 +1631,9 @@ void tst_QAbstractItemModel::testMoveToDescendants()
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
 
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
+
     ModelMoveCommand *moveCommand;
     QList<int> ancestors;
     while (ancestors.size() < depth)
@@ -1669,6 +1699,9 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange()
 
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
+
+    QVERIFY(beforeSpy.isValid());
+    QVERIFY(afterSpy.isValid());
 
     ModelMoveCommand *moveCommand = new ModelMoveCommand(m_model, this);
     moveCommand->setNumCols(4);
@@ -1755,6 +1788,8 @@ void tst_QAbstractItemModel::testReset()
     QSignalSpy beforeResetSpy(m_model, SIGNAL(modelAboutToBeReset()));
     QSignalSpy afterResetSpy(m_model, SIGNAL(modelReset()));
 
+    QVERIFY(beforeResetSpy.isValid());
+    QVERIFY(afterResetSpy.isValid());
 
     QSortFilterProxyModel *nullProxy = new QSortFilterProxyModel(this);
     nullProxy->setSourceModel(m_model);
@@ -1820,6 +1855,9 @@ void tst_QAbstractItemModel::testDataChanged()
 
     QSignalSpy withRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
     QSignalSpy withoutRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+
+    QVERIFY(withRoles.isValid());
+    QVERIFY(withoutRoles.isValid());
 
     model.emitSignals();
 
@@ -1920,6 +1958,9 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
         QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
         QSignalSpy afterSpy(&model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
 
+        QVERIFY(beforeSpy.isValid());
+        QVERIFY(afterSpy.isValid());
+
         ModelChangeChildrenLayoutsCommand *changeCommand = new ModelChangeChildrenLayoutsCommand(&model, this);
         changeCommand->setAncestorRowNumbers(QList<int>() << 2);
         changeCommand->setSecondAncestorRowNumbers(QList<int>() << 5);
@@ -1983,6 +2024,9 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
 
         QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
         QSignalSpy afterSpy(&model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+        QVERIFY(beforeSpy.isValid());
+        QVERIFY(afterSpy.isValid());
 
         // Because the arguments in the signal are persistent, we need to check them for the aboutToBe
         // case at emission time - before they get updated.

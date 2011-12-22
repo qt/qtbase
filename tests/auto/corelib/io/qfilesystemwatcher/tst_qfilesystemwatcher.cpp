@@ -138,6 +138,7 @@ void tst_QFileSystemWatcher::basicTest()
     watcher.addPath(testFile.fileName());
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
+    QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -273,6 +274,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     watcher.addPath(testDir.dirName());
 
     QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -423,6 +425,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QVERIFY(fileChangedSpy.isValid());
+    QVERIFY(dirChangedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));

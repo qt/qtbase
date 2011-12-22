@@ -873,6 +873,7 @@ void tst_QStateMachine::historyStateAfterRestart()
 
     for (int x = 0; x < 2; ++x) {
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QVERIFY(startedSpy.isValid());
         machine.start();
         QTRY_COMPARE(startedSpy.count(), 1);
         QCOMPARE(machine.configuration().count(), 1);
@@ -908,6 +909,7 @@ void tst_QStateMachine::historyStateAfterRestart()
         QVERIFY(machine.configuration().contains(s22));
 
         QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+        QVERIFY(stoppedSpy.isValid());
         machine.stop();
         QTRY_COMPARE(stoppedSpy.count(), 1);
     }
@@ -1189,6 +1191,11 @@ void tst_QStateMachine::stateEntryAndExit()
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+
+        QVERIFY(startedSpy.isValid());
+        QVERIFY(stoppedSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
+
         machine.setInitialState(s1);
         QCOMPARE(machine.initialState(), (QAbstractState*)s1);
         {
@@ -1206,6 +1213,13 @@ void tst_QStateMachine::stateEntryAndExit()
         QSignalSpy tTriggeredSpy(t, SIGNAL(triggered()));
         QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
         QSignalSpy s2ExitedSpy(s2, SIGNAL(exited()));
+
+        QVERIFY(s1EnteredSpy.isValid());
+        QVERIFY(s1ExitedSpy.isValid());
+        QVERIFY(tTriggeredSpy.isValid());
+        QVERIFY(s2EnteredSpy.isValid());
+        QVERIFY(s2ExitedSpy.isValid());
+
         machine.start();
 
         QTRY_COMPARE(startedSpy.count(), 1);
@@ -1256,6 +1270,8 @@ void tst_QStateMachine::stateEntryAndExit()
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(startedSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s1);
         globalTick = 0;
         machine.start();
@@ -1329,6 +1345,7 @@ void tst_QStateMachine::assignProperty()
 
     {
         QSignalSpy propertiesAssignedSpy(s1, SIGNAL(propertiesAssigned()));
+        QVERIFY(propertiesAssignedSpy.isValid());
         machine.start();
         QTRY_COMPARE(propertiesAssignedSpy.count(), 1);
     }
@@ -1384,6 +1401,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QTRY_COMPARE(finishedSpy.count(), 1);
         QCOMPARE(obj.property("foo").toInt(), 456);
@@ -1412,6 +1430,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QTRY_COMPARE(finishedSpy.count(), 1);
         QCOMPARE(obj.property("foo").toInt(), 456);
@@ -1440,6 +1459,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QTRY_COMPARE(finishedSpy.count(), 1);
         QCOMPARE(obj.property("foo").toInt(), 456);
@@ -1489,6 +1509,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QTRY_COMPARE(finishedSpy.count(), 1);
         QCOMPARE(obj.property("foo").toInt(), 321);
@@ -1523,6 +1544,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         machine.start();
         QTRY_COMPARE(machine.configuration().contains(s1), true);
         QSignalSpy propertiesAssignedSpy(s2, SIGNAL(propertiesAssigned()));
+        QVERIFY(propertiesAssignedSpy.isValid());
         emitter.emitSignalWithNoArg();
         QTRY_COMPARE(machine.configuration().contains(s2), true);
         QVERIFY(propertiesAssignedSpy.isEmpty());
@@ -1610,6 +1632,7 @@ void tst_QStateMachine::postEvent()
         machine.addState(s2);
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QTRY_COMPARE(finishedSpy.count(), 1);
         QCOMPARE(machine.configuration().size(), 1);
@@ -1639,6 +1662,7 @@ void tst_QStateMachine::cancelDelayedEvent()
     machine.setInitialState(s1);
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -1658,6 +1682,7 @@ void tst_QStateMachine::cancelDelayedEvent()
     QVERIFY(!machine.cancelDelayedEvent(id2));
 
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
@@ -1672,6 +1697,7 @@ void tst_QStateMachine::postDelayedEventAndStop()
     machine.setInitialState(s1);
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -1680,6 +1706,7 @@ void tst_QStateMachine::postDelayedEventAndStop()
     int id1 = machine.postDelayedEvent(new StringEvent("a"), 0);
     QVERIFY(id1 != -1);
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QVERIFY(stoppedSpy.isValid());
     machine.stop();
     QTRY_COMPARE(stoppedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -1707,9 +1734,11 @@ void tst_QStateMachine::stopAndPostEvent()
     QState *s1 = new QState(&machine);
     machine.setInitialState(s1);
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    QVERIFY(stoppedSpy.isValid());
     machine.stop();
     QCOMPARE(stoppedSpy.count(), 0);
     machine.postEvent(new QEvent(QEvent::User));
@@ -1729,6 +1758,7 @@ void tst_QStateMachine::stateFinished()
     s1->addTransition(s1, SIGNAL(finished()), s2);
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -1766,6 +1796,7 @@ void tst_QStateMachine::parallelStates()
 
     machine.setInitialState(s1);
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -1788,6 +1819,7 @@ void tst_QStateMachine::parallelRootState()
     s2->setInitialState(s2_f);
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
     machine.start();
     QCoreApplication::processEvents();
@@ -1833,6 +1865,7 @@ void tst_QStateMachine::allSourceToTargetConfigurations()
     s0->addTransition(new StringTransition("e", s211));
 
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     machine.setInitialState(s0);
     machine.start();
     QCoreApplication::processEvents();
@@ -1919,6 +1952,7 @@ void tst_QStateMachine::signalTransitions()
         QCOMPARE(trans->signal(), QByteArray(SIGNAL(signalWithNoArg())));
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -1969,6 +2003,7 @@ void tst_QStateMachine::signalTransitions()
         QCOMPARE(trans->signal(), QByteArray("signalWithNoArg()"));
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -1993,6 +2028,7 @@ void tst_QStateMachine::signalTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2014,6 +2050,7 @@ void tst_QStateMachine::signalTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2045,6 +2082,7 @@ void tst_QStateMachine::signalTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2063,6 +2101,7 @@ void tst_QStateMachine::signalTransitions()
         QSignalTransition *t1 = s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s0);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2112,6 +2151,8 @@ void tst_QStateMachine::signalTransitions()
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(startedSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
 
         machine.start();
@@ -2151,6 +2192,8 @@ void tst_QStateMachine::signalTransitions()
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(startedSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QTRY_COMPARE(startedSpy.count(), 1);
@@ -2212,6 +2255,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2264,6 +2308,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2289,6 +2334,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2311,6 +2357,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2336,6 +2383,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2358,6 +2406,7 @@ void tst_QStateMachine::eventTransitions()
         s1->addTransition(t1);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2408,6 +2457,8 @@ void tst_QStateMachine::eventTransitions()
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(startedSpy.isValid());
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
 
         machine.start();
@@ -2435,6 +2486,7 @@ void tst_QStateMachine::eventTransitions()
         s0->addTransition(trans);
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QVERIFY(startedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QTest::ignoreMessage(QtWarningMsg, "QObject event transitions are not supported for custom types");
@@ -2452,6 +2504,7 @@ void tst_QStateMachine::eventTransitions()
         QCOMPARE(trans->eventTypeReceived(), QEvent::None);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.setInitialState(s0);
         machine.start();
         QCoreApplication::processEvents();
@@ -2481,6 +2534,8 @@ void tst_QStateMachine::graphicsSceneEventTransitions()
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
     QVERIFY(finishedSpy.count() == 0);
@@ -2527,6 +2582,7 @@ void tst_QStateMachine::historyStates()
         s0->setInitialState(s00);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        QVERIFY(finishedSpy.isValid());
         machine.start();
         QCoreApplication::processEvents();
         QCOMPARE(machine.configuration().size(), 2);
@@ -2565,6 +2621,11 @@ void tst_QStateMachine::startAndStop()
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(stoppedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
+
     QVERIFY(!machine.isRunning());
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
     machine.start();
@@ -2616,6 +2677,11 @@ void tst_QStateMachine::targetStateWithNoParent()
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(stoppedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
+
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 's1'");
     QTRY_COMPARE(startedSpy.count(), 1);
@@ -3045,12 +3111,14 @@ void tst_QStateMachine::propertiesAssignedSignalTransitionsReuseAnimationGroup()
     QParallelAnimationGroup animationGroup;
     animationGroup.addAnimation(new QPropertyAnimation(object, "foo"));
     QSignalSpy animationFinishedSpy(&animationGroup, SIGNAL(finished()));
+    QVERIFY(animationFinishedSpy.isValid());
     s1->addTransition(s1, SIGNAL(propertiesAssigned()), s2)->addAnimation(&animationGroup);
     s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3)->addAnimation(&animationGroup);
     s3->addTransition(s3, SIGNAL(propertiesAssigned()), s4);
 
     machine.setInitialState(s1);
     QSignalSpy machineFinishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(machineFinishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(machineFinishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
@@ -3551,6 +3619,8 @@ void tst_QStateMachine::nestedStateMachines()
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
     QTRY_COMPARE(machine.configuration().count(), 1+2*3);
@@ -3573,6 +3643,7 @@ void tst_QStateMachine::goToState()
     QState *s2 = new QState(&machine);
     machine.setInitialState(s1);
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
 
@@ -3615,6 +3686,7 @@ void tst_QStateMachine::goToStateFromSourceWithTransition()
     QState *s2 = new QState(&machine);
     machine.setInitialState(s1);
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
 
@@ -3704,6 +3776,7 @@ void tst_QStateMachine::postEventFromOtherThread()
     poster.start();
 
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(finishedSpy.isValid());
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
 }
@@ -3759,6 +3832,9 @@ void tst_QStateMachine::stopInTransitionToFinalState()
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
+    QVERIFY(stoppedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(s2EnteredSpy.isValid());
     machine.start();
 
     // Stopping should take precedence over finished.
@@ -3799,11 +3875,14 @@ void tst_QStateMachine::stopInEventTest()
     machine.setInitialState(s1);
 
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QVERIFY(startedSpy.isValid());
     machine.start();
     QTRY_COMPARE(startedSpy.count(), 1);
 
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    QVERIFY(stoppedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
     machine.postEvent(new QEvent(QEvent::User), QStateMachine::EventPriority(eventPriority));
 
     QTRY_COMPARE(stoppedSpy.count(), 1);

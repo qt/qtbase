@@ -601,6 +601,7 @@ void tst_QItemModel::setData()
     QVERIFY(currentModel);
     qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy spy(currentModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QVERIFY(spy.isValid());
     QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
     QCOMPARE(spy.count(), 0);
 
@@ -662,6 +663,7 @@ void tst_QItemModel::setHeaderData()
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy spy(currentModel, SIGNAL(headerDataChanged( Qt::Orientation, int , int )));
+    QVERIFY(spy.isValid());
 
     QString text = "Index private pointers should always be the same";
     int signalCount = 0;
@@ -702,6 +704,7 @@ void tst_QItemModel::sort()
     QModelIndex index = currentModel->index(0, 0, topIndex);
     QVERIFY(index.isValid());
     QSignalSpy spy(currentModel, SIGNAL(layoutChanged()));
+    QVERIFY(spy.isValid());
     for (int i=-1; i < 10; ++i){
         currentModel->sort(i);
         if (index != currentModel->index(0, 0, topIndex)){
@@ -845,6 +848,13 @@ void tst_QItemModel::remove()
     QSignalSpy rowsRemovedSpy(currentModel, SIGNAL(rowsRemoved( const QModelIndex &, int, int )));
     QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
     QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
+
+    QVERIFY(columnsAboutToBeRemovedSpy.isValid());
+    QVERIFY(rowsAboutToBeRemovedSpy.isValid());
+    QVERIFY(columnsRemovedSpy.isValid());
+    QVERIFY(rowsRemovedSpy.isValid());
+    QVERIFY(modelResetSpy.isValid());
+    QVERIFY(modelLayoutChangedSpy.isValid());
 
     QFETCH(int, numberOfRowsAboutToBeRemovedSignals);
     QFETCH(int, numberOfColumnsAboutToBeRemovedSignals);
@@ -1181,6 +1191,13 @@ void tst_QItemModel::insert()
     QSignalSpy rowsInsertedSpy(currentModel, SIGNAL(rowsInserted( const QModelIndex &, int, int )));
     QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
     QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
+
+    QVERIFY(columnsAboutToBeInsertedSpy.isValid());
+    QVERIFY(rowsAboutToBeInsertedSpy.isValid());
+    QVERIFY(columnsInsertedSpy.isValid());
+    QVERIFY(rowsInsertedSpy.isValid());
+    QVERIFY(modelResetSpy.isValid());
+    QVERIFY(modelLayoutChangedSpy.isValid());
 
     QFETCH(int, numberOfRowsAboutToBeInsertedSignals);
     QFETCH(int, numberOfColumnsAboutToBeInsertedSignals);

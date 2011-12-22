@@ -1504,6 +1504,7 @@ void tst_QSortFilterProxyModel::filterCurrent()
     view.show();
     view.setModel(&proxy);
     QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)));
+    QVERIFY(spy.isValid());
 
     view.setCurrentIndex(proxy.index(0, 0));
     QCOMPARE(spy.count(), 1);
@@ -1627,6 +1628,11 @@ void tst_QSortFilterProxyModel::removeSourceRows()
     QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
     QSignalSpy aboutToRemoveSpy(&proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)));
     QSignalSpy aboutToInsertSpy(&proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)));
+
+    QVERIFY(removeSpy.isValid());
+    QVERIFY(insertSpy.isValid());
+    QVERIFY(aboutToRemoveSpy.isValid());
+    QVERIFY(aboutToInsertSpy.isValid());
 
     model.removeRows(start, count, QModelIndex());
 
@@ -1802,6 +1808,9 @@ void tst_QSortFilterProxyModel::changeFilter()
     QSignalSpy initialRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
     QSignalSpy initialInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
 
+    QVERIFY(initialRemoveSpy.isValid());
+    QVERIFY(initialInsertSpy.isValid());
+
     proxy.setFilterRegExp(initialFilter);
 
     QCOMPARE(initialRemoveSpy.count(), initialRemoveIntervals.count());
@@ -1822,6 +1831,9 @@ void tst_QSortFilterProxyModel::changeFilter()
 
     QSignalSpy finalRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
     QSignalSpy finalInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
+
+    QVERIFY(finalRemoveSpy.isValid());
+    QVERIFY(finalInsertSpy.isValid());
 
     proxy.setFilterRegExp(finalFilter);
 
@@ -1971,6 +1983,9 @@ void tst_QSortFilterProxyModel::changeSourceData()
     QSignalSpy removeSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
     QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
 
+    QVERIFY(removeSpy.isValid());
+    QVERIFY(insertSpy.isValid());
+
     {
         QModelIndex index = model.index(row, 0, QModelIndex());
         model.setData(index, newValue, Qt::DisplayRole);
@@ -2065,6 +2080,7 @@ void tst_QSortFilterProxyModel::selectionFilteredOut()
     view.show();
     view.setModel(&proxy);
     QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)));
+    QVERIFY(spy.isValid());
 
     view.setCurrentIndex(proxy.index(0, 0));
     QCOMPARE(spy.count(), 1);
@@ -2181,6 +2197,9 @@ void tst_QSortFilterProxyModel::insertIntoChildrenlessItem()
     QSignalSpy colsInsertedSpy(&proxy, SIGNAL(columnsInserted(const QModelIndex&, int, int)));
     QSignalSpy rowsInsertedSpy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
 
+    QVERIFY(colsInsertedSpy.isValid());
+    QVERIFY(rowsInsertedSpy.isValid());
+
     (void)proxy.rowCount(QModelIndex()); // force mapping of "a", "b", "c"
     QCOMPARE(colsInsertedSpy.count(), 0);
     QCOMPARE(rowsInsertedSpy.count(), 0);
@@ -2256,6 +2275,7 @@ void tst_QSortFilterProxyModel::insertRowIntoFilteredParent()
     proxy.setSourceModel(&model);
 
     QSignalSpy spy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+    QVERIFY(spy.isValid());
 
     QStandardItem *itemA = new QStandardItem();
     model.appendRow(itemA); // A will be filtered
@@ -2285,6 +2305,9 @@ void tst_QSortFilterProxyModel::filterOutParentAndFilterInChild()
 
     QSignalSpy removedSpy(&proxy, SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
     QSignalSpy insertedSpy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+
+    QVERIFY(removedSpy.isValid());
+    QVERIFY(insertedSpy.isValid());
 
     proxy.setFilterRegExp("C"); // A and B will be filtered out, C filtered in
 
@@ -2882,6 +2905,9 @@ void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
     QSignalSpy spyAbout1(&proxyModel, SIGNAL(layoutAboutToBeChanged()));
     QSignalSpy spyChanged1(&proxyModel, SIGNAL(layoutChanged()));
 
+    QVERIFY(spyAbout1.isValid());
+    QVERIFY(spyChanged1.isValid());
+
     //introducing secondProxyModel to test the layoutChange when many items appears at once
     QSortFilterProxyModel secondProxyModel;
     secondProxyModel.setSourceModel(&proxyModel);
@@ -2890,6 +2916,9 @@ void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
     QCOMPARE(secondProxyModel.rowCount(), 0); //all rows are hidden at first;
     QSignalSpy spyAbout2(&secondProxyModel, SIGNAL(layoutAboutToBeChanged()));
     QSignalSpy spyChanged2(&secondProxyModel, SIGNAL(layoutChanged()));
+
+    QVERIFY(spyAbout2.isValid());
+    QVERIFY(spyChanged2.isValid());
 
     proxyModel.updateXX();
     QApplication::processEvents();
@@ -3248,15 +3277,26 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
 
     QSignalSpy dataChangedSpy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
 
+    QVERIFY(dataChangedSpy.isValid());
+
     // Verify that the no-arg signal is still emitted.
     QSignalSpy layoutAboutToBeChangedSpy(&proxy, SIGNAL(layoutAboutToBeChanged()));
     QSignalSpy layoutChangedSpy(&proxy, SIGNAL(layoutChanged()));
 
+    QVERIFY(layoutAboutToBeChangedSpy.isValid());
+    QVERIFY(layoutChangedSpy.isValid());
+
     QSignalSpy parentsAboutToBeChangedSpy(&proxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
     QSignalSpy parentsChangedSpy(&proxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
 
+    QVERIFY(parentsAboutToBeChangedSpy.isValid());
+    QVERIFY(parentsChangedSpy.isValid());
+
     QSignalSpy proxy2ParentsAboutToBeChangedSpy(&proxy2, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
     QSignalSpy proxy2ParentsChangedSpy(&proxy2, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+    QVERIFY(proxy2ParentsAboutToBeChangedSpy.isValid());
+    QVERIFY(proxy2ParentsChangedSpy.isValid());
 
     QStandardItem *item = model.invisibleRootItem()->child(1)->child(1);
 
@@ -3425,6 +3465,17 @@ void tst_QSortFilterProxyModel::moveSourceRows()
     QSignalSpy filterAfterParentLayoutSpy(&filterProxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
     QSignalSpy filterBothBeforeParentLayoutSpy(&filterBothProxy, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
     QSignalSpy filterBothAfterParentLayoutSpy(&filterBothProxy, SIGNAL(layoutChanged(QList<QPersistentModelIndex>)));
+
+    QVERIFY(modelBeforeSpy.isValid());
+    QVERIFY(modelAfterSpy.isValid());
+    QVERIFY(proxyBeforeMoveSpy.isValid());
+    QVERIFY(proxyAfterMoveSpy.isValid());
+    QVERIFY(proxyBeforeParentLayoutSpy.isValid());
+    QVERIFY(proxyAfterParentLayoutSpy.isValid());
+    QVERIFY(filterBeforeParentLayoutSpy.isValid());
+    QVERIFY(filterAfterParentLayoutSpy.isValid());
+    QVERIFY(filterBothBeforeParentLayoutSpy.isValid());
+    QVERIFY(filterBothAfterParentLayoutSpy.isValid());
 
     {
         ModelMoveCommand moveCommand(&model, 0);

@@ -1483,14 +1483,15 @@ void tst_QFile::tailFile()
     QVERIFY(tailFile.open(QFile::ReadOnly));
     tailFile.seek(file.size());
 
-    QSignalSpy readSignal(&tailFile, SIGNAL(readyRead()));
+    QSignalSpy readSignalSpy(&tailFile, SIGNAL(readyRead()));
+    QVERIFY(readSignalSpy.isValid());
 
     file.write("", 1);
 
     QTestEventLoop::instance().enterLoop(5);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(readSignal.count(), 1);
+    QCOMPARE(readSignalSpy.count(), 1);
 }
 
 void tst_QFile::flush()

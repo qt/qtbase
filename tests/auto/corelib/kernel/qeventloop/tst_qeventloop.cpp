@@ -203,6 +203,9 @@ void tst_QEventLoop::processEvents()
     QSignalSpy spy1(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()));
     QSignalSpy spy2(QAbstractEventDispatcher::instance(), SIGNAL(awake()));
 
+    QVERIFY(spy1.isValid());
+    QVERIFY(spy2.isValid());
+
     QEventLoop eventLoop;
 
     QCoreApplication::postEvent(&eventLoop, new QEvent(QEvent::User));
@@ -285,6 +288,7 @@ void tst_QEventLoop::exec()
 
         // make sure the eventloop runs
         QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+        QVERIFY(spy.isValid());
         thread.cond.wakeOne();
         thread.cond.wait(&thread.mutex);
         QVERIFY(spy.count() > 0);
@@ -396,6 +400,7 @@ void tst_QEventLoop::wakeUp()
     (void) eventLoop.exec();
 
     QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+    QVERIFY(spy.isValid());
     thread.eventLoop->wakeUp();
 
     // give the thread time to wake up

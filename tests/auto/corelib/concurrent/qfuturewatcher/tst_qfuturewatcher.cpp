@@ -90,17 +90,20 @@ void tst_QFutureWatcher::startFinish()
 {
     QFutureWatcher<void> futureWatcher;
 
-    QSignalSpy started(&futureWatcher, SIGNAL(started()));
-    QSignalSpy finished(&futureWatcher, SIGNAL(finished()));
+    QSignalSpy startedSpy(&futureWatcher, SIGNAL(started()));
+    QSignalSpy finishedSpy(&futureWatcher, SIGNAL(finished()));
+
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
 
     futureWatcher.setFuture(QtConcurrent::run(sleeper));
     QTest::qWait(10); // spin the event loop to deliver queued signals.
-    QCOMPARE(started.count(), 1);
-    QCOMPARE(finished.count(), 0);
+    QCOMPARE(startedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 0);
     futureWatcher.future().waitForFinished();
     QTest::qWait(10);
-    QCOMPARE(started.count(), 1);
-    QCOMPARE(finished.count(), 1);
+    QCOMPARE(startedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 1);
 }
 
 void mapSleeper(int &)
@@ -323,6 +326,7 @@ void tst_QFutureWatcher::futureSignals()
         f.setFuture(a.future());
 
         QSignalSpy progressSpy(&f, SIGNAL(progressValueChanged(int)));
+        QVERIFY(progressSpy.isValid());
         const int progress = 1;
         a.setProgressValue(progress);
         QTest::qWait(10);
@@ -332,6 +336,9 @@ void tst_QFutureWatcher::futureSignals()
 
         QSignalSpy finishedSpy(&f, SIGNAL(finished()));
         QSignalSpy resultReadySpy(&f, SIGNAL(resultReadyAt(int)));
+
+        QVERIFY(finishedSpy.isValid());
+        QVERIFY(resultReadySpy.isValid());
 
         const int result = 10;
         a.reportResult(&result);
@@ -375,6 +382,11 @@ void tst_QFutureWatcher::watchFinishedFuture()
     QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
     QSignalSpy canceledSpy(&watcher, SIGNAL(canceled()));
 
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(resultReadySpy.isValid());
+    QVERIFY(canceledSpy.isValid());
+
     watcher.setFuture(f);
     QTest::qWait(10);
 
@@ -404,6 +416,11 @@ void tst_QFutureWatcher::watchCanceledFuture()
     QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
     QSignalSpy canceledSpy(&watcher, SIGNAL(canceled()));
 
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(resultReadySpy.isValid());
+    QVERIFY(canceledSpy.isValid());
+
     watcher.setFuture(f);
     QTest::qWait(10);
 
@@ -427,6 +444,9 @@ void tst_QFutureWatcher::disconnectRunningFuture()
 
     QSignalSpy finishedSpy(watcher, SIGNAL(finished()));
     QSignalSpy resultReadySpy(watcher, SIGNAL(resultReadyAt(int)));
+
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(resultReadySpy.isValid());
 
     const int result = 10;
     a.reportResult(&result);
@@ -618,6 +638,7 @@ void tst_QFutureWatcher::changeFuture()
     SignalSlotObject object;
     connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
     QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
+    QVERIFY(resultReadySpy.isValid());
 
     watcher.setFuture(a); // Watch 'a' which will genere a resultReady event.
     watcher.setFuture(b); // But oh no! we're switching to another future
@@ -649,6 +670,7 @@ void tst_QFutureWatcher::cancelEvents()
     SignalSlotObject object;
     connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
     QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
+    QVERIFY(resultReadySpy.isValid());
 
     watcher.setFuture(a);
     watcher.cancel();
@@ -676,6 +698,7 @@ void tst_QFutureWatcher::pauseEvents()
         SignalSlotObject object;
         connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
         QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
+        QVERIFY(resultReadySpy.isValid());
 
         watcher.setFuture(a);
         watcher.pause();
@@ -701,6 +724,7 @@ void tst_QFutureWatcher::pauseEvents()
         SignalSlotObject object;
         connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
         QSignalSpy resultReadySpy(&watcher, SIGNAL(resultReadyAt(int)));
+        QVERIFY(resultReadySpy.isValid());
 
         watcher.setFuture(a);
         a.pause();

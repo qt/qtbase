@@ -169,6 +169,11 @@ void tst_QIdentityProxyModel::insertRows()
     QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
     QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
+    QVERIFY(modelBeforeSpy.isValid());
+    QVERIFY(modelAfterSpy.isValid());
+    QVERIFY(proxyBeforeSpy.isValid());
+    QVERIFY(proxyAfterSpy.isValid());
+
     QStandardItem *item = new QStandardItem(QString("new item"));
     parentItem->appendRow(item);
 
@@ -204,6 +209,11 @@ void tst_QIdentityProxyModel::removeRows()
     QSignalSpy modelAfterSpy(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
     QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
     QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+
+    QVERIFY(modelBeforeSpy.isValid());
+    QVERIFY(modelAfterSpy.isValid());
+    QVERIFY(proxyBeforeSpy.isValid());
+    QVERIFY(proxyAfterSpy.isValid());
 
     const QModelIndex topLevel = m_model->index(0, 0, QModelIndex());
     const QModelIndex secondLevel = m_model->index(0, 0, topLevel);
@@ -253,6 +263,11 @@ void tst_QIdentityProxyModel::moveRows()
     QSignalSpy modelAfterSpy(&model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+
+    QVERIFY(modelBeforeSpy.isValid());
+    QVERIFY(modelAfterSpy.isValid());
+    QVERIFY(proxyBeforeSpy.isValid());
+    QVERIFY(proxyAfterSpy.isValid());
 
     {
         ModelMoveCommand moveCommand(&model, 0);
@@ -309,6 +324,11 @@ void tst_QIdentityProxyModel::reset()
     QSignalSpy modelAfterSpy(&model, SIGNAL(modelReset()));
     QSignalSpy proxyBeforeSpy(m_proxy, SIGNAL(modelAboutToBeReset()));
     QSignalSpy proxyAfterSpy(m_proxy, SIGNAL(modelReset()));
+
+    QVERIFY(modelBeforeSpy.isValid());
+    QVERIFY(modelAfterSpy.isValid());
+    QVERIFY(proxyBeforeSpy.isValid());
+    QVERIFY(proxyAfterSpy.isValid());
 
     {
         ModelResetCommandFixed resetCommand(&model, 0);

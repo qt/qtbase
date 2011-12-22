@@ -261,6 +261,11 @@ void tst_QParallelAnimationGroup::stateChanged()
     QSignalSpy spy3(anim3, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy spy4(anim4, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
+    QVERIFY(spy1.isValid());
+    QVERIFY(spy2.isValid());
+    QVERIFY(spy3.isValid());
+    QVERIFY(spy4.isValid());
+
     //first; let's start forward
     group.start();
     //all the animations should be started
@@ -432,6 +437,9 @@ void tst_QParallelAnimationGroup::updateChildrenWithRunningGroup()
     QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy childStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
+    QVERIFY(groupStateChangedSpy.isValid());
+    QVERIFY(childStateChangedSpy.isValid());
+
     QCOMPARE(groupStateChangedSpy.count(), 0);
     QCOMPARE(childStateChangedSpy.count(), 0);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
@@ -596,6 +604,9 @@ void tst_QParallelAnimationGroup::startGroupWithRunningChild()
     QSignalSpy stateChangedSpy1(&anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy stateChangedSpy2(&anim2, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
 
+    QVERIFY(stateChangedSpy1.isValid());
+    QVERIFY(stateChangedSpy2.isValid());
+
     QCOMPARE(stateChangedSpy1.count(), 0);
     QCOMPARE(stateChangedSpy2.count(), 0);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
@@ -661,11 +672,20 @@ void tst_QParallelAnimationGroup::zeroDurationAnimation()
     QSignalSpy stateChangedSpy1(&anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy finishedSpy1(&anim1, SIGNAL(finished()));
 
+    QVERIFY(stateChangedSpy1.isValid());
+    QVERIFY(finishedSpy1.isValid());
+
     QSignalSpy stateChangedSpy2(&anim2, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy finishedSpy2(&anim2, SIGNAL(finished()));
 
+    QVERIFY(stateChangedSpy2.isValid());
+    QVERIFY(finishedSpy2.isValid());
+
     QSignalSpy stateChangedSpy3(&anim3, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy finishedSpy3(&anim3, SIGNAL(finished()));
+
+    QVERIFY(stateChangedSpy3.isValid());
+    QVERIFY(finishedSpy3.isValid());
 
     group.addAnimation(&anim1);
     group.addAnimation(&anim2);
@@ -741,6 +761,7 @@ void tst_QParallelAnimationGroup::stopUncontrolledAnimations()
     loopsForever.setLoopCount(-1);
 
     QSignalSpy stateChangedSpy(&anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QVERIFY(stateChangedSpy.isValid());
 
     group.addAnimation(&anim1);
     group.addAnimation(&notTimeDriven);
@@ -948,6 +969,7 @@ void tst_QParallelAnimationGroup::pauseResume()
     QParallelAnimationGroup group;
     TestAnimation2 *anim = new TestAnimation2(250, &group);      // 0, duration = 250;
     QSignalSpy spy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QVERIFY(spy.isValid());
     QCOMPARE(group.duration(), 250);
     group.start();
     QTest::qWait(100);
