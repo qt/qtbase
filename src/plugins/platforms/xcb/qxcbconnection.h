@@ -56,7 +56,7 @@
 struct XInput2Data;
 #endif
 
-#define Q_XCB_DEBUG
+//#define Q_XCB_DEBUG
 
 QT_BEGIN_NAMESPACE
 
