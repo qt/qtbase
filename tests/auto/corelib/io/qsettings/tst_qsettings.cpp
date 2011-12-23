@@ -73,10 +73,8 @@ class tst_QSettings : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSettings();
-
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -270,7 +268,7 @@ static void populateWithFormats()
     QTest::newRow("custom2") << QSettings::CustomFormat2;
 }
 
-tst_QSettings::tst_QSettings()
+void tst_QSettings::initTestCase()
 {
     QSettings::Format custom1 = QSettings::registerFormat("custom1", readCustom1File, writeCustom1File);
     QSettings::Format custom2 = QSettings::registerFormat("custom2", readCustom2File, writeCustom2File
