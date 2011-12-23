@@ -76,6 +76,7 @@ private slots:
     void upCast();
     void qobjectWeakManagement();
     void noSharedPointerFromWeakQObject();
+    void sharedPointerFromQObjectWithWeak();
     void weakQObjectFromSharedPointer();
     void objectCast();
     void differentPointers();
@@ -692,10 +693,32 @@ void tst_QSharedPointer::noSharedPointerFromWeakQObject()
     QObject obj;
     QWeakPointer<QObject> weak(&obj);
 
-    QSharedPointer<QObject> strong = weak.toStrongRef();
-    QVERIFY(strong.isNull());
+    {
+        QTest::ignoreMessage(QtWarningMsg ,  "QSharedPointer: cannot create a QSharedPointer from a QObject-tracking QWeakPointer");
+        QSharedPointer<QObject> strong = weak.toStrongRef();
+        QVERIFY(strong.isNull());
+    }
+    {
+        QTest::ignoreMessage(QtWarningMsg ,  "QSharedPointer: cannot create a QSharedPointer from a QObject-tracking QWeakPointer");
+        QSharedPointer<QObject> strong = weak;
+        QVERIFY(strong.isNull());
+    }
 
+    QCOMPARE(weak.data(), &obj);
     // if something went wrong, we'll probably crash here
+}
+
+void tst_QSharedPointer::sharedPointerFromQObjectWithWeak()
+{
+    QObject *ptr = new QObject;
+    QWeakPointer<QObject> weak = ptr;
+    {
+        QSharedPointer<QObject> shared(ptr);
+        QVERIFY(!weak.isNull());
+        QCOMPARE(shared.data(), ptr);
+        QCOMPARE(weak.data(), ptr);
+    }
+    QVERIFY(weak.isNull());
 }
 
 void tst_QSharedPointer::weakQObjectFromSharedPointer()
@@ -1766,12 +1789,6 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "Data *ptr = 0;\n"
            "QWeakPointer<Data> weakptr(ptr);\n";
-
-    QTest::newRow("shared-pointer-from-unmanaged-qobject")
-        << &QTest::QExternalTest::tryRunFail
-        << "QObject *ptr = new QObject;\n"
-           "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
-           "QSharedPointer<QObject> shared(ptr);\n";
 
     QTest::newRow("shared-pointer-implicit-from-uninitialized")
         << &QTest::QExternalTest::tryCompileFail

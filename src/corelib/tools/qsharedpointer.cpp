@@ -1226,24 +1226,22 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     This function is called for a just-created QObject \a obj, to enable
-    the use of QSharedPointer and QWeakPointer.
+    the use of QSharedPointer and QWeakPointer in the future.
+ */
+void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *, bool)
+{}
 
-    When QSharedPointer is active in a QObject, the object must not be deleted
-    directly: the lifetime is managed by the QSharedPointer object. In that case,
-    the deleteLater() and parent-child relationship in QObject only decrease
-    the strong reference count, instead of deleting the object.
+/*!
+    \internal
+    This function is called when a QSharedPointer is created from a QWeakPointer
+
+    We check that the QWeakPointer was really created from a QSharedPointer, and
+    not from a QObject.
 */
-void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj, bool)
+void QtSharedPointer::ExternalRefCountData::checkQObjectShared(const QObject *)
 {
-    Q_ASSERT(obj);
-    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
-
-    if (d->sharedRefcount.load() != 0)
-        qFatal("QSharedPointer: pointer %p already has reference counting", obj);
-    d->sharedRefcount.store(this);
-
-    // QObject decreases the refcount too, so increase it up
-    weakref.ref();
+    if (strongref.load() < 0)
+        qWarning("QSharedPointer: cannot create a QSharedPointer from a QObject-tracking QWeakPointer");
 }
 
 QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)

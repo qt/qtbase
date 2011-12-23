@@ -192,7 +192,9 @@ namespace QtSharedPointer {
 #ifndef QT_NO_QOBJECT
         Q_CORE_EXPORT static ExternalRefCountData *getAndRef(const QObject *);
         Q_CORE_EXPORT void setQObjectShared(const QObject *, bool enable);
+        Q_CORE_EXPORT void checkQObjectShared(const QObject *);
 #endif
+        inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
     };
     // sizeof(ExternalRefCount) = 12 (32-bit) / 16 (64-bit)
@@ -432,10 +434,12 @@ namespace QtSharedPointer {
                     tmp = o->strongref.load();  // failed, try again
                 }
 
-                if (tmp > 0)
+                if (tmp > 0) {
                     o->weakref.ref();
-                else
+                } else {
+                    o->checkQObjectShared(actual);
                     o = 0;
+                }
             }
 
             qSwap(d, o);
