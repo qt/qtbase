@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
@@ -52,20 +51,17 @@
 
 void QModelListener::rowsAboutToBeRemovedOrInserted(const QModelIndex & parent, int start, int end )
 {
-    int i;
-    for (i = 0; start + i <= end; i++)
-    {
+    for (int i = 0; start + i <= end; i++) {
         QModelIndex mIndex = m_pModel->index(start + i, 0, parent);
         QVariant var = m_pModel->data(mIndex, Qt::DisplayRole);
         QString str = var.toString();
-        
+
         QCOMPARE(str, m_pAboutToStringlist->at(i));
     }
 }
 
 void QModelListener::rowsRemovedOrInserted(const QModelIndex & parent, int , int)
 {
-    int i;
     // Can the rows that *are* removed be iterated now ?
 
     // What about rowsAboutToBeInserted - what will the indices be?
@@ -74,17 +70,15 @@ void QModelListener::rowsRemovedOrInserted(const QModelIndex & parent, int , int
 
     // RemoveColumn. Does that also fire the rowsRemoved-family signals?
 
-    for (i = 0; i < m_pExpectedStringlist->size(); i++)
-    {
+    for (int i = 0; i < m_pExpectedStringlist->size(); i++) {
         QModelIndex mIndex = m_pModel->index(i, 0, parent);
         QVariant var = m_pModel->data(mIndex, Qt::DisplayRole);
         QString str = var.toString();
-        
+
         //qDebug() << "index: " << i << " start: " << start << "end: " << end;
         QCOMPARE(str, m_pExpectedStringlist->at(i));
     }
 }
-
 
 class tst_QStringListModel : public QObject
 {
@@ -152,21 +146,20 @@ void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved()
 
     QStringListModel *model = new QStringListModel(input);
     QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    pListener->connect(model,       SIGNAL( rowsAboutToBeRemoved(const QModelIndex & , int , int )), 
+    pListener->connect(model,       SIGNAL( rowsAboutToBeRemoved(const QModelIndex & , int , int )),
                        pListener,   SLOT(   rowsAboutToBeRemovedOrInserted(const QModelIndex & , int , int ))    );
 
-    pListener->connect(model,       SIGNAL( rowsRemoved(const QModelIndex & , int , int )), 
+    pListener->connect(model,       SIGNAL( rowsRemoved(const QModelIndex & , int , int )),
                        pListener,   SLOT(   rowsRemovedOrInserted(const QModelIndex & , int , int ))    );
 
     model->removeRows(row,count);
-    // At this point, control goes to our connected slots inn this order: 
+    // At this point, control goes to our connected slots inn this order:
     // 1. rowsAboutToBeRemovedOrInserted
     // 2. rowsRemovedOrInserted
     // Control returns here
 
     delete pListener;
     delete model;
-
 }
 
 void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted_data()
@@ -217,24 +210,21 @@ void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted()
 
     QStringListModel *model = new QStringListModel(input);
     QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    connect(model,       SIGNAL( rowsAboutToBeInserted(const QModelIndex & , int , int )), 
+    connect(model,       SIGNAL( rowsAboutToBeInserted(const QModelIndex & , int , int )),
                        pListener,   SLOT(   rowsAboutToBeRemovedOrInserted(const QModelIndex & , int , int ))    );
 
-    connect(model,       SIGNAL( rowsInserted(const QModelIndex & , int , int )), 
+    connect(model,       SIGNAL( rowsInserted(const QModelIndex & , int , int )),
                        pListener,   SLOT(   rowsRemovedOrInserted(const QModelIndex & , int , int ))    );
 
     model->insertRows(row,count);
-    // At this point, control goes to our connected slots inn this order: 
+    // At this point, control goes to our connected slots inn this order:
     // 1. rowsAboutToBeRemovedOrInserted
     // 2. rowsRemovedOrInserted
     // Control returns here
 
     delete pListener;
     delete model;
-
 }
-
 
 QTEST_MAIN(tst_QStringListModel)
 #include "tst_qstringlistmodel.moc"
-

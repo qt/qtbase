@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <QtGui/QtGui>
@@ -114,7 +113,6 @@ typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> PairList;
 
-
 Q_DECLARE_METATYPE(PairList)
 Q_DECLARE_METATYPE(QModelIndex)
 Q_DECLARE_METATYPE(QModelIndexList)
@@ -184,7 +182,8 @@ QDataStream &operator>>(QDataStream &s, QModelIndexList &output)
     return s;
 }
 
-tst_QItemSelectionModel::tst_QItemSelectionModel() : model(0), selection(0)
+tst_QItemSelectionModel::tst_QItemSelectionModel()
+    : model(0), selection(0)
 {
 }
 
@@ -315,7 +314,7 @@ void tst_QItemSelectionModel::clearAndSelect()
     // populate selectionmodel
     selection->select(model->index(1, 1, QModelIndex()), QItemSelectionModel::Select);
     QCOMPARE(selection->selectedIndexes().count(), 1);
-	QVERIFY(selection->hasSelection());
+    QVERIFY(selection->hasSelection());
 
     // ClearAndSelect with empty selection
     QItemSelection emptySelection;
@@ -323,39 +322,37 @@ void tst_QItemSelectionModel::clearAndSelect()
 
     // verify the selectionmodel is empty
     QVERIFY(selection->selectedIndexes().isEmpty());
-	QVERIFY(selection->hasSelection()==false);
+    QVERIFY(selection->hasSelection()==false);
 }
 
 void tst_QItemSelectionModel::toggleSelection()
 {
-	//test the toggle selection and checks whether selectedIndex
-	//and hasSelection returns the correct value
+    //test the toggle selection and checks whether selectedIndex
+    //and hasSelection returns the correct value
 
-	selection->clearSelection();
+    selection->clearSelection();
     QCOMPARE(selection->selectedIndexes().count(), 0);
-	QVERIFY(selection->hasSelection()==false);
+    QVERIFY(selection->hasSelection()==false);
 
-	QModelIndex index=model->index(1, 1, QModelIndex());
+    QModelIndex index=model->index(1, 1, QModelIndex());
     // populate selectionmodel
     selection->select(index, QItemSelectionModel::Toggle);
     QCOMPARE(selection->selectedIndexes().count(), 1);
-	QVERIFY(selection->hasSelection()==true);
+    QVERIFY(selection->hasSelection()==true);
 
     selection->select(index, QItemSelectionModel::Toggle);
     QCOMPARE(selection->selectedIndexes().count(), 0);
-	QVERIFY(selection->hasSelection()==false);
+    QVERIFY(selection->hasSelection()==false);
 
     // populate selectionmodel with rows
     selection->select(index, QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
     QCOMPARE(selection->selectedIndexes().count(), model->columnCount());
-	QVERIFY(selection->hasSelection()==true);
+    QVERIFY(selection->hasSelection()==true);
 
     selection->select(index, QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
     QCOMPARE(selection->selectedIndexes().count(), 0);
-	QVERIFY(selection->hasSelection()==false);
-
+    QVERIFY(selection->hasSelection()==false);
 }
-
 
 void tst_QItemSelectionModel::select_data()
 {
@@ -1181,54 +1178,54 @@ void tst_QItemSelectionModel::select_data()
     }
     {
         QModelIndexList indexes;
-	IntList commands;
-	QModelIndexList expected;
+        IntList commands;
+        QModelIndexList expected;
 
-	indexes  << model->index(0, 0, QModelIndex()) << model->index(0, 0, QModelIndex()) // press 0
-		 << model->index(0, 0, QModelIndex()) << model->index(0, 0, QModelIndex()) // release 0
-		 << model->index(1, 0, QModelIndex()) << model->index(1, 0, QModelIndex()) // press 1
-		 << model->index(1, 0, QModelIndex()) << model->index(1, 0, QModelIndex()) // release 1
-		 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // press 2
-		 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // release 2
-		 << model->index(3, 0, QModelIndex()) << model->index(3, 0, QModelIndex()) // press 3
-		 << model->index(3, 0, QModelIndex()) << model->index(3, 0, QModelIndex()) // release 3
-		 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // press 2 again
-		 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex());// move 2
+        indexes  << model->index(0, 0, QModelIndex()) << model->index(0, 0, QModelIndex()) // press 0
+                 << model->index(0, 0, QModelIndex()) << model->index(0, 0, QModelIndex()) // release 0
+                 << model->index(1, 0, QModelIndex()) << model->index(1, 0, QModelIndex()) // press 1
+                 << model->index(1, 0, QModelIndex()) << model->index(1, 0, QModelIndex()) // release 1
+                 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // press 2
+                 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // release 2
+                 << model->index(3, 0, QModelIndex()) << model->index(3, 0, QModelIndex()) // press 3
+                 << model->index(3, 0, QModelIndex()) << model->index(3, 0, QModelIndex()) // release 3
+                 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex()) // press 2 again
+                 << model->index(2, 0, QModelIndex()) << model->index(2, 0, QModelIndex());// move 2
 
-	commands << (QItemSelectionModel::NoUpdate)                                // press 0
-		 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 0
-		 << (QItemSelectionModel::NoUpdate)                                // press 1
-		 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 1
-		 << (QItemSelectionModel::NoUpdate)                                // press 2
-		 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 2
-		 << (QItemSelectionModel::NoUpdate)                                // press 3
-		 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 3
-	         << (QItemSelectionModel::NoUpdate)                                // press 2 again
-		 << (QItemSelectionModel::Toggle/*Current*/|QItemSelectionModel::Rows);// move 2
+        commands << (QItemSelectionModel::NoUpdate)                                // press 0
+                 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 0
+                 << (QItemSelectionModel::NoUpdate)                                // press 1
+                 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 1
+                 << (QItemSelectionModel::NoUpdate)                                // press 2
+                 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 2
+                 << (QItemSelectionModel::NoUpdate)                                // press 3
+                 << (QItemSelectionModel::Toggle|QItemSelectionModel::Rows)        // release 3
+                 << (QItemSelectionModel::NoUpdate)                                // press 2 again
+                 << (QItemSelectionModel::Toggle/*Current*/|QItemSelectionModel::Rows);// move 2
 
-	expected << model->index(0, 0, QModelIndex())
-		 << model->index(0, 1, QModelIndex())
-		 << model->index(0, 2, QModelIndex())
-		 << model->index(0, 3, QModelIndex())
-		 << model->index(0, 4, QModelIndex())
+        expected << model->index(0, 0, QModelIndex())
+                 << model->index(0, 1, QModelIndex())
+                 << model->index(0, 2, QModelIndex())
+                 << model->index(0, 3, QModelIndex())
+                 << model->index(0, 4, QModelIndex())
 
-		 << model->index(1, 0, QModelIndex())
-		 << model->index(1, 1, QModelIndex())
-		 << model->index(1, 2, QModelIndex())
-		 << model->index(1, 3, QModelIndex())
-		 << model->index(1, 4, QModelIndex())
-	  /*
-		 << model->index(2, 0, QModelIndex())
-		 << model->index(2, 1, QModelIndex())
-		 << model->index(2, 2, QModelIndex())
-		 << model->index(2, 3, QModelIndex())
-		 << model->index(2, 4, QModelIndex())
-	  */
-		 << model->index(3, 0, QModelIndex())
-		 << model->index(3, 1, QModelIndex())
-		 << model->index(3, 2, QModelIndex())
-		 << model->index(3, 3, QModelIndex())
-		 << model->index(3, 4, QModelIndex());
+                 << model->index(1, 0, QModelIndex())
+                 << model->index(1, 1, QModelIndex())
+                 << model->index(1, 2, QModelIndex())
+                 << model->index(1, 3, QModelIndex())
+                 << model->index(1, 4, QModelIndex())
+          /*
+                 << model->index(2, 0, QModelIndex())
+                 << model->index(2, 1, QModelIndex())
+                 << model->index(2, 2, QModelIndex())
+                 << model->index(2, 3, QModelIndex())
+                 << model->index(2, 4, QModelIndex())
+          */
+                 << model->index(3, 0, QModelIndex())
+                 << model->index(3, 1, QModelIndex())
+                 << model->index(3, 2, QModelIndex())
+                 << model->index(3, 3, QModelIndex())
+                 << model->index(3, 4, QModelIndex());
 
         QTest::newRow("simulated treeview multiselection behavior")
             << indexes
@@ -1337,140 +1334,140 @@ void tst_QItemSelectionModel::persistentselections_data()
         << insertRows << insertColumns << deleteRows << deleteColumns
         << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     deleteRows << 0 << 1;
-     QTest::newRow("ClearAndSelect (0, 0). Delete first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    deleteRows << 0 << 1;
+    QTest::newRow("ClearAndSelect (0, 0). Delete first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(1, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     deleteRows << 0 << 1;
-     expected << IntPair(0, 0);
-     QTest::newRow("ClearAndSelect (1, 0). Delete first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(1, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    deleteRows << 0 << 1;
+    expected << IntPair(0, 0);
+    QTest::newRow("ClearAndSelect (1, 0). Delete first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     insertRows << 5 << 1;
-     expected << IntPair(0, 0);
-     QTest::newRow("ClearAndSelect (0, 0). Append row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    insertRows << 5 << 1;
+    expected << IntPair(0, 0);
+    QTest::newRow("ClearAndSelect (0, 0). Append row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     insertRows << 0 << 1;
-     expected << IntPair(1, 0);
-     QTest::newRow("ClearAndSelect (0, 0). Insert before first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    insertRows << 0 << 1;
+    expected << IntPair(1, 0);
+    QTest::newRow("ClearAndSelect (0, 0). Insert before first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     insertRows << 5 << 1;
-     expected << IntPair(0, 0)
-              << IntPair(1, 0)
-              << IntPair(2, 0)
-              << IntPair(3, 0)
-              << IntPair(4, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Append row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    insertRows << 5 << 1;
+    expected << IntPair(0, 0)
+             << IntPair(1, 0)
+             << IntPair(2, 0)
+             << IntPair(3, 0)
+             << IntPair(4, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Append row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     insertRows << 0  << 1;
-     expected << IntPair(1, 0)
-              << IntPair(2, 0)
-              << IntPair(3, 0)
-              << IntPair(4, 0)
-              << IntPair(5, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Insert before first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    insertRows << 0  << 1;
+    expected << IntPair(1, 0)
+             << IntPair(2, 0)
+             << IntPair(3, 0)
+             << IntPair(4, 0)
+             << IntPair(5, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Insert before first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     deleteRows << 0  << 1;
-     expected << IntPair(0, 0)
-              << IntPair(1, 0)
-              << IntPair(2, 0)
-              << IntPair(3, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Delete first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    deleteRows << 0  << 1;
+    expected << IntPair(0, 0)
+             << IntPair(1, 0)
+             << IntPair(2, 0)
+             << IntPair(3, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Delete first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     deleteRows << 4  << 1;
-     expected << IntPair(0, 0)
-              << IntPair(1, 0)
-              << IntPair(2, 0)
-              << IntPair(3, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Delete last row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    deleteRows << 4  << 1;
+    expected << IntPair(0, 0)
+             << IntPair(1, 0)
+             << IntPair(2, 0)
+             << IntPair(3, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Delete last row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     deleteRows << 1  << 3;
-     expected << IntPair(0, 0)
-              << IntPair(1, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Deleting all but first and last row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    deleteRows << 1  << 3;
+    expected << IntPair(0, 0)
+             << IntPair(1, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Deleting all but first and last row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 
-     index.clear(); expected.clear(); command.clear();
-     insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
-     index << IntPair(0, 0)
-           << IntPair(4, 0);
-     command << QItemSelectionModel::ClearAndSelect;
-     insertRows << 1 << 1;
-     expected << IntPair(0, 0)
-         // the inserted row should not be selected
-              << IntPair(2, 0)
-              << IntPair(3, 0)
-              << IntPair(4, 0)
-              << IntPair(5, 0);
-     QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Insert after first row.")
-         << index << command
-         << insertRows << insertColumns << deleteRows << deleteColumns
-         << expected;
+    index.clear(); expected.clear(); command.clear();
+    insertRows.clear(); insertColumns.clear(); deleteRows.clear(); deleteColumns.clear();
+    index << IntPair(0, 0)
+          << IntPair(4, 0);
+    command << QItemSelectionModel::ClearAndSelect;
+    insertRows << 1 << 1;
+    expected << IntPair(0, 0)
+        // the inserted row should not be selected
+             << IntPair(2, 0)
+             << IntPair(3, 0)
+             << IntPair(4, 0)
+             << IntPair(5, 0);
+    QTest::newRow("ClearAndSelect (0, 0) to (4, 0). Insert after first row.")
+        << index << command
+        << insertRows << insertColumns << deleteRows << deleteColumns
+        << expected;
 }
 
 void tst_QItemSelectionModel::persistentselections()
@@ -1783,7 +1780,7 @@ void tst_QItemSelectionModel::modelLayoutChanged()
     // verify that selection is as expected
     QItemSelection selection = selectionModel.selection();
     QCOMPARE(selection.count(), expectedSelectedRanges.count());
-	QVERIFY(selectionModel.hasSelection() == !expectedSelectedRanges.isEmpty());
+    QVERIFY(selectionModel.hasSelection() == !expectedSelectedRanges.isEmpty());
 
     for (int i = 0; i < expectedSelectedRanges.count(); ++i) {
         IntPairPair expectedRange = expectedSelectedRanges.at(i);
@@ -2035,27 +2032,28 @@ void tst_QItemSelectionModel::task220420_selectedIndexes()
 class QtTestTableModel: public QAbstractTableModel
 {
     Q_OBJECT
+public:
+    QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = 0)
+        : QAbstractTableModel(parent)
+        , row_count(rows)
+        , column_count(columns)
+    {
+    }
 
-    public:
-        QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = 0)
-        : QAbstractTableModel(parent),
-        row_count(rows),
-        column_count(columns) {}
+    int rowCount(const QModelIndex& = QModelIndex()) const { return row_count; }
+    int columnCount(const QModelIndex& = QModelIndex()) const { return column_count; }
+    bool isEditable(const QModelIndex &) const { return true; }
 
-        int rowCount(const QModelIndex& = QModelIndex()) const { return row_count; }
-        int columnCount(const QModelIndex& = QModelIndex()) const { return column_count; }
-        bool isEditable(const QModelIndex &) const { return true; }
+    QVariant data(const QModelIndex &idx, int role) const
+    {
+        if (role == Qt::DisplayRole || role == Qt::EditRole)
+            return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
+        return QVariant();
+    }
 
-        QVariant data(const QModelIndex &idx, int role) const
-        {
-            if (role == Qt::DisplayRole || role == Qt::EditRole)
-                return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
-            return QVariant();
-        }
-
-        int row_count;
-        int column_count;
-        friend class tst_QItemSelectionModel;
+    int row_count;
+    int column_count;
+    friend class tst_QItemSelectionModel;
 };
 
 
@@ -2126,7 +2124,6 @@ void tst_QItemSelectionModel::merge_data()
         << int(QItemSelectionModel::Toggle)
         << r1;
 }
-
 
 void tst_QItemSelectionModel::merge()
 {
@@ -2317,7 +2314,6 @@ void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
         }
     }
 
-
     QCOMPARE(model.rowCount(), int(cNumRows));
     QCOMPARE(proxy.rowCount(), int(cNumRows/2));
 
@@ -2381,7 +2377,6 @@ public slots:
         }
         QVERIFY(m_itemSelectionModel->selection().size() == 2);
     }
-
 };
 
 void tst_QItemSelectionModel::deselectRemovedMiddleRange()
@@ -2434,9 +2429,9 @@ static QStandardItemModel* getModel(QObject *parent)
 }
 
 enum Result {
-  LessThan,
-  NotLessThan,
-  NotEqual
+    LessThan,
+    NotLessThan,
+    NotEqual
 };
 
 Q_DECLARE_METATYPE(Result);
@@ -2502,70 +2497,70 @@ void tst_QItemSelectionModel::rangeOperatorLessThan_data()
 
 void tst_QItemSelectionModel::rangeOperatorLessThan()
 {
-  QStandardItemModel *model1 = getModel(this);
-  QStandardItemModel *model2 = getModel(this);
+    QStandardItemModel *model1 = getModel(this);
+    QStandardItemModel *model2 = getModel(this);
 
-  QFETCH(int, parent1);
-  QFETCH(int, top1);
-  QFETCH(int, left1);
-  QFETCH(int, bottom1);
-  QFETCH(int, right1);
-  QFETCH(int, parent2);
-  QFETCH(int, top2);
-  QFETCH(int, left2);
-  QFETCH(int, bottom2);
-  QFETCH(int, right2);
-  QFETCH(Result, result);
+    QFETCH(int, parent1);
+    QFETCH(int, top1);
+    QFETCH(int, left1);
+    QFETCH(int, bottom1);
+    QFETCH(int, right1);
+    QFETCH(int, parent2);
+    QFETCH(int, top2);
+    QFETCH(int, left2);
+    QFETCH(int, bottom2);
+    QFETCH(int, right2);
+    QFETCH(Result, result);
 
-  QModelIndex p1 = model1->index(parent1, 0);
+    QModelIndex p1 = model1->index(parent1, 0);
 
-  QModelIndex tl1 = model1->index(top1, left1, p1);
-  QModelIndex br1 = model1->index(bottom1, right1, p1);
+    QModelIndex tl1 = model1->index(top1, left1, p1);
+    QModelIndex br1 = model1->index(bottom1, right1, p1);
 
-  QItemSelectionRange r1(tl1, br1);
+    QItemSelectionRange r1(tl1, br1);
 
-  QModelIndex p2 = model1->index(parent2, 0);
+    QModelIndex p2 = model1->index(parent2, 0);
 
-  QModelIndex tl2 = model1->index(top2, left2, p2);
-  QModelIndex br2 = model1->index(bottom2, right2, p2);
+    QModelIndex tl2 = model1->index(top2, left2, p2);
+    QModelIndex br2 = model1->index(bottom2, right2, p2);
 
-  QItemSelectionRange r2(tl2, br2);
+    QItemSelectionRange r2(tl2, br2);
 
-  if (result == LessThan)
-      QVERIFY(r1 < r2);
-  else if (result == NotLessThan)
-      QVERIFY(!(r1 < r2));
-  else if (result == NotEqual)
-      if (!(r1 < r2))
-          QVERIFY(r2 < r1);
+    if (result == LessThan)
+        QVERIFY(r1 < r2);
+    else if (result == NotLessThan)
+        QVERIFY(!(r1 < r2));
+    else if (result == NotEqual)
+        if (!(r1 < r2))
+            QVERIFY(r2 < r1);
 
-  // Ranges in different models are always non-equal
+    // Ranges in different models are always non-equal
 
-  QModelIndex p3 = model2->index(parent1, 0);
+    QModelIndex p3 = model2->index(parent1, 0);
 
-  QModelIndex tl3 = model2->index(top1, left1, p3);
-  QModelIndex br3 = model2->index(bottom1, right1, p3);
+    QModelIndex tl3 = model2->index(top1, left1, p3);
+    QModelIndex br3 = model2->index(bottom1, right1, p3);
 
-  QItemSelectionRange r3(tl3, br3);
+    QItemSelectionRange r3(tl3, br3);
 
-  if (!(r1 < r3))
-    QVERIFY(r3 < r1);
+    if (!(r1 < r3))
+        QVERIFY(r3 < r1);
 
-  if (!(r2 < r3))
-    QVERIFY(r3 < r2);
+    if (!(r2 < r3))
+        QVERIFY(r3 < r2);
 
-  QModelIndex p4 = model2->index(parent2, 0);
+    QModelIndex p4 = model2->index(parent2, 0);
 
-  QModelIndex tl4 = model2->index(top2, left2, p4);
-  QModelIndex br4 = model2->index(bottom2, right2, p4);
+    QModelIndex tl4 = model2->index(top2, left2, p4);
+    QModelIndex br4 = model2->index(bottom2, right2, p4);
 
-  QItemSelectionRange r4(tl4, br4);
+    QItemSelectionRange r4(tl4, br4);
 
-  if (!(r1 < r4))
-    QVERIFY(r4 < r1);
+    if (!(r1 < r4))
+        QVERIFY(r4 < r1);
 
-  if (!(r2 < r4))
-    QVERIFY(r4 < r2);
+    if (!(r2 < r4))
+        QVERIFY(r4 < r2);
 }
 
 void tst_QItemSelectionModel::testDifferentModels()
@@ -2577,7 +2572,6 @@ void tst_QItemSelectionModel::testDifferentModels()
 
     model1.appendColumn(QList<QStandardItem*>() << &top11 << &top12 << &top13);
     model2.appendColumn(QList<QStandardItem*>() << &top21 << &top22 << &top23);
-
 
     QModelIndex topIndex1 = model1.index(0, 0);
     QModelIndex bottomIndex1 = model1.index(2, 0);
@@ -2596,10 +2590,10 @@ void tst_QItemSelectionModel::testDifferentModels()
 
 class SelectionObserver : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
     SelectionObserver(QAbstractItemModel *model, QObject *parent = 0)
-      : QObject(parent), m_model(model), m_selectionModel(0)
+        : QObject(parent), m_model(model), m_selectionModel(0)
     {
         connect(model, SIGNAL(modelReset()), SLOT(modelReset()));
     }
@@ -2610,7 +2604,7 @@ public:
         connect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(selectionChanged(QItemSelection,QItemSelection)));
     }
 
-  private slots:
+private slots:
     void modelReset()
     {
         const QModelIndex idx = m_model->index(2, 0);
@@ -2660,37 +2654,35 @@ void tst_QItemSelectionModel::testValidRangesInSelectionsAfterReset()
 
 class DuplicateItemSelectionModel : public QItemSelectionModel
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
-    : QItemSelectionModel(model, parent), m_target(target)
-  {
+    DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
+        : QItemSelectionModel(model, parent), m_target(target)
+    {
+    }
 
-  }
+    void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+    {
+        QItemSelectionModel::select(selection, command);
+        m_target->select(selection, command);
+    }
 
-  void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
-  {
-      QItemSelectionModel::select(selection, command);
-      m_target->select(selection, command);
-  }
+    using QItemSelectionModel::select;
 
-  using QItemSelectionModel::select;
+    void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+    {
+        QItemSelectionModel::setCurrentIndex(index, command);
+        m_target->setCurrentIndex(index, command);
+    }
 
-  void setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
-  {
-      QItemSelectionModel::setCurrentIndex(index, command);
-      m_target->setCurrentIndex(index, command);
-  }
-
-  void clearCurrentIndex()
-  {
-      QItemSelectionModel::clearCurrentIndex();
-      m_target->clearCurrentIndex();
-  }
+    void clearCurrentIndex()
+    {
+        QItemSelectionModel::clearCurrentIndex();
+        m_target->clearCurrentIndex();
+    }
 
 private:
-  QItemSelectionModel *m_target;
-
+    QItemSelectionModel *m_target;
 };
 
 void tst_QItemSelectionModel::testChainedSelectionClear()

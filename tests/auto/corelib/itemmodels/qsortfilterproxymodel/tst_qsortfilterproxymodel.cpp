@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include "dynamictreemodel.h"
 #include "modeltest.h"
@@ -62,9 +61,7 @@ Q_DECLARE_METATYPE(QModelIndex)
 class tst_QSortFilterProxyModel : public QObject
 {
     Q_OBJECT
-
 public:
-
     tst_QSortFilterProxyModel();
 
 public slots:
@@ -173,7 +170,6 @@ void tst_QSortFilterProxyModel::getSetCheck()
 tst_QSortFilterProxyModel::tst_QSortFilterProxyModel()
     : m_model(0), m_proxy(0)
 {
-
 }
 
 void tst_QSortFilterProxyModel::initTestCase()
@@ -337,7 +333,6 @@ void tst_QSortFilterProxyModel::sort_data()
                                  << (QStringList()
                                      << "BETA" << "Gamma" << "alpha" << "delta");
 
-
     QStringList list;
     for (int i = 10000; i < 20000; ++i)
         list.append(QString("Number: %1").arg(i));
@@ -392,7 +387,6 @@ void tst_QSortFilterProxyModel::sort()
         QModelIndex index = m_proxy->index(row, 0, QModelIndex());
         QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), initial.at(row));
     }
-
 }
 
 void tst_QSortFilterProxyModel::sortHierarchy_data()
@@ -580,7 +574,7 @@ void tst_QSortFilterProxyModel::insertRows()
     for (int i = 0; i < insert.count(); ++i) {
         QModelIndex index = m_proxy->index(position + i, 0, QModelIndex());
         m_proxy->setData(index, insert.at(i), Qt::DisplayRole);
-     }
+    }
 
     // make sure the model correct after insert
     for (int row = 0; row < m_model->rowCount(QModelIndex()); ++row) {
@@ -599,7 +593,7 @@ void tst_QSortFilterProxyModel::prependRow()
 {
     //this tests that data is correctly handled by the sort filter when prepending a row
     QStandardItemModel model;
-	QSortFilterProxyModel proxy;
+    QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
     QStandardItem item("root");
@@ -1171,7 +1165,6 @@ void tst_QSortFilterProxyModel::removeColumns()
     }
 }
 
-
 void tst_QSortFilterProxyModel::filterColumns_data()
 {
     QTest::addColumn<QString>("pattern");
@@ -1397,8 +1390,6 @@ void tst_QSortFilterProxyModel::checkHierarchy(const QStringList &l, const QAbst
         }
     }
 }
-
-
 
 class TestModel: public QAbstractTableModel
 {
@@ -2320,7 +2311,6 @@ void tst_QSortFilterProxyModel::sourceInsertRows()
 
 void tst_QSortFilterProxyModel::sourceModelDeletion()
 {
-
     QSortFilterProxyModel proxyModel;
     {
         QStandardItemModel model;
@@ -2328,7 +2318,6 @@ void tst_QSortFilterProxyModel::sourceModelDeletion()
         QCOMPARE(proxyModel.sourceModel(), static_cast<QAbstractItemModel*>(&model));
     }
     QCOMPARE(proxyModel.sourceModel(), static_cast<QAbstractItemModel*>(0));
-
 }
 
 void tst_QSortFilterProxyModel::sortColumnTracking1()
@@ -2390,11 +2379,11 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
 void tst_QSortFilterProxyModel::sortStable()
 {
     QStandardItemModel* model = new QStandardItemModel(5, 2);
-    for (int r=0; r<5; r++) {
-        for (int c=0; c<2; c++)  {
+    for (int r = 0; r < 5; r++) {
+        for (int c = 0; c < 2; c++)  {
             QStandardItem* item = new QStandardItem(
                     QString("Row:%0, Column:%1").arg(r).arg(c) );
-            for( int i=0; i<3; i++ ) {
+            for (int i = 0; i < 3; i++) {
                 QStandardItem* child = new QStandardItem(
                         QString("Item %0").arg(i) );
                 item->appendRow( child );
@@ -2403,8 +2392,7 @@ void tst_QSortFilterProxyModel::sortStable()
         }
     }
     model->setHorizontalHeaderItem( 0, new QStandardItem( "Name" ));
-    model->setHorizontalHeaderItem( 1, new QStandardItem( "Value" ) );
-
+    model->setHorizontalHeaderItem( 1, new QStandardItem( "Value" ));
 
     QSortFilterProxyModel *filterModel = new QSortFilterProxyModel(model);
     filterModel->setSourceModel(model);
@@ -2522,7 +2510,6 @@ void tst_QSortFilterProxyModel::task248868_staticSorting()
         QModelIndex index = proxy.index(row, 0, QModelIndex());
         QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
     }
-
 }
 
 void tst_QSortFilterProxyModel::task248868_dynamicSorting()
@@ -2587,71 +2574,82 @@ void tst_QSortFilterProxyModel::task248868_dynamicSorting()
 
 class QtTestModel: public QAbstractItemModel
 {
-    public:
-        QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
-        rows(_rows), cols(_cols), wrongIndex(false) {  }
+public:
+    QtTestModel(int _rows, int _cols, QObject *parent = 0)
+        : QAbstractItemModel(parent)
+        , rows(_rows)
+        , cols(_cols)
+        , wrongIndex(false)
+    {
+    }
 
-        bool canFetchMore(const QModelIndex &idx) const {
-            return !fetched.contains(idx);
+    bool canFetchMore(const QModelIndex &idx) const
+    {
+        return !fetched.contains(idx);
+    }
+
+    void fetchMore(const QModelIndex &idx)
+    {
+        if (fetched.contains(idx))
+            return;
+        beginInsertRows(idx, 0, rows-1);
+        fetched.insert(idx);
+        endInsertRows();
+    }
+
+    bool hasChildren(const QModelIndex & = QModelIndex()) const
+    {
+        return true;
+    }
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const
+    {
+        return fetched.contains(parent) ? rows : 0;
+    }
+
+    int columnCount(const QModelIndex& parent = QModelIndex()) const
+    {
+        Q_UNUSED(parent);
+        return cols;
+    }
+
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+    {
+        if (row < 0 || column < 0 || column >= cols || row >= rows) {
+            return QModelIndex();
         }
+        QModelIndex i = createIndex(row, column, int(parent.internalId() + 1));
+        parentHash[i] = parent;
+        return i;
+    }
 
-        void fetchMore(const QModelIndex &idx) {
-            if (fetched.contains(idx))
-                return;
-            beginInsertRows(idx, 0, rows-1);
-            fetched.insert(idx);
-            endInsertRows();
-        }
+    QModelIndex parent(const QModelIndex &index) const
+    {
+        if (!parentHash.contains(index))
+            return QModelIndex();
+        return parentHash[index];
+    }
 
-        bool hasChildren(const QModelIndex & = QModelIndex()) const {
-            return true;
-        }
-
-        int rowCount(const QModelIndex& parent = QModelIndex()) const {
-            return fetched.contains(parent) ? rows : 0;
-        }
-        int columnCount(const QModelIndex& parent = QModelIndex()) const {
-            Q_UNUSED(parent);
-            return cols;
-        }
-
-        QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
-        {
-            if (row < 0 || column < 0 || column >= cols || row >= rows) {
-                return QModelIndex();
-            }
-            QModelIndex i = createIndex(row, column, int(parent.internalId() + 1));
-            parentHash[i] = parent;
-            return i;
-        }
-
-        QModelIndex parent(const QModelIndex &index) const
-        {
-            if (!parentHash.contains(index))
-                return QModelIndex();
-            return parentHash[index];
-        }
-
-        QVariant data(const QModelIndex &idx, int role) const
-        {
-            if (!idx.isValid())
-                return QVariant();
-
-            if (role == Qt::DisplayRole) {
-                if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
-                    wrongIndex = true;
-                    qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(),
-                    idx.internalPointer());
-                }
-                return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
-            }
+    QVariant data(const QModelIndex &idx, int role) const
+    {
+        if (!idx.isValid())
             return QVariant();
-        }
 
-        QSet<QModelIndex> fetched;
-        int rows, cols;
-        mutable bool wrongIndex;
-        mutable QMap<QModelIndex,QModelIndex> parentHash;
+        if (role == Qt::DisplayRole) {
+            if (idx.row() < 0 || idx.column() < 0 || idx.column() >= cols || idx.row() >= rows) {
+                wrongIndex = true;
+                qWarning("Invalid modelIndex [%d,%d,%p]", idx.row(), idx.column(),
+                idx.internalPointer());
+            }
+            return QString("[%1,%2]").arg(idx.row()).arg(idx.column());
+        }
+        return QVariant();
+    }
+
+    QSet<QModelIndex> fetched;
+    int rows, cols;
+    mutable bool wrongIndex;
+    mutable QMap<QModelIndex,QModelIndex> parentHash;
 };
 
 void tst_QSortFilterProxyModel::task250023_fetchMore()
@@ -2753,7 +2751,6 @@ static QStandardItem *addEntry(QStandardItem* pParent, const QString &descriptio
     return pItem;
 }
 
-
 void tst_QSortFilterProxyModel::task255652_removeRowsRecursive()
 {
     QStandardItemModel pModel;
@@ -2844,24 +2841,23 @@ void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
 {
     class PModel : public QSortFilterProxyModel
     {
-        public:
-            PModel() : mVisible(false) {};
-        protected:
-            bool filterAcceptsRow(int, const QModelIndex &) const
-            {
-                return mVisible;
-            }
+    public:
+        PModel() : mVisible(false) {};
+    protected:
+        bool filterAcceptsRow(int, const QModelIndex &) const
+        {
+            return mVisible;
+        }
 
-        public:
-            void updateXX()
-            {
-                mVisible = true;
-                invalidate();
-            }
-        private:
-            bool mVisible;
+    public:
+        void updateXX()
+        {
+            mVisible = true;
+            invalidate();
+        }
+    private:
+        bool mVisible;
     } proxyModel;
-
 
     QStringListModel sourceModel;
     QStringList list;
@@ -2996,7 +2992,6 @@ private slots:
 
 private:
     QItemSelectionModel *selectionModel;
-
 };
 
 void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
@@ -3023,13 +3018,13 @@ void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
 
     // trick the proxy into emitting begin/end reset signals.
     proxy.setSourceModel(0);
-
 }
 
-static bool isValid(const QItemSelection &selection) {
-  foreach(const QItemSelectionRange &range, selection)
-    if (!range.isValid())
-      return false;
+static bool isValid(const QItemSelection &selection)
+{
+    foreach (const QItemSelectionRange &range, selection)
+        if (!range.isValid())
+            return false;
     return true;
 }
 
@@ -3126,19 +3121,18 @@ void tst_QSortFilterProxyModel::taskQTBUG_10287_unnecessaryMapCreation()
 
 class FilteredColumnProxyModel : public QSortFilterProxyModel
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  FilteredColumnProxyModel(QObject *parent = 0)
-    : QSortFilterProxyModel(parent)
-  {
-
-  }
+    FilteredColumnProxyModel(QObject *parent = 0)
+        : QSortFilterProxyModel(parent)
+    {
+    }
 
 protected:
-  bool filterAcceptsColumn(int column, const QModelIndex & /* source_parent */) const
-  {
-    return column % 2 != 0;
-  }
+    bool filterAcceptsColumn(int column, const QModelIndex & /* source_parent */) const
+    {
+        return column % 2 != 0;
+    }
 };
 
 void tst_QSortFilterProxyModel::filteredColumns()
@@ -3176,10 +3170,12 @@ void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate()
 
     struct Proxy : QSortFilterProxyModel {
         QString pattern;
-        virtual bool filterAcceptsRow(int source_row, const QModelIndex&) const {
+        virtual bool filterAcceptsRow(int source_row, const QModelIndex&) const
+        {
             return sourceModel()->data(sourceModel()->index(source_row, 0)).toString().contains(pattern);
         }
-        void notifyChange(int test) {
+        void notifyChange(int test)
+        {
             switch (test) {
             case 0: break;
             case 1: reset(); break;
@@ -3313,7 +3309,6 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
         QVERIFY(beforeParents.contains(proxy2.mapToSource(idx)));
     foreach (const QPersistentModelIndex &idx, proxy2AfterList)
         QVERIFY(afterParents.contains(proxy2.mapToSource(idx)));
-
 }
 
 class SignalArgumentChecker : public QObject

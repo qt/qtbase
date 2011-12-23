@@ -38,10 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QObject>
 #include <QModelIndex>
 #include <qdebug.h>
-
 
 QT_FORWARD_DECLARE_CLASS(QStringListModel)
 
@@ -56,7 +56,7 @@ public:
     virtual ~QModelListener() {  }
 
     void setTestData(QStringList  *pAboutToStringlist, QStringList  *pExpectedStringlist, QStringListModel  *pModel)
-    { 
+    {
         m_pAboutToStringlist = pAboutToStringlist;
         m_pExpectedStringlist = pExpectedStringlist;
         m_pModel = pModel;
@@ -70,6 +70,5 @@ private:
 public slots:
     void rowsAboutToBeRemovedOrInserted(const QModelIndex & parent, int start, int end );
     void rowsRemovedOrInserted(const QModelIndex & parent, int start, int end );
-
 };
 

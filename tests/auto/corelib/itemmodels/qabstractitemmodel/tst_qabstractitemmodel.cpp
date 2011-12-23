@@ -682,7 +682,6 @@ void tst_QAbstractItemModel::dropMimeData()
     }
 }
 
-
 void tst_QAbstractItemModel::changePersistentIndex()
 {
     QtTestModel model(3, 3);
@@ -843,7 +842,6 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
         QVERIFY(!e[i].isValid());
     for (int i=6; i <10 ; i++)
         QVERIFY(e[i] == model.index(2, i-2 , QModelIndex()));
-
 }
 
 void tst_QAbstractItemModel::testMoveSameParentDown_data()
@@ -871,20 +869,18 @@ void tst_QAbstractItemModel::testMoveSameParentDown_data()
 
 void tst_QAbstractItemModel::testMoveSameParentDown()
 {
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
-    QFETCH( bool, topLevel);
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
+    QFETCH(bool, topLevel);
 
     QModelIndex moveParent = topLevel ? QModelIndex() : m_model->index(5, 0);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
 
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(); ++row) {
             QModelIndex idx = m_model->index(row, column);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -893,10 +889,8 @@ void tst_QAbstractItemModel::testMoveSameParentDown()
     }
 
     QModelIndex parent = m_model->index(5, 0);
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(parent); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(parent); ++row) {
             QModelIndex idx = m_model->index(row, column, parent);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -938,37 +932,29 @@ void tst_QAbstractItemModel::testMoveSameParentDown()
     QCOMPARE(afterSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
-    for (int i = 0; i < indexList.size(); i++)
-    {
+    for (int i = 0; i < indexList.size(); i++) {
         QModelIndex idx = indexList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
-        if (idx.parent() == moveParent)
-        {
+        if (idx.parent() == moveParent) {
             int row = idx.row();
-            if ( row >= startRow)
-            {
-                if (row <= endRow)
-                {
-                    QCOMPARE(row + destRow - endRow - 1, persistentIndex.row() );
+            if ( row >= startRow) {
+                if (row <= endRow) {
+                    QCOMPARE(row + destRow - endRow - 1, persistentIndex.row());
                     QCOMPARE(idx.column(), persistentIndex.column());
                     QCOMPARE(idx.parent(), persistentIndex.parent());
                     QCOMPARE(idx.model(), persistentIndex.model());
-                } else if ( row < destRow)
-                {
-                    QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row() );
+                } else if (row < destRow) {
+                    QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row());
                     QCOMPARE(idx.column(), persistentIndex.column());
                     QCOMPARE(idx.parent(), persistentIndex.parent());
                     QCOMPARE(idx.model(), persistentIndex.model());
-                } else
-                {
-                     QCOMPARE(idx, persistentIndex);
+                } else {
+                    QCOMPARE(idx, persistentIndex);
                 }
-            } else
-            {
+            } else {
                 QCOMPARE(idx, persistentIndex);
             }
-        } else
-        {
+        } else {
             QCOMPARE(idx, persistentIndex);
         }
     }
@@ -998,21 +984,18 @@ void tst_QAbstractItemModel::testMoveSameParentUp_data()
 
 void tst_QAbstractItemModel::testMoveSameParentUp()
 {
-
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
-    QFETCH( bool, topLevel);
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
+    QFETCH(bool, topLevel);
 
     QModelIndex moveParent = topLevel ? QModelIndex() : m_model->index(5, 0);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
 
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(); ++row) {
             QModelIndex idx = m_model->index(row, column);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -1021,10 +1004,8 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     }
 
     QModelIndex parent = m_model->index(2, 0);
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(parent); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(parent); ++row) {
             QModelIndex idx = m_model->index(row, column, parent);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -1066,38 +1047,29 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     QCOMPARE(afterSignal.at(3).value<QModelIndex>(), moveParent);
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
-
-    for (int i = 0; i < indexList.size(); i++)
-    {
+    for (int i = 0; i < indexList.size(); i++) {
         QModelIndex idx = indexList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
-        if (idx.parent() == moveParent)
-        {
+        if (idx.parent() == moveParent) {
             int row = idx.row();
-            if ( row >= destRow)
-            {
-                if (row < startRow)
-                {
-                    QCOMPARE(row + endRow - startRow + 1, persistentIndex.row() );
+            if ( row >= destRow) {
+                if (row < startRow) {
+                    QCOMPARE(row + endRow - startRow + 1, persistentIndex.row());
                     QCOMPARE(idx.column(), persistentIndex.column());
                     QCOMPARE(idx.parent(), persistentIndex.parent());
                     QCOMPARE(idx.model(), persistentIndex.model());
-                } else if ( row <= endRow)
-                {
-                    QCOMPARE(row + destRow - startRow, persistentIndex.row() );
+                } else if (row <= endRow) {
+                    QCOMPARE(row + destRow - startRow, persistentIndex.row());
                     QCOMPARE(idx.column(), persistentIndex.column());
                     QCOMPARE(idx.parent(), persistentIndex.parent());
                     QCOMPARE(idx.model(), persistentIndex.model());
-                } else
-                {
+                } else {
                     QCOMPARE(idx, persistentIndex);
                 }
-            } else
-            {
+            } else {
                 QCOMPARE(idx, persistentIndex);
             }
-        } else
-        {
+        } else {
             QCOMPARE(idx, persistentIndex);
         }
     }
@@ -1161,19 +1133,16 @@ void tst_QAbstractItemModel::testMoveToGrandParent_data()
 
 void tst_QAbstractItemModel::testMoveToGrandParent()
 {
-
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
     QModelIndexList parentsList;
 
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(); ++row) {
             QModelIndex idx = m_model->index(row, column);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -1183,10 +1152,8 @@ void tst_QAbstractItemModel::testMoveToGrandParent()
     }
 
     QModelIndex sourceIndex = m_model->index(5, 0);
-    for (int column = 0; column < m_model->columnCount(); ++column)
-    {
-        for (int row= 0; row < m_model->rowCount(sourceIndex); ++row)
-        {
+    for (int column = 0; column < m_model->columnCount(); ++column) {
+        for (int row = 0; row < m_model->rowCount(sourceIndex); ++row) {
             QModelIndex idx = m_model->index(row, column, sourceIndex);
             QVERIFY(idx.isValid());
             indexList << idx;
@@ -1228,46 +1195,37 @@ void tst_QAbstractItemModel::testMoveToGrandParent()
     QCOMPARE(afterSignal.at(3).value<QModelIndex>(), QModelIndex());
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
-    for (int i = 0; i < indexList.size(); i++)
-    {
+    for (int i = 0; i < indexList.size(); i++) {
         QModelIndex idx = indexList.at(i);
         QModelIndex idxParent = parentsList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
         int row = idx.row();
-        if (idxParent == QModelIndex())
-        {
-            if ( row >= destRow)
-            {
-                    QCOMPARE(row + endRow - startRow + 1, persistentIndex.row() );
-                    QCOMPARE(idx.column(), persistentIndex.column());
-                    QCOMPARE(idxParent, persistentIndex.parent());
-                    QCOMPARE(idx.model(), persistentIndex.model());
-            } else
-            {
+        if (idxParent == QModelIndex()) {
+            if (row >= destRow) {
+                QCOMPARE(row + endRow - startRow + 1, persistentIndex.row());
+                QCOMPARE(idx.column(), persistentIndex.column());
+                QCOMPARE(idxParent, persistentIndex.parent());
+                QCOMPARE(idx.model(), persistentIndex.model());
+            } else {
                 QCOMPARE(idx, persistentIndex);
             }
-        } else
-        {
-            if (row < startRow)
-            {
+        } else {
+            if (row < startRow) {
                 QCOMPARE(idx, persistentIndex);
-            } else if (row <= endRow)
-            {
-                QCOMPARE(row + destRow - startRow, persistentIndex.row() );
+            } else if (row <= endRow) {
+                QCOMPARE(row + destRow - startRow, persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
                 QCOMPARE(QModelIndex(), persistentIndex.parent());
                 QCOMPARE(idx.model(), persistentIndex.model());
             } else {
-                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row() );
+                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
 
-                if (idxParent.row() >= destRow)
-                {
+                if (idxParent.row() >= destRow) {
                     QModelIndex adjustedParent;
-                    adjustedParent = idxParent.sibling( idxParent.row() + endRow - startRow + 1,    idxParent.column());
+                    adjustedParent = idxParent.sibling(idxParent.row() + endRow - startRow + 1, idxParent.column());
                     QCOMPARE(adjustedParent, persistentIndex.parent());
-                } else
-                {
+                } else {
                     QCOMPARE(idxParent, persistentIndex.parent());
                 }
                 QCOMPARE(idx.model(), persistentIndex.model());
@@ -1316,10 +1274,9 @@ void tst_QAbstractItemModel::testMoveToSibling_data()
 
 void tst_QAbstractItemModel::testMoveToSibling()
 {
-
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
@@ -1327,8 +1284,7 @@ void tst_QAbstractItemModel::testMoveToSibling()
 
     const int column = 0;
 
-    for (int i= 0; i < m_model->rowCount(); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(); ++i) {
         QModelIndex idx = m_model->index(i, column);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1338,8 +1294,7 @@ void tst_QAbstractItemModel::testMoveToSibling()
 
     QModelIndex destIndex = m_model->index(5, 0);
     QModelIndex sourceIndex;
-    for (int i= 0; i < m_model->rowCount(destIndex); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(destIndex); ++i) {
         QModelIndex idx = m_model->index(i, column, destIndex);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1380,51 +1335,41 @@ void tst_QAbstractItemModel::testMoveToSibling()
     QCOMPARE(afterSignal.at(3).value<QModelIndex>(), static_cast<QModelIndex>(persistentDest));
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
-    for (int i = 0; i < indexList.size(); i++)
-    {
+    for (int i = 0; i < indexList.size(); i++) {
         QModelIndex idx = indexList.at(i);
         QModelIndex idxParent = parentsList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
 
         QModelIndex adjustedDestination = destIndex.sibling(destIndex.row() - (endRow - startRow + 1), destIndex.column());
         int row = idx.row();
-        if (idxParent == destIndex)
-        {
-            if ( row >= destRow)
-            {
-                    QCOMPARE(row + endRow - startRow + 1, persistentIndex.row() );
-                    QCOMPARE(idx.column(), persistentIndex.column());
-                    if (idxParent.row() > startRow)
-                    {
-                        QCOMPARE(adjustedDestination, persistentIndex.parent());
-                    } else {
-                        QCOMPARE(destIndex, persistentIndex.parent());
-                    }
-                    QCOMPARE(idx.model(), persistentIndex.model());
-            } else
-            {
+        if (idxParent == destIndex) {
+            if (row >= destRow) {
+                QCOMPARE(row + endRow - startRow + 1, persistentIndex.row());
+                QCOMPARE(idx.column(), persistentIndex.column());
+                if (idxParent.row() > startRow) {
+                    QCOMPARE(adjustedDestination, persistentIndex.parent());
+                } else {
+                    QCOMPARE(destIndex, persistentIndex.parent());
+                }
+                QCOMPARE(idx.model(), persistentIndex.model());
+            } else {
                 QCOMPARE(idx, persistentIndex);
             }
-        } else
-        {
-            if (row < startRow)
-            {
+        } else {
+            if (row < startRow) {
                 QCOMPARE(idx, persistentIndex);
-            } else if (row <= endRow)
-            {
-                QCOMPARE(row + destRow - startRow, persistentIndex.row() );
+            } else if (row <= endRow) {
+                QCOMPARE(row + destRow - startRow, persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
-                if (destIndex.row() > startRow)
-                {
+                if (destIndex.row() > startRow) {
                     QCOMPARE(adjustedDestination, persistentIndex.parent());
                 } else {
                     QCOMPARE(destIndex, persistentIndex.parent());
                 }
 
                 QCOMPARE(idx.model(), persistentIndex.model());
-
             } else {
-                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row() );
+                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
                 QCOMPARE(idxParent, persistentIndex.parent());
                 QCOMPARE(idx.model(), persistentIndex.model());
@@ -1435,7 +1380,6 @@ void tst_QAbstractItemModel::testMoveToSibling()
 
 void tst_QAbstractItemModel::testMoveToUncle_data()
 {
-
     QTest::addColumn<int>("startRow");
     QTest::addColumn<int>("endRow");
     QTest::addColumn<int>("destRow");
@@ -1480,9 +1424,9 @@ void tst_QAbstractItemModel::testMoveToUncle()
     insertCommand->setEndRow(9);
     insertCommand->doCommand();
 
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
 
     QList<QPersistentModelIndex> persistentList;
     QModelIndexList indexList;
@@ -1491,8 +1435,7 @@ void tst_QAbstractItemModel::testMoveToUncle()
     const int column = 0;
 
     QModelIndex sourceIndex = m_model->index(9, 0);
-    for (int i= 0; i < m_model->rowCount(sourceIndex); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(sourceIndex); ++i) {
         QModelIndex idx = m_model->index(i, column, sourceIndex);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1501,8 +1444,7 @@ void tst_QAbstractItemModel::testMoveToUncle()
     }
 
     QModelIndex destIndex = m_model->index(5, 0);
-    for (int i= 0; i < m_model->rowCount(destIndex); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(destIndex); ++i) {
         QModelIndex idx = m_model->index(i, column, destIndex);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1542,39 +1484,31 @@ void tst_QAbstractItemModel::testMoveToUncle()
     QCOMPARE(afterSignal.at(3).value<QModelIndex>(), destIndex);
     QCOMPARE(afterSignal.at(4).toInt(), destRow);
 
-    for (int i = 0; i < indexList.size(); i++)
-    {
+    for (int i = 0; i < indexList.size(); i++) {
         QModelIndex idx = indexList.at(i);
         QModelIndex idxParent = parentsList.at(i);
         QModelIndex persistentIndex = persistentList.at(i);
 
         int row = idx.row();
-        if (idxParent == destIndex)
-        {
-            if ( row >= destRow)
-            {
-                    QCOMPARE(row + endRow - startRow + 1, persistentIndex.row() );
-                    QCOMPARE(idx.column(), persistentIndex.column());
-                    QCOMPARE(destIndex, persistentIndex.parent());
-                    QCOMPARE(idx.model(), persistentIndex.model());
-            } else
-            {
-                QCOMPARE(idx, persistentIndex);
-            }
-        } else
-        {
-            if (row < startRow)
-            {
-                QCOMPARE(idx, persistentIndex);
-            } else if (row <= endRow)
-            {
-                QCOMPARE(row + destRow - startRow, persistentIndex.row() );
+        if (idxParent == destIndex) {
+            if (row >= destRow) {
+                QCOMPARE(row + endRow - startRow + 1, persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
                 QCOMPARE(destIndex, persistentIndex.parent());
                 QCOMPARE(idx.model(), persistentIndex.model());
-
             } else {
-                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row() );
+                QCOMPARE(idx, persistentIndex);
+            }
+        } else {
+            if (row < startRow) {
+                QCOMPARE(idx, persistentIndex);
+            } else if (row <= endRow) {
+                QCOMPARE(row + destRow - startRow, persistentIndex.row());
+                QCOMPARE(idx.column(), persistentIndex.column());
+                QCOMPARE(destIndex, persistentIndex.parent());
+                QCOMPARE(idx.model(), persistentIndex.model());
+            } else {
+                QCOMPARE(row - (endRow - startRow + 1), persistentIndex.row());
                 QCOMPARE(idx.column(), persistentIndex.column());
                 QCOMPARE(idxParent, persistentIndex.parent());
                 QCOMPARE(idx.model(), persistentIndex.model());
@@ -1591,8 +1525,7 @@ void tst_QAbstractItemModel::testMoveToDescendants()
     // Need to have some extra rows available in a tree.
     QList<int> rows;
     ModelInsertCommand *insertCommand;
-    for (int i = 0; i < depth; i++)
-    {
+    for (int i = 0; i < depth; i++) {
         insertCommand = new ModelInsertCommand(m_model, this);
         insertCommand->setAncestorRowNumbers(rows);
         insertCommand->setNumCols(4);
@@ -1609,8 +1542,7 @@ void tst_QAbstractItemModel::testMoveToDescendants()
     const int column = 0;
 
     QModelIndex sourceIndex = m_model->index(9, 0);
-    for (int i= 0; i < m_model->rowCount(sourceIndex); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(sourceIndex); ++i) {
         QModelIndex idx = m_model->index(i, column, sourceIndex);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1619,8 +1551,7 @@ void tst_QAbstractItemModel::testMoveToDescendants()
     }
 
     QModelIndex destIndex = m_model->index(5, 0);
-    for (int i= 0; i < m_model->rowCount(destIndex); ++i)
-    {
+    for (int i = 0; i < m_model->rowCount(destIndex); ++i) {
         QModelIndex idx = m_model->index(i, column, destIndex);
         QVERIFY(idx.isValid());
         indexList << idx;
@@ -1636,11 +1567,9 @@ void tst_QAbstractItemModel::testMoveToDescendants()
 
     ModelMoveCommand *moveCommand;
     QList<int> ancestors;
-    while (ancestors.size() < depth)
-    {
+    while (ancestors.size() < depth) {
         ancestors << 9;
-        for (int row = 0; row <= 9; row++)
-        {
+        for (int row = 0; row <= 9; row++) {
             moveCommand = new ModelMoveCommand(m_model, this);
             moveCommand->setNumCols(4);
             moveCommand->setStartRow(9);
@@ -1686,16 +1615,13 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange_data()
     QTest::newRow("move20") << 8 << 9 << 10;
     QTest::newRow("move21") << 9 << 9 << 9;
     QTest::newRow("move22") << 0 << 9 << 10;
-
 }
 
 void tst_QAbstractItemModel::testMoveWithinOwnRange()
 {
-
-    QFETCH( int, startRow);
-    QFETCH( int, endRow);
-    QFETCH( int, destRow);
-
+    QFETCH(int, startRow);
+    QFETCH(int, endRow);
+    QFETCH(int, destRow);
 
     QSignalSpy beforeSpy(m_model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
     QSignalSpy afterSpy(m_model, SIGNAL(rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int)));
@@ -1712,13 +1638,11 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange()
 
     QVERIFY(beforeSpy.size() == 0);
     QVERIFY(afterSpy.size() == 0);
-
-
 }
 
 class ListenerObject : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
     ListenerObject(QAbstractProxyModel *parent);
 
@@ -1750,14 +1674,11 @@ void ListenerObject::fillIndexStores(const QModelIndex &parent)
     const int column = 0;
     int row = 0;
     QModelIndex idx = m_model->index(row, column, parent);
-    while (idx.isValid())
-    {
+    while (idx.isValid()) {
         m_persistentIndexes << QPersistentModelIndex(idx);
         m_nonPersistentIndexes << idx;
         if (m_model->hasChildren(idx))
-        {
             fillIndexStores(idx);
-        }
         ++row;
         idx = m_model->index(row, column, parent);
     }
@@ -1766,8 +1687,7 @@ void ListenerObject::fillIndexStores(const QModelIndex &parent)
 void ListenerObject::slotAboutToBeReset()
 {
     // Nothing has been changed yet. All indexes should be the same.
-    for (int i = 0; i < m_persistentIndexes.size(); ++i)
-    {
+    for (int i = 0; i < m_persistentIndexes.size(); ++i) {
         QModelIndex idx = m_persistentIndexes.at(i);
         QVERIFY(idx == m_nonPersistentIndexes.at(i));
         QVERIFY(m_model->mapToSource(idx).isValid());
@@ -1776,12 +1696,10 @@ void ListenerObject::slotAboutToBeReset()
 
 void ListenerObject::slotReset()
 {
-    foreach(const QModelIndex &idx, m_persistentIndexes)
-    {
+    foreach (const QModelIndex &idx, m_persistentIndexes) {
         QVERIFY(!idx.isValid());
     }
 }
-
 
 void tst_QAbstractItemModel::testReset()
 {
@@ -1814,7 +1732,6 @@ void tst_QAbstractItemModel::testReset()
     QVERIFY(m_model->rowCount() == 9);
     QModelIndex destIndex = m_model->index(4, 0);
     QVERIFY(m_model->rowCount(destIndex) == 11);
-
 }
 
 class CustomRoleModel : public QStringListModel
@@ -1831,7 +1748,6 @@ public:
     CustomRoleModel(QObject *parent = 0)
       : QStringListModel(QStringList() << "a" << "b" << "c", parent)
     {
-
     }
 
     void emitSignals()
@@ -1991,7 +1907,6 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
         QVERIFY(p1LastPersistent.row() == 0);
         QVERIFY(p2FirstPersistent.row() == 9);
         QVERIFY(p2LastPersistent.row() == 8);
-
     }
 
     insertCommand = new ModelInsertCommand(&model, this);

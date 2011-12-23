@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtCore>
 #include <QtGui>
@@ -79,7 +78,6 @@ private:
 tst_QIdentityProxyModel::tst_QIdentityProxyModel()
     : m_model(0), m_proxy(0)
 {
-
 }
 
 void tst_QIdentityProxyModel::initTestCase()
@@ -177,7 +175,6 @@ void tst_QIdentityProxyModel::insertRows()
     QVERIFY(modelAfterSpy.first().at(2) == proxyAfterSpy.first().at(2));
 
     verifyIdentity(m_model);
-
 }
 
 void tst_QIdentityProxyModel::removeRows()

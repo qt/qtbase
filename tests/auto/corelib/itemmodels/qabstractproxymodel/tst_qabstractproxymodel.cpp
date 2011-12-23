@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <qabstractproxymodel.h>
 #include <QItemSelection>
@@ -330,18 +329,18 @@ public:
 
 class AnotherStandardItemModelWithCustomRoleNames : public QStandardItemModel
 {
-    public:
-        enum CustomRole {
-            AnotherCustomRole1 = Qt::UserRole + 10,  // Different to StandardItemModelWithCustomRoleNames::CustomRole1
-            AnotherCustomRole2
-        };
+public:
+    enum CustomRole {
+        AnotherCustomRole1 = Qt::UserRole + 10,  // Different to StandardItemModelWithCustomRoleNames::CustomRole1
+        AnotherCustomRole2
+    };
 
-        AnotherStandardItemModelWithCustomRoleNames() {
-            QHash<int, QByteArray> _roleNames = roleNames();
-            _roleNames.insert(AnotherCustomRole1, "another_custom1");
-            _roleNames.insert(AnotherCustomRole2, "another_custom2");
-            setRoleNames(_roleNames);
-        }
+    AnotherStandardItemModelWithCustomRoleNames() {
+        QHash<int, QByteArray> _roleNames = roleNames();
+        _roleNames.insert(AnotherCustomRole1, "another_custom1");
+        _roleNames.insert(AnotherCustomRole2, "another_custom2");
+        setRoleNames(_roleNames);
+    }
 };
 
 /**
@@ -390,7 +389,6 @@ void tst_QAbstractProxyModel::testRoleNames()
     QVERIFY( proxy2RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole2));
     QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole1) == "custom1" );
     QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole2) == "custom2" );
-
 }
 
 QTEST_MAIN(tst_QAbstractProxyModel)
