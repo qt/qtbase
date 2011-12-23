@@ -231,16 +231,14 @@ SOURCES += \
     $$V8SRC/mips/stub-cache-mips.cc
 }
 
-unix:!symbian:!macx {
-SOURCES += \
-    $$V8SRC/platform-linux.cc \
-    $$V8SRC/platform-posix.cc
-}
-
 #os:macos
 macx {
 SOURCES += \
     $$V8SRC/platform-macos.cc \
+    $$V8SRC/platform-posix.cc
+} else:unix:!symbian {
+SOURCES += \
+    $$V8SRC/platform-linux.cc \
     $$V8SRC/platform-posix.cc
 }
 
