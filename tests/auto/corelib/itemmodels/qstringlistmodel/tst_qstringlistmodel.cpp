@@ -75,7 +75,6 @@ void QModelListener::rowsRemovedOrInserted(const QModelIndex & parent, int , int
         QVariant var = m_pModel->data(mIndex, Qt::DisplayRole);
         QString str = var.toString();
 
-        //qDebug() << "index: " << i << " start: " << start << "end: " << end;
         QCOMPARE(str, m_pExpectedStringlist->at(i));
     }
 }

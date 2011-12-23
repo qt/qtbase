@@ -1258,12 +1258,6 @@ void tst_QItemSelectionModel::select()
 
     QVERIFY(selection->hasSelection()!=selectedList.isEmpty());
 
-    // debug output
-//     for (int i=0; i<selectedList.count(); ++i)
-//         qDebug(QString("selected (%1, %2)")
-//                .arg(selectedList.at(i).row())
-//                .arg(selectedList.at(i).column()));
-
     // test that the number of indices are as expected
     QVERIFY2(selectedList.count() == expectedList.count(),
             QString("expected indices: %1 actual indices: %2")
