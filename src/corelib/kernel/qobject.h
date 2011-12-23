@@ -296,8 +296,8 @@ public:
                                   const QObject *receiver, void **zero)
     {
         // This is the overload for when one wish to disconnect a signal from any slot. (slot=0)
-        // Since the function template parametter cannot be deduced from '0', we use a
-        // dummy void ** parametter that must be equal to 0
+        // Since the function template parameter cannot be deduced from '0', we use a
+        // dummy void ** parameter that must be equal to 0
         Q_ASSERT(!zero);
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
