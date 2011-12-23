@@ -55,14 +55,11 @@ class tst_QIdentityProxyModel : public QObject
     Q_OBJECT
 
 public:
-
     tst_QIdentityProxyModel();
-    virtual ~tst_QIdentityProxyModel();
 
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -85,11 +82,6 @@ tst_QIdentityProxyModel::tst_QIdentityProxyModel()
 
 }
 
-tst_QIdentityProxyModel::~tst_QIdentityProxyModel()
-{
-
-}
-
 void tst_QIdentityProxyModel::initTestCase()
 {
     qRegisterMetaType<QModelIndex>("QModelIndex");
@@ -102,10 +94,6 @@ void tst_QIdentityProxyModel::cleanupTestCase()
 {
     delete m_proxy;
     delete m_model;
-}
-
-void tst_QIdentityProxyModel::init()
-{
 }
 
 void tst_QIdentityProxyModel::cleanup()

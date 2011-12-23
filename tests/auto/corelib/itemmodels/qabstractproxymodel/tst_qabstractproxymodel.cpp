@@ -49,14 +49,7 @@ class tst_QAbstractProxyModel : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
-
 private slots:
-    void qabstractproxymodel_data();
     void qabstractproxymodel();
     void data_data();
     void data();
@@ -74,9 +67,7 @@ private slots:
     void mapSelectionToSource();
     void mapToSource_data();
     void mapToSource();
-    void revert_data();
     void revert();
-    void setSourceModel_data();
     void setSourceModel();
     void submit_data();
     void submit();
@@ -115,32 +106,6 @@ public:
         return 0;
     }
 };
-
-// This will be called before the first test function is executed.
-// It is only called once.
-void tst_QAbstractProxyModel::initTestCase()
-{
-}
-
-// This will be called after the last test function is executed.
-// It is only called once.
-void tst_QAbstractProxyModel::cleanupTestCase()
-{
-}
-
-// This will be called before each test function is executed.
-void tst_QAbstractProxyModel::init()
-{
-}
-
-// This will be called after every test function.
-void tst_QAbstractProxyModel::cleanup()
-{
-}
-
-void tst_QAbstractProxyModel::qabstractproxymodel_data()
-{
-}
 
 void tst_QAbstractProxyModel::qabstractproxymodel()
 {
@@ -309,32 +274,16 @@ void tst_QAbstractProxyModel::mapToSource()
     QCOMPARE(model.mapToSource(proxyIndex), mapToSource);
 }
 
-void tst_QAbstractProxyModel::revert_data()
-{
-    //QTest::addColumn<int>("foo");
-    //QTest::newRow("null") << 0;
-}
-
 // public void revert()
 void tst_QAbstractProxyModel::revert()
 {
-    //QFETCH(int, foo);
-
     SubQAbstractProxyModel model;
     model.revert();
-}
-
-void tst_QAbstractProxyModel::setSourceModel_data()
-{
-    //QTest::addColumn<int>("sourceModelCount");
-    //QTest::newRow("null") << 0;
 }
 
 // public void setSourceModel(QAbstractItemModel* sourceModel)
 void tst_QAbstractProxyModel::setSourceModel()
 {
-    //QFETCH(int, sourceModelCount);
-
     SubQAbstractProxyModel model;
     QStandardItemModel *sourceModel = new QStandardItemModel(&model);
     model.setSourceModel(sourceModel);

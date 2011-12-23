@@ -90,56 +90,13 @@ class tst_QStringListModel : public QObject
 {
     Q_OBJECT
 
-public:
-
-    tst_QStringListModel();
-    virtual ~tst_QStringListModel();
-
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
-    void cleanup();
 private slots:
-
     void rowsAboutToBeRemoved_rowsRemoved();
     void rowsAboutToBeRemoved_rowsRemoved_data();
 
     void rowsAboutToBeInserted_rowsInserted();
     void rowsAboutToBeInserted_rowsInserted_data();
 };
-
-
-tst_QStringListModel::tst_QStringListModel()
-
-{
-}
-
-tst_QStringListModel::~tst_QStringListModel()
-{
-}
-
-void tst_QStringListModel::initTestCase()
-{
-}
-
-void tst_QStringListModel::cleanupTestCase()
-{
-}
-
-void tst_QStringListModel::init()
-{
-}
-
-void tst_QStringListModel::cleanup()
-{
-}
-
-/*
-  tests
-*/
-
 
 void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved_data()
 {

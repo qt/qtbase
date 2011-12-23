@@ -66,12 +66,10 @@ class tst_QSortFilterProxyModel : public QObject
 public:
 
     tst_QSortFilterProxyModel();
-    virtual ~tst_QSortFilterProxyModel();
 
 public slots:
     void initTestCase();
     void cleanupTestCase();
-    void init();
     void cleanup();
 
 private slots:
@@ -84,8 +82,6 @@ private slots:
     void insertRows_data();
     void insertRows();
     void prependRow();
-//     void insertColumns_data();
-//     void insertColumns();
     void removeRows_data();
     void removeRows();
     void removeColumns_data();
@@ -180,11 +176,6 @@ tst_QSortFilterProxyModel::tst_QSortFilterProxyModel()
 
 }
 
-tst_QSortFilterProxyModel::~tst_QSortFilterProxyModel()
-{
-
-}
-
 void tst_QSortFilterProxyModel::initTestCase()
 {
     qRegisterMetaType<QModelIndex>("QModelIndex");
@@ -200,10 +191,6 @@ void tst_QSortFilterProxyModel::cleanupTestCase()
 {
     delete m_proxy;
     delete m_model;
-}
-
-void tst_QSortFilterProxyModel::init()
-{
 }
 
 void tst_QSortFilterProxyModel::cleanup()
@@ -633,19 +620,6 @@ void tst_QSortFilterProxyModel::prependRow()
     QCOMPARE(sub2.rowCount(), proxy.rowCount(index_sub2));
     QCOMPARE(proxy.rowCount(QModelIndex()), 1); //only the "root" item is there
 }
-
-
-/*
-void tst_QSortFilterProxyModel::insertColumns_data()
-{
-
-}
-
-void tst_QSortFilterProxyModel::insertColumns()
-{
-
-}
-*/
 
 void tst_QSortFilterProxyModel::removeRows_data()
 {

@@ -51,8 +51,6 @@ class tst_QItemSelectionModel : public QObject
 
 public:
     tst_QItemSelectionModel();
-    virtual ~tst_QItemSelectionModel();
-
 
 public slots:
     void initTestCase();
@@ -187,10 +185,6 @@ QDataStream &operator>>(QDataStream &s, QModelIndexList &output)
 }
 
 tst_QItemSelectionModel::tst_QItemSelectionModel() : model(0), selection(0)
-{
-}
-
-tst_QItemSelectionModel::~tst_QItemSelectionModel()
 {
 }
 
