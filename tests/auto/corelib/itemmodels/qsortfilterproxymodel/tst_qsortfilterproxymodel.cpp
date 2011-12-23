@@ -121,20 +121,20 @@ private slots:
 
     void sortStable();
 
-    void task236755_hiddenColumns();
-    void task247867_insertRowsSort();
-    void task248868_staticSorting();
-    void task248868_dynamicSorting();
-    void task250023_fetchMore();
-    void task251296_hiddenChildren();
-    void task252507_mapFromToSource();
-    void task255652_removeRowsRecursive();
-    void taskQTBUG_6205_doubleProxySelectionSetSourceModel();
-    void taskQTBUG_7537_appearsAndSort();
-    void taskQTBUG_7716_unnecessaryDynamicSorting();
-    void taskQTBUG_10287_unnecessaryMapCreation();
-    void taskQTBUG_17812_resetInvalidate_data();
-    void taskQTBUG_17812_resetInvalidate();
+    void hiddenColumns();
+    void insertRowsSort();
+    void staticSorting();
+    void dynamicSorting();
+    void fetchMore();
+    void hiddenChildren();
+    void mapFromToSource();
+    void removeRowsRecursive();
+    void doubleProxySelectionSetSourceModel();
+    void appearsAndSort();
+    void unnecessaryDynamicSorting();
+    void unnecessaryMapCreation();
+    void resetInvalidate_data();
+    void resetInvalidate();
 
     void testMultipleProxiesWithSelection();
     void mapSelectionFromSource();
@@ -2409,7 +2409,7 @@ void tst_QSortFilterProxyModel::sortStable()
     QCOMPARE(lastItemData, filterModel->index(2,0, firstRoot).data());
 }
 
-void tst_QSortFilterProxyModel::task236755_hiddenColumns()
+void tst_QSortFilterProxyModel::hiddenColumns()
 {
     class MyStandardItemModel : public QStandardItemModel
     {
@@ -2433,12 +2433,12 @@ void tst_QSortFilterProxyModel::task236755_hiddenColumns()
     model.blockSignals(false);
     model.reset();
 
-    //in the initial task this would be false because resetting
-    //model would also reset the hidden columns
+    // In the initial bug report that spawned this test, this would be false
+    // because resetting model would also reset the hidden columns.
     QVERIFY(view.isColumnHidden(0));
 }
 
-void tst_QSortFilterProxyModel::task247867_insertRowsSort()
+void tst_QSortFilterProxyModel::insertRowsSort()
 {
     QStandardItemModel model(2,2);
     QSortFilterProxyModel proxyModel;
@@ -2454,7 +2454,7 @@ void tst_QSortFilterProxyModel::task247867_insertRowsSort()
     QCOMPARE(proxyModel.sortColumn(), 0);
 }
 
-void tst_QSortFilterProxyModel::task248868_staticSorting()
+void tst_QSortFilterProxyModel::staticSorting()
 {
     QStandardItemModel model(0, 1);
     QSortFilterProxyModel proxy;
@@ -2512,7 +2512,7 @@ void tst_QSortFilterProxyModel::task248868_staticSorting()
     }
 }
 
-void tst_QSortFilterProxyModel::task248868_dynamicSorting()
+void tst_QSortFilterProxyModel::dynamicSorting()
 {
     QStringListModel model1;
     const QStringList initial = QString("bateau avion dragon hirondelle flamme camion elephant").split(" ");
@@ -2652,7 +2652,7 @@ public:
     mutable QMap<QModelIndex,QModelIndex> parentHash;
 };
 
-void tst_QSortFilterProxyModel::task250023_fetchMore()
+void tst_QSortFilterProxyModel::fetchMore()
 {
     QtTestModel model(10,10);
     QSortFilterProxyModel proxy;
@@ -2674,7 +2674,7 @@ void tst_QSortFilterProxyModel::task250023_fetchMore()
     QCOMPARE(proxy.columnCount(idx), 10);
 }
 
-void tst_QSortFilterProxyModel::task251296_hiddenChildren()
+void tst_QSortFilterProxyModel::hiddenChildren()
 {
     QStandardItemModel model;
     QSortFilterProxyModel proxy;
@@ -2725,7 +2725,7 @@ void tst_QSortFilterProxyModel::task251296_hiddenChildren()
     QCOMPARE(proxy.rowCount(indexA) , 0);
 }
 
-void tst_QSortFilterProxyModel::task252507_mapFromToSource()
+void tst_QSortFilterProxyModel::mapFromToSource()
 {
     QtTestModel source(10,10);
     source.fetchMore(QModelIndex());
@@ -2751,7 +2751,7 @@ static QStandardItem *addEntry(QStandardItem* pParent, const QString &descriptio
     return pItem;
 }
 
-void tst_QSortFilterProxyModel::task255652_removeRowsRecursive()
+void tst_QSortFilterProxyModel::removeRowsRecursive()
 {
     QStandardItemModel pModel;
     QStandardItem *pItem1    = new QStandardItem("root");
@@ -2801,7 +2801,7 @@ void tst_QSortFilterProxyModel::task255652_removeRowsRecursive()
     delete pItem11;
 }
 
-void tst_QSortFilterProxyModel::taskQTBUG_6205_doubleProxySelectionSetSourceModel()
+void tst_QSortFilterProxyModel::doubleProxySelectionSetSourceModel()
 {
     QStandardItemModel *model1 = new QStandardItemModel;
     QStandardItem *parentItem = model1->invisibleRootItem();
@@ -2837,7 +2837,7 @@ void tst_QSortFilterProxyModel::taskQTBUG_6205_doubleProxySelectionSetSourceMode
     QVERIFY(ism.selection().isEmpty());
 }
 
-void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
+void tst_QSortFilterProxyModel::appearsAndSort()
 {
     class PModel : public QSortFilterProxyModel
     {
@@ -2910,7 +2910,7 @@ void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
     QCOMPARE(spyChanged2.count(), 1);
 }
 
-void tst_QSortFilterProxyModel::taskQTBUG_7716_unnecessaryDynamicSorting()
+void tst_QSortFilterProxyModel::unnecessaryDynamicSorting()
 {
     QStringListModel model;
     const QStringList initial = QString("bravo charlie delta echo").split(" ");
@@ -3111,7 +3111,7 @@ protected:
     }
 };
 
-void tst_QSortFilterProxyModel::taskQTBUG_10287_unnecessaryMapCreation()
+void tst_QSortFilterProxyModel::unnecessaryMapCreation()
 {
     Model10287 m;
     Proxy10287 p(&m);
@@ -3152,7 +3152,7 @@ void tst_QSortFilterProxyModel::filteredColumns()
     insertCommand->doCommand();
 }
 
-void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate_data()
+void tst_QSortFilterProxyModel::resetInvalidate_data()
 {
     QTest::addColumn<int>("test");
     QTest::addColumn<bool>("works");
@@ -3163,7 +3163,7 @@ void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate_data()
     QTest::newRow("invalidate_filter") << 3 << true;
 }
 
-void tst_QSortFilterProxyModel::taskQTBUG_17812_resetInvalidate()
+void tst_QSortFilterProxyModel::resetInvalidate()
 {
     QFETCH(int, test);
     QFETCH(bool, works);

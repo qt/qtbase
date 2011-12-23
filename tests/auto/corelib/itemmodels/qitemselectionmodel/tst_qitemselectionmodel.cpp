@@ -77,18 +77,18 @@ private slots:
     void selectedColumns();
     void setCurrentIndex();
     void splitOnInsert();
-    void task196285_rowIntersectsSelection();
+    void rowIntersectsSelection1();
+    void rowIntersectsSelection2();
     void unselectable();
-    void task220420_selectedIndexes();
-    void task240734_layoutChanged();
+    void selectedIndexes();
+    void layoutChanged();
     void merge_data();
     void merge();
-    void task119433_isRowSelected();
-    void task252069_rowIntersectsSelection();
-    void task232634_childrenDeselectionSignal();
-    void task260134_layoutChangedWithAllSelected();
-    void QTBUG5671_layoutChangedWithAllSelected();
-    void QTBUG2804_layoutChangedTreeSelection();
+    void isRowSelected();
+    void childrenDeselectionSignal();
+    void layoutChangedWithAllSelected1();
+    void layoutChangedWithAllSelected2();
+    void layoutChangedTreeSelection();
     void deselectRemovedMiddleRange();
     void rangeOperatorLessThan_data();
     void rangeOperatorLessThan();
@@ -1964,7 +1964,7 @@ void tst_QItemSelectionModel::splitOnInsert()
     QVERIFY(!selectionModel.isSelected(model.index(1, 0)));
 }
 
-void tst_QItemSelectionModel::task196285_rowIntersectsSelection()
+void tst_QItemSelectionModel::rowIntersectsSelection1()
 {
     QTableWidget table;
     table.setColumnCount(1);
@@ -1991,6 +1991,52 @@ void tst_QItemSelectionModel::task196285_rowIntersectsSelection()
     QVERIFY(!selectionModel->columnIntersectsSelection(0, QModelIndex()));
 }
 
+void tst_QItemSelectionModel::rowIntersectsSelection2()
+{
+    QStandardItemModel m;
+    for (int i=0; i<8; ++i) {
+        for (int j=0; j<8; ++j) {
+            QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
+            if ((i % 2 == 0 && j == 0)  ||
+                (j % 2 == 0 && i == 0)  ||
+                 j == 5 || i == 5 ) {
+                item->setEnabled(false);
+                //item->setSelectable(false);
+            }
+            m.setItem(i, j, item);
+        }
+    }
+
+    QItemSelectionModel selected(&m);
+    //nothing is selected
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+    selected.select(m.index(2, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+    selected.select(m.index(0, 5), QItemSelectionModel::Select | QItemSelectionModel::Columns);
+    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
+    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
+    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+}
+
 void tst_QItemSelectionModel::unselectable()
 {
     QTreeWidget w;
@@ -2005,7 +2051,7 @@ void tst_QItemSelectionModel::unselectable()
     QCOMPARE(w.selectionModel()->selectedRows().count(), 0);
 }
 
-void tst_QItemSelectionModel::task220420_selectedIndexes()
+void tst_QItemSelectionModel::selectedIndexes()
 {
     QStandardItemModel model(2, 2);
     QItemSelectionModel selectionModel(&model);
@@ -2049,7 +2095,7 @@ public:
 };
 
 
-void tst_QItemSelectionModel::task240734_layoutChanged()
+void tst_QItemSelectionModel::layoutChanged()
 {
     QtTestTableModel model(1,1);
     QItemSelectionModel selectionModel(&model);
@@ -2132,7 +2178,7 @@ void tst_QItemSelectionModel::merge()
         QVERIFY(init.contains(idx));
 }
 
-void tst_QItemSelectionModel::task119433_isRowSelected()
+void tst_QItemSelectionModel::isRowSelected()
 {
     QStandardItemModel model(2,2);
     model.setData(model.index(0,0), 0, Qt::UserRole - 1);
@@ -2142,53 +2188,7 @@ void tst_QItemSelectionModel::task119433_isRowSelected()
     QVERIFY(sel.isRowSelected(0, QModelIndex()));
 }
 
-void tst_QItemSelectionModel::task252069_rowIntersectsSelection()
-{
-    QStandardItemModel m;
-    for (int i=0; i<8; ++i) {
-        for (int j=0; j<8; ++j) {
-            QStandardItem *item = new QStandardItem(QString("Item number %1").arg(i));
-            if ((i % 2 == 0 && j == 0)  ||
-                (j % 2 == 0 && i == 0)  ||
-                 j == 5 || i == 5 ) {
-                item->setEnabled(false);
-                //item->setSelectable(false);
-            }
-            m.setItem(i, j, item);
-        }
-    }
-
-    QItemSelectionModel selected(&m);
-    //nothing is selected
-    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(2, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(2, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
-    selected.select(m.index(2, 0), QItemSelectionModel::Select | QItemSelectionModel::Rows);
-    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
-    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
-    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
-    selected.select(m.index(0, 5), QItemSelectionModel::Select | QItemSelectionModel::Columns);
-    QVERIFY(!selected.rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY( selected.rowIntersectsSelection(2, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.rowIntersectsSelection(5, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(0, QModelIndex()));
-    QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
-    QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
-    QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
-}
-
-void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
+void tst_QItemSelectionModel::childrenDeselectionSignal()
 {
     QStandardItemModel model;
 
@@ -2242,7 +2242,7 @@ void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
     QVERIFY(selectionModel.selection().contains(sel2));
 }
 
-void tst_QItemSelectionModel::task260134_layoutChangedWithAllSelected()
+void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
 {
     QStringListModel model( QStringList() << "foo" << "bar" << "foo2");
     QSortFilterProxyModel proxy;
@@ -2273,8 +2273,9 @@ void tst_QItemSelectionModel::task260134_layoutChangedWithAllSelected()
         QVERIFY(selection.isSelected(index));
 }
 
-
-void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
+// Same as layoutChangedWithAllSelected1, but with a slightly bigger model.
+// This test is a regression test for QTBUG-5671.
+void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
 {
     struct MyFilterModel : public QSortFilterProxyModel
     {     // Override sort filter proxy to remove even numbered rows.
@@ -2284,8 +2285,6 @@ void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
             return !filtering || !( source_row & 1 );
         }
     };
-
-    //same as task260134_layoutChangedWithAllSelected but with a sightly bigger model
 
     enum { cNumRows=30, cNumCols=20 };
 
@@ -2325,7 +2324,8 @@ void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
         QVERIFY(selection.isSelected(index));
 }
 
-void tst_QItemSelectionModel::QTBUG2804_layoutChangedTreeSelection()
+// This test is a regression test for QTBUG-2804.
+void tst_QItemSelectionModel::layoutChangedTreeSelection()
 {
     QStandardItemModel model;
     QStandardItem top1("Child1"), top2("Child2"), top3("Child3");
