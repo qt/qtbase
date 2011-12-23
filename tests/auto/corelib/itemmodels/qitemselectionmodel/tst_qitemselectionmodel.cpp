@@ -619,7 +619,6 @@ void tst_QItemSelectionModel::select_data()
             << command
             << expected;
     }
-    /* ### FAILS
     {
         QModelIndexList index;
         QModelIndexList expected;
@@ -633,7 +632,6 @@ void tst_QItemSelectionModel::select_data()
             << command
             << expected;
     }
-    */
     {
         QModelIndexList index;
         QModelIndexList expected;
