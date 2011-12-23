@@ -57,10 +57,6 @@ class tst_QSet : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSet() {}
-    virtual ~tst_QSet() {}
-
 private slots:
     void operator_eq();
     void swap();
