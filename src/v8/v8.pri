@@ -236,6 +236,11 @@ macx {
 SOURCES += \
     $$V8SRC/platform-macos.cc \
     $$V8SRC/platform-posix.cc
+} else:freebsd-* {
+SOURCES += \
+    $$V8SRC/platform-freebsd.cc \
+    $$V8SRC/platform-posix.cc
+LIBS += -lexecinfo
 } else:unix:!symbian {
 SOURCES += \
     $$V8SRC/platform-linux.cc \
