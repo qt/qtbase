@@ -48,14 +48,13 @@ using namespace QtConcurrent;
 class tst_QtConcurrentThreadEngine: public QObject
 {
     Q_OBJECT
-public:
-    void threadCount();
 private slots:
     void runDirectly();
     void result();
     void runThroughStarter();
     void cancel();
     void throttle();
+    void threadCount();
     void multipleResults();
     void stresstest();
     void cancelQueuedSlowUser();
@@ -279,6 +278,8 @@ public:
 
 void tst_QtConcurrentThreadEngine::threadCount()
 {
+    QSKIP("QTBUG-23333: This test is unstable");
+
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
         ThreadCountUser t;
