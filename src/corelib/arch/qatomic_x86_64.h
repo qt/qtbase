@@ -138,7 +138,7 @@ bool QBasicAtomicOps<1>::ref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "incb %0\n"
+                 "addb  $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -164,7 +164,7 @@ bool QBasicAtomicOps<4>::ref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "incl %0\n"
+                 "addl $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -177,7 +177,7 @@ bool QBasicAtomicOps<8>::ref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "incq %0\n"
+                 "addq $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -190,7 +190,7 @@ bool QBasicAtomicOps<1>::deref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "decb %0\n"
+                 "subb $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -215,7 +215,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "decl %0\n"
+                 "subl $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
@@ -228,7 +228,7 @@ bool QBasicAtomicOps<8>::deref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "decq %0\n"
+                 "subq $1, %0\n"
                  "setne %1"
                  : "=m" (_q_value), "=qm" (ret)
                  : "m" (_q_value)
