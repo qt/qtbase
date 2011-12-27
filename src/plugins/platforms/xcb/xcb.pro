@@ -91,10 +91,11 @@ contains(DEFINES, XCB_USE_DRI2) {
         DEFINES += XCB_USE_GLX
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
+        LIBS += $$QMAKE_LIBS_DYNLOAD
     }
 }
 
-LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shape
+LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shape -lxcb-shm
 
 DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB
