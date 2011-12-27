@@ -425,20 +425,28 @@ QFileSystemWatcher::~QFileSystemWatcher()
     otherwise the fileChanged() signal is emitted when \a path is
     modified, renamed or removed.
 
-    \note There is a system dependent limit to the number of files and
-    directories that can be monitored simultaneously. If this limit
-    has been reached, \a path will not be added to the file system
-    watcher, and a warning message will be printed to \e{stderr}.
+    If the watch was successful, true is returned.
+
+    Reasons for a watch failure are generally system-dependent, but
+    may include the resource not existing, access failures, or the
+    total watch count limit, if the platform has one.
+
+    \note There may be a system dependent limit to the number of
+    files and directories that can be monitored simultaneously.
+    If this limit is been reached, \a path will not be monitored,
+    and false is returned.
 
     \sa addPaths(), removePath()
 */
-void QFileSystemWatcher::addPath(const QString &path)
+bool QFileSystemWatcher::addPath(const QString &path)
 {
     if (path.isEmpty()) {
         qWarning("QFileSystemWatcher::addPath: path is empty");
-        return;
+        return true;
     }
-    addPaths(QStringList(path));
+
+    QStringList paths = addPaths(QStringList(path));
+    return paths.isEmpty();
 }
 
 /*!
@@ -451,23 +459,37 @@ void QFileSystemWatcher::addPath(const QString &path)
     otherwise the fileChanged() signal is emitted when the path is
     modified, renamed, or removed.
 
-    \note There is a system dependent limit to the number of files and
-    directories that can be monitored simultaneously. If this limit
-    has been reached, the excess \a paths will not be added to the
-    file system watcher, and a warning message will be printed to
-    \e{stderr} for each path that could not be added.
+    The return value is a list of paths that could not be watched.
+
+    Reasons for a watch failure are generally system-dependent, but
+    may include the resource not existing, access failures, or the
+    total watch count limit, if the platform has one.
+
+    \note There may be a system dependent limit to the number of
+    files and directories that can be monitored simultaneously.
+    If this limit has been reached, the excess \a paths will not
+    be monitored, and they will be added to the returned QStringList.
 
     \sa addPath(), removePaths()
 */
-void QFileSystemWatcher::addPaths(const QStringList &paths)
+QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
 {
     Q_D(QFileSystemWatcher);
-    if (paths.isEmpty()) {
-        qWarning("QFileSystemWatcher::addPaths: list is empty");
-        return;
-    }
 
     QStringList p = paths;
+    QMutableListIterator<QString> it(p);
+
+    while (it.hasNext()) {
+        const QString &path = it.next();
+        if (path.isEmpty())
+            it.remove();
+    }
+
+    if (p.isEmpty()) {
+        qWarning("QFileSystemWatcher::addPaths: list is empty");
+        return QStringList();
+    }
+
     QFileSystemWatcherEngine *engine = 0;
 
     if(!objectName().startsWith(QLatin1String("_qt_autotest_force_engine_"))) {
@@ -495,42 +517,65 @@ void QFileSystemWatcher::addPaths(const QStringList &paths)
     if(engine)
         p = engine->addPaths(p, &d->files, &d->directories);
 
-    if (!p.isEmpty())
-        qWarning("QFileSystemWatcher: failed to add paths: %s",
-                 qPrintable(p.join(QLatin1String(", "))));
+    return p;
 }
 
 /*!
     Removes the specified \a path from the file system watcher.
 
+    If the watch is successfully removed, true is returned.
+
+    Reasons for watch removal failing are generally system-dependent,
+    but may be due to the path having already been deleted, for example.
+
     \sa removePaths(), addPath()
 */
-void QFileSystemWatcher::removePath(const QString &path)
+bool QFileSystemWatcher::removePath(const QString &path)
 {
     if (path.isEmpty()) {
         qWarning("QFileSystemWatcher::removePath: path is empty");
-        return;
+        return true;
     }
-    removePaths(QStringList(path));
+
+    QStringList paths = removePaths(QStringList(path));
+    return paths.isEmpty();
 }
 
 /*!
     Removes the specified \a paths from the file system watcher.
 
+    The return value is a list of paths which were not able to be
+    unwatched successfully.
+
+    Reasons for watch removal failing are generally system-dependent,
+    but may be due to the path having already been deleted, for example.
+
     \sa removePath(), addPaths()
 */
-void QFileSystemWatcher::removePaths(const QStringList &paths)
+QStringList QFileSystemWatcher::removePaths(const QStringList &paths)
 {
-    if (paths.isEmpty()) {
-        qWarning("QFileSystemWatcher::removePaths: list is empty");
-        return;
-    }
     Q_D(QFileSystemWatcher);
+
     QStringList p = paths;
+    QMutableListIterator<QString> it(p);
+
+    while (it.hasNext()) {
+        const QString &path = it.next();
+        if (path.isEmpty())
+            it.remove();
+    }
+
+    if (p.isEmpty()) {
+        qWarning("QFileSystemWatcher::removePaths: list is empty");
+        return QStringList();
+    }
+
     if (d->native)
         p = d->native->removePaths(p, &d->files, &d->directories);
     if (d->poller)
         p = d->poller->removePaths(p, &d->files, &d->directories);
+
+    return p;
 }
 
 /*!

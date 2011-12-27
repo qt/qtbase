@@ -64,10 +64,10 @@ public:
     QFileSystemWatcher(const QStringList &paths, QObject *parent = 0);
     ~QFileSystemWatcher();
 
-    void addPath(const QString &file);
-    void addPaths(const QStringList &files);
-    void removePath(const QString &file);
-    void removePaths(const QStringList &files);
+    bool addPath(const QString &file);
+    QStringList addPaths(const QStringList &files);
+    bool removePath(const QString &file);
+    QStringList removePaths(const QStringList &files);
 
     QStringList files() const;
     QStringList directories() const;

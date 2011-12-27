@@ -105,8 +105,7 @@ void tst_QFileSystemWatcher::basicTest()
     // create watcher, forcing it to use a specific backend
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
-    watcher.removePath(testFile.fileName());
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QVERIFY(changedSpy.isValid());
@@ -140,7 +139,7 @@ void tst_QFileSystemWatcher::basicTest()
     changedSpy.clear();
 
     // remove the watch and modify the file, should not get a signal from the watcher
-    watcher.removePath(testFile.fileName());
+    QVERIFY(watcher.removePath(testFile.fileName()));
     testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
     testFile.write(QByteArray("hello universe!"));
     testFile.close();
@@ -152,19 +151,19 @@ void tst_QFileSystemWatcher::basicTest()
     QCOMPARE(changedSpy.count(), 0);
 
     // readd the file watch with a relative path
-    watcher.addPath(testFile.fileName().prepend("./"));
+    QVERIFY(watcher.addPath(testFile.fileName().prepend("./")));
     testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
     testFile.write(QByteArray("hello multiverse!"));
     testFile.close();
 
     QTRY_VERIFY(changedSpy.count() > 0);
 
-    watcher.removePath(testFile.fileName().prepend("./"));
+    QVERIFY(watcher.removePath(testFile.fileName().prepend("./")));
 
     changedSpy.clear();
 
     // readd the file watch
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     // change the permissions, should get a signal from the watcher
     testFile.setPermissions(QFile::ReadOwner);
@@ -179,7 +178,7 @@ void tst_QFileSystemWatcher::basicTest()
     changedSpy.clear();
 
     // remove the watch and modify file permissions, should not get a signal from the watcher
-    watcher.removePath(testFile.fileName());
+    QVERIFY(watcher.removePath(testFile.fileName()));
     testFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOther);
 
     // waiting max 5 seconds for notification for file modification to trigger
@@ -189,7 +188,7 @@ void tst_QFileSystemWatcher::basicTest()
     QCOMPARE(changedSpy.count(), 0);
 
     // readd the file watch
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     // remove the file, should get a signal from the watcher
     QVERIFY(testFile.remove());
@@ -231,7 +230,7 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
-    watcher.addPath(testDir.dirName());
+    QVERIFY(watcher.addPath(testDir.dirName()));
 
     QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
     QVERIFY(changedSpy.isValid());
@@ -247,7 +246,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     QString fileName;
 
     // remove the watch, should not get notification of a new file
-    watcher.removePath(testDir.dirName());
+    QVERIFY(watcher.removePath(testDir.dirName()));
     QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.close();
 
@@ -257,7 +256,7 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QCOMPARE(changedSpy.count(), 0);
 
-    watcher.addPath(testDir.dirName());
+    QVERIFY(watcher.addPath(testDir.dirName()));
 
     // remove the file again, should get a signal from the watcher
     QVERIFY(testFile.remove());
@@ -300,30 +299,32 @@ void tst_QFileSystemWatcher::addPath()
 {
     QFileSystemWatcher watcher;
     QString home = QDir::homePath();
-    watcher.addPath(home);
+    QVERIFY(watcher.addPath(home));
     QCOMPARE(watcher.directories().count(), 1);
     QCOMPARE(watcher.directories().first(), home);
-    watcher.addPath(home);
+
+    // second watch on an already-watched path should fail
+    QVERIFY(!watcher.addPath(home));
     QCOMPARE(watcher.directories().count(), 1);
 
     // With empty string
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::addPath: path is empty");
-    watcher.addPath(QString());
+    QVERIFY(watcher.addPath(QString()));
 }
 
 void tst_QFileSystemWatcher::removePath()
 {
     QFileSystemWatcher watcher;
     QString home = QDir::homePath();
-    watcher.addPath(home);
-    watcher.removePath(home);
+    QVERIFY(watcher.addPath(home));
+    QVERIFY(watcher.removePath(home));
     QCOMPARE(watcher.directories().count(), 0);
-    watcher.removePath(home);
+    QVERIFY(!watcher.removePath(home));
     QCOMPARE(watcher.directories().count(), 0);
 
     // With empty string
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::removePath: path is empty");
-    watcher.removePath(QString());
+    QVERIFY(watcher.removePath(QString()));
 }
 
 void tst_QFileSystemWatcher::addPaths()
@@ -331,13 +332,13 @@ void tst_QFileSystemWatcher::addPaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::currentPath();
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
 
     // With empty list
     paths.clear();
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::addPaths: list is empty");
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
 }
 
 void tst_QFileSystemWatcher::removePaths()
@@ -345,9 +346,9 @@ void tst_QFileSystemWatcher::removePaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::currentPath();
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
-    watcher.removePaths(paths);
+    QCOMPARE(watcher.removePaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 0);
 
     //With empty list
@@ -377,8 +378,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
 
-    watcher.addPath(testDir.dirName());
-    watcher.addPath(testFileName);
+    QVERIFY(watcher.addPath(testDir.dirName()));
+    QVERIFY(watcher.addPath(testFileName));
 
     QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
@@ -433,7 +434,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     fileChangedSpy.clear();
     dirChangedSpy.clear();
 
-    watcher.removePath(testFileName);
+    // removing a deleted file should fail
+    QVERIFY(!watcher.removePath(testFileName));
     QFile::remove(secondFileName);
 
     timer.start(3000);
@@ -458,8 +460,17 @@ void tst_QFileSystemWatcher::nonExistingFile()
 {
     // Don't crash...
     QFileSystemWatcher watcher;
-    watcher.addPath("file_that_does_not_exist.txt");
-    QVERIFY(true);
+    QVERIFY(!watcher.addPath("file_that_does_not_exist.txt"));
+
+    // Test that the paths returned in error aren't messed with
+    QCOMPARE(watcher.addPaths(QStringList() << "../..//./does-not-exist"),
+                              QStringList() << "../..//./does-not-exist");
+
+    // empty path is not actually a failure
+    QCOMPARE(watcher.addPaths(QStringList() << QString()), QStringList());
+
+    // empty path is not actually a failure
+    QCOMPARE(watcher.removePaths(QStringList() << QString()), QStringList());
 }
 
 void tst_QFileSystemWatcher::removeFileAndUnWatch()
@@ -472,17 +483,17 @@ void tst_QFileSystemWatcher::removeFileAndUnWatch()
         testFile.open(QIODevice::WriteOnly);
         testFile.close();
     }
-    watcher.addPath(filename);
+    QVERIFY(watcher.addPath(filename));
 
     QFile::remove(filename);
-    watcher.removePath(filename);
+    QVERIFY(watcher.removePath(filename));
 
     {
         QFile testFile(filename);
         testFile.open(QIODevice::WriteOnly);
         testFile.close();
     }
-    watcher.addPath(filename);
+    QVERIFY(watcher.addPath(filename));
 }
 
 class SomeSingleton : public QObject

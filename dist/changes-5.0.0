@@ -170,6 +170,10 @@ QtCore
 * The default value of the property QSortFilterProxyModel::dynamicSortFilter was
   changed from false to true.
 
+* QFileSystemWatcher is now able to return failure in case of errors whilst
+  altering the watchlist in both the singular and QStringList overloads of
+  addPath and removePath.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
