@@ -160,10 +160,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.close();
 
     // waiting max 5 seconds for notification for file modification to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QCOMPARE(changedSpy.count(), 1);
+    QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     QString fileName = changedSpy.at(0).at(0).toString();
@@ -189,10 +186,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.write(QByteArray("hello multiverse!"));
     testFile.close();
 
-    timer.start(5000);
-    eventLoop.exec();
-
-    QVERIFY(changedSpy.count() > 0);
+    QTRY_VERIFY(changedSpy.count() > 0);
 
     watcher.removePath(testFile.fileName().prepend("./"));
 
@@ -205,10 +199,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.setPermissions(QFile::ReadOwner);
 
     // waiting max 5 seconds for notification for file permission modification to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QCOMPARE(changedSpy.count(), 1);
+    QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
@@ -233,10 +224,9 @@ void tst_QFileSystemWatcher::basicTest()
     QVERIFY(testFile.remove());
 
     // waiting max 5 seconds for notification for file removal to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QVERIFY(changedSpy.count() == 1 || changedSpy.count() == 2); // removing a file on some filesystems seems to deliver 2 notifications
+    // > 0 && < 3 because some platforms may emit two changes
+    // XXX: which platforms? (QTBUG-23370)
+    QTRY_VERIFY(changedSpy.count() > 0 && changedSpy.count() < 3);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
@@ -309,13 +299,10 @@ void tst_QFileSystemWatcher::watchDirectory()
     QVERIFY(QDir().rmdir("testDir"));
 
     // waiting max 5 seconds for notification for directory removal to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
 #endif
-    QCOMPARE(changedSpy.count(), 2);
+    QTRY_COMPARE(changedSpy.count(), 2);
     QCOMPARE(changedSpy.at(0).count(), 1);
     QCOMPARE(changedSpy.at(1).count(), 1);
 
@@ -440,9 +427,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     testFile.write(QByteArray("hello again"));
     testFile.close();
 
-    timer.start(3000);
-    eventLoop.exec();
-    QVERIFY(fileChangedSpy.count() > 0);
+    QTRY_VERIFY(fileChangedSpy.count() > 0);
+
     //according to Qt 4 documentation:
     //void QFileSystemWatcher::directoryChanged ( const QString & path )   [signal]
     //This signal is emitted when the directory at a specified path, is modified
@@ -474,9 +460,7 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     QFile::remove(testFileName);
 
-    timer.start(3000);
-    eventLoop.exec();
-    QVERIFY(fileChangedSpy.count() > 0);
+    QTRY_VERIFY(fileChangedSpy.count() > 0);
     QCOMPARE(dirChangedSpy.count(), 1);
 
     fileChangedSpy.clear();
