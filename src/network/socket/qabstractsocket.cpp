@@ -315,6 +315,8 @@
            proxy) was not found.
     \value ProxyProtocolError The connection negotiation with the proxy server
            because the response from the proxy server could not be understood.
+    \value OperationError An operation was attempted while the socket was in a state that
+           did not permit it.
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()
@@ -1497,6 +1499,9 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
     if (d->state == ConnectedState || d->state == ConnectingState
         || d->state == ClosingState || d->state == HostLookupState) {
         qWarning("QAbstractSocket::connectToHost() called when already looking up or connecting/connected to \"%s\"", qPrintable(hostName));
+        d->socketError = QAbstractSocket::OperationError;
+        setErrorString(QAbstractSocket::tr("Trying to connect while connection is in progress"));
+        emit error(d->socketError);
         return;
     }
 

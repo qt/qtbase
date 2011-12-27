@@ -131,8 +131,11 @@ void QLocalSocketPrivate::destroyPipeHandles()
 void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 {
     Q_D(QLocalSocket);
-    if (state() == ConnectedState || state() == ConnectingState)
+    if (state() == ConnectedState || state() == ConnectingState) {
+        setErrorString("Trying to connect while connection is in progress");
+        emit error(QLocalSocket::OperationError);
         return;
+    }
 
     d->error = QLocalSocket::UnknownSocketError;
     d->errorString = QString();

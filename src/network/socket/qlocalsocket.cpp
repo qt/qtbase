@@ -419,6 +419,8 @@ bool QLocalSocket::isSequential() const
     \value ConnectionError An error occurred with the connection.
     \value UnsupportedSocketOperationError The requested socket operation
         is not supported by the local operating system.
+    \value OperationError An operation was attempted while the socket was in a state that
+           did not permit it.
     \value UnknownSocketError An unidentified error occurred.
  */
 

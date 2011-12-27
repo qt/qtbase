@@ -72,7 +72,8 @@ public:
         DatagramTooLargeError = QAbstractSocket::DatagramTooLargeError,
         ConnectionError = QAbstractSocket::NetworkError,
         UnsupportedSocketOperationError = QAbstractSocket::UnsupportedSocketOperationError,
-        UnknownSocketError = QAbstractSocket::UnknownSocketError
+        UnknownSocketError = QAbstractSocket::UnknownSocketError,
+        OperationError = QAbstractSocket::OperationError
     };
 
     enum LocalSocketState

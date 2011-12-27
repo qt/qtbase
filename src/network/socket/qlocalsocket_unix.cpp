@@ -162,6 +162,9 @@ QString QLocalSocketPrivate::generateErrorString(QLocalSocket::LocalSocketError 
     case QLocalSocket::UnsupportedSocketOperationError:
         errorString = QLocalSocket::tr("%1: The socket operation is not supported").arg(function);
         break;
+    case QLocalSocket::OperationError:
+        errorString = QLocalSocket::tr("%1: Operation not permitted when socket is in this state").arg(function);
+        break;
     case QLocalSocket::UnknownSocketError:
     default:
         errorString = QLocalSocket::tr("%1: Unknown error %2").arg(function).arg(errno);
@@ -221,9 +224,12 @@ void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, co
 void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 {
     Q_D(QLocalSocket);
-    if (state() == ConnectedState
-        || state() == ConnectingState)
+    if (state() == ConnectedState || state() == ConnectingState) {
+        QString errorString = d->generateErrorString(QLocalSocket::OperationError, QLatin1String("QLocalSocket::connectToserver"));
+        setErrorString(errorString);
+        emit error(QLocalSocket::OperationError);
         return;
+    }
 
     d->errorString.clear();
     d->unixSocket.setSocketState(QAbstractSocket::ConnectingState);
