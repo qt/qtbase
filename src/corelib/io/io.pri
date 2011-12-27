@@ -101,13 +101,8 @@ win32 {
         }
 
         linux-* {
-            SOURCES += \
-                    io/qfilesystemwatcher_inotify.cpp \
-                    io/qfilesystemwatcher_dnotify.cpp
-
-            HEADERS += \
-                    io/qfilesystemwatcher_inotify_p.h \
-                    io/qfilesystemwatcher_dnotify_p.h
+            SOURCES += io/qfilesystemwatcher_inotify.cpp
+            HEADERS += io/qfilesystemwatcher_inotify_p.h
         }
 
         !nacl {

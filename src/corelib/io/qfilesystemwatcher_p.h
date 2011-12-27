@@ -105,9 +105,8 @@ public:
     QFileSystemWatcherPrivate();
     void init();
     void initPollerEngine();
-    void initForcedEngine(const QString &);
 
-    QFileSystemWatcherEngine *native, *poller, *forced;
+    QFileSystemWatcherEngine *native, *poller;
     QStringList files, directories;
 
     // private slots
