@@ -206,6 +206,8 @@ QString QAuthenticator::user() const
 
 /*!
   Sets the \a user used for authentication.
+
+  \sa QNetworkAccessManager::authenticationRequired()
 */
 void QAuthenticator::setUser(const QString &user)
 {
@@ -244,6 +246,8 @@ QString QAuthenticator::password() const
 
 /*!
   Sets the \a password used for authentication.
+
+  \sa QNetworkAccessManager::authenticationRequired()
 */
 void QAuthenticator::setPassword(const QString &password)
 {

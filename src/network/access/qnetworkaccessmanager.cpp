@@ -285,11 +285,16 @@ static void ensureInitialized()
     again, without emitting the authenticationRequired() signal. If it
     rejects the credentials, this signal will be emitted again.
 
+    \note To have the request not send credentials you must not call
+    setUser() or setPassword() on the \a authenticator object. This
+    will result in the the \l finished() signal being emitted with a
+    \l QNetworkReply with error \l AuthenticationRequiredError.
+
     \note It is not possible to use a QueuedConnection to connect to
     this signal, as the connection will fail if the authenticator has
     not been filled in with new information when the signal returns.
 
-    \sa proxyAuthenticationRequired()
+    \sa proxyAuthenticationRequired(), QAuthenticator::setUser(), QAuthenticator::setPassword()
 */
 
 /*!
