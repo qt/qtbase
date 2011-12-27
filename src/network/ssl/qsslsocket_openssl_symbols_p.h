@@ -427,11 +427,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 					(char *)(rsa))
 #define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
 					(char *)(dsa))
-#ifdef OPENSSL_LOAD_CONF
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
-#else
-#define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_noconf()
-#endif
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
