@@ -82,7 +82,7 @@ win32 {
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
         SOURCES += io/qstandardpaths_win.cpp
-} else:unix {
+} else:unix|integrity {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \
                 io/qfilesystemengine_unix.cpp \
@@ -117,9 +117,4 @@ win32 {
             }
         }
 }
-integrity {
-	SOURCES += io/qfsfileengine_unix.cpp \
-            io/qfsfileengine_iterator.cpp \
-            io/qfilesystemengine_unix.cpp \
-            io/qfilesystemiterator_unix.cpp
-}
+
