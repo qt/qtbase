@@ -222,7 +222,7 @@ public:
                                   Qt::MatchFlags(Qt::MatchStartsWith|Qt::MatchWrap)) const;
     virtual QSize span(const QModelIndex &index) const;
 
-    const QHash<int,QByteArray> &roleNames() const;
+    virtual QHash<int,QByteArray> roleNames() const;
 
 #ifdef Q_NO_USING_KEYWORD
     inline QObject *parent() const { return QObject::parent(); }
@@ -302,9 +302,16 @@ protected:
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
 
-    void setRoleNames(const QHash<int,QByteArray> &roleNames);
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED void setRoleNames(const QHash<int,QByteArray> &roleNames)
+    {
+        doSetRoleNames(roleNames);
+    }
+#endif
 
 private:
+    void doSetRoleNames(const QHash<int,QByteArray> &roleNames);
+
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
 };

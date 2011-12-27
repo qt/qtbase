@@ -112,6 +112,8 @@ private slots:
 
     void testChildrenLayoutsChanged();
 
+    void testRoleNames();
+
 private:
     DynamicTreeModel *m_model;
 };
@@ -1974,6 +1976,32 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
         QVERIFY(p2FirstPersistent.row() == 9);
         QVERIFY(p2LastPersistent.row() == 8);
     }
+}
+
+class OverrideRoleNames : public QStringListModel
+{
+    Q_OBJECT
+public:
+    OverrideRoleNames(QObject *parent = 0)
+      : QStringListModel(parent)
+    {
+
+    }
+
+    QHash<int, QByteArray> roleNames() const
+    {
+        QHash<int, QByteArray> roles = QStringListModel::roleNames();
+        roles.insert(Qt::UserRole + 2, "custom");
+        return roles;
+    }
+};
+
+void tst_QAbstractItemModel::testRoleNames()
+{
+    QAbstractItemModel *model = new OverrideRoleNames(this);
+    QHash<int, QByteArray> roles = model->roleNames();
+    QVERIFY(roles.contains(Qt::UserRole + 2));
+    QVERIFY(roles.value(Qt::UserRole + 2) == "custom");
 }
 
 QTEST_MAIN(tst_QAbstractItemModel)

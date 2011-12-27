@@ -2132,6 +2132,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 
 /*!
     \since 4.6
+    \obsolete
 
     Sets the model's role names to \a roleNames.
 
@@ -2142,7 +2143,11 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 
     \sa roleNames()
 */
-void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
+
+/*!
+    \internal
+ */
+void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
 {
     Q_D(QAbstractItemModel);
     d->roleNames = roleNames;
@@ -2155,7 +2160,7 @@ void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 
     \sa setRoleNames()
 */
-const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
+QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {
     Q_D(const QAbstractItemModel);
     return d->roleNames;
