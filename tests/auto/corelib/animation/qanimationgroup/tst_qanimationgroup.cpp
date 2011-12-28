@@ -51,7 +51,7 @@ class tst_QAnimationGroup : public QObject
 {
     Q_OBJECT
 public Q_SLOTS:
-    void init();
+    void initTestCase();
 
 private slots:
     void construction();
@@ -63,7 +63,7 @@ private slots:
     void loopWithoutStartValue();
 };
 
-void tst_QAnimationGroup::init()
+void tst_QAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
 }
