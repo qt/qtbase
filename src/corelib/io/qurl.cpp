@@ -629,8 +629,12 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end)
                 break;
             }
         }
-        if (x == ushort(x))
+        if (x == ushort(x)) {
             port = ushort(x);
+        } else {
+            sectionHasError |= Port;
+            errorCode = InvalidPortError;
+        }
     } else {
         port = -1;
     }
@@ -869,7 +873,8 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
             return true;
 
         sectionHasError |= Host;
-        errorCode = InvalidIPv6AddressError;
+        errorCode = begin[1].unicode() == 'v' ?
+                        InvalidIPvFutureError : InvalidIPv6AddressError;
         return false;
     }
 
@@ -926,7 +931,7 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, bool maybePe
     return true;
 }
 
-void QUrlPrivate::parse(const QString &url)
+void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
 {
     //   URI-reference = URI / relative-ref
     //   URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
@@ -948,7 +953,8 @@ void QUrlPrivate::parse(const QString &url)
     const ushort *const data = reinterpret_cast<const ushort *>(begin);
 
     for (int i = 0; i < len; ++i) {
-        if (data[i] == '#' && hash == -1) {
+        register uint uc = data[i];
+        if (uc == '#' && hash == -1) {
             hash = i;
 
             // nothing more to be found
@@ -956,9 +962,9 @@ void QUrlPrivate::parse(const QString &url)
         }
 
         if (question == -1) {
-            if (data[i] == ':' && colon == -1)
+            if (uc == ':' && colon == -1)
                 colon = i;
-            else if (data[i] == '?')
+            else if (uc == '?')
                 question = i;
         }
     }
@@ -975,6 +981,7 @@ void QUrlPrivate::parse(const QString &url)
         hierStart = 0;
     }
 
+    int pathStart;
     int hierEnd = qMin<uint>(qMin<uint>(question, hash), len);
     if (hierEnd - hierStart >= 2 && data[hierStart] == '/' && data[hierStart + 1] == '/') {
         // we have an authority, it ends at the first slash after these
@@ -989,12 +996,14 @@ void QUrlPrivate::parse(const QString &url)
         setAuthority(url, hierStart + 2, authorityEnd);
 
         // even if we failed to set the authority properly, let's try to recover
-        setPath(url, authorityEnd, hierEnd);
+        pathStart = authorityEnd;
+        setPath(url, pathStart, hierEnd);
     } else {
         userName.clear();
         password.clear();
         host.clear();
         port = -1;
+        pathStart = hierStart;
 
         if (hierStart < hierEnd)
             setPath(url, hierStart, hierEnd);
@@ -1007,6 +1016,67 @@ void QUrlPrivate::parse(const QString &url)
 
     if (hash != -1)
         setFragment(url, hash + 1, len);
+
+    if (sectionHasError || parsingMode == QUrl::TolerantMode)
+        return;
+
+    // The parsing so far was tolerant of errors, so the StrictMode
+    // parsing is actually implemented here, as an extra post-check.
+    // We only execute it if we haven't found any errors so far.
+
+    // What we need to look out for, that the regular parser tolerates:
+    //  - percent signs not followed by two hex digits
+    //  - forbidden characters, which should always appear encoded
+    //    '"' / '<' / '>' / '\' / '^' / '`' / '{' / '|' / '}' / BKSP
+    //    control characters
+    //  - delimiters not allowed in certain positions
+    //    . scheme: parser is already strict
+    //    . user info: gen-delims (except for ':') disallowed
+    //    . host: parser is stricter than the standard
+    //    . port: parser is stricter than the standard
+    //    . path: all delimiters allowed
+    //    . fragment: all delimiters allowed
+    //    . query: all delimiters allowed
+    //    We would only need to check the user-info. However, the presence
+    //    of the disallowed gen-delims changes the parsing, so we don't
+    //    actually need to do anything
+    static const char forbidden[] = "\"<>\\^`{|}\x7F";
+    for (uint i = 0; i < uint(len); ++i) {
+        register uint uc = data[i];
+        if (uc >= 0x80)
+            continue;
+
+        if ((uc == '%' && (uint(len) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
+                || uc < 0x20 || strchr(forbidden, uc)) {
+            // found an error
+            errorSupplement = uc;
+
+            // where are we?
+            if (i > uint(hash)) {
+                errorCode = InvalidFragmentError;
+                sectionHasError |= Fragment;
+            } else if (i > uint(question)) {
+                errorCode = InvalidQueryError;
+                sectionHasError |= Query;
+            } else if (i > uint(pathStart)) {
+                // pathStart is never -1
+                errorCode = InvalidPathError;
+                sectionHasError |= Path;
+            } else {
+                // It must be in the authority, since the scheme is strict.
+                // Since the port and hostname parsers are also strict,
+                // the error can only have happened in the user info.
+                int pos = url.indexOf(QLatin1Char(':'), hierStart);
+                if (i > uint(pos)) {
+                    errorCode = InvalidPasswordError;
+                    sectionHasError |= Password;
+                } else {
+                    errorCode = InvalidUserNameError;
+                    sectionHasError |= UserName;
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -1360,18 +1430,14 @@ void QUrl::clear()
     \a url is assumed to be in unicode format, with no percent
     encoding.
 
-    Calling isValid() will tell whether or not a valid URL was
-    constructed.
+    Calling isValid() will tell whether or not a valid URL was constructed.
 
     \sa setEncodedUrl()
 */
 void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
     detach();
-    if (parsingMode == StrictMode) {
-        // ### strict check here!
-    }
-    d->parse(url);
+    d->parse(url, parsingMode);
 }
 
 
@@ -2206,7 +2272,7 @@ QUrl &QUrl::operator =(const QString &url)
         clear();
     } else {
         detach();
-        d->parse(url);
+        d->parse(url, TolerantMode);
     }
     return *this;
 }
@@ -2423,8 +2489,20 @@ QString QUrl::errorString() const
     case QUrlPrivate::SchemeEmptyError:
         return QStringLiteral("Empty scheme");
 
+    case QUrlPrivate::InvalidUserNameError:
+        return QString(QStringLiteral("Invalid user name (character '%1' not permitted)"))
+                .arg(c);
+
+    case QUrlPrivate::InvalidPasswordError:
+        return QString(QStringLiteral("Invalid password (character '%1' not permitted)"))
+                .arg(c);
+
     case QUrlPrivate::InvalidRegNameError:
-        return QStringLiteral("Hostname contains invalid characters");
+        if (d->errorSupplement)
+            return QString(QStringLiteral("Invalid hostname (character '%1' not permitted)"))
+                    .arg(c);
+        else
+            return QStringLiteral("Hostname contains invalid characters");
     case QUrlPrivate::InvalidIPv4AddressError:
         return QString(); // doesn't happen yet
     case QUrlPrivate::InvalidIPv6AddressError:
@@ -2432,14 +2510,25 @@ QString QUrl::errorString() const
     case QUrlPrivate::InvalidIPvFutureError:
         return QStringLiteral("Invalid IPvFuture address");
     case QUrlPrivate::HostMissingEndBracket:
-        return QStringLiteral("Expected '[' to match ']' in hostname");
+        return QStringLiteral("Expected ']' to match '[' in hostname");
 
     case QUrlPrivate::InvalidPortError:
     case QUrlPrivate::PortEmptyError:
         return QStringLiteral("Invalid port or port number out of range");
 
+    case QUrlPrivate::InvalidPathError:
+        return QString(QStringLiteral("Invalid path (character '%1' not permitted)"))
+                .arg(c);
     case QUrlPrivate::PathContainsColonBeforeSlash:
         return QStringLiteral("Path component contains ':' before any '/'");
+
+    case QUrlPrivate::InvalidQueryError:
+        return QString(QStringLiteral("Invalid query (character '%1' not permitted)"))
+                .arg(c);
+
+    case QUrlPrivate::InvalidFragmentError:
+        return QString(QStringLiteral("Invalid fragment (character '%1' not permitted)"))
+                .arg(c);
     }
     return QStringLiteral("<unknown error>");
 }

@@ -75,27 +75,37 @@ public:
     };
 
     enum ErrorCode {
-        InvalidSchemeError = 0x000,
+        // the high byte of the error code matches the Section
+        InvalidSchemeError = Scheme << 8,
         SchemeEmptyError,
 
-        InvalidRegNameError = 0x800,
+        InvalidUserNameError = UserName << 8,
+
+        InvalidPasswordError = Password << 8,
+
+        InvalidRegNameError = Host << 8,
         InvalidIPv4AddressError,
         InvalidIPv6AddressError,
         InvalidIPvFutureError,
         HostMissingEndBracket,
 
-        InvalidPortError = 0x1000,
+        InvalidPortError = Port << 8,
         PortEmptyError,
 
-        PathContainsColonBeforeSlash = 0x2000,
+        InvalidPathError = Path << 8,
+        PathContainsColonBeforeSlash,
 
-        NoError = 0xffff
+        InvalidQueryError = Query << 8,
+
+        InvalidFragmentError = Fragment << 8,
+
+        NoError = 0
     };
 
     QUrlPrivate();
     QUrlPrivate(const QUrlPrivate &copy);
 
-    void parse(const QString &url);
+    void parse(const QString &url, QUrl::ParsingMode parsingMode);
     void clear();
 
     // no QString scheme() const;

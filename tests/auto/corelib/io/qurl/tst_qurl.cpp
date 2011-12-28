@@ -122,6 +122,8 @@ private slots:
     void schemeValidator_data();
     void schemeValidator();
     void invalidSchemeValidator();
+    void strictParser_data();
+    void strictParser();
     void tolerantParser();
     void correctEncodedMistakes_data();
     void correctEncodedMistakes();
@@ -143,7 +145,6 @@ private slots:
     void toEncoded();
     void setAuthority_data();
     void setAuthority();
-    void errorString();
     void clear();
     void resolvedWithAbsoluteSchemes() const;
     void resolvedWithAbsoluteSchemes_data() const;
@@ -1594,7 +1595,6 @@ void tst_QUrl::isValid()
     }
     {
         QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/", QUrl::StrictMode);
-        QEXPECT_FAIL("", "StrictMode not implemented yet", Continue);
         QVERIFY(!url.isValid());
         // < and > are not allowed in userinfo in strict mode
         url.setUserName("normal_username");
@@ -1604,6 +1604,7 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange<username>@ok-hostname/");
         QVERIFY(url.isValid());
         // < and > are allowed in tolerant mode
+        QCOMPARE(url.toEncoded(), QByteArray("http://strange%3Cusername%3E@ok-hostname/"));
     }
     {
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
@@ -1710,6 +1711,55 @@ void tst_QUrl::invalidSchemeValidator()
     }
 }
 
+void tst_QUrl::strictParser_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("needle");
+
+    // cannot test bad schemes here, as they are parsed as paths instead
+    //QTest::newRow("invalid-scheme") << "ht%://example.com" << "Invalid scheme";
+    //QTest::newRow("empty-scheme") << ":/" << "Empty scheme";
+
+    QTest::newRow("invalid-user1") << "http://bad<user_name>@ok-hostname" << "Invalid user name";
+    QTest::newRow("invalid-user2") << "http://bad%@ok-hostname" << "Invalid user name";
+
+    QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password";
+
+    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Hostname contains invalid characters";
+    QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
+    QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
+    QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']'";
+
+    QTest::newRow("empty-port") << "http://example.com:" << "Invalid port";
+    QTest::newRow("invalid-port-1") << "http://example.com:-1" << "Invalid port";
+    QTest::newRow("invalid-port-2") << "http://example.com:abc" << "Invalid port";
+    QTest::newRow("invalid-port-3") << "http://example.com:9a" << "Invalid port";
+    QTest::newRow("port-range") << "http://example.com:65536" << "out of range";
+
+    QTest::newRow("invalid-path") << "foo:/path%\x1F" << "Invalid path";
+    // not yet checked:
+    //QTest::newRow("path-colon-before-slash") << "foo::/" << "':' before any '/'";
+
+    QTest::newRow("invalid-query") << "foo:?\\#" << "Invalid query";
+
+    QTest::newRow("invalid-fragment") << "#{}" << "Invalid fragment";
+}
+
+void tst_QUrl::strictParser()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, needle);
+
+    QUrl url(input, QUrl::StrictMode);
+    QVERIFY(!url.isValid());
+    QVERIFY(!url.errorString().isEmpty());
+    if (!url.errorString().contains(needle))
+        qWarning("Error string changed and does not contain \"%s\" anymore: %s",
+                 qPrintable(needle), qPrintable(url.errorString()));
+}
+
 void tst_QUrl::tolerantParser()
 {
     {
@@ -1718,18 +1768,16 @@ void tst_QUrl::tolerantParser()
         QCOMPARE(url.path(), QString("/path with spaces.html"));
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
         url.setUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
-        QEXPECT_FAIL("", "StrictMode not implemented yet", Continue);
         QVERIFY(!url.isValid());
-        QEXPECT_FAIL("", "StrictMode not implemented yet", Continue);
-        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%2520with%20spaces.html"));
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
     }
     {
         QUrl url = QUrl::fromEncoded("http://www.example.com/path%20with spaces.html");
         QVERIFY(url.isValid());
         QCOMPARE(url.path(), QString("/path with spaces.html"));
         url.setEncodedUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
-        QEXPECT_FAIL("", "StrictMode not implemented yet", Continue);
-        QVERIFY(!url.isValid());
+        QVERIFY(url.isValid());
+        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
     }
 
     {
@@ -2207,19 +2255,6 @@ void tst_QUrl::setAuthority()
     QFETCH(QString, url);
     u.setAuthority(authority);
     QCOMPARE(u.toString(), url);
-}
-
-void tst_QUrl::errorString()
-{
-    QUrl v;
-    QCOMPARE(v.errorString(), QString());
-
-    QUrl u = QUrl::fromEncoded("http://strange<username>@bad_hostname/", QUrl::StrictMode);
-    QEXPECT_FAIL("", "StrictMode not implemented yet", Abort);
-    QVERIFY(!u.isValid());
-    QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
-                          "error at position 14: expected end of URL, but found '<'";
-    QCOMPARE(u.errorString(), errorString);
 }
 
 void tst_QUrl::clear()
