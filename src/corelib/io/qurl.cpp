@@ -1047,7 +1047,7 @@ void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
             continue;
 
         if ((uc == '%' && (uint(len) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
-                || uc < 0x20 || strchr(forbidden, uc)) {
+                || uc <= 0x20 || strchr(forbidden, uc)) {
             // found an error
             errorSupplement = uc;
 

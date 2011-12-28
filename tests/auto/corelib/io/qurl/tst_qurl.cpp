@@ -1769,15 +1769,13 @@ void tst_QUrl::tolerantParser()
         QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
         url.setUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
         QVERIFY(!url.isValid());
-        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
     }
     {
         QUrl url = QUrl::fromEncoded("http://www.example.com/path%20with spaces.html");
         QVERIFY(url.isValid());
         QCOMPARE(url.path(), QString("/path with spaces.html"));
         url.setEncodedUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
-        QVERIFY(url.isValid());
-        QCOMPARE(url.toString(QUrl::FullyEncoded), QString("http://www.example.com/path%20with%20spaces.html"));
+        QVERIFY(!url.isValid());
     }
 
     {
