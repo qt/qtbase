@@ -84,6 +84,18 @@ win32:!contains(QT_CONFIG, directwrite) {
             silent:ssse3_compiler.commands = @echo compiling[ssse3] ${QMAKE_FILE_IN} && $$ssse3_compiler.commands
             QMAKE_EXTRA_COMPILERS += ssse3_compiler
         }
+        avx {
+            avx_compiler.commands = $$QMAKE_CXX -c -Winline
+            avx_compiler.commands += -mavx
+            avx_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            avx_compiler.dependency_type = TYPE_C
+            avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+            avx_compiler.input = AVX_SOURCES
+            avx_compiler.variable_out = OBJECTS
+            avx_compiler.name = compiling[avx] ${QMAKE_FILE_IN}
+            silent:avx_compiler.commands = @echo compiling[avx] ${QMAKE_FILE_IN} && $$avx_compiler.commands
+            QMAKE_EXTRA_COMPILERS += avx_compiler
+        }
         iwmmxt {
             iwmmxt_compiler.commands = $$QMAKE_CXX -c -Winline
             iwmmxt_compiler.commands += -mcpu=iwmmxt

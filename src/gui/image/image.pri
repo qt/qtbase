@@ -77,3 +77,4 @@ contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
 NEON_SOURCES += image/qimage_neon.cpp
 SSE2_SOURCES += image/qimage_sse2.cpp
 SSSE3_SOURCES += image/qimage_ssse3.cpp
+AVX_SOURCES += image/qimage_avx.cpp

@@ -5805,6 +5805,24 @@ void qInitDrawhelperAsm()
 
     const uint features = qDetectCPUFeatures();
     if (false) {
+#ifdef QT_HAVE_AVX
+    } else if (features & AVX) {
+        qt_memfill32 = qt_memfill32_avx;
+        qt_memfill16 = qt_memfill16_avx;
+        qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_avx;
+        qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_avx;
+        qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_avx;
+        qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_avx;
+
+        extern void qt_scale_image_argb32_on_argb32_avx(uchar *destPixels, int dbpl,
+                                                         const uchar *srcPixels, int sbpl,
+                                                         const QRectF &targetRect,
+                                                         const QRectF &sourceRect,
+                                                         const QRect &clip,
+                                                         int const_alpha);
+        qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_avx;
+        qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_avx;
+#endif
 #ifdef QT_HAVE_SSE2
     } else if (features & SSE2) {
         qt_memfill32 = qt_memfill32_sse2;
@@ -5859,12 +5877,51 @@ void qInitDrawhelperAsm()
     }
 #endif // SSSE3
 
+#ifdef QT_HAVE_AVX
+    if (features & AVX) {
+        extern void qt_blend_rgb32_on_rgb32_avx(uchar *destPixels, int dbpl,
+                                                const uchar *srcPixels, int sbpl,
+                                                int w, int h,
+                                                int const_alpha);
+        extern void qt_blend_argb32_on_argb32_avx(uchar *destPixels, int dbpl,
+                                                  const uchar *srcPixels, int sbpl,
+                                                  int w, int h,
+                                                  int const_alpha);
+
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_avx;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_avx;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_avx(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                     int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_avx;
+    }
+#endif // AVX
+
 #endif // SSE2
 
 #ifdef QT_HAVE_SSE2
     if (features & SSE2) {
         functionForModeAsm = qt_functionForMode_SSE2;
         functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
+        }
+#endif
+#ifdef QT_HAVE_AVX
+        if (features & AVX) {
+            extern void QT_FASTCALL comp_func_SourceOver_avx(uint *destPixels,
+                                                             const uint *srcPixels,
+                                                             int length,
+                                                             uint const_alpha);
+            extern void QT_FASTCALL comp_func_solid_SourceOver_avx(uint *destPixels, int length, uint color, uint const_alpha);
+            extern void QT_FASTCALL comp_func_Plus_avx(uint *dst, const uint *src, int length, uint const_alpha);
+            extern void QT_FASTCALL comp_func_Source_avx(uint *dst, const uint *src, int length, uint const_alpha);
+
+            functionForModeAsm[0] = comp_func_SourceOver_avx;
+            functionForModeAsm[QPainter::CompositionMode_Source] = comp_func_Source_avx;
+            functionForModeAsm[QPainter::CompositionMode_Plus] = comp_func_Plus_avx;
+            functionForModeSolidAsm[0] = comp_func_solid_SourceOver_avx;
     }
 #endif // SSE2
 

@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QDRAWHELPER_AVX
+// in AVX mode, we'll use the SSSE3 code
 void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
                                     const uchar *srcPixels, int sbpl,
                                     int w, int h,
@@ -83,6 +85,7 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         }
     }
 }
+#endif
 
 // qblendfunctions.cpp
 void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
@@ -310,6 +313,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
     }
 }
 
+#ifndef QDRAWHELPER_AVX
 CompositionFunctionSolid qt_functionForModeSolid_SSE2[numCompositionFunctions] = {
     comp_func_solid_SourceOver_sse2,
     comp_func_solid_DestinationOver,
@@ -381,6 +385,7 @@ CompositionFunction qt_functionForMode_SSE2[numCompositionFunctions] = {
     rasterop_NotSourceAndDestination,
     rasterop_SourceAndNotDestination
 };
+#endif
 
 void qt_memfill16_sse2(quint16 *dest, quint16 value, int count)
 {

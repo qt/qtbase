@@ -91,12 +91,13 @@ SOURCES += \
 
 
 
-if(mmx|3dnow|sse|sse2|iwmmxt) {
+if(mmx|3dnow|sse|sse2|iwmmxt|avx) {
     HEADERS += painting/qdrawhelper_x86_p.h \
                painting/qdrawingprimitive_sse2_p.h
     SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
     SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
     IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
+    AVX_SOURCES += painting/qdrawhelper_avx.cpp
 }
 
 NEON_SOURCES += painting/qdrawhelper_neon.cpp
