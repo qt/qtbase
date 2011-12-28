@@ -191,7 +191,6 @@ void tst_QPrinter::getSetCheck()
     obj1.setPageSize(QPrinter::PageSize(QPrinter::A4));
     QCOMPARE(QPrinter::PageSize(QPrinter::A4), obj1.pageSize());
     obj1.setPageSize(QPrinter::PageSize(QPrinter::Letter));
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(QPrinter::PageSize(QPrinter::Letter), obj1.pageSize());
     obj1.setPageSize(QPrinter::PageSize(QPrinter::Legal));
     QCOMPARE(QPrinter::PageSize(QPrinter::Legal), obj1.pageSize());
@@ -517,7 +516,6 @@ void tst_QPrinter::setGetPaperSize()
     p.setOutputFormat(QPrinter::PdfFormat);
     QSizeF size(500, 10);
     p.setPaperSize(size, QPrinter::Millimeter);
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
     QSizeF ptSize = p.paperSize(QPrinter::Point);
     //qDebug() << ptSize;
@@ -760,7 +758,6 @@ void tst_QPrinter::valuePreservation()
 
         printer.setPageSize(QPrinter::B5);
         printer.setOutputFormat(newFormat);
-        QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
         QCOMPARE(printer.pageSize(), QPrinter::B5);
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.pageSize(), QPrinter::B5);
@@ -881,7 +878,6 @@ void tst_QPrinter::testCustomPageSizes()
     p.setPaperSize(customSize, QPrinter::Inch);
 
     QSizeF paperSize = p.paperSize(QPrinter::Inch);
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(paperSize, customSize);
 
     QPrinter p2(QPrinter::HighResolution);

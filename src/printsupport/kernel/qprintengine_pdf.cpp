@@ -303,7 +303,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->pageOrder;
         break;
     case PPK_PaperSize:
-        ret = d->paperSize;
+        ret = d->printerPaperSize;
         break;
     case PPK_PaperSource:
         ret = d->paperSource;
