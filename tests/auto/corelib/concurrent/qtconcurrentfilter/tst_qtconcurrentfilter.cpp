@@ -59,7 +59,7 @@ private slots:
     void filteredReduced();
     void resultAt();
     void incrementalResults();
-    void noDetatch();
+    void noDetach();
 #ifndef QT_NO_STL
     void stlContainers();
 #endif
@@ -1461,7 +1461,7 @@ void tst_QtConcurrentFilter::incrementalResults()
     QCOMPARE(future.results().count(), count / 2);
 }
 
-void tst_QtConcurrentFilter::noDetatch()
+void tst_QtConcurrentFilter::noDetach()
 {
     {
         QList<int> l = QList<int>() << 1;
