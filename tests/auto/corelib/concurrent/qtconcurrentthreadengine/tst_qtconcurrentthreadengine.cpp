@@ -446,8 +446,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Blocking mode:
@@ -460,9 +459,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // test throwing the exception from the main thread (different code path)
@@ -474,9 +471,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Asynchronous mode:
@@ -489,8 +484,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Blocking mode:
@@ -503,9 +497,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // test throwing the exception from the main thread (different code path)
@@ -517,9 +509,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 }
 
