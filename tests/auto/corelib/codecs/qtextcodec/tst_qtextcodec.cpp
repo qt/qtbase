@@ -356,17 +356,18 @@ void tst_QTextCodec::codecForLocale()
                 break;
         }
     }
-    if (!codec2) {
-        QSKIP("Could not find a codec that is not already the codecForLocale()");
+
+    // Only run the rest of the test if we could find a codec that is not
+    // already the codecForLocale().
+    if (codec2) {
+        // set it, codecForLocale() should return it now
+        QTextCodec::setCodecForLocale(codec2);
+        QCOMPARE(QTextCodec::codecForLocale(), codec2);
+
+        // reset back to the default
+        QTextCodec::setCodecForLocale(0);
+        QCOMPARE(QTextCodec::codecForLocale(), codec);
     }
-
-    // set it, codecForLocale() should return it now
-    QTextCodec::setCodecForLocale(codec2);
-    QCOMPARE(QTextCodec::codecForLocale(), codec2);
-
-    // reset back to the default
-    QTextCodec::setCodecForLocale(0);
-    QCOMPARE(QTextCodec::codecForLocale(), codec);
 #endif
 }
 
