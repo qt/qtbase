@@ -725,9 +725,6 @@ CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
 CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
-CFG_MMX=auto
-CFG_3DNOW=auto
-CFG_SSE=auto
 CFG_SSE2=auto
 CFG_SSE3=auto
 CFG_SSSE3=auto
@@ -1467,27 +1464,6 @@ while [ "$#" -gt 0 ]; do
     reduce-exports)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_REDUCE_EXPORTS="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    mmx)
-        if [ "$VAL" = "no" ]; then
-            CFG_MMX="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    3dnow)
-        if [ "$VAL" = "no" ]; then
-            CFG_3DNOW="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    sse)
-        if [ "$VAL" = "no" ]; then
-            CFG_SSE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2927,7 +2903,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
-        [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
+        [-no-separate-debug-info] [-no-sse2]
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info]
         [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
@@ -3099,9 +3075,6 @@ fi
 
 cat << EOF
 
-    -no-mmx ............ Do not compile with use of MMX instructions.
-    -no-3dnow .......... Do not compile with use of 3DNOW instructions.
-    -no-sse ............ Do not compile with use of SSE instructions.
     -no-sse2 ........... Do not compile with use of SSE2 instructions.
     -no-sse3 ........... Do not compile with use of SSE3 instructions.
     -no-ssse3 .......... Do not compile with use of SSSE3 instructions.
@@ -3961,33 +3934,6 @@ if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpat
     CFG_USE_FLOATMATH=yes
 else
     CFG_USE_FLOATMATH=no
-fi
-
-# detect mmx support
-if [ "${CFG_MMX}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mmx "mmx" $L_FLAGS $I_FLAGS $l_FLAGS "-mmmx"; then
-	CFG_MMX=yes
-    else
-	CFG_MMX=no
-    fi
-fi
-
-# detect 3dnow support
-if [ "${CFG_3DNOW}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/3dnow "3dnow" $L_FLAGS $I_FLAGS $l_FLAGS "-m3dnow"; then
-	CFG_3DNOW=yes
-    else
-	CFG_3DNOW=no
-    fi
-fi
-
-# detect sse support
-if [ "${CFG_SSE}" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse "sse" $L_FLAGS $I_FLAGS $l_FLAGS "-msse"; then
-	CFG_SSE=yes
-    else
-	CFG_SSE=no
-    fi
 fi
 
 # detect sse2 support
@@ -5603,9 +5549,6 @@ fi
 if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
     QT_CONFIG="$QT_CONFIG separate_debug_info_nocopy"
 fi
-[ "$CFG_MMX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mmx"
-[ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"
-[ "$CFG_SSE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse"
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
 [ "$CFG_SSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse3"
 [ "$CFG_SSSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG ssse3"
@@ -6565,8 +6508,8 @@ echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
-    echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
-    echo "SSSE3/SSE4.1/SSE4.2..... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
+    echo "SSE2/SSE3/SSSE3......... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
+    echo "SSE4.1/SSE4.2........... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
     echo "AVX..................... ${CFG_AVX}"
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"

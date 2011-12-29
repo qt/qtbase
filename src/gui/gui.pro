@@ -144,10 +144,6 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += iwmmxt_compiler
         }
     } else {
-        mmx: SOURCES += $$MMX_SOURCES
-        3dnow: SOURCES += $$MMX3DNOW_SOURCES
-        3dnow:sse: SOURCES += $$SSE3DNOW_SOURCES
-        sse: SOURCES += $$SSE_SOURCES
         sse2: SOURCES += $$SSE2_SOURCES
         ssse3: SOURCES += $$SSSE3_SOURCES
         iwmmxt: SOURCES += $$IWMMXT_SOURCES

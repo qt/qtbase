@@ -200,9 +200,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "EXCEPTIONS" ]      = "yes";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
-    dictionary[ "MMX" ]             = "auto";
-    dictionary[ "3DNOW" ]           = "auto";
-    dictionary[ "SSE" ]             = "auto";
     dictionary[ "SSE2" ]            = "auto";
     dictionary[ "IWMMXT" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
@@ -797,18 +794,6 @@ void Configure::parseCmdLine()
             cout << "Setting accessibility to NO" << endl;
         }
 
-        else if (configCmdLine.at(i) == "-no-mmx")
-            dictionary[ "MMX" ] = "no";
-        else if (configCmdLine.at(i) == "-mmx")
-            dictionary[ "MMX" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-3dnow")
-            dictionary[ "3DNOW" ] = "no";
-        else if (configCmdLine.at(i) == "-3dnow")
-            dictionary[ "3DNOW" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-sse")
-            dictionary[ "SSE" ] = "no";
-        else if (configCmdLine.at(i) == "-sse")
-            dictionary[ "SSE" ] = "yes";
         else if (configCmdLine.at(i) == "-no-sse2")
             dictionary[ "SSE2" ] = "no";
         else if (configCmdLine.at(i) == "-sse2")
@@ -1374,10 +1359,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STL" ]                 = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "RTTI" ]                = "no";
-        dictionary[ "3DNOW" ]               = "no";
-        dictionary[ "SSE" ]                 = "no";
         dictionary[ "SSE2" ]                = "no";
-        dictionary[ "MMX" ]                 = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
@@ -1468,7 +1450,7 @@ bool Configure::displayHelp()
                     "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
                     "[-no-libpng] [-qt-libpng] [-system-libpng]\n"
                     "[-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-mmx] [-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
+                    "[-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
@@ -1611,12 +1593,6 @@ bool Configure::displayHelp()
 
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.\n");
-        desc("MMX", "no",       "-no-mmx",              "Do not compile with use of MMX instructions");
-        desc("MMX", "yes",      "-mmx",                 "Compile with use of MMX instructions");
-        desc("3DNOW", "no",     "-no-3dnow",            "Do not compile with use of 3DNOW instructions");
-        desc("3DNOW", "yes",    "-3dnow",               "Compile with use of 3DNOW instructions");
-        desc("SSE", "no",       "-no-sse",              "Do not compile with use of SSE instructions");
-        desc("SSE", "yes",      "-sse",                 "Compile with use of SSE instructions");
         desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions");
         desc("SSE2", "yes",      "-sse2",               "Compile with use of SSE2 instructions");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile in OpenSSL support");
@@ -1862,10 +1838,6 @@ bool Configure::checkAvailability(const QString &part)
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
         available = (dictionary.value("QMAKESPEC") != "win32-msvc");
-    else if (part == "3DNOW")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-icc") && findFile("mm3dnow.h");
-    else if (part == "MMX" || part == "SSE")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "OPENSSL")
         available = findFile("openssl\\ssl.h");
     else if (part == "DBUS")
@@ -1974,12 +1946,6 @@ void Configure::autoDetection()
         dictionary["SQL_SQLITE2"] = checkAvailability("SQL_SQLITE2") ? defaultTo("SQL_SQLITE2") : "no";
     if (dictionary["SQL_IBASE"] == "auto")
         dictionary["SQL_IBASE"] = checkAvailability("SQL_IBASE") ? defaultTo("SQL_IBASE") : "no";
-    if (dictionary["MMX"] == "auto")
-        dictionary["MMX"] = checkAvailability("MMX") ? "yes" : "no";
-    if (dictionary["3DNOW"] == "auto")
-        dictionary["3DNOW"] = checkAvailability("3DNOW") ? "yes" : "no";
-    if (dictionary["SSE"] == "auto")
-        dictionary["SSE"] = checkAvailability("SSE") ? "yes" : "no";
     if (dictionary["SSE2"] == "auto")
         dictionary["SSE2"] = checkAvailability("SSE2") ? "yes" : "no";
     if (dictionary["IWMMXT"] == "auto")
@@ -2621,12 +2587,6 @@ void Configure::generateQConfigPri()
             configStream << " exceptions_off";
         if (dictionary[ "RTTI" ] == "yes")
             configStream << " rtti";
-        if (dictionary[ "MMX" ] == "yes")
-            configStream << " mmx";
-        if (dictionary[ "3DNOW" ] == "yes")
-            configStream << " 3dnow";
-        if (dictionary[ "SSE" ] == "yes")
-            configStream << " sse";
         if (dictionary[ "SSE2" ] == "yes")
             configStream << " sse2";
         if (dictionary[ "IWMMXT" ] == "yes")
@@ -3034,9 +2994,6 @@ void Configure::displayConfig()
     cout << "STL support................." << dictionary[ "STL" ] << endl;
     cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;
     cout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
-    cout << "MMX support................." << dictionary[ "MMX" ] << endl;
-    cout << "3DNOW support..............." << dictionary[ "3DNOW" ] << endl;
-    cout << "SSE support................." << dictionary[ "SSE" ] << endl;
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
