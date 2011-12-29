@@ -382,7 +382,7 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
-template <class RadialFetchFunc>
+template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
                                                            int y, int x, int length)
 {
@@ -687,7 +687,7 @@ inline quint24::operator uint() const
     return data[2] | (data[1] << 8) | (data[0] << 16);
 }
 
-template <class T>
+template <class T> Q_STATIC_TEMPLATE_FUNCTION
 void qt_memfill(T *dest, T value, int count);
 
 template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
@@ -728,7 +728,7 @@ inline void qt_memfill(T *dest, T value, int count)
     }
 }
 
-template <class T>
+template <class T> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_rectfill(T *dest, T value,
                         int x, int y, int width, int height, int stride)
 {
