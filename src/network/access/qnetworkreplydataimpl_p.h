@@ -87,7 +87,6 @@ public:
     QNetworkReplyDataImplPrivate();
     ~QNetworkReplyDataImplPrivate();
 
-    QPair<QString, QByteArray> decodeDataUrlResult;
     QBuffer decodedData;
 
     Q_DECLARE_PUBLIC(QNetworkReplyDataImpl)

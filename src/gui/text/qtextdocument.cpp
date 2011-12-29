@@ -1925,8 +1925,12 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 #endif
 
     // handle data: URLs
-    if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0)
-        r = qDecodeDataUrl(name).second;
+    if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0) {
+        QString mimetype;
+        QByteArray payload;
+        if (qDecodeDataUrl(name, mimetype, payload))
+            r = payload;
+    }
 
     // if resource was not loaded try to load it here
     if (!doc && r.isNull() && name.isRelative()) {

@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT QPair<QString, QByteArray> qDecodeDataUrl(const QUrl &url);
+Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &url, QString &mimeType, QByteArray &payload);
 
 QT_END_NAMESPACE
 
