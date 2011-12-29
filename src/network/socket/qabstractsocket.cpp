@@ -1470,27 +1470,6 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
                                     NetworkLayerProtocol protocol)
 {
     Q_D(QAbstractSocket);
-    d->preferredNetworkLayerProtocol = protocol;
-
-    QMetaObject::invokeMethod(this, "connectToHostImplementation",
-                              Qt::DirectConnection,
-                              Q_ARG(QString, hostName),
-                              Q_ARG(quint16, port),
-                              Q_ARG(OpenMode, openMode));
-}
-
-/*!
-    \since 4.1
-
-    Contains the implementation of connectToHost().
-
-    Attempts to make a connection to \a hostName on the given \a
-    port. The socket is opened in the given \a openMode.
-*/
-void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint16 port,
-                                                  OpenMode openMode)
-{
-    Q_D(QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::connectToHost(\"%s\", %i, %i)...", qPrintable(hostName), port,
            (int) openMode);
@@ -1505,6 +1484,7 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
         return;
     }
 
+    d->preferredNetworkLayerProtocol = protocol;
     d->hostName = hostName;
     d->port = port;
     d->state = UnconnectedState;
@@ -2620,17 +2600,6 @@ void QAbstractSocket::close()
     \sa connectToHost()
 */
 void QAbstractSocket::disconnectFromHost()
-{
-    QMetaObject::invokeMethod(this, "disconnectFromHostImplementation",
-                              Qt::DirectConnection);
-}
-
-/*!
-    \since 4.1
-
-    Contains the implementation of disconnectFromHost().
-*/
-void QAbstractSocket::disconnectFromHostImplementation()
 {
     Q_D(QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)

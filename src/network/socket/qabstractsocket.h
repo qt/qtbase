@@ -131,10 +131,9 @@ public:
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
 
-    // ### Qt 5: Make connectToHost() and disconnectFromHost() virtual.
-    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
-    void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
-    void disconnectFromHost();
+    virtual void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
+    virtual void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
+    virtual void disconnectFromHost();
 
     bool isValid() const;
 
@@ -195,10 +194,6 @@ Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
 #endif
-
-protected Q_SLOTS:
-    void connectToHostImplementation(const QString &hostName, quint16 port, OpenMode mode = ReadWrite);
-    void disconnectFromHostImplementation();
 
 protected:
     qint64 readData(char *data, qint64 maxlen);

@@ -149,6 +149,10 @@ information about a particular change.
   * On Windows, QProcess::ForwardedChannels will not forward the output of GUI
     applications anymore, if they do not create a console.
 
+- QAbstractSocket's connectToHost() and disconnectFromHost() are now virtual and
+  connectToHostImplementation() and disconnectFromHostImplementation() don't exist.
+
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
