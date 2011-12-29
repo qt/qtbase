@@ -67,7 +67,7 @@ private slots:
     void watchFinishedFuture();
     void watchCanceledFuture();
     void disconnectRunningFuture();
-    void toMuchProgress();
+    void tooMuchProgress();
     void progressText();
     void sharedFutureInterface();
     void changeFuture();
@@ -77,7 +77,7 @@ private slots:
     void throttling();
     void incrementalMapResults();
     void incrementalFilterResults();
-    void qfutureSynchornizer();
+    void qfutureSynchronizer();
     void warnRace();
 };
 
@@ -476,7 +476,7 @@ public:
     }
 };
 
-void tst_QFutureWatcher::toMuchProgress()
+void tst_QFutureWatcher::tooMuchProgress()
 {
     progressValues.clear();
     ProgressObject o;
@@ -891,7 +891,7 @@ void tst_QFutureWatcher::incrementalFilterResults()
     future.waitForFinished(); 
 }
 
-void tst_QFutureWatcher::qfutureSynchornizer()
+void tst_QFutureWatcher::qfutureSynchronizer()
 {
     int taskCount = 1000; 
     QTime t;
