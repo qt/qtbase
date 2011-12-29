@@ -76,6 +76,10 @@ QT_BEGIN_NAMESPACE
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_ALWAYS_INLINE inline __attribute__((always_inline))
 #  define Q_DECL_RESTRICT __restrict__
+#elif defined(Q_CC_MSVC)
+#  define Q_STATIC_TEMPLATE_FUNCTION static
+#  define Q_ALWAYS_INLINE __forceinline
+#  define Q_DECL_RESTRICT __restrict
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_ALWAYS_INLINE inline
