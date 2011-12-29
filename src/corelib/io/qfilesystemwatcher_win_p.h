@@ -60,6 +60,7 @@
 #include <qt_windows.h>
 
 #include <QtCore/qdatetime.h>
+#include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qhash.h>
@@ -78,14 +79,10 @@ class QWindowsFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
 public:
-    QWindowsFileSystemWatcherEngine();
     ~QWindowsFileSystemWatcherEngine();
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
-
 
     class Handle
     {

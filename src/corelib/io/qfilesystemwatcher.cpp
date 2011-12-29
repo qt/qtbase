@@ -220,14 +220,10 @@ QFileSystemWatcher::~QFileSystemWatcher()
 {
     Q_D(QFileSystemWatcher);
     if (d->native) {
-        d->native->stop();
-        d->native->wait();
         delete d->native;
         d->native = 0;
     }
     if (d->poller) {
-        d->poller->stop();
-        d->poller->wait();
         delete d->poller;
         d->poller = 0;
     }

@@ -60,19 +60,16 @@
 #include <private/qobject_p.h>
 
 #include <QtCore/qstringlist.h>
-#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFileSystemWatcherEngine : public QThread
+class QFileSystemWatcherEngine : public QObject
 {
     Q_OBJECT
 
 protected:
-    inline QFileSystemWatcherEngine(bool move = true)
+    inline QFileSystemWatcherEngine()
     {
-        if (move)
-            moveToThread(this);
     }
 
 public:
@@ -87,8 +84,6 @@ public:
     virtual QStringList removePaths(const QStringList &paths,
                                     QStringList *files,
                                     QStringList *directories) = 0;
-
-    virtual void stop() = 0;
 
 Q_SIGNALS:
     void fileChanged(const QString &path, bool removed);

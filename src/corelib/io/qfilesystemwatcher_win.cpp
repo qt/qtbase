@@ -53,22 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
-void QWindowsFileSystemWatcherEngine::stop()
-{
-    foreach(QWindowsFileSystemWatcherEngineThread *thread, threads)
-        thread->stop();
-}
-
-QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine()
-    : QFileSystemWatcherEngine(false)
-{
-}
-
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
 {
-    if (threads.isEmpty())
-        return;
-
     foreach(QWindowsFileSystemWatcherEngineThread *thread, threads) {
         thread->stop();
         thread->wait();

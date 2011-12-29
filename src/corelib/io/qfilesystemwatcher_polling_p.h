@@ -57,6 +57,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qtimer.h>
 
 #include "qfilesystemwatcher_p.h"
 
@@ -110,15 +111,14 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
 public:
     QPollingFileSystemWatcherEngine();
 
-    void run();
-
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
 
-    void stop();
-
 private Q_SLOTS:
     void timeout();
+
+private:
+    QTimer timer;
 };
 
 QT_END_NAMESPACE

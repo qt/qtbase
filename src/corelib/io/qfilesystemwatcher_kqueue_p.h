@@ -59,6 +59,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qsocketnotifier.h>
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 struct kevent;
@@ -76,19 +77,18 @@ public:
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
 
-    void stop();
+private Q_SLOTS:
+    void readFromKqueue();
 
 private:
     QKqueueFileSystemWatcherEngine(int kqfd);
 
-    void run();
-
     int kqfd;
-    int kqpipe[2];
 
     QMutex mutex;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;
+    QSocketNotifier notifier;
 };
 
 QT_END_NAMESPACE

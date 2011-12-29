@@ -226,10 +226,10 @@ QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
 
 QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd)
     : inotifyFd(fd)
+    , notifier(fd, QSocketNotifier::Read, this)
 {
     fcntl(inotifyFd, F_SETFD, FD_CLOEXEC);
-
-    moveToThread(this);
+    connect(&notifier, SIGNAL(activated(int)), SLOT(readFromInotify()));
 }
 
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
@@ -238,13 +238,6 @@ QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
     ::close(inotifyFd);
-}
-
-void QInotifyFileSystemWatcherEngine::run()
-{
-    QSocketNotifier sn(inotifyFd, QSocketNotifier::Read, this);
-    connect(&sn, SIGNAL(activated(int)), SLOT(readFromInotify()));
-    (void) exec();
 }
 
 QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
@@ -302,8 +295,6 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
         idToPath.insert(id, path);
     }
 
-    start();
-
     return p;
 }
 
@@ -335,11 +326,6 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
     }
 
     return p;
-}
-
-void QInotifyFileSystemWatcherEngine::stop()
-{
-    quit();
 }
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()

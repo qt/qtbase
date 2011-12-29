@@ -57,8 +57,9 @@
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 
-#include <qhash.h>
-#include <qmutex.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qsocketnotifier.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,12 +72,8 @@ public:
 
     static QInotifyFileSystemWatcherEngine *create();
 
-    void run();
-
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
 
 private Q_SLOTS:
     void readFromInotify();
@@ -87,6 +84,7 @@ private:
     QMutex mutex;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;
+    QSocketNotifier notifier;
 };
 
 

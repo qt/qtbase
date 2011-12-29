@@ -45,18 +45,9 @@
 QT_BEGIN_NAMESPACE
 
 QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine()
+    : timer(this)
 {
-#ifndef QT_NO_THREAD
-    moveToThread(this);
-#endif
-}
-
-void QPollingFileSystemWatcherEngine::run()
-{
-    QTimer timer;
     connect(&timer, SIGNAL(timeout()), SLOT(timeout()));
-    timer.start(PollingInterval);
-    (void) exec();
 }
 
 QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
@@ -84,7 +75,13 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
         }
         it.remove();
     }
-    start();
+
+    if ((!this->files.isEmpty() ||
+         !this->directories.isEmpty()) &&
+        !timer.isActive()) {
+        timer.start(PollingInterval);
+    }
+
     return p;
 }
 
@@ -105,17 +102,13 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
             it.remove();
         }
     }
-    if (this->files.isEmpty() && this->directories.isEmpty()) {
-        locker.unlock();
-        stop();
-        wait();
-    }
-    return p;
-}
 
-void QPollingFileSystemWatcherEngine::stop()
-{
-    quit();
+    if (this->files.isEmpty() &&
+        this->directories.isEmpty()) {
+        timer.stop();
+    }
+
+    return p;
 }
 
 void QPollingFileSystemWatcherEngine::timeout()
