@@ -39,6 +39,15 @@
 **
 ****************************************************************************/
 
+#if defined(__OPTIMIZE__) && !defined(__INTEL_COMPILER) && defined(__GNUC__) \
+    && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)
+// GCC 4.4 supports #pragma GCC optimize and #pragma GCC target
+#  pragma GCC optimize "O3"
+#  if defined(__i386__) && defined(__SSE2__) && !defined(__SSE2_MATH__)
+#   pragma GCC target "fpmath=sse"
+#  endif
+#endif
+
 #include <qstylehints.h>
 #include <qguiapplication.h>
 #include <qatomic.h>
