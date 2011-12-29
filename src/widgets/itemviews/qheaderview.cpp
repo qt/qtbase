@@ -1660,31 +1660,22 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
     d->invalidateCachedSizeHint();
 
     // add the new sections
-    int insertAt = 0;
-    for (int spanStart = 0; insertAt < d->sectionSpans.count() && spanStart < logicalFirst; ++insertAt)
-        spanStart += d->sectionSpans.at(insertAt).count;
+    int insertAt = logicalFirst;
 
     int insertCount = logicalLast - logicalFirst + 1;
     d->sectionCount += insertCount;
+    QHeaderViewPrivate::SectionSpan span(d->defaultSectionSize, d->globalResizeMode);
+    d->sectionStartposRecalc = true;
 
     if (d->sectionSpans.isEmpty() || insertAt >= d->sectionSpans.count()) {
         int insertLength = d->defaultSectionSize * insertCount;
         d->length += insertLength;
-        QHeaderViewPrivate::SectionSpan span(insertLength, insertCount, d->globalResizeMode);
-        d->sectionSpans.append(span);
-    } else if ((d->sectionSpans.at(insertAt).sectionSize() == d->defaultSectionSize)
-               && d->sectionSpans.at(insertAt).resizeMode == d->globalResizeMode) {
-        // add the new sections to an existing span
-        int insertLength = d->sectionSpans.at(insertAt).sectionSize() * insertCount;
-        d->length += insertLength;
-        d->sectionSpans[insertAt].size += insertLength;
-        d->sectionSpans[insertAt].count += insertCount;
+        d->sectionSpans.insert(d->sectionSpans.count(), insertCount, span); // append
     } else {
-        // separate them out into their own span
+        // separate them out into their own spans
         int insertLength = d->defaultSectionSize * insertCount;
         d->length += insertLength;
-        QHeaderViewPrivate::SectionSpan span(insertLength, insertCount, d->globalResizeMode);
-        d->sectionSpans.insert(insertAt, span);
+        d->sectionSpans.insert(insertAt, insertCount, span);
     }
 
     // update sorting column
@@ -3112,177 +3103,27 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
 
 void QHeaderViewPrivate::createSectionSpan(int start, int end, int size, QHeaderView::ResizeMode mode)
 {
-    // ### the code for merging spans does not merge at all opertuneties
-    // ### what if the number of sections is reduced ?
-
-    SectionSpan span(size, (end - start) + 1, mode);
-    int start_section = 0;
-#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
-    int initial_section_count = headerSectionCount(); // ### debug code
-#endif
-
-    QList<int> spansToRemove;
-    for (int i = 0; i < sectionSpans.count(); ++i) {
-        int end_section = start_section + sectionSpans.at(i).count - 1;
-        int section_count = sectionSpans.at(i).count;
-        if (start <= start_section && end > end_section) {
-            // the existing span is entirely coveded by the new span
-            spansToRemove.append(i);
-        } else if (start < start_section && end >= end_section) {
-            // the existing span is entirely coveded by the new span
-            spansToRemove.append(i);
-        } else if (start == start_section && end == end_section) {
-            // the new span is covered by an existin span
-            length -= sectionSpans.at(i).size;
-            length += size;
-            sectionSpans[i].size = size;
-            sectionSpans[i].resizeMode = mode;
-            // ### check if we can merge the section with any of its neighbours
-            removeSpans(spansToRemove);
-            Q_ASSERT(initial_section_count == headerSectionCount());
-            return;
-        } else if (start > start_section && end < end_section) {
-            if (sectionSpans.at(i).sectionSize() == span.sectionSize()
-                && sectionSpans.at(i).resizeMode == span.resizeMode) {
-                Q_ASSERT(initial_section_count == headerSectionCount());
-                return;
-            }
-            // the new span is in the middle of the old span, so we have to split it
-            length -= sectionSpans.at(i).size;
-            int section_size = sectionSpans.at(i).sectionSize();
-#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
-            const int span_count = sectionSpans.at(i).count;
-#endif
-            QHeaderView::ResizeMode span_mode = sectionSpans.at(i).resizeMode;
-            // first span
-            int first_span_count = start - start_section;
-            int first_span_size = section_size * first_span_count;
-            sectionSpans[i].count = first_span_count;
-            sectionSpans[i].size = first_span_size;
-            sectionSpans[i].resizeMode = span_mode;
-            length += first_span_size;
-            // middle span (the new span)
-#if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
-            const int mid_span_count = span.count;
-#endif
-            int mid_span_size = span.size;
-            sectionSpans.insert(i + 1, span);
-            length += mid_span_size;
-            // last span
-            int last_span_count = end_section - end;
-            int last_span_size = section_size * last_span_count;
-            sectionSpans.insert(i + 2, SectionSpan(last_span_size, last_span_count, span_mode));
-            length += last_span_size;
-            Q_ASSERT(span_count == first_span_count + mid_span_count + last_span_count);
-            removeSpans(spansToRemove);
-            Q_ASSERT(initial_section_count == headerSectionCount());
-            return;
-        } else if (start > start_section && start <= end_section && end >= end_section) {
-            // the new span covers the last part of the existing span
-            length -= sectionSpans.at(i).size;
-            int removed_count = (end_section - start + 1);
-            int span_count = sectionSpans.at(i).count - removed_count;
-            int section_size = sectionSpans.at(i).sectionSize();
-            int span_size = section_size * span_count;
-            sectionSpans[i].count = span_count;
-            sectionSpans[i].size = span_size;
-            length += span_size;
-            if (end == end_section) {
-                sectionSpans.insert(i + 1, span); // insert after
-                length += span.size;
-                removeSpans(spansToRemove);
-                Q_ASSERT(initial_section_count == headerSectionCount());
-                return;
-            }
-        } else if (end < end_section && end >= start_section && start <= start_section) {
-            // the new span covers the first part of the existing span
-            length -= sectionSpans.at(i).size;
-            int removed_count = (end - start_section + 1);
-            int section_size = sectionSpans.at(i).sectionSize();
-            int span_count = sectionSpans.at(i).count - removed_count;
-            int span_size = section_size * span_count;
-            sectionSpans[i].count = span_count;
-            sectionSpans[i].size = span_size;
-            length += span_size;
-            sectionSpans.insert(i, span); // insert before
-            length += span.size;
-            removeSpans(spansToRemove);
-            Q_ASSERT(initial_section_count == headerSectionCount());
-            return;
-        }
-        start_section += section_count;
-    }
-
-    // ### adding and removing _ sections_  in addition to spans
-    // ### add some more checks here
-
-    if (spansToRemove.isEmpty()) {
-        if (!sectionSpans.isEmpty()
-            && sectionSpans.last().sectionSize() == span.sectionSize()
-            && sectionSpans.last().resizeMode == span.resizeMode) {
-            length += span.size;
-            int last = sectionSpans.count() - 1;
-            sectionSpans[last].count += span.count;
-            sectionSpans[last].size += span.size;
-            sectionSpans[last].resizeMode = span.resizeMode;
-        } else {
-            length += span.size;
-            sectionSpans.append(span);
-        }
-    } else {
-        removeSpans(spansToRemove);
-        length += span.size;
-        sectionSpans.insert(spansToRemove.first(), span);
-        //Q_ASSERT(initial_section_count == headerSectionCount());
+    int sizePerSection = size / (end - start + 1);
+    if (end >= sectionSpans.count())
+        sectionSpans.resize(end + 1);
+    SectionSpan *sectiondata = sectionSpans.data();
+    for (int i = start; i <= end; ++i) {
+        length += (sizePerSection - sectiondata[i].size);
+        sectionStartposRecalc |= (sectiondata[i].size != sizePerSection);
+        sectiondata[i].size = sizePerSection;
+        sectiondata[i].resizeMode = mode;
     }
 }
 
 void QHeaderViewPrivate::removeSectionsFromSpans(int start, int end)
 {
     // remove sections
-    int start_section = 0;
-    QList<int> spansToRemove;
-    for (int i = 0; i < sectionSpans.count(); ++i) {
-        int end_section = start_section + sectionSpans.at(i).count - 1;
-        int section_size = sectionSpans.at(i).sectionSize();
-        int section_count = sectionSpans.at(i).count;
-        if (start <= start_section && end >= end_section) {
-            // the change covers the entire span
-            spansToRemove.append(i);
-            if (end == end_section)
-                break;
-        } else if (start > start_section && end < end_section) {
-            // all the removed sections are inside the span
-            int change = (end - start + 1);
-            sectionSpans[i].count -= change;
-            sectionSpans[i].size = section_size * sectionSpans.at(i).count;
-            length -= (change * section_size);
-            break;
-        } else if (start >= start_section && start <= end_section) {
-            // the some of the removed sections are inside the span,at the end
-            int change = qMin(end_section - start + 1, end - start + 1);
-            sectionSpans[i].count -= change;
-            sectionSpans[i].size = section_size * sectionSpans.at(i).count;
-            start += change;
-            length -= (change * section_size);
-            // the change affects several spans
-        } else if (end >= start_section && end <= end_section) {
-            // the some of the removed sections are inside the span, at the beginning
-            int change = qMin((end - start_section + 1), end - start + 1);
-            sectionSpans[i].count -= change;
-            sectionSpans[i].size = section_size * sectionSpans.at(i).count;
-            length -= (change * section_size);
-            break;
-        }
-        start_section += section_count;
-    }
-
-    for (int i = spansToRemove.count() - 1; i >= 0; --i) {
-        int s = spansToRemove.at(i);
-        length -= sectionSpans.at(s).size;
-        sectionSpans.remove(s);
-        // ### merge remaining spans
-    }
+    sectionStartposRecalc |= (end != sectionSpans.count() - 1);
+    int removedlength = 0;
+    for (int u = start; u <= end; ++u)
+        removedlength += sectionSpans.at(u).size;
+    length -= removedlength;
+    sectionSpans.remove(start, end - start + 1);
 }
 
 void QHeaderViewPrivate::clear()
@@ -3427,23 +3268,29 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
 {
     Q_Q(QHeaderView);
     defaultSectionSize = size;
-    int currentVisualIndex = 0;
     for (int i = 0; i < sectionSpans.count(); ++i) {
         QHeaderViewPrivate::SectionSpan &span = sectionSpans[i];
         if (span.size > 0) {
             //we resize it if it is not hidden (ie size > 0)
-            const int newSize = span.count * size;
+            const int newSize = size;
             if (newSize != span.size) {
                 length += newSize - span.size; //the whole length is changed
                 const int oldSectionSize = span.sectionSize();
-                span.size = span.count * size;
-                for (int i = currentVisualIndex; i < currentVisualIndex + span.count; ++i) {
-                    emit q->sectionResized(logicalIndex(i), oldSectionSize, size);
-                }
+                span.size = size;
+                emit q->sectionResized(logicalIndex(i), oldSectionSize, size);
             }
         }
-        currentVisualIndex += span.count;
     }
+}
+
+void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
+{
+    int pixelpos = 0;
+    for (QVector<SectionSpan>::const_iterator i = sectionSpans.constBegin(); i != sectionSpans.constEnd(); ++i) {
+        i->calculated_startpos = pixelpos; // write into const mutable
+        pixelpos += i->size;
+    }
+    sectionStartposRecalc = false;
 }
 
 void QHeaderViewPrivate::resizeSectionSpan(int visualIndex, int oldSize, int newSize)
@@ -3456,54 +3303,37 @@ void QHeaderViewPrivate::resizeSectionSpan(int visualIndex, int oldSize, int new
 
 int QHeaderViewPrivate::headerSectionSize(int visual) const
 {
-    // ### stupid iteration
-    int section_start = 0;
-    const int sectionSpansCount = sectionSpans.count();
-    for (int i = 0; i < sectionSpansCount; ++i) {
-        const QHeaderViewPrivate::SectionSpan &currentSection = sectionSpans.at(i);
-        int section_end = section_start + currentSection.count - 1;
-        if (visual >= section_start && visual <= section_end)
-            return currentSection.sectionSize();
-        section_start = section_end + 1;
-    }
+    if (visual < sectionCount && visual >= 0)
+        return sectionSpans.at(visual).sectionSize();
     return -1;
 }
 
 int QHeaderViewPrivate::headerSectionPosition(int visual) const
 {
-    // ### stupid iteration
-    int section_start = 0;
-    int span_position = 0;
-    const int sectionSpansCount = sectionSpans.count();
-    for (int i = 0; i < sectionSpansCount; ++i) {
-        const QHeaderViewPrivate::SectionSpan &currentSection = sectionSpans.at(i);
-        int section_end = section_start + currentSection.count - 1;
-        if (visual >= section_start && visual <= section_end)
-            return span_position + (visual - section_start) * currentSection.sectionSize();
-        section_start = section_end + 1;
-        span_position += currentSection.size;
+    if (visual < sectionCount && visual >= 0) {
+        if (sectionStartposRecalc)
+            recalcSectionStartPos();
+        return sectionSpans.at(visual).calculated_startpos;
     }
     return -1;
 }
 
 int QHeaderViewPrivate::headerVisualIndexAt(int position) const
 {
-    // ### stupid iteration
-    int span_start_section = 0;
-    int span_position = 0;
-    const int sectionSpansCount = sectionSpans.count();
-    for (int i = 0; i < sectionSpansCount; ++i) {
-        const QHeaderViewPrivate::SectionSpan &currentSection = sectionSpans.at(i);
-        int next_span_start_section = span_start_section + currentSection.count;
-        int next_span_position = span_position + currentSection.size;
-        if (position == span_position && currentSection.size > 0)
-            return span_start_section;
-        if (position > span_position && position < next_span_position) {
-            int position_in_span = position - span_position;
-            return span_start_section + (position_in_span / currentSection.sectionSize());
+    if (sectionStartposRecalc)
+        recalcSectionStartPos();
+    int startidx = 0;
+    int endidx = sectionSpans.count() - 1;
+    while (startidx <= endidx) {
+        int middle = (endidx + startidx) / 2;
+        if (sectionSpans.at(middle).calculated_startpos > position) {
+            endidx = middle - 1;
+        } else {
+            if (sectionSpans.at(middle).calculatedEndPos() <= position)
+                startidx = middle + 1;
+            else // we found it.
+                return middle;
         }
-        span_start_section = next_span_start_section;
-        span_position = next_span_position;
     }
     return -1;
 }
@@ -3546,9 +3376,9 @@ int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
         int currentVisualIndex = 0;
         for (int i = 0; i < sectionSpans.count(); ++i) {
             if (sectionSpans.at(i).size == 0)
-                adjustedVisualIndex += sectionSpans.at(i).count;
+                ++adjustedVisualIndex;
             else
-                currentVisualIndex += sectionSpans.at(i).count;
+                ++currentVisualIndex;
             if (currentVisualIndex >= visualIndex)
                 break;
         }
@@ -3626,7 +3456,15 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     globalResizeMode = (QHeaderView::ResizeMode)global;
 
     in >> sectionSpans;
-
+    // Spans in Qt5 only contains one element - but for backward compability with Qt4 we do the following
+    QVector<SectionSpan> newSectionSpans;
+    for (int u = 0; u < sectionSpans.count(); ++u) {
+        int count = sectionSpans.at(u).tmpDataStreamSectionCount;
+        for (int n = 0; n < count; ++n)
+            newSectionSpans.append(sectionSpans[u]);
+    }
+    sectionSpans = newSectionSpans;
+    recalcSectionStartPos();
     return true;
 }
 
