@@ -58,18 +58,6 @@ QT_BEGIN_NAMESPACE
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 
-#if defined(Q_OS_IRIX) && defined(Q_CC_GNU) && __GNUC__ == 3 && __GNUC__ < 4 && QT_POINTER_SIZE == 8
-#define Q_IRIX_GCC3_3_WORKAROUND
-//
-// work around http://gcc.gnu.org/bugzilla/show_bug.cgi?id=14484
-//
-static uint gccBug(uint value) __attribute__((noinline));
-static uint gccBug(uint value)
-{
-    return value;
-}
-#endif
-
 /*
   constants and structures
 */
