@@ -71,6 +71,9 @@ QT_BEGIN_NAMESPACE
 // RVCT doesn't like static template functions
 #  define Q_STATIC_TEMPLATE_FUNCTION
 #  define Q_STATIC_INLINE_FUNCTION static __forceinline
+#elif defined(Q_CC_GNU)
+#  define Q_STATIC_TEMPLATE_FUNCTION static __attribute__((always_inline))
+#  define Q_STATIC_INLINE_FUNCTION static inline __attribute__((always_inline))
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_STATIC_INLINE_FUNCTION static inline
