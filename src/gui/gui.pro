@@ -61,9 +61,9 @@ win32:!contains(QT_CONFIG, directwrite) {
 
     win32-g++*|!win32:!win32-icc*:!macx-icc* {
         sse2 {
-            sse2_compiler.commands = $$QMAKE_CXX -c -Winline
+            sse2_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
             sse2_compiler.commands += -msse2
-            sse2_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
             sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
             sse2_compiler.input = SSE2_SOURCES
@@ -73,9 +73,9 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += sse2_compiler
         }
         ssse3 {
-            ssse3_compiler.commands = $$QMAKE_CXX -c -Winline
+            ssse3_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
             ssse3_compiler.commands += -mssse3
-            ssse3_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
             ssse3_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
             ssse3_compiler.input = SSSE3_SOURCES
@@ -85,9 +85,9 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += ssse3_compiler
         }
         avx {
-            avx_compiler.commands = $$QMAKE_CXX -c -Winline
+            avx_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
             avx_compiler.commands += -mavx
-            avx_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             avx_compiler.dependency_type = TYPE_C
             avx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
             avx_compiler.input = AVX_SOURCES
@@ -97,9 +97,9 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += avx_compiler
         }
         iwmmxt {
-            iwmmxt_compiler.commands = $$QMAKE_CXX -c -Winline
+            iwmmxt_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
             iwmmxt_compiler.commands += -mcpu=iwmmxt
-            iwmmxt_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+            iwmmxt_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             iwmmxt_compiler.dependency_type = TYPE_C
             iwmmxt_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
             iwmmxt_compiler.input = IWMMXT_SOURCES
