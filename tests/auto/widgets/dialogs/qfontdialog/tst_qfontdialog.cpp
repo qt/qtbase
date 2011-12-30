@@ -119,10 +119,10 @@ void tst_QFontDialog::postKeyReturn() {
 
 void tst_QFontDialog::defaultOkButton()
 {
-    bool ok = FALSE;
+    bool ok = false;
     QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
     QFontDialog::getFont(&ok);
-    QVERIFY(ok == TRUE);
+    QVERIFY(ok);
 }
 
 
@@ -132,7 +132,7 @@ void tst_QFontDialog::setFont()
               while the font dialog was open.
 	      Task #27662
     */
-    bool ok = FALSE;
+    bool ok = false;
 #if defined Q_OS_HPUX
     QString fontName = "Courier";
     int fontSize = 25;

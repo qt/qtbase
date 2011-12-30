@@ -303,7 +303,7 @@ void tst_QWorkspace::windowActivatedWithMinimize()
 
 void tst_QWorkspace::accelActivated()
 {
-    accelPressed = TRUE;
+    accelPressed = true;
 }
 
 void tst_QWorkspace::showWindows()

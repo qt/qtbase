@@ -726,7 +726,7 @@ void BezierViewer::paintEvent( QPaintEvent* )
 
     /* Write number of vertices */
     painter.setPen( Qt::red );
-    painter.setFont( QFont("Helvetica", 14, QFont::DemiBold, TRUE ) );
+    painter.setFont( QFont("Helvetica", 14, QFont::DemiBold, true ) );
     QString caption;
     caption.setNum( bezier.size() );
     caption += QString::fromLatin1( " vertices" );
@@ -759,24 +759,24 @@ void tst_QWidget::fontPropagation()
     childWidget->show();
     QCOMPARE( font, childWidget->font() );
 
-    font.setBold( TRUE );
+    font.setBold( true );
     testWidget->setFont( font );
     QCOMPARE( font, testWidget->font() );
     QCOMPARE( font, childWidget->font() );
 
     QFont newFont = font;
-    newFont.setItalic( TRUE );
+    newFont.setItalic( true );
     childWidget->setFont( newFont );
     QWidget* grandChildWidget = new QWidget( childWidget );
     QCOMPARE( font, testWidget->font() );
     QCOMPARE( newFont, grandChildWidget->font() );
 
-    font.setUnderline( TRUE );
+    font.setUnderline( true );
     testWidget->setFont( font );
 
     // the child and grand child should now have merged bold and
     // underline
-    newFont.setUnderline( TRUE );
+    newFont.setUnderline( true );
 
     QCOMPARE( newFont, childWidget->font() );
     QCOMPARE( newFont, grandChildWidget->font() );
@@ -1074,32 +1074,32 @@ void tst_QWidget::enabledPropagation()
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setDisabled( FALSE );
+    testWidget->setDisabled( false );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
     QWidget* grandChildWidget = new QWidget( childWidget );
     QVERIFY( grandChildWidget->isEnabled() );
 
-    testWidget->setDisabled( TRUE );
+    testWidget->setDisabled( true );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( FALSE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( false );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( TRUE );
-    testWidget->setEnabled( FALSE );
-    childWidget->setDisabled( TRUE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( true );
+    testWidget->setEnabled( false );
+    childWidget->setDisabled( true );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
@@ -1162,7 +1162,7 @@ void tst_QWidget::isEnabledTo()
     QVERIFY( childWidget->isEnabledTo( testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( testWidget ) );
 
-    childWidget->setEnabled( FALSE );
+    childWidget->setEnabled( false );
     QVERIFY( !childWidget->isEnabledTo( testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( childWidget ) );
     QVERIFY( !grandChildWidget->isEnabledTo( testWidget ) );
@@ -1245,7 +1245,7 @@ void tst_QWidget::visible_setWindowOpacity()
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
 #ifdef Q_OS_WIN
-    QVERIFY(::IsWindowVisible(winHandleOf(testWidget)) ==  FALSE);
+    QVERIFY(!::IsWindowVisible(winHandleOf(testWidget)));
 #endif
     testWidget->setWindowOpacity(1.0);
 }
@@ -1638,12 +1638,12 @@ public:
 
     void tab()
     {
-	focusNextPrevChild(TRUE);
+	focusNextPrevChild(true);
     }
 
     void backTab()
     {
-	focusNextPrevChild(FALSE);
+	focusNextPrevChild(false);
     }
 };
 

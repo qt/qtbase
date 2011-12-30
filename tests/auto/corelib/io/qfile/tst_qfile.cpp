@@ -404,7 +404,7 @@ void tst_QFile::cleanupTestCase()
 void tst_QFile::exists()
 {
     QFile f( QFINDTESTDATA("testfile.txt") );
-    QCOMPARE( f.exists(), (bool)TRUE );
+    QVERIFY(f.exists());
 
     QFile file("nobodyhassuchafile");
     file.remove();
@@ -443,41 +443,41 @@ void tst_QFile::open_data()
 #endif
     QTest::newRow( "exist_readOnly"  )
         << QString(QFINDTESTDATA("testfile.txt")) << int(QIODevice::ReadOnly)
-        << (bool)TRUE << QFile::NoError;
+        << true << QFile::NoError;
 
     QTest::newRow( "exist_writeOnly" )
         << QString("readonlyfile")
         << int(QIODevice::WriteOnly)
-        << (bool)FALSE
+        << false
         << QFile::OpenError;
 
     QTest::newRow( "exist_append"    )
         << QString("readonlyfile") << int(QIODevice::Append)
-        << (bool)FALSE << QFile::OpenError;
+        << false << QFile::OpenError;
 
     QTest::newRow( "nonexist_readOnly"  )
         << QString("nonExist.txt") << int(QIODevice::ReadOnly)
-        << (bool)FALSE << QFile::OpenError;
+        << false << QFile::OpenError;
 
     QTest::newRow("emptyfile")
         << QString("")
         << int(QIODevice::ReadOnly)
-        << (bool)FALSE
+        << false
         << QFile::OpenError;
 
-    QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << (bool)FALSE
+    QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << false
         << QFile::OpenError;
 
-    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << (bool)TRUE
+    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << true
         << QFile::NoError;
 
     QTest::newRow("readonlyfile") << QString("readonlyfile") << int(QIODevice::WriteOnly)
-                                  << (bool)FALSE << QFile::OpenError;
+                                  << false << QFile::OpenError;
     QTest::newRow("noreadfile") << QString("noreadfile") << int(QIODevice::ReadOnly)
-                                << (bool)FALSE << QFile::OpenError;
+                                << false << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
-                                        << (bool)TRUE << QFile::NoError;
+                                        << true << QFile::NoError;
     QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
@@ -694,7 +694,7 @@ void tst_QFile::atEnd()
 
     bool end = f.atEnd();
     f.close();
-    QCOMPARE( end, (bool)TRUE );
+    QVERIFY(end);
 }
 
 void tst_QFile::readLine()

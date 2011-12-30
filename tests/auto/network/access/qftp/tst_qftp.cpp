@@ -278,7 +278,7 @@ void tst_QFtp::init()
     bytesAvailable_finished = 1234567890;
     bytesAvailable_done = 1234567890;
 
-    inFileDirExistsFunction = FALSE;
+    inFileDirExistsFunction = false;
 
 #if !defined(Q_OS_WINCE)
     srand(time(0));
@@ -435,12 +435,12 @@ void tst_QFtp::close_data()
     QTest::addColumn<QString>("password");
     QTest::addColumn<bool>("login");
 
-    QTest::newRow( "login01" ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString() << (bool)TRUE;
-    QTest::newRow( "login02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString() << (bool)TRUE;
-    QTest::newRow( "login03" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString("foo") << (bool)TRUE;
-    QTest::newRow( "login04" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest") << QString("password") << (bool)TRUE;
+    QTest::newRow( "login01" ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString() << true;
+    QTest::newRow( "login02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString() << true;
+    QTest::newRow( "login03" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString("foo") << true;
+    QTest::newRow( "login04" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest") << QString("password") << true;
 
-    QTest::newRow( "no-login01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("") << QString("") << (bool)FALSE;
+    QTest::newRow( "no-login01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("") << QString("") << false;
 }
 
 void tst_QFtp::close()
@@ -1963,12 +1963,12 @@ bool tst_QFtp::fileExists( const QString &host, quint16 port, const QString &use
     // ### make these tests work
     if (ftp->currentId() != 0) {
         qWarning("ftp->currentId() != 0");
-        return FALSE;
+        return false;
     }
 
     if (ftp->state() != QFtp::Unconnected) {
         qWarning("ftp->state() != QFtp::Unconnected");
-        return FALSE;
+        return false;
     }
 
     addCommand( QFtp::ConnectToHost, ftp->connectToHost( host, port ) );
@@ -1978,39 +1978,39 @@ bool tst_QFtp::fileExists( const QString &host, quint16 port, const QString &use
     addCommand( QFtp::List, ftp->list( file ) );
     addCommand( QFtp::Close, ftp->close() );
 
-    inFileDirExistsFunction = TRUE;
+    inFileDirExistsFunction = true;
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
         // ### make this test work
         qWarning("tst_QFtp::fileExists: Network operation timed out");
-        return FALSE;
+        return false;
     }
-    inFileDirExistsFunction = FALSE;
+    inFileDirExistsFunction = false;
 
     ResMapIt it = resultMap.find( QFtp::ConnectToHost );
     // ### make these tests work
     if (it == resultMap.end()) {
         qWarning("it != resultMap.end()");
-        return FALSE;
+        return false;
     }
 
     if (it.value().success == -1) {
         qWarning("it.value().success != -1");
-        return FALSE;
+        return false;
     }
 
     if ( it.value().success == 1 ) {
         for ( uint i=0; i < (uint) listInfo_i.count(); i++ ) {
             if ( QFileInfo(listInfo_i[i].name()).fileName() == QFileInfo(file).fileName() )
-                return TRUE;
+                return true;
         }
     }
 
     //this is not a good warning considering sometime this function is used to test that a file does not exist
     //qWarning("file doesn't exist");
-    return FALSE;
+    return false;
 }
 
 bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &cdDir, const QString &dirToCreate )
@@ -2029,7 +2029,7 @@ bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user
         addCommand( QFtp::Cd, ftp->cd( cdDir + "/" + dirToCreate ) );
     addCommand( QFtp::Close, ftp->close() );
 
-    inFileDirExistsFunction = TRUE;
+    inFileDirExistsFunction = true;
     QTestEventLoop::instance().enterLoop( 30 );
     delete ftp;
     ftp = 0;
@@ -2037,9 +2037,9 @@ bool tst_QFtp::dirExists( const QString &host, quint16 port, const QString &user
         // ### make this test work
         // QFAIL( "Network operation timed out" );
         qWarning("tst_QFtp::dirExists: Network operation timed out");
-        return FALSE;
+        return false;
     }
-    inFileDirExistsFunction = FALSE;
+    inFileDirExistsFunction = false;
 
     ResMapIt it = resultMap.find( QFtp::Cd );
     // ### make these tests work

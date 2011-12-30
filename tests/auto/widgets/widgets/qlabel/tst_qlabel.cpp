@@ -181,7 +181,7 @@ void tst_QLabel::init()
     testWidget->setBuddy( 0 );
     testWidget->setIndent( 0 );
     testWidget->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-    testWidget->setScaledContents( FALSE );
+    testWidget->setScaledContents( false );
 }
 
 void tst_QLabel::cleanup()

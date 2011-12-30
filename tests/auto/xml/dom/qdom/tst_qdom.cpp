@@ -261,11 +261,11 @@ void tst_QDom::setContent()
     QStringList::Iterator it;
     for ( it = featuresTrue.begin(); it != featuresTrue.end(); ++it ) {
         QVERIFY( reader.hasFeature( *it ) );
-        reader.setFeature( *it, TRUE );
+        reader.setFeature( *it, true );
     }
     for ( it = featuresFalse.begin(); it != featuresFalse.end(); ++it ) {
         QVERIFY( reader.hasFeature( *it ) );
-        reader.setFeature( *it, FALSE );
+        reader.setFeature( *it, false );
     }
 
     QDomDocument domDoc;
@@ -386,7 +386,7 @@ void tst_QDom::hasAttributes_data()
 }
 
 /*
-  This function tests that QDomNode::hasAttributes() returns TRUE if and only
+  This function tests that QDomNode::hasAttributes() returns true if and only
   if the node has attributes (i.e. QDomNode::attributes() returns a list with
   attributes in it).
 */
@@ -588,13 +588,13 @@ void tst_QDom::cloneNode_data()
     QTest::addColumn<QList<QVariant> >("pathToNode");
     QTest::addColumn<bool>("deep");
 
-    QTest::newRow( "noDeep_01" ) << doc01 << nodeB1 << (bool)FALSE;
-    QTest::newRow( "noDeep_02" ) << doc01 << nodeC1 << (bool)FALSE;
-    QTest::newRow( "noDeep_03" ) << doc01 << nodeC2 << (bool)FALSE;
+    QTest::newRow( "noDeep_01" ) << doc01 << nodeB1 << false;
+    QTest::newRow( "noDeep_02" ) << doc01 << nodeC1 << false;
+    QTest::newRow( "noDeep_03" ) << doc01 << nodeC2 << false;
 
-    QTest::newRow( "deep_01" ) << doc01 << nodeB1 << (bool)TRUE;
-    QTest::newRow( "deep_02" ) << doc01 << nodeC1 << (bool)TRUE;
-    QTest::newRow( "deep_03" ) << doc01 << nodeC2 << (bool)TRUE;
+    QTest::newRow( "deep_01" ) << doc01 << nodeB1 << true;
+    QTest::newRow( "deep_02" ) << doc01 << nodeC1 << true;
+    QTest::newRow( "deep_03" ) << doc01 << nodeC2 << true;
 }
 
 void tst_QDom::cloneNode()
@@ -732,14 +732,14 @@ void tst_QDom::ownerDocumentTask27424_data()
     QTest::addColumn<bool>("insertLevel2AfterCstr");
     QTest::addColumn<bool>("insertLevel3AfterCstr");
 
-    QTest::newRow( "000" ) << (bool)FALSE << (bool)FALSE << (bool)FALSE;
-    QTest::newRow( "001" ) << (bool)FALSE << (bool)FALSE << (bool)TRUE;
-    QTest::newRow( "010" ) << (bool)FALSE << (bool)TRUE  << (bool)FALSE;
-    QTest::newRow( "011" ) << (bool)FALSE << (bool)TRUE  << (bool)TRUE;
-    QTest::newRow( "100" ) << (bool)TRUE  << (bool)FALSE << (bool)FALSE;
-    QTest::newRow( "101" ) << (bool)TRUE  << (bool)FALSE << (bool)TRUE;
-    QTest::newRow( "110" ) << (bool)TRUE  << (bool)TRUE  << (bool)FALSE;
-    QTest::newRow( "111" ) << (bool)TRUE  << (bool)TRUE  << (bool)TRUE;
+    QTest::newRow( "000" ) << false << false << false;
+    QTest::newRow( "001" ) << false << false << true;
+    QTest::newRow( "010" ) << false << true  << false;
+    QTest::newRow( "011" ) << false << true  << true;
+    QTest::newRow( "100" ) << true  << false << false;
+    QTest::newRow( "101" ) << true  << false << true;
+    QTest::newRow( "110" ) << true  << true  << false;
+    QTest::newRow( "111" ) << true  << true  << true;
 }
 
 void tst_QDom::ownerDocumentTask27424()
@@ -858,14 +858,14 @@ void tst_QDom::documentCreationTask27424_data()
     QTest::addColumn<bool>("insertLevel2AfterCstr");
     QTest::addColumn<bool>("insertLevel3AfterCstr");
 
-    QTest::newRow( "000" ) << (bool)FALSE << (bool)FALSE << (bool)FALSE;
-    QTest::newRow( "001" ) << (bool)FALSE << (bool)FALSE << (bool)TRUE;
-    QTest::newRow( "010" ) << (bool)FALSE << (bool)TRUE  << (bool)FALSE;
-    QTest::newRow( "011" ) << (bool)FALSE << (bool)TRUE  << (bool)TRUE;
-    QTest::newRow( "100" ) << (bool)TRUE  << (bool)FALSE << (bool)FALSE;
-    QTest::newRow( "101" ) << (bool)TRUE  << (bool)FALSE << (bool)TRUE;
-    QTest::newRow( "110" ) << (bool)TRUE  << (bool)TRUE  << (bool)FALSE;
-    QTest::newRow( "111" ) << (bool)TRUE  << (bool)TRUE  << (bool)TRUE;
+    QTest::newRow( "000" ) << false << false << false;
+    QTest::newRow( "001" ) << false << false << true;
+    QTest::newRow( "010" ) << false << true  << false;
+    QTest::newRow( "011" ) << false << true  << true;
+    QTest::newRow( "100" ) << true  << false << false;
+    QTest::newRow( "101" ) << true  << false << true;
+    QTest::newRow( "110" ) << true  << true  << false;
+    QTest::newRow( "111" ) << true  << true  << true;
 }
 
 void tst_QDom::documentCreationTask27424()
@@ -961,9 +961,9 @@ bool tst_QDom::isDeepEqual(const QDomNode &n1, const QDomNode &n2)
 }
 
 /*
-    Returns TRUE if \a doc1 and \a doc2 represent the same XML document, i.e.
+    Returns true if \a doc1 and \a doc2 represent the same XML document, i.e.
     they have the same informational content. Otherwise, this function returns
-    FALSE.
+    false.
 */
 bool tst_QDom::compareDocuments( const QDomDocument &doc1, const QDomDocument &doc2 )
 {
@@ -971,12 +971,12 @@ bool tst_QDom::compareDocuments( const QDomDocument &doc1, const QDomDocument &d
 }
 
 /*
-    Returns TRUE if \a node1 and \a node2 represent the same XML node, i.e.
+    Returns true if \a node1 and \a node2 represent the same XML node, i.e.
     they have the same informational content. Otherwise, this function returns
-    FALSE.
+    false.
 
-    If \a deep is TRUE, children of the nodes are also tested. If \a deep is
-    FALSE, only \a node1 and \a node 2 are compared.
+    If \a deep is true, children of the nodes are also tested. If \a deep is
+    false, only \a node1 and \a node 2 are compared.
 */
 bool tst_QDom::compareNodes( const QDomNode &node1, const QDomNode &node2, bool deep )
 {
@@ -995,7 +995,7 @@ bool tst_QDom::compareNodes( const QDomNode &node1, const QDomNode &node2, bool 
     }
 
     if ( node1.isNull() && node2.isNull() )
-        return TRUE;
+        return true;
     // ### I am not sure if this test is complete
     bool equal =     node1.nodeName() == node2.nodeName();
     equal = equal && node1.nodeType() == node2.nodeType();

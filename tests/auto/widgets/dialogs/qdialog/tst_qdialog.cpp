@@ -170,10 +170,10 @@ void tst_QDialog::showExtension_data()
     QTest::addColumn<QSize>("result");
 
     //next we fill it with data
-    QTest::newRow( "data0" )  << QSize(100,100) << QSize(50,50) << (bool)FALSE << QSize(100,150);
-    QTest::newRow( "data1" )  << QSize(100,100) << QSize(120,50) << (bool)FALSE << QSize(120,150);
-    QTest::newRow( "data2" )  << QSize(100,100) << QSize(50,50) << (bool)TRUE << QSize(150,100);
-    QTest::newRow( "data3" )  << QSize(100,100) << QSize(50,120) << (bool)TRUE << QSize(150,120);
+    QTest::newRow( "data0" )  << QSize(100,100) << QSize(50,50) << false << QSize(100,150);
+    QTest::newRow( "data1" )  << QSize(100,100) << QSize(120,50) << false << QSize(120,150);
+    QTest::newRow( "data2" )  << QSize(100,100) << QSize(50,50) << true << QSize(150,100);
+    QTest::newRow( "data3" )  << QSize(100,100) << QSize(50,120) << true << QSize(150,120);
 }
 
 void tst_QDialog::showExtension()
@@ -193,7 +193,7 @@ void tst_QDialog::showExtension()
     QPoint oldPosition = testWidget->pos();
 
     // show
-    ((DummyDialog*)testWidget)->showExtension( TRUE );
+    ((DummyDialog*)testWidget)->showExtension( true );
 //     while ( testWidget->size() == dlgSize )
 // 	qApp->processEvents();
 
@@ -202,7 +202,7 @@ void tst_QDialog::showExtension()
     QCOMPARE(testWidget->pos(), oldPosition);
 
     // hide extension. back to old size ?
-    ((DummyDialog*)testWidget)->showExtension( FALSE );
+    ((DummyDialog*)testWidget)->showExtension( false );
     QCOMPARE( testWidget->size(), dlgSize );
 
     testWidget->setExtension( 0 );
@@ -214,14 +214,14 @@ void tst_QDialog::defaultButtons()
     QPushButton *push = new QPushButton("Button 1", testWidget);
     QPushButton *pushTwo = new QPushButton("Button 2", testWidget);
     QPushButton *pushThree = new QPushButton("Button 3", testWidget);
-    pushThree->setAutoDefault(FALSE);
+    pushThree->setAutoDefault(false);
 
     //we need to show the buttons. Otherwise they won't get the focus
     push->show();
     pushTwo->show();
     pushThree->show();
 
-    push->setDefault(TRUE);
+    push->setDefault(true);
     QVERIFY(push->isDefault());
 
     pushTwo->setFocus();
@@ -231,7 +231,7 @@ void tst_QDialog::defaultButtons()
     lineEdit->setFocus();
     QVERIFY(push->isDefault());
 
-    pushTwo->setDefault(TRUE);
+    pushTwo->setDefault(true);
     QVERIFY(pushTwo->isDefault());
 
     pushTwo->setFocus();

@@ -1254,10 +1254,8 @@ void tst_QShortcut::testElement()
 
     if (action == ClearAll) {
 	clearAllShortcuts();
-	QCOMPARE(TRUE, TRUE);
     } else if (action == SetupAccel) {
 	setupShortcut(testWidget, txt, k1, k2, k3, k4);
-	QCOMPARE(TRUE, TRUE);
     } else {
 	sendKeyEvents(k1, c1, k2, c2, k3, c3, k4, c4);
 	QCOMPARE(int(currentResult), result);

@@ -315,25 +315,25 @@ void tst_QPrinter::testSetOptions()
     QPrintDialog dlg(&prn);
 
     // Verify default values
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions(QAbstractPrintDialog::PrintPageRange);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions((QAbstractPrintDialog::PrintDialogOptions(QAbstractPrintDialog::PrintSelection
                                                                     | QAbstractPrintDialog::PrintPageRange)));
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions(QAbstractPrintDialog::PrintSelection);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), FALSE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), false);
 }
 
 void tst_QPrinter::testMargins_data()

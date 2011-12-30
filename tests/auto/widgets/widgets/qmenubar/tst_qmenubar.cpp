@@ -722,7 +722,7 @@ void tst_QMenuBar::check_homeKey()
 {
     // I'm temporarily shutting up this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( TRUE );
+    QVERIFY( true );
     return;
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
@@ -760,7 +760,7 @@ void tst_QMenuBar::check_endKey()
 {
     // I'm temporarily silenting this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( TRUE );
+    QVERIFY( true );
     return;
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );

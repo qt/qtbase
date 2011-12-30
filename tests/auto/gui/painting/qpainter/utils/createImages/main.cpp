@@ -127,7 +127,7 @@ static QBitmap createSrcBitmap( int size, int border )
     painter.drawRect( border, border, size, size2 );
     painter.end();
     if ( border > 0 ) {
-	QBitmap mask( totalSize, totalSize, TRUE );
+	QBitmap mask( totalSize, totalSize, true );
 	QPainter painter;
 	painter.begin( &mask );
 	painter.setPen( QPen( Qt::color1, 1 ) );
@@ -171,7 +171,7 @@ int main( int argc, char **argv )
 	QBitmap src_tmp = createSrcBitmap( 32, 0 ).xForm( QWMatrix( 1, 0, 0, -1, 0, 0 ) );
 	src_tmp.resize( 32, 48 );
 	QBitmap src2 = src_tmp.xForm( QWMatrix( 1, 0, 0, -1, 0, 0 ) );
-	QBitmap mask( 32, 48, TRUE );
+	QBitmap mask( 32, 48, true );
 	{
 	    QPainter painter;
 	    painter.begin( &mask );

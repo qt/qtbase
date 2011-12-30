@@ -443,7 +443,7 @@ void tst_QWaitCondition::wakeOne()
     for (x = 0; x < ThreadCount; ++x) {
         thread[x].mutex = &mutex;
         thread[x].cond = &cond;
-        thread_exited[x] = FALSE;
+        thread_exited[x] = false;
         thread[x].start();
         // wait for thread to start
         QVERIFY(thread[x].started.wait(&mutex, 1000));
@@ -468,7 +468,7 @@ void tst_QWaitCondition::wakeOne()
             if (thread_exited[y])
                         continue;
             if (thread[y].wait(exited > 0 ? 10 : 1000)) {
-                thread_exited[y] = TRUE;
+                thread_exited[y] = true;
                 ++exited;
             }
         }
@@ -487,7 +487,7 @@ void tst_QWaitCondition::wakeOne()
     for (x = 0; x < ThreadCount; ++x) {
         rwthread[x].readWriteLock = &readWriteLock;
         rwthread[x].cond = &cond;
-        thread_exited[x] = FALSE;
+        thread_exited[x] = false;
         rwthread[x].start();
         // wait for thread to start
         QVERIFY(rwthread[x].started.wait(&readWriteLock, 1000));
@@ -512,7 +512,7 @@ void tst_QWaitCondition::wakeOne()
             if (thread_exited[y])
                         continue;
             if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
-                thread_exited[y] = TRUE;
+                thread_exited[y] = true;
                 ++exited;
             }
         }
@@ -537,7 +537,7 @@ void tst_QWaitCondition::wakeOne()
     for (x = 0; x < ThreadCount; ++x) {
         thread[x].mutex = &mutex;
         thread[x].cond = &cond;
-        thread_exited[x] = FALSE;
+        thread_exited[x] = false;
         thread[x].start();
         // wait for thread to start
         QVERIFY(thread[x].started.wait(&mutex, 1000));
@@ -564,7 +564,7 @@ void tst_QWaitCondition::wakeOne()
             if (thread_exited[y])
                         continue;
             if (thread[y].wait(exited > 0 ? 10 : 1000)) {
-                thread_exited[y] = TRUE;
+                thread_exited[y] = true;
                 ++exited;
             }
         }
@@ -583,7 +583,7 @@ void tst_QWaitCondition::wakeOne()
     for (x = 0; x < ThreadCount; ++x) {
         rwthread[x].readWriteLock = &readWriteLock;
         rwthread[x].cond = &cond;
-        thread_exited[x] = FALSE;
+        thread_exited[x] = false;
         rwthread[x].start();
         // wait for thread to start
         QVERIFY(rwthread[x].started.wait(&readWriteLock, 1000));
@@ -610,7 +610,7 @@ void tst_QWaitCondition::wakeOne()
             if (thread_exited[y])
                         continue;
             if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
-                thread_exited[y] = TRUE;
+                thread_exited[y] = true;
                 ++exited;
             }
         }

@@ -873,7 +873,7 @@ static void QBitArrayData(QBitArray *b, int index)
 
     for (int i = 0; i < filler.length(); ++i) {
         if (filler.at(i) == '1')
-            b->setBit(i, TRUE);
+            b->setBit(i, true);
     }
 }
 
@@ -1313,83 +1313,83 @@ void tst_QDataStream::readQDateTime(QDataStream *s)
 static QFont qFontData(int index)
 {
     switch (index) {
-    case 0: return QFont("Courier", 20, QFont::Bold, TRUE);
-    case 1: return QFont("Courier", 18, QFont::Bold, FALSE);
-    case 2: return QFont("Courier", 16, QFont::Light, TRUE);
-    case 3: return QFont("Courier", 14, QFont::Normal, FALSE);
-    case 4: return QFont("Courier", 12, QFont::DemiBold, TRUE);
-    case 5: return QFont("Courier", 10, QFont::Black, FALSE);
+    case 0: return QFont("Courier", 20, QFont::Bold, true);
+    case 1: return QFont("Courier", 18, QFont::Bold, false);
+    case 2: return QFont("Courier", 16, QFont::Light, true);
+    case 3: return QFont("Courier", 14, QFont::Normal, false);
+    case 4: return QFont("Courier", 12, QFont::DemiBold, true);
+    case 5: return QFont("Courier", 10, QFont::Black, false);
     case 6:
         {
-            QFont f("Helvetica", 10, QFont::Normal, FALSE);
+            QFont f("Helvetica", 10, QFont::Normal, false);
             f.setPixelSize(2);
-            f.setUnderline(FALSE);
-            f.setStrikeOut(FALSE);
-            f.setFixedPitch(FALSE);
+            f.setUnderline(false);
+            f.setStrikeOut(false);
+            f.setFixedPitch(false);
             return f;
         }
     case 7:
         {
-            QFont f("Helvetica", 10, QFont::Bold, FALSE);
+            QFont f("Helvetica", 10, QFont::Bold, false);
             f.setPixelSize(4);
-            f.setUnderline(TRUE);
-            f.setStrikeOut(FALSE);
-            f.setFixedPitch(FALSE);
+            f.setUnderline(true);
+            f.setStrikeOut(false);
+            f.setFixedPitch(false);
             return f;
         }
     case 8:
         {
-            QFont f("Helvetica", 10, QFont::Light, FALSE);
+            QFont f("Helvetica", 10, QFont::Light, false);
             f.setPixelSize(6);
-            f.setUnderline(FALSE);
-            f.setStrikeOut(TRUE);
-            f.setFixedPitch(FALSE);
+            f.setUnderline(false);
+            f.setStrikeOut(true);
+            f.setFixedPitch(false);
             return f;
         }
     case 9:
         {
-            QFont f("Helvetica", 10, QFont::DemiBold, FALSE);
+            QFont f("Helvetica", 10, QFont::DemiBold, false);
             f.setPixelSize(8);
-            f.setUnderline(FALSE);
-            f.setStrikeOut(FALSE);
-            f.setFixedPitch(TRUE);
+            f.setUnderline(false);
+            f.setStrikeOut(false);
+            f.setFixedPitch(true);
             return f;
         }
     case 10:
         {
-            QFont f("Helvetica", 10, QFont::Black, FALSE);
+            QFont f("Helvetica", 10, QFont::Black, false);
             f.setPixelSize(10);
-            f.setUnderline(TRUE);
-            f.setStrikeOut(TRUE);
-            f.setFixedPitch(FALSE);
+            f.setUnderline(true);
+            f.setStrikeOut(true);
+            f.setFixedPitch(false);
             return f;
         }
     case 11:
         {
-            QFont f("Helvetica", 10, QFont::Normal, TRUE);
+            QFont f("Helvetica", 10, QFont::Normal, true);
             f.setPixelSize(12);
-            f.setUnderline(FALSE);
-            f.setStrikeOut(TRUE);
-            f.setFixedPitch(TRUE);
+            f.setUnderline(false);
+            f.setStrikeOut(true);
+            f.setFixedPitch(true);
             return f;
         }
     case 12:
         {
-            QFont f("Helvetica", 10, QFont::Bold, TRUE);
+            QFont f("Helvetica", 10, QFont::Bold, true);
             f.setPixelSize(14);
-            f.setUnderline(TRUE);
-            f.setStrikeOut(TRUE);
-            f.setFixedPitch(TRUE);
+            f.setUnderline(true);
+            f.setStrikeOut(true);
+            f.setFixedPitch(true);
             return f;
         }
     case 13:
         {
-            QFont f("Helvetica", 10, QFont::Bold, TRUE);
+            QFont f("Helvetica", 10, QFont::Bold, true);
             f.setStretch(200);
             return f;
         }
     }
-    return QFont("Courier", 18, QFont::Bold, TRUE);
+    return QFont("Courier", 18, QFont::Bold, true);
 }
 #define MAX_QFONT_DATA 14
 

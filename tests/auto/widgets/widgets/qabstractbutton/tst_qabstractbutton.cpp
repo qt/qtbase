@@ -182,9 +182,9 @@ void tst_QAbstractButton::cleanupTestCase()
 void tst_QAbstractButton::init()
 {
     testWidget->setText("Test");
-    testWidget->setEnabled( TRUE );
-    testWidget->setDown( FALSE );
-    testWidget->setAutoRepeat( FALSE );
+    testWidget->setEnabled( true );
+    testWidget->setDown( false );
+    testWidget->setAutoRepeat( false );
     QKeySequence seq;
     testWidget->setShortcut( seq );
 
@@ -257,16 +257,16 @@ void tst_QAbstractButton::setAutoRepeat()
         break;
     case 1:
         // check if we can toggle the mode
-        testWidget->setAutoRepeat( TRUE );
+        testWidget->setAutoRepeat( true );
         QVERIFY( testWidget->autoRepeat() );
 
-        testWidget->setAutoRepeat( FALSE );
+        testWidget->setAutoRepeat( false );
         QVERIFY( !testWidget->autoRepeat() );
         break;
     case 2:
         // check that the button is down if we press space and not in autorepeat
-        testWidget->setDown( FALSE );
-        testWidget->setAutoRepeat( FALSE );
+        testWidget->setDown( false );
+        testWidget->setAutoRepeat( false );
         QTest::keyPress( testWidget, Qt::Key_Space );
 
         QTest::qWait( REPEAT_DELAY );
@@ -295,9 +295,9 @@ void tst_QAbstractButton::setAutoRepeat()
         QVERIFY(click_count > 1);
         break;
     case 4:
-        // check that pressing ENTER has no effect when autorepeat is FALSE
-        testWidget->setDown( FALSE );
-        testWidget->setAutoRepeat( FALSE );
+        // check that pressing ENTER has no effect when autorepeat is false
+        testWidget->setDown( false );
+        testWidget->setAutoRepeat( false );
         QTest::keyPress( testWidget, Qt::Key_Enter );
 
         QTest::qWait( REPEAT_DELAY );
@@ -312,9 +312,9 @@ void tst_QAbstractButton::setAutoRepeat()
         QVERIFY( click_count == 0 );
         break;
     case 5:
-        // check that pressing ENTER has no effect when autorepeat is TRUE
-        testWidget->setDown( FALSE );
-        testWidget->setAutoRepeat( TRUE );
+        // check that pressing ENTER has no effect when autorepeat is true
+        testWidget->setDown( false );
+        testWidget->setAutoRepeat( true );
         QTest::keyPress( testWidget, Qt::Key_Enter );
 
         QTest::qWait( REPEAT_DELAY );
@@ -427,11 +427,11 @@ void tst_QAbstractButton::setIcon()
 
 void tst_QAbstractButton::setEnabled()
 {
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
 //    QTEST( testWidget, "disabled" );
 
-    testWidget->setEnabled( TRUE );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
 //    QTEST( testWidget, "enabled" );
 }
@@ -443,14 +443,14 @@ void tst_QAbstractButton::isCheckable()
 
 void tst_QAbstractButton::setDown()
 {
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     QVERIFY( !testWidget->isDown() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QTest::qWait(300);
     QVERIFY( testWidget->isDown() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
 
     // add some debugging stuff
     QWidget *grab = QWidget::keyboardGrabber();
@@ -466,13 +466,13 @@ void tst_QAbstractButton::setDown()
 
 void tst_QAbstractButton::isChecked()
 {
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     QVERIFY( !testWidget->isChecked() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QVERIFY( !testWidget->isChecked() );
 
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     testWidget->toggle();
     QVERIFY( testWidget->isChecked() == testWidget->isCheckable() );
 }

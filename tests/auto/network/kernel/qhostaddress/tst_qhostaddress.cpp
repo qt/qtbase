@@ -157,67 +157,67 @@ void tst_QHostAddress::setAddress_QString_data()
     QTest::addColumn<int>("protocol"); // 4: IPv4, 6: IPv6, other: undefined
 
     //next we fill it with data
-    QTest::newRow("ip4_00")  << QString("127.0.0.1") << (bool)TRUE << QString("127.0.0.1") << 4;
-    QTest::newRow("ip4_01")  << QString("255.3.2.1") << (bool)TRUE << QString("255.3.2.1") << 4;
-    QTest::newRow("ip4_03")  << QString(" 255.3.2.1") << (bool)TRUE << QString("255.3.2.1") << 4;
-    QTest::newRow("ip4_04")  << QString("255.3.2.1\r ") << (bool)TRUE << QString("255.3.2.1") << 4;
-    QTest::newRow("ip4_05")  << QString("0.0.0.0") << (bool)TRUE << QString("0.0.0.0") << 4;
+    QTest::newRow("ip4_00")  << QString("127.0.0.1") << true << QString("127.0.0.1") << 4;
+    QTest::newRow("ip4_01")  << QString("255.3.2.1") << true << QString("255.3.2.1") << 4;
+    QTest::newRow("ip4_03")  << QString(" 255.3.2.1") << true << QString("255.3.2.1") << 4;
+    QTest::newRow("ip4_04")  << QString("255.3.2.1\r ") << true << QString("255.3.2.1") << 4;
+    QTest::newRow("ip4_05")  << QString("0.0.0.0") << true << QString("0.0.0.0") << 4;
 
     // for the format of IPv6 addresses see also RFC 5952
-    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << (bool)TRUE << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << 6;
-    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
-    QTest::newRow("ip6_04")  << QString("FF01::43") << (bool)TRUE << QString("FF01::43") << 6;
-    QTest::newRow("ip6_05")  << QString("::1") << (bool)TRUE << QString("::1") << 6;
-    QTest::newRow("ip6_06")  << QString("1::") << (bool)TRUE << QString("1::") << 6;
-    QTest::newRow("ip6_07")  << QString("::") << (bool)TRUE << QString("::") << 6;
-    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << (bool)TRUE << QString("::D01:4403") << 6;
-    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << (bool)TRUE <<  QString("::D01:4403") << 6;
-    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << (bool)TRUE << QString("::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << (bool)TRUE << QString("::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << (bool)TRUE << QString("1::FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_13")  << QString("A:B::D:E") << (bool)TRUE << QString("A:B::D:E") << 6;
-    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << (bool)TRUE << QString("1080:0:1:0:8:800:200C:417A") << 6;
-    QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << (bool)TRUE << QString("1080:0:1:0:8:800:200C:0") << 6;
-    QTest::newRow("ip6_16")  << QString("1080:0:1:0:8:800:0:0") << (bool)TRUE << QString("1080:0:1:0:8:800::") << 6;
-    QTest::newRow("ip6_17")  << QString("1080:0:0:0:8:800:0:0") << (bool)TRUE << QString("1080::8:800:0:0") << 6;
-    QTest::newRow("ip6_18")  << QString("0:1:1:1:8:800:0:0") << (bool)TRUE << QString("0:1:1:1:8:800::") << 6;
-    QTest::newRow("ip6_19")  << QString("0:1:1:1:8:800:0:1") << (bool)TRUE << QString("0:1:1:1:8:800:0:1") << 6;
+    QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << true << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << 6;
+    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << true << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_04")  << QString("FF01::43") << true << QString("FF01::43") << 6;
+    QTest::newRow("ip6_05")  << QString("::1") << true << QString("::1") << 6;
+    QTest::newRow("ip6_06")  << QString("1::") << true << QString("1::") << 6;
+    QTest::newRow("ip6_07")  << QString("::") << true << QString("::") << 6;
+    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << true << QString("::D01:4403") << 6;
+    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << true <<  QString("::D01:4403") << 6;
+    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << true << QString("::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << true << QString("::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << true << QString("1::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_13")  << QString("A:B::D:E") << true << QString("A:B::D:E") << 6;
+    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << true << QString("1080:0:1:0:8:800:200C:417A") << 6;
+    QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << true << QString("1080:0:1:0:8:800:200C:0") << 6;
+    QTest::newRow("ip6_16")  << QString("1080:0:1:0:8:800:0:0") << true << QString("1080:0:1:0:8:800::") << 6;
+    QTest::newRow("ip6_17")  << QString("1080:0:0:0:8:800:0:0") << true << QString("1080::8:800:0:0") << 6;
+    QTest::newRow("ip6_18")  << QString("0:1:1:1:8:800:0:0") << true << QString("0:1:1:1:8:800::") << 6;
+    QTest::newRow("ip6_19")  << QString("0:1:1:1:8:800:0:1") << true << QString("0:1:1:1:8:800:0:1") << 6;
 
-    QTest::newRow("error_00")  << QString("foobarcom") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_01")  << QString("foo.bar.com") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_02")  << QString("") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_03")  << QString() << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_04")  << QString(" \t\r") << (bool)FALSE << QString() << 0;
+    QTest::newRow("error_00")  << QString("foobarcom") << false << QString() << 0;
+    QTest::newRow("error_01")  << QString("foo.bar.com") << false << QString() << 0;
+    QTest::newRow("error_02")  << QString("") << false << QString() << 0;
+    QTest::newRow("error_03")  << QString() << false << QString() << 0;
+    QTest::newRow("error_04")  << QString(" \t\r") << false << QString() << 0;
 
-    QTest::newRow("error_ip4_00")  << QString("256.9.9.9") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip4_01")  << QString("-1.9.9.9") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip4_02")  << QString("123.0.0") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip4_03")  << QString("123.0.0.0.0") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip4_04")  << QString("255.2 3.2.1") << (bool)FALSE << QString() << 0;
+    QTest::newRow("error_ip4_00")  << QString("256.9.9.9") << false << QString() << 0;
+    QTest::newRow("error_ip4_01")  << QString("-1.9.9.9") << false << QString() << 0;
+    QTest::newRow("error_ip4_02")  << QString("123.0.0") << false << QString() << 0;
+    QTest::newRow("error_ip4_03")  << QString("123.0.0.0.0") << false << QString() << 0;
+    QTest::newRow("error_ip4_04")  << QString("255.2 3.2.1") << false << QString() << 0;
 
-    QTest::newRow("error_ip6_00")  << QString(":") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_01")  << QString(":::") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_02")  << QString("::AAAA:") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_03")  << QString(":AAAA::") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_04")  << QString("FFFF:::129.144.52.38") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_05")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210:1234") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_06")  << QString("129.144.52.38::") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_07")  << QString("::129.144.52.38:129.144.52.38") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_08")  << QString(":::129.144.52.38") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_09")  << QString("1FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_10")  << QString("::FFFFFFFF") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_11")  << QString("::EFGH") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_12")  << QString("ABCD:ABCD:ABCD") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_13")  << QString("::ABCD:ABCD::") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_14")  << QString("1::2::3") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_15")  << QString("1:2:::") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_16")  << QString(":::1:2") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_17")  << QString("1:::2") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_18")  << QString("FEDC::7654:3210:FEDC:BA98::3210") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_19")  << QString("ABCD:ABCD:ABCD:1.2.3.4") << (bool)FALSE << QString() << 0;
-    QTest::newRow("error_ip6_20")  << QString("ABCD::ABCD::ABCD:1.2.3.4") << (bool)FALSE << QString() << 0;
+    QTest::newRow("error_ip6_00")  << QString(":") << false << QString() << 0;
+    QTest::newRow("error_ip6_01")  << QString(":::") << false << QString() << 0;
+    QTest::newRow("error_ip6_02")  << QString("::AAAA:") << false << QString() << 0;
+    QTest::newRow("error_ip6_03")  << QString(":AAAA::") << false << QString() << 0;
+    QTest::newRow("error_ip6_04")  << QString("FFFF:::129.144.52.38") << false << QString() << 0;
+    QTest::newRow("error_ip6_05")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210:1234") << false << QString() << 0;
+    QTest::newRow("error_ip6_06")  << QString("129.144.52.38::") << false << QString() << 0;
+    QTest::newRow("error_ip6_07")  << QString("::129.144.52.38:129.144.52.38") << false << QString() << 0;
+    QTest::newRow("error_ip6_08")  << QString(":::129.144.52.38") << false << QString() << 0;
+    QTest::newRow("error_ip6_09")  << QString("1FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << false << QString() << 0;
+    QTest::newRow("error_ip6_10")  << QString("::FFFFFFFF") << false << QString() << 0;
+    QTest::newRow("error_ip6_11")  << QString("::EFGH") << false << QString() << 0;
+    QTest::newRow("error_ip6_12")  << QString("ABCD:ABCD:ABCD") << false << QString() << 0;
+    QTest::newRow("error_ip6_13")  << QString("::ABCD:ABCD::") << false << QString() << 0;
+    QTest::newRow("error_ip6_14")  << QString("1::2::3") << false << QString() << 0;
+    QTest::newRow("error_ip6_15")  << QString("1:2:::") << false << QString() << 0;
+    QTest::newRow("error_ip6_16")  << QString(":::1:2") << false << QString() << 0;
+    QTest::newRow("error_ip6_17")  << QString("1:::2") << false << QString() << 0;
+    QTest::newRow("error_ip6_18")  << QString("FEDC::7654:3210:FEDC:BA98::3210") << false << QString() << 0;
+    QTest::newRow("error_ip6_19")  << QString("ABCD:ABCD:ABCD:1.2.3.4") << false << QString() << 0;
+    QTest::newRow("error_ip6_20")  << QString("ABCD::ABCD::ABCD:1.2.3.4") << false << QString() << 0;
 
 }
 

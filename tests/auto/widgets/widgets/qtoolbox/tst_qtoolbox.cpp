@@ -273,23 +273,23 @@ void tst_QToolBox::change()
     QCOMPARE( currentIndex, 1 );
     QCOMPARE( testWidget->currentIndex(), 1 );
 
-    testWidget->setItemEnabled( testWidget->currentIndex(), FALSE );
+    testWidget->setItemEnabled( testWidget->currentIndex(), false );
     QCOMPARE( currentIndex, 2 );
     QCOMPARE( testWidget->currentIndex(), 2 );
 
     currentIndex = -1;
-    testWidget->setItemEnabled( testWidget->indexOf(lastItem), FALSE );
+    testWidget->setItemEnabled( testWidget->indexOf(lastItem), false );
     QCOMPARE( currentIndex, -1 );
     QCOMPARE( testWidget->currentIndex(), 2 );
 
-    testWidget->setItemEnabled( testWidget->currentIndex(), FALSE );
+    testWidget->setItemEnabled( testWidget->currentIndex(), false );
     QCOMPARE( currentIndex, 0 );
 
     currentIndex = -1;
-    testWidget->setItemEnabled( testWidget->currentIndex(), FALSE );
+    testWidget->setItemEnabled( testWidget->currentIndex(), false );
     QCOMPARE( currentIndex, -1 );
 
-    testWidget->setItemEnabled( 1, TRUE );
+    testWidget->setItemEnabled( 1, true );
 }
 
 void tst_QToolBox::clear()

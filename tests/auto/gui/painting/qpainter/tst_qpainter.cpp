@@ -347,7 +347,7 @@ Q_DECLARE_METATYPE(QRegion)
 tst_QPainter::tst_QPainter()
 {
     // QtTestCase sets this to false, but this turns off alpha pixmaps on Unix.
-    QApplication::setDesktopSettingsAware(TRUE);
+    QApplication::setDesktopSettingsAware(true);
 }
 
 tst_QPainter::~tst_QPainter()

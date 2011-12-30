@@ -3158,7 +3158,7 @@ void tst_QSettings::consistentRegistryStorage()
 // Not tested at the moment.
 void tst_QSettings::oldSubkeyList()
 {
-    QVERIFY( TRUE );
+    QVERIFY( true );
 }
 */
 

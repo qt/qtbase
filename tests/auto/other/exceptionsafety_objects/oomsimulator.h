@@ -173,17 +173,17 @@ static int qCrtAllocHook(int allocType, void * /*userData*/, size_t /*size*/,
                          const unsigned char * /*filename*/, int /*lineNumber*/)
 {
     if (blockType == _CRT_BLOCK)
-        return TRUE; // ignore allocations from the C library
+        return true; // ignore allocations from the C library
 
     switch (allocType) {
         case _HOOK_ALLOC:
         case _HOOK_REALLOC:
             ++mallocCount;
             if (mallocFailActive && --mallocFailIndex < 0)
-                return FALSE; // simulate OOM
+                return false; // simulate OOM
     }
 
-    return TRUE;
+    return true;
 }
 
 static struct QCrtDebugRegistrator
