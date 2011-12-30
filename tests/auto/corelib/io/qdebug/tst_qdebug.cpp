@@ -81,16 +81,34 @@ static void myMessageHandler(QtMsgType type, const char *msg)
     s_msgType = type;
 }
 
+// Helper class to ensure that the testlib message handler gets
+// restored at the end of each test function, even if the test
+// fails or throws an exception.
+class MessageHandlerSetter
+{
+public:
+    MessageHandlerSetter(QtMsgHandler newMsgHandler)
+        : oldMsgHandler(qInstallMsgHandler(newMsgHandler))
+    { }
+
+    ~MessageHandlerSetter()
+    {
+        qInstallMsgHandler(oldMsgHandler);
+    }
+
+private:
+    QtMsgHandler oldMsgHandler;
+};
+
 /*! \internal
   The qWarning() stream should be usable even if QT_NO_DEBUG is defined.
  */
 void tst_QDebug::warningWithoutDebug() const
 {
-    qInstallMsgHandler(myMessageHandler);
+    MessageHandlerSetter mhs(myMessageHandler);
     { qWarning() << "A qWarning() message"; }
     QCOMPARE(s_msgType, QtWarningMsg);
     QCOMPARE(QString::fromLatin1(s_msg.data()), QString::fromLatin1("A qWarning() message "));
-    qInstallMsgHandler(0);
 }
 
 /*! \internal
@@ -98,25 +116,23 @@ void tst_QDebug::warningWithoutDebug() const
  */
 void tst_QDebug::criticalWithoutDebug() const
 {
-    qInstallMsgHandler(myMessageHandler);
+    MessageHandlerSetter mhs(myMessageHandler);
     { qCritical() << "A qCritical() message"; }
     QCOMPARE(s_msgType, QtCriticalMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("A qCritical() message "));
-    qInstallMsgHandler(0);
 }
 
 void tst_QDebug::debugWithQBool() const
 {
-    qInstallMsgHandler(myMessageHandler);
+    MessageHandlerSetter mhs(myMessageHandler);
     { qDebug() << QBool(false) << QBool(true); }
     QCOMPARE(s_msgType, QtDebugMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("false true "));
-    qInstallMsgHandler(0);
 }
 
 void tst_QDebug::veryLongWarningMessage() const
 {
-    qInstallMsgHandler(myMessageHandler);
+    MessageHandlerSetter mhs(myMessageHandler);
     QString test;
     {
         QString part("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n");
@@ -126,7 +142,6 @@ void tst_QDebug::veryLongWarningMessage() const
     }
     QCOMPARE(s_msgType, QtWarningMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("Test output:\n")+test+QString::fromLatin1("\nend"));
-    qInstallMsgHandler(0);
 }
 
 void tst_QDebug::qDebugQStringRef() const
@@ -136,27 +151,26 @@ void tst_QDebug::qDebugQStringRef() const
         const QString in(QLatin1String("input"));
         const QStringRef inRef(&in);
 
-        qInstallMsgHandler(myMessageHandler);
+        MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inRef; }
         QCOMPARE(s_msgType, QtDebugMsg);
         QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("\"input\" "));
-        qInstallMsgHandler(0);
     }
 
     /* Use a null QStringRef. */
     {
         const QStringRef inRef;
 
-        qInstallMsgHandler(myMessageHandler);
+        MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inRef; }
         QCOMPARE(s_msgType, QtDebugMsg);
         QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("\"\" "));
-        qInstallMsgHandler(0);
     }
 }
 
 void tst_QDebug::defaultMessagehandler() const
 {
+    MessageHandlerSetter mhs(0);
     QtMsgHandler defaultMessageHandler1 = qInstallMsgHandler(0);
     QtMsgHandler defaultMessageHandler2 = qInstallMsgHandler(myMessageHandler);
     bool same = (*defaultMessageHandler1 == *defaultMessageHandler2);
