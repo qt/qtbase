@@ -123,10 +123,7 @@ void QPlatformAccessibility::initialize()
     if (isInit)
         return;
     isInit = true;      // ### not atomic
-#ifdef Q_OS_UNIX
-    if (qgetenv("QT_ACCESSIBILITY") != "1")
-        return;
-#endif
+
 #ifndef QT_NO_LIBRARY
     const QStringList l = bridgeloader()->keys();
     for (int i = 0; i < l.count(); ++i) {
