@@ -83,11 +83,22 @@ Q_DECLARE_METATYPE(QFont)
 Q_DECLARE_METATYPE(QColor)
 Q_DECLARE_METATYPE(QKeySequence)
 
+class CustomNonQObject;
+
 class tst_QVariant : public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QVariant(QObject *parent = 0)
+      : QObject(parent), customNonQObjectPointer(0)
+    {
+
+    }
+
 private slots:
+    void cleanupTestCase();
+
     void constructor();
     void copy_constructor();
     void isNull();
@@ -176,6 +187,7 @@ private slots:
 
     void qvariant_cast_QObject_data();
     void qvariant_cast_QObject();
+    void qvariant_cast_QObject_derived();
 
     void toLocale();
 
@@ -275,6 +287,9 @@ private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
     void saveQVariantFromDataStream(QDataStream::Version version);
+
+    CustomNonQObject *customNonQObjectPointer;
+    QVector<QObject*> objectPointerTestData;
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2452,20 +2467,63 @@ void tst_QVariant::invalidQColor() const
     QVERIFY(!qvariant_cast<QColor>(va).isValid());
 }
 
-void tst_QVariant::qvariant_cast_QObject_data() {
+class CustomQObject : public QObject {
+    Q_OBJECT
+public:
+    CustomQObject(QObject *parent = 0) : QObject(parent) {}
+};
+class CustomQWidget : public QWidget {
+    Q_OBJECT
+public:
+    CustomQWidget(QWidget *parent = 0) : QWidget(parent) {}
+};
+Q_DECLARE_METATYPE(CustomQObject*)
+Q_DECLARE_METATYPE(CustomQWidget*)
 
+class CustomNonQObject { };
+Q_DECLARE_METATYPE(CustomNonQObject)
+Q_DECLARE_METATYPE(CustomNonQObject*)
+
+void tst_QVariant::cleanupTestCase()
+{
+    delete customNonQObjectPointer;
+    qDeleteAll(objectPointerTestData);
+}
+
+void tst_QVariant::qvariant_cast_QObject_data()
+{
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QObject *obj = new QObject(this);
+    QObject *obj = new QObject;
     obj->setObjectName(QString::fromLatin1("Hello"));
     QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, &obj) << true;
     QTest::newRow("from QObject2") << QVariant::fromValue(obj) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
+    QWidget *widget = new QWidget;
+    widget->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from QWidget") << QVariant::fromValue(widget) << true;
+    CustomQObject *customObject = new CustomQObject(this);
+    customObject->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from Derived QObject") << QVariant::fromValue(customObject) << true;
+    CustomQWidget *customWidget = new CustomQWidget;
+    customWidget->setObjectName(QString::fromLatin1("Hello"));
+    QTest::newRow("from Derived QWidget") << QVariant::fromValue(customWidget) << true;
+    QTest::newRow("from custom Object") << QVariant::fromValue(CustomNonQObject()) << false;
+
+    // Deleted in cleanupTestCase.
+    customNonQObjectPointer = new CustomNonQObject;
+    QTest::newRow("from custom ObjectStar") << QVariant::fromValue(customNonQObjectPointer) << false;
+
+    // Deleted in cleanupTestCase.
+    objectPointerTestData.push_back(obj);
+    objectPointerTestData.push_back(widget);
+    objectPointerTestData.push_back(customObject);
+    objectPointerTestData.push_back(customWidget);
 }
 
-
-void tst_QVariant::qvariant_cast_QObject() {
+void tst_QVariant::qvariant_cast_QObject()
+{
     QFETCH(QVariant, data);
     QFETCH(bool, success);
 
@@ -2473,6 +2531,38 @@ void tst_QVariant::qvariant_cast_QObject() {
     QCOMPARE(o != 0, success);
     if (success) {
         QCOMPARE(o->objectName(), QString::fromLatin1("Hello"));
+    }
+}
+
+class CustomQObjectDerived : public CustomQObject {
+    Q_OBJECT
+public:
+    CustomQObjectDerived(QObject *parent = 0) : CustomQObject(parent) {}
+};
+Q_DECLARE_METATYPE(CustomQObjectDerived*)
+
+void tst_QVariant::qvariant_cast_QObject_derived()
+{
+    {
+        CustomQObjectDerived *object = new CustomQObjectDerived(this);
+        QVariant data = QVariant::fromValue(object);
+
+        QVERIFY(data.userType() == qMetaTypeId<CustomQObjectDerived*>());
+
+        QCOMPARE(data.value<QObject *>(), object);
+        QCOMPARE(data.value<CustomQObjectDerived *>(), object);
+        QCOMPARE(data.value<CustomQObject *>(), object);
+        QVERIFY(data.value<CustomQWidget*>() == 0);
+    }
+    {
+        CustomQWidget customWidget;
+        QWidget *widget = &customWidget;
+        QVariant data = QVariant::fromValue(widget);
+        QVERIFY(data.userType() == QMetaType::QWidgetStar);
+
+        QCOMPARE(data.value<QObject*>(), widget);
+        QCOMPARE(data.value<QWidget*>(), widget);
+        QCOMPARE(data.value<CustomQWidget*>(), widget);
     }
 }
 
