@@ -43,9 +43,9 @@
 
 int main(int, char**)
 {
-    volatile __m128i a = _mm_set1_epi32(42);
+    __m128i a = _mm_set1_epi32(42);
     _mm_abs_epi8(a);
-    volatile __m128i result = _mm_sign_epi16(a, _mm_set1_epi32(64));
+    __m128i result = _mm_sign_epi16(a, _mm_set1_epi32(64));
     (void)result;
     return 0;
 }

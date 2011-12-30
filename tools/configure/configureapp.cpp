@@ -212,6 +212,12 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "SSE2" ]            = "auto";
+    dictionary[ "SSE3" ]            = "auto";
+    dictionary[ "SSSE3" ]           = "auto";
+    dictionary[ "SSE4_1" ]          = "auto";
+    dictionary[ "SSE4_2" ]          = "auto";
+    dictionary[ "AVX" ]             = "auto";
+    dictionary[ "AVX2" ]            = "auto";
     dictionary[ "IWMMXT" ]          = "auto";
     dictionary[ "SYNCQT" ]          = "auto";
     dictionary[ "CE_CRT" ]          = "no";
@@ -808,6 +814,30 @@ void Configure::parseCmdLine()
             dictionary[ "SSE2" ] = "no";
         else if (configCmdLine.at(i) == "-sse2")
             dictionary[ "SSE2" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-sse3")
+            dictionary[ "SSE3" ] = "no";
+        else if (configCmdLine.at(i) == "-sse3")
+            dictionary[ "SSE3" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-ssse3")
+            dictionary[ "SSSE3" ] = "no";
+        else if (configCmdLine.at(i) == "-ssse3")
+            dictionary[ "SSSE3" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-sse4.1")
+            dictionary[ "SSE4_1" ] = "no";
+        else if (configCmdLine.at(i) == "-sse4.1")
+            dictionary[ "SSE4_1" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-sse4.2")
+            dictionary[ "SSE4_2" ] = "no";
+        else if (configCmdLine.at(i) == "-sse4.2")
+            dictionary[ "SSE4_2" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-avx")
+            dictionary[ "AVX" ] = "no";
+        else if (configCmdLine.at(i) == "-avx")
+            dictionary[ "AVX" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-avx2")
+            dictionary[ "AVX2" ] = "no";
+        else if (configCmdLine.at(i) == "-avx2")
+            dictionary[ "AVX2" ] = "yes";
         else if (configCmdLine.at(i) == "-no-iwmmxt")
             dictionary[ "IWMMXT" ] = "no";
         else if (configCmdLine.at(i) == "-iwmmxt")
@@ -1380,6 +1410,12 @@ void Configure::applySpecSpecifics()
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "SSE2" ]                = "no";
+        dictionary[ "SSE3" ]                = "no";
+        dictionary[ "SSSE3" ]               = "no";
+        dictionary[ "SSE4_1" ]              = "no";
+        dictionary[ "SSE4_2" ]              = "no";
+        dictionary[ "AVX" ]                 = "no";
+        dictionary[ "AVX2" ]                = "no";
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
@@ -1468,7 +1504,10 @@ bool Configure::displayHelp()
                     "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
                     "[-no-libpng] [-qt-libpng] [-system-libpng]\n"
                     "[-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-sse2] [-no-sse2]\n"
+                    "[-sse2] [-no-sse2] [-sse3] [-no-sse3]\n"
+                    "[-ssse3] [-no-ssse3]\n"
+                    "[-sse4.1] [-no-sse4.1] [-sse4.2] [-no-sse4.2]\n"
+                    "[-avx] [-no-avx] [-avx2] [-no-avx2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
@@ -1635,7 +1674,19 @@ bool Configure::displayHelp()
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.\n");
         desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions");
-        desc("SSE2", "yes",      "-sse2",               "Compile with use of SSE2 instructions");
+        desc("SSE2", "yes",     "-sse2",                "Compile with use of SSE2 instructions");
+        desc("SSE3", "no",      "-no-sse3",             "Do not compile with use of SSE3 instructions");
+        desc("SSE3", "yes",     "-sse3",                "Compile with use of SSE3 instructions");
+        desc("SSSE3", "no",     "-no-ssse3",            "Do not compile with use of SSSE3 instructions");
+        desc("SSSE3", "yes",    "-ssse3",               "Compile with use of SSSE3 instructions");
+        desc("SSE4_1", "no",    "-no-sse4.1",           "Do not compile with use of SSE4.1 instructions");
+        desc("SSE4_1", "yes",   "-sse4.1",              "Compile with use of SSE4.1 instructions");
+        desc("SSE4_2", "no",    "-no-sse4.2",           "Do not compile with use of SSE4.2 instructions");
+        desc("SSE4_2", "yes",   "-sse4.2",              "Compile with use of SSE4.2 instructions");
+        desc("AVX", "no",       "-no-avx",              "Do not compile with use of AVX instructions");
+        desc("AVX", "yes",      "-avx",                 "Compile with use of AVX instructions");
+        desc("AVX2", "no",      "-no-avx2",             "Do not compile with use of AVX2 instructions");
+        desc("AVX2", "yes",     "-avx2",                "Compile with use of AVX2 instructions");
         desc("OPENSSL", "no",    "-no-openssl",         "Do not compile in OpenSSL support");
         desc("OPENSSL", "yes",   "-openssl",            "Compile in run-time OpenSSL support");
         desc("OPENSSL", "linked","-openssl-linked",     "Compile in linked OpenSSL support");
@@ -1878,7 +1929,19 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "DIRECTSHOW")
         available = (dictionary.value("XQMAKESPEC").startsWith("wince"));
     else if (part == "SSE2")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
+        available = tryCompileProject("common/sse2");
+    else if (part == "SSE3")
+        available = tryCompileProject("common/sse3");
+    else if (part == "SSSE3")
+        available = tryCompileProject("common/ssse3");
+    else if (part == "SSE4_1")
+        available = tryCompileProject("common/sse4_1");
+    else if (part == "SSE4_2")
+        available = tryCompileProject("common/sse4_2");
+    else if (part == "AVX")
+        available = tryCompileProject("common/avx");
+    else if (part == "AVX2")
+        available = tryCompileProject("common/avx2");
     else if (part == "OPENSSL")
         available = findFile("openssl\\ssl.h");
     else if (part == "DBUS")
@@ -1989,6 +2052,18 @@ void Configure::autoDetection()
         dictionary["SQL_IBASE"] = checkAvailability("SQL_IBASE") ? defaultTo("SQL_IBASE") : "no";
     if (dictionary["SSE2"] == "auto")
         dictionary["SSE2"] = checkAvailability("SSE2") ? "yes" : "no";
+    if (dictionary["SSE3"] == "auto")
+        dictionary["SSE3"] = checkAvailability("SSE3") ? "yes" : "no";
+    if (dictionary["SSSE3"] == "auto")
+        dictionary["SSSE3"] = checkAvailability("SSSE3") ? "yes" : "no";
+    if (dictionary["SSE4_1"] == "auto")
+        dictionary["SSE4_1"] = checkAvailability("SSE4_1") ? "yes" : "no";
+    if (dictionary["SSE4_2"] == "auto")
+        dictionary["SSE4_2"] = checkAvailability("SSE4_2") ? "yes" : "no";
+    if (dictionary["AVX"] == "auto")
+        dictionary["AVX"] = checkAvailability("AVX") ? "yes" : "no";
+    if (dictionary["AVX2"] == "auto")
+        dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
     if (dictionary["IWMMXT"] == "auto")
         dictionary["IWMMXT"] = checkAvailability("IWMMXT") ? "yes" : "no";
     if (dictionary["OPENSSL"] == "auto")
@@ -2543,6 +2618,18 @@ void Configure::generateCachefile()
         moduleStream << "CONFIG += create_prl link_prl";
         if (dictionary[ "SSE2" ] == "yes")
             moduleStream << " sse2";
+        if (dictionary[ "SSE3" ] == "yes")
+            moduleStream << " sse3";
+        if (dictionary[ "SSSE3" ] == "yes")
+            moduleStream << " ssse3";
+        if (dictionary[ "SSE4_1" ] == "yes")
+            moduleStream << " sse4_1";
+        if (dictionary[ "SSE4_2" ] == "yes")
+            moduleStream << " sse4_2";
+        if (dictionary[ "AVX" ] == "yes")
+            moduleStream << " avx";
+        if (dictionary[ "AVX2" ] == "yes")
+            moduleStream << " avx2";
         if (dictionary[ "IWMMXT" ] == "yes")
             moduleStream << " iwmmxt";
         moduleStream << endl;
@@ -2663,6 +2750,47 @@ void Configure::detectArch()
     }
 
     QDir::setCurrent(oldpwd);
+}
+
+bool Configure::tryCompileProject(const QString &projectPath, const QString &extraOptions)
+{
+    QString oldpwd = QDir::currentPath();
+
+    QString newpwd = fixSeparators(QString("%1/config.tests/%2").arg(buildPath, projectPath));
+    if (!QDir().exists(newpwd) && !QDir().mkpath(newpwd)) {
+        cout << "Failed to create directory " << qPrintable(newpwd) << endl;
+        dictionary["DONE"] = "error";
+        return false;
+    }
+    if (!QDir::setCurrent(newpwd)) {
+        cout << "Failed to change working directory to " << qPrintable(newpwd) << endl;
+        dictionary["DONE"] = "error";
+        return false;
+    }
+
+    // run qmake
+    QString command =
+            fixSeparators(QString("%1/bin/qmake.exe %2/config.tests/%3 %4 2>&1")
+                          .arg(buildPath, sourcePath, projectPath, extraOptions));
+    int code = 0;
+    QString output = Environment::execute(command, &code);
+    //cout << output << endl;
+
+    if (code == 0) {
+        // compile
+        command = dictionary[ "MAKE" ];
+        if (command.contains("nmake"))
+            command += " /NOLOGO";
+        command += " -s 2>&1";
+        output = Environment::execute(command, &code);
+        //cout << output << endl;
+
+        // clean up
+        Environment::execute(command + " distclean 2>&1");
+    }
+
+    QDir::setCurrent(oldpwd);
+    return code == 0;
 }
 
 void Configure::generateQConfigPri()
@@ -3108,6 +3236,12 @@ void Configure::displayConfig()
     sout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     sout << "RTTI support................" << dictionary[ "RTTI" ] << endl;
     sout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
+    sout << "SSE3 support................" << dictionary[ "SSE3" ] << endl;
+    sout << "SSSE3 support..............." << dictionary[ "SSSE3" ] << endl;
+    sout << "SSE4.1 support.............." << dictionary[ "SSE4_1" ] << endl;
+    sout << "SSE4.2 support.............." << dictionary[ "SSE4_2" ] << endl;
+    sout << "AVX support................." << dictionary[ "AVX" ] << endl;
+    sout << "AVX2 support................" << dictionary[ "AVX2" ] << endl;
     sout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
     sout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
     if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {

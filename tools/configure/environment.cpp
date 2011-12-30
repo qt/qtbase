@@ -431,7 +431,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
 
     Taken from qmake's system() command.
 */
-QString Environment::execute(const QString &command)
+QString Environment::execute(const QString &command, int *returnCode)
 {
     QString output;
     FILE *proc = _popen(command.toLatin1().constData(), "r");
@@ -443,8 +443,11 @@ QString Environment::execute(const QString &command)
         buff[read_in] = '\0';
         output += buff;
     }
-    if (proc)
-        _pclose(proc);
+    if (proc) {
+        int r = _pclose(proc);
+        if (returnCode)
+            *returnCode = r;
+    }
     return output;
 }
 

@@ -45,11 +45,11 @@ int main(int, char**)
 {
     /* AVX */
     _mm256_zeroall();
-    volatile __m256i a = _mm256_setzero_si256();
+    __m256i a = _mm256_setzero_si256();
 
     /* AVX2 */
-    volatile __m256i b = _mm256_and_si256(a, a);
-    volatile __m256i result = _mm256_add_epi8(a, b);
+    __m256i b = _mm256_and_si256(a, a);
+    __m256i result = _mm256_add_epi8(a, b);
     (void)result;
     return 0;
 }
