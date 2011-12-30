@@ -61,7 +61,7 @@ win32:!contains(QT_CONFIG, directwrite) {
 
     win32-g++*|!win32:!win32-icc*:!macx-icc* {
         sse2 {
-            sse2_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
+            sse2_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
             sse2_compiler.commands += -msse2
             sse2_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             sse2_compiler.dependency_type = TYPE_C
@@ -73,7 +73,7 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += sse2_compiler
         }
         ssse3 {
-            ssse3_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
+            ssse3_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
             ssse3_compiler.commands += -mssse3
             ssse3_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             ssse3_compiler.dependency_type = TYPE_C
@@ -85,7 +85,7 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += ssse3_compiler
         }
         avx {
-            avx_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
+            avx_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
             avx_compiler.commands += -mavx
             avx_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             avx_compiler.dependency_type = TYPE_C
@@ -97,7 +97,7 @@ win32:!contains(QT_CONFIG, directwrite) {
             QMAKE_EXTRA_COMPILERS += avx_compiler
         }
         iwmmxt {
-            iwmmxt_compiler.commands = $$QMAKE_CXX -c -Winline $(CXXFLAGS)
+            iwmmxt_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
             iwmmxt_compiler.commands += -mcpu=iwmmxt
             iwmmxt_compiler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
             iwmmxt_compiler.dependency_type = TYPE_C
