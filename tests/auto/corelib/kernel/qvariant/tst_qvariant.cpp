@@ -3324,6 +3324,11 @@ void tst_QVariant::colorInteger()
 }
 
 class Forward;
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<Forward*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(Forward*);
 
 void tst_QVariant::forwardDeclare()

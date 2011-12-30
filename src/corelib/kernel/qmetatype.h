@@ -207,7 +207,8 @@ public:
     enum TypeFlag {
         NeedsConstruction = 0x1,
         NeedsDestruction = 0x2,
-        MovableType = 0x4
+        MovableType = 0x4,
+        PointerToQObject = 0x8
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -315,6 +316,9 @@ struct QMetaTypeId2
     static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
+class QObject;
+class QWidget;
+
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {
@@ -324,6 +328,43 @@ namespace QtPrivate {
     template <typename T> struct QMetaTypeIdHelper<T, false> {
         static inline int qt_metatype_id()
         { return -1; }
+    };
+
+    template<typename T>
+    struct IsPointerToTypeDerivedFromQObject
+    {
+        enum { Value = false };
+    };
+
+    // Specialize to avoid sizeof(void) warning
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<void*>
+    {
+        enum { Value = false };
+    };
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<QObject*>
+    {
+        enum { Value = true };
+    };
+    template<>
+    struct IsPointerToTypeDerivedFromQObject<QWidget*>
+    {
+        enum { Value = true };
+    };
+
+    template<typename T>
+    struct IsPointerToTypeDerivedFromQObject<T*>
+    {
+        typedef qint8 yes_type;
+        typedef qint64 no_type;
+
+#ifndef QT_NO_QOBJECT
+        static yes_type checkType(QObject* );
+#endif
+        static no_type checkType(...);
+        Q_STATIC_ASSERT_X(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
+        enum { Value = sizeof(checkType(static_cast<T*>(0))) == sizeof(yes_type) };
     };
 }
 
@@ -354,6 +395,8 @@ int qRegisterMetaType(const char *typeName
         flags |= QMetaType::NeedsConstruction;
         flags |= QMetaType::NeedsDestruction;
     }
+    if (QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value)
+        flags |= QMetaType::PointerToQObject;
 
     return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
                                    reinterpret_cast<QMetaType::Creator>(cptr),
@@ -459,8 +502,6 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 
 #undef QT_FORWARD_DECLARE_STATIC_TYPES_ITER
 
-class QWidget;
-class QObject;
 template <class T> class QList;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;

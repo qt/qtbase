@@ -596,21 +596,50 @@ Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(CustomMovable);
 
+class CustomObject : public QObject
+{
+    Q_OBJECT
+public:
+    CustomObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+Q_DECLARE_METATYPE(CustomObject*);
+
+struct SecondBase {};
+
+class CustomMultiInheritanceObject : public QObject, SecondBase
+{
+    Q_OBJECT
+public:
+    CustomMultiInheritanceObject(QObject *parent = 0)
+      : QObject(parent)
+    {
+
+    }
+};
+Q_DECLARE_METATYPE(CustomMultiInheritanceObject*);
+
 void tst_QMetaType::flags_data()
 {
     QTest::addColumn<int>("type");
     QTest::addColumn<bool>("isMovable");
     QTest::addColumn<bool>("isComplex");
+    QTest::addColumn<bool>("isPointerToQObject");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex);
+    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex) << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value);
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
-    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true;
-    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true;
+    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << false << true << false;
+    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false;
+    QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true;
+    QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true;
 }
 
 void tst_QMetaType::flags()
@@ -618,10 +647,12 @@ void tst_QMetaType::flags()
     QFETCH(int, type);
     QFETCH(bool, isMovable);
     QFETCH(bool, isComplex);
+    QFETCH(bool, isPointerToQObject);
 
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::PointerToQObject), isPointerToQObject);
 }
 
 void tst_QMetaType::construct_data()

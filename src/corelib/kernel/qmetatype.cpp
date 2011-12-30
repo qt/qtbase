@@ -1670,11 +1670,13 @@ class Flags
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct FlagsImpl
     {
-        static quint32 Flags(const int)
+        static quint32 Flags(const int type)
         {
             return (!QTypeInfo<T>::isStatic * QMetaType::MovableType)
                     | (QTypeInfo<T>::isComplex * QMetaType::NeedsConstruction)
-                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction);
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction)
+                    | (type == QMetaType::QObjectStar ? QMetaType::PointerToQObject : 0)
+                    | (type == QMetaType::QWidgetStar ? QMetaType::PointerToQObject : 0);
         }
     };
     template<typename T>

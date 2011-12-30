@@ -1298,6 +1298,11 @@ static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<UcstrncmpFunction> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(UcstrncmpFunction)
 
 void tst_QString::ucstrncmp_data() const
@@ -1457,6 +1462,11 @@ void tst_QString::fromLatin1() const
 }
 
 typedef void (* FromLatin1Function)(ushort *, const char *, int);
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<FromLatin1Function> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(FromLatin1Function)
 
 void fromLatin1_regular(ushort *dst, const char *str, int size)
@@ -1907,6 +1917,11 @@ void tst_QString::fromLatin1Alternatives() const
 }
 
 typedef int (* FromUtf8Function)(ushort *, const char *, int);
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<FromUtf8Function> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(FromUtf8Function)
 
 extern QTextCodec::ConverterState *state;

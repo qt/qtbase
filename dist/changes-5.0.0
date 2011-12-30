@@ -117,6 +117,11 @@ information about a particular change.
   * QWidget *widget() has been removed and is replaced by QObject
     *target() in order to avoid QWidget dependencies.
 
+- QMetaType
+
+  * It is no longer possible to use Q_DECLARE_METATYPE(Foo*) where Foo is only
+    forward declared - it must be fully defined.
+
 - QWindowSystemInterface:
 
   * The signature of all handleTouchEvent() variants have changed,

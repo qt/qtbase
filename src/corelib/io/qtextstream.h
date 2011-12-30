@@ -208,6 +208,13 @@ typedef QTextStream & (*QTextStreamFunction)(QTextStream &);// manipulator funct
 typedef void (QTextStream::*QTSMFI)(int); // manipulator w/int argument
 typedef void (QTextStream::*QTSMFC)(QChar); // manipulator w/QChar argument
 
+
+namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<QTextStreamFunction> {
+    enum { Value = false };
+};
+}
+
 class Q_CORE_EXPORT QTextStreamManipulator
 {
 public:

@@ -107,7 +107,18 @@
 template <typename T>
 inline void PQfreemem(T *t, int = 0) { free(t); }
 
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<PGconn*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(PGconn*)
+
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<PGresult*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(PGresult*)
 
 QT_BEGIN_NAMESPACE

@@ -127,6 +127,18 @@ QT_BEGIN_NAMESPACE
 #define CS_PUBLIC
 #endif
 
+namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<LOGINREC*> {
+    enum { Value = false };
+};
+}
+
+namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<DBPROCESS*> {
+    enum { Value = false };
+};
+}
+
 QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = -1)
 {
     return QSqlError(QLatin1String("QTDS: ") + err, QString(), type, errNo);
