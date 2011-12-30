@@ -55,9 +55,6 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
-#ifdef QT_HAVE_ARM_SIMD
-#include <private/qdrawhelper_arm_simd_p.h>
-#endif
 #include <private/qdrawhelper_neon_p.h>
 #ifdef QT_HAVE_MIPS_DSP
 #include <private/qdrawhelper_mips_dsp_p.h>
@@ -5875,12 +5872,7 @@ void qInitDrawhelperAsm()
     }
 #endif // IWMMXT
 
-#if defined(QT_HAVE_ARM_SIMD)
-    qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_arm_simd;
-    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_arm_simd;
-    qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_arm_simd;
-    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_arm_simd;
-#elif defined(QT_HAVE_NEON)
+#if defined(QT_HAVE_NEON)
     if (features & NEON) {
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
