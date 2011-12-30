@@ -51,6 +51,8 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
 
+#include <wchar.h>
+
 #if !defined(QT_NO_DIRECTWRITE)
 #    include <dwrite.h>
 #    include <d2d1.h>

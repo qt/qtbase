@@ -51,6 +51,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
 
+#include <wchar.h>
+
 static inline QFontDatabase::WritingSystem writingSystemFromScript(const QString &scriptName)
 {
     if (scriptName == QStringLiteral("Western")
