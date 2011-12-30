@@ -731,6 +731,7 @@ CFG_SSSE3=auto
 CFG_SSE4_1=auto
 CFG_SSE4_2=auto
 CFG_AVX=auto
+CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_NAS=no
 CFG_ACCESSIBILITY=auto
@@ -1506,6 +1507,13 @@ while [ "$#" -gt 0 ]; do
     avx)
         if [ "$VAL" = "no" ]; then
             CFG_AVX="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    avx2)
+        if [ "$VAL" = "no" ]; then
+            CFG_AVX2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3081,6 +3089,7 @@ cat << EOF
     -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
+    -no-avx2 ........... Do not compile with use of AVX2 instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
     -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
     -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
@@ -3987,6 +3996,15 @@ if [ "${CFG_AVX}" = "auto" ]; then
        CFG_AVX=yes
     else
        CFG_AVX=no
+    fi
+fi
+
+# detect avx2 support
+if [ "${CFG_AVX2}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/avx2 "avx2" $L_FLAGS $I_FLAGS $l_FLAGS "-march=core-avx2"; then
+       CFG_AVX2=yes
+    else
+       CFG_AVX2=no
     fi
 fi
 
@@ -5555,6 +5573,7 @@ fi
 [ "$CFG_SSE4_1" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_1"
 [ "$CFG_SSE4_2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_2"
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
+[ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
@@ -6510,7 +6529,7 @@ echo "PCH support ............ $CFG_PRECOMPILE"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
     echo "SSE2/SSE3/SSSE3......... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
     echo "SSE4.1/SSE4.2........... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
-    echo "AVX..................... ${CFG_AVX}"
+    echo "AVX/AVX2................ ${CFG_AVX}/${CFG_AVX2}"
 elif [ "$CFG_ARCH" = "arm" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"
