@@ -495,6 +495,8 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
             break;
         }
         newPosition = blockIt.position() + line.textStart() + line.textLength();
+        if (newPosition >= priv->length())
+            newPosition = priv->length() - 1;
         if (line.lineNumber() < layout->lineCount() - 1) {
             const QString text = blockIt.text();
             // ###### this relies on spaces being the cause for linebreaks.
