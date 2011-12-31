@@ -420,6 +420,10 @@ QT_END_INCLUDE_NAMESPACE
 # define Q_DECL_FINAL
 #endif
 
+#if defined(Q_COMPILER_ALIGNOF) && !defined(Q_ALIGNOF)
+#  define Q_ALIGNOF(x)  alignof(x)
+#endif
+
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_OS_WIN)
