@@ -708,8 +708,10 @@ CFG_PKGCONFIG=auto
 
 # Target architecture
 CFG_ARCH=
+CFG_CPUFEATURES=
 # Host architecture, same as CFG_ARCH when not cross-compiling
 CFG_HOST_ARCH=
+CFG_HOST_CPUFEATURES=
 # Set when the -arch or -host-arch arguments are used
 OPT_OBSOLETE_HOST_ARG=no
 
@@ -3668,9 +3670,9 @@ fi
 
 # Use config.tests/arch/arch.pro to has the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE"
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG"
 if [ $? -eq 0 ]; then
-    CFG_ARCH=`cat "$OUTFILE"`
+    eval `cat "$OUTFILE"`
 else
     echo
     echo "Could not determine the target architecture!"
@@ -3681,9 +3683,9 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE"
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST"
     if [ $? -eq 0 ]; then
-        CFG_HOST_ARCH=`cat "$OUTFILE"`
+        eval `cat "$OUTFILE"`
     else
         echo
         echo "Could not determine the host architecture!"
@@ -3694,6 +3696,7 @@ if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
 else
     # not cross compiling, host == target
     CFG_HOST_ARCH="$CFG_ARCH"
+    CFG_HOST_CPUFEATURES="$CFG_CPUFEATURES"
 fi
 unset OUTFILE
 
@@ -5719,6 +5722,8 @@ cat >>"$QTCONFIG.tmp" <<EOF
 CONFIG += $QTCONFIG_CONFIG
 QT_ARCH = $CFG_ARCH
 QT_HOST_ARCH = $CFG_HOST_ARCH
+QT_CPU_FEATURES = $CFG_CPUFEATURES
+QT_HOST_CPU_FEATURES = $CFG_HOST_CPUFEATURES
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
@@ -5882,8 +5887,9 @@ else
     echo "Building for:  $XPLATFORM"
 fi
 
-echo "Architecture:  $CFG_ARCH"
-echo "Host architecture: $CFG_HOST_ARCH"
+# the missing space before $CFG_FEATURES is intentional
+echo "Architecture:  $CFG_ARCH, features:$CFG_CPUFEATURES"
+echo "Host architecture: $CFG_HOST_ARCH, features:$CFG_HOST_CPUFEATURES"
 
 if [ -n "$PLATFORM_NOTES" ]; then
     echo "Platform notes:"

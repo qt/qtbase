@@ -2531,6 +2531,17 @@ void Configure::generateCachefile()
     }
 }
 
+struct ArchData {
+    const char *qmakespec;
+    const char *key;
+    const char *subarchKey;
+    const char *type;
+    ArchData() {}
+    ArchData(const char *t, const char *qm, const char *k, const char *sak)
+        : qmakespec(qm), key(k), subarchKey(sak), type(t)
+    {}
+};
+
 /*
     Runs qmake on config.tests/arch/arch.pro, which will detect the target arch
     for the compiler we are using
@@ -2551,15 +2562,16 @@ void Configure::detectArch()
         return;
     }
 
-    QList<QPair<QString, QString> > qmakespecs;
+    QVector<ArchData> qmakespecs;
     if (dictionary.contains("XQMAKESPEC"))
-        qmakespecs << qMakePair(QString("XQMAKESPEC"), QString("QT_ARCH"));
-    qmakespecs << qMakePair(QString("QMAKESPEC"), QString("QT_HOST_ARCH"));
+        qmakespecs << ArchData("target", "XQMAKESPEC", "QT_ARCH", "QT_CPU_FEATURES");
+    qmakespecs << ArchData("host", "QMAKESPEC", "QT_HOST_ARCH", "QT_HOST_CPU_FEATURES");
 
     for (int i = 0; i < qmakespecs.count(); ++i) {
-        const QPair<QString, QString> &pair = qmakespecs.at(i);
-        QString qmakespec = dictionary.value(pair.first);
-        QString key = pair.second;
+        const ArchData &data = qmakespecs.at(i);
+        QString qmakespec = dictionary.value(data.qmakespec);
+        QString key = data.key;
+        QString subarchKey = data.subarchKey;
 
         // run qmake
         QString command =
@@ -2584,10 +2596,11 @@ void Configure::detectArch()
         QByteArray exeContents = exe.readAll();
         exe.close();
 
-        static const char magic[] = "==Qt=magic=Qt== Architecture:";
-        int magicPos = exeContents.indexOf(magic);
+        static const char archMagic[] = "==Qt=magic=Qt== Architecture:";
+        int magicPos = exeContents.indexOf(archMagic);
         if (magicPos == -1) {
-            cout << "Internal error, could not find the architecture of the executable" << endl;
+            cout << "Internal error, could not find the architecture of the "
+                 << data.type << " executable" << endl;
             dictionary["DONE"] = "error";
             return;
         }
@@ -2595,10 +2608,24 @@ void Configure::detectArch()
 
         // the conversion from QByteArray will stop at the ending NUL anyway
         QString arch = QString::fromLatin1(exeContents.constData() + magicPos
-                                           + sizeof(magic) - 1);
+                                           + sizeof(archMagic) - 1);
         dictionary[key] = arch;
 
+        static const char subarchMagic[] = "==Qt=magic=Qt== Sub-architecture:";
+        magicPos = exeContents.indexOf(subarchMagic);
+        if (magicPos == -1) {
+            cout << "Internal error, could not find the sub-architecture of the "
+                 << data.type << " executable" << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
+
+        QString subarch = QString::fromLatin1(exeContents.constData() + magicPos
+                                              + sizeof(subarchMagic) - 1);
+        dictionary[subarchKey] = subarch;
+
         //cout << "Detected arch '" << qPrintable(arch) << "'\n";
+        //cout << "Detected sub-arch '" << qPrintable(subarch) << "'\n";
 
         // clean up
         Environment::execute(command + " distclean");
@@ -2606,8 +2633,10 @@ void Configure::detectArch()
 
     if (!dictionary.contains("QT_HOST_ARCH"))
         dictionary["QT_HOST_ARCH"] = "unknown";
-    if (!dictionary.contains("QT_ARCH"))
+    if (!dictionary.contains("QT_ARCH")) {
         dictionary["QT_ARCH"] = dictionary["QT_HOST_ARCH"];
+        dictionary["QT_CPU_FEATURES"] = dictionary["QT_HOST_CPU_FEATURES"];
+    }
 
     QDir::setCurrent(oldpwd);
 }
@@ -2650,6 +2679,8 @@ void Configure::generateQConfigPri()
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary["QT_ARCH"] << endl;
         configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
+        configStream << "QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
+        configStream << "QT_HOST_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
             configStream << "QT_EDITION = " << QLatin1String("OpenSource") << endl;
         else
@@ -3037,8 +3068,10 @@ void Configure::displayConfig()
         sout << "QMAKESPEC..................." << dictionary[ "XQMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
     else
         sout << "QMAKESPEC..................." << dictionary[ "QMAKESPEC" ] << " (" << dictionary["QMAKESPEC_FROM"] << ")" << endl;
-    sout << "Architecture................" << dictionary["QT_ARCH"] << endl;
-    sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"] << endl;
+    sout << "Architecture................" << dictionary["QT_ARCH"]
+         << ", features:" << dictionary["QT_CPU_FEATURES"] << endl;
+    sout << "Host Architecture..........." << dictionary["QT_HOST_ARCH"]
+         << ", features:" << dictionary["QT_HOST_CPU_FEATURES"]  << endl;
     sout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
     sout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
     sout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
