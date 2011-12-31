@@ -342,7 +342,49 @@ static const int features_indices[] = {
 };
 // end generated
 
-const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+static const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+
+static const uint minFeature = None
+#if defined __RTM__
+                               | RTM
+#endif
+// don't define for HLE, since the HLE prefix can be run on older CPUs
+#if defined __AVX2__
+                               | AVX2
+#endif
+#if defined __AVX__
+                               | AVX
+#endif
+#if defined __SSE4_2__
+                               | SSE4_2
+#endif
+#if defined __SSE4_1__
+                               | SSE4_1
+#endif
+#if defined __SSSE3__
+                               | SSSE3
+#endif
+#if defined __SSE3__
+                               | SSE3
+#endif
+#if defined __SSE2__
+                               | SSE2
+#endif
+#if defined __ARM_NEON__
+                               | NEON
+#endif
+#if defined __IWMMXT__
+                               | IWMMXT
+#endif
+                               ;
+
+#ifdef Q_OS_WIN
+int ffs(int i)
+{
+    unsigned long result;
+    return _BitScanForward(&result, i) ? result : 0;
+}
+#endif
 
 uint qDetectCPUFeatures()
 {
@@ -360,6 +402,19 @@ uint qDetectCPUFeatures()
         }
     }
 
+    if (minFeature != 0 && (f & minFeature) != minFeature) {
+        uint missing = minFeature & ~f;
+        fprintf(stderr, "Incompatible processor. This Qt build requires the following features:\n   ");
+        for (int i = 0; i < features_count; ++i) {
+            if (missing & (1 << i))
+                fprintf(stderr, "%s", features_string + features_indices[i]);
+        }
+        fprintf(stderr, "\n");
+        fflush(stderr);
+        qFatal("Aborted. Incompatible processor: missing feature 0x%x -%s.", missing,
+               features_string + features_indices[ffs(missing) - 1]);
+    }
+
     features.store(f);
     return f;
 }
@@ -370,7 +425,8 @@ void qDumpCPUFeatures()
     printf("Processor features: ");
     for (int i = 0; i < features_count; ++i) {
         if (features & (1 << i))
-            printf("%s", features_string + features_indices[i]);
+            printf("%s%s", features_string + features_indices[i],
+                   minFeature & (1 << i) ? "[required]" : "");
     }
     puts("");
 }
