@@ -163,6 +163,12 @@ namespace QT_NAMESPACE {}
 #ifndef Q_UNLIKELY
 #  define Q_UNLIKELY(x) (x)
 #endif
+#ifndef Q_ASSUME
+#  define Q_ASSUME(expr)
+#endif
+#ifndef Q_UNREACHABLE
+#  define Q_UNREACHABLE()
+#endif
 
 #ifndef Q_ALLOC_SIZE
 #  define Q_ALLOC_SIZE(x)

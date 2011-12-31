@@ -88,6 +88,8 @@
 #  define Q_NO_TEMPLATE_FRIENDS
 #  define Q_ALIGNOF(type) __alignof(type)
 #  define Q_DECL_ALIGN(n) __declspec(align(n))
+#  define Q_ASSUME(expr) __assume(expr)
+#  define Q_UNREACHABLE() __assume(0)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
 #  if defined(__INTEL_COMPILER)
 #    define Q_CC_INTEL
@@ -141,11 +143,17 @@
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL
+#    define Q_ASSUME(expr)  __assume(expr)
+#    define Q_UNREACHABLE() __assume(0)
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
+#    define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
+#    define Q_UNREACHABLE() __builtin_unreachable()
 #  else
 /* Plain GCC */
+#    define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
+#    define Q_UNREACHABLE() __builtin_unreachable()
 #  endif
 
 #  define Q_ALIGNOF(type)   __alignof__(type)
