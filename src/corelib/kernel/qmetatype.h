@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qbytearray.h>
 
 #include <new>
 
@@ -501,12 +502,42 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 #undef QT_FORWARD_DECLARE_STATIC_TYPES_ITER
 
 template <class T> class QList;
+template <class T> class QLinkedList;
+template <class T> class QVector;
+template <class T> class QQueue;
+template <class T> class QStack;
+template <class T> class QSet;
+template <class T> class QSharedPointer;
 template <class T1, class T2> class QMap;
 template <class T1, class T2> class QHash;
 typedef QList<QVariant> QVariantList;
 typedef QMap<QString, QVariant> QVariantMap;
 typedef QHash<QString, QVariant> QVariantHash;
 
+#define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
+template <typename T> \
+struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
+{ \
+    enum { \
+        Defined = QMetaTypeId2<T>::Defined \
+    }; \
+    static int qt_metatype_id() \
+    { \
+        static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
+        if (!metatype_id.load()) \
+            metatype_id.storeRelease(qRegisterMetaType< SINGLE_ARG_TEMPLATE<T> >( QByteArray(QByteArray(#SINGLE_ARG_TEMPLATE "<") + QMetaType::typeName(qMetaTypeId<T>()) + ">"), \
+                        reinterpret_cast< SINGLE_ARG_TEMPLATE<T> *>(quintptr(-1)))); \
+        return metatype_id.loadAcquire(); \
+    } \
+};
+
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QList)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QVector)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QQueue)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QStack)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSet)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QSharedPointer)
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(QLinkedList)
 
 QT_END_NAMESPACE
 

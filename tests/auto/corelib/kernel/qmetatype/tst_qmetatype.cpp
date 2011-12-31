@@ -89,6 +89,7 @@ private slots:
     void isRegistered();
     void unregisterType();
     void registerStreamBuiltin();
+    void automaticTemplateRegistration();
 };
 
 struct Foo { int i; };
@@ -886,6 +887,51 @@ void tst_QMetaType::registerStreamBuiltin()
     //should not crash;
     qRegisterMetaTypeStreamOperators<QString>("QString");
     qRegisterMetaTypeStreamOperators<QVariant>("QVariant");
+}
+
+Q_DECLARE_METATYPE(QSharedPointer<QObject>)
+
+void tst_QMetaType::automaticTemplateRegistration()
+{
+  {
+    QList<int> intList;
+    intList << 42;
+    QVERIFY(QVariant::fromValue(intList).value<QList<int> >().first() == 42);
+    QVector<QList<int> > vectorList;
+    vectorList << intList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<int> > >().first().first() == 42);
+  }
+
+  {
+    QList<QByteArray> bytearrayList;
+    bytearrayList << QByteArray("foo");
+    QVERIFY(QVariant::fromValue(bytearrayList).value<QList<QByteArray> >().first() == QByteArray("foo"));
+    QVector<QList<QByteArray> > vectorList;
+    vectorList << bytearrayList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QByteArray> > >().first().first() == QByteArray("foo"));
+  }
+
+  QCOMPARE(::qMetaTypeId<QVariantList>(), (int)QMetaType::QVariantList);
+  QCOMPARE(::qMetaTypeId<QList<QVariant> >(), (int)QMetaType::QVariantList);
+
+  {
+    QList<QVariant> variantList;
+    variantList << 42;
+    QVERIFY(QVariant::fromValue(variantList).value<QList<QVariant> >().first() == 42);
+    QVector<QList<QVariant> > vectorList;
+    vectorList << variantList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QVariant> > >().first().first() == 42);
+  }
+
+  {
+    QList<QSharedPointer<QObject> > sharedPointerList;
+    QObject *testObject = new QObject;
+    sharedPointerList << QSharedPointer<QObject>(testObject);
+    QVERIFY(QVariant::fromValue(sharedPointerList).value<QList<QSharedPointer<QObject> > >().first() == testObject);
+    QVector<QList<QSharedPointer<QObject> > > vectorList;
+    vectorList << sharedPointerList;
+    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QSharedPointer<QObject> > > >().first().first() == testObject);
+  }
 }
 
 QTEST_MAIN(tst_QMetaType)
