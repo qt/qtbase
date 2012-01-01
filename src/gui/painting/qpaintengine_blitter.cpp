@@ -65,16 +65,6 @@ QT_BEGIN_NAMESPACE
 #define STATE_CLIP_COMPLEX      0x00020000
 
 
-static inline void updateStateBits(uint *state, uint mask, bool on)
-{
-    *state = on ? (*state | mask) : (*state & ~mask);
-}
-
-static inline bool checkStateAgainstMask(uint state, uint mask)
-{
-    return !state || (state & mask && !(state & ~mask));
-}
-
 class CapabilitiesToStateMask
 {
 public:
@@ -127,7 +117,17 @@ public:
         updateStateBits(&capabillitiesState, mask, on);
     }
 
-public:
+private:
+
+    static inline void updateStateBits(uint *state, uint mask, bool on)
+    {
+        *state = on ? (*state | mask) : (*state & ~mask);
+    }
+
+    static inline bool checkStateAgainstMask(uint state, uint mask)
+    {
+        return !state || (state & mask && !(state & ~mask));
+    }
 
     void setFillRectMask() {
         updateStateBits(&fillRectMask, STATE_XFORM_SCALE, false);
@@ -187,12 +187,12 @@ public:
     QBlitterPaintEnginePrivate(QBlittablePlatformPixmap *p)
         : QPaintEngineExPrivate()
         , pmData(p)
+        , caps(pmData->blittable()->capabilities())
         , isBlitterLocked(false)
         , hasXForm(false)
 
     {
         raster.reset(new QRasterPaintEngine(p->buffer()));
-        capabillities.reset(new CapabilitiesToStateMask(pmData->blittable()->capabilities()));
     }
 
     inline void lock() {
@@ -264,7 +264,7 @@ public:
         Q_Q(QBlitterPaintEngine);
         const QClipData *clip = q->clipData();
         bool complex = clip && !(clip->hasRectClip || clip->hasRegionClip);
-        capabillities->updateState(STATE_CLIP_COMPLEX, complex);
+        caps.updateState(STATE_CLIP_COMPLEX, complex);
     }
 
     void systemStateChanged() {
@@ -274,10 +274,8 @@ public:
     QScopedPointer<QRasterPaintEngine> raster;
 
     QBlittablePlatformPixmap *pmData;
+    CapabilitiesToStateMask caps;
     bool isBlitterLocked;
-
-    QScopedPointer<CapabilitiesToStateMask> capabillities;
-
     uint hasXForm;
 };
 
@@ -335,7 +333,7 @@ void QBlitterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 void QBlitterPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
     Q_D(QBlitterPaintEngine);
-    if (d->capabillities->canBlitterFillRect() && color.alpha() == 0xff) {
+    if (d->caps.canBlitterFillRect() && color.alpha() == 0xff) {
         d->fillRect(rect, color);
     } else {
         d->lock();
@@ -353,10 +351,10 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
     if (qbrush_style(brush) == Qt::SolidPattern
         && qbrush_color(brush).alpha() == 0xff
-        && d->capabillities->canBlitterFillRect()) {
+        && d->caps.canBlitterFillRect()) {
         d->fillRect(rect, qbrush_color(brush));
     } else if (brush.style() == Qt::TexturePattern
-              && d->capabillities->canBlitterDrawPixmap(rect, brush.texture(), rect)) {
+              && d->caps.canBlitterDrawPixmap(rect, brush.texture(), rect)) {
         bool rectIsFilled = false;
         QRectF transformedRect = state()->matrix.mapRect(rect);
         qreal x = transformedRect.x();
@@ -463,7 +461,7 @@ void QBlitterPaintEngine::penChanged()
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->penChanged();
-    d->capabillities->updateState(STATE_PEN_ENABLED, qpen_style(state()->pen) != Qt::NoPen);
+    d->caps.updateState(STATE_PEN_ENABLED, qpen_style(state()->pen) != Qt::NoPen);
 }
 
 void QBlitterPaintEngine::brushChanged()
@@ -473,9 +471,9 @@ void QBlitterPaintEngine::brushChanged()
 
     bool solid = qbrush_style(state()->brush) == Qt::SolidPattern;
 
-    d->capabillities->updateState(STATE_BRUSH_PATTERN, !solid);
-    d->capabillities->updateState(STATE_BRUSH_ALPHA,
-                                    qbrush_color(state()->brush).alpha() < 255);
+    d->caps.updateState(STATE_BRUSH_PATTERN, !solid);
+    d->caps.updateState(STATE_BRUSH_ALPHA,
+                        qbrush_color(state()->brush).alpha() < 255);
 }
 
 void QBlitterPaintEngine::brushOriginChanged()
@@ -490,7 +488,7 @@ void QBlitterPaintEngine::opacityChanged()
     d->raster->opacityChanged();
 
     bool translucent = state()->opacity < 1;
-    d->capabillities->updateState(STATE_ALPHA, translucent);
+    d->caps.updateState(STATE_ALPHA, translucent);
 }
 
 void QBlitterPaintEngine::compositionModeChanged()
@@ -501,7 +499,7 @@ void QBlitterPaintEngine::compositionModeChanged()
     bool nonTrivial = state()->composition_mode != QPainter::CompositionMode_SourceOver
                       && state()->composition_mode != QPainter::CompositionMode_Source;
 
-    d->capabillities->updateState(STATE_BLENDING_COMPLEX, nonTrivial);
+    d->caps.updateState(STATE_BLENDING_COMPLEX, nonTrivial);
 }
 
 void QBlitterPaintEngine::renderHintsChanged()
@@ -510,7 +508,7 @@ void QBlitterPaintEngine::renderHintsChanged()
     d->raster->renderHintsChanged();
 
     bool aa = state()->renderHints & QPainter::Antialiasing;
-    d->capabillities->updateState(STATE_ANTIALIASING, aa);
+    d->caps.updateState(STATE_ANTIALIASING, aa);
 
 }
 
@@ -521,8 +519,8 @@ void QBlitterPaintEngine::transformChanged()
 
     QTransform::TransformationType type = state()->matrix.type();
 
-    d->capabillities->updateState(STATE_XFORM_COMPLEX, type > QTransform::TxScale);
-    d->capabillities->updateState(STATE_XFORM_SCALE, type > QTransform::TxTranslate);
+    d->caps.updateState(STATE_XFORM_COMPLEX, type > QTransform::TxScale);
+    d->caps.updateState(STATE_XFORM_SCALE, type > QTransform::TxTranslate);
 
     d->hasXForm = type >= QTransform::TxTranslate;
 
@@ -531,7 +529,7 @@ void QBlitterPaintEngine::transformChanged()
 void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QBlitterPaintEngine);
-    if (d->capabillities->canBlitterDrawRectMask()) {
+    if (d->caps.canBlitterDrawRectMask()) {
         for (int i=0; i<rectCount; ++i)
             d->fillRect(rects[i], qbrush_color(state()->brush));
     } else {
@@ -543,7 +541,7 @@ void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
 void QBlitterPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
     Q_D(QBlitterPaintEngine);
-    if (d->capabillities->canBlitterDrawRectMask()) {
+    if (d->caps.canBlitterDrawRectMask()) {
         for (int i = 0; i < rectCount; ++i)
             d->fillRect(rects[i], qbrush_color(state()->brush));
     } else {
@@ -555,7 +553,7 @@ void QBlitterPaintEngine::drawRects(const QRectF *rects, int rectCount)
 void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     Q_D(QBlitterPaintEngine);
-    if (d->capabillities->canBlitterDrawPixmap(r, pm, sr)) {
+    if (d->caps.canBlitterDrawPixmap(r, pm, sr)) {
 
         d->unlock();
         QRectF targetRect = r;
