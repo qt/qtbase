@@ -251,9 +251,9 @@ void QBlitterPaintEnginePrivate::updatePenState(QPainterState *s)
 
 void QBlitterPaintEnginePrivate::updateBrushState(QPainterState *s)
 {
-    bool solid = qbrush_style(s->brush) == Qt::SolidPattern;
+    Qt::BrushStyle style = qbrush_style(s->brush);
 
-    caps.updateState(STATE_BRUSH_PATTERN, !solid);
+    caps.updateState(STATE_BRUSH_PATTERN, style > Qt::SolidPattern);
     caps.updateState(STATE_BRUSH_ALPHA,
                         qbrush_color(s->brush).alpha() < 255);
 }
