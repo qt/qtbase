@@ -199,12 +199,15 @@ public:
     void fillRect(const QRectF &rect, const QColor &color);
     void clipAndDrawPixmap(const QRectF &clip, const QRectF &target, const QPixmap &pm, const QRectF &sr);
 
-    void updateClip() {
-        Q_Q(QBlitterPaintEngine);
-        const QClipData *clip = q->clipData();
-        bool complex = clip && !(clip->hasRectClip || clip->hasRegionClip);
-        caps.updateState(STATE_CLIP_COMPLEX, complex);
-    }
+
+    void updateCompleteState(QPainterState *s);
+    void updatePenState(QPainterState *s);
+    void updateBrushState(QPainterState *s);
+    void updateOpacityState(QPainterState *s);
+    void updateCompositionModeState(QPainterState *s);
+    void updateRenderHintsState(QPainterState *s);
+    void updateTransformState(QPainterState *s);
+    void updateClipState(QPainterState *s);
 
     void systemStateChanged() {
         raster->d_func()->systemStateChanged();
@@ -227,6 +230,71 @@ inline void QBlitterPaintEnginePrivate::lock()
 inline void QBlitterPaintEnginePrivate::unlock()
 {
     pmData->blittable()->unlock();
+}
+
+// State tracking to make decisions
+void QBlitterPaintEnginePrivate::updateCompleteState(QPainterState *s)
+{
+    updatePenState(s);
+    updateBrushState(s);
+    updateOpacityState(s);
+    updateCompositionModeState(s);
+    updateRenderHintsState(s);
+    updateTransformState(s);
+    updateClipState(s);
+}
+
+void QBlitterPaintEnginePrivate::updatePenState(QPainterState *s)
+{
+    caps.updateState(STATE_PEN_ENABLED, qpen_style(s->pen) != Qt::NoPen);
+}
+
+void QBlitterPaintEnginePrivate::updateBrushState(QPainterState *s)
+{
+    bool solid = qbrush_style(s->brush) == Qt::SolidPattern;
+
+    caps.updateState(STATE_BRUSH_PATTERN, !solid);
+    caps.updateState(STATE_BRUSH_ALPHA,
+                        qbrush_color(s->brush).alpha() < 255);
+}
+
+void QBlitterPaintEnginePrivate::updateOpacityState(QPainterState *s)
+{
+    bool translucent = s->opacity < 1;
+    caps.updateState(STATE_ALPHA, translucent);
+}
+
+void QBlitterPaintEnginePrivate::updateCompositionModeState(QPainterState *s)
+{
+    bool nonTrivial = s->composition_mode != QPainter::CompositionMode_SourceOver
+                      && s->composition_mode != QPainter::CompositionMode_Source;
+
+    caps.updateState(STATE_BLENDING_COMPLEX, nonTrivial);
+}
+
+void QBlitterPaintEnginePrivate::updateRenderHintsState(QPainterState *s)
+{
+    bool aa = s->renderHints & QPainter::Antialiasing;
+    caps.updateState(STATE_ANTIALIASING, aa);
+}
+
+void QBlitterPaintEnginePrivate::updateTransformState(QPainterState *s)
+{
+    QTransform::TransformationType type = s->matrix.type();
+
+    caps.updateState(STATE_XFORM_COMPLEX, type > QTransform::TxScale);
+    caps.updateState(STATE_XFORM_SCALE, type > QTransform::TxTranslate);
+
+    hasXForm = type >= QTransform::TxTranslate;
+}
+
+void QBlitterPaintEnginePrivate::updateClipState(QPainterState *)
+{
+    Q_Q(QBlitterPaintEngine);
+
+    const QClipData *clip = q->clipData();
+    bool complexClip = clip && !(clip->hasRectClip || clip->hasRegionClip);
+    caps.updateState(STATE_CLIP_COMPLEX, complexClip);
 }
 
 void QBlitterPaintEnginePrivate::fillRect(const QRectF &rect, const QColor &color)
@@ -437,14 +505,14 @@ void QBlitterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->clip(path, op);
-    d->updateClip();
+    d->updateClipState(state());
 }
 
 void QBlitterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op){
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->clip(rect, op);
-    d->updateClip();
+    d->updateClipState(state());
 }
 
 void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
@@ -452,7 +520,7 @@ void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->clip(region, op);
-    d->updateClip();
+    d->updateClipState(state());
 }
 
 void QBlitterPaintEngine::clipEnabledChanged()
@@ -460,6 +528,7 @@ void QBlitterPaintEngine::clipEnabledChanged()
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->clipEnabledChanged();
+    d->updateClipState(state());
 }
 
 void QBlitterPaintEngine::penChanged()
@@ -467,7 +536,8 @@ void QBlitterPaintEngine::penChanged()
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->penChanged();
-    d->caps.updateState(STATE_PEN_ENABLED, qpen_style(state()->pen) != Qt::NoPen);
+
+    d->updatePenState(state());
 }
 
 void QBlitterPaintEngine::brushChanged()
@@ -475,11 +545,7 @@ void QBlitterPaintEngine::brushChanged()
     Q_D(QBlitterPaintEngine);
     d->raster->brushChanged();
 
-    bool solid = qbrush_style(state()->brush) == Qt::SolidPattern;
-
-    d->caps.updateState(STATE_BRUSH_PATTERN, !solid);
-    d->caps.updateState(STATE_BRUSH_ALPHA,
-                        qbrush_color(state()->brush).alpha() < 255);
+    d->updateBrushState(state());
 }
 
 void QBlitterPaintEngine::brushOriginChanged()
@@ -492,44 +558,28 @@ void QBlitterPaintEngine::opacityChanged()
 {
     Q_D(QBlitterPaintEngine);
     d->raster->opacityChanged();
-
-    bool translucent = state()->opacity < 1;
-    d->caps.updateState(STATE_ALPHA, translucent);
+    d->updateOpacityState(state());
 }
 
 void QBlitterPaintEngine::compositionModeChanged()
 {
     Q_D(QBlitterPaintEngine);
     d->raster->compositionModeChanged();
-
-    bool nonTrivial = state()->composition_mode != QPainter::CompositionMode_SourceOver
-                      && state()->composition_mode != QPainter::CompositionMode_Source;
-
-    d->caps.updateState(STATE_BLENDING_COMPLEX, nonTrivial);
+    d->updateCompositionModeState(state());
 }
 
 void QBlitterPaintEngine::renderHintsChanged()
 {
     Q_D(QBlitterPaintEngine);
     d->raster->renderHintsChanged();
-
-    bool aa = state()->renderHints & QPainter::Antialiasing;
-    d->caps.updateState(STATE_ANTIALIASING, aa);
-
+    d->updateRenderHintsState(state());
 }
 
 void QBlitterPaintEngine::transformChanged()
 {
     Q_D(QBlitterPaintEngine);
     d->raster->transformChanged();
-
-    QTransform::TransformationType type = state()->matrix.type();
-
-    d->caps.updateState(STATE_XFORM_COMPLEX, type > QTransform::TxScale);
-    d->caps.updateState(STATE_XFORM_SCALE, type > QTransform::TxTranslate);
-
-    d->hasXForm = type >= QTransform::TxTranslate;
-
+    d->updateTransformState(state());
 }
 
 void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
@@ -630,16 +680,7 @@ void QBlitterPaintEngine::setState(QPainterState *s)
     QPaintEngineEx::setState(s);
     d->raster->setState(s);
 
-    clipEnabledChanged();
-    penChanged();
-    brushChanged();
-    brushOriginChanged();
-    opacityChanged();
-    compositionModeChanged();
-    renderHintsChanged();
-    transformChanged();
-
-    d->updateClip();
+    d->updateCompleteState(s);
 }
 
 inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
