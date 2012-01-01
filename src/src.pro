@@ -65,7 +65,7 @@ src_platformsupport.target = sub-platformsupport
       src_declarative.depends += src_opengl
       src_webkit.depends += src_opengl
    }
-   src_v8.depends += src_tools_mkv8snapshot
+   contains(QT_CONFIG, v8snapshot):src_v8.depends += src_tools_mkv8snapshot
 }
 
 
