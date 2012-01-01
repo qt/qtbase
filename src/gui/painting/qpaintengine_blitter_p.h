@@ -66,12 +66,14 @@ public:
     virtual bool begin(QPaintDevice *pdev);
     virtual bool end();
 
+    // Call down into QBlittable
     virtual void fill(const QVectorPath &path, const QBrush &brush);
     virtual void stroke(const QVectorPath &path, const QPen &pen);
-
-    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
-    virtual void clip(const QRect &rect, Qt::ClipOperation op);
-    virtual void clip(const QRegion &region, Qt::ClipOperation op);
+    virtual void fillRect(const QRectF &rect, const QBrush &brush);
+    virtual void fillRect(const QRectF &rect, const QColor &color);
+    virtual void drawRects(const QRect *rects, int rectCount);
+    virtual void drawRects(const QRectF *rects, int rectCount);
+    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
 
     virtual void clipEnabledChanged();
     virtual void penChanged();
@@ -82,13 +84,10 @@ public:
     virtual void renderHintsChanged();
     virtual void transformChanged();
 
-    virtual void fillRect(const QRectF &rect, const QBrush &brush);
-    virtual void fillRect(const QRectF &rect, const QColor &color);
-
-    virtual void drawRects(const QRect *rects, int rectCount);
-    virtual void drawRects(const QRectF *rects, int rectCount);
-
-    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
+    // Override to lock the QBlittable before using raster
+    virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
+    virtual void clip(const QRect &rect, Qt::ClipOperation op);
+    virtual void clip(const QRegion &region, Qt::ClipOperation op);
 
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags);
 

@@ -360,6 +360,58 @@ QBlitterPaintEngine::QBlitterPaintEngine(QBlittablePlatformPixmap *p)
 QBlitterPaintEngine::~QBlitterPaintEngine()
 {}
 
+// State tracking
+void QBlitterPaintEngine::penChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->penChanged();
+
+    d->updatePenState(state());
+}
+
+void QBlitterPaintEngine::brushChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->brushChanged();
+
+    d->updateBrushState(state());
+}
+
+void QBlitterPaintEngine::brushOriginChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->brushOriginChanged();
+}
+
+void QBlitterPaintEngine::opacityChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->opacityChanged();
+    d->updateOpacityState(state());
+}
+
+void QBlitterPaintEngine::compositionModeChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->compositionModeChanged();
+    d->updateCompositionModeState(state());
+}
+
+void QBlitterPaintEngine::renderHintsChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->renderHintsChanged();
+    d->updateRenderHintsState(state());
+}
+
+void QBlitterPaintEngine::transformChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->raster->transformChanged();
+    d->updateTransformState(state());
+}
+
 QPainterState *QBlitterPaintEngine::createState(QPainterState *orig) const
 {
     Q_D(const QBlitterPaintEngine);
@@ -378,7 +430,6 @@ bool QBlitterPaintEngine::begin(QPaintDevice *pdev)
     return ok;
 }
 
-
 bool QBlitterPaintEngine::end()
 {
     Q_D(QBlitterPaintEngine);
@@ -390,7 +441,23 @@ bool QBlitterPaintEngine::end()
     return d->raster->end();
 }
 
+void QBlitterPaintEngine::setState(QPainterState *s)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    QPaintEngineEx::setState(s);
+    d->raster->setState(s);
 
+    d->updateCompleteState(s);
+}
+
+inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
+{
+    Q_D(const QBlitterPaintEngine);
+    return d->raster.data();
+}
+
+// Accelerated paths
 void QBlitterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QBlitterPaintEngine);
@@ -492,96 +559,6 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
 }
 
-void QBlitterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->pmData->markRasterOverlay(path);
-    d->raster->stroke(path, pen);
-}
-
-void QBlitterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->raster->clip(path, op);
-    d->updateClipState(state());
-}
-
-void QBlitterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op){
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->raster->clip(rect, op);
-    d->updateClipState(state());
-}
-
-void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->raster->clip(region, op);
-    d->updateClipState(state());
-}
-
-void QBlitterPaintEngine::clipEnabledChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->raster->clipEnabledChanged();
-    d->updateClipState(state());
-}
-
-void QBlitterPaintEngine::penChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    d->raster->penChanged();
-
-    d->updatePenState(state());
-}
-
-void QBlitterPaintEngine::brushChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->brushChanged();
-
-    d->updateBrushState(state());
-}
-
-void QBlitterPaintEngine::brushOriginChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->brushOriginChanged();
-}
-
-void QBlitterPaintEngine::opacityChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->opacityChanged();
-    d->updateOpacityState(state());
-}
-
-void QBlitterPaintEngine::compositionModeChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->compositionModeChanged();
-    d->updateCompositionModeState(state());
-}
-
-void QBlitterPaintEngine::renderHintsChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->renderHintsChanged();
-    d->updateRenderHintsState(state());
-}
-
-void QBlitterPaintEngine::transformChanged()
-{
-    Q_D(QBlitterPaintEngine);
-    d->raster->transformChanged();
-    d->updateTransformState(state());
-}
-
 void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
     Q_D(QBlitterPaintEngine);
@@ -635,6 +612,46 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
     }
 }
 
+// Overriden methods to lock the graphics memory
+void QBlitterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->pmData->markRasterOverlay(path);
+    d->raster->stroke(path, pen);
+}
+
+void QBlitterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->clip(path, op);
+    d->updateClipState(state());
+}
+
+void QBlitterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op){
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->clip(rect, op);
+    d->updateClipState(state());
+}
+
+void QBlitterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->clip(region, op);
+    d->updateClipState(state());
+}
+
+void QBlitterPaintEngine::clipEnabledChanged()
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->clipEnabledChanged();
+    d->updateClipState(state());
+}
+
 void QBlitterPaintEngine::drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                                     Qt::ImageConversionFlags flags)
 {
@@ -643,7 +660,6 @@ void QBlitterPaintEngine::drawImage(const QRectF &r, const QImage &pm, const QRe
     d->pmData->markRasterOverlay(r);
     d->raster->drawImage(r, pm, sr, flags);
 }
-
 
 void QBlitterPaintEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 {
@@ -664,29 +680,12 @@ void QBlitterPaintEngine::drawStaticTextItem(QStaticTextItem *sti)
 
 }
 
-
 void QBlitterPaintEngine::drawEllipse(const QRectF &r)
 {
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->pmData->markRasterOverlay(r);
     d->raster->drawEllipse(r);
-}
-
-void QBlitterPaintEngine::setState(QPainterState *s)
-{
-    Q_D(QBlitterPaintEngine);
-    d->lock();
-    QPaintEngineEx::setState(s);
-    d->raster->setState(s);
-
-    d->updateCompleteState(s);
-}
-
-inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
-{
-    Q_D(const QBlitterPaintEngine);
-    return d->raster.data();
 }
 
 QT_END_NAMESPACE
