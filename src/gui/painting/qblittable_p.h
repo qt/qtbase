@@ -80,6 +80,8 @@ public:
     QImage *lock();
     void unlock();
 
+    bool isLocked() const;
+
 protected:
     virtual QImage *doLock() = 0;
     virtual void doUnlock() = 0;

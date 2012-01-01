@@ -100,6 +100,12 @@ void QBlittable::unlock()
     }
 }
 
+bool QBlittable::isLocked() const
+{
+    Q_D(const QBlittable);
+    return d->locked;
+}
+
 QT_END_NAMESPACE
 #endif //QT_NO_BLITTABLE
 
