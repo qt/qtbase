@@ -79,6 +79,7 @@
 #include "qstringlist.h"
 #include "qurl.h"
 #include "qlocale.h"
+#include "quuid.h"
 
 #ifndef QT_NO_GEOM_VARIANT
 #include "qsize.h"

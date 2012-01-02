@@ -50,6 +50,7 @@
 #include "qvector.h"
 #include "qlocale.h"
 #include "qeasingcurve.h"
+#include "quuid.h"
 #include "qvariant.h"
 #include "qmetatypeswitcher_p.h"
 
@@ -788,6 +789,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
             return false;
         qMetaTypeWidgetsHelper[type - FirstWidgetsType].saveOp(stream, data);
         break;
+    case QMetaType::QUuid:
+        stream << *static_cast<const NS(QUuid)*>(data);
+        break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         if (!ct)
@@ -995,6 +999,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
             return false;
         qMetaTypeWidgetsHelper[type - FirstWidgetsType].loadOp(stream, data);
         break;
+    case QMetaType::QUuid:
+        stream >> *static_cast< NS(QUuid)*>(data);
+        break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         if (!ct)
@@ -1115,6 +1122,8 @@ void *QMetaType::create(int type, const void *copy)
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
 #endif
+        case QMetaType::QUuid:
+            return new NS(QUuid)(*static_cast<const NS(QUuid)*>(copy));
         case QMetaType::Void:
             return 0;
         default:
@@ -1212,6 +1221,8 @@ void *QMetaType::create(int type, const void *copy)
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve);
 #endif
+        case QMetaType::QUuid:
+            return new NS(QUuid);
         case QMetaType::Void:
             return 0;
         default:
@@ -1379,6 +1390,9 @@ void QMetaType::destroy(int type, void *data)
         delete static_cast< NS(QEasingCurve)* >(data);
         break;
 #endif
+    case QMetaType::QUuid:
+        delete static_cast< NS(QUuid)* >(data);
+        break;
     case QMetaType::Void:
         break;
     default: {

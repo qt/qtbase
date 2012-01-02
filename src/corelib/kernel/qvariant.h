@@ -123,6 +123,7 @@ class Q_CORE_EXPORT QVariant
         RegExp = QMetaType::QRegExp,
         Hash = QMetaType::QVariantHash,
         EasingCurve = QMetaType::QEasingCurve,
+        Uuid = QMetaType::QUuid,
         LastCoreType = QMetaType::LastCoreType,
 
         Font = QMetaType::QFont,

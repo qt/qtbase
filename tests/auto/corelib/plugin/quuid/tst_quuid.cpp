@@ -76,6 +76,9 @@ private slots:
 
     void hash();
 
+    void qvariant();
+    void qvariant_conversion();
+
 public:
     // Variables
     QUuid uuidA;
@@ -327,7 +330,35 @@ void tst_QUuid::hash()
     QCOMPARE(qHash(QUuid(uuidA.toString())), h);
 }
 
+void tst_QUuid::qvariant()
+{
+    QUuid uuid = QUuid::createUuid();
+    QVariant v = QVariant::fromValue(uuid);
+    QVERIFY(!v.isNull());
+    QCOMPARE(v.type(), QVariant::Uuid);
 
+    QUuid uuid2 = v.value<QUuid>();
+    QVERIFY(!uuid2.isNull());
+    QCOMPARE(uuid, uuid2);
+}
+
+void tst_QUuid::qvariant_conversion()
+{
+    QUuid uuid = QUuid::createUuid();
+    QVariant v = QVariant::fromValue(uuid);
+
+    QVERIFY(v.canConvert<QString>());
+    QCOMPARE(v.toString(), uuid.toString());
+    QCOMPARE(v.value<QString>(), uuid.toString());
+    QVERIFY(!v.canConvert<int>());
+    QVERIFY(!v.canConvert<QStringList>());
+
+    // try reverse conversion QString -> QUuid
+    QVariant sv = QVariant::fromValue(uuid.toString());
+    QCOMPARE(sv.type(), QVariant::String);
+    QVERIFY(sv.canConvert<QUuid>());
+    QCOMPARE(sv.value<QUuid>(), uuid);
+}
 
 QTEST_MAIN(tst_QUuid)
 #include "tst_quuid.moc"

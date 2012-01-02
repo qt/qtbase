@@ -52,6 +52,7 @@
 #include "qstringlist.h"
 #include "qurl.h"
 #include "qlocale.h"
+#include "quuid.h"
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
 
@@ -344,6 +345,9 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
+        case QVariant::Uuid:
+            *str = v_cast<QUuid>(d)->toString();
             break;
         default:
             return false;
@@ -709,6 +713,15 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         return *ok;
     }
 #endif
+    case QVariant::Uuid:
+        switch (d->type) {
+        case QVariant::String:
+            *static_cast<QUuid *>(result) = QUuid(*v_cast<QString>(d));
+            break;
+        default:
+            return false;
+        }
+        break;
     default:
         return false;
     }
@@ -807,6 +820,9 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << v.toRectF();
         break;
 #endif
+    case QVariant::Uuid:
+        dbg.nospace() << v.value<QUuid>().toString();
+        break;
     case QVariant::BitArray:
         //dbg.nospace() << v.toBitArray();
         break;
@@ -1073,6 +1089,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
     \value DateTime  a QDateTime
     \value Double  a double
     \value EasingCurve a QEasingCurve
+    \value Uuid a QUuid
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon
@@ -2402,7 +2419,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
                 | 1 << QVariant::UInt       | 1 << QVariant::Bool       | 1 << QVariant::Double
                 | 1 << QVariant::Date       | 1 << QVariant::Time       | 1 << QVariant::DateTime
                 | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong  | 1 << QVariant::Char
-                | 1 << QVariant::Url,
+                | 1 << QVariant::Url        | 1 << QVariant::Uuid,
 
 /*QStringList*/   1 << QVariant::List       | 1 << QVariant::String,
 
@@ -2441,7 +2458,9 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QHash*/         0,
 
-/*QEasingCurve*/  0
+/*QEasingCurve*/  0,
+
+/*QUuid*/         1 << QVariant::String
 };
 
 /*!
