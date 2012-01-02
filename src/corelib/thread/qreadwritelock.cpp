@@ -506,7 +506,7 @@ void QReadWriteLock::unlock()
 
     \ingroup thread
 
-    The purpose of QWriteLocker (and QReadLocker is to simplify
+    The purpose of QWriteLocker (and QReadLocker) is to simplify
     QReadWriteLock locking and unlocking. Locking and unlocking
     statements or in exception handling code is error-prone and
     difficult to debug. QWriteLocker can be used in such situations
