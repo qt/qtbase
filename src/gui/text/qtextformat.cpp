@@ -394,6 +394,9 @@ void QTextFormatPrivate::recalcFont() const
             case QTextFormat::FontStrikeOut:
                 f.setStrikeOut(props.at(i).value.toBool());
                 break;
+            case QTextFormat::FontAbsoluteLetterSpacing:
+                f.setLetterSpacing(QFont::AbsoluteSpacing, props.at(i).value.toReal());
+                break;
             case QTextFormat::FontLetterSpacing:
                 f.setLetterSpacing(QFont::PercentageSpacing, props.at(i).value.toReal());
                 break;
@@ -408,6 +411,9 @@ void QTextFormatPrivate::recalcFont() const
                 if (f.fixedPitch() != value)
                     f.setFixedPitch(value);
                 break; }
+            case QTextFormat::FontStretch:
+                f.setStretch(props.at(i).value.toInt());
+                break;
             case QTextFormat::FontStyleHint:
                 f.setStyleHint(static_cast<QFont::StyleHint>(props.at(i).value.toInt()), f.styleStrategy());
                 break;
@@ -564,10 +570,12 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value FontOverline
     \value FontStrikeOut
     \value FontCapitalization Specifies the capitalization type that is to be applied to the text.
+    \value FontAbsoluteLetterSpacing If true FontLetterSpacing is absolute
     \value FontLetterSpacing Changes the default spacing between individual letters in the font. The value is
                                                 specified in percentage, with 100 as the default value.
     \value FontWordSpacing  Changes the default spacing between individual words. A positive value increases the word spacing
                                                  by the corresponding pixels; a negative value decreases the spacing.
+    \value FontStretch          Corresponds to the QFont::Stretch property
     \value FontStyleHint        Corresponds to the QFont::StyleHint property
     \value FontStyleStrategy    Corresponds to the QFont::StyleStrategy property
     \value FontKerning          Specifies whether the font has kerning turned on.
@@ -1853,8 +1861,12 @@ void QTextCharFormat::setFont(const QFont &font)
     setFontFixedPitch(font.fixedPitch());
     setFontCapitalization(font.capitalization());
     setFontWordSpacing(font.wordSpacing());
-    if (font.letterSpacingType() == QFont::PercentageSpacing)
+    if (font.letterSpacingType() == QFont::AbsoluteSpacing) {
+        setFontAbsoluteLetterSpacing(font.letterSpacing());
+    } else {
         setFontLetterSpacing(font.letterSpacing());
+    }
+    setFontStretch(font.stretch());
     setFontStyleHint(font.styleHint());
     setFontStyleStrategy(font.styleStrategy());
     setFontKerning(font.kerning());
@@ -3045,14 +3057,37 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 */
 
 /*!
+    \fn void QTextCharFormat::setFontAbsoluteLetterSpacing(bool absolute)
+    \since 5.0
+
+    Sets the letter spacing type of this format to absolute.
+    \sa fontAbsoluteLetterSpacing()
+    \sa setFontLetterSpacing()
+    \sa fontLetterSpacing()
+*/
+
+/*!
+    \fn bool QTextCharFormat::fontAbsoluteLetterSpacing() const
+    \since 5.0
+
+    Returns if the current letter spacing is absolute (or percentage).
+    \sa setFontAbsoluteLetterSpacing()
+    \sa setFontLetterSpacing()
+    \sa fontLetterSpacing()
+*/
+
+/*!
     \fn void QTextCharFormat::setFontLetterSpacing(qreal spacing)
     \since 4.4
 
-    Sets the letter spacing of this format to the given \a spacing, in percent.
-    A value of 100 indicates default spacing; a value of 200 doubles the amount
+    Sets the letter spacing of this format to the given \a spacing.
+    Depending on fontAbsoluteLetterSpacing the value is given in absolutes or in percent.
+    For percent a value of 100 indicates default spacing; a value of 200 doubles the amount
     of space a letter takes.
 
     \sa fontLetterSpacing()
+    \sa setFontAbsoluteLetterSpacing()
+    \sa fontAbsoluteLetterSpacing()
 */
 
 /*!
@@ -3076,6 +3111,28 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     \since 4.4
 
     Returns the current word spacing value.
+*/
+
+/*!
+    \fn void QTextCharFormat::setFontStretch(int factor)
+    \since 5.0
+
+    Sets the stretch factor for the font.
+
+    The stretch factor changes the width of all characters in the font by factor percent. For example, setting factor to 150 results in all characters in the font being 1.5 times (ie. 150%) wider. The default stretch factor is 100. The minimum stretch factor is 1, and the maximum stretch factor is 4000.
+
+    The stretch factor is only applied to outline fonts. The stretch factor is ignored for bitmap fonts.
+
+    NOTE: QFont cannot stretch XLFD fonts. When loading XLFD fonts on X11, the stretch factor is matched against a predefined set of values for the SETWIDTH_NAME field of the XLFD.
+    \sa fontStretch()
+*/
+
+/*!
+    \fn int QTextCharFormat::fontStretch() const
+    \since 5.0
+
+    Returns the current font stretching.
+    \sa setFontStretch()
 */
 
 /*!

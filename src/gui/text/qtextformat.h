@@ -180,8 +180,10 @@ public:
         // character properties
         FirstFontProperty = 0x1FE0,
         FontCapitalization = FirstFontProperty,
+        FontAbsoluteLetterSpacing = 0x2033, // if true FontLetterSpacing is absolute
         FontLetterSpacing = 0x1FE1,
         FontWordSpacing = 0x1FE2,
+        FontStretch = 0x2034,
         FontStyleHint = 0x1FE3,
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
@@ -428,8 +430,14 @@ public:
     { setProperty(FontCapitalization, capitalization); }
     inline QFont::Capitalization fontCapitalization() const
     { return static_cast<QFont::Capitalization>(intProperty(FontCapitalization)); }
+    inline void setFontAbsoluteLetterSpacing(qreal absoluteSpacing)
+    { setProperty(FontAbsoluteLetterSpacing, absoluteSpacing);
+      clearProperty(FontLetterSpacing); }
+    inline qreal fontAbsoluteLetterSpacing() const
+    { return doubleProperty(FontAbsoluteLetterSpacing); }
     inline void setFontLetterSpacing(qreal spacing)
-    { setProperty(FontLetterSpacing, spacing); }
+    { setProperty(FontLetterSpacing, spacing);
+      clearProperty(FontAbsoluteLetterSpacing); }
     inline qreal fontLetterSpacing() const
     { return doubleProperty(FontLetterSpacing); }
     inline void setFontWordSpacing(qreal spacing)
@@ -460,6 +468,11 @@ public:
     { setProperty(FontFixedPitch, fixedPitch); }
     inline bool fontFixedPitch() const
     { return boolProperty(FontFixedPitch); }
+
+    inline void setFontStretch(qreal factor)
+    { setProperty(FontStretch, factor); }
+    inline int fontStretch() const
+    { return intProperty(FontStretch); }
 
     inline void setFontStyleHint(QFont::StyleHint hint, QFont::StyleStrategy strategy = QFont::PreferDefault)
     { setProperty(FontStyleHint, hint); setProperty(FontStyleStrategy, strategy); }
