@@ -82,7 +82,7 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
 
     DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
+        DirectFBError("QDirectFbWindow: failed to create window", result);
     }
 
     m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
