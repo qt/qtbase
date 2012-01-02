@@ -2429,6 +2429,7 @@
 
     \value ImhDate                   The text editor functions as a date field.
     \value ImhTime                   The text editor functions as a time field.
+    \value ImhPreferLatin            Latin characters are preferred (but not required).
 
     Flags that restrict input (exclusive flags):
 
@@ -2439,6 +2440,7 @@
     \value ImhDialableCharactersOnly Only characters suitable for phone dialing are allowed.
     \value ImhEmailCharactersOnly    Only characters suitable for email addresses are allowed.
     \value ImhUrlCharactersOnly      Only characters suitable for URLs are allowed.
+    \value ImhLatinOnly              Only latin based input is allowed.
 
     Masks:
 
