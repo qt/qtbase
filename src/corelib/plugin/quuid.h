@@ -184,6 +184,8 @@ struct Q_CORE_EXPORT QUuid
     uchar   data4[8];
 };
 
+Q_DECLARE_TYPEINFO(QUuid, Q_MOVABLE_TYPE);
+
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUuid &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUuid &);
