@@ -775,6 +775,16 @@ QLocale &QLocale::operator=(const QLocale &other)
     return *this;
 }
 
+bool QLocale::operator==(const QLocale &other) const
+{
+    return d() == other.d() && numberOptions() == other.numberOptions();
+}
+
+bool QLocale::operator!=(const QLocale &other) const
+{
+    return d() != other.d() || numberOptions() != other.numberOptions();
+}
+
 /*!
     \since 4.2
 

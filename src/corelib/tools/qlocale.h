@@ -739,8 +739,8 @@ public:
 
     QStringList uiLanguages() const;
 
-    inline bool operator==(const QLocale &other) const;
-    inline bool operator!=(const QLocale &other) const;
+    bool operator==(const QLocale &other) const;
+    bool operator!=(const QLocale &other) const;
 
     static QString languageToString(Language language);
     static QString countryToString(Country country);
@@ -789,10 +789,6 @@ inline QString QLocale::toString(uint i) const
     { return toString(qulonglong(i)); }
 inline QString QLocale::toString(float i, char f, int prec) const
     { return toString(double(i), f, prec); }
-inline bool QLocale::operator==(const QLocale &other) const
-    { return d() == other.d() && numberOptions() == other.numberOptions(); }
-inline bool QLocale::operator!=(const QLocale &other) const
-    { return d() != other.d() || numberOptions() != other.numberOptions(); }
 
 inline QString QLocale::toCurrencyString(short i, const QString &symbol) const
     { return toCurrencyString(qlonglong(i), symbol); }
