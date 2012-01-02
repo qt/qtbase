@@ -158,6 +158,7 @@
 
 #define DEFAULT_TIMER_INTERVAL 16
 #define STARTSTOP_TIMER_DELAY 0
+#define PAUSE_TIMER_COARSE_THRESHOLD 2000
 
 QT_BEGIN_NAMESPACE
 
@@ -264,7 +265,9 @@ void QUnifiedTimer::restartAnimationTimer()
             qDebug() << closestPauseAnimationTimeToFinish();
         }
         driver->stop();
-        pauseTimer.start(closestTimeToFinish, this);
+        // use a precise timer if the pause will be short
+        Qt::TimerType timerType = closestTimeToFinish < PAUSE_TIMER_COARSE_THRESHOLD ? Qt::PreciseTimer : Qt::CoarseTimer;
+        pauseTimer.start(closestTimeToFinish, timerType, this);
     } else if (!driver->isRunning()) {
         if (pauseTimer.isActive())
             pauseTimer.stop();
@@ -619,7 +622,8 @@ void QDefaultAnimationDriver::timerEvent(QTimerEvent *e)
 
 void QDefaultAnimationDriver::startTimer()
 {
-    m_timer.start(m_unified_timer->timingInterval, this);
+    // always use a precise timer to drive animations
+    m_timer.start(m_unified_timer->timingInterval, Qt::PreciseTimer, this);
 }
 
 void QDefaultAnimationDriver::stopTimer()
