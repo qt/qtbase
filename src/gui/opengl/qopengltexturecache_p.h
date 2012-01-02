@@ -73,7 +73,7 @@ private:
     QOpenGLSharedResourceGuard *m_resource;
 };
 
-class QOpenGLTextureCache : public QOpenGLSharedResource
+class Q_GUI_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
 {
 public:
     static QOpenGLTextureCache *cacheForContext(QOpenGLContext *context);
