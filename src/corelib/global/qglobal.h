@@ -487,6 +487,9 @@ namespace QT_NAMESPACE {}
 #      define QT_NO_ARM_EABI
 #    endif
 #  endif
+#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
+#  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__)
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
@@ -791,6 +794,10 @@ namespace QT_NAMESPACE {}
 #endif
 #ifndef Q_UNLIKELY
 #  define Q_UNLIKELY(x) (x)
+#endif
+
+#ifndef Q_ALLOC_SIZE
+#  define Q_ALLOC_SIZE(x)
 #endif
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -2161,11 +2168,11 @@ Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
    These functions make it possible to use standard C++ functions with
    a similar name from Qt header files (especially template classes).
 */
-Q_CORE_EXPORT void *qMalloc(size_t size);
+Q_CORE_EXPORT void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void qFree(void *ptr);
-Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size);
-Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment);
-Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment);
+Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
+Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
+Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
 Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
 Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
