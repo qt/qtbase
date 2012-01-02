@@ -290,7 +290,11 @@ void tst_QThreadStorage::crashOnExit()
     QProcess process;
     // crashOnExit is always expected to be in the same directory
     // as this test binary
+#ifdef Q_OS_MAC
+    process.start(QCoreApplication::applicationDirPath() + "/../../../crashOnExit");
+#else
     process.start(QCoreApplication::applicationDirPath() + "/crashOnExit");
+#endif
     QVERIFY(process.waitForFinished());
     QVERIFY(process.exitStatus() != QProcess::CrashExit);
 }
