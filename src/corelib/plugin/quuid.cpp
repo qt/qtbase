@@ -440,15 +440,6 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 */
 #ifndef QT_NO_QUUID_STRING
 /*!
-    \fn QUuid::operator QString() const
-    \obsolete
-
-    Returns the string representation of the uuid.
-
-    \sa toString()
-*/
-
-/*!
     Returns the string representation of this QUuid. The string is
     formatted as five hex fields separated by '-' and enclosed in
     curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where

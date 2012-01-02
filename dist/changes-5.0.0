@@ -136,6 +136,11 @@ information about a particular change.
   QAbstractEventDispatcher::registeredTimers() will need to be updated to pass
   3 arguments to the TimerInfo constructor (instead of 2).
 
+- QUuid
+
+  * Removed implicit conversion operator QUuid::operator QString(), instead
+  QUuid::toString() function should be used.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
