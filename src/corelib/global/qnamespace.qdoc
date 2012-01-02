@@ -2429,7 +2429,6 @@
 
     \value ImhDate                   The text editor functions as a date field.
     \value ImhTime                   The text editor functions as a time field.
-    \value ImhMultiLine              The text editor accepts multi-line content.
 
     Flags that restrict input (exclusive flags):
 

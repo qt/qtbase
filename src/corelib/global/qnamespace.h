@@ -1297,7 +1297,6 @@ public:
 
         ImhDate = 0x80,
         ImhTime = 0x100,
-        ImhMultiLine = 0x200,
 
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,
