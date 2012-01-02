@@ -1885,7 +1885,8 @@ void tst_QProcess::lockupsInStartDetached()
     // doesn't exist. Before Qt 4.2, this used to lock up on Unix due
     // to calling ::exit instead of ::_exit if execve failed.
 
-    QHostInfo::lookupHost(QString("something.invalid"), 0, 0);
+    QObject *dummy = new QObject(this);
+    QHostInfo::lookupHost(QString("something.invalid"), dummy, SLOT(deleteLater()));
     QProcess::execute("yjhbrty");
     QProcess::startDetached("yjhbrty");
 }
