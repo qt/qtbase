@@ -383,7 +383,7 @@ QPlatformNativeInterface *QApplication::platformNativeInterface()
     return pi->nativeInterface();
 }
 
-void qt_init(QApplicationPrivate *, int type)
+void qt_init(QApplicationPrivate *priv, int type)
 {
     Q_UNUSED(type);
 
@@ -393,7 +393,7 @@ void qt_init(QApplicationPrivate *, int type)
     qApp->setObjectName(appName);
 
 #ifndef QT_NO_QWS_INPUTMETHODS
-    qApp->setInputContext(new QInputContext(qApp));
+    priv->setInputContext(new QInputContext(qApp));
 #endif
 }
 

@@ -191,8 +191,8 @@ QtGui
 
 QtWidgets
 ---------
-* QWidget::setInputContext() is removed. Input contexts are now platform
-  specific.
+* QWidget::setInputContext() and QApplication::setInputContext() are removed.
+  Input contexts are now platform specific.
 
 QtNetwork
 ---------

@@ -223,7 +223,6 @@ public:
 #endif
 
 #ifndef QT_NO_IM
-    void setInputContext(QInputContext *);
     QInputContext *inputContext() const;
 #endif
 

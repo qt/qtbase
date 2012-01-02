@@ -83,7 +83,6 @@ public slots:
     void cleanup();
 private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
-    void getSetCheck();
     void staticSetup();
 
     void alert();
@@ -175,38 +174,6 @@ void tst_QApplication::sendEventsOnProcessEvents()
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
 }
 
-class MyInputContext : public QInputContext
-{
-public:
-    MyInputContext() : QInputContext() {}
-    QString identifierName() { return QString("NoName"); }
-    QString language() { return QString("NoLanguage"); }
-    void reset() {}
-    bool isComposing() const { return false; }
-};
-
-// Testing get/set functions
-void tst_QApplication::getSetCheck()
-{
-    int argc = 0;
-    QApplication obj1(argc, 0, QApplication::GuiServer);
-    MyInputContext *var1 = new MyInputContext;
-
-    // QApplication takes ownership, so check for reparenting:
-    obj1.setInputContext(var1);
-    QCOMPARE(var1->parent(), static_cast<QObject *>(&obj1));
-
-    // Test for self-assignment:
-    obj1.setInputContext(obj1.inputContext());
-    QVERIFY(obj1.inputContext());
-    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
-
-    // Resetting the input context to 0 is not allowed:
-    QTest::ignoreMessage(QtWarningMsg, "QApplication::setInputContext: called with 0 input context");
-    obj1.setInputContext(0);
-
-    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
-}
 
 class CloseEventTestWindow : public QWidget
 {

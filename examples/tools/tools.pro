@@ -5,7 +5,6 @@ SUBDIRS       = codecs \
                 customcompleter \
                 echoplugin \
                 i18n \
-                inputpanel \
                 contiguouscache \
                 plugandpaintplugins \
                 plugandpaint \

@@ -4939,31 +4939,29 @@ int QApplication::keyboardInputInterval()
 // Input Method support
 // ************************************************************************
 
-/*!
+/*
     This function replaces the QInputContext instance used by the application
     with \a inputContext.
 
     Qt takes ownership of the given \a inputContext.
-
-    \sa inputContext()
 */
-void QApplication::setInputContext(QInputContext *inputContext)
+void QApplicationPrivate::setInputContext(QInputContext *newInputContext)
 {
-    if (inputContext == QApplicationPrivate::inputContext)
+    Q_Q(QApplication);
+
+    if (newInputContext == inputContext)
         return;
-    if (!inputContext) {
-        qWarning("QApplication::setInputContext: called with 0 input context");
+    if (!newInputContext) {
+        qWarning("QApplicationPrivate::setInputContext: called with 0 input context");
         return;
     }
-    delete QApplicationPrivate::inputContext;
-    QApplicationPrivate::inputContext = inputContext;
-    QApplicationPrivate::inputContext->setParent(this);
+    delete inputContext;
+    inputContext = newInputContext;
+    inputContext->setParent(q);
 }
 
 /*!
     Returns the QInputContext instance used by the application.
-
-    \sa setInputContext()
 */
 QInputContext *QApplication::inputContext() const
 {
