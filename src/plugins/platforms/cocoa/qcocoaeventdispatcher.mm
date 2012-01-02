@@ -904,7 +904,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
 }
 
 QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
-    : QEventDispatcherUNIX(*new QCocoaEventDispatcherPrivate, parent)
+    : QAbstractEventDispatcher(*new QCocoaEventDispatcherPrivate, parent)
 {
     Q_D(QCocoaEventDispatcher);
     CFRunLoopSourceContext context;
@@ -1050,6 +1050,9 @@ void QCocoaEventDispatcher::interrupt()
     // events on the floor before we get a chance to reestablish a new session.
     d->cancelWaitForMoreEvents();
 }
+
+void QCocoaEventDispatcher::flush()
+{ }
 
 QCocoaEventDispatcher::~QCocoaEventDispatcher()
 {

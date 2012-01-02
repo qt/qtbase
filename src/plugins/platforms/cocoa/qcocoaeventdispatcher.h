@@ -87,10 +87,11 @@
 // We mean it.
 //
 
+#include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
-#include <QtCore/private/qeventdispatcher_unix_p.h>
+#include <QtCore/private/qabstracteventdispatcher_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -104,7 +105,7 @@ typedef struct _QCocoaModalSessionInfo {
 } QCocoaModalSessionInfo;
 
 class QCocoaEventDispatcherPrivate;
-class QCocoaEventDispatcher : public QEventDispatcherUNIX
+class QCocoaEventDispatcher : public QAbstractEventDispatcher
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QCocoaEventDispatcher)
@@ -128,6 +129,7 @@ public:
 
     void wakeUp();
     void interrupt();
+    void flush();
 
 private:
     //friend void qt_mac_select_timer_callbk(__EventLoopTimer*, void*);
@@ -157,7 +159,7 @@ struct MacSocketInfo {
 };
 typedef QHash<int, MacSocketInfo *> MacSocketHash;
 
-class QCocoaEventDispatcherPrivate : public QEventDispatcherUNIXPrivate
+class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 {
     Q_DECLARE_PUBLIC(QCocoaEventDispatcher)
 
