@@ -82,6 +82,7 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
     case QStandardPaths::RuntimeLocation:
     case QStandardPaths::DataLocation:
         return kApplicationSupportFolderType;
+    case QStandardPaths::GenericCacheLocation:
     case QStandardPaths::CacheLocation:
         return kCachedDataFolderType;
     default:
@@ -128,6 +129,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return QDir::tempPath();
     case GenericDataLocation:
     case DataLocation:
+    case GenericCacheLocation:
     case CacheLocation:
     case RuntimeLocation:
         return macLocation(type, kUserDomain);
@@ -140,7 +142,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
 
-    if (type == GenericDataLocation || type == DataLocation || type == CacheLocation) {
+    if (type == GenericDataLocation || type == DataLocation || type == GenericCacheLocation || type == CacheLocation) {
         const QString path = macLocation(type, kOnAppropriateDisk);
         if (!path.isEmpty())
             dirs.append(path);
