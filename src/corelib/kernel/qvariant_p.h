@@ -327,7 +327,7 @@ class QVariantConstructor
     {
         CallConstructor(const QVariantConstructor &tc)
         {
-            Q_STATIC_ASSERT(QTypeInfo<T>::isComplex);
+            Q_STATIC_ASSERT(QTypeInfo<T>::isComplex || sizeof(T) > sizeof(QVariant::Private::Data));
             tc.m_x->data.shared = tc.m_copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T*>(tc.m_copy))
                                       : new QVariantPrivateSharedEx<T>;
             tc.m_x->is_shared = true;
