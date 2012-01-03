@@ -1316,6 +1316,9 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
             if (found)
                 break;
         }
+        // We couldn't translate the key.
+        if (!found)
+            return Qt::Key_unknown;
     }
     return ret;
 }

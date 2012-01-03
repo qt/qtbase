@@ -537,6 +537,9 @@ void tst_QKeySequence::parseString_data()
     QTest::newRow("Win+A") << "Win+a" <<  QKeySequence(Qt::Key_unknown);
     QTest::newRow("4+3=2") << "4+3=2" <<  QKeySequence(Qt::Key_unknown);
     QTest::newRow("Super+Meta+A") << "Super+Meta+A" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Meta+Trolls") << "Meta+Trolls" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Alabama") << "Alabama" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Simon+G") << "Simon+G" << QKeySequence(Qt::Key_unknown);
 }
 
 void tst_QKeySequence::parseString()
@@ -558,6 +561,9 @@ void tst_QKeySequence::fromString()
     QFETCH(QString, strSequence);
     QFETCH(QString, neutralString);
     QFETCH(QString, platformString);
+
+    if (strSequence == "Ctrly") // Key_Unknown gives empty string
+        return;
 
     QKeySequence ks1(strSequence);
     QKeySequence ks2 = QKeySequence::fromString(ks1.toString());
