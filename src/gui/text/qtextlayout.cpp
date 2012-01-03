@@ -836,7 +836,7 @@ int QTextLayout::lineCount() const
 */
 QTextLine QTextLayout::lineAt(int i) const
 {
-    return QTextLine(i, d);
+    return i < lineCount() ? QTextLine(i, d) : QTextLine();
 }
 
 /*!
