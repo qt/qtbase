@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
     qcoreapplication \
     qeventloop \
-    qitemmodel \
     qmath \
     qmetaobject \
     qmetaobjectbuilder \
