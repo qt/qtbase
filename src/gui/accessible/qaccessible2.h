@@ -163,6 +163,8 @@ public:
 class Q_GUI_EXPORT QAccessibleTableCellInterface
 {
 public:
+    virtual ~QAccessibleTableCellInterface() {}
+
     //            Returns the number of columns occupied by this cell accessible.
     virtual int columnExtent() const = 0;
 
@@ -189,6 +191,7 @@ public:
 class Q_GUI_EXPORT QAccessibleTableInterface
 {
 public:
+    virtual ~QAccessibleTableInterface() {}
 
     // Returns the cell at the specified row and column in the table.
     virtual QAccessibleInterface *cellAt (int row, int column) const = 0;
@@ -249,6 +252,7 @@ class Q_GUI_EXPORT QAccessibleActionInterface
 {
     Q_DECLARE_TR_FUNCTIONS(QAccessibleActionInterface)
 public:
+    virtual ~QAccessibleActionInterface() {}
 
     virtual QStringList actionNames() const = 0;
     virtual QString localizedActionName(const QString &name) const;
@@ -268,6 +272,7 @@ public:
 class Q_GUI_EXPORT QAccessibleImageInterface
 {
 public:
+    virtual ~QAccessibleImageInterface() {}
 
     virtual QString imageDescription() = 0;
     virtual QSize imageSize() = 0;
