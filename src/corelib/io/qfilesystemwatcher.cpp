@@ -59,9 +59,6 @@
 #elif defined(Q_OS_LINUX)
 #  include "qfilesystemwatcher_inotify_p.h"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
-#  if (defined Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-#  include "qfilesystemwatcher_fsevents_p.h"
-#  endif //MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 #  include "qfilesystemwatcher_kqueue_p.h"
 #endif
 
@@ -76,12 +73,7 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine()
     // 2005), so we can't just new inotify directly.
     return QInotifyFileSystemWatcherEngine::create();
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
-#  if 0 && defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
-        return QFSEventsFileSystemWatcherEngine::create();
-    else
-#  endif
-        return QKqueueFileSystemWatcherEngine::create();
+    return QKqueueFileSystemWatcherEngine::create();
 #else
     return 0;
 #endif
