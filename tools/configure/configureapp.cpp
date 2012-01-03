@@ -2915,7 +2915,10 @@ void Configure::generateConfigfiles()
         if (dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
-        if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
+        if (dictionary["OPENSSL"] == "no") {
+            qconfigList += "QT_NO_OPENSSL";
+            qconfigList += "QT_NO_SSL";
+        }
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";

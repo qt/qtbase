@@ -45,7 +45,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qregexp.h>
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #   include <QtNetwork/qtcpsocket.h>
 #   include <QtNetwork/qsslerror.h>
 #endif
@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 class QDir;
 class QSslCipher;
@@ -217,7 +217,7 @@ private:
     friend class QSslSocketBackendPrivate;
 };
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QT_END_NAMESPACE
 

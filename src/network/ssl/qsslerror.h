@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 class QSslErrorPrivate;
 class Q_NETWORK_EXPORT QSslError
@@ -115,7 +115,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError &error);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError::SslError &error);
 #endif
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QT_END_NAMESPACE
 

@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 class QSslCertificateExtensionPrivate;
 
@@ -78,7 +78,7 @@ private:
     QSharedDataPointer<QSslCertificateExtensionPrivate> d;
 };
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QT_END_NAMESPACE
 
