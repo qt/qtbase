@@ -83,14 +83,13 @@ private slots:
 void tst_QFileSystemWatcher::basicTest_data()
 {
     QTest::addColumn<QString>("backend");
-    QTest::newRow("native") << "native";
-    QTest::newRow("poller") << "poller";
+    QTest::newRow("native backend") << "native";
+    QTest::newRow("poller backend") << "poller";
 }
 
 void tst_QFileSystemWatcher::basicTest()
 {
     QFETCH(QString, backend);
-    qDebug() << "Testing" << backend << "engine";
 
     // create test file
     QFile testFile("testfile.txt");
@@ -223,7 +222,6 @@ void tst_QFileSystemWatcher::basicTest()
 void tst_QFileSystemWatcher::watchDirectory()
 {
     QFETCH(QString, backend);
-    qDebug() << "Testing" << backend << "engine";
 
     QDir().mkdir("testDir");
     QDir testDir("testDir");
