@@ -1357,7 +1357,7 @@ while [ "$#" -gt 0 ]; do
         PLATFORM_X11=yes
         ;;
     sdk)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             CFG_SDK="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -1383,7 +1383,7 @@ while [ "$#" -gt 0 ]; do
         CFG_HOST_ARCH=$VAL
         ;;
     harfbuzz)
-        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
             CFG_MAC_HARFBUZZ="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -1391,7 +1391,7 @@ while [ "$#" -gt 0 ]; do
         ;;
 
     framework)
-        if [ "$PLATFORM_MAC" = "yes" ] || [ "$PLATFORM_QPA" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             CFG_FRAMEWORK="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2144,7 +2144,7 @@ while [ "$#" -gt 0 ]; do
         l_FLAGS="$l_FLAGS -l\"${VAL}\""
         ;;
     add_fpath)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             L_FLAGS="$L_FLAGS -F\"${VAL}\""
             I_FLAGS="$I_FLAGS -F\"${VAL}\""
         else
@@ -2152,7 +2152,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     add_framework)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             l_FLAGS="$l_FLAGS -framework \"${VAL}\""
         else
             UNKNOWN_OPT=yes
@@ -2503,7 +2503,7 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-        if [ "$PLATFORM_MAC" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+        if [ "$PLATFORM_QPA" = "yes" ]; then
           OSX_VERSION=`uname -r | cut -d. -f1`
           if [ "$OSX_VERSION" -ge 11 ]; then
               # We're on Lion or above. Check if we have a supported Clang version
@@ -2704,7 +2704,7 @@ if [ "$PLATFORM" != "$XPLATFORM" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG cross_compile"
 fi
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
    if [ `basename $QMAKESPEC` = "macx-xcode" ] || [ `basename $XQMAKESPEC` = "macx-xcode" ]; then
       echo >&2
       echo "   Platform 'macx-xcode' should not be used when building Qt/Mac." >&2
@@ -3043,7 +3043,7 @@ if [ '!' -z "$CFG_SDK" ]; then
 fi
 
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3093,7 +3093,7 @@ if [ "$CFG_PRECOMPILE" = "auto" ]; then
 fi
 
 #auto-detect DWARF2 on the mac
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "auto" ]; then
     if "$mactests/dwarf2.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests" ; then
         CFG_MAC_DWARF2=no
     else
@@ -3157,15 +3157,8 @@ if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
         CFG_OPENGL=no
 fi
 
-# mac
-if [ "$PLATFORM_MAC" = "yes" ]; then
-    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
-        CFG_OPENGL=desktop
-    fi
-fi
-
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3176,18 +3169,6 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 else
     CFG_FRAMEWORK=no
-fi
-
-# Print a warning if configure was called with the 10.4u SDK option on Snow Leopard
-# with the default mkspec. The 10.4u SDK does not support gcc 4.2.
-if [ "$PLATFORM_MAC" = "yes" ] && [ '!' -z "$CFG_SDK" ]; then
-    # get the darwin version. 10.0.0 and up means snow leopard.
-    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
-    if [ "$VERSION" -gt 9 ] && [ "$CFG_SDK" == "/Developer/SDKs/MacOSX10.4u.sdk/" ] && [ "$PLATFORM" == "macx-g++" ]; then
-        echo
-        echo "WARNING: The 10.4u SDK does not support gcc 4.2. Configure with -platform macx-g++40. "
-        echo
-    fi
 fi
 
 # x11 tests are done after qmake is built
@@ -3227,7 +3208,7 @@ QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
 
 if [ -z "$QT_INSTALL_DOCS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_DOCS="/Developer/Documentation/Qt"
         fi
     fi
@@ -3238,7 +3219,7 @@ QT_INSTALL_DOCS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DOCS"`
 
 if [ -z "$QT_INSTALL_HEADERS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             if [ "$CFG_FRAMEWORK" = "yes" ]; then
                 QT_INSTALL_HEADERS=
             fi
@@ -3251,7 +3232,7 @@ QT_INSTALL_HEADERS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_HEADERS"`
 
 if [ -z "$QT_INSTALL_LIBS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             if [ "$CFG_FRAMEWORK" = "yes" ]; then
                 QT_INSTALL_LIBS="/Libraries/Frameworks"
             fi
@@ -3263,7 +3244,7 @@ QT_INSTALL_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBS"`
 
 if [ -z "$QT_INSTALL_BINS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_BINS="/Developer/Applications/Qt"
         fi
     fi
@@ -3273,7 +3254,7 @@ QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
 if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_PLUGINS="/Developer/Applications/Qt/plugins"
         fi
     fi
@@ -3283,7 +3264,7 @@ QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
 
 if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_IMPORTS="/Developer/Applications/Qt/imports"
         fi
     fi
@@ -3302,7 +3283,7 @@ fi
 QT_INSTALL_TRANSLATIONS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TRANSLATIONS"`
 
 if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
-    if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "$BUILD_ON_MAC" = "yes" ]; then
         QT_INSTALL_SETTINGS=/Library/Preferences/Qt
     else
         QT_INSTALL_SETTINGS=/etc/xdg
@@ -3312,7 +3293,7 @@ QT_INSTALL_SETTINGS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_SETTINGS"
 
 if [ -z "$QT_INSTALL_EXAMPLES" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_EXAMPLES="/Developer/Examples/Qt"
         fi
     fi
@@ -3323,7 +3304,7 @@ QT_INSTALL_EXAMPLES=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_EXAMPLES"
 #tests
 if [ -z "$QT_INSTALL_TESTS" ]; then #default
     if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
             QT_INSTALL_TESTS="/Developer/Tests/Qt"
         fi
     fi
@@ -4069,8 +4050,6 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_QPA" = "yes" ]; then
     Platform="Qt Lighthouse"
-elif [ "$PLATFORM_MAC" = "yes" ]; then
-    Platform="Qt for Mac OS X"
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     Platform="Qt for Windows"
 elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
@@ -4849,7 +4828,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if ( [ "$PLATFORM_MAC" != "yes" ] || [ "$XPLATFORM_MINGW" = "yes" ] ) && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                if ( [ "$BUILD_ON_MAC" != "yes" ] || [ "$XPLATFORM_MINGW" = "yes" ] ) && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
@@ -5559,7 +5538,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 fi # X11
 
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     if [ "$CFG_PHONON" != "no" ]; then
         # Always enable Phonon (unless it was explicitly disabled)
         CFG_PHONON=yes
@@ -5577,9 +5556,7 @@ fi
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
     # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
-    if [ "$PLATFORM_MAC" = "yes" ]; then
-        CFG_OPENGL=desktop
-    elif [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
+    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
@@ -5963,7 +5940,6 @@ fi
 
 # freetype support
 [ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"
-[ "x$PLATFORM_MAC" = "xyes" ] && CFG_LIBFREETYPE=no
 [ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_LIBFREETYPE" = "auto" ] && CFG_LIBFREETYPE=no
 if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/freetype "FreeType" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
@@ -5976,7 +5952,7 @@ fi
 if [ "$CFG_ENDIAN" = "auto" ]; then
     if [ "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_ENDIAN="Q_LITTLE_ENDIAN"
-    elif [ "$PLATFORM_MAC" = "yes" ]; then
+    elif [ "$BUILD_ON_MAC" = "yes" ]; then
         true #leave as auto
     else
         "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "QMAKE_LFLAGS+=$SYSROOT_FLAG"
@@ -5997,7 +5973,7 @@ if [ "$CFG_ENDIAN" = "auto" ]; then
 fi
 
 if [ "$CFG_HOST_ENDIAN" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "$BUILD_ON_MAC" = "yes" ]; then
 	true #leave as auto
     else
         "$unixtests/endian.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
@@ -6554,7 +6530,7 @@ else
 fi
 
 
-if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
+if [ "x$BUILD_ON_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
     [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
@@ -7053,7 +7029,7 @@ if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #if defined(__LP64__)
 # define QT_POINTER_SIZE 8
@@ -7419,11 +7395,6 @@ if [ '!' -z "$CFG_SDK" ]; then
    echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$QTMODULE.tmp"
 fi
 
-# mac gcc -Xarch support
-if [ "$CFG_MAC_XARCH" = "no" ]; then
-   echo "QMAKE_MAC_XARCH = no" >> "$QTMODULE.tmp"
-fi
-
 # cmdline args
 cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
 rm -f "$QMAKE_VARS_FILE" 2>/dev/null
@@ -7702,7 +7673,7 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
 fi
 echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
 echo "Alsa support ........... $CFG_ALSA"
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
 echo "libICU support ......... $CFG_ICU"
@@ -7734,7 +7705,7 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
 fi
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
     echo
     echo "Error: debug-only framework builds are not supported. Configure with -no-framework"
     echo "if you want a pure debug build."
