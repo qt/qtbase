@@ -430,25 +430,6 @@ static void installCoverageTool(QLibraryPrivate *libPrivate)
 #endif
 }
 
-static void releaseCoverageTool(QLibraryPrivate *libPrivate)
-{
-#ifdef __COVERAGESCANNER__
-    /*
-      __COVERAGESCANNER__ is defined when Qt has been instrumented for code
-      coverage by TestCocoon.
-      Here is the code to save the execution data.
-      See comments about initialization in QLibraryPrivate::load().
-    */
-    if (libPrivate->pHnd) {
-        __coveragescanner_save();
-        __coveragescanner_clear();
-        __coveragescanner_unregister_library(libPrivate->fileName.toLocal8Bit());
-    }
-#else
-    Q_UNUSED(libPrivate);
-#endif
-}
-
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
 
 struct LibraryData {
@@ -545,8 +526,6 @@ bool QLibraryPrivate::unload()
 
 void QLibraryPrivate::release()
 {
-    releaseCoverageTool(this);
-
     QMutexLocker locker(qt_library_mutex());
     if (!libraryRefCount.deref())
         delete this;
