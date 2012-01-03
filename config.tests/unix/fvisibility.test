@@ -25,6 +25,7 @@ __global void blah();
 EOF
 
     if [ "$VERBOSE" = "yes" ] ; then
+        echo $COMPILER -c $CMDLINE fvisibility.c
         $COMPILER -c $CMDLINE fvisibility.c && FVISIBILITY_SUPPORT=yes
     else
         $COMPILER -c $CMDLINE fvisibility.c >/dev/null 2>&1 && FVISIBILITY_SUPPORT=yes

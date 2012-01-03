@@ -2601,8 +2601,13 @@ if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
 fi
 
 # auto-detect -fvisibility support
-if [ "$CFG_REDUCE_EXPORTS" = "auto" ]; then
+if [ "$CFG_REDUCE_EXPORTS" != "no" ]; then
     if "$unixtests/fvisibility.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+       if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
+           echo "-reduce-exports was requested but this compiler does not support it"
+           echo "Re-run configure with -v for more information"
+           exit 1
+       fi
        CFG_REDUCE_EXPORTS=no
     else
        CFG_REDUCE_EXPORTS=yes
@@ -2612,6 +2617,11 @@ fi
 # detect the availability of the -Bsymbolic-functions linker optimization
 if [ "$CFG_REDUCE_RELOCATIONS" != "no" ]; then
     if "$unixtests/bsymbolic_functions.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
+       if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
+           echo "-reduce-relocations was requested but this compiler does not support it"
+           echo "Re-run configure with -v for more information"
+           exit 1
+       fi
         CFG_REDUCE_RELOCATIONS=no
     else
         CFG_REDUCE_RELOCATIONS=yes
