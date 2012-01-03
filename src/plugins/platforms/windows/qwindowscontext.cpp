@@ -164,11 +164,10 @@ void QWindowsUser32DLL::init()
     // MinGW (g++ 3.4.5) accepts only C casts.
     setLayeredWindowAttributes = (SetLayeredWindowAttributes)(library.resolve("SetLayeredWindowAttributes"));
     updateLayeredWindow = (UpdateLayeredWindow)(library.resolve("UpdateLayeredWindow"));
+    if (!setLayeredWindowAttributes || !updateLayeredWindow)
+        qFatal("This version of Windows is not supported (User32.dll is missing the symbols 'SetLayeredWindowAttributes', 'UpdateLayeredWindow').");
+
     updateLayeredWindowIndirect = (UpdateLayeredWindowIndirect)(library.resolve("UpdateLayeredWindowIndirect"));
-
-    Q_ASSERT(setLayeredWindowAttributes && updateLayeredWindow
-             && updateLayeredWindowIndirect);
-
     isHungAppWindow = (IsHungAppWindow)library.resolve("IsHungAppWindow");
 }
 
