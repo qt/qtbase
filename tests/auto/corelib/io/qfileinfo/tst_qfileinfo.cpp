@@ -49,6 +49,7 @@
 #include <qdir.h>
 #include <qfileinfo.h>
 #ifdef Q_OS_UNIX
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -1492,41 +1493,53 @@ void tst_QFileInfo::testDecomposedUnicodeNames_data()
     QTest::newRow("no decomposed") << currPath + QString::fromUtf8("/4 øøøcopy.pdf") << QString::fromUtf8("4 øøøcopy.pdf") << true;
 }
 
-static void createFileNative(const QString &filePath)
+// This is a helper class that ensures that files created during the test
+// will be removed afterwards, even if the test fails or throws an exception.
+class NativeFileCreator
 {
+public:
+    NativeFileCreator(const QString &filePath)
+        : m_filePath(filePath), m_error(0)
+    {
 #ifdef Q_OS_UNIX
-    int fd = open(filePath.normalized(QString::NormalizationForm_D).toUtf8().constData(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        QFAIL("couldn't create file");
-    } else {
-        close(fd);
+        int fd = open(m_filePath.normalized(QString::NormalizationForm_D).toUtf8().constData(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+        if (fd >= 0)
+            close(fd);
+        else
+            m_error = errno;
+#endif
     }
-#else
-    Q_UNUSED(filePath);
-#endif
-}
-
-static void removeFileNative(const QString &filePath)
-{
+    ~NativeFileCreator()
+    {
 #ifdef Q_OS_UNIX
-    unlink(filePath.normalized(QString::NormalizationForm_D).toUtf8().constData());
-#else
-    Q_UNUSED(filePath);
+        if (m_error == 0)
+            unlink(m_filePath.normalized(QString::NormalizationForm_D).toUtf8().constData());
 #endif
-}
+    }
+    int error() const
+    {
+        return m_error;
+    }
+
+private:
+    QString m_filePath;
+    int m_error;
+};
 
 void tst_QFileInfo::testDecomposedUnicodeNames()
 {
 #ifndef Q_OS_MAC
     QSKIP("This is a OS X only test (unless you know more about filesystems, then maybe you should try it ;)");
-#endif
+#else
     QFETCH(QString, filePath);
-    createFileNative(filePath);
+    NativeFileCreator nativeFileCreator(filePath);
+    int error = nativeFileCreator.error();
+    QVERIFY2(error == 0, qPrintable(QString("Couldn't create native file %1: %2").arg(filePath).arg(strerror(error))));
 
     QFileInfo file(filePath);
     QTEST(file.fileName(), "fileName");
     QTEST(file.exists(), "exists");
-    removeFileNative(filePath);
+#endif
 }
 
 void tst_QFileInfo::equalOperator() const
