@@ -1694,6 +1694,7 @@ void tst_QSettings::testUpdateRequestEvent()
 
 const int NumIterations = 5;
 const int NumThreads = 4;
+int numThreadSafetyFailures;
 
 class SettingsThread : public QThread
 {
@@ -1711,7 +1712,10 @@ void SettingsThread::run()
         QSettings settings("software.org", "KillerAPP");
         settings.setValue(QString::number((param * NumIterations) + i), param);
         settings.sync();
-        QCOMPARE((int)settings.status(), (int)QSettings::NoError);
+        if (settings.status() != QSettings::NoError) {
+            QWARN(qPrintable(QString("Unexpected QSettings status %1").arg((int)settings.status())));
+            ++numThreadSafetyFailures;
+        }
     }
 }
 
@@ -1719,6 +1723,8 @@ void tst_QSettings::testThreadSafety()
 {
     SettingsThread threads[NumThreads];
     int i, j;
+
+    numThreadSafetyFailures = 0;
 
     for (i = 0; i < NumThreads; ++i)
         threads[i].start(i + 1);
@@ -1732,6 +1738,8 @@ void tst_QSettings::testThreadSafety()
             QCOMPARE(settings.value(QString::number((param * NumIterations) + j)).toInt(), param);
         }
     }
+
+    QCOMPARE(numThreadSafetyFailures, 0);
 }
 
 void tst_QSettings::testNormalizedKey_data()
