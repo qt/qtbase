@@ -229,7 +229,6 @@ fi
 #-------------------------------------------------------------------------------
 COMMERCIAL_USER=ask
 CFG_DEV=no
-CFG_NOKIA=no
 CFG_EMBEDDED=no
 CFG_RTOS_ENABLED=yes
 EditionString=Commercial
@@ -346,11 +345,6 @@ earlyArgParse()
         developer-build)
             CFG_DEV="yes"
             ;;
-        nokia-developer)
-            CFG_DEV="yes"
-            CFG_NOKIA="yes"
-            COMMERCIAL_USER="no"
-            ;;
         commercial)
             COMMERCIAL_USER="yes"
             ;;
@@ -385,13 +379,7 @@ if [ "$COMMERCIAL_USER" = "ask" ]; then
     done
 fi
 
-if [ "$CFG_NOKIA" = "yes" ]; then
-    Licensee="Nokia"
-    Edition="NokiaInternalBuild"
-    EditionString="Nokia Internal Build"
-    QT_EDITION="QT_EDITION_OPENSOURCE"
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-elif [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
+if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
     # Commercial preview release
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
     Licensee="Preview"
@@ -1586,7 +1574,7 @@ while [ "$#" -gt 0 ]; do
     debug)
         CFG_DEBUG="$VAL"
         ;;
-    developer-build|commercial|opensource|nokia-developer)
+    developer-build|commercial|opensource)
         # These switches have been dealt with already
         ;;
     static)
@@ -4370,11 +4358,7 @@ echo
 echo "This is the $Platform ${EditionString} Edition."
 echo
 
-if [ "$Edition" = "NokiaInternalBuild" ]; then
-    echo "Detected -nokia-developer option"
-    echo "Nokia employees and agents are allowed to use this software under"
-    echo "the authority of Nokia Corporation and/or its subsidiary(-ies)"
-elif [ "$Edition" = "OpenSource" ]; then
+if [ "$Edition" = "OpenSource" ]; then
     while true; do
         echo "You are licensed to use this software under the terms of"
         echo "the Lesser GNU General Public License (LGPL) versions 2.1."

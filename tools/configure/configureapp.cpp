@@ -300,7 +300,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "BUILDTYPE" ]      = "none";
 
     dictionary[ "BUILDDEV" ]        = "no";
-    dictionary[ "BUILDNOKIA" ]      = "no";
 
     dictionary[ "SHARED" ]          = "yes";
 
@@ -481,14 +480,6 @@ void Configure::parseCmdLine()
             dictionary[ "SHARED" ] = "no";
         else if (configCmdLine.at(i) == "-developer-build")
             dictionary[ "BUILDDEV" ] = "yes";
-        else if (configCmdLine.at(i) == "-nokia-developer") {
-            cout << "Detected -nokia-developer option" << endl;
-            cout << "Nokia employees and agents are allowed to use this software under" << endl;
-            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
-            dictionary[ "BUILDNOKIA" ] = "yes";
-            dictionary[ "BUILDDEV" ] = "yes";
-            dictionary["LICENSE_CONFIRMED"] = "yes";
-        }
         else if (configCmdLine.at(i) == "-opensource") {
             dictionary[ "BUILDTYPE" ] = "opensource";
         }
@@ -3788,7 +3779,7 @@ void Configure::readLicense()
 
     bool openSource = false;
     bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
-    if (dictionary["BUILDNOKIA"] == "yes" || dictionary["BUILDTYPE"] == "commercial") {
+    if (dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
         openSource = true;
@@ -3828,7 +3819,7 @@ void Configure::readLicense()
 #ifdef COMMERCIAL_VERSION
     else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
-        if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
+        if (dictionary["DONE"] != "error") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
             if (!showLicense(dictionary["LICENSE FILE"])) {
