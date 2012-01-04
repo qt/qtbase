@@ -130,13 +130,10 @@ public:
     void wakeUp();
     void interrupt();
     void flush();
-
-private:
-    //friend void qt_mac_select_timer_callbk(__EventLoopTimer*, void*);
-    friend class QApplicationPrivate;
 };
 
 struct MacTimerInfo {
+    QCocoaEventDispatcherPrivate *d_ptr;
     int id;
     int interval;
     Qt::TimerType timerType;
@@ -166,26 +163,27 @@ class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 public:
     QCocoaEventDispatcherPrivate();
 
-    static MacTimerHash macTimerHash;
+    MacTimerHash macTimerHash;
+
     // Set 'blockSendPostedEvents' to true if you _really_ need
     // to make sure that qt events are not posted while calling
     // low-level cocoa functions (like beginModalForWindow). And
     // use a QBoolBlocker to be safe:
-    static bool blockSendPostedEvents;
+    bool blockSendPostedEvents;
     // The following variables help organizing modal sessions:
-    static QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
-    static bool currentExecIsNSAppRun;
-    static bool nsAppRunCalledByQt;
-    static bool cleanupModalSessionsNeeded;
-    static NSModalSession currentModalSessionCached;
-    static NSModalSession currentModalSession();
-    static void updateChildrenWorksWhenModal();
-    static void temporarilyStopAllModalSessions();
-    static void beginModalSession(QWindow *widget);
-    static void endModalSession(QWindow *widget);
-    static void cancelWaitForMoreEvents();
-    static void cleanupModalSessions();
-    static void ensureNSAppInitialized();
+    QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
+    bool currentExecIsNSAppRun;
+    bool nsAppRunCalledByQt;
+    bool cleanupModalSessionsNeeded;
+    NSModalSession currentModalSessionCached;
+    NSModalSession currentModalSession();
+    void updateChildrenWorksWhenModal();
+    void temporarilyStopAllModalSessions();
+    void beginModalSession(QWindow *widget);
+    void endModalSession(QWindow *widget);
+    void cancelWaitForMoreEvents();
+    void cleanupModalSessions();
+    void ensureNSAppInitialized();
 
     MacSocketHash macSockets;
     QList<void *> queuedUserInputEvents; // NSEvent *
@@ -194,15 +192,15 @@ public:
     CFRunLoopObserverRef firstTimeObserver;
     QAtomicInt serialNumber;
     int lastSerial;
-    static bool interrupt;
-private:
+    bool interrupt;
+
     static Boolean postedEventSourceEqualCallback(const void *info1, const void *info2);
     static void postedEventsSourcePerformCallback(void *info);
     static void activateTimer(CFRunLoopTimerRef, void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
-    friend void processPostedEvents(QCocoaEventDispatcherPrivate *const d, const bool blockSendPostedEvents);
+    void processPostedEvents();
 };
 
 class QtCocoaInterruptDispatcher : public QObject

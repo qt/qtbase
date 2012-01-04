@@ -111,20 +111,13 @@ static inline CFRunLoopRef mainRunLoop()
 /* timer call back */
 void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
 {
-    int timerID =
-#ifdef Q_OS_MAC64
-    qint64(info);
-#else
-    int(info);
-#endif
-
-    MacTimerInfo *tmr;
-    tmr = macTimerHash.value(timerID);
+    MacTimerInfo *tmr = static_cast<MacTimerInfo *>(info);
+    QCocoaEventDispatcherPrivate *d = tmr->d_ptr;
+    int timerID = tmr->id;
     if (tmr == 0 || tmr->pending == true)
         return; // Can't send another timer event if it's pending.
 
-
-    if (blockSendPostedEvents) {
+    if (d->blockSendPostedEvents) {
         QCoreApplication::postEvent(tmr->obj, new QTimerEvent(tmr->id));
     } else {
         tmr->pending = true;
@@ -132,7 +125,7 @@ void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
 
         QCoreApplication::sendSpontaneousEvent(tmr->obj, &e);
         // Get the value again in case the timer gets unregistered during the sendEvent.
-        tmr = macTimerHash.value(timerID);
+        tmr = d->macTimerHash.value(timerID);
         if (tmr != 0)
             tmr->pending = false;
     }
@@ -152,6 +145,7 @@ void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerTy
 #endif
 
     MacTimerInfo *t = new MacTimerInfo();
+    t->d_ptr = d_func();
     t->id = timerId;
     t->interval = interval;
     t->timerType = timerType;
@@ -162,8 +156,8 @@ void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerTy
     CFAbsoluteTime fireDate = CFAbsoluteTimeGetCurrent();
     CFTimeInterval cfinterval = qMax(CFTimeInterval(interval) / 1000, 0.0000001);
     fireDate += cfinterval;
-    QCocoaEventDispatcherPrivate::macTimerHash.insert(timerId, t);
-    CFRunLoopTimerContext info = { 0, (void *)timerId, 0, 0, 0 };
+    t->d_ptr->macTimerHash.insert(timerId, t);
+    CFRunLoopTimerContext info = { 0, (void *)t, 0, 0, 0 };
     t->runLoopTimer = CFRunLoopTimerCreate(0, fireDate, cfinterval, 0, 0,
                                            QCocoaEventDispatcherPrivate::activateTimer, &info);
     if (t->runLoopTimer == 0) {
@@ -186,7 +180,7 @@ bool QCocoaEventDispatcher::unregisterTimer(int identifier)
     if (identifier <= 0)
         return false;                                // not init'd or invalid timer
 
-    MacTimerInfo *timerInfo = QCocoaEventDispatcherPrivate::macTimerHash.take(identifier);
+    MacTimerInfo *timerInfo = d_func()->macTimerHash.take(identifier);
     if (timerInfo == 0)
         return false;
 
@@ -209,8 +203,9 @@ bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
     }
 #endif
 
-    MacTimerHash::iterator it = QCocoaEventDispatcherPrivate::macTimerHash.begin();
-    while (it != QCocoaEventDispatcherPrivate::macTimerHash.end()) {
+    Q_D(QCocoaEventDispatcher);
+    MacTimerHash::iterator it = d->macTimerHash.begin();
+    while (it != d->macTimerHash.end()) {
         MacTimerInfo *timerInfo = it.value();
         if (timerInfo->obj != obj) {
             ++it;
@@ -218,7 +213,7 @@ bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
             CFRunLoopTimerInvalidate(timerInfo->runLoopTimer);
             CFRelease(timerInfo->runLoopTimer);
             delete timerInfo;
-            it = QCocoaEventDispatcherPrivate::macTimerHash.erase(it);
+            it = d->macTimerHash.erase(it);
         }
     }
     return true;
@@ -234,8 +229,9 @@ QCocoaEventDispatcher::registeredTimers(QObject *object) const
 
     QList<TimerInfo> list;
 
-    MacTimerHash::const_iterator it = QCocoaEventDispatcherPrivate::macTimerHash.constBegin();
-    while (it != QCocoaEventDispatcherPrivate::macTimerHash.constEnd()) {
+    Q_D(const QCocoaEventDispatcher);
+    MacTimerHash::const_iterator it = d->macTimerHash.constBegin();
+    while (it != d->macTimerHash.constEnd()) {
         MacTimerInfo *t = it.value();
         if (t->obj == object)
             list << TimerInfo(t->id, t->interval, t->timerType);
@@ -689,16 +685,6 @@ void QCocoaEventDispatcher::wakeUp()
 /*****************************************************************************
   QEventDispatcherMac Implementation
  *****************************************************************************/
-MacTimerHash QCocoaEventDispatcherPrivate::macTimerHash;
-bool QCocoaEventDispatcherPrivate::blockSendPostedEvents = false;
-bool QCocoaEventDispatcherPrivate::interrupt = false;
-
-
-QStack<QCocoaModalSessionInfo> QCocoaEventDispatcherPrivate::cocoaModalSessionStack;
-bool QCocoaEventDispatcherPrivate::currentExecIsNSAppRun = false;
-bool QCocoaEventDispatcherPrivate::nsAppRunCalledByQt = false;
-bool QCocoaEventDispatcherPrivate::cleanupModalSessionsNeeded = false;
-NSModalSession QCocoaEventDispatcherPrivate::currentModalSessionCached = 0;
 
 void QCocoaEventDispatcherPrivate::ensureNSAppInitialized()
 {
@@ -896,6 +882,12 @@ void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
 }
 
 QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
+    : blockSendPostedEvents(false),
+      currentExecIsNSAppRun(false),
+      nsAppRunCalledByQt(false),
+      cleanupModalSessionsNeeded(false),
+      currentModalSessionCached(0),
+      interrupt(false)
 {
 }
 
@@ -952,38 +944,38 @@ Boolean QCocoaEventDispatcherPrivate::postedEventSourceEqualCallback(const void 
     return info1 == info2;
 }
 
-void processPostedEvents(QCocoaEventDispatcherPrivate *const d, const bool blockSendPostedEvents)
+void QCocoaEventDispatcherPrivate::processPostedEvents()
 {
     if (blockSendPostedEvents) {
         // We're told to not send posted events (because the event dispatcher
         // is currently working on setting up the correct session to run). But
         // we still need to make sure that we don't fall asleep until pending events
         // are sendt, so we just signal this need, and return:
-        CFRunLoopSourceSignal(d->postedEventsSource);
+        CFRunLoopSourceSignal(postedEventsSource);
         return;
     }
 
-    if (d->cleanupModalSessionsNeeded)
-        d->cleanupModalSessions();
+    if (cleanupModalSessionsNeeded)
+        cleanupModalSessions();
 
-    if (d->interrupt) {
-        if (d->currentExecIsNSAppRun) {
+    if (interrupt) {
+        if (currentExecIsNSAppRun) {
             // The event dispatcher has been interrupted. But since
             // [NSApplication run] is running the event loop, we
             // delayed stopping it until now (to let cocoa process 
             // pending cocoa events first).
-            if (d->currentModalSessionCached)
-                d->temporarilyStopAllModalSessions();
+            if (currentModalSessionCached)
+                temporarilyStopAllModalSessions();
             [NSApp stop:NSApp];
-            d->cancelWaitForMoreEvents();
+            cancelWaitForMoreEvents();
         }
         return;
     }
 
-    int serial = d->serialNumber.load();
-    if (!d->threadData->canWait || (serial != d->lastSerial)) {
-        d->lastSerial = serial;
-        QWindowSystemInterface::sendWindowSystemEvents(d->q_func(), QEventLoop::AllEvents);
+    int serial = serialNumber.load();
+    if (!threadData->canWait || (serial != lastSerial)) {
+        lastSerial = serial;
+        QWindowSystemInterface::sendWindowSystemEvents(q_func(), QEventLoop::AllEvents);
     }
 }
 
@@ -1013,12 +1005,12 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
       forEventClass:kInternetEventClass andEventID:kAEGetURL];
 */
 
-    processPostedEvents(static_cast<QCocoaEventDispatcherPrivate *>(info), blockSendPostedEvents);
+    static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 
 void QCocoaEventDispatcherPrivate::postedEventsSourcePerformCallback(void *info)
 {
-    processPostedEvents(static_cast<QCocoaEventDispatcherPrivate *>(info), blockSendPostedEvents);
+    static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
 }
 
 void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
@@ -1054,8 +1046,8 @@ QCocoaEventDispatcher::~QCocoaEventDispatcher()
 {
     Q_D(QCocoaEventDispatcher);
     //timer cleanup
-    MacTimerHash::iterator it = QCocoaEventDispatcherPrivate::macTimerHash.begin();
-    while (it != QCocoaEventDispatcherPrivate::macTimerHash.end()) {
+    MacTimerHash::iterator it = d->macTimerHash.begin();
+    while (it != d->macTimerHash.end()) {
         MacTimerInfo *t = it.value();
         if (t->runLoopTimer) {
             CFRunLoopTimerInvalidate(t->runLoopTimer);
@@ -1064,7 +1056,7 @@ QCocoaEventDispatcher::~QCocoaEventDispatcher()
         delete t;
         ++it;
     }
-    QCocoaEventDispatcherPrivate::macTimerHash.clear();
+    d->macTimerHash.clear();
 
     // Remove CFSockets from the runloop.
     for (MacSocketHash::ConstIterator it = d->macSockets.constBegin(); it != d->macSockets.constEnd(); ++it) {
