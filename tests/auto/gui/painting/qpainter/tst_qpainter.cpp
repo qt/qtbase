@@ -256,6 +256,8 @@ private slots:
 
     void drawTextOutsideGuiThread();
 
+    void drawTextWithComplexBrush();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -4303,6 +4305,28 @@ void tst_QPainter::drawTextOutsideGuiThread()
     t.wait();
 
     QCOMPARE(referenceRendering, t.rendering);
+}
+
+void tst_QPainter::drawTextWithComplexBrush()
+{
+    QImage texture(10, 10, QImage::Format_ARGB32_Premultiplied);
+    texture.fill(Qt::red);
+
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::white);
+    QPainter p(&image);
+    QFont f = p.font();
+    f.setPixelSize(70);
+    p.setFont(f);
+
+    QBrush brush(Qt::white);
+    brush.setTextureImage(texture);
+    p.setPen(QPen(brush, 2));
+
+    p.drawText(10, 10, "Hello World");
+
+    int paintedPixels = getPaintedPixels(image, Qt::white);
+    QVERIFY(paintedPixels > 0);
 }
 
 QTEST_MAIN(tst_QPainter)
