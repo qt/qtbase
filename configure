@@ -6081,6 +6081,24 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xlib"
     fi
 
+    # auto-detect Xrender support
+    if [ "$CFG_XRENDER" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xrender "Xrender" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+            CFG_XRENDER=yes
+            QT_CONFIG="$QT_CONFIG xrender"
+        else
+            if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "Xrender support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
+                CFG_XRENDER=no
+            fi
+        fi
+    fi
+
     if [ "$CFG_XCB" != "no" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_XCB=yes
@@ -8323,7 +8341,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     echo "Xcursor support ........ $CFG_XCURSOR"
     echo "Xfixes support ......... $CFG_XFIXES"
     echo "Xrandr support ......... $CFG_XRANDR"
-    echo "Xrender support ........ $CFG_XRENDER"
     echo "Xi support ............. $CFG_XINPUT"
     echo "MIT-SHM support ........ $CFG_MITSHM"
     echo "FontConfig support ..... $CFG_FONTCONFIG"
@@ -8359,6 +8376,7 @@ if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
 else
     echo "Xcb support ............ $CFG_XCB"
 fi
+echo "Xrender support ........ $CFG_XRENDER"
 if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "XInput2 support ........ $CFG_XINPUT2"
 fi
