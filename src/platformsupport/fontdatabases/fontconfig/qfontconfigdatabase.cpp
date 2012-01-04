@@ -724,7 +724,7 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
     FcConfigSubstitute(0, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 
-    FcChar8 *familyAfterSubstitution;
+    FcChar8 *familyAfterSubstitution = 0;
     FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
     QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
     FcPatternDestroy(pattern);
