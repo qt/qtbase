@@ -43,6 +43,7 @@
 #define QUUID_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qcryptographichash.h>
 
 QT_BEGIN_HEADER
 
@@ -79,8 +80,10 @@ public:
         VerUnknown        =-1,
         Time                = 1, // 0 0 0 1
         EmbeddedPOSIX        = 2, // 0 0 1 0
-        Name                = 3, // 0 0 1 1
-        Random                = 4  // 0 1 0 0
+        Md5                 = 3, // 0 0 1 1
+        Name = Md5,
+        Random                = 4,  // 0 1 0 0
+        Sha1                 = 5 // 0 1 0 1
     };
 
     QUuid()
@@ -173,6 +176,21 @@ public:
     }
 #endif
     static QUuid createUuid();
+    static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
+    static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
+#ifndef QT_NO_QUUID_STRING
+    static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
+    {
+        return QUuid::createUuidV3(ns, baseData.toUtf8());
+    }
+
+    static inline QUuid createUuidV5(const QUuid &ns, const QString &baseData)
+    {
+        return QUuid::createUuidV5(ns, baseData.toUtf8());
+    }
+
+#endif
+
     QUuid::Variant variant() const;
     QUuid::Version version() const;
 
