@@ -59,6 +59,7 @@ class tst_QAbstractItemModel : public QObject
 public slots:
     void initTestCase();
     void init();
+    void cleanup();
 
 private slots:
     void index();
@@ -273,6 +274,11 @@ void tst_QAbstractItemModel::init()
     insertCommand->setStartRow(0);
     insertCommand->setEndRow(9);
     insertCommand->doCommand();
+}
+
+void tst_QAbstractItemModel::cleanup()
+{
+    delete m_model;
 }
 
 /*
