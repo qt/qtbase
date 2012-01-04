@@ -106,12 +106,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QBasicTimer::start(int msec, QObject *object)
 
-    Starts (or restarts) the timer with a \a msec milliseconds
-    timeout.
+    Starts (or restarts) the timer with a \a msec milliseconds timeout. The
+    timer will be a Qt::CoarseTimer. See Qt::TimerType for information on the
+    different timer types.
 
     The given \a object will receive timer events.
 
-    \sa stop() isActive() QObject::timerEvent()
+    \sa stop() isActive() QObject::timerEvent() Qt::CoarseTimer
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
