@@ -304,11 +304,16 @@ sub classNames {
                 push @symbols, "QMutable" . $1 . "Iterator";
             }
 
+            our $publicclassregexp;
             foreach my $symbol (@symbols) {
                 $symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
-                push @ret, $symbol
-                    if ($symbol =~ /^Q[^:]*$/           # no-namespace, starting with Q
-                        || $symbol =~ /^Phonon::/);     # or in the Phonon namespace
+
+                if ($symbol =~ /^Q[^:]*$/           # no-namespace, starting with Q
+                    || $symbol =~ /^Phonon::/) {    # or in the Phonon namespace
+                    push @ret, $symbol;
+                } elsif (defined($publicclassregexp)) {
+                    push @ret, $symbol if ($symbol =~ $publicclassregexp);
+                }
             }
         }
     }
