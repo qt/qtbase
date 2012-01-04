@@ -116,8 +116,10 @@ QT_BEGIN_NAMESPACE
 void QBasicTimer::start(int msec, QObject *obj)
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (!eventDispatcher)
+    if (!eventDispatcher) {
+        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
         return;
+    }
     if (id) {
         eventDispatcher->unregisterTimer(id);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);
@@ -141,8 +143,10 @@ void QBasicTimer::start(int msec, QObject *obj)
 void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (!eventDispatcher)
+    if (!eventDispatcher) {
+        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
         return;
+    }
     if (id) {
         eventDispatcher->unregisterTimer(id);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);
