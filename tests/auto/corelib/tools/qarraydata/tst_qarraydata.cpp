@@ -46,6 +46,23 @@
 
 #include "simplevector.h"
 
+struct SharedNullVerifier
+{
+    SharedNullVerifier()
+    {
+        Q_ASSERT(QArrayData::shared_null.ref.isStatic());
+        Q_ASSERT(QArrayData::shared_null.ref.isShared());
+        Q_ASSERT(QArrayData::shared_null.ref.isSharable());
+    }
+};
+
+// This is meant to verify/ensure that shared_null is not being dynamically
+// initialized and stays away from the order-of-static-initialization fiasco.
+//
+// Of course, if this was to fail, qmake and the build should have crashed and
+// burned before we ever got to this point :-)
+SharedNullVerifier globalInit;
+
 class tst_QArrayData : public QObject
 {
     Q_OBJECT

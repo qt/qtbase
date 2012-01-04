@@ -90,27 +90,27 @@ struct QStringData {
     inline const ushort *data() const { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
 };
 
-template<int N> struct QConstStringData;
-template<int N> struct QConstStringDataPtr
+template<int N> struct QStaticStringData;
+template<int N> struct QStaticStringDataPtr
 {
-    const QConstStringData<N> *ptr;
+    const QStaticStringData<N> *ptr;
 };
 
 #if defined(Q_COMPILER_UNICODE_STRINGS)
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const char16_t data[N + 1];
+    QStringData str;
+    char16_t data[N + 1];
 };
 
 #define QT_UNICODE_LITERAL_II(str) u"" str
 
 #elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
 // wchar_t is 2 bytes
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const wchar_t data[N + 1];
+    QStringData str;
+    wchar_t data[N + 1];
 };
 
 #if defined(Q_CC_MSVC)
@@ -120,21 +120,21 @@ template<int N> struct QConstStringData
 #endif
 
 #else
-template<int N> struct QConstStringData
+template<int N> struct QStaticStringData
 {
-    const QStringData str;
-    const ushort data[N + 1];
+    QStringData str;
+    ushort data[N + 1];
 };
 #endif
 
 #if defined(QT_UNICODE_LITERAL_II)
 #  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
 # if defined(Q_COMPILER_LAMBDA)
-#  define QStringLiteral(str) ([]() -> QConstStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
+#  define QStringLiteral(str) ([]() -> QStaticStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QConstStringData<Size> qstring_literal = \
+        static const QStaticStringData<Size> qstring_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
-        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
 # elif defined(Q_CC_GNU)
@@ -145,9 +145,9 @@ template<int N> struct QConstStringData
 #  define QStringLiteral(str) \
     __extension__ ({ \
         enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
-        static const QConstStringData<Size> qstring_literal = \
+        static const QStaticStringData<Size> qstring_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
-        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        QStaticStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif
 #endif
@@ -586,9 +586,9 @@ public:
 
     QString(int size, Qt::Initialization);
     template <int n>
-    inline QString(const QConstStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
+    inline QString(const QStaticStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
     template <int N>
-    Q_DECL_CONSTEXPR inline QString(QConstStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
+    Q_DECL_CONSTEXPR inline QString(QStaticStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
@@ -600,8 +600,8 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    static const QConstStringData<1> shared_null;
-    static const QConstStringData<1> shared_empty;
+    static const QStaticStringData<1> shared_null;
+    static const QStaticStringData<1> shared_empty;
     Data *d;
     inline QString(Data *dd, int /*dummy*/) : d(dd) {}
 

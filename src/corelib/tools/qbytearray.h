@@ -133,24 +133,24 @@ struct QByteArrayData
     inline const char *data() const { return d + sizeof(qptrdiff) + offset; }
 };
 
-template<int N> struct QConstByteArrayData
+template<int N> struct QStaticByteArrayData
 {
-    const QByteArrayData ba;
-    const char data[N + 1];
+    QByteArrayData ba;
+    char data[N + 1];
 };
 
-template<int N> struct QConstByteArrayDataPtr
+template<int N> struct QStaticByteArrayDataPtr
 {
-    const QConstByteArrayData<N> *ptr;
+    const QStaticByteArrayData<N> *ptr;
 };
 
 
 #if defined(Q_COMPILER_LAMBDA)
-#  define QByteArrayLiteral(str) ([]() -> QConstByteArrayDataPtr<sizeof(str) - 1> { \
+#  define QByteArrayLiteral(str) ([]() -> QStaticByteArrayDataPtr<sizeof(str) - 1> { \
         enum { Size = sizeof(str) - 1 }; \
-        static const QConstByteArrayData<Size> qbytearray_literal = \
+        static const QStaticByteArrayData<Size> qbytearray_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, str }; \
-        QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
+        QStaticByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
     return holder; }())
 
 #elif defined(Q_CC_GNU)
@@ -161,9 +161,9 @@ template<int N> struct QConstByteArrayDataPtr
 #  define QByteArrayLiteral(str) \
     __extension__ ({ \
         enum { Size = sizeof(str) - 1 }; \
-        static const QConstByteArrayData<Size> qbytearray_literal = \
+        static const QStaticByteArrayData<Size> qbytearray_literal = \
         { { Q_REFCOUNT_INITIALIZE_STATIC, Size, 0, 0, { 0 } }, str }; \
-        QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
+        QStaticByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
         holder; })
 #endif
 
@@ -378,16 +378,16 @@ public:
     bool isNull() const;
 
     template <int n>
-    inline QByteArray(const QConstByteArrayData<n> &dd)
+    inline QByteArray(const QStaticByteArrayData<n> &dd)
         : d(const_cast<QByteArrayData *>(&dd.str)) {}
     template <int N>
-    Q_DECL_CONSTEXPR inline QByteArray(QConstByteArrayDataPtr<N> dd)
+    Q_DECL_CONSTEXPR inline QByteArray(QStaticByteArrayDataPtr<N> dd)
         : d(const_cast<QByteArrayData *>(&dd.ptr->ba)) {}
 
 private:
     operator QNoImplicitBoolCast() const;
-    static const QConstByteArrayData<1> shared_null;
-    static const QConstByteArrayData<1> shared_empty;
+    static const QStaticByteArrayData<1> shared_null;
+    static const QStaticByteArrayData<1> shared_empty;
     Data *d;
     QByteArray(Data *dd, int /*dummy*/, int /*dummy*/) : d(dd) {}
     void realloc(int alloc);
