@@ -56,6 +56,7 @@ QT_END_NAMESPACE
 #include "qplatformdefs.h"
 
 #include "qdatastream.h"
+#include "qdebug.h"
 #include "qstring.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
@@ -3325,4 +3326,13 @@ QString QLocale::nativeCountryName() const
     return getLocaleData(endonyms_data + d()->m_country_endonym_idx, d()->m_country_endonym_size);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QLocale &l)
+{
+    dbg.nospace() << "QLocale(" << qPrintable(QLocale::languageToString(l.language()))
+                  << ", " << qPrintable(QLocale::scriptToString(l.script()))
+                  << ", " << qPrintable(QLocale::countryToString(l.country())) << ')';
+    return dbg.space();
+}
+#endif
 QT_END_NAMESPACE

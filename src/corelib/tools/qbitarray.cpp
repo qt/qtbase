@@ -725,6 +725,24 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
 }
 #endif // QT_NO_DATASTREAM
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QBitArray &array)
+{
+    dbg.nospace() << "QBitArray(";
+    for (int i = 0; i < array.size();) {
+        if (array.testBit(i))
+            dbg.nospace() << '1';
+        else
+            dbg.nospace() << '0';
+        i += 1;
+        if (!(i % 4) && (i < array.size()))
+            dbg.nospace() << ' ';
+    }
+    dbg.nospace() << ')';
+    return dbg.space();
+}
+#endif
+
 /*!
     \fn DataPtr &QBitArray::data_ptr()
     \internal

@@ -43,6 +43,7 @@
 #include "qguiapplication.h"
 #include "qdatastream.h"
 #include "qvariant.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1080,5 +1081,13 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &foreground, const QBru
     setBrush(cg, ToolTipBase, toolTipBase);
     setBrush(cg, ToolTipText, toolTipText);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QPalette &)
+{
+    dbg.nospace() << "QPalette()";
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

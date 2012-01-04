@@ -43,6 +43,7 @@
 
 #include "qdatastream.h"
 #include "qendian.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -917,6 +918,14 @@ QUuid QUuid::createUuid()
     Returns true if this UUID is not equal to the Windows GUID \a
     guid; otherwise returns false.
 */
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QUuid &id)
+{
+    dbg.nospace() << "QUuid(" << id.toString() << ')';
+    return dbg.space();
+}
+#endif
 
 /**
     Returns a hash of the QUuid

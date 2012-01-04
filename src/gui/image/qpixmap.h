@@ -238,6 +238,10 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPixmap &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QPixmap &);
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

@@ -136,6 +136,10 @@ Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
 Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QIcon &);
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

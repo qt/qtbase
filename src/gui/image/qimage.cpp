@@ -5863,4 +5863,12 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     \internal
 */
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QImage &i)
+{
+    dbg.nospace() << "QImage(" << i.size() << ')';
+    return dbg.space();
+}
+#endif
+
 QT_END_NAMESPACE

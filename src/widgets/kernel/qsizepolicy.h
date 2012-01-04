@@ -181,6 +181,10 @@ Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
 Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSizePolicy &);
+#endif
+
 inline void QSizePolicy::transpose() {
     Policy hData = horizontalPolicy();
     Policy vData = verticalPolicy();

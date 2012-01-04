@@ -3321,4 +3321,19 @@ void QTextFormatCollection::setDefaultFont(const QFont &f)
             formats[i].d->resolveFont(defaultFnt);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QTextLength &l)
+{
+    dbg.nospace() << "QTextLength(QTextLength::Type(" << l.type() << "))";
+    return dbg.space();
+}
+
+QDebug operator<<(QDebug dbg, const QTextFormat &f)
+{
+    dbg.nospace() << "QTextFormat(QTextFormat::FormatType(" << f.type() << "))";
+    return dbg.space();
+}
+
+#endif
+
 QT_END_NAMESPACE

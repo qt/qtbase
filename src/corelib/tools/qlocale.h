@@ -806,6 +806,10 @@ Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QLocale &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QLocale &);
+#endif
+
 QT_END_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE

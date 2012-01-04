@@ -126,6 +126,11 @@ private:
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &outS, const QCursor &cursor);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &inS, QCursor &cursor);
 #endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QCursor &);
+#endif
+
 #endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE
