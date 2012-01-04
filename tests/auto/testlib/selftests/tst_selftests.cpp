@@ -291,8 +291,17 @@ static QList<LoggerSet> allLoggerSets()
 
 void tst_Selftests::initTestCase()
 {
+    //Detect the location of the sub programs
+    QString subProgram = QLatin1String("float/float");
+#if defined(Q_OS_WIN)
+    subProgram = QLatin1String("float/float.exe");
+#endif
+    QString testdataDir = QFINDTESTDATA(subProgram);
+    if (testdataDir.lastIndexOf(subProgram) > 0)
+        testdataDir = testdataDir.left(testdataDir.lastIndexOf(subProgram));
+    else
+        testdataDir = QCoreApplication::applicationDirPath();
     // chdir to our testdata path and execute helper apps relative to that.
-    QString testdataDir = QFileInfo(QFINDTESTDATA("float")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
 }
 

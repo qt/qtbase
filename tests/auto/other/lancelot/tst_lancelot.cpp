@@ -50,10 +50,6 @@
 #include <QtOpenGL>
 #endif
 
-#ifndef SRCDIR
-#define SRCDIR "."
-#endif
-
 class tst_Lancelot : public QObject
 {
 Q_OBJECT
@@ -114,11 +110,8 @@ void tst_Lancelot::initTestCase()
     if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode, clientInfo))
         QSKIP(qPrintable(proto.errorMessage()));
 
-#if defined(USE_RUNTIME_DIR)
-    scriptsDir = QCoreApplication::applicationDirPath() + "/scripts/";
-#else
-    scriptsDir = SRCDIR "/scripts/";
-#endif
+    QString baseDir = QFINDTESTDATA("scripts/text.qps");
+    scriptsDir = baseDir.left(baseDir.lastIndexOf('/')) + '/';
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
     if (files.isEmpty()) {

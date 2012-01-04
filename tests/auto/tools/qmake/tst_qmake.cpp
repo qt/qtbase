@@ -118,8 +118,13 @@ void tst_qmake::initTestCase()
 #else
     test_compiler.setBaseCommands( "make", cmd );
 #endif
-    QString tmpFile = QFINDTESTDATA("testdata");
-    base_path = tmpFile.left(tmpFile.lastIndexOf('/'));
+    //Detect the location of the testdata
+    QString subProgram  = QLatin1String("testdata/simple_app/main.cpp");
+    base_path = QFINDTESTDATA(subProgram);
+    if (base_path.lastIndexOf(subProgram) > 0)
+        base_path = base_path.left(base_path.lastIndexOf(subProgram));
+    else
+        base_path = QCoreApplication::applicationDirPath();
 }
 
 void tst_qmake::cleanupTestCase()
