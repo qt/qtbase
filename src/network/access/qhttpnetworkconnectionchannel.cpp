@@ -73,10 +73,10 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , lastStatus(0)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
-    , authenticationCredentialsSent(false)
-    , proxyCredentialsSent(false)
     , authMethod(QAuthenticatorPrivate::None)
     , proxyAuthMethod(QAuthenticatorPrivate::None)
+    , authenticationCredentialsSent(false)
+    , proxyCredentialsSent(false)
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif

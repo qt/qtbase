@@ -73,7 +73,6 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
     QString mimeType;
     QByteArray payload;
     if (qDecodeDataUrl(url, mimeType, payload)) {
-        QString &mimeType = mimeType;
         qint64 size = payload.size();
         setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
         setHeader(QNetworkRequest::ContentLengthHeader, size);
