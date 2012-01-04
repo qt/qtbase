@@ -35,6 +35,7 @@ HEADERS +=  \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystemwatcher.h \
         io/qfilesystemwatcher_p.h \
+        io/qfilesystemwatcher_polling_p.h \
         io/qfilesystementry_p.h \
         io/qfilesystemengine_p.h \
         io/qfilesystemmetadata_p.h \
@@ -65,6 +66,7 @@ SOURCES += \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \
         io/qfilesystemwatcher.cpp \
+        io/qfilesystemwatcher_polling.cpp \
         io/qfilesystementry.cpp \
         io/qfilesystemengine.cpp
 
