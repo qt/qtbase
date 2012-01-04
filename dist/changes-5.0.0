@@ -260,6 +260,10 @@ Qt for Windows CE
 
 - Build System
 
+  * Remove qttest_p4.prf file. From now on we should explicitly enable the
+    things from it which we want. Autotest .pro files should stop using
+    'load(qttest_p4)' and start using 'CONFIG+=testcase' instead.
+
 - Assistant
 
 - Designer
