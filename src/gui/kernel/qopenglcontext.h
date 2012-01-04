@@ -118,6 +118,9 @@ public:
 
     QOpenGLFunctions *functions() const;
 
+Q_SIGNALS:
+    void aboutToBeDestroyed();
+
 private:
     friend class QGLContext;
     friend class QOpenGLContextResourceBase;

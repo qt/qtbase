@@ -174,6 +174,8 @@ bool QOpenGLContext::create()
 void QOpenGLContext::destroy()
 {
     Q_D(QOpenGLContext);
+    if (d->platformGLContext)
+        emit aboutToBeDestroyed();
     if (QOpenGLContext::currentContext() == this)
         doneCurrent();
     if (d->shareGroup)
@@ -184,6 +186,17 @@ void QOpenGLContext::destroy()
     delete d->functions;
     d->functions = 0;
 }
+
+/*!
+    \fn void QOpenGLContext::aboutToBeDestroyed()
+
+    This signal is emitted before the underlying native OpenGL context is
+    destroyed, such that users may clean up OpenGL resources that might otherwise
+    be left dangling in the case of shared OpenGL contexts.
+
+    If you wish to make the context current in order to do clean-up, make sure to
+    only connect to the signal using a direct connection.
+*/
 
 /*!
   If this is the current context for the thread, doneCurrent is called
