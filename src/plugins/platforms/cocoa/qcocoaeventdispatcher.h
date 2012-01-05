@@ -92,6 +92,7 @@
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
+#include <QtCore/private/qtimerinfo_unix_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -132,21 +133,6 @@ public:
     void flush();
 };
 
-struct MacTimerInfo {
-    QCocoaEventDispatcherPrivate *d_ptr;
-    int id;
-    int interval;
-    Qt::TimerType timerType;
-    QObject *obj;
-    bool pending;
-    CFRunLoopTimerRef runLoopTimer;
-    bool operator==(const MacTimerInfo &other)
-    {
-        return (id == other.id);
-    }
-};
-typedef QHash<int, MacTimerInfo *> MacTimerHash;
-
 struct MacSocketInfo {
     MacSocketInfo() : socket(0), runloop(0), readNotifier(0), writeNotifier(0) {}
     CFSocketRef socket;
@@ -163,7 +149,12 @@ class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 public:
     QCocoaEventDispatcherPrivate();
 
-    MacTimerHash macTimerHash;
+    // timer handling
+    QTimerInfoList timerInfoList;
+    CFRunLoopTimerRef runLoopTimerRef;
+    void maybeStartCFRunLoopTimer();
+    void maybeStopCFRunLoopTimer();
+    static void activateTimer(CFRunLoopTimerRef, void *info);
 
     // Set 'blockSendPostedEvents' to true if you _really_ need
     // to make sure that qt events are not posted while calling
@@ -196,7 +187,6 @@ public:
 
     static Boolean postedEventSourceEqualCallback(const void *info1, const void *info2);
     static void postedEventsSourcePerformCallback(void *info);
-    static void activateTimer(CFRunLoopTimerRef, void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);

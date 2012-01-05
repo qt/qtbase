@@ -111,32 +111,79 @@ static inline CFRunLoopRef mainRunLoop()
 /* timer call back */
 void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
 {
-    MacTimerInfo *tmr = static_cast<MacTimerInfo *>(info);
-    QCocoaEventDispatcherPrivate *d = tmr->d_ptr;
-    int timerID = tmr->id;
-    if (tmr == 0 || tmr->pending == true)
-        return; // Can't send another timer event if it's pending.
+    QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    (void) d->timerInfoList.activateTimers();
+    d->maybeStartCFRunLoopTimer();
+}
 
-    if (d->blockSendPostedEvents) {
-        QCoreApplication::postEvent(tmr->obj, new QTimerEvent(tmr->id));
-    } else {
-        tmr->pending = true;
-        QTimerEvent e(tmr->id);
-
-        QCoreApplication::sendSpontaneousEvent(tmr->obj, &e);
-        // Get the value again in case the timer gets unregistered during the sendEvent.
-        tmr = d->macTimerHash.value(timerID);
-        if (tmr != 0)
-            tmr->pending = false;
+void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
+{
+    if (timerInfoList.isEmpty()) {
+        // no active timers, so the CFRunLoopTimerRef should not be active either
+        Q_ASSERT(runLoopTimerRef == 0);
+        return;
     }
 
+    if (runLoopTimerRef == 0) {
+        // start the CFRunLoopTimer
+        CFAbsoluteTime ttf = CFAbsoluteTimeGetCurrent();
+        CFTimeInterval interval;
+        CFTimeInterval oneyear = CFTimeInterval(3600. * 24. * 365.);
+
+        // Q: when should the CFRunLoopTimer fire for the first time?
+        struct timeval tv;
+        if (timerInfoList.timerWait(tv)) {
+            // A: when we have timers to fire, of course
+            interval = qMax(tv.tv_sec + tv.tv_usec / 1000000., 0.0000001);
+        } else {
+            // this shouldn't really happen, but in case it does, set the timer to fire a some point in the distant future
+            interval = oneyear;
+        }
+
+        ttf += interval;
+        CFRunLoopTimerContext info = { 0, this, 0, 0, 0 };
+        // create the timer with a large interval, as recommended by the CFRunLoopTimerSetNextFireDate()
+        // documentation, since we will adjust the timer's time-to-fire as needed to keep Qt timers working
+        runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QCocoaEventDispatcherPrivate::activateTimer, &info);
+        Q_ASSERT(runLoopTimerRef != 0);
+
+        CFRunLoopAddTimer(mainRunLoop(), runLoopTimerRef, kCFRunLoopCommonModes);
+    } else {
+        // calculate when we need to wake up to process timers again
+        CFAbsoluteTime ttf = CFAbsoluteTimeGetCurrent();
+        CFTimeInterval interval;
+
+        // Q: when should the timer first next?
+        struct timeval tv;
+        if (timerInfoList.timerWait(tv)) {
+            // A: when we have timers to fire, of course
+            interval = qMax(tv.tv_sec + tv.tv_usec / 1000000., 0.0000001);
+        } else {
+            // no timers can fire, but we cannot stop the CFRunLoopTimer, set the timer to fire at some
+            // point in the distant future (the timer interval is one year)
+            interval = CFRunLoopTimerGetInterval(runLoopTimerRef);
+        }
+
+        ttf += interval;
+        CFRunLoopTimerSetNextFireDate(runLoopTimerRef, ttf);
+    }
+}
+
+void QCocoaEventDispatcherPrivate::maybeStopCFRunLoopTimer()
+{
+    if (runLoopTimerRef == 0)
+        return;
+
+    CFRunLoopTimerInvalidate(runLoopTimerRef);
+    CFRelease(runLoopTimerRef);
+    runLoopTimerRef = 0;
 }
 
 void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {
-        qWarning("QEventDispatcherMac::registerTimer: invalid arguments");
+        qWarning("QCocoaEventDispatcher::registerTimer: invalid arguments");
         return;
     } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QObject::startTimer: timers cannot be started from another thread");
@@ -144,58 +191,37 @@ void QCocoaEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerTy
     }
 #endif
 
-    MacTimerInfo *t = new MacTimerInfo();
-    t->d_ptr = d_func();
-    t->id = timerId;
-    t->interval = interval;
-    t->timerType = timerType;
-    t->obj = obj;
-    t->runLoopTimer = 0;
-    t->pending = false;
-
-    CFAbsoluteTime fireDate = CFAbsoluteTimeGetCurrent();
-    CFTimeInterval cfinterval = qMax(CFTimeInterval(interval) / 1000, 0.0000001);
-    fireDate += cfinterval;
-    t->d_ptr->macTimerHash.insert(timerId, t);
-    CFRunLoopTimerContext info = { 0, (void *)t, 0, 0, 0 };
-    t->runLoopTimer = CFRunLoopTimerCreate(0, fireDate, cfinterval, 0, 0,
-                                           QCocoaEventDispatcherPrivate::activateTimer, &info);
-    if (t->runLoopTimer == 0) {
-        qFatal("QEventDispatcherMac::registerTimer: Cannot create timer");
-    }
-    CFRunLoopAddTimer(mainRunLoop(), t->runLoopTimer, kCFRunLoopCommonModes);
+    Q_D(QCocoaEventDispatcher);
+    d->timerInfoList.registerTimer(timerId, interval, timerType, obj);
+    d->maybeStartCFRunLoopTimer();
 }
 
-bool QCocoaEventDispatcher::unregisterTimer(int identifier)
+bool QCocoaEventDispatcher::unregisterTimer(int timerId)
 {
 #ifndef QT_NO_DEBUG
-    if (identifier < 1) {
-        qWarning("QEventDispatcherMac::unregisterTimer: invalid argument");
+    if (timerId < 1) {
+        qWarning("QCocoaEventDispatcher::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
         qWarning("QObject::killTimer: timers cannot be stopped from another thread");
         return false;
     }
 #endif
-    if (identifier <= 0)
-        return false;                                // not init'd or invalid timer
 
-    MacTimerInfo *timerInfo = d_func()->macTimerHash.take(identifier);
-    if (timerInfo == 0)
-        return false;
-
-    CFRunLoopTimerInvalidate(timerInfo->runLoopTimer);
-    CFRelease(timerInfo->runLoopTimer);
-    delete timerInfo;
-
-    return true;
+    Q_D(QCocoaEventDispatcher);
+    bool returnValue = d->timerInfoList.unregisterTimer(timerId);
+    if (!d->timerInfoList.isEmpty())
+        d->maybeStartCFRunLoopTimer();
+    else
+        d->maybeStopCFRunLoopTimer();
+    return returnValue;
 }
 
 bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (!obj) {
-        qWarning("QEventDispatcherMac::unregisterTimers: invalid argument");
+        qWarning("QCocoaEventDispatcher::unregisterTimers: invalid argument");
         return false;
     } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QObject::killTimers: timers cannot be stopped from another thread");
@@ -204,40 +230,26 @@ bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
 #endif
 
     Q_D(QCocoaEventDispatcher);
-    MacTimerHash::iterator it = d->macTimerHash.begin();
-    while (it != d->macTimerHash.end()) {
-        MacTimerInfo *timerInfo = it.value();
-        if (timerInfo->obj != obj) {
-            ++it;
-        } else {
-            CFRunLoopTimerInvalidate(timerInfo->runLoopTimer);
-            CFRelease(timerInfo->runLoopTimer);
-            delete timerInfo;
-            it = d->macTimerHash.erase(it);
-        }
-    }
-    return true;
+    bool returnValue = d->timerInfoList.unregisterTimers(obj);
+    if (!d->timerInfoList.isEmpty())
+        d->maybeStartCFRunLoopTimer();
+    else
+        d->maybeStopCFRunLoopTimer();
+    return returnValue;
 }
 
 QList<QCocoaEventDispatcher::TimerInfo>
 QCocoaEventDispatcher::registeredTimers(QObject *object) const
 {
+#ifndef QT_NO_DEBUG
     if (!object) {
-        qWarning("QEventDispatcherMac:registeredTimers: invalid argument");
+        qWarning("QCocoaEventDispatcher:registeredTimers: invalid argument");
         return QList<TimerInfo>();
     }
-
-    QList<TimerInfo> list;
+#endif
 
     Q_D(const QCocoaEventDispatcher);
-    MacTimerHash::const_iterator it = d->macTimerHash.constBegin();
-    while (it != d->macTimerHash.constEnd()) {
-        MacTimerInfo *t = it.value();
-        if (t->obj == object)
-            list << TimerInfo(t->id, t->interval, t->timerType);
-        ++it;
-    }
-    return list;
+    return d->timerInfoList.registeredTimers(object);
 }
 
 /**************************************************************************
@@ -882,7 +894,8 @@ void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
 }
 
 QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
-    : blockSendPostedEvents(false),
+    : runLoopTimerRef(0),
+      blockSendPostedEvents(false),
       currentExecIsNSAppRun(false),
       nsAppRunCalledByQt(false),
       cleanupModalSessionsNeeded(false),
@@ -1045,18 +1058,9 @@ void QCocoaEventDispatcher::flush()
 QCocoaEventDispatcher::~QCocoaEventDispatcher()
 {
     Q_D(QCocoaEventDispatcher);
-    //timer cleanup
-    MacTimerHash::iterator it = d->macTimerHash.begin();
-    while (it != d->macTimerHash.end()) {
-        MacTimerInfo *t = it.value();
-        if (t->runLoopTimer) {
-            CFRunLoopTimerInvalidate(t->runLoopTimer);
-            CFRelease(t->runLoopTimer);
-        }
-        delete t;
-        ++it;
-    }
-    d->macTimerHash.clear();
+
+    qDeleteAll(d->timerInfoList);
+    d->maybeStopCFRunLoopTimer();
 
     // Remove CFSockets from the runloop.
     for (MacSocketHash::ConstIterator it = d->macSockets.constBegin(); it != d->macSockets.constEnd(); ++it) {
