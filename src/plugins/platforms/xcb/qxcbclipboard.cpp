@@ -213,6 +213,7 @@ QXcbClipboard::~QXcbClipboard()
                          "clipboard manager in a reasonable time");
             }
         }
+        free(reply);
     }
 }
 
@@ -595,6 +596,7 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
     xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
     if (!reply || reply->type == XCB_NONE) {
+        free(reply);
         buffer->resize(0);
         return false;
     }
