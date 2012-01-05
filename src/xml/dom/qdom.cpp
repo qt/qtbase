@@ -7553,6 +7553,8 @@ bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicI
 bool QDomHandler::notationDecl(const QString & name, const QString & publicId, const QString & systemId)
 {
     QDomNotationPrivate* n = new QDomNotationPrivate(doc, 0, name, publicId, systemId);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    n->ref.deref();
     doc->doctype()->appendChild(n);
     return true;
 }

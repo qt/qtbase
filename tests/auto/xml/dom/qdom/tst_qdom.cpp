@@ -125,6 +125,7 @@ private slots:
 
     void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
     void cloneDTD_QTBUG8398() const;
+    void DTDNotationDecl();
 
     void cleanupTestCase() const;
 
@@ -1923,5 +1924,28 @@ void tst_QDom::cloneDTD_QTBUG8398() const
     domDocument2.save(stream, 0);
     QCOMPARE(output, expected);
 }
+
+void tst_QDom::DTDNotationDecl()
+{
+    QString dtd("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!NOTATION gif SYSTEM 'image/gif'>\n"
+                   "<!NOTATION jpeg SYSTEM 'image/jpeg'>\n"
+                   "]>\n"
+                   "<first/>\n");
+
+    QDomDocument domDocument;
+    QVERIFY(domDocument.setContent(dtd));
+
+    const QDomDocumentType doctype = domDocument.doctype();
+    QCOMPARE(doctype.notations().size(), 2);
+
+    QVERIFY(doctype.namedItem(QString("gif")).isNotation());
+    QCOMPARE(doctype.namedItem(QString("gif")).toNotation().systemId(), QString("image/gif"));
+
+    QVERIFY(doctype.namedItem(QString("jpeg")).isNotation());
+    QCOMPARE(doctype.namedItem(QString("jpeg")).toNotation().systemId(), QString("image/jpeg"));
+}
+
 QTEST_MAIN(tst_QDom)
 #include "tst_qdom.moc"
