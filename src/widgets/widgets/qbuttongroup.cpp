@@ -258,13 +258,3 @@
     \sa setId()
 */
 
-
-/*! \fn void QButtonGroup::insert(QAbstractButton *b)
-
-    Use addButton() instead.
-*/
-
-/*! \fn void QButtonGroup::remove(QAbstractButton *b)
-
-    Use removeButton() instead.
-*/

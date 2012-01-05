@@ -1250,36 +1250,6 @@ QString QDoubleSpinBoxPrivate::textFromValue(const QVariant &f) const
     return q->textFromValue(f.toDouble());
 }
 
-/*!
-    \fn void QSpinBox::setLineStep(int step)
-
-    Use setSingleStep() instead.
-*/
-
-/*!
-    \fn void QSpinBox::setMaxValue(int value)
-
-    Use setMaximum() instead.
-*/
-
-/*!
-    \fn void QSpinBox::setMinValue(int value)
-
-    Use setMinimum() instead.
-*/
-
-/*!
-    \fn int QSpinBox::maxValue() const
-
-    Use maximum() instead.
-*/
-
-/*!
-    \fn int QSpinBox::minValue() const
-
-    Use minimum() instead.
-*/
-
 /*! \reimp */
 bool QSpinBox::event(QEvent *event)
 {
