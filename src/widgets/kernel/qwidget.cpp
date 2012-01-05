@@ -10791,33 +10791,6 @@ void QWidget::stackUnder(QWidget* w)
     QApplication::sendEvent(this, &e);
 }
 
-/*!
-    \enum QWidget::BackgroundOrigin
-
-    \compat
-
-    \value WidgetOrigin
-    \value ParentOrigin
-    \value WindowOrigin
-    \value AncestorOrigin
-
-*/
-
-/*!
-    \fn void QWidget::drawText(const QPoint &p, const QString &s)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your drawing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn void QWidget::drawText(int x, int y, const QString &s)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your drawing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
 
 /*!
     \fn bool QWidget::isTopLevel() const

@@ -488,24 +488,6 @@ bool QDial::event(QEvent *e)
     return QAbstractSlider::event(e);
 }
 
-/*!
-    \fn void QDial::dialPressed();
-
-    Use QAbstractSlider::sliderPressed() instead.
-*/
-
-/*!
-    \fn void QDial::dialMoved(int value);
-
-    Use QAbstractSlider::sliderMoved() instead.
-*/
-
-/*!
-    \fn void QDial::dialReleased();
-
-    Use QAbstractSlider::sliderReleased() instead.
-*/
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_DIAL
