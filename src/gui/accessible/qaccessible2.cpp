@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QAccessibleActionInterface::doAction(const QString &actionName) const
+    \fn void QAccessibleActionInterface::doAction(const QString &actionName)
 
     Invokes the action specified by \a actionName
 
