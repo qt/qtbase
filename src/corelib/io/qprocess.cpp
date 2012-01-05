@@ -617,6 +617,14 @@ void QProcessPrivate::Channel::clear()
     writes to its standard output and standard error will be written
     to the standard output and standard error of the main process.
 
+    \note Windows intentionally suppresses output from GUI-only
+    applications to inherited consoles.
+    This does \e not apply to output redirected to files or pipes.
+    To forward the output of GUI-only applications on the console
+    nonetheless, you must use SeparateChannels and do the forwarding
+    yourself by reading the output and writing it to the appropriate
+    output channels.
+
     \sa setProcessChannelMode()
 */
 

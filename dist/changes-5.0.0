@@ -144,6 +144,10 @@ information about a particular change.
 - The QHttp, QHttpHeader, QHttpResponseHeader and QHttpRequestHeader classes have
   been removed, QNetworkAccessManager should be used instead.
 
+- QProcess
+
+  * On Windows, QProcess::ForwardedChannels will not forward the output of GUI
+    applications anymore, if they do not create a console.
 
 ****************************************************************************
 *                           General                                        *

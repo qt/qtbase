@@ -92,6 +92,15 @@ static void qt_create_pipe(Q_PIPE *pipe, bool in)
     CloseHandle(tmpHandle);
 }
 
+static void duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
+{
+    pipe[0] = INVALID_Q_PIPE;
+    HANDLE hStdWriteChannel = GetStdHandle(nStdHandle);
+    HANDLE hCurrentProcess = GetCurrentProcess();
+    DuplicateHandle(hCurrentProcess, hStdWriteChannel, hCurrentProcess,
+                    &pipe[1], 0, TRUE, DUPLICATE_SAME_ACCESS);
+}
+
 /*
     Create the pipes to a QProcessPrivate::Channel.
 
@@ -108,8 +117,11 @@ bool QProcessPrivate::createChannel(Channel &channel)
 
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
-        qt_create_pipe(channel.pipe, &channel == &stdinChannel);
-
+        const bool isStdInChannel = (&channel == &stdinChannel);
+        if (isStdInChannel || processChannelMode != QProcess::ForwardedChannels)
+            qt_create_pipe(channel.pipe, isStdInChannel);
+        else
+            duplicateStdWriteChannel(channel.pipe, (&channel == &stdoutChannel) ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
         return true;
     } else if (channel.type == Channel::Redirect) {
         // we're redirecting the channel to/from a file
@@ -465,18 +477,6 @@ qint64 QProcessPrivate::bytesAvailableFromStdout() const
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStdout() == %d", bytesAvail);
 #endif
-    if (processChannelMode == QProcess::ForwardedChannels && bytesAvail > 0) {
-        QByteArray buf(bytesAvail, 0);
-        DWORD bytesRead = 0;
-        if (ReadFile(stdoutChannel.pipe[0], buf.data(), buf.size(), &bytesRead, 0) && bytesRead > 0) {
-            HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (hStdout) {
-                DWORD bytesWritten = 0;
-                WriteFile(hStdout, buf.data(), bytesRead, &bytesWritten, 0);
-            }
-        }
-        bytesAvail = 0;
-    }
     return bytesAvail;
 }
 
@@ -490,18 +490,6 @@ qint64 QProcessPrivate::bytesAvailableFromStderr() const
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStderr() == %d", bytesAvail);
 #endif
-    if (processChannelMode == QProcess::ForwardedChannels && bytesAvail > 0) {
-        QByteArray buf(bytesAvail, 0);
-        DWORD bytesRead = 0;
-        if (ReadFile(stderrChannel.pipe[0], buf.data(), buf.size(), &bytesRead, 0) && bytesRead > 0) {
-            HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE);
-            if (hStderr) {
-                DWORD bytesWritten = 0;
-                WriteFile(hStderr, buf.data(), bytesRead, &bytesWritten, 0);
-            }
-        }
-        bytesAvail = 0;
-    }
     return bytesAvail;
 }
 
