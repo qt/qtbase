@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1778,7 +1778,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );

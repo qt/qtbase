@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2007  Red Hat, Inc.
  *
  * This code is a modified version of some part of HarfBuzz,
