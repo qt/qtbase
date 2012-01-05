@@ -151,19 +151,21 @@ public:
     // 64 bit enums seem hard on some platforms (windows...)
     // which makes using a bit field a sensible alternative
     struct State {
-        quint64 unavailable : 1;
+        // http://msdn.microsoft.com/en-us/library/ms697270.aspx
+        quint64 disabled : 1; // used to be Unavailable
         quint64 selected : 1;
+        quint64 focusable : 1;
         quint64 focused : 1;
         quint64 pressed : 1;
+        quint64 checkable : 1;
         quint64 checked : 1;
-        quint64 mixed : 1;
+        quint64 checkStateMixed : 1; // used to be Mixed
         quint64 readOnly : 1;
         quint64 hotTracked : 1;
         quint64 defaultButton : 1;
         quint64 expanded : 1;
         quint64 collapsed : 1;
         quint64 busy : 1;
-        //       quint64 Floating : 1;
         quint64 expandable : 1;
         quint64 marqueed : 1;
         quint64 animated : 1;
@@ -172,23 +174,53 @@ public:
         quint64 sizeable : 1;
         quint64 movable : 1;
         quint64 selfVoicing : 1;
-        quint64 focusable : 1;
         quint64 selectable : 1;
         quint64 linked : 1;
         quint64 traversed : 1;
         quint64 multiSelectable : 1;
         quint64 extSelectable : 1;
-        //       quint64 alertLow : 1;
-        //       quint64 alertMedium : 1;
-        //       quint64 alertHigh : 1;
-        quint64 passwordEdit : 1;
+        quint64 passwordEdit : 1; // used to be Protected
         quint64 hasPopup : 1;
         quint64 modal : 1;
+
+        // IA2 - we chose to not add some IA2 states for now
+        // Below the ones that seem helpful
+        quint64 active : 1;
+        quint64 invalid : 1; // = defunct
+        quint64 editable : 1;
+        quint64 multiLine : 1;
+        quint64 selectableText : 1;
+        quint64 supportsAutoCompletion : 1;
+
+        // quint64 horizontal : 1;
+        // quint64 vertical : 1;
+        // quint64 invalidEntry : 1;
+        // quint64 managesDescendants : 1;
+        // quint64 singleLine : 1; // we have multi line, this is redundant.
+        // quint64 stale : 1;
+        // quint64 transient : 1;
+        // quint64 pinned : 1;
+
+        // Apple - see http://mattgemmell.com/2010/12/19/accessibility-for-iphone-and-ipad-apps/
+        // quint64 playsSound : 1;
+        // quint64 summaryElement : 1;
+        // quint64 updatesFrequently : 1;
+        // quint64 adjustable : 1;
+        // more and not included here: http://developer.apple.com/library/mac/#documentation/UserExperience/Reference/Accessibility_RoleAttribute_Ref/Attributes.html
+
+        // MSAA
+        // quint64 alertLow : 1;
+        // quint64 alertMedium : 1;
+        // quint64 alertHigh : 1;
 
         State() {
             qMemSet(this, 0, sizeof(State));
         }
     };
+
+
+
+
 
     enum Role {
         NoRole         = 0x00000000,

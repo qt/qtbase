@@ -466,7 +466,7 @@ void tst_QAccessibility::deletedWidget()
 void tst_QAccessibility::statesStructTest()
 {
     QAccessible::State s1;
-    QVERIFY(s1.unavailable == 0);
+    QVERIFY(s1.disabled == 0);
     QVERIFY(s1.focusable == 0);
     QVERIFY(s1.modal == 0);
 
@@ -1741,7 +1741,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     QVERIFY(interface->state().invisible);
     testWindow->setVisible(true);
     testWindow->setEnabled(false);
-    QVERIFY(interface->state().unavailable);
+    QVERIFY(interface->state().disabled);
     testWindow->setEnabled(true);
     qApp->setActiveWindow(&mdiArea);
     mdiArea.setActiveSubWindow(testWindow);

@@ -706,7 +706,7 @@ QAccessible::State QAccessibleWidget::state() const
     if (w->hasFocus())
         state.focused = true;
     if (!w->isEnabled())
-        state.unavailable = true;
+        state.disabled = true;
     if (w->isWindow()) {
         if (w->windowFlags() & Qt::WindowSystemMenuHint)
             state.movable = true;

@@ -142,7 +142,7 @@ QAccessible::State QAccessibleButton::state() const
     if (b->isChecked())
         state.checked = true;
     else if (cb && cb->checkState() == Qt::PartiallyChecked)
-        state.mixed = true;
+        state.checkStateMixed = true;
     if (b->isDown())
         state.pressed = true;
     QPushButton *pb = qobject_cast<QPushButton*>(b);

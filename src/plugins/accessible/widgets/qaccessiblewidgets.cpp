@@ -714,7 +714,7 @@ QAccessible::State QAccessibleMdiSubWindow::state() const
     if (!mdiSubWindow()->parentWidget()->contentsRect().contains(mdiSubWindow()->geometry()))
         state.offscreen = true;
     if (!mdiSubWindow()->isEnabled())
-        state.unavailable = true;
+        state.disabled = true;
     return state;
 }
 
@@ -1035,7 +1035,7 @@ QAccessible::State QAccessibleTitleBar::state() const
     if (w->hasFocus())
         state.focused = true;
     if (!w->isEnabled())
-        state.unavailable = true;
+        state.disabled = true;
 
     return state;
 }

@@ -120,45 +120,64 @@ QT_BEGIN_NAMESPACE
     \sa QAccessibleInterface
 */
 
-/*!
-    \enum QAccessible::StateFlag
 
-    This enum type defines bit flags that can be combined to indicate
+/*!
+    \class QAccessible::State
+
+    This structure defines bit flags that indicate
     the state of an accessible object. The values are:
 
-    \value Animated         The object's appearance changes frequently.
-    \value Busy             The object cannot accept input at the moment.
-    \value Checked          The object's check box is checked.
-    \value Collapsed        The object is collapsed, e.g. a closed listview item, or an iconified window.
-    \value DefaultButton    The object represents the default button in a dialog.
-    \value Expandable       The object is expandable, mostly used for cells in a tree view.
-    \value Expanded         The object is expanded, currently its children are visible.
-    \value ExtSelectable    The object supports extended selection.
-    \value Focusable        The object can receive focus. Only objects in the active window can receive focus.
-    \value Focused          The object has keyboard focus.
-    \value HasPopup         The object opens a popup.
-    \value HotTracked       The object's appearance is sensitive to the mouse cursor position.
-    \value Invisible        The object is not visible to the user.
-    \value Linked           The object is linked to another object, e.g. a hyperlink.
-    \value Marqueed         The object displays scrolling contents, e.g. a log view.
-    \value Mixed            The state of the object is not determined, e.g. a tri-state check box that is neither checked nor unchecked.
-    \value Modal            The object blocks input from other objects.
-    \value Movable          The object can be moved.
-    \value MultiSelectable  The object supports multiple selected items.
-    \value Normal           The normal state.
-    \value Offscreen        The object is clipped by the visible area. Objects that are off screen are also invisible.
-    \value Pressed          The object is pressed.
-    \value Protected        The object is password protected, e.g. a line edit for entering a Password.
-    \value ReadOnly         The object can usually be edited, but is explicitly set to read-only.
-    \value Selectable       The object is selectable.
-    \value Selected         The object is selected.
-    \value SelfVoicing      The object describes itself through speech or sound.
-    \value Sizeable         The object can be resized, e.g. top-level windows.
-    \value Traversed        The object is linked and has been visited.
-    \value Unavailable      The object is unavailable to the user, e.g. a disabled widget.
+    \value active                  The object is the active window or the active sub-element in a container (that would get focus when focusing the container).
+    \value adjustable              The object represents an adjustable value, e.g. sliders.
+    \value animated                The object's appearance changes frequently.
+    \value busy                    The object cannot accept input at the moment.
+    \value checkable               The object is checkable.
+    \value checked                 The object's check box is checked.
+    \value checkStateMixed         The third state of checkboxes (half checked in tri-state check boxes).
+    \value collapsed               The object is collapsed, e.g. a closed listview item, or an iconified window.
+    \value defaultButton           The object represents the default button in a dialog.
+    \value defunct                 The object no longer exists.
+    \value editable                The object has a text carret (and often implements the text interface).
+    \value expandable              The object is expandable, mostly used for cells in a tree view.
+    \value expanded                The object is expanded, currently its children are visible.
+    \value extSelectable           The object supports extended selection.
+    \value focusable               The object can receive focus. Only objects in the active window can receive focus.
+    \value focused                 The object has keyboard focus.
+    \value hasPopup                The object opens a popup.
+    \value hotTracked              The object's appearance is sensitive to the mouse cursor position.
+    \value invalid                 The object is no longer valid (because it has been deleted).
+    \value invalidEntry            Input validation current input invalid.
+    \value invisible               The object is not visible to the user.
+    \value linked                  The object is linked to another object, e.g. a hyperlink.
+    \value marqueed                The object displays scrolling contents, e.g. a log view.
+    \value modal                   The object blocks input from other objects.
+    \value movable                 The object can be moved.
+    \value multiLine               The object has multiple lines of text (word wrap), as opposed to a single line.
+    \value multiSelectable         The object supports multiple selected items.
+    \value offscreen               The object is clipped by the visible area. Objects that are off screen are also invisible.
+    \value passwordEdit            The object is a password field, e.g. a line edit for entering a Password.
+    \value playsSound              The object produces sound when interacted with.
+    \value pressed                 The object is pressed.
+    \value readOnly                The object can usually be edited, but is explicitly set to read-only.
+    \value selectable              The object is selectable.
+    \value selectableText          The object has text which can be selected. This is different from selectable which refers to the object's children.
+    \value selected                The object is selected.
+    \value selfVoicing             The object describes itself through speech or sound.
+    \value sizeable                The object can be resized, e.g. top-level windows.
+    \value summaryElement          The object summarizes the state of the window and should be treated with priority.
+    \value supportsAutoCompletion  The object has auto-completion, for example in line edits or combo boxes.
+    \value traversed               The object is linked and has been visited.
+    \value updatesFrequently       The object changes frequently and needs to be refreshed when accessing it.
+    \value disabled                The object is unavailable to the user, e.g. a disabled widget.
 
     Implementations of QAccessibleInterface::state() return a combination
     of these flags.
+*/
+
+/*!
+    \fn QAccessible::State::State()
+
+    Creates a new QAccessible::State with all states set to false.
 */
 
 /*!

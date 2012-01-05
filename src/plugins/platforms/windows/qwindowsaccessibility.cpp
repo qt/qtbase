@@ -1093,7 +1093,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
         st |= STATE_SYSTEM_LINKED;
     if (state.marqueed)
         st |= STATE_SYSTEM_MARQUEED;
-    if (state.mixed)
+    if (state.checkStateMixed)
         st |= STATE_SYSTEM_MIXED;
     if (state.movable)
         st |= STATE_SYSTEM_MOVEABLE;
