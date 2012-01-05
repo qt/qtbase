@@ -109,9 +109,9 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleImageInterface
-    QString imageDescription();
-    QSize imageSize();
-    QRect imagePosition(QAccessible2::CoordinateType coordType);
+    QString imageDescription() const;
+    QSize imageSize() const;
+    QRect imagePosition(QAccessible2::CoordinateType coordType) const;
 };
 
 #ifndef QT_NO_LINEEDIT

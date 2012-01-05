@@ -482,7 +482,7 @@ void *QAccessibleDisplay::interface_cast(QAccessible::InterfaceType t)
 }
 
 /*! \internal */
-QString QAccessibleDisplay::imageDescription()
+QString QAccessibleDisplay::imageDescription() const
 {
 #ifndef QT_NO_TOOLTIP
     return widget()->toolTip();
@@ -492,7 +492,7 @@ QString QAccessibleDisplay::imageDescription()
 }
 
 /*! \internal */
-QSize QAccessibleDisplay::imageSize()
+QSize QAccessibleDisplay::imageSize() const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
@@ -504,7 +504,7 @@ QSize QAccessibleDisplay::imageSize()
 }
 
 /*! \internal */
-QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType)
+QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType) const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)

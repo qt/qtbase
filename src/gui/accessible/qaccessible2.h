@@ -274,9 +274,9 @@ class Q_GUI_EXPORT QAccessibleImageInterface
 public:
     virtual ~QAccessibleImageInterface() {}
 
-    virtual QString imageDescription() = 0;
-    virtual QSize imageSize() = 0;
-    virtual QRect imagePosition(QAccessible2::CoordinateType coordType) = 0;
+    virtual QString imageDescription() const = 0;
+    virtual QSize imageSize() const = 0;
+    virtual QRect imagePosition(QAccessible2::CoordinateType coordType) const = 0;
 };
 
 #endif // QT_NO_ACCESSIBILITY
