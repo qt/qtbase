@@ -369,6 +369,7 @@ private Q_SLOTS:
     void qtbug15311doubleContentLength();
 
     void qtbug18232gzipContentLengthZero();
+    void qtbug22660gzipNoContentLengthEmptyContent();
 
     void synchronousRequest_data();
     void synchronousRequest();
@@ -6360,6 +6361,28 @@ void tst_QNetworkReply::qtbug18232gzipContentLengthZero()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->size(), qint64(0));
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(0));
+    QCOMPARE(reply->readAll(), QByteArray());
+}
+
+// Reproduced a crash in QHttpNetworkReplyPrivate::gunzipBodyPartiallyEnd
+// where zlib inflateEnd was called for uninitialized zlib stream
+void tst_QNetworkReply::qtbug22660gzipNoContentLengthEmptyContent()
+{
+    // Response with no Content-Length in header and empty content
+    QByteArray response("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\n\r\n");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(0));
+    QVERIFY(!reply->header(QNetworkRequest::ContentLengthHeader).isValid());
     QCOMPARE(reply->readAll(), QByteArray());
 }
 
