@@ -10,7 +10,6 @@ nacl: SRC_SUBDIRS -= src_network src_testlib
 contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
-contains(QT_CONFIG, v8): SRC_SUBDIRS += src_v8
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins
@@ -19,8 +18,6 @@ src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_corelib.subdir = $$QT_SOURCE_TREE/src/corelib
 src_corelib.target = sub-corelib
-src_v8.subdir = $$QT_SOURCE_TREE/src/v8
-src_v8.target = sub-v8
 src_xml.subdir = $$QT_SOURCE_TREE/src/xml
 src_xml.target = sub-xml
 src_dbus.subdir = $$QT_SOURCE_TREE/src/dbus
@@ -65,7 +62,6 @@ src_platformsupport.target = sub-platformsupport
       src_declarative.depends += src_opengl
       src_webkit.depends += src_opengl
    }
-   contains(QT_CONFIG, v8snapshot):src_v8.depends += src_tools_mkv8snapshot
 }
 
 
