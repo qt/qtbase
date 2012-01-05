@@ -140,18 +140,18 @@ QAccessible::State QAccessibleButton::state() const
     QAbstractButton *b = button();
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
     if (b->isChecked())
-        state |= QAccessible::Checked;
+        state.checked = true;
     else if (cb && cb->checkState() == Qt::PartiallyChecked)
-        state |= QAccessible::Mixed;
+        state.mixed = true;
     if (b->isDown())
-        state |= QAccessible::Pressed;
+        state.pressed = true;
     QPushButton *pb = qobject_cast<QPushButton*>(b);
     if (pb) {
         if (pb->isDefault())
-            state |= QAccessible::DefaultButton;
+            state.defaultButton = true;
 #ifndef QT_NO_MENU
         if (pb->menu())
-            state |= QAccessible::HasPopup;
+            state.hasPopup = true;
 #endif
     }
 
@@ -171,7 +171,7 @@ QStringList QAccessibleButton::actionNames() const
             break;
         default:
             if (button()->isCheckable()) {
-                if (state() & QAccessible::Checked) {
+                if (state().checked) {
                     names <<  uncheckAction();
                 } else {
                     // FIXME
@@ -263,10 +263,10 @@ QAccessible::State QAccessibleToolButton::state() const
 {
     QAccessible::State st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
-        st |= QAccessible::HotTracked;
+        st.hotTracked = true;
 #ifndef QT_NO_MENU
     if (toolButton()->menu())
-        st |= QAccessible::HasPopup;
+        st.hasPopup = true;
 #endif
     return st;
 }
@@ -588,16 +588,16 @@ QAccessible::State QAccessibleLineEdit::state() const
 
     QLineEdit *l = lineEdit();
     if (l->isReadOnly())
-        state |= QAccessible::ReadOnly;
+        state.readOnly = true;
     if (l->echoMode() != QLineEdit::Normal)
-        state |= QAccessible::Protected;
-    state |= QAccessible::Selectable;
+        state.passwordEdit = true;
+    state.selectable = true;
     if (l->hasSelectedText())
-        state |= QAccessible::Selected;
+        state.selected = true;
 
     if (l->contextMenuPolicy() != Qt::NoContextMenu
         && l->contextMenuPolicy() != Qt::PreventContextMenu)
-        state |= QAccessible::HasPopup;
+        state.hasPopup = true;
 
     return state;
 }

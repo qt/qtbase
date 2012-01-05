@@ -304,7 +304,7 @@ QAccessible::Role QAccessibleApplication::role() const
 /*! \reimp */
 QAccessible::State QAccessibleApplication::state() const
 {
-    return QGuiApplication::activeWindow() ? QAccessible::Focused : QAccessible::Normal;
+    return QAccessible::State();
 }
 
 

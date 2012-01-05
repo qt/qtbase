@@ -282,28 +282,28 @@ void QAccessibleMenuItem::setText(QAccessible::Text /*t*/, const QString & /*tex
 
 QAccessible::State QAccessibleMenuItem::state() const
 {
-    QAccessible::State s = QAccessible::Normal;
+    QAccessible::State s;
     QWidget *own = owner();
 
     if (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
-        s |= QAccessible::Invisible;
+        s.invisible = true;
     }
 
     if (QMenu *menu = qobject_cast<QMenu*>(own)) {
         if (menu->activeAction() == m_action)
-            s |= QAccessible::Focused;
+            s.focused = true;
 #ifndef QT_NO_MENUBAR
     } else if (QMenuBar *menuBar = qobject_cast<QMenuBar*>(own)) {
         if (menuBar->activeAction() == m_action)
-            s |= QAccessible::Focused;
+            s.focused = true;
 #endif
     }
     if (own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
-        s |= QAccessible::HotTracked;
+        s.hotTracked = true;
     if (m_action->isSeparator() || !m_action->isEnabled())
-        s |= QAccessible::Unavailable;
+        s.unavailable = true;
     if (m_action->isChecked())
-        s |= QAccessible::Checked;
+        s.checked = true;
 
     return s;
 }

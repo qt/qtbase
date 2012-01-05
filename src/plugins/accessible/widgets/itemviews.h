@@ -264,7 +264,7 @@ public:
 
     QObject *object() const { return 0; }
     QAccessible::Role role() const { return QAccessible::Pane; }
-    QAccessible::State state() const { return QAccessible::Normal; }
+    QAccessible::State state() const { return QAccessible::State(); }
     QRect rect() const { return QRect(); }
     bool isValid() const { return true; }
 

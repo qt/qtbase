@@ -704,7 +704,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
                 QAccessibleInterface *sibling = 0;
                 sibling = pIface->child(i);
                 Q_ASSERT(sibling);
-                if ((accessible->relationTo(sibling) & QAccessible::Self) || (sibling->state() & QAccessible::Invisible)) {
+                if ((accessible->relationTo(sibling) & QAccessible::Self) || sibling->state().invisible) {
                     //ignore ourself and invisible siblings
                     delete sibling;
                     continue;
@@ -1058,8 +1058,62 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
         state = accessible->state();
     }
 
+    LONG st = 0;
+    if (state.animated)
+        st |= STATE_SYSTEM_ANIMATED;
+    if (state.busy)
+        st |= STATE_SYSTEM_BUSY;
+    if (state.checked)
+        st |= STATE_SYSTEM_CHECKED;
+    if (state.collapsed)
+        st |= STATE_SYSTEM_COLLAPSED;
+    if (state.defaultButton)
+        st |= STATE_SYSTEM_DEFAULT;
+    if (state.expanded)
+        st |= STATE_SYSTEM_EXPANDED;
+    if (state.extSelectable)
+        st |= STATE_SYSTEM_EXTSELECTABLE;
+    if (state.focusable)
+        st |= STATE_SYSTEM_FOCUSABLE;
+    if (state.focused)
+        st |= STATE_SYSTEM_FOCUSED;
+    if (state.hasPopup)
+        st |= STATE_SYSTEM_HASPOPUP;
+    if (state.hotTracked)
+        st |= STATE_SYSTEM_HOTTRACKED;
+    if (state.invisible)
+        st |= STATE_SYSTEM_INVISIBLE;
+    if (state.linked)
+        st |= STATE_SYSTEM_LINKED;
+    if (state.marqueed)
+        st |= STATE_SYSTEM_MARQUEED;
+    if (state.mixed)
+        st |= STATE_SYSTEM_MIXED;
+    if (state.movable)
+        st |= STATE_SYSTEM_MOVEABLE;
+    if (state.multiSelectable)
+        st |= STATE_SYSTEM_MULTISELECTABLE;
+    if (state.offscreen)
+        st |= STATE_SYSTEM_OFFSCREEN;
+    if (state.pressed)
+        st |= STATE_SYSTEM_PRESSED;
+    if (state.passwordEdit)
+        st |= STATE_SYSTEM_PROTECTED;
+    if (state.readOnly)
+        st |= STATE_SYSTEM_READONLY;
+    if (state.selectable)
+        st |= STATE_SYSTEM_SELECTABLE;
+    if (state.selected)
+        st |= STATE_SYSTEM_SELECTED;
+    if (state.selfVoicing)
+        st |= STATE_SYSTEM_SELFVOICING;
+    if (state.sizeable)
+        st |= STATE_SYSTEM_SIZEABLE;
+    if (state.traversed)
+        st |= STATE_SYSTEM_TRAVERSED;
+
     (*pvarState).vt = VT_I4;
-    (*pvarState).lVal = state;
+    (*pvarState).lVal = st;
     return S_OK;
 }
 
@@ -1169,7 +1223,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
         bool isSelected = false;
         QAccessibleInterface *child = accessible->child(i);
         if (child) {
-            isSelected = child->state() & QAccessible::Selected;
+            isSelected = child->state().selected;
             delete child;
         }
         if (isSelected)

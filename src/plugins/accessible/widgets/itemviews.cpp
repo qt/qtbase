@@ -363,7 +363,7 @@ QAccessible::Role QAccessibleTable::role() const
 
 QAccessible::State QAccessibleTable::state() const
 {
-    return QAccessible::Normal;
+    return QAccessible::State();
 }
 
 QAccessibleInterface *QAccessibleTable::childAt(int x, int y) const
@@ -701,34 +701,34 @@ QAccessible::Role QAccessibleTableCell::role() const
 
 QAccessible::State QAccessibleTableCell::state() const
 {
-    QAccessible::State st = QAccessible::Normal;
+    QAccessible::State st;
     QRect globalRect = view->rect();
     globalRect.translate(view->mapToGlobal(QPoint(0,0)));
     if (!globalRect.intersects(rect()))
-        st |= QAccessible::Invisible;
+        st.invisible = true;
 
     if (view->selectionModel()->isSelected(m_index))
-        st |= QAccessible::Selected;
+        st.selected = true;
     if (view->selectionModel()->currentIndex() == m_index)
-        st |= QAccessible::Focused;
+        st.focused = true;
     if (m_index.model()->data(m_index, Qt::CheckStateRole).toInt() == Qt::Checked)
-        st |= QAccessible::Checked;
+        st.checked = true;
 
     Qt::ItemFlags flags = m_index.flags();
     if (flags & Qt::ItemIsSelectable) {
-        st |= QAccessible::Selectable;
-        st |= QAccessible::Focusable;
+        st.selectable = true;
+        st.focusable = true;
         if (view->selectionMode() == QAbstractItemView::MultiSelection)
-            st |= QAccessible::MultiSelectable;
+            st.multiSelectable = true;
         if (view->selectionMode() == QAbstractItemView::ExtendedSelection)
-            st |= QAccessible::ExtSelectable;
+            st.extSelectable = true;
     }
     if (m_role == QAccessible::TreeItem) {
         const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
         if (treeView->model()->hasChildren(m_index))
-            st |= QAccessible::Expandable;
+            st.expandable = true;
         if (treeView->isExpanded(m_index))
-            st |= QAccessible::Expanded;
+            st.expanded = true;
     }
     return st;
 }
@@ -840,7 +840,7 @@ QAccessible::Role QAccessibleTableHeaderCell::role() const
 
 QAccessible::State QAccessibleTableHeaderCell::state() const
 {
-    return QAccessible::Normal;
+    return QAccessible::State();
 }
 
 QRect QAccessibleTableHeaderCell::rect() const

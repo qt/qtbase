@@ -845,18 +845,21 @@ void QAccessibleMdiSubWindow::setText(QAccessible::Text textType, const QString 
 
 QAccessible::State QAccessibleMdiSubWindow::state() const
 {
-    QAccessible::State state = QAccessible::Normal | QAccessible::Focusable;
-    if (!mdiSubWindow()->isMaximized())
-        state |= (QAccessible::Movable | QAccessible::Sizeable);
+    QAccessible::State state;
+    state.focusable = true;
+    if (!mdiSubWindow()->isMaximized()) {
+        state.movable = true;
+        state.sizeable = true;
+    }
     if (mdiSubWindow()->isAncestorOf(QApplication::focusWidget())
             || QApplication::focusWidget() == mdiSubWindow())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!mdiSubWindow()->isVisible())
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (!mdiSubWindow()->parentWidget()->contentsRect().contains(mdiSubWindow()->geometry()))
-        state |= QAccessible::Offscreen;
+        state.offscreen = true;
     if (!mdiSubWindow()->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.unavailable = true;
     return state;
 }
 
@@ -1256,17 +1259,17 @@ QString QAccessibleTitleBar::text(QAccessible::Text t) const
 
 QAccessible::State QAccessibleTitleBar::state() const
 {
-    QAccessible::State state = QAccessible::Normal;
+    QAccessible::State state;
 
     QDockWidget *w = dockWidget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state |= QAccessible::Focusable;
+        state.focusable = true;
     if (w->hasFocus())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!w->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.unavailable = true;
 
     return state;
 }

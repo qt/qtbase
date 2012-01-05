@@ -148,46 +148,47 @@ public:
         AcceleratorChanged   = 0x80C0
     };
 
+    // 64 bit enums seem hard on some platforms (windows...)
+    // which makes using a bit field a sensible alternative
+    struct State {
+        quint64 unavailable : 1;
+        quint64 selected : 1;
+        quint64 focused : 1;
+        quint64 pressed : 1;
+        quint64 checked : 1;
+        quint64 mixed : 1;
+        quint64 readOnly : 1;
+        quint64 hotTracked : 1;
+        quint64 defaultButton : 1;
+        quint64 expanded : 1;
+        quint64 collapsed : 1;
+        quint64 busy : 1;
+        //       quint64 Floating : 1;
+        quint64 expandable : 1;
+        quint64 marqueed : 1;
+        quint64 animated : 1;
+        quint64 invisible : 1;
+        quint64 offscreen : 1;
+        quint64 sizeable : 1;
+        quint64 movable : 1;
+        quint64 selfVoicing : 1;
+        quint64 focusable : 1;
+        quint64 selectable : 1;
+        quint64 linked : 1;
+        quint64 traversed : 1;
+        quint64 multiSelectable : 1;
+        quint64 extSelectable : 1;
+        //       quint64 alertLow : 1;
+        //       quint64 alertMedium : 1;
+        //       quint64 alertHigh : 1;
+        quint64 passwordEdit : 1;
+        quint64 hasPopup : 1;
+        quint64 modal : 1;
 
-    enum StateFlag {
-        Normal          = 0x00000000,
-        Unavailable     = 0x00000001,
-        Selected        = 0x00000002,
-        Focused         = 0x00000004,
-        Pressed         = 0x00000008,
-        Checked         = 0x00000010,
-        Mixed           = 0x00000020,
-        ReadOnly        = 0x00000040,
-        HotTracked      = 0x00000080,
-        DefaultButton   = 0x00000100,
-        Expanded        = 0x00000200,
-        Collapsed       = 0x00000400,
-        Busy            = 0x00000800,
-        // Floating        = 0x00001000,
-        Expandable      = 0x00001000,
-        Marqueed        = 0x00002000,
-        Animated        = 0x00004000,
-        Invisible       = 0x00008000,
-        Offscreen       = 0x00010000,
-        Sizeable        = 0x00020000,
-        Movable         = 0x00040000,
-        SelfVoicing     = 0x00080000,
-        Focusable       = 0x00100000,
-        Selectable      = 0x00200000,
-        Linked          = 0x00400000,
-        Traversed       = 0x00800000,
-        MultiSelectable = 0x01000000,
-        ExtSelectable   = 0x02000000,
-        //AlertLow        = 0x04000000,
-        //AlertMedium     = 0x08000000,
-        //AlertHigh       = 0x10000000, /* reused for HasInvokeExtension */
-        Protected       = 0x20000000,
-        HasPopup        = 0x40000000,
-        Modal           = 0x80000000
-
+        State() {
+            qMemSet(this, 0, sizeof(State));
+        }
     };
-    Q_DECLARE_FLAGS(State, StateFlag)
-
 
     enum Role {
         NoRole         = 0x00000000,
@@ -334,7 +335,8 @@ private:
     QAccessible() {}
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::State)
+Q_GUI_EXPORT bool operator==(const QAccessible::State &first, const QAccessible::State &second);
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSet<QAccessible::Method>)
@@ -377,7 +379,6 @@ public:
     virtual QRect rect() const = 0;
     virtual QAccessible::Role role() const = 0;
     virtual QAccessible::State state() const = 0;
-    // FIXME virtual QSet<QAccessible::State> states() const = 0;
 
     virtual QColor foregroundColor() const;
     virtual QColor backgroundColor() const;

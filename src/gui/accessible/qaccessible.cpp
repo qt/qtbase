@@ -1197,6 +1197,11 @@ const char *qAccessibleEventString(QAccessible::Event event)
     return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
 }
 
+bool operator==(const QAccessible::State &first, const QAccessible::State &second)
+{
+    return memcmp(&first, &second, sizeof(QAccessible::State)) == 0;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
 {
@@ -1214,8 +1219,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
         if (iface->object()) {
             d << "obj=" << iface->object();
         }
-        bool invisible = iface->state() & QAccessible::Invisible;
-        if (invisible) {
+        if (iface->state().invisible) {
             d << "invisible";
         } else {
             d << "rect=" << iface->rect();

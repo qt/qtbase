@@ -373,7 +373,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
         if (wg.intersects(sg)) {
             QAccessibleInterface *pIface = 0;
             pIface = sibIface->parent();
-            if (pIface && !((sibIface->state() | state()) & QAccessible::Invisible)) {
+            if (pIface && !(sibIface->state().invisible | state().invisible)) {
                 int wi = pIface->indexOfChild(this);
                 int si = pIface->indexOfChild(sibIface);
 
@@ -430,7 +430,7 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
             QAccessibleInterface *sibling = 0;
             for (int i = pIface->indexOfChild(this) + 1; i <= sibCount && entry; ++i) {
                 sibling = pIface->child(i - 1);
-                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
+                if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -460,7 +460,7 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
             for (int i = 1; i < index && entry; ++i) {
                 sibling = pIface->child(i - 1);
                 Q_ASSERT(sibling);
-                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
+                if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -690,22 +690,22 @@ QAccessible::Role QAccessibleWidget::role() const
 /*! \reimp */
 QAccessible::State QAccessibleWidget::state() const
 {
-    QAccessible::State state = QAccessible::Normal;
+    QAccessible::State state;
 
     QWidget *w = widget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state |= QAccessible::Focusable;
+        state.focusable = true;
     if (w->hasFocus())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!w->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.unavailable = true;
     if (w->isWindow()) {
         if (w->windowFlags() & Qt::WindowSystemMenuHint)
-            state |= QAccessible::Movable;
+            state.movable = true;
         if (w->minimumSize() != w->maximumSize())
-            state |= QAccessible::Sizeable;
+            state.sizeable = true;
     }
 
     return state;
