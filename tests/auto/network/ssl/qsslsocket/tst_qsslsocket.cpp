@@ -396,7 +396,7 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.peerPort(), quint16(0));
     QCOMPARE(socket.proxy().type(), QNetworkProxy::DefaultProxy);
     QCOMPARE(socket.readBufferSize(), qint64(0));
-    QCOMPARE(socket.socketDescriptor(), -1);
+    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.socketType(), QAbstractSocket::TcpSocket);
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");

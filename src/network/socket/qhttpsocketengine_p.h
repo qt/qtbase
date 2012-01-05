@@ -80,11 +80,11 @@ public:
     ~QHttpSocketEngine();
 
     bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
-    bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
+    bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
 
     void setProxy(const QNetworkProxy &networkProxy);
 
-    int socketDescriptor() const;
+    qintptr socketDescriptor() const;
 
     bool isValid() const;
 
@@ -191,7 +191,7 @@ class Q_AUTOTEST_EXPORT QHttpSocketEngineHandler : public QSocketEngineHandler
 public:
     virtual QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType,
                                                       const QNetworkProxy &, QObject *parent);
-    virtual QAbstractSocketEngine *createSocketEngine(int socketDescripter, QObject *parent);
+    virtual QAbstractSocketEngine *createSocketEngine(qintptr socketDescripter, QObject *parent);
 };
 #endif
 

@@ -455,7 +455,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
 
     \sa socketDescriptor()
 */
-bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, OpenMode openMode)
+bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state, OpenMode openMode)
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG

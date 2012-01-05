@@ -900,6 +900,7 @@ template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qin
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSizeof<void*>::Unsigned quintptr;
 typedef QIntegerForSizeof<void*>::Signed qptrdiff;
+typedef qptrdiff qintptr;
 
 /*
    Useful type definitions for Qt

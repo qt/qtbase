@@ -1723,7 +1723,7 @@ bool QAbstractSocket::canReadLine() const
 
     \sa setSocketDescriptor()
 */
-int QAbstractSocket::socketDescriptor() const
+qintptr QAbstractSocket::socketDescriptor() const
 {
     Q_D(const QAbstractSocket);
     return d->cachedSocketDescriptor;
@@ -1741,7 +1741,7 @@ int QAbstractSocket::socketDescriptor() const
 
     \sa socketDescriptor()
 */
-bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState socketState,
+bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState socketState,
                                           OpenMode openMode)
 {
     Q_D(QAbstractSocket);

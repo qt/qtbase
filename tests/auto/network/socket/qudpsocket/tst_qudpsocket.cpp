@@ -195,7 +195,7 @@ void tst_QUdpSocket::constructing()
     QCOMPARE((int) socket.bytesAvailable(), 0);
     QCOMPARE(socket.canReadLine(), false);
     QCOMPARE(socket.readLine(), QByteArray());
-    QCOMPARE(socket.socketDescriptor(), -1);
+    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.error(), QUdpSocket::UnknownSocketError);
     QCOMPARE(socket.errorString(), QString("Unknown error"));
 

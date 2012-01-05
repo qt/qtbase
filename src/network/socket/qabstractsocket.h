@@ -156,8 +156,8 @@ public:
     void abort();
 
     // ### Qt 5: Make socketDescriptor() and setSocketDescriptor() virtual.
-    int socketDescriptor() const;
-    bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
+    qintptr socketDescriptor() const;
+    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
     // ### Qt 5: Make virtual?

@@ -103,7 +103,7 @@ bool QHttpSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstractSo
     return true;
 }
 
-bool QHttpSocketEngine::initialize(int, QAbstractSocket::SocketState)
+bool QHttpSocketEngine::initialize(qintptr, QAbstractSocket::SocketState)
 {
     return false;
 }
@@ -120,7 +120,7 @@ void QHttpSocketEngine::setProxy(const QNetworkProxy &proxy)
         d->authenticator.setPassword(password);
 }
 
-int QHttpSocketEngine::socketDescriptor() const
+qintptr QHttpSocketEngine::socketDescriptor() const
 {
     Q_D(const QHttpSocketEngine);
     return d->socket ? d->socket->socketDescriptor() : 0;
@@ -838,7 +838,7 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
     return engine;
 }
 
-QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(int, QObject *)
+QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(qintptr, QObject *)
 {
     return 0;
 }

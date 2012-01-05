@@ -118,7 +118,7 @@ public:
     QString peerName;
 
     QAbstractSocketEngine *socketEngine;
-    int cachedSocketDescriptor;
+    qintptr cachedSocketDescriptor;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy;

@@ -76,8 +76,8 @@ public:
     quint16 serverPort() const;
     QHostAddress serverAddress() const;
 
-    int socketDescriptor() const;
-    bool setSocketDescriptor(int socketDescriptor);
+    qintptr socketDescriptor() const;
+    bool setSocketDescriptor(qintptr socketDescriptor);
 
     bool waitForNewConnection(int msec = 0, bool *timedOut = 0);
     virtual bool hasPendingConnections() const;
@@ -92,7 +92,7 @@ public:
 #endif
 
 protected:
-    virtual void incomingConnection(int handle);
+    virtual void incomingConnection(qintptr handle);
     void addPendingConnection(QTcpSocket* socket);
 
 Q_SIGNALS:

@@ -118,7 +118,7 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
     return new QNativeSocketEngine(parent);
 }
 
-QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(int socketDescripter, QObject *parent)
+QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(qintptr socketDescripter, QObject *parent)
 {
     QMutexLocker locker(&socketHandlers()->mutex);
     for (int i = 0; i < socketHandlers()->size(); i++) {

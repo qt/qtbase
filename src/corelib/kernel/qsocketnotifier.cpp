@@ -168,7 +168,7 @@ QT_BEGIN_NAMESPACE
     \sa setEnabled(), isEnabled()
 */
 
-QSocketNotifier::QSocketNotifier(int socket, Type type, QObject *parent)
+QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     : QObject(parent)
 {
     if (socket < 0)

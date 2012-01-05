@@ -378,7 +378,7 @@ void QTcpServer::close()
 
     \sa setSocketDescriptor(), isListening()
 */
-int QTcpServer::socketDescriptor() const
+qintptr QTcpServer::socketDescriptor() const
 {
     Q_D(const QTcpServer);
     Q_CHECK_SOCKETENGINE(-1);
@@ -394,7 +394,7 @@ int QTcpServer::socketDescriptor() const
 
     \sa socketDescriptor(), isListening()
 */
-bool QTcpServer::setSocketDescriptor(int socketDescriptor)
+bool QTcpServer::setSocketDescriptor(qintptr socketDescriptor)
 {
     Q_D(QTcpServer);
     if (isListening()) {
@@ -566,7 +566,7 @@ QTcpSocket *QTcpServer::nextPendingConnection()
 
     \sa newConnection(), nextPendingConnection(), addPendingConnection()
 */
-void QTcpServer::incomingConnection(int socketDescriptor)
+void QTcpServer::incomingConnection(qintptr socketDescriptor)
 {
 #if defined (QTCPSERVER_DEBUG)
     qDebug("QTcpServer::incomingConnection(%i)", socketDescriptor);

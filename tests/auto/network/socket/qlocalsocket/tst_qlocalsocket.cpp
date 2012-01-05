@@ -264,7 +264,7 @@ void tst_QLocalSocket::socket_basic()
     QCOMPARE(socket.isValid(), false);
     QVERIFY(socket.readBufferSize() == 0);
     socket.setReadBufferSize(0);
-    //QCOMPARE(socket.socketDescriptor(), -1);
+    //QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
     QCOMPARE(socket.waitForConnected(0), false);
     QCOMPARE(socket.waitForDisconnected(0), false);
@@ -632,7 +632,7 @@ void tst_QLocalSocket::hitMaximumConnections()
 void tst_QLocalSocket::setSocketDescriptor()
 {
     LocalSocket socket;
-    quintptr minusOne = -1;
+    qintptr minusOne = -1;
     socket.setSocketDescriptor(minusOne, QLocalSocket::ConnectingState, QIODevice::Append);
     QCOMPARE(socket.socketDescriptor(), minusOne);
     QCOMPARE(socket.state(), QLocalSocket::ConnectingState);
