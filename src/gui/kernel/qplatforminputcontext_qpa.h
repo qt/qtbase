@@ -77,6 +77,11 @@ public:
     virtual void hideInputPanel();
     virtual bool isInputPanelVisible() const;
     void emitInputPanelVisibleChanged();
+
+    virtual QLocale locale() const;
+    void emitLocaleChanged();
+    virtual Qt::LayoutDirection inputDirection() const;
+    void emitInputDirectionChanged(Qt::LayoutDirection newDirection);
 };
 
 QT_END_NAMESPACE
