@@ -68,7 +68,6 @@
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
-#include "private/qkeymapper_p.h"
 #include "private/qcursor_p.h"
 #include "private/qdnd_p.h"
 #include <private/qplatformthemefactory_qpa_p.h>
@@ -1463,26 +1462,24 @@ uint QGuiApplicationPrivate::currentKeyPlatform()
 
 /*!
     \since 4.2
+    \obsolete
 
-    Returns the current keyboard input locale.
+    Returns the current keyboard input locale. Replaced with QInputPanel::locale()
 */
 QLocale QGuiApplication::keyboardInputLocale()
 {
-    if (!QGuiApplicationPrivate::checkInstance("keyboardInputLocale"))
-        return QLocale::c();
-    return qt_keymapper_private()->keyboardInputLocale;
+    return qApp ? qApp->inputPanel()->locale() : QLocale::c();
 }
 
 /*!
     \since 4.2
+    \obsolete
 
-    Returns the current keyboard input direction.
+    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
 */
 Qt::LayoutDirection QGuiApplication::keyboardInputDirection()
 {
-    if (!QGuiApplicationPrivate::checkInstance("keyboardInputDirection"))
-        return Qt::LeftToRight;
-    return qt_keymapper_private()->keyboardInputDirection;
+    return qApp ? qApp->inputPanel()->inputDirection() : Qt::LeftToRight;
 }
 
 /*!

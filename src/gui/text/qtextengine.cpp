@@ -54,6 +54,7 @@
 #include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
 #include <qguiapplication.h>
+#include <qinputpanel.h>
 #include <stdlib.h>
 
 
@@ -1408,7 +1409,7 @@ bool QTextEngine::isRightToLeft() const
         itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
-        return QGuiApplication::keyboardInputDirection() == Qt::RightToLeft;
+        return qApp ? qApp->inputPanel()->inputDirection() == Qt::RightToLeft : false;
     return layoutData->string.isRightToLeft();
 }
 

@@ -41,6 +41,7 @@
 
 #include <qinputpanel.h>
 #include <private/qinputpanel_p.h>
+#include "private/qkeymapper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -245,6 +246,24 @@ bool QInputPanel::isAnimating() const
     if (ic)
         return ic->isAnimating();
     return false;
+}
+
+/*!
+    \property QInputPanel::locale
+    \brief Current input locale.
+*/
+QLocale QInputPanel::locale() const
+{
+    return qt_keymapper_private()->keyboardInputLocale;
+}
+
+/*!
+    \property QInputPanel::inputDirection
+    \brief Current input direction.
+*/
+Qt::LayoutDirection QInputPanel::inputDirection() const
+{
+    return qt_keymapper_private()->keyboardInputDirection;
 }
 
 /*!

@@ -277,7 +277,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return QGuiApplication::keyboardInputDirection();
+                return qApp->inputPanel()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;

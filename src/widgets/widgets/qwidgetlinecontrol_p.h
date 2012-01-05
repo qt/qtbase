@@ -62,6 +62,7 @@
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
 #include "QtGui/qclipboard.h"
+#include "QtGui/qinputpanel.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qthread.h"
@@ -318,7 +319,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return QApplication::keyboardInputDirection();
+                return qApp->inputPanel()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;

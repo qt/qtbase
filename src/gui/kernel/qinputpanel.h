@@ -64,6 +64,8 @@ class Q_GUI_EXPORT QInputPanel : public QObject
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
+    Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
+    Q_PROPERTY(Qt::LayoutDirection inputDirection READ inputDirection NOTIFY inputDirectionChanged)
 
     Q_ENUMS(Action)
 public:
@@ -92,6 +94,9 @@ public:
 
     bool isAnimating() const;
 
+    QLocale locale() const;
+    Qt::LayoutDirection inputDirection() const;
+
 public Q_SLOTS:
     void show();
     void hide();
@@ -108,6 +113,8 @@ Q_SIGNALS:
     void keyboardRectangleChanged();
     void visibleChanged();
     void animatingChanged();
+    void localeChanged();
+    void inputDirectionChanged(Qt::LayoutDirection newDirection);
 
 private:
     friend class QGuiApplication;
