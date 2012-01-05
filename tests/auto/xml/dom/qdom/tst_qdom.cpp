@@ -126,6 +126,7 @@ private slots:
     void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
     void cloneDTD_QTBUG8398() const;
     void DTDNotationDecl();
+    void DTDEntityDecl();
 
     void cleanupTestCase() const;
 
@@ -1945,6 +1946,30 @@ void tst_QDom::DTDNotationDecl()
 
     QVERIFY(doctype.namedItem(QString("jpeg")).isNotation());
     QCOMPARE(doctype.namedItem(QString("jpeg")).toNotation().systemId(), QString("image/jpeg"));
+}
+
+void tst_QDom::DTDEntityDecl()
+{
+    QString dtd("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!ENTITY secondFile SYSTEM 'second.xml'>\n"
+                   "<!ENTITY logo SYSTEM \"http://www.w3c.org/logo.gif\" NDATA gif>"
+                   "]>\n"
+                   "<first/>\n");
+
+    QDomDocument domDocument;
+    QVERIFY(domDocument.setContent(dtd));
+
+    const QDomDocumentType doctype = domDocument.doctype();
+    QCOMPARE(doctype.entities().count(), 2);
+
+    QVERIFY(doctype.namedItem(QString("secondFile")).isEntity());
+    QCOMPARE(doctype.namedItem(QString("secondFile")).toEntity().systemId(), QString("second.xml"));
+    QCOMPARE(doctype.namedItem(QString("secondFile")).toEntity().notationName(), QString());
+
+    QVERIFY(doctype.namedItem(QString("logo")).isEntity());
+    QCOMPARE(doctype.namedItem(QString("logo")).toEntity().systemId(), QString("http://www.w3c.org/logo.gif"));
+    QCOMPARE(doctype.namedItem(QString("logo")).toEntity().notationName(), QString("gif"));
 }
 
 QTEST_MAIN(tst_QDom)

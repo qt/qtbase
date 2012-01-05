@@ -7541,6 +7541,8 @@ bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicI
 {
     QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, name,
             publicId, systemId, notationName);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    e->ref.deref();
     doc->doctype()->appendChild(e);
     return true;
 }
