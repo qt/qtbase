@@ -147,6 +147,18 @@ bool QTimerInfoList::timeChanged(timeval *delta)
     return elapsedTimeTicks < ((qAbs(*delta) - tickGranularity) * 10);
 }
 
+/*
+  repair broken timer
+*/
+void QTimerInfoList::timerRepair(const timeval &diff)
+{
+    // repair all timers
+    for (int i = 0; i < size(); ++i) {
+        register QTimerInfo *t = at(i);
+        t->timeout = t->timeout + diff;
+    }
+}
+
 void QTimerInfoList::repairTimersIfNeeded()
 {
     if (QElapsedTimer::isMonotonic())
@@ -176,18 +188,6 @@ void QTimerInfoList::timerInsert(QTimerInfo *ti)
             break;
     }
     insert(index+1, ti);
-}
-
-/*
-  repair broken timer
-*/
-void QTimerInfoList::timerRepair(const timeval &diff)
-{
-    // repair all timers
-    for (int i = 0; i < size(); ++i) {
-        register QTimerInfo *t = at(i);
-        t->timeout = t->timeout + diff;
-    }
 }
 
 inline timeval &operator+=(timeval &t1, int ms)

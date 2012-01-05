@@ -86,6 +86,7 @@ class QTimerInfoList : public QList<QTimerInfo*>
     int msPerTick;
 
     bool timeChanged(timeval *delta);
+    void timerRepair(const timeval &);
 #endif
 
     // state variables used by activateTimers()
@@ -102,7 +103,6 @@ public:
 
     bool timerWait(timeval &);
     void timerInsert(QTimerInfo *);
-    void timerRepair(const timeval &);
 
     void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
