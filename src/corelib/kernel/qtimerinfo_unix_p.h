@@ -77,7 +77,7 @@ struct QTimerInfo {
 #endif
 };
 
-class QTimerInfoList : public QList<QTimerInfo*>
+class Q_CORE_EXPORT QTimerInfoList : public QList<QTimerInfo*>
 {
 #if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
     timeval previousTime;
