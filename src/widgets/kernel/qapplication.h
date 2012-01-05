@@ -242,7 +242,6 @@ public:
 #endif
 
 Q_SIGNALS:
-    void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
 #ifndef QT_NO_SESSIONMANAGER
     void commitDataRequest(QSessionManager &sessionManager);
