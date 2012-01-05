@@ -66,12 +66,12 @@ struct QTimerInfo {
     int id;           // - timer identifier
     int interval;     // - timer interval in milliseconds
     Qt::TimerType timerType; // - timer type
-    timeval expected; // when timer is expected to fire
     timeval timeout;  // - when to actually fire
     QObject *obj;     // - object to receive event
     QTimerInfo **activateRef; // - ref from activateTimers
 
 #ifdef QTIMERINFO_DEBUG
+    timeval expected; // when timer is expected to fire
     float cumulativeError;
     uint count;
 #endif

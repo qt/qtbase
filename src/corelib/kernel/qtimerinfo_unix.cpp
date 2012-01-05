@@ -342,17 +342,18 @@ static void calculateNextTimeout(QTimerInfo *t, timeval currentTime)
     switch (t->timerType) {
     case Qt::PreciseTimer:
     case Qt::CoarseTimer:
-        t->expected += t->interval;
-        if (t->expected < currentTime) {
-            t->expected = currentTime;
-            t->expected += t->interval;
-        }
-
         t->timeout += t->interval;
         if (t->timeout < currentTime) {
             t->timeout = currentTime;
             t->timeout += t->interval;
         }
+#ifdef QTIMERINFO_DEBUG
+        t->expected += t->interval;
+        if (t->expected < currentTime) {
+            t->expected = currentTime;
+            t->expected += t->interval;
+        }
+#endif
         if (t->timerType == Qt::CoarseTimer)
             calculateCoarseTimerTimeout(t, currentTime);
         return;
@@ -362,7 +363,11 @@ static void calculateNextTimeout(QTimerInfo *t, timeval currentTime)
         t->timeout.tv_sec += t->interval;
         if (t->timeout.tv_sec <= currentTime.tv_sec)
             t->timeout.tv_sec = currentTime.tv_sec + t->interval;
+#ifdef QTIMERINFO_DEBUG
         t->expected.tv_sec += t->interval;
+        if (t->expected.tv_sec <= currentTime.tv_sec)
+            t->expected.tv_sec = currentTime.tv_sec + t->interval;
+#endif
         return;
     }
 
@@ -413,15 +418,16 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
     t->id = timerId;
     t->interval = interval;
     t->timerType = timerType;
-    t->expected = updateCurrentTime() + interval;
     t->obj = object;
     t->activateRef = 0;
+
+    timeval expected = updateCurrentTime() + interval;
 
     switch (timerType) {
     case Qt::PreciseTimer:
         // high precision timer is based on millisecond precision
         // so no adjustment is necessary
-        t->timeout = t->expected;
+        t->timeout = expected;
         break;
 
     case Qt::CoarseTimer:
@@ -433,7 +439,7 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
             t->timerType = Qt::VeryCoarseTimer;
             // fall through
         } else {
-            t->timeout = t->expected;
+            t->timeout = expected;
             if (interval <= 20) {
                 t->timerType = Qt::PreciseTimer;
                 // no adjustment is necessary
@@ -460,6 +466,7 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
     timerInsert(t);
 
 #ifdef QTIMERINFO_DEBUG
+    t->expected = expected;
     t->cumulativeError = 0;
     t->count = 0;
     if (t->timerType != Qt::PreciseTimer)
