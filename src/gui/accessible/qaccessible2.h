@@ -97,23 +97,23 @@ public:
     virtual ~QAccessibleTextInterface() {}
 
     virtual void addSelection(int startOffset, int endOffset) = 0;
-    virtual QString attributes(int offset, int *startOffset, int *endOffset) = 0;
-    virtual int cursorPosition() = 0;
-    virtual QRect characterRect(int offset, QAccessible2::CoordinateType coordType) = 0;
-    virtual int selectionCount() = 0;
-    virtual int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) = 0;
-    virtual void selection(int selectionIndex, int *startOffset, int *endOffset) = 0;
-    virtual QString text(int startOffset, int endOffset) = 0;
+    virtual QString attributes(int offset, int *startOffset, int *endOffset) const = 0;
+    virtual int cursorPosition() const = 0;
+    virtual QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const = 0;
+    virtual int selectionCount() const = 0;
+    virtual int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const = 0;
+    virtual void selection(int selectionIndex, int *startOffset, int *endOffset) const = 0;
+    virtual QString text(int startOffset, int endOffset) const = 0;
     virtual QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-                              int *startOffset, int *endOffset) = 0;
+                              int *startOffset, int *endOffset) const = 0;
     virtual QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                            int *startOffset, int *endOffset) = 0;
+                            int *startOffset, int *endOffset) const = 0;
     virtual QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                         int *startOffset, int *endOffset) = 0;
+                         int *startOffset, int *endOffset) const = 0;
     virtual void removeSelection(int selectionIndex) = 0;
     virtual void setCursorPosition(int position) = 0;
     virtual void setSelection(int selectionIndex, int startOffset, int endOffset) = 0;
-    virtual int characterCount() = 0;
+    virtual int characterCount() const = 0;
     virtual void scrollToSubstring(int startIndex, int endIndex) = 0;
 };
 
@@ -122,7 +122,7 @@ class Q_GUI_EXPORT QAccessibleEditableTextInterface
 public:
     virtual ~QAccessibleEditableTextInterface() {}
 
-    virtual void copyText(int startOffset, int endOffset) = 0;
+    virtual void copyText(int startOffset, int endOffset) const = 0;
     virtual void deleteText(int startOffset, int endOffset) = 0;
     virtual void insertText(int offset, const QString &text) = 0;
     virtual void cutText(int startOffset, int endOffset) = 0;
@@ -136,7 +136,7 @@ class Q_GUI_EXPORT QAccessibleSimpleEditableTextInterface: public QAccessibleEdi
 public:
     QAccessibleSimpleEditableTextInterface(QAccessibleInterface *accessibleInterface);  //###
 
-    void copyText(int startOffset, int endOffset);
+    void copyText(int startOffset, int endOffset) const;
     void deleteText(int startOffset, int endOffset);
     void insertText(int offset, const QString &text);
     void cutText(int startOffset, int endOffset);
@@ -154,10 +154,10 @@ public:
 
     virtual ~QAccessibleValueInterface() {}
 
-    virtual QVariant currentValue() = 0;
+    virtual QVariant currentValue() const = 0;
     virtual void setCurrentValue(const QVariant &value) = 0;
-    virtual QVariant maximumValue() = 0;
-    virtual QVariant minimumValue() = 0;
+    virtual QVariant maximumValue() const = 0;
+    virtual QVariant minimumValue() const = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleTableCellInterface

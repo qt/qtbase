@@ -128,23 +128,23 @@ public:
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
-    QString attributes(int offset, int *startOffset, int *endOffset);
-    int cursorPosition();
-    QRect characterRect(int offset, QAccessible2::CoordinateType coordType);
-    int selectionCount();
-    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType);
-    void selection(int selectionIndex, int *startOffset, int *endOffset);
-    QString text(int startOffset, int endOffset);
+    QString attributes(int offset, int *startOffset, int *endOffset) const;
+    int cursorPosition() const;
+    QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const;
+    int selectionCount() const;
+    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    QString text(int startOffset, int endOffset) const;
     QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     void removeSelection(int selectionIndex);
     void setCursorPosition(int position);
     void setSelection(int selectionIndex, int startOffset, int endOffset);
-    int characterCount();
+    int characterCount() const;
     void scrollToSubstring(int startIndex, int endIndex);
 
 protected:
@@ -160,9 +160,9 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant currentValue() const;
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
     inline void setCurrentValue(const QVariant &) {}
 
 protected:

@@ -615,30 +615,30 @@ void QAccessibleLineEdit::addSelection(int startOffset, int endOffset)
     setSelection(0, startOffset, endOffset);
 }
 
-QString QAccessibleLineEdit::attributes(int offset, int *startOffset, int *endOffset)
+QString QAccessibleLineEdit::attributes(int offset, int *startOffset, int *endOffset) const
 {
     // QLineEdit doesn't have text attributes
     *startOffset = *endOffset = offset;
     return QString();
 }
 
-int QAccessibleLineEdit::cursorPosition()
+int QAccessibleLineEdit::cursorPosition() const
 {
     return lineEdit()->cursorPosition();
 }
 
-QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/)
+QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/) const
 {
     // QLineEdit doesn't hand out character rects
     return QRect();
 }
 
-int QAccessibleLineEdit::selectionCount()
+int QAccessibleLineEdit::selectionCount() const
 {
     return lineEdit()->hasSelectedText() ? 1 : 0;
 }
 
-int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType)
+int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
 {
     QPoint p = point;
     if (coordType == RelativeToScreen)
@@ -647,7 +647,7 @@ int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coord
     return lineEdit()->cursorPositionAt(p);
 }
 
-void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *endOffset)
+void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
     *startOffset = *endOffset = 0;
     if (selectionIndex != 0)
@@ -657,7 +657,7 @@ void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *e
     *endOffset = *startOffset + lineEdit()->selectedText().count();
 }
 
-QString QAccessibleLineEdit::text(int startOffset, int endOffset)
+QString QAccessibleLineEdit::text(int startOffset, int endOffset) const
 {
     if (startOffset > endOffset)
         return QString();
@@ -669,7 +669,7 @@ QString QAccessibleLineEdit::text(int startOffset, int endOffset)
 }
 
 QString QAccessibleLineEdit::textBeforeOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -679,7 +679,7 @@ QString QAccessibleLineEdit::textBeforeOffset(int offset, BoundaryType boundaryT
 }
 
 QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -689,7 +689,7 @@ QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryTy
 }
 
 QString QAccessibleLineEdit::textAtOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -719,7 +719,7 @@ void QAccessibleLineEdit::setSelection(int selectionIndex, int startOffset, int 
     lineEdit()->setSelection(startOffset, endOffset - startOffset);
 }
 
-int QAccessibleLineEdit::characterCount()
+int QAccessibleLineEdit::characterCount() const
 {
     return lineEdit()->text().count();
 }
@@ -746,17 +746,17 @@ void *QAccessibleProgressBar::interface_cast(QAccessible::InterfaceType t)
     return QAccessibleDisplay::interface_cast(t);
 }
 
-QVariant QAccessibleProgressBar::currentValue()
+QVariant QAccessibleProgressBar::currentValue() const
 {
     return progressBar()->value();
 }
 
-QVariant QAccessibleProgressBar::maximumValue()
+QVariant QAccessibleProgressBar::maximumValue() const
 {
     return progressBar()->maximum();
 }
 
-QVariant QAccessibleProgressBar::minimumValue()
+QVariant QAccessibleProgressBar::minimumValue() const
 {
     return progressBar()->minimum();
 }

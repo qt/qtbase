@@ -296,7 +296,7 @@ void QAccessibleTextEdit::addSelection(int startOffset, int endOffset)
     setSelection(0, startOffset, endOffset);
 }
 
-QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset)
+QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset) const
 {
     /* The list of attributes can be found at:
      http://linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
@@ -406,12 +406,12 @@ QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOf
     return result;
 }
 
-int QAccessibleTextEdit::cursorPosition()
+int QAccessibleTextEdit::cursorPosition() const
 {
     return textEdit()->textCursor().position();
 }
 
-QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
+QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType) const
 {
     QTextEdit *edit = textEdit();
     QTextCursor cursor(edit->document());
@@ -443,12 +443,12 @@ QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
     return r;
 }
 
-int QAccessibleTextEdit::selectionCount()
+int QAccessibleTextEdit::selectionCount() const
 {
     return textEdit()->textCursor().hasSelection() ? 1 : 0;
 }
 
-int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType)
+int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
 {
     QTextEdit *edit = textEdit();
 
@@ -461,7 +461,7 @@ int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coord
     return edit->document()->documentLayout()->hitTest(p, Qt::ExactHit);
 }
 
-void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *endOffset)
+void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
     *startOffset = *endOffset = 0;
     QTextCursor cursor = textEdit()->textCursor();
@@ -473,7 +473,7 @@ void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *e
     *endOffset = cursor.selectionEnd();
 }
 
-QString QAccessibleTextEdit::text(int startOffset, int endOffset)
+QString QAccessibleTextEdit::text(int startOffset, int endOffset) const
 {
     QTextCursor cursor(textEdit()->document());
 
@@ -484,7 +484,7 @@ QString QAccessibleTextEdit::text(int startOffset, int endOffset)
 }
 
 QString QAccessibleTextEdit::textBeforeOffset (int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     // TODO - what exactly is before?
     Q_UNUSED(offset);
@@ -495,7 +495,7 @@ QString QAccessibleTextEdit::textBeforeOffset (int offset, BoundaryType boundary
 }
 
 QString QAccessibleTextEdit::textAfterOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     // TODO - what exactly is after?
     Q_UNUSED(offset);
@@ -506,7 +506,7 @@ QString QAccessibleTextEdit::textAfterOffset(int offset, BoundaryType boundaryTy
 }
 
 QString QAccessibleTextEdit::textAtOffset(int offset, BoundaryType boundaryType,
-                                          int *startOffset, int *endOffset)
+                                          int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset);
     Q_ASSERT(endOffset);
@@ -587,7 +587,7 @@ void QAccessibleTextEdit::setSelection(int selectionIndex, int startOffset, int 
     textEdit()->setTextCursor(cursor);
 }
 
-int QAccessibleTextEdit::characterCount()
+int QAccessibleTextEdit::characterCount() const
 {
     return textEdit()->toPlainText().count();
 }
@@ -620,7 +620,7 @@ static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endO
     return cursor;
 }
 
-void QAccessibleTextEdit::copyText(int startOffset, int endOffset)
+void QAccessibleTextEdit::copyText(int startOffset, int endOffset) const
 {
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 

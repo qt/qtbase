@@ -94,7 +94,7 @@ void *QAccessibleAbstractSpinBox::interface_cast(QAccessible::InterfaceType t)
     return QAccessibleWidget::interface_cast(t);
 }
 
-QVariant QAccessibleAbstractSpinBox::currentValue()
+QVariant QAccessibleAbstractSpinBox::currentValue() const
 {
     QVariant result = abstractSpinBox()->property("value");
     QVariant::Type type = result.type();
@@ -112,12 +112,12 @@ void QAccessibleAbstractSpinBox::setCurrentValue(const QVariant &value)
     abstractSpinBox()->setProperty("value", value);
 }
 
-QVariant QAccessibleAbstractSpinBox::maximumValue()
+QVariant QAccessibleAbstractSpinBox::maximumValue() const
 {
     return abstractSpinBox()->property("maximum");
 }
 
-QVariant QAccessibleAbstractSpinBox::minimumValue()
+QVariant QAccessibleAbstractSpinBox::minimumValue() const
 {
     return abstractSpinBox()->property("minimum");
 }
@@ -258,7 +258,7 @@ void *QAccessibleAbstractSlider::interface_cast(QAccessible::InterfaceType t)
     return QAccessibleWidget::interface_cast(t);
 }
 
-QVariant QAccessibleAbstractSlider::currentValue()
+QVariant QAccessibleAbstractSlider::currentValue() const
 {
     return abstractSlider()->value();
 }
@@ -268,12 +268,12 @@ void QAccessibleAbstractSlider::setCurrentValue(const QVariant &value)
     abstractSlider()->setValue(value.toInt());
 }
 
-QVariant QAccessibleAbstractSlider::maximumValue()
+QVariant QAccessibleAbstractSlider::maximumValue() const
 {
     return abstractSlider()->maximum();
 }
 
-QVariant QAccessibleAbstractSlider::minimumValue()
+QVariant QAccessibleAbstractSlider::minimumValue() const
 {
     return abstractSlider()->minimum();
 }

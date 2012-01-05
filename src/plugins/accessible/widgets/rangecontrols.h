@@ -67,10 +67,10 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
+    QVariant currentValue() const;
     void setCurrentValue(const QVariant &value);
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
 
     // FIXME Action interface
 
@@ -106,10 +106,10 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
+    QVariant currentValue() const;
     void setCurrentValue(const QVariant &value);
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
 
 protected:
     QAbstractSlider *abstractSlider() const;

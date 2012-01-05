@@ -405,7 +405,7 @@ static QString textForRange(QAccessibleInterface *iface, int startOffset, int en
 }
 #endif
 
-void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOffset)
+void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOffset) const
 {
 #ifdef QT_NO_CLIPBOARD
     Q_UNUSED(startOffset);
