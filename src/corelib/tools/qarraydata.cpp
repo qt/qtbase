@@ -44,8 +44,9 @@
 QT_BEGIN_NAMESPACE
 
 const QArrayData QArrayData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
-const QArrayData QArrayData::shared_empty = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
-const QArrayData QArrayData::unsharable_empty = { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, 0 };
+
+static const QArrayData qt_array_empty = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
+static const QArrayData qt_array_unsharable_empty = { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, 0 };
 
 QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         size_t capacity, bool reserve, bool sharable)
@@ -57,8 +58,8 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
     // Don't allocate empty headers
     if (!capacity)
         return sharable
-            ? const_cast<QArrayData *>(&shared_empty)
-            : const_cast<QArrayData *>(&unsharable_empty);
+            ? const_cast<QArrayData *>(&qt_array_empty)
+            : const_cast<QArrayData *>(&qt_array_unsharable_empty);
 
     // Allocate extra (alignment - Q_ALIGNOF(QArrayData)) padding bytes so we
     // can properly align the data array. This assumes malloc is able to
@@ -90,7 +91,7 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
             && !(alignment & (alignment - 1)));
     Q_UNUSED(objectSize) Q_UNUSED(alignment)
 
-    if (data == &unsharable_empty)
+    if (data == &qt_array_unsharable_empty)
         return;
 
     qFree(data);

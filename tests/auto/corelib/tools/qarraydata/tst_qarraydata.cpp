@@ -153,7 +153,7 @@ void tst_QArrayData::referenceCounting()
 void tst_QArrayData::sharedNullEmpty()
 {
     QArrayData *null = const_cast<QArrayData *>(&QArrayData::shared_null);
-    QArrayData *empty = const_cast<QArrayData *>(&QArrayData::shared_empty);
+    QArrayData *empty = QArrayData::allocate(1, Q_ALIGNOF(QArrayData), 0, false, true);
 
     QVERIFY(null->ref.isStatic());
     QVERIFY(null->ref.isSharable());
@@ -492,16 +492,22 @@ void tst_QArrayData::allocate_data()
         { "void *", sizeof(void *), Q_ALIGNOF(void *) }
     };
 
+    QArrayData *shared_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0, false, true);
+    QArrayData *unsharable_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0, false, false);
+
+    QVERIFY(shared_empty);
+    QVERIFY(unsharable_empty);
+
     struct {
         char const *description;
         bool isCapacityReserved;
         bool isSharable;
         const QArrayData *commonEmpty;
     } options[] = {
-        { "Default", false, true, &QArrayData::shared_empty },
-        { "Reserved", true, true, &QArrayData::shared_empty },
-        { "Reserved | Unsharable", true, false, &QArrayData::unsharable_empty },
-        { "Unsharable", false, false, &QArrayData::unsharable_empty },
+        { "Default", false, true, shared_empty },
+        { "Reserved", true, true, shared_empty },
+        { "Reserved | Unsharable", true, false, unsharable_empty },
+        { "Unsharable", false, false, unsharable_empty },
     };
 
     for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
@@ -635,7 +641,7 @@ void tst_QArrayData::typedData()
 
     {
         QTypedArrayData<int> *null = QTypedArrayData<int>::sharedNull();
-        QTypedArrayData<int> *empty = QTypedArrayData<int>::sharedEmpty();
+        QTypedArrayData<int> *empty = QTypedArrayData<int>::allocate(0);
 
         QVERIFY(null != empty);
 

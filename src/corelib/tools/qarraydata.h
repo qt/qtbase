@@ -79,8 +79,6 @@ struct Q_CORE_EXPORT QArrayData
             size_t alignment);
 
     static const QArrayData shared_null;
-    static const QArrayData shared_empty;
-    static const QArrayData unsharable_empty;
 };
 
 template <class T>
@@ -116,18 +114,6 @@ struct QTypedArrayData
     {
         return static_cast<QTypedArrayData *>(
                 const_cast<QArrayData *>(&QArrayData::shared_null));
-    }
-
-    static QTypedArrayData *sharedEmpty()
-    {
-        return static_cast<QTypedArrayData *>(
-                const_cast<QArrayData *>(&QArrayData::shared_empty));
-    }
-
-    static QTypedArrayData *unsharableEmpty()
-    {
-        return static_cast<QTypedArrayData *>(
-                const_cast<QArrayData *>(&QArrayData::unsharable_empty));
     }
 };
 

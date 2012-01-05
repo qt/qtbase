@@ -115,12 +115,7 @@ public:
     void setSharable(bool sharable)
     {
         if (d->alloc == 0 && d->size == 0) {
-            Q_ASSERT(Data::sharedNull() == d
-                    || Data::sharedEmpty() == d
-                    || Data::unsharableEmpty() == d);
-            d = sharable
-                ? Data::sharedEmpty()
-                : Data::unsharableEmpty();
+            d = Data::allocate(0, false, sharable);
             return;
         }
 
@@ -136,7 +131,7 @@ public:
     void clear()
     {
         QArrayDataPointer tmp(d);
-        d = Data::sharedEmpty();
+        d = Data::allocate(0);
     }
 
     bool detach()
