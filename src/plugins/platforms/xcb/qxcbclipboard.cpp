@@ -208,7 +208,7 @@ QXcbClipboard::~QXcbClipboard()
             connection()->sync();
 
             // waiting until the clipboard manager fetches the content.
-            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, 5000, true)) {
+            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, clipboard_timeout, true)) {
                 qWarning("QClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
