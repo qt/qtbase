@@ -48,6 +48,7 @@
 #include "qlist.h"
 #include "qfile.h"
 #include "qstringlist.h"
+#include "qvarlengtharray.h"
 
 #ifdef Q_OS_UNIX
 #  include "qiconvcodec_p.h"
@@ -220,10 +221,7 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
     if (!mb || !mblen)
         return QString();
 
-    const int wclen_auto = 4096;
-    wchar_t wc_auto[wclen_auto];
-    int wclen = wclen_auto;
-    wchar_t *wc = wc_auto;
+    QVarLengthArray<wchar_t, 4096> wc(4096);
     int len;
     QString sp;
     bool prepend = false;
@@ -243,7 +241,7 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         prev[1] = mb[0];
         remainingChars = 0;
         len = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-                                    prev, 2, wc, wclen);
+                                    prev, 2, wc.data(), wc.length());
         if (len) {
             prepend = true;
             sp.append(QChar(wc[0]));
@@ -254,18 +252,12 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
     }
 
     while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED|MB_ERR_INVALID_CHARS,
-                mb, mblen, wc, wclen))) {
+                mb, mblen, wc.data(), wc.length()))) {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
-            if (wc != wc_auto) {
-                qWarning("MultiByteToWideChar: Size changed");
-                break;
-            } else {
-                wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+                const int wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new wchar_t[wclen];
-                // and try again...
-            }
+                wc.resize(wclen);
         } else if (r == ERROR_NO_UNICODE_TRANSLATION) {
             //find the last non NULL character
             while (mblen > 1  && !(mb[mblen-1]))
@@ -283,8 +275,10 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
             break;
         }
     }
+
     if (len <= 0)
         return QString();
+
     if (wc[len-1] == 0) // len - 1: we don't want terminator
         --len;
 
@@ -293,9 +287,7 @@ QString QWindowsLocalCodec::convertToUnicode(const char *chars, int length, Conv
         state->state_data[0] = (char)state_data;
         state->remainingChars = remainingChars;
     }
-    QString s((QChar*)wc, len);
-    if (wc != wc_auto)
-        delete [] wc;
+    QString s((QChar*)wc.data(), len);
     if (prepend) {
         return sp+s;
     }
