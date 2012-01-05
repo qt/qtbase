@@ -119,28 +119,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QAccessible::Action
-
-    This enum describes the possible types of action that can occur.
-
-    \value DefaultAction
-    \value Press
-    \value SetFocus
-    \value Increase
-    \value Decrease
-    \value Accept
-    \value Cancel
-    \value Select
-    \value ClearSelection
-    \value RemoveSelection
-    \value ExtendSelection
-    \value AddToSelection
-
-    \value FirstStandardAction
-    \value LastStandardAction
-*/
-
-/*!
     \enum QAccessible::Method
 
     This enum describes the possible types of methods that can be
@@ -838,12 +816,10 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 */
 
 /*!
-    \fn QAccessible::Relation QAccessibleInterface::relationTo(int child,
-const QAccessibleInterface *other, int otherChild) const
+    \fn QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *other) const
 
-    Returns the relationship between this object's \a child and the \a
-    other object's \a otherChild. If \a child is 0 the object's own relation
-    is returned.
+    Returns the relationship between this object and the \a
+    other object.
 
     The returned value indicates the relation of the called object to
     the \a other object, e.g. if this object is a label for \a other
@@ -916,8 +892,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn int QAccessibleInterface::navigate(RelationFlag relation, int entry, QAccessibleInterface
-**target) const
+    \fn int QAccessibleInterface::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 
     Navigates from this object to an object that has a relationship
     \a relation to this object, and returns the respective object in
@@ -960,10 +935,9 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QString QAccessibleInterface::text(Text t, int child) const
+    \fn QString QAccessibleInterface::text(Text t) const
 
-    Returns the value of the text property \a t of the object, or of
-    the object's child if \a child is not 0.
+    Returns the value of the text property \a t of the object.
 
     The \l Name is a string used by clients to identify, find, or
     announce an accessible object for the user. All objects must have
@@ -1003,10 +977,9 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn void QAccessibleInterface::setText(Text t, int child, const QString &text)
+    \fn void QAccessibleInterface::setText(Text t, const QString &text)
 
-    Sets the text property \a t of the object, or of the object's
-    child if \a child is not 0, to \a text.
+    Sets the text property \a t of the object.
 
     Note that the text properties of most objects are read-only.
 
@@ -1014,10 +987,9 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QRect QAccessibleInterface::rect(int child) const
+    \fn QRect QAccessibleInterface::rect() const
 
-    Returns the geometry of the object, or of the object's child if \a child
-    is not 0. The geometry is in screen coordinates.
+    Returns the geometry of the object. The geometry is in screen coordinates.
 
     This function is only reliable for visible objects (invisible
     objects might not be laid out correctly).
@@ -1028,10 +1000,10 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessible::Role QAccessibleInterface::role(int child) const
+    \fn QAccessible::Role QAccessibleInterface::role() const
 
-    Returns the role of the object, or of the object's child if \a child
-    is not 0. The role of an object is usually static.
+    Returns the role of the object.
+    The role of an object is usually static.
 
     All accessible objects have a role.
 
@@ -1039,10 +1011,10 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessible::State QAccessibleInterface::state(int child) const
+    \fn QAccessible::State QAccessibleInterface::state() const
 
-    Returns the current state of the object, or of the object's child if
-    \a child is not 0. The returned value is a combination of the flags in
+    Returns the current state of the object.
+    The returned value is a combination of the flags in
     the QAccessible::StateFlag enumeration.
 
     All accessible objects have a state.
@@ -1092,7 +1064,7 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 
 /*!
-    \fn QAccessibleTable2Interface *QAccessibleInterface::table2Interface()
+    \fn QAccessibleTableInterface *QAccessibleInterface::tableInterface()
     \internal
 */
 
@@ -1131,16 +1103,11 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 
 /*!
-    \fn QAccessibleEvent::QAccessibleEvent(Type type, int child)
+    \fn QAccessibleEvent::QAccessibleEvent(Type type)
 
     Constructs an accessibility event of the given \a type, which
     must be QEvent::AccessibilityDescription or
     QEvent::AccessibilityHelp.
-
-    \a child is the (1-based) index of the child to which the request
-    applies. If \a child is 0, the request is for the widget itself.
-
-    \sa child()
 */
 
 /*!
