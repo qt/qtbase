@@ -155,11 +155,12 @@ public:
 
     QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
+
     int indexOfChild(const QAccessibleInterface *) const;
 
     int rowCount() const;
 
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // table interface
@@ -194,7 +195,6 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int) const;
     int navigate(QAccessible::RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // cell interface
     virtual int columnExtent() const;
@@ -283,12 +283,11 @@ public:
     }
     int navigate(QAccessible::RelationFlag relation, int, QAccessibleInterface **iface) const
     {
-        if (relation == QAccessible::Ancestor) {
-            *iface = parent();
-            return *iface ? 0 : -1;
-        }
+        Q_UNUSED(relation);
+        Q_UNUSED(iface);
         return -1;
     }
+
     QAccessible::Relation relationTo(const QAccessibleInterface *) const
     {
         return QAccessible::Unrelated;

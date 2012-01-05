@@ -230,7 +230,6 @@ private slots:
     void customWidget();
     void deletedWidget();
 
-    void navigateGeometric();
     void navigateHierarchy();
     void sliderTest();
     void navigateCovered();
@@ -463,102 +462,6 @@ void tst_QAccessibility::deletedWidget()
     delete iface;
 }
 
-void tst_QAccessibility::navigateGeometric()
-{
-    {
-    static const int skip = 20; //speed the test up significantly
-    static const double step = Q_PI / 180;
-    QWidget *w = new QWidget(0);
-    w->setObjectName(QString("Josef"));
-    w->setFixedSize(400, 400);
-
-    // center widget
-    QtTestAccessibleWidget *center = new QtTestAccessibleWidget(w, "Sol");
-    center->move(200, 200);
-
-    // arrange 360 widgets around it in a circle
-    QtTestAccessibleWidget *aw = 0;
-    for (int i = 0; i < 360; i += skip) {
-        aw = new QtTestAccessibleWidget(w, QString::number(i).toLatin1());
-        aw->move( int(200.0 + 100.0 * sin(step * (double)i)), int(200.0 + 100.0 * cos(step * (double)i)) );
-    }
-
-    aw = new QtTestAccessibleWidget(w, "Earth");
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(center);
-    QAccessibleInterface *target = 0;
-    QVERIFY(iface != 0);
-    QVERIFY(iface->isValid());
-
-    w->show();
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
-
-    // let one widget rotate around center
-    for (int i = 0; i < 360; i+=skip) {
-        aw->move( int(200.0 + 75.0 * sin(step * (double)i)), int(200.0 + 75.0 * cos(step * (double)i)) );
-
-        if (i < 45 || i > 315) {
-            QCOMPARE(iface->navigate(QAccessible::Down, 0, &target), 0);
-        } else if ( i < 135 ) {
-            QCOMPARE(iface->navigate(QAccessible::Right, 0, &target), 0);
-        } else if ( i < 225 ) {
-            QCOMPARE(iface->navigate(QAccessible::Up, 0, &target), 0);
-        } else {
-            QCOMPARE(iface->navigate(QAccessible::Left, 0, &target), 0);
-        }
-
-        QVERIFY(target);
-        QVERIFY(target->isValid());
-        QVERIFY(target->object());
-        QCOMPARE(target->object()->objectName(), aw->objectName());
-        delete target; target = 0;
-    }
-
-    // test invisible widget
-    target = QAccessible::queryAccessibleInterface(aw);
-    QVERIFY(!(target->state() & QAccessible::Invisible));
-    aw->hide();
-    QVERIFY(target->state() & QAccessible::Invisible);
-    delete target; target = 0;
-
-    aw->move(center->x() + 10, center->y());
-    QCOMPARE(iface->navigate(QAccessible::Right, 0, &target), 0);
-    QVERIFY(target);
-    QVERIFY(target->isValid());
-    QVERIFY(target->object());
-    QVERIFY(QString(target->object()->objectName()) != "Earth");
-    delete target; target = 0;
-
-    aw->move(center->x() - 10, center->y());
-    QCOMPARE(iface->navigate(QAccessible::Left, 0, &target), 0);
-    QVERIFY(target);
-    QVERIFY(target->isValid());
-    QVERIFY(target->object());
-    QVERIFY(QString(target->object()->objectName()) != "Earth");
-    delete target; target = 0;
-
-    aw->move(center->x(), center->y() + 10);
-    QCOMPARE(iface->navigate(QAccessible::Down, 0, &target), 0);
-    QVERIFY(target);
-    QVERIFY(target->isValid());
-    QVERIFY(target->object());
-    QVERIFY(QString(target->object()->objectName()) != "Earth");
-    delete target; target = 0;
-
-    aw->move(center->x(), center->y() - 10);
-    QCOMPARE(iface->navigate(QAccessible::Up, 0, &target), 0);
-    QVERIFY(target);
-    QVERIFY(target->isValid());
-    QVERIFY(target->object());
-    QVERIFY(QString(target->object()->objectName()) != "Earth");
-    delete target; target = 0;
-
-    delete iface;
-    delete w;
-    }
-    QTestAccessibility::clearEvents();
-}
-
 void tst_QAccessibility::sliderTest()
 {
     {
@@ -721,11 +624,6 @@ void tst_QAccessibility::navigateHierarchy()
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
 
-    QCOMPARE(iface->navigate(QAccessible::Sibling, -42, &target), -1);
-    QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Sibling, 42, &target), -1);
-    QVERIFY(target == 0);
-
     target = iface->child(14);
     QVERIFY(target == 0);
     target = iface->child(-1);
@@ -741,38 +639,27 @@ void tst_QAccessibility::navigateHierarchy()
     delete interfaceW1;
     delete iface; iface = 0;
 
-    QCOMPARE(target->navigate(QAccessible::Sibling, 0, &iface), -1);
-    QVERIFY(iface == 0);
-    QCOMPARE(target->navigate(QAccessible::Sibling, 42, &iface), -1);
-    QVERIFY(iface == 0);
-    QCOMPARE(target->navigate(QAccessible::Sibling, -42, &iface), -1);
-    QVERIFY(iface == 0);
-    QCOMPARE(target->navigate(QAccessible::Sibling, 2, &iface), 0);
-    QVERIFY(iface != 0);
-    QVERIFY(iface->isValid());
-    QCOMPARE(iface->object(), (QObject*)w2);
-    delete target; target = 0;
-    QCOMPARE(iface->navigate(QAccessible::Sibling, 3, &target), 0);
+    iface = QAccessible::queryAccessibleInterface(w);
+    target = iface->child(2);
     QVERIFY(target != 0);
     QVERIFY(target->isValid());
     QCOMPARE(target->object(), (QObject*)w3);
     delete iface; iface = 0;
 
+
+    iface = target->child(1);
+    QCOMPARE(iface, (QAccessibleInterface*)0);
     iface = target->child(0);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
     QCOMPARE(iface->object(), (QObject*)w31);
-    delete target; target = 0;
 
-    QCOMPARE(iface->navigate(QAccessible::Sibling, -1, &target), -1);
-    QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Sibling, 0, &target), -1);
-    QVERIFY(target == 0);
-    QCOMPARE(iface->navigate(QAccessible::Sibling, 1, &target), 0);
-    QVERIFY(target != 0);
-    QVERIFY(target->isValid());
+    iface = QAccessible::queryAccessibleInterface(w);
+    QAccessibleInterface *acc3 = iface->child(2);
+    target = acc3->child(0);
+    delete acc3;
+    delete iface;
     QCOMPARE(target->object(), (QObject*)w31);
-    delete iface; iface = 0;
 
     iface = target->parent();
     QVERIFY(iface != 0);
@@ -1555,8 +1442,7 @@ void tst_QAccessibility::menuTest()
         QAccessible::MenuItem
     };
     for (int child = 0; child < 5; ++child) {
-        entry = iface->navigate(QAccessible::Sibling, child + 1, &iface2);
-        QCOMPARE(entry, 0);
+        iface2 = interface->child(child);
         QVERIFY(iface2);
         QCOMPARE(iface2->role(), fileRoles[child]);
         delete iface2;
@@ -2133,6 +2019,16 @@ void tst_QAccessibility::workspaceTest()
     QTestAccessibility::clearEvents();
 }
 
+bool accessibleInterfaceLeftOf(const QAccessibleInterface *a1, const QAccessibleInterface *a2)
+{
+    return a1->rect().x() < a2->rect().x();
+}
+
+bool accessibleInterfaceAbove(const QAccessibleInterface *a1, const QAccessibleInterface *a2)
+{
+    return a1->rect().y() < a2->rect().y();
+}
+
 void tst_QAccessibility::dialogButtonBoxTest()
 {
     {
@@ -2154,25 +2050,17 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QCOMPARE(iface->role(), QAccessible::Grouping);
     QStringList actualOrder;
     QAccessibleInterface *child;
-    QAccessibleInterface *leftmost;
     child = iface->child(0);
     QCOMPARE(child->role(), QAccessible::PushButton);
 
-    // first find the leftmost button
-    while (child->navigate(QAccessible::Left, 1, &leftmost) != -1) {
-        delete child;
-        child = leftmost;
-    }
-    leftmost = child;
+    QVector<QAccessibleInterface *> buttons;
+    for (int i = 0; i < iface->childCount(); ++i)
+        buttons <<  iface->child(i);
 
-    // then traverse from left to right to find the correct order of the buttons
-    int right = 0;
-    while (right != -1) {
-        actualOrder << leftmost->text(QAccessible::Name);
-        right = leftmost->navigate(QAccessible::Right, 1, &child);
-        delete leftmost;
-        leftmost = child;
-    }
+    qSort(buttons.begin(), buttons.end(), accessibleInterfaceLeftOf);
+
+    for (int i = 0; i < buttons.count(); ++i)
+        actualOrder << buttons.at(i)->text(QAccessible::Name);
 
     QStringList expectedOrder;
     QDialogButtonBox::ButtonLayout btnlout =
@@ -2214,26 +2102,16 @@ void tst_QAccessibility::dialogButtonBoxTest()
 #endif
 
     QApplication::processEvents();
-    QAccessibleInterface *child;
     QStringList actualOrder;
-    child = iface->child(0);
-    // first find the topmost button
-    QAccessibleInterface *other;
-    while (child->navigate(QAccessible::Up, 1, &other) != -1) {
-        delete child;
-        child = other;
-    }
-    other = child;
 
-    // then traverse from top to bottom to find the correct order of the buttons
-    actualOrder.clear();
-    int right = 0;
-    while (right != -1) {
-        actualOrder << other->text(QAccessible::Name);
-        right = other->navigate(QAccessible::Down, 1, &child);
-        delete other;
-        other = child;
-    }
+    QVector<QAccessibleInterface *> buttons;
+    for (int i = 0; i < iface->childCount(); ++i)
+        buttons <<  iface->child(i);
+
+    qSort(buttons.begin(), buttons.end(), accessibleInterfaceAbove);
+
+    for (int i = 0; i < buttons.count(); ++i)
+        actualOrder << buttons.at(i)->text(QAccessible::Name);
 
     QStringList expectedOrder;
     expectedOrder << QDialogButtonBox::tr("OK")

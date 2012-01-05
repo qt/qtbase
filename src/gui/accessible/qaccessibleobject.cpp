@@ -272,9 +272,6 @@ int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
             return 0;
         }
         break;
-    case QAccessible::Ancestor:
-        *target = parent();
-        return 0;
     default:
         break;
     }

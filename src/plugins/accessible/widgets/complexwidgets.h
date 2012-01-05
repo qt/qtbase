@@ -112,7 +112,6 @@ public:
 
     QAccessibleInterface* child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
 protected:
     QTabBar *tabBar() const;

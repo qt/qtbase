@@ -274,11 +274,6 @@ public:
     enum RelationFlag {
         Unrelated     = 0x00000000,
         Self          = 0x00000001,
-        Ancestor      = 0x00000002,
-        Child         = 0x00000004,
-        Descendent    = 0x00000008,
-        Sibling       = 0x00000010,
-        HierarchyMask = 0x000000ff,
 
         Up            = 0x00000100,
         Down          = 0x00000200,

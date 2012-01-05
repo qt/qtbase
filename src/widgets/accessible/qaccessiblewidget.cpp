@@ -363,11 +363,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     }
 
     QObject *parent = object()->parent();
-    if (o == parent)
-        return relation | QAccessible::Child;
-
     if (o->parent() == parent) {
-        relation |= QAccessible::Sibling;
         QAccessibleInterface *sibIface = QAccessible::queryAccessibleInterface(o);
         Q_ASSERT(sibIface);
         QRect wg = rect();
@@ -385,27 +381,11 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
                     relation |= QAccessible::Covered;
             }
             delete pIface;
-        } else {
-            QPoint wc = wg.center();
-            QPoint sc = sg.center();
-            if (wc.x() < sc.x())
-                relation |= QAccessible::Left;
-            else if(wc.x() > sc.x())
-                relation |= QAccessible::Right;
-            if (wc.y() < sc.y())
-                relation |= QAccessible::Up;
-            else if (wc.y() > sc.y())
-                relation |= QAccessible::Down;
         }
         delete sibIface;
 
         return relation;
     }
-
-    if (isAncestor(o, object()))
-        return relation | QAccessible::Descendent;
-    if (isAncestor(object(), o))
-        return relation | QAccessible::Ancestor;
 
     return relation;
 }
@@ -437,120 +417,6 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
     QObject *targetObject = 0;
 
     switch (relation) {
-    // Hierarchical
-    case QAccessible::Self:
-        targetObject = object();
-        break;
-    case QAccessible::Child:
-        qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Child in:" << object()->metaObject()->className();
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    case QAccessible::Ancestor:
-        qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Ancestor in:" << object()->metaObject()->className();
-        *target = parent();
-        return *target ? 0 : -1;
-    case QAccessible::Sibling:
-        {
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parentObject());
-            if (!iface)
-                return -1;
-
-            *target = iface->child(entry - 1);
-            delete iface;
-            if (*target)
-                return 0;
-        }
-        break;
-
-    // Geometrical
-    case QAccessible::Left:
-        // fall through
-    case QAccessible::Right:
-        // fall through
-    case QAccessible::Up:
-        // fall through
-    case QAccessible::Down:
-    {
-        QAccessibleInterface *pIface = parent();
-        if (!pIface)
-            return -1;
-
-        QRect startg = rect();
-        QPoint startc = startg.center();
-        QAccessibleInterface *candidate = 0;
-        int mindist = 100000;
-        int sibCount = pIface->childCount();
-        for (int i = 0; i < sibCount; ++i) {
-            QAccessibleInterface *sibling = 0;
-            sibling = pIface->child(i);
-            Q_ASSERT(sibling);
-            if ((relationTo(sibling) & QAccessible::Self) || (sibling->state() & QAccessible::Invisible)) {
-                //ignore ourself and invisible siblings
-                delete sibling;
-                continue;
-            }
-
-            QRect sibg = sibling->rect();
-            QPoint sibc = sibg.center();
-            QPoint sibp;
-            QPoint startp;
-            QPoint distp;
-            switch (relation) {
-            case QAccessible::Left:
-                startp = QPoint(startg.left(), startg.top() + startg.height() / 2);
-                sibp = QPoint(sibg.right(), sibg.top() + sibg.height() / 2);
-                if (QPoint(sibc - startc).x() >= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Right:
-                startp = QPoint(startg.right(), startg.top() + startg.height() / 2);
-                sibp = QPoint(sibg.left(), sibg.top() + sibg.height() / 2);
-                if (QPoint(sibc - startc).x() <= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Up:
-                startp = QPoint(startg.left() + startg.width() / 2, startg.top());
-                sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.bottom());
-                if (QPoint(sibc - startc).y() >= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Down:
-                startp = QPoint(startg.left() + startg.width() / 2, startg.bottom());
-                sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.top());
-                if (QPoint(sibc - startc).y() <= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            default:
-                break;
-            }
-
-            int dist = (int)qSqrt((qreal)distp.x() * distp.x() + distp.y() * distp.y());
-            if (dist < mindist) {
-                delete candidate;
-                candidate = sibling;
-                mindist = dist;
-            } else {
-                delete sibling;
-            }
-        }
-        delete pIface;
-        *target = candidate;
-        if (*target)
-            return 0;
-    }
-        break;
     case QAccessible::Covers:
         if (entry > 0) {
             QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());

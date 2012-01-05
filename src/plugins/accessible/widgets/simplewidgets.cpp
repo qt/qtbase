@@ -464,10 +464,11 @@ int QAccessibleDisplay::navigate(QAccessible::RelationFlag rel, int entry, QAcce
         } else {
             QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
             if (groupbox && !groupbox->title().isEmpty())
-                rel = QAccessible::Child;
+                *target = child(entry - 1);
 #endif
         }
-        *target = QAccessible::queryAccessibleInterface(targetObject);
+        if (targetObject)
+            *target = QAccessible::queryAccessibleInterface(targetObject);
         if (*target)
             return 0;
     }

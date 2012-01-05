@@ -111,21 +111,6 @@ QAccessibleInterface *QAccessibleMenu::parent() const
     return QAccessibleWidget::parent();
 }
 
-int QAccessibleMenu::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    Q_ASSERT(entry >= 0);
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    case QAccessible::Ancestor:
-        *target = parent();
-        return *target ? 0 : -1;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-}
-
 int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child) const
 {
     int index = -1;
@@ -160,15 +145,6 @@ QAccessibleInterface *QAccessibleMenuBar::child(int index) const
     if (index < childCount())
         return new QAccessibleMenuItem(menuBar(), menuBar()->actions().at(index));
     return 0;
-}
-
-int QAccessibleMenuBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    if (relation == QAccessible::Child) {
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    }
-    return QAccessibleWidget::navigate(relation, entry, target);
 }
 
 int QAccessibleMenuBar::indexOfChild(const QAccessibleInterface *child) const
@@ -244,12 +220,6 @@ int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry,
     }
 
     switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        break;
-    case QAccessible::Ancestor:
-        *target = parent();
-        break;
     case QAccessible::Up:
     case QAccessible::Down:{
         QAccessibleInterface *parentIface = parent();
@@ -260,13 +230,6 @@ int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry,
                 *target = parentIface->child(index - 1);
             }
         }
-        delete parentIface;
-        break;
-    }
-    case QAccessible::Sibling: {
-        QAccessibleInterface *parentIface = parent();
-        if (parentIface)
-            *target = parentIface->child(entry - 1);
         delete parentIface;
         break;
     }
@@ -306,16 +269,6 @@ QRect QAccessibleMenuItem::rect() const
         rect = rect.translated(globalPos);
     }
     return rect;
-}
-
-QAccessible::Relation QAccessibleMenuItem::relationTo(const QAccessibleInterface *other) const
-{
-    if (other->object() == owner()) {
-        return QAccessible::Child;
-    }
-    Q_UNUSED(other)
-    // ###
-    return QAccessible::Unrelated;
 }
 
 QAccessible::Role QAccessibleMenuItem::role() const

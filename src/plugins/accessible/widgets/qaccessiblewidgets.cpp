@@ -698,6 +698,7 @@ QAccessibleStackedWidget::QAccessibleStackedWidget(QWidget *widget)
 
 QVariant QAccessibleStackedWidget::invokeMethod(QAccessible::Method, const QVariantList &params)
 {
+    Q_UNUSED(params);
     return QVariant();
 }
 
@@ -739,17 +740,6 @@ QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
     return QAccessible::queryAccessibleInterface(stackedWidget()->widget(index));
 }
 
-int QAccessibleStackedWidget::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-}
-
 QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
 {
     return static_cast<QStackedWidget *>(object());
@@ -783,6 +773,16 @@ int QAccessibleMdiArea::childCount() const
     return mdiArea()->subWindowList().count();
 }
 
+QAccessibleInterface *QAccessibleMdiArea::child(int index) const
+{
+    QList<QMdiSubWindow *> subWindows = mdiArea()->subWindowList();
+    QWidget *targetObject = subWindows.value(index);
+    if (!targetObject)
+       return 0;
+    return QAccessible::queryAccessibleInterface(targetObject);
+}
+
+
 int QAccessibleMdiArea::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child || !child->object() || mdiArea()->subWindowList().isEmpty())
@@ -799,13 +799,7 @@ int QAccessibleMdiArea::navigate(QAccessible::RelationFlag relation, int entry, 
 {
     *target = 0;
     QWidget *targetObject = 0;
-    QList<QMdiSubWindow *> subWindows = mdiArea()->subWindowList();
     switch (relation) {
-    case QAccessible::Child:
-        if (entry < 1 || subWindows.isEmpty() || entry > subWindows.count())
-            return -1;
-        targetObject = subWindows.at(entry - 1);
-        break;
     case QAccessible::Up:
     case QAccessible::Down:
     case QAccessible::Left:
@@ -873,6 +867,15 @@ int QAccessibleMdiSubWindow::childCount() const
     return 0;
 }
 
+QAccessibleInterface *QAccessibleMdiSubWindow::child(int index) const
+{
+    QMdiSubWindow *source = mdiSubWindow();
+    if (index != 0 || !source->widget())
+        return 0;
+
+    return QAccessible::queryAccessibleInterface(source->widget());
+}
+
 int QAccessibleMdiSubWindow::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child && child->object() && child->object() == mdiSubWindow()->widget())
@@ -890,11 +893,6 @@ int QAccessibleMdiSubWindow::navigate(QAccessible::RelationFlag relation, int en
     QWidget *targetObject = 0;
     QMdiSubWindow *source = mdiSubWindow();
     switch (relation) {
-    case QAccessible::Child:
-        if (entry != 1 || !source->widget())
-            return -1;
-        targetObject = source->widget();
-        break;
     case QAccessible::Up:
     case QAccessible::Down:
     case QAccessible::Left:
@@ -952,6 +950,15 @@ int QAccessibleWorkspace::childCount() const
     return workspace()->windowList().count();
 }
 
+QAccessibleInterface *QAccessibleWorkspace::child(int index) const
+{
+    QWidgetList subWindows = workspace()->windowList();
+    if (index < 0 || subWindows.isEmpty() || index >= subWindows.count())
+        return 0;
+    QObject *targetObject = subWindows.at(index);
+    return QAccessible::queryAccessibleInterface(targetObject);
+}
+
 int QAccessibleWorkspace::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child || !child->object() || workspace()->windowList().isEmpty())
@@ -968,13 +975,7 @@ int QAccessibleWorkspace::navigate(QAccessible::RelationFlag relation, int entry
 {
     *target = 0;
     QWidget *targetObject = 0;
-    QWidgetList subWindows = workspace()->windowList();
     switch (relation) {
-    case QAccessible::Child:
-        if (entry < 1 || subWindows.isEmpty() || entry > subWindows.count())
-            return -1;
-        targetObject = subWindows.at(entry - 1);
-        break;
     case QAccessible::Up:
     case QAccessible::Down:
     case QAccessible::Left:
@@ -1066,9 +1067,6 @@ int QAccessibleCalendarWidget::navigate(QAccessible::RelationFlag relation, int 
         return QAccessibleWidget::navigate(relation, entry, target);
     QWidget *targetWidget = 0;
     switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
     case QAccessible::Up:
         if (entry == 2)
             targetWidget = navigationBar();
@@ -1201,9 +1199,6 @@ QAccessibleInterface *QAccessibleTitleBar::child(int index) const
 int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const
 {
     switch (relation) {
-    case QAccessible::Child:
-        *iface = child(entry - 1);
-        return *iface ? 0 : -1;
     case QAccessible::FocusChild:
         // ###
         if (entry >= 1) {
@@ -1222,9 +1217,6 @@ int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry,
             return role > QDockWidgetLayout::FloatButton ? -1 : index;
         }
         break;
-    case QAccessible::Ancestor:
-        *iface = parent();
-        return iface ? 0 : -1;
     default:
         break;
     }

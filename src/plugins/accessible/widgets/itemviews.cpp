@@ -444,23 +444,9 @@ QAccessibleInterface *QAccessibleTable::child(int index) const
 
 int QAccessibleTable::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
+    Q_UNUSED(relation);
+    Q_UNUSED(index);
     *iface = 0;
-    switch (relation) {
-    case QAccessible::Ancestor: {
-        *iface = parent();
-        return *iface ? 0 : -1;
-    }
-    case QAccessible::Child: {
-        Q_ASSERT(index > 0);
-        *iface = child(index - 1);
-        if (*iface) {
-            return 0;
-        }
-        break;
-    }
-    default:
-        break;
-    }
     return -1;
 }
 
@@ -518,6 +504,29 @@ int QAccessibleTree::childCount() const
     return (treeView->d_func()->viewItems.count() + hHeader)* view->model()->columnCount();
 }
 
+
+QAccessibleInterface *QAccessibleTree::child(int index) const
+{
+    Q_ASSERT(index >= 0);
+    int hHeader = horizontalHeader() ? 1 : 0;
+
+    if (hHeader) {
+        if (index < view->model()->columnCount()) {
+            return new QAccessibleTableHeaderCell(view, index, Qt::Horizontal);
+        } else {
+            index -= view->model()->columnCount();
+        }
+    }
+
+    int row = index / view->model()->columnCount();
+    int column = index % view->model()->columnCount();
+    QModelIndex modelIndex = indexFromLogical(row, column);
+    if (modelIndex.isValid()) {
+        return cell(modelIndex);
+    }
+    return 0;
+}
+
 int QAccessibleTree::rowCount() const
 {
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
@@ -548,38 +557,6 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
     }
     // FIXME: add scrollbars and don't just ignore them
     return -1;
-}
-
-int QAccessibleTree::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
-{
-    switch (relation) {
-    case QAccessible::Child: {
-        Q_ASSERT(index > 0);
-        --index;
-        int hHeader = horizontalHeader() ? 1 : 0;
-
-        if (hHeader) {
-            if (index < view->model()->columnCount()) {
-                *iface = new QAccessibleTableHeaderCell(view, index, Qt::Horizontal);
-                return 0;
-            } else {
-                index -= view->model()->columnCount();
-            }
-        }
-
-        int row = index / view->model()->columnCount();
-        int column = index % view->model()->columnCount();
-        QModelIndex modelIndex = indexFromLogical(row, column);
-        if (modelIndex.isValid()) {
-            *iface = cell(modelIndex);
-            return 0;
-        }
-        return -1;
-    }
-    default:
-        break;
-    }
-    return QAccessibleTable::navigate(relation, index, iface);
 }
 
 QAccessible::Relation QAccessibleTree::relationTo(const QAccessibleInterface *) const
@@ -815,29 +792,10 @@ QAccessibleInterface *QAccessibleTableCell::child(int) const
 
 int QAccessibleTableCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
-    if (relation == QAccessible::Ancestor && index == 1) {
-        *iface = parent();
-        return 0;
-    }
+    Q_UNUSED(index);
+    Q_UNUSED(relation);
 
-    *iface = 0;
-    if (!view)
-        return -1;
-
-    switch (relation) {
-
-    case QAccessible::Child: {
-        return -1;
-    }
-    case QAccessible::Sibling:
-        if (index > 0) {
-            QAccessibleInterface *parent = QAccessible::queryAccessibleInterface(view);
-            *iface = parent->child(index - 1);
-            delete parent;
-            return *iface ? 0 : -1;
-        }
-        return -1;
-
+//  switch (relation) {
 // From table1 implementation:
 //    case Up:
 //    case Down:
@@ -862,26 +820,9 @@ int QAccessibleTableCell::navigate(QAccessible::RelationFlag relation, int index
 //        if (idx.parent() != row.parent() || idx.row() != row.row())
 //            *iface = cell(idx);
 //        return index ? kids.indexOf(idx) + 1 : 0; }
-    default:
-        break;
-    }
-
+//    }
+    *iface = 0;
     return -1;
-}
-
-QAccessible::Relation QAccessibleTableCell::relationTo(const QAccessibleInterface *other) const
-{
-    // we only check for parent-child relationships in trees
-    if (m_role == QAccessible::TreeItem && other->role() == QAccessible::TreeItem) {
-        QModelIndex otherIndex = static_cast<const QAccessibleTableCell*>(other)->m_index;
-        // is the other our parent?
-        if (otherIndex.parent() == m_index)
-            return QAccessible::Ancestor;
-        // are we the other's child?
-        if (m_index.parent() == otherIndex)
-            return QAccessible::Child;
-    }
-    return QAccessible::Unrelated;
 }
 
 QAccessibleTableHeaderCell::QAccessibleTableHeaderCell(QAbstractItemView *view_, int index_, Qt::Orientation orientation_)
@@ -976,11 +917,10 @@ QAccessibleInterface *QAccessibleTableHeaderCell::child(int) const
 
 int QAccessibleTableHeaderCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
-    if (relation == QAccessible::Ancestor && index == 1) {
-        *iface = parent();
-        return *iface ? 0 : -1;
-    }
-    *iface = 0;
+    Q_UNUSED(relation);
+    Q_UNUSED(index);
+    Q_UNUSED(iface);
+
     return -1;
 }
 

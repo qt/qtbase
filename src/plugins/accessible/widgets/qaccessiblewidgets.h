@@ -125,7 +125,6 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QStackedWidget *stackedWidget() const;
@@ -153,6 +152,7 @@ public:
     explicit QAccessibleMdiArea(QWidget *widget);
 
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
@@ -169,6 +169,7 @@ public:
     void setText(QAccessible::Text textType, const QString &text);
     QAccessible::State state() const;
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QRect rect() const;
@@ -185,6 +186,7 @@ public:
     explicit QAccessibleWorkspace(QWidget *widget);
 
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 

@@ -762,13 +762,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
         return E_FAIL;
 
     QAccessibleInterface *acc = 0;
-    int control = -1;
     switch (navDir) {
     case NAVDIR_FIRSTCHILD:
-        control = accessible->navigate(QAccessible::Child, 1, &acc);
+        acc = accessible->child(0);
         break;
     case NAVDIR_LASTCHILD:
-        control = accessible->navigate(QAccessible::Child, accessible->childCount(), &acc);
+        acc = accessible->child(accessible->childCount() - 1);
         break;
     case NAVDIR_NEXT:
     case NAVDIR_PREVIOUS:
@@ -778,41 +777,107 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
                 if (index > 0 && index <= parent->childCount())
-                    control = parent->navigate(QAccessible::Child, index, &acc);
+                    acc = parent->child(index - 1);
                 delete parent;
             }
         } else {
             int index = varStart.lVal;
             index += (navDir == NAVDIR_NEXT) ? 1 : -1;
             if (index > 0 && index <= accessible->childCount())
-                control = accessible->navigate(QAccessible::Child, index, &acc);
+                acc = accessible->child(index - 1);
         }
         break;
+
+    // Geometrical
     case NAVDIR_UP:
-        control = accessible->navigate(QAccessible::Up, varStart.lVal, &acc);
-        break;
     case NAVDIR_DOWN:
-        control = accessible->navigate(QAccessible::Down, varStart.lVal, &acc);
-        break;
     case NAVDIR_LEFT:
-        control = accessible->navigate(QAccessible::Left, varStart.lVal, &acc);
-        break;
     case NAVDIR_RIGHT:
-        control = accessible->navigate(QAccessible::Right, varStart.lVal, &acc);
+        if (QAccessibleInterface *pIface = accessible->parent()) {
+
+            QRect startg = accessible->rect();
+            QPoint startc = startg.center();
+            QAccessibleInterface *candidate = 0;
+            unsigned mindist = UINT_MAX;    // will work on screen sizes at least up to 46340x46340
+            const int sibCount = pIface->childCount();
+            for (int i = 0; i < sibCount; ++i) {
+                QAccessibleInterface *sibling = 0;
+                sibling = pIface->child(i);
+                Q_ASSERT(sibling);
+                if ((accessible->relationTo(sibling) & QAccessible::Self) || (sibling->state() & QAccessible::Invisible)) {
+                    //ignore ourself and invisible siblings
+                    delete sibling;
+                    continue;
+                }
+
+                QRect sibg = sibling->rect();
+                QPoint sibc = sibg.center();
+                QPoint sibp;
+                QPoint startp;
+                QPoint distp;
+                switch (navDir) {
+                case NAVDIR_LEFT:
+                    startp = QPoint(startg.left(), startg.top() + startg.height() / 2);
+                    sibp = QPoint(sibg.right(), sibg.top() + sibg.height() / 2);
+                    if (QPoint(sibc - startc).x() >= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_RIGHT:
+                    startp = QPoint(startg.right(), startg.top() + startg.height() / 2);
+                    sibp = QPoint(sibg.left(), sibg.top() + sibg.height() / 2);
+                    if (QPoint(sibc - startc).x() <= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_UP:
+                    startp = QPoint(startg.left() + startg.width() / 2, startg.top());
+                    sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.bottom());
+                    if (QPoint(sibc - startc).y() >= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_DOWN:
+                    startp = QPoint(startg.left() + startg.width() / 2, startg.bottom());
+                    sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.top());
+                    if (QPoint(sibc - startc).y() <= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                default:
+                    break;
+                }
+
+                // Since we're *comparing* (and not measuring) distances, we can compare the
+                // squared distance, (thus, no need to take the sqrt()).
+                unsigned dist = distp.x() * distp.x() + distp.y() * distp.y();
+                if (dist < mindist) {
+                    delete candidate;
+                    candidate = sibling;
+                    mindist = dist;
+                } else {
+                    delete sibling;
+                }
+            }
+            delete pIface;
+            acc = candidate;
+        }
         break;
     default:
         break;
     }
-    if (control == -1) {
+    if (!acc) {
         (*pvarEnd).vt = VT_EMPTY;
         return S_FALSE;
     }
-    if (!acc) {
-        (*pvarEnd).vt = VT_I4;
-        (*pvarEnd).lVal = control;
-        return S_OK;
-    }
-
     QWindowsAccessible* wacc = new QWindowsAccessible(acc);
 
     IDispatch *iface = 0;
@@ -850,18 +915,21 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
             acc = QAccessible::queryAccessibleInterface(ref.first);
             if (acc && ref.second) {
                 if (ref.second) {
-                    QAccessibleInterface *res;
-                    int index = acc->navigate(QAccessible::Child, ref.second, &res);
+                    QAccessibleInterface *res = acc->child(ref.second - 1);
                     delete acc;
-                    if (index == -1)
+                    if (!res)
                         return E_INVALIDARG;
                     acc = res;
                 }
             }
         }
     } else {
-        QAccessible::RelationFlag rel = childIndex ? QAccessible::Child : QAccessible::Self;
-        accessible->navigate(rel, childIndex, &acc);
+        if (childIndex) {
+            acc = accessible->child(childIndex - 1);
+        } else {
+            // FIXME
+            Q_ASSERT(0);
+        }
     }
 
     if (acc) {

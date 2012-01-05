@@ -124,17 +124,11 @@ public:
     QAccessibleInterface *child(int) const { return 0; }
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
     {
-        if (relation == QAccessible::Ancestor && index == 1) {
-            *iface = parent();
-            return 0;
-        }
+        Q_UNUSED(relation);
+        Q_UNUSED(index);
+        Q_UNUSED(iface);
         return -1;
     }
-    QAccessible::Relation relationTo(const QAccessibleInterface *) const
-    {
-        return QAccessible::Unrelated;
-    }
-
     // action interface
     QStringList actionNames() const
     {
@@ -170,18 +164,6 @@ QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
 QTabBar *QAccessibleTabBar::tabBar() const
 {
     return qobject_cast<QTabBar*>(object());
-}
-
-int QAccessibleTabBar::navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const
-{
-    if (rel == QAccessible::Child) {
-        *target = child(entry - 1);
-        if (*target) {
-            return 0;
-        }
-        return -1;
-    }
-    return QAccessibleWidget::navigate(rel, entry, target);
 }
 
 QAccessibleInterface* QAccessibleTabBar::child(int index) const
@@ -443,8 +425,7 @@ int QAccessibleAbstractScrollArea::navigate(QAccessible::RelationFlag relation, 
     QWidget *targetWidget = 0;
     QWidget *entryWidget = 0;
 
-    if (relation == QAccessible::Child ||
-        relation == QAccessible::Left || relation == QAccessible::Up || relation == QAccessible::Right || relation == QAccessible::Down) {
+    if (relation == QAccessible::Left || relation == QAccessible::Up || relation == QAccessible::Right || relation == QAccessible::Down) {
         QWidgetList children = accessibleChildren();
         if (entry < 0 || entry > children.count())
             return -1;
@@ -460,11 +441,6 @@ int QAccessibleAbstractScrollArea::navigate(QAccessible::RelationFlag relation, 
         // It might be possible to make it more general, but I'll leave that as an exercise
         // to the reader. :-)
         switch (relation) {
-        case QAccessible::Child:
-            if (entry > 0) {
-                *target = child(entry - 1);
-                return *target ? 0 : -1;
-            }
         case QAccessible::Left:
             if (entry < 1)
                 break;

@@ -65,7 +65,6 @@ public:
     QAccessible::Role role() const;
     QAccessibleInterface *child(int index) const;
     QAccessibleInterface *parent() const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild( const QAccessibleInterface *child ) const;
 
 protected:
@@ -81,7 +80,6 @@ public:
     QAccessibleInterface *child(int index) const;
     int childCount() const;
 
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild(const QAccessibleInterface *child) const;
 
 protected:
@@ -108,7 +106,6 @@ public:
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface ** target) const;
     QObject * object() const;
     QRect rect() const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
     QAccessible::Role role() const;
     void setText(QAccessible::Text t, const QString & text);
     QAccessible::State state() const;
