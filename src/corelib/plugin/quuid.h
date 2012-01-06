@@ -64,8 +64,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-struct Q_CORE_EXPORT QUuid
+class Q_CORE_EXPORT QUuid
 {
+public:
     enum Variant {
         VarUnknown        =-1,
         NCS                = 0, // 0 - -

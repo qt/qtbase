@@ -53,7 +53,7 @@ enum Target {
     StaticLib
 };
 
-struct QUuid;
+class QUuid;
 class VcprojGenerator : public Win32MakefileGenerator
 {
     bool init_flag;
