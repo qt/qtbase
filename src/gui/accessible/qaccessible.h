@@ -276,10 +276,6 @@ public:
         Unrelated     = 0x00000000,
         Self          = 0x00000001,
 
-        Up            = 0x00000100,
-        Down          = 0x00000200,
-        Left          = 0x00000400,
-        Right         = 0x00000800,
         Covers        = 0x00001000,
         Covered       = 0x00002000,
         GeometryMask  = 0x0000ff00,

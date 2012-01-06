@@ -154,7 +154,6 @@ public:
     int childCount() const;
     QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QMdiArea *mdiArea() const;
@@ -171,7 +170,6 @@ public:
     int childCount() const;
     QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QRect rect() const;
 
 protected:
@@ -188,7 +186,6 @@ public:
     int childCount() const;
     QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QWorkspace *workspace() const;
@@ -221,7 +218,6 @@ public:
 
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
     QAccessibleInterface *child(int index) const;
 

@@ -206,31 +206,10 @@ QAccessibleInterface *QAccessibleMenuItem::child(int index) const
 
 int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
+    Q_UNUSED(relation);
+    Q_UNUSED(entry);
     *target = 0;
-    if (entry < 0) {
-        return -1;
-    }
-
-    switch (relation) {
-    case QAccessible::Up:
-    case QAccessible::Down:{
-        QAccessibleInterface *parentIface = parent();
-        if (parentIface) {
-            int index = parentIface->indexOfChild(this);
-            if (index != -1) {
-                index += (relation == QAccessible::Down ? +1 : -1);
-                if (index >= 0)
-                    *target = parentIface->child(index);
-            }
-        }
-        delete parentIface;
-        break;
-    }
-    default:
-        break;
-
-    }
-    return *target ? 0 : -1;
+    return -1;
 }
 
 void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)

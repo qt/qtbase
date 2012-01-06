@@ -79,7 +79,6 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QAccessibleInterface *childAt(int x, int y) const;
 
 //protected:

@@ -827,8 +827,14 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
         if (childIndex) {
             acc = accessible->child(childIndex - 1);
         } else {
-            // FIXME
-            Q_ASSERT(0);
+            // Yes, some AT clients (Active Accessibility Object Inspector)
+            // actually ask for the same object. As a consequence, we need to clone ourselves:
+            if (QAccessibleInterface *par = accessible->parent()) {
+                const int indexOf = par->indexOfChild(accessible);
+                QAccessibleInterface *clone = par->child(indexOf);
+                delete par;
+                acc = clone;
+            }
         }
     }
 

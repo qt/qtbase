@@ -98,121 +98,6 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
     return widgets;
 }
 
-static inline int distance(QWidget *source, QWidget *target,
-                           QAccessible::RelationFlag relation)
-{
-    if (!source || !target)
-        return -1;
-
-    int returnValue = -1;
-    switch (relation) {
-    case QAccessible::Up:
-        if (target->y() <= source->y())
-            returnValue = source->y() - target->y();
-        break;
-    case QAccessible::Down:
-        if (target->y() >= source->y() + source->height())
-            returnValue = target->y() - (source->y() + source->height());
-        break;
-    case QAccessible::Right:
-        if (target->x() >= source->x() + source->width())
-            returnValue = target->x() - (source->x() + source->width());
-        break;
-    case QAccessible::Left:
-        if (target->x() <= source->x())
-            returnValue = source->x() - target->x();
-        break;
-    default:
-        break;
-    }
-    return returnValue;
-}
-
-static inline QWidget *mdiAreaNavigate(QWidget *area,
-                                       QAccessible::RelationFlag relation, int entry)
-{
-#if defined(QT_NO_MDIAREA) && defined(QT_NO_WORKSPACE)
-    Q_UNUSED(area);
-#endif
-#ifndef QT_NO_MDIAREA
-    const QMdiArea *mdiArea = qobject_cast<QMdiArea *>(area);
-#endif
-#ifndef QT_NO_WORKSPACE
-    const QWorkspace *workspace = qobject_cast<QWorkspace *>(area);
-#endif
-    if (true
-#ifndef QT_NO_MDIAREA
-        && !mdiArea
-#endif
-#ifndef QT_NO_WORKSPACE
-    && !workspace
-#endif
-    )
-        return 0;
-
-    QWidgetList windows;
-#ifndef QT_NO_MDIAREA
-    if (mdiArea) {
-        foreach (QMdiSubWindow *window, mdiArea->subWindowList())
-            windows.append(window);
-    } else
-#endif
-    {
-#ifndef QT_NO_WORKSPACE
-        foreach (QWidget *window, workspace->windowList())
-            windows.append(window->parentWidget());
-#endif
-    }
-
-    if (windows.isEmpty() || entry < 1 || entry > windows.count())
-        return 0;
-
-    QWidget *source = windows.at(entry - 1);
-    QMap<int, QWidget *> candidates;
-    foreach (QWidget *window, windows) {
-        if (source == window)
-            continue;
-        int candidateDistance = distance(source, window, relation);
-        if (candidateDistance >= 0)
-            candidates.insert(candidateDistance, window);
-    }
-
-    int minimumDistance = INT_MAX;
-    QWidget *target = 0;
-    foreach (QWidget *candidate, candidates) {
-        switch (relation) {
-        case QAccessible::Up:
-        case QAccessible::Down:
-            if (qAbs(candidate->x() - source->x()) < minimumDistance) {
-                target = candidate;
-                minimumDistance = qAbs(candidate->x() - source->x());
-            }
-            break;
-        case QAccessible::Left:
-        case QAccessible::Right:
-            if (qAbs(candidate->y() - source->y()) < minimumDistance) {
-                target = candidate;
-                minimumDistance = qAbs(candidate->y() - source->y());
-            }
-            break;
-        default:
-            break;
-        }
-        if (minimumDistance == 0)
-            break;
-    }
-
-#ifndef QT_NO_WORKSPACE
-    if (workspace) {
-        foreach (QWidget *widget, workspace->windowList()) {
-            if (widget->parentWidget() == target)
-                target = widget;
-        }
-    }
-#endif
-    return target;
-}
-
 #ifndef QT_NO_TEXTEDIT
 
 /*!
@@ -790,24 +675,6 @@ int QAccessibleMdiArea::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
-int QAccessibleMdiArea::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    QWidget *targetObject = 0;
-    switch (relation) {
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right:
-        targetObject = mdiAreaNavigate(mdiArea(), relation, entry);
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
-}
-
 QMdiArea *QAccessibleMdiArea::mdiArea() const
 {
     return static_cast<QMdiArea *>(object());
@@ -881,44 +748,6 @@ int QAccessibleMdiSubWindow::indexOfChild(const QAccessibleInterface *child) con
     return -1;
 }
 
-int QAccessibleMdiSubWindow::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-
-    if (!mdiSubWindow()->parent())
-        return QAccessibleWidget::navigate(relation, entry, target);
-
-    QWidget *targetObject = 0;
-    QMdiSubWindow *source = mdiSubWindow();
-    switch (relation) {
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right: {
-        if (entry != 0)
-            break;
-        QWidget *parent = source->parentWidget();
-        while (parent && !parent->inherits("QMdiArea"))
-            parent = parent->parentWidget();
-        QMdiArea *mdiArea = qobject_cast<QMdiArea *>(parent);
-        if (!mdiArea)
-            break;
-        int index = mdiArea->subWindowList().indexOf(source);
-        if (index == -1)
-            break;
-        if (QWidget *dest = mdiAreaNavigate(mdiArea, relation, index + 1)) {
-            *target = QAccessible::queryAccessibleInterface(dest);
-            return *target ? 0 : -1;
-        }
-        break;
-    }
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
-}
-
 QRect QAccessibleMdiSubWindow::rect() const
 {
     if (mdiSubWindow()->isHidden())
@@ -965,24 +794,6 @@ int QAccessibleWorkspace::indexOfChild(const QAccessibleInterface *child) const
         return workspace()->windowList().indexOf(window);
     }
     return -1;
-}
-
-int QAccessibleWorkspace::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    QWidget *targetObject = 0;
-    switch (relation) {
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right:
-        targetObject = mdiAreaNavigate(workspace(), relation, entry);
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
 }
 
 QWorkspace *QAccessibleWorkspace::workspace() const
@@ -1054,28 +865,6 @@ QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
         return QAccessible::queryAccessibleInterface(navigationBar());
 
     return QAccessible::queryAccessibleInterface(calendarView());
-}
-
-int QAccessibleCalendarWidget::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    if (entry <= 0 || entry > childCount())
-        return QAccessibleWidget::navigate(relation, entry, target);
-    QWidget *targetWidget = 0;
-    switch (relation) {
-    case QAccessible::Up:
-        if (entry == 2)
-            targetWidget = navigationBar();
-        break;
-    case QAccessible::Down:
-        if (entry == 1 && childCount() == 2)
-            targetWidget = calendarView();
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetWidget);
-    return *target ? 0 : -1;
 }
 
 QCalendarWidget *QAccessibleCalendarWidget::calendarWidget() const
