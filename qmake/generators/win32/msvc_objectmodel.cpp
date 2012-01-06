@@ -649,11 +649,11 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 RuntimeLibrary = rtMultiThreadedDebug;
             break;
         } else if (second == 'P') {
-            if (config->CompilerVersion >= NET2005) {
-                AdditionalOptions += option;
-            } else if (config->CompilerVersion >= NET2010) {
+            if (config->CompilerVersion >= NET2010) {
                 MultiProcessorCompilation = _True;
                 MultiProcessorCompilationProcessorCount = option+3;
+            } else if (config->CompilerVersion >= NET2005) {
+                AdditionalOptions += option;
             } else {
                 warn_msg(WarnLogic, "/MP option is not supported in Visual C++ < 2005, ignoring.");
             }
