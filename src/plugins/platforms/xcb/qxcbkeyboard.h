@@ -86,6 +86,7 @@ private:
     uint m_caps_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
+    xcb_keycode_t m_autorepeat_code;
 };
 
 QT_END_NAMESPACE

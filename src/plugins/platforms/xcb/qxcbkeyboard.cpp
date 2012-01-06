@@ -907,6 +907,7 @@ QString QXcbKeyboard::translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
 
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     : QXcbObject(connection)
+    , m_autorepeat_code(0)
 {
     m_key_symbols = xcb_key_symbols_alloc(xcb_connection());
     setupModifiers();
@@ -1020,6 +1021,62 @@ void QXcbKeyboard::setMask(uint sym, uint mask)
 
 // #define XCB_KEYBOARD_DEBUG
 
+class KeyChecker
+{
+public:
+    KeyChecker(xcb_window_t window, xcb_keycode_t code, xcb_timestamp_t time)
+        : m_window(window)
+        , m_code(code)
+        , m_time(time)
+        , m_error(false)
+        , m_release(true)
+    {
+    }
+
+    bool check(xcb_generic_event_t *ev)
+    {
+        if (m_error || !ev)
+            return false;
+
+        int type = ev->response_type & ~0x80;
+        if (type != XCB_KEY_PRESS && type != XCB_KEY_RELEASE)
+            return false;
+
+        xcb_key_press_event_t *event = (xcb_key_press_event_t *)ev;
+
+        if (event->event != m_window || event->detail != m_code) {
+            m_error = true;
+            return false;
+        }
+
+        if (type == XCB_KEY_PRESS) {
+            m_error = !m_release || event->time - m_time > 10;
+            return !m_error;
+        }
+
+        if (m_release) {
+            m_error = true;
+            return false;
+        }
+
+        m_release = true;
+        m_time = event->time;
+
+        return false;
+    }
+
+    bool release() const { return m_release; }
+    xcb_timestamp_t time() const { return m_time; }
+
+private:
+    xcb_window_t m_window;
+    xcb_keycode_t m_code;
+    xcb_timestamp_t m_time;
+
+    bool m_error;
+    bool m_release;
+};
+
 void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code,
                                   quint16 state, xcb_timestamp_t time)
 {
@@ -1062,8 +1119,32 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
             return;
     }
 
+    bool isAutoRepeat = false;
+
+    if (type == QEvent::KeyPress) {
+        if (m_autorepeat_code == code) {
+            isAutoRepeat = true;
+            m_autorepeat_code = 0;
+        }
+    } else {
+        // look ahead for auto-repeat
+        KeyChecker checker(((QXcbWindow *)window->handle())->xcb_window(), code, time);
+        xcb_generic_event_t *event = connection()->checkEvent(checker);
+        if (event) {
+            isAutoRepeat = true;
+            free(event);
+        }
+        m_autorepeat_code = isAutoRepeat ? code : 0;
+    }
+
     QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                   code, 0, state, string.left(count));
+                                                   code, 0, state, string.left(count), isAutoRepeat);
+
+    if (isAutoRepeat && type == QEvent::KeyRelease) {
+        // since we removed it from the event queue using checkEvent we need to send the key press here
+        QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
+                                                       code, 0, state, string.left(count), isAutoRepeat);
+    }
 }
 
 #ifdef XCB_USE_XLIB

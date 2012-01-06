@@ -340,7 +340,7 @@ public:
 
     xcb_generic_event_t *checkEvent(int type);
     template<typename T>
-    inline xcb_generic_event_t *checkEvent(const T &checker);
+    inline xcb_generic_event_t *checkEvent(T &checker);
 
     typedef bool (*PeekFunc)(xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -428,7 +428,7 @@ private:
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 
 template<typename T>
-xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
+xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
 {
     QXcbEventArray *eventqueue = m_reader->lock();
 
