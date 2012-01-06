@@ -198,8 +198,13 @@ public:
                               int row, int column, const QModelIndex &parent);
     virtual Qt::DropActions supportedDropActions() const;
 
-    Qt::DropActions supportedDragActions() const;
-    void setSupportedDragActions(Qt::DropActions);
+    virtual Qt::DropActions supportedDragActions() const;
+#if QT_DEPRECATED_SINCE(5, 0)
+    void setSupportedDragActions(Qt::DropActions actions)
+    {
+      doSetSupportedDragActions(actions);
+    }
+#endif
 
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
@@ -311,6 +316,7 @@ protected:
 
 private:
     void doSetRoleNames(const QHash<int,QByteArray> &roleNames);
+    void doSetSupportedDragActions(Qt::DropActions actions);
 
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)

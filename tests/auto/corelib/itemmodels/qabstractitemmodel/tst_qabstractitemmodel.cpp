@@ -113,6 +113,7 @@ private slots:
     void testChildrenLayoutsChanged();
 
     void testRoleNames();
+    void testDragActions();
 
 private:
     DynamicTreeModel *m_model;
@@ -1978,11 +1979,11 @@ void tst_QAbstractItemModel::testChildrenLayoutsChanged()
     }
 }
 
-class OverrideRoleNames : public QStringListModel
+class OverrideRoleNamesAndDragActions : public QStringListModel
 {
     Q_OBJECT
 public:
-    OverrideRoleNames(QObject *parent = 0)
+    OverrideRoleNamesAndDragActions(QObject *parent = 0)
       : QStringListModel(parent)
     {
 
@@ -1994,14 +1995,27 @@ public:
         roles.insert(Qt::UserRole + 2, "custom");
         return roles;
     }
+
+    Qt::DropActions supportedDragActions() const
+    {
+        return QStringListModel::supportedDragActions() | Qt::MoveAction;
+    }
 };
 
 void tst_QAbstractItemModel::testRoleNames()
 {
-    QAbstractItemModel *model = new OverrideRoleNames(this);
+    QAbstractItemModel *model = new OverrideRoleNamesAndDragActions(this);
     QHash<int, QByteArray> roles = model->roleNames();
     QVERIFY(roles.contains(Qt::UserRole + 2));
     QVERIFY(roles.value(Qt::UserRole + 2) == "custom");
+}
+
+void tst_QAbstractItemModel::testDragActions()
+{
+    QAbstractItemModel *model = new OverrideRoleNamesAndDragActions(this);
+    const Qt::DropActions actions = model->supportedDragActions();
+    QVERIFY(actions & Qt::CopyAction); // Present by default
+    QVERIFY(actions & Qt::MoveAction);
 }
 
 QTEST_MAIN(tst_QAbstractItemModel)

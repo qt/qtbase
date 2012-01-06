@@ -1831,7 +1831,6 @@ Qt::DropActions QAbstractItemModel::supportedDropActions() const
 */
 Qt::DropActions QAbstractItemModel::supportedDragActions() const
 {
-    // ### Qt 5: make this virtual or these properties
     Q_D(const QAbstractItemModel);
     if (d->supportedDragActions != -1)
         return d->supportedDragActions;
@@ -1839,17 +1838,22 @@ Qt::DropActions QAbstractItemModel::supportedDragActions() const
 }
 
 /*!
+    \internal
+ */
+void QAbstractItemModel::doSetSupportedDragActions(Qt::DropActions actions)
+{
+    Q_D(QAbstractItemModel);
+    d->supportedDragActions = actions;
+}
+
+/*!
     \since 4.2
+    \obsolete
 
     Sets the supported drag \a actions for the items in the model.
 
     \sa supportedDragActions(), {Using drag and drop with item views}
 */
-void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
-{
-    Q_D(QAbstractItemModel);
-    d->supportedDragActions = actions;
-}
 
 /*!
     \note The base class implementation of this function does nothing and
