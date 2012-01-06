@@ -1435,12 +1435,10 @@ class TypeConstructor {
         {
             QMetaType::Constructor ctor = 0;
             if (QTypeModuleInfo<T>::IsGui) {
-                Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 ctor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor;
             } else if (QTypeModuleInfo<T>::IsWidget) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
                 ctor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor;
@@ -1527,12 +1525,10 @@ class TypeDestructor {
         {
             QMetaType::Destructor dtor = 0;
             if (QTypeModuleInfo<T>::IsGui) {
-                Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return;
                 dtor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor;
             } else if (QTypeModuleInfo<T>::IsWidget) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return;
                 dtor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor;
@@ -1601,12 +1597,10 @@ class SizeOf {
         static int Size(const int type)
         {
             if (QTypeModuleInfo<T>::IsGui) {
-                Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size;
             } else if (QTypeModuleInfo<T>::IsWidget) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
                 return qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].size;
