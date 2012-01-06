@@ -174,7 +174,7 @@ bool isSorted(ContainerType &container, LessThan lessThan)
 template <typename ContainerType>
 bool isSorted(ContainerType &container)
 {
-    return isSorted(container, qLess<Q_TYPENAME ContainerType::value_type>());
+    return isSorted(container, qLess<typename ContainerType::value_type>());
 }
 
 

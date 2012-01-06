@@ -285,11 +285,11 @@ void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 }
 
 template <typename T>
-Q_TYPENAME T::value_type qAverage(const T &container)
+typename T::value_type qAverage(const T &container)
 {
-    Q_TYPENAME T::const_iterator it = container.constBegin();
-    Q_TYPENAME T::const_iterator end = container.constEnd();
-    Q_TYPENAME T::value_type acc = Q_TYPENAME T::value_type();
+    typename T::const_iterator it = container.constBegin();
+    typename T::const_iterator end = container.constEnd();
+    typename T::value_type acc = typename T::value_type();
     int count = 0;
     while (it != end) {
         acc += *it;

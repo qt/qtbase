@@ -552,7 +552,6 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_BOOL_TYPE
 #    define Q_NO_EXPLICIT_KEYWORD
 #    define Q_NO_USING_KEYWORD
-#    define Q_TYPENAME
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
@@ -586,7 +585,6 @@ namespace QT_NAMESPACE {}
 /* Apply to all versions prior to Compaq C++ V6.0-000 - observed on
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
-#    define Q_TYPENAME
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
 #  endif
@@ -1617,10 +1615,6 @@ inline int qMacVersion() { return QSysInfo::MacintoshVersion; }
 #endif
 #ifndef Q_INLINE_TEMPLATE
 #  define Q_INLINE_TEMPLATE inline
-#endif
-
-#ifndef Q_TYPENAME
-#  define Q_TYPENAME typename
 #endif
 
 /*

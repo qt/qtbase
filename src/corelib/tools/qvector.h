@@ -591,7 +591,7 @@ void QVector<T>::append(const T &t)
 }
 
 template <typename T>
-Q_TYPENAME QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, const T &t)
+typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, const T &t)
 {
     int offset = int(before - p->array);
     if (n != 0) {
@@ -625,7 +625,7 @@ Q_TYPENAME QVector<T>::iterator QVector<T>::insert(iterator before, size_type n,
 }
 
 template <typename T>
-Q_TYPENAME QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
+typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 {
     int f = int(abegin - p->array);
     int l = int(aend - p->array);

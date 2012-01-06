@@ -93,7 +93,7 @@ void FixedColumnMatrix<T, NumColumns>::addRow(const T &value)
 template <class T, int NumColumns>
 void FixedColumnMatrix<T, NumColumns>::insertRow(int r, const T &value)
 {
-    Q_TYPENAME Storage::iterator it = m_storage.begin();
+    typename Storage::iterator it = m_storage.begin();
     it += r * NumColumns;
     m_storage.insert(it, NumColumns, value);
 }
