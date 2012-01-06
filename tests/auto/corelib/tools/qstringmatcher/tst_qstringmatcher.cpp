@@ -56,15 +56,9 @@ private slots:
     void assignOperator();
 };
 
-// Subclass that exposes the protected functions.
-class SubQStringMatcher : public QStringMatcher
-{
-public:
-};
-
 void tst_QStringMatcher::qstringmatcher()
 {
-    SubQStringMatcher matcher;
+    QStringMatcher matcher;
     QCOMPARE(matcher.caseSensitivity(), Qt::CaseSensitive);
     QCOMPARE(matcher.indexIn("foo", 1), 1);
     QCOMPARE(matcher.pattern(), QString());
@@ -73,7 +67,7 @@ void tst_QStringMatcher::qstringmatcher()
 // public Qt::CaseSensitivity caseSensitivity() const
 void tst_QStringMatcher::caseSensitivity()
 {
-    SubQStringMatcher matcher;
+    QStringMatcher matcher;
 
     matcher.setCaseSensitivity(Qt::CaseSensitive);
     QCOMPARE(matcher.caseSensitivity(), Qt::CaseSensitive);
@@ -106,7 +100,7 @@ void tst_QStringMatcher::indexIn()
     QFETCH(int, from);
     QFETCH(int, indexIn);
 
-    SubQStringMatcher matcher;
+    QStringMatcher matcher;
     matcher.setPattern(needle);
 
     QCOMPARE(matcher.indexIn(haystack, from), indexIn);
@@ -133,7 +127,7 @@ void tst_QStringMatcher::setCaseSensitivity()
     QFETCH(int, indexIn);
     QFETCH(int, cs);
 
-    SubQStringMatcher matcher;
+    QStringMatcher matcher;
     matcher.setPattern(needle);
     matcher.setCaseSensitivity(static_cast<Qt::CaseSensitivity> (cs));
 
