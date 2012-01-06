@@ -75,6 +75,7 @@ contains(QT_CONFIG, freetype) {
    DEFINES += FT2_BUILD_LIBRARY
    contains(QT_CONFIG, system-zlib) {
         DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
+        include($$PWD/../../../3rdparty/zlib_dependency.pri)
    }
 
 } else:contains(QT_CONFIG, system-freetype) {
