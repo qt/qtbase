@@ -949,6 +949,10 @@ void VcprojGenerator::initCompilerTool()
         placement = ".\\";
 
     VCConfiguration &conf = vcProject.Configuration;
+    if (conf.CompilerVersion >= NET2010) {
+        // adjust compiler tool defaults for VS 2010 and above
+        conf.compiler.Optimization = optimizeDisabled;
+    }
     conf.compiler.AssemblerListingLocation = placement ;
     conf.compiler.ProgramDataBaseFileName = ".\\" ;
     conf.compiler.ObjectFile = placement ;
