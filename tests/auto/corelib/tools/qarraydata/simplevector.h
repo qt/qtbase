@@ -237,11 +237,15 @@ public:
             return;
         }
 
-        // Temporarily copy overlapping data, if needed
         if ((first >= where && first < end)
                 || (last > where && last <= end)) {
-            SimpleVector tmp(first, last);
-            d->insert(where, tmp.constBegin(), tmp.constEnd());
+            // Copy overlapping data first and only then shuffle it into place
+            T *start = d->begin() + position;
+            T *middle = d->end();
+
+            d->copyAppend(first, last);
+            std::rotate(start, middle, d->end());
+
             return;
         }
 
