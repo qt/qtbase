@@ -1126,6 +1126,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accValue(VARIANT, BSTR)
 // moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIANT varID)
 {
+    Q_UNUSED(flagsSelect);
+    Q_UNUSED(varID);
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
