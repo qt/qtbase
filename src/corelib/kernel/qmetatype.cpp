@@ -1434,12 +1434,12 @@ class TypeConstructor {
         static void *Construct(const int type, void *where, const T *copy)
         {
             QMetaType::Constructor ctor = 0;
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
+            if (QTypeModuleInfo<T>::IsGui) {
                 Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 ctor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
@@ -1526,12 +1526,12 @@ class TypeDestructor {
         static void Destruct(const int type, void *where)
         {
             QMetaType::Destructor dtor = 0;
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
+            if (QTypeModuleInfo<T>::IsGui) {
                 Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return;
                 dtor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return;
@@ -1600,12 +1600,12 @@ class SizeOf {
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
         static int Size(const int type)
         {
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
+            if (QTypeModuleInfo<T>::IsGui) {
                 Q_ASSERT(qMetaTypeGuiHelper);
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 Q_ASSERT(qMetaTypeWidgetsHelper);
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
