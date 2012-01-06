@@ -78,7 +78,7 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
         setHeader(QNetworkRequest::ContentLengthHeader, size);
         QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
 
-        d->decodedData.setBuffer(&payload);
+        d->decodedData.setData(payload);
         d->decodedData.open(QIODevice::ReadOnly);
 
         QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
