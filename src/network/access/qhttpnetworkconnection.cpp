@@ -1050,14 +1050,16 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
 
         int timeout = 300;
 #ifndef QT_NO_BEARERMANAGEMENT
-        if (networkSession->configuration().bearerType() == QNetworkConfiguration::Bearer2G)
-            timeout = 800;
-        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerCDMA2000)
-            timeout = 500;
-        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerWCDMA)
-            timeout = 500;
-        else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerHSPA)
-            timeout = 400;
+        if (networkSession) {
+            if (networkSession->configuration().bearerType() == QNetworkConfiguration::Bearer2G)
+                timeout = 800;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerCDMA2000)
+                timeout = 500;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerWCDMA)
+                timeout = 500;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerHSPA)
+                timeout = 400;
+        }
 #endif
         delayedConnectionTimer.start(timeout);
         if (delayIpv4)
