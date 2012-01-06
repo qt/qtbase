@@ -225,6 +225,27 @@ static int q_X509Callback(int ok, X509_STORE_CTX *ctx)
     if (!ok) {
         // Store the error and at which depth the error was detected.
         _q_sslErrorList()->errors << qMakePair<int, int>(ctx->error, ctx->error_depth);
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << "verification error: dumping bad certificate";
+        qDebug() << QSslCertificatePrivate::QSslCertificate_from_X509(ctx->current_cert).toPem();
+        qDebug() << "dumping chain";
+        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(ctx->chain)) {
+            QString certFormat(QStringLiteral("O=%1 CN=%2 L=%3 OU=%4 C=%5 ST=%6"));
+            qDebug() << "Issuer:" << "O=" << cert.issuerInfo(QSslCertificate::Organization)
+                << "CN=" << cert.issuerInfo(QSslCertificate::CommonName)
+                << "L=" << cert.issuerInfo(QSslCertificate::LocalityName)
+                << "OU=" << cert.issuerInfo(QSslCertificate::OrganizationalUnitName)
+                << "C=" << cert.issuerInfo(QSslCertificate::CountryName)
+                << "ST=" << cert.issuerInfo(QSslCertificate::StateOrProvinceName);
+            qDebug() << "Subject:" << "O=" << cert.subjectInfo(QSslCertificate::Organization)
+                << "CN=" << cert.subjectInfo(QSslCertificate::CommonName)
+                << "L=" << cert.subjectInfo(QSslCertificate::LocalityName)
+                << "OU=" << cert.subjectInfo(QSslCertificate::OrganizationalUnitName)
+                << "C=" << cert.subjectInfo(QSslCertificate::CountryName)
+                << "ST=" << cert.subjectInfo(QSslCertificate::StateOrProvinceName);
+            qDebug() << "Valid:" << cert.effectiveDate() << "-" << cert.expiryDate();
+        }
+#endif
     }
     // Always return OK to allow verification to continue. We're handle the
     // errors gracefully after collecting all errors, after verification has
