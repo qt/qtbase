@@ -57,6 +57,7 @@ private slots:
     void signal();
     void constructor();
     void property();
+    void variantProperty();
     void notifySignal();
     void enumerator();
     void classInfo();
@@ -725,6 +726,20 @@ void tst_QMetaObjectBuilder::property()
     QCOMPARE(prototypeProp.notifySignal().signature(), QByteArray("propChanged(QString)"));
     QCOMPARE(builder.methodCount(), 1);
     QCOMPARE(builder.method(0).signature(), QByteArray("propChanged(QString)"));
+}
+
+void tst_QMetaObjectBuilder::variantProperty()
+{
+    QMetaObjectBuilder builder;
+    builder.addProperty("variant", "const QVariant &");
+    QMetaObject *meta = builder.toMetaObject();
+
+    QMetaProperty prop = meta->property(meta->propertyOffset());
+    QCOMPARE(QMetaType::Type(prop.type()), QMetaType::QVariant);
+    QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
+    QCOMPARE(QByteArray(prop.typeName()), QByteArray("QVariant"));
+
+    qFree(meta);
 }
 
 void tst_QMetaObjectBuilder::notifySignal()

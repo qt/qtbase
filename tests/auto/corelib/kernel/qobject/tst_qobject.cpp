@@ -1671,7 +1671,7 @@ void tst_QObject::property()
 
     const int idx = mo->indexOfProperty("variant");
     QVERIFY(idx != -1);
-    QVERIFY(mo->property(idx).type() == QVariant::LastType);
+    QCOMPARE(QMetaType::Type(mo->property(idx).type()), QMetaType::QVariant);
     QCOMPARE(object.property("variant"), QVariant());
     QVariant variant1(42);
     QVariant variant2("string");

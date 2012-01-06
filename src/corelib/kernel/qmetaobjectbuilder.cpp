@@ -80,8 +80,6 @@ uint qvariant_nameToType(const char* name)
     if (!name)
         return 0;
 
-    if (strcmp(name, "QVariant") == 0)
-        return 0xffffffff;
     if (strcmp(name, "QCString") == 0)
         return QMetaType::QByteArray;
     if (strcmp(name, "Q_LLONG") == 0)
