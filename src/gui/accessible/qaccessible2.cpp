@@ -51,8 +51,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \namespace QAccessible2
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessible2 namespace defines constants relating to
     IAccessible2-based interfaces
@@ -64,8 +62,6 @@ QT_BEGIN_NAMESPACE
     \class QAccessibleTextInterface
 
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessibleTextInterface class implements support for
     the IAccessibleText interface.
@@ -76,8 +72,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleEditableTextInterface
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessibleEditableTextInterface class implements support for
     the IAccessibleEditableText interface.
@@ -88,8 +82,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleSimpleEditableTextInterface
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessibleSimpleEditableTextInterface class is a convenience class for
     text-based widgets.
@@ -100,8 +92,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessibleValueInterface
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessibleValueInterface class implements support for
     the IAccessibleValue interface.
@@ -122,10 +112,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \class QAccessibleTableCellInterface
+    \ingroup accessibility
+
+    \brief The QAccessibleTableCellInterface class implements support for
+    the IAccessibleTable2 Cell interface.
+
+    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
+/*!
+    \class QAccessibleTableInterface
+    \ingroup accessibility
+
+    \brief The QAccessibleTableInterface class implements support for
+    the IAccessibleTable2 interface.
+
+    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
+
+/*!
     \class QAccessibleActionInterface
     \ingroup accessibility
-    \internal
-    \preliminary
 
     \brief The QAccessibleActionInterface class implements support for
     invocable actions in the interface.
