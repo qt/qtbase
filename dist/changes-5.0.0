@@ -364,3 +364,10 @@ Qt for Windows CE
      construction would not be affected by the QPointer, but now that QPointer
      is implemented using QWeakPoiner, constructing the QSharedPointer will
      cause an abort().
+
+
+- QMessageBox
+
+     * The static function QMessageBox::question has changed the default argument
+     for buttons. Before the default was to have an Ok button. That is changed
+     to having a yes and a no button.
