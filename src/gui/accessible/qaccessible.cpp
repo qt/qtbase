@@ -59,10 +59,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessible
     \brief The QAccessible class provides enums and static functions
-    relating to accessibility.
+    related to accessibility.
 
     \ingroup accessibility
     \inmodule QtWidgets
+
+    This class is part of \l {Accessibility for QWidget Applications}.
 
     Accessible applications can be used by people who are not able to
     use applications by conventional means.
@@ -687,6 +689,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     \ingroup accessibility
     \inmodule QtGui
 
+    This class is part of \l {Accessibility for QWidget Applications}.
+
     Accessibility tools (also called AT Clients), such as screen readers
     or braille displays, require high-level information about
     accessible objects in an application. Accessible objects provide
@@ -1080,6 +1084,9 @@ QColor QAccessibleInterface::backgroundColor() const
 
 /*!
     \class QAccessibleEvent
+
+    \internal
+
     \brief The QAccessibleEvent class is used to query addition
     accessibility information about complex widgets.
 

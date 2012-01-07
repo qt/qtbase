@@ -159,6 +159,8 @@ public:
     \ingroup accessibility
     \inmodule QtWidgets
 
+    This class is part of \l {Accessibility for QWidget Applications}.
+
     This class is convenient to use as a base class for custom
     implementations of QAccessibleInterfaces that provide information
     about widget objects.
