@@ -264,7 +264,7 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
 {
     const KeyPair *i = qBinaryFind(entries, end, keyCode);
     if (i == end)
-        return Qt::Key(keyCode.unicode());
+        return Qt::Key(keyCode.toUpper().unicode());
     return i->qtKey;
 }
 
