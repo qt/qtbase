@@ -962,6 +962,7 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
     xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, &error);
     if (error) {
         qWarning() << "QXcbConnection::atomName: bad Atom" << atom;
+        free(error);
     }
     if (reply) {
         QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
