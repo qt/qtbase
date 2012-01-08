@@ -520,6 +520,11 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
 #    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+       /* C++0x features supported in GCC 4.7: */
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_FINAL
+#    endif
 
 #  endif
 
@@ -1081,6 +1086,18 @@ redefine to built-in booleans to make autotests work properly */
 # define Q_DECL_CONSTEXPR constexpr
 #else
 # define Q_DECL_CONSTEXPR
+#endif
+
+#ifdef Q_COMPILER_EXPLICIT_OVERRIDES
+# define Q_DECL_OVERRIDE override
+#else
+# define Q_DECL_OVERRIDE
+#endif
+
+#ifdef Q_COMPILER_FINAL
+# define Q_DECL_FINAL final
+#else
+# define Q_DECL_FINAL
 #endif
 
 //defines the type for the WNDPROC on windows
