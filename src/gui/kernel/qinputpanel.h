@@ -82,7 +82,7 @@ public:
     QRectF cursorRectangle() const; // ### what if we have rotations for the item?
 
     // keyboard geometry in window coords
-    QRectF keyboardRectangle();
+    QRectF keyboardRectangle() const;
 
     enum Action {
         Click,

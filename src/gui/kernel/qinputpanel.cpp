@@ -159,9 +159,9 @@ QRectF QInputPanel::cursorRectangle() const
     \property QInputPanel::keyboardRectangle
     \brief Virtual keyboard's geometry in window coordinates.
 */
-QRectF QInputPanel::keyboardRectangle()
+QRectF QInputPanel::keyboardRectangle() const
 {
-    Q_D(QInputPanel);
+    Q_D(const QInputPanel);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->keyboardRect();
