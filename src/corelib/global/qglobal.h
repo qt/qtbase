@@ -1071,6 +1071,12 @@ redefine to built-in booleans to make autotests work properly */
 # define Q_NULLPTR         0
 #endif
 
+#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
+# define Q_DECL_EQ_DELETE = delete
+#else
+# define Q_DECL_EQ_DELETE
+#endif
+
 #ifdef Q_COMPILER_CONSTEXPR
 # define Q_DECL_CONSTEXPR constexpr
 #else
@@ -2443,15 +2449,9 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
-#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #define Q_DISABLE_COPY(Class) \
-    Class(const Class &) = delete;\
-    Class &operator=(const Class &) = delete;
-#else
-#define Q_DISABLE_COPY(Class) \
-    Class(const Class &); \
-    Class &operator=(const Class &);
-#endif
+    Class(const Class &) Q_DECL_EQ_DELETE;\
+    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
