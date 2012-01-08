@@ -1899,13 +1899,13 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 */
 
 template <typename T>
-inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t, const HandlersManager &handler)
+inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t, const HandlersManager &handlerManager)
 {
     if (d.type == t)
         return *v_cast<T>(&d);
 
     T ret;
-    handler[d.type]->convert(&d, t, &ret, 0);
+    handlerManager[d.type]->convert(&d, t, &ret, 0);
     return ret;
 }
 
@@ -2212,7 +2212,7 @@ QBitArray QVariant::toBitArray() const
 
 template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d,
-                             const HandlersManager &handler, bool *ok, const T& val)
+                             const HandlersManager &handlerManager, bool *ok, const T& val)
 {
     uint t = qMetaTypeId<T>();
     if (ok)
@@ -2221,7 +2221,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
         return val;
 
     T ret = 0;
-    if (!handler[d.type]->convert(&d, QVariant::Type(t), &ret, ok) && ok)
+    if (!handlerManager[d.type]->convert(&d, QVariant::Type(t), &ret, ok) && ok)
         *ok = false;
     return ret;
 }
