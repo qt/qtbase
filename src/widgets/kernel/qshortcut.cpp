@@ -521,9 +521,9 @@ void QShortcut::setContext(Qt::ShortcutContext context)
     d->redoGrab(qApp->d_func()->shortcutMap);
 }
 
-Qt::ShortcutContext QShortcut::context()
+Qt::ShortcutContext QShortcut::context() const
 {
-    Q_D(QShortcut);
+    Q_D(const QShortcut);
     return d->sc_context;
 }
 
