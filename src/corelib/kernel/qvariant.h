@@ -389,10 +389,10 @@ public:
 
 private:
     // force compile error, prevent QVariant(bool) to be called
-    inline QVariant(void *) { Q_ASSERT(false); }
+    inline QVariant(void *) Q_DECL_EQ_DELETE;
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
-    inline QVariant(const char *) { Q_ASSERT(false); }
+    inline QVariant(const char *) Q_DECL_EQ_DELETE;
 #endif
 public:
     typedef Private DataPtr;
