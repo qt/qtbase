@@ -83,7 +83,7 @@ public:
     QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const;
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
-    int bspTreeDepth();
+    int bspTreeDepth() const;
     void setBspTreeDepth(int depth);
 
 protected Q_SLOTS:

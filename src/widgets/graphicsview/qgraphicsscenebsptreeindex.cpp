@@ -601,7 +601,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
     10 items.
 
 */
-int QGraphicsSceneBspTreeIndex::bspTreeDepth()
+int QGraphicsSceneBspTreeIndex::bspTreeDepth() const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
     return d->bspTreeDepth;
