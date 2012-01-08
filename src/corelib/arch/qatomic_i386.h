@@ -322,17 +322,17 @@ template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
 # define EBX_reg "b"
 # define EBX_load(reg)
 #endif
-        unsigned char ret;
+        quint32 highExpectedValue = quint32(newValue >> 32); // ECX
         asm volatile(EBX_load("%3")
                      "lock\n"
                      "cmpxchg8b %0\n"
                      EBX_load("%3")
-                     "sete %1\n"
-                     : "+m" (_q_value), "=qm" (ret),
-                       "+A" (expectedValue)
-                     : EBX_reg (quint32(newValue & 0xffffffff)), "c" (quint32(newValue >> 32))
+                     "sete %%cl\n"
+                     : "+m" (_q_value), "+c" (highExpectedValue), "+&A" (expectedValue)
+                     : EBX_reg (quint32(newValue & 0xffffffff))
                      : "memory");
-        return ret != 0;
+        // if the comparison failed, expectedValue here contains the current value
+        return quint8(highExpectedValue) != 0;
 #undef EBX_reg
 #undef EBX_load
     }
