@@ -99,7 +99,7 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     }
 
     // Navigate to child, compare its object and role with the interface from queryAccessibleInterface(child).
-    QAccessibleInterface *navigatedChildInterface = interface->child(index - 1);
+    QAccessibleInterface *navigatedChildInterface = interface->child(index);
     if (navigatedChildInterface == 0)
         return false;
 
@@ -2218,14 +2218,14 @@ void tst_QAccessibility::abstractScrollAreaTest()
     QCOMPARE(interface->childCount(), 1);
     QWidget *viewport = abstractScrollArea.viewport();
     QVERIFY(viewport);
-    QVERIFY(verifyChild(viewport, interface, 1, globalGeometry));
+    QVERIFY(verifyChild(viewport, interface, 0, globalGeometry));
 
     // Horizontal scrollBar.
     abstractScrollArea.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     QCOMPARE(interface->childCount(), 2);
     QWidget *horizontalScrollBar = abstractScrollArea.horizontalScrollBar();
     QWidget *horizontalScrollBarContainer = horizontalScrollBar->parentWidget();
-    QVERIFY(verifyChild(horizontalScrollBarContainer, interface, 2, globalGeometry));
+    QVERIFY(verifyChild(horizontalScrollBarContainer, interface, 1, globalGeometry));
 
     // Horizontal scrollBar widgets.
     QLabel *secondLeftLabel = new QLabel(QLatin1String("L2"));
@@ -2249,7 +2249,7 @@ void tst_QAccessibility::abstractScrollAreaTest()
     QCOMPARE(interface->childCount(), 3);
     QWidget *verticalScrollBar = abstractScrollArea.verticalScrollBar();
     QWidget *verticalScrollBarContainer = verticalScrollBar->parentWidget();
-    QVERIFY(verifyChild(verticalScrollBarContainer, interface, 3, globalGeometry));
+    QVERIFY(verifyChild(verticalScrollBarContainer, interface, 2, globalGeometry));
 
     // Vertical scrollBar widgets.
     QLabel *secondTopLabel = new QLabel(QLatin1String("T2"));
@@ -2272,7 +2272,7 @@ void tst_QAccessibility::abstractScrollAreaTest()
     abstractScrollArea.setCornerWidget(new QLabel(QLatin1String("C")));
     QCOMPARE(interface->childCount(), 4);
     QWidget *cornerWidget = abstractScrollArea.cornerWidget();
-    QVERIFY(verifyChild(cornerWidget, interface, 4, globalGeometry));
+    QVERIFY(verifyChild(cornerWidget, interface, 3, globalGeometry));
 
     // Test navigate.
     QAccessibleInterface *target = 0;
@@ -2290,58 +2290,58 @@ void tst_QAccessibility::abstractScrollAreaTest()
     // viewport -> Down -> horizontalScrollBarContainer
     const int horizontalScrollBarContainerIndex = indexOfChild(interface, horizontalScrollBarContainer);
     QVERIFY(horizontalScrollBarContainerIndex != -1);
-    QCOMPARE(interface->navigate(QAccessible::Down, viewportIndex, &target), 0);
+    QCOMPARE(interface->navigate(QAccessible::Down, viewportIndex + 1, &target), 0);
     QVERIFY(target);
     QCOMPARE(target->object(), static_cast<QObject *>(horizontalScrollBarContainer));
     delete target;
     target = 0;
 
     // horizontalScrollBarContainer -> Left -> NOTHING
-    QCOMPARE(interface->navigate(QAccessible::Left, horizontalScrollBarContainerIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Left, horizontalScrollBarContainerIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // horizontalScrollBarContainer -> Down -> NOTHING
     QVERIFY(horizontalScrollBarContainerIndex != -1);
-    QCOMPARE(interface->navigate(QAccessible::Down, horizontalScrollBarContainerIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Down, horizontalScrollBarContainerIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // horizontalScrollBarContainer -> Right -> cornerWidget
     const int cornerWidgetIndex = indexOfChild(interface, cornerWidget);
     QVERIFY(cornerWidgetIndex != -1);
-    QCOMPARE(interface->navigate(QAccessible::Right, horizontalScrollBarContainerIndex, &target), 0);
+    QCOMPARE(interface->navigate(QAccessible::Right, horizontalScrollBarContainerIndex + 1, &target), 0);
     QVERIFY(target);
     QCOMPARE(target->object(), static_cast<QObject *>(cornerWidget));
     delete target;
     target = 0;
 
     // cornerWidget -> Down -> NOTHING
-    QCOMPARE(interface->navigate(QAccessible::Down, cornerWidgetIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Down, cornerWidgetIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // cornerWidget -> Right -> NOTHING
     QVERIFY(cornerWidgetIndex != -1);
-    QCOMPARE(interface->navigate(QAccessible::Right, cornerWidgetIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Right, cornerWidgetIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // cornerWidget -> Up ->  verticalScrollBarContainer
     const int verticalScrollBarContainerIndex = indexOfChild(interface, verticalScrollBarContainer);
     QVERIFY(verticalScrollBarContainerIndex != -1);
-    QCOMPARE(interface->navigate(QAccessible::Up, cornerWidgetIndex, &target), 0);
+    QCOMPARE(interface->navigate(QAccessible::Up, cornerWidgetIndex + 1, &target), 0);
     QVERIFY(target);
     QCOMPARE(target->object(), static_cast<QObject *>(verticalScrollBarContainer));
     delete target;
     target = 0;
 
     // verticalScrollBarContainer -> Right -> NOTHING
-    QCOMPARE(interface->navigate(QAccessible::Right, verticalScrollBarContainerIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Right, verticalScrollBarContainerIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // verticalScrollBarContainer -> Up -> NOTHING
-    QCOMPARE(interface->navigate(QAccessible::Up, verticalScrollBarContainerIndex, &target), -1);
+    QCOMPARE(interface->navigate(QAccessible::Up, verticalScrollBarContainerIndex + 1, &target), -1);
     QVERIFY(!target);
 
     // verticalScrollBarContainer -> Left -> viewport
-    QCOMPARE(interface->navigate(QAccessible::Left, verticalScrollBarContainerIndex, &target), 0);
+    QCOMPARE(interface->navigate(QAccessible::Left, verticalScrollBarContainerIndex + 1, &target), 0);
     QVERIFY(target);
     QCOMPARE(target->object(), static_cast<QObject *>(viewport));
     delete target;
@@ -2394,18 +2394,18 @@ void tst_QAccessibility::listTest()
     {
     QAIPtr child1 = QAIPtr(iface->child(0));
     QVERIFY(child1);
-    QCOMPARE(iface->indexOfChild(child1.data()), 1);
+    QCOMPARE(iface->indexOfChild(child1.data()), 0);
     QCOMPARE(child1->text(QAccessible::Name), QString("Oslo"));
     QCOMPARE(child1->role(), QAccessible::ListItem);
 
     QAIPtr child2 = QAIPtr(iface->child(1));
     QVERIFY(child2);
-    QCOMPARE(iface->indexOfChild(child2.data()), 2);
+    QCOMPARE(iface->indexOfChild(child2.data()), 1);
     QCOMPARE(child2->text(QAccessible::Name), QString("Berlin"));
 
     QAIPtr child3 = QAIPtr(iface->child(2));
     QVERIFY(child3);
-    QCOMPARE(iface->indexOfChild(child3.data()), 3);
+    QCOMPARE(iface->indexOfChild(child3.data()), 2);
     QCOMPARE(child3->text(QAccessible::Name), QString("Brisbane"));
     }
     QTestAccessibility::clearEvents();
@@ -2514,7 +2514,7 @@ void tst_QAccessibility::treeTest()
     QAccessibleInterface *header1 = 0;
     header1 = iface->child(0);
     QVERIFY(header1);
-    QCOMPARE(iface->indexOfChild(header1), 1);
+    QCOMPARE(iface->indexOfChild(header1), 0);
     QCOMPARE(header1->text(QAccessible::Name), QString("Artist"));
     QCOMPARE(header1->role(), QAccessible::ColumnHeader);
     delete header1;
@@ -2522,7 +2522,7 @@ void tst_QAccessibility::treeTest()
     QAccessibleInterface *child1 = 0;
     child1 = iface->child(2);
     QVERIFY(child1);
-    QCOMPARE(iface->indexOfChild(child1), 3);
+    QCOMPARE(iface->indexOfChild(child1), 2);
     QCOMPARE(child1->text(QAccessible::Name), QString("Spain"));
     QCOMPARE(child1->role(), QAccessible::TreeItem);
     QVERIFY(!(child1->state().expanded));
@@ -2531,7 +2531,7 @@ void tst_QAccessibility::treeTest()
     QAccessibleInterface *child2 = 0;
     child2 = iface->child(4);
     QVERIFY(child2);
-    QCOMPARE(iface->indexOfChild(child2), 5);
+    QCOMPARE(iface->indexOfChild(child2), 4);
     QCOMPARE(child2->text(QAccessible::Name), QString("Austria"));
     delete child2;
 
@@ -2552,7 +2552,7 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 1);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 0);
     QVERIFY(cell2->state().expandable);
-    QCOMPARE(iface->indexOfChild(cell2), 5);
+    QCOMPARE(iface->indexOfChild(cell2), 4);
     QVERIFY(!(cell2->state().expanded));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
     delete cell2;
@@ -2568,7 +2568,7 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(table2->rowCount(), 5);
     cell1 = table2->cellAt(1,0);
     QCOMPARE(cell1->text(QAccessible::Name), QString("Picasso"));
-    QCOMPARE(iface->indexOfChild(cell1), 5); // 1 based + 2 header + 2 for root item
+    QCOMPARE(iface->indexOfChild(cell1), 4); // 2 header + 2 for root item
 
     cell2 = table2->cellAt(4,0);
     QCOMPARE(cell2->text(QAccessible::Name), QString("Klimt"));
@@ -2576,7 +2576,7 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 4);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 0);
     QVERIFY(!(cell2->state().expandable));
-    QCOMPARE(iface->indexOfChild(cell2), 11);
+    QCOMPARE(iface->indexOfChild(cell2), 10);
 
     QCOMPARE(table2->columnDescription(0), QString("Artist"));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
@@ -2618,13 +2618,13 @@ void tst_QAccessibility::tableTest()
 
     QAccessibleInterface *cornerButton = iface->child(0);
     QVERIFY(cornerButton);
-    QCOMPARE(iface->indexOfChild(cornerButton), 1);
+    QCOMPARE(iface->indexOfChild(cornerButton), 0);
     QCOMPARE(cornerButton->role(), QAccessible::Pane);
     delete cornerButton;
 
     QAccessibleInterface *child1 = iface->child(2);
     QVERIFY(child1);
-    QCOMPARE(iface->indexOfChild(child1), 3);
+    QCOMPARE(iface->indexOfChild(child1), 2);
     QCOMPARE(child1->text(QAccessible::Name), QString("h2"));
     QCOMPARE(child1->role(), QAccessible::ColumnHeader);
     QVERIFY(!(child1->state().expanded));
@@ -2632,7 +2632,7 @@ void tst_QAccessibility::tableTest()
 
     QAccessibleInterface *child2 = iface->child(10);
     QVERIFY(child2);
-    QCOMPARE(iface->indexOfChild(child2), 11);
+    QCOMPARE(iface->indexOfChild(child2), 10);
     QCOMPARE(child2->text(QAccessible::Name), QString("1.1"));
     QAccessibleTableCellInterface *cell2Iface = child2->tableCellInterface();
     QCOMPARE(cell2Iface->rowIndex(), 1);
@@ -2640,7 +2640,7 @@ void tst_QAccessibility::tableTest()
     delete child2;
 
     QAccessibleInterface *child3 = iface->child(11);
-    QCOMPARE(iface->indexOfChild(child3), 12);
+    QCOMPARE(iface->indexOfChild(child3), 11);
     QCOMPARE(child3->text(QAccessible::Name), QString("1.2"));
     delete child3;
 
@@ -2654,7 +2654,7 @@ void tst_QAccessibility::tableTest()
     QAccessibleInterface *cell1;
     QVERIFY(cell1 = table2->cellAt(0,0));
     QCOMPARE(cell1->text(QAccessible::Name), QString("0.0"));
-    QCOMPARE(iface->indexOfChild(cell1), 6);
+    QCOMPARE(iface->indexOfChild(cell1), 5);
 
     QAccessibleInterface *cell2;
     QVERIFY(cell2 = table2->cellAt(0,1));
@@ -2662,7 +2662,7 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(cell2->role(), QAccessible::Cell);
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 0);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 1);
-    QCOMPARE(iface->indexOfChild(cell2), 7);
+    QCOMPARE(iface->indexOfChild(cell2), 6);
     delete cell2;
 
     QAccessibleInterface *cell3;
@@ -2671,7 +2671,7 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(cell3->role(), QAccessible::Cell);
     QCOMPARE(cell3->tableCellInterface()->rowIndex(), 1);
     QCOMPARE(cell3->tableCellInterface()->columnIndex(), 2);
-    QCOMPARE(iface->indexOfChild(cell3), 12);
+    QCOMPARE(iface->indexOfChild(cell3), 11);
     delete cell3;
 
     QCOMPARE(table2->columnDescription(0), QString("h1"));
@@ -2722,7 +2722,7 @@ void tst_QAccessibility::calendarWidgetTest()
         }
     }
     QVERIFY(navigationBar);
-    QVERIFY(verifyChild(navigationBar, interface, 1, globalGeometry));
+    QVERIFY(verifyChild(navigationBar, interface, 0, globalGeometry));
 
     QAbstractItemView *calendarView = 0;
     foreach (QObject *child, calendarWidget.children()) {
@@ -2732,14 +2732,14 @@ void tst_QAccessibility::calendarWidgetTest()
         }
     }
     QVERIFY(calendarView);
-    QVERIFY(verifyChild(calendarView, interface, 2, globalGeometry));
+    QVERIFY(verifyChild(calendarView, interface, 1, globalGeometry));
 
     // Hide navigation bar.
     calendarWidget.setNavigationBarVisible(false);
     QCOMPARE(interface->childCount(), 1);
     QVERIFY(!navigationBar->isVisible());
 
-    QVERIFY(verifyChild(calendarView, interface, 1, globalGeometry));
+    QVERIFY(verifyChild(calendarView, interface, 0, globalGeometry));
 
     // Show navigation bar.
     calendarWidget.setNavigationBarVisible(true);
@@ -2838,10 +2838,10 @@ void tst_QAccessibility::dockWidgetTest()
     QCOMPARE(childAt->role(), QAccessible::TitleBar);
     int index = accDock1->indexOfChild(childAt);
     delete childAt;
-    QAccessibleInterface *accTitleBar = accDock1->child(index - 1);
+    QAccessibleInterface *accTitleBar = accDock1->child(index);
 
     QCOMPARE(accTitleBar->role(), QAccessible::TitleBar);
-    QCOMPARE(accDock1->indexOfChild(accTitleBar), 1);
+    QCOMPARE(accDock1->indexOfChild(accTitleBar), 0);
     QAccessibleInterface *acc;
     acc = accTitleBar->parent();
     QVERIFY(acc);

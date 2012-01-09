@@ -187,11 +187,13 @@ QAccessibleInterface* QAccessibleTabBar::child(int index) const
 
 int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
 {
+    // FIXME this looks broken
+
     if (child->object() && child->object() == tabBar()->d_func()->leftB)
-        return tabBar()->count() + 1; // fixme - one based
+        return tabBar()->count();
     if (child->object() && child->object() == tabBar()->d_func()->rightB)
-        return tabBar()->count() + 2; // fixme - one based
-    return 0;
+        return tabBar()->count() + 1;
+    return -1;
 }
 
 int QAccessibleTabBar::childCount() const
@@ -404,10 +406,7 @@ int QAccessibleAbstractScrollArea::indexOfChild(const QAccessibleInterface *chil
 {
     if (!child || !child->object())
         return -1;
-    int index = accessibleChildren().indexOf(qobject_cast<QWidget *>(child->object()));
-    if (index >= 0)
-        return ++index;
-    return -1;
+    return accessibleChildren().indexOf(qobject_cast<QWidget *>(child->object()));
 }
 
 bool QAccessibleAbstractScrollArea::isValid() const

@@ -424,14 +424,16 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
     switch (relation) {
     case QAccessible::Covers:
         if (entry > 0) {
-            QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
+            QAccessibleInterface *pIface = parent();
             if (!pIface)
                 return -1;
 
             QRect r = rect();
             int sibCount = pIface->childCount();
             QAccessibleInterface *sibling = 0;
-            for (int i = pIface->indexOfChild(this) + 1; i <= sibCount && entry; ++i) {
+            // FIXME: this code looks very suspicious
+            // why start at this index?
+            for (int i = pIface->indexOfChild(this) + 2; i <= sibCount && entry; ++i) {
                 sibling = pIface->child(i - 1);
                 if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
@@ -460,8 +462,9 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
             QRect r = rect();
             int index = pIface->indexOfChild(this);
             QAccessibleInterface *sibling = 0;
-            for (int i = 1; i < index && entry; ++i) {
-                sibling = pIface->child(i - 1);
+            // FIXME: why end at index?
+            for (int i = 0; i < index && entry; ++i) {
+                sibling = pIface->child(i);
                 Q_ASSERT(sibling);
                 if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
@@ -595,10 +598,7 @@ int QAccessibleWidget::childCount() const
 int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     QWidgetList cl = childWidgets(widget());
-    int index = cl.indexOf(qobject_cast<QWidget *>(child->object()));
-    if (index != -1)
-        ++index;
-    return index;
+    return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }
 
 // from qwidget.cpp

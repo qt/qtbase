@@ -799,9 +799,8 @@ void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 /*!
     \fn int QAccessibleInterface::indexOfChild(const QAccessibleInterface *child) const
 
-    Returns the 1-based index of the object \a child in this object's
-    children list, or -1 if \a child is not a child of this object. 0
-    is not a possible return value.
+    Returns the 0-based index of the object \a child in this object's
+    children list, or -1 if \a child is not a child of this object.
 
     All objects provide this information about their children.
 

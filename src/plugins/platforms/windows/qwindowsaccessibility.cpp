@@ -676,8 +676,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
             if (parent) {
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
-                if (index > 0 && index <= parent->childCount())
-                    acc = parent->child(index - 1);
+                if (index >= 0 && index < parent->childCount())
+                    acc = parent->child(index);
                 delete parent;
             }
         } else {

@@ -232,7 +232,7 @@ static QAccessibleInterface *acast(void *ptr)
 
     // hit a child, forward to child accessible interface.
     int childIndex = acast(accessibleInterface)->indexOfChild(childInterface);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex  -1 parent:self accessibleInterface: childInterface];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex parent:self accessibleInterface: childInterface];
     return [accessibleElement accessibilityHitTest:point];
 }
 

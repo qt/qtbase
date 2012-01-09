@@ -113,14 +113,11 @@ QAccessibleInterface *QAccessibleMenu::parent() const
 
 int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child) const
 {
-    int index = -1;
     QAccessible::Role r = child->role();
     if ((r == QAccessible::MenuItem || r == QAccessible::Separator) && menu()) {
-        index = menu()->actions().indexOf(qobject_cast<QAction*>(child->object()));
-        if (index != -1)
-            ++index;
+        return menu()->actions().indexOf(qobject_cast<QAction*>(child->object()));
     }
-    return index;
+    return -1;
 }
 
 #ifndef QT_NO_MENUBAR
@@ -149,14 +146,11 @@ QAccessibleInterface *QAccessibleMenuBar::child(int index) const
 
 int QAccessibleMenuBar::indexOfChild(const QAccessibleInterface *child) const
 {
-    int index = -1;
     QAccessible::Role r = child->role();
     if ((r == QAccessible::MenuItem || r == QAccessible::Separator) && menuBar()) {
-        index = menuBar()->actions().indexOf(qobject_cast<QAction*>(child->object()));
-        if (index != -1)
-            ++index;
+        return menuBar()->actions().indexOf(qobject_cast<QAction*>(child->object()));
     }
-    return index;
+    return -1;
 }
 
 #endif // QT_NO_MENUBAR
@@ -188,10 +182,8 @@ int QAccessibleMenuItem::childCount() const
 
 int QAccessibleMenuItem::indexOfChild(const QAccessibleInterface * child) const
 {
-    Q_ASSERT(child == 0);
-    if (child->role() == QAccessible::PopupMenu && child->object() == m_action->menu())
-        return 1;
-
+    if (child && child->role() == QAccessible::PopupMenu && child->object() == m_action->menu())
+        return 0;
     return -1;
 }
 
@@ -227,7 +219,8 @@ int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry,
             int index = parentIface->indexOfChild(this);
             if (index != -1) {
                 index += (relation == QAccessible::Down ? +1 : -1);
-                *target = parentIface->child(index - 1);
+                if (index >= 0)
+                    *target = parentIface->child(index);
             }
         }
         delete parentIface;

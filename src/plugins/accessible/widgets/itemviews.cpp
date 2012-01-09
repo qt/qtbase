@@ -393,15 +393,15 @@ int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
     Q_ASSERT(iface->role() != QAccessible::TreeItem); // should be handled by tree class
     if (iface->role() == QAccessible::Cell || iface->role() == QAccessible::ListItem) {
         const QAccessibleTableCell* cell = static_cast<const QAccessibleTableCell*>(iface);
-        return logicalIndex(cell->m_index);
+        return logicalIndex(cell->m_index) - 1;
     } else if (iface->role() == QAccessible::ColumnHeader){
         const QAccessibleTableHeaderCell* cell = static_cast<const QAccessibleTableHeaderCell*>(iface);
-        return cell->index + (verticalHeader() ? 1 : 0) + 1;
+        return cell->index + (verticalHeader() ? 1 : 0);
     } else if (iface->role() == QAccessible::RowHeader){
         const QAccessibleTableHeaderCell* cell = static_cast<const QAccessibleTableHeaderCell*>(iface);
-        return (cell->index+1) * (view->model()->rowCount()+1)  + 1;
+        return (cell->index+1) * (view->model()->rowCount()+1);
     } else if (iface->role() == QAccessible::Pane) {
-        return 1; // corner button
+        return 0; // corner button
     } else {
         qWarning() << "WARNING QAccessibleTable::indexOfChild Fix my children..."
                    << iface->role() << iface->text(QAccessible::Name);
@@ -543,14 +543,14 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
         int row = treeView->d_func()->viewIndex(cell->m_index) + (horizontalHeader() ? 1 : 0);
         int column = cell->m_index.column();
 
-        int index = row * view->model()->columnCount() + column + 1;
+        int index = row * view->model()->columnCount() + column;
         //qDebug() << "QAccessibleTree::indexOfChild r " << row << " c " << column << "index " << index;
-        Q_ASSERT(index > treeView->model()->columnCount());
+        Q_ASSERT(index >= treeView->model()->columnCount());
         return index;
     } else if (iface->role() == QAccessible::ColumnHeader){
         const QAccessibleTableHeaderCell* cell = static_cast<const QAccessibleTableHeaderCell*>(iface);
         //qDebug() << "QAccessibleTree::indexOfChild header " << cell->index << "is: " << cell->index + 1;
-        return cell->index + 1;
+        return cell->index;
     } else {
         qWarning() << "WARNING QAccessibleTable::indexOfChild invalid child"
                    << iface->role() << iface->text(QAccessible::Name);

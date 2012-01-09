@@ -727,10 +727,7 @@ int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) co
         return -1;
 
     QWidget* widget = qobject_cast<QWidget*>(child->object());
-    int index = stackedWidget()->indexOf(widget);
-    if (index >= 0) // one based counting of children
-        return index + 1;
-    return -1;
+    return stackedWidget()->indexOf(widget);
 }
 
 QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
@@ -788,9 +785,7 @@ int QAccessibleMdiArea::indexOfChild(const QAccessibleInterface *child) const
     if (!child || !child->object() || mdiArea()->subWindowList().isEmpty())
         return -1;
     if (QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(child->object())) {
-        int index = mdiArea()->subWindowList().indexOf(window);
-        if (index != -1)
-            return ++index;
+        return mdiArea()->subWindowList().indexOf(window);
     }
     return -1;
 }
@@ -882,7 +877,7 @@ QAccessibleInterface *QAccessibleMdiSubWindow::child(int index) const
 int QAccessibleMdiSubWindow::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child && child->object() && child->object() == mdiSubWindow()->widget())
-        return 1;
+        return 0;
     return -1;
 }
 
@@ -967,9 +962,7 @@ int QAccessibleWorkspace::indexOfChild(const QAccessibleInterface *child) const
     if (!child || !child->object() || workspace()->windowList().isEmpty())
         return -1;
     if (QWidget *window = qobject_cast<QWidget *>(child->object())) {
-        int index = workspace()->windowList().indexOf(window);
-        if (index != -1)
-            return ++index;
+        return workspace()->windowList().indexOf(window);
     }
     return -1;
 }
@@ -1048,8 +1041,8 @@ int QAccessibleCalendarWidget::indexOfChild(const QAccessibleInterface *child) c
     if (!child || !child->object() || childCount() <= 0)
         return -1;
     if (qobject_cast<QAbstractItemView *>(child->object()))
-        return childCount();
-    return 1;
+        return childCount() - 1; // FIXME
+    return 0;
 }
 
 QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
@@ -1135,9 +1128,9 @@ int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child) {
         if (child->role() == QAccessible::TitleBar) {
-            return 1;
+            return 0;
         } else {
-            return 2;   //###
+            return 1;   // FIXME
         }
     }
     return -1;
@@ -1414,8 +1407,7 @@ int QAccessibleMainWindow::childCount() const
 int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
 {
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
-    int childIndex = kids.indexOf(static_cast<QWidget*>(iface->object()));
-    return childIndex == -1 ? -1 : ++childIndex;
+    return kids.indexOf(static_cast<QWidget*>(iface->object()));
 }
 
 QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const

@@ -221,10 +221,7 @@ int QAccessibleApplication::childCount() const
 int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) const
 {
     const QObjectList tlw(topLevelObjects());
-    int index = tlw.indexOf(child->object());
-    if (index != -1)
-        ++index;
-    return index;
+    return tlw.indexOf(child->object());
 }
 
 /*! \reimp */
