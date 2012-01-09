@@ -985,8 +985,8 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            QFileInfo check(configCmdLine.at(i));
-            if (!check.isDir()) {
+            QFileInfo checkDirectory(configCmdLine.at(i));
+            if (!checkDirectory.isDir()) {
                 cout << "Argument passed to -L option is not a directory path. Did you mean the -l option?" << endl;
                 dictionary[ "DONE" ] = "error";
                 break;
