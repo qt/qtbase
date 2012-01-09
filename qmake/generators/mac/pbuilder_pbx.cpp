@@ -168,8 +168,8 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                 if(tmp_proj.read(fn)) {
                     if(Option::debug_level) {
                         debug_msg(1, "Dumping all variables:");
-                        QMap<QString, QStringList> &vars = tmp_proj.variables();
-                        for(QMap<QString, QStringList>::Iterator it = vars.begin();
+                        QHash<QString, QStringList> &vars = tmp_proj.variables();
+                        for(QHash<QString, QStringList>::Iterator it = vars.begin();
                             it != vars.end(); ++it) {
                             if(it.key().left(1) != "." && !it.value().isEmpty())
                                 debug_msg(1, "%s: %s === %s", fn.toLatin1().constData(), it.key().toLatin1().constData(),

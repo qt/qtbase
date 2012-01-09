@@ -43,7 +43,6 @@
 #include "option.h"
 
 #include <qdir.h>
-#include <qmap.h>
 #include <qsettings.h>
 #include <qstringlist.h>
 #include <stdio.h>

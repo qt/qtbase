@@ -2303,13 +2303,14 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         deps += CustomBuildTool.AdditionalDependencies;
         deps += cmd.left(cmd.indexOf(' '));
         // Make sure that all deps are only once
-        QMap<QString, bool> uniqDeps;
+        QHash<QString, bool> uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
             QString aDep = deps.at(c).trimmed();
             if (!aDep.isEmpty())
                 uniqDeps[aDep] = false;
         }
         CustomBuildTool.AdditionalDependencies = uniqDeps.keys();
+        CustomBuildTool.AdditionalDependencies.sort();
     }
 
     // Ensure that none of the output files are also dependencies. Or else, the custom buildstep

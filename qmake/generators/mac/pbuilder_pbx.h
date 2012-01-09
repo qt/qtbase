@@ -56,7 +56,7 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     bool writeMakefile(QTextStream &);
 
     QString pbxbuild();
-    QMap<QString, QString> keys;
+    QHash<QString, QString> keys;
     QString keyFor(const QString &file);
     QString findProgram(const QString &prog);
     QString fixForOutput(const QString &file);

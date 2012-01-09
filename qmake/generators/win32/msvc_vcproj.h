@@ -76,8 +76,8 @@ public:
     bool autogenPrecompCPP;
     static bool hasBuiltinCompiler(const QString &file);
 
-    QMap<QString, QStringList> extraCompilerSources;
-    QMap<QString, QStringList> extraCompilerOutputs;
+    QHash<QString, QStringList> extraCompilerSources;
+    QHash<QString, QStringList> extraCompilerOutputs;
     bool usePCH;
     VCProjectWriter *projectWriter;
 

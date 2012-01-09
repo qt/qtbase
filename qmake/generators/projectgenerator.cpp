@@ -79,7 +79,7 @@ ProjectGenerator::init()
     project->read(QMakeProject::ReadFeatures);
     project->variables()["CONFIG"].clear();
 
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     QString templ = Option::user_template.isEmpty() ? QString("app") : Option::user_template;
     if(!Option::user_template_prefix.isEmpty())
         templ.prepend(Option::user_template_prefix);

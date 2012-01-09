@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QMap<QString, QMap<QString, QStringList> > QMakeMetaInfo::cache_vars;
+QHash<QString, QHash<QString, QStringList> > QMakeMetaInfo::cache_vars;
 
 QMakeMetaInfo::QMakeMetaInfo()
 {
@@ -140,8 +140,8 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
         dirf = "";
     else if(!dirf.isEmpty() && !dirf.endsWith(Option::output_dir))
         dirf += Option::dir_sep;
-    QMap<QString, QStringList> &v = proj.variables();
-    for(QMap<QString, QStringList>::Iterator it = v.begin(); it != v.end(); ++it) {
+    QHash<QString, QStringList> &v = proj.variables();
+    for(QHash<QString, QStringList>::Iterator it = v.begin(); it != v.end(); ++it) {
         QStringList lst = it.value();
         if(lst.count() == 1 && (lst.first().startsWith("'") || lst.first().startsWith("\"")) &&
            lst.first().endsWith(QString(lst.first()[0])))

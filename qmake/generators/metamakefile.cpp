@@ -218,8 +218,8 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
         // debugging
         if(Option::debug_level) {
             debug_msg(1, "Dumping all variables:");
-            QMap<QString, QStringList> &vars = project->variables();
-            for(QMap<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
+            QHash<QString, QStringList> &vars = project->variables();
+            for(QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
                 if(!it.key().startsWith(".") && !it.value().isEmpty())
                     debug_msg(1, "%s === %s", it.key().toLatin1().constData(),
                               it.value().join(" :: ").toLatin1().constData());
@@ -237,7 +237,7 @@ MakefileGenerator
                   project->projectFile().toLatin1().constData(),build.toLatin1().constData());
 
         //initialize the base
-        QMap<QString, QStringList> basevars;
+        QHash<QString, QStringList> basevars;
         if(!project->isEmpty(build + ".CONFIG"))
             basevars["CONFIG"] += project->values(build + ".CONFIG");
         basevars["CONFIG"] += build;

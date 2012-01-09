@@ -42,7 +42,7 @@
 #ifndef META_H
 #define META_H
 
-#include <qmap.h>
+#include <qhash.h>
 #include <qstringlist.h>
 #include <qstring.h>
 
@@ -52,9 +52,9 @@ class QMakeMetaInfo
 {
     bool readLibtoolFile(const QString &f);
     bool readPkgCfgFile(const QString &f);
-    QMap<QString, QStringList> vars;
+    QHash<QString, QStringList> vars;
     QString meta_type;
-    static QMap<QString, QMap<QString, QStringList> > cache_vars;
+    static QHash<QString, QHash<QString, QStringList> > cache_vars;
     void clear();
 public:
     QMakeMetaInfo();
@@ -67,7 +67,7 @@ public:
     bool isEmpty(const QString &v);
     QStringList &values(const QString &v);
     QString first(const QString &v);
-    QMap<QString, QStringList> &variables();
+    QHash<QString, QStringList> &variables();
 };
 
 inline bool QMakeMetaInfo::isEmpty(const QString &v)
@@ -92,7 +92,7 @@ inline QString QMakeMetaInfo::first(const QString &v)
 #endif
 }
 
-inline QMap<QString, QStringList> &QMakeMetaInfo::variables()
+inline QHash<QString, QStringList> &QMakeMetaInfo::variables()
 { return vars; }
 
 inline bool QMakeMetaInfo::libExists(QString lib)
