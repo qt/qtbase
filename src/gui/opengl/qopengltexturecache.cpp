@@ -107,6 +107,8 @@ QOpenGLTextureCache::~QOpenGLTextureCache()
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &pixmap)
 {
+    if (pixmap.isNull())
+        return 0;
     QMutexLocker locker(&m_mutex);
     qint64 key = pixmap.cacheKey();
 
@@ -128,6 +130,8 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &image)
 {
+    if (image.isNull())
+        return 0;
     QMutexLocker locker(&m_mutex);
     qint64 key = image.cacheKey();
 
