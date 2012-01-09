@@ -190,6 +190,7 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d->asking = 0;
 }
 
+/*! \reimp */
 QWindow *QAccessibleWidget::window() const
 {
     return widget()->windowHandle();
@@ -392,6 +393,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     return relation;
 }
 
+/*! \reimp */
 QAccessibleInterface *QAccessibleWidget::parent() const
 {
     QObject *parentWidget= widget()->parentWidget();
@@ -400,6 +402,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
     return QAccessible::queryAccessibleInterface(parentWidget);
 }
 
+/*! \reimp */
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
     QWidgetList childList = childWidgets(widget());
@@ -654,6 +657,7 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
     return str;
 }
 
+/*! \reimp */
 QStringList QAccessibleWidget::actionNames() const
 {
     QStringList names;
@@ -664,6 +668,7 @@ QStringList QAccessibleWidget::actionNames() const
     return names;
 }
 
+/*! \reimp */
 void QAccessibleWidget::doAction(const QString &actionName)
 {
     if (!widget()->isEnabled())
@@ -676,6 +681,7 @@ void QAccessibleWidget::doAction(const QString &actionName)
     }
 }
 
+/*! \reimp */
 QStringList QAccessibleWidget::keyBindingsForAction(const QString & /* actionName */) const
 {
     return QStringList();
@@ -711,16 +717,19 @@ QAccessible::State QAccessibleWidget::state() const
     return state;
 }
 
+/*! \reimp */
 QColor QAccessibleWidget::foregroundColor() const
 {
     return widget()->palette().color(widget()->foregroundRole());
 }
 
+/*! \reimp */
 QColor QAccessibleWidget::backgroundColor() const
 {
     return widget()->palette().color(widget()->backgroundRole());
 }
 
+/*! \reimp */
 void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ActionInterface)

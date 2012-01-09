@@ -318,9 +318,9 @@ public:
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
-    static void updateAccessibility(QObject *, int who, Event reason);
+    static void updateAccessibility(QObject *object, int child, Event reason);
     static bool isActive();
-    static void setRootObject(QObject*);
+    static void setRootObject(QObject *object);
 
     static void cleanup();
 
