@@ -1306,6 +1306,7 @@ QMakeProject::read(uchar cmd)
                     cache_depth = Option::output_dir.mid(abs_cache.length()).count('/');
             }
             if(!qmake_cache.isEmpty()) {
+                QHash<QString, QStringList> cache;
                 if(read(qmake_cache, cache)) {
                     Option::mkfile::cachefile_depth = cache_depth;
                     Option::mkfile::cachefile = qmake_cache;

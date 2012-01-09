@@ -84,7 +84,7 @@ class QMakeProject
     QString pfile, cfile;
     QMakeProperty *prop;
     void reset();
-    QHash<QString, QStringList> vars, base_vars, cache;
+    QHash<QString, QStringList> vars, base_vars;
     bool parse(const QString &text, QHash<QString, QStringList> &place, int line_count=1);
 
     enum IncludeStatus {
