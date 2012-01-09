@@ -726,14 +726,6 @@ void tst_QDateTime::addSecs_data()
     QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC)
                                 << 1
                                 << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), Qt::UTC);
-
-    // Gregorian/Julian switchover
-    QTest::newRow("toGregorian") << QDateTime(QDate(1582, 10, 4), QTime(23, 59, 59))
-                                 << 1
-                                 << QDateTime(QDate(1582, 10, 15), QTime(0, 0, 0));
-    QTest::newRow("toJulian") << QDateTime(QDate(1582, 10, 15), QTime(0, 0, 0))
-                              << -1
-                              << QDateTime(QDate(1582, 10, 4), QTime(23, 59, 59));
 }
 
 void tst_QDateTime::addSecs()

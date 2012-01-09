@@ -185,10 +185,10 @@ void tst_QDate::isValid_data()
     QTest::newRow("idec") << 2000 << 12 << 32 << nullJd << false;
 
     // the beginning of the Julian Day calendar:
-    QTest::newRow("jd earliest formula") <<   -4800 <<  1 <<  1 << qint64(   -31776) << true;
-    QTest::newRow("jd -1")               <<   -4714 << 12 << 31 << qint64(       -1) << true;
-    QTest::newRow("jd 0")                <<   -4713 <<  1 <<  1 << qint64(        0) << true;
-    QTest::newRow("jd 1")                <<   -4713 <<  1 <<  2 << qint64(        1) << true;
+    QTest::newRow("jd earliest formula") <<   -4800 <<  1 <<  1 << qint64(   -31738) << true;
+    QTest::newRow("jd -1")               <<   -4714 << 11 << 23 << qint64(       -1) << true;
+    QTest::newRow("jd 0")                <<   -4714 << 11 << 24 << qint64(        0) << true;
+    QTest::newRow("jd 1")                <<   -4714 << 11 << 25 << qint64(        1) << true;
     QTest::newRow("jd latest formula")   << 1400000 << 12 << 31 << qint64(513060925) << true;
 }
 
@@ -259,19 +259,14 @@ void tst_QDate::dayOfWeek_data()
     QTest::newRow("data5")  <<  2000 <<  1 <<  7 << 5;
     QTest::newRow("data6")  <<  2000 <<  1 <<  8 << 6;
     QTest::newRow("data7")  <<  2000 <<  1 <<  9 << 7;
-    QTest::newRow("data8")  <<  1815 <<  6 << 15 << 4;
-    QTest::newRow("data9")  <<  1815 <<  6 << 15 << 4;
-    QTest::newRow("data10") <<  1500 <<  1 <<  1 << 3;
-    QTest::newRow("data11") << -1500 <<  1 <<  1 << 7;
-    QTest::newRow("data12") << -4800 <<  1 <<  1 << 5;
-    QTest::newRow("data13") << -4800 <<  1 <<  4 << 1;
-    QTest::newRow("data14") << -4800 <<  1 <<  5 << 2;
-    QTest::newRow("data15") << -4800 <<  1 <<  6 << 3;
-    QTest::newRow("data16") << -4800 <<  1 <<  7 << 4;
-    QTest::newRow("data17") << -4800 <<  1 <<  8 << 5;
-    QTest::newRow("data18") << -4800 <<  1 <<  9 << 6;
-    QTest::newRow("data19") << -4800 <<  1 << 10 << 7;
-    QTest::newRow("data20") << -4800 <<  1 << 11 << 1;
+    QTest::newRow("data8")  << -4800 <<  1 <<  1 << 1;
+    QTest::newRow("data9")  << -4800 <<  1 <<  2 << 2;
+    QTest::newRow("data10") << -4800 <<  1 <<  3 << 3;
+    QTest::newRow("data12") << -4800 <<  1 <<  4 << 4;
+    QTest::newRow("data12") << -4800 <<  1 <<  5 << 5;
+    QTest::newRow("data13") << -4800 <<  1 <<  6 << 6;
+    QTest::newRow("data14") << -4800 <<  1 <<  7 << 7;
+    QTest::newRow("data15") << -4800 <<  1 <<  8 << 1;
 }
 
 void tst_QDate::dayOfWeek()
@@ -300,9 +295,9 @@ void tst_QDate::dayOfYear_data()
     QTest::newRow("data5")  <<  2001 << 12 << 31 << 365;
     QTest::newRow("data6")  <<  1815 <<  1 <<  1 <<   1;
     QTest::newRow("data7")  <<  1815 << 12 << 31 << 365;
-    QTest::newRow("data8")  <<  1582 <<  1 <<  1 <<   1;
-    QTest::newRow("data9")  <<  1582 << 12 << 31 << 355;
-    QTest::newRow("data10") <<  1500 <<  1 <<  1 <<   1;
+    QTest::newRow("data8")  <<  1500 <<  1 <<  1 <<   1;
+    QTest::newRow("data9")  <<  1500 << 12 << 31 << 365;
+    QTest::newRow("data10") << -1500 <<  1 <<  1 <<   1;
     QTest::newRow("data11") << -1500 << 12 << 31 << 365;
     QTest::newRow("data12") << -4800 <<  1 <<  1 <<   1;
     QTest::newRow("data13") << -4800 << 12 << 31 << 365;
@@ -589,14 +584,6 @@ void tst_QDate::addMonths_data()
     QTest::newRow( "data15" ) << 1 << 1 << 1 << -12 << -1 << 1 << 1;
     QTest::newRow( "data16" ) << -1 << 12 << 1 << 1 << 1 << 1 << 1;
     QTest::newRow( "data17" ) << -1 << 1 << 1 << 12 << 1 << 1 << 1;
-
-    // Gregorian/Julian switchover
-    QTest::newRow( "data18" ) << 1582 << 9 << 4 << 1 << 1582 << 10 << 4;
-    QTest::newRow( "data19" ) << 1582 << 9 << 10 << 1 << 1582 << 10 << 15;
-    QTest::newRow( "data20" ) << 1582 << 9 << 20 << 1 << 1582 << 10 << 20;
-    QTest::newRow( "data21" ) << 1582 << 11 << 4 << -1 << 1582 << 10 << 4;
-    QTest::newRow( "data22" ) << 1582 << 11 << 10 << -1 << 1582 << 10 << 4;
-    QTest::newRow( "data23" ) << 1582 << 11 << 20 << -1 << 1582 << 10 << 20;
 }
 
 void tst_QDate::addYears()
@@ -930,10 +917,10 @@ void tst_QDate::isLeapYear()
     QVERIFY(QDate::isLeapYear(4));
     QVERIFY(!QDate::isLeapYear(7));
     QVERIFY(QDate::isLeapYear(8));
-    QVERIFY(QDate::isLeapYear(100));
+    QVERIFY(!QDate::isLeapYear(100));
     QVERIFY(QDate::isLeapYear(400));
-    QVERIFY(QDate::isLeapYear(700));
-    QVERIFY(QDate::isLeapYear(1500));
+    QVERIFY(!QDate::isLeapYear(700));
+    QVERIFY(!QDate::isLeapYear(1500));
     QVERIFY(QDate::isLeapYear(1600));
     QVERIFY(!QDate::isLeapYear(1700));
     QVERIFY(!QDate::isLeapYear(1800));
@@ -1184,24 +1171,16 @@ void tst_QDate::roundtrip() const
 
     // Test Julian round trip around JD 0 and current low end of valid range
     QDate testDate;
-    QDate loopDate = QDate::fromJulianDay(-31776); // 1 Jan 4800 BC
-    while (loopDate.toJulianDay() <= 5113) {     // 31 Dec 4700 AD
+    QDate loopDate = QDate::fromJulianDay(-31738); // 1 Jan 4800 BC
+    while (loopDate.toJulianDay() <= 5150) {     // 31 Dec 4700 BC
         testDate.setDate(loopDate.year(), loopDate.month(), loopDate.day());
         QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
         loopDate = loopDate.addDays(1);
     }
 
     // Test Julian round trip in both BC and AD
-    loopDate = QDate::fromJulianDay(1684899);       //  1 Jan 100 BC
-    while (loopDate.toJulianDay() <= 1757948) {   // 31 Dec 100 AD
-        testDate.setDate(loopDate.year(), loopDate.month(), loopDate.day());
-        QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
-        loopDate = loopDate.addDays(1);
-    }
-
-    // Test Julian and Gregorian round trip during changeover period
-    loopDate = QDate::fromJulianDay(2298153);     //  1 Jan 1580 AD
-    while (loopDate.toJulianDay() <= 2300334) { // 31 Dec 1585 AD
+    loopDate = QDate::fromJulianDay(1684901);       //  1 Jan 100 BC
+    while (loopDate.toJulianDay() <= 1757949) {   // 31 Dec 100 AD
         testDate.setDate(loopDate.year(), loopDate.month(), loopDate.day());
         QCOMPARE(loopDate.toJulianDay(), testDate.toJulianDay());
         loopDate = loopDate.addDays(1);

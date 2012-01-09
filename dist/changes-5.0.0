@@ -241,6 +241,10 @@ QtCore
   in Qt 4 they returned a null QString or a null QStringRef.
 
 * QDate, QTime, and QDateTime have undergone important behavioural changes:
+  * QDate only implements the Gregorian calendar, the switch to the Julian
+    calendar before 1582 has been removed. This means all QDate methods will
+    return different results for dates prior to 15 October 1582, and there is
+    no longer a gap between 4 October 1582 and 15 October 1582.
   * QDate::setYMD() is deprecated, use QDate::setDate() instead
   * Most methods now apply strict validity checks and will return appropriate
     and consistent values when invalid.  For example, QDate::year() will return

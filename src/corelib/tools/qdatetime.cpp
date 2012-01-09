@@ -82,7 +82,7 @@ enum {
     MSECS_PER_HOUR = 3600000,
     SECS_PER_MIN = 60,
     MSECS_PER_MIN = 60000,
-    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromGregorianDate(1970, 1, 1)
+    JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
 };
 
 static inline QDate fixedDate(int y, int m, int d)
@@ -92,66 +92,41 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
-static inline qint64 julianDayFromGregorianDate(qint64 year, int month, int day)
+static inline qint64 julianDayFromDate(qint64 year, int month, int day)
 {
-    // Gregorian calendar starting from October 15, 1582
+    // Gregorian calendar
     // Algorithm from Henry F. Fliegel and Thomas C. Van Flandern
+
+    if (year < 0)
+        ++year;
+
     return (1461 * (year + 4800 + (month - 14) / 12)) / 4
            + (367 * (month - 2 - 12 * ((month - 14) / 12))) / 12
            - (3 * ((year + 4900 + (month - 14) / 12) / 100)) / 4
            + day - 32075;
 }
 
-static qint64 julianDayFromDate(qint64 year, int month, int day)
-{
-    if (year > 1582 || (year == 1582 && (month > 10 || (month == 10 && day >= 15)))) {
-        return julianDayFromGregorianDate(year, month, day);
-    } else if (year < 1582 || (year == 1582 && (month < 10 || (month == 10 && day <= 4)))) {
-        // Julian calendar until October 4, 1582
-        // Algorithm from Frequently Asked Questions about Calendars by Claus Toendering
-        if (year < 0)
-            ++year;
-        int a = (14 - month) / 12;
-        return (153 * (month + (12 * a) - 3) + 2) / 5
-               + (1461 * (year + 4800 - a)) / 4
-               + day - 32083;
-    } else {
-        // the day following October 4, 1582 is October 15, 1582
-        return std::numeric_limits<qint64>::min(); // i.e. nullJd()
-    }
-}
-
 static void getDateFromJulianDay(qint64 julianDay, int *year, int *month, int *day)
 {
     int y, m, d;
 
-    if (julianDay >= 2299161) {
-        // Gregorian calendar starting from October 15, 1582
-        // This algorithm is from Henry F. Fliegel and Thomas C. Van Flandern
-        qint64 ell, n, i, j;  //TODO These will need to be bigger to prevent overflow!!!
-        ell = julianDay + 68569;
-        n = (4 * ell) / 146097;
-        ell = ell - (146097 * n + 3) / 4;
-        i = (4000 * (ell + 1)) / 1461001;
-        ell = ell - (1461 * i) / 4 + 31;
-        j = (80 * ell) / 2447;
-        d = ell - (2447 * j) / 80;
-        ell = j / 11;
-        m = j + 2 - (12 * ell);
-        y = 100 * (n - 49) + i + ell;
-    } else {
-        // Julian calendar until October 4, 1582
-        // Algorithm from Frequently Asked Questions about Calendars by Claus Toendering
-        julianDay += 32082;
-        qint64 dd = (4 * julianDay + 3) / 1461;  //TODO These may need to be bigger to prevent overflow!!!
-        qint64 ee = julianDay - (1461 * dd) / 4;  //TODO These may need to be bigger to prevent overflow!!!
-        qint64 mm = ((5 * ee) + 2) / 153;  //TODO These may need to be bigger to prevent overflow!!!
-        d = ee - (153 * mm + 2) / 5 + 1;
-        m = mm + 3 - 12 * (mm / 10);
-        y = dd - 4800 + (mm / 10);
-        if (y <= 0)
-            --y;
-    }
+    // Gregorian calendar
+    // This algorithm is from Henry F. Fliegel and Thomas C. Van Flandern
+    qint64 ell, n, i, j;  //TODO These will need to be bigger to prevent overflow!!!
+    ell = julianDay + 68569;
+    n = (4 * ell) / 146097;
+    ell = ell - (146097 * n + 3) / 4;
+    i = (4000 * (ell + 1)) / 1461001;
+    ell = ell - (1461 * i) / 4 + 31;
+    j = (80 * ell) / 2447;
+    d = ell - (2447 * j) / 80;
+    ell = j / 11;
+    m = j + 2 - (12 * ell);
+    y = 100 * (n - 49) + i + ell;
+
+    if (y<= 0)
+        --y;
+
     if (year)
         *year = y;
     if (month)
@@ -197,12 +172,10 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
 
 
     A QDate object contains a calendar date, i.e. year, month, and day
-    numbers, in the Gregorian calendar. (see \l{QDate G and J} {Use of
-    Gregorian and Julian Calendars} for dates prior to 15 October
-    1582). It can read the current date from the system clock. It
-    provides functions for comparing dates, and for manipulating
-    dates. For example, it is possible to add and subtract days,
-    months, and years to dates.
+    numbers, in the Gregorian calendar. It can read the current date
+    from the system clock. It provides functions for comparing dates,
+    and for manipulating dates. For example, it is possible to add
+    and subtract days, months, and years to dates.
 
     A QDate object is typically created either by giving the year,
     month, and day numbers explicitly. Note that QDate interprets two
@@ -232,26 +205,6 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     isLeapYear() function indicates whether a date is in a leap year.
 
     \section1
-
-    \target QDate G and J
-    \section2 Use of Gregorian and Julian Calendars
-
-    QDate uses the Gregorian calendar in all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, the Julian calendar is used.  This means there is a
-    10-day gap in the internal calendar between the 4th and the 15th
-    of October 1582. When you use QDateTime for dates in that epoch,
-    the day after 4 October 1582 is 15 October 1582, and the dates in
-    the gap are invalid.
-
-    The Julian to Gregorian changeover date used here is the date when
-    the Gregorian calendar was first introduced, by Pope Gregory
-    XIII. That change was not universally accepted and some localities
-    only executed it at a later date (if at all).  QDateTime
-    doesn't take any of these historical facts into account. If an
-    application must support a locale-specific dating system, it must
-    do so on its own, remembering to convert the dates using the
-    Julian day.
 
     \section2 No Year 0
 
@@ -985,11 +938,6 @@ QDate QDate::addDays(qint64 ndays) const
     resulting month/year, this function will return a date that is the
     latest valid date.
 
-    \warning QDate has a date hole around the days introducing the
-    Gregorian calendar (the days 5 to 14 October 1582, inclusive, do
-    not exist). If the calculation ends in one of those days, QDate
-    will return either October 4 or October 15.
-
     \sa addDays() addYears()
 */
 
@@ -1038,10 +986,6 @@ QDate QDate::addMonths(int nmonths) const
         (old_y < 0 && y >= 0))
         // yes, adjust the date by +1 or -1 years
         y += increasing ? +1 : -1;
-
-    // did we end up in the Gregorian/Julian conversion hole?
-    if (y == 1582 && m == 10 && d > 4 && d < 15)
-        d = increasing ? 15 : 4;
 
     return fixedDate(y, m, d);
 }
@@ -1332,12 +1276,8 @@ QDate QDate::fromString(const QString &string, const QString &format)
 
 bool QDate::isValid(int year, int month, int day)
 {
-    // there is no year 0 in the Julian calendar
+    // there is no year 0 in the Gregorian calendar
     if (year == 0)
-        return false;
-
-    // passage from Julian to Gregorian calendar
-    if (year == 1582 && month == 10 && day > 4 && day < 15)
         return false;
 
     return (day > 0 && month > 0 && month <= 12) &&
@@ -1353,14 +1293,11 @@ bool QDate::isValid(int year, int month, int day)
 
 bool QDate::isLeapYear(int y)
 {
-    if (y < 1582) {
-        if ( y < 1) {  // No year 0 in Julian calendar, so -1, -5, -9 etc are leap years
-            ++y;
-        }
-        return y % 4 == 0;
-    } else {
-        return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-    }
+    // No year 0 in Gregorian calendar, so -1, -5, -9 etc are leap years
+    if ( y < 1)
+        ++y;
+
+    return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
 }
 
 /*! \fn static QDate QDate::fromJulianDay(int jd)
@@ -2088,26 +2025,6 @@ int QTime::elapsed() const
 
     \section1
 
-    \target QDateTime G and J
-    \section2 Use of Gregorian and Julian Calendars
-
-    QDate uses the Gregorian calendar in all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, the Julian calendar is used.  This means there is a
-    10-day gap in the internal calendar between the 4th and the 15th
-    of October 1582. When you use QDateTime for dates in that epoch,
-    the day after 4 October 1582 is 15 October 1582, and the dates in
-    the gap are invalid.
-
-    The Julian to Gregorian changeover date used here is the date when
-    the Gregorian calendar was first introduced, by Pope Gregory
-    XIII. That change was not universally accepted and some localities
-    only executed it at a later date (if at all).  QDateTime
-    doesn't take any of these historical facts into account. If an
-    application must support a locale-specific dating system, it must
-    do so on its own, remembering to convert the dates using the
-    Julian day.
-
     \section2 No Year 0
 
     There is no year 0. Dates in that year are considered invalid. The
@@ -2133,16 +2050,6 @@ int QTime::elapsed() const
     restricted to 1 January 4800 BCE to 31 December 1400000 CE due to
     shortcomings in the available conversion formulas. Conversions outside this
     range are not guaranteed to be correct. This may change in the future.
-
-    The Gregorian calendar was introduced in different places around
-    the world on different dates. QDateTime uses QDate to store the
-    date, so it uses the Gregorian calendar for all locales, beginning
-    on the date 15 October 1582. For dates up to and including 4
-    October 1582, QDateTime uses the Julian calendar.  This means
-    there is a 10-day gap in the QDateTime calendar between the 4th
-    and the 15th of October 1582. When you use QDateTime for dates in
-    that epoch, the day after 4 October 1582 is 15 October 1582, and
-    the dates in the gap are invalid.
 
     \section2
     Use of System Timezone
@@ -3052,8 +2959,8 @@ qint64 QDateTime::currentMSecsSinceEpoch()
     GetSystemTime(&st);
 
     return msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds) +
-            qint64(julianDayFromGregorianDate(st.wYear, st.wMonth, st.wDay)
-                   - julianDayFromGregorianDate(1970, 1, 1)) * Q_INT64_C(86400000);
+            qint64(julianDayFromDate(st.wYear, st.wMonth, st.wDay)
+                   - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
 #elif defined(Q_OS_UNIX)
