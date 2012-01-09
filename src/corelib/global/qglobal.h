@@ -1639,15 +1639,6 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
-/*
-   On Symbian we do not know beforehand whether we are compiling in
-   release or debug mode, so check the Symbian build define here,
-   and set the QT_NO_DEBUG define appropriately.
-*/
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
-#  define QT_NO_DEBUG
-#endif
-
 #if !defined(QT_NO_DEBUG) && !defined(QT_DEBUG)
 #  define QT_DEBUG
 #endif
