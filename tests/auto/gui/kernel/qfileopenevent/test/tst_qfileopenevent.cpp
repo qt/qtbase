@@ -163,11 +163,11 @@ void tst_qfileopenevent::handleLifetime()
     qFile.close();
 
     // check the content
-    QFile check("testHandleLifetime");
-    check.open(QFile::ReadOnly);
-    QString content(check.readAll());
+    QFile checkContent("testHandleLifetime");
+    checkContent.open(QFile::ReadOnly);
+    QString content(checkContent.readAll());
     QCOMPARE(content, QLatin1String("test content+closed original handles"));
-    check.close();
+    checkContent.close();
 
     QFile::remove(QLatin1String("testHandleLifetime"));
 }
@@ -214,11 +214,11 @@ void tst_qfileopenevent::sendAndReceive()
     QCoreApplication::instance()->sendPostedEvents();
 
     // check the content
-    QFile check("testSendAndReceive");
-    QCOMPARE(check.open(QFile::ReadOnly), true);
-    QString content(check.readAll());
+    QFile checkContent("testSendAndReceive");
+    QCOMPARE(checkContent.open(QFile::ReadOnly), true);
+    QString content(checkContent.readAll());
     QCOMPARE(content, QLatin1String("sending+received"));
-    check.close();
+    checkContent.close();
 
     QFile::remove(QLatin1String("testSendAndReceive"));
 }
