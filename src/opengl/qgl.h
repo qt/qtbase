@@ -80,7 +80,6 @@ typedef GLfloat GLdouble;
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(OpenGL)
 
 
 

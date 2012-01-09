@@ -73,7 +73,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 // Types that aren't defined in all system's gl.h files.
 typedef ptrdiff_t qopengl_GLintptr;

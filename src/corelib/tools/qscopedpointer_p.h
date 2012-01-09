@@ -57,7 +57,6 @@
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-QT_MODULE(Core)
 
 
 /* Internal helper class - exposes the data through data_ptr (legacy from QShared).

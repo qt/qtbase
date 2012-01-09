@@ -51,7 +51,6 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-QT_MODULE(Network)
 
 class QNetworkConfigurationPrivate;
 class Q_NETWORK_EXPORT QNetworkConfiguration

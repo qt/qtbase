@@ -57,7 +57,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(DBus)
 
 class QDBusError;
 class QDBusPendingCall;

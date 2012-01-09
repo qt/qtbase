@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 class QMimeData;
 class QTouchDevice;
 
-QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowSystemInterface
 {

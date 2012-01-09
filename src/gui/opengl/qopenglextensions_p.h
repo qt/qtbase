@@ -59,7 +59,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #if 0
 #ifndef GL_ARB_vertex_buffer_object

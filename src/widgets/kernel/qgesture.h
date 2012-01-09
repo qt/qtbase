@@ -59,7 +59,6 @@ Q_DECLARE_METATYPE(Qt::GestureType)
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QGesturePrivate;
 class Q_WIDGETS_EXPORT QGesture : public QObject

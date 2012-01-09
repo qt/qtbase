@@ -52,7 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
 
 class QHostAddress;
 #ifndef QT_NO_NETWORKPROXY

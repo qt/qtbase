@@ -56,7 +56,6 @@ class QUndoStack;
 class QUndoGroup;
 class QIcon;
 
-QT_MODULE(Gui)
 
 class Q_WIDGETS_EXPORT QUndoView : public QListView
 {

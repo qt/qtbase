@@ -68,7 +68,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h

@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
 
 #if !defined(QT_SHARED) && !defined(QT_DLL)
 # define Q_TESTLIB_EXPORT

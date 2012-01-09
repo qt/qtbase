@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QMacNativeWidgetPrivate;
 class Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget

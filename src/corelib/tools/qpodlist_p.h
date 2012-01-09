@@ -59,7 +59,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 template <typename T, int Prealloc>
 class QPodList : public QVarLengthArray<T, Prealloc>

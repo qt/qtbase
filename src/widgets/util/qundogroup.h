@@ -53,7 +53,6 @@ class QUndoGroupPrivate;
 class QUndoStack;
 class QAction;
 
-QT_MODULE(Gui)
 
 #ifndef QT_NO_UNDOGROUP
 

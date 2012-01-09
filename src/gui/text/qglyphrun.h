@@ -53,7 +53,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class QGlyphRunPrivate;
 class Q_GUI_EXPORT QGlyphRun

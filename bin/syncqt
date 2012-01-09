@@ -1341,7 +1341,6 @@ if($check_includes) {
                         my $iheader = $subdir . "/" . $header;
                         if($public_header) {
                             if(open(F, "<$iheader")) {
-                                my $qt_module_found = 0;
                                 my $qt_begin_header_found = 0;
                                 my $qt_end_header_found = 0;
                                 my $qt_begin_namespace_found = 0;
@@ -1376,8 +1375,6 @@ if($check_includes) {
                                         $qt_begin_namespace_found = 1;
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE\s*$/) {
                                         $qt_end_namespace_found = 1;
-                                    } elsif ($header_skip_qt_module_test == 0 and $line =~ /^QT_MODULE\(.*\)\s*$/) {
-                                        $qt_module_found = 1;
                                     }
                                 }
                                 if ($header_skip_qt_begin_header_test == 0) {
@@ -1400,11 +1397,6 @@ if($check_includes) {
                                     }
                                 }
 
-                                if ($header_skip_qt_module_test == 0) {
-                                    if ($qt_module_found == 0) {
-                                        print "$lib: WARNING: $iheader does not include QT_MODULE\n";
-                                    }
-                                }
                                 close(F);
                             }
                         }

@@ -42,8 +42,6 @@
 #ifndef QATOMIC_ARMV7_H
 #define QATOMIC_ARMV7_H
 
-QT_BEGIN_HEADER
-
 // use the DMB instruction when compiling for ARMv7, ...
 #ifndef Q_CC_RCVT
 # define Q_DATA_MEMORY_BARRIER asm volatile("dmb\n":::"memory")
@@ -52,10 +50,6 @@ QT_BEGIN_HEADER
 #endif
 
 // ... but the implementation is otherwise identical to that for ARMv6
-QT_BEGIN_INCLUDE_HEADER
 #include "QtCore/qatomic_armv6.h"
-QT_END_INCLUDE_HEADER
-
-QT_END_HEADER
 
 #endif // QATOMIC_ARMV7_H

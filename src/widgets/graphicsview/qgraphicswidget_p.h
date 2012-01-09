@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 class QGraphicsLayout;
 class QStyleOptionTitleBar;
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsWidgetPrivate : public QGraphicsItemPrivate
 {
@@ -218,7 +218,7 @@ public:
 #endif
 };
 
-#endif //!defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+#endif
 
 QT_END_NAMESPACE
 

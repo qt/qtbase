@@ -143,13 +143,9 @@ namespace QT_NAMESPACE {}
 #if defined(Q_OS_MAC) && !defined(Q_CC_INTEL)
 #define QT_BEGIN_HEADER extern "C++" {
 #define QT_END_HEADER }
-#define QT_BEGIN_INCLUDE_HEADER }
-#define QT_END_INCLUDE_HEADER extern "C++" {
 #else
 #define QT_BEGIN_HEADER
 #define QT_END_HEADER
-#define QT_BEGIN_INCLUDE_HEADER
-#define QT_END_INCLUDE_HEADER extern "C++"
 #endif
 
 /*
@@ -2440,138 +2436,7 @@ inline int qIntCast(float f) { return int(f); }
 Q_CORE_EXPORT void qsrand(uint seed);
 Q_CORE_EXPORT int qrand();
 
-/*
-   This gives us the possibility to check which modules the user can
-   use. These are purely compile time checks and will generate no code.
-*/
-
-/* Qt modules */
-#define QT_MODULE_CORE                 0x000001
-#define QT_MODULE_GUI                  0x000002
-#define QT_MODULE_NETWORK              0x000004
-#define QT_MODULE_OPENGL               0x000008
-#define QT_MODULE_SQL                  0x000010
-#define QT_MODULE_XML                  0x000020
-#define QT_MODULE_SVG                  0x000100
-#define QT_MODULE_ACTIVEQT             0x000200
-#define QT_MODULE_GRAPHICSVIEW         0x000400
-#define QT_MODULE_SCRIPT               0x000800
-#define QT_MODULE_XMLPATTERNS          0x001000
-#define QT_MODULE_HELP                 0x002000
-#define QT_MODULE_TEST                 0x004000
-#define QT_MODULE_DBUS                 0x008000
-#define QT_MODULE_SCRIPTTOOLS          0x010000
-#define QT_MODULE_OPENVG               0x020000
-#define QT_MODULE_MULTIMEDIA           0x040000
-#define QT_MODULE_DECLARATIVE          0x080000
-
-/* Qt editions */
-#define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
-                                 | QT_MODULE_NETWORK \
-                                 | QT_MODULE_SQL \
-                                 | QT_MODULE_SCRIPT \
-                                 | QT_MODULE_MULTIMEDIA \
-                                 | QT_MODULE_XML \
-                                 | QT_MODULE_XMLPATTERNS \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_DESKTOPLIGHT (QT_MODULE_CORE \
-                                 | QT_MODULE_GUI \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS)
-#define QT_EDITION_OPENSOURCE   (QT_MODULE_CORE \
-                                 | QT_MODULE_GUI \
-                                 | QT_MODULE_NETWORK \
-                                 | QT_MODULE_OPENGL \
-                                 | QT_MODULE_OPENVG \
-                                 | QT_MODULE_SQL \
-                                 | QT_MODULE_MULTIMEDIA \
-                                 | QT_MODULE_XML \
-                                 | QT_MODULE_XMLPATTERNS \
-                                 | QT_MODULE_SCRIPT \
-                                 | QT_MODULE_SCRIPTTOOLS \
-                                 | QT_MODULE_SVG \
-                                 | QT_MODULE_DECLARATIVE \
-                                 | QT_MODULE_GRAPHICSVIEW \
-                                 | QT_MODULE_HELP \
-                                 | QT_MODULE_TEST \
-                                 | QT_MODULE_DBUS \
-                                 | QT_MODULE_ACTIVEQT)
-#define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
-#define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
-#define QT_EDITION_ACADEMIC     QT_EDITION_DESKTOP
-#define QT_EDITION_EDUCATIONAL  QT_EDITION_DESKTOP
-#define QT_EDITION_EVALUATION   QT_EDITION_DESKTOP
-
-/* Determine which modules can be used */
-#ifndef QT_EDITION
-#  ifdef QT_BUILD_QMAKE
-#    define QT_EDITION QT_EDITION_DESKTOP
-#  else
-#    error "Qt not configured correctly, please run configure"
-#  endif
-#endif
-
-#define QT_LICENSED_MODULE(x) \
-    enum QtValidLicenseFor##x##Module { Licensed##x = true };
-
-/* qdoc is really unhappy with the following block of preprocessor checks,
-   making it difficult to document classes properly after this point. */
-
-#if (QT_EDITION & QT_MODULE_CORE)
-QT_LICENSED_MODULE(Core)
-#endif
-#if (QT_EDITION & QT_MODULE_GUI)
-QT_LICENSED_MODULE(Gui)
-#endif
-#if (QT_EDITION & QT_MODULE_NETWORK)
-QT_LICENSED_MODULE(Network)
-#endif
-#if (QT_EDITION & QT_MODULE_OPENGL)
-QT_LICENSED_MODULE(OpenGL)
-#endif
-#if (QT_EDITION & QT_MODULE_OPENVG)
-QT_LICENSED_MODULE(OpenVG)
-#endif
-#if (QT_EDITION & QT_MODULE_SQL)
-QT_LICENSED_MODULE(Sql)
-#endif
-#if (QT_EDITION & QT_MODULE_MULTIMEDIA)
-QT_LICENSED_MODULE(Multimedia)
-#endif
-#if (QT_EDITION & QT_MODULE_XML)
-QT_LICENSED_MODULE(Xml)
-#endif
-#if (QT_EDITION & QT_MODULE_XMLPATTERNS)
-QT_LICENSED_MODULE(XmlPatterns)
-#endif
-#if (QT_EDITION & QT_MODULE_HELP)
-QT_LICENSED_MODULE(Help)
-#endif
-#if (QT_EDITION & QT_MODULE_SCRIPT) || defined(QT_BUILD_QMAKE)
-QT_LICENSED_MODULE(Script)
-#endif
-#if (QT_EDITION & QT_MODULE_SCRIPTTOOLS)
-QT_LICENSED_MODULE(ScriptTools)
-#endif
-#if (QT_EDITION & QT_MODULE_SVG)
-QT_LICENSED_MODULE(Svg)
-#endif
-#if (QT_EDITION & QT_MODULE_DECLARATIVE)
-QT_LICENSED_MODULE(Declarative)
-#endif
-#if (QT_EDITION & QT_MODULE_ACTIVEQT)
-QT_LICENSED_MODULE(ActiveQt)
-#endif
-#if (QT_EDITION & QT_MODULE_TEST)
-QT_LICENSED_MODULE(Test)
-#endif
-#if (QT_EDITION & QT_MODULE_DBUS)
-QT_LICENSED_MODULE(DBus)
-#endif
-
-#define QT_MODULE(x) \
-    typedef QtValidLicenseFor##x##Module Qt##x##Module;
+#define QT_MODULE(x)
 
 #ifdef QT_NO_CONCURRENT
 #  define QT_NO_QFUTURE

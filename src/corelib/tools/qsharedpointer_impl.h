@@ -52,7 +52,6 @@
 // classes found in qsharedpointer.h
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
-QT_MODULE(Core)
 QT_END_NAMESPACE
 QT_END_HEADER
 #pragma qt_sync_stop_processing
@@ -66,7 +65,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 // Macro QSHAREDPOINTER_VERIFY_AUTO_CAST
 //  generates a compiler error if the following construct isn't valid:

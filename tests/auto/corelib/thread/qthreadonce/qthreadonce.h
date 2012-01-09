@@ -48,7 +48,6 @@
 
 QT_BEGIN_HEADER
 
-QT_MODULE(Core)
 
 #ifndef QT_NO_THREAD
 

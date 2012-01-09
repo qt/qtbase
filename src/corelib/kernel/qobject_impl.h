@@ -49,7 +49,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 namespace QtPrivate {
     template <typename T> struct RemoveRef { typedef T Type; };

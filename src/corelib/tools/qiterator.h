@@ -53,7 +53,6 @@ namespace std {
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #define Q_DECLARE_SEQUENTIAL_ITERATOR(C) \
 \

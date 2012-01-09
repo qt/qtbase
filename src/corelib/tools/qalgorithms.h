@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 /*
     Warning: The contents of QAlgorithmsPrivate is not a part of the public Qt API

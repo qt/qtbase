@@ -75,7 +75,6 @@ typedef GLfloat GLdouble;
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 QT_END_NAMESPACE
 

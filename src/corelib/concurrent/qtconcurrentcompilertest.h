@@ -49,7 +49,6 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
 #  define QT_TYPENAME

@@ -50,7 +50,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #if !defined(QT_NO_THREAD) && !defined(qdoc)
 

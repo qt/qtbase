@@ -53,7 +53,6 @@ struct DBusError;
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(DBus)
 
 class QDBusMessage;
 

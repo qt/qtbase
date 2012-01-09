@@ -400,7 +400,6 @@ static bool qt_cache_shader(const QOpenGLShaderProgram *shader, QOpenGLContext *
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 class CachedShader
 {

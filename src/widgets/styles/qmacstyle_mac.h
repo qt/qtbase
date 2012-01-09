@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
 
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 

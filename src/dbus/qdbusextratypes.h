@@ -54,7 +54,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(DBus)
 
 // defined in qhash.cpp
 Q_CORE_EXPORT uint qHash(const QString &key);

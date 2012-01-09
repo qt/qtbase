@@ -52,7 +52,6 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 class QThreadPoolPrivate;
 class Q_CORE_EXPORT QThreadPool : public QObject

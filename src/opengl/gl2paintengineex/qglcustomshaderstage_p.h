@@ -59,7 +59,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(OpenGL)
 
 class QGLCustomShaderStagePrivate;
 class Q_OPENGL_EXPORT QGLCustomShaderStage

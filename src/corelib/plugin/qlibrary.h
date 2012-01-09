@@ -48,7 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
 
 #if defined(QT_NO_LIBRARY) && defined(Q_OS_WIN)
 #undef QT_NO_LIBRARY

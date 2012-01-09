@@ -53,7 +53,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
 
 #ifndef QTEST_NO_SIZEOF_CHECK
 template <int>
