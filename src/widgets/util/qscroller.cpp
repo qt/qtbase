@@ -1524,10 +1524,8 @@ void QScrollerPrivate::handleDrag(const QPointF &position, qint64 timestamp)
     dragDistance += deltaPixel;
 //    }
 //qScrollerDebug() << "######################" << deltaPixel << position.y() << lastPosition.y();
-    if (canScrollX)
-        lastPosition.setX(position.x());
-    if (canScrollY)
-        lastPosition.setY(position.y());
+
+    lastPosition = position;
     lastTimestamp = timestamp;
 }
 
