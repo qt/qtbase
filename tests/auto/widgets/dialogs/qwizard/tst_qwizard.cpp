@@ -855,7 +855,7 @@ public:
     void cleanupPage() { ++cleanup; QWizardPage::cleanupPage(); }
     bool validatePage() { ++validate; return QWizardPage::validatePage(); }
 
-    bool check(int init, int cleanup)
+    bool sanityCheck(int init, int cleanup)
     {
         return init == this->init
             && cleanup == this->cleanup
@@ -868,9 +868,9 @@ public:
 };
 
 #define CHECK_PAGE_INIT(i0, c0, i1, c1, i2, c2) \
-    QVERIFY(page0->check((i0), (c0))); \
-    QVERIFY(page1->check((i1), (c1))); \
-    QVERIFY(page2->check((i2), (c2)));
+    QVERIFY(page0->sanityCheck((i0), (c0))); \
+    QVERIFY(page1->sanityCheck((i1), (c1))); \
+    QVERIFY(page2->sanityCheck((i2), (c2)));
 
 void tst_QWizard::setOption_IndependentPages()
 {
