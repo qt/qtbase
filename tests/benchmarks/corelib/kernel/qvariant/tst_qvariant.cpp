@@ -90,6 +90,7 @@ struct BigClass
     double n,i,e,r,o,b;
 };
 Q_STATIC_ASSERT(sizeof(BigClass) > sizeof(QVariant::Private::Data));
+Q_DECLARE_TYPEINFO(BigClass, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(BigClass);
 
 struct SmallClass
@@ -97,6 +98,7 @@ struct SmallClass
     char s;
 };
 Q_STATIC_ASSERT(sizeof(SmallClass) <= sizeof(QVariant::Private::Data));
+Q_DECLARE_TYPEINFO(SmallClass, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(SmallClass);
 
 void tst_qvariant::testBound()

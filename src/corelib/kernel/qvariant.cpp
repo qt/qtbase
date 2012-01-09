@@ -787,7 +787,8 @@ const QVariant::Handler qt_dummy_variant_handler = {
 
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
-    const uint size = QMetaType::sizeOf(d->type);
+    const QMetaType type(d->type);
+    const uint size = type.sizeOf();
     if (!size) {
         d->type = QVariant::Invalid;
         return;
@@ -795,11 +796,11 @@ static void customConstruct(QVariant::Private *d, const void *copy)
 
     // this logic should match with QVariantIntegrator::CanUseInternalSpace
     if (size <= sizeof(QVariant::Private::Data)
-            && (QMetaType::typeFlags(d->type) & QMetaType::MovableType)) {
-        QMetaType::construct(d->type, &d->data.ptr, copy);
+            && (type.flags() & QMetaType::MovableType)) {
+        type.construct(&d->data.ptr, copy);
         d->is_shared = false;
     } else {
-        void *ptr = QMetaType::create(d->type, copy);
+        void *ptr = type.create(copy);
         d->is_shared = true;
         d->data.shared = new QVariant::PrivateShared(ptr);
     }
