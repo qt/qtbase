@@ -120,7 +120,7 @@ protected:
     QPixmap decoration(const QStyleOptionViewItem &option, const QVariant &variant) const;
     QPixmap *selected(const QPixmap &pixmap, const QPalette &palette, bool enabled) const;
 
-    QRect check(const QStyleOptionViewItem &option, const QRect &bounding,
+    QRect doCheck(const QStyleOptionViewItem &option, const QRect &bounding,
                 const QVariant &variant) const;
     QRect textRectangle(QPainter *painter, const QRect &rect,
                         const QFont &font, const QString &text) const;
