@@ -85,7 +85,7 @@ private slots:
     void deleteCache();
 
 private:
-    void check();
+    void runTest();
     void checkSynchronous();
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -174,7 +174,7 @@ void tst_QAbstractNetworkCache::expires_data()
 
 void tst_QAbstractNetworkCache::expires()
 {
-    check();
+    runTest();
 }
 
 void tst_QAbstractNetworkCache::expiresSynchronous_data()
@@ -206,7 +206,7 @@ void tst_QAbstractNetworkCache::lastModified_data()
 
 void tst_QAbstractNetworkCache::lastModified()
 {
-    check();
+    runTest();
 }
 
 void tst_QAbstractNetworkCache::lastModifiedSynchronous_data()
@@ -238,7 +238,7 @@ void tst_QAbstractNetworkCache::etag_data()
 
 void tst_QAbstractNetworkCache::etag()
 {
-    check();
+    runTest();
 }
 
 void tst_QAbstractNetworkCache::etagSynchronous_data()
@@ -279,7 +279,7 @@ void tst_QAbstractNetworkCache::cacheControl_data()
 
 void tst_QAbstractNetworkCache::cacheControl()
 {
-    check();
+    runTest();
 }
 
 void tst_QAbstractNetworkCache::cacheControlSynchronous_data()
@@ -292,7 +292,7 @@ void tst_QAbstractNetworkCache::cacheControlSynchronous()
     checkSynchronous();
 }
 
-void tst_QAbstractNetworkCache::check()
+void tst_QAbstractNetworkCache::runTest()
 {
     QFETCH(QNetworkRequest::CacheLoadControl, cacheLoadControl);
     QFETCH(QString, url);
