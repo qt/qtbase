@@ -41,7 +41,35 @@
 
 #include "qplatformtheme_qpa.h"
 
+#include <QtCore/QVariant>
+
 QT_BEGIN_NAMESPACE
+
+/*!
+    \class QPlatformTheme
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+    \brief The QPlatformTheme class allows customizing the UI based on themes.
+
+*/
+
+/*!
+    \enum QPlatformTheme::ThemeHint
+
+    This enum describes the available theme hints.
+
+    \value TextCursorWidth  (int) Determines the width of the text cursor.
+
+    \value DropShadow       (bool) Determines whether the drop shadow effect for
+                            tooltips or whatsthis is enabled.
+
+    \value MaximumScrollBarDragDistance (int) Determines the value returned by
+                            QStyle::pixelMetric(PM_MaximumDragDistance)
+
+    \sa themeHint(), QStyle::pixelMetric()
+*/
 
 QPlatformMenu *QPlatformTheme::createPlatformMenu(QMenu *menu) const
 {
@@ -65,6 +93,19 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(QDialog *dialo
 {
     Q_UNUSED(dialog);
     return 0;
+}
+
+QVariant QPlatformTheme::themeHint(ThemeHint hint) const
+{
+    switch (hint) {
+    case TextCursorWidth:
+        return QVariant(1);
+    case DropShadow:
+        return QVariant(false);
+    case MaximumScrollBarDragDistance:
+        return QVariant(-1);
+    }
+    return QVariant();
 }
 
 QT_END_NAMESPACE

@@ -53,6 +53,7 @@ public:
 
     virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    virtual QVariant themeHint(ThemeHint) const;
 };
 
 QT_END_NAMESPACE

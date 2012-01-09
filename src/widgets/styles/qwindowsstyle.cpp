@@ -392,16 +392,9 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 #endif
     case PM_MaximumDragDistance:
-#if defined(Q_OS_WIN)
-        {
-            HDC hdcScreen = GetDC(0);
-            int dpi = GetDeviceCaps(hdcScreen, LOGPIXELSX);
-            ReleaseDC(0, hdcScreen);
-            ret = (int)(dpi * 1.375);
-        }
-#else
-        ret = 60;
-#endif
+        ret = QCommonStyle::pixelMetric(PM_MaximumDragDistance);
+        if (ret == -1)
+            ret = 60;
         break;
 
 #ifndef QT_NO_SLIDER
@@ -530,13 +523,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         ret = GetSystemMetrics(SM_CYFRAME);
 #endif
         break;
-    case PM_TextCursorWidth: {
-        DWORD caretWidth = 1;
-#if defined(SPI_GETCARETWIDTH)
-        SystemParametersInfo(SPI_GETCARETWIDTH, 0, &caretWidth, 0);
-#endif
-        ret = (int)caretWidth;
-        break; }
 #endif
     case PM_ToolBarItemMargin:
         ret = 1;

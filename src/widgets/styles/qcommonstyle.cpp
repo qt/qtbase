@@ -44,6 +44,7 @@
 
 #include <qfile.h>
 #include <qapplication.h>
+#include <private/qguiapplication_p.h>
 #include <qbitmap.h>
 #include <qcache.h>
 #include <qdockwidget.h>
@@ -72,6 +73,7 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qsettings.h>
+#include <qvariant.h>
 #include <qpixmapcache.h>
 #include <private/qguiplatformplugin_p.h>
 
@@ -4313,7 +4315,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 #endif
     case PM_MaximumDragDistance:
-        ret = -1;
+        ret = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::MaximumScrollBarDragDistance).toInt();
         break;
 
 #ifndef QT_NO_SLIDER
@@ -4550,7 +4552,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         }
         break;
     case PM_TextCursorWidth:
-        ret = 1;
+        ret = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::TextCursorWidth).toInt();
         break;
     case PM_TabBar_ScrollButtonOverlap:
         ret = 1;

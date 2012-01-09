@@ -41,11 +41,44 @@
 
 #include "qwindowstheme.h"
 #include "qwindowsdialoghelpers.h"
+#include "qwindowscontext.h"
+#include "qt_windows.h"
+
+#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
+static inline bool booleanSystemParametersInfo(UINT what, bool defaultValue)
+{
+    BOOL result;
+    if (SystemParametersInfo(what, 0, &result, 0))
+        return result ? true : false;
+    return defaultValue;
+}
+
+static inline bool dWordSystemParametersInfo(UINT what, DWORD defaultValue)
+{
+    DWORD result;
+    if (SystemParametersInfo(what, 0, &result, 0))
+        return result;
+    return defaultValue;
+}
+
 QWindowsTheme::QWindowsTheme()
 {
+}
+
+QVariant QWindowsTheme::themeHint(ThemeHint hint) const
+{
+    switch (hint) {
+    case TextCursorWidth:
+        return QVariant(int(dWordSystemParametersInfo(SPI_GETCARETWIDTH, 1u)));
+    case DropShadow:
+        return QVariant(booleanSystemParametersInfo(SPI_GETDROPSHADOW, false));
+    case MaximumScrollBarDragDistance:
+        return QVariant(qRound(qreal(QWindowsContext::instance()->defaultDPI()) * 1.375));
+    }
+    return QVariant();
 }
 
 bool QWindowsTheme::usePlatformNativeDialog(const QDialog *dialog) const

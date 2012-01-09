@@ -43,6 +43,7 @@
 #ifndef QT_NO_WHATSTHIS
 #include "qpointer.h"
 #include "qapplication.h"
+#include <private/qguiapplication_p.h>
 #include "qdesktopwidget.h"
 #include "qevent.h"
 #include "qpixmap.h"
@@ -58,12 +59,6 @@
 #include "qdebug.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
-#endif
-#if defined(Q_WS_WIN)
-#include "qt_windows.h"
-#ifndef SPI_GETDROPSHADOW
-#define SPI_GETDROPSHADOW                   0x1024
-#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -221,15 +216,9 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
                                         + Qt::TextWordWrap + Qt::TextExpandTabs,
                                         text);
     }
-#if defined(Q_WS_WIN)
-    if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
-    {
-        BOOL shadow;
-        SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
-        shadowWidth = shadow ? 0 : 6;
-    }
-#endif
+    shadowWidth =
+        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::DropShadow).toBool() ?
+        0 : 6;
     resize(r.width() + 2*hMargin + shadowWidth, r.height() + 2*vMargin + shadowWidth);
 }
 
