@@ -132,7 +132,8 @@ QT_BEGIN_NAMESPACE
     \value Checked          The object's check box is checked.
     \value Collapsed        The object is collapsed, e.g. a closed listview item, or an iconified window.
     \value DefaultButton    The object represents the default button in a dialog.
-    \value Expanded         The object is expandable, and currently the children are visible.
+    \value Expandable       The object is expandable, mostly used for cells in a tree view.
+    \value Expanded         The object is expanded, currently its children are visible.
     \value ExtSelectable    The object supports extended selection.
     \value Focusable        The object can receive focus. Only objects in the active window can receive focus.
     \value Focused          The object has keyboard focus.
