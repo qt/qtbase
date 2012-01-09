@@ -148,9 +148,21 @@ public:
     QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
+    QWheelEvent(const QPointF &pos, const QPointF& globalPos,
+                QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
+                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+
     ~QWheelEvent();
 
-    inline int delta() const { return d; }
+
+    inline QPoint pixelDelta() const { return pixelD; }
+    inline QPoint angleDelta() const { return angleD; }
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QT_DEPRECATED int delta() const  { return qt4D; }
+    inline QT_DEPRECATED Qt::Orientation orientation() const { return qt4O; }
+#endif
+
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return p.toPoint(); }
     inline QPoint globalPos()   const { return g.toPoint(); }
@@ -163,15 +175,15 @@ public:
     inline const QPointF &globalPosF()   const { return g; }
 
     inline Qt::MouseButtons buttons() const { return mouseState; }
-    Qt::Orientation orientation() const { return o; }
-
-
 protected:
     QPointF p;
     QPointF g;
-    int d;
+    QPoint pixelD;
+    QPoint angleD;
+    int qt4D;
+    Qt::Orientation qt4O;
     Qt::MouseButtons mouseState;
-    Qt::Orientation o;
+    int reserved;
 };
 #endif
 

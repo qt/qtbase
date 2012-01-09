@@ -189,8 +189,53 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local,
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
 {
-    QWindowSystemInterfacePrivate::WheelEvent *e =
-            new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o, mods);
+    QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
+    handleWheelEvent(tlw, timestamp, local, global, point, point, mods);
+}
+
+void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleWheelEvent(w, time, local, global, pixelDelta, angleDelta, mods);
+}
+
+void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods)
+{
+    // Qt 4 sends two separate wheel events for horizontal and vertical
+    // deltas. For Qt 5 we want to send the deltas in one event, but at the
+    // same time preserve source and behavior compatibility with Qt 4.
+    //
+    // In addition high-resolution pixel-based deltas are also supported.
+    // Platforms that does not support these may pass a null point here.
+    // Angle deltas must always be sent in addition to pixel deltas.
+    QWindowSystemInterfacePrivate::WheelEvent *e;
+
+    if (angleDelta.isNull())
+        return;
+
+    // Simple case: vertical deltas only:
+    if (angleDelta.y() != 0 && angleDelta.x() == 0) {
+        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods);
+        QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+        return;
+    }
+
+    // Simple case: horizontal deltas only:
+    if (angleDelta.y() == 0 && angleDelta.x() != 0) {
+        e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, pixelDelta, angleDelta, angleDelta.x(), Qt::Horizontal, mods);
+        QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+        return;
+    }
+
+    // Both horizontal and vertical deltas: Send two wheel events.
+    // The first event contains the Qt 5 pixel and angle delta as points,
+    // and in addition the Qt 4 compatibility vertical angle delta.
+    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, pixelDelta, angleDelta, angleDelta.y(), Qt::Vertical, mods);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+
+    // The second event contains null pixel and angle points and the
+    // Qt 4 compatibility horizontal angle delta.
+    e = new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, QPoint(), QPoint(), angleDelta.x(), Qt::Horizontal, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

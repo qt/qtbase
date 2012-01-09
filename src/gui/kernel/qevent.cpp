@@ -453,7 +453,13 @@ QHoverEvent::~QHoverEvent()
 
     Wheel events are sent to the widget under the mouse cursor, but
     if that widget does not handle the event they are sent to the
-    focus widget. The rotation distance is provided by delta().
+    focus widget. Wheel events are generated for both mouse wheels
+    and trackpad scroll gestures. There are two ways to read the
+    wheel event delta: angleDelta() returns the delta in wheel
+    degrees. This value is always provided. pixelDelta() returns
+    the delta in screen pixels and is available on platforms that
+    have high-resolution trackpads, such as Mac OS X.
+
     The functions pos() and globalPos() return the mouse cursor's
     location at the time of the event.
 
@@ -483,7 +489,10 @@ QHoverEvent::~QHoverEvent()
 */
 
 /*!
+    \obsolete
     Constructs a wheel event object.
+
+    Use the QPoint-based constructor instead.
 
     The position, \a pos, is the location of the mouse cursor within
     the widget. The globalPos() is initialized to QCursor::pos()
@@ -496,13 +505,13 @@ QHoverEvent::~QHoverEvent()
     \a modifiers holds the keyboard modifier flags at the time of the
     event, and \a orient holds the wheel's orientation.
 
-    \sa pos() delta() state()
+    \sa pos() pixelDelta() angleDelta() state()
 */
 #ifndef QT_NO_WHEELEVENT
 QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
-    : QInputEvent(Wheel, modifiers), p(pos), d(delta), mouseState(buttons), o(orient)
+    : QInputEvent(Wheel, modifiers), p(pos), qt4D(delta), qt4O(orient), mouseState(buttons)
 {
     g = QCursor::pos();
 }
@@ -515,7 +524,10 @@ QWheelEvent::~QWheelEvent()
 }
 
 /*!
+    \obsolete
     Constructs a wheel event object.
+
+    Use the QPoint-based constructor instead.
 
     The \a pos provides the location of the mouse cursor
     within the widget. The position in global coordinates is specified
@@ -523,18 +535,58 @@ QWheelEvent::~QWheelEvent()
     holds the keyboard modifier flags at the time of the event, and
     \a orient holds the wheel's orientation.
 
-    \sa pos() globalPos() delta() state()
+
+    \sa pos() pixelDelta() angleDelta() state()
 */
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
-    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), d(delta), mouseState(buttons), o(orient)
+    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), qt4D(delta), qt4O(orient), mouseState(buttons)
 {}
+
+/*!
+    Constructs a wheel event object.
+
+    The \a pos provides the location of the mouse cursor
+    within the window. The position in global coordinates is specified
+    by \a globalPos. \pixelDelta contains the scrolling distance
+    in pixels on screen, \a angleDelta contains the wheel rotation distance.
+    \pixelDelta is optional and can be null.
+
+    \a modifiers holds the keyboard modifier flags at the time of the event.
+
+    \a pixelDelta contains the scrolling delta in pixels,
+    \a angleDelta contains the rotation distance, and
+    \a orient holds the wheel's orientation.
+
+    \sa pos() globalPos() delta() state()
+*/
+
+QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
+            QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
+            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+    : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
+      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons)
+{}
+
 
 #endif // QT_NO_WHEELEVENT
 
 /*!
-    \fn int QWheelEvent::delta() const
+    \fn QPoint QWheelEvent::pixelDelta() const
+
+    Returns the scrolling distance in pixels on screen. This value is
+    provided on platforms that support high-resolution pixel-based
+    delta values, such as Mac OS X. The value should be used directly
+    to scroll content on screen.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_gui_kernel_qevent.cpp 0
+*/
+
+/*!
+    \fn QPoint QWheelEvent::angleDelta() const
 
     Returns the distance that the wheel is rotated, in eighths of a
     degree. A positive value indicates that the wheel was rotated
@@ -553,6 +605,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     Example:
 
     \snippet doc/src/snippets/code/src_gui_kernel_qevent.cpp 0
+*/
+
+/*!
+    \fn int QWheelEvent::delta() const
+
+    This function has been deprecated, use pixelDelta() or angleDelta() instead.
 */
 
 /*!
