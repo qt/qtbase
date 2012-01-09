@@ -434,7 +434,7 @@ xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
-        if (checker.check(event)) {
+        if (checker.checkEvent(event)) {
             (*eventqueue)[i] = 0;
             m_reader->unlock();
             return event;

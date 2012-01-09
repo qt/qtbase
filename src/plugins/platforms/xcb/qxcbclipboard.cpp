@@ -689,7 +689,7 @@ namespace
             : window(win), type(t) {}
         xcb_window_t window;
         int type;
-        bool check(xcb_generic_event_t *event) const {
+        bool checkEvent(xcb_generic_event_t *event) const {
             if (!event)
                 return false;
             int t = event->response_type & 0x7f;
@@ -712,7 +712,7 @@ namespace
         ClipboardEvent(QXcbConnection *c)
         { clipboard = c->internAtom("CLIPBOARD"); }
         xcb_atom_t clipboard;
-        bool check(xcb_generic_event_t *e) const {
+        bool checkEvent(xcb_generic_event_t *e) const {
             if (!e)
                 return false;
             int type = e->response_type & 0x7f;

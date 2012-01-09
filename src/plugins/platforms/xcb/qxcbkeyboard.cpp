@@ -1033,7 +1033,7 @@ public:
     {
     }
 
-    bool check(xcb_generic_event_t *ev)
+    bool checkEvent(xcb_generic_event_t *ev)
     {
         if (m_error || !ev)
             return false;

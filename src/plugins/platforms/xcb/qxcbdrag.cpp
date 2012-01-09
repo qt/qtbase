@@ -818,7 +818,7 @@ namespace
     public:
         ClientMessageScanner(xcb_atom_t a) : atom(a) {}
         xcb_atom_t atom;
-        bool check(xcb_generic_event_t *event) const {
+        bool checkEvent(xcb_generic_event_t *event) const {
             if (!event)
                 return false;
             if ((event->response_type & 0x7f) != XCB_CLIENT_MESSAGE)
