@@ -416,20 +416,6 @@ public:
 private:
 };
 
-class QAccessibleEvent : public QEvent
-{
-public:
-    inline QAccessibleEvent(Type type);
-    inline QString value() const { return val; }
-    inline void setValue(const QString &aText) { val = aText; }
-
-private:
-    QString val;
-};
-
-inline QAccessibleEvent::QAccessibleEvent(Type atype)
-    : QEvent(atype) {}
-
 #define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 

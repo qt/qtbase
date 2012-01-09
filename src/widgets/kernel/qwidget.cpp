@@ -8187,26 +8187,6 @@ bool QWidget::event(QEvent *event)
             event->ignore();
         break;
 #endif
-#ifndef QT_NO_ACCESSIBILITY
-    case QEvent::AccessibilityDescription:
-    case QEvent::AccessibilityHelp: {
-        QAccessibleEvent *ev = static_cast<QAccessibleEvent *>(event);
-        switch (ev->type()) {
-#ifndef QT_NO_TOOLTIP
-        case QEvent::AccessibilityDescription:
-            ev->setValue(d->toolTip);
-            break;
-#endif
-#ifndef QT_NO_WHATSTHIS
-        case QEvent::AccessibilityHelp:
-            ev->setValue(d->whatsThis);
-            break;
-#endif
-        default:
-            return false;
-        }
-        break; }
-#endif
     case QEvent::EmbeddingControl:
         d->topData()->frameStrut.setCoords(0 ,0, 0, 0);
         data->fstrut_dirty = false;

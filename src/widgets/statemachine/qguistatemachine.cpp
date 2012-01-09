@@ -285,13 +285,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::HoverMove:
         return new QHoverEvent(*static_cast<QHoverEvent*>(e));
 
-    case QEvent::AccessibilityHelp:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::AccessibilityDescription:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::EnterEditFocus:
         return new QEvent(*e);

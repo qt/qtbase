@@ -185,9 +185,6 @@ public:
         HoverLeave = 128,                       // mouse cursor leaves a hover widget
         HoverMove = 129,                        // mouse cursor move inside a hover widget
 
-        AccessibilityHelp = 119,                // accessibility help text request
-        AccessibilityDescription = 130,         // accessibility description text request
-
         // last event id used = 132
 
 #ifdef QT_KEYPAD_NAVIGATION

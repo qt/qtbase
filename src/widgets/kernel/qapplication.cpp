@@ -3423,8 +3423,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::Style:
         case QEvent::IconDrag:
         case QEvent::StyleChange:
-        case QEvent::AccessibilityHelp:
-        case QEvent::AccessibilityDescription:
         case QEvent::GraphicsSceneDragEnter:
         case QEvent::GraphicsSceneDragMove:
         case QEvent::GraphicsSceneDragLeave:
