@@ -168,7 +168,7 @@ void tst_QDom::setContent_data()
     QTest::addColumn<QStringList>("featuresFalse");
     QTest::addColumn<QString>("res");
 
-/*    QTest::newRow( "01" ) << doc01
+    QTest::newRow( "01" ) << doc01
                        << QStringList()
                        << QString("http://trolltech.com/xml/features/report-whitespace-only-CharData").split(' ')
                        << QString("<!DOCTYPE a1>\n"
@@ -240,7 +240,7 @@ void tst_QDom::setContent_data()
                                    " </b3>\n"
                                    "</a1>\n");
 
-  */   QTest::newRow("05") << QString("<message>\n"
+    QTest::newRow("05") << QString("<message>\n"
                                 "    <body>&lt;b&gt;foo&lt;/b&gt;>]]&gt;</body>\n"
                                 "</message>\n")
                      << QStringList() << QStringList()
