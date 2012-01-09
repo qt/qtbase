@@ -152,12 +152,12 @@ protected:
 };
 
 QT_BEGIN_NAMESPACE
-template<> struct QMetaTypeId<tst_QShortcut::Widget>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
-template<> struct QMetaTypeId<tst_QShortcut::Result>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
-template<> struct QMetaTypeId<tst_QShortcut::Action>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Widget> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Result> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Action> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
 QT_END_NAMESPACE
 
 class TestEdit : public QTextEdit
