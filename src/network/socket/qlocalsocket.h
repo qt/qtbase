@@ -105,10 +105,10 @@ public:
     qint64 readBufferSize() const;
     void setReadBufferSize(qint64 size);
 
-    bool setSocketDescriptor(quintptr socketDescriptor,
+    bool setSocketDescriptor(qintptr socketDescriptor,
                              LocalSocketState socketState = ConnectedState,
                              OpenMode openMode = ReadWrite);
-    quintptr socketDescriptor() const;
+    qintptr socketDescriptor() const;
 
     LocalSocketState state() const;
     bool waitForBytesWritten(int msecs = 30000);

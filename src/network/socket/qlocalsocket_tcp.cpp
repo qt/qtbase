@@ -250,7 +250,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     QIODevice::open(openMode);
 }
 
-bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
+bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
         LocalSocketState socketState, OpenMode openMode)
 {
     Q_D(QLocalSocket);
@@ -290,7 +290,7 @@ bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
                                              newSocketState, openMode);
 }
 
-quintptr QLocalSocket::socketDescriptor() const
+qintptr QLocalSocket::socketDescriptor() const
 {
     Q_D(const QLocalSocket);
     return d->tcpSocket->socketDescriptor();
