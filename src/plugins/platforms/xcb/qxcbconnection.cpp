@@ -570,13 +570,17 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     if (!handled) {
         // Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
         // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
-        Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent((Display*)m_xlib_display, response_type, 0);
+
+        Display *xdisplay = (Display *)m_xlib_display;
+        XLockDisplay(xdisplay);
+        Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, response_type, 0);
         if (proc) {
-            XESetWireToEvent((Display*)m_xlib_display, response_type, proc);
+            XESetWireToEvent(xdisplay, response_type, proc);
             XEvent dummy;
             event->sequence = LastKnownRequestProcessed(m_xlib_display);
-            proc((Display*)m_xlib_display, &dummy, (xEvent*)event);
+            proc(xdisplay, &dummy, (xEvent*)event);
         }
+        XUnlockDisplay(xdisplay);
     }
 #endif
 
