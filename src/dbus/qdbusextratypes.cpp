@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void QDBusObjectPath::check()
+void QDBusObjectPath::doCheck()
 {
     if (!QDBusUtil::isValidObjectPath(*this)) {
         qWarning("QDBusObjectPath: invalid path \"%s\"", qPrintable(*this));
@@ -54,7 +54,7 @@ void QDBusObjectPath::check()
     }
 }
 
-void QDBusSignature::check()
+void QDBusSignature::doCheck()
 {
     if (!QDBusUtil::isValidSignature(*this)) {
         qWarning("QDBusSignature: invalid signature \"%s\"", qPrintable(*this));

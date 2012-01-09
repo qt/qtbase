@@ -75,26 +75,26 @@ public:
     { return *this; }
 
 private:
-    void check();
+    void doCheck();
 };
 
 inline QDBusObjectPath::QDBusObjectPath(const char *objectPath)
     : QString(QString::fromLatin1(objectPath))
-{ check(); }
+{ doCheck(); }
 
 inline QDBusObjectPath::QDBusObjectPath(const QLatin1String &objectPath)
     : QString(objectPath)
-{ check(); }
+{ doCheck(); }
 
 inline QDBusObjectPath::QDBusObjectPath(const QString &objectPath)
     : QString(objectPath)
-{ check(); }
+{ doCheck(); }
 
 inline QDBusObjectPath &QDBusObjectPath::operator=(const QDBusObjectPath &_path)
-{ QString::operator=(_path); check(); return *this; }
+{ QString::operator=(_path); doCheck(); return *this; }
 
 inline void QDBusObjectPath::setPath(const QString &objectPath)
-{ QString::operator=(objectPath); check(); }
+{ QString::operator=(objectPath); doCheck(); }
 
 inline bool operator==(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 { return lhs.path() == rhs.path(); }
@@ -125,26 +125,26 @@ public:
     { return *this; }
 
 private:
-    void check();
+    void doCheck();
 };
 
 inline QDBusSignature::QDBusSignature(const char *dBusSignature)
     : QString(QString::fromAscii(dBusSignature))
-{ check(); }
+{ doCheck(); }
 
 inline QDBusSignature::QDBusSignature(const QLatin1String &dBusSignature)
     : QString(dBusSignature)
-{ check(); }
+{ doCheck(); }
 
 inline QDBusSignature::QDBusSignature(const QString &dBusSignature)
     : QString(dBusSignature)
-{ check(); }
+{ doCheck(); }
 
 inline QDBusSignature &QDBusSignature::operator=(const QDBusSignature &dbusSignature)
-{ QString::operator=(dbusSignature); check(); return *this; }
+{ QString::operator=(dbusSignature); doCheck(); return *this; }
 
 inline void QDBusSignature::setSignature(const QString &dBusSignature)
-{ QString::operator=(dBusSignature); check(); }
+{ QString::operator=(dBusSignature); doCheck(); }
 
 inline bool operator==(const QDBusSignature &lhs, const QDBusSignature &rhs)
 { return lhs.signature() == rhs.signature(); }
