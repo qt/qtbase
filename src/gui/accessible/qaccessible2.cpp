@@ -189,7 +189,59 @@ QT_BEGIN_NAMESPACE
     \l QAccessibleSimpleEditableTextInterface provides a convenience implementation of this interface.
     Consider inheriting \l QAccessibleSimpleEditableTextInterface instead.
 
+    \sa QAccessibleInterface
+
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
+/*!
+    \fn QAccessibleEditableTextInterface::~QAccessibleEditableTextInterface()
+
+
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::copyText(int startOffset, int endOffset) const
+
+    Copies the text from \a startOffset to \a endOffset to the system clip board.
+    The \a startOffset is the first character that will be copied.
+    The \a endOffset is the first character that will not be copied.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::deleteText(int startOffset, int endOffset)
+
+    Deletes the text from \a startOffset to \a endOffset.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::insertText(int offset, const QString &text)
+
+    Inserts \a text at position \a offset.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::cutText(int startOffset, int endOffset)
+
+    Removes the text from \a startOffset to \a endOffset and puts it in the system clip board.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::pasteText(int offset)
+
+    Pastes text from the system clip board at the position \a offset.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::replaceText(int startOffset, int endOffset, const QString &text)
+
+    Removes the text from \a startOffset to \a endOffset and instead inserts \a text.
+*/
+
+/*!
+    \fn void QAccessibleEditableTextInterface::setAttributes(int startOffset, int endOffset, const QString &attributes)
+
+    \sa QAccessibleTextInterface::attributes()
 */
 
 /*!
@@ -197,7 +249,9 @@ QT_BEGIN_NAMESPACE
     \ingroup accessibility
 
     \brief The QAccessibleSimpleEditableTextInterface class is a convenience class for
-    text-based widgets.
+    text-based widgets. It can be inherited instead of \l QAccessibleEditableTextInterface.
+
+    \sa QAccessibleInterface, QAccessibleEditableTextInterface
 
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
@@ -213,6 +267,8 @@ QT_BEGIN_NAMESPACE
 
     Instead of forcing the user to deal with the individual parts of the widgets, this interface
     gives an easier approach to the kind of widget it represents.
+
+    Usually this interface is implemented by classes that also implement \l QAccessibleInterface.
 
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
@@ -292,7 +348,9 @@ QT_BEGIN_NAMESPACE
     \brief The QAccessibleActionInterface class implements support for
     invocable actions in the interface.
 
-    Each accessible should implement the action interface if it supports any actions.
+    Accessible objects should implement the action interface if they support user interaction.
+    Usually this interface is implemented by classes that also implement \l QAccessibleInterface.
+
     The supported actions should use the predefined actions offered in this class unless they do not
     fit a predefined action. In that case a custom action can be added.
 
@@ -622,6 +680,7 @@ static QString textForRange(QAccessibleInterface *iface, int startOffset, int en
 }
 #endif
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOffset) const
 {
 #ifdef QT_NO_CLIPBOARD
@@ -632,6 +691,7 @@ void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOf
 #endif
 }
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::deleteText(int startOffset, int endOffset)
 {
     QString txt = iface->text(QAccessible::Value);
@@ -639,6 +699,7 @@ void QAccessibleSimpleEditableTextInterface::deleteText(int startOffset, int end
     iface->setText(QAccessible::Value, txt);
 }
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::insertText(int offset, const QString &text)
 {
     QString txt = iface->text(QAccessible::Value);
@@ -646,6 +707,7 @@ void QAccessibleSimpleEditableTextInterface::insertText(int offset, const QStrin
     iface->setText(QAccessible::Value, txt);
 }
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::cutText(int startOffset, int endOffset)
 {
 #ifdef QT_NO_CLIPBOARD
@@ -658,6 +720,7 @@ void QAccessibleSimpleEditableTextInterface::cutText(int startOffset, int endOff
 #endif
 }
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::pasteText(int offset)
 {
 #ifdef QT_NO_CLIPBOARD
@@ -669,6 +732,7 @@ void QAccessibleSimpleEditableTextInterface::pasteText(int offset)
 #endif
 }
 
+/*! \reimp */
 void QAccessibleSimpleEditableTextInterface::replaceText(int startOffset, int endOffset, const QString &text)
 {
     QString txt = iface->text(QAccessible::Value);
