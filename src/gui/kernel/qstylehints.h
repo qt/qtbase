@@ -60,6 +60,7 @@ public:
     int startDragDistance() const;
     int startDragTime() const;
     int keyboardInputInterval() const;
+    int keyboardAutoRepeatRate() const;
     int cursorFlashTime() const;
 private:
     friend class QGuiApplication;

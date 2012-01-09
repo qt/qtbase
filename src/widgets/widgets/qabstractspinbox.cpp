@@ -48,6 +48,7 @@
 #ifndef QT_NO_SPINBOX
 
 #include <qapplication.h>
+#include <qstylehints.h>
 #include <qclipboard.h>
 #include <qdatetime.h>
 #include <qdatetimeedit.h>
@@ -1169,15 +1170,6 @@ void QAbstractSpinBox::hideEvent(QHideEvent *event)
 
     Remember that time value should be given in msecs.
 */
-static int getKeyboardAutoRepeatRate() {
-    int ret = 30;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    DWORD time;
-    if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0) != FALSE)
-        ret = static_cast<int>(1000 / static_cast<int>(time)); // msecs
-#endif
-    return ret; // msecs
-}
 
 /*!
     \reimp
@@ -1192,7 +1184,7 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
         killTimer(d->spinClickThresholdTimerId);
         d->spinClickThresholdTimerId = -1;
         d->effectiveSpinRepeatRate = d->buttonState & Keyboard
-                                     ? getKeyboardAutoRepeatRate()
+                                     ? qApp->styleHints()->keyboardAutoRepeatRate()
                                      : d->spinClickTimerInterval;
         d->spinClickTimerId = startTimer(d->effectiveSpinRepeatRate);
         doStep = true;

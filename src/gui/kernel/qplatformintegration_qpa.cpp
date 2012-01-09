@@ -227,6 +227,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return 1000;
     case KeyboardInputInterval:
         return 400;
+    case KeyboardAutoRepeatRate:
+        return 30;
     case MouseDoubleClickInterval:
         return 400;
     case StartDragDistance:

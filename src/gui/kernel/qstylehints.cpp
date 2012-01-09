@@ -76,6 +76,11 @@ int QStyleHints::keyboardInputInterval() const
     return hint(QPlatformIntegration::KeyboardInputInterval).toInt();
 }
 
+int QStyleHints::keyboardAutoRepeatRate() const
+{
+    return hint(QPlatformIntegration::KeyboardAutoRepeatRate).toInt();
+}
+
 int QStyleHints::cursorFlashTime() const
 {
     return hint(QPlatformIntegration::CursorFlashTime).toInt();

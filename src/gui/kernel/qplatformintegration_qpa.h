@@ -106,7 +106,8 @@ public:
         KeyboardInputInterval,
         MouseDoubleClickInterval,
         StartDragDistance,
-        StartDragTime
+        StartDragTime,
+        KeyboardAutoRepeatRate
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
