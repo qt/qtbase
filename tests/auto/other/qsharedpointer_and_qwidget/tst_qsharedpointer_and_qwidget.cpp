@@ -62,10 +62,10 @@ private slots:
     void strong_sharedptrDelete();
 
 public slots:
-    void cleanup() { check(); }
+    void cleanup() { safetyCheck(); }
 
 public:
-    inline void check()
+    inline void safetyCheck()
     {
 #ifdef QT_BUILD_INTERNAL
         QtSharedPointer::internalSafetyCheckCleanCheck();
