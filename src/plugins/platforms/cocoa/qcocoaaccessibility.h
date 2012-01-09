@@ -66,6 +66,7 @@ namespace QCocoaAccessible {
 */
 
 NSString *macRole(QAccessible::Role);
+bool shouldBeIgnrored(QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
 QString translateAction(NSString *nsAction);

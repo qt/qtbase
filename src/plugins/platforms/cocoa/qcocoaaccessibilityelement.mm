@@ -216,7 +216,7 @@ static QAccessibleInterface *acast(void *ptr)
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    return NO;
+    return QCocoaAccessible::shouldBeIgnrored(acast(accessibleInterface));
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {

@@ -114,6 +114,55 @@ NSString *macRole(QAccessible::Role qtRole)
 }
 
 /*
+    Mac accessibility supports ignoring elements, which means that
+    the elements are still present in the accessibility tree but is
+    not used by the screen reader.
+*/
+bool shouldBeIgnrored(QAccessibleInterface *interface)
+{
+    // Mac accessibility does not have an attribute that corresponds to the Invisible/Offscreen
+    // state. Ignore interfaces with those flags set.
+    const QAccessible::State state = interface->state();
+    if (state.invisible ||
+        state.offscreen)
+        return true;
+
+    // Some roles are not interesting. In particular, container roles should be
+    // ignored in order to flatten the accessibility tree as seen by the user.
+    const QAccessible::Role role = interface->role();
+    if (role == QAccessible::Border ||      // QFrame
+        role == QAccessible::Application || // We use the system-provided application element.
+        role == QAccessible::MenuItem ||    // The system also provides the menu items.
+        role == QAccessible::ToolBar)       // Access the tool buttons directly.
+        return true;
+
+    NSString *mac_role = macRole(interface->role());
+    if (mac_role == NSAccessibilityWindowRole || // We use the system-provided window elements.
+        mac_role == NSAccessibilityGroupRole ||
+        mac_role == NSAccessibilityUnknownRole)
+        return true;
+
+    // Client is a generic role returned by plain QWidgets or other
+    // widgets that does not have separate QAccessible interface, such
+    // as the TabWidget. Return false unless macRole gives the interface
+    // a special role.
+    if (role == QAccessible::Client && mac_role == NSAccessibilityUnknownRole)
+        return true;
+
+    if (QObject * const object = interface->object()) {
+        const QString className = QLatin1String(object->metaObject()->className());
+
+        // VoiceOver focusing on tool tips can be confusing. The contents of the
+        // tool tip is available through the description attribute anyway, so
+        // we disable accessibility for tool tips.
+        if (className == QLatin1String("QTipLabel"))
+            return true;
+    }
+
+    return false;
+}
+
+/*
     Translates a predefined QAccessibleActionInterface action to a Mac action constant.
     Returns 0 if the Qt Action has no mac equivalent. Ownership of the NSString is
     not transferred.

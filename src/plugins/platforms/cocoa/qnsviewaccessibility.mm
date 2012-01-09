@@ -53,8 +53,10 @@
 
 @implementation QNSView (QNSViewAccessibility)
 
+// The QNSView is a container that the user does not interact directly with:
+// Remove it from the user-visible accessibility tree.
 - (BOOL)accessibilityIsIgnored {
-    return NO;
+    return YES;
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
