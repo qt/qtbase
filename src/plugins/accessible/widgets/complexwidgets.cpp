@@ -387,11 +387,6 @@ QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
     Q_ASSERT(qobject_cast<QAbstractScrollArea *>(widget));
 }
 
-QVariant QAccessibleAbstractScrollArea::invokeMethod(QAccessible::Method, const QVariantList &)
-{
-    return QVariant();
-}
-
 QAccessibleInterface *QAccessibleAbstractScrollArea::child(int index) const
 {
     return QAccessible::queryAccessibleInterface(accessibleChildren().at(index));

@@ -120,7 +120,6 @@ class QAccessibleStackedWidget : public QAccessibleWidget
 public:
     explicit QAccessibleStackedWidget(QWidget *widget);
 
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
@@ -196,8 +195,6 @@ class QAccessibleDialogButtonBox : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDialogButtonBox(QWidget *widget);
-
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
 };
 
 #ifndef QT_NO_TEXTBROWSER
@@ -221,8 +218,6 @@ public:
 
     QAccessibleInterface *child(int index) const;
 
-
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
 protected:
     QCalendarWidget *calendarWidget() const;
 
@@ -286,7 +281,6 @@ public:
     QAccessibleInterface *childAt(int x, int y) const;
     QMainWindow *mainWindow() const;
 
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
 };
 #endif //QT_NO_MAINWINDOW
 

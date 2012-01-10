@@ -581,13 +581,6 @@ QAccessibleStackedWidget::QAccessibleStackedWidget(QWidget *widget)
     Q_ASSERT(qobject_cast<QStackedWidget *>(widget));
 }
 
-QVariant QAccessibleStackedWidget::invokeMethod(QAccessible::Method, const QVariantList &params)
-{
-    Q_UNUSED(params);
-    return QVariant();
-}
-
-
 QAccessibleInterface *QAccessibleStackedWidget::childAt(int x, int y) const
 {
     if (!stackedWidget()->isVisible())
@@ -810,10 +803,6 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
     Q_ASSERT(qobject_cast<QDialogButtonBox*>(widget));
 }
 
-QVariant QAccessibleDialogButtonBox::invokeMethod(QAccessible::Method, const QVariantList &)
-{
-    return QVariant();
-}
 #endif // QT_NO_DIALOGBUTTONBOX
 
 #ifndef QT_NO_TEXTBROWSER
@@ -835,11 +824,6 @@ QAccessibleCalendarWidget::QAccessibleCalendarWidget(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Table)
 {
     Q_ASSERT(qobject_cast<QCalendarWidget *>(widget));
-}
-
-QVariant QAccessibleCalendarWidget::invokeMethod(QAccessible::Method, const QVariantList &)
-{
-    return QVariant();
 }
 
 int QAccessibleCalendarWidget::childCount() const
@@ -1172,11 +1156,6 @@ bool QAccessibleTitleBar::isValid() const
 #ifndef QT_NO_MAINWINDOW
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Window) { }
-
-QVariant QAccessibleMainWindow::invokeMethod(QAccessible::Method /*method*/, const QVariantList & /*params*/)
-{
-    return QVariant();
-}
 
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {

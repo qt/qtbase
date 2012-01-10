@@ -80,7 +80,6 @@ public:
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
-    QVariant invokeMethod(QAccessible::Method, const QVariantList &) { return QVariant(); }
     void *interface_cast(QAccessible::InterfaceType t);
 
     // table interface

@@ -120,7 +120,6 @@ QT_BEGIN_NAMESPACE
     \sa QAccessibleInterface
 */
 
-
 /*!
     \enum QAccessible::StateFlag
 
@@ -1159,17 +1158,17 @@ QWindow *QAccessibleInterface::window() const
 
     Returns an invalid QVariant if the object doesn't support the action.
 */
-QVariant QAccessibleInterface::invokeMethod(QAccessible::Method method, const QVariantList &params)
-{
-    Q_UNUSED(method)
-    Q_UNUSED(params)
-    return QVariant();
-}
 
-/*! \internal */
-QVariant QAccessibleInterface::virtual_hook(const QVariant &)
+/*!
+    \internal
+    Method to allow extending this class without breaking binary compatibility.
+    The actual behavior and format of \a data depends on \a id argument
+    which must be defined if the class is to be extended with another virtual
+    function.
+    Currently, this is unused.
+*/
+void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
 {
-    return QVariant();
 }
 
 /*!

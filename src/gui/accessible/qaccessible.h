@@ -289,10 +289,6 @@ public:
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
 
-    enum Method {
-        ListSupportedMethods      = 0
-    };
-
     enum InterfaceType
     {
         TextInterface,
@@ -334,9 +330,6 @@ private:
 Q_GUI_EXPORT bool operator==(const QAccessible::State &first, const QAccessible::State &second);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
-QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QSet<QAccessible::Method>)
-QT_BEGIN_NAMESPACE
 
 class QAccessible2Interface;
 class QAccessibleTextInterface;
@@ -379,11 +372,6 @@ public:
     virtual QColor foregroundColor() const;
     virtual QColor backgroundColor() const;
 
-    virtual QVariant invokeMethod(QAccessible::Method method, const QVariantList &params = QVariantList());
-
-    inline QSet<QAccessible::Method> supportedMethods()
-    { return qvariant_cast<QSet<QAccessible::Method> >(invokeMethod(QAccessible::ListSupportedMethods)); }
-
     inline QAccessibleTextInterface *textInterface()
     { return reinterpret_cast<QAccessibleTextInterface *>(interface_cast(QAccessible::TextInterface)); }
 
@@ -405,8 +393,8 @@ public:
     inline QAccessibleTableCellInterface *tableCellInterface()
     { return reinterpret_cast<QAccessibleTableCellInterface *>(interface_cast(QAccessible::TableCellInterface)); }
 
-    // FIXME
-    virtual QVariant virtual_hook(const QVariant &data);
+    virtual void virtual_hook(int id, void *data);
+
     virtual void *interface_cast(QAccessible::InterfaceType)
     { return 0; }
 private:
