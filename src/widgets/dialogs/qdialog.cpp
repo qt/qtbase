@@ -520,10 +520,10 @@ int QDialog::exec()
     setAttribute(Qt::WA_ShowModal, wasShowModal);
 
     int res = result();
-    if (deleteOnClose)
-        delete this;
     if (d->nativeDialogInUse)
         d->helperDone(static_cast<QDialog::DialogCode>(res), d->platformHelper());
+    if (deleteOnClose)
+        delete this;
     return res;
 }
 
