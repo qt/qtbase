@@ -212,7 +212,7 @@ void tst_QHttpSocketEngine::errorTest_data()
 
     QTest::newRow("garbage2") << QString() << 0 << QString()
                               << "This is not HTTP"
-                              << int(QAbstractSocket::ProxyConnectionClosedError);
+                              << int(QAbstractSocket::ProxyProtocolError);
 
     QTest::newRow("garbage3") << QString() << 0 << QString()
                               << ""

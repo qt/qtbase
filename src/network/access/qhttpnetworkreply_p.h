@@ -156,6 +156,7 @@ Q_SIGNALS:
     void authenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
+    friend class QHttpSocketEngine;
     friend class QHttpNetworkConnection;
     friend class QHttpNetworkConnectionPrivate;
     friend class QHttpNetworkConnectionChannel;

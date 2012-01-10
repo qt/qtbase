@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 
 class QTcpSocket;
+class QHttpNetworkReply;
 class QHttpSocketEnginePrivate;
 
 class Q_AUTOTEST_EXPORT QHttpSocketEngine : public QAbstractSocketEngine
@@ -171,7 +172,7 @@ public:
     QNetworkProxy proxy;
     QString peerName;
     QTcpSocket *socket;
-    QByteArray readBuffer; // only used for parsing the proxy response
+    QHttpNetworkReply *reply; // only used for parsing the proxy response
     QHttpSocketEngine::HttpState state;
     QAuthenticator authenticator;
     bool readNotificationEnabled;
