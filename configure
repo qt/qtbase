@@ -815,7 +815,6 @@ CFG_SILENT=no
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
-CFG_ICD=auto
 CFG_NOPROCESS=no
 CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
@@ -857,10 +856,6 @@ QT_LIBS_GLIB=
 # flags for GStreamer (X11 only)
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
-
-# flags for libconnsettings0 (used for Maemo ICD bearer management plugin)
-QT_CFLAGS_CONNSETTINGS=
-QT_LIBS_CONNSETTINGS=
 
 #-------------------------------------------------------------------------------
 # check SQL drivers, mouse drivers and decorations available in this package
@@ -5522,33 +5517,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
         fi
     fi
 
-    # auto-detect icd support
-    if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
-        if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings icd2 2>/dev/null`
-            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings icd2 2>/dev/null`
-        fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_CONNSETTINGS $QT_LIBS_CONNSETTINGS; then
-            [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
-            QMakeVar set QT_CFLAGS_CONNSETTINGS "$QT_CFLAGS_CONNSETTINGS"
-            QMakeVar set QT_LIBS_CONNSETTINGS "$QT_LIBS_CONNSETTINGS"
-        else
-            if [ "$CFG_ICD" = "auto" ]; then
-                CFG_ICD=no
-            elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                # CFG_ICD is "yes"
-
-                echo "The ICD Bearer Management plugin cannot be enabled because connsettings was not found."
-                echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                echo " If you believe this message is in error you may use the continue"
-                echo " switch (-continue) to $0 to continue."
-                exit 101
-            fi
-        fi
-    elif [ "$CFG_GLIB" = "no" ]; then
-        CFG_ICD=no
-    fi
-
     # auto-detect libicu support
     if [ "$CFG_ICU" != "no" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icu "ICU" $L_FLAGS $I_FLAGS $l_FLAGS; then
@@ -7161,10 +7129,6 @@ if [ "$CFG_COREWLAN" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG corewlan"
 fi
 
-if [ "$CFG_ICD" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG icd"
-fi
-
 if [ "$CFG_ICU" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG icu"
 fi
@@ -7815,7 +7779,6 @@ QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_S60"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 [ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
-[ "$CFG_ICD" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICD"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -8369,7 +8332,6 @@ echo "Alsa support ........... $CFG_ALSA"
 if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
-echo "ICD support ............ $CFG_ICD"
 echo "libICU support ......... $CFG_ICU"
 if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "Xcb support ............ limited (old version)"

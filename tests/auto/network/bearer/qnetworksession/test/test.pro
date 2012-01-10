@@ -14,9 +14,3 @@ CONFIG(debug_and_release) {
 } else {
   DESTDIR = ..
 }
-
-maemo6|maemo5 {
-    CONFIG += link_pkgconfig
-
-    PKGCONFIG += conninet
-}

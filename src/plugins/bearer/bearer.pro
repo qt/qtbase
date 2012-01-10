@@ -1,12 +1,8 @@
 TEMPLATE = subdirs
 
-contains(QT_CONFIG, dbus) {
-    contains(QT_CONFIG, icd) {
-        SUBDIRS += icd
-    } else:linux* {
-        SUBDIRS += generic
-        SUBDIRS += connman networkmanager
-    }
+linux*:contains(QT_CONFIG, dbus) {
+    SUBDIRS += generic
+    SUBDIRS += connman networkmanager
 }
 
 #win32:SUBDIRS += nla
