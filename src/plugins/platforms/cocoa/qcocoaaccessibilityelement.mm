@@ -60,7 +60,7 @@ static QAccessibleInterface *acast(void *ptr)
     if (self) {
         index = aIndex;
         accessibleInterface = anQAccessibleInterface;
-        role = macRole(acast(accessibleInterface)->role());
+        role = QCocoaAccessible::macRole(acast(accessibleInterface)->role());
         parent = aParent;
 
     }
@@ -177,17 +177,40 @@ static QAccessibleInterface *acast(void *ptr)
 // actions
 
 - (NSArray *)accessibilityActionNames {
-    return [NSArray arrayWithObject:NSAccessibilityPressAction];
+    NSMutableArray * nsActions = [NSMutableArray new];
+
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QStringList supportedActionNames = actionInterface->actionNames();
+
+        foreach (const QString &qtAction, supportedActionNames) {
+            NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
+            if (nsAction)
+                [nsActions addObject : nsAction];
+        }
+    }
+
+    return nsActions;
 }
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QString qtAction = QCocoaAccessible::translateAction(action);
+        QString description = actionInterface->localizedActionDescription(qtAction);
+        if (!description.isEmpty())
+            return qt_mac_QStringToNSString(description);
+    }
+
     return NSAccessibilityActionDescription(action);
 }
 
 - (void)accessibilityPerformAction:(NSString *)action {
-    Q_UNUSED(action);
-    if (acast(accessibleInterface)->actionInterface())
-        acast(accessibleInterface)->actionInterface()->doAction(0);
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QString qtAction = QCocoaAccessible::translateAction(action);
+        actionInterface->doAction(QAccessibleActionInterface::pressAction());
+    }
 }
 
 // misc

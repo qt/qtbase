@@ -45,6 +45,8 @@
 
 #include <QtGui>
 
+namespace QCocoaAccessible {
+
 /*
     Qt Cocoa Accessibility Overview
 
@@ -64,5 +66,10 @@
 */
 
 NSString *macRole(QAccessible::Role);
+NSString *getTranslatedAction(const QString &qtAction);
+NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
+QString translateAction(NSString *nsAction);
+
+}
 
 #endif

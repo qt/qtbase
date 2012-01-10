@@ -60,7 +60,7 @@
 - (id)accessibilityAttributeValue:(NSString *)attribute {
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
         if (m_accessibleRoot)
-            return macRole(m_accessibleRoot->role());
+            return QCocoaAccessible::macRole(m_accessibleRoot->role());
         return NSAccessibilityUnknownRole;
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescriptionForUIElement(self);

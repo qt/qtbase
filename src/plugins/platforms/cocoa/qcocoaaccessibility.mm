@@ -40,6 +40,8 @@
  ****************************************************************************/
 #include "qcocoaaccessibility.h"
 
+namespace QCocoaAccessible {
+
 typedef QMap<QAccessible::Role, NSString *> QMacAccessibiltyRoleMap;
 Q_GLOBAL_STATIC(QMacAccessibiltyRoleMap, qMacAccessibiltyRoleMap);
 
@@ -111,3 +113,60 @@ NSString *macRole(QAccessible::Role qtRole)
     return NSAccessibilityUnknownRole;
 }
 
+/*
+    Translates a predefined QAccessibleActionInterface action to a Mac action constant.
+    Returns 0 if the Qt Action has no mac equivalent. Ownership of the NSString is
+    not transferred.
+*/
+NSString *getTranslatedAction(const QString &qtAction)
+{
+    if (qtAction == QAccessibleActionInterface::pressAction())
+        return NSAccessibilityPressAction;
+    else if (qtAction == QAccessibleActionInterface::increaseAction())
+        return NSAccessibilityIncrementAction;
+    else if (qtAction == QAccessibleActionInterface::decreaseAction())
+        return NSAccessibilityDecrementAction;
+    else if (qtAction == QAccessibleActionInterface::showMenuAction())
+        return NSAccessibilityShowMenuAction;
+    else if (qtAction == QAccessibleActionInterface::setFocusAction()) // Not 100% sure on this one
+        return NSAccessibilityRaiseAction;
+
+    // Not translated:
+    //
+    // Qt:
+    //     static const QString &checkAction();
+    //     static const QString &uncheckAction();
+    //
+    // Cocoa:
+    //      NSAccessibilityConfirmAction;
+    //      NSAccessibilityPickAction;
+    //      NSAccessibilityCancelAction;
+    //      NSAccessibilityDeleteAction;
+
+    return 0;
+}
+
+
+/*
+    Translates between a Mac action constant and a QAccessibleActionInterface action
+    Returns an empty QString if there is no Qt predefined equivalent.
+*/
+QString translateAction(NSString *nsAction)
+{
+    if ([nsAction compare: NSAccessibilityPressAction] == NSOrderedSame)
+        return QAccessibleActionInterface::pressAction();
+    else if ([nsAction compare: NSAccessibilityIncrementAction] == NSOrderedSame)
+        return QAccessibleActionInterface::increaseAction();
+    else if ([nsAction compare: NSAccessibilityDecrementAction] == NSOrderedSame)
+        return QAccessibleActionInterface::decreaseAction();
+    else if ([nsAction compare: NSAccessibilityShowMenuAction] == NSOrderedSame)
+        return QAccessibleActionInterface::showMenuAction();
+    else if ([nsAction compare: NSAccessibilityRaiseAction] == NSOrderedSame)
+        return QAccessibleActionInterface::setFocusAction();
+
+    // See getTranslatedAction for not matched translations.
+
+    return QString();
+}
+
+} // namespace QCocoaAccessible
