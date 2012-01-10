@@ -42,6 +42,10 @@
 #ifndef QBEARERTESTCOMMON_H
 #define QBEARERTESTCOMMON_H
 
+#include <QtTest/qtestcase.h>
+
+enum { TestTimeOut = 90000 };
+
 // Wait for __expr to happen, while still allowing events to be processed.
 #define QTRY_NOOP(__expr) \
     do { \
@@ -53,20 +57,6 @@
         for (int __i = 0; __i < __timeout && !(__expr); __i+=__step) { \
             QTest::qWait(__step); \
         } \
-    } while(0)
-
-// Will try to wait for the condition while allowing event processing
-#define QTRY_VERIFY(__expr) \
-    do { \
-        const int __step = 50; \
-        const int __timeout = 90000; \
-        if (!(__expr)) { \
-            QTest::qWait(0); \
-        } \
-        for (int __i = 0; __i < __timeout && !(__expr); __i+=__step) { \
-            QTest::qWait(__step); \
-        } \
-        QVERIFY(__expr); \
     } while(0)
 
 #endif

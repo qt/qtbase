@@ -35,7 +35,7 @@ information about a particular change.
 
 - QCoreApplication::translate() will no longer return the source text when
   the translation is empty. Use lrelease -removeidentical for optimization.
-  
+
 - Qt::escape() is deprecated (but can be enabled via
   QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
@@ -44,7 +44,9 @@ information about a particular change.
 - QTestLib:
   * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.
     These macros formerly lived in tests/shared/util.h but are now provided
-    by including the <QtTest/QtTest> header.
+    by including the <QtTest/QtTest> header. In addition,
+    QTRY_VERIFY_WITH_TIMEOUT and QTRY_COMPARE_WITH_TIMEOUT are provided,
+    allowing for specifying custom timeout values.
   * The QTEST_NOOP_MAIN macro has been removed from the API.  If a test is
     known at compile-time to be inapplicable for a particular build it should
     be omitted via .pro file logic, or the test should call QSKIP in the

@@ -110,7 +110,7 @@ void tst_QNetworkSession::initTestCase()
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
-    QTRY_VERIFY(spy.count() == 1);
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut);
 }
 
 void tst_QNetworkSession::cleanupTestCase()
@@ -172,7 +172,7 @@ void tst_QNetworkSession::sessionClosing()
         session.close();
         // Sooner or later session must end in Disconnected state,
         // no matter what the phase was.
-        QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
         QTest::qWait(200); // Give platform a breathe, otherwise we'll be catching other errors
     }
 }
@@ -420,7 +420,7 @@ void tst_QNetworkSession::userChoiceSession()
             QVERIFY(errorSpy.isEmpty());
 
             if (expectStateChange)
-                QTRY_VERIFY(!stateChangedSpy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!stateChangedSpy.isEmpty(), TestTimeOut);
 
             QVERIFY(session.state() == QNetworkSession::Connected);
 #ifndef QT_NO_NETWORKINTERFACE
@@ -524,7 +524,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         // Wait until the configuration is uptodate as well, it may be signaled 'connected'
         // bit later than the session
-        QTRY_VERIFY(configuration.state() == QNetworkConfiguration::Active);
+        QTRY_VERIFY_WITH_TIMEOUT(configuration.state() == QNetworkConfiguration::Active, TestTimeOut);
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
@@ -558,7 +558,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             QVERIFY(errorSpy.isEmpty());
 
             if (expectStateChange) {
-                QTRY_VERIFY(stateChangedSpy.count() >= 2);
+                QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy.count() >= 2, TestTimeOut);
 
                 QNetworkSession::State state =
                     qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(0).at(0));
@@ -598,7 +598,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         session2.open();
 	    
-        QTRY_VERIFY(!sessionOpenedSpy2.isEmpty() || !errorSpy2.isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!sessionOpenedSpy2.isEmpty() || !errorSpy2.isEmpty(), TestTimeOut);
 
         if (errorSpy2.isEmpty()) {
             QVERIFY(session2.isOpen());
@@ -625,13 +625,13 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         // QNetworkSession::stop() must result either closed() signal
         // or error() signal
-        QTRY_VERIFY(!sessionClosedSpy2.isEmpty() || !errorSpy2.isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy2.isEmpty() || !errorSpy2.isEmpty(), TestTimeOut);
         QVERIFY(!session2.isOpen());
 
         if (!errorSpy2.isEmpty()) {
             // QNetworkSession::stop() resulted error() signal for session2
             // => also session should emit error() signal
-            QTRY_VERIFY(!errorSpy.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!errorSpy.isEmpty(), TestTimeOut);
 
             // check for SessionAbortedError
             QNetworkSession::SessionError error =
@@ -656,7 +656,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QTRY_NOOP(session2.state() == QNetworkSession::Disconnected);
 	
         if (expectStateChange)
-            QTRY_VERIFY(stateChangedSpy2.count() >= 1 || !errorSpy2.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy2.count() >= 1 || !errorSpy2.isEmpty(), TestTimeOut);
 
         if (!errorSpy2.isEmpty()) {
             QVERIFY(session2.state() == previousState);
@@ -708,11 +708,11 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         QFAIL("Unexpected amount of state changes when roaming.");
                     }
 			
-                    QTRY_VERIFY(session.state() == QNetworkSession::Roaming ||
+                    QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Roaming ||
                                 session.state() == QNetworkSession::Connected ||
-                                session.state() == QNetworkSession::Disconnected);
+                                session.state() == QNetworkSession::Disconnected, TestTimeOut);
                     
-                    QTRY_VERIFY(stateChangedSpy.count() > 0);
+                    QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy.count() > 0, TestTimeOut);
                     state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 1).at(0));                    
                     
                     for (int i = 0; i < stateChangedSpy.count(); i++) {
@@ -723,19 +723,19 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     }
 
                     if (state == QNetworkSession::Roaming) {
-                        QTRY_VERIFY(session.state() == QNetworkSession::Connected);
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Connected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Connected, TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Connected, TestTimeOut);
                         roamedSuccessfully = true;
                     } else if (state == QNetworkSession::Closing) {
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
-                        QTRY_VERIFY(session.state() == QNetworkSession::Connected ||
-                                    session.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Disconnected, TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Connected ||
+                                    session.state() == QNetworkSession::Disconnected, TestTimeOut );
                         roamedSuccessfully = false;
                     } else if (state == QNetworkSession::Disconnected) {
-                        QTRY_VERIFY(!errorSpy.isEmpty());
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(!errorSpy.isEmpty(), TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Disconnected, TestTimeOut);
                   	} else if (state == QNetworkSession::Connected) {
-                        QTRY_VERIFY(errorSpy.isEmpty());
+                        QTRY_VERIFY_WITH_TIMEOUT(errorSpy.isEmpty(),TestTimeOut);
 
                         if (stateChangedSpy.count() > 1) {
                             state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 2).at(0));                        
@@ -757,7 +757,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         if (session.isOpen())
                             QVERIFY(!sessionOpenedSpy3.isEmpty() || !errorSpy3.isEmpty());
                         session.stop();
-                        QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
                     }
                     if (!roamedSuccessfully)
                         QVERIFY(!errorSpy.isEmpty());
@@ -786,8 +786,8 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     }
                 }
 
-                QTRY_VERIFY(!sessionClosedSpy.isEmpty());
-                QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy.isEmpty(), TestTimeOut);
+                QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
             }
 
             QVERIFY(errorSpy2.isEmpty());
@@ -808,7 +808,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             int stateChangedCountBeforeClose = stateChangedSpy2.count();
             session2.close();
 
-            QTRY_VERIFY(!sessionClosedSpy2.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy2.isEmpty(), TestTimeOut);
             QVERIFY(stateChangedSpy2.count() == stateChangedCountBeforeClose);
 
             QVERIFY(sessionClosedSpy.isEmpty());
@@ -833,12 +833,12 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
             session.close();
 
-            QTRY_VERIFY(!sessionClosedSpy.isEmpty() || !errorSpy.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy.isEmpty() || !errorSpy.isEmpty(), TestTimeOut);
 
             QVERIFY(!session.isOpen());
 
             if (expectStateChange)
-                QTRY_VERIFY(!stateChangedSpy.isEmpty() || !errorSpy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!stateChangedSpy.isEmpty() || !errorSpy.isEmpty(), TestTimeOut);
 
             if (!errorSpy.isEmpty()) {
                 QNetworkSession::SessionError error =
@@ -867,7 +867,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                 QVERIFY(errorSpy.isEmpty());
 
                 if (expectStateChange)
-                    QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                    QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
 
                 ++inProcessSessionManagementCount;
             } else {
@@ -929,7 +929,7 @@ void tst_QNetworkSession::outOfProcessSession()
             QNetworkConfiguration changed;
 
             do {
-                QTRY_VERIFY(!spy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), TestTimeOut);
                 changed = qvariant_cast<QNetworkConfiguration>(spy.takeFirst().at(0));
             } while (changed.identifier() != identifier);
 
@@ -949,7 +949,7 @@ void tst_QNetworkSession::outOfProcessSession()
             oopSocket->waitForBytesWritten();
 
             do {
-                QTRY_VERIFY(!spy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), TestTimeOut);
 
                 changed = qvariant_cast<QNetworkConfiguration>(spy.takeFirst().at(0));
             } while (changed.identifier() != identifier);
@@ -1236,7 +1236,7 @@ void tst_QNetworkSession::sessionAutoClose()
     // set session to auto close at next polling interval.
     session.setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 0);
 
-    QTRY_VERIFY(!closeSpy.isEmpty());
+    QTRY_VERIFY_WITH_TIMEOUT(!closeSpy.isEmpty(), TestTimeOut);
 
     QCOMPARE(session.state(), QNetworkSession::Connected);
 
