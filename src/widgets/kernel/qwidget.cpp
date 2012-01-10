@@ -6555,6 +6555,9 @@ QByteArray QWidget::saveGeometry() const
 #ifdef Q_WS_MAC
            << newFramePosition
            << newNormalPosition
+#else
+           << frameGeometry()
+           << normalGeometry()
 #endif // Q_WS_MAC
            << qint32(QApplication::desktop()->screenNumber(this))
            << quint8(windowState() & Qt::WindowMaximized)
