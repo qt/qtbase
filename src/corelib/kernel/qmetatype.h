@@ -99,6 +99,7 @@ QT_MODULE(Core)
     F(QRegExp, 27, QRegExp) \
     F(QEasingCurve, 29, QEasingCurve) \
     F(QUuid, 30, QUuid) \
+    F(QModelIndex, 31, QModelIndex) \
     F(QVariant, 138, QVariant) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
@@ -183,7 +184,7 @@ public:
         // these are merged with QVariant
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
-        LastCoreType = QUuid,
+        LastCoreType = QModelIndex,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,

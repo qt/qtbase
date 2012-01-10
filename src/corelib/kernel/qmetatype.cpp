@@ -62,6 +62,7 @@
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"
+#  include "qabstractitemmodel.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -108,6 +109,7 @@ template<> struct TypeDefiniton<QVariant> { static const bool IsAvailable = fals
 template<> struct TypeDefiniton<QBitArray> { static const bool IsAvailable = false; };
 template<> struct TypeDefiniton<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false; };
@@ -1124,6 +1126,10 @@ void *QMetaType::create(int type, const void *copy)
 #endif
         case QMetaType::QUuid:
             return new NS(QUuid)(*static_cast<const NS(QUuid)*>(copy));
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QModelIndex:
+            return new NS(QModelIndex)(*static_cast<const NS(QModelIndex)*>(copy));
+#endif
         case QMetaType::Void:
             return 0;
         default:
@@ -1223,6 +1229,10 @@ void *QMetaType::create(int type, const void *copy)
 #endif
         case QMetaType::QUuid:
             return new NS(QUuid);
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QModelIndex:
+            return new NS(QModelIndex);
+#endif
         case QMetaType::Void:
             return 0;
         default:
@@ -1393,6 +1403,11 @@ void QMetaType::destroy(int type, void *data)
     case QMetaType::QUuid:
         delete static_cast< NS(QUuid)* >(data);
         break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QModelIndex:
+        delete static_cast< NS(QModelIndex)* >(data);
+        break;
+#endif
     case QMetaType::Void:
         break;
     default: {

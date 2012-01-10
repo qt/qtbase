@@ -53,6 +53,9 @@
 #include "qurl.h"
 #include "qlocale.h"
 #include "quuid.h"
+#ifndef QT_BOOTSTRAPPED
+#include "qabstractitemmodel.h"
+#endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
 
@@ -102,6 +105,7 @@ struct TypeDefiniton {
 // Ignore these types, as incomplete
 #ifdef QT_BOOTSTRAPPED
 template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
 template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
@@ -995,6 +999,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
     \value Double  a double
     \value EasingCurve a QEasingCurve
     \value Uuid a QUuid
+    \value ModelIndex a QModelIndex
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon

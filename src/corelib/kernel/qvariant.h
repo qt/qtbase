@@ -124,6 +124,7 @@ class Q_CORE_EXPORT QVariant
         Hash = QMetaType::QVariantHash,
         EasingCurve = QMetaType::QEasingCurve,
         Uuid = QMetaType::QUuid,
+        ModelIndex = QMetaType::QModelIndex,
         LastCoreType = QMetaType::LastCoreType,
 
         Font = QMetaType::QFont,

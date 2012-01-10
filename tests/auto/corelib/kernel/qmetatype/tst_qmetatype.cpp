@@ -449,6 +449,9 @@ template<> struct TestValueFactory<QMetaType::QEasingCurve> {
 template<> struct TestValueFactory<QMetaType::QUuid> {
     static QUuid *create() { return new QUuid(); }
 };
+template<> struct TestValueFactory<QMetaType::QModelIndex> {
+    static QModelIndex *create() { return new QModelIndex(); }
+};
 template<> struct TestValueFactory<QMetaType::QRegExp> {
     static QRegExp *create()
     {
