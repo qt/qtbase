@@ -13,3 +13,8 @@ win32 {
 }
 
 RESOURCES += ../selftests.qrc
+
+include(../selftests.pri)
+load(testcase) # for target.path and installTestHelperApp()
+for(file, SUBPROGRAMS): installTestHelperApp("../$${file}/$${file}",$${file},$${file})
+
