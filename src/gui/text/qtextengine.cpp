@@ -2526,7 +2526,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                         // fall through
                     case QTextOption::RightTab:
                         tab = QFixed::fromReal(tabSpec.position) * dpiScale - length;
-                        if (tab < 0) // default to tab taking no space
+                        if (tab < x) // default to tab taking no space
                             return QFixed();
                         break;
                     case QTextOption::LeftTab:
