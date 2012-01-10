@@ -2875,4 +2875,10 @@
     \value PreciseTimer Precise timers try to keep millisecond accuracy
     \value CoarseTimer Coarse timers try to keep accuracy within 5% of the desired interval
     \value VeryCoarseTimer Very coarse timers only keep full second accuracy
+
+    On Windows, Qt will use Windows's Multimedia timer facility (if available)
+    for Qt::PreciseTimer and normal Windows timers for Qt::CoarseTimer and
+    Qt::VeryCoarseTimer. The interval for Qt::VeryCoarseTimer is rounded to the
+    nearest full second (e.g. an interval of 23500ms will be rounded to
+    24000ms, and 20300ms to 20000ms).
 */

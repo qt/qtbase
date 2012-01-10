@@ -530,18 +530,21 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     int ok = 0;
-    if (t->interval > 20 || !t->interval || !qtimeSetEvent) {
+    uint interval = t->interval;
+    if (interval == 0u) {
+        // optimization for single-shot-zero-timer
+        QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
         ok = 1;
-        if (!t->interval)  // optimization for single-shot-zero-timer
-            QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
-        else
-            ok = SetTimer(internalHwnd, t->timerId, (uint) t->interval, 0);
-    } else {
-        ok = t->fastTimerId = qtimeSetEvent(t->interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
+    } else if ((interval < 20u || t->timerType == Qt::PreciseTimer) && qtimeSetEvent) {
+        ok = t->fastTimerId = qtimeSetEvent(interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
                                             TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-        if (ok == 0) { // fall back to normal timer if no more multimedia timers available
-            ok = SetTimer(internalHwnd, t->timerId, (uint) t->interval, 0);
-        }
+    } else if (interval >= 20000u || t->timerType == Qt::VeryCoarseTimer) {
+        // round the interval, VeryCoarseTimers only have full second accuracy
+        interval = ((interval + 500)) / 1000 * 1000;
+    }
+    if (ok == 0) {
+        // user normal timers for (Very)CoarseTimers, or if no more multimedia timers available
+        ok = SetTimer(internalHwnd, t->timerId, interval, 0);
     }
 
     if (ok == 0)
