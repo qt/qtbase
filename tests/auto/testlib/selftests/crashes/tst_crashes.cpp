@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 #ifdef Q_OS_WIN

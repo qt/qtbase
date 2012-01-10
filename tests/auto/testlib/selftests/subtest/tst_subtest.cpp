@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include <QtTest/QtTest>
-#include <QDebug>
 
 class tst_Subtest: public QObject
 {

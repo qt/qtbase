@@ -40,10 +40,9 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtTest/QtTest>
-
-#include <QDateTime>
 
 /*!
   \internal

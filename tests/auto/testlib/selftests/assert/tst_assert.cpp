@@ -44,7 +44,7 @@
 # undef QT_NO_DEBUG
 #endif
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 class tst_Assert: public QObject

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>

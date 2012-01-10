@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 #include <private/cycle_p.h>

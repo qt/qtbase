@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 class tst_Sleep: public QObject

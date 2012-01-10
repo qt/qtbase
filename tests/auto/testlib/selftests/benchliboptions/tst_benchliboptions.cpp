@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 /* Custom event dispatcher to ensure we don't receive any spontaneous events */

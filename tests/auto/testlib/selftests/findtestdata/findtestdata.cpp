@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore/QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 #define TESTFILE "testfile"
