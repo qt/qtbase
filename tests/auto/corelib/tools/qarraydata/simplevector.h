@@ -139,15 +139,22 @@ public:
 
     void reserve(size_t n)
     {
-        if (n > capacity()
-                || (n
-                && !d->capacityReserved
-                && (d->ref.isShared() || (d->capacityReserved = 1, false)))) {
-            SimpleVector detached(Data::allocate(n,
-                        d->detachFlags() | Data::CapacityReserved));
-            detached.d->copyAppend(constBegin(), constEnd());
-            detached.swap(*this);
+        if (n == 0)
+            return;
+
+        if (n <= capacity()) {
+            if (d->capacityReserved)
+                return;
+            if (!d->ref.isShared()) {
+                d->capacityReserved = 1;
+                return;
+            }
         }
+
+        SimpleVector detached(Data::allocate(n,
+                    d->detachFlags() | Data::CapacityReserved));
+        detached.d->copyAppend(constBegin(), constEnd());
+        detached.swap(*this);
     }
 
     void prepend(const_iterator first, const_iterator last)
