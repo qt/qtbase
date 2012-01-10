@@ -7239,6 +7239,11 @@ else
         *) canUseV8Snapshot="no"
             ;;
         esac
+    else
+        if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" == "arm" ]; then
+            # QEMU crashes when building inside Scratchbox with an ARM target
+            canUseV8Snapshot="no"
+        fi
     fi
     if [ "$CFG_V8SNAPSHOT" = "auto" ]; then
         CFG_V8SNAPSHOT="$canUseV8Snapshot"
