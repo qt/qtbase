@@ -466,11 +466,26 @@ static inline QProcessEnvironment processEnvironment()
     if (!displayValue.isEmpty())
         result.insert(display, displayValue);
 #endif
+    const QString platform = QStringLiteral("QT_QPA_PLATFORM");
+    const QString platformValue = systemEnvironment.value(platform);
+    if (!platformValue.isEmpty())
+        result.insert(platform, platformValue);
     return result;
 }
 
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments)
 {
+#if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
+    if (arguments.contains("-callgrind")) {
+        QProcess checkProcess;
+        QStringList args;
+        args << QLatin1String("--version");
+        checkProcess.start(QLatin1String("valgrind"), args);
+        if (!checkProcess.waitForFinished(-1))
+            QSKIP(QString("Valgrind broken or not available. Not running %1 test!").arg(subdir).toLocal8Bit());
+    }
+#endif
+
     QProcess proc;
     static const QProcessEnvironment environment = processEnvironment();
     proc.setProcessEnvironment(environment);
