@@ -38,7 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore>
+#include <QCoreApplication>
+#include <QFile>
 
 int main(int argc, char **argv)
 {

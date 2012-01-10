@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QCoreApplication>
+#include <QByteArray>
+#include <QDir>
 
 int main(int argc, char **argv)
 {
