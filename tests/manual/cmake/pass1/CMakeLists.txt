@@ -3,23 +3,23 @@ cmake_minimum_required(VERSION 2.8)
 
 project(pass1)
 
-# Warning: requires cmake 2.8.7 due for release in December 2011
-# for automatic moc with Qt 5
 set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 macro(qt5_use_package _target _package)
-    # TODO: Handle public/private keywords?
-    find_package(Qt5${_package} ${ARG1})
+    if (NOT Qt5${_package}_FOUND)
+        find_package(Qt5${_package} ${ARG1})
+    endif()
     if (Qt5${_package}_FOUND)
+        # TODO: Handle public/private keywords?
         target_link_libraries(${_target} ${Qt5${_package}_LIBRARIES})
-        include_directories(${Qt5${_package}_INCLUDE_DIRS})
+        # ### Requires CMake 2.8.8:
         # set_property(TARGET ${_target} APPEND PROPERTY INCLUDE_DIRECTORIES ${Qt5${_package}_INCLUDE_DIRS})
+        include_directories(${Qt5${_package}_INCLUDE_DIRS})
         set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS ${Qt5${_package}_COMPILE_DEFINITIONS})
-        foreach(_dep ${_Qt5_MODULE_DEPENDENCIES})
-            qt5_use_package(${_target} ${_dep} REQUIRED)
-        endforeach()
+    else()
+        message(FATAL_ERROR "NOT FOUND: Qt5${_package}")
     endif()
 endmacro()
 
