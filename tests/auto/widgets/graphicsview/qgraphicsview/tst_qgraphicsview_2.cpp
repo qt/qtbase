@@ -39,23 +39,11 @@
 **
 ****************************************************************************/
 #include <QtTest/QtTest>
-#include <QSize>
-#include <QRectF>
-#include <QTransform>
-
-#ifdef Q_OS_WINCE
-#include <qguifunctions_wince.h>
-
-bool qt_wince_is_high_dpi() {
-    HDC deviceContext = GetDC(0);
-    int dpi = GetDeviceCaps(deviceContext, LOGPIXELSX);
-    ReleaseDC(0, deviceContext);
-    if ((dpi < 1000) && (dpi > 0))
-        return dpi > 96;
-    else
-        return false;
-}
-#endif
+#include <QtCore/QSize>
+#include <QtCore/QRectF>
+#include <QtGui/QTransform>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -286,7 +274,7 @@ static void _scrollBarRanges_data_1(int offset)
                                             << -200 << (50 + 16) << -200 << (100 + 16) << false << false;
 }
 
-static void _scrollBarRanges_data_2(int offset)
+static void _scrollBarRangesMotif_data_1(int offset)
 {
     // Motif, flat frame
     QTest::newRow("Motif, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -507,7 +495,7 @@ static void _scrollBarRanges_data_2(int offset)
                                                    << -200 << (50 + 16) << -200 << (100 + 16) << true << false;
 }
 
-static void _scrollBarRanges_data_3(int offset)
+static void _scrollBarRanges_data_2(int offset)
 {
     // No motif, styled panel
     QTest::newRow("Styled, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -728,7 +716,7 @@ static void _scrollBarRanges_data_3(int offset)
                                                     << -200 << (50 + 16) << -200 << (100 + 16) << false << true;
 }
 
-static void _scrollBarRanges_data_4(int offset)
+static void _scrollBarRangesMotif_data_2(int offset)
 {
     // Motif, styled panel
     QTest::newRow("Motif, Styled, 1") << QSize(150, 100) << QRectF(0, 0, 150, 100) << QTransform()
@@ -963,14 +951,14 @@ void _scrollBarRanges_data()
     QTest::addColumn<bool>("useMotif");
     QTest::addColumn<bool>("useStyledPanel");
 
-    int offset = 16;
-#ifdef Q_OS_WINCE
-    if (qt_wince_is_high_dpi())
-        offset *= 2;
-#endif
+    const int offset = 16;
 
     _scrollBarRanges_data_1(offset);
     _scrollBarRanges_data_2(offset);
-    _scrollBarRanges_data_3(offset);
-    _scrollBarRanges_data_4(offset);
+    // Motif tests are suitable for 96 DPI, only.
+    const QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen && qFuzzyCompare(screen->logicalDotsPerInchX(), 96.0)) {
+        _scrollBarRangesMotif_data_1(offset);
+        _scrollBarRangesMotif_data_2(offset);
+    }
 }
