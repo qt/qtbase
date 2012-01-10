@@ -874,7 +874,7 @@ void QHeaderView::swapSections(int first, int second)
 void QHeaderView::resizeSection(int logical, int size)
 {
     Q_D(QHeaderView);
-    if (logical < 0 || logical >= count())
+    if (logical < 0 || logical >= count() || size < 0)
         return;
 
     if (isSectionHidden(logical)) {

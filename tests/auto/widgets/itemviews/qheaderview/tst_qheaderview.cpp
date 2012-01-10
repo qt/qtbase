@@ -172,6 +172,7 @@ private slots:
     void removeSection();
     void preserveHiddenSectionWidth();
     void invisibleStretchLastSection();
+    void noSectionsWithNegativeSize();
 
     void emptySectionSpan();
     void task236450_hidden_data();
@@ -1851,6 +1852,15 @@ void tst_QHeaderView::invisibleStretchLastSection()
     for (int i = 0; i < count - 1; ++i)
         QCOMPARE(view.sectionSize(i), view.defaultSectionSize());
     QCOMPARE(view.sectionSize(count - 1), view.defaultSectionSize() * 2);
+}
+
+void tst_QHeaderView::noSectionsWithNegativeSize()
+{
+    QStandardItemModel m(4, 4);
+    QHeaderView h(Qt::Horizontal);
+    h.setModel(&m);
+    h.resizeSection(1, -5);
+    QVERIFY(h.sectionSize(1) >= 0); // Sections with negative sizes not well defined.
 }
 
 void tst_QHeaderView::emptySectionSpan()
