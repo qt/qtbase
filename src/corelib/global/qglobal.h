@@ -1740,10 +1740,10 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line);
 
 #if !defined(Q_ASSERT_X)
-#  ifndef QT_NO_DEBUG
-#    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
-#  else
+#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_ASSERT_X(cond, where, what) qt_noop()
+#  else
+#    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
 #  endif
 #endif
 
