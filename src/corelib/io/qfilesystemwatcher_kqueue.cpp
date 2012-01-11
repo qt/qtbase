@@ -86,6 +86,7 @@ QKqueueFileSystemWatcherEngine::QKqueueFileSystemWatcherEngine(int kqfd)
 
 QKqueueFileSystemWatcherEngine::~QKqueueFileSystemWatcherEngine()
 {
+    notifier.setEnabled(false);
     close(kqfd);
 
     foreach (int id, pathToID)

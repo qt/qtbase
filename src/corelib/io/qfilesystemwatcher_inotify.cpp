@@ -234,6 +234,7 @@ QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd)
 
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
 {
+    notifier.setEnabled(false);
     foreach (int id, pathToID)
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
