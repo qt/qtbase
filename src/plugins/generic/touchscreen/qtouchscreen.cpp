@@ -247,10 +247,6 @@ void QTouchScreenData::processInputEvent(input_event *data)
         if (key == -1)
             key = m_contacts.count();
 
-        // Mark the first point as primary.
-        if (m_contacts.isEmpty())
-            m_currentData.flags |= QTouchEvent::TouchPoint::Primary;
-
         m_contacts.insert(key, m_currentData);
         m_currentData = Contact();
 
