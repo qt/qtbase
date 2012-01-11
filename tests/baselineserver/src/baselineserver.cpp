@@ -101,7 +101,7 @@ QString BaselineServer::settingsFilePath()
     return settingsFile;
 }
 
-void BaselineServer::incomingConnection(int socketDescriptor)
+void BaselineServer::incomingConnection(qintptr socketDescriptor)
 {
     QString runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
     if (runId == lastRunId) {

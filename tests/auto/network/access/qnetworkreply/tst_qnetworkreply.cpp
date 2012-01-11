@@ -485,7 +485,7 @@ public:
     }
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         //qDebug() << "incomingConnection" << socketDescriptor << "doSsl:" << doSsl << "ipv6:" << ipv6;
         if (!doSsl) {
@@ -807,7 +807,7 @@ public:
             return nextPendingConnection();
         }
     }
-    virtual void incomingConnection(int socketDescriptor)
+    virtual void incomingConnection(qintptr socketDescriptor)
     {
 #ifndef QT_NO_OPENSSL
         if (doSsl) {
@@ -4277,7 +4277,7 @@ class SslServer : public QTcpServer {
     Q_OBJECT
 public:
     SslServer() : socket(0) {};
-    void incomingConnection(int socketDescriptor) {
+    void incomingConnection(qintptr socketDescriptor) {
         QSslSocket *serverSocket = new QSslSocket;
         serverSocket->setParent(this);
 

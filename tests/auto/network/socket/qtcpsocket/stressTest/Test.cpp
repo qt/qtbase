@@ -107,7 +107,7 @@ My4Server::My4Server(QObject *parent)
 }
 
 //------------------------------------------------------------------------------
-void My4Server::incomingConnection(int socketId)
+void My4Server::incomingConnection(qintptr socketId)
 {
     m_socket = new My4Socket(this);
     m_socket->setSocketDescriptor(socketId);

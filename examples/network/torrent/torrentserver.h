@@ -58,7 +58,7 @@ public:
     void removeClient(TorrentClient *client);
 
 protected:
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor);
 
 private slots:
     void removeClient();

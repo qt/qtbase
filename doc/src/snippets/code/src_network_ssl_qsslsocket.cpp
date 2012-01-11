@@ -47,7 +47,7 @@ socket->connectToHostEncrypted("imap.example.com", 993);
 
 
 //! [1]
-void SslServer::incomingConnection(int socketDescriptor)
+void SslServer::incomingConnection(qintptr socketDescriptor)
 {
     QSslSocket *serverSocket = new QSslSocket;
     if (serverSocket->setSocketDescriptor(socketDescriptor)) {

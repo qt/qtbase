@@ -912,7 +912,7 @@ public:
     QString m_certFile;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
         socket->setProtocol(protocol);
@@ -1332,7 +1332,7 @@ void tst_QSslSocket::wildcard()
 class SslServer2 : public QTcpServer
 {
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         QSslSocket *socket = new QSslSocket(this);
         socket->ignoreSslErrors();
@@ -1558,7 +1558,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
@@ -1730,7 +1730,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
 

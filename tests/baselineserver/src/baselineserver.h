@@ -69,7 +69,7 @@ public:
     static QString settingsFilePath();
 
 protected:
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor);
 
 private slots:
     void heartbeat();

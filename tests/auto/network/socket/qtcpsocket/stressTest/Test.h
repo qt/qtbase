@@ -69,7 +69,7 @@ public:
     My4Server(QObject *parent = 0);
 
 protected:
-    void incomingConnection(int socket);
+    void incomingConnection(qintptr socket);
 
 private slots:
     void stopServer();

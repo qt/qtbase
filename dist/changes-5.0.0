@@ -155,6 +155,8 @@ information about a particular change.
 - QAbstractSocket's connectToHost() and disconnectFromHost() are now virtual and
   connectToHostImplementation() and disconnectFromHostImplementation() don't exist.
 
+- QTcpServer::incomingConnection() now takes a qintptr instead of an int.
+
 
 ****************************************************************************
 *                           General                                        *

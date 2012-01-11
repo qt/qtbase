@@ -56,7 +56,7 @@ signals:
     void newConnection(Connection *connection);
 
 protected:
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor);
 };
 
 #endif

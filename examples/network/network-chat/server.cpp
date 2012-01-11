@@ -49,7 +49,7 @@ Server::Server(QObject *parent)
     listen(QHostAddress::Any);
 }
 
-void Server::incomingConnection(int socketDescriptor)
+void Server::incomingConnection(qintptr socketDescriptor)
 {
     Connection *connection = new Connection(this);
     connection->setSocketDescriptor(socketDescriptor);
