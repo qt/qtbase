@@ -19,7 +19,6 @@ DEFINES	       += \
         QT_NO_QOBJECT \
         QT_NO_STL \
         QT_NO_SYSTEMLOCALE \
-        QT_NO_TEXTSTREAM \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
         QT_NO_USING_NAMESPACE \

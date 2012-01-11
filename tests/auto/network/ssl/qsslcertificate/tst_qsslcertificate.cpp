@@ -200,10 +200,8 @@ void tst_QSslCertificate::emptyConstructor()
     QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.subjectAlternativeNames(),(QMultiMap<QSsl::AlternativeNameEntryType, QString>()));
-#ifndef QT_NO_TEXTSTREAM
     QCOMPARE(certificate.effectiveDate(), QDateTime());
     QCOMPARE(certificate.expiryDate(), QDateTime());
-#endif
 }
 
 Q_DECLARE_METATYPE(QSsl::EncodingFormat);

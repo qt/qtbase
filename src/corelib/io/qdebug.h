@@ -129,10 +129,8 @@ public:
     inline QNoDebug(){}
     inline QNoDebug(const QDebug &){}
     inline ~QNoDebug(){}
-#if !defined( QT_NO_TEXTSTREAM )
     inline QNoDebug &operator<<(QTextStreamFunction) { return *this; }
     inline QNoDebug &operator<<(QTextStreamManipulator) { return *this; }
-#endif
     inline QNoDebug &space() { return *this; }
     inline QNoDebug &nospace() { return *this; }
     inline QNoDebug &maybeSpace() { return *this; }

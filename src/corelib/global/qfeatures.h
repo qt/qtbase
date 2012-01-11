@@ -289,9 +289,6 @@
 // HtmlParser
 //#define QT_NO_TEXTHTMLPARSER
 
-// QTextStream
-//#define QT_NO_TEXTSTREAM
-
 // QToolTip
 //#define QT_NO_TOOLTIP
 
@@ -349,16 +346,6 @@
 // QFileSystemModel
 #if !defined(QT_NO_FILESYSTEMMODEL) && (defined(QT_NO_FILESYSTEMWATCHER))
 #define QT_NO_FILESYSTEMMODEL
-#endif
-
-// QHostInfo
-#if !defined(QT_NO_HOSTINFO) && (defined(QT_NO_TEXTSTREAM))
-#define QT_NO_HOSTINFO
-#endif
-
-// XPM Image Format
-#if !defined(QT_NO_IMAGEFORMAT_XPM) && (defined(QT_NO_TEXTSTREAM))
-#define QT_NO_IMAGEFORMAT_XPM
 #endif
 
 // QLibrary
@@ -597,7 +584,7 @@
 #endif
 
 // QPrinter
-#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
+#if !defined(QT_NO_PRINTER) && (defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
 #define QT_NO_PRINTER
 #endif
 

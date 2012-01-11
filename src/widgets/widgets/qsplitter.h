@@ -133,10 +133,8 @@ private:
     friend class QSplitterHandle;
 };
 
-#ifndef QT_NO_TEXTSTREAM
 Q_WIDGETS_EXPORT QTextStream& operator<<(QTextStream&, const QSplitter&);
 Q_WIDGETS_EXPORT QTextStream& operator>>(QTextStream&, QSplitter&);
-#endif
 
 class QSplitterHandlePrivate;
 class Q_WIDGETS_EXPORT QSplitterHandle : public QWidget

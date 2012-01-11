@@ -104,9 +104,6 @@
 #ifndef QT_NO_TEMPORARYFILE
 #  define QT_NO_TEMPORARYFILE
 #endif
-#ifndef QT_NO_TEXTSTREAM
-#  define QT_NO_TEXTSTREAM
-#endif
 #ifndef QT_NO_SETTINGS
 #  define QT_NO_SETTINGS
 #endif
