@@ -97,6 +97,9 @@ public:
 
     QByteArray toRawForm(RawForm form = Full) const;
 
+    bool hasSameIdentifier(const QNetworkCookie &other) const;
+    void normalize(const QUrl &url);
+
     static QList<QNetworkCookie> parseCookies(const QByteArray &cookieString);
 
 private:

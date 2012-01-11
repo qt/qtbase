@@ -156,7 +156,7 @@ QNetworkCookie &QNetworkCookie::operator=(const QNetworkCookie &other)
     However, in some contexts, two cookies of the same name could be
     considered equal.
 
-    \sa operator!=()
+    \sa operator!=(), hasSameIdentifier()
 */
 bool QNetworkCookie::operator==(const QNetworkCookie &other) const
 {
@@ -169,6 +169,17 @@ bool QNetworkCookie::operator==(const QNetworkCookie &other) const
         d->path == other.d->path &&
         d->secure == other.d->secure &&
         d->comment == other.d->comment;
+}
+
+/*!
+    Returns true if this cookie has the same identifier tuple as \a other.
+    The identifier tuple is composed of the name, domain and path.
+
+    \sa operator==()
+*/
+bool QNetworkCookie::hasSameIdentifier(const QNetworkCookie &other) const
+{
+    return d->name == other.d->name && d->domain == other.d->domain && d->path == other.d->path;
 }
 
 /*!
@@ -1040,6 +1051,30 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
     }
 
     return result;
+}
+
+/*!
+    This functions normalizes the path and domain of the cookie if they were previously empty.
+*/
+void QNetworkCookie::normalize(const QUrl &url)
+{
+    // don't do path checking. See http://bugreports.qt.nokia.com/browse/QTBUG-5815
+    if (d->path.isEmpty()) {
+        QString pathAndFileName = url.path();
+        QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);
+        if (defaultPath.isEmpty())
+            defaultPath = QLatin1Char('/');
+        d->path = defaultPath;
+    }
+
+    if (d->domain.isEmpty())
+        d->domain = url.host();
+    else if (!d->domain.startsWith(QLatin1Char('.')))
+        // Ensure the domain starts with a dot if its field was not empty
+        // in the HTTP header. There are some servers that forget the
+        // leading dot and this is actually forbidden according to RFC 2109,
+        // but all browsers accept it anyway so we do that as well.
+        d->domain.prepend(QLatin1Char('.'));
 }
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -155,8 +155,7 @@ static inline bool isParentDomain(QString domain, QString reference)
 
 /*!
     Adds the cookies in the list \a cookieList to this cookie
-    jar. Default values for path and domain are taken from the \a
-    url object.
+    jar. Before being inserted cookies are normalized.
 
     Returns true if one or more cookies are set for \a url,
     otherwise false.
@@ -173,72 +172,18 @@ static inline bool isParentDomain(QString domain, QString reference)
     size. Reimplement this function to discard older cookies to create
     room for new ones.
 
-    \sa cookiesForUrl(), QNetworkAccessManager::setCookieJar()
+    \sa cookiesForUrl(), QNetworkAccessManager::setCookieJar(), QNetworkCookie::normalize()
 */
 bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList,
                                           const QUrl &url)
 {
-    Q_D(QNetworkCookieJar);
-    QString defaultDomain = url.host();
-    QString pathAndFileName = url.path();
-    QString defaultPath = pathAndFileName.left(pathAndFileName.lastIndexOf(QLatin1Char('/'))+1);
-    if (defaultPath.isEmpty())
-        defaultPath = QLatin1Char('/');
-
-    int added = 0;
-    QDateTime now = QDateTime::currentDateTime();
+    bool added = false;
     foreach (QNetworkCookie cookie, cookieList) {
-        bool isDeletion = !cookie.isSessionCookie() &&
-                          cookie.expirationDate() < now;
-
-        // validate the cookie & set the defaults if unset
-        if (cookie.path().isEmpty())
-            cookie.setPath(defaultPath);
-        // don't do path checking. See http://bugreports.qt.nokia.com/browse/QTBUG-5815
-//        else if (!isParentPath(pathAndFileName, cookie.path())) {
-//            continue;           // not accepted
-//        }
-        if (cookie.domain().isEmpty()) {
-            cookie.setDomain(defaultDomain);
-        } else {
-            // Ensure the domain starts with a dot if its field was not empty
-            // in the HTTP header. There are some servers that forget the
-            // leading dot and this is actually forbidden according to RFC 2109,
-            // but all browsers accept it anyway so we do that as well.
-            if (!cookie.domain().startsWith(QLatin1Char('.')))
-                cookie.setDomain(QLatin1Char('.') + cookie.domain());
-
-            QString domain = cookie.domain();
-            if (!(isParentDomain(domain, defaultDomain)
-                || isParentDomain(defaultDomain, domain)))
-                continue; // not accepted
-
-            // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
-            // redundant; the "leading dot" rule has been relaxed anyway, see above
-            // we remove the leading dot for this check
-            if (qIsEffectiveTLD(domain.remove(0, 1)))
-                continue; // not accepted
-        }
-
-        QList<QNetworkCookie>::Iterator it = d->allCookies.begin(),
-                                       end = d->allCookies.end();
-        for ( ; it != end; ++it)
-            // does this cookie already exist?
-            if (cookie.name() == it->name() &&
-                cookie.domain() == it->domain() &&
-                cookie.path() == it->path()) {
-                // found a match
-                d->allCookies.erase(it);
-                break;
-            }
-
-        // did not find a match
-        if (!isDeletion) {
-            d->allCookies += cookie;
-            ++added;
-        }
+        cookie.normalize(url);
+        if (validateCookie(cookie, url) && insertCookie(cookie))
+            added = true;
     }
-    return (added > 0);
+    return added;
 }
 
 /*!
@@ -302,6 +247,83 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     }
 
     return result;
+}
+
+/*!
+    Adds \a cookie to this cookie jar.
+
+    Returns true if \a cookie was added, false otherwise.
+
+    If a cookie with the same identifier already exists in the
+    cookie jar, it will be overridden.
+*/
+bool QNetworkCookieJar::insertCookie(const QNetworkCookie &cookie)
+{
+    Q_D(QNetworkCookieJar);
+    QDateTime now = QDateTime::currentDateTime();
+    bool isDeletion = !cookie.isSessionCookie() &&
+                      cookie.expirationDate() < now;
+
+    deleteCookie(cookie);
+
+    if (!isDeletion) {
+        d->allCookies += cookie;
+        return true;
+    }
+    return false;
+}
+
+/*!
+    If a cookie with the same identifier as \a cookie exists in this cookie jar
+    it will be updated. This function uses insertCookie().
+
+    Returns true if \a cookie was updated, false if no cookie in the jar matches
+    the identifier of \a cookie.
+
+    \sa QNetworkCookie::hasSameIdentifier()
+*/
+bool QNetworkCookieJar::updateCookie(const QNetworkCookie &cookie)
+{
+    if (deleteCookie(cookie))
+        return insertCookie(cookie);
+    return false;
+}
+
+/*!
+    Deletes from cookie jar the cookie found to have the same identifier as \a cookie.
+
+    Returns true if a cookie was deleted, false otherwise.
+
+    \sa QNetworkCookie::hasSameIdentifier()
+*/
+bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
+{
+    Q_D(QNetworkCookieJar);
+    QList<QNetworkCookie>::Iterator it;
+    for (it = d->allCookies.begin(); it != d->allCookies.end(); it++)
+        if (it->hasSameIdentifier(cookie)) {
+            d->allCookies.erase(it);
+            return true;
+        }
+    return false;
+}
+
+/*!
+    Returns true if the domain and path of \a cookie are valid, false otherwise.
+*/
+bool QNetworkCookieJar::validateCookie(const QNetworkCookie &cookie, const QUrl &url) const
+{
+    QString domain = cookie.domain();
+    if (!(isParentDomain(domain, url.host()) || isParentDomain(url.host(), domain)))
+        return false; // not accepted
+
+    // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
+    // redundant; the "leading dot" rule has been relaxed anyway, see QNetworkCookie::normalize()
+    // we remove the leading dot for this check if it's present
+    if (qIsEffectiveTLD(domain.startsWith('.') ? domain.remove(0, 1) : domain))
+        return false; // not accepted
+
+    return true;
 }
 
 QT_END_NAMESPACE
