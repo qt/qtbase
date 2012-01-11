@@ -50,6 +50,7 @@
 #include <qset.h>
 #include <qdatetime.h>
 #include <qdir.h>
+#include <qtextstream.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -312,6 +313,17 @@ QWindowsFileSystemWatcherEngineThread::~QWindowsFileSystemWatcherEngineThread()
     }
 }
 
+static inline QString msgFindNextFailed(const QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> &pathInfos)
+{
+    QString result;
+    QTextStream str(&result);
+    str << "QFileSystemWatcher: FindNextChangeNotification failed for";
+    foreach (const QWindowsFileSystemWatcherEngine::PathInfo &pathInfo, pathInfos)
+        str << " \"" << QDir::toNativeSeparators(pathInfo.absolutePath) << '"';
+    str << ' ';
+    return result;
+}
+
 void QWindowsFileSystemWatcherEngineThread::run()
 {
     QMutexLocker locker(&mutex);
@@ -342,11 +354,11 @@ void QWindowsFileSystemWatcherEngineThread::run()
                 // for some reason, so we must check if the handle exist in the handles vector
                 if (handles.contains(handle)) {
                     // qDebug()<<"thread"<<this<<"Acknowledged handle:"<<at<<handle;
-                    if (!FindNextChangeNotification(handle)) {
-                        qErrnoWarning("QFileSystemWatcher: FindNextChangeNotification failed!!");
-                    }
-
                     QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> &h = pathInfoForHandle[handle];
+                    if (!FindNextChangeNotification(handle)) {
+                        const DWORD error = GetLastError();
+                        qErrnoWarning(error, "%s", qPrintable(msgFindNextFailed(h)));
+                    }
                     QMutableHashIterator<QString, QWindowsFileSystemWatcherEngine::PathInfo> it(h);
                     while (it.hasNext()) {
                         QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo>::iterator x = it.next();
