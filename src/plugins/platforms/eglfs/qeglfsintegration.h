@@ -66,6 +66,8 @@ public:
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
+    QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
+
 private:
     QPlatformFontDatabase *mFontDb;
 };

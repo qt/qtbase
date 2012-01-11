@@ -107,7 +107,8 @@ public:
         MouseDoubleClickInterval,
         StartDragDistance,
         StartDragTime,
-        KeyboardAutoRepeatRate
+        KeyboardAutoRepeatRate,
+        ShowIsFullScreen
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

@@ -62,6 +62,7 @@ public:
     int keyboardInputInterval() const;
     int keyboardAutoRepeatRate() const;
     int cursorFlashTime() const;
+    bool showIsFullScreen() const;
 private:
     friend class QGuiApplication;
     QStyleHints();

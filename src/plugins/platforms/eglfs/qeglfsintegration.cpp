@@ -110,4 +110,12 @@ QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
     return createUnixEventDispatcher();
 }
 
+QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    if (hint == QPlatformIntegration::ShowIsFullScreen)
+        return true;
+
+    return QPlatformIntegration::styleHint(hint);
+}
+
 QT_END_NAMESPACE

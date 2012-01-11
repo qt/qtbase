@@ -54,6 +54,8 @@
 
 #include <QtCore/QDebug>
 
+#include <QStyleHints>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -741,30 +743,42 @@ QObject *QWindow::focusObject() const
     return const_cast<QWindow *>(this);
 }
 
+void QWindow::show()
+{
+    if (qApp->styleHints()->showIsFullScreen())
+        showFullScreen();
+    else
+        showNormal();
+}
+
+void QWindow::hide()
+{
+    setVisible(false);
+}
 
 void QWindow::showMinimized()
 {
     setWindowState(Qt::WindowMinimized);
-    show();
+    setVisible(true);
 }
 
 void QWindow::showMaximized()
 {
     setWindowState(Qt::WindowMaximized);
-    show();
+    setVisible(true);
 }
 
 void QWindow::showFullScreen()
 {
     setWindowState(Qt::WindowFullScreen);
-    show();
+    setVisible(true);
     requestActivateWindow();
 }
 
 void QWindow::showNormal()
 {
     setWindowState(Qt::WindowNoState);
-    show();
+    setVisible(true);
 }
 
 bool QWindow::close()

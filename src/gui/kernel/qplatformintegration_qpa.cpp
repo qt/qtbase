@@ -235,6 +235,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return 10;
     case StartDragTime:
         return 500;
+    case ShowIsFullScreen:
+        return false;
     }
 
     return 0;

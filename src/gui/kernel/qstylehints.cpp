@@ -86,4 +86,9 @@ int QStyleHints::cursorFlashTime() const
     return hint(QPlatformIntegration::CursorFlashTime).toInt();
 }
 
+bool QStyleHints::showIsFullScreen() const
+{
+    return hint(QPlatformIntegration::ShowIsFullScreen).toBool();
+}
+
 QT_END_NAMESPACE

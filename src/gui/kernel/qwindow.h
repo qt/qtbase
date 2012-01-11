@@ -209,8 +209,8 @@ public:
 public Q_SLOTS:
     void setVisible(bool visible);
 
-    inline void show() { setVisible(true); }
-    inline void hide() { setVisible(false); }
+    void show();
+    void hide();
 
     void showMinimized();
     void showMaximized();
