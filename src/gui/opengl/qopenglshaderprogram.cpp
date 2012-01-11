@@ -265,7 +265,6 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
             glfuncs->glGetShaderSource(shader, sourceCodeLength, &temp, sourceCodeBuffer);
         }
 
-        QString log;
         if (logBuffer)
             log = QString::fromLatin1(logBuffer);
         else
