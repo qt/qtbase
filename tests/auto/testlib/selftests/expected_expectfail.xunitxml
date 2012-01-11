@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="9" failures="0" tests="6" name="tst_ExpectFail">
+<testsuite errors="9" failures="1" tests="7" name="tst_ExpectFail">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -17,6 +17,9 @@
   <testcase result="xfail" name="xfailWithQString">
     <!-- message="A string" type="info" -->
     <!-- message="Bug 5 (The message)" type="info" -->
+  </testcase>
+  <testcase result="xpass" name="xpass">
+    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
   </testcase>
   <testcase result="xfail" name="dataDrivenTest">
     <!-- tag="Abort" message="This test should xfail" type="info" -->

@@ -53,6 +53,7 @@ private slots:
     void expectAndContinue() const;
     void expectAndAbort() const;
     void xfailWithQString() const;
+    void xpass() const;
     void dataDrivenTest_data() const;
     void dataDrivenTest() const;
 };
@@ -84,6 +85,16 @@ void tst_ExpectFail::xfailWithQString() const
     QString msg("The message");
     QEXPECT_FAIL( "", QString("Bug %1 (%2)").arg(bugNo).arg(msg).toLatin1().constData(), Continue);
     QVERIFY(false);
+}
+
+void tst_ExpectFail::xpass() const
+{
+    QEXPECT_FAIL("", "This test should xpass", Abort);
+    QVERIFY(true);
+
+    // If we get here the test did not correctly abort on the previous
+    // unexpected pass.
+    QVERIFY2(false, "This should not be reached");
 }
 
 void tst_ExpectFail::dataDrivenTest_data() const
