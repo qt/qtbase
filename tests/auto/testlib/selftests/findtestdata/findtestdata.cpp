@@ -62,7 +62,11 @@ void FindTestData::initTestCase()
 {
     // verify that our qt.conf is working as expected.
     QString app_path = QCoreApplication::applicationDirPath();
-    QString install_path = app_path + "/tests";
+    QString install_path = app_path
+#ifdef Q_OS_MAC
+        + "/Contents"
+#endif
+        + "/tests";
     QVERIFY(QDir("/").mkpath(install_path));
     QVERIFY(QDir("/").mkpath(install_path + "/findtestdata"));
     QCOMPARE(QLibraryInfo::location(QLibraryInfo::TestsPath), install_path);
@@ -107,7 +111,11 @@ void FindTestData::paths()
     QVERIFY(touch(testfile_path1));
 
     // 2. at the test install path (faked via qt.conf)
-    QString testfile_path2 = app_path + "/tests/findtestdata/" TESTFILE;
+    QString testfile_path2 = app_path
+#ifdef Q_OS_MAC
+        + "/Contents"
+#endif
+        + "/tests/findtestdata/" TESTFILE;
     QVERIFY(touch(testfile_path2));
 
     // 3. at the source path (which we will fake later on)
