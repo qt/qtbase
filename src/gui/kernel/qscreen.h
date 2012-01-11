@@ -140,6 +140,7 @@ private:
 
     Q_DISABLE_COPY(QScreen)
     friend class QGuiApplicationPrivate;
+    friend class QPlatformIntegration;
     friend class QPlatformScreen;
 };
 

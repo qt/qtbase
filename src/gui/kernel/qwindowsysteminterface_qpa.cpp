@@ -275,31 +275,31 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
 {
     QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenOrientationEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenOrientationEvent(screen, orientation);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const QRect &geometry)
 {
     QWindowSystemInterfacePrivate::ScreenGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, geometry);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen, const QRect &availableGeometry)
 {
     QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen, availableGeometry);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal dpiX, qreal dpiY)
 {
     QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen, dpiX, dpiY);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

@@ -122,10 +122,10 @@ public:
     static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
     // Changes to the screen
-    static void handleScreenOrientationChange(QScreen *screen);
-    static void handleScreenGeometryChange(QScreen *screen);
-    static void handleScreenAvailableGeometryChange(QScreen *screen);
-    static void handleScreenLogicalDotsPerInchChange(QScreen *screen);
+    static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);
+    static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry);
+    static void handleScreenAvailableGeometryChange(QScreen *screen, const QRect &newAvailableGeometry);
+    static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);

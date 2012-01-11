@@ -42,23 +42,18 @@
 #include "qplatformscreen_qpa.h"
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qplatformscreen_qpa_p.h>
 #include <QtGui/qplatformintegration_qpa.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformScreenPrivate
-{
-public:
-    QScreen *screen;
-};
-
 QPlatformScreen::QPlatformScreen()
     : d_ptr(new QPlatformScreenPrivate)
 {
     Q_D(QPlatformScreen);
-    d->screen = new QScreen(this);
+    d->screen = 0;
 }
 
 QPlatformScreen::~QPlatformScreen()

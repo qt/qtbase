@@ -40,22 +40,12 @@
 ****************************************************************************/
 
 #include "qscreen.h"
+#include "qscreen_p.h"
 #include "qplatformscreen_qpa.h"
 
 #include <QtCore/private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
-
-class QScreenPrivate : public QObjectPrivate
-{
-public:
-    QScreenPrivate(QPlatformScreen *screen)
-        : platformScreen(screen)
-    {
-    }
-
-    QPlatformScreen *platformScreen;
-};
 
 /*!
     \class QScreen
@@ -119,7 +109,7 @@ int QScreen::depth() const
 QSize QScreen::size() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->geometry().size();
+    return d->geometry.size();
 }
 
 /*!
@@ -184,7 +174,7 @@ qreal QScreen::physicalDotsPerInch() const
 qreal QScreen::logicalDotsPerInchX() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->logicalDpi().first;
+    return d->logicalDpi.first;
 }
 
 /*!
@@ -198,7 +188,7 @@ qreal QScreen::logicalDotsPerInchX() const
 qreal QScreen::logicalDotsPerInchY() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->logicalDpi().second;
+    return d->logicalDpi.second;
 }
 
 /*!
@@ -216,7 +206,7 @@ qreal QScreen::logicalDotsPerInchY() const
 qreal QScreen::logicalDotsPerInch() const
 {
     Q_D(const QScreen);
-    QDpi dpi = d->platformScreen->logicalDpi();
+    QDpi dpi = d->logicalDpi;
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 
@@ -246,7 +236,7 @@ QSizeF QScreen::physicalSize() const
 QSize QScreen::availableSize() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->availableGeometry().size();
+    return d->availableGeometry.size();
 }
 
 /*!
@@ -259,7 +249,7 @@ QSize QScreen::availableSize() const
 QRect QScreen::geometry() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->geometry();
+    return d->geometry;
 }
 
 /*!
@@ -272,7 +262,7 @@ QRect QScreen::geometry() const
 QRect QScreen::availableGeometry() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->availableGeometry();
+    return d->availableGeometry;
 }
 
 /*!
@@ -315,10 +305,9 @@ QSize QScreen::virtualSize() const
 */
 QRect QScreen::virtualGeometry() const
 {
-    Q_D(const QScreen);
     QRect result;
-    foreach (QPlatformScreen *platformScreen, d->platformScreen->virtualSiblings())
-        result |= platformScreen->geometry();
+    foreach (QScreen *screen, virtualSiblings())
+        result |= screen->geometry();
     return result;
 }
 
@@ -347,10 +336,9 @@ QSize QScreen::availableVirtualSize() const
 */
 QRect QScreen::availableVirtualGeometry() const
 {
-    Q_D(const QScreen);
     QRect result;
-    foreach (QPlatformScreen *platformScreen, d->platformScreen->virtualSiblings())
-        result |= platformScreen->availableGeometry();
+    foreach (QScreen *screen, virtualSiblings())
+        result |= screen->availableGeometry();
     return result;
 }
 
@@ -383,7 +371,7 @@ Qt::ScreenOrientation QScreen::primaryOrientation() const
 Qt::ScreenOrientation QScreen::currentOrientation() const
 {
     Q_D(const QScreen);
-    return d->platformScreen->currentOrientation();
+    return d->currentOrientation;
 }
 
 // i must be power of two

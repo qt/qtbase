@@ -57,6 +57,7 @@
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
+#include <private/qscreen_p.h>
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
@@ -1021,6 +1022,8 @@ void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfac
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->currentOrientation = e->orientation;
+
     emit s->currentOrientationChanged(s->currentOrientation());
 
     QScreenOrientationChangeEvent event(s, s->currentOrientation());
@@ -1037,6 +1040,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->geometry = e->geometry;
 
     emit s->sizeChanged(s->size());
     emit s->geometryChanged(s->geometry());
@@ -1058,6 +1062,7 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->availableGeometry = e->availableGeometry;
 
     emit s->availableSizeChanged(s->availableSize());
     emit s->availableGeometryChanged(s->availableGeometry());
@@ -1073,6 +1078,7 @@ void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfa
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
 
     emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
     emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());

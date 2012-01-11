@@ -13,6 +13,7 @@ HEADERS += \
         kernel/qplatformintegration_qpa.h \
         kernel/qplatformdrag_qpa.h \
         kernel/qplatformscreen_qpa.h \
+        kernel/qplatformscreen_qpa_p.h \
         kernel/qplatforminputcontext_qpa.h \
         kernel/qplatformintegrationfactory_qpa_p.h \
         kernel/qplatformintegrationplugin_qpa.h \
@@ -50,6 +51,7 @@ HEADERS += \
         kernel/qsessionmanager.h \
         kernel/qwindowdefs.h \
         kernel/qscreen.h \
+        kernel/qscreen_p.h \
         kernel/qstylehints.h \
         kernel/qtouchdevice.h \
         kernel/qtouchdevice_p.h
