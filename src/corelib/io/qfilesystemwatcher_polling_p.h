@@ -105,7 +105,6 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
         }
     };
 
-    mutable QMutex mutex;
     QHash<QString, FileInfo> files, directories;
 
 public:

@@ -245,8 +245,6 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -303,8 +301,6 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -331,8 +327,6 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
 {
-    QMutexLocker locker(&mutex);
-
     // qDebug() << "QInotifyFileSystemWatcherEngine::readFromInotify";
 
     int buffSize = 0;

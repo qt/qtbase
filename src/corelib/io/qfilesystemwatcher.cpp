@@ -48,7 +48,6 @@
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
-#include <qmutex.h>
 #include <qset.h>
 #include <qtimer.h>
 

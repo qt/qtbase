@@ -81,7 +81,6 @@ private Q_SLOTS:
 private:
     QInotifyFileSystemWatcherEngine(int fd);
     int inotifyFd;
-    QMutex mutex;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;
     QSocketNotifier notifier;

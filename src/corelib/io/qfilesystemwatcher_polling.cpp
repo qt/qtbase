@@ -54,7 +54,6 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -89,7 +88,6 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -113,7 +111,6 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QPollingFileSystemWatcherEngine::timeout()
 {
-    QMutexLocker locker(&mutex);
     QMutableHashIterator<QString, FileInfo> fit(files);
     while (fit.hasNext()) {
         QHash<QString, FileInfo>::iterator x = fit.next();

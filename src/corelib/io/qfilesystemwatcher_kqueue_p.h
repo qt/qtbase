@@ -85,7 +85,6 @@ private:
 
     int kqfd;
 
-    QMutex mutex;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;
     QSocketNotifier notifier;
