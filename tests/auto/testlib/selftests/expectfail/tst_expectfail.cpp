@@ -70,7 +70,9 @@ void tst_ExpectFail::expectAndAbort() const
     qDebug("begin");
     QEXPECT_FAIL("", "This should xfail", Abort);
     QVERIFY(false);
-    qDebug("this should not be reached");
+
+    // If we get here the test did not correctly abort on the previous QVERIFY.
+    QVERIFY2(false, "This should not be reached");
 }
 
 void tst_ExpectFail::xfailWithQString() const
