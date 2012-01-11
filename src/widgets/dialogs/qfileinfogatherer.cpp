@@ -280,10 +280,11 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
     if (files.isEmpty()
-        && !watcher->directories().contains(path)
         && !path.isEmpty()
         && !path.startsWith(QLatin1String("//")) /*don't watch UNC path*/) {
-        watcher->addPath(path);
+        QMutexLocker locker(&mutex);
+        if (!watcher->directories().contains(path))
+            watcher->addPath(path);
     }
 #endif
 
