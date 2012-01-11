@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
+class QAccessibleEvent;
 class QWindow;
 
 // We need to inherit QObject to expose the enums to QML.
@@ -326,7 +327,7 @@ public:
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
-    typedef void(*UpdateHandler)(QObject*, int who, Event reason);
+    typedef void(*UpdateHandler)(const QAccessibleEvent &event);
     typedef void(*RootObjectHandler)(QObject*);
 
     static void installFactory(InterfaceFactory);
@@ -335,7 +336,10 @@ public:
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
+
     static void updateAccessibility(QObject *object, int child, Event reason);
+    static void updateAccessibility(const QAccessibleEvent &event);
+
     static bool isActive();
     static void setRootObject(QObject *object);
 
@@ -424,6 +428,28 @@ public:
     { return 0; }
 private:
 };
+
+class Q_GUI_EXPORT QAccessibleEvent
+{
+public:
+    inline QAccessibleEvent(QAccessible::Event type, QObject *object, int child = -1)
+        : m_type(type), m_object(object), m_child(child)
+    {
+        Q_ASSERT(object);
+    }
+
+    QAccessible::Event type() const { return m_type; }
+    QObject *object() const { return m_object; }
+    int child() const { return m_child; }
+
+    QAccessibleInterface *accessibleInterface() const;
+
+private:
+    QAccessible::Event m_type;
+    QObject *m_object;
+    int m_child;
+};
+
 
 #define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)

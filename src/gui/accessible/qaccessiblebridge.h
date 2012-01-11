@@ -53,13 +53,14 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
+class QAccessibleEvent;
 
 class QAccessibleBridge
 {
 public:
     virtual ~QAccessibleBridge() {}
     virtual void setRootObject(QAccessibleInterface *) = 0;
-    virtual void notifyAccessibilityUpdate(int, QAccessibleInterface*, int) = 0;
+    virtual void notifyAccessibilityUpdate(const QAccessibleEvent &event) = 0;
 };
 
 struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface

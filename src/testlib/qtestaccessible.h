@@ -134,10 +134,10 @@ private:
         }
     }
 
-    static void updateHandler(QObject *o, int c, QAccessible::Event e)
+    static void updateHandler(const QAccessibleEvent &event)
     {
         //    qDebug("updateHandler called: %p %d %d", o, c, (int)e);
-        eventList().append(QTestAccessibilityEvent(o, c, (int)e));
+        eventList().append(QTestAccessibilityEvent(event.object(), event.child(), (int)event.type()));
     }
 
     static EventList &eventList()

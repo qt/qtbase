@@ -1296,10 +1296,10 @@ QWindowsAccessibility::QWindowsAccessibility()
 }
 
 
-void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason)
+void QWindowsAccessibility::notifyAccessibilityUpdate(const QAccessibleEvent &event)
 {
     QString soundName;
-    switch (reason) {
+    switch (event.type()) {
     case QAccessible::PopupMenuStart:
         soundName = QLatin1String("MenuPopup");
         break;
@@ -1370,8 +1370,9 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
 
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
+    QAccessibleInterface *iface = event.accessibleInterface();
     QWindow *window = iface ? window_helper(iface) : 0;
+    delete iface;
 
     if (!window) {
         window = QGuiApplication::activeWindow();
@@ -1382,18 +1383,17 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
 
-    if (reason != QAccessible::MenuCommand) { // MenuCommand is faked
+    if (event.type() != QAccessible::MenuCommand) { // MenuCommand is faked
         // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
         eventNum %= 50;              //[0..49]
         int eventId = - eventNum - 1;
 
-        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(o, who));
-        ptrNotifyWinEvent(reason, hWnd, OBJID_CLIENT, eventId );
+        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(event.object(), event.child()));
+        ptrNotifyWinEvent(event.type(), hWnd, OBJID_CLIENT, eventId );
 
         ++eventNum;
     }
 #endif // Q_WS_WINCE
-
 }
 
 /*
