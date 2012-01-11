@@ -46,6 +46,7 @@
 #include <QtCore/QSet>
 #include <QtCore/QFile>
 #include <QtCore/QTranslator>
+#include <QtCore/QTemporaryDir>
 #include <private/qthread_p.h>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QColorDialog>
@@ -116,15 +117,52 @@ public:
 
     virtual bool isEmpty() const { return false; }
 
-public slots:
-    void install() {
-        QCoreApplication::installTranslator(this);
-        QTest::qWait(2500);
-        QApplication::closeAllWindows();
-    }
 public:
     mutable QSet<QByteArray> m_translations;
 };
+
+// Install the translator and close all application windows after a while to
+// quit the event loop.
+class LanguageTestStateMachine : public QObject
+{
+    Q_OBJECT
+public:
+    LanguageTestStateMachine(QTranslator *translator);
+    void start() { m_timer.start(); }
+
+private slots:
+    void timeout();
+
+private:
+    enum State { InstallTranslator, CloseDialog };
+
+    QTimer m_timer;
+    QTranslator *m_translator;
+    State m_state;
+};
+
+LanguageTestStateMachine::LanguageTestStateMachine(QTranslator *translator) :
+    m_translator(translator), m_state(InstallTranslator)
+{
+    m_timer.setInterval(500);
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(timeout()));
+}
+
+void LanguageTestStateMachine::timeout()
+{
+    switch (m_state) {
+    case InstallTranslator:
+        m_timer.stop();
+        QCoreApplication::installTranslator(m_translator);
+        m_timer.setInterval(2500);
+        m_timer.start();
+        m_state = CloseDialog;
+        break;
+    case CloseDialog: // Close repeatedly in case file dialog is slow.
+        QApplication::closeAllWindows();
+        break;
+    }
+}
 
 enum DialogType {
     InputDialog = 1,
@@ -208,17 +246,20 @@ void tst_languageChange::retranslatability()
                     "get proper widget layout.");
 
     TransformTranslator translator;
-    QTimer::singleShot(500, &translator, SLOT(install()));
+    LanguageTestStateMachine stateMachine(&translator);
+
     switch (dialogType) {
     case InputDialog:
-        (void)QInputDialog::getInteger(0, QLatin1String("title"), QLatin1String("label"));
+        stateMachine.start();
+        QInputDialog::getInteger(0, QLatin1String("title"), QLatin1String("label"));
         break;
 
     case ColorDialog:
 #ifdef Q_OS_MAC
         QSKIP("The native color dialog is used on Mac OS");
 #else
-        (void)QColorDialog::getColor();
+        stateMachine.start();
+        QColorDialog::getColor();
 #endif
         break;
     case FileDialog: {
@@ -227,29 +268,30 @@ void tst_languageChange::retranslatability()
 #endif
         QFileDialog dlg;
         dlg.setOption(QFileDialog::DontUseNativeDialog);
-        QString tmpParentDir = QDir::tempPath();
-        if (!tmpParentDir.endsWith(QLatin1Char('/')))
-            tmpParentDir += QLatin1Char('/');
-        tmpParentDir += QStringLiteral("languagechangetestdir");
-        const QString tmpDir = tmpParentDir + QStringLiteral("/finaldir");
-        const QString fooName = tmpParentDir + QStringLiteral("/foo");
+        QString tempDirPattern = QDir::tempPath();
+        if (!tempDirPattern.endsWith(QLatin1Char('/')))
+            tempDirPattern += QLatin1Char('/');
+        tempDirPattern += QStringLiteral("languagechangetestdirXXXXXX");
+        QTemporaryDir temporaryDir(tempDirPattern);
+        temporaryDir.setAutoRemove(true);
+        QVERIFY(temporaryDir.isValid());
+        const QString finalDir = temporaryDir.path() + QStringLiteral("/finaldir");
+        const QString fooName = temporaryDir.path() + QStringLiteral("/foo");
         QDir dir;
-        QCOMPARE(dir.mkpath(tmpDir), true);
+        QVERIFY(dir.mkpath(finalDir));
         QFile fooFile(fooName);
         QVERIFY(fooFile.open(QIODevice::WriteOnly|QIODevice::Text));
         fooFile.write("test");
         fooFile.close();
-        dlg.setDirectory(tmpParentDir);
+        dlg.setDirectory(temporaryDir.path());
 #ifdef Q_OS_WINCE
         dlg.setDirectory("\\Windows");
 #endif
         dlg.setFileMode(QFileDialog::ExistingFiles);
         dlg.setViewMode(QFileDialog::Detail);
+        stateMachine.start();
         dlg.exec();
         QTest::qWait(3000);
-        QCOMPARE(QFile::remove(fooName), true);
-        QCOMPARE(dir.rmdir(tmpDir), true);
-        QCOMPARE(dir.rmdir(tmpParentDir), true);
         break; }
     }
 
