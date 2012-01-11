@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 #############################################################################
 ##
 ## Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
@@ -51,6 +51,7 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 use strict;
+use warnings;
 use English qw(-no_match_vars );
 
 # set output basedir to be where ever syncqt is run from
