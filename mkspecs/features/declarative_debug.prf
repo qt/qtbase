@@ -1,1 +1,1 @@
-contains(QT, declarative)|contains(QT, declarative-private):DEFINES += QT_DECLARATIVE_DEBUG
+DEFINES += QT_DECLARATIVE_DEBUG
