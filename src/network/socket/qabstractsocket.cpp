@@ -163,7 +163,7 @@
     issue to be aware of, though: You must make sure that enough data
     is available before attempting to read it using operator>>().
 
-    \sa QFtp, QNetworkAccessManager, QTcpServer
+    \sa QNetworkAccessManager, QTcpServer
 */
 
 /*!

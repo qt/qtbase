@@ -10,7 +10,6 @@ SUBDIRS       = \
                 broadcastsender \
                 fortuneclient \
                 fortuneserver \
-                qftp \
                 http \
                 loopback \
                 threadedfortuneserver \

@@ -39,6 +39,17 @@
 **
 ****************************************************************************/
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Network Access API.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifndef QFTP_H
 #define QFTP_H
 
@@ -56,7 +67,7 @@ QT_MODULE(Network)
 
 class QFtpPrivate;
 
-class Q_NETWORK_EXPORT QFtp : public QObject
+class Q_AUTOTEST_EXPORT QFtp : public QObject
 {
     Q_OBJECT
 

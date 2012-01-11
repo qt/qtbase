@@ -54,7 +54,9 @@
 #include <QtNetwork/QLocalSocket>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QHostInfo>
-#include <QtNetwork/QFtp>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QAbstractNetworkCache>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
@@ -1849,23 +1851,22 @@ void tst_QNetworkReply::putToFtp()
 
     // download the file again from FTP to make sure it was uploaded
     // correctly
-    QFtp ftp;
-    ftp.connectToHost(url.host());
-    ftp.login();
-    ftp.get(url.path());
+    QNetworkAccessManager qnam;
+    QNetworkRequest req(url);
+    QNetworkReply *r = qnam.get(req);
 
-    QObject::connect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
-    QObject::disconnect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QByteArray uploaded = ftp.readAll();
+    QByteArray uploaded = r->readAll();
     QCOMPARE(uploaded.size(), data.size());
     QCOMPARE(uploaded, data);
 
-    ftp.close();
-    QObject::connect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    r->close();
+    QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
-    QObject::disconnect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
 
 void tst_QNetworkReply::putToHttp_data()
@@ -3901,23 +3902,22 @@ void tst_QNetworkReply::ioPutToFtpFromFile()
 
     // download the file again from FTP to make sure it was uploaded
     // correctly
-    QFtp ftp;
-    ftp.connectToHost(url.host());
-    ftp.login();
-    ftp.get(url.path());
+    QNetworkAccessManager qnam;
+    QNetworkRequest req(url);
+    QNetworkReply *r = qnam.get(req);
 
-    QObject::connect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(3);
-    QObject::disconnect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QByteArray uploaded = ftp.readAll();
+    QByteArray uploaded = r->readAll();
     QCOMPARE(qint64(uploaded.size()), sourceFile.size());
     QCOMPARE(uploaded, sourceFile.readAll());
 
-    ftp.close();
-    QObject::connect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    r->close();
+    QObject::connect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
-    QObject::disconnect(&ftp, SIGNAL(done(bool)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QObject::disconnect(r, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
 
 void tst_QNetworkReply::ioPutToHttpFromFile_data()

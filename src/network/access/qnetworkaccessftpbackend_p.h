@@ -57,7 +57,7 @@
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
-#include "QtNetwork/qftp.h"
+#include "private/qftp_p.h"
 
 #include "QtCore/qpointer.h"
 

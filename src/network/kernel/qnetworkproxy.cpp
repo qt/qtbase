@@ -53,8 +53,8 @@
 
     QNetworkProxy provides the method for configuring network layer
     proxy support to the Qt network classes. The currently supported
-    classes are QAbstractSocket, QTcpSocket, QUdpSocket, QTcpServer,
-    QNetworkAccessManager and QFtp. The proxy support is designed to
+    classes are QAbstractSocket, QTcpSocket, QUdpSocket, QTcpServer
+    and QNetworkAccessManager. The proxy support is designed to
     be as transparent as possible. This means that existing
     network-enabled applications that you have written should
     automatically support network proxy using the following code.
@@ -166,8 +166,7 @@
     \row
         \o Caching FTP
         \o Implemented using an FTP proxy, it is useful only in the
-           context of FTP requests (see QFtp,
-           QNetworkAccessManager)
+           context of FTP requests (see QNetworkAccessManager)
         \o CachingCapability, HostNameLookupCapability
 
     \endtable

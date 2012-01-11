@@ -40,8 +40,7 @@
     \brief An Introduction to Network Programming with Qt
 
     The QtNetwork module offers classes that allow you to write TCP/IP clients
-    and servers. It offers classes such as QFtp that implement specific
-    application-level protocols, lower-level classes such as QTcpSocket,
+    and servers. It offers lower-level classes such as QTcpSocket,
     QTcpServer and QUdpSocket that represent low level network concepts,
     and high level classes such as QNetworkRequest, QNetworkReply and
     QNetworkAccessManager to perform network operations using common protocols.
@@ -92,64 +91,6 @@
     Each application or library can create one or more instances of
     QNetworkAccessManager to handle network communication.
 
-    \section1 Writing FTP Clients with QFtp
-
-    FTP (File Transfer Protocol) is a protocol used almost exclusively
-    for browsing remote directories and for transferring files.
-
-    \image httpstack.png FTP Client and Server
-
-    FTP uses two network connections, one for sending
-    commands and one for transferring data. The
-    FTP protocol has a state and requires the client to send several
-    commands before a file transfer takes place.
-    FTP clients establish a connection
-    and keeps it open throughout the session. In each session, multiple
-    transfers can occur.
-
-    The QFtp class provides client-side support for FTP. 
-    It has the following characteristics:
-    \list
-
-    \o \e{Non-blocking behavior.} QFtp is asynchronous.
-    You can schedule a series of commands which are executed later,
-    when control returns to Qt's event loop.
-
-    \o \e{Command IDs.} Each command has a unique ID number that you
-    can use to follow the execution of the command. For example, QFtp
-    emits the \l{QFtp::commandStarted()}{commandStarted()} and
-    \l{QFtp::commandFinished()}{commandFinished()} signal with the
-    command ID for each command that is executed. 
-
-    \o \e{Data transfer progress indicators.} QFtp emits signals
-    whenever data is transferred (QFtp::dataTransferProgress(),
-    QNetworkReply::downloadProgress(), and
-    QNetworkReply::uploadProgress()).  You could connect these signals
-    to QProgressBar::setProgress() or QProgressDialog::setProgress(),
-    for example.
-
-    \o \e{QIODevice support.} The class supports convenient
-    uploading from and downloading to \l{QIODevice}s, in addition to a
-    QByteArray-based API.
-
-    \endlist
-
-    There are two main ways of using QFtp. The most common
-    approach is to keep track of the command IDs and follow the
-    execution of every command by connecting to the appropriate
-    signals. The other approach is to schedule all commands at once
-    and only connect to the done() signal, which is emitted when all
-    scheduled commands have been executed. The first approach
-    requires more work, but it gives you more control over the
-    execution of individual commands and allows you to initiate new
-    commands based on the result of a previous command. It also
-    enables you to provide detailed feedback to the user.
-
-    The \l{network/qftp}{FTP} example
-    illustrates how to write an FTP client.
-    Writing your own FTP (or HTTP) server is possible using the
-    lower-level classes QTcpSocket and QTcpServer.
-
     \section1 Using TCP with QTcpSocket and QTcpServer
 
     TCP (Transmission Control Protocol) is a low-level network
@@ -172,7 +113,7 @@
     will then stop immediately.
 
     QTcpSocket works asynchronously and emits signals to report status
-    changes and errors, just like QNetworkAccessManager and QFtp. It
+    changes and errors, just like QNetworkAccessManager. It
     relies on the event loop to detect incoming data and to
     automatically flush outgoing data. You can write data to the
     socket using QTcpSocket::write(), and read data using

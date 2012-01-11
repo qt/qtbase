@@ -62,8 +62,8 @@ bool checkUrl(const QUrl &url) {
 
 
 //! [3]
-QFtp ftp;
-ftp.connectToHost(url.host(), url.port(21));
+QTcpSocket sock;
+sock.connectToHost(url.host(), url.port(80));
 //! [3]
 
 

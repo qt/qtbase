@@ -42,7 +42,7 @@
 //#define QFTPPI_DEBUG
 //#define QFTPDTP_DEBUG
 
-#include "qftp.h"
+#include "private/qftp_p.h"
 #include "qabstractsocket.h"
 
 #ifndef QT_NO_FTP
@@ -825,6 +825,8 @@ void QFtpPI::connectToHost(const QString &host, quint16 port)
 }
 
 /*
+  \internal
+
   Sends the sequence of commands \a cmds to the FTP server. When the commands
   are all done the finished() signal is emitted. When an error occurs, the
   error() signal is emitted.
@@ -970,6 +972,8 @@ void QFtpPI::readyRead()
 }
 
 /*
+  \internal
+
   Process a reply from the FTP server.
 
   Returns true if the reply was processed or false if the reply has to be
@@ -1150,6 +1154,8 @@ bool QFtpPI::processReply()
 }
 
 /*
+  \internal
+
   Starts next pending command. Returns false if there are no pending commands,
   otherwise it returns true.
 */
@@ -1306,6 +1312,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
  *
  *********************************************************************/
 /*!
+    \internal
     \class QFtp
     \brief The QFtp class provides an implementation of the client side of FTP protocol.
 
@@ -1409,6 +1416,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
 
 
 /*!
+    \internal
     Constructs a QFtp object with the given \a parent.
 */
 QFtp::QFtp(QObject *parent)
@@ -1435,6 +1443,7 @@ QFtp::QFtp(QObject *parent)
 }
 
 /*!
+    \internal
     \enum QFtp::State
 
     This enum defines the connection state:
@@ -1451,6 +1460,7 @@ QFtp::QFtp(QObject *parent)
     \sa stateChanged() state()
 */
 /*!
+    \internal
     \enum QFtp::TransferMode
 
     FTP works with two socket connections; one for commands and
@@ -1468,6 +1478,7 @@ QFtp::QFtp(QObject *parent)
     data.
 */
 /*!
+    \internal
     \enum QFtp::TransferType
 
     This enum identifies the data transfer type used with get and
@@ -1479,6 +1490,7 @@ QFtp::QFtp(QObject *parent)
     characters will be converted to the local format.
 */
 /*!
+    \internal
     \enum QFtp::Error
 
     This enum identifies the error that occurred.
@@ -1495,6 +1507,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \enum QFtp::Command
 
     This enum is used as the return value for the currentCommand() function.
@@ -1524,6 +1537,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::stateChanged(int state)
 
     This signal is emitted when the state of the connection changes.
@@ -1538,6 +1552,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::listInfo(const QUrlInfo &i);
 
     This signal is emitted for each directory entry the list() command
@@ -1547,6 +1562,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::commandStarted(int id)
 
     This signal is emitted when processing the command identified by
@@ -1556,6 +1572,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::commandFinished(int id, bool error)
 
     This signal is emitted when processing the command identified by
@@ -1566,6 +1583,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::done(bool error)
 
     This signal is emitted when the last pending command has finished;
@@ -1577,6 +1595,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::readyRead()
 
     This signal is emitted in response to a get() command when there
@@ -1597,6 +1616,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::dataTransferProgress(qint64 done, qint64 total)
 
     This signal is emitted in response to a get() or put() request to
@@ -1617,6 +1637,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     \fn void QFtp::rawCommandReply(int replyCode, const QString &detail);
 
     This signal is emitted in response to the rawCommand() function.
@@ -1627,6 +1648,7 @@ QFtp::QFtp(QObject *parent)
 */
 
 /*!
+    \internal
     Connects to the FTP server \a host using port \a port.
 
     The stateChanged() signal is emitted when the state of the
@@ -1655,6 +1677,7 @@ int QFtp::connectToHost(const QString &host, quint16 port)
 }
 
 /*!
+    \internal
     Logs in to the FTP server with the username \a user and the
     password \a password.
 
@@ -1681,6 +1704,7 @@ int QFtp::login(const QString &user, const QString &password)
 }
 
 /*!
+    \internal
     Closes the connection to the FTP server.
 
     The stateChanged() signal is emitted when the state of the
@@ -1704,6 +1728,7 @@ int QFtp::close()
 }
 
 /*!
+    \internal
     Sets the current FTP transfer mode to \a mode. The default is QFtp::Passive.
 
     \sa QFtp::TransferMode
@@ -1717,6 +1742,7 @@ int QFtp::setTransferMode(TransferMode mode)
 }
 
 /*!
+    \internal
     Enables use of the FTP proxy on host \a host and port \a
     port. Calling this function with \a host empty disables proxying.
 
@@ -1731,6 +1757,7 @@ int QFtp::setProxy(const QString &host, quint16 port)
 }
 
 /*!
+    \internal
     Lists the contents of directory \a dir on the FTP server. If \a
     dir is empty, it lists the contents of the current directory.
 
@@ -1760,6 +1787,7 @@ int QFtp::list(const QString &dir)
 }
 
 /*!
+    \internal
     Changes the working directory of the server to \a dir.
 
     The function does not block and returns immediately. The command
@@ -1779,6 +1807,7 @@ int QFtp::cd(const QString &dir)
 }
 
 /*!
+    \internal
     Downloads the file \a file from the server.
 
     If \a dev is 0, then the readyRead() signal is emitted when there
@@ -1832,6 +1861,7 @@ int QFtp::get(const QString &file, QIODevice *dev, TransferType type)
 }
 
 /*!
+    \internal
     \overload
 
     Writes a copy of the given \a data to the file called \a file on
@@ -1869,6 +1899,7 @@ int QFtp::put(const QByteArray &data, const QString &file, TransferType type)
 }
 
 /*!
+    \internal
     Reads the data from the IO device \a dev, and writes it to the
     file called \a file on the server. The data is read in chunks from
     the IO device, so this overload allows you to transmit large
@@ -1897,6 +1928,7 @@ int QFtp::put(QIODevice *dev, const QString &file, TransferType type)
 }
 
 /*!
+    \internal
     Deletes the file called \a file from the server.
 
     The function does not block and returns immediately. The command
@@ -1916,6 +1948,7 @@ int QFtp::remove(const QString &file)
 }
 
 /*!
+    \internal
     Creates a directory called \a dir on the server.
 
     The function does not block and returns immediately. The command
@@ -1935,6 +1968,7 @@ int QFtp::mkdir(const QString &dir)
 }
 
 /*!
+    \internal
     Removes the directory called \a dir from the server.
 
     The function does not block and returns immediately. The command
@@ -1954,6 +1988,7 @@ int QFtp::rmdir(const QString &dir)
 }
 
 /*!
+    \internal
     Renames the file called \a oldname to \a newname on the server.
 
     The function does not block and returns immediately. The command
@@ -1976,6 +2011,7 @@ int QFtp::rename(const QString &oldname, const QString &newname)
 }
 
 /*!
+    \internal
     Sends the raw FTP command \a command to the FTP server. This is
     useful for low-level FTP access. If the operation you wish to
     perform has an equivalent QFtp function, we recommend using the
@@ -2000,6 +2036,7 @@ int QFtp::rawCommand(const QString &command)
 }
 
 /*!
+    \internal
     Returns the number of bytes that can be read from the data socket
     at the moment.
 
@@ -2011,6 +2048,7 @@ qint64 QFtp::bytesAvailable() const
 }
 
 /*!
+    \internal
     Reads \a maxlen bytes from the data socket into \a data and
     returns the number of bytes read. Returns -1 if an error occurred.
 
@@ -2022,6 +2060,7 @@ qint64 QFtp::read(char *data, qint64 maxlen)
 }
 
 /*!
+    \internal
     Reads all the bytes available from the data socket and returns
     them.
 
@@ -2033,6 +2072,7 @@ QByteArray QFtp::readAll()
 }
 
 /*!
+    \internal
     Aborts the current command and deletes all scheduled commands.
 
     If there is an unfinished command (i.e. a command for which the
@@ -2071,6 +2111,7 @@ void QFtp::abort()
 }
 
 /*!
+    \internal
     Returns the identifier of the FTP command that is being executed
     or 0 if there is no command being executed.
 
@@ -2084,6 +2125,7 @@ int QFtp::currentId() const
 }
 
 /*!
+    \internal
     Returns the command type of the FTP command being executed or \c
     None if there is no command being executed.
 
@@ -2097,6 +2139,7 @@ QFtp::Command QFtp::currentCommand() const
 }
 
 /*!
+    \internal
     Returns the QIODevice pointer that is used by the FTP command to read data
     from or store data to. If there is no current FTP command being executed or
     if the command does not use an IO device, this function returns 0.
@@ -2117,6 +2160,7 @@ QIODevice* QFtp::currentDevice() const
 }
 
 /*!
+    \internal
     Returns true if there are any commands scheduled that have not yet
     been executed; otherwise returns false.
 
@@ -2131,6 +2175,7 @@ bool QFtp::hasPendingCommands() const
 }
 
 /*!
+    \internal
     Deletes all pending commands from the list of scheduled commands.
     This does not affect the command that is being executed. If you
     want to stop this as well, use abort().
@@ -2145,6 +2190,7 @@ void QFtp::clearPendingCommands()
 }
 
 /*!
+    \internal
     Returns the current state of the object. When the state changes,
     the stateChanged() signal is emitted.
 
@@ -2156,6 +2202,7 @@ QFtp::State QFtp::state() const
 }
 
 /*!
+    \internal
     Returns the last error that occurred. This is useful to find out
     what went wrong when receiving a commandFinished() or a done()
     signal with the \c error argument set to \c true.
@@ -2168,6 +2215,7 @@ QFtp::Error QFtp::error() const
 }
 
 /*!
+    \internal
     Returns a human-readable description of the last error that
     occurred. This is useful for presenting a error message to the
     user when receiving a commandFinished() or a done() signal with
@@ -2385,6 +2433,7 @@ void QFtpPrivate::_q_piFtpReply(int code, const QString &text)
 }
 
 /*!
+    \internal
     Destructor.
 */
 QFtp::~QFtp()
@@ -2397,6 +2446,6 @@ QT_END_NAMESPACE
 
 #include "qftp.moc"
 
-#include "moc_qftp.cpp"
+#include "moc_qftp_p.cpp"
 
 #endif // QT_NO_FTP
