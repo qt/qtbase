@@ -2279,7 +2279,7 @@ QT_END_INCLUDE_NAMESPACE
     However, note that repeated calls to this function will recreate the
     list of environment variables, which is a non-trivial operation.
 
-    \note For new code, it is recommended to use QProcessEvironment::systemEnvironment()
+    \note For new code, it is recommended to use QProcessEnvironment::systemEnvironment()
 
     \sa QProcessEnvironment::systemEnvironment(), environment(), setEnvironment()
 */

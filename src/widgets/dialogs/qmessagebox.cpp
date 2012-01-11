@@ -538,8 +538,8 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 6
 
     This is the approach recommended in the
-    \l{http://developer.apple.com/documentation/UserExperience/Conceptual/AppleHIGuidelines/XHIGWindows/chapter_18_section_7.html}
-    {Mac OS X Guidlines}. Similar guidlines apply for the other
+    \l{http://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-BABCAJID}
+    {Mac OS X Guidelines}. Similar guidelines apply for the other
     platforms, but note the different ways the
     \l{QMessageBox::informativeText} {informative text} is handled for
     different platforms.
