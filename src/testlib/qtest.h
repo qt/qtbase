@@ -254,6 +254,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
@@ -267,6 +268,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QGuiApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
@@ -277,6 +279,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
@@ -287,6 +290,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }

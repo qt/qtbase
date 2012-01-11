@@ -138,36 +138,32 @@ extern bool qt_is_gui_used;
 
 Q_GUI_EXPORT int qt_defaultDpiX()
 {
+    if (qApp->testAttribute(Qt::AA_Use96Dpi))
+        return 96;
+
     if (!qt_is_gui_used)
         return 75;
 
-    int dpi;
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (screen) {
-        dpi = qRound(screen->logicalDotsPerInchX());
-    } else {
-        //PI has not been initialised, or it is being initialised. Give a default dpi
-        dpi = 100;
-    }
+    if (const QScreen *screen = QGuiApplication::primaryScreen())
+        return qRound(screen->logicalDotsPerInchX());
 
-    return dpi;
+    //PI has not been initialised, or it is being initialised. Give a default dpi
+    return 100;
 }
 
 Q_GUI_EXPORT int qt_defaultDpiY()
 {
+    if (qApp->testAttribute(Qt::AA_Use96Dpi))
+        return 96;
+
     if (!qt_is_gui_used)
         return 75;
 
-    int dpi;
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (screen) {
-        dpi = qRound(screen->logicalDotsPerInchY());
-    } else {
-        //PI has not been initialised, or it is being initialised. Give a default dpi
-        dpi = 100;
-    }
+    if (const QScreen *screen = QGuiApplication::primaryScreen())
+        return qRound(screen->logicalDotsPerInchY());
 
-    return dpi;
+    //PI has not been initialised, or it is being initialised. Give a default dpi
+    return 100;
 }
 
 Q_GUI_EXPORT int qt_defaultDpi()
