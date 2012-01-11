@@ -45,6 +45,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -441,7 +442,7 @@ QString qt_mac_applicationName()
         appName = QCFString::toQString(static_cast<CFStringRef>(string));
 
     if (appName.isEmpty()) {
-        QString arg0 = qApp->arguments().at(0);
+        QString arg0 = QGuiApplicationPrivate::instance()->appName();
         if (arg0.contains("/")) {
             QStringList parts = arg0.split("/");
             appName = parts.at(parts.count() - 1);
