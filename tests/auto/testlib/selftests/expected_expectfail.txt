@@ -3,18 +3,23 @@ Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE
 PASS   : tst_ExpectFail::initTestCase()
 QDEBUG : tst_ExpectFail::expectAndContinue() begin
 XFAIL  : tst_ExpectFail::expectAndContinue() This should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(27)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(64)]
 QDEBUG : tst_ExpectFail::expectAndContinue() after
 PASS   : tst_ExpectFail::expectAndContinue()
 QDEBUG : tst_ExpectFail::expectAndAbort() begin
 XFAIL  : tst_ExpectFail::expectAndAbort() This should xfail
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(35)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(72)]
 PASS   : tst_ExpectFail::expectAndAbort()
 XFAIL  : tst_ExpectFail::xfailWithQString() A string
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(42)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(79)]
 XFAIL  : tst_ExpectFail::xfailWithQString() Bug 5 (The message)
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(47)]
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(84)]
 PASS   : tst_ExpectFail::xfailWithQString()
+XFAIL  : tst_ExpectFail::dataDrivenTest(Abort) This test should xfail
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(113)]
+XFAIL  : tst_ExpectFail::dataDrivenTest(Continue) This test should xfail
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(113)]
+PASS   : tst_ExpectFail::dataDrivenTest()
 PASS   : tst_ExpectFail::cleanupTestCase()
-Totals: 5 passed, 0 failed, 0 skipped
+Totals: 6 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_ExpectFail *********

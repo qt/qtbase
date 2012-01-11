@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="7" failures="0" tests="5" name="tst_ExpectFail">
+<testsuite errors="9" failures="0" tests="6" name="tst_ExpectFail">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -18,6 +18,10 @@
     <!-- message="A string" type="info" -->
     <!-- message="Bug 5 (The message)" type="info" -->
   </testcase>
+  <testcase result="xfail" name="dataDrivenTest">
+    <!-- tag="Abort" message="This test should xfail" type="info" -->
+    <!-- tag="Continue" message="This test should xfail" type="info" -->
+  </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
 <![CDATA[begin]]>
@@ -27,5 +31,7 @@
 <![CDATA[This should xfail]]>
 <![CDATA[A string]]>
 <![CDATA[Bug 5 (The message)]]>
+<![CDATA[This test should xfail]]>
+<![CDATA[This test should xfail]]>
   </system-err>
 </testsuite>

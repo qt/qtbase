@@ -43,6 +43,8 @@
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
+Q_DECLARE_METATYPE(QTest::TestFailMode)
+
 class tst_ExpectFail: public QObject
 {
     Q_OBJECT
@@ -51,6 +53,8 @@ private slots:
     void expectAndContinue() const;
     void expectAndAbort() const;
     void xfailWithQString() const;
+    void dataDrivenTest_data() const;
+    void dataDrivenTest() const;
 };
 
 void tst_ExpectFail::expectAndContinue() const
@@ -80,6 +84,39 @@ void tst_ExpectFail::xfailWithQString() const
     QVERIFY(false);
 }
 
-QTEST_MAIN(tst_ExpectFail)
+void tst_ExpectFail::dataDrivenTest_data() const
+{
+    QTest::addColumn<bool>("shouldPass");
+    QTest::addColumn<QTest::TestFailMode>("failMode");
 
+    QTest::newRow("Pass 1")   << true  << QTest::Abort;
+    QTest::newRow("Pass 2")   << true  << QTest::Continue;
+    QTest::newRow("Abort")    << false << QTest::Abort;
+    QTest::newRow("Continue") << false << QTest::Continue;
+}
+
+void tst_ExpectFail::dataDrivenTest() const
+{
+    QFETCH(bool, shouldPass);
+    QFETCH(QTest::TestFailMode, failMode);
+
+    // You can't pass a variable as the last parameter of QEXPECT_FAIL,
+    // because the macro adds "QTest::" in front of the last parameter.
+    // That is why the following code appears to be a little strange.
+    if (!shouldPass) {
+        if (failMode == QTest::Abort)
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Abort);
+        else
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Continue);
+    }
+
+    QVERIFY(shouldPass);
+
+    // If we get here, we either expected to pass or we expected to
+    // fail and the failure mode was Continue.
+    if (!shouldPass)
+        QCOMPARE(failMode, QTest::Continue);
+}
+
+QTEST_MAIN(tst_ExpectFail)
 #include "tst_expectfail.moc"

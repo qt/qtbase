@@ -9,7 +9,7 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
 </Message>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="60">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="64">
     <Description><![CDATA[This should xfail]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">
@@ -21,17 +21,28 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
 </Message>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="68">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="72">
     <Description><![CDATA[This should xfail]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="xfailWithQString">
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="75">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="79">
     <Description><![CDATA[A string]]></Description>
 </Incident>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="80">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="84">
     <Description><![CDATA[Bug 5 (The message)]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="dataDrivenTest">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="113">
+    <DataTag><![CDATA[Abort]]></DataTag>
+    <Description><![CDATA[This test should xfail]]></Description>
+</Incident>
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="113">
+    <DataTag><![CDATA[Continue]]></DataTag>
+    <Description><![CDATA[This test should xfail]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
