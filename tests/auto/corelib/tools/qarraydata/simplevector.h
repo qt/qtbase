@@ -274,6 +274,12 @@ public:
         d.detach();
     }
 
+    static SimpleVector fromRawData(const T *data, size_t size,
+            QArrayData::AllocateOptions options = Data::Default)
+    {
+        return SimpleVector(Data::fromRawData(data, size, options));
+    }
+
 private:
     QArrayDataPointer<T> d;
 };

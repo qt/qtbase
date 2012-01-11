@@ -114,6 +114,8 @@ public:
 
     void setSharable(bool sharable)
     {
+        // Can't call setSharable on static read-only data, like shared_null
+        // and the internal shared-empties.
         if (d->alloc == 0 && d->size == 0) {
             d = Data::allocate(0, sharable
                     ? QArrayData::Default
@@ -138,7 +140,7 @@ public:
 
     bool detach()
     {
-        if (d->ref.isShared()) {
+        if (!d->isMutable() || d->ref.isShared()) {
             Data *copy = clone(d->detachFlags());
             QArrayDataPointer old(d);
             d = copy;

@@ -73,9 +73,18 @@ struct Q_CORE_EXPORT QArrayData
         return reinterpret_cast<const char *>(this) + offset;
     }
 
+    // This refers to array data mutability, not "header data" represented by
+    // data members in QArrayData. Shared data (array and header) must still
+    // follow COW principles.
+    bool isMutable() const
+    {
+        return alloc != 0;
+    }
+
     enum AllocateOption {
         CapacityReserved = 0x1,
         Unsharable = 0x2,
+        RawData = 0x4,
 
         Default = 0
     };
@@ -137,6 +146,20 @@ struct QTypedArrayData
     static void deallocate(QArrayData *data)
     {
         QArrayData::deallocate(data, sizeof(T), Q_ALIGNOF(AlignmentDummy));
+    }
+
+    static QTypedArrayData *fromRawData(const T *data, size_t n,
+            AllocateOptions options = Default)
+    {
+        QTypedArrayData *result = allocate(0, options | RawData);
+        if (result) {
+            Q_ASSERT(!result->ref.isShared()); // No shared empty, please!
+
+            result->offset = reinterpret_cast<const char *>(data)
+                - reinterpret_cast<const char *>(result);
+            result->size = n;
+        }
+        return result;
     }
 
     static QTypedArrayData *sharedNull()

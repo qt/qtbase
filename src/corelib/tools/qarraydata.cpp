@@ -56,16 +56,19 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
             && !(alignment & (alignment - 1)));
 
     // Don't allocate empty headers
-    if (!capacity)
+    if (!(options & RawData) && !capacity)
         return !(options & Unsharable)
             ? const_cast<QArrayData *>(&qt_array_empty)
             : const_cast<QArrayData *>(&qt_array_unsharable_empty);
 
+    size_t allocSize = sizeof(QArrayData) + objectSize * capacity;
+
     // Allocate extra (alignment - Q_ALIGNOF(QArrayData)) padding bytes so we
     // can properly align the data array. This assumes malloc is able to
     // provide appropriate alignment for the header -- as it should!
-    size_t allocSize = sizeof(QArrayData) + objectSize * capacity
-        + (alignment - Q_ALIGNOF(QArrayData));
+    // Padding is skipped when allocating a header for RawData.
+    if (!(options & RawData))
+        allocSize += (alignment - Q_ALIGNOF(QArrayData));
 
     QArrayData *header = static_cast<QArrayData *>(qMalloc(allocSize));
     Q_CHECK_PTR(header);
