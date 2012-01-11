@@ -490,7 +490,7 @@ namespace QT_NAMESPACE {}
 #  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
 #      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
 #  endif
-#  if defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) && !defined(__clang__) /* clang C++11 enablers are found below, don't do them here */
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
 #      define Q_COMPILER_VARIADIC_MACROS
@@ -783,6 +783,45 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#  endif
+#endif
+
+#ifdef Q_CC_CLANG
+/* General C++ features */
+#  if !__has_feature(cxx_exceptions)
+#    define QT_NO_EXCEPTIONS
+#  endif
+#  if !__has_feature(cxx_rtti)
+#    define QT_NO_RTTI
+#  endif
+/* C++11 features, see http://clang.llvm.org/cxx_status.html */
+#  if __cplusplus >= 201103L || __GXX_EXPERIMENTAL_CXX0X__
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DECLTYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_STATIC_ASSERT
+#      define Q_COMPILER_VARIADIC_MACROS
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#    endif
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 300 /* since clang 3.0 */
+#      define Q_COMPILER_CLASS_ENUM
+        /* defaulted members in 3.0, deleted members in 2.9 */
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_NULLPTR
+#      define Q_COMPILER_RANGE_FOR
+#      define Q_COMPILER_UNICODE_STRINGS
+#    endif
+#    if 0 /*) not implemented in clang */
+#      define Q_COMPILER_ATOMICS
+#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_FINAL
+#      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
 #  endif
 #endif
