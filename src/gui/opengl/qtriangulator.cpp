@@ -41,7 +41,6 @@
 
 #include "qtriangulator_p.h"
 
-#include <QtWidgets/qdialog.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
