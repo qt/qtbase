@@ -546,13 +546,13 @@ struct Deallocator
 };
 
 Q_DECLARE_METATYPE(const QArrayData *)
-Q_DECLARE_METATYPE(QArrayData::AllocateOptions)
+Q_DECLARE_METATYPE(QArrayData::AllocationOptions)
 
 void tst_QArrayData::allocate_data()
 {
     QTest::addColumn<size_t>("objectSize");
     QTest::addColumn<size_t>("alignment");
-    QTest::addColumn<QArrayData::AllocateOptions>("allocateOptions");
+    QTest::addColumn<QArrayData::AllocationOptions>("allocateOptions");
     QTest::addColumn<bool>("isCapacityReserved");
     QTest::addColumn<bool>("isSharable");
     QTest::addColumn<const QArrayData *>("commonEmpty");
@@ -575,7 +575,7 @@ void tst_QArrayData::allocate_data()
 
     struct {
         char const *description;
-        QArrayData::AllocateOptions allocateOptions;
+        QArrayData::AllocationOptions allocateOptions;
         bool isCapacityReserved;
         bool isSharable;
         const QArrayData *commonEmpty;
@@ -603,7 +603,7 @@ void tst_QArrayData::allocate()
 {
     QFETCH(size_t, objectSize);
     QFETCH(size_t, alignment);
-    QFETCH(QArrayData::AllocateOptions, allocateOptions);
+    QFETCH(QArrayData::AllocationOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
     QFETCH(bool, isSharable);
     QFETCH(const QArrayData *, commonEmpty);
@@ -614,14 +614,14 @@ void tst_QArrayData::allocate()
 
     // Shared Empty
     QCOMPARE(QArrayData::allocate(objectSize, minAlignment, 0,
-                QArrayData::AllocateOptions(allocateOptions)), commonEmpty);
+                QArrayData::AllocationOptions(allocateOptions)), commonEmpty);
 
     Deallocator keeper(objectSize, minAlignment);
     keeper.headers.reserve(1024);
 
     for (int capacity = 1; capacity <= 1024; capacity <<= 1) {
         QArrayData *data = QArrayData::allocate(objectSize, minAlignment,
-                capacity, QArrayData::AllocateOptions(allocateOptions));
+                capacity, QArrayData::AllocationOptions(allocateOptions));
         keeper.headers.append(data);
 
         QCOMPARE(data->size, 0);

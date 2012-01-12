@@ -81,7 +81,7 @@ struct Q_CORE_EXPORT QArrayData
         return alloc != 0;
     }
 
-    enum AllocateOption {
+    enum AllocationOption {
         CapacityReserved = 0x1,
         Unsharable = 0x2,
         RawData = 0x4,
@@ -89,11 +89,11 @@ struct Q_CORE_EXPORT QArrayData
         Default = 0
     };
 
-    Q_DECLARE_FLAGS(AllocateOptions, AllocateOption)
+    Q_DECLARE_FLAGS(AllocationOptions, AllocationOption)
 
-    AllocateOptions detachFlags() const
+    AllocationOptions detachFlags() const
     {
-        AllocateOptions result;
+        AllocationOptions result;
         if (!ref.isSharable())
             result |= Unsharable;
         if (capacityReserved)
@@ -101,23 +101,24 @@ struct Q_CORE_EXPORT QArrayData
         return result;
     }
 
-    AllocateOptions cloneFlags() const
+    AllocationOptions cloneFlags() const
     {
-        AllocateOptions result;
+        AllocationOptions result;
         if (capacityReserved)
             result |= CapacityReserved;
         return result;
     }
 
     static QArrayData *allocate(size_t objectSize, size_t alignment,
-            size_t capacity, AllocateOptions options = Default) Q_REQUIRED_RESULT;
+            size_t capacity, AllocationOptions options = Default)
+        Q_REQUIRED_RESULT;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment);
 
     static const QArrayData shared_null;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocateOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
 
 template <class T>
 struct QTypedArrayData
@@ -137,7 +138,7 @@ struct QTypedArrayData
     class AlignmentDummy { QArrayData header; T data; };
 
     static QTypedArrayData *allocate(size_t capacity,
-            AllocateOptions options = Default) Q_REQUIRED_RESULT
+            AllocationOptions options = Default) Q_REQUIRED_RESULT
     {
         return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
                     Q_ALIGNOF(AlignmentDummy), capacity, options));
@@ -149,7 +150,7 @@ struct QTypedArrayData
     }
 
     static QTypedArrayData *fromRawData(const T *data, size_t n,
-            AllocateOptions options = Default)
+            AllocationOptions options = Default)
     {
         QTypedArrayData *result = allocate(0, options | RawData);
         if (result) {

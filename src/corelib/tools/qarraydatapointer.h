@@ -151,7 +151,7 @@ public:
     }
 
 private:
-    Data *clone(QArrayData::AllocateOptions options) const Q_REQUIRED_RESULT
+    Data *clone(QArrayData::AllocationOptions options) const Q_REQUIRED_RESULT
     {
         QArrayDataPointer copy(Data::allocate(d->alloc ? d->alloc : d->size,
                     options));

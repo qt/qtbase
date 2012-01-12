@@ -275,7 +275,7 @@ public:
     }
 
     static SimpleVector fromRawData(const T *data, size_t size,
-            QArrayData::AllocateOptions options = Data::Default)
+            QArrayData::AllocationOptions options = Data::Default)
     {
         return SimpleVector(Data::fromRawData(data, size, options));
     }
