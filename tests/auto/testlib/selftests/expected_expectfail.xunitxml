@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="9" failures="1" tests="7" name="tst_ExpectFail">
+<testsuite errors="9" failures="2" tests="8" name="tst_ExpectFail">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -13,6 +13,9 @@
   <testcase result="xfail" name="expectAndAbort">
     <!-- message="begin" type="qdebug" -->
     <!-- message="This should xfail" type="info" -->
+  </testcase>
+  <testcase result="fail" name="expectTwice">
+    <failure message="Already expecting a fail" result="fail"/>
   </testcase>
   <testcase result="xfail" name="xfailWithQString">
     <!-- message="A string" type="info" -->

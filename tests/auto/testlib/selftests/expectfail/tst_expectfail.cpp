@@ -52,6 +52,7 @@ class tst_ExpectFail: public QObject
 private slots:
     void expectAndContinue() const;
     void expectAndAbort() const;
+    void expectTwice() const;
     void xfailWithQString() const;
     void xpass() const;
     void dataDrivenTest_data() const;
@@ -73,6 +74,16 @@ void tst_ExpectFail::expectAndAbort() const
     QVERIFY(false);
 
     // If we get here the test did not correctly abort on the previous QVERIFY.
+    QVERIFY2(false, "This should not be reached");
+}
+
+void tst_ExpectFail::expectTwice() const
+{
+    QEXPECT_FAIL("", "Calling QEXPECT_FAIL once is fine", Abort);
+    QEXPECT_FAIL("", "Calling QEXPECT_FAIL when already expecting a failure is "
+                     "an error and should abort this test function", Abort);
+
+    // If we get here the test did not correctly abort on the double call to QEXPECT_FAIL.
     QVERIFY2(false, "This should not be reached");
 }
 
