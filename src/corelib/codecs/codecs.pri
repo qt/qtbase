@@ -41,7 +41,7 @@ unix {
                         ../plugins/codecs/cn/qgb18030codec.h \
                         ../plugins/codecs/jp/qeucjpcodec.h \
                         ../plugins/codecs/jp/qjiscodec.h \
-                        ../plugins/codecs/jp/qsjiscodec.h \ 
+                        ../plugins/codecs/jp/qsjiscodec.h \
                         ../plugins/codecs/kr/qeuckrcodec.h \
                         ../plugins/codecs/tw/qbig5codec.h \
                         ../plugins/codecs/jp/qfontjpcodec.h
