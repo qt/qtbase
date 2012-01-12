@@ -108,6 +108,7 @@ public:
 #endif
 
     static QPalette palette();
+    static void setPalette(const QPalette &pal);
 
     static Qt::KeyboardModifiers keyboardModifiers();
     static Qt::MouseButtons mouseButtons();

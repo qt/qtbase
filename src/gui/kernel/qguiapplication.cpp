@@ -1185,6 +1185,16 @@ QPalette QGuiApplication::palette()
     return *QGuiApplicationPrivate::app_pal;
 }
 
+void QGuiApplication::setPalette(const QPalette &pal)
+{
+    if (QGuiApplicationPrivate::app_pal && pal.isCopyOf(*QGuiApplicationPrivate::app_pal))
+        return;
+    if (!QGuiApplicationPrivate::app_pal)
+        QGuiApplicationPrivate::app_pal = new QPalette(pal);
+    else
+        *QGuiApplicationPrivate::app_pal = pal;
+}
+
 QFont QGuiApplication::font()
 {
     QMutexLocker locker(applicationFontMutex());
