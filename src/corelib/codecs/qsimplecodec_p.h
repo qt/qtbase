@@ -64,11 +64,7 @@ template <typename T> class QAtomicPointer;
 class QSimpleTextCodec: public QTextCodec
 {
 public:
-#ifdef Q_OS_SYMBIAN
-    enum { numSimpleCodecs = 5 };
-#else
     enum { numSimpleCodecs = 30 };
-#endif
     explicit QSimpleTextCodec(int);
     ~QSimpleTextCodec();
 
