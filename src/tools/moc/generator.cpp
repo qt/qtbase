@@ -329,17 +329,10 @@ void Generator::generateCode()
     }
 
     if (!extraList.isEmpty()) {
-        fprintf(out, "#ifdef Q_NO_DATA_RELOCATION\n");
-        fprintf(out, "static const QMetaObjectAccessor qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
-        for (int i = 0; i < extraList.count(); ++i) {
-            fprintf(out, "    %s::getStaticMetaObject,\n", extraList.at(i).constData());
-        }
-        fprintf(out, "#else\n");
         fprintf(out, "static const QMetaObject *qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
         for (int i = 0; i < extraList.count(); ++i) {
             fprintf(out, "    &%s::staticMetaObject,\n", extraList.at(i).constData());
         }
-        fprintf(out, "#endif //Q_NO_DATA_RELOCATION\n");
         fprintf(out, "    0\n};\n\n");
     }
 
@@ -384,12 +377,6 @@ void Generator::generateCode()
     if(isQt)
         return;
 
-//
-// Generate static meta object accessor (needed for symbian, because DLLs do not support data imports.
-//
-    fprintf(out, "\n#ifdef Q_NO_DATA_RELOCATION\n");
-    fprintf(out, "const QMetaObject &%s::getStaticMetaObject() { return staticMetaObject; }\n", cdef->qualified.constData());
-    fprintf(out, "#endif //Q_NO_DATA_RELOCATION\n");
 
     if (!cdef->hasQObject)
         return;

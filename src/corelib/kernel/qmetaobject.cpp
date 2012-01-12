@@ -657,26 +657,17 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
         if (strcmp(self->d.stringdata, name) == 0)
             return self;
         if (self->d.extradata) {
-#ifdef Q_NO_DATA_RELOCATION
-            const QMetaObjectAccessor *e;
-            Q_ASSERT(priv(self->d.data)->revision >= 2);
-#else
             const QMetaObject **e;
             if (priv(self->d.data)->revision < 2) {
                 e = (const QMetaObject**)(self->d.extradata);
             } else
-#endif
             {
                 const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
                 e = extra->objects;
             }
             if (e) {
                 while (*e) {
-#ifdef Q_NO_DATA_RELOCATION
-                    if (const QMetaObject *m =QMetaObject_findMetaObject(&((*e)()), name))
-#else
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
-#endif
                         return m;
                     ++e;
                 }
