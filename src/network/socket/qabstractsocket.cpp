@@ -349,20 +349,29 @@
     \enum QAbstractSocket::SocketOption
     \since 4.6
 
-    This enum represents the options that can be set on a socket.
-    If desired, they can be set after having received the connected() signal from
-    the socket or after having received a new socket from a QTcpServer.
+    This enum represents the options that can be set on a socket.  If
+    desired, they can be set after having received the connected()
+    signal from the socket or after having received a new socket from
+    a QTcpServer.
 
-    \value LowDelayOption Try to optimize the socket for low latency. For a QTcpSocket
-    this would set the TCP_NODELAY option and disable Nagle's algorithm. Set this to 1
-    to enable.
-    \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE socket option
+    \value LowDelayOption Try to optimize the socket for low
+    latency. For a QTcpSocket this would set the TCP_NODELAY option
+    and disable Nagle's algorithm. Set this to 1 to enable.
 
-    \value MulticastTtlOption Set this to an integer value to set IP_MULTICAST_TTL (TTL for multicast datagrams) socket option.
+    \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE
+    socket option
 
-    \value MulticastLoopbackOption Set this to 1 to enable the IP_MULTICAST_LOOP (multicast loopback) socket option.
+    \value MulticastTtlOption Set this to an integer value to set
+    IP_MULTICAST_TTL (TTL for multicast datagrams) socket option.
 
-    \value TypeOfServiceOption This option is not supported on Windows. This maps to to the IP_TOS socket option. Possible values are:
+    \value MulticastLoopbackOption Set this to 1 to enable the
+    IP_MULTICAST_LOOP (multicast loopback) socket option.
+
+    \value TypeOfServiceOption This option is not supported on
+    Windows. This maps to to the IP_TOS socket option.
+
+    Possible values for the \e{TypeOfServiceOption} are:
+
     \table
     \header \o Value \o Description
     \row \o 224 \o Network control
