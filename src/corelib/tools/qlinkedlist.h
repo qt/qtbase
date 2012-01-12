@@ -95,8 +95,8 @@ public:
 
     inline int size() const { return d->size; }
     inline void detach()
-    { if (d->ref != 1) detach_helper(); }
-    inline bool isDetached() const { return d->ref == 1; }
+    { if (d->ref.isShared()) detach_helper(); }
+    inline bool isDetached() const { return !d->ref.isShared(); }
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QLinkedListData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QLinkedList<T> &other) const { return d == other.d; }
 

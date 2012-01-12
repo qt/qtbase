@@ -133,16 +133,16 @@ public:
 
     inline int size() const { return p.size(); }
 
-    inline void detach() { if (d->ref != 1) detach_helper(); }
+    inline void detach() { if (d->ref.isShared()) detach_helper(); }
 
     inline void detachShared()
     {
         // The "this->" qualification is needed for GCCE.
-        if (d->ref != 1 && this->d != &QListData::shared_null)
+        if (d->ref.isShared() && this->d != &QListData::shared_null)
             detach_helper();
     }
 
-    inline bool isDetached() const { return d->ref == 1; }
+    inline bool isDetached() const { return !d->ref.isShared(); }
     inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QListData::shared_null) d->sharable = sharable; }
     inline bool isSharedWith(const QList<T> &other) const { return d == other.d; }
 
@@ -479,7 +479,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::reserve(int alloc)
 {
     if (d->alloc < alloc) {
-        if (d->ref != 1)
+        if (d->ref.isShared())
             detach_helper(alloc);
         else
             p.realloc(alloc);
@@ -489,7 +489,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::reserve(int alloc)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
 {
-    if (d->ref != 1) {
+    if (d->ref.isShared()) {
         Node *n = detach_helper_grow(INT_MAX, 1);
         QT_TRY {
             node_construct(n, t);
@@ -523,7 +523,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
 template <typename T>
 inline void QList<T>::prepend(const T &t)
 {
-    if (d->ref != 1) {
+    if (d->ref.isShared()) {
         Node *n = detach_helper_grow(0, 1);
         QT_TRY {
             node_construct(n, t);
@@ -557,7 +557,7 @@ inline void QList<T>::prepend(const T &t)
 template <typename T>
 inline void QList<T>::insert(int i, const T &t)
 {
-    if (d->ref != 1) {
+    if (d->ref.isShared()) {
         Node *n = detach_helper_grow(i, 1);
         QT_TRY {
             node_construct(n, t);
@@ -803,7 +803,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
         if (isEmpty()) {
             *this = l;
         } else {
-            Node *n = (d->ref != 1)
+            Node *n = (d->ref.isShared())
                       ? detach_helper_grow(INT_MAX, l.size())
                       : reinterpret_cast<Node *>(p.append(l.p));
             QT_TRY {

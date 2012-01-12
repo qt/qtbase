@@ -1237,7 +1237,7 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (d->offset && d->ref == 1 && size < d->size) {
+    if (d->offset && !d->ref.isShared() && size < d->size) {
         d->size = size;
         return;
     }
@@ -1248,7 +1248,7 @@ void QString::resize(int size)
             QString::free(d);
         d = x;
     } else {
-        if (d->ref != 1 || size > int(d->alloc) ||
+        if (d->ref.isShared() || size > int(d->alloc) ||
             (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
             realloc(grow(size));
         if (int(d->alloc) >= size) {
@@ -1311,7 +1311,7 @@ void QString::resize(int size)
 // ### Qt 5: rename reallocData() to avoid confusion. 197625
 void QString::realloc(int alloc)
 {
-    if (d->ref != 1 || d->offset) {
+    if (d->ref.isShared() || d->offset) {
         Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
         x->ref.initializeOwned();
@@ -1541,7 +1541,7 @@ QString &QString::append(const QString &str)
         if (d == &shared_null.str) {
             operator=(str);
         } else {
-            if (d->ref != 1 || d->size + str.d->size > int(d->alloc))
+            if (d->ref.isShared() || d->size + str.d->size > int(d->alloc))
                 realloc(grow(d->size + str.d->size));
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
@@ -1561,7 +1561,7 @@ QString &QString::append(const QLatin1String &str)
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
         int len = qstrlen((char *)s);
-        if (d->ref != 1 || d->size + len > int(d->alloc))
+        if (d->ref.isShared() || d->size + len > int(d->alloc))
             realloc(grow(d->size + len));
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
@@ -1604,7 +1604,7 @@ QString &QString::append(const QLatin1String &str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref != 1 || d->size + 1 > int(d->alloc))
+    if (d->ref.isShared() || d->size + 1 > int(d->alloc))
         realloc(grow(d->size + 1));
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
@@ -7090,7 +7090,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 QString &QString::setRawData(const QChar *unicode, int size)
 {
-    if (d->ref != 1 || d->alloc) {
+    if (d->ref.isShared() || d->alloc) {
         *this = fromRawData(unicode, size);
     } else {
         if (unicode) {

@@ -429,9 +429,9 @@ inline const char *QByteArray::data() const
 inline const char *QByteArray::constData() const
 { return d->data(); }
 inline void QByteArray::detach()
-{ if (d->ref != 1 || d->offset) realloc(d->size); }
+{ if (d->ref.isShared() || d->offset) realloc(d->size); }
 inline bool QByteArray::isDetached() const
-{ return d->ref == 1; }
+{ return !d->ref.isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) : d(a.d)
 { d->ref.ref(); }
 
@@ -440,7 +440,7 @@ inline int QByteArray::capacity() const
 
 inline void QByteArray::reserve(int asize)
 {
-    if (d->ref != 1 || asize > int(d->alloc))
+    if (d->ref.isShared() || asize > int(d->alloc))
         realloc(asize);
 
     if (!d->capacityReserved) {
@@ -451,11 +451,12 @@ inline void QByteArray::reserve(int asize)
 
 inline void QByteArray::squeeze()
 {
-    if (d->ref > 1 || d->size < int(d->alloc))
+    if (d->ref.isShared() || d->size < int(d->alloc))
         realloc(d->size);
 
     if (d->capacityReserved) {
-        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
+        // cannot set unconditionally, since d could be shared_null or
+        // otherwise static.
         d->capacityReserved = false;
     }
 }

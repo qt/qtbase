@@ -339,7 +339,7 @@ public:
     inline QString &prepend(const QLatin1String &s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
-        if (d->ref != 1 || d->size + 1 > int(d->alloc))
+        if (d->ref.isShared() || d->size + 1 > int(d->alloc))
             realloc(grow(d->size + 1));
         d->data()[d->size++] = c.unicode();
         d->data()[d->size] = '\0';
@@ -706,9 +706,9 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref != 1 || d->offset) realloc(); }
+{ if (d->ref.isShared() || d->offset) realloc(); }
 inline bool QString::isDetached() const
-{ return d->ref == 1; }
+{ return !d->ref.isShared(); }
 inline QString &QString::operator=(const QLatin1String &s)
 {
     *this = fromLatin1(s.latin1());
@@ -871,7 +871,7 @@ inline QString::~QString() { if (!d->ref.deref()) free(d); }
 
 inline void QString::reserve(int asize)
 {
-    if (d->ref != 1 || asize > int(d->alloc))
+    if (d->ref.isShared() || asize > int(d->alloc))
         realloc(asize);
 
     if (!d->capacityReserved) {
@@ -882,11 +882,12 @@ inline void QString::reserve(int asize)
 
 inline void QString::squeeze()
 {
-    if (d->ref > 1 || d->size < int(d->alloc))
+    if (d->ref.isShared() || d->size < int(d->alloc))
         realloc();
 
     if (d->capacityReserved) {
-        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
+        // cannot set unconditionally, since d could be shared_null or
+        // otherwise static.
         d->capacityReserved = false;
     }
 }
