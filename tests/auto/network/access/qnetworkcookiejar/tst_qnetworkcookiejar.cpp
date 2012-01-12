@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QNetworkCookieJar>
+#include <QtNetwork/QNetworkCookie>
 #include "private/qtldurl_p.h"
 
 class tst_QNetworkCookieJar: public QObject

@@ -48,6 +48,7 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkrequest_p.h"
+#include "qnetworkcookie.h"
 #include "qnetworkcookie_p.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qelapsedtimer.h"

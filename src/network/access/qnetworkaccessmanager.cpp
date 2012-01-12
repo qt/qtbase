@@ -45,6 +45,7 @@
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "qnetworkcookie.h"
+#include "qnetworkcookiejar.h"
 #include "qabstractnetworkcache.h"
 
 #include "QtNetwork/qnetworksession.h"

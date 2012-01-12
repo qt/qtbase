@@ -42,6 +42,7 @@
 #include "qnetworkreplyimpl_p.h"
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkcookie.h"
+#include "qnetworkcookiejar.h"
 #include "qabstractnetworkcache.h"
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qdatetime.h"

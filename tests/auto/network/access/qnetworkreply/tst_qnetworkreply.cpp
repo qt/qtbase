@@ -63,6 +63,7 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkcookie.h>
+#include <QtNetwork/QNetworkCookieJar>
 #include <QtNetwork/QHttpPart>
 #include <QtNetwork/QHttpMultiPart>
 #include <QtNetwork/QNetworkProxyQuery>
