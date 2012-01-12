@@ -190,8 +190,6 @@ public:
     // incoming from user
     QNetworkAccessManager *manager;
     QNetworkAccessManagerPrivate *managerPrivate;
-    QNetworkRequest request;
-    QNetworkAccessManager::Operation operation; // FIXME already in replyprivate?
     QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
     bool synchronous;
 
