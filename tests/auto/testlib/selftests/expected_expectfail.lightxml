@@ -9,7 +9,7 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
 </Message>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="68">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="70">
     <Description><![CDATA[This should xfail]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">
@@ -21,42 +21,53 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[begin]]></Description>
 </Message>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="76">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="78">
     <Description><![CDATA[This should xfail]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="expectTwice">
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="85">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="87">
     <Description><![CDATA[Already expecting a fail]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="xfailWithQString">
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="95">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="97">
     <Description><![CDATA[A string]]></Description>
 </Incident>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="100">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="102">
     <Description><![CDATA[Bug 5 (The message)]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="xpass">
-<Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="106">
+<Incident type="xpass" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="108">
     <Description><![CDATA['true' returned FALSE. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="dataDrivenTest">
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="139">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="141">
     <DataTag><![CDATA[Abort]]></DataTag>
     <Description><![CDATA[This test should xfail]]></Description>
 </Incident>
-<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="139">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="141">
     <DataTag><![CDATA[Continue]]></DataTag>
     <Description><![CDATA[This test should xfail]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="expectOnWrongRow">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="expectOnAnyRow">
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="176">
+    <DataTag><![CDATA[first row]]></DataTag>
+    <Description><![CDATA[This test should xfail]]></Description>
+</Incident>
+<Incident type="xfail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp" line="176">
+    <DataTag><![CDATA[second row]]></DataTag>
+    <Description><![CDATA[This test should xfail]]></Description>
+</Incident>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">

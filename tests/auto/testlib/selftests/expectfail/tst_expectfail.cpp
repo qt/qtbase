@@ -59,6 +59,8 @@ private slots:
     void dataDrivenTest() const;
     void expectOnWrongRow_data() const;
     void expectOnWrongRow() const;
+    void expectOnAnyRow_data() const;
+    void expectOnAnyRow() const;
 };
 
 void tst_ExpectFail::expectAndContinue() const
@@ -156,6 +158,22 @@ void tst_ExpectFail::expectOnWrongRow() const
     // QEXPECT_FAIL for a row that is not the current row should be ignored.
     QEXPECT_FAIL("wrong row", "This xfail should be ignored", Abort);
     QVERIFY(true);
+}
+
+void tst_ExpectFail::expectOnAnyRow_data() const
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("first row") << 0;
+    QTest::newRow("second row") << 1;
+}
+
+void tst_ExpectFail::expectOnAnyRow() const
+{
+    // In a data-driven test, passing an empty first parameter to QEXPECT_FAIL
+    // should mean that the failure is expected for all data rows.
+    QEXPECT_FAIL("", "This test should xfail", Abort);
+    QVERIFY(false);
 }
 
 QTEST_MAIN(tst_ExpectFail)
