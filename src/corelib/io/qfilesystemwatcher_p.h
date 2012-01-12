@@ -68,7 +68,8 @@ class QFileSystemWatcherEngine : public QObject
     Q_OBJECT
 
 protected:
-    inline QFileSystemWatcherEngine()
+    inline QFileSystemWatcherEngine(QObject *parent)
+        : QObject(parent)
     {
     }
 
@@ -94,7 +95,7 @@ class QFileSystemWatcherPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFileSystemWatcher)
 
-    static QFileSystemWatcherEngine *createNativeEngine();
+    static QFileSystemWatcherEngine *createNativeEngine(QObject *parent);
 
 public:
     QFileSystemWatcherPrivate();

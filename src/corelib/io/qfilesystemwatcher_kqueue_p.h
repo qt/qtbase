@@ -72,7 +72,7 @@ class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
 public:
     ~QKqueueFileSystemWatcherEngine();
 
-    static QKqueueFileSystemWatcherEngine *create();
+    static QKqueueFileSystemWatcherEngine *create(QObject *parent);
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
@@ -81,7 +81,7 @@ private Q_SLOTS:
     void readFromKqueue();
 
 private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
+    QKqueueFileSystemWatcherEngine(int kqfd, QObject *parent);
 
     int kqfd;
 

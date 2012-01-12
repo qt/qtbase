@@ -44,8 +44,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine()
-    : timer(this)
+QPollingFileSystemWatcherEngine::QPollingFileSystemWatcherEngine(QObject *parent)
+    : QFileSystemWatcherEngine(parent),
+      timer(this)
 {
     connect(&timer, SIGNAL(timeout()), SLOT(timeout()));
 }

@@ -79,6 +79,9 @@ class QWindowsFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
 public:
+    inline QWindowsFileSystemWatcherEngine(QObject *parent)
+        : QFileSystemWatcherEngine(parent)
+    { }
     ~QWindowsFileSystemWatcherEngine();
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);

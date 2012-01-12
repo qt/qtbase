@@ -67,17 +67,18 @@ QT_BEGIN_NAMESPACE
 #  define DEBUG if(false)qDebug
 #endif
 
-QKqueueFileSystemWatcherEngine *QKqueueFileSystemWatcherEngine::create()
+QKqueueFileSystemWatcherEngine *QKqueueFileSystemWatcherEngine::create(QObject *parent)
 {
     int kqfd = kqueue();
     if (kqfd == -1)
         return 0;
-    return new QKqueueFileSystemWatcherEngine(kqfd);
+    return new QKqueueFileSystemWatcherEngine(kqfd, parent);
 }
 
-QKqueueFileSystemWatcherEngine::QKqueueFileSystemWatcherEngine(int kqfd)
-    : kqfd(kqfd)
-    , notifier(kqfd, QSocketNotifier::Read, this)
+QKqueueFileSystemWatcherEngine::QKqueueFileSystemWatcherEngine(int kqfd, QObject *parent)
+    : QFileSystemWatcherEngine(parent),
+      kqfd(kqfd),
+      notifier(kqfd, QSocketNotifier::Read, this)
 {
     connect(&notifier, SIGNAL(activated(int)), SLOT(readFromKqueue()));
 

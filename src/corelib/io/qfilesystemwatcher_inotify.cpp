@@ -210,7 +210,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
+QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject *parent)
 {
     register int fd = -1;
 #ifdef IN_CLOEXEC
@@ -221,12 +221,13 @@ QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
         if (fd == -1)
             return 0;
     }
-    return new QInotifyFileSystemWatcherEngine(fd);
+    return new QInotifyFileSystemWatcherEngine(fd, parent);
 }
 
-QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd)
-    : inotifyFd(fd)
-    , notifier(fd, QSocketNotifier::Read, this)
+QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd, QObject *parent)
+    : QFileSystemWatcherEngine(parent),
+      inotifyFd(fd),
+      notifier(fd, QSocketNotifier::Read, this)
 {
     fcntl(inotifyFd, F_SETFD, FD_CLOEXEC);
     connect(&notifier, SIGNAL(activated(int)), SLOT(readFromInotify()));

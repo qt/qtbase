@@ -63,16 +63,16 @@
 
 QT_BEGIN_NAMESPACE
 
-QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine()
+QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject *parent)
 {
 #if defined(Q_OS_WIN)
-    return new QWindowsFileSystemWatcherEngine;
+    return new QWindowsFileSystemWatcherEngine(parent);
 #elif defined(Q_OS_LINUX)
     // there is a chance that inotify may fail on Linux pre-2.6.13 (August
     // 2005), so we can't just new inotify directly.
-    return QInotifyFileSystemWatcherEngine::create();
+    return QInotifyFileSystemWatcherEngine::create(parent);
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
-    return QKqueueFileSystemWatcherEngine::create();
+    return QKqueueFileSystemWatcherEngine::create(parent);
 #else
     return 0;
 #endif
@@ -86,7 +86,7 @@ QFileSystemWatcherPrivate::QFileSystemWatcherPrivate()
 void QFileSystemWatcherPrivate::init()
 {
     Q_Q(QFileSystemWatcher);
-    native = createNativeEngine();
+    native = createNativeEngine(q);
     if (native) {
         QObject::connect(native,
                          SIGNAL(fileChanged(QString,bool)),
@@ -105,7 +105,7 @@ void QFileSystemWatcherPrivate::initPollerEngine()
         return;
 
     Q_Q(QFileSystemWatcher);
-    poller = new QPollingFileSystemWatcherEngine; // that was a mouthful
+    poller = new QPollingFileSystemWatcherEngine(q); // that was a mouthful
     QObject::connect(poller,
                      SIGNAL(fileChanged(QString,bool)),
                      q,
@@ -216,17 +216,7 @@ QFileSystemWatcher::QFileSystemWatcher(const QStringList &paths, QObject *parent
     Destroys the file system watcher.
 */
 QFileSystemWatcher::~QFileSystemWatcher()
-{
-    Q_D(QFileSystemWatcher);
-    if (d->native) {
-        delete d->native;
-        d->native = 0;
-    }
-    if (d->poller) {
-        delete d->poller;
-        d->poller = 0;
-    }
-}
+{ }
 
 /*!
     Adds \a path to the file system watcher if \a path exists. The

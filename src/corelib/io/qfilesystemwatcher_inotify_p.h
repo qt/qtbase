@@ -70,7 +70,7 @@ class QInotifyFileSystemWatcherEngine : public QFileSystemWatcherEngine
 public:
     ~QInotifyFileSystemWatcherEngine();
 
-    static QInotifyFileSystemWatcherEngine *create();
+    static QInotifyFileSystemWatcherEngine *create(QObject *parent);
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
@@ -79,7 +79,7 @@ private Q_SLOTS:
     void readFromInotify();
 
 private:
-    QInotifyFileSystemWatcherEngine(int fd);
+    QInotifyFileSystemWatcherEngine(int fd, QObject *parent);
     int inotifyFd;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;

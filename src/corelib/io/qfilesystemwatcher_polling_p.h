@@ -108,7 +108,7 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
     QHash<QString, FileInfo> files, directories;
 
 public:
-    QPollingFileSystemWatcherEngine();
+    QPollingFileSystemWatcherEngine(QObject *parent);
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
