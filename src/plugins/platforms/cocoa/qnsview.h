@@ -62,6 +62,8 @@ class QCocoaWindow;
 - (void)setImage:(QImage *)image;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
+- (void)windowDidBecomeKey;
+- (void)windowDidResignKey;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;

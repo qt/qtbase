@@ -138,6 +138,16 @@ static QTouchDevice *touchDevice = 0;
         QWindowSystemInterface::handleSynchronousGeometryChange(m_window, geo);
 }
 
+- (void)windowDidBecomeKey
+{
+    QWindowSystemInterface::handleWindowActivated(m_window);
+}
+
+- (void)windowDidResignKey
+{
+    QWindowSystemInterface::handleWindowActivated(0);
+}
+
 - (void) setImage:(QImage *)image
 {
     CGImageRelease(m_cgImage);

@@ -100,6 +100,16 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
 
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidBecomeKey)
+                                          name:NSWindowDidBecomeKeyNotification
+                                          object:m_nsWindow];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidResignKey)
+                                          name:NSWindowDidResignKeyNotification
+                                          object:m_nsWindow];
+
     // ### Accept touch events by default.
     // Beware that enabling touch events has a negative impact on the overall performance.
     // We probably need a QWindowSystemInterface API to enable/disable touch events.
