@@ -91,9 +91,6 @@
 #ifndef QT_NO_CODECS
 #  define QT_NO_CODECS
 #endif
-#ifndef QT_NO_TEXTCODECPLUGIN
-#  define QT_NO_TEXTCODECPLUGIN
-#endif
 #ifndef QT_NO_TRANSLATION
 #  define QT_NO_TRANSLATION
 #endif

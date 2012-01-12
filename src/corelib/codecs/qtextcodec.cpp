@@ -47,11 +47,6 @@
 
 #include "qlist.h"
 #include "qfile.h"
-#ifndef QT_NO_LIBRARY
-# include "qcoreapplication.h"
-# include "qtextcodecplugin.h"
-# include "private/qfactoryloader_p.h"
-#endif
 #include "qstringlist.h"
 
 #ifdef Q_OS_UNIX
@@ -100,11 +95,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_TEXTCODECPLUGIN)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QTextCodecFactoryInterface_iid, QLatin1String("/codecs")))
-#endif
-
 //Cache for QTextCodec::codecForName and codecForMib.
 typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
 Q_GLOBAL_STATIC(QTextCodecCache, qTextCodecCache)
@@ -145,39 +135,6 @@ static bool nameMatch(const QByteArray &name, const QByteArray &test)
     return (*h == '\0');
 }
 
-
-static QTextCodec *createForName(const QByteArray &name)
-{
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_TEXTCODECPLUGIN)
-    QFactoryLoader *l = loader();
-    QStringList keys = l->keys();
-    for (int i = 0; i < keys.size(); ++i) {
-        if (nameMatch(name, keys.at(i).toLatin1())) {
-            QString realName = keys.at(i);
-            if (QTextCodecFactoryInterface *factory
-                = qobject_cast<QTextCodecFactoryInterface*>(l->instance(realName))) {
-                return factory->create(realName);
-            }
-        }
-    }
-#else
-    Q_UNUSED(name);
-#endif
-    return 0;
-}
-
-static QTextCodec *createForMib(int mib)
-{
-#ifndef QT_NO_TEXTCODECPLUGIN
-    QString name = QLatin1String("MIB: ") + QString::number(mib);
-    if (QTextCodecFactoryInterface *factory
-        = qobject_cast<QTextCodecFactoryInterface*>(loader()->instance(name)))
-        return factory->create(name);
-#else
-    Q_UNUSED(mib);
-#endif
-    return 0;
-}
 
 static QList<QTextCodec*> *all = 0;
 #ifdef Q_DEBUG_TEXTCODEC
@@ -936,10 +893,6 @@ QTextCodec::ConverterState::~ConverterState()
          \o Converts a Unicode string to an 8-bit character string.
     \endtable
 
-    You may find it more convenient to make your codec class
-    available as a plugin; see \l{How to Create Qt Plugins} for
-    details.
-
     \sa QTextStream, QTextDecoder, QTextEncoder, {Codecs Example}
 */
 
@@ -1032,10 +985,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
             }
     }
 
-    codec = createForName(name);
-    if (codec && cache)
-        cache->insert(name, codec);
-    return codec;
+    return 0;
 }
 
 
@@ -1072,16 +1022,7 @@ QTextCodec* QTextCodec::codecForMib(int mib)
         }
     }
 
-    codec = createForMib(mib);
-
-    // Qt 3 used 1000 (mib for UCS2) as its identifier for the utf16 codec. Map
-    // this correctly for compatibility.
-    if (!codec && mib == 1000)
-        return codecForMib(1015);
-
-    if (codec && cache)
-        cache->insert(key, codec);
-    return codec;
+    return 0;
 }
 
 /*!
@@ -1114,18 +1055,6 @@ QList<QByteArray> QTextCodec::availableCodecs()
     locker.unlock();
 #endif
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_TEXTCODECPLUGIN)
-    QFactoryLoader *l = loader();
-    QStringList keys = l->keys();
-    for (int i = 0; i < keys.size(); ++i) {
-        if (!keys.at(i).startsWith(QLatin1String("MIB: "))) {
-            QByteArray name = keys.at(i).toLatin1();
-            if (!codecs.contains(name))
-                codecs += name;
-        }
-    }
-#endif
-
     return codecs;
 }
 
@@ -1152,18 +1081,6 @@ QList<int> QTextCodec::availableMibs()
 
 #ifndef QT_NO_THREAD
     locker.unlock();
-#endif
-
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_TEXTCODECPLUGIN)
-    QFactoryLoader *l = loader();
-    QStringList keys = l->keys();
-    for (int i = 0; i < keys.size(); ++i) {
-        if (keys.at(i).startsWith(QLatin1String("MIB: "))) {
-            int mib = keys.at(i).mid(5).toInt();
-            if (!codecs.contains(mib))
-                codecs += mib;
-        }
-    }
 #endif
 
     return codecs;

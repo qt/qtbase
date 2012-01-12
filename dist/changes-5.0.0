@@ -171,6 +171,8 @@ information about a particular change.
 - qmake
   * several functions and built-in variables were modified to return normalized paths.
 
+- QTextCodecPlugin has been removed since it is no longer used. All text codecs
+  are now built into QtCore.
 
 ****************************************************************************
 *                           General                                        *
@@ -338,7 +340,7 @@ Qt for Windows CE
 ****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
-
+- The text codecs that were previously plugins are now built into QtCore.
 
 ****************************************************************************
 *                   Important Behavior Changes                             *

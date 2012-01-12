@@ -633,11 +633,6 @@
 #define QT_NO_TABDIALOG
 #endif
 
-// QTextCodecPlugin
-#if !defined(QT_NO_TEXTCODECPLUGIN) && (defined(QT_NO_TEXTCODEC) || defined(QT_NO_LIBRARY))
-#define QT_NO_TEXTCODECPLUGIN
-#endif
-
 // QColorDialog
 #if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_SPINBOX))
 #define QT_NO_COLORDIALOG
