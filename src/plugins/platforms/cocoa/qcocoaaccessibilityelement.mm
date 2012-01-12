@@ -195,11 +195,12 @@ static QAccessibleInterface *acast(void *ptr)
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
     QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
-    if (actionInterface) {
-        QString qtAction = QCocoaAccessible::translateAction(action);
+    QString qtAction = QCocoaAccessible::translateAction(action);
+
+    // Return a description from the action interface if this action is not known to the OS.
+    if (qtAction.isEmpty()) {
         QString description = actionInterface->localizedActionDescription(qtAction);
-        if (!description.isEmpty())
-            return qt_mac_QStringToNSString(description);
+        return qt_mac_QStringToNSString(description);
     }
 
     return NSAccessibilityActionDescription(action);
