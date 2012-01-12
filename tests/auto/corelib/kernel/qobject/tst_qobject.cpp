@@ -134,6 +134,7 @@ private slots:
     void returnValue();
     void returnValue2_data();
     void returnValue2();
+    void connectVirtualSlots();
 };
 
 class SenderObject : public QObject
@@ -5150,6 +5151,52 @@ void tst_QObject::returnValue2()
     }
 }
 
+class VirtualSlotsObjectBase : public QObject {
+    Q_OBJECT
+public slots:
+    virtual void slot1() {
+        base_counter1++;
+    }
+public:
+    VirtualSlotsObjectBase() : base_counter1(0) {}
+    int base_counter1;
+signals:
+    void signal1();
+};
+
+class VirtualSlotsObject : public VirtualSlotsObjectBase {
+    Q_OBJECT
+public slots:
+    virtual void slot1() {
+        derived_counter1++;
+    }
+public:
+    VirtualSlotsObject() : derived_counter1(0) {}
+    int derived_counter1;
+};
+
+void tst_QObject::connectVirtualSlots()
+{
+    VirtualSlotsObject obj;
+    QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+    QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+
+    emit obj.signal1();
+    QCOMPARE(obj.base_counter1, 0);
+    QCOMPARE(obj.derived_counter1, 1);
+
+    QVERIFY(QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1));
+    QVERIFY(!QObject::disconnect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1));
+
+    emit obj.signal1();
+    QCOMPARE(obj.base_counter1, 0);
+    QCOMPARE(obj.derived_counter1, 1);
+
+    /* the C++ standard say the comparison between pointer to virtual member function is unspecified
+    QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
+    QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObject::slot1, Qt::UniqueConnection));
+    */
+}
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"
