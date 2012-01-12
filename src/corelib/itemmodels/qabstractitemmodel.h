@@ -308,9 +308,9 @@ protected:
     QModelIndexList persistentIndexList() const;
 
 #if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED void setRoleNames(const QHash<int,QByteArray> &roleNames)
+    QT_DEPRECATED void setRoleNames(const QHash<int,QByteArray> &theRoleNames)
     {
-        doSetRoleNames(roleNames);
+        doSetRoleNames(theRoleNames);
     }
 #endif
 

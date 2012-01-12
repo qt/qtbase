@@ -70,7 +70,7 @@ public:
     void setInterval(int msec);
     int interval() const { return inter; }
 
-    void setTimerType(Qt::TimerType type) { this->type = type; }
+    void setTimerType(Qt::TimerType atype) { this->type = atype; }
     Qt::TimerType timerType() const { return Qt::TimerType(type); }
 
     inline void setSingleShot(bool singleShot);
