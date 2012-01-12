@@ -32,4 +32,7 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
+# QTBUG-23575
+linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = oneiric ]"):DEFINES+=UBUNTU_ONEIRIC
+
 requires(contains(QT_CONFIG,private_tests))

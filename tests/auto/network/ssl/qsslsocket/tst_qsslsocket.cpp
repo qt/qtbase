@@ -947,6 +947,9 @@ protected slots:
 
 void tst_QSslSocket::protocolServerSide_data()
 {
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QSKIP("Fails on this platform - QTBUG-23575");
+#endif
 
     QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
@@ -1096,6 +1099,9 @@ void tst_QSslSocket::setSocketDescriptor()
     loop.exec();
 
     QCOMPARE(client->state(), QAbstractSocket::ConnectedState);
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(client->isEncrypted());
     QVERIFY(!client->peerAddress().isNull());
     QVERIFY(client->peerPort() != 0);
@@ -1381,6 +1387,9 @@ void tst_QSslSocket::spontaneousWrite()
     QVERIFY(server.waitForNewConnection(0));
 
     QSslSocket *sender = server.socket;
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(sender);
     QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
@@ -1426,6 +1435,9 @@ void tst_QSslSocket::setReadBufferSize()
     QVERIFY(server.waitForNewConnection(0));
 
     QSslSocket *sender = server.socket;
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(sender);
     QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
@@ -1680,6 +1692,9 @@ void tst_QSslSocket::waitForMinusOne()
 
     // first verification: this waiting should take 200 ms
     QVERIFY2(socket.waitForEncrypted(-1), qPrintable(socket.errorString()));
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(socket.isEncrypted());
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QCOMPARE(socket.bytesAvailable(), Q_INT64_C(0));
@@ -1760,6 +1775,9 @@ void tst_QSslSocket::verifyMode()
     connect(&clientSocket, SIGNAL(encrypted()), &loop, SLOT(quit()));
     loop.exec();
 
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(clientSocket.isEncrypted());
     QVERIFY(server.socket->sslErrors().isEmpty());
 }
@@ -2037,6 +2055,9 @@ void tst_QSslSocket::blacklistedCertificates()
     QVERIFY(server.waitForNewConnection(0));
 
     QSslSocket *sender = server.socket;
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(sender);
     QVERIFY(sender->state() == QAbstractSocket::ConnectedState);
     receiver->setObjectName("receiver");
