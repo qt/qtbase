@@ -297,7 +297,6 @@ QWindowsFileSystemWatcherEngineThread::QWindowsFileSystemWatcherEngineThread()
         handles.reserve(MAXIMUM_WAIT_OBJECTS);
         handles.append(h);
     }
-    moveToThread(this);
 }
 
 
