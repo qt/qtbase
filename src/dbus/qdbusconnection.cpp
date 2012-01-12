@@ -123,21 +123,6 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 }
 
 /*!
-    \fn QDBusConnection &QDBusConnection::sessionBus()
-
-    Returns a QDBusConnection object opened with the session bus. The object
-    reference returned by this function is valid until the application terminates,
-    at which point the connection will be closed and the object deleted.
-*/
-/*!
-    \fn QDBusConnection &QDBusConnection::systemBus()
-
-    Returns a QDBusConnection object opened with the system bus. The object reference returned
-    by this function is valid until the QCoreApplication's destructor is run, when the
-    connection will be closed and the object, deleted.
-*/
-
-/*!
     \class QDBusConnection
     \inmodule QtDBus
     \since 4.2
@@ -1123,11 +1108,25 @@ Q_GLOBAL_STATIC_WITH_ARGS(QDBusDefaultConnection, _q_sessionBus,
 Q_GLOBAL_STATIC_WITH_ARGS(QDBusDefaultConnection, _q_systemBus,
                           (QDBusConnection::SystemBus, _q_systemBusName))
 
+/*!
+    \fn QDBusConnection QDBusConnection::sessionBus()
+
+    Returns a QDBusConnection object opened with the session bus. The object
+    reference returned by this function is valid until the application terminates,
+    at which point the connection will be closed and the object deleted.
+*/
 QDBusConnection QDBusConnection::sessionBus()
 {
     return *_q_sessionBus();
 }
 
+/*!
+    \fn QDBusConnection QDBusConnection::systemBus()
+
+    Returns a QDBusConnection object opened with the system bus. The object reference returned
+    by this function is valid until the QCoreApplication's destructor is run, when the
+    connection will be closed and the object, deleted.
+*/
 QDBusConnection QDBusConnection::systemBus()
 {
     return *_q_systemBus();
