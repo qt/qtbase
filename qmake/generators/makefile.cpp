@@ -1300,15 +1300,15 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                        cmd = "-$(INSTALL_PROGRAM)";
                     else
                        cmd = "-$(INSTALL_FILE)";
-                    cmd += " " + escapeFilePath(wild) + " " + dst_file + "\n";
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)) + "\n";
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))) + "\n";
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                     continue;
                 }
                 QString local_dirstr = Option::fixPathToLocalOS(dirstr, true);
@@ -1332,11 +1332,11 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     } else {
                         cmd = QString(fi.isExecutable() ? "-$(INSTALL_PROGRAM)" : "-$(INSTALL_FILE)");
                     }
-                    cmd += " " + wild + " " + dst_file + "\n";
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                 }
                 for(int x = 0; x < files.count(); x++) {
                     QString file = files[x];
@@ -1344,7 +1344,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         continue;
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
                     if(!target.isEmpty())
                         target += "\t";
@@ -1355,12 +1355,12 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         dst_file += fi.fileName();
                     }
                     QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(INSTALL_FILE)") + " " +
-                                  dirstr + file + " " + dst_file + "\n";
+                                  escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false)) +
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))) +
                                   "\n";
                 }
             }
