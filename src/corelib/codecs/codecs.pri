@@ -9,13 +9,13 @@ HEADERS += \
     codecs/qtsciicodec_p.h \
     codecs/qutfcodec_p.h \
     codecs/qtextcodecplugin.h \
-    ../plugins/codecs/cn/qgb18030codec.h \
-    ../plugins/codecs/jp/qeucjpcodec.h \
-    ../plugins/codecs/jp/qjiscodec.h \
-    ../plugins/codecs/jp/qsjiscodec.h \
-    ../plugins/codecs/kr/qeuckrcodec.h \
-    ../plugins/codecs/tw/qbig5codec.h \
-    ../plugins/codecs/jp/qfontjpcodec.h
+    codecs/qgb18030codec_p.h \
+    codecs/qeucjpcodec_p.h \
+    codecs/qjiscodec_p.h \
+    codecs/qsjiscodec_p.h \
+    codecs/qeuckrcodec_p.h \
+    codecs/qbig5codec_p.h \
+    codecs/qfontjpcodec_p.h
 
 SOURCES += \
     codecs/qisciicodec.cpp \
@@ -25,14 +25,14 @@ SOURCES += \
     codecs/qtsciicodec.cpp \
     codecs/qutfcodec.cpp \
     codecs/qtextcodecplugin.cpp \
-    ../plugins/codecs/cn/qgb18030codec.cpp \
-    ../plugins/codecs/jp/qjpunicode.cpp \
-    ../plugins/codecs/jp/qeucjpcodec.cpp \
-    ../plugins/codecs/jp/qjiscodec.cpp \
-    ../plugins/codecs/jp/qsjiscodec.cpp \
-    ../plugins/codecs/kr/qeuckrcodec.cpp \
-    ../plugins/codecs/tw/qbig5codec.cpp \
-    ../plugins/codecs/jp/qfontjpcodec.cpp
+    codecs/qgb18030codec.cpp \
+    codecs/qjpunicode.cpp \
+    codecs/qeucjpcodec.cpp \
+    codecs/qjiscodec.cpp \
+    codecs/qsjiscodec.cpp \
+    codecs/qeuckrcodec.cpp \
+    codecs/qbig5codec.cpp \
+    codecs/qfontjpcodec.cpp
 
 unix {
 	SOURCES += codecs/qfontlaocodec.cpp

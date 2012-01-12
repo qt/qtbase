@@ -66,16 +66,16 @@
 #  include "qisciicodec_p.h"
 #if !defined(Q_OS_INTEGRITY)
 #  if !defined(QT_BOOTSTRAPPED)
-#    include "../../plugins/codecs/cn/qgb18030codec.h"
-#    include "../../plugins/codecs/jp/qeucjpcodec.h"
-#    include "../../plugins/codecs/jp/qjiscodec.h"
-#    include "../../plugins/codecs/jp/qsjiscodec.h"
-#    include "../../plugins/codecs/kr/qeuckrcodec.h"
-#    include "../../plugins/codecs/tw/qbig5codec.h"
+#    include "qgb18030codec_p.h"
+#    include "qeucjpcodec_p.h"
+#    include "qjiscodec_p.h"
+#    include "qsjiscodec_p.h"
+#    include "qeuckrcodec_p.h"
+#    include "qbig5codec_p.h"
 #  endif // !QT_BOOTSTRAPPED
 #  if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
 #    include "qfontlaocodec_p.h"
-#    include "../../plugins/codecs/jp/qfontjpcodec.h"
+#    include "qfontjpcodec_p.h"
 #  endif
 #endif // !Q_OS_INTEGRITY
 #endif // QT_NO_CODECS
