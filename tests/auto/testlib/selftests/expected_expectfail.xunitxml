@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="9" failures="2" tests="8" name="tst_ExpectFail">
+<testsuite errors="9" failures="2" tests="9" name="tst_ExpectFail">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -28,6 +28,7 @@
     <!-- tag="Abort" message="This test should xfail" type="info" -->
     <!-- tag="Continue" message="This test should xfail" type="info" -->
   </testcase>
+  <testcase result="pass" name="expectOnWrongRow"/>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
 <![CDATA[begin]]>

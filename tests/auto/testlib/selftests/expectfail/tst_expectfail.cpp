@@ -57,6 +57,8 @@ private slots:
     void xpass() const;
     void dataDrivenTest_data() const;
     void dataDrivenTest() const;
+    void expectOnWrongRow_data() const;
+    void expectOnWrongRow() const;
 };
 
 void tst_ExpectFail::expectAndContinue() const
@@ -140,6 +142,20 @@ void tst_ExpectFail::dataDrivenTest() const
     // fail and the failure mode was Continue.
     if (!shouldPass)
         QCOMPARE(failMode, QTest::Continue);
+}
+
+void tst_ExpectFail::expectOnWrongRow_data() const
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("right row") << 0;
+}
+
+void tst_ExpectFail::expectOnWrongRow() const
+{
+    // QEXPECT_FAIL for a row that is not the current row should be ignored.
+    QEXPECT_FAIL("wrong row", "This xfail should be ignored", Abort);
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_ExpectFail)
