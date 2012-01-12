@@ -53,10 +53,13 @@
 #include <QtTest/qtestspontaneevent.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
-#include <QtWidgets/qapplication.h>
 #include <QtGui/qevent.h>
-#include <QtWidgets/qwidget.h>
 #include <QtGui/qwindowsysteminterface_qpa.h>
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qwidget.h>
+#endif
 
 QT_BEGIN_HEADER
 

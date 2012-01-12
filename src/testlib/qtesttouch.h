@@ -54,7 +54,9 @@
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
+#ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
+#endif
 
 QT_BEGIN_HEADER
 
