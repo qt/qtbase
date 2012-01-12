@@ -226,21 +226,14 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
     handleTouchEvent(w, time, device, points, mods);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
-                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
+QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type)
 {
-    if (!points.size()) // Touch events must have at least one point
-        return;
-
-    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
-        return;
-
     QList<QTouchEvent::TouchPoint> touchPoints;
     Qt::TouchPointStates states;
     QTouchEvent::TouchPoint p;
 
-    QList<struct TouchPoint>::const_iterator point = points.constBegin();
-    QList<struct TouchPoint>::const_iterator end = points.constEnd();
+    QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
+    QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
         p.setId(point->id);
         p.setPressure(point->pressure);
@@ -264,11 +257,28 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTo
     }
 
     // Determine the event type based on the combined point states.
-    QEvent::Type type = QEvent::TouchUpdate;
-    if (states == Qt::TouchPointPressed)
-        type = QEvent::TouchBegin;
-    else if (states == Qt::TouchPointReleased)
-        type = QEvent::TouchEnd;
+    if (type) {
+        *type = QEvent::TouchUpdate;
+        if (states == Qt::TouchPointPressed)
+            *type = QEvent::TouchBegin;
+        else if (states == Qt::TouchPointReleased)
+            *type = QEvent::TouchEnd;
+    }
+
+    return touchPoints;
+}
+
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
+{
+    if (!points.size()) // Touch events must have at least one point
+        return;
+
+    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
+        return;
+
+    QEvent::Type type;
+    QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
 
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);

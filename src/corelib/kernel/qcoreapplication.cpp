@@ -300,7 +300,7 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 
 QCoreApplication *QCoreApplication::self = 0;
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
-uint QCoreApplicationPrivate::attribs;
+uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
 #ifdef Q_OS_UNIX
 Qt::HANDLE qt_application_thread_id = 0;

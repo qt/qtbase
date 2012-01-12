@@ -3323,7 +3323,7 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     \section1 Event Delivery and Propagation
 
-    By default, QWidget::event() translates the first non-primary touch point in a QTouchEvent into
+    By default, QGuiApplication translates the first touch point in a QTouchEvent into
     a QMouseEvent. This makes it possible to enable touch events on existing widgets that do not
     normally handle QTouchEvent. See below for information on some special considerations needed
     when doing this.
@@ -3361,17 +3361,12 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     This makes it possible for sibling widgets to handle touch events independently while making
     sure that the sequence of QTouchEvents is always correct.
 
-    \section1 Mouse Events and the Primary Touch Point
+    \section1 Mouse Events and Touch Event synthesizing
 
-    QTouchEvent delivery is independent from that of QMouseEvent. On some windowing systems, mouse
-    events are also sent for the \l{QTouchEvent::TouchPoint::isPrimary()}{primary touch point}.
-    This means it is possible for your widget to receive both QTouchEvent and QMouseEvent for the
-    same user interaction point. You can use the QTouchEvent::TouchPoint::isPrimary() function to
-    identify the primary touch point.
-
-    Note that on some systems, it is possible to receive touch events without a primary touch
-    point. All this means is that there will be no mouse event generated for the touch points in
-    the QTouchEvent.
+    QTouchEvent delivery is independent from that of QMouseEvent. The application flags
+    Qt::AA_SynthesizeTouchForUnhandledMouseEvents and Qt::AA_SynthesizeMouseForUnhandledTouchEvents
+    can be used to enable or disable automatic synthesizing of touch events to mouse events and
+    mouse events to touch events.
 
     \section1 Caveats
 
@@ -3590,15 +3585,6 @@ int QTouchEvent::TouchPoint::id() const
 Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 {
     return Qt::TouchPointState(int(d->state));
-}
-
-/*!
-    Returns true if this touch point is the primary touch point. The primary touch point is the
-    point for which the windowing system generates mouse events.
-*/
-bool QTouchEvent::TouchPoint::isPrimary() const
-{
-    return (d->flags & Primary) != 0;
 }
 
 /*!

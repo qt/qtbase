@@ -113,6 +113,7 @@ static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
+QTouchDevice *QGuiApplicationPrivate::m_fakeTouchDevice = 0;
 
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
@@ -689,7 +690,38 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 cursors.at(i).data()->pointerEvent(ev);
 #endif
         QGuiApplication::sendSpontaneousEvent(window, &ev);
-        return;
+        if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
+            if (!m_fakeTouchDevice) {
+                m_fakeTouchDevice = new QTouchDevice;
+                QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
+            }
+            QList<QWindowSystemInterface::TouchPoint> points;
+            QWindowSystemInterface::TouchPoint point;
+            point.id = 1;
+            point.area = QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4);
+
+            // only translate left button related events to
+            // avoid strange touch event sequences when several
+            // buttons are pressed
+            if (type == QEvent::MouseButtonPress && button == Qt::LeftButton) {
+                point.state = Qt::TouchPointPressed;
+            } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
+                point.state = Qt::TouchPointReleased;
+            } else if (type == QEvent::MouseMove && (buttons & Qt::LeftButton)) {
+                point.state = Qt::TouchPointMoved;
+            } else {
+                return;
+            }
+
+            points << point;
+
+            QEvent::Type type;
+            QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+
+            QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
+            fake.synthetic = true;
+            processTouchEvent(&fake);
+        }
     }
 }
 
@@ -999,6 +1031,18 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+        if (!e->synthetic && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
+            // exclude touchpads as those generate their own mouse events
+            if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
+                Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
+
+                const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().first();
+
+                QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp, touchPoint.pos(), touchPoint.screenPos(), b, e->modifiers);
+                fake.synthetic = true;
+                processMouseEvent(&fake);
+            }
+        }
     }
 
     // Remove released points from the hash table only after the event is

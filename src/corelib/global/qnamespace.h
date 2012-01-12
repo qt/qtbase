@@ -481,6 +481,8 @@ public:
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
         AA_X11InitThreads = 10,
+        AA_SynthesizeTouchForUnhandledMouseEvents = 11,
+        AA_SynthesizeMouseForUnhandledTouchEvents = 12,
 
         // Add new attributes before this line
         AA_AttributeCount

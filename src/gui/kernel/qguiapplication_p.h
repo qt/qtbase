@@ -205,6 +205,7 @@ private:
     void init();
 
     static QGuiApplicationPrivate *self;
+    static QTouchDevice *m_fakeTouchDevice;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);

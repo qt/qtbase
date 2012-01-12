@@ -167,6 +167,15 @@
            construction in order to make Xlib calls thread-safe. This
            attribute must be set before QApplication is constructed.
 
+    \value AA_SynthesizeTouchForUnhandledMouseEvents All mouse events
+           that are not accepted by the application will be translated
+           to touch events instead.
+
+    \value AA_SynthesizeMouseForUnhandledTouchEvents All touch events
+           that are not accepted by the application will be translated
+           to left button mouse events instead. This attribute is enabled
+           by default.
+
     \omitvalue AA_AttributeCount
 */
 

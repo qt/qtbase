@@ -690,8 +690,7 @@ public:
     {
     public:
         enum InfoFlag {
-            Primary = 0x0001,
-            Pen = 0x0002
+            Pen  = 0x0001
         };
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 
@@ -702,7 +701,6 @@ public:
         int id() const;
 
         Qt::TouchPointState state() const;
-        bool isPrimary() const;
 
         QPointF pos() const;
         QPointF startPos() const;

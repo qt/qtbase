@@ -72,8 +72,9 @@ public:
     class WindowSystemEvent {
     public:
         explicit WindowSystemEvent(EventType t)
-            : type(t) { }
+            : type(t), synthetic(false) { }
         EventType type;
+        bool synthetic;
     };
 
     class CloseEvent : public WindowSystemEvent {
@@ -261,6 +262,8 @@ public:
     static void queueWindowSystemEvent(WindowSystemEvent *ev);
 
     static QTime eventTime;
+
+    static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };
 
 QT_END_HEADER

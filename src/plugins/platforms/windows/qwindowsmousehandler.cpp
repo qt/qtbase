@@ -240,8 +240,6 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         QTouchPoint touchPoint;
         touchPoint.pressure = 1.0;
-        if ((winTouchInput.dwFlags & TOUCHEVENTF_PRIMARY) != 0)
-            touchPoint.flags |= QTouchEvent::TouchPoint::Primary;
         touchPoint.id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
         if (touchPoint.id == -1) {
             touchPoint.id = m_touchInputIDToTouchPointID.size();

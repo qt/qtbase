@@ -788,78 +788,83 @@ bool QWindow::close()
     return true;
 }
 
-void QWindow::exposeEvent(QExposeEvent *)
+void QWindow::exposeEvent(QExposeEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::moveEvent(QMoveEvent *)
+void QWindow::moveEvent(QMoveEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::resizeEvent(QResizeEvent *)
+void QWindow::resizeEvent(QResizeEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::showEvent(QShowEvent *)
+void QWindow::showEvent(QShowEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::hideEvent(QHideEvent *)
+void QWindow::hideEvent(QHideEvent *ev)
 {
+    ev->ignore();
 }
 
-bool QWindow::event(QEvent *event)
+bool QWindow::event(QEvent *ev)
 {
-    switch (event->type()) {
+    switch (ev->type()) {
     case QEvent::MouseMove:
-        mouseMoveEvent(static_cast<QMouseEvent*>(event));
+        mouseMoveEvent(static_cast<QMouseEvent*>(ev));
         break;
 
     case QEvent::MouseButtonPress:
-        mousePressEvent(static_cast<QMouseEvent*>(event));
+        mousePressEvent(static_cast<QMouseEvent*>(ev));
         break;
 
     case QEvent::MouseButtonRelease:
-        mouseReleaseEvent(static_cast<QMouseEvent*>(event));
+        mouseReleaseEvent(static_cast<QMouseEvent*>(ev));
         break;
 
     case QEvent::MouseButtonDblClick:
-        mouseDoubleClickEvent(static_cast<QMouseEvent*>(event));
+        mouseDoubleClickEvent(static_cast<QMouseEvent*>(ev));
         break;
 
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
-        touchEvent(static_cast<QTouchEvent *>(event));
+        touchEvent(static_cast<QTouchEvent *>(ev));
         break;
 
     case QEvent::Move:
-        moveEvent(static_cast<QMoveEvent*>(event));
+        moveEvent(static_cast<QMoveEvent*>(ev));
         break;
 
     case QEvent::Resize:
-        resizeEvent(static_cast<QResizeEvent*>(event));
+        resizeEvent(static_cast<QResizeEvent*>(ev));
         break;
 
     case QEvent::KeyPress:
-        keyPressEvent(static_cast<QKeyEvent *>(event));
+        keyPressEvent(static_cast<QKeyEvent *>(ev));
         break;
 
     case QEvent::KeyRelease:
-        keyReleaseEvent(static_cast<QKeyEvent *>(event));
+        keyReleaseEvent(static_cast<QKeyEvent *>(ev));
         break;
 
     case QEvent::FocusIn:
-        focusInEvent(static_cast<QFocusEvent *>(event));
+        focusInEvent(static_cast<QFocusEvent *>(ev));
         break;
 
     case QEvent::FocusOut:
-        focusOutEvent(static_cast<QFocusEvent *>(event));
+        focusOutEvent(static_cast<QFocusEvent *>(ev));
         break;
 
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
-        wheelEvent(static_cast<QWheelEvent*>(event));
+        wheelEvent(static_cast<QWheelEvent*>(ev));
         break;
 #endif
 
@@ -872,65 +877,74 @@ bool QWindow::event(QEvent *event)
         break; }
 
     case QEvent::Expose:
-        exposeEvent(static_cast<QExposeEvent *>(event));
+        exposeEvent(static_cast<QExposeEvent *>(ev));
         break;
 
     case QEvent::Show:
-        showEvent(static_cast<QShowEvent *>(event));
+        showEvent(static_cast<QShowEvent *>(ev));
         break;
 
     case QEvent::Hide:
-        hideEvent(static_cast<QHideEvent *>(event));
+        hideEvent(static_cast<QHideEvent *>(ev));
         break;
 
     default:
-        return QObject::event(event);
+        return QObject::event(ev);
     }
     return true;
 }
 
-void QWindow::keyPressEvent(QKeyEvent *)
+void QWindow::keyPressEvent(QKeyEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::keyReleaseEvent(QKeyEvent *)
+void QWindow::keyReleaseEvent(QKeyEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::focusInEvent(QFocusEvent *)
+void QWindow::focusInEvent(QFocusEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::focusOutEvent(QFocusEvent *)
+void QWindow::focusOutEvent(QFocusEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::mousePressEvent(QMouseEvent *)
+void QWindow::mousePressEvent(QMouseEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::mouseReleaseEvent(QMouseEvent *)
+void QWindow::mouseReleaseEvent(QMouseEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::mouseDoubleClickEvent(QMouseEvent *)
+void QWindow::mouseDoubleClickEvent(QMouseEvent *ev)
 {
+    ev->ignore();
 }
 
-void QWindow::mouseMoveEvent(QMouseEvent *)
+void QWindow::mouseMoveEvent(QMouseEvent *ev)
 {
+    ev->ignore();
 }
 
 #ifndef QT_NO_WHEELEVENT
-void QWindow::wheelEvent(QWheelEvent *)
+void QWindow::wheelEvent(QWheelEvent *ev)
 {
+    ev->ignore();
 }
 #endif //QT_NO_WHEELEVENT
 
-void QWindow::touchEvent(QTouchEvent *)
+void QWindow::touchEvent(QTouchEvent *ev)
 {
+    ev->ignore();
 }
-
 
 /*!
     \fn QPoint QWindow::mapToGlobal(const QPoint &pos) const
