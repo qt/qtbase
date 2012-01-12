@@ -94,7 +94,8 @@ static int nullErrorHandler(Display *, XErrorEvent *)
 #endif
 
 QXcbConnection::QXcbConnection(const char *displayName)
-    : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    : m_connection(0)
+    , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
 #ifdef XCB_USE_XINPUT2_MAEMO
     , m_xinputData(0)
 #endif
@@ -110,24 +111,26 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
-    m_primaryScreen = DefaultScreen(dpy);
-    m_connection = XGetXCBConnection(dpy);
-    XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
-    XSetErrorHandler(nullErrorHandler);
-    m_xlib_display = dpy;
+    if (dpy) {
+        m_primaryScreen = DefaultScreen(dpy);
+        m_connection = XGetXCBConnection(dpy);
+        XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+        XSetErrorHandler(nullErrorHandler);
+        m_xlib_display = dpy;
 #ifdef XCB_USE_EGL
-    EGLDisplay eglDisplay = eglGetDisplay(dpy);
-    m_egl_display = eglDisplay;
-    EGLint major, minor;
-    eglBindAPI(EGL_OPENGL_ES_API);
-    m_has_egl = eglInitialize(eglDisplay,&major,&minor);
+        EGLDisplay eglDisplay = eglGetDisplay(dpy);
+        m_egl_display = eglDisplay;
+        EGLint major, minor;
+        eglBindAPI(EGL_OPENGL_ES_API);
+        m_has_egl = eglInitialize(eglDisplay,&major,&minor);
 #endif //XCB_USE_EGL
+    }
 #else
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
 
-    if (m_connection)
-        qDebug("Successfully connected to display %s", m_displayName.constData());
+    if (!m_connection)
+        qFatal("Could not connect to display %s", m_displayName.constData());
 
     m_reader = new QXcbEventReader(this);
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
