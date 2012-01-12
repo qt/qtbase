@@ -400,11 +400,7 @@ void tst_QProcess::echoTest()
     process = new QProcess;
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
     QVERIFY(process->waitForStarted(5000));
 
     process->write(input);
@@ -456,11 +452,7 @@ void tst_QProcess::echoTest2()
     process = new QProcess;
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho2/testProcessEcho2.app");
-#else
     process->start("testProcessEcho2/testProcessEcho2");
-#endif
     QVERIFY(process->waitForStarted(5000));
     QVERIFY(!process->waitForReadyRead(250));
     QCOMPARE(process->error(), QProcess::Timedout);
@@ -508,11 +500,7 @@ void tst_QProcess::echoTest_performance()
 #endif
 
     QProcess process;
-#ifdef Q_OS_MAC
-    process.start("testProcessLoopback/testProcessLoopback.app");
-#else
     process.start("testProcessLoopback/testProcessLoopback");
-#endif
 
     QByteArray array;
     array.resize(1024 * 1024);
@@ -663,11 +651,7 @@ void tst_QProcess::loopBackTest()
 #endif
 
     process = new QProcess;
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
     QVERIFY(process->waitForStarted(5000));
 
     for (int i = 0; i < 100; ++i) {
@@ -693,11 +677,7 @@ void tst_QProcess::readTimeoutAndThenCrash()
 #endif
 
     process = new QProcess;
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
     if (process->state() != QProcess::Starting)
         QCOMPARE(process->state(), QProcess::Running);
 
@@ -727,11 +707,7 @@ void tst_QProcess::waitForFinished()
 {
     QProcess process;
 
-#ifdef Q_OS_MAC
-    process.start("testProcessOutput/testProcessOutput.app");
-#else
     process.start("testProcessOutput/testProcessOutput");
-#endif
 
 #if !defined(Q_OS_WINCE)
     QVERIFY(process.waitForFinished(5000));
@@ -759,11 +735,7 @@ void tst_QProcess::deadWhileReading()
 
     QProcess process;
 
-#ifdef Q_OS_MAC
-    process.start("testProcessDeadWhileReading/testProcessDeadWhileReading.app");
-#else
     process.start("testProcessDeadWhileReading/testProcessDeadWhileReading");
-#endif
 
     QString output;
 
@@ -789,11 +761,7 @@ void tst_QProcess::restartProcessDeadlock()
     process = &proc;
     connect(process, SIGNAL(finished(int)), this, SLOT(restartProcess()));
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
 
     QCOMPARE(process->write("", 1), qlonglong(1));
     QVERIFY(process->waitForFinished(5000));
@@ -806,11 +774,7 @@ void tst_QProcess::restartProcessDeadlock()
 
 void tst_QProcess::restartProcess()
 {
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -854,11 +818,7 @@ void tst_QProcess::closeReadChannel()
         QProcess::ProcessChannel channel2 = QProcess::StandardError;
 
         QProcess proc;
-#ifdef Q_OS_MAC
-        proc.start("testProcessEcho2/testProcessEcho2.app");
-#else
         proc.start("testProcessEcho2/testProcessEcho2");
-#endif
         QVERIFY(proc.waitForStarted(5000));
         proc.closeReadChannel(i&1 ? channel2 : channel1);
         proc.setReadChannel(i&1 ? channel2 : channel1);
@@ -889,11 +849,7 @@ void tst_QProcess::openModes()
     QProcess proc;
     QVERIFY(!proc.isOpen());
     QVERIFY(proc.openMode() == QProcess::NotOpen);
-#ifdef Q_OS_MAC
-    proc.start("testProcessEcho3/testProcessEcho3.app");
-#else
     proc.start("testProcessEcho3/testProcessEcho3");
-#endif
     QVERIFY(proc.waitForStarted(5000));
     QVERIFY(proc.isOpen());
     QVERIFY(proc.openMode() == QProcess::ReadWrite);
@@ -941,11 +897,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
     QSignalSpy spy(&proc, SIGNAL(readyRead()));
     QVERIFY(spy.isValid());
 
-#ifdef Q_OS_MAC
-    proc.start("testProcessEcho/testProcessEcho.app");
-#else
     proc.start("testProcessEcho/testProcessEcho");
-#endif
 
     QCOMPARE(spy.count(), 0);
 
@@ -974,9 +926,7 @@ void tst_QProcess::hardExit()
 {
     QProcess proc;
 
-#if defined(Q_OS_MAC)
-    proc.start("testProcessEcho/testProcessEcho.app");
-#elif defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
     proc.start("testSoftExit/testSoftExit");
 #else
     proc.start("testProcessEcho/testProcessEcho");
@@ -1084,16 +1034,8 @@ void tst_QProcess::softExitInSlots_data()
 {
     QTest::addColumn<QString>("appName");
 
-#ifdef Q_OS_MAC
-    QTest::newRow("gui app") << "testGuiProcess/testGuiProcess.app";
-#else
     QTest::newRow("gui app") << "testGuiProcess/testGuiProcess";
-#endif
-#ifdef Q_OS_MAC
-    QTest::newRow("console app") << "testProcessEcho2/testProcessEcho2.app";
-#else
     QTest::newRow("console app") << "testProcessEcho2/testProcessEcho2";
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1126,11 +1068,7 @@ void tst_QProcess::mergedChannels()
     process.setReadChannelMode(QProcess::MergedChannels);
     QCOMPARE(process.readChannelMode(), QProcess::MergedChannels);
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
-#else
     process.start("testProcessEcho2/testProcessEcho2");
-#endif
 
     QVERIFY(process.waitForStarted(5000));
 
@@ -1156,11 +1094,7 @@ void tst_QProcess::forwardedChannels()
     process.setReadChannelMode(QProcess::ForwardedChannels);
     QCOMPARE(process.readChannelMode(), QProcess::ForwardedChannels);
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
-#else
     process.start("testProcessEcho2/testProcessEcho2");
-#endif
 
     QVERIFY(process.waitForStarted(5000));
     QCOMPARE(process.write("forwarded\n"), qlonglong(10));
@@ -1181,11 +1115,7 @@ void tst_QProcess::atEnd()
 
     QProcess process;
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
-#else
     process.start("testProcessEcho/testProcessEcho");
-#endif
     process.write("abcdefgh\n");
 
     while (process.bytesAvailable() < 8)
@@ -1219,11 +1149,7 @@ protected:
         connect(&process, SIGNAL(finished(int)), this, SLOT(catchExitCode(int)),
                 Qt::DirectConnection);
 
-#ifdef Q_OS_MAC
-        process.start("testProcessEcho/testProcessEcho.app");
-#else
         process.start("testProcessEcho/testProcessEcho");
-#endif
 
 #if !defined(Q_OS_WINCE)
         QCOMPARE(process.write("abc\0", 4), qint64(4));
@@ -1284,11 +1210,7 @@ void tst_QProcess::waitForFinishedWithTimeout()
 
     process = new QProcess(this);
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
 
     QVERIFY(process->waitForStarted(5000));
     QVERIFY(!process->waitForFinished(1));
@@ -1313,11 +1235,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     connect(process, SIGNAL(finished(int)), this, SLOT(exitLoopSlot()));
     bytesAvailable = 0;
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
     QVERIFY(process->waitForStarted(5000));
 
     QSignalSpy spy(process, SIGNAL(readyRead()));
@@ -1359,11 +1277,7 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     connect(process, SIGNAL(bytesWritten(qint64)), this, SLOT(waitForBytesWrittenInABytesWrittenSlotSlot()));
     bytesAvailable = 0;
 
-#ifdef Q_OS_MAC
-    process->start("testProcessEcho/testProcessEcho.app");
-#else
     process->start("testProcessEcho/testProcessEcho");
-#endif
     QVERIFY(process->waitForStarted(5000));
 
     qRegisterMetaType<qint64>("qint64");
@@ -1712,11 +1626,7 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
     QVERIFY(file.open(QFile::WriteOnly));
 
     QProcess process;
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
-#else
     process.start("testProcessEcho/testProcessEcho");
-#endif
 
     QVERIFY(process.waitForStarted(5000));
 
@@ -1900,11 +1810,7 @@ void tst_QProcess::atEnd2()
 
     QProcess process;
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
-#else
     process.start("testProcessEcho/testProcessEcho");
-#endif
     process.write("Foo\nBar\nBaz\nBodukon\nHadukan\nTorwukan\nend\n");
     process.putChar('\0');
     QVERIFY(process.waitForFinished());
@@ -1956,11 +1862,7 @@ void tst_QProcess::setStandardInputFile()
     file.close();
 
     process.setStandardInputFile("data");
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho/testProcessEcho.app");
-#else
     process.start("testProcessEcho/testProcessEcho");
-#endif
 
     QPROCESS_VERIFY(process, waitForFinished());
         QByteArray all = process.readAll();
@@ -2027,11 +1929,7 @@ void tst_QProcess::setStandardOutputFile()
     else
         process.setStandardErrorFile("data", mode);
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
-#else
     process.start("testProcessEcho2/testProcessEcho2");
-#endif
     process.write(testdata, sizeof testdata);
     QPROCESS_VERIFY(process,waitForFinished());
 
@@ -2075,13 +1973,8 @@ void tst_QProcess::setStandardOutputProcess()
     source.setReadChannelMode(merged ? QProcess::MergedChannels : QProcess::SeparateChannels);
     source.setStandardOutputProcess(&sink);
 
-#ifdef Q_OS_MAC
-    source.start("testProcessEcho2/testProcessEcho2.app");
-    sink.start("testProcessEcho2/testProcessEcho2.app");
-#else
     source.start("testProcessEcho2/testProcessEcho2");
     sink.start("testProcessEcho2/testProcessEcho2");
-#endif
 
     QByteArray data("Hello, World");
     source.write(data);
@@ -2179,11 +2072,7 @@ void tst_QProcess::switchReadChannels()
 
     QProcess process;
 
-#ifdef Q_OS_MAC
-    process.start("testProcessEcho2/testProcessEcho2.app");
-#else
     process.start("testProcessEcho2/testProcessEcho2");
-#endif
     process.write(data);
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
@@ -2212,11 +2101,7 @@ void tst_QProcess::setWorkingDirectory()
 #endif
     process = new QProcess;
     process->setWorkingDirectory("test");
-#ifdef Q_OS_MAC
-    process->start("testSetWorkingDirectory/testSetWorkingDirectory.app");
-#else
     process->start("testSetWorkingDirectory/testSetWorkingDirectory");
-#endif
 #ifndef Q_OS_WIN
     QSKIP("setWorkingDirectory will chdir before starting the process on unices");
 #endif
@@ -2237,11 +2122,7 @@ void tst_QProcess::startFinishStartFinish()
     for (int i = 0; i < 3; ++i) {
         QCOMPARE(process.state(), QProcess::NotRunning);
 
-#ifdef Q_OS_MAC
-        process.start("testProcessOutput/testProcessOutput.app");
-#else
         process.start("testProcessOutput/testProcessOutput");
-#endif
 #if !defined(Q_OS_WINCE)
         QVERIFY(process.waitForReadyRead(10000));
         QCOMPARE(QString::fromLatin1(process.readLine().trimmed()),
