@@ -124,7 +124,6 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 
 /*!
     \fn QDBusConnection &QDBusConnection::sessionBus()
-    \relates QDBusConnection
 
     Returns a QDBusConnection object opened with the session bus. The object
     reference returned by this function is valid until the application terminates,
@@ -132,7 +131,6 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 */
 /*!
     \fn QDBusConnection &QDBusConnection::systemBus()
-    \relates QDBusConnection
 
     Returns a QDBusConnection object opened with the system bus. The object reference returned
     by this function is valid until the QCoreApplication's destructor is run, when the
