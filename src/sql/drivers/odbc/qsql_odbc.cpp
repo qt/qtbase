@@ -84,7 +84,7 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, int s
             result=QString::fromUcs4((const uint *)input.constData(), realsize);
             break;
         default:
-            qCritical() << "sizeof(SQLTCHAR) is " << sizeof(SQLTCHAR) << "Don't know how to handle this";
+            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", sizeof(SQLTCHAR));
     }
     return result;
 }
@@ -104,7 +104,7 @@ inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
             memcpy(result.data(), input.toUcs4().data(), input.size() * 4);
             break;
         default:
-            qCritical() << "sizeof(SQLTCHAR) is " << sizeof(SQLTCHAR) << "Don't know how to handle this";
+            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", sizeof(SQLTCHAR));
     }
     result.append(0); // make sure it's null terminated, doesn't matter if it already is, it does if it isn't.
     return result;

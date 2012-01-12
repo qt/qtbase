@@ -1846,7 +1846,7 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     Q_Q(QNetworkReplyHttpImpl);
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
-        qWarning() << "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.";
+        qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
 
@@ -1959,7 +1959,7 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
 
     if (enable) {
         if (bytesDownloaded) {
-            qDebug() << "x" << bytesDownloaded;
+            qDebug("setCachingEnabled: %d bytesDownloaded", bytesDownloaded);
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");
             return;

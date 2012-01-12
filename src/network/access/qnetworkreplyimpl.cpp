@@ -780,7 +780,7 @@ void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const
     Q_Q(QNetworkReplyImpl);
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
-        qWarning() << "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.";
+        qWarning( "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
 
