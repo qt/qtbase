@@ -44,6 +44,8 @@
   .../doc/src/qstyles.qdoc. 
 */
 
+#include <Cocoa/Cocoa.h>
+
 #include "qmacstyle_mac.h"
 #include "qmacstyle_mac_p.h"
 #include "qmacstylepixmaps_mac_p.h"

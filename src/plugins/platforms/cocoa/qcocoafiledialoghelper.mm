@@ -51,8 +51,8 @@
 #include <qapplication.h>
 #include <private/qapplication_p.h>
 #include <private/qfiledialog_p.h>
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+#include "qt_mac_p.h"
+#include "qcocoahelpers.h"
 #include <qregexp.h>
 #include <qbuffer.h>
 #include <qdebug.h>

@@ -55,9 +55,6 @@
 
 #include "QtWidgets/qmenubar.h"
 #include "QtWidgets/qstyleoption.h"
-#ifdef Q_OS_MAC
-#include "QtWidgets/qmacdefines_mac.h"
-#endif
 #include "QtCore/qdatetime.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"

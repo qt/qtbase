@@ -52,8 +52,7 @@
 //
 // We mean it.
 //
-
-#include <private/qt_mac_p.h>
+#include "qt_mac_p.h"
 #include <private/qguiapplication_p.h>
 #include <QtGui/qscreen.h>
 

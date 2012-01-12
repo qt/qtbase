@@ -43,10 +43,6 @@
 #define QMENUBAR_H
 
 #include <QtWidgets/qmenu.h>
-#ifdef Q_OS_MAC
-#include "QtWidgets/qmacdefines_mac.h"
-#endif
-
 
 QT_BEGIN_HEADER
 
@@ -157,12 +153,6 @@ private:
     friend class QMenu;
     friend class QMenuPrivate;
     friend class QWindowsStyle;
-
-#ifdef Q_OS_MAC
-    friend class QApplicationPrivate;
-    friend class QWidgetPrivate;
-    friend bool qt_mac_activate_action(MenuRef, uint, QAction::ActionEvent, bool);
-#endif
 };
 
 #endif // QT_NO_MENUBAR

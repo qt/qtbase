@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <private/qt_mac_p.h>
+#include "qt_mac_p.h"
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qmenu.h>
 #include <QtWidgets/qmenubar.h>
