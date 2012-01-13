@@ -317,7 +317,7 @@ public:
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
     enum ScreenOrientation {
-        UnknownOrientation           = 0x00000000,
+        PrimaryOrientation           = 0x00000000,
         PortraitOrientation          = 0x00000001,
         LandscapeOrientation         = 0x00000002,
         InvertedPortraitOrientation  = 0x00000004,

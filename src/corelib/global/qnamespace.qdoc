@@ -1821,7 +1821,8 @@
 
     This enum type specifies the various orientations a screen might have.
 
-    \value UnknownOrientation           The orientation is unknown or the platform doesn't support orientations.
+    \value PrimaryOrientation           The display's primary orientation. The QWindow and QScreen APIs never return this value,
+                                        instead it will be mapped to the corresponding QScreen's QScreen::primaryOrientation().
     \value LandscapeOrientation         Landscape orientation, display width is greater than display height.
     \value PortraitOrientation          Portrait orientation, display height is greater than display width,
                                         rotated 90 degree clockwise relative to landscape.

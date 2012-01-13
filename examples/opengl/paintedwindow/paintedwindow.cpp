@@ -70,13 +70,22 @@ PaintedWindow::PaintedWindow()
     m_animation->setEndValue(qreal(1));
     m_animation->setDuration(500);
 
-    setOrientation(QGuiApplication::primaryScreen()->primaryOrientation());
+    requestWindowOrientation(Qt::PortraitOrientation);
+
+    QRect screenGeometry = screen()->availableGeometry();
+
+    QPoint center = screenGeometry.center();
+    QRect windowRect = screen()->isLandscape(windowOrientation()) ? QRect(0, 0, 640, 480) : QRect(0, 0, 480, 640);
+    setGeometry(QRect(center - windowRect.center(), windowRect.size()));
+
     m_rotation = 0;
 
-    m_targetOrientation = orientation();
-    m_nextTargetOrientation = Qt::UnknownOrientation;
+    reportContentOrientationChange(screen()->orientation());
 
-    connect(screen(), SIGNAL(currentOrientationChanged(Qt::ScreenOrientation)), this, SLOT(orientationChanged(Qt::ScreenOrientation)));
+    m_targetOrientation = contentOrientation();
+    m_nextTargetOrientation = Qt::PrimaryOrientation;
+
+    connect(screen(), SIGNAL(orientationChanged(Qt::ScreenOrientation)), this, SLOT(orientationChanged(Qt::ScreenOrientation)));
     connect(m_animation, SIGNAL(finished()), this, SLOT(rotationDone()));
     connect(this, SIGNAL(rotationChanged(qreal)), this, SLOT(paint()));
 }
@@ -93,7 +102,7 @@ void PaintedWindow::exposeEvent(QExposeEvent *)
 
 void PaintedWindow::mousePressEvent(QMouseEvent *)
 {
-    Qt::ScreenOrientation o = orientation();
+    Qt::ScreenOrientation o = contentOrientation();
     switch (o) {
     case Qt::LandscapeOrientation:
         orientationChanged(Qt::PortraitOrientation);
@@ -116,15 +125,13 @@ void PaintedWindow::mousePressEvent(QMouseEvent *)
 
 void PaintedWindow::orientationChanged(Qt::ScreenOrientation newOrientation)
 {
-    if (orientation() == newOrientation)
+    if (contentOrientation() == newOrientation)
         return;
 
     if (m_animation->state() == QAbstractAnimation::Running) {
         m_nextTargetOrientation = newOrientation;
         return;
     }
-
-    Qt::ScreenOrientation screenOrientation = screen()->primaryOrientation();
 
     QRect rect(0, 0, width(), height());
 
@@ -135,16 +142,16 @@ void PaintedWindow::orientationChanged(Qt::ScreenOrientation newOrientation)
 
     QPainter p;
     p.begin(&m_prevImage);
-    p.setTransform(QScreen::transformBetween(orientation(), screenOrientation, rect));
-    paint(&p, QScreen::mapBetween(orientation(), screenOrientation, rect));
+    p.setTransform(screen()->transformBetween(contentOrientation(), windowOrientation(), rect));
+    paint(&p, screen()->mapBetween(contentOrientation(), windowOrientation(), rect));
     p.end();
 
     p.begin(&m_nextImage);
-    p.setTransform(QScreen::transformBetween(newOrientation, screenOrientation, rect));
-    paint(&p, QScreen::mapBetween(newOrientation, screenOrientation, rect));
+    p.setTransform(screen()->transformBetween(newOrientation, windowOrientation(), rect));
+    paint(&p, screen()->mapBetween(newOrientation, windowOrientation(), rect));
     p.end();
 
-    m_deltaRotation = QScreen::angleBetween(newOrientation, orientation());
+    m_deltaRotation = screen()->angleBetween(newOrientation, contentOrientation());
     if (m_deltaRotation > 180)
         m_deltaRotation = 180 - m_deltaRotation;
 
@@ -154,11 +161,11 @@ void PaintedWindow::orientationChanged(Qt::ScreenOrientation newOrientation)
 
 void PaintedWindow::rotationDone()
 {
-    setOrientation(m_targetOrientation);
-    if (m_nextTargetOrientation != Qt::UnknownOrientation) {
+    reportContentOrientationChange(m_targetOrientation);
+    if (m_nextTargetOrientation != Qt::PrimaryOrientation) {
         Q_ASSERT(m_animation->state() != QAbstractAnimation::Running);
         orientationChanged(m_nextTargetOrientation);
-        m_nextTargetOrientation = Qt::UnknownOrientation;
+        m_nextTargetOrientation = Qt::PrimaryOrientation;
     }
 }
 
@@ -174,9 +181,6 @@ void PaintedWindow::paint()
 {
     m_context->makeCurrent(this);
 
-    Qt::ScreenOrientation screenOrientation = screen()->primaryOrientation();
-    Qt::ScreenOrientation appOrientation = orientation();
-
     QRect rect(0, 0, width(), height());
 
     QOpenGLPaintDevice device(size());
@@ -189,7 +193,7 @@ void PaintedWindow::paint()
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     painter.fillPath(path, Qt::blue);
 
-    if (orientation() != m_targetOrientation) {
+    if (contentOrientation() != m_targetOrientation) {
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
         painter.save();
         painter.translate(width() / 2, height() / 2);
@@ -203,9 +207,9 @@ void PaintedWindow::paint()
         painter.setOpacity(m_rotation);
         painter.drawImage(0, 0, m_nextImage);
     } else {
-        QRect mapped = QScreen::mapBetween(appOrientation, screenOrientation, rect);
+        QRect mapped = screen()->mapBetween(contentOrientation(), windowOrientation(), rect);
 
-        painter.setTransform(QScreen::transformBetween(appOrientation, screenOrientation, rect));
+        painter.setTransform(screen()->transformBetween(contentOrientation(), windowOrientation(), rect));
         paint(&painter, mapped);
         painter.end();
     }

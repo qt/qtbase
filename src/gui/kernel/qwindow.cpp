@@ -72,8 +72,24 @@ QT_BEGIN_NAMESPACE
     to support double and triple buffering. To release a windows memory
     resources, the destroy() function.
 
- */
+    \section1 Window and content orientation
 
+    QWindow has reportContentOrientationChange() and
+    requestWindowOrientation() that can be used to specify the
+    layout of the window contents in relation to the screen. The
+    window orientation determines the actual buffer layout of the
+    window, and the windowing system uses this value to rotate the
+    window before it ends up on the display, and to ensure that input
+    coordinates are in the correct coordinate space relative to the
+    application.
+
+    On the other hand, the content orientation is simply a hint to the
+    windowing system about which orientation the window contents are in.
+    It's useful when you wish to keep the same buffer layout, but rotate
+    the contents instead, especially when doing rotation animations
+    between different orientations. The windowing system might use this
+    value to determine the layout of system popups or dialogs.
+*/
 QWindow::QWindow(QScreen *targetScreen)
     : QObject(*new QWindowPrivate(), 0)
     , QSurface(QSurface::Window)
@@ -375,42 +391,82 @@ bool QWindow::isActive() const
 }
 
 /*!
-  Returns the window's currently set orientation.
-
-  The default value is Qt::UnknownOrientation.
-
-  \sa setOrientation(), QScreen::currentOrientation()
-*/
-Qt::ScreenOrientation QWindow::orientation() const
-{
-    Q_D(const QWindow);
-    return d->orientation;
-}
-
-/*!
-  Set the orientation of the window's contents.
+  Reports that the orientation of the window's contents have changed.
 
   This is a hint to the window manager in case it needs to display
   additional content like popups, dialogs, status bars, or similar
   in relation to the window.
 
-  The recommended orientation is QScreen::currentOrientation() but
+  The recommended orientation is QScreen::orientation() but
   an application doesn't have to support all possible orientations,
   and thus can opt to ignore the current screen orientation.
 
-  \sa QScreen::currentOrientation()
+  The difference between the window and the content orientation
+  determines how much to rotate the content by. QScreen::angleBetween(),
+  QScreen::transformBetween(), and QScreen::mapBetween() can be used
+  to compute the necessary transform.
+
+  \sa requestWindowOrientation(), QScreen::orientation()
 */
-void QWindow::setOrientation(Qt::ScreenOrientation orientation)
+void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
     Q_D(QWindow);
-    if (orientation == d->orientation)
-        return;
+    if (!d->platformWindow)
+        create();
+    Q_ASSERT(d->platformWindow);
+    d->contentOrientation = orientation;
+    d->platformWindow->handleContentOrientationChange(orientation);
+}
 
-    d->orientation = orientation;
-    if (d->platformWindow) {
-        d->platformWindow->setOrientation(orientation);
-    }
-    emit orientationChanged(orientation);
+/*!
+  Returns the actual content orientation.
+
+  This is the last value set with reportContentOrientationChange(),
+  except Qt::PrimaryOrientation gets converted to the screen's
+  primary orientation.
+*/
+Qt::ScreenOrientation QWindow::contentOrientation() const
+{
+    Q_D(const QWindow);
+    return d->contentOrientation == Qt::PrimaryOrientation ? screen()->primaryOrientation() : d->contentOrientation;
+}
+
+/*!
+  Requests the given window orientation.
+
+  The window orientation specifies how the window should be rotated
+  by the window manager in order to be displayed. Input events will
+  be correctly mapped to the given orientation.
+
+  The return value is false if the system doesn't support the given
+  orientation (for example when requesting a portrait orientation
+  on a device that only handles landscape buffers, typically a desktop
+  system).
+
+  If the return value is false, call windowOrientation() to get the actual
+  supported orientation.
+
+  \sa windowOrientation(), reportContentOrientationChange(), QScreen::orientation()
+*/
+bool QWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
+{
+    Q_D(QWindow);
+    if (!d->platformWindow)
+        create();
+    Q_ASSERT(d->platformWindow);
+    d->windowOrientation = d->platformWindow->requestWindowOrientation(orientation);
+    return d->windowOrientation == orientation;
+}
+
+/*!
+  Returns the actual window orientation.
+
+  \sa requestWindowOrientation()
+*/
+Qt::ScreenOrientation QWindow::windowOrientation() const
+{
+    Q_D(const QWindow);
+    return d->windowOrientation == Qt::PrimaryOrientation ? screen()->primaryOrientation() : d->windowOrientation;
 }
 
 Qt::WindowState QWindow::windowState() const

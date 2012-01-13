@@ -467,7 +467,7 @@ void QMeeGoPlatformInputContext::inputItemChanged()
 
             // ### react to orientation changes, too
             if (window)
-                d->server->appOrientationChanged(orientationAngle(window->screen()->currentOrientation()));
+                d->server->appOrientationChanged(orientationAngle(window->screen()->orientation()));
         }
     }
     d->sendStateUpdate(/*focusChanged*/true);

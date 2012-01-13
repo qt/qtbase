@@ -95,7 +95,8 @@ public:
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
 
-    virtual void setOrientation(Qt::ScreenOrientation orientation);
+    virtual void handleContentOrientationChange(Qt::ScreenOrientation orientation);
+    virtual Qt::ScreenOrientation requestWindowOrientation(Qt::ScreenOrientation orientation);
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);

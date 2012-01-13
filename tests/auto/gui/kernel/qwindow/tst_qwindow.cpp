@@ -57,6 +57,7 @@ private slots:
     void touchToMouseTranslation();
     void mouseToTouchTranslation();
     void mouseToTouchLoop();
+    void orientation();
     void initTestCase()
     {
         touchDevice = new QTouchDevice;
@@ -479,6 +480,23 @@ void tst_QWindow::mouseToTouchLoop()
 
     qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
     qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+}
+
+void tst_QWindow::orientation()
+{
+    QWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.create();
+
+    window.reportContentOrientationChange(Qt::PortraitOrientation);
+    QCOMPARE(window.contentOrientation(), Qt::PortraitOrientation);
+
+    window.reportContentOrientationChange(Qt::PrimaryOrientation);
+    QCOMPARE(window.contentOrientation(), window.screen()->primaryOrientation());
+
+    QVERIFY(!window.requestWindowOrientation(Qt::LandscapeOrientation) || window.windowOrientation() == Qt::LandscapeOrientation);
+    QVERIFY(!window.requestWindowOrientation(Qt::PortraitOrientation) || window.windowOrientation() == Qt::PortraitOrientation);
+    QVERIFY(!window.requestWindowOrientation(Qt::PrimaryOrientation) || window.windowOrientation() == window.screen()->primaryOrientation());
 }
 
 #include <tst_qwindow.moc>

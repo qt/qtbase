@@ -59,13 +59,18 @@ public:
     QScreenPrivate(QPlatformScreen *screen)
         : platformScreen(screen)
     {
-        currentOrientation = screen->currentOrientation();
+        orientation = screen->orientation();
         geometry = screen->geometry();
         availableGeometry = screen->availableGeometry();
         logicalDpi = screen->logicalDpi();
+
+        updatePrimaryOrientation();
     }
 
-    Qt::ScreenOrientation currentOrientation;
+    void updatePrimaryOrientation();
+
+    Qt::ScreenOrientation orientation;
+    Qt::ScreenOrientation primaryOrientation;
     QRect geometry;
     QRect availableGeometry;
     QDpi logicalDpi;

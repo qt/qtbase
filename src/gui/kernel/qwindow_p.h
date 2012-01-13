@@ -76,7 +76,8 @@ public:
         , windowState(Qt::WindowNoState)
         , resizeEventPending(true)
         , positionPolicy(WindowFrameExclusive)
-        , orientation(Qt::UnknownOrientation)
+        , contentOrientation(Qt::PrimaryOrientation)
+        , windowOrientation(Qt::PrimaryOrientation)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
         , transientParent(0)
@@ -111,7 +112,8 @@ public:
     Qt::WindowState windowState;
     bool resizeEventPending;
     PositionPolicy positionPolicy;
-    Qt::ScreenOrientation orientation;
+    Qt::ScreenOrientation contentOrientation;
+    Qt::ScreenOrientation windowOrientation;
 
     QSize minimumSize;
     QSize maximumSize;

@@ -90,6 +90,11 @@ void tst_QScreen::angleBetween_data()
         << uint(Qt::InvertedLandscapeOrientation)
         << uint(Qt::LandscapeOrientation)
         << 180;
+
+    QTest::newRow("Landscape Primary")
+        << uint(Qt::LandscapeOrientation)
+        << uint(Qt::PrimaryOrientation)
+        << QGuiApplication::primaryScreen()->angleBetween(Qt::LandscapeOrientation, QGuiApplication::primaryScreen()->primaryOrientation());
 }
 
 void tst_QScreen::angleBetween()
@@ -101,8 +106,8 @@ void tst_QScreen::angleBetween()
     Qt::ScreenOrientation a = Qt::ScreenOrientation(oa);
     Qt::ScreenOrientation b = Qt::ScreenOrientation(ob);
 
-    QCOMPARE(QScreen::angleBetween(a, b), expected);
-    QCOMPARE(QScreen::angleBetween(b, a), (360 - expected) % 360);
+    QCOMPARE(QGuiApplication::primaryScreen()->angleBetween(a, b), expected);
+    QCOMPARE(QGuiApplication::primaryScreen()->angleBetween(b, a), (360 - expected) % 360);
 }
 
 void tst_QScreen::transformBetween_data()
@@ -149,6 +154,12 @@ void tst_QScreen::transformBetween_data()
         << uint(Qt::LandscapeOrientation)
         << rect
         << QTransform(-1, 0, 0, -1, rect.width(), rect.height());
+
+    QTest::newRow("Landscape Primary")
+        << uint(Qt::LandscapeOrientation)
+        << uint(Qt::PrimaryOrientation)
+        << rect
+        << QGuiApplication::primaryScreen()->transformBetween(Qt::LandscapeOrientation, QGuiApplication::primaryScreen()->primaryOrientation(), rect);
 }
 
 void tst_QScreen::transformBetween()
@@ -161,7 +172,7 @@ void tst_QScreen::transformBetween()
     Qt::ScreenOrientation a = Qt::ScreenOrientation(oa);
     Qt::ScreenOrientation b = Qt::ScreenOrientation(ob);
 
-    QCOMPARE(QScreen::transformBetween(a, b, rect), expected);
+    QCOMPARE(QGuiApplication::primaryScreen()->transformBetween(a, b, rect), expected);
 }
 
 void tst_QScreen::orientationChange()
@@ -169,10 +180,10 @@ void tst_QScreen::orientationChange()
     QScreen *screen = QGuiApplication::primaryScreen();
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
-    QTRY_COMPARE(screen->currentOrientation(), Qt::LandscapeOrientation);
+    QTRY_COMPARE(screen->orientation(), Qt::LandscapeOrientation);
 
     QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::PortraitOrientation);
-    QTRY_COMPARE(screen->currentOrientation(), Qt::PortraitOrientation);
+    QTRY_COMPARE(screen->orientation(), Qt::PortraitOrientation);
 }
 
 #include <tst_qscreen.moc>

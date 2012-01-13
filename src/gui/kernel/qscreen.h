@@ -81,8 +81,8 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
     Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableSizeChanged)
     Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
-    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation CONSTANT)
-    Q_PROPERTY(Qt::ScreenOrientation currentOrientation READ currentOrientation NOTIFY currentOrientationChanged)
+    Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ orientation NOTIFY primaryOrientationChanged)
+    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
 
 public:
     QPlatformScreen *handle() const;
@@ -116,11 +116,14 @@ public:
     QRect availableVirtualGeometry() const;
 
     Qt::ScreenOrientation primaryOrientation() const;
-    Qt::ScreenOrientation currentOrientation() const;
+    Qt::ScreenOrientation orientation() const;
 
-    static int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
-    static QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
-    static QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
+    int angleBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b);
+    QTransform transformBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &target);
+    QRect mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, const QRect &rect);
+
+    bool isPortrait(Qt::ScreenOrientation orientation);
+    bool isLandscape(Qt::ScreenOrientation orientation);
 
 Q_SIGNALS:
     void sizeChanged(const QSize &size);
@@ -133,7 +136,8 @@ Q_SIGNALS:
     void logicalDotsPerInchChanged(qreal dpi);
     void availableSizeChanged(const QSize &size);
     void availableGeometryChanged(const QRect &rect);
-    void currentOrientationChanged(Qt::ScreenOrientation orientation);
+    void primaryOrientationChanged(Qt::ScreenOrientation orientation);
+    void orientationChanged(Qt::ScreenOrientation orientation);
 
 private:
     QScreen(QPlatformScreen *screen);

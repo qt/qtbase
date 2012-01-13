@@ -91,7 +91,6 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
-    Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
 
 public:
     enum SurfaceType { RasterSurface, OpenGLSurface };
@@ -133,8 +132,11 @@ public:
 
     bool isActive() const;
 
-    Qt::ScreenOrientation orientation() const;
-    void setOrientation(Qt::ScreenOrientation orientation);
+    void reportContentOrientationChange(Qt::ScreenOrientation orientation);
+    Qt::ScreenOrientation contentOrientation() const;
+
+    bool requestWindowOrientation(Qt::ScreenOrientation orientation);
+    Qt::ScreenOrientation windowOrientation() const;
 
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);
@@ -252,16 +254,12 @@ Q_SIGNALS:
     void screenChanged(QScreen *screen);
 
     void xChanged(int arg);
-
     void yChanged(int arg);
 
     void widthChanged(int arg);
-
     void heightChanged(int arg);
 
     void visibleChanged(bool arg);
-
-    void orientationChanged(Qt::ScreenOrientation arg);
 
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);
