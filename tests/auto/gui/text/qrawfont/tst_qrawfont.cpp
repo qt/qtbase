@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <QtGui/QFontDatabase>
 
 #include <qrawfont.h>
 #include <private/qrawfont_p.h>
@@ -50,6 +51,7 @@ class tst_QRawFont: public QObject
 #if !defined(QT_NO_RAWFONT)
 private slots:
     void init();
+    void initTestCase();
 
     void invalidRawFont();
 
@@ -99,7 +101,9 @@ private slots:
 #if defined(Q_WS_X11) || defined(Q_WS_MAC)
     void multipleRawFontsFromData();
 #endif
-
+private:
+    QString testFont;
+    QString testFontBoldItalic;
 #endif // QT_NO_RAWFONT
 };
 
@@ -111,6 +115,18 @@ Q_DECLARE_METATYPE(QFontDatabase::WritingSystem)
 
 void tst_QRawFont::init()
 {
+}
+
+void tst_QRawFont::initTestCase()
+{
+    testFont = QFINDTESTDATA("testfont.ttf");
+    testFontBoldItalic = QFINDTESTDATA("testfont_bold_italic.ttf");
+    if (testFont.isEmpty() || testFontBoldItalic.isEmpty())
+        QFAIL("qrawfont unittest font files not found!");
+
+    QFontDatabase database;
+    if (database.families().count() == 0)
+        QSKIP("No fonts available!!!");
 }
 
 void tst_QRawFont::invalidRawFont()
@@ -140,7 +156,7 @@ void tst_QRawFont::explicitRawFontNotLoadedInDatabase()
 {
     QFETCH(QFont::HintingPreference, hintingPreference);
 
-    QRawFont font(QLatin1String(SRCDIR "testfont.ttf"), 10, hintingPreference);
+    QRawFont font(testFont, 10, hintingPreference);
     QVERIFY(font.isValid());
 
     QVERIFY(!QFontDatabase().families().contains(font.familyName()));
@@ -160,7 +176,7 @@ void tst_QRawFont::explicitRawFontNotAvailableInSystem()
 {
     QFETCH(QFont::HintingPreference, hintingPreference);
 
-    QRawFont rawfont(QLatin1String(SRCDIR "testfont.ttf"), 10, hintingPreference);
+    QRawFont rawfont(testFont, 10, hintingPreference);
 
     {
         QFont font(rawfont.familyName(), 10);
@@ -190,7 +206,7 @@ void tst_QRawFont::correctFontData_data()
     int *hintingPreference = hintingPreferences;
 
     while (*hintingPreference >= 0) {
-        QString fileName = QLatin1String(SRCDIR "testfont.ttf");
+        QString fileName = testFont;
         QString title = fileName
                       + QLatin1String(": hintingPreference=")
                       + QString::number(*hintingPreference);
@@ -204,7 +220,7 @@ void tst_QRawFont::correctFontData_data()
                 << 1000.0
                 << 10.0;
 
-        fileName = QLatin1String(SRCDIR "testfont_bold_italic.ttf");
+        fileName = testFontBoldItalic;
         title = fileName
               + QLatin1String(": hintingPreference=")
               + QString::number(*hintingPreference);
@@ -245,7 +261,7 @@ void tst_QRawFont::correctFontData()
 
 void tst_QRawFont::glyphIndices()
 {
-    QRawFont font(QLatin1String(SRCDIR "testfont.ttf"), 10);
+    QRawFont font(testFont, 10);
     QVERIFY(font.isValid());
 
     QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("Foobar"));
@@ -269,7 +285,7 @@ void tst_QRawFont::advances()
 {
     QFETCH(QFont::HintingPreference, hintingPreference);
 
-    QRawFont font(QLatin1String(SRCDIR "testfont.ttf"), 10, hintingPreference);
+    QRawFont font(testFont, 10, hintingPreference);
     QVERIFY(font.isValid());
 
     QRawFontPrivate *font_d = QRawFontPrivate::get(font);
@@ -292,7 +308,7 @@ void tst_QRawFont::advances()
 void tst_QRawFont::textLayout()
 {
     QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(SRCDIR "testfont.ttf");
+    int id = fontDatabase.addApplicationFont(testFont);
     QVERIFY(id >= 0);
 
     QString familyName = QString::fromLatin1("QtBidiTestFont");
@@ -371,7 +387,7 @@ void tst_QRawFont::fontTable()
     QFETCH(int, offset);
     QFETCH(quint32, expectedValue);
 
-    QRawFont font(QString::fromLatin1(SRCDIR "testfont.ttf"), 10, hintingPreference);
+    QRawFont font(testFont, 10, hintingPreference);
     QVERIFY(font.isValid());
 
     QByteArray table = font.fontTable(tagName);
@@ -396,7 +412,7 @@ void tst_QRawFont::supportedWritingSystems_data()
 
         QTest::newRow(qPrintable(QString::fromLatin1("testfont.ttf, hintingPreference=%1")
                       .arg(hintingPreference)))
-            << QString::fromLatin1(SRCDIR "testfont.ttf")
+            << testFont
             << (QList<QFontDatabase::WritingSystem>()
                   << QFontDatabase::Latin
                   << QFontDatabase::Hebrew
@@ -405,7 +421,7 @@ void tst_QRawFont::supportedWritingSystems_data()
 
         QTest::newRow(qPrintable(QString::fromLatin1("testfont_bold_italic.ttf, hintingPreference=%1")
                       .arg(hintingPreference)))
-            << QString::fromLatin1(SRCDIR "testfont_bold_italic.ttf")
+            << testFontBoldItalic
             << (QList<QFontDatabase::WritingSystem>()
                     << QFontDatabase::Latin
                     << QFontDatabase::Hebrew
@@ -439,8 +455,8 @@ void tst_QRawFont::supportsCharacter_data()
     QTest::addColumn<bool>("shouldBeSupported");
 
     const char *fileNames[2] = {
-        SRCDIR "testfont.ttf",
-        SRCDIR "testfont_bold_italic.ttf"
+        "testfont.ttf",
+        "testfont_bold_italic.ttf"
     };
 
     for (int hintingPreference=QFont::PreferDefaultHinting;
@@ -448,7 +464,7 @@ void tst_QRawFont::supportsCharacter_data()
          ++hintingPreference) {
 
         for (int i=0; i<2; ++i) {
-            QString fileName = QLatin1String(fileNames[i]);
+            QString fileName = QFINDTESTDATA(fileNames[i]);
 
             // Latin text
             for (char ch='!'; ch<='~'; ++ch) {
@@ -510,7 +526,7 @@ void tst_QRawFont::supportsUcs4Character_data()
          ++hintingPreference) {
         for (quint32 ch=0x10330; ch<=0x1034A; ++ch) {
             {
-                QString fileName = QString::fromLatin1(SRCDIR "testfont.ttf");
+                QString fileName = testFont;
                 QString title = QString::fromLatin1("%1, character=0x%2, hintingPreference=%3")
                         .arg(fileName).arg(QString::number(ch, 16)).arg(hintingPreference);
 
@@ -522,7 +538,7 @@ void tst_QRawFont::supportsUcs4Character_data()
             }
 
             {
-                QString fileName = QString::fromLatin1(SRCDIR "testfont_bold_italic.ttf");
+                QString fileName = testFontBoldItalic;
                 QString title = QString::fromLatin1("%1, character=0x%2, hintingPreference=%3")
                         .arg(fileName).arg(QString::number(ch, 16)).arg(hintingPreference);
 
@@ -560,7 +576,7 @@ void tst_QRawFont::fromFont_data()
         QString titleBase = QString::fromLatin1("%2, hintingPreference=%1, writingSystem=%3")
                 .arg(i);
         {
-            QString fileName = QString::fromLatin1(SRCDIR "testfont.ttf");
+            QString fileName = testFont;
             QFontDatabase::WritingSystem writingSystem = QFontDatabase::Any;
 
             QString title = titleBase.arg(fileName).arg(writingSystem);
@@ -572,7 +588,7 @@ void tst_QRawFont::fromFont_data()
         }
 
         {
-            QString fileName = QString::fromLatin1(SRCDIR "testfont.ttf");
+            QString fileName = testFont;
             QFontDatabase::WritingSystem writingSystem = QFontDatabase::Hebrew;
 
             QString title = titleBase.arg(fileName).arg(writingSystem);
@@ -584,7 +600,7 @@ void tst_QRawFont::fromFont_data()
         }
 
         {
-            QString fileName = QString::fromLatin1(SRCDIR "testfont.ttf");
+            QString fileName = testFont;
             QFontDatabase::WritingSystem writingSystem = QFontDatabase::Latin;
 
             QString title = titleBase.arg(fileName).arg(writingSystem);
@@ -644,7 +660,7 @@ void tst_QRawFont::copyConstructor()
 
         QRawFont outerRawFont;
         {
-            QRawFont rawFont(QString::fromLatin1(SRCDIR "testfont.ttf"), 11, hintingPreference);
+            QRawFont rawFont(testFont, 11, hintingPreference);
             QVERIFY(rawFont.isValid());
 
             rawFontFamilyName = rawFont.familyName();
@@ -712,7 +728,7 @@ void tst_QRawFont::detach()
 
         QRawFont outerRawFont;
         {
-            QRawFont rawFont(QString::fromLatin1(SRCDIR "testfont.ttf"), 11, hintingPreference);
+            QRawFont rawFont(testFont, 11, hintingPreference);
             QVERIFY(rawFont.isValid());
 
             rawFontFamilyName = rawFont.familyName();
@@ -725,8 +741,7 @@ void tst_QRawFont::detach()
             {
                 QRawFont otherRawFont(rawFont);
 
-                otherRawFont.loadFromFile(QLatin1String(SRCDIR "testfont.ttf"),
-                                          rawFontPixelSize, hintingPreference);
+                otherRawFont.loadFromFile(testFont, rawFontPixelSize, hintingPreference);
 
                 QVERIFY(otherRawFont.isValid());
                 QCOMPARE(otherRawFont.pixelSize(), rawFontPixelSize);
@@ -740,8 +755,7 @@ void tst_QRawFont::detach()
             {
                 QRawFont otherRawFont = rawFont;
 
-                otherRawFont.loadFromFile(QLatin1String(SRCDIR "testfont.ttf"),
-                                          rawFontPixelSize, hintingPreference);
+                otherRawFont.loadFromFile(testFont, rawFontPixelSize, hintingPreference);
 
                 QVERIFY(otherRawFont.isValid());
                 QCOMPARE(otherRawFont.pixelSize(), rawFontPixelSize);
@@ -754,8 +768,7 @@ void tst_QRawFont::detach()
 
             outerRawFont = rawFont;
 
-            rawFont.loadFromFile(QLatin1String(SRCDIR "testfont.ttf"), rawFontPixelSize,
-                                 hintingPreference);
+            rawFont.loadFromFile(testFont, rawFontPixelSize, hintingPreference);
         }
 
         QVERIFY(outerRawFont.isValid());
@@ -783,7 +796,7 @@ void tst_QRawFont::unsupportedWritingSystem()
     QFETCH(QFont::HintingPreference, hintingPreference);
 
     QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(QLatin1String(SRCDIR "testfont.ttf"));
+    int id = fontDatabase.addApplicationFont(testFont);
 
     QFont font("QtBidiTestFont");
     font.setHintingPreference(hintingPreference);
@@ -857,13 +870,13 @@ void tst_QRawFont::rawFontSetPixelSize()
 #if defined(Q_WS_X11) || defined(Q_WS_MAC)
 void tst_QRawFont::multipleRawFontsFromData()
 {
-    QFile file(QString::fromLatin1(SRCDIR "testfont.ttf"));
+    QFile file(testFont);
     QRawFont testFont;
     if (file.open(QIODevice::ReadOnly)) {
         testFont.loadFromData(file.readAll(), 11, QFont::PreferDefaultHinting);
         file.close();
     }
-    file.setFileName(QLatin1String(SRCDIR "testfont_bold_italic.ttf"));
+    file.setFileName(testFontBoldItalic);
     QRawFont testFontBoldItalic;
     if (file.open(QIODevice::ReadOnly))
         testFontBoldItalic.loadFromData(file.readAll(), 11, QFont::PreferDefaultHinting);
