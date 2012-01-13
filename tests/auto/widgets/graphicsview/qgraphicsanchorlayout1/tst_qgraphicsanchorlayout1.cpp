@@ -559,10 +559,9 @@ void tst_QGraphicsAnchorLayout1::testSpecialCases()
 {
     // One widget, setLayout before defining layouts
     {
-#ifdef QT_DEBUG
-    QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
-                                       " in wrong parent; moved to correct parent");
-#endif
+    if (QLibraryInfo::isDebugBuild())
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
+                                           " in wrong parent; moved to correct parent");
     QGraphicsWidget *widget = new QGraphicsWidget;
     TheAnchorLayout *layout = new TheAnchorLayout();
     widget->setLayout(layout);
@@ -581,10 +580,9 @@ void tst_QGraphicsAnchorLayout1::testSpecialCases()
 
     // One widget, layout inside layout, layout inside layout inside layout
     {
-#ifdef QT_DEBUG
-    QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
-                                       " in wrong parent; moved to correct parent");
-#endif
+    if (QLibraryInfo::isDebugBuild())
+        QTest::ignoreMessage(QtWarningMsg, "QGraphicsLayout::addChildLayoutItem: QGraphicsWidget \"\""
+                                           " in wrong parent; moved to correct parent");
     QGraphicsWidget *widget = new QGraphicsWidget;
     TheAnchorLayout *layout = new TheAnchorLayout();
     widget->setLayout(layout);
