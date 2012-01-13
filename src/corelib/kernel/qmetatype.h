@@ -65,16 +65,16 @@ QT_BEGIN_NAMESPACE
     F(LongLong, 4, qlonglong) \
     F(ULongLong, 5, qulonglong) \
     F(Double, 6, double) \
-    F(Long, 129, long) \
-    F(Short, 130, short) \
-    F(Char, 131, char) \
-    F(ULong, 132, ulong) \
-    F(UShort, 133, ushort) \
-    F(UChar, 134, uchar) \
-    F(Float, 135, float) \
+    F(Long, 32, long) \
+    F(Short, 33, short) \
+    F(Char, 34, char) \
+    F(ULong, 35, ulong) \
+    F(UShort, 36, ushort) \
+    F(UChar, 37, uchar) \
+    F(Float, 38, float) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
-    F(VoidStar, 128, void*) \
+    F(VoidStar, 31, void*) \
 
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
@@ -98,12 +98,12 @@ QT_BEGIN_NAMESPACE
     F(QRegExp, 27, QRegExp) \
     F(QEasingCurve, 29, QEasingCurve) \
     F(QUuid, 30, QUuid) \
-    F(QModelIndex, 31, QModelIndex) \
-    F(QVariant, 138, QVariant) \
+    F(QVariant, 41, QVariant) \
+    F(QModelIndex, 42, QModelIndex) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
-    F(QObjectStar, 136, QObject*) \
-    F(QWidgetStar, 137, QWidget*) \
+    F(QObjectStar, 39, QObject*) \
+    F(QWidgetStar, 40, QWidget*) \
 
 #define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
     F(QVariantMap, 8, QVariantMap) \
@@ -188,8 +188,7 @@ public:
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
         LastWidgetsType = QSizePolicy,
-        FirstCoreExtType = VoidStar,
-        LastCoreExtType = QVariant,
+        HighestInternalId = LastWidgetsType,
 
 // This logic must match the one in qglobal.h
 #if defined(QT_COORD_TYPE)

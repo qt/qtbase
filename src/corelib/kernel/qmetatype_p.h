@@ -68,8 +68,6 @@ static inline int moduleForType(const int typeId)
         return Gui;
     if (typeId <= QMetaType::LastWidgetsType)
         return Widgets;
-    if (typeId <= QMetaType::LastCoreExtType)
-        return Core;
     return Unknown;
 }
 }

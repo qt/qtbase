@@ -228,14 +228,13 @@ template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false
 
     \value User  Base value for user types
 
-    \omitvalue FirstCoreExtType
     \omitvalue FirstGuiType
     \omitvalue FirstWidgetsType
-    \omitvalue LastCoreExtType
     \omitvalue LastCoreType
     \omitvalue LastGuiType
     \omitvalue LastWidgetsType
     \omitvalue QReal
+    \omitvalue HighestInternalId
 
     Additional types can be registered using Q_DECLARE_METATYPE().
 
@@ -362,10 +361,10 @@ const char *QMetaType::typeName(int type)
     // In theory it can be filled during compilation time, but for some reason template code
     // that is able to do it causes GCC 4.6 to generate additional 3K of executable code. Probably
     // it is not worth of it.
-    static const char *namesCache[QMetaType::LastCoreExtType + 1];
+    static const char *namesCache[QMetaType::HighestInternalId + 1];
 
     const char *result;
-    if (type <= QMetaType::LastCoreExtType && ((result = namesCache[type])))
+    if (type <= QMetaType::HighestInternalId && ((result = namesCache[type])))
         return result;
 
 #define QT_METATYPE_TYPEID_TYPENAME_CONVERTER(MetaTypeName, TypeId, RealName) \
@@ -388,7 +387,7 @@ const char *QMetaType::typeName(int type)
     }
 #undef QT_METATYPE_TYPEID_TYPENAME_CONVERTER
 
-    Q_ASSERT(type <= QMetaType::LastCoreExtType);
+    Q_ASSERT(type <= QMetaType::HighestInternalId);
     namesCache[type] = result;
     return result;
 }

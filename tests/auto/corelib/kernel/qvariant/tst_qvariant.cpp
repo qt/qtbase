@@ -262,6 +262,19 @@ private slots:
     void forwardDeclare();
     void debugStream_data();
     void debugStream();
+
+    void loadQt4Stream_data();
+    void loadQt4Stream();
+    void saveQt4Stream_data();
+    void saveQt4Stream();
+    void loadQt5Stream_data();
+    void loadQt5Stream();
+    void saveQt5Stream_data();
+    void saveQt5Stream();
+private:
+    void dataStream_data(QDataStream::Version version);
+    void loadQVariantFromDataStream(QDataStream::Version version);
+    void saveQVariantFromDataStream(QDataStream::Version version);
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2003,13 +2016,6 @@ Q_DECLARE_METATYPE(MyType*)
 void tst_QVariant::userType()
 {
     {
-        QVariant userVariant(QVariant::UserType);
-
-        QVERIFY(userVariant.isValid());
-        QVERIFY(userVariant.isNull());
-    }
-
-    {
         MyType data(1, "eins");
         MyType data2(2, "zwei");
 
@@ -3338,6 +3344,123 @@ void tst_QVariant::forwardDeclare()
     QCOMPARE(qvariant_cast<Forward*>(v), f);
 }
 
+void tst_QVariant::loadQt5Stream_data()
+{
+    dataStream_data(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::loadQt5Stream()
+{
+    loadQVariantFromDataStream(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::saveQt5Stream_data()
+{
+    dataStream_data(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::saveQt5Stream()
+{
+    saveQVariantFromDataStream(QDataStream::Qt_5_0);
+}
+
+void tst_QVariant::loadQt4Stream_data()
+{
+    dataStream_data(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::loadQt4Stream()
+{
+    loadQVariantFromDataStream(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::saveQt4Stream_data()
+{
+    dataStream_data(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::saveQt4Stream()
+{
+    saveQVariantFromDataStream(QDataStream::Qt_4_9);
+}
+
+void tst_QVariant::dataStream_data(QDataStream::Version version)
+{
+    QTest::addColumn<QString>("fileName");
+
+    QString path;
+    switch (version) {
+    case QDataStream::Qt_4_9:
+        path = QString::fromLatin1("qt4.9");
+        break;
+    case QDataStream::Qt_5_0:
+        path = QString::fromLatin1("qt5.0");
+        break;
+    default:
+        Q_UNIMPLEMENTED();
+    }
+
+    path = path.prepend(":/stream/").append("/");
+    QDir dir(path);
+    uint i = 0;
+    foreach (const QFileInfo &fileInfo, dir.entryInfoList(QStringList() << "*.bin")) {
+        QTest::newRow((path + fileInfo.fileName()).toLatin1()) << fileInfo.filePath();
+        i += 1;
+    }
+    QVERIFY(i > 10);
+}
+
+void tst_QVariant::loadQVariantFromDataStream(QDataStream::Version version)
+{
+    QFETCH(QString, fileName);
+
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QDataStream stream(&file);
+    stream.setVersion(version);
+
+    QString typeName;
+    QVariant loadedVariant;
+    stream >> typeName >> loadedVariant;
+
+    const int id = QMetaType::type(typeName.toLatin1());
+    QVariant constructedVariant(static_cast<QVariant::Type>(id));
+    QCOMPARE(constructedVariant.userType(), id);
+    QCOMPARE(QMetaType::typeName(loadedVariant.userType()), typeName.toLatin1().constData());
+    QCOMPARE(loadedVariant.userType(), constructedVariant.userType());
+}
+
+void tst_QVariant::saveQVariantFromDataStream(QDataStream::Version version)
+{
+    QFETCH(QString, fileName);
+
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDataStream dataFileStream(&file);
+
+    QString typeName;
+    dataFileStream >> typeName;
+    QByteArray data = file.readAll();
+    const int id = QMetaType::type(typeName.toLatin1());
+
+    QBuffer buffer;
+    buffer.open(QIODevice::ReadWrite);
+    QDataStream stream(&buffer);
+    stream.setVersion(version);
+
+    QVariant constructedVariant(static_cast<QVariant::Type>(id));
+    QCOMPARE(constructedVariant.userType(), id);
+    stream << constructedVariant;
+
+    // We are testing QVariant there is no point in testing full array.
+    QCOMPARE(buffer.data().left(5), data.left(5));
+
+    buffer.seek(0);
+    QVariant recunstructedVariant;
+    stream >> recunstructedVariant;
+    QCOMPARE(recunstructedVariant.userType(), constructedVariant.userType());
+}
 
 class MessageHandler {
 public:
@@ -3396,7 +3519,6 @@ void tst_QVariant::debugStream()
     qDebug() << variant;
     QVERIFY(msgHandler.testPassed());
 }
-
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"

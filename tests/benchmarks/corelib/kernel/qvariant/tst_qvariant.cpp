@@ -307,8 +307,6 @@ void tst_qvariant::createCoreType_data()
     QTest::addColumn<int>("typeId");
     for (int i = 0; i <= QMetaType::LastCoreType; ++i)
         QTest::newRow(QMetaType::typeName(i)) << i;
-    for (int i = QMetaType::FirstCoreExtType; i <= QMetaType::LastCoreExtType; ++i)
-        QTest::newRow(QMetaType::typeName(i)) << i;
 }
 
 // Tests how fast a Qt core type can be default-constructed by a

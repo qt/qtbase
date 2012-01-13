@@ -250,7 +250,7 @@ QT_BEGIN_NAMESPACE
         return retVal;
 
 enum {
-    DefaultStreamVersion = QDataStream::Qt_4_6
+    DefaultStreamVersion = QDataStream::Qt_5_0
 };
 
 // ### 5.0: when streaming invalid QVariants, just the type should
