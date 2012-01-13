@@ -8808,13 +8808,37 @@ QString QString::toHtmlEscaped() const
   Creating a QString from it is free in this case, and the generated string data is stored in
   the read-only segment of the compiled object file.
 
+  For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
+  QLatin1String.
+
+  The result of the QStringLiteral expression can be cast into a QString.
+
+  If you have code looking like:
+  \code
+  if (node.hasAttribute("http-contents-length")) //...
+  \endcode
+  One temporary QString will be created to be passed as the hasAttribute function parameter.
+  This can be quite expensive, as it involves a memory allocation and the copy and the conversion
+  of the data into QString's internal encoding.
+
+  This can be avoided by doing
+  \code
+  if (node.hasAttribute(QStringLiteral("http-contents-length"))) //...
+  \endcode
+  Then the QString's internal data will be generated at compile time and no conversion or allocation
+  will occur at runtime
+
   Using QStringLiteral instead of a double quoted ascii literal can significantly speed up creation
   of QString's from data known at compile time.
 
-  If the compiler is c++0x enabled the string \a str can actually contain unicode data.
+  If the compiler is C++11 enabled the string \a str can actually contain unicode data.
 
-  For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
-  QLatin1String.
+  \note There are still a few cases in which QLatin1String is more efficient than QStringLiteral:
+  If it is passed to a function that has an overload that takes the QLatin1String directly, without
+  conversion to QString. For instance, this is the case of QString::operator==
+  \code
+  if (attribute.name() == QLatin1String("http-contents-length")) //...
+  \endcode
 */
 
 QT_END_NAMESPACE
