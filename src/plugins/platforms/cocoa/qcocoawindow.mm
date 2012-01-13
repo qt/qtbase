@@ -123,6 +123,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
 QCocoaWindow::~QCocoaWindow()
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+    [m_contentView release];
     [m_nsWindow release];
 }
 
