@@ -2118,7 +2118,7 @@ void QTest::qWarn(const char *message, const char *file, int line)
 */
 void QTest::ignoreMessage(QtMsgType type, const char *message)
 {
-    QTestResult::ignoreMessage(type, message);
+    QTestLog::ignoreMessage(type, message);
 }
 
 /*! \internal

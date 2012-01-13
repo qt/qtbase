@@ -80,8 +80,6 @@ public:
     static int failCount();
     static int skipCount();
 
-    static void ignoreMessage(QtMsgType type, const char *msg);
-
     static void addFailure(const char *message, const char *file, int line);
     static bool compare(bool success, const char *msg, const char *file, int line);
     static bool compare(bool success, const char *msg, char *val1, char *val2,

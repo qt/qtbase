@@ -313,11 +313,6 @@ int QTestResult::skipCount()
     return QTestLog::skipCount();
 }
 
-void QTestResult::ignoreMessage(QtMsgType type, const char *msg)
-{
-    QTestLog::ignoreMessage(type, msg);
-}
-
 bool QTestResult::testFailed()
 {
     return QTest::failed;
