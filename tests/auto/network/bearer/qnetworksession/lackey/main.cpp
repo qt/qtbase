@@ -43,9 +43,11 @@
 #include <QStringList>
 #include <QLocalSocket>
 
+#ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfiguration.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
+#endif
 
 #include <QEventLoop>
 #include <QTimer>
@@ -62,6 +64,7 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
+#ifndef QT_NO_BEARERMANAGEMENT
     // Update configurations so that everything is up to date for this process too.
     // Event loop is used to wait for awhile.
     QNetworkConfigurationManager manager;
@@ -150,6 +153,7 @@ int main(int argc, char** argv)
 
     oopSocket.disconnectFromServer();
     oopSocket.waitForDisconnected(-1);
+#endif
 
     return 0;
 }

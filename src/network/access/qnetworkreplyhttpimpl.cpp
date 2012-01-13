@@ -1497,10 +1497,12 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 */
 bool QNetworkReplyHttpImplPrivate::start()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
     if (!managerPrivate->networkSession) {
         postRequest();
         return true;
     }
+#endif
 
     // This is not ideal.
     const QString host = url.host();
@@ -1511,11 +1513,13 @@ bool QNetworkReplyHttpImplPrivate::start()
         return true;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     if (managerPrivate->networkSession->isOpen() &&
         managerPrivate->networkSession->state() == QNetworkSession::Connected) {
         postRequest();
         return true;
     }
+#endif
 
     return false;
 }

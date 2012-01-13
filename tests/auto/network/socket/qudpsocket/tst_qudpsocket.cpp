@@ -63,7 +63,9 @@
 
 Q_DECLARE_METATYPE(QHostAddress)
 Q_DECLARE_METATYPE(QNetworkInterface)
+#ifndef QT_NO_BEARERMANAGEMENT
 Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
+#endif
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 

@@ -42,11 +42,15 @@
 #include <QtTest/QtTest>
 
 #include <QtNetwork/QNetworkAccessManager>
+#ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/QNetworkConfigurationManager>
+#endif
 
 #include <QtCore/QDebug>
 
-Q_DECLARE_METATYPE(QNetworkAccessManager::NetworkAccessibility);
+#ifndef QT_NO_BEARERMANAGEMENT
+Q_DECLARE_METATYPE(QNetworkAccessManager::NetworkAccessibility)
+#endif
 
 class tst_QNetworkAccessManager : public QObject
 {
@@ -65,6 +69,7 @@ tst_QNetworkAccessManager::tst_QNetworkAccessManager()
 
 void tst_QNetworkAccessManager::networkAccessible()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
     QNetworkAccessManager manager;
 
     qRegisterMetaType<QNetworkAccessManager::NetworkAccessibility>("QNetworkAccessManager::NetworkAccessibility");
@@ -105,6 +110,7 @@ void tst_QNetworkAccessManager::networkAccessible()
                  QNetworkAccessManager::NotAccessible);
         QCOMPARE(manager.networkAccessible(), QNetworkAccessManager::NotAccessible);
     }
+#endif
 }
 
 QTEST_MAIN(tst_QNetworkAccessManager)

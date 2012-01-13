@@ -95,7 +95,9 @@ class QHostInfoAgent : public QObject
     Q_OBJECT
 public:
     static QHostInfo fromName(const QString &hostName);
+#ifndef QT_NO_BEARERMANAGEMENT
     static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
+#endif
 };
 
 class QHostInfoPrivate

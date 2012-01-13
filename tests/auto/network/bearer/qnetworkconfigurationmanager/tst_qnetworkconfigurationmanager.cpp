@@ -42,8 +42,10 @@
 #include <QtTest/QtTest>
 #include "../qbearertestcommon.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfiguration.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
+#endif
 
 QT_USE_NAMESPACE
 class tst_QNetworkConfigurationManager : public QObject
@@ -51,12 +53,15 @@ class tst_QNetworkConfigurationManager : public QObject
     Q_OBJECT
 
 private slots:
+#ifndef QT_NO_BEARERMANAGEMENT
     void usedInThread(); // this test must be first, or it will falsely pass
     void allConfigurations();
     void defaultConfiguration();
     void configurationFromIdentifier();
+#endif
 };
 
+#ifndef QT_NO_BEARERMANAGEMENT
 void printConfigurationDetails(const QNetworkConfiguration& p)
 {
     qDebug() << p.name() <<":  isvalid->" <<p.isValid() << " type->"<< p.type() << 
@@ -245,6 +250,7 @@ void tst_QNetworkConfigurationManager::usedInThread()
     //QCOMPARE(thread.preScanConfigs, preScanConfigs);
 #endif
 }
+#endif
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
 #include "tst_qnetworkconfigurationmanager.moc"
