@@ -1025,17 +1025,17 @@ void tst_QImage::setPixel_data()
     QTest::newRow("RGB16 blue") << int(QImage::Format_RGB16)
                                 << 0xff0000ff << 0x001fu;
     QTest::newRow("ARGB8565_Premultiplied red") << int(QImage::Format_ARGB8565_Premultiplied)
-                                  << 0xffff0000 << 0xffff0000;
+                                  << 0xffff0000 << 0xf800ffu;
     QTest::newRow("ARGB8565_Premultiplied green") << int(QImage::Format_ARGB8565_Premultiplied)
-                                    << 0xff00ff00 << 0xff00ff00;
+                                    << 0xff00ff00 << 0x07e0ffu;
     QTest::newRow("ARGB8565_Premultiplied blue") << int(QImage::Format_ARGB8565_Premultiplied)
-                                   << 0xff0000ff << 0xff0000ff;
+                                   << 0xff0000ff << 0x001fffu;
     QTest::newRow("RGB666 red") << int(QImage::Format_RGB666)
-                                << 0xffff0000 << 0xffff0000;
+                                << 0xffff0000 << 0x03f000u;
     QTest::newRow("RGB666 green") << int(QImage::Format_RGB666)
-                                  << 0xff00ff00 << 0xff00ff00;;
+                                  << 0xff00ff00 << 0x000fc0u;
     QTest::newRow("RGB666 blue") << int(QImage::Format_RGB666)
-                                 << 0xff0000ff << 0xff0000ff;
+                                 << 0xff0000ff << 0x00003fu;
     QTest::newRow("RGB555 red") << int(QImage::Format_RGB555)
                                 << 0xffff0000 << 0x7c00u;
     QTest::newRow("RGB555 green") << int(QImage::Format_RGB555)
@@ -1043,17 +1043,17 @@ void tst_QImage::setPixel_data()
     QTest::newRow("RGB555 blue") << int(QImage::Format_RGB555)
                                  << 0xff0000ff << 0x001fu;
     QTest::newRow("ARGB8555_Premultiplied red") << int(QImage::Format_ARGB8555_Premultiplied)
-                                  << 0xffff0000 << 0xffff0000;
+                                  << 0xffff0000 << 0x7c00ffu;
     QTest::newRow("ARGB8555_Premultiplied green") << int(QImage::Format_ARGB8555_Premultiplied)
-                                    << 0xff00ff00 << 0xff00ff00;
+                                    << 0xff00ff00 << 0x03e0ffu;
     QTest::newRow("ARGB8555_Premultiplied blue") << int(QImage::Format_ARGB8555_Premultiplied)
-                                   << 0xff0000ff << 0xff0000ff;
+                                   << 0xff0000ff << 0x001fffu;
     QTest::newRow("RGB888 red") << int(QImage::Format_RGB888)
-                                << 0xffff0000 << 0xffff0000;
+                                << 0xffff0000 << 0x0000ffu;
     QTest::newRow("RGB888 green") << int(QImage::Format_RGB888)
-                                  << 0xff00ff00 << 0xff00ff00;
+                                  << 0xff00ff00 << 0x00ff00u;
     QTest::newRow("RGB888 blue") << int(QImage::Format_RGB888)
-                                 << 0xff0000ff << 0xff0000ff;
+                                 << 0xff0000ff << 0xff0000u;
 }
 
 void tst_QImage::setPixel()
@@ -1106,57 +1106,18 @@ void tst_QImage::setPixel()
         break;
     }
     case int(QImage::Format_RGB666):
-    {
-        for (int y = 0; y < h; ++y) {
-            const qrgb666 *row = (const qrgb666*)(img.scanLine(y));
-            for (int x = 0; x < w; ++x) {
-                quint32 result = row[x];
-                if (result != expected)
-                    printf("[x,y]: %d,%d, expected=%04x, result=%04x\n",
-                           x, y, expected, result);
-                QCOMPARE(result, expected);
-            }
-        }
-        break;
-    }
     case int(QImage::Format_ARGB8565_Premultiplied):
-    {
-        for (int y = 0; y < h; ++y) {
-            const qargb8565 *row = (const qargb8565*)(img.scanLine(y));
-            for (int x = 0; x < w; ++x) {
-                quint32 result = row[x];
-                if (result != expected)
-                    printf("[x,y]: %d,%d, expected=%04x, result=%04x\n",
-                           x, y, expected, result);
-                QCOMPARE(result, expected);
-            }
-        }
-        break;
-    }
     case int(QImage::Format_ARGB8555_Premultiplied):
-    {
-        for (int y = 0; y < h; ++y) {
-            const qargb8555 *row = (const qargb8555*)(img.scanLine(y));
-            for (int x = 0; x < w; ++x) {
-                quint32 result = row[x];
-                if (result != expected)
-                    printf("[x,y]: %d,%d, expected=%04x, result=%04x\n",
-                           x, y, expected, result);
-                QCOMPARE(result, expected);
-            }
-        }
-        break;
-    }
     case int(QImage::Format_RGB888):
     {
         for (int y = 0; y < h; ++y) {
-            const qrgb888 *row = (const qrgb888*)(img.scanLine(y));
+            const quint24 *row = (const quint24*)(img.scanLine(y));
             for (int x = 0; x < w; ++x) {
-                qrgb888 result = row[x];
+                quint32 result = row[x];
                 if (result != expected)
                     printf("[x,y]: %d,%d, expected=%04x, result=%04x\n",
-                           x, y, expected, quint32(result));
-                QCOMPARE(uint(result), expected);
+                           x, y, expected, result);
+                QCOMPARE(result, expected);
             }
         }
         break;

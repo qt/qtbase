@@ -202,46 +202,10 @@ void QRasterPlatformPixmap::fill(const QColor &color)
                     image = QImage(image.width(), image.height(), toFormat);
                 }
             }
-
-            switch (image.format()) {
-            case QImage::Format_ARGB8565_Premultiplied:
-                pixel = qargb8565(color.rgba()).rawValue();
-                break;
-            case QImage::Format_ARGB8555_Premultiplied:
-                pixel = qargb8555(color.rgba()).rawValue();
-                break;
-            case QImage::Format_ARGB6666_Premultiplied:
-                pixel = qargb6666(color.rgba()).rawValue();
-                break;
-            case QImage::Format_ARGB4444_Premultiplied:
-                pixel = qargb4444(color.rgba()).rawValue();
-                break;
-            default:
-                pixel = PREMUL(color.rgba());
-                break;
-            }
-        } else {
-            switch (image.format()) {
-            case QImage::Format_RGB16:
-                pixel = qt_colorConvert<quint16, quint32>(color.rgba(), 0);
-                break;
-            case QImage::Format_RGB444:
-                pixel = qrgb444(color.rgba()).rawValue();
-                break;
-            case QImage::Format_RGB555:
-                pixel = qrgb555(color.rgba()).rawValue();
-                break;
-            case QImage::Format_RGB666:
-                pixel = qrgb666(color.rgba()).rawValue();
-                break;
-            case QImage::Format_RGB888:
-                pixel = qrgb888(color.rgba()).rawValue();
-                break;
-            default:
-                pixel = color.rgba();
-                break;
-            }
         }
+        pixel = PREMUL(color.rgba());
+        const QPixelLayout *layout = &qPixelLayouts[image.format()];
+        layout->convertFromARGB32PM(&pixel, &pixel, 1, layout, 0);
     } else {
         pixel = 0;
         // ### what about 8 bits

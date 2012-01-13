@@ -198,7 +198,7 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
 
         while (h--) {
             for (int x=0; x<w; ++x)
-                dst[x] = INTERPOLATE_PIXEL_255(qt_colorConvert(src[x], dst[x]), a, dst[x], ia);
+                dst[x] = INTERPOLATE_PIXEL_255(qConvertRgb16To32(src[x]), a, dst[x], ia);
             dst += dbpl;
             src += sbpl;
         }

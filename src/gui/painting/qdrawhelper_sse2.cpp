@@ -459,7 +459,7 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
                           quint32 color,
                           const uchar *src, int width, int height, int stride)
 {
-    const quint16 c = qt_colorConvert<quint16, quint32>(color, 0);
+    const quint16 c = qConvertRgb32To16(color);
     quint16 *dest = reinterpret_cast<quint16*>(rasterBuffer->scanLine(y)) + x;
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
