@@ -2265,13 +2265,9 @@ void QSignalEventGenerator::qt_static_metacall(QObject *_o, QMetaObject::Call _c
     Q_UNUSED(_a);
 }
 
-const QMetaObjectExtraData QSignalEventGenerator::staticMetaObjectExtraData = {
-    0,  qt_static_metacall
-};
-
 const QMetaObject QSignalEventGenerator::staticMetaObject = {
     { &QObject::staticMetaObject, qt_meta_stringdata_QSignalEventGenerator.data,
-      qt_meta_data_QSignalEventGenerator, &staticMetaObjectExtraData }
+      qt_meta_data_QSignalEventGenerator, qt_static_metacall, 0, 0 }
 };
 
 const QMetaObject *QSignalEventGenerator::metaObject() const

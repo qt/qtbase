@@ -1316,25 +1316,8 @@ bool tst_QMetaObjectBuilder::sameMetaObject
             return false;
     }
 
-    const QMetaObject **objects1 = 0;
-    const QMetaObject **objects2 = 0;
-    if (meta1->d.data[0] == meta2->d.data[0] && meta1->d.data[0] >= 2) {
-        QMetaObjectExtraData *extra1 = (QMetaObjectExtraData *)(meta1->d.extradata);
-        QMetaObjectExtraData *extra2 = (QMetaObjectExtraData *)(meta2->d.extradata);
-        if (extra1 && !extra2)
-            return false;
-        if (extra2 && !extra1)
-            return false;
-        if (extra1 && extra2) {
-            if (extra1->static_metacall != extra2->static_metacall)
-                return false;
-            objects1 = extra1->objects;
-            objects2 = extra1->objects;
-        }
-    } else if (meta1->d.data[0] == meta2->d.data[0] && meta1->d.data[0] == 1) {
-        objects1 = (const QMetaObject **)(meta1->d.extradata);
-        objects2 = (const QMetaObject **)(meta2->d.extradata);
-    }
+    const QMetaObject **objects1 = meta1->d.relatedMetaObjects;
+    const QMetaObject **objects2 = meta2->d.relatedMetaObjects;
     if (objects1 && !objects2)
         return false;
     if (objects2 && !objects1)
@@ -1402,7 +1385,7 @@ private:
 };
 
 QMetaObject TestObject::staticMetaObject = {
-    { 0, 0, 0, 0 }
+    { 0, 0, 0, 0, 0, 0 }
 };
 
 TestObject::TestObject(QObject *parent)

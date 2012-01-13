@@ -2949,8 +2949,7 @@ QObjectPrivate::Connection *QMetaObjectPrivate::connect(const QObject *sender, i
     int method_offset = rmeta ? rmeta->methodOffset() : 0;
     Q_ASSERT(!rmeta || QMetaObjectPrivate::get(rmeta)->revision >= 6);
     QObjectPrivate::StaticMetaCallFunction callFunction =
-        (rmeta && rmeta->d.extradata)
-        ? reinterpret_cast<const QMetaObjectExtraData *>(rmeta->d.extradata)->static_metacall : 0;
+        rmeta ? rmeta->d.static_metacall : 0;
 
     QOrderedMutexLocker locker(signalSlotLock(sender),
                                signalSlotLock(receiver));

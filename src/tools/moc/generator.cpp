@@ -415,22 +415,6 @@ void Generator::generateCode()
         fprintf(out, "    0\n};\n\n");
     }
 
-    bool hasExtraData = (cdef->hasQObject && !isQt) || !extraList.isEmpty();
-    if (hasExtraData) {
-        fprintf(out, "const QMetaObjectExtraData %s::staticMetaObjectExtraData = {\n    ",
-                cdef->qualified.constData());
-        if (extraList.isEmpty())
-            fprintf(out, "0, ");
-        else
-            fprintf(out, "qt_meta_extradata_%s, ", qualifiedClassNameIdentifier.constData());
-
-        if (cdef->hasQObject && !isQt)
-            fprintf(out, " qt_static_metacall");
-        else
-            fprintf(out, " 0");
-        fprintf(out, " \n};\n\n");
-    }
-
 //
 // Finally create and initialize the static meta object
 //
@@ -448,15 +432,19 @@ void Generator::generateCode()
     fprintf(out, "qt_meta_stringdata_%s.data,\n"
             "      qt_meta_data_%s, ", qualifiedClassNameIdentifier.constData(),
             qualifiedClassNameIdentifier.constData());
-    if (!hasExtraData)
-        fprintf(out, "0 }\n");
+    if (cdef->hasQObject && !isQt)
+        fprintf(out, " qt_static_metacall, ");
     else
-        fprintf(out, "&staticMetaObjectExtraData }\n");
-    fprintf(out, "};\n");
+        fprintf(out, " 0, ");
+
+    if (extraList.isEmpty())
+        fprintf(out, "0, ");
+    else
+        fprintf(out, "qt_meta_extradata_%s, ", qualifiedClassNameIdentifier.constData());
+    fprintf(out, "0}\n};\n\n");
 
     if(isQt)
         return;
-
 
     if (!cdef->hasQObject)
         return;

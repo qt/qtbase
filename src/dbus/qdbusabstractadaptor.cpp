@@ -395,13 +395,9 @@ void QDBusAdaptorConnector::qt_static_metacall(QObject *_o, QMetaObject::Call _c
     }
 }
 
-const QMetaObjectExtraData QDBusAdaptorConnector::staticMetaObjectExtraData = {
-    0,  qt_static_metacall
-};
-
 const QMetaObject QDBusAdaptorConnector::staticMetaObject = {
     { &QObject::staticMetaObject, qt_meta_stringdata_QDBusAdaptorConnector.data,
-      qt_meta_data_QDBusAdaptorConnector, &staticMetaObjectExtraData }
+      qt_meta_data_QDBusAdaptorConnector, qt_static_metacall, 0, 0 }
 };
 
 const QMetaObject *QDBusAdaptorConnector::metaObject() const

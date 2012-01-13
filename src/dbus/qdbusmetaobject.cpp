@@ -542,6 +542,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
     // put the metaobject together
     obj->d.data = uint_data;
+    obj->d.relatedMetaObjects = 0;
+    obj->d.static_metacall = 0;
     obj->d.extradata = 0;
     obj->d.stringdata = reinterpret_cast<const QByteArrayData *>(string_data);
     obj->d.superdata = &QDBusAbstractInterface::staticMetaObject;
@@ -564,6 +566,8 @@ void QDBusMetaObjectGenerator::writeWithoutXml(const QString &interface)
     stringdata[name.length()] = '\0';
     
     d.data = reinterpret_cast<uint*>(header);
+    d.relatedMetaObjects = 0;
+    d.static_metacall = 0;
     d.extradata = 0;
     d.stringdata = stringdata;
     d.superdata = &QDBusAbstractInterface::staticMetaObject;

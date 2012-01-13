@@ -847,10 +847,7 @@ void tst_Moc::testExtraDataForEnum()
     const QMetaObject *mobjUser = &EnumUserClass::staticMetaObject;
     QCOMPARE(mobjUser->enumeratorCount(), 0);
 
-    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(mobjUser->d.extradata);
-    QVERIFY(extra);
-
-    const QMetaObject **objects = extra->objects;
+    const QMetaObject **objects = mobjUser->d.relatedMetaObjects;
     QVERIFY(objects);
     QVERIFY(objects[0] == mobjSource);
     QVERIFY(objects[1] == 0);

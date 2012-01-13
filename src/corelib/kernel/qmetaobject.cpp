@@ -288,11 +288,10 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
 */
 int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
 {
-    const QMetaObjectExtraData *extra = reinterpret_cast<const QMetaObjectExtraData *>(d.extradata);
     Q_ASSERT(priv(d.data)->revision >= 6);
-    if (!extra || !extra->static_metacall)
+    if (!d.static_metacall)
         return 0;
-    extra->static_metacall(0, cl, idx, argv);
+    d.static_metacall(0, cl, idx, argv);
     return -1;
 }
 
@@ -863,11 +862,9 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
     while (self) {
         if (strcmp(rawStringData(self, 0), name) == 0)
             return self;
-        if (self->d.extradata) {
-            const QMetaObject **e;
+        if (self->d.relatedMetaObjects) {
             Q_ASSERT(priv(self->d.data)->revision >= 2);
-            const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
-            e = extra->objects;
+            const QMetaObject **e = self->d.relatedMetaObjects;
             if (e) {
                 while (*e) {
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
@@ -2024,8 +2021,7 @@ bool QMetaMethod::invoke(QObject *object,
     int idx_relative = ((handle - priv(mobj->d.data)->methodData) / 5);
     int idx_offset =  mobj->methodOffset();
     Q_ASSERT(QMetaObjectPrivate::get(mobj)->revision >= 6);
-    QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.extradata
-        ? reinterpret_cast<const QMetaObjectExtraData *>(mobj->d.extradata)->static_metacall : 0;
+    QObjectPrivate::StaticMetaCallFunction callFunction = mobj->d.static_metacall;
 
     if (connectionType == Qt::DirectConnection) {
         if (callFunction) {
