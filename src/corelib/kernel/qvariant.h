@@ -380,7 +380,7 @@ protected:
 #ifndef Q_NO_TEMPLATE_FRIENDS
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
-private:
+protected:
 #else
 public:
 #endif
