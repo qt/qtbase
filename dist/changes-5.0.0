@@ -105,10 +105,8 @@ information about a particular change.
     QTouchDevice pointer instead of just a DeviceType value.
 
   * TouchPointState no longer includes TouchPointStateMask and
-    TouchPointPrimary. The primary flag is now stored together with
-    other touch point flags and is accessible through
-    TouchPoint::isPrimary() or TouchPoint::flags(). As a result the
-    internally used state mask is no longer necessary.
+    TouchPointPrimary. QTouchEvent::TouchPoint::isPrimary() has
+    been removed.
 
   * QWidget *widget() has been removed and is replaced by QObject
     *target() in order to avoid QWidget dependencies.
