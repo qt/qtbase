@@ -73,7 +73,6 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
         allocSize += (alignment - Q_ALIGNOF(QArrayData));
 
     QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
-    Q_CHECK_PTR(header);
     if (header) {
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);

@@ -73,6 +73,7 @@ public:
     explicit QArrayDataPointer(QTypedArrayData<T> *ptr)
         : d(ptr)
     {
+        Q_CHECK_PTR(ptr);
     }
 
     QArrayDataPointer &operator=(const QArrayDataPointer &other)
