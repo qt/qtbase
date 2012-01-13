@@ -39,6 +39,9 @@
     "qtsqlversion.h" => "QtSqlVersion",
     "qttestversion.h" => "QtTestVersion",
     "qtxmlversion.h" => "QtXmlVersion",
+    "qtwidgetsversion.h" => "QtWidgetsVersion",
+    "qtprintsupportversion.h" => "QtPrintSupportVersion",
+    "qtplatformsupportversion.h" => "QtPlatformSupportVersion",
 );
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",
