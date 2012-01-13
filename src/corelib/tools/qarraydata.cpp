@@ -41,6 +41,8 @@
 
 #include <QtCore/qarraydata.h>
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 const QArrayData QArrayData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, 0 };
@@ -70,7 +72,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
     if (!(options & RawData))
         allocSize += (alignment - Q_ALIGNOF(QArrayData));
 
-    QArrayData *header = static_cast<QArrayData *>(qMalloc(allocSize));
+    QArrayData *header = static_cast<QArrayData *>(::malloc(allocSize));
     Q_CHECK_PTR(header);
     if (header) {
         quintptr data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
@@ -97,7 +99,7 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
     if (data == &qt_array_unsharable_empty)
         return;
 
-    qFree(data);
+    ::free(data);
 }
 
 QT_END_NAMESPACE
