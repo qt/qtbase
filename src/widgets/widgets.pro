@@ -13,7 +13,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
-HEADERS += $$QT_SOURCE_TREE/src/widgets/qtwidgetsversion.h
+HEADERS += $$OUT_PWD/qtwidgetsversion.h
 
 include(../qbase.pri)
 

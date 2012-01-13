@@ -22,7 +22,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/network/qtnetworkversion.h
+HEADERS += $$OUT_PWD/qtnetworkversion.h
 
 include(access/access.pri)
 include(bearer/bearer.pri)

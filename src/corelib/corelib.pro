@@ -14,7 +14,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
+HEADERS += $$OUT_PWD/qtcoreversion.h
 
 include(animation/animation.pri)
 include(arch/arch.pri)

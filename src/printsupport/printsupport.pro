@@ -13,7 +13,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/printsupport/qtprintsupportversion.h
+HEADERS += $$OUT_PWD/qtprintsupportversion.h
 
 QMAKE_LIBS += $$QMAKE_LIBS_PRINTSUPPORT
 

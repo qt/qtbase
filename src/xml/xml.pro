@@ -14,7 +14,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/xml/qtxmlversion.h
+HEADERS += $$OUT_PWD/qtxmlversion.h
 
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
