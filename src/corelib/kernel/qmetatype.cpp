@@ -633,6 +633,7 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
+    case QMetaType::QModelIndex:
         return false;
     case QMetaType::Long:
         stream << qlonglong(*static_cast<const long *>(data));
@@ -837,6 +838,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::VoidStar:
     case QMetaType::QObjectStar:
     case QMetaType::QWidgetStar:
+    case QMetaType::QModelIndex:
         return false;
     case QMetaType::Long: {
         qlonglong l;
