@@ -20,11 +20,9 @@ screen. If this is not desired, pass force_window in the plugin
 specification as shown in the example above. This will cause mapping
 the touch surface to the active window instead.
 
-Only touch events are generated, mouse events are not. This is because
-on desktop the touch device will usually act as a single-point mouse
-replacement by default. For embedded systems the code could to be
-extended to generate also mouse events (by calling handleMouseEvent
-for the primary touch point for example).
+Only touch events are generated, mouse events are not. Be aware however
+that ignored touch events will generate a mouse event from the first
+touch point by default. See AA_SynthesizeMouseForUnhandledTouchEvents.
 
 (2) Using in a compositor
 
