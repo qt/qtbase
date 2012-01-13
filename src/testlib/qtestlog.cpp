@@ -419,7 +419,7 @@ int QTestLog::verboseLevel()
     return QTest::verbosity;
 }
 
-void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
+void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 
