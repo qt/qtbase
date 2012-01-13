@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtCore/QtCore>
+#include <QtCore/QCoreApplication>
 
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QStringListModel>

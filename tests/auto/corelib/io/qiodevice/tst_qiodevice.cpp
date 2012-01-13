@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtNetwork/QtNetwork>
 #include <QtTest/QtTest>
 

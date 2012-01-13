@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <qdebug.h>
 #include "modelstotest.cpp"
 #include <QMetaType>

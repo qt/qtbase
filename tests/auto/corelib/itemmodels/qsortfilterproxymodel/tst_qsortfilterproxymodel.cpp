@@ -43,9 +43,10 @@
 #include "dynamictreemodel.h"
 #include "modeltest.h"
 
-#include <QtCore>
-#include <QtGui>
-#include <QtWidgets>
+#include <QtCore/QCoreApplication>
+#include <QtWidgets/QStandardItem>
+#include <QtWidgets/QTreeView>
+#include <QtWidgets/QTableView>
 
 #include <qdebug.h>
 

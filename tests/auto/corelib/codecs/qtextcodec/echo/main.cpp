@@ -42,7 +42,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QTextCodec>
 
 int main(int argc, char **argv)
 {

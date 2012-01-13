@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QTextStream>
+#include <QtCore/QDebug>
 
 int main(int argc, char **argv)
 {

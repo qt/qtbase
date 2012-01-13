@@ -41,10 +41,10 @@
 
 
 #include <QtTest/QtTest>
-#include <QtCore/QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtSql/QtSql>
 #include <QtWidgets/QtWidgets>
-#include <QSortFilterProxyModel>
+#include <QtCore/QSortFilterProxyModel>
 
 /*
     To add a model to be tested add the header file to the includes

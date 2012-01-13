@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 class tst_QCryptographicHash : public QObject
@@ -54,7 +55,6 @@ private slots:
     void files_data();
     void files();
 };
-#include <QtCore>
 
 void tst_QCryptographicHash::repeated_result_data()
 {

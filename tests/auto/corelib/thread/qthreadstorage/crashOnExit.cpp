@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QThreadStorage>
 
 class Class
 {

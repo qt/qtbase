@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/QtGui>
+#include <QtGui/QBitmap>
+#include <QtGui/QPixmap>
+#include <QtGui/QPicture>
+#include <QtGui/QTextLength>
+#include <QtGui/QPainter>
+#include <QtGui/QPen>
 
 Q_DECLARE_METATYPE(QBitArray)
 Q_DECLARE_METATYPE(qint64)

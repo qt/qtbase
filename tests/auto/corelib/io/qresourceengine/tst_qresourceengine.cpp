@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 
 class tst_QResourceEngine: public QObject
 {

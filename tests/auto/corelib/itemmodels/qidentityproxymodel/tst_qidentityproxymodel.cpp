@@ -40,9 +40,8 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtCore>
-#include <QtGui>
-#include <QtWidgets>
+#include <QtCore/QCoreApplication>
+#include <QtWidgets/QStandardItemModel>
 
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"

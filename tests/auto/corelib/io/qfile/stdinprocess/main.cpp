@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QFile>
 
 int main(int argc, char *argv[])
 {
