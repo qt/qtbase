@@ -3160,6 +3160,17 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \sa Q_DECL_EXPORT
 */
 
+/*!
+    \macro Q_DECL_CONSTEXPR
+    \relates <QtGlobal>
+
+    This macro can be used to declare variable that should be constructed at compile-time,
+    or an inline function that can be computed at compile-time.
+
+    It expands to "constexpr" if your compiler supports that C++11 keyword, or to nothing
+    otherwise.
+*/
+
 #if defined(Q_OS_SYMBIAN)
 
 #include <typeinfo>
