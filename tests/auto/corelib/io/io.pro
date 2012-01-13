@@ -7,6 +7,7 @@ SUBDIRS=\
     qdir \
     qdiriterator \
     qfile \
+    largefile \
     qfileinfo \
     qfilesystementry \
     qfilesystemwatcher \
