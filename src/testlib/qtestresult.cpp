@@ -88,11 +88,6 @@ void QTestResult::reset()
     QTest::expectFailMode = 0;
 }
 
-bool QTestResult::allDataPassed()
-{
-    return !QTest::failed;
-}
-
 bool QTestResult::currentTestFailed()
 {
     return QTest::dataFailed;

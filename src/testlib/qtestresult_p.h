@@ -67,7 +67,6 @@ public:
 
     static const char *currentTestObjectName();
     static bool currentTestFailed();
-    static bool allDataPassed();
     static QTestData *currentTestData();
     static QTestData *currentGlobalTestData();
     static const char *currentTestFunction();
