@@ -35,7 +35,6 @@
     "qtguiversion.h" => "QtGuiVersion",
     "qtnetworkversion.h" => "QtNetworkVersion",
     "qtopenglversion.h" => "QtOpenGLVersion",
-    "qtopenvgversion.h" => "QtOpenVGVersion",
     "qtsqlversion.h" => "QtSqlVersion",
     "qttestversion.h" => "QtTestVersion",
     "qtxmlversion.h" => "QtXmlVersion",

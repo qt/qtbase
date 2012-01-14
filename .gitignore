@@ -124,7 +124,6 @@ src/dbus/qtdbusversion.h
 src/gui/qtguiversion.h
 src/network/qtnetworkversion.h
 src/opengl/qtopenglversion.h
-src/openvg/qtopenvgversion.h
 src/sql/qtsqlversion.h
 src/testlib/qttestversion.h
 src/xml/qtxmlversion.h
