@@ -117,11 +117,8 @@ public:
     QByteArray fromUnicode(const QChar *in, int length, ConverterState *state = 0) const
         { return convertFromUnicode(in, length, state); }
 
-    // ### Qt 5: merge these functions.
-    QTextDecoder* makeDecoder() const;
-    QTextDecoder* makeDecoder(ConversionFlags flags) const;
-    QTextEncoder* makeEncoder() const;
-    QTextEncoder* makeEncoder(ConversionFlags flags) const;
+    QTextDecoder* makeDecoder(ConversionFlags flags = DefaultConversion) const;
+    QTextEncoder* makeEncoder(ConversionFlags flags = DefaultConversion) const;
 
     virtual QByteArray name() const = 0;
     virtual QList<QByteArray> aliases() const;

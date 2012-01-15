@@ -1284,17 +1284,6 @@ QList<QByteArray> QTextCodec::aliases() const
 */
 
 /*!
-    Creates a QTextDecoder which stores enough state to decode chunks
-    of \c{char *} data to create chunks of Unicode data.
-
-    The caller is responsible for deleting the returned object.
-*/
-QTextDecoder* QTextCodec::makeDecoder() const
-{
-    return new QTextDecoder(this);
-}
-
-/*!
     Creates a QTextDecoder with a specified \a flags to decode chunks
     of \c{char *} data to create chunks of Unicode data.
 
@@ -1305,18 +1294,6 @@ QTextDecoder* QTextCodec::makeDecoder() const
 QTextDecoder* QTextCodec::makeDecoder(QTextCodec::ConversionFlags flags) const
 {
     return new QTextDecoder(this, flags);
-}
-
-
-/*!
-    Creates a QTextEncoder which stores enough state to encode chunks
-    of Unicode data as \c{char *} data.
-
-    The caller is responsible for deleting the returned object.
-*/
-QTextEncoder* QTextCodec::makeEncoder() const
-{
-    return new QTextEncoder(this);
 }
 
 /*!
