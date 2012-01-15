@@ -92,20 +92,21 @@ public:
     QRegion translated(int dx, int dy) const;
     inline QRegion translated(const QPoint &p) const { return translated(p.x(), p.y()); }
 
-    // ### Qt 5: make these four functions QT4_SUPPORT
-    QRegion unite(const QRegion &r) const;
-    QRegion unite(const QRect &r) const;
-    QRegion intersect(const QRegion &r) const;
-    QRegion intersect(const QRect &r) const;
-    QRegion subtract(const QRegion &r) const;
-    QRegion eor(const QRegion &r) const;
+    QRegion united(const QRegion &r) const;
+    QRegion united(const QRect &r) const;
+    QRegion intersected(const QRegion &r) const;
+    QRegion intersected(const QRect &r) const;
+    QRegion subtracted(const QRegion &r) const;
+    QRegion xored(const QRegion &r) const;
 
-    inline QRegion united(const QRegion &r) const { return unite(r); }
-    inline QRegion united(const QRect &r) const { return unite(r); }
-    inline QRegion intersected(const QRegion &r) const { return intersect(r); }
-    inline QRegion intersected(const QRect &r) const { return intersect(r); }
-    inline QRegion subtracted(const QRegion &r) const { return subtract(r); }
-    inline QRegion xored(const QRegion &r) const { return eor(r); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QT_DEPRECATED QRegion unite(const QRegion &r) const { return united(r); }
+    inline QT_DEPRECATED QRegion unite(const QRect &r) const { return united(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRegion &r) const { return intersected(r); }
+    inline QT_DEPRECATED QRegion intersect(const QRect &r) const { return intersected(r); }
+    inline QT_DEPRECATED QRegion subtract(const QRegion &r) const { return subtracted(r); }
+    inline QT_DEPRECATED QRegion eor(const QRegion &r) const { return xored(r); }
+#endif
 
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;
