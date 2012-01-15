@@ -1040,7 +1040,7 @@ void QKeySequence::setKey(int key, int index)
     Returns the number of keys in the key sequence.
     The maximum is 4.
  */
-uint QKeySequence::count() const
+int QKeySequence::count() const
 {
     if (!d->key[0])
         return 0;
@@ -1478,7 +1478,8 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
 }
 
 
-/*!
+/*! \fn QKeySequence::operator QString() const
+
     \obsolete
 
     Use toString() instead. 
@@ -1487,10 +1488,6 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
     calling toString(QKeySequence::NativeText). Note that the
     result is not platform independent.
 */
-QKeySequence::operator QString() const
-{
-    return QKeySequence::toString(QKeySequence::NativeText);
-}
 
 /*!
    Returns the key sequence as a QVariant
@@ -1500,18 +1497,12 @@ QKeySequence::operator QVariant() const
     return QVariant(QVariant::KeySequence, this);
 }
 
-/*!
+/*! \fn QKeySequence::operator int () const
+
     \obsolete
     For backward compatibility: returns the first keycode
     as integer. If the key sequence is empty, 0 is returned.
  */
-QKeySequence::operator int () const
-{
-    if (1 <= count())
-        return d->key[0];
-    return 0;
-}
-
 
 /*!
     Returns a reference to the element at position \a index in the key
