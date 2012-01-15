@@ -182,17 +182,47 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
                           source.height(),
                           false);
     } else {
-        xcb_image_t *subimage = xcb_image_subimage(m_xcb_image, source.x(), source.y(), source.width(), source.height(),
-                                                   0, 0, 0);
-        xcb_image_put(xcb_connection(),
-                      window,
-                      m_gc,
-                      subimage,
-                      target.x(),
-                      target.y(),
-                      0);
+        // If we upload the whole image in a single chunk, the result might be
+        // larger than the server's maximum request size and stuff breaks.
+        // To work around that, we upload the image in chunks where each chunk
+        // is small enough for a single request.
+        int src_x = source.x();
+        int src_y = source.y();
+        int target_x = target.x();
+        int target_y = target.y();
+        int width = source.width();
+        int height = source.height();
 
-        xcb_image_destroy(subimage);
+        // We must make sure that each request is not larger than max_req_size.
+        // Each request takes req_size + m_xcb_image->stride * height bytes.
+        uint32_t max_req_size = xcb_get_maximum_request_length(xcb_connection());
+        uint32_t req_size = sizeof(xcb_put_image_request_t);
+        int rows_per_put = (max_req_size - req_size) / m_xcb_image->stride;
+
+        // This assert could trigger if a single row has more pixels than fit in
+        // a single PutImage request. However, max_req_size is guaranteed to be
+        // at least 16384 bytes. That should be enough for quite large images.
+        Q_ASSERT(rows_per_put > 0);
+
+        while (height > 0) {
+            int rows = std::min(height, rows_per_put);
+
+            xcb_image_t *subimage = xcb_image_subimage(m_xcb_image, src_x, src_y, width, rows,
+                                                       0, 0, 0);
+            xcb_image_put(xcb_connection(),
+                          window,
+                          m_gc,
+                          subimage,
+                          target_x,
+                          target_y,
+                          0);
+
+            xcb_image_destroy(subimage);
+
+            src_y += rows;
+            target_y += rows;
+            height -= rows;
+        }
     }
     Q_XCB_NOOP(connection());
 
