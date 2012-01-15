@@ -136,29 +136,23 @@ public:
     bool contains(int x, int y) const; // inline methods, _don't_ merge these
     bool contains(int x, int y, bool proper) const;
     bool contains(const QRect &r, bool proper = false) const;
-    QRect unite(const QRect &r) const;  // ### Qt 5: make QT4_SUPPORT
     QRect united(const QRect &other) const;
-    QRect intersect(const QRect &r) const;  // ### Qt 5: make QT4_SUPPORT
     QRect intersected(const QRect &other) const;
     bool intersects(const QRect &r) const;
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED QRect unite(const QRect &r) const { return united(r); }
+    QT_DEPRECATED QRect intersect(const QRect &r) const { return intersected(r); }
+#endif
 
     friend Q_CORE_EXPORT_INLINE bool operator==(const QRect &, const QRect &);
     friend Q_CORE_EXPORT_INLINE bool operator!=(const QRect &, const QRect &);
 
 private:
-    // ### Qt 5;  remove the ifdef and just have the same order on all platforms.
-#if defined(Q_OS_MAC)
-    int y1;
-    int x1;
-    int y2;
-    int x2;
-#else
     int x1;
     int y1;
     int x2;
     int y2;
-#endif
-
 };
 Q_DECLARE_TYPEINFO(QRect, Q_MOVABLE_TYPE);
 
@@ -440,24 +434,14 @@ inline QRect& QRect::operator&=(const QRect &r)
     return *this;
 }
 
-inline QRect QRect::intersect(const QRect &r) const
-{
-    return *this & r;
-}
-
 inline QRect QRect::intersected(const QRect &other) const
 {
-    return intersect(other);
-}
-
-inline QRect QRect::unite(const QRect &r) const
-{
-    return *this | r;
+    return *this & other;
 }
 
 inline QRect QRect::united(const QRect &r) const
 {
-     return unite(r);
+    return *this | r;
 }
 
 inline bool operator==(const QRect &r1, const QRect &r2)
@@ -557,11 +541,14 @@ public:
     bool contains(const QPointF &p) const;
     bool contains(qreal x, qreal y) const;
     bool contains(const QRectF &r) const;
-    QRectF unite(const QRectF &r) const;  // ### Qt 5: make QT4_SUPPORT
     QRectF united(const QRectF &other) const;
-    QRectF intersect(const QRectF &r) const;  // ### Qt 5: make QT4_SUPPORT
     QRectF intersected(const QRectF &other) const;
     bool intersects(const QRectF &r) const;
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED QRectF unite(const QRectF &r) const { return united(r); }
+    QT_DEPRECATED QRectF intersect(const QRectF &r) const { return intersected(r); }
+#endif
 
     friend Q_CORE_EXPORT_INLINE bool operator==(const QRectF &, const QRectF &);
     friend Q_CORE_EXPORT_INLINE bool operator!=(const QRectF &, const QRectF &);
@@ -777,24 +764,14 @@ inline QRectF& QRectF::operator&=(const QRectF &r)
     return *this;
 }
 
-inline QRectF QRectF::intersect(const QRectF &r) const
+inline QRectF QRectF::intersected(const QRectF &r) const
 {
     return *this & r;
 }
 
-inline QRectF QRectF::intersected(const QRectF &r) const
-{
-    return intersect(r);
-}
-
-inline QRectF QRectF::unite(const QRectF &r) const
-{
-    return *this | r;
-}
-
 inline QRectF QRectF::united(const QRectF &r) const
 {
-    return unite(r);
+    return *this | r;
 }
 
 inline bool operator==(const QRectF &r1, const QRectF &r2)
