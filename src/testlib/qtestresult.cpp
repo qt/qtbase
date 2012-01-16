@@ -298,21 +298,6 @@ const char *QTestResult::currentTestObjectName()
     return QTest::currentTestObjectName ? QTest::currentTestObjectName : "";
 }
 
-int QTestResult::passCount()
-{
-    return QTestLog::passCount();
-}
-
-int QTestResult::failCount()
-{
-    return QTestLog::failCount();
-}
-
-int QTestResult::skipCount()
-{
-    return QTestLog::skipCount();
-}
-
 bool QTestResult::testFailed()
 {
     return QTest::failed;

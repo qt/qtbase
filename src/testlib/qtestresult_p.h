@@ -76,10 +76,6 @@ public:
     static void finishedCurrentTestFunction();
     static void reset();
 
-    static int passCount();
-    static int failCount();
-    static int skipCount();
-
     static void addFailure(const char *message, const char *file, int line);
     static bool compare(bool success, const char *msg, const char *file, int line);
     static bool compare(bool success, const char *msg, char *val1, char *val2,
