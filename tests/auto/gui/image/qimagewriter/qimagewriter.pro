@@ -7,11 +7,4 @@ MOC_DIR=tmp
 win32-msvc:QMAKE_CXXFLAGS -= -Zm200
 win32-msvc:QMAKE_CXXFLAGS += -Zm800
 
-wince*: {
-   addFiles.files = images\\*.*
-   addFiles.path = images
-   DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\".\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD\\\"
-}
+TESTDATA += images/*

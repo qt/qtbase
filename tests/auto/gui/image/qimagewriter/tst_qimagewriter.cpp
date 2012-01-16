@@ -71,6 +71,7 @@ public:
 
 public slots:
     void init();
+    void initTestCase();
     void cleanup();
 
 private slots:
@@ -100,9 +101,9 @@ private slots:
     void resolution();
 
     void saveToTemporaryFile();
+private:
+    QString prefix;
 };
-
-static const QLatin1String prefix(SRCDIR "/images/");
 
 static void initializePadding(QImage *image)
 {
@@ -113,6 +114,13 @@ static void initializePadding(QImage *image)
     for (int y = 0; y < image->height(); ++y) {
         qMemSet(image->scanLine(y) + effectiveBytesPerLine, 0, paddingBytes);
     }
+}
+
+void tst_QImageWriter::initTestCase()
+{
+    prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("Can't find images directory!");
 }
 
 // Testing get/set functions
@@ -217,15 +225,22 @@ void tst_QImageWriter::writeImage()
     }
 
     {
-        // Shouldn't be able to write to read-only file
-        QFile sourceFile(prefix + "gen-" + fileName);
-        QFile::Permissions permissions = sourceFile.permissions();
-        QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
+        bool skip = false;
+#if defined(Q_OS_UNIX)
+        if (::geteuid() == 0)
+            skip = true;
+#endif
+        if (!skip) {
+            // Shouldn't be able to write to read-only file
+            QFile sourceFile(prefix + "gen-" + fileName);
+            QFile::Permissions permissions = sourceFile.permissions();
+            QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
 
-        QImageWriter writer(prefix + "gen-" + fileName, format);
-        QVERIFY(!writer.write(image));
+            QImageWriter writer(prefix + "gen-" + fileName, format);
+            QVERIFY(!writer.write(image));
 
-        QVERIFY(sourceFile.setPermissions(permissions));
+            QVERIFY(sourceFile.setPermissions(permissions));
+        }
     }
 
     QImage image2;
