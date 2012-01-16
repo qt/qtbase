@@ -1474,11 +1474,11 @@ void tst_QPlainTextEdit::selectionChanged()
     QCOMPARE(selectionChangedSpy.count(), 3);
 
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 5);
+    QCOMPARE(ed->textCursor().position(), 4);
     QCOMPARE(selectionChangedSpy.count(), 4);
 
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 6);
+    QCOMPARE(ed->textCursor().position(), 5);
     QCOMPARE(selectionChangedSpy.count(), 4);
 }
 
