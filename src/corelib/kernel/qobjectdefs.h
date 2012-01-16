@@ -62,6 +62,7 @@ class QString;
 // They are used, strictly speaking, only by the moc.
 
 #ifndef Q_MOC_RUN
+#ifndef QT_NO_META_MACROS
 # if defined(QT_NO_KEYWORDS)
 #  define QT_NO_EMIT
 # else
@@ -106,6 +107,7 @@ class QString;
 // inherit the ones from QObject
 # define QT_TR_FUNCTIONS
 #endif
+#endif // QT_NO_META_MACROS
 
 #if defined(QT_NO_QOBJECT_CHECK)
 /* tmake ignore Q_OBJECT */
@@ -151,11 +153,14 @@ private: \
 
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT_FAKE Q_OBJECT
+
+#ifndef QT_NO_META_MACROS
 /* tmake ignore Q_GADGET */
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
 private:
+#endif // QT_NO_META_MACROS
 
 #else // Q_MOC_RUN
 #define slots slots
@@ -182,6 +187,7 @@ private:
 #define Q_SLOT Q_SLOT
 #endif //Q_MOC_RUN
 
+#ifndef QT_NO_META_MACROS
 // macro for onaming members
 #ifdef METHOD
 #undef METHOD
@@ -192,9 +198,11 @@ private:
 #ifdef SIGNAL
 #undef SIGNAL
 #endif
+#endif // QT_NO_META_MACROS
 
 Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 
+#ifndef QT_NO_META_MACROS
 #define QTOSTRING_HELPER(s) #s
 #define QTOSTRING(s) QTOSTRING_HELPER(s)
 #ifndef QT_NO_DEBUG
@@ -215,6 +223,7 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 #define QMETHOD_CODE  0                        // member type codes
 #define QSLOT_CODE    1
 #define QSIGNAL_CODE  2
+#endif // QT_NO_META_MACROS
 
 #define Q_ARG(type, data) QArgument<type >(#type, data)
 #define Q_RETURN_ARG(type, data) QReturnArgument<type >(#type, data)
