@@ -106,7 +106,7 @@ public:
     void doneCurrent();
 
     void swapBuffers(QSurface *surface);
-    void (*getProcAddress(const QByteArray &procName)) ();
+    QFunctionPointer getProcAddress(const QByteArray &procName);
 
     QSurface *surface() const;
 

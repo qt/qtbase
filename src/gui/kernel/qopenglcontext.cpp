@@ -310,7 +310,7 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
-void (*QOpenGLContext::getProcAddress(const QByteArray &procName)) ()
+QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName)
 {
     Q_D(QOpenGLContext);
     if (!d->platformGLContext)
