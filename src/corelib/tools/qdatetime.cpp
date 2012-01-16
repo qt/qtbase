@@ -832,7 +832,9 @@ QString QDate::toString(const QString& format) const
 #endif //QT_NO_DATESTRING
 
 /*!
-    \obsolete
+    \fn bool setYMD(int y, int m, int d)
+
+    \deprecated in 5.0, use setDate() instead.
 
     Sets the date's year \a y, month \a m, and day \a d.
 
@@ -841,13 +843,6 @@ QString QDate::toString(const QString& format) const
 
     Use setDate() instead.
 */
-
-bool QDate::setYMD(int y, int m, int d)
-{
-    if (uint(y) <= 99)
-        y += 1900;
-    return setDate(y, m, d);
-}
 
 /*!
     \since 4.2

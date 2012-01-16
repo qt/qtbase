@@ -84,7 +84,11 @@ public:
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
     QString toString(const QString &format) const;
 #endif
-    bool setYMD(int y, int m, int d);
+#if QT_DEPRECATED_SINCE(5,0)
+QT_DEPRECATED inline bool setYMD(int y, int m, int d)
+{ if (uint(y) <= 99) y += 1900; return setDate(y, m, d); }
+#endif
+
     bool setDate(int year, int month, int day);
 
     void getDate(int *year, int *month, int *day);

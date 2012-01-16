@@ -472,7 +472,7 @@ static void _q_fixupDateTime(QDateTime *dateTime)
     const int futureTolerance = 86400;
     if (dateTime->secsTo(QDateTime::currentDateTime()) < -futureTolerance) {
         QDate d = dateTime->date();
-        d.setYMD(d.year() - 1, d.month(), d.day());
+        d.setDate(d.year() - 1, d.month(), d.day());
         dateTime->setDate(d);
     }
 }

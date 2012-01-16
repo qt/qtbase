@@ -703,6 +703,7 @@ void tst_QDate::yearsZeroToNinetyNine()
     QVERIFY(QDate::isValid(1, 2, 3));
     QVERIFY(QDate::isValid(-1, 2, 3));
 
+#if QT_DEPRECATED_SINCE(5,0)
     {
         QDate dt;
         dt.setYMD(1, 2, 3);
@@ -710,6 +711,7 @@ void tst_QDate::yearsZeroToNinetyNine()
         QCOMPARE(dt.month(), 2);
         QCOMPARE(dt.day(), 3);
     }
+#endif
 
     {
         QDate dt;

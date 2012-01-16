@@ -234,6 +234,10 @@ QtCore
   now return an empty QString, QStringRef or QByteArray respectively.
   in Qt 4 they returned a null QString or a null QStringRef.
 
+* QDate, QTime, and QDateTime have undergone important behavioural changes:
+  * QDate::setYMD() is deprecated, use QDate::setDate() instead
+
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

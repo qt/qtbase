@@ -1134,7 +1134,7 @@ const QDBusArgument &operator>>(const QDBusArgument &a, QDate &date)
     a.endStructure();
 
     if (y != 0 && m != 0 && d != 0)
-        date.setYMD(y, m, d);
+        date.setDate(y, m, d);
     else
         date = QDate();
     return a;
