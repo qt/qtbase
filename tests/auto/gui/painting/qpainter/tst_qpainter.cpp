@@ -3108,7 +3108,7 @@ void tst_QPainter::drawImage_task217400()
 {
     QFETCH(QImage::Format, format);
 
-    const QImage src = QImage(QString(SRCDIR) + "/task217400.png")
+    const QImage src = QImage(QFINDTESTDATA("task217400.png"))
                        .convertToFormat(format);
     QVERIFY(!src.isNull());
 
