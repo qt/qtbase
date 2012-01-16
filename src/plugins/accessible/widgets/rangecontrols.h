@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,10 +67,10 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
+    QVariant currentValue() const;
     void setCurrentValue(const QVariant &value);
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
 
     // FIXME Action interface
 
@@ -106,10 +106,10 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
+    QVariant currentValue() const;
     void setCurrentValue(const QVariant &value);
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
 
 protected:
     QAbstractSlider *abstractSlider() const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -601,7 +601,7 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) {}
     void unregisterSocketNotifier(QSocketNotifier *) {}
-    void registerTimer(int , int , QObject *) {}
+    void registerTimer(int , int , Qt::TimerType, QObject *) {}
     bool unregisterTimer(int ) { return false; }
     bool unregisterTimers(QObject *) { return false; }
     QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }

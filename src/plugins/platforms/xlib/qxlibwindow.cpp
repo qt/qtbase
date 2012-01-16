@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -303,10 +303,11 @@ WId QXlibWindow::winId() const
     return x_window;
 }
 
-void QXlibWindow::setParent(const QPlatformWindow *window)
+void QXlibWindow::setParent(const QPlatformWindow *parent)
 {
     QPoint topLeft = geometry().topLeft();
-    XReparentWindow(mScreen->display()->nativeDisplay(),x_window,window->winId(),topLeft.x(),topLeft.y());
+    WId parentWinId = parent ? parent->winId() : mScreen->rootWindow();
+    XReparentWindow(mScreen->display()->nativeDisplay(),x_window,parentWinId,topLeft.x(),topLeft.y());
 }
 
 void QXlibWindow::raise()

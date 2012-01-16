@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -572,7 +572,7 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();
-        QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
+        setupViewport(widget);
         delete oldViewport;
     }
 }

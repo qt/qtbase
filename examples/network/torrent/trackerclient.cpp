@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include "trackerclient.h"
 
 #include <QtCore>
+#include <QNetworkRequest>
 
 TrackerClient::TrackerClient(TorrentClient *downloader, QObject *parent)
     : QObject(parent), torrentDownloader(downloader)
@@ -56,7 +57,7 @@ TrackerClient::TrackerClient(TorrentClient *downloader, QObject *parent)
     lastTrackerRequest = false;
     firstSeeding = true;
 
-    connect(&http, SIGNAL(done(bool)), this, SLOT(httpRequestDone(bool)));
+    connect(&http, SIGNAL(finished(QNetworkReply*)), this, SLOT(httpRequestDone(QNetworkReply*)));
 }
 
 void TrackerClient::start(const MetaInfo &info)
@@ -82,15 +83,13 @@ void TrackerClient::startSeeding()
 void TrackerClient::stop()
 {
     lastTrackerRequest = true;
-    http.abort();
     fetchPeerList();
 }
 
 void TrackerClient::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == requestIntervalTimer) {
-        if (http.state() == QHttp::Unconnected)
-            fetchPeerList();
+        fetchPeerList();
     } else {
         QObject::timerEvent(event);
     }
@@ -148,32 +147,35 @@ void TrackerClient::fetchPeerList()
     if (!trackerId.isEmpty())
         query += "&trackerid=" + trackerId;
 
-    http.setHost(url.host(), url.port() == -1 ? 80 : url.port());
-    if (!url.userName().isEmpty())
-        http.setUser(url.userName(), url.password());
-    http.get(query);
+    QNetworkRequest req(url);
+    if (!url.userName().isEmpty()) {
+        uname = url.userName();
+        pwd = url.password();
+        connect(&http, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(provideAuthentication(QNetworkReply*,QAuthenticator*)));
+    }
+    http.get(req);
 }
 
-void TrackerClient::httpRequestDone(bool error)
+void TrackerClient::httpRequestDone(QNetworkReply *reply)
 {
+    reply->deleteLater();
     if (lastTrackerRequest) {
         emit stopped();
         return;
     }
 
-    if (error) {
-        emit connectionError(http.error());
+    if (reply->error() != QNetworkReply::NoError) {
+        emit connectionError(reply->error());
         return;
     }
 
-    QByteArray response = http.readAll();
-    http.abort();
+    QByteArray response = reply->readAll();
+    reply->abort();
 
     BencodeParser parser;
     if (!parser.parse(response)) {
         qWarning("Error parsing bencode response from tracker: %s",
                  qPrintable(parser.errorString()));
-        http.abort();
         return;
     }
 
@@ -233,4 +235,11 @@ void TrackerClient::httpRequestDone(bool error)
         }
         emit peerListUpdated(peers);
     }
+}
+
+void TrackerClient::provideAuthentication(QNetworkReply *reply, QAuthenticator *auth)
+{
+    Q_UNUSED(reply);
+    auth->setUser(uname);
+    auth->setPassword(pwd);
 }

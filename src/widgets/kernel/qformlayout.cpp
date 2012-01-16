@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,7 +93,7 @@ void FixedColumnMatrix<T, NumColumns>::addRow(const T &value)
 template <class T, int NumColumns>
 void FixedColumnMatrix<T, NumColumns>::insertRow(int r, const T &value)
 {
-    Q_TYPENAME Storage::iterator it = m_storage.begin();
+    typename Storage::iterator it = m_storage.begin();
     it += r * NumColumns;
     m_storage.insert(it, NumColumns, value);
 }

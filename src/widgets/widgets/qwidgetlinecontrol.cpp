@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,22 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+static const int qt_passwordEchoDelay = QT_GUI_PASSWORD_ECHO_DELAY;
+#endif
+
+/*!
+    \macro QT_GUI_PASSWORD_ECHO_DELAY
+
+    \internal
+
+    Defines the amount of time in milliseconds the last entered character
+    should be displayed unmasked in the Password echo mode.
+
+    If not defined in qplatformdefs.h there will be no delay in masking
+    password characters.
+*/
+
 /*!
    \internal
 
@@ -93,9 +109,25 @@ void QWidgetLineControl::updateDisplayText(bool forceUpdate)
     else
         str = m_text;
 
-    if (m_echoMode == QLineEdit::Password || (m_echoMode == QLineEdit::PasswordEchoOnEdit
-                && !m_passwordEchoEditing))
+    if (m_echoMode == QLineEdit::Password) {
         str.fill(m_passwordCharacter);
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0 && m_cursor > 0 && m_cursor <= m_text.length()) {
+            int cursor = m_cursor - 1;
+            QChar uc = m_text.at(cursor);
+            str[cursor] = uc;
+            if (cursor > 0 && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+                // second half of a surrogate, check if we have the first half as well,
+                // if yes restore both at once
+                uc = m_text.at(cursor - 1);
+                if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
+                    str[cursor - 1] = uc;
+            }
+        }
+#endif
+    } else if (m_echoMode == QLineEdit::PasswordEchoOnEdit && !m_passwordEchoEditing) {
+        str.fill(m_passwordCharacter);
+    }
 
     // replace certain non-printable characters with spaces (to avoid
     // drawing boxes when using fonts that don't have glyphs for such
@@ -354,6 +386,7 @@ void QWidgetLineControl::init(const QString &txt)
 */
 void QWidgetLineControl::updatePasswordEchoEditing(bool editing)
 {
+    cancelPasswordEchoTimer();
     m_passwordEchoEditing = editing;
     updateDisplayText();
 }
@@ -694,6 +727,8 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
         m_selDirty = false;
         emit selectionChanged();
     }
+    if (m_cursor == m_lastCursorPos)
+        updateMicroFocus();
     emitCursorPositionChanged();
     return true;
 }
@@ -705,6 +740,7 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
 */
 void QWidgetLineControl::internalSetText(const QString &txt, int pos, bool edited)
 {
+    cancelPasswordEchoTimer();
     internalDeselect();
     emit resetInputContext();
     QString oldText = m_text;
@@ -757,6 +793,13 @@ void QWidgetLineControl::addCommand(const Command &cmd)
 */
 void QWidgetLineControl::internalInsert(const QString &s)
 {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    if (m_echoMode == QLineEdit::Password) {
+        if (m_passwordEchoTimer != 0)
+            killTimer(m_passwordEchoTimer);
+        m_passwordEchoTimer = startTimer(qt_passwordEchoDelay);
+    }
+#endif
     if (hasSelectedText())
         addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
     if (m_maskData) {
@@ -794,6 +837,7 @@ void QWidgetLineControl::internalInsert(const QString &s)
 void QWidgetLineControl::internalDelete(bool wasBackspace)
 {
     if (m_cursor < (int) m_text.length()) {
+        cancelPasswordEchoTimer();
         if (hasSelectedText())
             addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
         addCommand(Command((CommandType)((m_maskData ? 2 : 0) + (wasBackspace ? Remove : Delete)),
@@ -820,6 +864,7 @@ void QWidgetLineControl::internalDelete(bool wasBackspace)
 void QWidgetLineControl::removeSelectedText()
 {
     if (m_selstart < m_selend && m_selend <= (int) m_text.length()) {
+        cancelPasswordEchoTimer();
         separate();
         int i ;
         addCommand(Command(SetSelection, m_cursor, 0, m_selstart, m_selend));
@@ -1218,6 +1263,7 @@ void QWidgetLineControl::internalUndo(int until)
 {
     if (!isUndoAvailable())
         return;
+    cancelPasswordEchoTimer();
     internalDeselect();
     while (m_undoState && m_undoState > until) {
         Command& cmd = m_history[--m_undoState];
@@ -1422,6 +1468,12 @@ void QWidgetLineControl::timerEvent(QTimerEvent *event)
     } else if (event->timerId() == m_tripleClickTimer) {
         killTimer(m_tripleClickTimer);
         m_tripleClickTimer = 0;
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    } else if (event->timerId() == m_passwordEchoTimer) {
+        killTimer(m_passwordEchoTimer);
+        m_passwordEchoTimer = 0;
+        updateDisplayText();
+#endif
     }
 }
 

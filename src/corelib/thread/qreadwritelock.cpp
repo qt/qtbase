@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,18 +107,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a QReadWriteLock object in NonRecursive mode.
-
-    \sa lockForRead(), lockForWrite()
-*/
-QReadWriteLock::QReadWriteLock()
-    :d(new QReadWriteLockPrivate(NonRecursive))
-{ }
-
-/*!
     \since 4.4
 
     Constructs a QReadWriteLock object in the given \a recursionMode.
+
+    The default recursion mode is NonRecursive.
 
     \sa lockForRead(), lockForWrite(), RecursionMode
 */
@@ -513,7 +506,7 @@ void QReadWriteLock::unlock()
 
     \ingroup thread
 
-    The purpose of QWriteLocker (and QReadLocker is to simplify
+    The purpose of QWriteLocker (and QReadLocker) is to simplify
     QReadWriteLock locking and unlocking. Locking and unlocking
     statements or in exception handling code is error-prone and
     difficult to debug. QWriteLocker can be used in such situations

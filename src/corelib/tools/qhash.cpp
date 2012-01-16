@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,7 +171,7 @@ const QHashData QHashData::shared_null = {
 
 void *QHashData::allocateNode(int nodeAlign)
 {
-    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : qMalloc(nodeSize);
+    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : malloc(nodeSize);
     Q_CHECK_PTR(ptr);
     return ptr;
 }
@@ -181,7 +181,7 @@ void QHashData::freeNode(void *node)
     if (strictAlignment)
         qFreeAligned(node);
     else
-        qFree(node);
+        free(node);
 }
 
 QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),

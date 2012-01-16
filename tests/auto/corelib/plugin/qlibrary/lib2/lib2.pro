@@ -21,10 +21,10 @@ win32 {
     } else {
         src = $(DESTDIR_TARGET)
     }
-    files = mylib.dl2 system.trolltech.test.mylib.dll
+    files = mylib.dl2 system.qt.test.mylib.dll
 } else {
     src = $(DESTDIR)$(TARGET)
-    files = libmylib.so2 system.trolltech.test.mylib.so
+    files = libmylib.so2 system.qt.test.mylib.so
 }
 
 # This project is testdata for tst_qlibrary

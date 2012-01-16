@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -143,7 +143,7 @@ QT_USE_NAMESPACE
 {
     Q_UNUSED(event);
 /*
-    if (qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
+    if (qApp && qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
         return true;
 
     if ([event type] == NSApplicationDefined) {

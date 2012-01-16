@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1177,7 +1177,7 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
           << ',' << certificate.issuerInfo(QSslCertificate::Organization)
           << ',' << certificate.subjectInfo(QSslCertificate::Organization)
           << ',' << certificate.subjectAlternativeNames()
-#ifndef QT_NO_TEXTSTREAM
+#ifndef QT_NO_DATESTRING
           << ',' << certificate.effectiveDate()
           << ',' << certificate.expiryDate()
 #endif

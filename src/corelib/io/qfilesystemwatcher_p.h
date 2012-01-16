@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,19 +60,17 @@
 #include <private/qobject_p.h>
 
 #include <QtCore/qstringlist.h>
-#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFileSystemWatcherEngine : public QThread
+class QFileSystemWatcherEngine : public QObject
 {
     Q_OBJECT
 
 protected:
-    inline QFileSystemWatcherEngine(bool move = true)
+    inline QFileSystemWatcherEngine(QObject *parent)
+        : QObject(parent)
     {
-        if (move)
-            moveToThread(this);
     }
 
 public:
@@ -88,8 +86,6 @@ public:
                                     QStringList *files,
                                     QStringList *directories) = 0;
 
-    virtual void stop() = 0;
-
 Q_SIGNALS:
     void fileChanged(const QString &path, bool removed);
     void directoryChanged(const QString &path, bool removed);
@@ -99,15 +95,14 @@ class QFileSystemWatcherPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFileSystemWatcher)
 
-    static QFileSystemWatcherEngine *createNativeEngine();
+    static QFileSystemWatcherEngine *createNativeEngine(QObject *parent);
 
 public:
     QFileSystemWatcherPrivate();
     void init();
     void initPollerEngine();
-    void initForcedEngine(const QString &);
 
-    QFileSystemWatcherEngine *native, *poller, *forced;
+    QFileSystemWatcherEngine *native, *poller;
     QStringList files, directories;
 
     // private slots

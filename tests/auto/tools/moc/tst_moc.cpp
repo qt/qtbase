@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1091,15 +1091,15 @@ void tst_Moc::invokable()
 {
     {
         const QMetaObject &mobj = InvokableBeforeReturnType::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 5);
-        QVERIFY(mobj.method(4).signature() == QByteArray("foo()"));
+        QCOMPARE(mobj.methodCount(), 6);
+        QVERIFY(mobj.method(5).signature() == QByteArray("foo()"));
     }
 
     {
         const QMetaObject &mobj = InvokableBeforeInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(4).signature() == QByteArray("foo()"));
-        QVERIFY(mobj.method(5).signature() == QByteArray("bar()"));
+        QCOMPARE(mobj.methodCount(), 7);
+        QVERIFY(mobj.method(5).signature() == QByteArray("foo()"));
+        QVERIFY(mobj.method(6).signature() == QByteArray("bar()"));
     }
 }
 
@@ -1107,23 +1107,23 @@ void tst_Moc::singleFunctionKeywordSignalAndSlot()
 {
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeReturnType::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 7);
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordBeforeInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 7);
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
     }
 
     {
         const QMetaObject &mobj = SingleFunctionKeywordAfterInline::staticMetaObject;
-        QCOMPARE(mobj.methodCount(), 6);
-        QVERIFY(mobj.method(4).signature() == QByteArray("mySignal()"));
-        QVERIFY(mobj.method(5).signature() == QByteArray("mySlot()"));
+        QCOMPARE(mobj.methodCount(), 7);
+        QVERIFY(mobj.method(5).signature() == QByteArray("mySignal()"));
+        QVERIFY(mobj.method(6).signature() == QByteArray("mySlot()"));
     }
 }
 

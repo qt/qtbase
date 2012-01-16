@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -329,7 +329,7 @@ QString QHostInfo::localDomainName()
     resolveLibrary();
     if (local_res_ninit) {
         // using thread-safe version
-        res_state_ptr state = res_state_ptr(qMalloc(sizeof(*state)));
+        res_state_ptr state = res_state_ptr(malloc(sizeof(*state)));
         Q_CHECK_PTR(state);
         memset(state, 0, sizeof(*state));
         local_res_ninit(state);
@@ -337,7 +337,7 @@ QString QHostInfo::localDomainName()
         if (domainName.isEmpty())
             domainName = QUrl::fromAce(state->dnsrch[0]);
         local_res_nclose(state);
-        qFree(state);
+        free(state);
 
         return domainName;
     }

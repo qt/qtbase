@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -733,7 +733,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
         s->stroker = 0;
     }
 
-    ensureState(); // needed because of tx_noshear...
+    ensureRasterState(); // needed because of tx_noshear...
     s->flags.fast_pen = pen_style > Qt::NoPen
             && s->penData.blend
             && ((pen.isCosmetic() && penWidth <= 1)
@@ -801,7 +801,7 @@ void QRasterPaintEngine::updateOutlineMapper()
     d->outlineMapper->setMatrix(state()->matrix);
 }
 
-void QRasterPaintEngine::updateState()
+void QRasterPaintEngine::updateRasterState()
 {
     QRasterPaintEngineState *s = state();
 
@@ -1434,7 +1434,7 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
     qDebug(" - QRasterPaintEngine::drawRect(), rectCount=%d", rectCount);
 #endif
     Q_D(QRasterPaintEngine);
-    ensureState();
+    ensureRasterState();
     QRasterPaintEngineState *s = state();
 
     // Fill
@@ -1489,7 +1489,7 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
 #endif
 #ifdef QT_FAST_SPANS
     Q_D(QRasterPaintEngine);
-    ensureState();
+    ensureRasterState();
     QRasterPaintEngineState *s = state();
 
 
@@ -1645,7 +1645,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
             fillRect_normalized(toNormalizedFillRect(QRectF(tl, br)), &s->brushData, d);
             return;
         }
-        ensureState();
+        ensureRasterState();
         if (s->flags.tx_noshear) {
             d->initializeRasterizer(&s->brushData);
             // ### Is normalizing really necessary here?
@@ -1702,7 +1702,7 @@ void QRasterPaintEngine::fillRect(const QRectF &r, QSpanData *data)
             return;
         }
     }
-    ensureState();
+    ensureRasterState();
     if (s->flags.tx_noshear) {
         d->initializeRasterizer(data);
         QRectF nr = r.normalized();
@@ -2330,7 +2330,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         }
 
 #ifdef QT_FAST_SPANS
-        ensureState();
+        ensureRasterState();
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
@@ -2425,7 +2425,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
         d->image_filler_xform.setupMatrix(copy, s->flags.bilinear);
 
 #ifdef QT_FAST_SPANS
-        ensureState();
+        ensureRasterState();
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
@@ -2878,18 +2878,68 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
     return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
 }
 
+static QPair<int, int> visibleGlyphRange(const QRectF &clip, QFontEngine *fontEngine,
+                                         glyph_t *glyphs, QFixedPoint *positions, int numGlyphs)
+{
+    QFixed clipLeft = QFixed::fromReal(clip.left());
+    QFixed clipRight = QFixed::fromReal(clip.right());
+    QFixed clipTop = QFixed::fromReal(clip.top());
+    QFixed clipBottom = QFixed::fromReal(clip.bottom());
+
+    int first = 0;
+    while (first < numGlyphs) {
+        glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[first]);
+        QFixed left = metrics.x + positions[first].x;
+        QFixed top = metrics.y + positions[first].y;
+        QFixed right = left + metrics.width;
+        QFixed bottom = top + metrics.height;
+        if (left < clipRight && right > clipLeft && top < clipBottom && bottom > clipTop)
+            break;
+        ++first;
+    }
+    int last = numGlyphs - 1;
+    while (last > first) {
+        glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[last]);
+        QFixed left = metrics.x + positions[last].x;
+        QFixed top = metrics.y + positions[last].y;
+        QFixed right = left + metrics.width;
+        QFixed bottom = top + metrics.height;
+        if (left < clipRight && right > clipLeft && top < clipBottom && bottom > clipTop)
+            break;
+        --last;
+    }
+    return QPair<int, int>(first, last + 1);
+}
+
 /*!
    \reimp
 */
 void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
+    if (textItem->numGlyphs == 0)
+        return;
+
     ensurePen();
-    ensureState();
+    ensureRasterState();
 
     QFontEngine *fontEngine = textItem->fontEngine();
     if (shouldDrawCachedGlyphs(fontEngine->fontDef.pixelSize, state()->matrix)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
+    } else if (state()->matrix.type() < QTransform::TxProject) {
+        bool invertible;
+        QTransform invMat = state()->matrix.inverted(&invertible);
+        if (!invertible)
+            return;
+
+        QPair<int, int> range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
+                                                  textItem->fontEngine(), textItem->glyphs,
+                                                  textItem->glyphPositions, textItem->numGlyphs);
+        QStaticTextItem copy = *textItem;
+        copy.glyphs += range.first;
+        copy.glyphPositions += range.first;
+        copy.numGlyphs = range.second - range.first;
+        QPaintEngineEx::drawStaticTextItem(&copy);
     } else {
         QPaintEngineEx::drawStaticTextItem(textItem);
     }
@@ -2901,7 +2951,6 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
-    QRasterPaintEngineState *s = state();
 
 #ifdef QT_DEBUG_DRAW
     Q_D(QRasterPaintEngine);
@@ -2910,25 +2959,51 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
            d->glyphCacheType);
 #endif
 
+    if (ti.glyphs.numGlyphs == 0)
+        return;
     ensurePen();
-    ensureState();
+    ensureRasterState();
 
+    QRasterPaintEngineState *s = state();
+    QTransform matrix = s->matrix;
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
 
-        QTransform matrix = s->matrix;
         matrix.translate(p.x(), p.y());
-
         ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
         drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine);
-        return;
+    } else if (matrix.type() < QTransform::TxProject) {
+        bool invertible;
+        QTransform invMat = matrix.inverted(&invertible);
+        if (!invertible)
+            return;
+
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+
+        ti.fontEngine->getGlyphPositions(ti.glyphs, QTransform::fromTranslate(p.x(), p.y()),
+                                         ti.flags, glyphs, positions);
+        QPair<int, int> range = visibleGlyphRange(invMat.mapRect(clipBoundingRect()),
+                                                  ti.fontEngine, glyphs.data(), positions.data(),
+                                                  glyphs.size());
+
+        if (range.first >= range.second)
+            return;
+
+        QStaticTextItem staticTextItem;
+        staticTextItem.color = s->pen.color();
+        staticTextItem.font = s->font;
+        staticTextItem.setFontEngine(ti.fontEngine);
+        staticTextItem.numGlyphs = range.second - range.first;
+        staticTextItem.glyphs = glyphs.data() + range.first;
+        staticTextItem.glyphPositions = positions.data() + range.first;
+        QPaintEngineEx::drawStaticTextItem(&staticTextItem);
+    } else {
+        QPaintEngineEx::drawTextItem(p, ti);
     }
-
-
-    QPaintEngineEx::drawTextItem(p, ti);
 }
 
 /*!
@@ -4425,8 +4500,6 @@ void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
 
     adjustSpanMethods();
 }
-
-extern const QVector<QRgb> *qt_image_colortable(const QImage &image);
 
 void QSpanData::initTexture(const QImage *image, int alpha, QTextureData::Type _type, const QRect &sourceRect)
 {

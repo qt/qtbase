@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,7 @@
 
     \bold{Note:} TCP sockets cannot be opened in QIODevice::Unbuffered mode.
 
-    \sa QTcpServer, QUdpSocket, QFtp, QNetworkAccessManager,
+    \sa QTcpServer, QUdpSocket, QNetworkAccessManager,
     {Fortune Server Example}, {Fortune Client Example},
     {Threaded Fortune Server Example}, {Blocking Fortune Client Example},
     {Loopback Example}, {Torrent Example}

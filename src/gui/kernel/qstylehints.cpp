@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,9 +76,19 @@ int QStyleHints::keyboardInputInterval() const
     return hint(QPlatformIntegration::KeyboardInputInterval).toInt();
 }
 
+int QStyleHints::keyboardAutoRepeatRate() const
+{
+    return hint(QPlatformIntegration::KeyboardAutoRepeatRate).toInt();
+}
+
 int QStyleHints::cursorFlashTime() const
 {
     return hint(QPlatformIntegration::CursorFlashTime).toInt();
+}
+
+bool QStyleHints::showIsFullScreen() const
+{
+    return hint(QPlatformIntegration::ShowIsFullScreen).toBool();
 }
 
 QT_END_NAMESPACE

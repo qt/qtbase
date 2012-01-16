@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -179,11 +179,6 @@ public:
     static inline void resetCurrentSender(QObject *receiver,
                                    Sender *currentSender,
                                    Sender *previousSender);
-#ifdef QT_JAMBI_BUILD
-    static int *setDeleteWatch(QObjectPrivate *d, int *newWatch);
-    static void resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch);
-#endif
-    static void clearGuards(QObject *);
 
     static QObjectPrivate *get(QObject *o) {
         return o->d_func();
@@ -203,6 +198,7 @@ public:
     Sender *currentSender;   // object currently activating the object
     mutable quint32 connectedSignals[2];
 
+    QVector<int> runningTimers;
     QList<QPointer<QObject> > eventFilters;
     union {
         QObject *currentChildBeingDeleted;
@@ -212,9 +208,6 @@ public:
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
-#ifdef QT_JAMBI_BUILD
-    int *deleteWatch;
-#endif
 };
 
 

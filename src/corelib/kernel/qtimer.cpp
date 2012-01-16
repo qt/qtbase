@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,7 +134,6 @@ QT_BEGIN_NAMESPACE
         {Analog Clock Example}, {Wiggly Example}
 */
 
-
 static const int INV_TIMER = -1;                // invalid timer id
 
 /*!
@@ -142,7 +141,7 @@ static const int INV_TIMER = -1;                // invalid timer id
 */
 
 QTimer::QTimer(QObject *parent)
-    : QObject(parent), id(INV_TIMER), inter(0), del(0), single(0), nulltimer(0)
+    : QObject(parent), id(INV_TIMER), inter(0), del(0), single(0), nulltimer(0), type(Qt::CoarseTimer)
 {
 }
 
@@ -203,7 +202,7 @@ void QTimer::start()
     if (id != INV_TIMER)                        // stop running timer
         stop();
     nulltimer = (!inter && single);
-    id = QObject::startTimer(inter);
+    id = QObject::startTimer(inter, Qt::TimerType(type));
 }
 
 /*!
@@ -257,18 +256,18 @@ class QSingleShotTimer : public QObject
     int timerId;
 public:
     ~QSingleShotTimer();
-    QSingleShotTimer(int msec, QObject *r, const char * m);
+    QSingleShotTimer(int msec, Qt::TimerType timerType, QObject *r, const char * m);
 Q_SIGNALS:
     void timeout();
 protected:
     void timerEvent(QTimerEvent *);
 };
 
-QSingleShotTimer::QSingleShotTimer(int msec, QObject *receiver, const char *member)
+QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, QObject *receiver, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
     connect(this, SIGNAL(timeout()), receiver, member);
-    timerId = startTimer(msec);
+    timerId = startTimer(msec, timerType);
 }
 
 QSingleShotTimer::~QSingleShotTimer()
@@ -318,6 +317,28 @@ QT_END_INCLUDE_NAMESPACE
 
 void QTimer::singleShot(int msec, QObject *receiver, const char *member)
 {
+    // coarse timers are worst in their first firing
+    // so we prefer a high precision timer for something that happens only once
+    // unless the timeout is too big, in which case we go for coarse anyway
+    singleShot(msec, msec >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer, receiver, member);
+}
+
+/*! \overload
+    \reentrant
+    This static function calls a slot after a given time interval.
+
+    It is very convenient to use this function because you do not need
+    to bother with a \link QObject::timerEvent() timerEvent\endlink or
+    create a local QTimer object.
+
+    The \a receiver is the receiving object and the \a member is the slot. The
+    time interval is \a msec milliseconds. The \a timerType affects the
+    accuracy of the timer.
+
+    \sa start()
+*/
+void QTimer::singleShot(int msec, Qt::TimerType timerType, QObject *receiver, const char *member)
+{
     if (receiver && member) {
         if (msec == 0) {
             // special code shortpath for 0-timers
@@ -330,7 +351,7 @@ void QTimer::singleShot(int msec, QObject *receiver, const char *member)
             QMetaObject::invokeMethod(receiver, methodName.constData(), Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(msec, receiver, member);
+        (void) new QSingleShotTimer(msec, timerType, receiver, member);
     }
 }
 
@@ -361,8 +382,17 @@ void QTimer::setInterval(int msec)
     inter = msec;
     if (id != INV_TIMER) {                        // create new timer
         QObject::killTimer(id);                        // restart timer
-        id = QObject::startTimer(msec);
+        id = QObject::startTimer(msec, Qt::TimerType(type));
     }
 }
+
+/*!
+    \property QTimer::timerType
+    \brief controls the accuracy of the timer
+
+    The default value for this property is \c Qt::CoarseTimer.
+
+    \sa Qt::TimerType
+*/
 
 QT_END_NAMESPACE

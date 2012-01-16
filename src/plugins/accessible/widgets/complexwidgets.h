@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,12 +75,10 @@ public:
     };
 
     QAccessibleInterface *child(int index) const;
-    QVariant invokeMethod(QAccessible::Method method, int, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
-//    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
 
 //protected:
     QAbstractScrollArea *abstractScrollArea() const;
@@ -96,136 +94,7 @@ class QAccessibleScrollArea : public QAccessibleAbstractScrollArea
 public:
     explicit QAccessibleScrollArea(QWidget *widget);
 };
-
 #endif // QT_NO_SCROLLAREA
-
-#if 0
-#ifndef QT_NO_ITEMVIEWS
-class QAccessibleHeader : public QAccessibleWidget
-{
-public:
-    explicit QAccessibleHeader(QWidget *w);
-
-    int childCount() const;
-
-    QRect rect(int child) const;
-    QString text(QAccessible::Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
-
-protected:
-    QHeaderView *header() const;
-};
-
-class QAccessibleItemRow: public QAccessibleInterface
-{
-    friend class QAccessibleItemView;
-public:
-    QAccessibleItemRow(QAbstractItemView *view, const QModelIndex &index = QModelIndex(), bool isHeader = false);
-    QRect rect(int child) const;
-    QString text(QAccessible::Text t, int child) const;
-    void setText(QAccessible::Text t, int child, const QString &text);
-    bool isValid() const;
-    QObject *object() const;
-    Role role(int child) const;
-    State state(int child) const;
-
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface *) const;
-    QList<QModelIndex> children() const;
-
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
-    int childAt(int x, int y) const;
-    QAccessibleInterface *parent() const;
-    QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-
-    int userActionCount(int child) const;
-    QString actionText(int action, Text t, int child) const;
-    bool doAction(int action, int child, const QVariantList &params = QVariantList());
-
-    QModelIndex childIndex(int child) const;
-
-    QHeaderView *horizontalHeader() const;  //used by QAccessibleItemView
-private:
-    static QAbstractItemView::CursorAction toCursorAction(Relation rel);
-    int logicalFromChild(QHeaderView *header, int child) const;
-    int treeLevel() const;
-    QHeaderView *verticalHeader() const;
-    QString text_helper(int child) const;
-
-    QPersistentModelIndex row;
-    QPointer<QAbstractItemView> view;
-    bool m_header;
-};
-
-class QAccessibleItemView: public QAccessibleAbstractScrollArea, public QAccessibleTableInterface
-{
-public:
-    explicit QAccessibleItemView(QWidget *w);
-
-    QObject *object() const;
-    Role role(int child) const;
-    State state(int child) const;
-    QRect rect(int child) const;
-    int childAt(int x, int y) const;
-    int childCount() const;
-    QString text(QAccessible::Text t, int child) const;
-    void setText(QAccessible::Text t, int child, const QString &text);
-    int indexOfChild(const QAccessibleInterface *iface) const;
-
-    QModelIndex childIndex(int child) const;
-    int entryFromIndex(const QModelIndex &index) const;
-    bool isValid() const;
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-
-    QAccessibleInterface *accessibleAt(int row, int column);
-    QAccessibleInterface *caption();
-    int childIndex(int rowIndex, int columnIndex);
-    QString columnDescription(int column);
-    int columnSpan(int row, int column);
-    QAccessibleInterface *columnHeader();
-    int columnIndex(int childIndex);
-    int columnCount();
-    int rowCount();
-    int selectedColumnCount();
-    int selectedRowCount();
-    QString rowDescription(int row);
-    int rowSpan(int row, int column);
-    QAccessibleInterface *rowHeader();
-    int rowIndex(int childIndex);
-    int selectedRows(int maxRows, QList<int> *rows);
-    int selectedColumns(int maxColumns, QList<int> *columns);
-    QAccessibleInterface *summary();
-    bool isColumnSelected(int column);
-    bool isRowSelected(int row);
-    bool isSelected(int row, int column);
-    void selectRow(int row);
-    void selectColumn(int column);
-    void unselectRow(int row);
-    void unselectColumn(int column);
-    void cellAtIndex(int index, int *row, int *column, int *rowSpan,
-                     int *columnSpan, bool *isSelected);
-
-    QHeaderView *horizontalHeader() const;
-    QHeaderView *verticalHeader() const;
-    bool isValidChildRole(QAccessible::Role role) const;
-
-protected:
-    QAbstractItemView *itemView() const;
-    QModelIndex index(int row, int column) const;
-
-private:
-    inline bool atViewport() const {
-        return atVP;
-    };
-    QAccessible::Role expectedRoleOfChildren() const;
-
-    bool atVP;
-};
-
-#endif
-#endif
 
 #ifndef QT_NO_TABBAR
 class QAccessibleTabBar : public QAccessibleWidget
@@ -241,7 +110,6 @@ public:
 
     QAccessibleInterface* child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
 protected:
     QTabBar *tabBar() const;
@@ -255,7 +123,7 @@ public:
     explicit QAccessibleComboBox(QWidget *w);
 
     int childCount() const;
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface* child(int index) const;
 

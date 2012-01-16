@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,6 +98,8 @@ QT_MODULE(Core)
     F(QPointF, 26, QPointF) \
     F(QRegExp, 27, QRegExp) \
     F(QEasingCurve, 29, QEasingCurve) \
+    F(QUuid, 30, QUuid) \
+    F(QModelIndex, 31, QModelIndex) \
     F(QVariant, 138, QVariant) \
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
@@ -182,7 +184,7 @@ public:
         // these are merged with QVariant
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
-        LastCoreType = QEasingCurve,
+        LastCoreType = QModelIndex,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QIcon,
@@ -201,6 +203,13 @@ public:
 
         User = 256
     };
+
+    enum TypeFlag {
+        NeedsConstruction = 0x1,
+        NeedsDestruction = 0x2,
+        MovableType = 0x4
+    };
+    Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
     typedef void (*Deleter)(void *);
     typedef void *(*Creator)(const void *);
@@ -222,11 +231,13 @@ public:
                             Creator creator,
                             Destructor destructor,
                             Constructor constructor,
-                            int size);
+                            int size,
+                            QMetaType::TypeFlags flags);
     static int registerTypedef(const char *typeName, int aliasId);
     static int type(const char *typeName);
     static const char *typeName(int type);
     static int sizeOf(int type);
+    static TypeFlags typeFlags(int type);
     static bool isRegistered(int type);
     static void *create(int type, const void *copy = 0);
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -245,6 +256,8 @@ public:
 };
 
 #undef QT_DEFINE_METATYPE_ID
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaType::TypeFlags)
 
 template <typename T>
 void qMetaTypeDeleteHelper(T *t)
@@ -334,11 +347,20 @@ int qRegisterMetaType(const char *typeName
     typedef void(*DestructPtr)(T*);
     DestructPtr ipdptr = qMetaTypeDestructHelper<T>;
 
+    QMetaType::TypeFlags flags;
+    if (!QTypeInfo<T>::isStatic)
+        flags |= QMetaType::MovableType;
+    if (QTypeInfo<T>::isComplex) {
+        flags |= QMetaType::NeedsConstruction;
+        flags |= QMetaType::NeedsDestruction;
+    }
+
     return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Deleter>(dptr),
                                    reinterpret_cast<QMetaType::Creator>(cptr),
                                    reinterpret_cast<QMetaType::Destructor>(ipdptr),
                                    reinterpret_cast<QMetaType::Constructor>(ipcptr),
-                                   sizeof(T));
+                                   sizeof(T),
+                                   flags);
 }
 
 #ifndef QT_NO_DATASTREAM

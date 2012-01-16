@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -210,7 +210,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
+QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject *parent)
 {
     register int fd = -1;
 #ifdef IN_CLOEXEC
@@ -220,40 +220,32 @@ QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create()
         fd = inotify_init();
         if (fd == -1)
             return 0;
-        ::fcntl(fd, F_SETFD, FD_CLOEXEC);
     }
-    return new QInotifyFileSystemWatcherEngine(fd);
+    return new QInotifyFileSystemWatcherEngine(fd, parent);
 }
 
-QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd)
-    : inotifyFd(fd)
+QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd, QObject *parent)
+    : QFileSystemWatcherEngine(parent),
+      inotifyFd(fd),
+      notifier(fd, QSocketNotifier::Read, this)
 {
     fcntl(inotifyFd, F_SETFD, FD_CLOEXEC);
-
-    moveToThread(this);
+    connect(&notifier, SIGNAL(activated(int)), SLOT(readFromInotify()));
 }
 
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
 {
+    notifier.setEnabled(false);
     foreach (int id, pathToID)
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
     ::close(inotifyFd);
 }
 
-void QInotifyFileSystemWatcherEngine::run()
-{
-    QSocketNotifier sn(inotifyFd, QSocketNotifier::Read, this);
-    connect(&sn, SIGNAL(activated(int)), SLOT(readFromInotify()));
-    (void) exec();
-}
-
 QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                       QStringList *files,
                                                       QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -303,8 +295,6 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
         idToPath.insert(id, path);
     }
 
-    start();
-
     return p;
 }
 
@@ -312,8 +302,6 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
                                                          QStringList *files,
                                                          QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
     QStringList p = paths;
     QMutableListIterator<QString> it(p);
     while (it.hasNext()) {
@@ -338,15 +326,8 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
     return p;
 }
 
-void QInotifyFileSystemWatcherEngine::stop()
-{
-    quit();
-}
-
 void QInotifyFileSystemWatcherEngine::readFromInotify()
 {
-    QMutexLocker locker(&mutex);
-
     // qDebug() << "QInotifyFileSystemWatcherEngine::readFromInotify";
 
     int buffSize = 0;

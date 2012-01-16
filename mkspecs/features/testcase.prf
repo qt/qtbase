@@ -126,3 +126,28 @@ contains(INSTALLS, target) {
 
 }
 
+defineTest(installTestHelperApp) {
+    # args: relativeSource, relativeDestination, targetName
+    # description: install executables from other project directories as part of your installation.
+    # relativeSource - file to install including relative path
+    # relativeDestination - relative directory to install to
+    # targetName - executable without extension
+    targetName = $$replace(3, ' ', '_') # handle spaces in name
+    subTarget = $${targetName}.target
+    subInstall = $${targetName}_install
+    subConfig = $${subInstall}.CONFIG
+    subFiles = $${subInstall}.files
+    subPath = $${subInstall}.path
+    win32: extension = .exe
+    $$subTarget = $${2}/$${3}$${extension}
+    $$subFiles = $${1}$${extension}
+    $$subPath = $${target.path}/$${2}
+    $$subConfig += no_check_exist executable
+    INSTALLS += $${subInstall}
+    export(INSTALLS)
+    export($$subTarget)
+    export($$subFiles)
+    export($$subPath)
+    export($$subConfig)
+}
+

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -495,6 +495,12 @@ void QFontDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QFontDialog *d = q_func();
     QObject::connect(h, SIGNAL(currentFontChanged(QFont)), d, SIGNAL(currentFontChanged(QFont)));
     QObject::connect(h, SIGNAL(fontSelected(QFont)), d, SIGNAL(fontSelected(QFont)));
+    static_cast<QPlatformFontDialogHelper *>(h)->setOptions(options);
+}
+
+void QFontDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
+{
+    options->setWindowTitle(q_func()->windowTitle());
 }
 
 /*
@@ -888,8 +894,7 @@ QFont QFontDialog::selectedFont() const
 void QFontDialog::setOption(FontDialogOption option, bool on)
 {
     Q_D(QFontDialog);
-    if (!(d->opts & option) != !on)
-        setOptions(d->opts ^ option);
+    d->options->setOption(static_cast<QFontDialogOptions::FontDialogOption>(option), on);
 }
 
 /*!
@@ -901,7 +906,7 @@ void QFontDialog::setOption(FontDialogOption option, bool on)
 bool QFontDialog::testOption(FontDialogOption option) const
 {
     Q_D(const QFontDialog);
-    return (d->opts & option) != 0;
+    return d->options->testOption(static_cast<QFontDialogOptions::FontDialogOption>(option));
 }
 
 /*!
@@ -921,18 +926,17 @@ void QFontDialog::setOptions(FontDialogOptions options)
 {
     Q_D(QFontDialog);
 
-    FontDialogOptions changed = (options ^ d->opts);
-    if (!changed)
+    if (QFontDialog::options() == options)
         return;
 
-    d->opts = options;
+    d->options->setOptions(QFontDialogOptions::FontDialogOptions(int(options)));
     d->buttonBox->setVisible(!(options & NoButtons));
 }
 
 QFontDialog::FontDialogOptions QFontDialog::options() const
 {
     Q_D(const QFontDialog);
-    return d->opts;
+    return QFontDialog::FontDialogOptions(int(d->options->options()));
 }
 
 #ifdef Q_WS_MAC
@@ -1043,7 +1047,7 @@ bool QFontDialogPrivate::canBeNativeDialog()
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))
         return false;
-    if (opts & QFontDialog::DontUseNativeDialog)
+    if (options->options() & QFontDialog::DontUseNativeDialog)
         return false;
 
     QLatin1String staticName(QFontDialog::staticMetaObject.className());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -739,8 +739,8 @@ public:
 
     QStringList uiLanguages() const;
 
-    inline bool operator==(const QLocale &other) const;
-    inline bool operator!=(const QLocale &other) const;
+    bool operator==(const QLocale &other) const;
+    bool operator!=(const QLocale &other) const;
 
     static QString languageToString(Language language);
     static QString countryToString(Country country);
@@ -789,10 +789,6 @@ inline QString QLocale::toString(uint i) const
     { return toString(qulonglong(i)); }
 inline QString QLocale::toString(float i, char f, int prec) const
     { return toString(double(i), f, prec); }
-inline bool QLocale::operator==(const QLocale &other) const
-    { return d() == other.d() && numberOptions() == other.numberOptions(); }
-inline bool QLocale::operator!=(const QLocale &other) const
-    { return d() != other.d() || numberOptions() != other.numberOptions(); }
 
 inline QString QLocale::toCurrencyString(short i, const QString &symbol) const
     { return toCurrencyString(qlonglong(i), symbol); }
@@ -808,6 +804,10 @@ inline QString QLocale::toCurrencyString(float i, const QString &symbol) const
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QLocale &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QLocale &);
 #endif
 
 QT_END_NAMESPACE

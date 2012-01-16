@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -657,26 +657,17 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
         if (strcmp(self->d.stringdata, name) == 0)
             return self;
         if (self->d.extradata) {
-#ifdef Q_NO_DATA_RELOCATION
-            const QMetaObjectAccessor *e;
-            Q_ASSERT(priv(self->d.data)->revision >= 2);
-#else
             const QMetaObject **e;
             if (priv(self->d.data)->revision < 2) {
                 e = (const QMetaObject**)(self->d.extradata);
             } else
-#endif
             {
                 const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
                 e = extra->objects;
             }
             if (e) {
                 while (*e) {
-#ifdef Q_NO_DATA_RELOCATION
-                    if (const QMetaObject *m =QMetaObject_findMetaObject(&((*e)()), name))
-#else
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
-#endif
                         return m;
                     ++e;
                 }
@@ -855,7 +846,7 @@ QMetaProperty QMetaObject::property(int index) const
                 Q_ASSERT(colon <= enum_name || *(colon-1) == ':');
                 if (colon > enum_name) {
                     int len = colon-enum_name-1;
-                    scope_buffer = (char *)qMalloc(len+1);
+                    scope_buffer = (char *)malloc(len+1);
                     qMemCopy(scope_buffer, enum_name, len);
                     scope_buffer[len] = '\0';
                     scope_name = scope_buffer;
@@ -870,7 +861,7 @@ QMetaProperty QMetaObject::property(int index) const
                 if (scope)
                     result.menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
                 if (scope_buffer)
-                    qFree(scope_buffer);
+                    free(scope_buffer);
             }
         }
     }
@@ -1644,9 +1635,9 @@ bool QMetaMethod::invoke(QObject *object,
         }
 
         int nargs = 1; // include return type
-        void **args = (void **) qMalloc(paramCount * sizeof(void *));
+        void **args = (void **) malloc(paramCount * sizeof(void *));
         Q_CHECK_PTR(args);
-        int *types = (int *) qMalloc(paramCount * sizeof(int));
+        int *types = (int *) malloc(paramCount * sizeof(int));
         Q_CHECK_PTR(types);
         types[0] = 0; // return type
         args[0] = 0;
@@ -1663,8 +1654,8 @@ bool QMetaMethod::invoke(QObject *object,
                     if (types[x] && args[x])
                         QMetaType::destroy(types[x], args[x]);
                 }
-                qFree(types);
-                qFree(args);
+                free(types);
+                free(args);
                 return false;
             }
         }

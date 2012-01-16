@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,7 +44,7 @@
     \brief The QPointer class is a template class that provides guarded pointers to QObject.
 
     \ingroup objectmodel
-
+    \obsolete Use QWeakPointer instead.
 
     A guarded pointer, QPointer<T>, behaves like a normal C++
     pointer \c{T *}, except that it is automatically set to 0 when the
@@ -56,6 +56,24 @@
     to a QObject that is owned by someone else, and therefore might be
     destroyed while you still hold a reference to it. You can safely
     test the pointer for validity.
+
+    Note that Qt 5 introduces two slight changes in behavior when using QPointer.
+
+    \list
+
+    \i When using QPointer on a QWidget (or a subclass of QWidget), previously
+    the QPointer would be cleared by the QWidget destructor. Now, the QPointer
+    is cleared by the QObject destructor (since this is when QWeakPointers are
+    cleared). Any QPointers tracking a widget will \b NOT be cleared before the
+    QWidget destructor destroys the children for the widget being tracked.
+
+    \i When constructing a QSharedPointer to take ownership of an object after a
+    QPointer is already tracking the object. Previously, the shared pointer
+    construction would not be affected by the QPointer, but now that QPointer
+    is implemented using QWeakPoiner, constructing the QSharedPointer will
+    cause an \c abort().
+
+    \endlist
 
     Qt also provides QSharedPointer, an implementation of a reference-counted
     shared pointer object, which can be used to maintain a collection of

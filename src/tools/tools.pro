@@ -2,7 +2,6 @@ TEMPLATE = subdirs
 
 TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc
 !contains(QT_CONFIG, no-gui): TOOLS_SUBDIRS += src_tools_uic
-contains(QT_CONFIG, v8):contains(QT_CONFIG, v8snapshot): TOOLS_SUBDIRS += src_tools_mkv8snapshot
 # Set subdir and respective target name
 src_tools_bootstrap.subdir = $$QT_SOURCE_TREE/src/tools/bootstrap
 src_tools_bootstrap.target = sub-tools-bootstrap
@@ -12,8 +11,6 @@ src_tools_rcc.subdir = $$QT_SOURCE_TREE/src/tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_uic.subdir = $$QT_SOURCE_TREE/src/tools/uic
 src_tools_uic.target = sub-uic
-src_tools_mkv8snapshot.subdir = $$QT_SOURCE_TREE/src/tools/mkv8snapshot
-src_tools_mkv8snapshot.target = sub-mkv8snapshot
 
 !wince*:!ordered {
     # Set dependencies for each subdir

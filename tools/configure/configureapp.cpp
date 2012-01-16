@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -300,7 +300,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "BUILDTYPE" ]      = "none";
 
     dictionary[ "BUILDDEV" ]        = "no";
-    dictionary[ "BUILDNOKIA" ]      = "no";
 
     dictionary[ "SHARED" ]          = "yes";
 
@@ -317,7 +316,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBMNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
 
-    dictionary[ "QT3SUPPORT" ]      = "no";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENVG" ]          = "no";
@@ -345,7 +343,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SQL_SQLITE_LIB" ]  = "qt";
     dictionary[ "SQL_SQLITE2" ]     = "no";
     dictionary[ "SQL_IBASE" ]       = "no";
-    dictionary[ "GRAPHICS_SYSTEM" ] = "raster";
 
     QString tmp = dictionary[ "QMAKESPEC" ];
     if (tmp.contains("\\")) {
@@ -483,14 +480,6 @@ void Configure::parseCmdLine()
             dictionary[ "SHARED" ] = "no";
         else if (configCmdLine.at(i) == "-developer-build")
             dictionary[ "BUILDDEV" ] = "yes";
-        else if (configCmdLine.at(i) == "-nokia-developer") {
-            cout << "Detected -nokia-developer option" << endl;
-            cout << "Nokia employees and agents are allowed to use this software under" << endl;
-            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
-            dictionary[ "BUILDNOKIA" ] = "yes";
-            dictionary[ "BUILDDEV" ] = "yes";
-            dictionary["LICENSE_CONFIRMED"] = "yes";
-        }
         else if (configCmdLine.at(i) == "-opensource") {
             dictionary[ "BUILDTYPE" ] = "opensource";
         }
@@ -685,10 +674,6 @@ void Configure::parseCmdLine()
             dictionary[ "STYLE_CDE" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-cde")
             dictionary[ "STYLE_CDE" ] = "no";
-
-        // Qt 3 Support ---------------------------------------------
-        else if (configCmdLine.at(i) == "-no-qt3support")
-            dictionary[ "QT3SUPPORT" ] = "no";
 
         // Work around compiler nesting limitation
         else
@@ -1000,8 +985,8 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            QFileInfo check(configCmdLine.at(i));
-            if (!check.isDir()) {
+            QFileInfo checkDirectory(configCmdLine.at(i));
+            if (!checkDirectory.isDir()) {
                 cout << "Argument passed to -L option is not a directory path. Did you mean the -l option?" << endl;
                 dictionary[ "DONE" ] = "error";
                 break;
@@ -1138,25 +1123,6 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             dictionary[ "MAKE" ] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-graphicssystem") {
-            ++i;
-            if (i == argCount)
-                break;
-            QString system = configCmdLine.at(i);
-            if (system == QLatin1String("raster")
-                || system == QLatin1String("opengl")
-                || system == QLatin1String("openvg")
-                || system == QLatin1String("runtime"))
-                dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
-        }
-
-        else if (configCmdLine.at(i) == "-runtimegraphicssystem") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary["RUNTIME_SYSTEM"] = configCmdLine.at(i);
         }
 
         else if (configCmdLine.at(i).indexOf(QRegExp("^-(en|dis)able-")) != -1) {
@@ -1464,7 +1430,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_MOTIF" ]         = "no";
         dictionary[ "STYLE_CDE" ]           = "no";
         dictionary[ "FREETYPE" ]            = "no";
-        dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "STL" ]                 = "no";
@@ -1496,7 +1461,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "KBD_DRIVERS" ]         = "tty";
         dictionary[ "GFX_DRIVERS" ]         = "linuxfb vnc";
         dictionary[ "MOUSE_DRIVERS" ]       = "pc linuxtp";
-        dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "DBUS"]                 = "no";
@@ -1572,7 +1536,7 @@ bool Configure::displayHelp()
                     "[-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng]\n"
                     "[-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
-                    "[-no-libmng] [-qt-libmng] [-system-libmng] [-no-qt3support] [-mmx]\n"
+                    "[-no-libmng] [-qt-libmng] [-system-libmng] [-mmx]\n"
                     "[-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
@@ -1581,7 +1545,6 @@ bool Configure::displayHelp()
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
-                    "[-graphicssystem raster|opengl|openvg]\n"
                     "[-no-directwrite] [-directwrite] [-qpa]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
@@ -1657,7 +1620,6 @@ bool Configure::displayHelp()
 
         desc(                   "-system-sqlite",       "Use sqlite from the operating system.\n");
 
-        desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
@@ -1683,11 +1645,6 @@ bool Configure::displayHelp()
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
         desc(                   "-l <libraryname>",     "Add an explicit library name, residing in a librarypath.\n");
 #endif
-        desc(                   "-graphicssystem <sys>",   "Specify which graphicssystem should be used.\n"
-                                "Available values for <sys>:");
-        desc("GRAPHICS_SYSTEM", "raster", "",  "  raster - Software rasterizer", ' ');
-        desc("GRAPHICS_SYSTEM", "opengl", "",  "  opengl - Using OpenGL acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!\n", ' ');
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
@@ -2464,9 +2421,6 @@ void Configure::generateOutputVars()
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
         qmakeVars += "QT_LFLAGS_SQLITE += " + escapeSeparators(dictionary["QT_LFLAGS_SQLITE"]);
 
-    if (dictionary[ "QT3SUPPORT" ] == "yes")
-        qtConfig += "gui-qt3support";
-
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
 
@@ -2692,7 +2646,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp create_prl link_prl depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2766,7 +2720,9 @@ void Configure::generateCachefile()
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            moduleStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            moduleStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"]<<endl;
+
+        moduleStream << "CONFIG += create_prl link_prl" << endl;
 
         moduleStream.flush();
         moduleFile.close();
@@ -2926,8 +2882,6 @@ void Configure::generateConfigfiles()
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
-        if (dictionary["GRAPHICS_SYSTEM"] == "runtime" && dictionary["RUNTIME_SYSTEM"] != "runtime")
-            tmpStream << "#define QT_DEFAULT_RUNTIME_SYSTEM \"" << dictionary["RUNTIME_SYSTEM"] << "\"" << endl;
 
         QStringList qconfigList;
         if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
@@ -2961,7 +2915,10 @@ void Configure::generateConfigfiles()
         if (dictionary["EXCEPTIONS"] == "no")        qconfigList += "QT_NO_EXCEPTIONS";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
-        if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
+        if (dictionary["OPENSSL"] == "no") {
+            qconfigList += "QT_NO_OPENSSL";
+            qconfigList += "QT_NO_SSL";
+        }
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
@@ -2994,11 +2951,6 @@ void Configure::generateConfigfiles()
         if (dictionary["SQL_SQLITE"] == "yes")       qconfigList += "QT_SQL_SQLITE";
         if (dictionary["SQL_SQLITE2"] == "yes")      qconfigList += "QT_SQL_SQLITE2";
         if (dictionary["SQL_IBASE"] == "yes")        qconfigList += "QT_SQL_IBASE";
-
-        if (dictionary["GRAPHICS_SYSTEM"] == "openvg")  qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
-        if (dictionary["GRAPHICS_SYSTEM"] == "opengl")  qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
-        if (dictionary["GRAPHICS_SYSTEM"] == "raster")  qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
-        if (dictionary["GRAPHICS_SYSTEM"] == "runtime") qconfigList += "QT_GRAPHICSSYSTEM_RUNTIME";
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
@@ -3256,8 +3208,6 @@ void Configure::displayConfig()
     cout << "V8 support.................." << dictionary[ "V8" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
-    cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
-    cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl;
     cout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
 
     cout << "Third Party Libraries:" << endl;
@@ -3832,7 +3782,7 @@ void Configure::readLicense()
 
     bool openSource = false;
     bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
-    if (dictionary["BUILDNOKIA"] == "yes" || dictionary["BUILDTYPE"] == "commercial") {
+    if (dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
         openSource = true;
@@ -3872,7 +3822,7 @@ void Configure::readLicense()
 #ifdef COMMERCIAL_VERSION
     else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
-        if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
+        if (dictionary["DONE"] != "error") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
             if (!showLicense(dictionary["LICENSE FILE"])) {

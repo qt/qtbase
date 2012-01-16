@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -280,10 +280,11 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
     if (files.isEmpty()
-        && !watcher->directories().contains(path)
         && !path.isEmpty()
         && !path.startsWith(QLatin1String("//")) /*don't watch UNC path*/) {
-        watcher->addPath(path);
+        QMutexLocker locker(&mutex);
+        if (!watcher->directories().contains(path))
+            watcher->addPath(path);
     }
 #endif
 

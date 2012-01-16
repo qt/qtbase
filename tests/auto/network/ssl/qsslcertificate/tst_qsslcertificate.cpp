@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -200,10 +200,8 @@ void tst_QSslCertificate::emptyConstructor()
     QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.subjectAlternativeNames(),(QMultiMap<QSsl::AlternativeNameEntryType, QString>()));
-#ifndef QT_NO_TEXTSTREAM
     QCOMPARE(certificate.effectiveDate(), QDateTime());
     QCOMPARE(certificate.expiryDate(), QDateTime());
-#endif
 }
 
 Q_DECLARE_METATYPE(QSsl::EncodingFormat);

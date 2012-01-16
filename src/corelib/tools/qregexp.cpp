@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include "qbitarray.h"
 #include "qcache.h"
 #include "qdatastream.h"
+#include "qdebug.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qmutex.h"
@@ -4570,5 +4571,14 @@ QDataStream &operator>>(QDataStream &in, QRegExp &regExp)
     return in;
 }
 #endif // QT_NO_DATASTREAM
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QRegExp &r)
+{
+    dbg.nospace() << "QRegExp(patternSyntax=" << r.patternSyntax()
+                  << ", pattern='"<< r.pattern() << "')";
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

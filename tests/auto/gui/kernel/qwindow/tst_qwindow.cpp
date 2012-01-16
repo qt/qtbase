@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,8 @@
 
 #include <QtTest/QtTest>
 
+#include <QEvent>
+
 class tst_QWindow: public QObject
 {
     Q_OBJECT
@@ -51,6 +53,19 @@ private slots:
     void mapGlobal();
     void positioning();
     void isActive();
+    void testInputEvents();
+    void touchToMouseTranslation();
+    void mouseToTouchTranslation();
+    void mouseToTouchLoop();
+    void initTestCase()
+    {
+        touchDevice = new QTouchDevice;
+        touchDevice->setType(QTouchDevice::TouchScreen);
+        QWindowSystemInterface::registerTouchDevice(touchDevice);
+    }
+
+private:
+    QTouchDevice *touchDevice;
 };
 
 
@@ -219,6 +234,225 @@ void tst_QWindow::isActive()
 
     // parent has focus
     QVERIFY(child.isActive());
+}
+
+class InputTestWindow : public QWindow
+{
+public:
+    void keyPressEvent(QKeyEvent *event) {
+        keyPressCode = event->key();
+    }
+    void keyReleaseEvent(QKeyEvent *event) {
+        keyReleaseCode = event->key();
+    }
+    void mousePressEvent(QMouseEvent *event) {
+        if (ignoreMouse)
+            event->ignore();
+        else
+            mousePressButton = event->button();
+    }
+    void mouseReleaseEvent(QMouseEvent *event) {
+        if (ignoreMouse)
+            event->ignore();
+        else
+            mouseReleaseButton = event->button();
+    }
+    void touchEvent(QTouchEvent *event) {
+        if (ignoreTouch) {
+            event->ignore();
+            return;
+        }
+        QList<QTouchEvent::TouchPoint> points = event->touchPoints();
+        for (int i = 0; i < points.count(); ++i) {
+            switch (points.at(i).state()) {
+            case Qt::TouchPointPressed:
+                ++touchPressedCount;
+                break;
+            case Qt::TouchPointReleased:
+                ++touchReleasedCount;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    InputTestWindow() {
+        keyPressCode = keyReleaseCode = 0;
+        mousePressButton = mouseReleaseButton = 0;
+        touchPressedCount = touchReleasedCount = 0;
+        ignoreMouse = ignoreTouch = 0;
+    }
+
+    int keyPressCode, keyReleaseCode;
+    int mousePressButton, mouseReleaseButton;
+    int touchPressedCount, touchReleasedCount;
+
+    bool ignoreMouse, ignoreTouch;
+};
+
+void tst_QWindow::testInputEvents()
+{
+    InputTestWindow window;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);
+    QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyRelease, Qt::Key_A, Qt::NoModifier);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.keyPressCode, int(Qt::Key_A));
+    QCOMPARE(window.keyReleaseCode, int(Qt::Key_A));
+
+    QPointF local(12, 34);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1, tp2;
+    tp1.id = 1;
+    tp1.state = Qt::TouchPointPressed;
+    tp1.area = QRect(10, 10, 4, 4);
+    tp2.id = 2;
+    tp2.state = Qt::TouchPointPressed;
+    tp2.area = QRect(20, 20, 4, 4);
+    points << tp1 << tp2;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointReleased;
+    points[1].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.touchPressedCount, 2);
+    QTRY_COMPARE(window.touchReleasedCount, 2);
+}
+
+void tst_QWindow::touchToMouseTranslation()
+{
+    InputTestWindow window;
+    window.ignoreTouch = true;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QList<QWindowSystemInterface::TouchPoint> points;
+    QWindowSystemInterface::TouchPoint tp1, tp2;
+    tp1.id = 1;
+    tp1.state = Qt::TouchPointPressed;
+    tp2.id = 2;
+    tp2.state = Qt::TouchPointPressed;
+    points << tp1 << tp2;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointReleased;
+    points[1].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+
+    window.mousePressButton = 0;
+    window.mouseReleaseButton = 0;
+
+    window.ignoreTouch = false;
+
+    points[0].state = Qt::TouchPointPressed;
+    points[1].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointReleased;
+    points[1].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+
+    // no new mouse events should be generated since the input window handles the touch events
+    QTRY_COMPARE(window.mousePressButton, 0);
+    QTRY_COMPARE(window.mouseReleaseButton, 0);
+
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+
+    window.ignoreTouch = true;
+    points[0].state = Qt::TouchPointPressed;
+    points[1].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    points[0].state = Qt::TouchPointReleased;
+    points[1].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
+
+    // mouse event synthesizing disabled
+    QTRY_COMPARE(window.mousePressButton, 0);
+    QTRY_COMPARE(window.mouseReleaseButton, 0);
+}
+
+void tst_QWindow::mouseToTouchTranslation()
+{
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
+
+    InputTestWindow window;
+    window.ignoreMouse = true;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
+
+    QTRY_COMPARE(window.touchPressedCount, 1);
+    QTRY_COMPARE(window.touchReleasedCount, 1);
+
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
+
+    window.ignoreMouse = false;
+
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
+
+    // no new touch events should be generated since the input window handles the mouse events
+    QTRY_COMPARE(window.touchPressedCount, 1);
+    QTRY_COMPARE(window.touchReleasedCount, 1);
+
+    window.ignoreMouse = true;
+
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    // touch event synthesis disabled
+    QTRY_COMPARE(window.touchPressedCount, 1);
+    QTRY_COMPARE(window.touchReleasedCount, 1);
+
+
+}
+
+void tst_QWindow::mouseToTouchLoop()
+{
+    // make sure there's no infinite loop when synthesizing both ways
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
+
+    InputTestWindow window;
+    window.ignoreMouse = true;
+    window.ignoreTouch = true;
+    window.setGeometry(80, 80, 40, 40);
+    window.show();
+    QTest::qWaitForWindowShown(&window);
+
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    qApp->setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
+    qApp->setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
 }
 
 #include <tst_qwindow.moc>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,7 @@ Qt {
     Q_OBJECT
 #endif
 
-#if (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
+#if defined(Q_MOC_RUN)
     // NOTE: Generally, do not add Q_ENUMS if a corresponding Q_FLAGS exists.
     Q_ENUMS(ScrollBarPolicy FocusPolicy ContextMenuPolicy)
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
@@ -97,7 +97,8 @@ Qt {
     Q_ENUMS(GestureType)
 #endif
     Q_ENUMS(CursorMoveStyle)
-#endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
+    Q_ENUMS(TimerType)
+#endif // defined(Q_MOC_RUN)
 
 #if defined(Q_MOC_RUN)
 public:
@@ -461,25 +462,8 @@ public:
         WA_MergeSoftkeys =  124,
         WA_MergeSoftkeysRecursively =  125,
 
-#if 0 // these values are reserved for Maemo5 - do not re-use them
-        WA_Maemo5NonComposited = 126,
-        WA_Maemo5StackedWindow = 127,
-#endif
-
-        WA_LockPortraitOrientation = 128,
-        WA_LockLandscapeOrientation = 129,
-        WA_AutoOrientation = 130,
-
-#if 0 // these values are reserved for Maemo5 - do not re-use them
-        WA_Maemo5PortraitOrientation = WA_LockPortraitOrientation,
-        WA_Maemo5LandscapeOrientation = WA_LockLandscapeOrientation,
-        WA_Maemo5AutoOrientation = WA_AutoOrientation,
-        WA_Maemo5ShowProgressIndicator = 131,
-#endif
-
-        WA_X11DoNotAcceptFocus = 132,
-        WA_SymbianNoSystemRotation = 133,
-        WA_MacNoShadow = 134,
+        WA_X11DoNotAcceptFocus = 126,
+        WA_MacNoShadow = 127,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -495,9 +479,10 @@ public:
         AA_MacPluginApplication = 5,
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
-        AA_S60DontConstructApplicationPanes = 8,
-        AA_S60DisablePartialScreenInputMode = 9,
+        AA_Use96Dpi = 8,
         AA_X11InitThreads = 10,
+        AA_SynthesizeTouchForUnhandledMouseEvents = 11,
+        AA_SynthesizeMouseForUnhandledTouchEvents = 12,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -1313,7 +1298,8 @@ public:
 
         ImhDate = 0x80,
         ImhTime = 0x100,
-        ImhMultiLine = 0x200,
+
+        ImhPreferLatin = 0x200,
 
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,
@@ -1322,6 +1308,7 @@ public:
         ImhDialableCharactersOnly = 0x100000,
         ImhEmailCharactersOnly = 0x200000,
         ImhUrlCharactersOnly = 0x400000,
+        ImhLatinOnly = 0x800000,
 
         ImhExclusiveInputMask = 0xffff0000
     };
@@ -1400,7 +1387,7 @@ public:
         StatusTipPropertyRole = 30,
         WhatsThisPropertyRole = 31,
         // Reserved
-        UserRole = 32
+        UserRole = 0x0100
     };
 
     enum ItemFlag {
@@ -1495,10 +1482,7 @@ public:
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,
         TouchPointStationary = 0x04,
-        TouchPointReleased   = 0x08,
-        TouchPointStateMask  = 0x0f,
-
-        TouchPointPrimary    = 0x10
+        TouchPointReleased   = 0x08
     };
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 
@@ -1547,6 +1531,12 @@ public:
         LogicalMoveStyle,
         VisualMoveStyle
     };
+
+    enum TimerType {
+        PreciseTimer,
+        CoarseTimer,
+        VeryCoarseTimer
+    };
 }
 #ifdef Q_MOC_RUN
  ;
@@ -1566,6 +1556,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodQueries)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 #ifndef QT_NO_GESTURES

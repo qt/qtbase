@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,7 @@
 #include <qvector3d.h>
 #include <qvector4d.h>
 #include <qquaternion.h>
+#include <qdebug.h>
 
 #include <limits.h>
 
@@ -253,11 +254,14 @@ private slots:
 
     void numericalConvert();
     void moreCustomTypes();
+    void movabilityTest();
     void variantInVariant();
 
     void colorInteger();
 
     void forwardDeclare();
+    void debugStream_data();
+    void debugStream();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -1375,8 +1379,29 @@ void tst_QVariant::quaternion()
     QMetaType::destroy(QVariant::Quaternion, pquaternion);
 }
 
+struct CustomStreamableClass
+{
+    int i;
+    bool operator==(const CustomStreamableClass& other) const
+    {
+        return i == other.i;
+    }
+};
+Q_DECLARE_METATYPE(CustomStreamableClass);
+
+QDataStream &operator<<(QDataStream &out, const CustomStreamableClass &myObj)
+{
+    return out << myObj.i;
+}
+
+QDataStream &operator>>(QDataStream &in, CustomStreamableClass &myObj)
+{
+    return in >> myObj.i;
+}
+
 void tst_QVariant::writeToReadFromDataStream_data()
 {
+    qRegisterMetaTypeStreamOperators<CustomStreamableClass>();
 
     QTest::addColumn<QVariant>("writeVariant");
     QTest::addColumn<bool>("isNull");
@@ -1483,6 +1508,8 @@ void tst_QVariant::writeToReadFromDataStream_data()
     QTest::newRow("QMetaType::Float invalid") << QVariant(QMetaType::Float, (void *) 0) << false;
     float f = 1.234f;
     QTest::newRow("QMetaType::Float") << QVariant(QMetaType::Float, &f) << false;
+    CustomStreamableClass custom = {123};
+    QTest::newRow("Custom type") << QVariant::fromValue(custom) << false;
 }
 
 void tst_QVariant::writeToReadFromDataStream()
@@ -1501,8 +1528,10 @@ void tst_QVariant::writeToReadFromDataStream()
     // Best way to confirm the readVariant contains the same data?
     // Since only a few won't match since the serial numbers are different
     // I won't bother adding another bool in the data test.
-    QVariant::Type writeType = writeVariant.type();
-    if ( writeType != QVariant::Invalid && writeType != QVariant::Bitmap && writeType != QVariant::Pixmap
+    const int writeType = writeVariant.userType();
+    if (writeType == qMetaTypeId<CustomStreamableClass>())
+        QCOMPARE(qvariant_cast<CustomStreamableClass>(readVariant), qvariant_cast<CustomStreamableClass>(writeVariant));
+    else if ( writeType != QVariant::Invalid && writeType != QVariant::Bitmap && writeType != QVariant::Pixmap
         && writeType != QVariant::Image) {
         switch (writeType) {
         default:
@@ -1562,6 +1591,7 @@ void tst_QVariant::writeToReadFromOldDataStream()
 
 void tst_QVariant::checkDataStream()
 {
+    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 46");
     const QByteArray settingsHex("0000002effffffffff");
     const QByteArray settings = QByteArray::fromHex(settingsHex);
     QDataStream in(settings);
@@ -2006,7 +2036,7 @@ void tst_QVariant::userType()
 
             QVariant userVar3;
             qVariantSetValue(userVar3, data2);
-            QVERIFY(userVar2 == userVar3);
+
             userVar3 = userVar2;
             QVERIFY(userVar2 == userVar3);
         }
@@ -2049,7 +2079,7 @@ void tst_QVariant::userType()
         QCOMPARE(instanceCount, 3);
         {
             QVariant second = myCarrier;
-            QCOMPARE(instanceCount, 4);
+            QCOMPARE(instanceCount, 3);
             second.detach();
             QCOMPARE(instanceCount, 4);
         }
@@ -3220,6 +3250,27 @@ void tst_QVariant::moreCustomTypes()
     QCOMPARE(MyMovable::count, 0);
 }
 
+void tst_QVariant::movabilityTest()
+{
+    // This test checks if QVariant is movable even if an internal data is not movable.
+    QVERIFY(!MyNotMovable::count);
+    {
+        QVariant variant = QVariant::fromValue(MyNotMovable());
+        QVERIFY(MyNotMovable::count);
+
+        // prepare destination memory space to which variant will be moved
+        QVariant buffer[1];
+        QCOMPARE(buffer[0].type(), QVariant::Invalid);
+        buffer[0].~QVariant();
+
+        memcpy(buffer, &variant, sizeof(QVariant));
+        QCOMPARE(buffer[0].type(), QVariant::UserType);
+        MyNotMovable tmp(buffer[0].value<MyNotMovable>());
+
+        new (&variant) QVariant();
+    }
+    QVERIFY(!MyNotMovable::count);
+}
 
 void tst_QVariant::variantInVariant()
 {
@@ -3280,6 +3331,65 @@ void tst_QVariant::forwardDeclare()
     Forward *f = 0;
     QVariant v = QVariant::fromValue(f);
     QCOMPARE(qvariant_cast<Forward*>(v), f);
+}
+
+
+class MessageHandler {
+public:
+    MessageHandler(const int typeId)
+        : oldMsgHandler(qInstallMsgHandler(handler))
+    {
+        currentId = typeId;
+    }
+
+    ~MessageHandler()
+    {
+        qInstallMsgHandler(oldMsgHandler);
+    }
+
+    bool testPassed() const
+    {
+        return ok;
+    }
+private:
+    static void handler(QtMsgType, const char *txt)
+    {
+        QString msg = QString::fromLatin1(txt);
+        // Format itself is not important, but basic data as a type name should be included in the output
+        ok = msg.startsWith("QVariant(") + QMetaType::typeName(currentId);
+        QVERIFY2(ok, (QString::fromLatin1("Message is not valid: '") + msg + '\'').toLatin1().constData());
+    }
+
+    QtMsgHandler oldMsgHandler;
+    static int currentId;
+    static bool ok;
+};
+bool MessageHandler::ok;
+int MessageHandler::currentId;
+
+void tst_QVariant::debugStream_data()
+{
+    QTest::addColumn<QVariant>("variant");
+    QTest::addColumn<int>("typeId");
+    for (int id = QMetaType::Void; id < QMetaType::User; ++id) {
+        const char *tagName = QMetaType::typeName(id);
+        if (!tagName)
+            continue;
+        QTest::newRow(tagName) << QVariant(static_cast<QVariant::Type>(id)) << id;
+    }
+    QTest::newRow("QBitArray(111)") << QVariant(QBitArray(3, true)) << qMetaTypeId<QBitArray>();
+    QTest::newRow("CustomStreamableClass") << QVariant(qMetaTypeId<CustomStreamableClass>(), 0) << qMetaTypeId<CustomStreamableClass>();
+    QTest::newRow("MyClass") << QVariant(qMetaTypeId<MyClass>(), 0) << qMetaTypeId<MyClass>();
+}
+
+void tst_QVariant::debugStream()
+{
+    QFETCH(QVariant, variant);
+    QFETCH(int, typeId);
+
+    MessageHandler msgHandler(typeId);
+    qDebug() << variant;
+    QVERIFY(msgHandler.testPassed());
 }
 
 

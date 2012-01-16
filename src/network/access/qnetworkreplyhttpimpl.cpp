@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,6 +48,7 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qnetworkrequest_p.h"
+#include "qnetworkcookie.h"
 #include "qnetworkcookie_p.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qelapsedtimer.h"
@@ -410,10 +411,10 @@ void QNetworkReplyHttpImpl::setSslConfigurationImplementation(const QSslConfigur
     Q_UNUSED(newconfig);
 }
 
-QSslConfiguration QNetworkReplyHttpImpl::sslConfigurationImplementation() const
+void QNetworkReplyHttpImpl::sslConfigurationImplementation(QSslConfiguration &configuration) const
 {
     Q_D(const QNetworkReplyHttpImpl);
-    return d->sslConfiguration;
+    configuration = d->sslConfiguration;
 }
 #endif
 
@@ -1496,10 +1497,12 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 */
 bool QNetworkReplyHttpImplPrivate::start()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
     if (!managerPrivate->networkSession) {
         postRequest();
         return true;
     }
+#endif
 
     // This is not ideal.
     const QString host = url.host();
@@ -1510,11 +1513,13 @@ bool QNetworkReplyHttpImplPrivate::start()
         return true;
     }
 
+#ifndef QT_NO_BEARERMANAGEMENT
     if (managerPrivate->networkSession->isOpen() &&
         managerPrivate->networkSession->state() == QNetworkSession::Connected) {
         postRequest();
         return true;
     }
+#endif
 
     return false;
 }
@@ -1846,7 +1851,7 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     Q_Q(QNetworkReplyHttpImpl);
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
-        qWarning() << "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.";
+        qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
 
@@ -1959,7 +1964,7 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
 
     if (enable) {
         if (bytesDownloaded) {
-            qDebug() << "x" << bytesDownloaded;
+            qDebug("setCachingEnabled: %d bytesDownloaded", bytesDownloaded);
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");
             return;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,7 +53,6 @@
 
 #include <qbuffer.h>
 #include <qpair.h>
-#include <qhttp.h>
 #include <qdebug.h>
 
 #ifndef QT_NO_HTTP
@@ -81,7 +80,7 @@ const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : state(RunningState),
   networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt),
+  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
   channelCount(defaultChannelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
@@ -92,7 +91,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt)
 : state(RunningState), networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt),
+  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
   channelCount(channelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
@@ -116,6 +115,7 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 
 void QHttpNetworkConnectionPrivate::init()
 {
+    Q_Q(QHttpNetworkConnection);
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
@@ -125,6 +125,8 @@ void QHttpNetworkConnectionPrivate::init()
 #endif
         channels[i].init();
     }
+    delayedConnectionTimer.setSingleShot(true);
+    QObject::connect(&delayedConnectionTimer, SIGNAL(timeout()), q, SLOT(_q_connectDelayedChannel()));
 }
 
 void QHttpNetworkConnectionPrivate::pauseConnection()
@@ -184,6 +186,12 @@ bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *sock
     bool emitError = true;
     int i = indexOf(socket);
     int otherSocket = (i == 0 ? 1 : 0);
+
+    // If the IPv4 connection still isn't started we need to start it now.
+    if (delayedConnectionTimer.isActive()) {
+        delayedConnectionTimer.stop();
+        channels[otherSocket].ensureConnection();
+    }
 
     if (channelCount == 1) {
         if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress)
@@ -419,9 +427,23 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             pauseConnection();
             if (!isProxy) {
+                if (channels[i].authenticationCredentialsSent) {
+                    auth->detach();
+                    priv = QAuthenticatorPrivate::getPrivate(*auth);
+                    priv->hasFailed = true;
+                    priv->phase = QAuthenticatorPrivate::Done;
+                    channels[i].authenticationCredentialsSent = false;
+                }
                 emit reply->authenticationRequired(reply->request(), auth);
 #ifndef QT_NO_NETWORKPROXY
             } else {
+                if (channels[i].proxyCredentialsSent) {
+                    auth->detach();
+                    priv = QAuthenticatorPrivate::getPrivate(*auth);
+                    priv->hasFailed = true;
+                    priv->phase = QAuthenticatorPrivate::Done;
+                    channels[i].proxyCredentialsSent = false;
+                }
                 emit reply->proxyAuthenticationRequired(networkProxy, auth);
 #endif
             }
@@ -459,7 +481,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             reply->d_func()->errorString = errorDetail(errorCode, socket);
             emit reply->finishedWithError(errorCode, reply->d_func()->errorString);
             // ### at this point the reply could be deleted
-            socket->close();
             return true;
         }
         //resend the request
@@ -482,6 +503,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
                 request.setHeaderField("Authorization", response);
+                channels[i].authenticationCredentialsSent = true;
             }
         }
     }
@@ -493,6 +515,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             if (priv && priv->method != QAuthenticatorPrivate::None) {
                 QByteArray response = priv->calculateResponse(request.d->methodName(), request.d->uri(false));
                 request.setHeaderField("Proxy-Authorization", response);
+                channels[i].proxyCredentialsSent = true;
             }
         }
     }
@@ -632,9 +655,13 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 
     // we do not like authentication stuff
     // ### make sure to be OK with this in later releases
-    if (!channels[i].authenticator.isNull() || !channels[i].authenticator.user().isEmpty())
+    if (!channels[i].authenticator.isNull()
+        && (!channels[i].authenticator.user().isEmpty()
+            || !channels[i].authenticator.password().isEmpty()))
         return;
-    if (!channels[i].proxyAuthenticator.isNull() || !channels[i].proxyAuthenticator.user().isEmpty())
+    if (!channels[i].proxyAuthenticator.isNull()
+        && (!channels[i].proxyAuthenticator.user().isEmpty()
+            || !channels[i].proxyAuthenticator.password().isEmpty()))
         return;
 
     // must be in ReadingState or WaitingState
@@ -965,12 +992,22 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(QHostInfo info)
 {
     bool bIpv4 = false;
     bool bIpv6 = false;
+    bool foundAddress = false;
 
-    foreach (QHostAddress address, info.addresses()) {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol)
+    foreach (const QHostAddress &address, info.addresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+            if (!foundAddress) {
+                foundAddress = true;
+                delayIpv4 = false;
+            }
             bIpv4 = true;
-        else if (address.protocol() == QAbstractSocket::IPv6Protocol)
+        } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
+            if (!foundAddress) {
+                foundAddress = true;
+                delayIpv4 = true;
+            }
             bIpv6 = true;
+        }
     }
 
     if (bIpv4 && bIpv6)
@@ -1010,8 +1047,24 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
         channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
         channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
 
-        channels[0].ensureConnection(); // Possibly delay this one..
-        channels[1].ensureConnection();
+        int timeout = 300;
+#ifndef QT_NO_BEARERMANAGEMENT
+        if (networkSession) {
+            if (networkSession->configuration().bearerType() == QNetworkConfiguration::Bearer2G)
+                timeout = 800;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerCDMA2000)
+                timeout = 500;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerWCDMA)
+                timeout = 500;
+            else if (networkSession->configuration().bearerType() == QNetworkConfiguration::BearerHSPA)
+                timeout = 400;
+        }
+#endif
+        delayedConnectionTimer.start(timeout);
+        if (delayIpv4)
+            channels[1].ensureConnection();
+        else
+            channels[0].ensureConnection();
     } else {
         networkLayerState = InProgress;
         channels[0].networkLayerPreference = QAbstractSocket::AnyIPProtocol;
@@ -1019,6 +1072,13 @@ void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
     }
 }
 
+void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
+{
+    if (delayIpv4)
+        channels[0].ensureConnection();
+    else
+        channels[1].ensureConnection();
+}
 
 #ifndef QT_NO_BEARERMANAGEMENT
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)

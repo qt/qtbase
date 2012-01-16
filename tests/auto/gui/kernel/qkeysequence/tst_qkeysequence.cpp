@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -122,8 +122,12 @@ private slots:
     void mnemonic();
     void toString_data();
     void toString();
+    void toStringFromKeycode_data();
+    void toStringFromKeycode();
     void streamOperators_data();
     void streamOperators();
+    void parseString_data();
+    void parseString();
     void fromString_data();
     void fromString();
     void ensureSorted();
@@ -474,6 +478,24 @@ void tst_QKeySequence::toString()
 
 }
 
+void tst_QKeySequence::toStringFromKeycode_data()
+{
+    QTest::addColumn<QKeySequence>("keycode");
+    QTest::addColumn<QString>("expectedString");
+
+    QTest::newRow("A") << QKeySequence(Qt::Key_A) << "A";
+    QTest::newRow("-1") << QKeySequence(-1) << "";
+    QTest::newRow("Unknown") << QKeySequence(Qt::Key_unknown) << "";
+}
+
+void tst_QKeySequence::toStringFromKeycode()
+{
+    QFETCH(QKeySequence, keycode);
+    QFETCH(QString, expectedString);
+
+    QCOMPARE(QKeySequence(keycode).toString(), expectedString);
+}
+
 void tst_QKeySequence::streamOperators_data()
 {
 	operatorQString_data();
@@ -501,6 +523,34 @@ void tst_QKeySequence::streamOperators()
 	QVERIFY( orgK != copyOrgK );
 }
 
+
+void tst_QKeySequence::parseString_data()
+{
+    QTest::addColumn<QString>("strSequence");
+    QTest::addColumn<QKeySequence>("keycode");
+
+    QTest::newRow("A") << "A" << QKeySequence(Qt::Key_A);
+    QTest::newRow("a") << "a" << QKeySequence(Qt::Key_A);
+    QTest::newRow("Ctrl+Left") << "Ctrl+Left" << QKeySequence(Qt::CTRL + Qt::Key_Left);
+    QTest::newRow("Ctrl++") << "Ctrl++" << QKeySequence(Qt::CTRL + Qt::Key_Plus);
+    QTest::newRow("Meta+A") << "Meta+a" <<  QKeySequence(Qt::META + Qt::Key_A);
+    QTest::newRow("Win+A") << "Win+a" <<  QKeySequence(Qt::Key_unknown);
+    QTest::newRow("4+3=2") << "4+3=2" <<  QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Super+Meta+A") << "Super+Meta+A" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Meta+Trolls") << "Meta+Trolls" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Alabama") << "Alabama" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Simon+G") << "Simon+G" << QKeySequence(Qt::Key_unknown);
+}
+
+void tst_QKeySequence::parseString()
+{
+    QFETCH( QString, strSequence );
+    QFETCH( QKeySequence, keycode );
+
+    QCOMPARE( QKeySequence(strSequence).toString(), keycode.toString() );
+    QVERIFY( QKeySequence(strSequence) == keycode );
+}
+
 void tst_QKeySequence::fromString_data()
 {
     toString_data();
@@ -511,6 +561,9 @@ void tst_QKeySequence::fromString()
     QFETCH(QString, strSequence);
     QFETCH(QString, neutralString);
     QFETCH(QString, platformString);
+
+    if (strSequence == "Ctrly") // Key_Unknown gives empty string
+        return;
 
     QKeySequence ks1(strSequence);
     QKeySequence ks2 = QKeySequence::fromString(ks1.toString());

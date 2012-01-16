@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -140,20 +140,36 @@ public:
     bool running;
 };
 
-typedef QElapsedTimer ElapsedTimer;
+class Q_CORE_EXPORT QAbstractAnimationTimer : public QObject
+{
+    Q_OBJECT
+public:
+    QAbstractAnimationTimer() : isRegistered(false), isPaused(false), pauseDuration(0) {}
+
+    virtual void updateAnimationsTime(qint64 delta) = 0;
+    virtual void restartAnimationTimer() = 0;
+    virtual int runningAnimationCount() = 0;
+
+    bool isRegistered;
+    bool isPaused;
+    int pauseDuration;
+};
 
 class Q_CORE_EXPORT QUnifiedTimer : public QObject
 {
+    Q_OBJECT
 private:
     QUnifiedTimer();
 
 public:
-    //XXX this is needed by dui
     static QUnifiedTimer *instance();
     static QUnifiedTimer *instance(bool create);
 
-    static void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
-    static void unregisterAnimation(QAbstractAnimation *animation);
+    static void startAnimationTimer(QAbstractAnimationTimer *timer);
+    static void stopAnimationTimer(QAbstractAnimationTimer *timer);
+
+    static void pauseAnimationTimer(QAbstractAnimationTimer *timer, int duration);
+    static void resumeAnimationTimer(QAbstractAnimationTimer *timer);
 
     //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
     void setTimingInterval(int interval);
@@ -168,6 +184,72 @@ public:
     void setSlowModeEnabled(bool enabled) { slowMode = enabled; }
     void setSlowdownFactor(qreal factor) { slowdownFactor = factor; }
 
+    void installAnimationDriver(QAnimationDriver *driver);
+    void uninstallAnimationDriver(QAnimationDriver *driver);
+    bool canUninstallAnimationDriver(QAnimationDriver *driver);
+
+    void restart();
+    void updateAnimationTimers(qint64 currentTick);
+
+    //useful for profiling/debugging
+    int runningAnimationCount();
+    void registerProfilerCallback(void (*cb)(qint64));
+
+protected:
+    void timerEvent(QTimerEvent *);
+
+private Q_SLOTS:
+    void startTimers();
+    void stopTimer();
+
+private:
+    friend class QDefaultAnimationDriver;
+    friend class QAnimationDriver;
+
+    QAnimationDriver *driver;
+    QDefaultAnimationDriver defaultDriver;
+
+    QBasicTimer pauseTimer;
+
+    QElapsedTimer time;
+
+    qint64 lastTick;
+    int timingInterval;
+    int currentAnimationIdx;
+    bool insideTick;
+    bool insideRestart;
+    bool consistentTiming;
+    bool slowMode;
+    bool startTimersPending;
+    bool stopTimerPending;
+
+    // This factor will be used to divide the DEFAULT_TIMER_INTERVAL at each tick
+    // when slowMode is enabled. Setting it to 0 or higher than DEFAULT_TIMER_INTERVAL (16)
+    // stops all animations.
+    qreal slowdownFactor;
+
+    QList<QAbstractAnimationTimer*> animationTimers, animationTimersToStart;
+    QList<QAbstractAnimationTimer*> pausedAnimationTimers;
+
+    void localRestart();
+    int closestPausedAnimationTimerTimeToFinish();
+
+    void (*profilerCallback)(qint64);
+};
+
+class QAnimationTimer : public QAbstractAnimationTimer
+{
+    Q_OBJECT
+private:
+    QAnimationTimer();
+
+public:
+    static QAnimationTimer *instance();
+    static QAnimationTimer *instance(bool create);
+
+    static void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
+    static void unregisterAnimation(QAbstractAnimation *animation);
+
     /*
         this is used for updating the currentTime of all animations in case the pause
         timer is active or, otherwise, only of the animation passed as parameter.
@@ -180,47 +262,22 @@ public:
     */
     static void updateAnimationTimer();
 
-    void installAnimationDriver(QAnimationDriver *driver);
-    void uninstallAnimationDriver(QAnimationDriver *driver);
-    bool canUninstallAnimationDriver(QAnimationDriver *driver);
-
     void restartAnimationTimer();
-    void updateAnimationsTime(qint64 timeStep);
+    void updateAnimationsTime(qint64 delta);
 
     //useful for profiling/debugging
     int runningAnimationCount() { return animations.count(); }
-    void registerProfilerCallback(void (*cb)(qint64));
 
-protected:
-    void timerEvent(QTimerEvent *);
+private Q_SLOTS:
+    void startAnimations();
+    void stopTimer();
 
 private:
-    friend class QDefaultAnimationDriver;
-    friend class QAnimationDriver;
-
-    QAnimationDriver *driver;
-    QDefaultAnimationDriver defaultDriver;
-
-    QBasicTimer animationTimer;
-    // timer used to delay the check if we should start/stop the animation timer
-    QBasicTimer startStopAnimationTimer;
-
-    ElapsedTimer time;
-
     qint64 lastTick;
-    int timingInterval;
     int currentAnimationIdx;
     bool insideTick;
-    bool consistentTiming;
-    bool slowMode;
-
-    // This factor will be used to divide the DEFAULT_TIMER_INTERVAL at each tick
-    // when slowMode is enabled. Setting it to 0 or higher than DEFAULT_TIMER_INTERVAL (16)
-    // stops all animations.
-    qreal slowdownFactor;
-
-    // bool to indicate that only pause animations are active
-    bool isPauseTimerActive;
+    bool startAnimationPending;
+    bool stopTimerPending;
 
     QList<QAbstractAnimation*> animations, animationsToStart;
 
@@ -232,8 +289,6 @@ private:
     void unregisterRunningAnimation(QAbstractAnimation *animation);
 
     int closestPauseAnimationTimeToFinish();
-
-    void (*profilerCallback)(qint64);
 };
 
 QT_END_NAMESPACE

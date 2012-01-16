@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,19 +70,15 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
     QNetworkReply::open(QIODevice::ReadOnly);
 
     QUrl url = req.url();
-
-    // FIXME qDecodeDataUrl should instead be rewritten to have the QByteArray
-    // and the mime type as an output parameter and return a bool instead
-    d->decodeDataUrlResult = qDecodeDataUrl(url);
-
-    if (! d->decodeDataUrlResult.first.isNull()) {
-        QString &mimeType = d->decodeDataUrlResult.first;
-        qint64 size = d->decodeDataUrlResult.second.size();
+    QString mimeType;
+    QByteArray payload;
+    if (qDecodeDataUrl(url, mimeType, payload)) {
+        qint64 size = payload.size();
         setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
         setHeader(QNetworkRequest::ContentLengthHeader, size);
         QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
 
-        d->decodedData.setBuffer(&d->decodeDataUrlResult.second);
+        d->decodedData.setData(payload);
         d->decodedData.open(QIODevice::ReadOnly);
 
         QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,12 +50,13 @@
 #include <QObject>
 #include <QThread>
 #include <QVector>
+#include <QVarLengthArray>
 
 #ifdef XCB_USE_XINPUT2_MAEMO
 struct XInput2Data;
 #endif
 
-#define Q_XCB_DEBUG
+//#define Q_XCB_DEBUG
 
 QT_BEGIN_NAMESPACE
 
@@ -249,6 +250,8 @@ namespace QXcbAtom {
     };
 }
 
+typedef QVarLengthArray<xcb_generic_event_t *, 64> QXcbEventArray;
+
 class QXcbConnection;
 class QXcbEventReader : public QThread
 {
@@ -263,7 +266,7 @@ public:
     void run();
 #endif
 
-    QList<xcb_generic_event_t *> *lock();
+    QXcbEventArray *lock();
     void unlock();
 
 signals:
@@ -273,7 +276,7 @@ private:
     void addEvent(xcb_generic_event_t *event);
 
     QMutex m_mutex;
-    QList<xcb_generic_event_t *> m_events;
+    QXcbEventArray m_events;
     QXcbConnection *m_connection;
 };
 
@@ -337,7 +340,7 @@ public:
 
     xcb_generic_event_t *checkEvent(int type);
     template<typename T>
-    inline xcb_generic_event_t *checkEvent(const T &checker);
+    inline xcb_generic_event_t *checkEvent(T &checker);
 
     typedef bool (*PeekFunc)(xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -425,13 +428,13 @@ private:
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
 
 template<typename T>
-xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
+xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
-        if (checker.check(event)) {
+        if (checker.checkEvent(event)) {
             (*eventqueue)[i] = 0;
             m_reader->unlock();
             return event;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -872,27 +872,147 @@ void tst_QTextCursor::tableMovement()
 
 void tst_QTextCursor::selectionsInTable()
 {
-    QTextTable *table = cursor.insertTable(2, 2);
-    table->cellAt(0, 0).firstCursorPosition().insertText("First");
-    table->cellAt(0, 1).firstCursorPosition().insertText("Second");
-    table->cellAt(1, 0).firstCursorPosition().insertText("Third");
-    table->cellAt(1, 1).firstCursorPosition().insertText("Fourth");
+    QTextTable *table = cursor.insertTable(3, 3);
+    table->cellAt(0, 0).firstCursorPosition().insertText("A a"); // first = 1
+    table->cellAt(0, 1).firstCursorPosition().insertText("B b"); // first = 5
+    table->cellAt(0, 2).firstCursorPosition().insertText("C c"); // first = 9
+    table->cellAt(1, 0).firstCursorPosition().insertText("D d"); // first = 13
+    table->cellAt(1, 1).firstCursorPosition().insertText("E e"); // first = 17
+    table->cellAt(1, 2).firstCursorPosition().insertText("F f"); // first = 21
+    table->cellAt(2, 0).firstCursorPosition().insertText("G g"); // first = 25
+    table->cellAt(2, 1).firstCursorPosition().insertText("H h"); // first = 29
+    table->cellAt(2, 2).firstCursorPosition().insertText("I i"); // first = 33
 
     cursor = table->cellAt(0, 0).lastCursorPosition();
+    QCOMPARE(cursor.position(), 4);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor) == false);
+    QCOMPARE(cursor.position(), 1);
 
     cursor = table->cellAt(1, 0).lastCursorPosition();
+    QCOMPARE(cursor.position(), 16);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor) == false);
+    QCOMPARE(cursor.position(), 13);
 
-    cursor = table->cellAt(0, 1).firstCursorPosition();
+    cursor = table->cellAt(0, 2).firstCursorPosition();
+    QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor) == false);
 
-    cursor = table->cellAt(1, 1).firstCursorPosition();
+    cursor = table->cellAt(1, 2).firstCursorPosition();
+    QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor));
     QVERIFY(cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor) == false);
+
+    // Next let's test selecting entire cells one at a time
+    cursor = table->cellAt(0, 0).firstCursorPosition();
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 5);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 9);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 13);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 17);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 21);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 25);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 29);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 33);
+    QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor) == false);
+
+    // And now lets walk all the way back
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 29);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 25);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 21);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 17);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 13);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 9);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 5);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor));
+    QCOMPARE(cursor.position(), 1);
+    QVERIFY(cursor.movePosition(QTextCursor::PreviousCell, QTextCursor::KeepAnchor) == false);
+
+    QTextCursor::MoveOperation leftMovements[5] = {
+          QTextCursor::PreviousBlock
+        , QTextCursor::PreviousCharacter
+        , QTextCursor::PreviousWord
+        , QTextCursor::Left
+        , QTextCursor::WordLeft
+    };
+
+    QTextCursor::MoveOperation rightMovements[5] = {
+        QTextCursor::NextBlock
+        , QTextCursor::NextCharacter
+        , QTextCursor::NextWord
+        , QTextCursor::Right
+        , QTextCursor::WordRight
+    };
+
+    for (int i = 0; i < 5; ++i) {
+        QTextCursor::MoveOperation left = leftMovements[i];
+        QTextCursor::MoveOperation right = rightMovements[i];
+
+        // Lets walk circle around anchor placed at 1,1 using up, down, left and right
+        cursor = table->cellAt(1, 1).firstCursorPosition();
+        QCOMPARE(cursor.position(), 17);
+        QVERIFY(cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 18); // First right should not jump more than one char
+        QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 21); // Lets jump to the next cell
+        QVERIFY(cursor.movePosition(QTextCursor::Down, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 33);
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 29);
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 25);
+        QVERIFY(cursor.movePosition(QTextCursor::Up, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 13);
+        QVERIFY(cursor.movePosition(QTextCursor::Up, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 1);
+        QVERIFY(cursor.movePosition(right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 5);
+        QVERIFY(cursor.movePosition(right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 9);
+        QVERIFY(cursor.movePosition(QTextCursor::Down, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 21);
+
+        // Lets walk to the side 2 cells and back, first right
+        cursor = table->cellAt(0, 0).firstCursorPosition();
+        QVERIFY(cursor.movePosition(QTextCursor::NextCell, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 5); // Lets jump to the next cell
+        QVERIFY(cursor.movePosition(right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 9);
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 5);
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QVERIFY(cursor.position() < 5);
+
+        // Then left
+        cursor = table->cellAt(0, 2).firstCursorPosition();
+        QCOMPARE(cursor.position(), 9);
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 5); // A single left should do
+        QVERIFY(cursor.movePosition(left, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 1);
+        QVERIFY(cursor.movePosition(right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 5);
+        QVERIFY(cursor.movePosition(right, QTextCursor::KeepAnchor));
+        QCOMPARE(cursor.position(), 9);
+    }
 }
 
 void tst_QTextCursor::selectedText()

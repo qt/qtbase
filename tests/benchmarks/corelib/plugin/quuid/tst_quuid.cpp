@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,8 @@ private slots:
     void fromByteArray();
     void toRfc4122();
     void fromRfc4122();
+    void createUuidV3();
+    void createUuidV5();
     void toDataStream();
     void fromDataStream();
     void isNull();
@@ -126,6 +128,24 @@ void tst_bench_QUuid::fromRfc4122()
     QByteArray string = QByteArray::fromHex("67C8770B44F1410AAB9AF9B5446F13EE");
     QBENCHMARK {
         QUuid uuid = QUuid::fromRfc4122(string);
+    }
+}
+
+void tst_bench_QUuid::createUuidV3()
+{
+    QUuid ns = QUuid::createUuid();
+    QByteArray name = QByteArray("Test");
+    QBENCHMARK {
+        QUuid uuid = QUuid::createUuidV3(ns, name);
+    }
+}
+
+void tst_bench_QUuid::createUuidV5()
+{
+    QUuid ns = QUuid::createUuid();
+    QByteArray name = QByteArray("Test");
+    QBENCHMARK {
+        QUuid uuid = QUuid::createUuidV5(ns, name);
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,7 @@
 #include <qt_windows.h>
 
 #include <QtCore/qdatetime.h>
+#include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qhash.h>
@@ -78,14 +79,13 @@ class QWindowsFileSystemWatcherEngine : public QFileSystemWatcherEngine
 {
     Q_OBJECT
 public:
-    QWindowsFileSystemWatcherEngine();
+    inline QWindowsFileSystemWatcherEngine(QObject *parent)
+        : QFileSystemWatcherEngine(parent)
+    { }
     ~QWindowsFileSystemWatcherEngine();
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
-
 
     class Handle
     {

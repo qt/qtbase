@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,6 +159,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
         return writableLocation(DataLocation) + QLatin1String("\\cache");
+
+    case GenericCacheLocation:
+        return writableLocation(GenericDataLocation) + QLatin1String("\\cache");
 
     case RuntimeLocation:
     case HomeLocation:

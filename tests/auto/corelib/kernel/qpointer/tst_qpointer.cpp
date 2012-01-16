@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -241,8 +241,8 @@ public:
 
 ChildWidget::~ChildWidget()
 {
-    QCOMPARE(static_cast<QWidget *>(guardedPointer), static_cast<QWidget *>(0));
-    QCOMPARE(qobject_cast<QWidget *>(guardedPointer), static_cast<QWidget *>(0));
+    QCOMPARE(static_cast<QWidget *>(guardedPointer), parentWidget());
+    QCOMPARE(qobject_cast<QWidget *>(guardedPointer), parentWidget());
 }
 
 class DerivedChild;

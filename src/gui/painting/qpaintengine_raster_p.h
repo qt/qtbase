@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -178,7 +178,7 @@ public:
     void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
     void drawImage(const QPointF &p, const QImage &img);
     void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                   Qt::ImageConversionFlags falgs = Qt::AutoColor);
+                   Qt::ImageConversionFlags flags = Qt::AutoColor);
     void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr);
     void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
@@ -268,10 +268,10 @@ private:
     void updateOutlineMapper();
     inline void ensureOutlineMapper();
 
-    void updateState();
-    inline void ensureState() {
+    void updateRasterState();
+    inline void ensureRasterState() {
         if (state()->dirty)
-            updateState();
+            updateRasterState();
     }
 };
 

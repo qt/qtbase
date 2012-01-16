@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,10 +66,16 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
     if (!m_platformHelperCreated) {
         QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         m_platformHelperCreated = true;
+        QDialog *dialog = ncThis->q_func();
         m_platformHelper = QGuiApplicationPrivate::platformTheme()
-                                       ->createPlatformDialogHelper(ncThis->q_func());
-        if (m_platformHelper)
+                                       ->createPlatformDialogHelper(dialog);
+        if (m_platformHelper) {
+            QObject::connect(m_platformHelper, SIGNAL(accept()), dialog, SLOT(accept()));
+            QObject::connect(m_platformHelper, SIGNAL(reject()), dialog, SLOT(reject()));
+            QObject::connect(m_platformHelper, SIGNAL(launchNativeAppModalPanel()),
+                             dialog, SLOT(_q_platformRunNativeAppModalPanel()));
             ncThis->initHelper(m_platformHelper);
+        }
     }
     return m_platformHelper;
 }
@@ -85,13 +91,24 @@ bool QDialogPrivate::setNativeDialogVisible(bool visible)
 {
     if (QPlatformDialogHelper *helper = platformHelper()) {
         if (visible) {
-            nativeDialogInUse = helper->show_sys(parentWindow());
+            helperPrepareShow(helper);
+            QPlatformDialogHelper::ShowFlags flags(0);
+            if (q_func()->isModal())
+                flags |= QPlatformDialogHelper::ShowModal;
+            nativeDialogInUse = helper->show_sys(flags, q_func()->windowFlags(), parentWindow());
         } else {
             helper->hide_sys();
         }
     }
     return nativeDialogInUse;
 }
+
+void QDialogPrivate::_q_platformRunNativeAppModalPanel()
+{
+    if (nativeDialogInUse)
+        platformHelper()->_q_platformRunNativeAppModalPanel();
+}
+
 
 QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 {
@@ -503,6 +520,8 @@ int QDialog::exec()
     setAttribute(Qt::WA_ShowModal, wasShowModal);
 
     int res = result();
+    if (d->nativeDialogInUse)
+        d->helperDone(static_cast<QDialog::DialogCode>(res), d->platformHelper());
     if (deleteOnClose)
         delete this;
     return res;

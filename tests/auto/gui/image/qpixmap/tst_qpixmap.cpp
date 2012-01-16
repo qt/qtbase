@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -329,7 +329,7 @@ void tst_QPixmap::convertFromImage()
     pix = QPixmap::fromImage(img2);
 
     QPixmap res = QPixmap::fromImage(img2);
-    QVERIFY( pixmapsAreEqual(&pix, &res) );
+    QCOMPARE(pix, res);
 }
 
 void tst_QPixmap::scroll_data()
@@ -1149,7 +1149,7 @@ void tst_QPixmap::copy()
     trans.fill(Qt::transparent);
 
     QPixmap transCopy = trans.copy();
-    QVERIFY(pixmapsAreEqual(&trans, &transCopy));
+    QCOMPARE(trans, transCopy);
 }
 
 void tst_QPixmap::depthOfNullObjects()
@@ -1317,7 +1317,7 @@ void tst_QPixmap::loadFromDataImage()
     QPixmap directLoadingPixmap;
     directLoadingPixmap.loadFromData(rawData);
 
-    QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
+    QCOMPARE(pixmapWithCopy, directLoadingPixmap);
 }
 
 void tst_QPixmap::fromImageReader_data()
@@ -1348,7 +1348,7 @@ void tst_QPixmap::fromImageReader()
 
     QPixmap directLoadingPixmap = QPixmap::fromImageReader(&imageReader);
 
-    QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
+    QCOMPARE(pixmapWithCopy, directLoadingPixmap);
 }
 
 void tst_QPixmap::fromImageReaderAnimatedGif_data()
@@ -1376,7 +1376,7 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
         QPixmap refPixmap = QPixmap::fromImage(refImage);
 
         QPixmap directLoadingPixmap = QPixmap::fromImageReader(&pixmapReader);
-        QVERIFY(pixmapsAreEqual(&refPixmap, &directLoadingPixmap));
+        QCOMPARE(refPixmap, directLoadingPixmap);
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -292,7 +292,9 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
 
 QSQLiteResult::~QSQLiteResult()
 {
-    qobject_cast<const QSQLiteDriver *>(driver())->d->results.removeOne(this);
+    const QSqlDriver *sqlDriver = driver();
+    if (sqlDriver)
+        qobject_cast<const QSQLiteDriver *>(sqlDriver)->d->results.removeOne(this);
     d->cleanup();
     delete d;
 }

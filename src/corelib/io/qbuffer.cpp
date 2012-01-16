@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -143,12 +143,8 @@ QByteArray QBufferPrivate::peek(qint64 maxSize)
 
     QBuffer emits readyRead() when new data has arrived in the
     buffer. By connecting to this signal, you can use QBuffer to
-    store temporary data before processing it. For example, you can
-    pass the buffer to QFtp when downloading a file from an FTP
-    server. Whenever a new payload of data has been downloaded,
-    readyRead() is emitted, and you can process the data that just
-    arrived. QBuffer also emits bytesWritten() every time new data
-    has been written to the buffer.
+    store temporary data before processing it. QBuffer also emits
+    bytesWritten() every time new data has been written to the buffer.
 
     \sa QFile, QDataStream, QTextStream, QByteArray
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -332,26 +332,6 @@ void QEventDispatcherWin32Private::activateEventNotifier(QWinEventNotifier * wen
     QCoreApplication::sendEvent(wen, &event);
 }
 
-// ### Qt 5: remove
-Q_CORE_EXPORT bool winPeekMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
-                     UINT wMsgFilterMax, UINT wRemoveMsg)
-{
-    return PeekMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
-}
-
-// ### Qt 5: remove
-Q_CORE_EXPORT bool winPostMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    return PostMessage(hWnd, msg, wParam, lParam);
-}
-
-// ### Qt 5: remove
-Q_CORE_EXPORT bool winGetMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
-                     UINT wMsgFilterMax)
-{
-    return GetMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax);
-}
-
 // This function is called by a workerthread
 void WINAPI QT_WIN_CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
 {
@@ -501,11 +481,16 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
     wc.lpszClassName = reinterpret_cast<const wchar_t *> (className.utf16());
 
     RegisterClass(&wc);
+#ifdef Q_OS_WINCE
+    HWND parent = 0;
+#else
+    HWND parent = HWND_MESSAGE;
+#endif
     HWND wnd = CreateWindow(wc.lpszClassName,  // classname
                             wc.lpszClassName,  // window name
                             0,                 // style
                             0, 0, 0, 0,        // geometry
-                            0,                 // parent
+                            parent,            // parent
                             0,                 // menu handle
                             qWinAppInst(),     // application
                             0);                // windows creation data.
@@ -530,30 +515,29 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     int ok = 0;
-    if (t->interval > 20 || !t->interval || !qtimeSetEvent) {
+    uint interval = t->interval;
+    if (interval == 0u) {
+        // optimization for single-shot-zero-timer
+        QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
         ok = 1;
-        if (!t->interval)  // optimization for single-shot-zero-timer
-            QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
-        else
-            ok = SetTimer(internalHwnd, t->timerId, (uint) t->interval, 0);
-    } else {
-        ok = t->fastTimerId = qtimeSetEvent(t->interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
+    } else if ((interval < 20u || t->timerType == Qt::PreciseTimer) && qtimeSetEvent) {
+        ok = t->fastTimerId = qtimeSetEvent(interval, 1, qt_fast_timer_proc, (DWORD_PTR)t,
                                             TIME_CALLBACK_FUNCTION | TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
-        if (ok == 0) { // fall back to normal timer if no more multimedia timers available
-            ok = SetTimer(internalHwnd, t->timerId, (uint) t->interval, 0);
-        }
+    } else if (interval >= 20000u || t->timerType == Qt::VeryCoarseTimer) {
+        // round the interval, VeryCoarseTimers only have full second accuracy
+        interval = ((interval + 500)) / 1000 * 1000;
+    }
+    if (ok == 0) {
+        // user normal timers for (Very)CoarseTimers, or if no more multimedia timers available
+        ok = SetTimer(internalHwnd, t->timerId, interval, 0);
     }
 
     if (ok == 0)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
 
-void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t, bool closingDown)
+void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
 {
-    // mark timer as unused
-    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent && !closingDown)
-        QAbstractEventDispatcherPrivate::releaseTimerId(t->timerId);
-
     if (t->interval == 0) {
         QCoreApplicationPrivate::removePostedTimerEvent(t->dispatcher, t->timerId);
     } else if (t->fastTimerId != 0) {
@@ -859,7 +843,7 @@ void QEventDispatcherWin32::unregisterSocketNotifier(QSocketNotifier *notifier)
         d->doWsaAsyncSelect(sockfd);
 }
 
-void QEventDispatcherWin32::registerTimer(int timerId, int interval, QObject *object)
+void QEventDispatcherWin32::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
     if (timerId < 1 || interval < 0 || !object) {
         qWarning("QEventDispatcherWin32::registerTimer: invalid arguments");
@@ -875,6 +859,7 @@ void QEventDispatcherWin32::registerTimer(int timerId, int interval, QObject *ob
     t->dispatcher = this;
     t->timerId  = timerId;
     t->interval = interval;
+    t->timerType = timerType;
     t->obj  = object;
     t->inTimerEvent = false;
     t->fastTimerId = 0;
@@ -953,7 +938,7 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
     for (int i = 0; i < d->timerVec.size(); ++i) {
         const WinTimerInfo *t = d->timerVec.at(i);
         if (t && t->obj == object)
-            list << TimerInfo(t->timerId, t->interval);
+            list << TimerInfo(t->timerId, t->interval, t->timerType);
     }
     return list;
 }
@@ -1050,7 +1035,7 @@ void QEventDispatcherWin32::closingDown()
 
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)
-        d->unregisterTimer(d->timerVec.at(i), true);
+        d->unregisterTimer(d->timerVec.at(i));
     d->timerVec.clear();
     d->timerDict.clear();
 

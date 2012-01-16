@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,14 +73,14 @@ protected:
         QLineEdit::focusInEvent( e );
         focusInEventReason = e->reason();
 	    focusInEventGotFocus = e->gotFocus();
-        focusInEventRecieved = TRUE;
+        focusInEventRecieved = true;
     }
     void focusOutEvent( QFocusEvent* e )
     {
         QLineEdit::focusOutEvent( e );
         focusOutEventReason = e->reason();
 	    focusOutEventLostFocus = !e->gotFocus();
-        focusOutEventRecieved = TRUE;
+        focusOutEventRecieved = true;
     }
 };
 
@@ -173,17 +173,17 @@ void tst_QFocusEvent::initWidget()
     // The first lineedit should have focus
     QVERIFY( childFocusWidgetOne->hasFocus() );
 
-    childFocusWidgetOne->focusInEventRecieved = FALSE;
-    childFocusWidgetOne->focusInEventGotFocus = FALSE;
+    childFocusWidgetOne->focusInEventRecieved = false;
+    childFocusWidgetOne->focusInEventGotFocus = false;
     childFocusWidgetOne->focusInEventReason = -1;
-    childFocusWidgetOne->focusOutEventRecieved = FALSE;
-    childFocusWidgetOne->focusOutEventLostFocus = FALSE;
+    childFocusWidgetOne->focusOutEventRecieved = false;
+    childFocusWidgetOne->focusOutEventLostFocus = false;
     childFocusWidgetOne->focusOutEventReason = -1;
-    childFocusWidgetTwo->focusInEventRecieved = FALSE;
-    childFocusWidgetTwo->focusInEventGotFocus = FALSE;
+    childFocusWidgetTwo->focusInEventRecieved = false;
+    childFocusWidgetTwo->focusInEventGotFocus = false;
     childFocusWidgetTwo->focusInEventReason = -1;
-    childFocusWidgetTwo->focusOutEventRecieved = FALSE;
-    childFocusWidgetTwo->focusOutEventLostFocus = FALSE;
+    childFocusWidgetTwo->focusOutEventRecieved = false;
+    childFocusWidgetTwo->focusOutEventLostFocus = false;
     childFocusWidgetTwo->focusOutEventReason = -1;
 }
 

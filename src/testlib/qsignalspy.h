@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,8 +56,6 @@ QT_MODULE(Test)
 
 class QVariant;
 
-/* ### Qt5: change the class to use regular BC mechanisms, such that we can
- * implement things like suggested in task 160192. */
 class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -649,11 +649,11 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 RuntimeLibrary = rtMultiThreadedDebug;
             break;
         } else if (second == 'P') {
-            if (config->CompilerVersion >= NET2005) {
-                AdditionalOptions += option;
-            } else if (config->CompilerVersion >= NET2010) {
+            if (config->CompilerVersion >= NET2010) {
                 MultiProcessorCompilation = _True;
                 MultiProcessorCompilationProcessorCount = option+3;
+            } else if (config->CompilerVersion >= NET2005) {
+                AdditionalOptions += option;
             } else {
                 warn_msg(WarnLogic, "/MP option is not supported in Visual C++ < 2005, ignoring.");
             }
@@ -2303,13 +2303,14 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         deps += CustomBuildTool.AdditionalDependencies;
         deps += cmd.left(cmd.indexOf(' '));
         // Make sure that all deps are only once
-        QMap<QString, bool> uniqDeps;
+        QHash<QString, bool> uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
             QString aDep = deps.at(c).trimmed();
             if (!aDep.isEmpty())
                 uniqDeps[aDep] = false;
         }
         CustomBuildTool.AdditionalDependencies = uniqDeps.keys();
+        CustomBuildTool.AdditionalDependencies.sort();
     }
 
     // Ensure that none of the output files are also dependencies. Or else, the custom buildstep

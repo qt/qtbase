@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,33 +86,37 @@ do {\
 } while (0)
 
 // Will try to wait for the expression to become true while allowing event processing
-#define QTRY_VERIFY(__expr) \
+#define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \
 do { \
     const int __step = 50; \
-    const int __timeout = 5000; \
+    const int __timeoutValue = __timeout; \
     if (!(__expr)) { \
         QTest::qWait(0); \
     } \
-    for (int __i = 0; __i < __timeout && !(__expr); __i+=__step) { \
+    for (int __i = 0; __i < __timeoutValue && !(__expr); __i+=__step) { \
         QTest::qWait(__step); \
     } \
     QVERIFY(__expr); \
 } while (0)
 
+#define QTRY_VERIFY(__expr) QTRY_VERIFY_WITH_TIMEOUT(__expr, 5000)
+
 // Will try to wait for the comparison to become successful while allowing event processing
-#define QTRY_COMPARE(__expr, __expected) \
+
+#define QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, __timeout) \
 do { \
     const int __step = 50; \
-    const int __timeout = 5000; \
+    const int __timeoutValue = __timeout; \
     if ((__expr) != (__expected)) { \
         QTest::qWait(0); \
     } \
-    for (int __i = 0; __i < __timeout && ((__expr) != (__expected)); __i+=__step) { \
+    for (int __i = 0; __i < __timeoutValue && ((__expr) != (__expected)); __i+=__step) { \
         QTest::qWait(__step); \
     } \
     QCOMPARE(__expr, __expected); \
 } while (0)
 
+#define QTRY_COMPARE(__expr, __expected) QTRY_COMPARE_WITH_TIMEOUT(__expr, __expected, 5000)
 
 #ifdef Q_CC_MSVC
 #define QSKIP(statement) \
@@ -180,6 +184,7 @@ namespace QTest
     Q_TESTLIB_EXPORT char *toString(const void *);
 
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = 0);
+    Q_TESTLIB_EXPORT int qExec(QObject *testObject, const QStringList &arguments);
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
@@ -208,7 +213,7 @@ namespace QTest
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, const char *file,
                                           int line);
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *msg, char *val1, char *val2,
-                                         const char *expected, const char *actual,
+                                         const char *actual, const char *expected,
                                          const char *file, int line);
     Q_TESTLIB_EXPORT void qSleep(int ms);
     Q_TESTLIB_EXPORT void addColumnInternal(int id, const char *name);

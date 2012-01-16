@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -435,7 +435,7 @@ void QToolBarPrivate::plug(const QRect &r)
     pop up a menu containing the items that does not currently fit in
     the toolbar.
 
-    When a QToolBar is not a child of a QMainWindow, it looses the ability
+    When a QToolBar is not a child of a QMainWindow, it loses the ability
     to populate the extension pop up with widgets added to the toolbar using
     addWidget(). Please use widget actions created by inheriting QWidgetAction
     and implementing QWidgetAction::createWidget() instead.

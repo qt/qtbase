@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -222,7 +222,6 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                 for (int i = 0; i < m_xinputData->xiMaxContacts; ++i) {
                     QWindowSystemInterface::TouchPoint tp;
                     tp.id = i;
-                    tp.isPrimary = (i == 0);
                     tp.state = Qt::TouchPointReleased;
                     touchPoints << tp;
                 }
@@ -288,7 +287,7 @@ void QXcbConnection::handleGenericEvent(xcb_ge_event_t *event)
                     QWindowSystemInterface::registerTouchDevice(dev);
                     m_xinputData->qtTouchDevice = dev;
                 }
-                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, (QEvent::Type)0 /*None*/, dev, touchPoints);
+                QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xideviceevent->time, dev, touchPoints);
             }
 
             if (xideviceevent->evtype == XI_ButtonRelease) {

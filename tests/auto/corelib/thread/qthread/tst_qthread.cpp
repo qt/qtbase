@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1074,17 +1074,14 @@ void tst_QThread::wait2()
     thread.start();
     timer.start();
     QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
-    qint64 elapsed = timer.elapsed();
-
-    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
-    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+    qint64 elapsed = timer.elapsed(); // On Windows, we sometimes get (WaitTime - 1).
+    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
 
     timer.start();
     thread.cond1.wakeOne();
     QVERIFY(thread.wait(/*Waiting_Thread::WaitTime * 1.4*/));
     elapsed = timer.elapsed();
-    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
-    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+    QVERIFY2(elapsed - Waiting_Thread::WaitTime >= -1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
 }
 
 
@@ -1116,9 +1113,7 @@ void tst_QThread::wait3_slowDestructor()
     timer.start();
     QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
     qint64 elapsed = timer.elapsed();
-
-    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
-    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+    QVERIFY2(elapsed >= Waiting_Thread::WaitTime - 1, qPrintable(QString::fromLatin1("elapsed: %1").arg(elapsed)));
 
     slow.cond.wakeOne();
     //now the thread should finish quickly
@@ -1233,7 +1228,7 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) {}
     void unregisterSocketNotifier(QSocketNotifier *) {}
-    void registerTimer(int , int , QObject *) {}
+    void registerTimer(int, int, Qt::TimerType, QObject *) {}
     bool unregisterTimer(int ) { return false; }
     bool unregisterTimers(QObject *) { return false; }
     QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }

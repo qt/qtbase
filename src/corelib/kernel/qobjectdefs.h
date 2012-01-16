@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,18 +136,11 @@ template <typename T1, typename T2>
 inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 #endif // QT_NO_QOBJECT_CHECK
 
-#ifdef Q_NO_DATA_RELOCATION
-#define Q_OBJECT_GETSTATICMETAOBJECT static const QMetaObject &getStaticMetaObject();
-#else
-#define Q_OBJECT_GETSTATICMETAOBJECT
-#endif
-
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT \
 public: \
     Q_OBJECT_CHECK \
     static const QMetaObject staticMetaObject; \
-    Q_OBJECT_GETSTATICMETAOBJECT \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
@@ -162,8 +155,8 @@ private: \
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
-    Q_OBJECT_GETSTATICMETAOBJECT \
 private:
+
 #else // Q_MOC_RUN
 #define slots slots
 #define signals signals
@@ -341,11 +334,6 @@ struct Q_CORE_EXPORT QMetaObject
     static void activate(QObject *sender, int signal_index, void **argv);
     static void activate(QObject *sender, const QMetaObject *, int local_signal_index, void **argv);
 
-    // internal guarded pointers
-    static void addGuard(QObject **ptr);
-    static void removeGuard(QObject **ptr);
-    static void changeGuard(QObject **ptr, QObject *o);
-
     static bool invokeMethod(QObject *obj, const char *member,
                              Qt::ConnectionType,
                              QGenericReturnArgument ret,
@@ -474,11 +462,7 @@ typedef const QMetaObject& (*QMetaObjectAccessor)();
 
 struct QMetaObjectExtraData
 {
-#ifdef Q_NO_DATA_RELOCATION
-    const QMetaObjectAccessor *objects;
-#else
     const QMetaObject **objects;
-#endif
 
     typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **); //from revision 6
     //typedef int (*StaticMetaCall)(QMetaObject::Call, int, void **); //used from revison 2 until revison 5

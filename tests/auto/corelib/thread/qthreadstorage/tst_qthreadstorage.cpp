@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -290,7 +290,11 @@ void tst_QThreadStorage::crashOnExit()
     QProcess process;
     // crashOnExit is always expected to be in the same directory
     // as this test binary
+#ifdef Q_OS_MAC
+    process.start(QCoreApplication::applicationDirPath() + "/../../../crashOnExit");
+#else
     process.start(QCoreApplication::applicationDirPath() + "/crashOnExit");
+#endif
     QVERIFY(process.waitForFinished());
     QVERIFY(process.exitStatus() != QProcess::CrashExit);
 }
@@ -465,7 +469,7 @@ void tst_QThreadStorage::valueBased()
     t2.someNumber = -128;
     t3.someNumber = 78;
     t1.someString = "hello";
-    t2.someString = "trolltech";
+    t2.someString = "australia";
     t3.someString = "nokia";
 
     t1.start();

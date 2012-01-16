@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,45 +148,78 @@ public:
         AcceleratorChanged   = 0x80C0
     };
 
+    // 64 bit enums seem hard on some platforms (windows...)
+    // which makes using a bit field a sensible alternative
+    struct State {
+        // http://msdn.microsoft.com/en-us/library/ms697270.aspx
+        quint64 disabled : 1; // used to be Unavailable
+        quint64 selected : 1;
+        quint64 focusable : 1;
+        quint64 focused : 1;
+        quint64 pressed : 1;
+        quint64 checkable : 1;
+        quint64 checked : 1;
+        quint64 checkStateMixed : 1; // used to be Mixed
+        quint64 readOnly : 1;
+        quint64 hotTracked : 1;
+        quint64 defaultButton : 1;
+        quint64 expanded : 1;
+        quint64 collapsed : 1;
+        quint64 busy : 1;
+        quint64 expandable : 1;
+        quint64 marqueed : 1;
+        quint64 animated : 1;
+        quint64 invisible : 1;
+        quint64 offscreen : 1;
+        quint64 sizeable : 1;
+        quint64 movable : 1;
+        quint64 selfVoicing : 1;
+        quint64 selectable : 1;
+        quint64 linked : 1;
+        quint64 traversed : 1;
+        quint64 multiSelectable : 1;
+        quint64 extSelectable : 1;
+        quint64 passwordEdit : 1; // used to be Protected
+        quint64 hasPopup : 1;
+        quint64 modal : 1;
 
-    enum StateFlag {
-        Normal          = 0x00000000,
-        Unavailable     = 0x00000001,
-        Selected        = 0x00000002,
-        Focused         = 0x00000004,
-        Pressed         = 0x00000008,
-        Checked         = 0x00000010,
-        Mixed           = 0x00000020,
-        ReadOnly        = 0x00000040,
-        HotTracked      = 0x00000080,
-        DefaultButton   = 0x00000100,
-        Expanded        = 0x00000200,
-        Collapsed       = 0x00000400,
-        Busy            = 0x00000800,
-        // Floating        = 0x00001000,
-        Expandable      = 0x00001000,
-        Marqueed        = 0x00002000,
-        Animated        = 0x00004000,
-        Invisible       = 0x00008000,
-        Offscreen       = 0x00010000,
-        Sizeable        = 0x00020000,
-        Movable         = 0x00040000,
-        SelfVoicing     = 0x00080000,
-        Focusable       = 0x00100000,
-        Selectable      = 0x00200000,
-        Linked          = 0x00400000,
-        Traversed       = 0x00800000,
-        MultiSelectable = 0x01000000,
-        ExtSelectable   = 0x02000000,
-        //AlertLow        = 0x04000000,
-        //AlertMedium     = 0x08000000,
-        //AlertHigh       = 0x10000000, /* reused for HasInvokeExtension */
-        Protected       = 0x20000000,
-        HasPopup        = 0x40000000,
-        Modal           = 0x80000000
+        // IA2 - we chose to not add some IA2 states for now
+        // Below the ones that seem helpful
+        quint64 active : 1;
+        quint64 invalid : 1; // = defunct
+        quint64 editable : 1;
+        quint64 multiLine : 1;
+        quint64 selectableText : 1;
+        quint64 supportsAutoCompletion : 1;
 
+        // quint64 horizontal : 1;
+        // quint64 vertical : 1;
+        // quint64 invalidEntry : 1;
+        // quint64 managesDescendants : 1;
+        // quint64 singleLine : 1; // we have multi line, this is redundant.
+        // quint64 stale : 1;
+        // quint64 transient : 1;
+        // quint64 pinned : 1;
+
+        // Apple - see http://mattgemmell.com/2010/12/19/accessibility-for-iphone-and-ipad-apps/
+        // quint64 playsSound : 1;
+        // quint64 summaryElement : 1;
+        // quint64 updatesFrequently : 1;
+        // quint64 adjustable : 1;
+        // more and not included here: http://developer.apple.com/library/mac/#documentation/UserExperience/Reference/Accessibility_RoleAttribute_Ref/Attributes.html
+
+        // MSAA
+        // quint64 alertLow : 1;
+        // quint64 alertMedium : 1;
+        // quint64 alertHigh : 1;
+
+        State() {
+            qMemSet(this, 0, sizeof(State));
+        }
     };
-    Q_DECLARE_FLAGS(State, StateFlag)
+
+
+
 
 
     enum Role {
@@ -274,16 +307,7 @@ public:
     enum RelationFlag {
         Unrelated     = 0x00000000,
         Self          = 0x00000001,
-        Ancestor      = 0x00000002,
-        Child         = 0x00000004,
-        Descendent    = 0x00000008,
-        Sibling       = 0x00000010,
-        HierarchyMask = 0x000000ff,
 
-        Up            = 0x00000100,
-        Down          = 0x00000200,
-        Left          = 0x00000400,
-        Right         = 0x00000800,
         Covers        = 0x00001000,
         Covered       = 0x00002000,
         GeometryMask  = 0x0000ff00,
@@ -296,12 +320,6 @@ public:
         LogicalMask   = 0x00ff0000
     };
     Q_DECLARE_FLAGS(Relation, RelationFlag)
-
-    enum Method {
-        ListSupportedMethods      = 0,
-        SetCursorPosition         = 1,
-        GetCursorPosition         = 2
-    };
 
     enum InterfaceType
     {
@@ -324,9 +342,9 @@ public:
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
-    static void updateAccessibility(QObject *, int who, Event reason);
+    static void updateAccessibility(QObject *object, int child, Event reason);
     static bool isActive();
-    static void setRootObject(QObject*);
+    static void setRootObject(QObject *object);
 
     static void cleanup();
 
@@ -341,11 +359,9 @@ private:
     QAccessible() {}
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::State)
+Q_GUI_EXPORT bool operator==(const QAccessible::State &first, const QAccessible::State &second);
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
-QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QSet<QAccessible::Method>)
-QT_BEGIN_NAMESPACE
 
 class QAccessible2Interface;
 class QAccessibleTextInterface;
@@ -369,7 +385,7 @@ public:
     virtual QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
     virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations() const;
 
-    virtual int childAt(int x, int y) const = 0;
+    virtual QAccessibleInterface *childAt(int x, int y) const = 0;
 
     // navigation, hierarchy
     virtual QAccessibleInterface *parent() const = 0;
@@ -384,15 +400,9 @@ public:
     virtual QRect rect() const = 0;
     virtual QAccessible::Role role() const = 0;
     virtual QAccessible::State state() const = 0;
-    // FIXME virtual QSet<QAccessible::State> states() const = 0;
 
     virtual QColor foregroundColor() const;
     virtual QColor backgroundColor() const;
-
-    virtual QVariant invokeMethod(QAccessible::Method method, const QVariantList &params = QVariantList());
-
-    inline QSet<QAccessible::Method> supportedMethods()
-    { return qvariant_cast<QSet<QAccessible::Method> >(invokeMethod(QAccessible::ListSupportedMethods)); }
 
     inline QAccessibleTextInterface *textInterface()
     { return reinterpret_cast<QAccessibleTextInterface *>(interface_cast(QAccessible::TextInterface)); }
@@ -415,29 +425,18 @@ public:
     inline QAccessibleTableCellInterface *tableCellInterface()
     { return reinterpret_cast<QAccessibleTableCellInterface *>(interface_cast(QAccessible::TableCellInterface)); }
 
-    // FIXME
-    virtual QVariant virtual_hook(const QVariant &data);
+    virtual void virtual_hook(int id, void *data);
+
     virtual void *interface_cast(QAccessible::InterfaceType)
     { return 0; }
 private:
 };
 
-class QAccessibleEvent : public QEvent
-{
-public:
-    inline QAccessibleEvent(Type type);
-    inline QString value() const { return val; }
-    inline void setValue(const QString &aText) { val = aText; }
-
-private:
-    QString val;
-};
-
-inline QAccessibleEvent::QAccessibleEvent(Type atype)
-    : QEvent(atype) {}
-
 #define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
+
+Q_GUI_EXPORT const char *qAccessibleRoleString(QAccessible::Role role);
+Q_GUI_EXPORT const char *qAccessibleEventString(QAccessible::Event event);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface);

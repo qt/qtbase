@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,6 +96,8 @@ QList<QByteArray> QAccessibleObjectPrivate::actionList() const
     \ingroup accessibility
     \inmodule QtWidgets
 
+    This class is part of \l {Accessibility for QWidget Applications}.
+
     This class is mainly provided for convenience. All subclasses of
     the QAccessibleInterface that provide implementations of non-widget objects
     should use this class as their base class.
@@ -154,6 +156,18 @@ void QAccessibleObject::setText(QAccessible::Text, const QString &)
 {
 }
 
+/*! \reimp */
+QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
+{
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
+        if (childIface->rect().contains(x,y)) {
+            return childIface;
+        }
+    }
+    return 0;
+}
+
 /*!
     \class QAccessibleApplication
     \brief The QAccessibleApplication class implements the QAccessibleInterface for QApplication.
@@ -207,23 +221,7 @@ int QAccessibleApplication::childCount() const
 int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) const
 {
     const QObjectList tlw(topLevelObjects());
-    int index = tlw.indexOf(child->object());
-    if (index != -1)
-        ++index;
-    return index;
-}
-
-/*! \reimp */
-int QAccessibleApplication::childAt(int x, int y) const
-{
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
-        QRect geom = childIface->rect();
-        if (geom.contains(x,y))
-            return i+1;
-        delete childIface;
-    }
-    return rect().contains(x,y) ? 0 : -1;
+    return tlw.indexOf(child->object());
 }
 
 /*! \reimp */
@@ -273,9 +271,6 @@ int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
             return 0;
         }
         break;
-    case QAccessible::Ancestor:
-        *target = parent();
-        return 0;
     default:
         break;
     }
@@ -306,7 +301,7 @@ QAccessible::Role QAccessibleApplication::role() const
 /*! \reimp */
 QAccessible::State QAccessibleApplication::state() const
 {
-    return QGuiApplication::activeWindow() ? QAccessible::Focused : QAccessible::Normal;
+    return QAccessible::State();
 }
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,121 +98,6 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
     return widgets;
 }
 
-static inline int distance(QWidget *source, QWidget *target,
-                           QAccessible::RelationFlag relation)
-{
-    if (!source || !target)
-        return -1;
-
-    int returnValue = -1;
-    switch (relation) {
-    case QAccessible::Up:
-        if (target->y() <= source->y())
-            returnValue = source->y() - target->y();
-        break;
-    case QAccessible::Down:
-        if (target->y() >= source->y() + source->height())
-            returnValue = target->y() - (source->y() + source->height());
-        break;
-    case QAccessible::Right:
-        if (target->x() >= source->x() + source->width())
-            returnValue = target->x() - (source->x() + source->width());
-        break;
-    case QAccessible::Left:
-        if (target->x() <= source->x())
-            returnValue = source->x() - target->x();
-        break;
-    default:
-        break;
-    }
-    return returnValue;
-}
-
-static inline QWidget *mdiAreaNavigate(QWidget *area,
-                                       QAccessible::RelationFlag relation, int entry)
-{
-#if defined(QT_NO_MDIAREA) && defined(QT_NO_WORKSPACE)
-    Q_UNUSED(area);
-#endif
-#ifndef QT_NO_MDIAREA
-    const QMdiArea *mdiArea = qobject_cast<QMdiArea *>(area);
-#endif
-#ifndef QT_NO_WORKSPACE
-    const QWorkspace *workspace = qobject_cast<QWorkspace *>(area);
-#endif
-    if (true
-#ifndef QT_NO_MDIAREA
-        && !mdiArea
-#endif
-#ifndef QT_NO_WORKSPACE
-    && !workspace
-#endif
-    )
-        return 0;
-
-    QWidgetList windows;
-#ifndef QT_NO_MDIAREA
-    if (mdiArea) {
-        foreach (QMdiSubWindow *window, mdiArea->subWindowList())
-            windows.append(window);
-    } else
-#endif
-    {
-#ifndef QT_NO_WORKSPACE
-        foreach (QWidget *window, workspace->windowList())
-            windows.append(window->parentWidget());
-#endif
-    }
-
-    if (windows.isEmpty() || entry < 1 || entry > windows.count())
-        return 0;
-
-    QWidget *source = windows.at(entry - 1);
-    QMap<int, QWidget *> candidates;
-    foreach (QWidget *window, windows) {
-        if (source == window)
-            continue;
-        int candidateDistance = distance(source, window, relation);
-        if (candidateDistance >= 0)
-            candidates.insert(candidateDistance, window);
-    }
-
-    int minimumDistance = INT_MAX;
-    QWidget *target = 0;
-    foreach (QWidget *candidate, candidates) {
-        switch (relation) {
-        case QAccessible::Up:
-        case QAccessible::Down:
-            if (qAbs(candidate->x() - source->x()) < minimumDistance) {
-                target = candidate;
-                minimumDistance = qAbs(candidate->x() - source->x());
-            }
-            break;
-        case QAccessible::Left:
-        case QAccessible::Right:
-            if (qAbs(candidate->y() - source->y()) < minimumDistance) {
-                target = candidate;
-                minimumDistance = qAbs(candidate->y() - source->y());
-            }
-            break;
-        default:
-            break;
-        }
-        if (minimumDistance == 0)
-            break;
-    }
-
-#ifndef QT_NO_WORKSPACE
-    if (workspace) {
-        foreach (QWidget *widget, workspace->windowList()) {
-            if (widget->parentWidget() == target)
-                target = widget;
-        }
-    }
-#endif
-    return target;
-}
-
 #ifndef QT_NO_TEXTEDIT
 
 /*!
@@ -282,26 +167,6 @@ void QAccessibleTextEdit::setText(QAccessible::Text t, const QString &text)
     textEdit()->setText(text);
 }
 
-QVariant QAccessibleTextEdit::invokeMethod(QAccessible::Method method,
-                                                     const QVariantList &params)
-{
-    switch (method) {
-    case QAccessible::ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << QAccessible::ListSupportedMethods << QAccessible::SetCursorPosition << QAccessible::GetCursorPosition;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidget::invokeMethod(method, params)));
-    }
-    case QAccessible::SetCursorPosition:
-        setCursorPosition(params.value(0).toInt());
-        return true;
-    case QAccessible::GetCursorPosition:
-        return textEdit()->textCursor().position();
-    default:
-        return QAccessibleWidget::invokeMethod(method, params);
-    }
-}
-
 void *QAccessibleTextEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)
@@ -316,7 +181,7 @@ void QAccessibleTextEdit::addSelection(int startOffset, int endOffset)
     setSelection(0, startOffset, endOffset);
 }
 
-QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset)
+QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset) const
 {
     /* The list of attributes can be found at:
      http://linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
@@ -426,12 +291,12 @@ QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOf
     return result;
 }
 
-int QAccessibleTextEdit::cursorPosition()
+int QAccessibleTextEdit::cursorPosition() const
 {
     return textEdit()->textCursor().position();
 }
 
-QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
+QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType) const
 {
     QTextEdit *edit = textEdit();
     QTextCursor cursor(edit->document());
@@ -463,12 +328,12 @@ QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
     return r;
 }
 
-int QAccessibleTextEdit::selectionCount()
+int QAccessibleTextEdit::selectionCount() const
 {
     return textEdit()->textCursor().hasSelection() ? 1 : 0;
 }
 
-int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType)
+int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
 {
     QTextEdit *edit = textEdit();
 
@@ -481,7 +346,7 @@ int QAccessibleTextEdit::offsetAtPoint(const QPoint &point, CoordinateType coord
     return edit->document()->documentLayout()->hitTest(p, Qt::ExactHit);
 }
 
-void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *endOffset)
+void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
     *startOffset = *endOffset = 0;
     QTextCursor cursor = textEdit()->textCursor();
@@ -493,7 +358,7 @@ void QAccessibleTextEdit::selection(int selectionIndex, int *startOffset, int *e
     *endOffset = cursor.selectionEnd();
 }
 
-QString QAccessibleTextEdit::text(int startOffset, int endOffset)
+QString QAccessibleTextEdit::text(int startOffset, int endOffset) const
 {
     QTextCursor cursor(textEdit()->document());
 
@@ -504,7 +369,7 @@ QString QAccessibleTextEdit::text(int startOffset, int endOffset)
 }
 
 QString QAccessibleTextEdit::textBeforeOffset (int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     // TODO - what exactly is before?
     Q_UNUSED(offset);
@@ -515,7 +380,7 @@ QString QAccessibleTextEdit::textBeforeOffset (int offset, BoundaryType boundary
 }
 
 QString QAccessibleTextEdit::textAfterOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     // TODO - what exactly is after?
     Q_UNUSED(offset);
@@ -526,7 +391,7 @@ QString QAccessibleTextEdit::textAfterOffset(int offset, BoundaryType boundaryTy
 }
 
 QString QAccessibleTextEdit::textAtOffset(int offset, BoundaryType boundaryType,
-                                          int *startOffset, int *endOffset)
+                                          int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset);
     Q_ASSERT(endOffset);
@@ -607,7 +472,7 @@ void QAccessibleTextEdit::setSelection(int selectionIndex, int startOffset, int 
     textEdit()->setTextCursor(cursor);
 }
 
-int QAccessibleTextEdit::characterCount()
+int QAccessibleTextEdit::characterCount() const
 {
     return textEdit()->toPlainText().count();
 }
@@ -640,7 +505,7 @@ static QTextCursor cursorForRange(QTextEdit *textEdit, int startOffset, int endO
     return cursor;
 }
 
-void QAccessibleTextEdit::copyText(int startOffset, int endOffset)
+void QAccessibleTextEdit::copyText(int startOffset, int endOffset) const
 {
     QTextCursor cursor = cursorForRange(textEdit(), startOffset, endOffset);
 
@@ -716,23 +581,17 @@ QAccessibleStackedWidget::QAccessibleStackedWidget(QWidget *widget)
     Q_ASSERT(qobject_cast<QStackedWidget *>(widget));
 }
 
-QVariant QAccessibleStackedWidget::invokeMethod(QAccessible::Method, int, const QVariantList &)
-{
-    return QVariant();
-}
-
-
-int QAccessibleStackedWidget::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleStackedWidget::childAt(int x, int y) const
 {
     if (!stackedWidget()->isVisible())
-        return -1;
+        return 0;
     QWidget *currentWidget = stackedWidget()->currentWidget();
     if (!currentWidget)
-        return -1;
+        return 0;
     QPoint position = currentWidget->mapFromGlobal(QPoint(x, y));
     if (currentWidget->rect().contains(position))
-        return 1;
-    return -1;
+        return child(stackedWidget()->currentIndex());
+    return 0;
 }
 
 int QAccessibleStackedWidget::childCount() const
@@ -746,10 +605,7 @@ int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) co
         return -1;
 
     QWidget* widget = qobject_cast<QWidget*>(child->object());
-    int index = stackedWidget()->indexOf(widget);
-    if (index >= 0) // one based counting of children
-        return index + 1;
-    return -1;
+    return stackedWidget()->indexOf(widget);
 }
 
 QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
@@ -757,17 +613,6 @@ QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
     if (index < 0 || index >= stackedWidget()->count())
         return 0;
     return QAccessible::queryAccessibleInterface(stackedWidget()->widget(index));
-}
-
-int QAccessibleStackedWidget::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
 }
 
 QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
@@ -803,40 +648,24 @@ int QAccessibleMdiArea::childCount() const
     return mdiArea()->subWindowList().count();
 }
 
+QAccessibleInterface *QAccessibleMdiArea::child(int index) const
+{
+    QList<QMdiSubWindow *> subWindows = mdiArea()->subWindowList();
+    QWidget *targetObject = subWindows.value(index);
+    if (!targetObject)
+       return 0;
+    return QAccessible::queryAccessibleInterface(targetObject);
+}
+
+
 int QAccessibleMdiArea::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child || !child->object() || mdiArea()->subWindowList().isEmpty())
         return -1;
     if (QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(child->object())) {
-        int index = mdiArea()->subWindowList().indexOf(window);
-        if (index != -1)
-            return ++index;
+        return mdiArea()->subWindowList().indexOf(window);
     }
     return -1;
-}
-
-int QAccessibleMdiArea::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    QWidget *targetObject = 0;
-    QList<QMdiSubWindow *> subWindows = mdiArea()->subWindowList();
-    switch (relation) {
-    case QAccessible::Child:
-        if (entry < 1 || subWindows.isEmpty() || entry > subWindows.count())
-            return -1;
-        targetObject = subWindows.at(entry - 1);
-        break;
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right:
-        targetObject = mdiAreaNavigate(mdiArea(), relation, entry);
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
 }
 
 QMdiArea *QAccessibleMdiArea::mdiArea() const
@@ -871,18 +700,21 @@ void QAccessibleMdiSubWindow::setText(QAccessible::Text textType, const QString 
 
 QAccessible::State QAccessibleMdiSubWindow::state() const
 {
-    QAccessible::State state = QAccessible::Normal | QAccessible::Focusable;
-    if (!mdiSubWindow()->isMaximized())
-        state |= (QAccessible::Movable | QAccessible::Sizeable);
+    QAccessible::State state;
+    state.focusable = true;
+    if (!mdiSubWindow()->isMaximized()) {
+        state.movable = true;
+        state.sizeable = true;
+    }
     if (mdiSubWindow()->isAncestorOf(QApplication::focusWidget())
             || QApplication::focusWidget() == mdiSubWindow())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!mdiSubWindow()->isVisible())
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (!mdiSubWindow()->parentWidget()->contentsRect().contains(mdiSubWindow()->geometry()))
-        state |= QAccessible::Offscreen;
+        state.offscreen = true;
     if (!mdiSubWindow()->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.disabled = true;
     return state;
 }
 
@@ -893,54 +725,20 @@ int QAccessibleMdiSubWindow::childCount() const
     return 0;
 }
 
+QAccessibleInterface *QAccessibleMdiSubWindow::child(int index) const
+{
+    QMdiSubWindow *source = mdiSubWindow();
+    if (index != 0 || !source->widget())
+        return 0;
+
+    return QAccessible::queryAccessibleInterface(source->widget());
+}
+
 int QAccessibleMdiSubWindow::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child && child->object() && child->object() == mdiSubWindow()->widget())
-        return 1;
+        return 0;
     return -1;
-}
-
-int QAccessibleMdiSubWindow::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-
-    if (!mdiSubWindow()->parent())
-        return QAccessibleWidget::navigate(relation, entry, target);
-
-    QWidget *targetObject = 0;
-    QMdiSubWindow *source = mdiSubWindow();
-    switch (relation) {
-    case QAccessible::Child:
-        if (entry != 1 || !source->widget())
-            return -1;
-        targetObject = source->widget();
-        break;
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right: {
-        if (entry != 0)
-            break;
-        QWidget *parent = source->parentWidget();
-        while (parent && !parent->inherits("QMdiArea"))
-            parent = parent->parentWidget();
-        QMdiArea *mdiArea = qobject_cast<QMdiArea *>(parent);
-        if (!mdiArea)
-            break;
-        int index = mdiArea->subWindowList().indexOf(source);
-        if (index == -1)
-            break;
-        if (QWidget *dest = mdiAreaNavigate(mdiArea, relation, index + 1)) {
-            *target = QAccessible::queryAccessibleInterface(dest);
-            return *target ? 0 : -1;
-        }
-        break;
-    }
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
 }
 
 QRect QAccessibleMdiSubWindow::rect() const
@@ -951,25 +749,6 @@ QRect QAccessibleMdiSubWindow::rect() const
         return QAccessibleWidget::rect();
     const QPoint pos = mdiSubWindow()->mapToGlobal(QPoint(0, 0));
     return QRect(pos, mdiSubWindow()->size());
-}
-
-int QAccessibleMdiSubWindow::childAt(int x, int y) const
-{
-    if (!mdiSubWindow()->isVisible())
-        return -1;
-    if (!mdiSubWindow()->parent())
-        return QAccessibleWidget::childAt(x, y);
-    const QRect globalGeometry = rect();
-    if (!globalGeometry.isValid())
-        return -1;
-    QAccessibleInterface *childIface = child(0);
-    const QRect globalChildGeometry = childIface->rect();
-    delete childIface;
-    if (globalChildGeometry.isValid() && globalChildGeometry.contains(QPoint(x, y)))
-        return 1;
-    if (globalGeometry.contains(QPoint(x, y)))
-        return 0;
-    return -1;
 }
 
 QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
@@ -991,40 +770,23 @@ int QAccessibleWorkspace::childCount() const
     return workspace()->windowList().count();
 }
 
+QAccessibleInterface *QAccessibleWorkspace::child(int index) const
+{
+    QWidgetList subWindows = workspace()->windowList();
+    if (index < 0 || subWindows.isEmpty() || index >= subWindows.count())
+        return 0;
+    QObject *targetObject = subWindows.at(index);
+    return QAccessible::queryAccessibleInterface(targetObject);
+}
+
 int QAccessibleWorkspace::indexOfChild(const QAccessibleInterface *child) const
 {
     if (!child || !child->object() || workspace()->windowList().isEmpty())
         return -1;
     if (QWidget *window = qobject_cast<QWidget *>(child->object())) {
-        int index = workspace()->windowList().indexOf(window);
-        if (index != -1)
-            return ++index;
+        return workspace()->windowList().indexOf(window);
     }
     return -1;
-}
-
-int QAccessibleWorkspace::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    QWidget *targetObject = 0;
-    QWidgetList subWindows = workspace()->windowList();
-    switch (relation) {
-    case QAccessible::Child:
-        if (entry < 1 || subWindows.isEmpty() || entry > subWindows.count())
-            return -1;
-        targetObject = subWindows.at(entry - 1);
-        break;
-    case QAccessible::Up:
-    case QAccessible::Down:
-    case QAccessible::Left:
-    case QAccessible::Right:
-        targetObject = mdiAreaNavigate(workspace(), relation, entry);
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0: -1;
 }
 
 QWorkspace *QAccessibleWorkspace::workspace() const
@@ -1041,10 +803,6 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
     Q_ASSERT(qobject_cast<QDialogButtonBox*>(widget));
 }
 
-QVariant QAccessibleDialogButtonBox::invokeMethod(QAccessible::Method, int, const QVariantList &)
-{
-    return QVariant();
-}
 #endif // QT_NO_DIALOGBUTTONBOX
 
 #ifndef QT_NO_TEXTBROWSER
@@ -1068,11 +826,6 @@ QAccessibleCalendarWidget::QAccessibleCalendarWidget(QWidget *widget)
     Q_ASSERT(qobject_cast<QCalendarWidget *>(widget));
 }
 
-QVariant QAccessibleCalendarWidget::invokeMethod(QAccessible::Method, int, const QVariantList &)
-{
-    return QVariant();
-}
-
 int QAccessibleCalendarWidget::childCount() const
 {
    return calendarWidget()->isNavigationBarVisible() ? 2 : 1;
@@ -1083,8 +836,8 @@ int QAccessibleCalendarWidget::indexOfChild(const QAccessibleInterface *child) c
     if (!child || !child->object() || childCount() <= 0)
         return -1;
     if (qobject_cast<QAbstractItemView *>(child->object()))
-        return childCount();
-    return 1;
+        return childCount() - 1; // FIXME
+    return 0;
 }
 
 QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
@@ -1096,31 +849,6 @@ QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
         return QAccessible::queryAccessibleInterface(navigationBar());
 
     return QAccessible::queryAccessibleInterface(calendarView());
-}
-
-int QAccessibleCalendarWidget::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    if (entry <= 0 || entry > childCount())
-        return QAccessibleWidget::navigate(relation, entry, target);
-    QWidget *targetWidget = 0;
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    case QAccessible::Up:
-        if (entry == 2)
-            targetWidget = navigationBar();
-        break;
-    case QAccessible::Down:
-        if (entry == 1 && childCount() == 2)
-            targetWidget = calendarView();
-        break;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-    *target = QAccessible::queryAccessibleInterface(targetWidget);
-    return *target ? 0 : -1;
 }
 
 QCalendarWidget *QAccessibleCalendarWidget::calendarWidget() const
@@ -1173,9 +901,9 @@ int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child) {
         if (child->role() == QAccessible::TitleBar) {
-            return 1;
+            return 0;
         } else {
-            return 2;   //###
+            return 1;   // FIXME
         }
     }
     return -1;
@@ -1240,9 +968,6 @@ QAccessibleInterface *QAccessibleTitleBar::child(int index) const
 int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const
 {
     switch (relation) {
-    case QAccessible::Child:
-        *iface = child(entry - 1);
-        return *iface ? 0 : -1;
     case QAccessible::FocusChild:
         // ###
         if (entry >= 1) {
@@ -1261,19 +986,11 @@ int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry,
             return role > QDockWidgetLayout::FloatButton ? -1 : index;
         }
         break;
-    case QAccessible::Ancestor:
-        *iface = parent();
-        return iface ? 0 : -1;
     default:
         break;
     }
     *iface = 0;
     return -1;
-}
-
-QAccessible::Relation QAccessibleTitleBar::relationTo(const QAccessibleInterface * /*otherChild*/) const
-{
-    return QAccessible::Unrelated;   //###
 }
 
 int QAccessibleTitleBar::indexOfChild(const QAccessibleInterface * /*child*/) const
@@ -1303,17 +1020,17 @@ QString QAccessibleTitleBar::text(QAccessible::Text t) const
 
 QAccessible::State QAccessibleTitleBar::state() const
 {
-    QAccessible::State state = QAccessible::Normal;
+    QAccessible::State state;
 
     QDockWidget *w = dockWidget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state |= QAccessible::Focusable;
+        state.focusable = true;
     if (w->hasFocus())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!w->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.disabled = true;
 
     return state;
 }
@@ -1344,17 +1061,16 @@ QRect QAccessibleTitleBar::rect() const
     return rect;
 }
 
-int QAccessibleTitleBar::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleTitleBar::childAt(int x, int y) const
 {
-    for (int i = childCount(); i >= 0; --i) {
-        QAccessibleInterface *childIface = child(i - 1);
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
         if (childIface->rect().contains(x,y)) {
-            delete childIface;
-            return i;
+            return childIface;
         }
         delete childIface;
     }
-    return -1;
+    return 0;
 }
 
 QObject *QAccessibleTitleBar::object() const
@@ -1436,11 +1152,6 @@ bool QAccessibleTitleBar::isValid() const
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Window) { }
 
-QVariant QAccessibleMainWindow::invokeMethod(QAccessible::Method /*method*/, int /*child*/, const QVariantList & /*params*/)
-{
-    return QVariant();
-}
-
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
@@ -1459,25 +1170,24 @@ int QAccessibleMainWindow::childCount() const
 int QAccessibleMainWindow::indexOfChild(const QAccessibleInterface *iface) const
 {
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
-    int childIndex = kids.indexOf(static_cast<QWidget*>(iface->object()));
-    return childIndex == -1 ? -1 : ++childIndex;
+    return kids.indexOf(static_cast<QWidget*>(iface->object()));
 }
 
-int QAccessibleMainWindow::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
 {
     QWidget *w = widget();
     if (!w->isVisible())
-        return -1;
+        return 0;
     QPoint gp = w->mapToGlobal(QPoint(0, 0));
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
-        return -1;
+        return 0;
 
     QWidgetList kids = childWidgets(mainWindow(), true);
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
     for (int i = 0; i < kids.size(); ++i) {
         QWidget *child = kids.at(i);
         if (!child->isWindow() && !child->isHidden() && child->geometry().contains(rp)) {
-            return i + 1;
+            return QAccessible::queryAccessibleInterface(child);
         }
     }
     return 0;

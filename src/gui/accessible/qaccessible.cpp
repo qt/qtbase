@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,10 +50,8 @@
 #include <private/qguiapplication_p.h>
 #include "qplatformaccessibility_qpa.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QHash>
-#include <QtCore/QMetaObject>
-#include <QtCore/QMutex>
+#include <QtCore/qdebug.h>
+#include <QtCore/qmetaobject.h>
 #include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -61,10 +59,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QAccessible
     \brief The QAccessible class provides enums and static functions
-    relating to accessibility.
+    related to accessibility.
 
     \ingroup accessibility
     \inmodule QtWidgets
+
+    This class is part of \l {Accessibility for QWidget Applications}.
 
     Accessible applications can be used by people who are not able to
     use applications by conventional means.
@@ -120,94 +120,64 @@ QT_BEGIN_NAMESPACE
     \sa QAccessibleInterface
 */
 
-/*!
-    \enum QAccessible::Action
-
-    This enum describes the possible types of action that can occur.
-
-    \value DefaultAction
-    \value Press
-    \value SetFocus
-    \value Increase
-    \value Decrease
-    \value Accept
-    \value Cancel
-    \value Select
-    \value ClearSelection
-    \value RemoveSelection
-    \value ExtendSelection
-    \value AddToSelection
-
-    \value FirstStandardAction
-    \value LastStandardAction
-*/
 
 /*!
-    \enum QAccessible::Method
+    \class QAccessible::State
 
-    This enum describes the possible types of methods that can be
-    invoked on an accessible object.
-
-    \value ListSupportedMethods
-    \value SetCursorPosition
-    \value GetCursorPosition
-
-    \omitvalue ForegroundColor
-    \omitvalue BackgroundColor
-
-    \sa QAccessibleInterface::invokeMethod()
-*/
-
-/*!
-    \fn QSet<Method> QAccessibleInterface::supportedMethods()
-    \since 4.3
-
-    Returns a QSet of \l{QAccessible::}{Method}s that are supported by this
-    accessible interface.
-
-    \sa QAccessible::Method invokeMethod()
-*/
-
-/*!
-    \enum QAccessible::StateFlag
-
-    This enum type defines bit flags that can be combined to indicate
+    This structure defines bit flags that indicate
     the state of an accessible object. The values are:
 
-    \value Animated         The object's appearance changes frequently.
-    \value Busy             The object cannot accept input at the moment.
-    \value Checked          The object's check box is checked.
-    \value Collapsed        The object is collapsed, e.g. a closed listview item, or an iconified window.
-    \value DefaultButton    The object represents the default button in a dialog.
-    \value Expanded         The object is expandable, and currently the children are visible.
-    \value ExtSelectable    The object supports extended selection.
-    \value Focusable        The object can receive focus. Only objects in the active window can receive focus.
-    \value Focused          The object has keyboard focus.
-    \value HasPopup         The object opens a popup.
-    \value HotTracked       The object's appearance is sensitive to the mouse cursor position.
-    \value Invisible        The object is not visible to the user.
-    \value Linked           The object is linked to another object, e.g. a hyperlink.
-    \value Marqueed         The object displays scrolling contents, e.g. a log view.
-    \value Mixed            The state of the object is not determined, e.g. a tri-state check box that is neither checked nor unchecked.
-    \value Modal            The object blocks input from other objects.
-    \value Movable          The object can be moved.
-    \value MultiSelectable  The object supports multiple selected items.
-    \value Normal           The normal state.
-    \value Offscreen        The object is clipped by the visible area. Objects that are off screen are also invisible.
-    \value Pressed          The object is pressed.
-    \value Protected        The object is password protected, e.g. a line edit for entering a Password.
-    \value ReadOnly         The object can usually be edited, but is explicitly set to read-only.
-    \value Selectable       The object is selectable.
-    \value Selected         The object is selected.
-    \value SelfVoicing      The object describes itself through speech or sound.
-    \value Sizeable         The object can be resized, e.g. top-level windows.
-    \value Traversed        The object is linked and has been visited.
-    \value Unavailable      The object is unavailable to the user, e.g. a disabled widget.
-    \omitvalue Moveable
-    \omitvalue HasInvokeExtension
+    \value active                  The object is the active window or the active sub-element in a container (that would get focus when focusing the container).
+    \value adjustable              The object represents an adjustable value, e.g. sliders.
+    \value animated                The object's appearance changes frequently.
+    \value busy                    The object cannot accept input at the moment.
+    \value checkable               The object is checkable.
+    \value checked                 The object's check box is checked.
+    \value checkStateMixed         The third state of checkboxes (half checked in tri-state check boxes).
+    \value collapsed               The object is collapsed, e.g. a closed listview item, or an iconified window.
+    \value defaultButton           The object represents the default button in a dialog.
+    \value defunct                 The object no longer exists.
+    \value editable                The object has a text carret (and often implements the text interface).
+    \value expandable              The object is expandable, mostly used for cells in a tree view.
+    \value expanded                The object is expanded, currently its children are visible.
+    \value extSelectable           The object supports extended selection.
+    \value focusable               The object can receive focus. Only objects in the active window can receive focus.
+    \value focused                 The object has keyboard focus.
+    \value hasPopup                The object opens a popup.
+    \value hotTracked              The object's appearance is sensitive to the mouse cursor position.
+    \value invalid                 The object is no longer valid (because it has been deleted).
+    \value invalidEntry            Input validation current input invalid.
+    \value invisible               The object is not visible to the user.
+    \value linked                  The object is linked to another object, e.g. a hyperlink.
+    \value marqueed                The object displays scrolling contents, e.g. a log view.
+    \value modal                   The object blocks input from other objects.
+    \value movable                 The object can be moved.
+    \value multiLine               The object has multiple lines of text (word wrap), as opposed to a single line.
+    \value multiSelectable         The object supports multiple selected items.
+    \value offscreen               The object is clipped by the visible area. Objects that are off screen are also invisible.
+    \value passwordEdit            The object is a password field, e.g. a line edit for entering a Password.
+    \value playsSound              The object produces sound when interacted with.
+    \value pressed                 The object is pressed.
+    \value readOnly                The object can usually be edited, but is explicitly set to read-only.
+    \value selectable              The object is selectable.
+    \value selectableText          The object has text which can be selected. This is different from selectable which refers to the object's children.
+    \value selected                The object is selected.
+    \value selfVoicing             The object describes itself through speech or sound.
+    \value sizeable                The object can be resized, e.g. top-level windows.
+    \value summaryElement          The object summarizes the state of the window and should be treated with priority.
+    \value supportsAutoCompletion  The object has auto-completion, for example in line edits or combo boxes.
+    \value traversed               The object is linked and has been visited.
+    \value updatesFrequently       The object changes frequently and needs to be refreshed when accessing it.
+    \value disabled                The object is unavailable to the user, e.g. a disabled widget.
 
     Implementations of QAccessibleInterface::state() return a combination
     of these flags.
+*/
+
+/*!
+    \fn QAccessible::State::State()
+
+    Creates a new QAccessible::State with all states set to false.
 */
 
 /*!
@@ -360,7 +330,7 @@ QT_BEGIN_NAMESPACE
     \value PopupMenu        A menu which lists options that the user can select to perform an action.
     \value ProgressBar      The object displays the progress of an operation in progress.
     \value PropertyPage     A property page where the user can change options and settings.
-    \value PushButton       A button.
+    \value Button           A button.
     \value RadioButton      An object that represents an option that is mutually exclusive with other options.
     \value Row              A row of cells, usually within a table.
     \value RowHeader        A header for a row of data.
@@ -391,10 +361,6 @@ QT_BEGIN_NAMESPACE
 
     \value Unrelated        The objects are unrelated.
     \value Self             The objects are the same.
-    \value Ancestor         The first object is a parent of the second object.
-    \value Child            The first object is a direct child of the second object.
-    \value Descendent       The first object is an indirect child of the second object.
-    \value Sibling          The objects are siblings.
 
     \value Up               The first object is above the second object.
     \value Down             The first object is below the second object.
@@ -409,7 +375,6 @@ QT_BEGIN_NAMESPACE
     \value Controller       The first object controls the second object.
     \value Controlled       The first object is controlled by the second object.
 
-    \omitvalue HierarchyMask
     \omitvalue GeometryMask
     \omitvalue LogicalMask
 
@@ -433,6 +398,26 @@ QT_BEGIN_NAMESPACE
     \value Help         A longer text giving information about how to use the object.
     \value Accelerator  The keyboard shortcut that executes the object's default action.
     \value UserText     The first value to be used for user defined text.
+    \omitvalue DebugDescription
+*/
+
+/*!
+    \enum QAccessible::InterfaceType
+
+    \l QAccessibleInterface supports several sub interfaces.
+    In order to provide more information about some objects, their accessible
+    representation should implement one or more of these interfaces.
+    When subclassing one of these interfaces, \l QAccessibleInterface::interface_cast also needs to be implemented.
+
+    \value TextInterface            For text that supports selections or is more than one line. Simple labels do not need to implement this interface.
+    \value EditableTextInterface    For text that can be edited by the user.
+    \value ValueInterface           For objects that are used to manipulate a value, for example slider or scroll bar.
+    \value ActionInterface          For interactive objects that allow the user to trigger an action. Basically everything that allows for example mouse interaction.
+    \omitvalue ImageInterface       For objects that represent an image. This interface is generally less important.
+    \value TableInterface           For lists, tables and trees.
+    \value TableCellInterface       For cells in a TableInterface object.
+
+    \sa QAccessibleInterface::interface_cast, QAccessibleTextInterface, QAccessibleEditableTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
 */
 
 /*!
@@ -657,15 +642,15 @@ bool QAccessible::isActive()
 
   \sa queryAccessibleInterface()
 */
-void QAccessible::setRootObject(QObject *o)
+void QAccessible::setRootObject(QObject *object)
 {
     if (rootObjectHandler) {
-        rootObjectHandler(o);
+        rootObjectHandler(object);
         return;
     }
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
-        pfAccessibility->setRootObject(o);
+        pfAccessibility->setRootObject(object);
 }
 
 /*!
@@ -686,12 +671,12 @@ void QAccessible::setRootObject(QObject *o)
   the parameters of the call is expensive you can test isActive() to
   avoid unnecessary computations.
 */
-void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
+void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
 {
-    Q_ASSERT(o);
+    Q_ASSERT(object);
 
     if (updateHandler) {
-        updateHandler(o, who, reason);
+        updateHandler(object, child, reason);
         return;
     }
 
@@ -699,7 +684,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
         return;
 
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
-        pfAccessibility->notifyAccessibilityUpdate(o, who, reason);
+        pfAccessibility->notifyAccessibilityUpdate(object, child, reason);
 }
 
 
@@ -710,6 +695,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 
     \ingroup accessibility
     \inmodule QtGui
+
+    This class is part of \l {Accessibility for QWidget Applications}.
 
     Accessibility tools (also called AT Clients), such as screen readers
     or braille displays, require high-level information about
@@ -740,8 +727,11 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 
     The functions childCount() and indexOfChild() return the number of
     children of an accessible object and the index a child object has
-    in its parent. The childAt() function returns the index of a child
-    at a given position.
+    in its parent. The childAt() function returns a child QAccessibleInterface
+    that is found at a position. The child does not have to be a direct
+    child. This allows bypassing intermediate layers when the parent already knows the
+    top-most child. childAt() is used for hit testing (finding the object
+    under the mouse).
 
     The relationTo() function provides information about how two
     different objects relate to each other, and navigate() allows
@@ -827,9 +817,8 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 /*!
     \fn int QAccessibleInterface::indexOfChild(const QAccessibleInterface *child) const
 
-    Returns the 1-based index of the object \a child in this object's
-    children list, or -1 if \a child is not a child of this object. 0
-    is not a possible return value.
+    Returns the 0-based index of the object \a child in this object's
+    children list, or -1 if \a child is not a child of this object.
 
     All objects provide this information about their children.
 
@@ -837,12 +826,10 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
 */
 
 /*!
-    \fn QAccessible::Relation QAccessibleInterface::relationTo(int child,
-const QAccessibleInterface *other, int otherChild) const
+    \fn QAccessible::Relation QAccessibleInterface::relationTo(const QAccessibleInterface *other) const
 
-    Returns the relationship between this object's \a child and the \a
-    other object's \a otherChild. If \a child is 0 the object's own relation
-    is returned.
+    Returns the relationship between this object and the \a
+    other object.
 
     The returned value indicates the relation of the called object to
     the \a other object, e.g. if this object is a label for \a other
@@ -875,17 +862,20 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 }
 
 /*!
-    \fn int QAccessibleInterface::childAt(int x, int y) const
+    \fn QAccessibleInterface *QAccessibleInterface::childAt(int x, int y) const
 
-    Returns the 1-based index of the child that contains the screen
-    coordinates (\a x, \a y). This function returns 0 if the point is
-    positioned on the object itself. If the tested point is outside
-    the boundaries of the object this function returns -1.
+    Returns the QAccessibleInterface of a child that contains the screen coordinates (\a x, \a y).
+    If there are no children at this position this function returns 0.
+    The returned accessible must be a child, but not necessarily a direct child.
 
     This function is only relyable for visible objects (invisible
     object might not be laid out correctly).
 
     All visual objects provide this information.
+
+    A default implementation is provided for objects inheriting QAccessibleObject. This will iterate
+    over all children. If the widget manages its children (e.g. a table) it will be more efficient
+    to write a specialized implementation.
 
     \sa rect()
 */
@@ -912,8 +902,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn int QAccessibleInterface::navigate(RelationFlag relation, int entry, QAccessibleInterface
-**target) const
+    \fn int QAccessibleInterface::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
 
     Navigates from this object to an object that has a relationship
     \a relation to this object, and returns the respective object in
@@ -956,18 +945,17 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QString QAccessibleInterface::text(Text t, int child) const
+    \fn QString QAccessibleInterface::text(QAccessible::Text t) const
 
-    Returns the value of the text property \a t of the object, or of
-    the object's child if \a child is not 0.
+    Returns the value of the text property \a t of the object.
 
-    The \l Name is a string used by clients to identify, find, or
+    The \l QAccessible::Name is a string used by clients to identify, find, or
     announce an accessible object for the user. All objects must have
     a name that is unique within their container. The name can be
     used differently by clients, so the name should both give a
     short description of the object and be unique.
 
-    An accessible object's \l Description provides textual information
+    An accessible object's \l QAccessible::Description provides textual information
     about an object's visual appearance. The description is primarily
     used to provide greater context for vision-impaired users, but is
     also used for context searching or other applications. Not all
@@ -975,17 +963,17 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
     description, but a tool button that shows a picture of a smiley
     would.
 
-    The \l Value of an accessible object represents visual information
+    The \l QAccessible::Value of an accessible object represents visual information
     contained by the object, e.g. the text in a line edit. Usually,
     the value can be modified by the user. Not all objects have a
     value, e.g. static text labels don't, and some objects have a
     state that already is the value, e.g. toggle buttons.
 
-    The \l Help text provides information about the function and
+    The \l QAccessible::Help text provides information about the function and
     usage of an accessible object. Not all objects provide this
     information.
 
-    The \l Accelerator is a keyboard shortcut that activates the
+    The \l QAccessible::Accelerator is a keyboard shortcut that activates the
     object's default action. A keyboard shortcut is the underlined
     character in the text of a menu, menu item or widget, and is
     either the character itself, or a combination of this character
@@ -993,27 +981,26 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
     tool buttons also have shortcut keys and usually display them in
     their tooltip.
 
-    All objects provide a string for \l Name.
+    All objects provide a string for \l QAccessible::Name.
 
     \sa role(), state()
 */
 
 /*!
-    \fn void QAccessibleInterface::setText(Text t, int child, const QString &text)
+    \fn void QAccessibleInterface::setText(QAccessible::Text t, const QString &text)
 
-    Sets the text property \a t of the object, or of the object's
-    child if \a child is not 0, to \a text.
+    Sets the text property \a t of the object to \a text.
 
-    Note that the text properties of most objects are read-only.
+    Note that the text properties of most objects are read-only
+    so calling this function might have no effect.
 
     \sa text()
 */
 
 /*!
-    \fn QRect QAccessibleInterface::rect(int child) const
+    \fn QRect QAccessibleInterface::rect() const
 
-    Returns the geometry of the object, or of the object's child if \a child
-    is not 0. The geometry is in screen coordinates.
+    Returns the geometry of the object. The geometry is in screen coordinates.
 
     This function is only reliable for visible objects (invisible
     objects might not be laid out correctly).
@@ -1024,10 +1011,10 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessible::Role QAccessibleInterface::role(int child) const
+    \fn QAccessible::Role QAccessibleInterface::role() const
 
-    Returns the role of the object, or of the object's child if \a child
-    is not 0. The role of an object is usually static.
+    Returns the role of the object.
+    The role of an object is usually static.
 
     All accessible objects have a role.
 
@@ -1035,10 +1022,10 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
-    \fn QAccessible::State QAccessibleInterface::state(int child) const
+    \fn QAccessible::State QAccessibleInterface::state() const
 
-    Returns the current state of the object, or of the object's child if
-    \a child is not 0. The returned value is a combination of the flags in
+    Returns the current state of the object.
+    The returned value is a combination of the flags in
     the QAccessible::StateFlag enumeration.
 
     All accessible objects have a state.
@@ -1088,7 +1075,7 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 
 /*!
-    \fn QAccessibleTable2Interface *QAccessibleInterface::table2Interface()
+    \fn QAccessibleTableCellInterface *QAccessibleInterface::tableCellInterface()
     \internal
 */
 
@@ -1104,6 +1091,9 @@ QColor QAccessibleInterface::backgroundColor() const
 
 /*!
     \class QAccessibleEvent
+
+    \internal
+
     \brief The QAccessibleEvent class is used to query addition
     accessibility information about complex widgets.
 
@@ -1127,16 +1117,11 @@ QColor QAccessibleInterface::backgroundColor() const
 */
 
 /*!
-    \fn QAccessibleEvent::QAccessibleEvent(Type type, int child)
+    \fn QAccessibleEvent::QAccessibleEvent(Type type)
 
     Constructs an accessibility event of the given \a type, which
     must be QEvent::AccessibilityDescription or
     QEvent::AccessibilityHelp.
-
-    \a child is the (1-based) index of the child to which the request
-    applies. If \a child is 0, the request is for the widget itself.
-
-    \sa child()
 */
 
 /*!
@@ -1162,6 +1147,7 @@ QColor QAccessibleInterface::backgroundColor() const
 
     \sa value()
 */
+
 /*!
     Returns the window associated with the underlying object.
     For instance, QAccessibleWidget reimplements this and returns
@@ -1191,16 +1177,61 @@ QWindow *QAccessibleInterface::window() const
 
     Returns an invalid QVariant if the object doesn't support the action.
 */
-QVariant QAccessibleInterface::invokeMethod(QAccessible::Method method, const QVariantList &params)
+
+/*!
+    \internal
+    Method to allow extending this class without breaking binary compatibility.
+    The actual behavior and format of \a data depends on \a id argument
+    which must be defined if the class is to be extended with another virtual
+    function.
+    Currently, this is unused.
+*/
+void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
 {
-    Q_UNUSED(method)
-    Q_UNUSED(params)
-    return QVariant();
 }
 
-QVariant QAccessibleInterface::virtual_hook(const QVariant &)
+/*!
+    \fn void *QAccessibleInterface::interface_cast(QAccessible::InterfaceType type)
+
+    \brief Returns a specialized accessibility interface \a type from the generic QAccessibleInterface.
+
+    This function must be reimplemented when providing more information about a widget or object through the
+    specialized interfaces. For example a line edit should implement the QAccessibleTextInterface and QAccessibleEditableTextInterface.
+
+    Qt's QLineEdit for example has its accessibility support implemented in QAccessibleLineEdit.
+    \code
+void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 {
-    return QVariant();
+    if (t == QAccessible::TextInterface)
+        return static_cast<QAccessibleTextInterface*>(this);
+    else if (t == QAccessible::EditableTextInterface)
+        return static_cast<QAccessibleEditableTextInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+    \endcode
+
+    \sa QAccessible::InterfaceType, QAccessibleTextInterface, QAccessibleEditableTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface
+  */
+
+/*! \internal */
+const char *qAccessibleRoleString(QAccessible::Role role)
+{
+    if (role >=0x40)
+         role = QAccessible::UserRole;
+    static int roleEnum = QAccessible::staticMetaObject.indexOfEnumerator("Role");
+    return QAccessible::staticMetaObject.enumerator(roleEnum).valueToKey(role);
+}
+
+/*! \internal */
+const char *qAccessibleEventString(QAccessible::Event event)
+{
+    static int eventEnum = QAccessible::staticMetaObject.indexOfEnumerator("Event");
+    return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
+}
+
+bool operator==(const QAccessible::State &first, const QAccessible::State &second)
+{
+    return memcmp(&first, &second, sizeof(QAccessible::State)) == 0;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1214,14 +1245,13 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
     d << "QAccessibleInterface(" << hex << (void *) iface << dec;
     if (iface->isValid()) {
         d << " name=" << iface->text(QAccessible::Name) << " ";
-        d << "role=" << iface->role() << " ";
+        d << "role=" << qAccessibleRoleString(iface->role()) << " ";
         if (iface->childCount())
             d << "childc=" << iface->childCount() << " ";
         if (iface->object()) {
             d << "obj=" << iface->object();
         }
-        bool invisible = iface->state() & QAccessible::Invisible;
-        if (invisible) {
+        if (iface->state().invisible) {
             d << "invisible";
         } else {
             d << "rect=" << iface->rect();

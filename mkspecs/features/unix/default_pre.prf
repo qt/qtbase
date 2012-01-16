@@ -1,0 +1,4 @@
+linux*:CONFIG = wayland-scanner $$CONFIG
+
+load(default_pre)
+

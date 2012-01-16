@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,8 +72,9 @@ public:
     class WindowSystemEvent {
     public:
         explicit WindowSystemEvent(EventType t)
-            : type(t) { }
+            : type(t), synthetic(false) { }
         EventType type;
+        bool synthetic;
     };
 
     class CloseEvent : public WindowSystemEvent {
@@ -197,30 +198,35 @@ public:
 
     class ScreenOrientationEvent : public WindowSystemEvent {
     public:
-        ScreenOrientationEvent(QScreen *s)
-            : WindowSystemEvent(ScreenOrientation), screen(s) { }
+        ScreenOrientationEvent(QScreen *s, Qt::ScreenOrientation o)
+            : WindowSystemEvent(ScreenOrientation), screen(s), orientation(o) { }
         QWeakPointer<QScreen> screen;
+        Qt::ScreenOrientation orientation;
     };
 
     class ScreenGeometryEvent : public WindowSystemEvent {
     public:
-        ScreenGeometryEvent(QScreen *s)
-            : WindowSystemEvent(ScreenGeometry), screen(s) { }
+        ScreenGeometryEvent(QScreen *s, const QRect &g)
+            : WindowSystemEvent(ScreenGeometry), screen(s), geometry(g) { }
         QWeakPointer<QScreen> screen;
+        QRect geometry;
     };
 
     class ScreenAvailableGeometryEvent : public WindowSystemEvent {
     public:
-        ScreenAvailableGeometryEvent(QScreen *s)
-            : WindowSystemEvent(ScreenAvailableGeometry), screen(s) { }
+        ScreenAvailableGeometryEvent(QScreen *s, const QRect &g)
+            : WindowSystemEvent(ScreenAvailableGeometry), screen(s), availableGeometry(g) { }
         QWeakPointer<QScreen> screen;
+        QRect availableGeometry;
     };
 
     class ScreenLogicalDotsPerInchEvent : public WindowSystemEvent {
     public:
-        ScreenLogicalDotsPerInchEvent(QScreen *s)
-            : WindowSystemEvent(ScreenLogicalDotsPerInch), screen(s) { }
+        ScreenLogicalDotsPerInchEvent(QScreen *s, qreal dx, qreal dy)
+            : WindowSystemEvent(ScreenLogicalDotsPerInch), screen(s), dpiX(dx), dpiY(dy) { }
         QWeakPointer<QScreen> screen;
+        qreal dpiX;
+        qreal dpiY;
     };
 
     class MapEvent : public WindowSystemEvent {
@@ -256,6 +262,8 @@ public:
     static void queueWindowSystemEvent(WindowSystemEvent *ev);
 
     static QTime eventTime;
+
+    static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };
 
 QT_END_HEADER

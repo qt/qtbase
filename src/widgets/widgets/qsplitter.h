@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -133,10 +133,8 @@ private:
     friend class QSplitterHandle;
 };
 
-#ifndef QT_NO_TEXTSTREAM
 Q_WIDGETS_EXPORT QTextStream& operator<<(QTextStream&, const QSplitter&);
 Q_WIDGETS_EXPORT QTextStream& operator>>(QTextStream&, QSplitter&);
-#endif
 
 class QSplitterHandlePrivate;
 class Q_WIDGETS_EXPORT QSplitterHandle : public QWidget

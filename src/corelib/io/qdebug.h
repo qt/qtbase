@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,10 +129,8 @@ public:
     inline QNoDebug(){}
     inline QNoDebug(const QDebug &){}
     inline ~QNoDebug(){}
-#if !defined( QT_NO_TEXTSTREAM )
     inline QNoDebug &operator<<(QTextStreamFunction) { return *this; }
     inline QNoDebug &operator<<(QTextStreamManipulator) { return *this; }
-#endif
     inline QNoDebug &space() { return *this; }
     inline QNoDebug &nospace() { return *this; }
     inline QNoDebug &maybeSpace() { return *this; }
@@ -140,8 +138,6 @@ public:
     template<typename T>
     inline QNoDebug &operator<<(const T &) { return *this; }
 };
-
-Q_CORE_EXPORT_INLINE QDebug qCritical() { return QDebug(QtCriticalMsg); }
 
 inline QDebug &QDebug::operator=(const QDebug &other)
 {
@@ -161,7 +157,7 @@ inline QDebug operator<<(QDebug debug, const QList<T> &list)
 #endif
 {
     debug.nospace() << '(';
-    for (Q_TYPENAME QList<T>::size_type i = 0; i < list.count(); ++i) {
+    for (typename QList<T>::size_type i = 0; i < list.count(); ++i) {
         if (i)
             debug << ", ";
         debug << list.at(i);
@@ -275,23 +271,26 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     return debug.space();
 }
 
-#if !defined(QT_NO_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
-
-#else // QT_NO_DEBUG_STREAM
+#else
 #undef qDebug
 inline QNoDebug qDebug() { return QNoDebug(); }
 #define qDebug QT_NO_QDEBUG_MACRO
-
 #endif
 
-#if !defined(QT_NO_WARNING_OUTPUT)
+#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT_INLINE QDebug qWarning() { return QDebug(QtWarningMsg); }
 #else
 #undef qWarning
 inline QNoDebug qWarning() { return QNoDebug(); }
 #define qWarning QT_NO_QWARNING_MACRO
 #endif
+
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT_INLINE QDebug qCritical() { return QDebug(QtCriticalMsg); }
+#endif
+
 
 QT_END_NAMESPACE
 

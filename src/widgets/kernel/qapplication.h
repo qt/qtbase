@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,7 +98,6 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
 public:
-    enum Type { Tty, GuiClient, GuiServer };
 
 #ifndef qdoc
     QApplication(int &argc, char **argv, int = ApplicationFlags);
@@ -224,7 +223,6 @@ public:
 #endif
 
 #ifndef QT_NO_IM
-    void setInputContext(QInputContext *);
     QInputContext *inputContext() const;
 #endif
 
@@ -243,7 +241,6 @@ public:
 #endif
 
 Q_SIGNALS:
-    void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
 #ifndef QT_NO_SESSIONMANAGER
     void commitDataRequest(QSessionManager &sessionManager);

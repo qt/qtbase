@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -724,6 +724,24 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     return in;
 }
 #endif // QT_NO_DATASTREAM
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QBitArray &array)
+{
+    dbg.nospace() << "QBitArray(";
+    for (int i = 0; i < array.size();) {
+        if (array.testBit(i))
+            dbg.nospace() << '1';
+        else
+            dbg.nospace() << '0';
+        i += 1;
+        if (!(i % 4) && (i < array.size()))
+            dbg.nospace() << ' ';
+    }
+    dbg.nospace() << ')';
+    return dbg.space();
+}
+#endif
 
 /*!
     \fn DataPtr &QBitArray::data_ptr()

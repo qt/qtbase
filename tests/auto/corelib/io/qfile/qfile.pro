@@ -5,6 +5,4 @@ wince* {
   SUBDIRS = test stdinprocess
 }
 
-SUBDIRS += largefile
-
 CONFIG += parallel_test

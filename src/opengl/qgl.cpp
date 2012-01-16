@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3582,7 +3582,7 @@ QGLWidget::~QGLWidget()
 */
 
 /*!
-    \fn void *QGLContext::getProcAddress(const QString &proc) const
+    \fn QFunctionPointer QGLContext::getProcAddress() const
 
     Returns a function pointer to the GL extension function passed in
     \a proc. 0 is returned if a pointer to the function could not be

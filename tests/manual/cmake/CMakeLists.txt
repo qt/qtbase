@@ -25,8 +25,10 @@ macro(expect_fail _dir)
     endif()
 endmacro()
 
-# Requires a patched cmake for the automoc stuff. Will uncomment when it is released.
-# expect_pass(pass1)
+if(${CMAKE_VERSION} VERSION_GREATER 2.8.7)
+    # Requires CMAKE_AUTOMOC function in CMake 2.8.7
+    expect_pass(pass1)
+endif()
 expect_pass(pass2)
 expect_pass(pass3)
 expect_fail(fail4)

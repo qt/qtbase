@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -939,15 +939,6 @@ QFocusEvent::QFocusEvent(Type type, Qt::FocusReason reason)
 */
 QFocusEvent::~QFocusEvent()
 {
-}
-
-// ### Qt 5: remove
-/*!
-    \internal
- */
-Qt::FocusReason QFocusEvent::reason()
-{
-    return m_reason;
 }
 
 /*!
@@ -3232,13 +3223,6 @@ QClipboardEvent::~QClipboardEvent()
     Returns the key sequence that triggered the event.
 */
 
-// ### Qt 5: remove
-/*!
-    \fn const QKeySequence &QShortcutEvent::key()
-
-    \internal
-*/
-
 /*!
     \fn int QShortcutEvent::shortcutId() const
 
@@ -3248,14 +3232,6 @@ QClipboardEvent::~QClipboardEvent()
     \sa QShortcut::id()
 */
 
-// ### Qt 5: remove
-/*!
-    \fn int QShortcutEvent::shortcutId()
-    \overload
-
-    \internal
-*/
-
 /*!
     \fn bool QShortcutEvent::isAmbiguous() const
 
@@ -3263,13 +3239,6 @@ QClipboardEvent::~QClipboardEvent()
     ambiguous.
 
     \sa QShortcut::activatedAmbiguously()
-*/
-
-// ### Qt 5: remove
-/*!
-    \fn bool QShortcutEvent::isAmbiguous()
-
-    \internal
 */
 
 /*!
@@ -3354,7 +3323,7 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 
     \section1 Event Delivery and Propagation
 
-    By default, QWidget::event() translates the first non-primary touch point in a QTouchEvent into
+    By default, QGuiApplication translates the first touch point in a QTouchEvent into
     a QMouseEvent. This makes it possible to enable touch events on existing widgets that do not
     normally handle QTouchEvent. See below for information on some special considerations needed
     when doing this.
@@ -3392,17 +3361,12 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     This makes it possible for sibling widgets to handle touch events independently while making
     sure that the sequence of QTouchEvents is always correct.
 
-    \section1 Mouse Events and the Primary Touch Point
+    \section1 Mouse Events and Touch Event synthesizing
 
-    QTouchEvent delivery is independent from that of QMouseEvent. On some windowing systems, mouse
-    events are also sent for the \l{QTouchEvent::TouchPoint::isPrimary()}{primary touch point}.
-    This means it is possible for your widget to receive both QTouchEvent and QMouseEvent for the
-    same user interaction point. You can use the QTouchEvent::TouchPoint::isPrimary() function to
-    identify the primary touch point.
-
-    Note that on some systems, it is possible to receive touch events without a primary touch
-    point. All this means is that there will be no mouse event generated for the touch points in
-    the QTouchEvent.
+    QTouchEvent delivery is independent from that of QMouseEvent. The application flags
+    Qt::AA_SynthesizeTouchForUnhandledMouseEvents and Qt::AA_SynthesizeMouseForUnhandledTouchEvents
+    can be used to enable or disable automatic synthesizing of touch events to mouse events and
+    mouse events to touch events.
 
     \section1 Caveats
 
@@ -3441,9 +3405,6 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     \value TouchPointMoved The touch point moved.
     \value TouchPointStationary The touch point did not move.
     \value TouchPointReleased The touch point was released.
-
-    \omitvalue TouchPointStateMask
-    \omitvalue TouchPointPrimary
 */
 
 /*! \enum QTouchEvent::DeviceType
@@ -3467,7 +3428,8 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(eventType, modifiers),
-      _widget(0),
+      _window(0),
+      _target(0),
       _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
@@ -3479,17 +3441,18 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
 QTouchEvent::~QTouchEvent()
 { }
 
-/*! \fn QWidget *QTouchEvent::widget() const
-
-    Returns the widget on which the event occurred.
-*/
-
 /*! \fn QWindow *QTouchEvent::window() const
 
     Returns the window on which the event occurred. Useful for doing
     global-local mapping on data like rawScreenPositions() which,
     for performance reasons, only stores the global positions in the
     touch event.
+*/
+
+/*! \fn QObject *QTouchEvent::target() const
+
+    Returns the target object within the window on which the event occurred.
+    This is typically a QWidget or a QQuickItem. May be 0 when no specific target is available.
 */
 
 /*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
@@ -3521,18 +3484,18 @@ QTouchEvent::~QTouchEvent()
     Returns the touch device from which this touch event originates.
 */
 
-/*! \fn void QTouchEvent::setWidget(QWidget *widget)
-
-    \internal
-
-    Sets the widget for this event.
-*/
-
 /*! \fn void QTouchEvent::setWindow(QWindow *window)
 
     \internal
 
     Sets the window for this event.
+*/
+
+/*! \fn void QTouchEvent::setTarget(QObject *target)
+
+    \internal
+
+    Sets the target within the window (typically a widget) for this event.
 */
 
 /*! \fn void QTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)
@@ -3621,16 +3584,7 @@ int QTouchEvent::TouchPoint::id() const
 */
 Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 {
-    return Qt::TouchPointState(int(d->state) & Qt::TouchPointStateMask);
-}
-
-/*!
-    Returns true if this touch point is the primary touch point. The primary touch point is the
-    point for which the windowing system generates mouse events.
-*/
-bool QTouchEvent::TouchPoint::isPrimary() const
-{
-    return (d->state & Qt::TouchPointPrimary) != 0;
+    return Qt::TouchPointState(int(d->state));
 }
 
 /*!

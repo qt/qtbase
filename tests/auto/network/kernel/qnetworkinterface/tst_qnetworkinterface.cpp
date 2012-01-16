@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,8 +45,10 @@
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
 #include <qtcpsocket.h>
+#ifndef QT_NO_BEARERMANAGEMENT
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
+#endif
 #include "../../../network-settings.h"
 
 class tst_QNetworkInterface : public QObject
@@ -68,7 +70,7 @@ private slots:
     void copyInvalidInterface();
 
 private:
-#ifndef QT_NO_BEARER_MANAGEMENT
+#ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager *netConfMan;
     QNetworkConfiguration networkConfiguration;
     QScopedPointer<QNetworkSession> networkSession;

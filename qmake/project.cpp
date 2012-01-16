@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,6 @@
 #include <qregexp.h>
 #include <qtextstream.h>
 #include <qstack.h>
-#include <qhash.h>
 #include <qdebug.h>
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -79,12 +78,12 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
                   E_SIZE, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
-QMap<QString, ExpandFunc> qmake_expandFunctions()
+QHash<QString, ExpandFunc> qmake_expandFunctions()
 {
-    static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
+    static QHash<QString, ExpandFunc> *qmake_expand_functions = 0;
     if(!qmake_expand_functions) {
-        qmake_expand_functions = new QMap<QString, ExpandFunc>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear<QMap<QString, ExpandFunc> >, (void**)&qmake_expand_functions);
+        qmake_expand_functions = new QHash<QString, ExpandFunc>;
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<QString, ExpandFunc> >, (void**)&qmake_expand_functions);
         qmake_expand_functions->insert("member", E_MEMBER);
         qmake_expand_functions->insert("first", E_FIRST);
         qmake_expand_functions->insert("last", E_LAST);
@@ -121,11 +120,11 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
                 T_MESSAGE, T_WARNING, T_IF, T_OPTION };
-QMap<QString, TestFunc> qmake_testFunctions()
+QHash<QString, TestFunc> qmake_testFunctions()
 {
-    static QMap<QString, TestFunc> *qmake_test_functions = 0;
+    static QHash<QString, TestFunc> *qmake_test_functions = 0;
     if(!qmake_test_functions) {
-        qmake_test_functions = new QMap<QString, TestFunc>;
+        qmake_test_functions = new QHash<QString, TestFunc>;
         qmake_test_functions->insert("requires", T_REQUIRES);
         qmake_test_functions->insert("greaterThan", T_GREATERTHAN);
         qmake_test_functions->insert("lessThan", T_LESSTHAN);
@@ -347,10 +346,10 @@ struct ParsableBlock
 protected:
     int ref_cnt;
     virtual bool continueBlock() = 0;
-    bool eval(QMakeProject *p, QMap<QString, QStringList> &place);
+    bool eval(QMakeProject *p, QHash<QString, QStringList> &place);
 };
 
-bool ParsableBlock::eval(QMakeProject *p, QMap<QString, QStringList> &place)
+bool ParsableBlock::eval(QMakeProject *p, QHash<QString, QStringList> &place)
 {
     //save state
     parser_info pi = parser;
@@ -376,19 +375,19 @@ struct FunctionBlock : public ParsableBlock
 {
     FunctionBlock() : calling_place(0), scope_level(1), cause_return(false) { }
 
-    QMap<QString, QStringList> vars;
-    QMap<QString, QStringList> *calling_place;
+    QHash<QString, QStringList> vars;
+    QHash<QString, QStringList> *calling_place;
     QStringList return_value;
     int scope_level;
     bool cause_return;
 
     bool exec(const QList<QStringList> &args,
-              QMakeProject *p, QMap<QString, QStringList> &place, QStringList &functionReturn);
+              QMakeProject *p, QHash<QString, QStringList> &place, QStringList &functionReturn);
     virtual bool continueBlock() { return !cause_return; }
 };
 
 bool FunctionBlock::exec(const QList<QStringList> &args,
-                         QMakeProject *proj, QMap<QString, QStringList> &place,
+                         QMakeProject *proj, QHash<QString, QStringList> &place,
                          QStringList &functionReturn)
 {
     //save state
@@ -442,10 +441,10 @@ struct IteratorBlock : public ParsableBlock
     bool loop_forever, cause_break, cause_next;
     QStringList list;
 
-    bool exec(QMakeProject *p, QMap<QString, QStringList> &place);
+    bool exec(QMakeProject *p, QHash<QString, QStringList> &place);
     virtual bool continueBlock() { return !cause_next && !cause_break; }
 };
-bool IteratorBlock::exec(QMakeProject *p, QMap<QString, QStringList> &place)
+bool IteratorBlock::exec(QMakeProject *p, QHash<QString, QStringList> &place)
 {
     bool ret = true;
     QStringList::Iterator it;
@@ -621,12 +620,12 @@ QMakeProject::~QMakeProject()
 {
     if(own_prop)
         delete prop;
-    for(QMap<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it) {
+    for(QHash<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it) {
         if(!it.value()->deref())
             delete it.value();
     }
     replaceFunctions.clear();
-    for(QMap<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it) {
+    for(QHash<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it) {
         if(!it.value()->deref())
             delete it.value();
     }
@@ -635,7 +634,7 @@ QMakeProject::~QMakeProject()
 
 
 void
-QMakeProject::init(QMakeProperty *p, const QMap<QString, QStringList> *vars)
+QMakeProject::init(QMakeProperty *p, const QHash<QString, QStringList> *vars)
 {
     if(vars)
         base_vars = *vars;
@@ -650,14 +649,14 @@ QMakeProject::init(QMakeProperty *p, const QMap<QString, QStringList> *vars)
     reset();
 }
 
-QMakeProject::QMakeProject(QMakeProject *p, const QMap<QString, QStringList> *vars)
+QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *vars)
 {
     init(p->properties(), vars ? vars : &p->variables());
-    for(QMap<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
+    for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
     }
-    for(QMap<QString, FunctionBlock*>::iterator it = p->testFunctions.begin(); it != p->testFunctions.end(); ++it) {
+    for(QHash<QString, FunctionBlock*>::iterator it = p->testFunctions.begin(); it != p->testFunctions.end(); ++it) {
         it.value()->ref();
         testFunctions.insert(it.key(), it.value());
     }
@@ -675,7 +674,7 @@ QMakeProject::reset()
 }
 
 bool
-QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int numLines)
+QMakeProject::parse(const QString &t, QHash<QString, QStringList> &place, int numLines)
 {
     // To preserve the integrity of any UTF-8 characters in .pro file, temporarily replace the
     // non-breaking space (0xA0) characters with another non-space character, so that
@@ -944,7 +943,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
                                         parser.file.toLatin1().constData(), parser.line_no, func.toLatin1().constData());
                                 return false;
                             }
-                            QMap<QString, FunctionBlock*> *map = 0;
+                            QHash<QString, FunctionBlock*> *map = 0;
                             if(func == "defineTest")
                                 map = &testFunctions;
                             else
@@ -1184,7 +1183,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
 }
 
 bool
-QMakeProject::read(QTextStream &file, QMap<QString, QStringList> &place)
+QMakeProject::read(QTextStream &file, QHash<QString, QStringList> &place)
 {
     int numLines = 0;
     bool ret = true;
@@ -1227,7 +1226,7 @@ QMakeProject::read(QTextStream &file, QMap<QString, QStringList> &place)
 }
 
 bool
-QMakeProject::read(const QString &file, QMap<QString, QStringList> &place)
+QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
 {
     parser_info pi = parser;
     reset();
@@ -1520,7 +1519,7 @@ void QMakeProject::validateModes()
 }
 
 bool
-QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QStringList> *place)
+QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStringList> *place)
 {
     if(x.isEmpty())
         return true;
@@ -1594,7 +1593,7 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
 }
 
 bool
-QMakeProject::doProjectTest(QString str, QMap<QString, QStringList> &place)
+QMakeProject::doProjectTest(QString str, QHash<QString, QStringList> &place)
 {
     QString chk = remove_quotes(str);
     if(chk.isEmpty())
@@ -1623,13 +1622,13 @@ QMakeProject::doProjectTest(QString str, QMap<QString, QStringList> &place)
 
 bool
 QMakeProject::doProjectTest(QString func, const QString &params,
-                            QMap<QString, QStringList> &place)
+                            QHash<QString, QStringList> &place)
 {
     return doProjectTest(func, split_arg_list(params), place);
 }
 
 QMakeProject::IncludeStatus
-QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringList> &place)
+QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QStringList> &place)
 {
     enum { UnknownFormat, ProFormat, JSFormat } format = UnknownFormat;
     if(flags & IncludeFlagFeature) {
@@ -1766,14 +1765,14 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
 
 QStringList
 QMakeProject::doProjectExpand(QString func, const QString &params,
-                              QMap<QString, QStringList> &place)
+                              QHash<QString, QStringList> &place)
 {
     return doProjectExpand(func, split_arg_list(params), place);
 }
 
 QStringList
 QMakeProject::doProjectExpand(QString func, QStringList args,
-                              QMap<QString, QStringList> &place)
+                              QHash<QString, QStringList> &place)
 {
     QList<QStringList> args_list;
     for(int i = 0; i < args.size(); ++i) {
@@ -1788,7 +1787,7 @@ QMakeProject::doProjectExpand(QString func, QStringList args,
 static void
 populateDeps(const QStringList &deps, const QString &prefix,
              QHash<QString, QSet<QString> > &dependencies, QHash<QString, QStringList> &dependees,
-             QStringList &rootSet, QMap<QString, QStringList> &place)
+             QStringList &rootSet, QHash<QString, QStringList> &place)
 {
     foreach (const QString &item, deps)
         if (!dependencies.contains(item)) {
@@ -1808,7 +1807,7 @@ populateDeps(const QStringList &deps, const QString &prefix,
 
 QStringList
 QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
-                              QMap<QString, QStringList> &place)
+                              QHash<QString, QStringList> &place)
 {
     func = func.trimmed();
     if(replaceFunctions.contains(func)) {
@@ -1931,7 +1930,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             QString file = args[0], seek_var = args[1];
             file = Option::fixPathToLocalOS(file);
 
-            QMap<QString, QStringList> tmp;
+            QHash<QString, QStringList> tmp;
             if(doProjectInclude(file, IncludeFlagNewParser, tmp) == IncludeSuccess) {
                 if(tmp.contains("QMAKE_INTERNAL_INCLUDED_FILES")) {
                     QStringList &out = place["QMAKE_INTERNAL_INCLUDED_FILES"];
@@ -1951,7 +1950,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                     parser.file.toLatin1().constData(), parser.line_no);
 
         } else {
-            const QMap<QString, QStringList> *source = &place;
+            const QHash<QString, QStringList> *source = &place;
             if(args.count() == 2) {
                 if(args.at(1) == "Global") {
                     source = &vars;
@@ -1970,7 +1969,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         QString tmp;
         tmp.sprintf(".QMAKE_INTERNAL_TMP_VAR_%d", x++);
         ret = QStringList(tmp);
-        QStringList &lst = (*((QMap<QString, QStringList>*)&place))[tmp];
+        QStringList &lst = (*((QHash<QString, QStringList>*)&place))[tmp];
         lst.clear();
         for(QStringList::ConstIterator arg_it = args.begin();
             arg_it != args.end(); ++arg_it)
@@ -2281,7 +2280,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
 }
 
 bool
-QMakeProject::doProjectTest(QString func, QStringList args, QMap<QString, QStringList> &place)
+QMakeProject::doProjectTest(QString func, QStringList args, QHash<QString, QStringList> &place)
 {
     QList<QStringList> args_list;
     for(int i = 0; i < args.size(); ++i) {
@@ -2294,7 +2293,7 @@ QMakeProject::doProjectTest(QString func, QStringList args, QMap<QString, QStrin
 }
 
 bool
-QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QString, QStringList> &place)
+QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QString, QStringList> &place)
 {
     func = func.trimmed();
 
@@ -2580,7 +2579,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         }
 
         bool ret = false;
-        QMap<QString, QStringList> tmp;
+        QHash<QString, QStringList> tmp;
         if(doProjectInclude(Option::fixPathToLocalOS(args[0]), IncludeFlagNewParser, tmp) == IncludeSuccess) {
             if(tmp.contains("QMAKE_INTERNAL_INCLUDED_FILES")) {
                 QStringList &out = place["QMAKE_INTERNAL_INCLUDED_FILES"];
@@ -2666,16 +2665,16 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
             flags |= IncludeFlagFeature;
         IncludeStatus stat = IncludeFailure;
         if(!parseInto.isEmpty()) {
-            QMap<QString, QStringList> symbols;
+            QHash<QString, QStringList> symbols;
             stat = doProjectInclude(file, flags|IncludeFlagNewProject, symbols);
             if(stat == IncludeSuccess) {
-                QMap<QString, QStringList> out_place;
-                for(QMap<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it) {
+                QHash<QString, QStringList> out_place;
+                for(QHash<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it) {
                     const QString var = it.key();
                     if(var != parseInto && !var.startsWith(parseInto + "."))
                         out_place.insert(var, it.value());
                 }
-                for(QMap<QString, QStringList>::ConstIterator it = symbols.begin(); it != symbols.end(); ++it) {
+                for(QHash<QString, QStringList>::ConstIterator it = symbols.begin(); it != symbols.end(); ++it) {
                     const QString var = it.key();
                     if(!var.startsWith("."))
                         out_place.insert(parseInto + "." + it.key(), it.value());
@@ -2754,7 +2753,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
 }
 
 bool
-QMakeProject::doProjectCheckReqs(const QStringList &deps, QMap<QString, QStringList> &place)
+QMakeProject::doProjectCheckReqs(const QStringList &deps, QHash<QString, QStringList> &place)
 {
     bool ret = false;
     for(QStringList::ConstIterator it = deps.begin(); it != deps.end(); ++it) {
@@ -2773,14 +2772,14 @@ QMakeProject::doProjectCheckReqs(const QStringList &deps, QMap<QString, QStringL
 bool
 QMakeProject::test(const QString &v)
 {
-    QMap<QString, QStringList> tmp = vars;
+    QHash<QString, QStringList> tmp = vars;
     return doProjectTest(v, tmp);
 }
 
 bool
 QMakeProject::test(const QString &func, const QList<QStringList> &args)
 {
-    QMap<QString, QStringList> tmp = vars;
+    QHash<QString, QStringList> tmp = vars;
     return doProjectTest(func, args, tmp);
 }
 
@@ -2788,7 +2787,7 @@ QStringList
 QMakeProject::expand(const QString &str)
 {
     bool ok;
-    QMap<QString, QStringList> tmp = vars;
+    QHash<QString, QStringList> tmp = vars;
     const QStringList ret = doVariableReplaceExpand(str, tmp, &ok);
     if(ok)
         return ret;
@@ -2803,7 +2802,7 @@ QMakeProject::expand(const QString &str, const QString &file, int line)
     parser.file = file;
     parser.line_no = line;
     parser.from_file = false;
-    QMap<QString, QStringList> tmp = vars;
+    QHash<QString, QStringList> tmp = vars;
     const QStringList ret = doVariableReplaceExpand(str, tmp, &ok);
     parser = pi;
     return ok ? ret.join(QString(Option::field_sep)) : QString();
@@ -2812,12 +2811,12 @@ QMakeProject::expand(const QString &str, const QString &file, int line)
 QStringList
 QMakeProject::expand(const QString &func, const QList<QStringList> &args)
 {
-    QMap<QString, QStringList> tmp = vars;
+    QHash<QString, QStringList> tmp = vars;
     return doProjectExpand(func, args, tmp);
 }
 
 bool
-QMakeProject::doVariableReplace(QString &str, QMap<QString, QStringList> &place)
+QMakeProject::doVariableReplace(QString &str, QHash<QString, QStringList> &place)
 {
     bool ret;
     str = doVariableReplaceExpand(str, place, &ret).join(QString(Option::field_sep));
@@ -2825,7 +2824,7 @@ QMakeProject::doVariableReplace(QString &str, QMap<QString, QStringList> &place)
 }
 
 QStringList
-QMakeProject::doVariableReplaceExpand(const QString &str, QMap<QString, QStringList> &place, bool *ok)
+QMakeProject::doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok)
 {
     QStringList ret;
     if(ok)
@@ -3015,7 +3014,7 @@ QMakeProject::doVariableReplaceExpand(const QString &str, QMap<QString, QStringL
     return ret;
 }
 
-QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList> &place)
+QStringList &QMakeProject::values(const QString &_var, QHash<QString, QStringList> &place)
 {
     QString var = varMap(_var);
     if(var == QLatin1String("LITERAL_WHITESPACE")) { //a real space in a token)
@@ -3185,7 +3184,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 
 bool QMakeProject::isEmpty(const QString &v)
 {
-    QMap<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
+    QHash<QString, QStringList>::ConstIterator it = vars.constFind(varMap(v));
     return it == vars.constEnd() || it->isEmpty();
 }
 

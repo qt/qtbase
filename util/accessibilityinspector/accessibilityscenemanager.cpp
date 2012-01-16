@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -158,7 +158,7 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
         m_animatedObjects.clear();
 
     } else {
-        qDebug() << "other update" << object;
+//        qDebug() << "other update" << object;
     }
 }
 
@@ -273,7 +273,7 @@ QGraphicsRectItem * AccessibilitySceneManager::processInterface(QAccessibleInter
     if (!m_rootItem)
         m_rootItem = item;
 
-    QString name = interface->text(QAccessibleInterface::Name);
+    QString name = interface->text(QAccessible::Name);
     QString description; // = interface->text(QAccessibleInterface::Description, child);
     QString role = translateRole(interface->role());
     int childCount = interface->childCount();

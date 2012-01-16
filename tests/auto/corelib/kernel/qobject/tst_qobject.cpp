@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,6 +65,7 @@ class tst_QObject : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void disconnect();
     void connectByName();
     void connectSignalsToSignalsWithDefaultArguments();
@@ -96,7 +97,7 @@ private slots:
     void recursiveSignalEmission();
 #endif
     void blockingQueuedConnection();
-    void compatibilityChildInsertedEvents();
+    void childEvents();
     void installEventFilter();
     void deleteSelfInSlot();
     void disconnectSelfInSlotAndDeleteAfterEmit();
@@ -236,6 +237,12 @@ public slots:
 
 int ReceiverObject::sequence = 0;
 
+void tst_QObject::initTestCase()
+{
+    const QString testDataDir = QFileInfo(QFINDTESTDATA("signalbug")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testDataDir), qPrintable("Could not chdir to " + testDataDir));
+}
+
 void tst_QObject::disconnect()
 {
     SenderObject *s = new SenderObject;
@@ -253,10 +260,10 @@ void tst_QObject::disconnect()
     s->emitSignal3();
     s->emitSignal4();
 
-    QCOMPARE( r1->called(1), TRUE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r1->called(3), TRUE );
-    QCOMPARE( r1->called(4), TRUE );
+    QVERIFY(r1->called(1));
+    QVERIFY(r1->called(2));
+    QVERIFY(r1->called(3));
+    QVERIFY(r1->called(4));
     r1->reset();
 
     // usual disconnect with all parameters given
@@ -264,12 +271,12 @@ void tst_QObject::disconnect()
 
     s->emitSignal1();
 
-    QCOMPARE( r1->called(1), FALSE );
+    QVERIFY(!r1->called(1));
     r1->reset();
 
-    QCOMPARE( ret, TRUE );
+    QVERIFY(ret);
     ret = QObject::disconnect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
-    QCOMPARE( ret, FALSE  );
+    QVERIFY(!ret);
 
     // disconnect all signals from s from all slots from r1
     QObject::disconnect( s, 0, r1, 0 );
@@ -278,9 +285,9 @@ void tst_QObject::disconnect()
     s->emitSignal3();
     s->emitSignal4();
 
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r1->called(3), FALSE );
-    QCOMPARE( r1->called(4), FALSE );
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r1->called(3));
+    QVERIFY(!r1->called(4));
     r1->reset();
 
     connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
@@ -294,10 +301,10 @@ void tst_QObject::disconnect()
     s->emitSignal1();
     s->emitSignal2();
 
-    QCOMPARE( r1->called(1), FALSE );
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r1->called(3), FALSE );
-    QCOMPARE( r1->called(4), TRUE );
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r1->called(3));
+    QVERIFY(r1->called(4));
     r1->reset();
     // make sure all is disconnected again
     QObject::disconnect( s, 0, r1, 0 );
@@ -315,12 +322,12 @@ void tst_QObject::disconnect()
     s->emitSignal2();
     s->emitSignal3();
 
-    QCOMPARE( r1->called(1), FALSE );
-    QCOMPARE( r2->called(1), FALSE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r2->called(2), TRUE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r2->called(2), TRUE );
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r2->called(1));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
 
     r1->reset();
     r2->reset();
@@ -328,10 +335,10 @@ void tst_QObject::disconnect()
     // disconnect all signals of s from all receivers
     QObject::disconnect( s, 0, 0, 0 );
 
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r2->called(2), FALSE );
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r2->called(2), FALSE );
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r2->called(2));
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r2->called(2));
 
     delete r2;
     delete r1;
@@ -972,14 +979,14 @@ void tst_QObject::emitInDefinedOrder()
 
     SequenceObject::sequence = sequence = 0;
     sender2->emitSignal1();
-    QCOMPARE(seq1.called(1), TRUE);
-    QCOMPARE(seq2.called(1), TRUE);
-    QCOMPARE(seq3->called(1), FALSE);
-    QCOMPARE(seq4.called(1), TRUE);
-    QCOMPARE(seq1.called(2), TRUE);
-    QCOMPARE(seq2.called(2), TRUE);
-    QCOMPARE(seq3->called(2), FALSE);
-    QCOMPARE(seq4.called(2), TRUE);
+    QVERIFY(seq1.called(1));
+    QVERIFY(seq2.called(1));
+    QVERIFY(!seq3->called(1));
+    QVERIFY(seq4.called(1));
+    QVERIFY(seq1.called(2));
+    QVERIFY(seq2.called(2));
+    QVERIFY(!seq3->called(2));
+    QVERIFY(seq4.called(2));
     QCOMPARE(seq1.sequence_slot1, ++sequence);
     QCOMPARE(seq2.sequence_slot1, ++sequence);
     QCOMPARE(seq4.sequence_slot1, ++sequence);
@@ -1008,14 +1015,14 @@ void tst_QObject::emitInDefinedOrder()
 
     SequenceObject::sequence = sequence = 0;
     sender2->emitSignal1();
-    QCOMPARE(seq1.called(2), TRUE);
-    QCOMPARE(seq2.called(2), TRUE);
-    QCOMPARE(seq3->called(2), FALSE);
-    QCOMPARE(seq4.called(2), TRUE);
-    QCOMPARE(seq1.called(1), TRUE);
-    QCOMPARE(seq2.called(1), TRUE);
-    QCOMPARE(seq3->called(1), FALSE);
-    QCOMPARE(seq4.called(1), TRUE);
+    QVERIFY(seq1.called(2));
+    QVERIFY(seq2.called(2));
+    QVERIFY(!seq3->called(2));
+    QVERIFY(seq4.called(2));
+    QVERIFY(seq1.called(1));
+    QVERIFY(seq2.called(1));
+    QVERIFY(!seq3->called(1));
+    QVERIFY(seq4.called(1));
     QCOMPARE(seq1.sequence_slot2, ++sequence);
     QCOMPARE(seq2.sequence_slot2, ++sequence);
     QCOMPARE(seq4.sequence_slot2, ++sequence);
@@ -1044,14 +1051,14 @@ void tst_QObject::emitInDefinedOrder()
 
     SequenceObject::sequence = sequence = 0;
     sender2->emitSignal1();
-    QCOMPARE(seq1.called(1), TRUE);
-    QCOMPARE(seq2.called(1), TRUE);
-    QCOMPARE(seq3->called(1), FALSE);
-    QCOMPARE(seq4.called(1), TRUE);
-    QCOMPARE(seq1.called(2), TRUE);
-    QCOMPARE(seq2.called(2), TRUE);
-    QCOMPARE(seq3->called(2), FALSE);
-    QCOMPARE(seq4.called(2), TRUE);
+    QVERIFY(seq1.called(1));
+    QVERIFY(seq2.called(1));
+    QVERIFY(!seq3->called(1));
+    QVERIFY(seq4.called(1));
+    QVERIFY(seq1.called(2));
+    QVERIFY(seq2.called(2));
+    QVERIFY(!seq3->called(2));
+    QVERIFY(seq4.called(2));
     QCOMPARE(seq1.sequence_slot1, ++sequence);
     QCOMPARE(seq2.sequence_slot1, ++sequence);
     QCOMPARE(seq4.sequence_slot1, ++sequence);
@@ -1085,12 +1092,12 @@ void tst_QObject::emitInDefinedOrder()
     sender2->emitSignal1();
     QCOMPARE(static_cast<QObject *>(psender), static_cast<QObject *>(0));
     QCOMPARE(static_cast<QObject *>(pseq3), static_cast<QObject *>(0));
-    QCOMPARE(seq1.called(1), TRUE);
-    QCOMPARE(seq2.called(1), TRUE);
-    QCOMPARE(seq4.called(1), TRUE);
-    QCOMPARE(seq1.called(2), TRUE);
-    QCOMPARE(seq2.called(2), TRUE);
-    QCOMPARE(seq4.called(2), FALSE);
+    QVERIFY(seq1.called(1));
+    QVERIFY(seq2.called(1));
+    QVERIFY(seq4.called(1));
+    QVERIFY(seq1.called(2));
+    QVERIFY(seq2.called(2));
+    QVERIFY(!seq4.called(2));
     QCOMPARE(seq1.sequence_slot1, ++sequence);
     QCOMPARE(seq2.sequence_slot1, ++sequence);
     QCOMPARE(seq4.sequence_slot1, ++sequence);
@@ -2794,7 +2801,9 @@ void tst_QObject::recursiveSignalEmission()
 {
     QProcess proc;
     // signalbug helper app should always be next to this test binary
-    proc.start(QCoreApplication::applicationDirPath() + "/signalbug");
+    const QString path = QStringLiteral("signalbug/signalbug");
+    proc.start(path);
+    QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
@@ -2859,7 +2868,7 @@ private:
     EventList events;
 };
 
-void tst_QObject::compatibilityChildInsertedEvents()
+void tst_QObject::childEvents()
 {
     EventSpy::EventList expected;
 
@@ -2880,7 +2889,7 @@ void tst_QObject::compatibilityChildInsertedEvents()
     }
 
     {
-        // 2 children, so we expect 2 ChildAdded and 2 ChildInserted events
+        // 2 children, so we expect 2 ChildAdded events
         QObject object;
         EventSpy spy;
         object.installEventFilter(&spy);
@@ -2911,7 +2920,7 @@ void tst_QObject::compatibilityChildInsertedEvents()
 
     {
         // 2 children, but one is reparented away, so we expect:
-        // 2 ChildAdded, 1 ChildRemoved, and 1 ChildInserted
+        // 2 ChildAdded, 1 ChildRemoved
         QObject object;
         EventSpy spy;
         object.installEventFilter(&spy);
@@ -3484,7 +3493,6 @@ void tst_QObject::isSignalConnected()
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig15()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig29()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig60()")));
-    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
 #endif
 
     QObject::connect(&o, SIGNAL(sig00()), &o, SIGNAL(sig69()));
@@ -3539,7 +3547,6 @@ void tst_QObject::isSignalConnected()
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig21()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig25()")));
     QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig55()")));
-    QVERIFY(!priv->isSignalConnected(priv->signalIndex("sig61()")));
 #endif
 
     emit o.sig00();
@@ -3990,7 +3997,7 @@ void tst_QObject::disconnectNotSignalMetaMethod()
     QMetaMethod slot = s.metaObject()->method(
             s.metaObject()->indexOfMethod("aPublicSlot()"));
 
-    QTest::ignoreMessage(QtWarningMsg,"Object::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
+    QTest::ignoreMessage(QtWarningMsg,"QObject::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
     QVERIFY(!QObject::disconnect(&s, slot, &r, QMetaMethod()));
 }
 
@@ -4092,12 +4099,25 @@ public slots:
     }
 };
 
+static void processEvents()
+{
+    qApp->processEvents();
+}
+
 void tst_QObject::baseDestroyed()
 {
-    BaseDestroyed d;
-    connect(&d, SIGNAL(destroyed()), &d, SLOT(slotUseList()));
-    //When d goes out of scope, slotUseList should not be called as the BaseDestroyed has
-    // already been destroyed while ~QObject emit destroyed
+    {
+        BaseDestroyed d;
+        connect(&d, SIGNAL(destroyed()), &d, SLOT(slotUseList()));
+        //When d goes out of scope, slotUseList should not be called as the BaseDestroyed has
+        // already been destroyed while ~QObject emit destroyed
+    }
+    {
+        BaseDestroyed d;
+        connect(&d, &QObject::destroyed, processEvents);
+        QMetaObject::invokeMethod(&d, "slotUseList", Qt::QueuedConnection);
+        //the destructor will call processEvents, that should not call the slotUseList
+    }
 }
 
 void tst_QObject::pointerConnect()
@@ -4189,10 +4209,10 @@ void tst_QObject::pointerDisconnect()
     s->emitSignal3();
     s->emitSignal4();
 
-    QCOMPARE( r1->called(1), TRUE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r1->called(3), TRUE );
-    QCOMPARE( r1->called(4), TRUE );
+    QVERIFY(r1->called(1));
+    QVERIFY(r1->called(2));
+    QVERIFY(r1->called(3));
+    QVERIFY(r1->called(4));
     r1->reset();
 
     // usual disconnect with all parameters given
@@ -4200,12 +4220,12 @@ void tst_QObject::pointerDisconnect()
 
     s->emitSignal1();
 
-    QCOMPARE( r1->called(1), FALSE );
+    QVERIFY(!r1->called(1));
     r1->reset();
 
-    QCOMPARE( ret, TRUE );
+    QVERIFY(ret);
     ret = QObject::disconnect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
-    QCOMPARE( ret, FALSE  );
+    QVERIFY(!ret);
 
     // disconnect all signals from s from all slots from r1
     QObject::disconnect( s, 0, r1, 0 );
@@ -4214,9 +4234,9 @@ void tst_QObject::pointerDisconnect()
     s->emitSignal3();
     s->emitSignal4();
 
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r1->called(3), FALSE );
-    QCOMPARE( r1->called(4), FALSE );
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r1->called(3));
+    QVERIFY(!r1->called(4));
     r1->reset();
 
     connect( s, &SenderObject::signal1, r1, &ReceiverObject::slot1 );
@@ -4230,10 +4250,10 @@ void tst_QObject::pointerDisconnect()
     s->emitSignal1();
     s->emitSignal2();
 
-    QCOMPARE( r1->called(1), FALSE );
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r1->called(3), FALSE );
-    QCOMPARE( r1->called(4), TRUE );
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r1->called(3));
+    QVERIFY(r1->called(4));
     r1->reset();
     // make sure all is disconnected again
     QObject::disconnect( s, 0, r1, 0 );
@@ -4251,12 +4271,12 @@ void tst_QObject::pointerDisconnect()
     s->emitSignal2();
     s->emitSignal3();
 
-    QCOMPARE( r1->called(1), FALSE );
-    QCOMPARE( r2->called(1), FALSE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r2->called(2), TRUE );
-    QCOMPARE( r1->called(2), TRUE );
-    QCOMPARE( r2->called(2), TRUE );
+    QVERIFY(!r1->called(1));
+    QVERIFY(!r2->called(1));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
+    QVERIFY(r1->called(2));
+    QVERIFY(r2->called(2));
 
     r1->reset();
     r2->reset();
@@ -4264,10 +4284,10 @@ void tst_QObject::pointerDisconnect()
     // disconnect all signals of s from all receivers
     QObject::disconnect( s, 0, 0, 0 );
 
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r2->called(2), FALSE );
-    QCOMPARE( r1->called(2), FALSE );
-    QCOMPARE( r2->called(2), FALSE );
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r2->called(2));
+    QVERIFY(!r1->called(2));
+    QVERIFY(!r2->called(2));
 
     delete r2;
     delete r1;

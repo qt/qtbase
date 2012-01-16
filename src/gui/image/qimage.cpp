@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,17 +113,6 @@ static inline bool checkPixelSize(const QImage::Format format)
 static QImage rotated90(const QImage &src);
 static QImage rotated180(const QImage &src);
 static QImage rotated270(const QImage &src);
-
-// ### Qt 5: remove
-Q_GUI_EXPORT qint64 qt_image_id(const QImage &image)
-{
-    return image.cacheKey();
-}
-
-const QVector<QRgb> *qt_image_colortable(const QImage &image)
-{
-    return &image.d->colortable;
-}
 
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
@@ -5873,5 +5862,13 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     \fn DataPtr & QImage::data_ptr()
     \internal
 */
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QImage &i)
+{
+    dbg.nospace() << "QImage(" << i.size() << ')';
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

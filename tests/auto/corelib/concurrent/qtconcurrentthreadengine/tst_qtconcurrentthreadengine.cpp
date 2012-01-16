@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,14 +48,13 @@ using namespace QtConcurrent;
 class tst_QtConcurrentThreadEngine: public QObject
 {
     Q_OBJECT
-public:
-    void threadCount();
 private slots:
     void runDirectly();
     void result();
     void runThroughStarter();
     void cancel();
     void throttle();
+    void threadCount();
     void multipleResults();
     void stresstest();
     void cancelQueuedSlowUser();
@@ -279,6 +278,8 @@ public:
 
 void tst_QtConcurrentThreadEngine::threadCount()
 {
+    QSKIP("QTBUG-23333: This test is unstable");
+
     const int repeats = 10;
     for (int i = 0; i < repeats; ++i) {
         ThreadCountUser t;
@@ -445,8 +446,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Blocking mode:
@@ -459,9 +459,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // test throwing the exception from the main thread (different code path)
@@ -473,9 +471,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const Exception &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Asynchronous mode:
@@ -488,8 +484,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // Blocking mode:
@@ -502,9 +497,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 
     // test throwing the exception from the main thread (different code path)
@@ -516,9 +509,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
-
-        if (!caught)
-            QFAIL("did not get exception");
+        QVERIFY2(caught, "did not get exception");
     }
 }
 

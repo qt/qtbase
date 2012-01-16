@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -240,7 +240,6 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         QTouchPoint touchPoint;
         touchPoint.pressure = 1.0;
-        touchPoint.isPrimary = (winTouchInput.dwFlags & TOUCHEVENTF_PRIMARY) != 0;
         touchPoint.id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
         if (touchPoint.id == -1) {
             touchPoint.id = m_touchInputIDToTouchPointID.size();
@@ -275,19 +274,18 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     QWindowsContext::user32dll.closeTouchInputHandle((HANDLE) msg.lParam);
 
     // all touch points released, forget the ids we've seen, they may not be reused
-    if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased)
+    if (allStates == Qt::TouchPointReleased)
         m_touchInputIDToTouchPointID.clear();
 
     if (!m_touchDevice) {
         m_touchDevice = new QTouchDevice;
+        // TODO: Device used to be hardcoded to screen in previous code.
         m_touchDevice->setType(QTouchDevice::TouchScreen);
         m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::Area | QTouchDevice::NormalizedPosition);
         QWindowSystemInterface::registerTouchDevice(m_touchDevice);
     }
 
-    // TODO: Device used to be hardcoded to screen in previous code.
-    // What is the correct event type? Which parts of translateRawTouchEvent() are required?
-    QWindowSystemInterface::handleTouchEvent(window, QEvent::TouchBegin,
+    QWindowSystemInterface::handleTouchEvent(window,
                                              m_touchDevice,
                                              touchPoints);
     return true;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,7 @@ class QMouseEvent;
 #ifndef QT_NO_WHEELEVENT
 class QWheelEvent;
 #endif
+class QTouchEvent;
 
 class QPlatformSurface;
 class QPlatformWindow;
@@ -208,8 +209,8 @@ public:
 public Q_SLOTS:
     void setVisible(bool visible);
 
-    inline void show() { setVisible(true); }
-    inline void hide() { setVisible(false); }
+    void show();
+    void hide();
 
     void showMinimized();
     void showMaximized();
@@ -285,6 +286,7 @@ protected:
 #ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
 #endif
+    virtual void touchEvent(QTouchEvent *);
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 

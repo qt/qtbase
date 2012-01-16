@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@ private slots:
     void angleBetween();
     void transformBetween_data();
     void transformBetween();
+    void orientationChange();
 };
 
 void tst_QScreen::angleBetween_data()
@@ -161,6 +162,17 @@ void tst_QScreen::transformBetween()
     Qt::ScreenOrientation b = Qt::ScreenOrientation(ob);
 
     QCOMPARE(QScreen::transformBetween(a, b, rect), expected);
+}
+
+void tst_QScreen::orientationChange()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+
+    QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::LandscapeOrientation);
+    QTRY_COMPARE(screen->currentOrientation(), Qt::LandscapeOrientation);
+
+    QWindowSystemInterface::handleScreenOrientationChange(screen, Qt::PortraitOrientation);
+    QTRY_COMPARE(screen->currentOrientation(), Qt::PortraitOrientation);
 }
 
 #include <tst_qscreen.moc>

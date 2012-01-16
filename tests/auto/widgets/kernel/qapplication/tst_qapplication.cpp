@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,12 +45,26 @@
 
 #include <QtTest/QtTest>
 
-#include "qabstracteventdispatcher.h"
-#include <QtGui>
-#include <QtWidgets>
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtCore/QProcess>
 
-#include "private/qapplication_p.h"
-#include "private/qstylesheetstyle_p.h"
+#include <QtGui/QFontDatabase>
+#include <QtGui/QClipboard>
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QInputContext>
+#include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/private/qapplication_p.h>
+#include <QtWidgets/private/qstylesheetstyle_p.h>
+
 #ifdef Q_OS_WINCE
 #include <windows.h>
 #endif
@@ -64,11 +78,11 @@ public:
     virtual ~tst_QApplication();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
-    void getSetCheck();
     void staticSetup();
 
     void alert();
@@ -140,6 +154,13 @@ public:
     }
 };
 
+void tst_QApplication::initTestCase()
+{
+    // chdir to our testdata path and execute helper apps relative to that.
+    const QString testdataDir = QFileInfo(QFINDTESTDATA("desktopsettingsaware")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+}
+
 void tst_QApplication::sendEventsOnProcessEvents()
 {
     int argc = 0;
@@ -153,38 +174,6 @@ void tst_QApplication::sendEventsOnProcessEvents()
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
 }
 
-class MyInputContext : public QInputContext
-{
-public:
-    MyInputContext() : QInputContext() {}
-    QString identifierName() { return QString("NoName"); }
-    QString language() { return QString("NoLanguage"); }
-    void reset() {}
-    bool isComposing() const { return false; }
-};
-
-// Testing get/set functions
-void tst_QApplication::getSetCheck()
-{
-    int argc = 0;
-    QApplication obj1(argc, 0, QApplication::GuiServer);
-    MyInputContext *var1 = new MyInputContext;
-
-    // QApplication takes ownership, so check for reparenting:
-    obj1.setInputContext(var1);
-    QCOMPARE(var1->parent(), static_cast<QObject *>(&obj1));
-
-    // Test for self-assignment:
-    obj1.setInputContext(obj1.inputContext());
-    QVERIFY(obj1.inputContext());
-    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
-
-    // Resetting the input context to 0 is not allowed:
-    QTest::ignoreMessage(QtWarningMsg, "QApplication::setInputContext: called with 0 input context");
-    obj1.setInputContext(0);
-
-    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
-}
 
 class CloseEventTestWindow : public QWidget
 {
@@ -1463,19 +1452,14 @@ void tst_QApplication::desktopSettingsAware()
 {
 #ifndef QT_NO_PROCESS
     QProcess testProcess;
+    const QString path = QStringLiteral("desktopsettingsaware/desktopsettingsaware");
 #ifdef Q_OS_WINCE
     int argc = 0;
     QApplication tmpApp(argc, 0, QApplication::GuiServer);
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
-#else
-#if defined(Q_OS_WIN) && defined(QT_DEBUG)
-    testProcess.start("desktopsettingsaware/debug/desktopsettingsaware");
-#elif defined(Q_OS_WIN)
-    testProcess.start("desktopsettingsaware/release/desktopsettingsaware");
-#else
-    testProcess.start("desktopsettingsaware/desktopsettingsaware");
 #endif
-#endif
+    testProcess.start(path);
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
     QCOMPARE(int(testProcess.state()), int(QProcess::NotRunning));
     QVERIFY(int(testProcess.error()) != int(QProcess::Crashed));
@@ -1866,11 +1850,10 @@ void tst_QApplication::windowsCommandLine()
     QFETCH(QString, expected);
 
     QProcess testProcess;
-#if defined(QT_DEBUG)
-    testProcess.start("wincmdline/debug/wincmdline", QStringList(args));
-#else
-    testProcess.start("wincmdline/release/wincmdline", QStringList(args));
-#endif
+    const QString path = QStringLiteral("wincmdline/wincmdline");
+    testProcess.start(path, QStringList(args));
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(10000));
     QByteArray error = testProcess.readAllStandardError();
     QString procError(error);
@@ -1941,23 +1924,52 @@ void tst_QApplication::touchEventPropagation()
         // touch event behavior on a window
         TouchEventPropagationTestWidget window;
         window.setObjectName("1. window");
+        window.show(); // Must have an explicitly specified QWindow for handleTouchEvent,
+                       // passing 0 would result in using topLevelAt() which is not ok in this case
+                       // as the screen position in the point is bogus.
+        QTest::qWaitForWindowShown(&window);
+        // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
+        // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
+        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
 
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
         window.reset();
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
 
         window.reset();
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
     }
@@ -1968,9 +1980,20 @@ void tst_QApplication::touchEventPropagation()
         window.setObjectName("2. window");
         TouchEventPropagationTestWidget widget(&window);
         widget.setObjectName("2. widget");
+        window.show();
+        QTest::qWaitForWindowShown(&window);
+        pressedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
+        releasedTouchPoints[0].setScreenPos(window.mapToGlobal(QPoint(0, 0)));
 
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1979,8 +2002,15 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1989,8 +2019,15 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptMouseEvent = true;
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -1999,8 +2036,15 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -2010,8 +2054,15 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents, false);
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
@@ -2020,8 +2071,15 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
@@ -2031,8 +2089,15 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.acceptMouseEvent = true; // doesn't matter, touch events are propagated first
         window.acceptTouchEvent = true;
-        qt_translateRawTouchEvent(&window, device, pressedTouchPoints, 0);
-        qt_translateRawTouchEvent(&window, device, releasedTouchPoints, 0);
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(pressedTouchPoints));
+        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 0,
+                                                 device,
+                                                 QTest::QTouchEventSequence::touchPointList(releasedTouchPoints));
+        QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
         QVERIFY(window.seenTouchEvent);
@@ -2044,11 +2109,10 @@ void tst_QApplication::qtbug_12673()
 {
     QProcess testProcess;
     QStringList arguments;
-#ifdef Q_OS_MAC
-    testProcess.start("modal/modal.app", arguments);
-#else
-    testProcess.start("modal/modal", arguments);
-#endif
+    const QString path = QStringLiteral("modal/modal");
+    testProcess.start(path, arguments);
+    QVERIFY2(testProcess.waitForStarted(),
+             qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, testProcess.errorString())));
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 }

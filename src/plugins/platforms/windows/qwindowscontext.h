@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,9 +77,9 @@ struct QWindowsUser32DLL
     // Functions missing in Q_CC_GNU stub libraries.
     SetLayeredWindowAttributes setLayeredWindowAttributes;
     UpdateLayeredWindow updateLayeredWindow;
-    UpdateLayeredWindowIndirect updateLayeredWindowIndirect;
 
     // Functions missing in older versions of Windows
+    UpdateLayeredWindowIndirect updateLayeredWindowIndirect;
     IsHungAppWindow isHungAppWindow;
 
     // Touch functions from Windows 7 onwards (also for use with Q_CC_MSVC).

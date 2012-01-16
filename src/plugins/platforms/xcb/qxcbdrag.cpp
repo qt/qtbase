@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -818,7 +818,7 @@ namespace
     public:
         ClientMessageScanner(xcb_atom_t a) : atom(a) {}
         xcb_atom_t atom;
-        bool check(xcb_generic_event_t *event) const {
+        bool checkEvent(xcb_generic_event_t *event) const {
             if (!event)
                 return false;
             if ((event->response_type & 0x7f) != XCB_CLIENT_MESSAGE)

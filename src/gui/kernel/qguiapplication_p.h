@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -189,14 +189,29 @@ public:
     QShortcutMap shortcutMap;
 #endif
 
+    struct ActiveTouchPointsKey {
+        ActiveTouchPointsKey(QTouchDevice *dev, int id) : device(dev), touchPointId(id) { }
+        QTouchDevice *device;
+        int touchPointId;
+    };
+    struct ActiveTouchPointsValue {
+        QWeakPointer<QWindow> window;
+        QWeakPointer<QObject> target;
+        QTouchEvent::TouchPoint touchPoint;
+    };
+    QHash<ActiveTouchPointsKey, ActiveTouchPointsValue> activeTouchPoints;
+
 private:
     void init();
 
     static QGuiApplicationPrivate *self;
-
-    QMap<int, QWeakPointer<QWindow> > windowForTouchPointId;
-    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
+    static QTouchDevice *m_fakeTouchDevice;
 };
+
+Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);
+
+Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
+                             const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
 QT_END_NAMESPACE
 

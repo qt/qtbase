@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,8 @@
 
 #include <QtGui>
 
+namespace QCocoaAccessible {
+
 /*
     Qt Cocoa Accessibility Overview
 
@@ -64,5 +66,11 @@
 */
 
 NSString *macRole(QAccessible::Role);
+bool shouldBeIgnrored(QAccessibleInterface *interface);
+NSString *getTranslatedAction(const QString &qtAction);
+NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
+QString translateAction(NSString *nsAction);
+
+}
 
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,9 +62,12 @@
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
 #include "QtGui/qclipboard.h"
+#include "QtGui/qinputpanel.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qthread.h"
+
+#include "qplatformdefs.h"
 
 #include "qplatformdefs.h"
 
@@ -252,6 +255,7 @@ public:
     uint echoMode() const { return m_echoMode; }
     void setEchoMode(uint mode)
     {
+        cancelPasswordEchoTimer();
         m_echoMode = mode;
         m_passwordEchoEditing = false;
         updateDisplayText();
@@ -301,7 +305,13 @@ public:
     QString preeditAreaText() const { return m_textLayout.preeditAreaText(); }
 
     void updatePasswordEchoEditing(bool editing);
-    bool passwordEchoEditing() const { return m_passwordEchoEditing; }
+    bool passwordEchoEditing() const {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0)
+            return true;
+#endif
+        return m_passwordEchoEditing ;
+    }
 
     QChar passwordCharacter() const { return m_passwordCharacter; }
     void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
@@ -309,7 +319,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return QApplication::keyboardInputDirection();
+                return qApp->inputPanel()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;
@@ -474,6 +484,18 @@ private:
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    int m_passwordEchoTimer;
+#endif
+    void cancelPasswordEchoTimer()
+    {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0) {
+            killTimer(m_passwordEchoTimer);
+            m_passwordEchoTimer = 0;
+        }
+#endif
+    }
 
     int redoTextLayout() const;
 #if defined(Q_WS_MAC)

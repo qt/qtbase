@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,14 +45,13 @@
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
-// ### Qt5 remove this include
-#include <QtNetwork/QNetworkCookie>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
+
+class QNetworkCookie;
 
 class QNetworkCookieJarPrivate;
 class Q_NETWORK_EXPORT QNetworkCookieJar: public QObject

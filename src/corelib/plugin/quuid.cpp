@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 
 #include "qdatastream.h"
 #include "qendian.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -131,6 +132,29 @@ bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&
     return true;
 }
 #endif
+
+static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
+{
+    QByteArray hashResult;
+
+    // create a scope so later resize won't reallocate
+    {
+        QCryptographicHash hash(algorithm);
+        hash.addData(ns.toRfc4122());
+        hash.addData(baseData);
+        hashResult = hash.result();
+    }
+    hashResult.resize(16); // Sha1 will be too long
+
+    QUuid result = QUuid::fromRfc4122(hashResult);
+
+    result.data3 &= 0x0FFF;
+    result.data3 |= (version << 12);
+    result.data4[0] &= 0x3F;
+    result.data4[0] |= 0x80;
+
+    return result;
+}
 
 /*!
     \class QUuid
@@ -230,7 +254,7 @@ bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&
     \o 0
     \o 1
     \o 1
-    \o Name
+    \o Md5(Name)
 
     \row
     \o 0
@@ -238,6 +262,13 @@ bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&
     \o 0
     \o 0
     \o Random
+
+    \row
+    \o 0
+    \o 1
+    \o 0
+    \o 1
+    \o Sha1
 
     \endtable
 
@@ -384,7 +415,38 @@ QUuid::QUuid(const QByteArray &text)
         return;
     }
 }
+
 #endif
+
+/*!
+  \since 5.0
+  \fn QUuid::createUuidV3()
+
+  This functions returns a new UUID with variant QUuid::DCE and version QUuid::MD5.
+  \a ns is the namespace and \a name is the name as described by RFC 4122.
+
+  \sa variant(), version(), createUuidV5()
+*/
+
+/*!
+  \since 5.0
+  \fn QUuid::createUuidV5()
+
+  This functions returns a new UUID with variant QUuid::DCE and version QUuid::SHA1.
+  \a ns is the namespace and \a name is the name as described by RFC 4122.
+
+  \sa variant(), version(), createUuidV3()
+*/
+
+QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData)
+{
+    return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
+}
+
+QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
+{
+    return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
+}
 
 /*!
   Creates a QUuid object from the binary representation of the UUID, as
@@ -439,15 +501,6 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
     otherwise returns false.
 */
 #ifndef QT_NO_QUUID_STRING
-/*!
-    \fn QUuid::operator QString() const
-    \obsolete
-
-    Returns the string representation of the uuid.
-
-    \sa toString()
-*/
-
 /*!
     Returns the string representation of this QUuid. The string is
     formatted as five hex fields separated by '-' and enclosed in
@@ -739,7 +792,7 @@ QUuid::Version QUuid::version() const
     if (isNull()
          || (variant() != DCE)
          || ver < Time
-         || ver > Random)
+         || ver > Sha1)
         return VerUnknown;
     return ver;
 }
@@ -926,6 +979,14 @@ QUuid QUuid::createUuid()
     Returns true if this UUID is not equal to the Windows GUID \a
     guid; otherwise returns false.
 */
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QUuid &id)
+{
+    dbg.nospace() << "QUuid(" << id.toString() << ')';
+    return dbg.space();
+}
+#endif
 
 /**
     Returns a hash of the QUuid

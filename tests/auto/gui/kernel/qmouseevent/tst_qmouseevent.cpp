@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,7 +72,7 @@ protected:
 	mousePressButton = e->button();
 	mousePressButtons = e->buttons();
 	mousePressModifiers = e->modifiers();
-	mousePressEventRecieved = TRUE;
+	mousePressEventRecieved = true;
 	e->accept();
     }
     void mouseReleaseEvent(QMouseEvent *e)
@@ -81,7 +81,7 @@ protected:
 	mouseReleaseButton = e->button();
 	mouseReleaseButtons = e->buttons();
 	mouseReleaseModifiers = e->modifiers();
-	mouseReleaseEventRecieved = TRUE;
+	mouseReleaseEventRecieved = true;
 	e->accept();
     }
 };
@@ -134,8 +134,8 @@ void tst_QMouseEvent::cleanupTestCase()
 
 void tst_QMouseEvent::init()
 {
-    testMouseWidget->mousePressEventRecieved = FALSE;
-    testMouseWidget->mouseReleaseEventRecieved = FALSE;
+    testMouseWidget->mousePressEventRecieved = false;
+    testMouseWidget->mouseReleaseEventRecieved = false;
     testMouseWidget->mousePressButton = 0;
     testMouseWidget->mousePressButtons = 0;
     testMouseWidget->mousePressModifiers = 0;

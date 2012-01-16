@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,16 +71,14 @@ public:
     QString text(QAccessible::Text t) const;
     QRect rect() const;
 
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *) const;
 
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
-    QVariant invokeMethod(QAccessible::Method, const QVariantList &) { return QVariant(); }
     void *interface_cast(QAccessible::InterfaceType t);
 
     // table interface
@@ -153,14 +151,13 @@ public:
 
     virtual ~QAccessibleTree() {}
 
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
+
     int indexOfChild(const QAccessibleInterface *) const;
 
     int rowCount() const;
-
-    int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // table interface
     QAccessibleInterface *cellAt(int row, int column) const;
@@ -184,7 +181,7 @@ public:
     QRect rect() const;
     bool isValid() const;
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -194,7 +191,6 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int) const;
     int navigate(QAccessible::RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // cell interface
     virtual int columnExtent() const;
@@ -231,7 +227,7 @@ public:
     QRect rect() const;
     bool isValid() const;
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -241,7 +237,6 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
 
 private:
     QAbstractItemView *view;
@@ -264,11 +259,11 @@ public:
 
     QObject *object() const { return 0; }
     QAccessible::Role role() const { return QAccessible::Pane; }
-    QAccessible::State state() const { return QAccessible::Normal; }
+    QAccessible::State state() const { return QAccessible::State(); }
     QRect rect() const { return QRect(); }
     bool isValid() const { return true; }
 
-    int childAt(int, int) const { return 0; }
+    QAccessibleInterface *childAt(int, int) const { return 0; }
     int childCount() const { return 0; }
     int indexOfChild(const QAccessibleInterface *) const  { return -1; }
 
@@ -283,15 +278,9 @@ public:
     }
     int navigate(QAccessible::RelationFlag relation, int, QAccessibleInterface **iface) const
     {
-        if (relation == QAccessible::Ancestor) {
-            *iface = parent();
-            return *iface ? 0 : -1;
-        }
+        Q_UNUSED(relation);
+        Q_UNUSED(iface);
         return -1;
-    }
-    QAccessible::Relation relationTo(int, const QAccessibleInterface *, int) const
-    {
-        return QAccessible::Unrelated;
     }
 
 private:

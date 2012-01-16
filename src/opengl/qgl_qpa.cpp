@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -231,10 +231,10 @@ void QGLContext::swapBuffers() const
     d->guiGlContext->swapBuffers(widget->windowHandle());
 }
 
-void *QGLContext::getProcAddress(const QString &procName) const
+QFunctionPointer QGLContext::getProcAddress(const QString &procName) const
 {
     Q_D(const QGLContext);
-    return (void *)d->guiGlContext->getProcAddress(procName.toAscii());
+    return d->guiGlContext->getProcAddress(procName.toAscii());
 }
 
 void QGLWidget::setContext(QGLContext *context,

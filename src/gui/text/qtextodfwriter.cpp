@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -376,9 +376,6 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 
         if (image.isNull()) {
             QString context;
-            if (QTextImageHandler::externalLoader)
-                image = QTextImageHandler::externalLoader(name, context);
-
             if (image.isNull()) { // try direct loading
                 name = imageFormat.name(); // remove qrc:/ prefix again
                 image.load(name);

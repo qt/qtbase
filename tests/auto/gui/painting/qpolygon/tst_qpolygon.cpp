@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,7 @@ void tst_QPolygon::makeEllipse()
 
     int i;
     // make sure that all points are R+-1 away from the center
-    bool err = FALSE;
+    bool err = false;
     for (i = 1; i < pa.size(); i++) {
 	QPoint p = pa.at( i );
 	double r = sqrt( pow( double(p.x() - R), 2.0 ) + pow( double(p.y() - R), 2.0 ) );

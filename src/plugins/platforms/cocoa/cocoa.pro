@@ -66,3 +66,6 @@ contains(QT_CONFIG,release):CONFIG -= debug
 # Acccessibility debug support
 # DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 # include ($$PWD/../../../../util/accessibilityinspector/accessibilityinspector.pri)
+
+# Window debug support
+#DEFINES += QT_COCOA_ENABLE_WINDOW_DEBUG

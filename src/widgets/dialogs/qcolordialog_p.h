@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,7 @@
 
 #include "private/qdialog_p.h"
 #include "qcolordialog.h"
+#include "qsharedpointer.h"
 
 #ifndef QT_NO_COLORDIALOG
 
@@ -75,6 +76,8 @@ class QColorDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QColorDialog)
 
 public:
+    QColorDialogPrivate() : options(new QColorDialogOptions) {}
+
     QPlatformColorDialogHelper *platformColorDialogHelper() const
         { return static_cast<QPlatformColorDialogHelper *>(platformHelper()); }
 
@@ -92,7 +95,6 @@ public:
     void retranslateStrings();
 
     void _q_addCustom();
-    void _q_platformRunNativeAppModalPanel();
 
     void _q_newHsv(int h, int s, int v);
     void _q_newColorTypedIn(QRgb rgb);
@@ -115,7 +117,8 @@ public:
     QColor selectedQColor;
     int nextCust;
     bool smallDisplay;
-    QColorDialog::ColorDialogOptions opts;
+    QSharedPointer<QColorDialogOptions> options;
+
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 
@@ -138,6 +141,7 @@ public:
 #endif
 private:
     virtual void initHelper(QPlatformDialogHelper *h);
+    virtual void helperPrepareShow(QPlatformDialogHelper *h);
 };
 
 #endif // QT_NO_COLORDIALOG

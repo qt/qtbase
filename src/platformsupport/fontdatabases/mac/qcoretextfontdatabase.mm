@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,6 +159,8 @@ static QString familyNameFromPostScriptName(QHash<QString, QString> &psNameToFam
 
 void QCoreTextFontDatabase::populateFontDatabase()
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
     QCFType<CTFontCollectionRef> collection = CTFontCollectionCreateFromAvailableFonts(0);
     if (! collection)
         return;
@@ -242,8 +244,6 @@ void QCoreTextFontDatabase::populateFontDatabase()
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
-
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
     NSDictionary *fallbackDict = [NSDictionary dictionaryWithContentsOfFile: @"/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Resources/DefaultFontFallbacks.plist"];
 

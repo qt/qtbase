@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,8 +69,7 @@ public:
 
     QString toPlainText() const;
 #ifndef QT_NO_TEXTHTMLPARSER
-    QString toHtml() const;
-    QString toHtml(const QByteArray &encoding) const;
+    QString toHtml(const QByteArray &encoding = QByteArray()) const;
 #endif // QT_NO_TEXTHTMLPARSER
 
     static QTextDocumentFragment fromPlainText(const QString &plainText);

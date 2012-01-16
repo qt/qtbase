@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,15 +62,18 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     case TempLocation:
         return QDir::tempPath();
     case CacheLocation:
+    case GenericCacheLocation:
     {
         // http://standards.freedesktop.org/basedir-spec/basedir-spec-0.6.html
         QString xdgCacheHome = QFile::decodeName(qgetenv("XDG_CACHE_HOME"));
         if (xdgCacheHome.isEmpty())
             xdgCacheHome = QDir::homePath() + QLatin1String("/.cache");
-        if (!QCoreApplication::organizationName().isEmpty())
-            xdgCacheHome += QLatin1Char('/') + QCoreApplication::organizationName();
-        if (!QCoreApplication::applicationName().isEmpty())
-            xdgCacheHome += QLatin1Char('/') + QCoreApplication::applicationName();
+        if (type == QStandardPaths::CacheLocation) {
+            if (!QCoreApplication::organizationName().isEmpty())
+                xdgCacheHome += QLatin1Char('/') + QCoreApplication::organizationName();
+            if (!QCoreApplication::applicationName().isEmpty())
+                xdgCacheHome += QLatin1Char('/') + QCoreApplication::applicationName();
+        }
         return xdgCacheHome;
     }
     case DataLocation:

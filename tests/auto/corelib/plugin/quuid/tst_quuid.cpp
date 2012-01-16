@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,7 @@ private slots:
     void fromByteArray();
     void toRfc4122();
     void fromRfc4122();
+    void createUuidV3OrV5();
     void check_QDataStream();
     void isNull();
     void equal();
@@ -76,23 +77,39 @@ private slots:
 
     void hash();
 
+    void qvariant();
+    void qvariant_conversion();
+
 public:
     // Variables
+    QUuid uuidNS;
     QUuid uuidA;
     QUuid uuidB;
+    QUuid uuidC;
+    QUuid uuidD;
 };
 
 void tst_QUuid::initTestCase()
 {
+    //It's NameSpace_DNS in RFC4122
+    //"{6ba7b810-9dad-11d1-80b4-00c04fd430c8}";
+    uuidNS = QUuid(0x6ba7b810, 0x9dad, 0x11d1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8);
+
     //"{fc69b59e-cc34-4436-a43c-ee95d128b8c5}";
-    uuidA = QUuid(0xfc69b59e, 0xcc34 ,0x4436 ,0xa4 ,0x3c ,0xee ,0x95 ,0xd1 ,0x28 ,0xb8 ,0xc5);
+    uuidA = QUuid(0xfc69b59e, 0xcc34, 0x4436, 0xa4, 0x3c, 0xee, 0x95, 0xd1, 0x28, 0xb8, 0xc5);
 
     //"{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
-    uuidB = QUuid(0x1ab6e93a ,0xb1cb ,0x4a87 ,0xba ,0x47 ,0xec ,0x7e ,0x99 ,0x03 ,0x9a ,0x7b);
+    uuidB = QUuid(0x1ab6e93a, 0xb1cb, 0x4a87, 0xba, 0x47, 0xec, 0x7e, 0x99, 0x03, 0x9a, 0x7b);
 
     // chdir to the directory containing our testdata, then refer to it with relative paths
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+
+    //"{3d813cbb-47fb-32ba-91df-831e1593ac29}"; http://www.rfc-editor.org/errata_search.php?rfc=4122&eid=1352
+    uuidC = QUuid(0x3d813cbb, 0x47fb, 0x32ba, 0x91, 0xdf, 0x83, 0x1e, 0x15, 0x93, 0xac, 0x29);
+
+    //"{21f7f8de-8051-5b89-8680-0195ef798b6a}";
+    uuidD = QUuid(0x21f7f8de, 0x8051, 0x5b89, 0x86, 0x80, 0x01, 0x95, 0xef, 0x79, 0x8b, 0x6a);
 }
 
 void tst_QUuid::fromChar()
@@ -159,6 +176,16 @@ void tst_QUuid::fromRfc4122()
     QCOMPARE(uuidA, QUuid::fromRfc4122(QByteArray::fromHex("fc69b59ecc344436a43cee95d128b8c5")));
 
     QCOMPARE(uuidB, QUuid::fromRfc4122(QByteArray::fromHex("1ab6e93ab1cb4a87ba47ec7e99039a7b")));
+}
+
+void tst_QUuid::createUuidV3OrV5()
+{
+    //"www.widgets.com" is also from RFC4122
+    QCOMPARE(uuidC, QUuid::createUuidV3(uuidNS, QByteArray("www.widgets.com")));
+    QCOMPARE(uuidC, QUuid::createUuidV3(uuidNS, QString("www.widgets.com")));
+
+    QCOMPARE(uuidD, QUuid::createUuidV5(uuidNS, QByteArray("www.widgets.com")));
+    QCOMPARE(uuidD, QUuid::createUuidV5(uuidNS, QString("www.widgets.com")));
 }
 
 void tst_QUuid::check_QDataStream()
@@ -327,7 +354,35 @@ void tst_QUuid::hash()
     QCOMPARE(qHash(QUuid(uuidA.toString())), h);
 }
 
+void tst_QUuid::qvariant()
+{
+    QUuid uuid = QUuid::createUuid();
+    QVariant v = QVariant::fromValue(uuid);
+    QVERIFY(!v.isNull());
+    QCOMPARE(v.type(), QVariant::Uuid);
 
+    QUuid uuid2 = v.value<QUuid>();
+    QVERIFY(!uuid2.isNull());
+    QCOMPARE(uuid, uuid2);
+}
+
+void tst_QUuid::qvariant_conversion()
+{
+    QUuid uuid = QUuid::createUuid();
+    QVariant v = QVariant::fromValue(uuid);
+
+    QVERIFY(v.canConvert<QString>());
+    QCOMPARE(v.toString(), uuid.toString());
+    QCOMPARE(v.value<QString>(), uuid.toString());
+    QVERIFY(!v.canConvert<int>());
+    QVERIFY(!v.canConvert<QStringList>());
+
+    // try reverse conversion QString -> QUuid
+    QVariant sv = QVariant::fromValue(uuid.toString());
+    QCOMPARE(sv.type(), QVariant::String);
+    QVERIFY(sv.canConvert<QUuid>());
+    QCOMPARE(sv.value<QUuid>(), uuid);
+}
 
 QTEST_MAIN(tst_QUuid)
 #include "tst_quuid.moc"

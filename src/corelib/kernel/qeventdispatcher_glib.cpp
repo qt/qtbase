@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -509,7 +509,7 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
     }
 }
 
-void QEventDispatcherGlib::registerTimer(int timerId, int interval, QObject *object)
+void QEventDispatcherGlib::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !object) {
@@ -522,7 +522,7 @@ void QEventDispatcherGlib::registerTimer(int timerId, int interval, QObject *obj
 #endif
 
     Q_D(QEventDispatcherGlib);
-    d->timerSource->timerList.registerTimer(timerId, interval, object);
+    d->timerSource->timerList.registerTimer(timerId, interval, timerType, object);
 }
 
 bool QEventDispatcherGlib::unregisterTimer(int timerId)

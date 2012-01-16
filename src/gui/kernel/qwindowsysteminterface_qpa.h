@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,9 +86,8 @@ public:
     static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     struct TouchPoint {
-        TouchPoint() : id(0), isPrimary(false), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
+        TouchPoint() : id(0), pressure(0), state(Qt::TouchPointStationary), flags(0) { }
         int id;                 // for application use
-        bool isPrimary;         // for application use
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
         qreal pressure;         // 0 to 1
@@ -99,9 +98,9 @@ public:
     };
 
     static void registerTouchDevice(QTouchDevice *device);
-    static void handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
+    static void handleTouchEvent(QWindow *w, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchDevice *device,
+    static void handleTouchEvent(QWindow *w, ulong timestamp, QTouchDevice *device,
                                  const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);
@@ -123,10 +122,10 @@ public:
     static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
     // Changes to the screen
-    static void handleScreenOrientationChange(QScreen *screen);
-    static void handleScreenGeometryChange(QScreen *screen);
-    static void handleScreenAvailableGeometryChange(QScreen *screen);
-    static void handleScreenLogicalDotsPerInchChange(QScreen *screen);
+    static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);
+    static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry);
+    static void handleScreenAvailableGeometryChange(QScreen *screen, const QRect &newAvailableGeometry);
+    static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);

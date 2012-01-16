@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,6 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
-#include <QInputContext>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QGraphicsLinearLayout>
@@ -440,7 +439,6 @@ private slots:
     void modality_keyEvents();
     void itemIsInFront();
     void scenePosChange();
-    void updateMicroFocus();
     void textItem_shortcuts();
     void scroll();
     void focusHandling_data();
@@ -10434,86 +10432,6 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 6);
     QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
-}
-
-class MyInputContext : public QInputContext
-{
-public:
-    MyInputContext() : nbUpdates(0) {}
-    ~MyInputContext() {}
-
-    QString identifierName() { return QString(); }
-    QString language() { return QString(); }
-
-    void reset() {}
-
-    bool isComposing() const { return false; }
-
-    void update() { nbUpdates++; }
-
-    bool nbUpdates;
-};
-
-class MyInputWidget : public QGraphicsWidget
-{
-public:
-    MyInputWidget()
-    {
-        setFlag(QGraphicsItem::ItemIsFocusable, true);
-        setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
-    }
-    void mousePressEvent(QGraphicsSceneMouseEvent *event)
-    {
-        event->accept();
-    }
-
-    void doUpdateMicroFocus()
-    {
-        if (QWidget *fw = QApplication::focusWidget()) {
-            if (scene()) {
-                for (int i = 0 ; i < scene()->views().count() ; ++i) {
-                    if (scene()->views().at(i) == fw) {
-                        if (QInputContext *inputContext = fw->inputContext()) {
-                            inputContext->update();
-                        }
-                    }
-                }
-            }
-        }
-    }
-};
-
-void tst_QGraphicsItem::updateMicroFocus()
-{
-#if defined Q_OS_WIN || defined Q_OS_MAC
-    QSKIP("QTBUG-9578");
-#endif
-    QGraphicsScene scene;
-    QWidget parent;
-    QGridLayout layout;
-    parent.setLayout(&layout);
-    QGraphicsView view(&scene);
-    QGraphicsView view2(&scene);
-    layout.addWidget(&view, 0, 0);
-    layout.addWidget(&view2, 0, 1);
-    MyInputContext *ic = new MyInputContext;
-    qApp->setInputContext(ic);
-    MyInputWidget input;
-    input.setPos(0, 0);
-    input.resize(150, 150);
-    scene.addItem(&input);
-    input.setFocus();
-    parent.show();
-    view.setFocus();
-    qApp->setAutoSipEnabled(true);
-    QApplication::setActiveWindow(&parent);
-    QTest::qWaitForWindowShown(&parent);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
-    //We reset the number of updates that happened previously (initialisation)
-    ic->nbUpdates = 0;
-    input.doUpdateMicroFocus();
-    QApplication::processEvents();
-    QTRY_COMPARE(ic->nbUpdates, 1);
 }
 
 void tst_QGraphicsItem::textItem_shortcuts()

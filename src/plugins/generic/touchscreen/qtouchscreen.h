@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,8 +58,9 @@ class QTouchScreenData;
 class QTouchScreenObserver
 {
 public:
-    virtual void touch_configure(int x_min, int x_max, int y_min, int y_max) = 0;
-    virtual void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
+    virtual void touch_configure(int x_min, int x_max, int y_min, int y_max,
+                                 int pressure_min, int pressure_max, const QString &dev_name) = 0;
+    virtual void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
 };
 
 class QTouchScreenHandler : public QObject

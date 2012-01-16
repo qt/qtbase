@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qbasictimer.h"
-#include "qcoreapplication.h"
 #include "qabstracteventdispatcher.h"
+#include "qabstracteventdispatcher_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -106,18 +106,55 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QBasicTimer::start(int msec, QObject *object)
 
-    Starts (or restarts) the timer with a \a msec milliseconds
-    timeout.
+    Starts (or restarts) the timer with a \a msec milliseconds timeout. The
+    timer will be a Qt::CoarseTimer. See Qt::TimerType for information on the
+    different timer types.
 
     The given \a object will receive timer events.
 
-    \sa stop() isActive() QObject::timerEvent()
+    \sa stop() isActive() QObject::timerEvent() Qt::CoarseTimer
  */
 void QBasicTimer::start(int msec, QObject *obj)
 {
-   stop();
-   if (obj)
-       id = obj->startTimer(msec);
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    if (!eventDispatcher) {
+        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
+        return;
+    }
+    if (id) {
+        eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
+    }
+    id = 0;
+    if (obj)
+        id = eventDispatcher->registerTimer(msec, Qt::CoarseTimer, obj);
+}
+
+/*!
+    \overload
+
+    Starts (or restarts) the timer with a \a msec milliseconds timeout and the
+    given \a timerType. See Qt::TimerType for information on the different
+    timer types.
+
+    The given \a object will receive timer events.
+
+    \sa stop() isActive() QObject::timerEvent() Qt::TimerType
+ */
+void QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
+{
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    if (!eventDispatcher) {
+        qWarning("QBasicTimer::start: QBasicTimer can only be used with threads started with QThread");
+        return;
+    }
+    if (id) {
+        eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
+    }
+    id = 0;
+    if (obj)
+        id = eventDispatcher->registerTimer(msec, timerType, obj);
 }
 
 /*!
@@ -131,6 +168,7 @@ void QBasicTimer::stop()
         QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
         if (eventDispatcher)
             eventDispatcher->unregisterTimer(id);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
     }
     id = 0;
 }

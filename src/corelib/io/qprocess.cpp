@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -471,7 +471,7 @@ void QProcessPrivate::Channel::clear()
     read the standard output by calling read(), readLine(), and
     getChar(). Because it inherits QIODevice, QProcess can also be
     used as an input source for QXmlReader, or for generating data to
-    be uploaded using QFtp.
+    be uploaded using QNetworkAccessManager.
 
     \note On Windows CE and Symbian, reading and writing to a process
     is not supported.
@@ -616,6 +616,14 @@ void QProcessPrivate::Channel::clear()
     running process onto the main process. Anything the child process
     writes to its standard output and standard error will be written
     to the standard output and standard error of the main process.
+
+    \note Windows intentionally suppresses output from GUI-only
+    applications to inherited consoles.
+    This does \e not apply to output redirected to files or pipes.
+    To forward the output of GUI-only applications on the console
+    nonetheless, you must use SeparateChannels and do the forwarding
+    yourself by reading the output and writing it to the appropriate
+    output channels.
 
     \sa setProcessChannelMode()
 */
@@ -2271,7 +2279,7 @@ QT_END_INCLUDE_NAMESPACE
     However, note that repeated calls to this function will recreate the
     list of environment variables, which is a non-trivial operation.
 
-    \note For new code, it is recommended to use QProcessEvironment::systemEnvironment()
+    \note For new code, it is recommended to use QProcessEnvironment::systemEnvironment()
 
     \sa QProcessEnvironment::systemEnvironment(), environment(), setEnvironment()
 */

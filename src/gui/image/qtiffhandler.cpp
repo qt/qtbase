@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -496,13 +496,13 @@ bool QTiffHandler::write(const QImage &image)
             }
             //// write the color table
             // allocate the color tables
-            uint16 *redTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
-            uint16 *greenTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
-            uint16 *blueTable = static_cast<uint16 *>(qMalloc(256 * sizeof(uint16)));
+            uint16 *redTable = static_cast<uint16 *>(malloc(256 * sizeof(uint16)));
+            uint16 *greenTable = static_cast<uint16 *>(malloc(256 * sizeof(uint16)));
+            uint16 *blueTable = static_cast<uint16 *>(malloc(256 * sizeof(uint16)));
             if (!redTable || !greenTable || !blueTable) {
-                qFree(redTable);
-                qFree(greenTable);
-                qFree(blueTable);
+                free(redTable);
+                free(greenTable);
+                free(blueTable);
                 TIFFClose(tiff);
                 return false;
             }
@@ -519,9 +519,9 @@ bool QTiffHandler::write(const QImage &image)
 
             const bool setColorTableSuccess = TIFFSetField(tiff, TIFFTAG_COLORMAP, redTable, greenTable, blueTable);
 
-            qFree(redTable);
-            qFree(greenTable);
-            qFree(blueTable);
+            free(redTable);
+            free(greenTable);
+            free(blueTable);
 
             if (!setColorTableSuccess) {
                 TIFFClose(tiff);

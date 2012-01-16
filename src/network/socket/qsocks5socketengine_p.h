@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,11 +70,11 @@ public:
     ~QSocks5SocketEngine();
 
     bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
-    bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
+    bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
 
     void setProxy(const QNetworkProxy &networkProxy);
 
-    int socketDescriptor() const;
+    qintptr socketDescriptor() const;
 
     bool isValid() const;
 
@@ -261,7 +261,7 @@ public:
 
     bool readNotificationEnabled, writeNotificationEnabled, exceptNotificationEnabled;
 
-    int socketDescriptor;
+    qintptr socketDescriptor;
 
     QSocks5Data *data;
     QSocks5ConnectData *connectData;
@@ -290,7 +290,7 @@ class Q_AUTOTEST_EXPORT QSocks5SocketEngineHandler : public QSocketEngineHandler
 public:
     virtual QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType,
                                                       const QNetworkProxy &, QObject *parent);
-    virtual QAbstractSocketEngine *createSocketEngine(int socketDescripter, QObject *parent);
+    virtual QAbstractSocketEngine *createSocketEngine(qintptr socketDescriptor, QObject *parent);
 };
 
 

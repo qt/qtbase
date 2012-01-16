@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -243,7 +243,6 @@ static const Keyword keywords[] = {
     { "Q_SLOTS", "Q_SLOTS_TOKEN" },
     { "Q_PRIVATE_SLOT", "Q_PRIVATE_SLOT_TOKEN" },
     { "QT_MOC_COMPAT", "Q_MOC_COMPAT_TOKEN" },
-    { "QT3_SUPPORT", "Q_QT3_SUPPORT_TOKEN" },
     { "Q_INVOKABLE", "Q_INVOKABLE_TOKEN" },
     { "Q_SIGNAL", "Q_SIGNAL_TOKEN" },
     { "Q_SLOT", "Q_SLOT_TOKEN" },

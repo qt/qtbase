@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,6 +57,7 @@
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
+#include <private/qscreen_p.h>
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
@@ -68,7 +69,6 @@
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
-#include "private/qkeymapper_p.h"
 #include "private/qcursor_p.h"
 #include "private/qdnd_p.h"
 #include <private/qplatformthemefactory_qpa_p.h>
@@ -113,6 +113,7 @@ static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
+QTouchDevice *QGuiApplicationPrivate::m_fakeTouchDevice = 0;
 
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
@@ -186,6 +187,7 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
       inputPanel(0)
 {
     self = this;
+    application_type = QCoreApplication::GuiClient;
 }
 
 QWindow *QGuiApplication::focusWindow()
@@ -333,6 +335,16 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+
+    // On Mac, look inside the application bundle for the platform plugin.
+    // TODO (msorvig): Create proper cross-platform solution for loading
+    // deployed platform plugins
+#ifdef Q_OS_MAC
+    if (platformPluginPath.isEmpty()) {
+        platformPluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
+    }
+#endif
+
     QByteArray platformName;
 #ifdef QT_QPA_DEFAULT_PLATFORM_NAME
     platformName = QT_QPA_DEFAULT_PLATFORM_NAME;
@@ -678,7 +690,38 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 cursors.at(i).data()->pointerEvent(ev);
 #endif
         QGuiApplication::sendSpontaneousEvent(window, &ev);
-        return;
+        if (!e->synthetic && !ev.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents)) {
+            if (!m_fakeTouchDevice) {
+                m_fakeTouchDevice = new QTouchDevice;
+                QWindowSystemInterface::registerTouchDevice(m_fakeTouchDevice);
+            }
+            QList<QWindowSystemInterface::TouchPoint> points;
+            QWindowSystemInterface::TouchPoint point;
+            point.id = 1;
+            point.area = QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4);
+
+            // only translate left button related events to
+            // avoid strange touch event sequences when several
+            // buttons are pressed
+            if (type == QEvent::MouseButtonPress && button == Qt::LeftButton) {
+                point.state = Qt::TouchPointPressed;
+            } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
+                point.state = Qt::TouchPointReleased;
+            } else if (type == QEvent::MouseMove && (buttons & Qt::LeftButton)) {
+                point.state = Qt::TouchPointMoved;
+            } else {
+                return;
+            }
+
+            points << point;
+
+            QEvent::Type type;
+            QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+
+            QWindowSystemInterfacePrivate::TouchEvent fake(window, e->timestamp, type, m_fakeTouchDevice, touchPoints, e->modifiers);
+            fake.synthetic = true;
+            processTouchEvent(&fake);
+        }
     }
 }
 
@@ -742,9 +785,6 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
-    if (!e->activated)
-        return;
-
     QWindow *previous = QGuiApplicationPrivate::focus_window;
     QGuiApplicationPrivate::focus_window = e->activated.data();
 
@@ -754,10 +794,18 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
+    } else {
+        QEvent appActivate(QEvent::ApplicationActivate);
+        qApp->sendSpontaneousEvent(qApp, &appActivate);
     }
 
-    QFocusEvent focusIn(QEvent::FocusIn);
-    QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+    if (QGuiApplicationPrivate::focus_window) {
+        QFocusEvent focusIn(QEvent::FocusIn);
+        QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+    } else {
+        QEvent appActivate(QEvent::ApplicationDeactivate);
+        qApp->sendSpontaneousEvent(qApp, &appActivate);
+    }
 
     if (self)
         self->notifyActiveWindowChange(previous);
@@ -822,6 +870,18 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
 }
 
+Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)
+{
+    return qHash(k.device) + k.touchPointId;
+}
+
+Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey &a,
+                             const QGuiApplicationPrivate::ActiveTouchPointsKey &b)
+{
+    return a.device == b.device
+            && a.touchPointId == b.touchPointId;
+}
+
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
     QWindow *window = e->window.data();
@@ -839,13 +899,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // update state
         QWeakPointer<QWindow> w;
         QTouchEvent::TouchPoint previousTouchPoint;
+        ActiveTouchPointsKey touchInfoKey(e->device, touchPoint.id());
+        ActiveTouchPointsValue &touchInfo = d->activeTouchPoints[touchInfoKey];
         switch (touchPoint.state()) {
         case Qt::TouchPointPressed:
             if (e->device->type() == QTouchDevice::TouchPad) {
                 // on touch-pads, send all touch points to the same widget
-                w = d->windowForTouchPointId.isEmpty()
+                w = d->activeTouchPoints.isEmpty()
                     ? QWeakPointer<QWindow>()
-                    : d->windowForTouchPointId.constBegin().value();
+                    : d->activeTouchPoints.constBegin().value().window;
             }
 
             if (!w) {
@@ -857,7 +919,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 w = window;
             }
 
-            d->windowForTouchPointId[touchPoint.id()] = w;
+            touchInfo.window = w;
             touchPoint.d->startScreenPos = touchPoint.screenPos();
             touchPoint.d->lastScreenPos = touchPoint.screenPos();
             touchPoint.d->startNormalizedPos = touchPoint.normalizedPos();
@@ -865,14 +927,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.pressure() < qreal(0.))
                 touchPoint.d->pressure = qreal(1.);
 
-            d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
+            touchInfo.touchPoint = touchPoint;
             break;
 
         case Qt::TouchPointReleased:
-            w = d->windowForTouchPointId.take(touchPoint.id());
+            w = touchInfo.window;
             if (!w)
                 continue;
-            previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
+
+            previousTouchPoint = touchInfo.touchPoint;
             touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
             touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
             touchPoint.d->startPos = previousTouchPoint.startPos();
@@ -881,14 +944,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             touchPoint.d->lastNormalizedPos = previousTouchPoint.normalizedPos();
             if (touchPoint.pressure() < qreal(0.))
                 touchPoint.d->pressure = qreal(0.);
+
             break;
 
         default:
-            w = d->windowForTouchPointId.value(touchPoint.id());
+            w = touchInfo.window;
             if (!w)
                 continue;
-            Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
-            previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
+
+            previousTouchPoint = touchInfo.touchPoint;
             touchPoint.d->startScreenPos = previousTouchPoint.startScreenPos();
             touchPoint.d->lastScreenPos = previousTouchPoint.screenPos();
             touchPoint.d->startPos = previousTouchPoint.startPos();
@@ -901,7 +965,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // Stationary points might not be delivered down to the receiving item
             // and get their position transformed, keep the old values instead.
             if (touchPoint.state() != Qt::TouchPointStationary)
-                d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
+                touchInfo.touchPoint = touchPoint;
             break;
         }
 
@@ -914,8 +978,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
         StatesAndTouchPoints &maskAndPoints = windowsNeedingEvents[w.data()];
         maskAndPoints.first |= touchPoint.state();
-        if (touchPoint.isPrimary())
-            maskAndPoints.first |= Qt::TouchPointPrimary;
         maskAndPoints.second.append(touchPoint);
     }
 
@@ -928,7 +990,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         QWindow *w = it.key();
 
         QEvent::Type eventType;
-        switch (it.value().first & Qt::TouchPointStateMask) {
+        switch (it.value().first) {
         case Qt::TouchPointPressed:
             eventType = QEvent::TouchBegin;
             break;
@@ -969,6 +1031,28 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         }
 
         QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+        if (!e->synthetic && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
+            // exclude touchpads as those generate their own mouse events
+            if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
+                Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
+
+                const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().first();
+
+                QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp, touchPoint.pos(), touchPoint.screenPos(), b, e->modifiers);
+                fake.synthetic = true;
+                processMouseEvent(&fake);
+            }
+        }
+    }
+
+    // Remove released points from the hash table only after the event is
+    // delivered. When the receiver is a widget, QApplication will access
+    // activeTouchPoints during delivery and therefore nothing can be removed
+    // before sending the event.
+    for (int i = 0; i < e->points.count(); ++i) {
+        QTouchEvent::TouchPoint touchPoint = e->points.at(i);
+        if (touchPoint.state() == Qt::TouchPointReleased)
+            d->activeTouchPoints.remove(ActiveTouchPointsKey(e->device, touchPoint.id()));
     }
 }
 
@@ -982,6 +1066,8 @@ void QGuiApplicationPrivate::reportScreenOrientationChange(QWindowSystemInterfac
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->currentOrientation = e->orientation;
+
     emit s->currentOrientationChanged(s->currentOrientation());
 
     QScreenOrientationChangeEvent event(s, s->currentOrientation());
@@ -998,6 +1084,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->geometry = e->geometry;
 
     emit s->sizeChanged(s->size());
     emit s->geometryChanged(s->geometry());
@@ -1019,6 +1106,7 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->availableGeometry = e->availableGeometry;
 
     emit s->availableSizeChanged(s->availableSize());
     emit s->availableGeometryChanged(s->availableGeometry());
@@ -1034,6 +1122,7 @@ void QGuiApplicationPrivate::reportLogicalDotsPerInchChange(QWindowSystemInterfa
         return;
 
     QScreen *s = e->screen.data();
+    s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
 
     emit s->logicalDotsPerInchXChanged(s->logicalDotsPerInchX());
     emit s->logicalDotsPerInchYChanged(s->logicalDotsPerInchY());
@@ -1138,6 +1227,16 @@ QPalette QGuiApplication::palette()
     if (!QGuiApplicationPrivate::app_pal)
         QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
     return *QGuiApplicationPrivate::app_pal;
+}
+
+void QGuiApplication::setPalette(const QPalette &pal)
+{
+    if (QGuiApplicationPrivate::app_pal && pal.isCopyOf(*QGuiApplicationPrivate::app_pal))
+        return;
+    if (!QGuiApplicationPrivate::app_pal)
+        QGuiApplicationPrivate::app_pal = new QPalette(pal);
+    else
+        *QGuiApplicationPrivate::app_pal = pal;
 }
 
 QFont QGuiApplication::font()
@@ -1423,26 +1522,24 @@ uint QGuiApplicationPrivate::currentKeyPlatform()
 
 /*!
     \since 4.2
+    \obsolete
 
-    Returns the current keyboard input locale.
+    Returns the current keyboard input locale. Replaced with QInputPanel::locale()
 */
 QLocale QGuiApplication::keyboardInputLocale()
 {
-    if (!QGuiApplicationPrivate::checkInstance("keyboardInputLocale"))
-        return QLocale::c();
-    return qt_keymapper_private()->keyboardInputLocale;
+    return qApp ? qApp->inputPanel()->locale() : QLocale::c();
 }
 
 /*!
     \since 4.2
+    \obsolete
 
-    Returns the current keyboard input direction.
+    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
 */
 Qt::LayoutDirection QGuiApplication::keyboardInputDirection()
 {
-    if (!QGuiApplicationPrivate::checkInstance("keyboardInputDirection"))
-        return Qt::LeftToRight;
-    return qt_keymapper_private()->keyboardInputDirection;
+    return qApp ? qApp->inputPanel()->inputDirection() : Qt::LeftToRight;
 }
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,7 +129,6 @@ QT_BEGIN_NAMESPACE
 Qt::MouseButtons qt_mac_get_buttons(int buttons);
 Qt::MouseButton qt_mac_get_button(EventMouseButton button);
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds = 0.15);
-bool macWindowIsTextured(void * /*OSWindowRef*/ window);
 void macWindowToolbarShow(const QWidget *widget, bool show );
 void macWindowToolbarSet( void * /*OSWindowRef*/ window, void* toolbarRef );
 bool macWindowToolbarIsVisible( void * /*OSWindowRef*/ window );
@@ -140,7 +139,6 @@ void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::H
 void qt_mac_replaceDrawRect(void * /*OSWindowRef */window, QWidgetPrivate *widget);
 void qt_mac_replaceDrawRectOriginal(void * /*OSWindowRef */window, QWidgetPrivate *widget);
 void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show);
-void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm);
 void qt_mac_update_mouseTracking(QWidget *widget);
 OSStatus qt_mac_drawCGImage(CGContextRef cg, const CGRect *inbounds, CGImageRef);
 bool qt_mac_checkForNativeSizeGrip(const QWidget *widget);

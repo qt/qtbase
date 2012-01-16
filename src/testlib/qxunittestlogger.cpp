@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,13 +86,13 @@ void QXunitTestLogger::stopLogging()
     currentLogElement = new QTestElement(QTest::LET_TestSuite);
     currentLogElement->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
 
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", testCounter);
+    qsnprintf(buf, sizeof(buf), "%i", testCounter);
     currentLogElement->addAttribute(QTest::AI_Tests, buf);
 
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", failureCounter);
+    qsnprintf(buf, sizeof(buf), "%i", failureCounter);
     currentLogElement->addAttribute(QTest::AI_Failures, buf);
 
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", errorCounter);
+    qsnprintf(buf, sizeof(buf), "%i", errorCounter);
     currentLogElement->addAttribute(QTest::AI_Errors, buf);
 
     QTestElement *property;
@@ -173,7 +173,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
             failureElement->addAttribute(QTest::AI_File, file);
         else
             failureElement->addAttribute(QTest::AI_File, "");
-        QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
+        qsnprintf(buf, sizeof(buf), "%i", line);
         failureElement->addAttribute(QTest::AI_Line, buf);
         failureElement->addAttribute(QTest::AI_Description, description);
         addTag(failureElement);
@@ -212,7 +212,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
     else
         currentLogElement->addAttribute(QTest::AI_File, "");
 
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
+    qsnprintf(buf, sizeof(buf), "%i", line);
     currentLogElement->addAttribute(QTest::AI_Line, buf);
 
     /*
@@ -235,7 +235,7 @@ void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(result.value).constData());
 
     char buf[100];
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", result.iterations);
+    qsnprintf(buf, sizeof(buf), "%i", result.iterations);
     benchmarkElement->addAttribute(QTest::AI_Iterations, buf);
     currentLogElement->addLogElement(benchmarkElement);
 }
@@ -303,7 +303,7 @@ void QXunitTestLogger::addMessage(MessageTypes type, const char *message, const 
         errorElement->addAttribute(QTest::AI_File, "");
 
     char buf[100];
-    QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
+    qsnprintf(buf, sizeof(buf), "%i", line);
     errorElement->addAttribute(QTest::AI_Line, buf);
 
     currentLogElement->addLogElement(errorElement);

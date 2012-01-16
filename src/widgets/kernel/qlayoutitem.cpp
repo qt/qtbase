@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include "qlayout.h"
 
 #include "qapplication.h"
+#include "qdebug.h"
 #include "qlayoutengine_p.h"
 #include "qmenubar.h"
 #include "qtoolbar.h"
@@ -835,5 +836,14 @@ int QWidgetItemV2::heightForWidth(int width) const
     q_cachedHfws[q_firstCachedHfw] = QSize(width, height);
     return height;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QSizePolicy &p)
+{
+    dbg.nospace() << "QSizePolicy(horizontalPolicy = " << p.horizontalPolicy()
+                  << ", verticalPolicy = " << p.verticalPolicy() << ')';
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -673,8 +673,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         disconnect(d->model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
-        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                   this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+        disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)),
+                   this, SLOT(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
         disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                    this, SLOT(_q_headerDataChanged()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -683,6 +683,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                   this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
@@ -691,6 +693,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(_q_columnsRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_columnsInserted(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+                   this, SLOT(_q_columnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(reset()));
         disconnect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
@@ -709,8 +713,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
     if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         connect(d->model, SIGNAL(destroyed()),
                 this, SLOT(_q_modelDestroyed()));
-        connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+        connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QSet<int>)),
+                this, SLOT(dataChanged(QModelIndex,QModelIndex,QSet<int>)));
         connect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                 this, SLOT(_q_headerDataChanged()));
         connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -721,12 +725,16 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                 this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        connect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         connect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                 this, SLOT(_q_columnsRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                 this, SLOT(_q_columnsInserted(QModelIndex,int,int)));
+        connect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
+                this, SLOT(_q_columnsMoved(QModelIndex,int,int,QModelIndex,int)));
 
         connect(d->model, SIGNAL(modelReset()), this, SLOT(reset()));
         connect(d->model, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
@@ -1658,15 +1666,11 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         QStyleOptionViewItemV4 option = d->viewOptionsV4();
         option.rect = visualRect(index);
         option.state |= (index == currentIndex() ? QStyle::State_HasFocus : QStyle::State_None);
-        bool retval = false;
-        // ### Qt 5: make this a normal function call to a virtual function
-        QMetaObject::invokeMethod(d->delegateForIndex(index), "helpEvent",
-                                  Q_RETURN_ARG(bool, retval),
-                                  Q_ARG(QHelpEvent *, he),
-                                  Q_ARG(QAbstractItemView *, this),
-                                  Q_ARG(QStyleOptionViewItem, option),
-                                  Q_ARG(QModelIndex, index));
-        return retval;
+
+        QAbstractItemDelegate *delegate = d->delegateForIndex(index);
+        if (!delegate)
+            return false;
+        return delegate->helpEvent(he, this, option, index);
     }
     case QEvent::FontChange:
         d->doDelayedItemsLayout(); // the size of the items will change
@@ -3218,7 +3222,7 @@ void QAbstractItemView::update(const QModelIndex &index)
     inclusive. If just one item is changed \a topLeft == \a
     bottomRight.
 */
-void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &)
 {
     // Single item changed
     Q_D(QAbstractItemView);
@@ -4292,6 +4296,7 @@ QPixmap QAbstractItemViewPrivate::renderToPixmap(const QModelIndexList &indexes,
     for (int j = 0; j < paintPairs.count(); ++j) {
         option.rect = paintPairs.at(j).first.translated(-r->topLeft());
         const QModelIndex &current = paintPairs.at(j).second;
+        adjustViewOptionsForIndex(&option, current);
         delegateForIndex(current)->paint(&painter, option, current);
     }
     return pixmap;

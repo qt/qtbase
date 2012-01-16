@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,8 +124,6 @@ public:
 
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode);
-
-    CacheMode cacheMode(); // ### Qt 5: remove me
 
 Q_SIGNALS:
     void started();

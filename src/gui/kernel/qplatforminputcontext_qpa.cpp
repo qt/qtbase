@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include <qplatforminputcontext_qpa.h>
 #include <qguiapplication.h>
 #include <QRect>
+#include "private/qkeymapper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -206,5 +207,26 @@ void QPlatformInputContext::emitInputPanelVisibleChanged()
 {
     emit qApp->inputPanel()->visibleChanged();
 }
+
+QLocale QPlatformInputContext::locale() const
+{
+    return qt_keymapper_private()->keyboardInputLocale;
+}
+
+void QPlatformInputContext::emitLocaleChanged()
+{
+    emit qApp->inputPanel()->localeChanged();
+}
+
+Qt::LayoutDirection QPlatformInputContext::inputDirection() const
+{
+    return qt_keymapper_private()->keyboardInputDirection;
+}
+
+void QPlatformInputContext::emitInputDirectionChanged(Qt::LayoutDirection newDirection)
+{
+    emit qApp->inputPanel()->inputDirectionChanged(newDirection);
+}
+
 
 QT_END_NAMESPACE

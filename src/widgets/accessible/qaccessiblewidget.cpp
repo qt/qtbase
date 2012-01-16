@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -159,6 +159,8 @@ public:
     \ingroup accessibility
     \inmodule QtWidgets
 
+    This class is part of \l {Accessibility for QWidget Applications}.
+
     This class is convenient to use as a base class for custom
     implementations of QAccessibleInterfaces that provide information
     about widget objects.
@@ -188,6 +190,7 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d->asking = 0;
 }
 
+/*! \reimp */
 QWindow *QAccessibleWidget::window() const
 {
     return widget()->windowHandle();
@@ -219,28 +222,6 @@ QObject *QAccessibleWidget::parentObject() const
     if (!parent)
         parent = qApp;
     return parent;
-}
-
-/*! \reimp */
-int QAccessibleWidget::childAt(int x, int y) const
-{
-    QWidget *w = widget();
-    if (!w->isVisible())
-        return -1;
-    QPoint gp = w->mapToGlobal(QPoint(0, 0));
-    if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
-        return -1;
-
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
-        bool found = false;
-        if (childIface->rect().contains(x, y))
-            found = true;
-        delete childIface;
-        if (found)
-            return i + 1;
-    }
-    return 0;
 }
 
 /*! \reimp */
@@ -385,11 +366,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     }
 
     QObject *parent = object()->parent();
-    if (o == parent)
-        return relation | QAccessible::Child;
-
     if (o->parent() == parent) {
-        relation |= QAccessible::Sibling;
         QAccessibleInterface *sibIface = QAccessible::queryAccessibleInterface(o);
         Q_ASSERT(sibIface);
         QRect wg = rect();
@@ -397,7 +374,7 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
         if (wg.intersects(sg)) {
             QAccessibleInterface *pIface = 0;
             pIface = sibIface->parent();
-            if (pIface && !((sibIface->state() | state()) & QAccessible::Invisible)) {
+            if (pIface && !(sibIface->state().invisible | state().invisible)) {
                 int wi = pIface->indexOfChild(this);
                 int si = pIface->indexOfChild(sibIface);
 
@@ -407,31 +384,16 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
                     relation |= QAccessible::Covered;
             }
             delete pIface;
-        } else {
-            QPoint wc = wg.center();
-            QPoint sc = sg.center();
-            if (wc.x() < sc.x())
-                relation |= QAccessible::Left;
-            else if(wc.x() > sc.x())
-                relation |= QAccessible::Right;
-            if (wc.y() < sc.y())
-                relation |= QAccessible::Up;
-            else if (wc.y() > sc.y())
-                relation |= QAccessible::Down;
         }
         delete sibIface;
 
         return relation;
     }
 
-    if (isAncestor(o, object()))
-        return relation | QAccessible::Descendent;
-    if (isAncestor(object(), o))
-        return relation | QAccessible::Ancestor;
-
     return relation;
 }
 
+/*! \reimp */
 QAccessibleInterface *QAccessibleWidget::parent() const
 {
     QObject *parentWidget= widget()->parentWidget();
@@ -440,6 +402,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
     return QAccessible::queryAccessibleInterface(parentWidget);
 }
 
+/*! \reimp */
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
     QWidgetList childList = childWidgets(widget());
@@ -459,132 +422,20 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
     QObject *targetObject = 0;
 
     switch (relation) {
-    // Hierarchical
-    case QAccessible::Self:
-        targetObject = object();
-        break;
-    case QAccessible::Child:
-        qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Child in:" << object()->metaObject()->className();
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    case QAccessible::Ancestor:
-        qWarning() << "QAccessibleWidget::navigate is deprecated for QAccessible::Ancestor in:" << object()->metaObject()->className();
-        *target = parent();
-        return *target ? 0 : -1;
-    case QAccessible::Sibling:
-        {
-            QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parentObject());
-            if (!iface)
-                return -1;
-
-            *target = iface->child(entry - 1);
-            delete iface;
-            if (*target)
-                return 0;
-        }
-        break;
-
-    // Geometrical
-    case QAccessible::Left:
-        // fall through
-    case QAccessible::Right:
-        // fall through
-    case QAccessible::Up:
-        // fall through
-    case QAccessible::Down:
-    {
-        QAccessibleInterface *pIface = parent();
-        if (!pIface)
-            return -1;
-
-        QRect startg = rect();
-        QPoint startc = startg.center();
-        QAccessibleInterface *candidate = 0;
-        int mindist = 100000;
-        int sibCount = pIface->childCount();
-        for (int i = 0; i < sibCount; ++i) {
-            QAccessibleInterface *sibling = 0;
-            sibling = pIface->child(i);
-            Q_ASSERT(sibling);
-            if ((relationTo(sibling) & QAccessible::Self) || (sibling->state() & QAccessible::Invisible)) {
-                //ignore ourself and invisible siblings
-                delete sibling;
-                continue;
-            }
-
-            QRect sibg = sibling->rect();
-            QPoint sibc = sibg.center();
-            QPoint sibp;
-            QPoint startp;
-            QPoint distp;
-            switch (relation) {
-            case QAccessible::Left:
-                startp = QPoint(startg.left(), startg.top() + startg.height() / 2);
-                sibp = QPoint(sibg.right(), sibg.top() + sibg.height() / 2);
-                if (QPoint(sibc - startc).x() >= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Right:
-                startp = QPoint(startg.right(), startg.top() + startg.height() / 2);
-                sibp = QPoint(sibg.left(), sibg.top() + sibg.height() / 2);
-                if (QPoint(sibc - startc).x() <= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Up:
-                startp = QPoint(startg.left() + startg.width() / 2, startg.top());
-                sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.bottom());
-                if (QPoint(sibc - startc).y() >= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            case QAccessible::Down:
-                startp = QPoint(startg.left() + startg.width() / 2, startg.bottom());
-                sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.top());
-                if (QPoint(sibc - startc).y() <= 0) {
-                    delete sibling;
-                    continue;
-                }
-                distp = sibp - startp;
-                break;
-            default:
-                break;
-            }
-
-            int dist = (int)qSqrt((qreal)distp.x() * distp.x() + distp.y() * distp.y());
-            if (dist < mindist) {
-                delete candidate;
-                candidate = sibling;
-                mindist = dist;
-            } else {
-                delete sibling;
-            }
-        }
-        delete pIface;
-        *target = candidate;
-        if (*target)
-            return 0;
-    }
-        break;
     case QAccessible::Covers:
         if (entry > 0) {
-            QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
+            QAccessibleInterface *pIface = parent();
             if (!pIface)
                 return -1;
 
             QRect r = rect();
             int sibCount = pIface->childCount();
             QAccessibleInterface *sibling = 0;
-            for (int i = pIface->indexOfChild(this) + 1; i <= sibCount && entry; ++i) {
+            // FIXME: this code looks very suspicious
+            // why start at this index?
+            for (int i = pIface->indexOfChild(this) + 2; i <= sibCount && entry; ++i) {
                 sibling = pIface->child(i - 1);
-                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
+                if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -611,10 +462,11 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
             QRect r = rect();
             int index = pIface->indexOfChild(this);
             QAccessibleInterface *sibling = 0;
-            for (int i = 1; i < index && entry; ++i) {
-                sibling = pIface->child(i - 1);
+            // FIXME: why end at index?
+            for (int i = 0; i < index && entry; ++i) {
+                sibling = pIface->child(i);
                 Q_ASSERT(sibling);
-                if (!sibling || (sibling->state() & QAccessible::Invisible)) {
+                if (!sibling || (sibling->state().invisible)) {
                     delete sibling;
                     sibling = 0;
                     continue;
@@ -746,10 +598,7 @@ int QAccessibleWidget::childCount() const
 int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     QWidgetList cl = childWidgets(widget());
-    int index = cl.indexOf(qobject_cast<QWidget *>(child->object()));
-    if (index != -1)
-        ++index;
-    return index;
+    return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }
 
 // from qwidget.cpp
@@ -808,6 +657,7 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
     return str;
 }
 
+/*! \reimp */
 QStringList QAccessibleWidget::actionNames() const
 {
     QStringList names;
@@ -818,6 +668,7 @@ QStringList QAccessibleWidget::actionNames() const
     return names;
 }
 
+/*! \reimp */
 void QAccessibleWidget::doAction(const QString &actionName)
 {
     if (!widget()->isEnabled())
@@ -830,6 +681,7 @@ void QAccessibleWidget::doAction(const QString &actionName)
     }
 }
 
+/*! \reimp */
 QStringList QAccessibleWidget::keyBindingsForAction(const QString & /* actionName */) const
 {
     return QStringList();
@@ -844,37 +696,40 @@ QAccessible::Role QAccessibleWidget::role() const
 /*! \reimp */
 QAccessible::State QAccessibleWidget::state() const
 {
-    QAccessible::State state = QAccessible::Normal;
+    QAccessible::State state;
 
     QWidget *w = widget();
     if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state |= QAccessible::Invisible;
+        state.invisible = true;
     if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state |= QAccessible::Focusable;
+        state.focusable = true;
     if (w->hasFocus())
-        state |= QAccessible::Focused;
+        state.focused = true;
     if (!w->isEnabled())
-        state |= QAccessible::Unavailable;
+        state.disabled = true;
     if (w->isWindow()) {
         if (w->windowFlags() & Qt::WindowSystemMenuHint)
-            state |= QAccessible::Movable;
+            state.movable = true;
         if (w->minimumSize() != w->maximumSize())
-            state |= QAccessible::Sizeable;
+            state.sizeable = true;
     }
 
     return state;
 }
 
+/*! \reimp */
 QColor QAccessibleWidget::foregroundColor() const
 {
     return widget()->palette().color(widget()->foregroundRole());
 }
 
+/*! \reimp */
 QColor QAccessibleWidget::backgroundColor() const
 {
     return widget()->palette().color(widget()->backgroundRole());
 }
 
+/*! \reimp */
 void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ActionInterface)

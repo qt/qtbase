@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,6 +168,10 @@ protected:
     void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
+
+    virtual void sslConfigurationImplementation(QSslConfiguration &) const;
+    virtual void setSslConfigurationImplementation(const QSslConfiguration &);
+    virtual void ignoreSslErrorsImplementation(const QList<QSslError> &);
 
 private:
     Q_DECLARE_PRIVATE(QNetworkReply)

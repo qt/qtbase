@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1090,37 +1090,6 @@
     return 0;
   }
 
-
-  static int
-  gray_line_to( const QT_FT_Vector*  to,
-                PWorker           worker )
-  {
-    gray_render_line( worker, UPSCALE( to->x ), UPSCALE( to->y ) );
-    return 0;
-  }
-
-
-  static int
-  gray_conic_to( const QT_FT_Vector*  control,
-                 const QT_FT_Vector*  to,
-                 PWorker           worker )
-  {
-    gray_render_conic( worker, control, to );
-    return 0;
-  }
-
-
-  static int
-  gray_cubic_to( const QT_FT_Vector*  control1,
-                 const QT_FT_Vector*  control2,
-                 const QT_FT_Vector*  to,
-                 PWorker           worker )
-  {
-    gray_render_cubic( worker, control1, control2, to );
-    return 0;
-  }
-
-
   static void
   gray_render_span( int             count,
                     const QT_FT_Span*  spans,
@@ -1464,9 +1433,7 @@
             vec.x = SCALED( point->x );
             vec.y = SCALED( point->y );
 
-            error = gray_line_to( &vec, user );
-            if ( error )
-              goto Exit;
+            gray_render_line(user, UPSCALE(vec.x), UPSCALE(vec.y));
             continue;
           }
 
@@ -1491,10 +1458,7 @@
 
               if ( tag == QT_FT_CURVE_TAG_ON )
               {
-                error = gray_conic_to( &v_control, &vec,
-                                                  user );
-                if ( error )
-                  goto Exit;
+                gray_render_conic(user, &v_control, &vec);
                 continue;
               }
 
@@ -1504,17 +1468,12 @@
               v_middle.x = ( v_control.x + vec.x ) / 2;
               v_middle.y = ( v_control.y + vec.y ) / 2;
 
-              error = gray_conic_to( &v_control, &v_middle,
-                                                user );
-              if ( error )
-                goto Exit;
-
+              gray_render_conic(user, &v_control, &v_middle);
               v_control = vec;
               goto Do_Conic;
             }
 
-            error = gray_conic_to( &v_control, &v_start,
-                                              user );
+            gray_render_conic(user, &v_control, &v_start);
             goto Close;
           }
 
@@ -1544,25 +1503,20 @@
               vec.x = SCALED( point->x );
               vec.y = SCALED( point->y );
 
-              error = gray_cubic_to( &vec1, &vec2, &vec, user );
-              if ( error )
-                goto Exit;
+              gray_render_cubic(user, &vec1, &vec2, &vec);
               continue;
             }
 
-            error = gray_cubic_to( &vec1, &vec2, &v_start, user );
+            gray_render_cubic(user, &vec1, &vec2, &v_start);
             goto Close;
           }
         }
       }
 
       /* close the contour with a line segment */
-      error = gray_line_to( &v_start, user );
+      gray_render_line(user, UPSCALE(v_start.x), UPSCALE(v_start.y));
 
    Close:
-      if ( error )
-        goto Exit;
-
       first = last + 1;
     }
 

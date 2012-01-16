@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,8 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , reconnectAttempts(2)
     , authMethod(QAuthenticatorPrivate::None)
     , proxyAuthMethod(QAuthenticatorPrivate::None)
+    , authenticationCredentialsSent(false)
+    , proxyCredentialsSent(false)
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif
@@ -549,6 +551,14 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 
         // reset state
         pipeliningSupported = PipeliningSupportUnknown;
+        authenticationCredentialsSent = false;
+        proxyCredentialsSent = false;
+        authenticator.detach();
+        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(authenticator);
+        priv->hasFailed = false;
+        proxyAuthenticator.detach();
+        priv = QAuthenticatorPrivate::getPrivate(proxyAuthenticator);
+        priv->hasFailed = false;
 
         // This workaround is needed since we use QAuthenticator for NTLM authentication. The "phase == Done"
         // is the usual criteria for emitting authentication signals. The "phase" is set to "Done" when the
@@ -556,7 +566,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         // check the "phase" for generating the Authorization header. NTLM authentication is a two stage
         // process & needs the "phase". To make sure the QAuthenticator uses the current username/password
         // the phase is reset to Start.
-        QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(authenticator);
+        priv = QAuthenticatorPrivate::getPrivate(authenticator);
         if (priv && priv->phase == QAuthenticatorPrivate::Done)
             priv->phase = QAuthenticatorPrivate::Start;
         priv = QAuthenticatorPrivate::getPrivate(proxyAuthenticator);
@@ -580,8 +590,11 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 value = connection->d_func()->predictNextRequest().headerField("user-agent");
             else
                 value = request.headerField("user-agent");
-            if (!value.isEmpty())
-                socket->proxy().setRawHeader("User-Agent", value);
+            if (!value.isEmpty()) {
+                QNetworkProxy proxy(socket->proxy());
+                proxy.setRawHeader("User-Agent", value); //detaches
+                socket->setProxy(proxy);
+            }
         }
 #endif
         if (ssl) {
@@ -780,6 +793,9 @@ void QHttpNetworkConnectionChannel::handleStatus()
                     closeAndResendCurrentRequest();
                     QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
                 }
+            } else {
+                //authentication cancelled, close the channel.
+                close();
             }
         } else {
             emit reply->headerChanged();
@@ -951,6 +967,8 @@ void QHttpNetworkConnectionChannel::_q_connected()
     // For the Happy Eyeballs we need to check if this is the first channel to connect.
     if (!pendingEncrypt) {
         if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+            if (connection->d_func()->delayedConnectionTimer.isActive())
+                connection->d_func()->delayedConnectionTimer.stop();
             if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
             else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)

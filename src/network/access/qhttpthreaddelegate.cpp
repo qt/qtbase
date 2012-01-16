@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -364,7 +364,7 @@ void QHttpThreadDelegate::readyReadSlot()
 void QHttpThreadDelegate::finishedSlot()
 {
     if (!httpReply) {
-        qWarning() << "QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        qWarning("QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.");
         return;
     }
 #ifdef QHTTPTHREADDELEGATE_DEBUG
@@ -420,7 +420,7 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
 void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
     if (!httpReply) {
-        qWarning() << "QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        qWarning("QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.");
         return;
     }
 #ifdef QHTTPTHREADDELEGATE_DEBUG

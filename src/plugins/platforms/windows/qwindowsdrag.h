@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,10 +105,17 @@ public:
 
     bool dragBeingCancelled() const { return m_dragBeingCancelled; }
 
+    QPixmap defaultCursor(Qt::DropAction action) const;
+
 private:
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject;
     bool m_dragBeingCancelled;
+
+    mutable QPixmap m_copyDragCursor;
+    mutable QPixmap m_moveDragCursor;
+    mutable QPixmap m_linkDragCursor;
+    mutable QPixmap m_ignoreDragCursor;
 };
 
 QT_END_NAMESPACE

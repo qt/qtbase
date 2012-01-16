@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qregexp.h>
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #   include <QtNetwork/qtcpsocket.h>
 #   include <QtNetwork/qsslerror.h>
 #endif
@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 class QDir;
 class QSslCipher;
@@ -87,8 +87,11 @@ public:
     // Autostarting the SSL client handshake.
     void connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void connectToHostEncrypted(const QString &hostName, quint16 port, const QString &sslPeerName, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
-    bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
+    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
+
+    void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
+    void disconnectFromHost();
 
     // ### Qt 5: Make virtual
     void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
@@ -193,11 +196,6 @@ Q_SIGNALS:
     void modeChanged(QSslSocket::SslMode newMode);
     void encryptedBytesWritten(qint64 totalBytes);
 
-protected Q_SLOTS:
-    void connectToHostImplementation(const QString &hostName, quint16 port,
-                                     OpenMode openMode);
-    void disconnectFromHostImplementation();
-
 protected:
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
@@ -217,7 +215,7 @@ private:
     friend class QSslSocketBackendPrivate;
 };
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QT_END_NAMESPACE
 

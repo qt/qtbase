@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,6 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
-    int childAt(int x, int y) const;
     QRect rect() const;
 
     QAccessibleInterface *parent() const;

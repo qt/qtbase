@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,13 +43,11 @@
 
 QT_BEGIN_NAMESPACE
 
-static void *qt_gl_getProcAddress_search
+static QFunctionPointer qt_gl_getProcAddress_search
     (QGLContext *ctx, const char *name1, const char *name2,
      const char *name3, const char *name4)
 {
-    void *addr;
-
-    addr = ctx->getProcAddress(QLatin1String(name1));
+    QFunctionPointer addr = ctx->getProcAddress(QLatin1String(name1));
     if (addr)
         return addr;
 

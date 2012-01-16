@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -468,7 +468,7 @@ void QItemDelegate::paint(QPainter *painter,
     value = index.data(Qt::CheckStateRole);
     if (value.isValid()) {
         checkState = static_cast<Qt::CheckState>(value.toInt());
-        checkRect = check(opt, opt.rect, value);
+        checkRect = doCheck(opt, opt.rect, value);
     }
 
     // do the layout
@@ -625,7 +625,7 @@ void QItemDelegate::updateEditorGeometry(QWidget *editor,
     QString text = QItemDelegatePrivate::replaceNewLine(index.data(Qt::DisplayRole).toString());
     QRect pixmapRect = QRect(QPoint(0, 0), option.decorationSize).intersected(pixmap.rect());
     QRect textRect = textRectangle(0, option.rect, option.font, text);
-    QRect checkRect = check(option, textRect, index.data(Qt::CheckStateRole));
+    QRect checkRect = doCheck(option, textRect, index.data(Qt::CheckStateRole));
     QStyleOptionViewItem opt = option;
     opt.showDecorationSelected = true; // let the editor take up all available space
     doLayout(opt, &checkRect, &pixmapRect, &textRect, false);
@@ -1079,7 +1079,7 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
     Q_D(const QItemDelegate);
     QVariant value = index.data(role);
     if (role == Qt::CheckStateRole)
-        return check(option, option.rect, value);
+        return doCheck(option, option.rect, value);
     if (value.isValid() && !value.isNull()) {
         switch (value.type()) {
         case QVariant::Invalid:
@@ -1109,20 +1109,8 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
 
 /*!
   \internal
-
-  Note that on Mac, if /usr/include/AssertMacros.h is included prior
-  to QItemDelegate, and the application is building in debug mode, the
-  check(assertion) will conflict with QItemDelegate::check.
-
-  To avoid this problem, add
-
-  #ifdef check
-	#undef check
-  #endif
-
-  after including AssertMacros.h
 */
-QRect QItemDelegate::check(const QStyleOptionViewItem &option,
+QRect QItemDelegate::doCheck(const QStyleOptionViewItem &option,
                            const QRect &bounding, const QVariant &value) const
 {
     if (value.isValid()) {
@@ -1280,7 +1268,7 @@ bool QItemDelegate::editorEvent(QEvent *event,
     if ((event->type() == QEvent::MouseButtonRelease)
         || (event->type() == QEvent::MouseButtonDblClick)
         || (event->type() == QEvent::MouseButtonPress)) {
-        QRect checkRect = check(option, option.rect, Qt::Checked);
+        QRect checkRect = doCheck(option, option.rect, Qt::Checked);
         QRect emptyRect;
         doLayout(option, &checkRect, &emptyRect, &emptyRect, false);
         QMouseEvent *me = static_cast<QMouseEvent*>(event);

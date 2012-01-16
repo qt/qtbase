@@ -8,8 +8,4 @@ SOURCES += \
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
-wince* {
-    DEFINES += SRCDIR=\\\"\\\"
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-}
+TESTDATA += testfont_bold_italic.ttf  testfont.ttf

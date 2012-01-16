@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,7 +84,7 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
 
-    void registerTimer(int timerId, int interval, QObject *object);
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object);
     bool unregisterTimer(int timerId);
     bool unregisterTimers(QObject *object);
     QList<TimerInfo> registeredTimers(QObject *object) const;
@@ -120,6 +120,7 @@ struct WinTimerInfo {                           // internal timer info
     QObject *dispatcher;
     int timerId;
     int interval;
+    Qt::TimerType timerType;
     QObject *obj;                               // - object to receive events
     bool inTimerEvent;
     int fastTimerId;
@@ -160,7 +161,7 @@ public:
     WinTimerVec timerVec;
     WinTimerDict timerDict;
     void registerTimer(WinTimerInfo *t);
-    void unregisterTimer(WinTimerInfo *t, bool closingDown = false);
+    void unregisterTimer(WinTimerInfo *t);
     void sendTimerEvent(int timerId);
 
     // socket notifiers

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,146 @@
 #include <shlobj.h>
 
 QT_BEGIN_NAMESPACE
+
+// These pixmaps approximate the images in the Windows User Interface Guidelines.
+// XPM
+
+static const char * const moveDragCursorXpmC[] = {
+"11 20 3 1",
+".        c None",
+"a        c #FFFFFF",
+"X        c #000000", // X11 cursor is traditionally black
+"aa.........",
+"aXa........",
+"aXXa.......",
+"aXXXa......",
+"aXXXXa.....",
+"aXXXXXa....",
+"aXXXXXXa...",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+
+/* XPM */
+static const char * const copyDragCursorXpmC[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXaaaaaXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+/* XPM */
+static const char * const linkDragCursorXpmC[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+".............aXXXXXXXXXa",
+".............aXXXaaaaXXa",
+".............aXXXXaaaXXa",
+".............aXXXaaaaXXa",
+".............aXXaaaXaXXa",
+".............aXXaaXXXXXa",
+".............aXXaXXXXXXa",
+".............aXXXaXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+static const char * const ignoreDragCursorXpmC[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa.....XXXX.....",
+".......aXXa..XXaaaaXX...",
+".......aXXa.XaaaaaaaaX..",
+"........aa.XaaaXXXXaaaX.",
+"...........XaaaaX..XaaX.",
+"..........XaaXaaaX..XaaX",
+"..........XaaXXaaaX.XaaX",
+"..........XaaX.XaaaXXaaX",
+"..........XaaX..XaaaXaaX",
+"...........XaaX..XaaaaX.",
+"...........XaaaXXXXaaaX.",
+"............XaaaaaaaaX..",
+".............XXaaaaXX...",
+"...............XXXX....."};
 
 /*!
     \class QWindowsDropMimeData
@@ -139,7 +279,7 @@ static inline Qt::KeyboardModifiers toQtKeyboardModifiers(DWORD keyState)
 class QWindowsOleDropSource : public IDropSource
 {
 public:
-    QWindowsOleDropSource();
+    explicit QWindowsOleDropSource(QWindowsDrag *drag);
     virtual ~QWindowsOleDropSource();
 
     void createCursors();
@@ -158,6 +298,7 @@ private:
 
     inline void clearCursors();
 
+    QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
     Qt::DropAction m_currentAction;
     ActionCursorMap m_cursors;
@@ -165,8 +306,8 @@ private:
     ULONG m_refs;
 };
 
-QWindowsOleDropSource::QWindowsOleDropSource() :
-    m_currentButtons(Qt::NoButton), m_currentAction(Qt::IgnoreAction),
+QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag) :
+    m_drag(drag), m_currentButtons(Qt::NoButton), m_currentAction(Qt::IgnoreAction),
     m_refs(1)
 {
     if (QWindowsContext::verboseOLE)
@@ -196,7 +337,14 @@ void QWindowsOleDropSource::createCursors()
         actions << Qt::IgnoreAction;
     const QPoint hotSpot = manager->object->hotSpot();
     for (int cnum = 0; cnum < actions.size(); ++cnum) {
-        const QPixmap cpm = manager->dragCursor(actions.at(cnum));
+        const Qt::DropAction action = actions.at(cnum);
+        QPixmap cpm = manager->dragCursor(action);
+        if (cpm.isNull())
+            cpm = m_drag->defaultCursor(action);
+        if (cpm.isNull()) {
+            qWarning("%s: Unable to obtain drag cursor for %d.", __FUNCTION__, action);
+            continue;
+        }
         int w = cpm.width();
         int h = cpm.height();
 
@@ -210,13 +358,13 @@ void QWindowsOleDropSource::createCursors()
             h = y2 - y1 + 1;
         }
 
-        const QRect srcRect = pixmap.rect();
-        const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
         const QPoint newHotSpot = hotSpot;
         QPixmap newCursor(w, h);
         if (hasPixmap) {
             newCursor.fill(QColor(0, 0, 0, 0));
             QPainter p(&newCursor);
+            const QRect srcRect = pixmap.rect();
+            const QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
             p.drawPixmap(pmDest, pixmap, srcRect);
             p.drawPixmap(qMax(0,newHotSpot.x()),qMax(0,newHotSpot.y()),cpm);
         } else {
@@ -227,7 +375,7 @@ void QWindowsOleDropSource::createCursors()
         const int hotY = hasPixmap ? qMax(0,newHotSpot.y()) : 0;
 
         if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newCursor, hotX, hotY))
-            m_cursors.insert(actions.at(cnum), sysCursor);
+            m_cursors.insert(action, sysCursor);
     }
     if (QWindowsContext::verboseOLE)
         qDebug("%s %d cursors", __FUNCTION__, m_cursors.size());
@@ -638,6 +786,30 @@ QWindowsDrag::~QWindowsDrag()
 {
 }
 
+QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const
+{
+    switch (action) {
+    case Qt::CopyAction:
+        if (m_copyDragCursor.isNull())
+            m_copyDragCursor = QPixmap(copyDragCursorXpmC);
+        return m_copyDragCursor;
+    case Qt::TargetMoveAction:
+    case Qt::MoveAction:
+        if (m_moveDragCursor.isNull())
+            m_moveDragCursor = QPixmap(moveDragCursorXpmC);
+        return m_moveDragCursor;
+    case Qt::LinkAction:
+        if (m_linkDragCursor.isNull())
+            m_linkDragCursor = QPixmap(linkDragCursorXpmC);
+        return m_linkDragCursor;
+    default:
+        break;
+    }
+    if (m_ignoreDragCursor.isNull())
+        m_ignoreDragCursor = QPixmap(ignoreDragCursorXpmC);
+    return m_ignoreDragCursor;
+}
+
 void QWindowsDrag::startDrag()
 {
     // TODO: Accessibility handling?
@@ -646,7 +818,7 @@ void QWindowsDrag::startDrag()
     m_dragBeingCancelled = false;
 
     DWORD resultEffect;
-    QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource();
+    QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource(this);
     windowDropSource->createCursors();
     QWindowsOleDataObject *dropDataObject = new QWindowsOleDataObject(dropData);
     const  Qt::DropActions possibleActions = dragManager->possible_actions;

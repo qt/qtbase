@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,7 @@
 #include "qvector.h"
 #include "qlocale.h"
 #include "qeasingcurve.h"
+#include "quuid.h"
 #include "qvariant.h"
 #include "qmetatypeswitcher_p.h"
 
@@ -61,6 +62,7 @@
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"
+#  include "qabstractitemmodel.h"
 #endif
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -107,6 +109,7 @@ template<> struct TypeDefiniton<QVariant> { static const bool IsAvailable = fals
 template<> struct TypeDefiniton<QBitArray> { static const bool IsAvailable = false; };
 template<> struct TypeDefiniton<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false; };
@@ -240,6 +243,16 @@ template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false
 */
 
 /*!
+    \enum QMetaType::TypeFlags
+
+    The enum describes attributes of a type supported by QMetaType.
+
+    \value NeedsConstruction This type has non-trivial constructors. If the flag is not set instances can be safely initialized with memset to 0.
+    \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
+    \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
+*/
+
+/*!
     \class QMetaType
     \brief The QMetaType class manages named types in the meta-object system.
 
@@ -296,6 +309,14 @@ public:
     QByteArray typeName;
     int alias;
 };
+
+namespace
+{
+union CheckThatItIsPod
+{   // This should break if QMetaTypeInterface is not a POD type
+    QMetaTypeInterface iface;
+};
+}
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
@@ -415,7 +436,7 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
 {
-    return registerType(typeName, deleter, creator, 0, 0, 0);
+    return registerType(typeName, deleter, creator, 0, 0, 0, TypeFlags());
 }
 
 /*! \internal
@@ -430,7 +451,7 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator,
                             Destructor destructor,
                             Constructor constructor,
-                            int size)
+                            int size, TypeFlags flags)
 {
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct || !typeName || !deleter || !creator)
@@ -454,10 +475,15 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.typeName = normalizedTypeName;
             inf.creator = creator;
             inf.deleter = deleter;
+#ifndef QT_NO_DATASTREAM
+            inf.loadOp = 0;
+            inf.saveOp = 0;
+#endif
             inf.alias = -1;
             inf.constructor = constructor;
             inf.destructor = destructor;
             inf.size = size;
+            inf.flags = flags;
             idx = ct->size() + User;
             ct->append(inf);
         }
@@ -765,6 +791,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
             return false;
         qMetaTypeWidgetsHelper[type - FirstWidgetsType].saveOp(stream, data);
         break;
+    case QMetaType::QUuid:
+        stream << *static_cast<const NS(QUuid)*>(data);
+        break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         if (!ct)
@@ -972,6 +1001,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
             return false;
         qMetaTypeWidgetsHelper[type - FirstWidgetsType].loadOp(stream, data);
         break;
+    case QMetaType::QUuid:
+        stream >> *static_cast< NS(QUuid)*>(data);
+        break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         if (!ct)
@@ -1092,6 +1124,12 @@ void *QMetaType::create(int type, const void *copy)
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
 #endif
+        case QMetaType::QUuid:
+            return new NS(QUuid)(*static_cast<const NS(QUuid)*>(copy));
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QModelIndex:
+            return new NS(QModelIndex)(*static_cast<const NS(QModelIndex)*>(copy));
+#endif
         case QMetaType::Void:
             return 0;
         default:
@@ -1188,6 +1226,12 @@ void *QMetaType::create(int type, const void *copy)
 #ifndef QT_BOOTSTRAPPED
         case QMetaType::QEasingCurve:
             return new NS(QEasingCurve);
+#endif
+        case QMetaType::QUuid:
+            return new NS(QUuid);
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QModelIndex:
+            return new NS(QModelIndex);
 #endif
         case QMetaType::Void:
             return 0;
@@ -1356,6 +1400,14 @@ void QMetaType::destroy(int type, void *data)
         delete static_cast< NS(QEasingCurve)* >(data);
         break;
 #endif
+    case QMetaType::QUuid:
+        delete static_cast< NS(QUuid)* >(data);
+        break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QModelIndex:
+        delete static_cast< NS(QModelIndex)* >(data);
+        break;
+#endif
     case QMetaType::Void:
         break;
     default: {
@@ -1387,9 +1439,8 @@ void QMetaType::destroy(int type, void *data)
 }
 
 namespace {
-template<class Filter>
 class TypeConstructor {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct ConstructorImpl {
         static void *Construct(const int /*type*/, void *where, const T *copy) { return qMetaTypeConstructHelper(where, copy); }
     };
@@ -1398,13 +1449,11 @@ class TypeConstructor {
         static void *Construct(const int type, void *where, const T *copy)
         {
             QMetaType::Constructor ctor = 0;
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
-                Q_ASSERT(qMetaTypeGuiHelper);
+            if (QTypeModuleInfo<T>::IsGui) {
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 ctor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].constructor;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
                 ctor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].constructor;
@@ -1474,15 +1523,14 @@ void *QMetaType::construct(int type, void *where, const void *copy)
 {
     if (!where)
         return 0;
-    TypeConstructor<DefinedTypesFilter> constructor(type, where);
+    TypeConstructor constructor(type, where);
     return QMetaTypeSwitcher::switcher<void*>(constructor, type, copy);
 }
 
 
 namespace {
-template<class Filter>
 class TypeDestructor {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestructorImpl {
         static void Destruct(const int /* type */, T *where) { qMetaTypeDestructHelper(where); }
     };
@@ -1491,13 +1539,11 @@ class TypeDestructor {
         static void Destruct(const int type, void *where)
         {
             QMetaType::Destructor dtor = 0;
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
-                Q_ASSERT(qMetaTypeGuiHelper);
+            if (QTypeModuleInfo<T>::IsGui) {
                 if (!qMetaTypeGuiHelper)
                     return;
                 dtor = qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].destructor;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 if (!qMetaTypeWidgetsHelper)
                     return;
                 dtor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor;
@@ -1550,15 +1596,14 @@ void QMetaType::destruct(int type, void *where)
 {
     if (!where)
         return;
-    TypeDestructor<DefinedTypesFilter> destructor(type);
+    TypeDestructor destructor(type);
     QMetaTypeSwitcher::switcher<void>(destructor, type, where);
 }
 
 
 namespace {
-template<class Filter>
 class SizeOf {
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct SizeOfImpl {
         static int Size(const int) { return sizeof(T); }
     };
@@ -1566,13 +1611,11 @@ class SizeOf {
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
         static int Size(const int type)
         {
-            if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType) {
-                Q_ASSERT(qMetaTypeGuiHelper);
+            if (QTypeModuleInfo<T>::IsGui) {
                 if (!qMetaTypeGuiHelper)
                     return 0;
                 return qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].size;
-            } else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType) {
-                Q_ASSERT(qMetaTypeWidgetsHelper);
+            } else if (QTypeModuleInfo<T>::IsWidget) {
                 if (!qMetaTypeWidgetsHelper)
                     return 0;
                 return qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].size;
@@ -1617,8 +1660,75 @@ private:
 */
 int QMetaType::sizeOf(int type)
 {
-    SizeOf<DefinedTypesFilter> sizeOf(type);
+    SizeOf sizeOf(type);
     return QMetaTypeSwitcher::switcher<int>(sizeOf, type, 0);
+}
+
+namespace {
+class Flags
+{
+    template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
+    struct FlagsImpl
+    {
+        static quint32 Flags(const int)
+        {
+            return (!QTypeInfo<T>::isStatic * QMetaType::MovableType)
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsConstruction)
+                    | (QTypeInfo<T>::isComplex * QMetaType::NeedsDestruction);
+        }
+    };
+    template<typename T>
+    struct FlagsImpl<T, /* IsAcceptedType = */ false>
+    {
+        static quint32 Flags(const int type)
+        {
+            return Flags::undefinedTypeFlags(type);
+        }
+    };
+public:
+    Flags(const int type)
+        : m_type(type)
+    {}
+    template<typename T>
+    quint32 delegate(const T*) { return FlagsImpl<T>::Flags(m_type); }
+    quint32 delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeFlags(m_type); }
+private:
+    const int m_type;
+    static quint32 customTypeFlags(const int type)
+    {
+        const QVector<QCustomTypeInfo> * const ct = customTypes();
+        if (!ct)
+            return 0;
+        QReadLocker locker(customTypesLock());
+        if (ct->count() <= type - QMetaType::User)
+            return 0;
+        return ct->at(type - QMetaType::User).flags;
+    }
+    static quint32 undefinedTypeFlags(const int type);
+};
+
+quint32 Flags::undefinedTypeFlags(const int type)
+{
+    if (type >= QMetaType::FirstGuiType && type <= QMetaType::LastGuiType)
+        return qMetaTypeGuiHelper ? qMetaTypeGuiHelper[type - QMetaType::FirstGuiType].flags : 0;
+    else if (type >= QMetaType::FirstWidgetsType && type <= QMetaType::LastWidgetsType)
+        return qMetaTypeWidgetsHelper ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].flags : 0;
+    return customTypeFlags(type);
+}
+
+}  // namespace
+
+/*!
+    \since 5.0
+
+    Returns flags of the given \a type.
+
+    \sa TypeFlags()
+*/
+QMetaType::TypeFlags QMetaType::typeFlags(int type)
+{
+    Flags flags(type);
+    return static_cast<QMetaType::TypeFlags>(QMetaTypeSwitcher::switcher<quint32>(flags, type, 0));
 }
 
 /*!

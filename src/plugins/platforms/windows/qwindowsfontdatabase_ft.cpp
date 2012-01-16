@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,8 @@
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QFontDatabase>
+
+#include <wchar.h>
 
 static inline QFontDatabase::WritingSystem writingSystemFromScript(const QString &scriptName)
 {

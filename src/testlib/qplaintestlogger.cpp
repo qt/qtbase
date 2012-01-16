@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -257,7 +257,7 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
     const char *bmtag = QTest::benchmarkResult2String();
 
     char buf1[1024];
-    QTest::qt_snprintf(
+    qsnprintf(
         buf1, sizeof(buf1), "%s: %s::%s",
         bmtag,
         QTestResult::currentTestObjectName(),
@@ -267,16 +267,15 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
     bufTag[0] = 0;
     QByteArray tag = result.context.tag.toAscii();
     if (tag.isEmpty() == false) {
-        QTest::qt_snprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
+        qsnprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
     }
 
 
     char fillFormat[8];
     int fillLength = 5;
-    QTest::qt_snprintf(
-        fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
+    qsnprintf(fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
     char fill[1024];
-    QTest::qt_snprintf(fill, sizeof(fill), fillFormat, "");
+    qsnprintf(fill, sizeof(fill), fillFormat, "");
 
     const char * unitText = QTest::benchmarkMetricUnit(result.metric);
 
@@ -285,34 +284,24 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
     QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.value));
 
     char buf2[1024];
-    QTest::qt_snprintf(
-        buf2, sizeof(buf2), "%s %s",
-        resultBuffer,
-        unitText);
+    qsnprintf(buf2, sizeof(buf2), "%s %s", resultBuffer, unitText);
 
     char buf2_[1024];
     QByteArray iterationText = " per iteration";
     Q_ASSERT(result.iterations > 0);
-    QTest::qt_snprintf(
-        buf2_,
-        sizeof(buf2_), "%s",
-        iterationText.data());
+    qsnprintf(buf2_, sizeof(buf2_), "%s", iterationText.data());
 
     char buf3[1024];
     Q_ASSERT(result.iterations > 0);
     QTest::formatResult(resultBuffer, 100, result.value, QTest::countSignificantDigits(result.value));
-    QTest::qt_snprintf(
-        buf3, sizeof(buf3), " (total: %s, iterations: %d)",
-        resultBuffer,
-        result.iterations);
+    qsnprintf(buf3, sizeof(buf3), " (total: %s, iterations: %d)", resultBuffer, result.iterations);
 
     char buf[1024];
 
     if (result.setByMacro) {
-        QTest::qt_snprintf(
-            buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
+        qsnprintf(buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
     } else {
-        QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
+        qsnprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
     }
 
     memcpy(buf, bmtag, strlen(bmtag));
@@ -340,13 +329,12 @@ void QPlainTestLogger::startLogging()
 
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {
-        QTest::qt_snprintf(buf, sizeof(buf), "Testing %s\n",
-                           QTestResult::currentTestObjectName());
+        qsnprintf(buf, sizeof(buf), "Testing %s\n", QTestResult::currentTestObjectName());
     } else {
-        QTest::qt_snprintf(buf, sizeof(buf),
-                           "********* Start testing of %s *********\n"
-                           "Config: Using QTest library " QTEST_VERSION_STR
-                           ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
+        qsnprintf(buf, sizeof(buf),
+                  "********* Start testing of %s *********\n"
+                  "Config: Using QTest library " QTEST_VERSION_STR
+                  ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
     }
     outputMessage(buf);
 }
@@ -355,15 +343,15 @@ void QPlainTestLogger::stopLogging()
 {
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {
-        QTest::qt_snprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped\n",
-                           QTestResult::passCount(), QTestResult::failCount(),
-                           QTestResult::skipCount());
+        qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped\n",
+                  QTestResult::passCount(), QTestResult::failCount(),
+                  QTestResult::skipCount());
     } else {
-        QTest::qt_snprintf(buf, sizeof(buf),
-                         "Totals: %d passed, %d failed, %d skipped\n"
-                         "********* Finished testing of %s *********\n",
-                         QTestResult::passCount(), QTestResult::failCount(),
-                         QTestResult::skipCount(), QTestResult::currentTestObjectName());
+        qsnprintf(buf, sizeof(buf),
+                  "Totals: %d passed, %d failed, %d skipped\n"
+                  "********* Finished testing of %s *********\n",
+                  QTestResult::passCount(), QTestResult::failCount(),
+                  QTestResult::skipCount(), QTestResult::currentTestObjectName());
     }
     outputMessage(buf);
 

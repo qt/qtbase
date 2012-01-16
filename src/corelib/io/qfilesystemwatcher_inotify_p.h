@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,8 +57,9 @@
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 
-#include <qhash.h>
-#include <qmutex.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qsocketnotifier.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,24 +70,20 @@ class QInotifyFileSystemWatcherEngine : public QFileSystemWatcherEngine
 public:
     ~QInotifyFileSystemWatcherEngine();
 
-    static QInotifyFileSystemWatcherEngine *create();
-
-    void run();
+    static QInotifyFileSystemWatcherEngine *create(QObject *parent);
 
     QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
 
 private Q_SLOTS:
     void readFromInotify();
 
 private:
-    QInotifyFileSystemWatcherEngine(int fd);
+    QInotifyFileSystemWatcherEngine(int fd, QObject *parent);
     int inotifyFd;
-    QMutex mutex;
     QHash<QString, int> pathToID;
     QHash<int, QString> idToPath;
+    QSocketNotifier notifier;
 };
 
 

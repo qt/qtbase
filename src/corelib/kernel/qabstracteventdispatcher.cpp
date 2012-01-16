@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,7 +96,10 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
 
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
-    timerIdFreeList()->release(timerId);
+    // this function may be called by a global destructor after
+    // timerIdFreeList() has been destructed
+    if (QtTimerIdFreeList *fl = timerIdFreeList())
+        fl->release(timerId);
 }
 
 /*!
@@ -230,22 +233,39 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 */
 
 /*!
+    \obsolete
+
     \fn int QAbstractEventDispatcher::registerTimer(int interval, QObject *object)
 
-    Registers a timer with the specified \a interval for the given \a object.
+    Registers a timer with the specified \a interval for the given \a object
+    and returns the timer id.
 */
-int QAbstractEventDispatcher::registerTimer(int interval, QObject *object)
+
+/*!
+    \obsolete
+
+    \fn void QAbstractEventDispatcher::registerTimer(int timerId, int interval, QObject *object)
+
+    Register a timer with the specified \a timerId and \a interval for the
+    given \a object.
+*/
+
+/*!
+    Registers a timer with the specified \a interval and \a timerType for the
+    given \a object and returns the timer id.
+*/
+int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerType, QObject *object)
 {
     int id = QAbstractEventDispatcherPrivate::allocateTimerId();
-    registerTimer(id, interval, object);
+    registerTimer(id, interval, timerType, object);
     return id;
 }
 
 /*!
-    \fn void QAbstractEventDispatcher::registerTimer(int timerId, int interval, QObject *object)
+    \fn void QAbstractEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 
-    Register a timer with the specified \a timerId and \a interval for
-    the given \a object.
+    Register a timer with the specified \a timerId, \a interval, and \a
+    timerType for the given \a object.
 */
 
 /*!
@@ -269,8 +289,10 @@ int QAbstractEventDispatcher::registerTimer(int interval, QObject *object)
 /*!
     \fn QList<TimerInfo> QAbstractEventDispatcher::registeredTimers(QObject *object) const
 
-    Returns a list of registered timers for \a object. The timer ID
-    is the first member in each pair; the interval is the second.
+    Returns a list of registered timers for \a object. The TimerInfo struct has
+    \c timerId, \c interval, and \c timerType members.
+
+    \sa Qt::TimerType
 */
 
 /*! \fn void QAbstractEventDispatcher::wakeUp()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1630,5 +1630,13 @@ QPlatformPixmap* QPixmap::handle() const
 {
     return data.data();
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QPixmap &r)
+{
+    dbg.nospace() << "QPixmap(" << r.size() << ')';
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

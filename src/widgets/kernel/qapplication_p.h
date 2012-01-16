@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,7 +88,7 @@ class QTouchDevice;
 class QGestureManager;
 #endif
 
-extern bool qt_is_gui_used;
+extern Q_GUI_EXPORT bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
 extern QClipboard *qt_clipboard;
 #endif
@@ -119,37 +119,6 @@ struct QTabletDeviceData
     int minX, maxX, minY, maxY, minZ, maxZ;
     inline QPointF scaleCoord(int coordX, int coordY, int outOriginX, int outExtentX,
                               int outOriginY, int outExtentY) const;
-#endif
-
-#ifdef Q_WS_X11
-    QPointer<QWidget> widgetToGetPress;
-#endif
-
-#ifdef Q_WS_X11
-    int deviceType;
-    enum {
-        TOTAL_XINPUT_EVENTS = 64
-    };
-    void *device;
-    int eventCount;
-    long unsigned int eventList[TOTAL_XINPUT_EVENTS]; // XEventClass is in fact a long unsigned int
-
-    int xinput_motion;
-    int xinput_key_press;
-    int xinput_key_release;
-    int xinput_button_press;
-    int xinput_button_release;
-    int xinput_proximity_in;
-    int xinput_proximity_out;
-#elif defined(Q_WS_WIN)
-    qint64 llId;
-    int currentDevice;
-    int currentPointerType;
-#elif defined(Q_WS_MAC)
-    quint64 tabletUniqueID;
-    int tabletDeviceType;
-    int tabletPointerType;
-    int capabilityMask;
 #endif
 };
 
@@ -188,80 +157,6 @@ typedef QHash<int, QTabletDeviceData> QMacTabletHash;
 QMacTabletHash *qt_mac_tablet_hash();
 # endif
 #endif
-
-
-#if defined(Q_WS_WIN)
-typedef BOOL (WINAPI *PtrRegisterTouchWindow)(HWND, ULONG);
-typedef BOOL (WINAPI *PtrGetTouchInputInfo)(HANDLE, UINT, PVOID, int);
-typedef BOOL (WINAPI *PtrCloseTouchInputHandle)(HANDLE);
-
-#ifndef QT_NO_GESTURES
-typedef BOOL (WINAPI *PtrGetGestureInfo)(HANDLE, PVOID);
-typedef BOOL (WINAPI *PtrGetGestureExtraArgs)(HANDLE, UINT, PBYTE);
-typedef BOOL (WINAPI *PtrCloseGestureInfoHandle)(HANDLE);
-typedef BOOL (WINAPI *PtrSetGestureConfig)(HWND, DWORD, UINT, PVOID, UINT);
-typedef BOOL (WINAPI *PtrGetGestureConfig)(HWND, DWORD, DWORD, PUINT, PVOID, UINT);
-
-typedef BOOL (WINAPI *PtrBeginPanningFeedback)(HWND);
-typedef BOOL (WINAPI *PtrUpdatePanningFeedback)(HWND, LONG, LONG, BOOL);
-typedef BOOL (WINAPI *PtrEndPanningFeedback)(HWND, BOOL);
-
-#ifndef WM_GESTURE
-#  define WM_GESTURE 0x0119
-
-#  define GID_BEGIN                       1
-#  define GID_END                         2
-#  define GID_ZOOM                        3
-#  define GID_PAN                         4
-#  define GID_ROTATE                      5
-#  define GID_TWOFINGERTAP                6
-#  define GID_ROLLOVER                    7
-
-typedef struct tagGESTUREINFO
-{
-    UINT cbSize;
-    DWORD dwFlags;
-    DWORD dwID;
-    HWND hwndTarget;
-    POINTS ptsLocation;
-    DWORD dwInstanceID;
-    DWORD dwSequenceID;
-    ULONGLONG ullArguments;
-    UINT cbExtraArgs;
-} GESTUREINFO;
-
-#  define GC_PAN                                      0x00000001
-#  define GC_PAN_WITH_SINGLE_FINGER_VERTICALLY        0x00000002
-#  define GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY      0x00000004
-
-#  define GC_ZOOM                                     0x00000001
-#  define GC_ROTATE                                   0x00000001
-
-typedef struct tagGESTURECONFIG
-{
-    DWORD dwID;
-    DWORD dwWant;
-    DWORD dwBlock;
-} GESTURECONFIG;
-
-#  define GID_ROTATE_ANGLE_FROM_ARGUMENT(arg) ((((double)(arg) / 65535.0) * 4.0 * 3.14159265) - 2.0*3.14159265)
-
-#endif // WM_GESTURE
-
-#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
-#undef GID_ZOOM
-#define GID_ZOOM 0xf000
-#undef GID_ROTATE
-#define GID_ROTATE 0xf001
-#undef GID_TWOFINGERTAP
-#define GID_TWOFINGERTAP 0xf002
-#undef GID_ROLLOVER
-#define GID_ROLLOVER 0xf003
-#endif
-
-#endif // QT_NO_GESTURES
-
-#endif // Q_WS_WIN
 
 struct FontHash : public QHash<QByteArray, QFont>
 {
@@ -355,6 +250,10 @@ public:
     QBasicTimer toolTipWakeUp, toolTipFallAsleep;
     QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
     QPointer<QWidget> toolTipWidget;
+
+#ifndef QT_NO_IM
+    void setInputContext(QInputContext *);
+#endif
 
     static QInputContext *inputContext;
 
@@ -472,14 +371,12 @@ public:
     QPixmap *ignore_cursor;
 #endif
 
-    QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
-    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
     void initializeMultitouch_sys();
     void cleanupMultitouch();
     void cleanupMultitouch_sys();
-    int findClosestTouchPointId(const QPointF &screenPos);
+    QWidget *findClosestTouchPointTarget(QTouchDevice *device, const QPointF &screenPos);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     static void translateRawTouchEvent(QWidget *widget,
@@ -487,60 +384,9 @@ public:
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);
 
-#if defined(Q_WS_WIN)
-    static bool HasTouchSupport;
-    static PtrRegisterTouchWindow RegisterTouchWindow;
-    static PtrGetTouchInputInfo GetTouchInputInfo;
-    static PtrCloseTouchInputHandle CloseTouchInputHandle;
-
-    QHash<DWORD, int> touchInputIDToTouchPointID;
-    bool translateTouchEvent(const MSG &msg);
-
-#ifndef QT_NO_GESTURES
-    PtrGetGestureInfo GetGestureInfo;
-    PtrGetGestureExtraArgs GetGestureExtraArgs;
-    PtrCloseGestureInfoHandle CloseGestureInfoHandle;
-    PtrSetGestureConfig SetGestureConfig;
-    PtrGetGestureConfig GetGestureConfig;
-    PtrBeginPanningFeedback BeginPanningFeedback;
-    PtrUpdatePanningFeedback UpdatePanningFeedback;
-    PtrEndPanningFeedback EndPanningFeedback;
-#endif // QT_NO_GESTURES
-#endif
-
-#ifdef QT_RX71_MULTITOUCH
-    bool hasRX71MultiTouch;
-
-    struct RX71TouchPointState {
-        QSocketNotifier *socketNotifier;
-        QTouchEvent::TouchPoint touchPoint;
-
-        int minX, maxX, scaleX;
-        int minY, maxY, scaleY;
-        int minZ, maxZ;
-    };
-    QList<RX71TouchPointState> allRX71TouchPoints;
-
-    bool readRX71MultiTouchEvents(int deviceNumber);
-    void fakeMouseEventFromRX71TouchEvent();
-    void _q_readRX71MultiTouchEvents();
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-    int pressureSupported;
-    int maxTouchPressure;
-    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
-
-    bool useTranslucentEGLSurfaces;
-#endif
-
 private:
 #ifdef Q_WS_QWS
     QMap<const QScreen*, QRect> maxWindowRects;
-#endif
-
-#ifdef Q_OS_SYMBIAN
-    QHash<TInt, TUint> scanCodeCache;
 #endif
 
     static QApplicationPrivate *self;
@@ -553,11 +399,6 @@ private:
 
     static bool isAlien(QWidget *);
 };
-
-Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
-                                                QTouchDevice *device,
-                                                const QList<QTouchEvent::TouchPoint> &touchPoints,
-                                                ulong timestamp);
 
 #if defined(Q_WS_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);

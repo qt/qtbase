@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,19 +130,43 @@ inline double QDBusDemarshaller::toDouble()
     return qIterGet<double>(&iterator);
 }
 
-inline QString QDBusDemarshaller::toString()
+inline QString QDBusDemarshaller::toStringUnchecked()
 {
     return QString::fromUtf8(qIterGet<char *>(&iterator));
 }
 
+inline QString QDBusDemarshaller::toString()
+{
+    if (isCurrentTypeStringLike())
+        return toStringUnchecked();
+    else
+        return QString();
+}
+
+inline QDBusObjectPath QDBusDemarshaller::toObjectPathUnchecked()
+ {
+     return QDBusObjectPath(QString::fromUtf8(qIterGet<char *>(&iterator)));
+ }
+
 inline QDBusObjectPath QDBusDemarshaller::toObjectPath()
 {
-    return QDBusObjectPath(QString::fromUtf8(qIterGet<char *>(&iterator)));
+    if (isCurrentTypeStringLike())
+        return toObjectPathUnchecked();
+    else
+        return QDBusObjectPath();
 }
+
+inline QDBusSignature QDBusDemarshaller::toSignatureUnchecked()
+ {
+     return QDBusSignature(QString::fromUtf8(qIterGet<char *>(&iterator)));
+ }
 
 inline QDBusSignature QDBusDemarshaller::toSignature()
 {
-    return QDBusSignature(QString::fromUtf8(qIterGet<char *>(&iterator)));
+    if (isCurrentTypeStringLike())
+        return toSignatureUnchecked();
+    else
+        return QDBusSignature();
 }
 
 inline QDBusUnixFileDescriptor QDBusDemarshaller::toUnixFileDescriptor()
@@ -236,11 +260,11 @@ QVariant QDBusDemarshaller::toVariantInternal()
     case DBUS_TYPE_UINT64:
         return toULongLong();
     case DBUS_TYPE_STRING:
-        return toString();
+        return toStringUnchecked();
     case DBUS_TYPE_OBJECT_PATH:
-        return QVariant::fromValue(toObjectPath());
+        return QVariant::fromValue(toObjectPathUnchecked());
     case DBUS_TYPE_SIGNATURE:
-        return QVariant::fromValue(toSignature());
+        return QVariant::fromValue(toSignatureUnchecked());
     case DBUS_TYPE_VARIANT:
         return QVariant::fromValue(toVariant());
 
@@ -248,9 +272,9 @@ QVariant QDBusDemarshaller::toVariantInternal()
         switch (q_dbus_message_iter_get_element_type(&iterator)) {
         case DBUS_TYPE_BYTE:
             // QByteArray
-            return toByteArray();
+            return toByteArrayUnchecked();
         case DBUS_TYPE_STRING:
-            return toStringList();
+            return toStringListUnchecked();
         case DBUS_TYPE_DICT_ENTRY:
             return QVariant::fromValue(duplicate());
 
@@ -280,7 +304,20 @@ QVariant QDBusDemarshaller::toVariantInternal()
     };
 }
 
-QStringList QDBusDemarshaller::toStringList()
+bool QDBusDemarshaller::isCurrentTypeStringLike()
+{
+    const int type = q_dbus_message_iter_get_arg_type(&iterator);
+    switch (type) {
+    case DBUS_TYPE_STRING:  //FALLTHROUGH
+    case DBUS_TYPE_OBJECT_PATH:  //FALLTHROUGH
+    case DBUS_TYPE_SIGNATURE:
+        return true;
+    default:
+        return false;
+    }
+}
+
+QStringList QDBusDemarshaller::toStringListUnchecked()
 {
     QStringList list;
 
@@ -288,12 +325,21 @@ QStringList QDBusDemarshaller::toStringList()
     q_dbus_message_iter_recurse(&iterator, &sub.iterator);
     q_dbus_message_iter_next(&iterator);
     while (!sub.atEnd())
-        list.append(sub.toString());
+        list.append(sub.toStringUnchecked());
 
     return list;
 }
 
-QByteArray QDBusDemarshaller::toByteArray()
+QStringList QDBusDemarshaller::toStringList()
+{
+    if (q_dbus_message_iter_get_arg_type(&iterator) == DBUS_TYPE_ARRAY
+            && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_STRING)
+        return toStringListUnchecked();
+    else
+        return QStringList();
+}
+
+QByteArray QDBusDemarshaller::toByteArrayUnchecked()
 {
     DBusMessageIter sub;
     q_dbus_message_iter_recurse(&iterator, &sub);
@@ -302,6 +348,15 @@ QByteArray QDBusDemarshaller::toByteArray()
     char* data;
     q_dbus_message_iter_get_fixed_array(&sub,&data,&len);
     return QByteArray(data,len);
+}
+
+QByteArray QDBusDemarshaller::toByteArray()
+{
+    if (q_dbus_message_iter_get_arg_type(&iterator) == DBUS_TYPE_ARRAY
+            && q_dbus_message_iter_get_element_type(&iterator) == DBUS_TYPE_BYTE) {
+        return toByteArrayUnchecked();
+    }
+    return QByteArray();
 }
 
 bool QDBusDemarshaller::atEnd()

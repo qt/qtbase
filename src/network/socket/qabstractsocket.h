@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ public:
         ProxyConnectionTimeoutError,
         ProxyNotFoundError,
         ProxyProtocolError,
+        OperationError,
 
         UnknownSocketError = -1
     };
@@ -113,7 +114,8 @@ public:
         LowDelayOption, // TCP_NODELAY
         KeepAliveOption, // SO_KEEPALIVE
         MulticastTtlOption, // IP_MULTICAST_TTL
-        MulticastLoopbackOption // IP_MULTICAST_LOOPBACK
+        MulticastLoopbackOption, // IP_MULTICAST_LOOPBACK
+        TypeOfServiceOption //IP_TOS
     };
     enum BindFlag {
         DefaultForPlatform = 0x0,
@@ -129,10 +131,9 @@ public:
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
 
-    // ### Qt 5: Make connectToHost() and disconnectFromHost() virtual.
-    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
-    void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
-    void disconnectFromHost();
+    virtual void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
+    virtual void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
+    virtual void disconnectFromHost();
 
     bool isValid() const;
 
@@ -154,8 +155,8 @@ public:
     void abort();
 
     // ### Qt 5: Make socketDescriptor() and setSocketDescriptor() virtual.
-    int socketDescriptor() const;
-    bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
+    qintptr socketDescriptor() const;
+    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
     // ### Qt 5: Make virtual?
@@ -193,10 +194,6 @@ Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
 #endif
-
-protected Q_SLOTS:
-    void connectToHostImplementation(const QString &hostName, quint16 port, OpenMode mode = ReadWrite);
-    void disconnectFromHostImplementation();
 
 protected:
     qint64 readData(char *data, qint64 maxlen);

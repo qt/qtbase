@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,15 +56,24 @@ class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
 class QDialog;
+class QVariant;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
 public:
+    enum ThemeHint {
+        TextCursorWidth,
+        DropShadow,
+        MaximumScrollBarDragDistance
+    };
+
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
     virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+
+    virtual QVariant themeHint(ThemeHint hint) const;
 };
 
 QT_END_NAMESPACE

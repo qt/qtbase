@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -45,6 +45,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -264,7 +265,7 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
 {
     const KeyPair *i = qBinaryFind(entries, end, keyCode);
     if (i == end)
-        return Qt::Key(keyCode.unicode());
+        return Qt::Key(keyCode.toUpper().unicode());
     return i->qtKey;
 }
 
@@ -441,7 +442,7 @@ QString qt_mac_applicationName()
         appName = QCFString::toQString(static_cast<CFStringRef>(string));
 
     if (appName.isEmpty()) {
-        QString arg0 = qApp->arguments().at(0);
+        QString arg0 = QGuiApplicationPrivate::instance()->appName();
         if (arg0.contains("/")) {
             QStringList parts = arg0.split("/");
             appName = parts.at(parts.count() - 1);

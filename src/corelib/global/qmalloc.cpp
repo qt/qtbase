@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,7 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
     if (alignment <= sizeof(void*)) {
         // special, fast case
-        void **newptr = static_cast<void **>(qRealloc(actualptr, newsize + sizeof(void*)));
+        void **newptr = static_cast<void **>(realloc(actualptr, newsize + sizeof(void*)));
         if (!newptr)
             return 0;
         if (newptr == actualptr) {
@@ -90,7 +90,7 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
         return newptr + 1;
     }
 
-    // qMalloc returns pointers aligned at least at sizeof(size_t) boundaries
+    // malloc returns pointers aligned at least at sizeof(size_t) boundaries
     // but usually more (8- or 16-byte boundaries).
     // So we overallocate by alignment-sizeof(size_t) bytes, so we're guaranteed to find a
     // somewhere within the first alignment-sizeof(size_t) that is properly aligned.
@@ -98,7 +98,7 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // However, we need to store the actual pointer, so we need to allocate actually size +
     // alignment anyway.
 
-    void *real = qRealloc(actualptr, newsize + alignment);
+    void *real = realloc(actualptr, newsize + alignment);
     if (!real)
         return 0;
 

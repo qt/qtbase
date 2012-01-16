@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +58,7 @@ FortuneServer::FortuneServer(QObject *parent)
 //! [0]
 
 //! [1]
-void FortuneServer::incomingConnection(int socketDescriptor)
+void FortuneServer::incomingConnection(qintptr socketDescriptor)
 {
     QString fortune = fortunes.at(qrand() % fortunes.size());
     FortuneThread *thread = new FortuneThread(socketDescriptor, fortune, this);

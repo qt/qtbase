@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -39,6 +39,8 @@
  **
  ****************************************************************************/
 #include "qcocoaaccessibility.h"
+
+namespace QCocoaAccessible {
 
 typedef QMap<QAccessible::Role, NSString *> QMacAccessibiltyRoleMap;
 Q_GLOBAL_STATIC(QMacAccessibiltyRoleMap, qMacAccessibiltyRoleMap);
@@ -111,3 +113,109 @@ NSString *macRole(QAccessible::Role qtRole)
     return NSAccessibilityUnknownRole;
 }
 
+/*
+    Mac accessibility supports ignoring elements, which means that
+    the elements are still present in the accessibility tree but is
+    not used by the screen reader.
+*/
+bool shouldBeIgnrored(QAccessibleInterface *interface)
+{
+    // Mac accessibility does not have an attribute that corresponds to the Invisible/Offscreen
+    // state. Ignore interfaces with those flags set.
+    const QAccessible::State state = interface->state();
+    if (state.invisible ||
+        state.offscreen)
+        return true;
+
+    // Some roles are not interesting. In particular, container roles should be
+    // ignored in order to flatten the accessibility tree as seen by the user.
+    const QAccessible::Role role = interface->role();
+    if (role == QAccessible::Border ||      // QFrame
+        role == QAccessible::Application || // We use the system-provided application element.
+        role == QAccessible::MenuItem ||    // The system also provides the menu items.
+        role == QAccessible::ToolBar)       // Access the tool buttons directly.
+        return true;
+
+    NSString *mac_role = macRole(interface->role());
+    if (mac_role == NSAccessibilityWindowRole || // We use the system-provided window elements.
+        mac_role == NSAccessibilityGroupRole ||
+        mac_role == NSAccessibilityUnknownRole)
+        return true;
+
+    // Client is a generic role returned by plain QWidgets or other
+    // widgets that does not have separate QAccessible interface, such
+    // as the TabWidget. Return false unless macRole gives the interface
+    // a special role.
+    if (role == QAccessible::Client && mac_role == NSAccessibilityUnknownRole)
+        return true;
+
+    if (QObject * const object = interface->object()) {
+        const QString className = QLatin1String(object->metaObject()->className());
+
+        // VoiceOver focusing on tool tips can be confusing. The contents of the
+        // tool tip is available through the description attribute anyway, so
+        // we disable accessibility for tool tips.
+        if (className == QLatin1String("QTipLabel"))
+            return true;
+    }
+
+    return false;
+}
+
+/*
+    Translates a predefined QAccessibleActionInterface action to a Mac action constant.
+    Returns 0 if the Qt Action has no mac equivalent. Ownership of the NSString is
+    not transferred.
+*/
+NSString *getTranslatedAction(const QString &qtAction)
+{
+    if (qtAction == QAccessibleActionInterface::pressAction())
+        return NSAccessibilityPressAction;
+    else if (qtAction == QAccessibleActionInterface::increaseAction())
+        return NSAccessibilityIncrementAction;
+    else if (qtAction == QAccessibleActionInterface::decreaseAction())
+        return NSAccessibilityDecrementAction;
+    else if (qtAction == QAccessibleActionInterface::showMenuAction())
+        return NSAccessibilityShowMenuAction;
+    else if (qtAction == QAccessibleActionInterface::setFocusAction()) // Not 100% sure on this one
+        return NSAccessibilityRaiseAction;
+
+    // Not translated:
+    //
+    // Qt:
+    //     static const QString &checkAction();
+    //     static const QString &uncheckAction();
+    //
+    // Cocoa:
+    //      NSAccessibilityConfirmAction;
+    //      NSAccessibilityPickAction;
+    //      NSAccessibilityCancelAction;
+    //      NSAccessibilityDeleteAction;
+
+    return 0;
+}
+
+
+/*
+    Translates between a Mac action constant and a QAccessibleActionInterface action
+    Returns an empty QString if there is no Qt predefined equivalent.
+*/
+QString translateAction(NSString *nsAction)
+{
+    if ([nsAction compare: NSAccessibilityPressAction] == NSOrderedSame)
+        return QAccessibleActionInterface::pressAction();
+    else if ([nsAction compare: NSAccessibilityIncrementAction] == NSOrderedSame)
+        return QAccessibleActionInterface::increaseAction();
+    else if ([nsAction compare: NSAccessibilityDecrementAction] == NSOrderedSame)
+        return QAccessibleActionInterface::decreaseAction();
+    else if ([nsAction compare: NSAccessibilityShowMenuAction] == NSOrderedSame)
+        return QAccessibleActionInterface::showMenuAction();
+    else if ([nsAction compare: NSAccessibilityRaiseAction] == NSOrderedSame)
+        return QAccessibleActionInterface::setFocusAction();
+
+    // See getTranslatedAction for not matched translations.
+
+    return QString();
+}
+
+} // namespace QCocoaAccessible

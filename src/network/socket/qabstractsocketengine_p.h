@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,7 +84,7 @@ class Q_AUTOTEST_EXPORT QAbstractSocketEngine : public QObject
 public:
 
     static QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType, const QNetworkProxy &, QObject *parent);
-    static QAbstractSocketEngine *createSocketEngine(int socketDescripter, QObject *parent);
+    static QAbstractSocketEngine *createSocketEngine(qintptr socketDescriptor, QObject *parent);
 
     QAbstractSocketEngine(QObject *parent = 0);
 
@@ -99,14 +99,15 @@ public:
         LowDelayOption,
         KeepAliveOption,
         MulticastTtlOption,
-        MulticastLoopbackOption
+        MulticastLoopbackOption,
+        TypeOfServiceOption
     };
 
     virtual bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) = 0;
 
-    virtual bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState) = 0;
+    virtual bool initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState) = 0;
 
-    virtual int socketDescriptor() const = 0;
+    virtual qintptr socketDescriptor() const = 0;
 
     virtual bool isValid() const = 0;
 
@@ -224,7 +225,7 @@ protected:
     virtual ~QSocketEngineHandler();
     virtual QAbstractSocketEngine *createSocketEngine(QAbstractSocket::SocketType socketType,
                                                       const QNetworkProxy &, QObject *parent) = 0;
-    virtual QAbstractSocketEngine *createSocketEngine(int socketDescripter, QObject *parent) = 0;
+    virtual QAbstractSocketEngine *createSocketEngine(qintptr socketDescriptor, QObject *parent) = 0;
 
 private:
     friend class QAbstractSocketEngine;

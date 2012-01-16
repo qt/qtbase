@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,24 +67,6 @@ QFont qfontForThemeFont(ThemeFontID themeID)
 }
 
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-static QColor qcolorFromCGColor(CGColorRef cgcolor)
-{
-    QColor pc;
-    CGColorSpaceModel model = CGColorSpaceGetModel(CGColorGetColorSpace(cgcolor));
-    const CGFloat *components = CGColorGetComponents(cgcolor);
-    if (model == kCGColorSpaceModelRGB) {
-        pc.setRgbF(components[0], components[1], components[2], components[3]);
-    } else if (model == kCGColorSpaceModelCMYK) {
-        pc.setCmykF(components[0], components[1], components[2], components[3]);
-    } else if (model == kCGColorSpaceModelMonochrome) {
-        pc.setRgbF(components[0], components[0], components[0], components[1]);
-    } else {
-        // Colorspace we can't deal with.
-        qWarning("Qt: qcolorFromCGColor: cannot convert from colorspace model: %d", model);
-        Q_ASSERT(false);
-    }
-    return pc;
-}
 
 static inline QColor leopardBrush(ThemeBrush brush)
 {

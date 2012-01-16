@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,11 +57,22 @@
 
 QT_BEGIN_NAMESPACE
 
-enum { /* TYPEMODULEINFO flags */
-    Q_CORE_TYPE = 1,
-    Q_GUI_TYPE = 2,
-    Q_WIDGET_TYPE = 3
-};
+namespace QModulesPrivate {
+enum Names { Core, Gui, Widgets, Unknown, ModulesCount /* ModulesCount has to be at the end */ };
+
+static inline int moduleForType(const int typeId)
+{
+    if (typeId <= QMetaType::LastCoreType)
+        return Core;
+    if (typeId <= QMetaType::LastGuiType)
+        return Gui;
+    if (typeId <= QMetaType::LastWidgetsType)
+        return Widgets;
+    if (typeId <= QMetaType::LastCoreExtType)
+        return Core;
+    return Unknown;
+}
+}
 
 template <typename T>
 class QTypeModuleInfo
@@ -73,7 +84,6 @@ public:
         IsGui = false,
         IsUnknown = !IsCore
     };
-    static inline int module() { return IsCore ? Q_CORE_TYPE : 0; }
 };
 
 #define QT_ASSIGN_TYPE_TO_MODULE(TYPE, MODULE) \
@@ -82,9 +92,9 @@ class QTypeModuleInfo<TYPE > \
 { \
 public: \
     enum Module { \
-        IsCore = (((MODULE) == (Q_CORE_TYPE))), \
-        IsWidget = (((MODULE) == (Q_WIDGET_TYPE))), \
-        IsGui = (((MODULE) == (Q_GUI_TYPE))), \
+        IsCore = (((MODULE) == (QModulesPrivate::Core))), \
+        IsWidget = (((MODULE) == (QModulesPrivate::Widgets))), \
+        IsGui = (((MODULE) == (QModulesPrivate::Gui))), \
         IsUnknown = !(IsCore || IsWidget || IsGui) \
     }; \
     static inline int module() { return MODULE; } \
@@ -96,11 +106,11 @@ public: \
 
 
 #define QT_DECLARE_CORE_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, Q_CORE_TYPE);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Core);
 #define QT_DECLARE_GUI_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, Q_GUI_TYPE);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Gui);
 #define QT_DECLARE_WIDGETS_MODULE_TYPES_ITER(TypeName, TypeId, Name) \
-    QT_ASSIGN_TYPE_TO_MODULE(Name, Q_WIDGET_TYPE);
+    QT_ASSIGN_TYPE_TO_MODULE(Name, QModulesPrivate::Widgets);
 
 QT_FOR_EACH_STATIC_CORE_CLASS(QT_DECLARE_CORE_MODULE_TYPES_ITER)
 QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_DECLARE_CORE_MODULE_TYPES_ITER)
@@ -113,7 +123,7 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 
 class QMetaTypeInterface
 {
-private:
+public:
     template<typename T>
     struct Impl {
         static void *creator(const T *t)
@@ -140,31 +150,6 @@ private:
             return new (where) T;
         }
     };
-public:
-    template<typename T>
-    explicit QMetaTypeInterface(T *)
-        : creator(reinterpret_cast<QMetaType::Creator>(Impl<T>::creator))
-              , deleter(reinterpret_cast<QMetaType::Deleter>(Impl<T>::deleter))
-          #ifndef QT_NO_DATASTREAM
-              , saveOp(reinterpret_cast<QMetaType::SaveOperator>(Impl<T>::saver))
-              , loadOp(reinterpret_cast<QMetaType::LoadOperator>(Impl<T>::loader))
-          #endif
-              , constructor(reinterpret_cast<QMetaType::Constructor>(Impl<T>::constructor))
-              , destructor(reinterpret_cast<QMetaType::Destructor>(Impl<T>::destructor))
-              , size(sizeof(T))
-    {}
-
-    QMetaTypeInterface()
-        : creator(0)
-        , deleter(0)
-    #ifndef QT_NO_DATASTREAM
-        , saveOp(0)
-        , loadOp(0)
-    #endif
-        , constructor(0)
-        , destructor(0)
-        , size(0)
-    {}
 
     QMetaType::Creator creator;
     QMetaType::Deleter deleter;
@@ -175,7 +160,29 @@ public:
     QMetaType::Constructor constructor;
     QMetaType::Destructor destructor;
     int size;
+    quint32 flags; // same as QMetaType::TypeFlags
 };
+
+#ifndef QT_NO_DATASTREAM
+#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    /*saveOp*/(reinterpret_cast<QMetaType::SaveOperator>(QMetaTypeInterface::Impl<Type>::saver)), \
+    /*loadOp*/(reinterpret_cast<QMetaType::LoadOperator>(QMetaTypeInterface::Impl<Type>::loader)),
+#else
+#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type)
+#endif
+
+#define QT_METATYPE_INTERFACE_INIT(Type) \
+{ \
+    /*creator*/(reinterpret_cast<QMetaType::Creator>(QMetaTypeInterface::Impl<Type>::creator)), \
+    /*deleter*/(reinterpret_cast<QMetaType::Deleter>(QMetaTypeInterface::Impl<Type>::deleter)), \
+    QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
+    /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
+    /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
+    /*size*/(sizeof(Type)), \
+    /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
+            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \
+            | (QTypeInfo<Type>::isComplex * QMetaType::NeedsDestruction) \
+}
 
 QT_END_NAMESPACE
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -284,13 +284,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::HoverLeave:
     case QEvent::HoverMove:
         return new QHoverEvent(*static_cast<QHoverEvent*>(e));
-
-    case QEvent::AccessibilityHelp:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::AccessibilityDescription:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
 
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::EnterEditFocus:

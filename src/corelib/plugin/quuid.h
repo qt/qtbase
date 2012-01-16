@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 #define QUUID_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qcryptographichash.h>
 
 QT_BEGIN_HEADER
 
@@ -64,8 +65,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-struct Q_CORE_EXPORT QUuid
+class Q_CORE_EXPORT QUuid
 {
+public:
     enum Variant {
         VarUnknown        =-1,
         NCS                = 0, // 0 - -
@@ -78,8 +80,10 @@ struct Q_CORE_EXPORT QUuid
         VerUnknown        =-1,
         Time                = 1, // 0 0 0 1
         EmbeddedPOSIX        = 2, // 0 0 1 0
-        Name                = 3, // 0 0 1 1
-        Random                = 4  // 0 1 0 0
+        Md5                 = 3, // 0 0 1 1
+        Name = Md5,
+        Random                = 4,  // 0 1 0 0
+        Sha1                 = 5 // 0 1 0 1
     };
 
     QUuid()
@@ -108,9 +112,6 @@ struct Q_CORE_EXPORT QUuid
     QUuid(const QString &);
     QUuid(const char *);
     QString toString() const;
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED operator QString() const { return toString(); }
-#endif
     QUuid(const QByteArray &);
     QByteArray toByteArray() const;
 #endif
@@ -175,6 +176,21 @@ struct Q_CORE_EXPORT QUuid
     }
 #endif
     static QUuid createUuid();
+    static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
+    static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
+#ifndef QT_NO_QUUID_STRING
+    static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
+    {
+        return QUuid::createUuidV3(ns, baseData.toUtf8());
+    }
+
+    static inline QUuid createUuidV5(const QUuid &ns, const QString &baseData)
+    {
+        return QUuid::createUuidV5(ns, baseData.toUtf8());
+    }
+
+#endif
+
     QUuid::Variant variant() const;
     QUuid::Version version() const;
 
@@ -184,9 +200,15 @@ struct Q_CORE_EXPORT QUuid
     uchar   data4[8];
 };
 
+Q_DECLARE_TYPEINFO(QUuid, Q_MOVABLE_TYPE);
+
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUuid &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUuid &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 #endif
 
 Q_CORE_EXPORT uint qHash(const QUuid &uuid);

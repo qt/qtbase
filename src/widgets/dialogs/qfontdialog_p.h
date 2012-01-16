@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,7 @@
 #include "qfontdatabase.h"
 #include "qfontdialog.h"
 #include "qplatformdialoghelper_qpa.h"
+#include "qsharedpointer.h"
 
 #ifndef QT_NO_FONTDIALOG
 
@@ -78,7 +79,7 @@ class QFontDialogPrivate : public QDialogPrivate
 
 public:
     inline QFontDialogPrivate()
-        : writingSystem(QFontDatabase::Any)
+        : writingSystem(QFontDatabase::Any), options(new QFontDialogOptions)
     { }
 
     QPlatformFontDialogHelper *platformFontDialogHelper() const
@@ -138,7 +139,7 @@ public:
     int size;
     bool smoothScalable;
     QFont selectedFont;
-    QFontDialog::FontDialogOptions opts;
+    QSharedPointer<QFontDialogOptions> options;
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 
@@ -163,6 +164,7 @@ public:
 
 private:
     virtual void initHelper(QPlatformDialogHelper *);
+    virtual void helperPrepareShow(QPlatformDialogHelper *);
 };
 
 #endif // QT_NO_FONTDIALOG

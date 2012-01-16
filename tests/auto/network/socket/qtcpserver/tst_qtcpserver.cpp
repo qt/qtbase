@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -191,7 +191,7 @@ void tst_QTcpServer::constructing()
     QCOMPARE(socket.serverAddress(), QHostAddress());
     QCOMPARE(socket.maxPendingConnections(), 30);
     QCOMPARE(socket.hasPendingConnections(), false);
-    QCOMPARE(socket.socketDescriptor(), -1);
+    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.serverError(), QAbstractSocket::UnknownSocketError);
 
     // Check the state of the socket layer?
@@ -510,7 +510,7 @@ public:
     bool ok;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         // how a user woulddo it (qabstractsocketengine is not public)
         unsigned long arg = 0;

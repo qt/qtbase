@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -458,7 +458,7 @@ void tst_QTcpSocket::constructing()
     QCOMPARE((int) socket->bytesAvailable(), 0);
     QCOMPARE(socket->canReadLine(), false);
     QCOMPARE(socket->readLine(), QByteArray());
-    QCOMPARE(socket->socketDescriptor(), -1);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
     QCOMPARE((int) socket->localPort(), 0);
     QVERIFY(socket->localAddress() == QHostAddress());
     QCOMPARE((int) socket->peerPort(), 0);
@@ -538,9 +538,9 @@ void tst_QTcpSocket::bind()
 void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
     QTcpSocket *socket = newSocket();
-    QCOMPARE(socket->socketDescriptor(), -1);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
-    QCOMPARE(socket->socketDescriptor(), -1);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
 
     QCOMPARE(socket->error(), QTcpSocket::UnsupportedSocketOperationError);
 
@@ -577,17 +577,17 @@ void tst_QTcpSocket::setSocketDescriptor()
     QVERIFY(sock != INVALID_SOCKET);
     QTcpSocket *socket = newSocket();
     QVERIFY(socket->setSocketDescriptor(sock, QTcpSocket::UnconnectedState));
-    QCOMPARE(socket->socketDescriptor(), (int)sock);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
 
     qt_qhostinfo_clear_cache(); //avoid the HostLookupState being skipped due to address being in cache from previous test.
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
     QCOMPARE(socket->state(), QTcpSocket::HostLookupState);
-    QCOMPARE(socket->socketDescriptor(), (int)sock);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     QVERIFY(socket->waitForConnected(10000));
     // skip this, it has been broken for years, see task 260735
     // if somebody complains, consider fixing it, but it might break existing applications.
     QEXPECT_FAIL("", "bug has been around for years, will not fix without need", Continue);
-    QCOMPARE(socket->socketDescriptor(), (int)sock);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)sock);
     delete socket;
 #ifdef Q_OS_WIN
     delete dummy;
@@ -600,7 +600,7 @@ void tst_QTcpSocket::socketDescriptor()
 {
     QTcpSocket *socket = newSocket();
 
-    QCOMPARE(socket->socketDescriptor(), -1);
+    QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
     socket->connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY((socket->state() == QAbstractSocket::HostLookupState && socket->socketDescriptor() == -1) ||
             (socket->state() == QAbstractSocket::ConnectingState && socket->socketDescriptor() != -1));
@@ -1025,7 +1025,7 @@ void tst_QTcpSocket::openCloseOpenClose()
         QCOMPARE((int) socket->bytesAvailable(), 0);
         QCOMPARE(socket->canReadLine(), false);
         QCOMPARE(socket->readLine(), QByteArray());
-        QCOMPARE(socket->socketDescriptor(), -1);
+        QCOMPARE(socket->socketDescriptor(), (qintptr)-1);
         QCOMPARE((int) socket->localPort(), 0);
         QVERIFY(socket->localAddress() == QHostAddress());
         QCOMPARE((int) socket->peerPort(), 0);
@@ -2259,6 +2259,9 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
     QVERIFY(stopWatch.elapsed() < 20000);
 
     // Check that both exited normally.
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "Fails on this platform", Abort);
+#endif
     QCOMPARE(clientProcess.readAll().constData(), "SUCCESS\n");
     QCOMPARE(serverProcess.readAll().constData(), "SUCCESS\n");
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -208,11 +208,12 @@ QXcbClipboard::~QXcbClipboard()
             connection()->sync();
 
             // waiting until the clipboard manager fetches the content.
-            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, 5000)) {
+            if (!waitForClipboardEvent(m_owner, XCB_SELECTION_NOTIFY, clipboard_timeout, true)) {
                 qWarning("QClipboard: Unable to receive an event from the "
                          "clipboard manager in a reasonable time");
             }
         }
+        free(reply);
     }
 }
 
@@ -595,6 +596,7 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
     xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
     if (!reply || reply->type == XCB_NONE) {
+        free(reply);
         buffer->resize(0);
         return false;
     }
@@ -687,7 +689,7 @@ namespace
             : window(win), type(t) {}
         xcb_window_t window;
         int type;
-        bool check(xcb_generic_event_t *event) const {
+        bool checkEvent(xcb_generic_event_t *event) const {
             if (!event)
                 return false;
             int t = event->response_type & 0x7f;
@@ -710,7 +712,7 @@ namespace
         ClipboardEvent(QXcbConnection *c)
         { clipboard = c->internAtom("CLIPBOARD"); }
         xcb_atom_t clipboard;
-        bool check(xcb_generic_event_t *e) const {
+        bool checkEvent(xcb_generic_event_t *e) const {
             if (!e)
                 return false;
             int type = e->response_type & 0x7f;
@@ -726,7 +728,7 @@ namespace
     };
 }
 
-xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int type, int timeout)
+xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int type, int timeout, bool checkManager)
 {
     QElapsedTimer timer;
     timer.start();
@@ -735,6 +737,16 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int 
         xcb_generic_event_t *e = connection()->checkEvent(notify);
         if (e)
             return e;
+
+        if (checkManager) {
+            xcb_get_selection_owner_cookie_t cookie = xcb_get_selection_owner(xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
+            xcb_get_selection_owner_reply_t *reply = xcb_get_selection_owner_reply(xcb_connection(), cookie, 0);
+            if (!reply || reply->owner == XCB_NONE) {
+                free(reply);
+                return 0;
+            }
+            free(reply);
+        }
 
         // process other clipboard events, since someone is probably requesting data from us
         ClipboardEvent clipboard(connection());

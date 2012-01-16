@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -5777,8 +5777,8 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
     for (int i = 0; i < touchPoints.count(); ++i) {
         QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
         touchPoint.setRect(item->mapFromScene(touchPoint.sceneRect()).boundingRect());
-        touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), touchEvent->widget()));
-        touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), touchEvent->widget()));
+        touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), static_cast<QWidget *>(touchEvent->target())));
+        touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), static_cast<QWidget *>(touchEvent->target())));
     }
     touchEvent->setTouchPoints(touchPoints);
 }
@@ -5819,7 +5819,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
                 // determine which item this touch point will go to
                 cachedItemsUnderMouse = itemsAtPosition(touchPoint.screenPos().toPoint(),
                                                         touchPoint.scenePos(),
-                                                        sceneTouchEvent->widget());
+                                                        static_cast<QWidget *>(sceneTouchEvent->target()));
                 item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.first();
             }
 
@@ -5888,13 +5888,13 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         }
 
         QTouchEvent touchEvent(eventType);
-        touchEvent.setWidget(sceneTouchEvent->widget());
+        touchEvent.setWindow(sceneTouchEvent->window());
+        touchEvent.setTarget(sceneTouchEvent->target());
         touchEvent.setDevice(sceneTouchEvent->device());
         touchEvent.setModifiers(sceneTouchEvent->modifiers());
         touchEvent.setTouchPointStates(it.value().first);
         touchEvent.setTouchPoints(it.value().second);
         touchEvent.setTimestamp(sceneTouchEvent->timestamp());
-        touchEvent.setWindow(sceneTouchEvent->window());
 
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:
@@ -5935,7 +5935,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         const QTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
         cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
                                                 firstTouchPoint.scenePos(),
-                                                touchEvent->widget());
+                                                static_cast<QWidget *>(touchEvent->target()));
     }
     Q_ASSERT(cachedItemsUnderMouse.first() == origin);
 

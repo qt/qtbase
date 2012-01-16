@@ -8,11 +8,5 @@ MOC_DIR=tmp
 !contains(QT_CONFIG, no-jpeg):DEFINES += QTEST_HAVE_JPEG
 !contains(QT_CONFIG, no-mng):DEFINES += QTEST_HAVE_MNG
 
-wince*: {
-   addFiles.files = animations\\*
-   addFiles.path = animations
-   DEPLOYMENT += addFiles
-}
-
 RESOURCES += resources.qrc
-
+TESTDATA += animations/*

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,7 +168,7 @@ QT_BEGIN_NAMESPACE
     \sa setEnabled(), isEnabled()
 */
 
-QSocketNotifier::QSocketNotifier(int socket, Type type, QObject *parent)
+QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     : QObject(parent)
 {
     if (socket < 0)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 #include <qdatastream.h>
 #include <qvariant.h>
 #include <private/qcursor_p.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -564,6 +565,15 @@ QCursor::operator QVariant() const
 {
     return QVariant(QVariant::Cursor, this);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QCursor &c)
+{
+    dbg.nospace() << "QCursor(Qt::CursorShape(" << c.shape() << "))";
+    return dbg.space();
+}
+#endif
+
 QT_END_NAMESPACE
 #endif // QT_NO_CURSOR
 

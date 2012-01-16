@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1030,7 +1030,7 @@ QString::QString(const QChar *unicode, int size)
     } else if (size <= 0) {
         d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
         d->ref.initializeOwned();
         d->size = size;
@@ -1062,7 +1062,7 @@ QString::QString(const QChar *unicode)
          if (!size) {
              d = const_cast<Data *>(&shared_empty.str);
          } else {
-             d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
              Q_CHECK_PTR(d);
              d->ref.initializeOwned();
              d->size = size;
@@ -1087,7 +1087,7 @@ QString::QString(int size, QChar ch)
    if (size <= 0) {
         d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
         d->ref.initializeOwned();
         d->size = size;
@@ -1111,7 +1111,7 @@ QString::QString(int size, QChar ch)
 */
 QString::QString(int size, Qt::Initialization)
 {
-    d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
+    d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
     Q_CHECK_PTR(d);
     d->ref.initializeOwned();
     d->size = size;
@@ -1133,7 +1133,7 @@ QString::QString(int size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = (Data *) qMalloc(sizeof(Data) + 2*sizeof(QChar));
+    d = (Data *) ::malloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
     d->ref.initializeOwned();
     d->size = 1;
@@ -1199,7 +1199,7 @@ QString::QString(QChar ch)
 // ### Qt 5: rename freeData() to avoid confusion. See task 197625.
 void QString::free(Data *d)
 {
-    qFree(d);
+    ::free(d);
 }
 
 /*!
@@ -1312,7 +1312,7 @@ void QString::resize(int size)
 void QString::realloc(int alloc)
 {
     if (d->ref != 1 || d->offset) {
-        Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
+        Data *x = static_cast<Data *>(::malloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
         x->ref.initializeOwned();
         x->size = qMin(alloc, d->size);
@@ -1325,7 +1325,7 @@ void QString::realloc(int alloc)
             QString::free(d);
         d = x;
     } else {
-        Data *p = static_cast<Data *>(qRealloc(d, sizeof(Data) + (alloc+1) * sizeof(QChar)));
+        Data *p = static_cast<Data *>(::realloc(d, sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(p);
         d = p;
         d->alloc = alloc;
@@ -1483,11 +1483,11 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     const ushort *s = (const ushort *)unicode;
     if (s >= d->data() && s < d->data() + d->alloc) {
         // Part of me - take a copy
-        ushort *tmp = static_cast<ushort *>(qMalloc(size * sizeof(QChar)));
+        ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
         Q_CHECK_PTR(tmp);
         memcpy(tmp, s, size * sizeof(QChar));
         insert(i, reinterpret_cast<const QChar *>(tmp), size);
-        qFree(tmp);
+        ::free(tmp);
         return *this;
     }
 
@@ -1843,7 +1843,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     // (which we could possibly invalidate via a realloc or corrupt via memcpy operations.)
     QChar *afterBuffer = const_cast<QChar *>(after);
     if (after >= reinterpret_cast<QChar *>(d->data()) && after < reinterpret_cast<QChar *>(d->data()) + d->size) {
-        afterBuffer = static_cast<QChar *>(qMalloc(alen*sizeof(QChar)));
+        afterBuffer = static_cast<QChar *>(::malloc(alen*sizeof(QChar)));
         Q_CHECK_PTR(afterBuffer);
         ::memcpy(afterBuffer, after, alen*sizeof(QChar));
     }
@@ -1898,11 +1898,11 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
         }
     } QT_CATCH(const std::bad_alloc &) {
         if (afterBuffer != after)
-            qFree(afterBuffer);
+            ::free(afterBuffer);
         QT_RETHROW;
     }
     if (afterBuffer != after)
-        qFree(afterBuffer);
+        ::free(afterBuffer);
 }
 
 /*!
@@ -3756,7 +3756,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
     } else {
         if (size < 0)
             size = qstrlen(str);
-        d = static_cast<Data *>(qMalloc(sizeof(Data) + (size+1) * sizeof(QChar)));
+        d = static_cast<Data *>(::malloc(sizeof(Data) + (size+1) * sizeof(QChar)));
         Q_CHECK_PTR(d);
         d->ref.initializeOwned();
         d->size = size;
@@ -3818,33 +3818,29 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
     return fromLatin1_helper(str, size);
 }
 
-/*!
+/*! \fn QString QString::fromLatin1(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the Latin-1 string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     \sa toLatin1(), fromAscii(), fromUtf8(), fromLocal8Bit()
 */
-QString QString::fromLatin1(const char *str, int size)
-{
-    return QString(fromLatin1_helper(str, size), 0);
-}
 
 
-/*!
+/*! \fn QString QString::fromLocal8Bit(const char *str, int size)
     Returns a QString initialized with the first \a size characters
     of the 8-bit string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     QTextCodec::codecForLocale() is used to perform the conversion.
 
     \sa toLocal8Bit(), fromAscii(), fromLatin1(), fromUtf8()
 */
-QString QString::fromLocal8Bit(const char *str, int size)
+QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
     if (!str)
         return QString();
@@ -3860,11 +3856,11 @@ QString QString::fromLocal8Bit(const char *str, int size)
     return fromLatin1(str, size);
 }
 
-/*!
+/*! \fn QString QString::fromAscii(const char *, int size);
     Returns a QString initialized with the first \a size characters
     from the string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     Note that, despite the name, this function actually uses the codec
@@ -3875,16 +3871,12 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
-QString QString::fromAscii(const char *str, int size)
-{
-    return QString(fromAscii_helper(str, size), 0);
-}
 
-/*!
+/*! \fn QString QString::fromUtf8(const char *str, int size)
     Returns a QString initialized with the first \a size bytes
     of the UTF-8 string \a str.
 
-    If \a size is -1 (default), it is taken to be qstrlen(\a
+    If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
@@ -3901,13 +3893,12 @@ QString QString::fromAscii(const char *str, int size)
 
     \sa toUtf8(), fromAscii(), fromLatin1(), fromLocal8Bit()
 */
-QString QString::fromUtf8(const char *str, int size)
+QString QString::fromUtf8_helper(const char *str, int size)
 {
     if (!str)
         return QString();
-    if (size < 0)
-        size = qstrlen(str);
 
+    Q_ASSERT(size != -1);
     return QUtf8::convertToUnicode(str, size, 0);
 }
 
@@ -7072,7 +7063,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     } else if (!size) {
         x = const_cast<Data *>(&shared_empty.str);
     } else {
-        x = static_cast<Data *>(qMalloc(sizeof(Data) + sizeof(ushort)));
+        x = static_cast<Data *>(::malloc(sizeof(Data) + sizeof(ushort)));
         Q_CHECK_PTR(x);
         x->ref.initializeOwned();
         x->size = size;
@@ -8817,13 +8808,37 @@ QString QString::toHtmlEscaped() const
   Creating a QString from it is free in this case, and the generated string data is stored in
   the read-only segment of the compiled object file.
 
+  For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
+  QLatin1String.
+
+  The result of the QStringLiteral expression can be cast into a QString.
+
+  If you have code looking like:
+  \code
+  if (node.hasAttribute("http-contents-length")) //...
+  \endcode
+  One temporary QString will be created to be passed as the hasAttribute function parameter.
+  This can be quite expensive, as it involves a memory allocation and the copy and the conversion
+  of the data into QString's internal encoding.
+
+  This can be avoided by doing
+  \code
+  if (node.hasAttribute(QStringLiteral("http-contents-length"))) //...
+  \endcode
+  Then the QString's internal data will be generated at compile time and no conversion or allocation
+  will occur at runtime
+
   Using QStringLiteral instead of a double quoted ascii literal can significantly speed up creation
   of QString's from data known at compile time.
 
-  If the compiler is c++0x enabled the string \a str can actually contain unicode data.
+  If the compiler is C++11 enabled the string \a str can actually contain unicode data.
 
-  For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
-  QLatin1String.
+  \note There are still a few cases in which QLatin1String is more efficient than QStringLiteral:
+  If it is passed to a function that has an overload that takes the QLatin1String directly, without
+  conversion to QString. For instance, this is the case of QString::operator==
+  \code
+  if (attribute.name() == QLatin1String("http-contents-length")) //...
+  \endcode
 */
 
 QT_END_NAMESPACE

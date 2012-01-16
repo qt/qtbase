@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,7 +72,8 @@ public:
         DatagramTooLargeError = QAbstractSocket::DatagramTooLargeError,
         ConnectionError = QAbstractSocket::NetworkError,
         UnsupportedSocketOperationError = QAbstractSocket::UnsupportedSocketOperationError,
-        UnknownSocketError = QAbstractSocket::UnknownSocketError
+        UnknownSocketError = QAbstractSocket::UnknownSocketError,
+        OperationError = QAbstractSocket::OperationError
     };
 
     enum LocalSocketState
@@ -104,10 +105,10 @@ public:
     qint64 readBufferSize() const;
     void setReadBufferSize(qint64 size);
 
-    bool setSocketDescriptor(quintptr socketDescriptor,
+    bool setSocketDescriptor(qintptr socketDescriptor,
                              LocalSocketState socketState = ConnectedState,
                              OpenMode openMode = ReadWrite);
-    quintptr socketDescriptor() const;
+    qintptr socketDescriptor() const;
 
     LocalSocketState state() const;
     bool waitForBytesWritten(int msecs = 30000);
@@ -131,10 +132,9 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(QAbstractSocket::SocketState))
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))
 #elif defined(Q_OS_WIN)
-    Q_PRIVATE_SLOT(d_func(), void _q_notified())
     Q_PRIVATE_SLOT(d_func(), void _q_canWrite())
     Q_PRIVATE_SLOT(d_func(), void _q_pipeClosed())
-    Q_PRIVATE_SLOT(d_func(), void _q_emitReadyRead())
+    Q_PRIVATE_SLOT(d_func(), void _q_winError(ulong, const QString &))
 #else
     Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(QAbstractSocket::SocketState))
     Q_PRIVATE_SLOT(d_func(), void _q_error(QAbstractSocket::SocketError))

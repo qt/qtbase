@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,10 +62,10 @@ private slots:
     void strong_sharedptrDelete();
 
 public slots:
-    void cleanup() { check(); }
+    void cleanup() { safetyCheck(); }
 
 public:
-    inline void check()
+    inline void safetyCheck()
     {
 #ifdef QT_BUILD_INTERNAL
         QtSharedPointer::internalSafetyCheckCleanCheck();

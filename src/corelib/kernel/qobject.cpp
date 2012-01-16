@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #include "qmetaobject_p.h"
 
 #include "qabstracteventdispatcher.h"
+#include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qvariant.h"
@@ -162,30 +163,28 @@ QObjectPrivate::QObjectPrivate(int version)
     q_ptr = 0;
     parent = 0;                                 // no parent yet. It is set by setParent()
     isWidget = false;                           // assume not a widget object
-    pendTimer = false;                          // no timers yet
     blockSig = false;                           // not blocking signals
     wasDeleted = false;                         // double-delete catcher
+    isDeletingChildren = false;                 // set by deleteChildren()
     sendChildEvents = true;                     // if we should send ChildInsert and ChildRemove events to parent
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
     connectedSignals[0] = connectedSignals[1] = 0;
-    inThreadChangeEvent = false;
-#ifdef QT_JAMBI_BUILD
-    inEventHandler = false;
-    deleteWatch = 0;
-#endif
     metaObject = 0;
-    hasGuards = false;
     isWindow = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
 {
-    if (pendTimer) {
+    if (!runningTimers.isEmpty()) {
         // unregister pending timers
         if (threadData->eventDispatcher)
             threadData->eventDispatcher->unregisterTimers(q_ptr);
+
+        // release the timer ids back to the pool
+        for (int i = 0; i < runningTimers.size(); ++i)
+            QAbstractEventDispatcherPrivate::releaseTimerId(runningTimers.at(i));
     }
 
     if (postedEvents)
@@ -194,35 +193,12 @@ QObjectPrivate::~QObjectPrivate()
     threadData->deref();
 
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
-#ifdef QT_JAMBI_BUILD
-    if (deleteWatch)
-        *deleteWatch = 1;
-#endif
 #ifndef QT_NO_USERDATA
     if (extraData)
         qDeleteAll(extraData->userData);
     delete extraData;
 #endif
 }
-
-
-#ifdef QT_JAMBI_BUILD
-int *QObjectPrivate::setDeleteWatch(QObjectPrivate *d, int *w) {
-    int *old = d->deleteWatch;
-    d->deleteWatch = w;
-    return old;
-}
-
-
-void QObjectPrivate::resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int deleteWatch) {
-    if (!deleteWatch)
-        d->deleteWatch = oldWatch;
-
-    if (oldWatch)
-        *oldWatch = deleteWatch;
-}
-#endif
-
 
 /*!\internal
   For a given metaobject, compute the signal offset, and the method offset (including signals)
@@ -408,113 +384,6 @@ void QObjectPrivate::cleanConnectionLists()
     }
 }
 
-typedef QMultiHash<QObject *, QObject **> GuardHash;
-Q_GLOBAL_STATIC(GuardHash, guardHash)
-Q_GLOBAL_STATIC(QMutex, guardHashLock)
-
-/*!\internal
- */
-void QMetaObject::addGuard(QObject **ptr)
-{
-    if (!*ptr)
-        return;
-    GuardHash *hash = guardHash();
-    if (!hash) {
-        *ptr = 0;
-        return;
-    }
-    QMutexLocker locker(guardHashLock());
-    QObjectPrivate::get(*ptr)->hasGuards = true;
-    hash->insert(*ptr, ptr);
-}
-
-/*!\internal
- */
-void QMetaObject::removeGuard(QObject **ptr)
-{
-    if (!*ptr)
-        return;
-    GuardHash *hash = guardHash();
-    /* check that the hash is empty - otherwise we might detach
-       the shared_null hash, which will alloc, which is not nice */
-    if (!hash || hash->isEmpty())
-        return;
-    QMutexLocker locker(guardHashLock());
-    if (!*ptr) //check again, under the lock
-        return;
-    GuardHash::iterator it = hash->find(*ptr);
-    const GuardHash::iterator end = hash->end();
-    bool more = false; //if the QObject has more pointer attached to it.
-    for (; it.key() == *ptr && it != end; ++it) {
-        if (it.value() == ptr) {
-            it = hash->erase(it);
-            if (!more) more = (it != end && it.key() == *ptr);
-            break;
-        }
-        more = true;
-    }
-    if (!more)
-        QObjectPrivate::get(*ptr)->hasGuards = false;
-}
-
-/*!\internal
- */
-void QMetaObject::changeGuard(QObject **ptr, QObject *o)
-{
-    GuardHash *hash = guardHash();
-    if (!hash) {
-        *ptr = 0;
-        return;
-    }
-    QMutexLocker locker(guardHashLock());
-    if (o) {
-        hash->insert(o, ptr);
-        QObjectPrivate::get(o)->hasGuards = true;
-    }
-    if (*ptr) {
-        bool more = false; //if the QObject has more pointer attached to it.
-        GuardHash::iterator it = hash->find(*ptr);
-        const GuardHash::iterator end = hash->end();
-        for (; it.key() == *ptr && it != end; ++it) {
-            if (it.value() == ptr) {
-                it = hash->erase(it);
-                if (!more) more = (it != end && it.key() == *ptr);
-                break;
-            }
-            more = true;
-        }
-        if (!more)
-            QObjectPrivate::get(*ptr)->hasGuards = false;
-    }
-    *ptr = o;
-}
-
-/*! \internal
- */
-void QObjectPrivate::clearGuards(QObject *object)
-{
-    GuardHash *hash = 0;
-    QMutex *mutex = 0;
-    QT_TRY {
-        hash = guardHash();
-        mutex = guardHashLock();
-    } QT_CATCH(const std::bad_alloc &) {
-        // do nothing in case of OOM - code below is safe
-    }
-
-    /* check that the hash is empty - otherwise we might detach
-       the shared_null hash, which will alloc, which is not nice */
-    if (hash && !hash->isEmpty()) {
-        QMutexLocker locker(mutex);
-        GuardHash::iterator it = hash->find(object);
-        const GuardHash::iterator end = hash->end();
-        while (it.key() == object && it != end) {
-            *it.value() = 0;
-            it = hash->erase(it);
-        }
-    }
-}
-
 /*! \internal
  */
 QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction,
@@ -546,8 +415,8 @@ QMetaCallEvent::~QMetaCallEvent()
             if (types_[i] && args_[i])
                 QMetaType::destroy(types_[i], args_[i]);
         }
-        qFree(types_);
-        qFree(args_);
+        free(types_);
+        free(args_);
     }
 #ifndef QT_NO_THREAD
     if (semaphore_)
@@ -563,7 +432,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 {
     if (slotObj_) {
         slotObj_->call(object, args_);
-    } else if (callFunction_) {
+    } else if (callFunction_ && method_offset_ <= object->metaObject()->methodOffset()) {
         callFunction_(object, QMetaObject::InvokeMetaMethod, method_relative_, args_);
     } else {
         QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, method_offset_ + method_relative_, args_);
@@ -839,12 +708,6 @@ QObject::~QObject()
     d->wasDeleted = true;
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
-    if (d->hasGuards && !d->isWidget) {
-        // set all QPointers for this object to zero - note that
-        // ~QWidget() does this for us, so we don't have to do it twice
-        QObjectPrivate::clearGuards(this);
-    }
-
     QtSharedPointer::ExternalRefCountData *sharedRefcount = d->sharedRefcount.load();
     if (sharedRefcount) {
         if (sharedRefcount->strongref.load() > 0) {
@@ -950,13 +813,6 @@ QObject::~QObject()
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
-
-#ifdef QT_JAMBI_BUILD
-    if (d->inEventHandler) {
-        qWarning("QObject: Do not delete object, '%s', during its event handler!",
-                 objectName().isNull() ? "unnamed" : qPrintable(objectName()));
-    }
-#endif
 }
 
 QObjectPrivate::Connection::~Connection()
@@ -1096,13 +952,20 @@ QString QObject::objectName() const
 void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
-    bool objectNameChanged = d->declarativeData && d->objectName != name;
-
-    d->objectName = name;
-
-    if (objectNameChanged) 
-        d->declarativeData->objectNameChanged(d->declarativeData, this);
+    if (d->objectName != name) {
+        d->objectName = name;
+        if (d->declarativeData)
+            d->declarativeData->objectNameChanged(d->declarativeData, this);
+        emit objectNameChanged(d->objectName);
+    }
 }
+
+/*! \fn void QObject::objectNameChanged(const QString &objectName)
+
+    This signal is emitted after the object's name has been changed. The new object name is passed as \a objectName.
+
+    \sa QObject::objectName
+*/
 
 /*!
     \fn bool QObject::isWidgetType() const
@@ -1144,9 +1007,6 @@ bool QObject::event(QEvent *e)
 
     case QEvent::MetaCall:
         {
-#ifdef QT_JAMBI_BUILD
-            d_func()->inEventHandler = false;
-#endif
             QMetaCallEvent *mce = static_cast<QMetaCallEvent*>(e);
 
             QConnectionSenderSwitcher sw(this, const_cast<QObject*>(mce->sender()), mce->signalId());
@@ -1160,15 +1020,12 @@ bool QObject::event(QEvent *e)
         QThreadData *threadData = d->threadData;
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher;
         if (eventDispatcher) {
-            QList<QPair<int, int> > timers = eventDispatcher->registeredTimers(this);
+            QList<QAbstractEventDispatcher::TimerInfo> timers = eventDispatcher->registeredTimers(this);
             if (!timers.isEmpty()) {
-                // set inThreadChangeEvent to true to tell the dispatcher not to release out timer ids
-                // back to the pool (since the timer ids are moving to a new thread).
-                d->inThreadChangeEvent = true;
+                // do not to release our timer ids back to the pool (since the timer ids are moving to a new thread).
                 eventDispatcher->unregisterTimers(this);
-                d->inThreadChangeEvent = false;
                 QMetaObject::invokeMethod(this, "_q_reregisterTimers", Qt::QueuedConnection,
-                                          Q_ARG(void*, (new QList<QPair<int, int> >(timers))));
+                                          Q_ARG(void*, (new QList<QAbstractEventDispatcher::TimerInfo>(timers))));
             }
         }
         break;
@@ -1451,15 +1308,6 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
         currentSender->ref = 0;
     currentSender = 0;
 
-#ifdef QT_JAMBI_BUILD
-    // the current event thread also shouldn't restore the delete watch
-    inEventHandler = false;
-
-    if (deleteWatch)
-        *deleteWatch = 1;
-    deleteWatch = 0;
-#endif
-
     // set new thread data
     targetData->ref();
     threadData->deref();
@@ -1474,11 +1322,11 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
 void QObjectPrivate::_q_reregisterTimers(void *pointer)
 {
     Q_Q(QObject);
-    QList<QPair<int, int> > *timerList = reinterpret_cast<QList<QPair<int, int> > *>(pointer);
+    QList<QAbstractEventDispatcher::TimerInfo> *timerList = reinterpret_cast<QList<QAbstractEventDispatcher::TimerInfo> *>(pointer);
     QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher;
     for (int i = 0; i < timerList->size(); ++i) {
-        const QPair<int, int> &pair = timerList->at(i);
-        eventDispatcher->registerTimer(pair.first, pair.second, q);
+        const QAbstractEventDispatcher::TimerInfo &ti = timerList->at(i);
+        eventDispatcher->registerTimer(ti.timerId, ti.interval, ti.timerType, q);
     }
     delete timerList;
 }
@@ -1510,10 +1358,12 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 8
 
-    Note that QTimer's accuracy depends on the underlying operating
-    system and hardware. Most platforms support an accuracy of 20
-    milliseconds; some provide more. If Qt is unable to deliver the
-    requested number of timer events, it will silently discard some.
+    Note that QTimer's accuracy depends on the underlying operating system and
+    hardware. The \a timerType argument allows you to customize the accuracy of
+    the timer. See Qt::TimerType for information on the different timer types.
+    Most platforms support an accuracy of 20 milliseconds; some provide more.
+    If Qt is unable to deliver the requested number of timer events, it will
+    silently discard some.
 
     The QTimer class provides a high-level programming interface with
     single-shot timers and timer signals instead of events. There is
@@ -1523,7 +1373,7 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
     \sa timerEvent(), killTimer(), QTimer::singleShot()
 */
 
-int QObject::startTimer(int interval)
+int QObject::startTimer(int interval, Qt::TimerType timerType)
 {
     Q_D(QObject);
 
@@ -1532,13 +1382,13 @@ int QObject::startTimer(int interval)
         return 0;
     }
 
-    d->pendTimer = true;                                // set timer flag
-
     if (!d->threadData->eventDispatcher) {
         qWarning("QObject::startTimer: QTimer can only be used with threads started with QThread");
         return 0;
     }
-    return d->threadData->eventDispatcher->registerTimer(interval, this);
+    int timerId = d->threadData->eventDispatcher->registerTimer(interval, timerType, this);
+    d->runningTimers.append(timerId);
+    return timerId;
 }
 
 /*!
@@ -1553,8 +1403,23 @@ int QObject::startTimer(int interval)
 void QObject::killTimer(int id)
 {
     Q_D(QObject);
-    if (d->threadData->eventDispatcher)
-        d->threadData->eventDispatcher->unregisterTimer(id);
+    if (id) {
+        int at = d->runningTimers.indexOf(id);
+        if (at == -1) {
+            // timer isn't owned by this object
+            qWarning("QObject::killTimer(): Error: timer id %d is not valid for object %p (%s), timer has not been killed",
+                     id,
+                     this,
+                     qPrintable(objectName()));
+            return;
+        }
+
+        if (d->threadData->eventDispatcher)
+            d->threadData->eventDispatcher->unregisterTimer(id);
+
+        d->runningTimers.remove(at);
+        QAbstractEventDispatcherPrivate::releaseTimerId(id);
+    }
 }
 
 
@@ -1774,8 +1639,8 @@ void QObject::setParent(QObject *parent)
 
 void QObjectPrivate::deleteChildren()
 {
-    const bool reallyWasDeleted = wasDeleted;
-    wasDeleted = true;
+    Q_ASSERT_X(!isDeletingChildren, "QObjectPrivate::deleteChildren()", "isDeletingChildren already set, did this function recurse?");
+    isDeletingChildren = true;
     // delete children objects
     // don't use qDeleteAll as the destructor of the child might
     // delete siblings
@@ -1786,7 +1651,7 @@ void QObjectPrivate::deleteChildren()
     }
     children.clear();
     currentChildBeingDeleted = 0;
-    wasDeleted = reallyWasDeleted;
+    isDeletingChildren = false;
 }
 
 void QObjectPrivate::setParent_helper(QObject *o)
@@ -1796,13 +1661,13 @@ void QObjectPrivate::setParent_helper(QObject *o)
         return;
     if (parent) {
         QObjectPrivate *parentD = parent->d_func();
-        if (parentD->wasDeleted && wasDeleted
+        if (parentD->isDeletingChildren && wasDeleted
             && parentD->currentChildBeingDeleted == q) {
             // don't do anything since QObjectPrivate::deleteChildren() already
             // cleared our entry in parentD->children.
         } else {
             const int index = parentD->children.indexOf(q);
-            if (parentD->wasDeleted) {
+            if (parentD->isDeletingChildren) {
                 parentD->children[index] = 0;
             } else {
                 parentD->children.removeAt(index);
@@ -1829,7 +1694,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!wasDeleted && declarativeData)
+    if (!isDeletingChildren && declarativeData)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
@@ -2060,10 +1925,10 @@ static bool check_signal_macro(const QObject *sender, const char *signal,
     int sigcode = extract_code(signal);
     if (sigcode != QSIGNAL_CODE) {
         if (sigcode == QSLOT_CODE)
-            qWarning("Object::%s: Attempt to %s non-signal %s::%s",
+            qWarning("QObject::%s: Attempt to %s non-signal %s::%s",
                      func, op, sender->metaObject()->className(), signal+1);
         else
-            qWarning("Object::%s: Use the SIGNAL macro to %s %s::%s",
+            qWarning("QObject::%s: Use the SIGNAL macro to %s %s::%s",
                      func, op, sender->metaObject()->className(), signal);
         return false;
     }
@@ -2074,7 +1939,7 @@ static bool check_method_code(int code, const QObject *object,
                                const char *method, const char *func)
 {
     if (code != QSLOT_CODE && code != QSIGNAL_CODE) {
-        qWarning("Object::%s: Use the SLOT or SIGNAL macro to "
+        qWarning("QObject::%s: Use the SLOT or SIGNAL macro to "
                  "%s %s::%s", func, func, object->metaObject()->className(), method);
         return false;
     }
@@ -2091,11 +1956,11 @@ static void err_method_notfound(const QObject *object,
     }
     const char *loc = extract_location(method);
     if (strchr(method,')') == 0)                // common typing mistake
-        qWarning("Object::%s: Parentheses expected, %s %s::%s%s%s",
+        qWarning("QObject::%s: Parentheses expected, %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
                  loc ? " in ": "", loc ? loc : "");
     else
-        qWarning("Object::%s: No such %s %s::%s%s%s",
+        qWarning("QObject::%s: No such %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
                  loc ? " in ": "", loc ? loc : "");
 
@@ -2109,9 +1974,9 @@ static void err_info_about_objects(const char * func,
     QString a = sender ? sender->objectName() : QString();
     QString b = receiver ? receiver->objectName() : QString();
     if (!a.isEmpty())
-        qWarning("Object::%s:  (sender name:   '%s')", func, a.toLocal8Bit().data());
+        qWarning("QObject::%s:  (sender name:   '%s')", func, a.toLocal8Bit().data());
     if (!b.isEmpty())
-        qWarning("Object::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
+        qWarning("QObject::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
 }
 
 /*!
@@ -2691,7 +2556,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                          const QObject *receiver, const char *method)
 {
     if (sender == 0 || (receiver == 0 && method != 0)) {
-        qWarning("Object::disconnect: Unexpected null parameter");
+        qWarning("QObject::disconnect: Unexpected null parameter");
         return false;
     }
 
@@ -2816,12 +2681,12 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
                          const QObject *receiver, const QMetaMethod &method)
 {
     if (sender == 0 || (receiver == 0 && method.mobj != 0)) {
-        qWarning("Object::disconnect: Unexpected null parameter");
+        qWarning("QObject::disconnect: Unexpected null parameter");
         return false;
     }
     if (signal.mobj) {
         if(signal.methodType() != QMetaMethod::Signal) {
-            qWarning("Object::%s: Attempt to %s non-signal %s::%s",
+            qWarning("QObject::%s: Attempt to %s non-signal %s::%s",
                      "disconnect","unbind",
                      sender->metaObject()->className(), signal.signature());
             return false;
@@ -3239,9 +3104,9 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     int nargs = 1; // include return type
     while (argumentTypes[nargs-1])
         ++nargs;
-    int *types = (int *) qMalloc(nargs*sizeof(int));
+    int *types = (int *) malloc(nargs*sizeof(int));
     Q_CHECK_PTR(types);
-    void **args = (void **) qMalloc(nargs*sizeof(void *));
+    void **args = (void **) malloc(nargs*sizeof(void *));
     Q_CHECK_PTR(args);
     types[0] = 0; // return type
     args[0] = 0; // return value
@@ -4004,11 +3869,6 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
 void qDeleteInEventHandler(QObject *o)
 {
-#ifdef QT_JAMBI_BUILD
-    if (!o)
-        return;
-    QObjectPrivate::get(o)->inEventHandler = false;
-#endif
     delete o;
 }
 
@@ -4273,7 +4133,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot, const QMetaObject *senderMetaObject)
 {
     if (sender == 0 || (receiver == 0 && slot != 0)) {
-        qWarning("Object::disconnect: Unexpected null parameter");
+        qWarning("QObject::disconnect: Unexpected null parameter");
         return false;
     }
 

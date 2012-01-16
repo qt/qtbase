@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,6 +55,9 @@ private slots:
     void appendCausingRealloc();
     void resize();
     void realloc();
+    void count();
+    void first();
+    void last();
 };
 
 int fooCtor = 0;
@@ -591,6 +594,111 @@ void tst_QVarLengthArray::realloc()
 
     reallocTest<MyComplex>();
     QVERIFY(reallocTestProceed);
+}
+
+void tst_QVarLengthArray::count()
+{
+    // tests size(), count() and length(), since they're the same thing
+    {
+        const QVarLengthArray<int> list;
+        QCOMPARE(list.length(), 0);
+        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        QCOMPARE(list.length(), 1);
+        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(1);
+        QCOMPARE(list.length(), 2);
+        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+    }
+
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(0);
+        list.append(0);
+        QCOMPARE(list.length(), 3);
+        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+    }
+
+    // test removals too
+    {
+        QVarLengthArray<int> list;
+        list.append(0);
+        list.append(0);
+        list.append(0);
+        QCOMPARE(list.length(), 3);
+        QCOMPARE(list.count(), 3);
+        QCOMPARE(list.size(), 3);
+        list.removeLast();
+        QCOMPARE(list.length(), 2);
+        QCOMPARE(list.count(), 2);
+        QCOMPARE(list.size(), 2);
+        list.removeLast();
+        QCOMPARE(list.length(), 1);
+        QCOMPARE(list.count(), 1);
+        QCOMPARE(list.size(), 1);
+        list.removeLast();
+        QCOMPARE(list.length(), 0);
+        QCOMPARE(list.count(), 0);
+        QCOMPARE(list.size(), 0);
+    }
+}
+
+void tst_QVarLengthArray::first()
+{
+    // append some items, make sure it stays sane
+    QVarLengthArray<int> list;
+    list.append(27);
+    QCOMPARE(list.first(), 27);
+    list.append(4);
+    QCOMPARE(list.first(), 27);
+    list.append(1987);
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 3);
+
+    // remove some, make sure it stays sane
+    list.removeLast();
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 2);
+
+    list.removeLast();
+    QCOMPARE(list.first(), 27);
+    QCOMPARE(list.length(), 1);
+}
+
+void tst_QVarLengthArray::last()
+{
+    // append some items, make sure it stays sane
+    QVarLengthArray<int> list;
+    list.append(27);
+    QCOMPARE(list.last(), 27);
+    list.append(4);
+    QCOMPARE(list.last(), 4);
+    list.append(1987);
+    QCOMPARE(list.last(), 1987);
+    QCOMPARE(list.length(), 3);
+
+    // remove some, make sure it stays sane
+    list.removeLast();
+    QCOMPARE(list.last(), 4);
+    QCOMPARE(list.length(), 2);
+
+    list.removeLast();
+    QCOMPARE(list.last(), 27);
+    QCOMPARE(list.length(), 1);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

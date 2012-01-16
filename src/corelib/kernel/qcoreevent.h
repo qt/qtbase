@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -184,9 +184,6 @@ public:
         HoverEnter = 127,                       // mouse cursor enters a hover widget
         HoverLeave = 128,                       // mouse cursor leaves a hover widget
         HoverMove = 129,                        // mouse cursor move inside a hover widget
-
-        AccessibilityHelp = 119,                // accessibility help text request
-        AccessibilityDescription = 130,         // accessibility description text request
 
         // last event id used = 132
 

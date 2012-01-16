@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -527,7 +527,7 @@ void QRawVector<T>::append(const T &t)
 }
 
 template <typename T>
-Q_TYPENAME QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_type n, const T &t)
+typename QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_type n, const T &t)
 {
     int offset = int(before - m_begin);
     if (n != 0) {
@@ -561,7 +561,7 @@ Q_TYPENAME QRawVector<T>::iterator QRawVector<T>::insert(iterator before, size_t
 }
 
 template <typename T>
-Q_TYPENAME QRawVector<T>::iterator QRawVector<T>::erase(iterator abegin, iterator aend)
+typename QRawVector<T>::iterator QRawVector<T>::erase(iterator abegin, iterator aend)
 {
     int f = int(abegin - m_begin);
     int l = int(aend - m_begin);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,6 +102,7 @@ void tst_QTimeLine::range()
     // Verify that you can change the range in the timeLine
     timeLine.setFrameRange(10, 20);
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(spy.isValid());
     timeLine.start();
 #ifdef Q_OS_WINCE
     QTest::qWait(1000);
@@ -131,6 +132,7 @@ void tst_QTimeLine::currentTime()
     timeLine.setUpdateInterval((timeLine.duration()/2) / 33);
     qRegisterMetaType<qreal>("qreal");
     QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
+    QVERIFY(spy.isValid());
     timeLine.setFrameRange(10, 20);
     QCOMPARE(timeLine.currentTime(), 0);
     timeLine.start();
@@ -200,6 +202,7 @@ void tst_QTimeLine::frameRate()
     // Default speed
     timeLine.setUpdateInterval(1000 / 33);
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
@@ -223,6 +226,7 @@ void tst_QTimeLine::value()
     // Default speed
     qRegisterMetaType<qreal>("qreal");
     QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()/3);
     QVERIFY(timeLine.currentValue() > 0);
@@ -253,6 +257,7 @@ void tst_QTimeLine::currentFrame()
 
     // Default speed
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()/3);
     QVERIFY(timeLine.currentFrame() > 10);
@@ -284,6 +289,7 @@ void tst_QTimeLine::loopCount()
 
     // Default speed infiniti looping
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration());
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -302,6 +308,8 @@ void tst_QTimeLine::loopCount()
 
     QSignalSpy finishedSpy(&timeLine, SIGNAL(finished()));
     QSignalSpy frameChangedSpy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(frameChangedSpy.isValid());
     QEventLoop loop;
     connect(&timeLine, SIGNAL(finished()), &loop, SLOT(quit()));
 
@@ -451,6 +459,7 @@ void tst_QTimeLine::frameChanged()
     timeLine.setFrameRange(0,9);
     timeLine.setUpdateInterval(1000);
     QSignalSpy spy(&timeLine, SIGNAL(frameChanged(int)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
@@ -473,6 +482,7 @@ void tst_QTimeLine::stopped()
     timeLine.setFrameRange(0, 9);
     qRegisterMetaType<QTimeLine::State>("QTimeLine::State");
     QSignalSpy spy(&timeLine, SIGNAL(stateChanged(QTimeLine::State)));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
@@ -490,6 +500,7 @@ void tst_QTimeLine::finished()
     QTimeLine timeLine;
     timeLine.setFrameRange(0,9);
     QSignalSpy spy(&timeLine, SIGNAL(finished()));
+    QVERIFY(spy.isValid());
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
@@ -522,6 +533,7 @@ void tst_QTimeLine::multipleTimeLines()
     QTimeLine timeLine(200);
     timeLine.setFrameRange(0,99);
     QSignalSpy spy(&timeLine, SIGNAL(finished()));
+    QVERIFY(spy.isValid());
 
     QTimeLine timeLineKiller;
     timeLineKiller.setFrameRange(0,99);

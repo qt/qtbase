@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,7 @@
 #include <qauthenticator.h>
 #include <qnetworkproxy.h>
 #include <qbuffer.h>
+#include <qtimer.h>
 
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
@@ -134,6 +135,7 @@ private:
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))
+    Q_PRIVATE_SLOT(d_func(), void _q_connectDelayedChannel())
 };
 
 
@@ -196,6 +198,7 @@ public:
     void _q_startNextRequest(); // send the next request from the queue
 
     void _q_hostLookupFinished(QHostInfo info);
+    void _q_connectDelayedChannel();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
 
@@ -207,8 +210,10 @@ public:
     QString hostName;
     quint16 port;
     bool encrypt;
+    bool delayIpv4;
 
     const int channelCount;
+    QTimer delayedConnectionTimer;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
     bool shouldEmitChannelError(QAbstractSocket *socket);
 

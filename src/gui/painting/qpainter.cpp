@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2201,7 +2201,7 @@ void QPainter::setBrushOrigin(const QPointF &p)
     source defines the translucency of the pixel.
 
     When the paint device is a QImage, the image format must be set to
-    \l {QImage::Format}{Format_ARGB32Premultiplied} or
+    \l {QImage::Format}{Format_ARGB32_Premultiplied} or
     \l {QImage::Format}{Format_ARGB32} for the composition modes to have
     any effect. For performance the premultiplied version is the preferred
     format.

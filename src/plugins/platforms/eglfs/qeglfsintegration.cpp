@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,7 +90,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createWindowSurface %p\n",widget);
+    qWarning("QEglIntegration::createWindowSurface %p\n", window);
 #endif
     return new QEglFSBackingStore(window);
 }
@@ -108,6 +108,14 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
 {
     return createUnixEventDispatcher();
+}
+
+QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    if (hint == QPlatformIntegration::ShowIsFullScreen)
+        return true;
+
+    return QPlatformIntegration::styleHint(hint);
 }
 
 QT_END_NAMESPACE

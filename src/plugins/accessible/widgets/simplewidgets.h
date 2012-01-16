@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,9 +109,9 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleImageInterface
-    QString imageDescription();
-    QSize imageSize();
-    QRect imagePosition(QAccessible2::CoordinateType coordType);
+    QString imageDescription() const;
+    QSize imageSize() const;
+    QRect imagePosition(QAccessible2::CoordinateType coordType) const;
 };
 
 #ifndef QT_NO_LINEEDIT
@@ -124,28 +124,27 @@ public:
     QString text(QAccessible::Text t) const;
     void setText(QAccessible::Text t, const QString &text);
     QAccessible::State state() const;
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
-    QString attributes(int offset, int *startOffset, int *endOffset);
-    int cursorPosition();
-    QRect characterRect(int offset, QAccessible2::CoordinateType coordType);
-    int selectionCount();
-    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType);
-    void selection(int selectionIndex, int *startOffset, int *endOffset);
-    QString text(int startOffset, int endOffset);
+    QString attributes(int offset, int *startOffset, int *endOffset) const;
+    int cursorPosition() const;
+    QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const;
+    int selectionCount() const;
+    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    QString text(int startOffset, int endOffset) const;
     QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     void removeSelection(int selectionIndex);
     void setCursorPosition(int position);
     void setSelection(int selectionIndex, int startOffset, int endOffset);
-    int characterCount();
+    int characterCount() const;
     void scrollToSubstring(int startIndex, int endIndex);
 
 protected:
@@ -161,9 +160,9 @@ public:
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleValueInterface
-    QVariant currentValue();
-    QVariant maximumValue();
-    QVariant minimumValue();
+    QVariant currentValue() const;
+    QVariant maximumValue() const;
+    QVariant minimumValue() const;
     inline void setCurrentValue(const QVariant &) {}
 
 protected:

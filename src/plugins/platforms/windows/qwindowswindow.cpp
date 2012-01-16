@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -648,11 +648,11 @@ void QWindowsWindow::destroyWindow()
 {
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.hwnd;
-    if (m_data.hwnd) {
+    if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         unregisterDropSite();
+        QWindowsContext::instance()->removeWindow(m_data.hwnd);
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
-        QWindowsContext::instance()->removeWindow(m_data.hwnd);
         m_data.hwnd = 0;
     }
 }

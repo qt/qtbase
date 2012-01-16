@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,6 +67,7 @@ public:
     // properties
     QRect rect() const;
     void setText(QAccessible::Text t, const QString &text);
+    QAccessibleInterface *childAt(int x, int y) const;
 
 protected:
     virtual ~QAccessibleObject();
@@ -89,7 +90,6 @@ public:
 
     // navigation
     QAccessibleInterface *parent() const;
-    int childAt(int x, int y) const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag, int, QAccessibleInterface **) const;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,15 +76,10 @@ public:
     int weekNumber(int *yearNum = 0) const;
 
 #ifndef QT_NO_TEXTDATE
-    // ### Qt 5: merge these functions.
-    static QString shortMonthName(int month);
-    static QString shortMonthName(int month, MonthNameType type);
-    static QString shortDayName(int weekday);
-    static QString shortDayName(int weekday, MonthNameType type);
-    static QString longMonthName(int month);
-    static QString longMonthName(int month, MonthNameType type);
-    static QString longDayName(int weekday);
-    static QString longDayName(int weekday, MonthNameType type);
+    static QString shortMonthName(int month, MonthNameType type = DateFormat);
+    static QString shortDayName(int weekday, MonthNameType type = DateFormat);
+    static QString longMonthName(int month, MonthNameType type = DateFormat);
+    static QString longDayName(int weekday, MonthNameType type = DateFormat);
 #endif // QT_NO_TEXTDATE
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
@@ -114,10 +109,6 @@ public:
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
-
-    // ### Qt 5: remove these two functions
-    static uint gregorianToJulian(int y, int m, int d);
-    static void julianToGregorian(uint jd, int &y, int &m, int &d);
 
     static inline QDate fromJulianDay(int jd) { QDate d; d.jd = jd; return d; }
     inline int toJulianDay() const { return jd; }

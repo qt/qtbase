@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -136,11 +136,7 @@ public:
 
     int addClassInfo(const QByteArray& name, const QByteArray& value);
 
-#ifdef Q_NO_DATA_RELOCATION
-    int addRelatedMetaObject(const QMetaObjectAccessor &meta);
-#else
     int addRelatedMetaObject(const QMetaObject *meta);
-#endif
 
     void addMetaObject(const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members = AllMembers);
 

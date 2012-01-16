@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,7 +75,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_STYLE_MAC) && defined(Q_WS_MAC)
+#if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include "qmacstyle_mac.h"
 QT_END_INCLUDE_NAMESPACE

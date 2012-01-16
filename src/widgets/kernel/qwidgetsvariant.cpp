@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+namespace {
 static void construct(QVariant::Private *x, const void *copy)
 {
     switch (x->type) {
@@ -97,10 +97,8 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Icon:
         return v_cast<QIcon>(d)->isNull();
 #endif
-    default:
-        Q_ASSERT(false);
     }
-    return true;
+    return false;
 }
 
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
@@ -119,6 +117,34 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     return false;
 }
 
+static bool convert(const QVariant::Private *d, QVariant::Type type, void *result, bool *ok)
+{
+    Q_UNUSED(d);
+    Q_UNUSED(type);
+    Q_UNUSED(result);
+    if (ok)
+        *ok = false;
+    return false;
+}
+
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+static void streamDebug(QDebug dbg, const QVariant &v)
+{
+    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    switch (d->type) {
+#ifndef QT_NO_ICON
+    case QVariant::Icon:
+        dbg.nospace() << *v_cast<QIcon>(d);
+        break;
+#endif
+    case QVariant::SizePolicy:
+        dbg.nospace() << *v_cast<QSizePolicy>(d);
+        break;
+    default:
+        dbg.nospace() << "QVariant::Type(" << d->type << ")";
+    }
+}
+#endif
 
 static const QVariant::Handler widgets_handler = {
     construct,
@@ -129,19 +155,17 @@ static const QVariant::Handler widgets_handler = {
     0,
 #endif
     compare,
-    0,
+    convert,
     0,
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
-    0
+    streamDebug
 #else
     0
 #endif
 };
 
-extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
-
 #define QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES(MetaTypeName, MetaTypeId, RealName) \
-    QMetaTypeInterface(static_cast<RealName*>(0)),
+    QT_METATYPE_INTERFACE_INIT(RealName),
 
 static const QMetaTypeInterface qVariantWidgetsHelper[] = {
     QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES)
@@ -149,18 +173,20 @@ static const QMetaTypeInterface qVariantWidgetsHelper[] = {
 
 #undef QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES
 
-extern Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler;
+}  // namespace
+
+extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
 
 void qRegisterWidgetsVariant()
 {
-    qt_widgets_variant_handler = &widgets_handler;
     qMetaTypeWidgetsHelper = qVariantWidgetsHelper;
+    QVariantPrivate::registerHandler(QModulesPrivate::Widgets, &widgets_handler);
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)
 
 void qUnregisterWidgetsVariant()
 {
-    qt_widgets_variant_handler = 0;
+    QVariantPrivate::unregisterHandler(QModulesPrivate::Widgets);
     qMetaTypeWidgetsHelper = 0;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterWidgetsVariant)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1502,7 +1502,7 @@ bool QDir::removeRecursively()
         di.next();
         const QFileInfo& fi = di.fileInfo();
         bool ok;
-        if (fi.isDir())
+        if (fi.isDir() && !fi.isSymLink())
             ok = QDir(di.filePath()).removeRecursively(); // recursive
         else
             ok = QFile::remove(di.filePath());

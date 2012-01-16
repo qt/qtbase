@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -203,11 +203,11 @@ void tst_QLibrary::load_data()
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.dll" << true;
 # elif defined Q_OS_UNIX
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.so" << true;
 # endif  // Q_OS_UNIX
 }
 
@@ -334,7 +334,7 @@ void tst_QLibrary::isLibrary_data()
 
     QTest::newRow("bad (libmylib.1.0.0.foo)") << QString("libmylib.1.0.0.foo") << false;
 #elif defined(Q_OS_WIN)
-    QTest::newRow("good (with many dots)" ) << "/system.trolltech.test.mylib.dll" << true;
+    QTest::newRow("good (with many dots)" ) << "/system.qt.test.mylib.dll" << true;
 #endif
 }
 
@@ -437,11 +437,11 @@ void tst_QLibrary::loadHints_data()
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << int(lh) << true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << int(lh) << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.dll" << int(lh) << true;
 # elif defined Q_OS_UNIX
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/libmylib" SUFFIX << int(lh) << true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << int(lh) << true;
-    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << int(lh) << true;
+    QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.qt.test.mylib.so" << int(lh) << true;
 # endif  // Q_OS_UNIX
 }
 

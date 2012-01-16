@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -389,7 +389,7 @@ QDBusMessage QDBusMessage::createSignal(const QString &path, const QString &inte
     When using DBus in a peer-to-peer context (i.e., not on a bus), the \a service parameter is
     optional.
 
-    The QDBusObject and QDBusInterface classes provide a simpler abstraction to synchronous
+    The QDBusInterface class provides a simpler abstraction to synchronous
     method calling.
 
     This function returns a QDBusMessage object that can be sent with

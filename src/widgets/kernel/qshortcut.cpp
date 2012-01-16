@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -521,9 +521,9 @@ void QShortcut::setContext(Qt::ShortcutContext context)
     d->redoGrab(qApp->d_func()->shortcutMap);
 }
 
-Qt::ShortcutContext QShortcut::context()
+Qt::ShortcutContext QShortcut::context() const
 {
-    Q_D(QShortcut);
+    Q_D(const QShortcut);
     return d->sc_context;
 }
 

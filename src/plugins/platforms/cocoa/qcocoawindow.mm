@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,6 +81,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_windowAttributes(0)
     , m_windowClass(0)
     , m_glContext(0)
+    , m_inConstructor(true)
 {
     QCocoaAutoReleasePool pool;
 
@@ -97,7 +98,17 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     // QCocoaWindow is deleted by Qt.
     [m_nsWindow setReleasedWhenClosed : NO];
 
-    m_contentView = [[QNSView alloc] initWithQWindow:tlw];
+    m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidBecomeKey)
+                                          name:NSWindowDidBecomeKeyNotification
+                                          object:m_nsWindow];
+
+    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
+                                          selector:@selector(windowDidResignKey)
+                                          name:NSWindowDidResignKeyNotification
+                                          object:m_nsWindow];
 
     // ### Accept touch events by default.
     // Beware that enabling touch events has a negative impact on the overall performance.
@@ -107,10 +118,13 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     setGeometry(tlw->geometry());
 
     [m_nsWindow setContentView:m_contentView];
+    m_inConstructor = false;
 }
 
 QCocoaWindow::~QCocoaWindow()
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+    [m_contentView release];
     [m_nsWindow release];
 }
 
@@ -118,17 +132,22 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 {
     if (geometry() == rect)
         return;
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::setGeometry" << this << rect;
+#endif
     QPlatformWindow::setGeometry(rect);
 
     NSRect bounds = qt_mac_flipRect(rect, window());
-
-    [[m_nsWindow contentView] setFrameSize:bounds.size];
     [m_nsWindow setContentSize : bounds.size];
     [m_nsWindow setFrameOrigin : bounds.origin];
 }
 
 void QCocoaWindow::setVisible(bool visible)
 {
+    QCocoaAutoReleasePool pool;
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::setVisible" << this << visible;
+#endif
     if (visible) {
         // The parent window might have moved while this window was hidden,
         // update the window geometry if there is a parent.
@@ -146,6 +165,8 @@ void QCocoaWindow::setVisible(bool visible)
 
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
+    QCocoaAutoReleasePool pool;
+
     CFStringRef windowTitle = QCFString::toCFStringRef(title);
     [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
     CFRelease(windowTitle);
@@ -164,21 +185,24 @@ void QCocoaWindow::lower()
 
 void QCocoaWindow::propagateSizeHints()
 {
+    QCocoaAutoReleasePool pool;
+
     [m_nsWindow setMinSize : qt_mac_toNSSize(window()->minimumSize())];
     [m_nsWindow setMaxSize : qt_mac_toNSSize(window()->maximumSize())];
+
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QCocoaWindow::propagateSizeHints" << this;
+    qDebug() << "     min/max " << window()->minimumSize() << window()->maximumSize();
+    qDebug() << "     basesize" << window()->baseSize();
+    qDebug() << "     geometry" << geometry();
+#endif
 
     if (!window()->sizeIncrement().isNull())
         [m_nsWindow setResizeIncrements : qt_mac_toNSSize(window()->sizeIncrement())];
 
-    // We must set the window frame after setting the minimum size to prevent the window
-    // from being resized to the minimum size. Use QWindow::baseSize if set, otherwise
-    // use the current size.
     QSize baseSize = window()->baseSize();
-    QRect rect = geometry();
     if (!baseSize.isNull()) {
-        [m_nsWindow setFrame : NSMakeRect(rect.x(), rect.y(), baseSize.width(), baseSize.height()) display : YES];
-    } else {
-        [m_nsWindow setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height()) display : YES];
+        [m_nsWindow setFrameSize : NSMakeSize(baseSize.width(), baseSize.height()) display : YES];
     }
 }
 
@@ -212,24 +236,15 @@ NSView *QCocoaWindow::contentView() const
 
 void QCocoaWindow::windowDidMove()
 {
-    NSRect rect = [[m_nsWindow contentView]frame];
-    NSRect windowRect = [m_nsWindow frame];
-
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    setGeometry(geo);
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
+    [m_contentView updateGeometry];
 }
 
 void QCocoaWindow::windowDidResize()
 {
     NSRect rect = [[m_nsWindow contentView]frame];
-    NSRect windowRect = [m_nsWindow frame];
-
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    setGeometry(geo);
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
+    // Call setFrameSize which will trigger a frameDidChangeNotification on QNSView.
+    [[m_nsWindow contentView] setFrameSize:rect.size];
 }
-
 
 void QCocoaWindow::windowWillClose()
 {

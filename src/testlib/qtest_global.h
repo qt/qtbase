@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,7 @@ QT_MODULE(Test)
 # endif
 #endif
 
-#if defined (Q_CC_SUN) || defined (Q_CC_XLC) || (defined (Q_CC_GNU) && (__GNUC__ - 0 < 3))
+#if defined (Q_CC_SUN) || defined (Q_CC_XLC)
 # define QTEST_NO_SPECIALIZATIONS
 #endif
 
@@ -78,8 +78,6 @@ QT_MODULE(Test)
 namespace QTest
 {
     enum TestFailMode { Abort = 1, Continue = 2 };
-
-    int Q_TESTLIB_EXPORT qt_snprintf(char *str, int size, const char *format, ...);
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QLocalSocket::setSocketDescriptor(quintptr socketDescriptor,
+    \fn bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
         LocalSocketState socketState, OpenMode openMode)
 
     Initializes QLocalSocket with the native socket descriptor
@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn quintptr QLocalSocket::socketDescriptor() const
+    \fn qintptr QLocalSocket::socketDescriptor() const
 
     Returns the native socket descriptor of the QLocalSocket object if
     this is available; otherwise returns -1.
@@ -419,6 +419,8 @@ bool QLocalSocket::isSequential() const
     \value ConnectionError An error occurred with the connection.
     \value UnsupportedSocketOperationError The requested socket operation
         is not supported by the local operating system.
+    \value OperationError An operation was attempted while the socket was in a state that
+           did not permit it.
     \value UnknownSocketError An unidentified error occurred.
  */
 

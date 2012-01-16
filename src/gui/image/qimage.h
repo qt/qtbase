@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -295,8 +295,6 @@ private:
     friend class QRasterPlatformPixmap;
     friend class QBlittablePlatformPixmap;
     friend class QPixmapCacheEntry;
-    friend Q_GUI_EXPORT qint64 qt_image_id(const QImage &image);
-    friend const QVector<QRgb> *qt_image_colortable(const QImage &image);
 
 public:
     typedef QImageData * DataPtr;
@@ -363,9 +361,9 @@ inline QString QImage::text(const QImageTextKeyLang&kl) const
 {
     if (!d)
         return QString();
-    QString k = QString::fromAscii(kl.key);
+    QString k = QString::fromAscii(kl.key.constData());
     if (!kl.lang.isEmpty())
-        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
+        k += QLatin1Char('/') + QString::fromAscii(kl.lang.constData());
     return text(k);
 }
 
@@ -407,6 +405,11 @@ inline int QImage::numBytes() const
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QImage &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QImage &);
 #endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QImage &);
+#endif
+
 
 QT_END_NAMESPACE
 

@@ -124,16 +124,12 @@ src/dbus/qtdbusversion.h
 src/gui/qtguiversion.h
 src/network/qtnetworkversion.h
 src/opengl/qtopenglversion.h
-src/openvg/qtopenvgversion.h
 src/sql/qtsqlversion.h
 src/testlib/qttestversion.h
 src/xml/qtxmlversion.h
-src/v8/qtv8version.h
 src/platformsupport/qtplatformsupportversion.h
 src/printsupport/qtprintsupportversion.h
 src/widgets/qtwidgetsversion.h
-
-src/v8/generated-debug/
 
 # Test generated files
 QObject.log

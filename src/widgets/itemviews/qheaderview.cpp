@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -370,6 +370,8 @@ void QHeaderView::setModel(QAbstractItemModel *model)
                             this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
         QObject::disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                             this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+        QObject::disconnect(d->model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                            this, SLOT(_q_layoutAboutToBeChanged()));
     } else {
         QObject::disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                             this, SLOT(sectionsInserted(QModelIndex,int,int)));
@@ -377,11 +379,13 @@ void QHeaderView::setModel(QAbstractItemModel *model)
                             this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
         QObject::disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                             this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+        QObject::disconnect(d->model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                            this, SLOT(_q_layoutAboutToBeChanged()));
     }
     QObject::disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                         this, SLOT(headerDataChanged(Qt::Orientation,int,int)));
-        QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
-                            this, SLOT(_q_layoutAboutToBeChanged()));
+    QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
+                        this, SLOT(_q_layoutAboutToBeChanged()));
     }
 
     if (model && model != QAbstractItemModelPrivate::staticEmptyModel()) {
@@ -389,9 +393,11 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
                              this, SLOT(sectionsInserted(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-                this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
+                             this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-                this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+                             this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+            QObject::connect(model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                             this, SLOT(_q_layoutAboutToBeChanged()));
         } else {
             QObject::connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                              this, SLOT(sectionsInserted(QModelIndex,int,int)));
@@ -399,6 +405,8 @@ void QHeaderView::setModel(QAbstractItemModel *model)
                              this, SLOT(sectionsAboutToBeRemoved(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                              this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
+            QObject::connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
+                             this, SLOT(_q_layoutAboutToBeChanged()));
         }
         QObject::connect(model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                          this, SLOT(headerDataChanged(Qt::Orientation,int,int)));
@@ -884,8 +892,12 @@ void QHeaderView::resizeSection(int logical, int size)
     if (stretchLastSection() && visual == d->lastVisibleVisualIndex())
         d->lastSectionSize = size;
 
-    if (size != oldSize)
-        d->createSectionSpan(visual, visual, size, d->headerSectionResizeMode(visual));
+    d->createSectionSpan(visual, visual, size, d->headerSectionResizeMode(visual));
+
+    if (!updatesEnabled()) {
+        emit sectionResized(logical, oldSize, size);
+        return;
+    }
 
     int w = d->viewport->width();
     int h = d->viewport->height();
@@ -2405,7 +2417,13 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         return true; }
 #endif // QT_NO_STATUSTIP
-    case QEvent::Hide:
+    case QEvent::Hide: {
+        d->invalidateCachedSizeHint();
+        QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea *>(parentWidget());
+        if (parent && parent->isVisible()) // Only resize if we have a visible parent
+            resizeSections();
+        emit geometriesChanged();
+        break;}
     case QEvent::Show:
     case QEvent::FontChange:
     case QEvent::StyleChange:
@@ -2637,7 +2655,7 @@ void QHeaderView::scrollContentsBy(int dx, int dy)
     \reimp
     \internal
 */
-void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QSet<int> &)
 {
     Q_D(QHeaderView);
     d->invalidateCachedSizeHint();

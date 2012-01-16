@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,8 @@ public:
         m_updateCallCount(0),
         m_resetCallCount(0),
         m_commitCallCount(0),
+        m_localeCallCount(0),
+        m_inputDirectionCallCount(0),
         m_lastQueries(Qt::ImhNone),
         m_action(QInputPanel::Click),
         m_cursorPosition(0),
@@ -91,12 +93,24 @@ public:
     {
         return m_visible;
     }
+    virtual QLocale locale() const
+    {
+        m_localeCallCount++;
+        return QLocale::c();
+    }
+    virtual Qt::LayoutDirection inputDirection() const
+    {
+        m_inputDirectionCallCount++;
+        return Qt::LeftToRight;
+    }
 
     bool m_animating;
     bool m_visible;
     int m_updateCallCount;
     int m_resetCallCount;
     int m_commitCallCount;
+    mutable int m_localeCallCount;
+    mutable int m_inputDirectionCallCount;
     Qt::InputMethodQueries m_lastQueries;
     QInputPanel::Action m_action;
     int m_cursorPosition;
@@ -144,6 +158,7 @@ private slots:
     void commit();
     void update();
     void query();
+    void inputDirection();
 private:
     InputItem m_inputItem;
     PlatformInputContext m_platformInputContext;
@@ -310,6 +325,17 @@ void tst_qinputpanel::query()
 
     QRect cursorRectangle = query.value(Qt::ImCursorRectangle).toRect();
     QCOMPARE(cursorRectangle, QRect(1,2,3,4));
+}
+
+void tst_qinputpanel::inputDirection()
+{
+    QCOMPARE(m_platformInputContext.m_inputDirectionCallCount, 0);
+    qApp->inputPanel()->inputDirection();
+    QCOMPARE(m_platformInputContext.m_inputDirectionCallCount, 1);
+
+    QCOMPARE(m_platformInputContext.m_localeCallCount, 0);
+    qApp->inputPanel()->locale();
+    QCOMPARE(m_platformInputContext.m_localeCallCount, 1);
 }
 
 QTEST_MAIN(tst_qinputpanel)

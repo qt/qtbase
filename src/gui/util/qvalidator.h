@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -180,7 +180,7 @@ public:
     virtual QValidator::State validate(QString& input, int& pos) const;
 
     void setRegExp(const QRegExp& rx);
-    const QRegExp& regExp() const { return r; } // ### make inline for 5.0
+    const QRegExp& regExp() const { return r; }
 
 Q_SIGNALS:
     void regExpChanged(const QRegExp& regExp);

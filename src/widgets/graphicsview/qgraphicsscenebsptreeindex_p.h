@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ public:
     QList<QGraphicsItem *> estimateTopLevelItems(const QRectF &rect, Qt::SortOrder order) const;
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::DescendingOrder) const;
 
-    int bspTreeDepth();
+    int bspTreeDepth() const;
     void setBspTreeDepth(int depth);
 
 protected Q_SLOTS:

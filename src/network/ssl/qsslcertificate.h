@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 class QDateTime;
 class QIODevice;
@@ -152,7 +152,7 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslCertificate &certific
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo info);
 #endif
 
-#endif // QT_NO_OPENSSL
+#endif // QT_NO_SSL
 
 QT_END_NAMESPACE
 

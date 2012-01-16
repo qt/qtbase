@@ -1,3 +1,0 @@
-[submodule "src/3rdparty/v8"]
-	path = src/3rdparty/v8
-	url = git://github.com/aaronkennedy/v8.git

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -201,6 +201,7 @@ public:
 
     QVariant toVariantInternal();
     QDBusArgument::ElementType currentType();
+    bool isCurrentTypeStringLike();
 
 public:
     DBusMessageIter iterator;
@@ -208,6 +209,11 @@ public:
 
 private:
     Q_DISABLE_COPY(QDBusDemarshaller)
+    QString toStringUnchecked();
+    QDBusObjectPath toObjectPathUnchecked();
+    QDBusSignature toSignatureUnchecked();
+    QStringList toStringListUnchecked();
+    QByteArray toByteArrayUnchecked();
 };
 
 inline QDBusMarshaller *QDBusArgumentPrivate::marshaller()

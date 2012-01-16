@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,7 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qpair.h"
 #include "QtGui/qtransform.h"
+#include <private/qdatabuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +82,7 @@ public:
 
     QPolygonF toPolygon(qreal bezier_flattening_threshold = 0.5) const;
     void addToPolygon(QPolygonF *p, qreal bezier_flattening_threshold = 0.5) const;
+    void addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattening_threshold) const;
 
     QRectF bounds() const;
     qreal length(qreal error = 0.01) const;

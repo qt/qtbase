@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,25 +217,6 @@ void QAlphaPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRe
 
         if (d->m_picengine)
             d->m_picengine->drawPixmap(r, pm, sr);
-
-    } else {
-        d->m_continueCall = !d->fullyContained(tr);
-    }
-}
-
-void QAlphaPaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF &sr)
-{
-    Q_D(QAlphaPaintEngine);
-
-    QRectF tr = d->m_transform.mapRect(r);
-    if (d->m_pass == 0) {
-        d->m_continueCall = false;
-        if (image.hasAlphaChannel() || d->m_alphaOpacity || d->m_complexTransform) {
-            d->addAlphaRect(tr);
-        }
-
-        if (d->m_picengine)
-            d->m_picengine->drawImage(r, image, sr);
 
     } else {
         d->m_continueCall = !d->fullyContained(tr);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -836,7 +836,7 @@ int QTextLayout::lineCount() const
 */
 QTextLine QTextLayout::lineAt(int i) const
 {
-    return QTextLine(i, d);
+    return i < lineCount() ? QTextLine(i, d) : QTextLine();
 }
 
 /*!
@@ -2264,11 +2264,12 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
             QFontEngine *mainFontEngine = font.d->engineForScript(si.analysis.script);
             if (mainFontEngine->type() == QFontEngine::Multi) {
                 QFontEngineMulti *multiFontEngine = static_cast<QFontEngineMulti *>(mainFontEngine);
-                int start = 0;
-                int end;
-                int which = glyphLayout.glyphs[0] >> 24;
-                for (end = 0; end < glyphLayout.numGlyphs; ++end) {
-                    const int e = glyphLayout.glyphs[end] >> 24;
+                int end = rtl ? glyphLayout.numGlyphs : 0;
+                int start = rtl ? end : 0;
+                int which = glyphLayout.glyphs[rtl ? start - 1 : end] >> 24;
+                for (; (rtl && start > 0) || (!rtl && end < glyphLayout.numGlyphs);
+                     rtl ? --start : ++end) {
+                    const int e = glyphLayout.glyphs[rtl ? start - 1 : end] >> 24;
                     if (e == which)
                         continue;
 
@@ -2286,7 +2287,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                                        subLayout.advances_y[i].toReal());
                     }
 
-                    start = end;
+                    if (rtl)
+                        end = start;
+                    else
+                        start = end;
                     which = e;
                 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -182,7 +182,6 @@ enum Token {
     Q_SLOT_TOKEN,
     Q_PRIVATE_SLOT_TOKEN,
     Q_MOC_COMPAT_TOKEN,
-    Q_QT3_SUPPORT_TOKEN,
     Q_INVOKABLE_TOKEN,
     Q_SCRIPTABLE_TOKEN,
     Q_PRIVATE_PROPERTY_TOKEN,

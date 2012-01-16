@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -7457,6 +7457,7 @@ bool QDomHandler::characters(const QString&  ch)
         QScopedPointer<QDomEntityPrivate> e(new QDomEntityPrivate(doc, 0, entityName,
                 QString(), QString(), QString()));
         e->value = ch;
+        e->ref.deref();
         doc->doctype()->appendChild(e.data());
         e.take();
         n.reset(doc->createEntityReference(entityName));
@@ -7541,6 +7542,8 @@ bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicI
 {
     QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, name,
             publicId, systemId, notationName);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    e->ref.deref();
     doc->doctype()->appendChild(e);
     return true;
 }
@@ -7553,6 +7556,8 @@ bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicI
 bool QDomHandler::notationDecl(const QString & name, const QString & publicId, const QString & systemId)
 {
     QDomNotationPrivate* n = new QDomNotationPrivate(doc, 0, name, publicId, systemId);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    n->ref.deref();
     doc->doctype()->appendChild(n);
     return true;
 }

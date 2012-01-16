@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -219,38 +219,26 @@ void QWindowSystemInterface::registerTouchDevice(QTouchDevice *device)
     QTouchDevicePrivate::registerDevice(device);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchDevice *device,
-                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleTouchEvent(QWindow *w, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleTouchEvent(w, time, type, device, points, mods);
+    handleTouchEvent(w, time, device, points, mods);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type,
-                                              QTouchDevice *device,
-                                              const QList<struct TouchPoint> &points, Qt::KeyboardModifiers mods)
+QList<QTouchEvent::TouchPoint> QWindowSystemInterfacePrivate::convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type)
 {
-    if (!points.size()) // Touch events must have at least one point
-        return;
-
-    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
-        return;
-
     QList<QTouchEvent::TouchPoint> touchPoints;
     Qt::TouchPointStates states;
     QTouchEvent::TouchPoint p;
 
-    QList<struct TouchPoint>::const_iterator point = points.constBegin();
-    QList<struct TouchPoint>::const_iterator end = points.constEnd();
+    QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
+    QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
         p.setId(point->id);
         p.setPressure(point->pressure);
         states |= point->state;
-        Qt::TouchPointStates state = point->state;
-        if (point->isPrimary) {
-            state |= Qt::TouchPointPrimary;
-        }
-        p.setState(state);
+        p.setState(point->state);
 
         const QPointF screenPos = point->area.center();
         p.setScreenPos(screenPos);
@@ -268,36 +256,60 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
         ++point;
     }
 
+    // Determine the event type based on the combined point states.
+    if (type) {
+        *type = QEvent::TouchUpdate;
+        if (states == Qt::TouchPointPressed)
+            *type = QEvent::TouchBegin;
+        else if (states == Qt::TouchPointReleased)
+            *type = QEvent::TouchEnd;
+    }
+
+    return touchPoints;
+}
+
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QTouchDevice *device,
+                                              const QList<TouchPoint> &points, Qt::KeyboardModifiers mods)
+{
+    if (!points.size()) // Touch events must have at least one point
+        return;
+
+    if (!QTouchDevicePrivate::isRegistered(device)) // Disallow passing bogus, non-registered devices.
+        return;
+
+    QEvent::Type type;
+    QList<QTouchEvent::TouchPoint> touchPoints = QWindowSystemInterfacePrivate::convertTouchPoints(points, &type);
+
     QWindowSystemInterfacePrivate::TouchEvent *e =
             new QWindowSystemInterfacePrivate::TouchEvent(tlw, timestamp, type, device, touchPoints, mods);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation orientation)
 {
     QWindowSystemInterfacePrivate::ScreenOrientationEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenOrientationEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenOrientationEvent(screen, orientation);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const QRect &geometry)
 {
     QWindowSystemInterfacePrivate::ScreenGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenGeometryEvent(screen, geometry);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenAvailableGeometryChange(QScreen *screen, const QRect &availableGeometry)
 {
     QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent(screen, availableGeometry);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen)
+void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal dpiX, qreal dpiY)
 {
     QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen);
+            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen, dpiX, dpiY);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 

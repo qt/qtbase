@@ -1,0 +1,32 @@
+#
+# Wayland-scanner extra-compiler for handling files specified in the WAYLANDSOURCES variable
+#
+
+isEmpty(QMAKE_WAYLAND_SCANNER):error("QMAKE_WAYLAND_SCANNER not defined for this mkspec")
+
+wayland-server-header.name = wayland ${QMAKE_FILE_BASE}
+wayland-server-header.input = WAYLANDSOURCES
+wayland-server-header.variable_out = HEADERS
+wayland-server-header.output = wayland-${QMAKE_FILE_BASE}-server-protocol$${first(QMAKE_EXT_H)}
+wayland-server-header.commands = $$QMAKE_WAYLAND_SCANNER server-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+
+silent:wayland-server-header.commands = @echo Wayland server header ${QMAKE_FILE_IN} && $$wayland-server-header.commands
+QMAKE_EXTRA_COMPILERS += wayland-server-header
+
+wayland-client-header.name = wayland ${QMAKE_FILE_BASE}
+wayland-client-header.input = WAYLANDSOURCES
+wayland-client-header.variable_out = HEADERS
+wayland-client-header.output = wayland-${QMAKE_FILE_BASE}-client-protocol$${first(QMAKE_EXT_H)}
+wayland-client-header.commands = $$QMAKE_WAYLAND_SCANNER client-header < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+
+silent:wayland-client-header.commands = @echo Wayland client header ${QMAKE_FILE_IN} && $$wayland-client-header.commands
+QMAKE_EXTRA_COMPILERS += wayland-client-header
+
+wayland-code.name = wayland ${QMAKE_FILE_BASE}
+wayland-code.input = WAYLANDSOURCES
+wayland-code.variable_out = SOURCES
+wayland-code.output = wayland-${QMAKE_FILE_BASE}-protocol.c
+wayland-code.commands = $$QMAKE_WAYLAND_SCANNER code < ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+
+silent:wayland-code.commands = @echo Wayland code header ${QMAKE_FILE_IN} && $$wayland-code.commands
+QMAKE_EXTRA_COMPILERS += wayland-code

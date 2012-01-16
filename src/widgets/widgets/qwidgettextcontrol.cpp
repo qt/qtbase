@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,7 +75,7 @@
 #include <qvariant.h>
 #include <qurl.h>
 #include <qdesktopservices.h>
-#include <qinputcontext.h>
+#include <qinputpanel.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
@@ -691,20 +691,30 @@ void QWidgetTextControlPrivate::extendWordwiseSelection(int suggestedNewPosition
     if (!wordSelectionEnabled && (mouseXPosition < wordStartX || mouseXPosition > wordEndX))
         return;
 
-    // keep the already selected word even when moving to the left
-    // (#39164)
-    if (suggestedNewPosition < selectedWordOnDoubleClick.position())
-        cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
-    else
-        cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
+    if (wordSelectionEnabled) {
+        if (suggestedNewPosition < selectedWordOnDoubleClick.position()) {
+            cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
+            setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
+            setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+        }
+    } else {
+        // keep the already selected word even when moving to the left
+        // (#39164)
+        if (suggestedNewPosition < selectedWordOnDoubleClick.position())
+            cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
+        else
+            cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
 
-    const qreal differenceToStart = mouseXPosition - wordStartX;
-    const qreal differenceToEnd = wordEndX - mouseXPosition;
+        const qreal differenceToStart = mouseXPosition - wordStartX;
+        const qreal differenceToEnd = wordEndX - mouseXPosition;
 
-    if (differenceToStart < differenceToEnd)
-        setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
-    else
-        setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+        if (differenceToStart < differenceToEnd)
+            setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
+        else
+            setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+    }
 
     if (interactionFlags & Qt::TextSelectableByMouse) {
 #ifndef QT_NO_CLIPBOARD
@@ -1678,16 +1688,15 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
                 emit q->cursorPositionChanged();
             _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
-            if (contextWidget) {
-                if (QInputContext *ic = qApp->inputContext()) {
-                    ic->update();
-                }
-            }
+            if (contextWidget)
+                qApp->inputPanel()->update(Qt::ImQueryInput);
 #endif //QT_NO_IM
         } else {
             //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
-            if (cursor.position() != oldCursorPos)
+            if (cursor.position() != oldCursorPos) {
                 emit q->cursorPositionChanged();
+                emit q->microFocusChanged();
+            }
         }
         selectionChanged(true);
         repaintOldAndNewSelection(oldSelection);
@@ -1734,8 +1743,10 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
 
     repaintOldAndNewSelection(oldSelection);
 
-    if (cursor.position() != oldCursorPos)
+    if (cursor.position() != oldCursorPos) {
         emit q->cursorPositionChanged();
+        emit q->microFocusChanged();
+    }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         if (!(button & Qt::LeftButton))
@@ -1807,34 +1818,32 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
         QEvent *e, QEvent::Type eventType, Qt::MouseButton button, const QPointF &pos,
         Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons, const QPoint &globalPos)
 {
-#if !defined(QT_NO_IM)
-    Q_Q(QWidgetTextControl);
-
-    if (contextWidget && isPreediting()) {
-        QTextLayout *layout = cursor.block().layout();
-        QInputContext *ctx = qApp->inputContext();
-        int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
-
-        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
-            cursorPos = -1;
-
-        if (ctx && cursorPos >= 0) {
-            QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos),
-                           contextWidget->topLevelWidget()->mapFromGlobal(globalPos), globalPos,
-                           button, buttons, modifiers);
-            ctx->mouseHandler(cursorPos, &ev);
-            e->setAccepted(ev.isAccepted());
-            return true;
-        }
-    }
-#else
-    Q_UNUSED(e);
     Q_UNUSED(eventType);
     Q_UNUSED(button);
     Q_UNUSED(pos);
     Q_UNUSED(modifiers);
     Q_UNUSED(buttons);
     Q_UNUSED(globalPos);
+#if !defined(QT_NO_IM)
+    Q_Q(QWidgetTextControl);
+
+    if (contextWidget && isPreediting()) {
+        QTextLayout *layout = cursor.block().layout();
+        int cursorPos = q->hitTest(pos, Qt::FuzzyHit) - cursor.position();
+
+        if (cursorPos < 0 || cursorPos > layout->preeditAreaText().length())
+            cursorPos = -1;
+
+        if (cursorPos >= 0) {
+            if (e->type() == QEvent::MouseButtonRelease)
+                qApp->inputPanel()->invokeAction(QInputPanel::Click, cursorPos);
+
+            e->setAccepted(true);
+            return true;
+        }
+    }
+#else
+    Q_UNUSED(e);
 #endif
     return false;
 }
@@ -2156,17 +2165,6 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         a = menu->addAction(tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll), this, SLOT(selectAll()));
         a->setEnabled(!d->doc->isEmpty());
     }
-
-#if !defined(QT_NO_IM)
-    if (d->contextWidget) {
-        QInputContext *qic = qApp->inputContext();
-        if (qic) {
-            QList<QAction *> imActions = qic->actions();
-            for (int i = 0; i < imActions.size(); ++i)
-                menu->addAction(imActions.at(i));
-        }
-    }
-#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if ((d->interactionFlags & Qt::TextEditable) && qt_use_rtl_extensions) {

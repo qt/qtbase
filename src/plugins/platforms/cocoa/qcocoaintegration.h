@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,7 @@
 #include "qcocoaautoreleasepool.h"
 #include "qcocoacursor.h"
 
+#include <QtCore/QScopedPointer>
 #include <QtGui/QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
@@ -90,11 +91,12 @@ public:
 
     QPlatformTheme *platformTheme() const;
 private:
-    QPlatformFontDatabase *mFontDb;
+
+    QScopedPointer<QPlatformFontDatabase> mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
 
-    QPlatformAccessibility *mAccessibility;
-    QPlatformTheme *mPlatformTheme;
+    QScopedPointer<QPlatformAccessibility> mAccessibility;
+    QScopedPointer<QPlatformTheme> mPlatformTheme;
 };
 
 QT_END_NAMESPACE

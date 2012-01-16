@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,10 +73,8 @@ class tst_QSettings : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QSettings();
-
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -270,7 +268,7 @@ static void populateWithFormats()
     QTest::newRow("custom2") << QSettings::CustomFormat2;
 }
 
-tst_QSettings::tst_QSettings()
+void tst_QSettings::initTestCase()
 {
     QSettings::Format custom1 = QSettings::registerFormat("custom1", readCustom1File, writeCustom1File);
     QSettings::Format custom2 = QSettings::registerFormat("custom2", readCustom2File, writeCustom2File
@@ -1696,6 +1694,7 @@ void tst_QSettings::testUpdateRequestEvent()
 
 const int NumIterations = 5;
 const int NumThreads = 4;
+int numThreadSafetyFailures;
 
 class SettingsThread : public QThread
 {
@@ -1713,7 +1712,10 @@ void SettingsThread::run()
         QSettings settings("software.org", "KillerAPP");
         settings.setValue(QString::number((param * NumIterations) + i), param);
         settings.sync();
-        QCOMPARE((int)settings.status(), (int)QSettings::NoError);
+        if (settings.status() != QSettings::NoError) {
+            QWARN(qPrintable(QString("Unexpected QSettings status %1").arg((int)settings.status())));
+            ++numThreadSafetyFailures;
+        }
     }
 }
 
@@ -1721,6 +1723,8 @@ void tst_QSettings::testThreadSafety()
 {
     SettingsThread threads[NumThreads];
     int i, j;
+
+    numThreadSafetyFailures = 0;
 
     for (i = 0; i < NumThreads; ++i)
         threads[i].start(i + 1);
@@ -1734,6 +1738,8 @@ void tst_QSettings::testThreadSafety()
             QCOMPARE(settings.value(QString::number((param * NumIterations) + j)).toInt(), param);
         }
     }
+
+    QCOMPARE(numThreadSafetyFailures, 0);
 }
 
 void tst_QSettings::testNormalizedKey_data()
@@ -3160,7 +3166,7 @@ void tst_QSettings::consistentRegistryStorage()
 // Not tested at the moment.
 void tst_QSettings::oldSubkeyList()
 {
-    QVERIFY( TRUE );
+    QVERIFY( true );
 }
 */
 

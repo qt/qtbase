@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,10 +58,24 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qmetatype_p.h>
+#include <QtCore/qdebug.h>
 
 #include "qmetatypeswitcher_p.h"
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+template<typename T>
+struct QVariantIntegrator
+{
+    static const bool CanUseInternalSpace = sizeof(T) <= sizeof(QVariant::Private::Data)
+                                            && (!QTypeInfo<T>::isStatic);
+};
+Q_STATIC_ASSERT(QVariantIntegrator<double>::CanUseInternalSpace);
+Q_STATIC_ASSERT(QVariantIntegrator<long int>::CanUseInternalSpace);
+Q_STATIC_ASSERT(QVariantIntegrator<qulonglong>::CanUseInternalSpace);
+} // namespace
 
 #ifdef Q_CC_SUN // Sun CC picks the wrong overload, so introduce awful hack
 
@@ -69,9 +83,9 @@ template <typename T>
 inline T *v_cast(const QVariant::Private *nd, T * = 0)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(nd);
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+            : static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #else // every other compiler in this world
@@ -79,17 +93,17 @@ inline T *v_cast(const QVariant::Private *nd, T * = 0)
 template <typename T>
 inline const T *v_cast(const QVariant::Private *d, T * = 0)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<const T *>(d->data.shared->ptr)
-            : static_cast<const T *>(static_cast<const void *>(&d->data.c)));
+            : static_cast<const T *>(static_cast<const void *>(&d->data.c));
 }
 
 template <typename T>
 inline T *v_cast(QVariant::Private *d, T * = 0)
 {
-    return ((sizeof(T) > sizeof(QVariant::Private::Data))
+    return !QVariantIntegrator<T>::CanUseInternalSpace
             ? static_cast<T *>(d->data.shared->ptr)
-            : static_cast<T *>(static_cast<void *>(&d->data.c)));
+            : static_cast<T *>(static_cast<void *>(&d->data.c));
 }
 
 #endif
@@ -110,7 +124,7 @@ private:
 template <class T>
 inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         x->data.shared = copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T *>(copy))
                               : new QVariantPrivateSharedEx<T>;
         x->is_shared = true;
@@ -125,7 +139,7 @@ inline void v_construct(QVariant::Private *x, const void *copy, T * = 0)
 template <class T>
 inline void v_construct(QVariant::Private *x, const T &t)
 {
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         x->data.shared = new QVariantPrivateSharedEx<T>(t);
         x->is_shared = true;
     } else {
@@ -138,7 +152,7 @@ template <class T>
 inline void v_clear(QVariant::Private *d, T* = 0)
 {
     
-    if (sizeof(T) > sizeof(QVariant::Private::Data)) {
+    if (!QVariantIntegrator<T>::CanUseInternalSpace) {
         //now we need to cast
         //because QVariant::PrivateShared doesn't have a virtual destructor
         delete static_cast<QVariantPrivateSharedEx<T>*>(d->data.shared);
@@ -159,24 +173,7 @@ class QVariantComparator {
     };
     template<typename T>
     struct FilteredComparator<T, /* IsAcceptedType = */ false> {
-        static bool compare(const QVariant::Private *m_a, const QVariant::Private *m_b)
-        {
-            const char *const typeName = QMetaType::typeName(m_a->type);
-            if (Q_UNLIKELY(!typeName) && Q_LIKELY(!QMetaType::isRegistered(m_a->type)))
-                qFatal("QVariant::compare: type %d unknown to QVariant.", m_a->type);
-
-            const void *a_ptr = m_a->is_shared ? m_a->data.shared->ptr : &(m_a->data.ptr);
-            const void *b_ptr = m_b->is_shared ? m_b->data.shared->ptr : &(m_b->data.ptr);
-
-            uint typeNameLen = qstrlen(typeName);
-            if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
-                return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
-
-            if (m_a->is_null && m_b->is_null)
-                return true;
-
-            return !memcmp(a_ptr, b_ptr, QMetaType::sizeOf(m_a->type));
-        }
+        static bool compare(const QVariant::Private *, const QVariant::Private *) { return false; }
     };
 public:
     QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
@@ -293,11 +290,11 @@ protected:
 template<class Filter>
 class QVariantConstructor
 {
-    template<typename T, bool IsSmall = (sizeof(T) <= sizeof(QVariant::Private::Data))>
+    template<typename T, bool CanUseInternalSpace = QVariantIntegrator<T>::CanUseInternalSpace>
     struct CallConstructor {};
 
     template<typename T>
-    struct CallConstructor<T, /* IsSmall = */ true>
+    struct CallConstructor<T, /* CanUseInternalSpace = */ true>
     {
         CallConstructor(const QVariantConstructor &tc)
         {
@@ -310,11 +307,11 @@ class QVariantConstructor
     };
 
     template<typename T>
-    struct CallConstructor<T, /* IsSmall = */ false>
+    struct CallConstructor<T, /* CanUseInternalSpace = */ false>
     {
         CallConstructor(const QVariantConstructor &tc)
         {
-            Q_STATIC_ASSERT(QTypeInfo<T>::isComplex);
+            Q_STATIC_ASSERT(QTypeInfo<T>::isComplex || sizeof(T) > sizeof(QVariant::Private::Data));
             tc.m_x->data.shared = tc.m_copy ? new QVariantPrivateSharedEx<T>(*static_cast<const T*>(tc.m_copy))
                                       : new QVariantPrivateSharedEx<T>;
             tc.m_x->is_shared = true;
@@ -359,24 +356,8 @@ public:
             m_x->is_shared = false;
             return;
         }
-        // it is not a static known type, lets ask QMetaType if it can be constructed for us.
-        const uint size = QMetaType::sizeOf(m_x->type);
-
-        if (size && size <= sizeof(QVariant::Private::Data)) {
-            void *ptr = QMetaType::construct(m_x->type, &m_x->data.ptr, m_copy);
-            if (!ptr) {
-                m_x->type = QVariant::Invalid;
-            }
-            m_x->is_shared = false;
-        } else {
-            void *ptr = QMetaType::create(m_x->type, m_copy);
-            if (!ptr) {
-                m_x->type = QVariant::Invalid;
-            } else {
-                m_x->is_shared = true;
-                m_x->data.shared = new QVariant::PrivateShared(ptr);
-            }
-        }
+        qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
+        m_x->type = QVariant::Invalid;
     }
 
     void delegate(const void*)
@@ -425,19 +406,68 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        // This is not a static type, so lets delegate everyting to QMetaType
-        if (!m_d->is_shared) {
-            QMetaType::destruct(m_d->type, &m_d->data.ptr);
-        } else {
-            QMetaType::destroy(m_d->type, m_d->data.shared->ptr);
-            delete m_d->data.shared;
-        }
+        if (m_d->type == QVariant::UserType)
+            return;
+        qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
     // Ignore nonconstructible type
     void delegate(const void*) {}
 private:
     QVariant::Private *m_d;
 };
+
+namespace QVariantPrivate {
+Q_CORE_EXPORT void registerHandler(const int /* Modules::Names */ name, const QVariant::Handler *handler);
+Q_CORE_EXPORT void unregisterHandler(const int /* Modules::Names */ name);
+}
+
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+template<class Filter>
+class QVariantDebugStream
+{
+    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
+    struct Filtered {
+        Filtered(QDebug dbg, QVariant::Private *d)
+        {
+            dbg.nospace() << *v_cast<T>(d);
+        }
+    };
+    template<typename T>
+    struct Filtered<T, /* IsAcceptedType = */ false> {
+        Filtered(QDebug dbg, QVariant::Private *d)
+        {
+            dbg.nospace() << "QVariant::Type(" << d->type << ")";
+        }
+    };
+
+public:
+    QVariantDebugStream(QDebug dbg, QVariant::Private *d)
+        : m_debugStream(dbg)
+        , m_d(d)
+    {}
+
+    template<typename T>
+    void delegate(const T*)
+    {
+        Filtered<T> streamIt(m_debugStream, m_d);
+    }
+
+    void delegate(const QMetaTypeSwitcher::UnknownType*)
+    {
+        if (m_d->type == QVariant::UserType)
+            m_debugStream.nospace() << "QVariant::UserType";
+        else
+            qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+    }
+    void delegate(const void*)
+    {
+        m_debugStream.nospace() << "QVariant::Invalid";
+    }
+private:
+    QDebug m_debugStream;
+    QVariant::Private *m_d;
+};
+#endif
 
 QT_END_NAMESPACE
 

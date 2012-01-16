@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,7 +89,12 @@ QCocoaScreen::~QCocoaScreen()
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
+    , mAccessibility(new QPlatformAccessibility)
+    , mPlatformTheme(new QCocoaTheme)
+
 {
+    QCocoaAutoReleasePool pool;
+
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
     NSApplication *cocoaApplication = [NSApplication sharedApplication];
@@ -132,13 +137,11 @@ QCocoaIntegration::QCocoaIntegration()
         screenAdded(screen);
     }
 
-    mAccessibility = new QPlatformAccessibility;
-    mPlatformTheme = new QCocoaTheme;
 }
 
 QCocoaIntegration::~QCocoaIntegration()
 {
-    delete mAccessibility;
+    [[NSApplication sharedApplication] setDelegate: 0];
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -175,7 +178,7 @@ QAbstractEventDispatcher *QCocoaIntegration::guiThreadEventDispatcher() const
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return mFontDb.data();
 }
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
@@ -185,12 +188,12 @@ QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
 
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
-    return mAccessibility;
+    return mAccessibility.data();
 }
 
 QPlatformTheme *QCocoaIntegration::platformTheme() const
 {
-    return mPlatformTheme;
+    return mPlatformTheme.data();
 }
 
 QT_END_NAMESPACE

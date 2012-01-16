@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -256,6 +256,8 @@ private slots:
 
     void drawTextOutsideGuiThread();
 
+    void drawTextWithComplexBrush();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -347,7 +349,7 @@ Q_DECLARE_METATYPE(QRegion)
 tst_QPainter::tst_QPainter()
 {
     // QtTestCase sets this to false, but this turns off alpha pixmaps on Unix.
-    QApplication::setDesktopSettingsAware(TRUE);
+    QApplication::setDesktopSettingsAware(true);
 }
 
 tst_QPainter::~tst_QPainter()
@@ -4303,6 +4305,28 @@ void tst_QPainter::drawTextOutsideGuiThread()
     t.wait();
 
     QCOMPARE(referenceRendering, t.rendering);
+}
+
+void tst_QPainter::drawTextWithComplexBrush()
+{
+    QImage texture(10, 10, QImage::Format_ARGB32_Premultiplied);
+    texture.fill(Qt::red);
+
+    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::white);
+    QPainter p(&image);
+    QFont f = p.font();
+    f.setPixelSize(70);
+    p.setFont(f);
+
+    QBrush brush(Qt::white);
+    brush.setTextureImage(texture);
+    p.setPen(QPen(brush, 2));
+
+    p.drawText(10, 10, "Hello World");
+
+    int paintedPixels = getPaintedPixels(image, Qt::white);
+    QVERIFY(paintedPixels > 0);
 }
 
 QTEST_MAIN(tst_QPainter)

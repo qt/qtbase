@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,6 @@ QCocoaTouch::~QCocoaTouch()
 void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 {
     _touchPoint.state = toTouchPointState(phase);
-    _touchPoint.isPrimary = (_touchCount == 1);
 
     // From the normalized position on the trackpad, calculate
     // where on screen the touchpoint should be according to the

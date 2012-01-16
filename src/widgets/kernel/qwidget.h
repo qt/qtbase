@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -746,16 +746,8 @@ private:
 #endif // QT_NO_GESTURES
     friend class QWidgetEffectSourcePrivate;
 
-#ifdef Q_WS_MAC
-    friend class QCoreGraphicsPaintEnginePrivate;
-    friend QPoint qt_mac_posInWindow(const QWidget *w);
-    friend OSWindowRef qt_mac_window_for(const QWidget *w);
+#ifdef Q_OS_MAC
     friend bool qt_mac_is_metal(const QWidget *w);
-    friend OSViewRef qt_mac_nativeview_for(const QWidget *w);
-    friend void qt_event_request_window_change(QWidget *widget);
-    friend bool qt_mac_sendMacEventToWidget(QWidget *widget, EventRef ref);
-    friend class QRasterWindowSurface;
-    friend class QUnifiedToolbarSurface;
 #endif
     friend Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
     friend Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);

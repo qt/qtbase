@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1185,22 +1185,19 @@ void QAction::activate(ActionEvent event)
 {
     Q_D(QAction);
     if(event == Trigger) {
-        QObject *guard = this;
-        QMetaObject::addGuard(&guard);
+        QWeakPointer<QObject> guard = this;
         if(d->checkable) {
             // the checked action of an exclusive group cannot be  unchecked
             if (d->checked && (d->group && d->group->isExclusive()
                                && d->group->checkedAction() == this)) {
-                if (guard)
+                if (!guard.isNull())
                     emit triggered(true);
-                QMetaObject::removeGuard(&guard);
                 return;
             }
             setChecked(!d->checked);
         }
-        if (guard)
+        if (!guard.isNull())
             emit triggered(d->checked);
-        QMetaObject::removeGuard(&guard);
     } else if(event == Hover) {
         emit hovered();
     }
@@ -1264,97 +1261,6 @@ void QAction::activate(ActionEvent event)
 
     \value Hover this will cause the QAction::hovered() signal to be emitted.
 */
-
-/*!
-    \fn void QAction::setMenuText(const QString &text)
-
-    Use setText() instead.
-*/
-
-/*!
-    \fn QString QAction::menuText() const
-
-    Use text() instead.
-*/
-
-/*!
-    \fn bool QAction::isOn() const
-
-    Use isChecked() instead.
-*/
-
-/*!
-    \fn void QAction::setOn(bool b)
-
-    Use setChecked() instead.
-*/
-
-/*!
-    \fn bool QAction::isToggleAction() const
-
-    Use isCheckable() instead.
-*/
-
-/*!
-    \fn void QAction::setToggleAction(bool b)
-
-    Use setCheckable() instead.
-*/
-
-/*!
-    \fn void QAction::setIconSet(const QIcon &i)
-
-    Use setIcon() instead.
-*/
-
-/*!
-    \fn bool QAction::addTo(QWidget *w)
-
-    Use QWidget::addAction() instead.
-
-    \oldcode
-    action->addTo(widget);
-    \newcode
-    widget->addAction(action);
-    \endcode
-*/
-
-/*!
-    \fn bool QAction::removeFrom(QWidget *w)
-
-    Use QWidget::removeAction() instead.
-
-    \oldcode
-    action->removeFrom(widget);
-    \newcode
-    widget->removeAction(action);
-    \endcode
-*/
-
-/*!
-    \fn void QAction::setAccel(const QKeySequence &shortcut)
-
-    Use setShortcut() instead.
-*/
-
-/*!
-    \fn QIcon QAction::iconSet() const
-
-    Use icon() instead.
-*/
-
-/*!
-    \fn QKeySequence QAction::accel() const
-
-    Use shortcut() instead.
-*/
-
-/*!
-    \fn void QAction::activated(int i);
-
-    Use triggered() instead.
-*/
-
 
 /*!
     \property QAction::menuRole

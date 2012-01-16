@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -158,9 +158,9 @@ QRectF QInputPanel::cursorRectangle() const
     \property QInputPanel::keyboardRectangle
     \brief Virtual keyboard's geometry in window coordinates.
 */
-QRectF QInputPanel::keyboardRectangle()
+QRectF QInputPanel::keyboardRectangle() const
 {
-    Q_D(QInputPanel);
+    Q_D(const QInputPanel);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->keyboardRect();
@@ -245,6 +245,32 @@ bool QInputPanel::isAnimating() const
     if (ic)
         return ic->isAnimating();
     return false;
+}
+
+/*!
+    \property QInputPanel::locale
+    \brief Current input locale.
+*/
+QLocale QInputPanel::locale() const
+{
+    Q_D(const QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
+    if (ic)
+        return ic->locale();
+    return QLocale::c();
+}
+
+/*!
+    \property QInputPanel::inputDirection
+    \brief Current input direction.
+*/
+Qt::LayoutDirection QInputPanel::inputDirection() const
+{
+    Q_D(const QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
+    if (ic)
+        return ic->inputDirection();
+    return Qt::LeftToRight;
 }
 
 /*!

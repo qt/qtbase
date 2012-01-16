@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -271,6 +271,14 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
     return d->m_fontDatabase;
 }
 
+static inline int keyBoardAutoRepeatRateMS()
+{
+  DWORD time = 0;
+  if (SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &time, 0))
+      return time ? 1000 / static_cast<int>(time) : 500;
+  return 30;
+}
+
 QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     switch (hint) {
@@ -278,7 +286,8 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         if (const unsigned timeMS = GetCaretBlinkTime())
             return QVariant(int(timeMS));
         break;
-
+    case KeyboardAutoRepeatRate:
+        return QVariant(keyBoardAutoRepeatRateMS());
     case QPlatformIntegration::StartDragTime:
     case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::MouseDoubleClickInterval:

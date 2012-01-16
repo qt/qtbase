@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,7 +165,7 @@ MakefileGenerator::MakefileGenerator() :
 void
 MakefileGenerator::verifyCompilers()
 {
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     QStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
     for(int i = 0; i < quc.size(); ) {
         bool error = false;
@@ -195,7 +195,7 @@ MakefileGenerator::initOutPaths()
         return;
     verifyCompilers();
     init_opath_already = true;
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     //for shadow builds
     if(!v.contains("QMAKE_ABSOLUTE_SOURCE_PATH")) {
         if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty() &&
@@ -317,7 +317,7 @@ QStringList
 MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &vpath_var)
 {
     QStringList vpath;
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     for(int val_it = 0; val_it < l.count(); ) {
         bool remove_file = false;
         QString &val = l[val_it];
@@ -411,7 +411,7 @@ MakefileGenerator::findFilesInVPATH(QStringList l, uchar flags, const QString &v
 void
 MakefileGenerator::initCompiler(const MakefileGenerator::Compiler &comp)
 {
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     QStringList &l = v[comp.variable_in];
     // find all the relevant file inputs
     if(!init_compiler_already.contains(comp.variable_in)) {
@@ -431,7 +431,7 @@ MakefileGenerator::init()
     verifyCompilers();
     init_already = true;
 
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     QStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order
@@ -875,8 +875,8 @@ MakefileGenerator::processPrlFile(QString &file)
                 debug_msg(2, "Ignored meta file %s [%s]", real_meta_file.toLatin1().constData(), libinfo.type().toLatin1().constData());
             } else {
                 ret = true;
-                QMap<QString, QStringList> &vars = libinfo.variables();
-                for(QMap<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it)
+                QHash<QString, QStringList> &vars = libinfo.variables();
+                for(QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it)
                     processPrlVariable(it.key(), it.value());
                 if(try_replace_file && !libinfo.isEmpty("QMAKE_PRL_TARGET")) {
                     QString dir;
@@ -1300,15 +1300,15 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                        cmd = "-$(INSTALL_PROGRAM)";
                     else
                        cmd = "-$(INSTALL_FILE)";
-                    cmd += " " + escapeFilePath(wild) + " " + dst_file + "\n";
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)) + "\n";
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))) + "\n";
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                     continue;
                 }
                 QString local_dirstr = Option::fixPathToLocalOS(dirstr, true);
@@ -1332,11 +1332,11 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                     } else {
                         cmd = QString(fi.isExecutable() ? "-$(INSTALL_PROGRAM)" : "-$(INSTALL_FILE)");
                     }
-                    cmd += " " + wild + " " + dst_file + "\n";
+                    cmd += " " + escapeFilePath(wild) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + filestr, FileFixifyAbsolute, false))));
                 }
                 for(int x = 0; x < files.count(); x++) {
                     QString file = files[x];
@@ -1344,7 +1344,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         continue;
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");
-                    uninst.append(rm_dir_contents + " " + filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false)));
+                    uninst.append(rm_dir_contents + " " + escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))));
                     QFileInfo fi(fileInfo(dirstr + file));
                     if(!target.isEmpty())
                         target += "\t";
@@ -1355,12 +1355,12 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                         dst_file += fi.fileName();
                     }
                     QString cmd = QString(fi.isDir() ? "-$(INSTALL_DIR)" : "-$(INSTALL_FILE)") + " " +
-                                  dirstr + file + " " + dst_file + "\n";
+                                  escapeFilePath(dirstr + file) + " " + escapeFilePath(dst_file) + "\n";
                     target += cmd;
                     if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") &&
                        !fi.isDir() && fi.isExecutable() && !project->isEmpty("QMAKE_STRIP"))
                         target += QString("\t-") + var("QMAKE_STRIP") + " " +
-                                  filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false)) +
+                                  escapeFilePath(filePrefixRoot(root, fileFixify(dst + file, FileFixifyAbsolute, false))) +
                                   "\n";
                 }
             }
@@ -2138,23 +2138,22 @@ MakefileGenerator::writeExtraCompilerVariables(QTextStream &t)
 void
 MakefileGenerator::writeExtraVariables(QTextStream &t)
 {
-    bool first = true;
-    QMap<QString, QStringList> &vars = project->variables();
+    t << endl;
+
+    QStringList outlist;
+    QHash<QString, QStringList> &vars = project->variables();
     QStringList &exports = project->values("QMAKE_EXTRA_VARIABLES");
-    for(QMap<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
-        for(QStringList::Iterator exp_it = exports.begin(); exp_it != exports.end(); ++exp_it) {
+    for (QHash<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
+        for (QStringList::Iterator exp_it = exports.begin(); exp_it != exports.end(); ++exp_it) {
             QRegExp rx((*exp_it), Qt::CaseInsensitive, QRegExp::Wildcard);
-            if(rx.exactMatch(it.key())) {
-                if(first) {
-                    t << "\n####### Custom Variables" << endl;
-                    first = false;
-                }
-                t << "EXPORT_" << it.key() << " = " << it.value().join(" ") << endl;
-            }
+            if (rx.exactMatch(it.key()))
+                outlist << ("EXPORT_" + it.key() + " = " + it.value().join(" "));
         }
     }
-    if(!first)
-        t << endl;
+    if (!outlist.isEmpty()) {
+        t << "####### Custom Variables" << endl;
+        t << outlist.join("\n") << endl << endl;
+    }
 }
 
 bool

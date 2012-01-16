@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,14 +53,16 @@
 
 @implementation QNSView (QNSViewAccessibility)
 
+// The QNSView is a container that the user does not interact directly with:
+// Remove it from the user-visible accessibility tree.
 - (BOOL)accessibilityIsIgnored {
-    return NO;
+    return YES;
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
         if (m_accessibleRoot)
-            return macRole(m_accessibleRoot->role());
+            return QCocoaAccessible::macRole(m_accessibleRoot->role());
         return NSAccessibilityUnknownRole;
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescriptionForUIElement(self);
@@ -83,34 +85,19 @@
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
+    if (!m_accessibleRoot)
+        return [super accessibilityHitTest:point];
     NSPoint windowPoint = [[self window] convertScreenToBase:point];
-    NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
 
-    int index = -1;
-    if (m_accessibleRoot) {
-        index = m_accessibleRoot->childAt(point.x, qt_mac_flipYCoordinate(point.y));
-
-        // qDebug() << "root rect" << m_accessibleRoot->rect();
-        // qDebug() << "hit screen" << point.x << qt_mac_flipYCoordinate(point.y)  << index;
-        // if (index > 0) {
-        //      qDebug() << "child name" << m_accessibleRoot->child(index - 1)->text(QAccessible::Name);
-        //      qDebug() << "child rect" << m_accessibleRoot->child(index - 1)->rect();
-        // }
-    }
-
-    // hit outside
-    if (index == -1) {
+    QAccessibleInterface *childInterface = m_accessibleRoot->childAt(point.x, qt_mac_flipYCoordinate(point.y));
+    // No child found, meaning we hit the NSView
+    if (!childInterface) {
         return [super accessibilityHitTest:point];
     }
 
-    // hit the NSView / top-level window
-    if (index == 0) {
-        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index parent:self accessibleInterface:(void*)m_accessibleRoot];
-        return [accessibleElement accessibilityHitTest:point];
-    }
-
-    // hit a child, forward to child accessible interface.
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index - 1 parent:self accessibleInterface:(void*)m_accessibleRoot->child(index -1)];
+    // Hit a child, forward to child accessible interface.
+    int childIndex = m_accessibleRoot->indexOfChild(childInterface);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex -1 parent:self accessibleInterface: childInterface];
     return [accessibleElement accessibilityHitTest:point];
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,11 +64,7 @@ template <typename T> class QAtomicPointer;
 class QSimpleTextCodec: public QTextCodec
 {
 public:
-#ifdef Q_OS_SYMBIAN
-    enum { numSimpleCodecs = 5 };
-#else
     enum { numSimpleCodecs = 30 };
-#endif
     explicit QSimpleTextCodec(int);
     ~QSimpleTextCodec();
 

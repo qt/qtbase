@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,12 +45,9 @@
 #include <QTimer>
 #include "../../qbearertestcommon.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
 #include <QtNetwork/qnetworksession.h>
-
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
-#include <stdio.h>
-#include <iapconf.h>
 #endif
 
 QT_USE_NAMESPACE
@@ -58,19 +55,21 @@ QT_USE_NAMESPACE
 // Can be used to configure tests that require manual attention (such as roaming)
 //#define QNETWORKSESSION_MANUAL_TESTS 1
 
+#ifndef QT_NO_BEARERMANAGEMENT
 Q_DECLARE_METATYPE(QNetworkConfiguration)
-Q_DECLARE_METATYPE(QNetworkConfiguration::Type);
+Q_DECLARE_METATYPE(QNetworkConfiguration::Type)
+#endif
 
 class tst_QNetworkSession : public QObject
 {
     Q_OBJECT
 
+#ifndef QT_NO_BEARERMANAGEMENT
 public slots:
     void initTestCase();
     void cleanupTestCase();
 
 private slots:
-
     void robustnessBombing();
 
     void sessionClosing_data();
@@ -97,17 +96,10 @@ private slots:
 private:
     QNetworkConfigurationManager manager;
     int inProcessSessionManagementCount;
-
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
-    Maemo::IAPConf *iapconf;
-    Maemo::IAPConf *iapconf2;
-    Maemo::IAPConf *gprsiap;
-#define MAX_IAPS 10
-    Maemo::IAPConf *iaps[MAX_IAPS];
-    QProcess *icd_stub;
 #endif
 };
 
+#ifndef QT_NO_BEARERMANAGEMENT
 // Helper functions
 bool openSession(QNetworkSession *session);
 bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration = true);
@@ -120,81 +112,11 @@ void tst_QNetworkSession::initTestCase()
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfiguration::Type>("QNetworkConfiguration::Type");
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
-    iapconf = new Maemo::IAPConf("007");
-    iapconf->setValue("ipv4_type", "AUTO");
-    iapconf->setValue("wlan_wepkey1", "connt");
-    iapconf->setValue("wlan_wepdefkey", 1);
-    iapconf->setValue("wlan_ssid", QByteArray("JamesBond"));
-    iapconf->setValue("name", "James Bond");
-    iapconf->setValue("type", "WLAN_INFRA");
-
-    gprsiap = new Maemo::IAPConf("This-is-GPRS-IAP");
-    gprsiap->setValue("ask_password", false);
-    gprsiap->setValue("gprs_accesspointname", "internet");
-    gprsiap->setValue("gprs_password", "");
-    gprsiap->setValue("gprs_username", "");
-    gprsiap->setValue("ipv4_autodns", true);
-    gprsiap->setValue("ipv4_type", "AUTO");
-    gprsiap->setValue("sim_imsi", "244070123456789");
-    gprsiap->setValue("name", "MI6");
-    gprsiap->setValue("type", "GPRS");
-
-    iapconf2 = new Maemo::IAPConf("osso.net");
-    iapconf2->setValue("ipv4_type", "AUTO");
-    iapconf2->setValue("wlan_wepkey1", "osso.net");
-    iapconf2->setValue("wlan_wepdefkey", 1);
-    iapconf2->setValue("wlan_ssid", QByteArray("osso.net"));
-    iapconf2->setValue("name", "osso.net");
-    iapconf2->setValue("type", "WLAN_INFRA");
-    iapconf2->setValue("wlan_security", "WEP");
-
-    /* Create large number of IAPs in the gconf and see what happens */
-    fflush(stdout);
-    printf("Creating %d IAPS: ", MAX_IAPS);
-    for (int i=0; i<MAX_IAPS; i++) {
-	QString num = QString().sprintf("%d", i);
-	QString iap = "iap-" + num;
-	iaps[i] = new Maemo::IAPConf(iap);
-	iaps[i]->setValue("name", QString("test-iap-")+num);
-	iaps[i]->setValue("type", "WLAN_INFRA");
-	iaps[i]->setValue("wlan_ssid", QString(QString("test-ssid-")+num).toAscii());
-	iaps[i]->setValue("wlan_security", "WPA_PSK");
-	iaps[i]->setValue("EAP_wpa_preshared_passphrase", QString("test-passphrase-")+num);
-	printf(".");
-	fflush(stdout);
-    }
-    printf("\n");
-    fflush(stdout);
-
-    icd_stub = new QProcess(this);
-    icd_stub->start("/usr/bin/icd2_stub.py");
-    QTest::qWait(1000);
-
-    // Add a known network to scan list that icd2 stub returns
-    QProcess dbus_send;
-    // 007 network
-    dbus_send.start("dbus-send --type=method_call --system "
-		    "--dest=com.nokia.icd2 /com/nokia/icd2 "
-		    "com.nokia.icd2.testing.add_available_network "
-		    "string:'' uint32:0 string:'' "
-		    "string:WLAN_INFRA uint32:5000011 array:byte:48,48,55");
-    dbus_send.waitForFinished();
-
-    // osso.net network
-    dbus_send.start("dbus-send --type=method_call --system "
-		    "--dest=com.nokia.icd2 /com/nokia/icd2 "
-		    "com.nokia.icd2.testing.add_available_network "
-		    "string:'' uint32:0 string:'' "
-		    "string:WLAN_INFRA uint32:83886097 array:byte:111,115,115,111,46,110,101,116");
-    dbus_send.waitForFinished();
-#endif
-
     inProcessSessionManagementCount = -1;
 
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations();
-    QTRY_VERIFY(spy.count() == 1);
+    QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut);
 }
 
 void tst_QNetworkSession::cleanupTestCase()
@@ -205,28 +127,6 @@ void tst_QNetworkSession::cleanupTestCase()
         qWarning("No usable configurations found to complete all possible tests in "
                  "inProcessSessionManagement()");
     }
-
-#if defined(Q_OS_UNIX) && !defined(QT_NO_ICD)
-    iapconf->clear();
-    delete iapconf;
-    iapconf2->clear();
-    delete iapconf2;
-    gprsiap->clear();
-    delete gprsiap;
-
-    printf("Deleting %d IAPS : ", MAX_IAPS);
-    for (int i=0; i<MAX_IAPS; i++) {
-	iaps[i]->clear();
-	delete iaps[i];
-	printf(".");
-	fflush(stdout);
-    }
-    printf("\n");
-    qDebug() << "Deleted" << MAX_IAPS << "IAPs";
-
-    icd_stub->terminate();
-    icd_stub->waitForFinished();
-#endif
 }
 
 // Robustness test for calling interfaces in nonsense order / with nonsense parameters
@@ -278,7 +178,7 @@ void tst_QNetworkSession::sessionClosing()
         session.close();
         // Sooner or later session must end in Disconnected state,
         // no matter what the phase was.
-        QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
         QTest::qWait(200); // Give platform a breathe, otherwise we'll be catching other errors
     }
 }
@@ -526,7 +426,7 @@ void tst_QNetworkSession::userChoiceSession()
             QVERIFY(errorSpy.isEmpty());
 
             if (expectStateChange)
-                QTRY_VERIFY(!stateChangedSpy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!stateChangedSpy.isEmpty(), TestTimeOut);
 
             QVERIFY(session.state() == QNetworkSession::Connected);
 #ifndef QT_NO_NETWORKINTERFACE
@@ -630,7 +530,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         // Wait until the configuration is uptodate as well, it may be signaled 'connected'
         // bit later than the session
-        QTRY_VERIFY(configuration.state() == QNetworkConfiguration::Active);
+        QTRY_VERIFY_WITH_TIMEOUT(configuration.state() == QNetworkConfiguration::Active, TestTimeOut);
 
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
@@ -664,7 +564,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             QVERIFY(errorSpy.isEmpty());
 
             if (expectStateChange) {
-                QTRY_VERIFY(stateChangedSpy.count() >= 2);
+                QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy.count() >= 2, TestTimeOut);
 
                 QNetworkSession::State state =
                     qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(0).at(0));
@@ -704,7 +604,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         session2.open();
 	    
-        QTRY_VERIFY(!sessionOpenedSpy2.isEmpty() || !errorSpy2.isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!sessionOpenedSpy2.isEmpty() || !errorSpy2.isEmpty(), TestTimeOut);
 
         if (errorSpy2.isEmpty()) {
             QVERIFY(session2.isOpen());
@@ -731,13 +631,13 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
         // QNetworkSession::stop() must result either closed() signal
         // or error() signal
-        QTRY_VERIFY(!sessionClosedSpy2.isEmpty() || !errorSpy2.isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy2.isEmpty() || !errorSpy2.isEmpty(), TestTimeOut);
         QVERIFY(!session2.isOpen());
 
         if (!errorSpy2.isEmpty()) {
             // QNetworkSession::stop() resulted error() signal for session2
             // => also session should emit error() signal
-            QTRY_VERIFY(!errorSpy.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!errorSpy.isEmpty(), TestTimeOut);
 
             // check for SessionAbortedError
             QNetworkSession::SessionError error =
@@ -762,7 +662,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QTRY_NOOP(session2.state() == QNetworkSession::Disconnected);
 	
         if (expectStateChange)
-            QTRY_VERIFY(stateChangedSpy2.count() >= 1 || !errorSpy2.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy2.count() >= 1 || !errorSpy2.isEmpty(), TestTimeOut);
 
         if (!errorSpy2.isEmpty()) {
             QVERIFY(session2.state() == previousState);
@@ -814,11 +714,11 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         QFAIL("Unexpected amount of state changes when roaming.");
                     }
 			
-                    QTRY_VERIFY(session.state() == QNetworkSession::Roaming ||
+                    QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Roaming ||
                                 session.state() == QNetworkSession::Connected ||
-                                session.state() == QNetworkSession::Disconnected);
+                                session.state() == QNetworkSession::Disconnected, TestTimeOut);
                     
-                    QTRY_VERIFY(stateChangedSpy.count() > 0);
+                    QTRY_VERIFY_WITH_TIMEOUT(stateChangedSpy.count() > 0, TestTimeOut);
                     state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 1).at(0));                    
                     
                     for (int i = 0; i < stateChangedSpy.count(); i++) {
@@ -829,19 +729,19 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     }
 
                     if (state == QNetworkSession::Roaming) {
-                        QTRY_VERIFY(session.state() == QNetworkSession::Connected);
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Connected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Connected, TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Connected, TestTimeOut);
                         roamedSuccessfully = true;
                     } else if (state == QNetworkSession::Closing) {
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
-                        QTRY_VERIFY(session.state() == QNetworkSession::Connected ||
-                                    session.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Disconnected, TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Connected ||
+                                    session.state() == QNetworkSession::Disconnected, TestTimeOut );
                         roamedSuccessfully = false;
                     } else if (state == QNetworkSession::Disconnected) {
-                        QTRY_VERIFY(!errorSpy.isEmpty());
-                        QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(!errorSpy.isEmpty(), TestTimeOut);
+                        QTRY_VERIFY_WITH_TIMEOUT(session2.state() == QNetworkSession::Disconnected, TestTimeOut);
                   	} else if (state == QNetworkSession::Connected) {
-                        QTRY_VERIFY(errorSpy.isEmpty());
+                        QTRY_VERIFY_WITH_TIMEOUT(errorSpy.isEmpty(),TestTimeOut);
 
                         if (stateChangedSpy.count() > 1) {
                             state = qvariant_cast<QNetworkSession::State>(stateChangedSpy.at(stateChangedSpy.count() - 2).at(0));                        
@@ -863,7 +763,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         if (session.isOpen())
                             QVERIFY(!sessionOpenedSpy3.isEmpty() || !errorSpy3.isEmpty());
                         session.stop();
-                        QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                        QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
                     }
                     if (!roamedSuccessfully)
                         QVERIFY(!errorSpy.isEmpty());
@@ -892,8 +792,8 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                     }
                 }
 
-                QTRY_VERIFY(!sessionClosedSpy.isEmpty());
-                QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy.isEmpty(), TestTimeOut);
+                QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
             }
 
             QVERIFY(errorSpy2.isEmpty());
@@ -914,7 +814,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             int stateChangedCountBeforeClose = stateChangedSpy2.count();
             session2.close();
 
-            QTRY_VERIFY(!sessionClosedSpy2.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy2.isEmpty(), TestTimeOut);
             QVERIFY(stateChangedSpy2.count() == stateChangedCountBeforeClose);
 
             QVERIFY(sessionClosedSpy.isEmpty());
@@ -939,12 +839,12 @@ void tst_QNetworkSession::sessionOpenCloseStop()
 
             session.close();
 
-            QTRY_VERIFY(!sessionClosedSpy.isEmpty() || !errorSpy.isEmpty());
+            QTRY_VERIFY_WITH_TIMEOUT(!sessionClosedSpy.isEmpty() || !errorSpy.isEmpty(), TestTimeOut);
 
             QVERIFY(!session.isOpen());
 
             if (expectStateChange)
-                QTRY_VERIFY(!stateChangedSpy.isEmpty() || !errorSpy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!stateChangedSpy.isEmpty() || !errorSpy.isEmpty(), TestTimeOut);
 
             if (!errorSpy.isEmpty()) {
                 QNetworkSession::SessionError error =
@@ -973,7 +873,7 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                 QVERIFY(errorSpy.isEmpty());
 
                 if (expectStateChange)
-                    QTRY_VERIFY(session.state() == QNetworkSession::Disconnected);
+                    QTRY_VERIFY_WITH_TIMEOUT(session.state() == QNetworkSession::Disconnected, TestTimeOut);
 
                 ++inProcessSessionManagementCount;
             } else {
@@ -1035,7 +935,7 @@ void tst_QNetworkSession::outOfProcessSession()
             QNetworkConfiguration changed;
 
             do {
-                QTRY_VERIFY(!spy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), TestTimeOut);
                 changed = qvariant_cast<QNetworkConfiguration>(spy.takeFirst().at(0));
             } while (changed.identifier() != identifier);
 
@@ -1055,7 +955,7 @@ void tst_QNetworkSession::outOfProcessSession()
             oopSocket->waitForBytesWritten();
 
             do {
-                QTRY_VERIFY(!spy.isEmpty());
+                QTRY_VERIFY_WITH_TIMEOUT(!spy.isEmpty(), TestTimeOut);
 
                 changed = qvariant_cast<QNetworkConfiguration>(spy.takeFirst().at(0));
             } while (changed.identifier() != identifier);
@@ -1342,7 +1242,7 @@ void tst_QNetworkSession::sessionAutoClose()
     // set session to auto close at next polling interval.
     session.setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 0);
 
-    QTRY_VERIFY(!closeSpy.isEmpty());
+    QTRY_VERIFY_WITH_TIMEOUT(!closeSpy.isEmpty(), TestTimeOut);
 
     QCOMPARE(session.state(), QNetworkSession::Connected);
 
@@ -1356,7 +1256,7 @@ void tst_QNetworkSession::sessionAutoClose()
 
     QCOMPARE(autoCloseSession.toInt(), -1);
 }
+#endif
 
 QTEST_MAIN(tst_QNetworkSession)
-
 #include "tst_qnetworksession.moc"

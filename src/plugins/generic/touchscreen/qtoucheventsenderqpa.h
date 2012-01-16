@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,8 +54,9 @@ class QTouchEventSenderQPA : public QTouchScreenObserver
 {
 public:
     QTouchEventSenderQPA(const QString &spec = QString());
-    void touch_configure(int x_min, int x_max, int y_min, int y_max);
-    void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points);
+    void touch_configure(int x_min, int x_max, int y_min, int y_max,
+                         int pressure_min, int pressure_max, const QString &dev_name);
+    void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points);
 
 private:
     bool m_forceToActiveWindow;
@@ -63,6 +64,9 @@ private:
     int hw_range_x_max;
     int hw_range_y_min;
     int hw_range_y_max;
+    int hw_pressure_min;
+    int hw_pressure_max;
+    QString hw_dev_name;
     QTouchDevice *m_device;
 };
 

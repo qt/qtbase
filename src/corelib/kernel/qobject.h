@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,17 +96,13 @@ public:
     QObjectList children;
 
     uint isWidget : 1;
-    uint pendTimer : 1;
     uint blockSig : 1;
     uint wasDeleted : 1;
-    uint ownObjectName : 1;
+    uint isDeletingChildren : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
-    uint inEventHandler : 1; //only used if QT_JAMBI_BUILD
-    uint inThreadChangeEvent : 1;
-    uint hasGuards : 1; //true iff there is one or more QPointer attached to this object
     uint isWindow : 1; //for QWindow
-    uint unused : 21;
+    uint unused : 25;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };
@@ -115,7 +111,7 @@ public:
 class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName)
+    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
     Q_DECLARE_PRIVATE(QObject)
 
 public:
@@ -152,7 +148,7 @@ public:
     QThread *thread() const;
     void moveToThread(QThread *thread);
 
-    int startTimer(int interval);
+    int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
     void killTimer(int id);
 
     template<typename T>
@@ -214,7 +210,12 @@ public:
         reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<typename SignalType::Object *>(0));
 
         //compilation error if the arguments does not match.
-        typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
+        Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
+                          "The slot requires more arguments than the signal provides.");
+        Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
+                          "Signal and slot arguments are not compatible.");
+        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
+                          "Return type of the slot is not compatible with the return type of the signal.");
 
         const int *types = 0;
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
@@ -236,8 +237,12 @@ public:
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
 
         //compilation error if the arguments does not match.
-        typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
-        typedef typename QtPrivate::QEnableIf<(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount))>::Type EnsureArgumentsCount;
+        Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
+                          "The slot requires more arguments than the signal provides.");
+        Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
+                          "Signal and slot arguments are not compatible.");
+        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
+                          "Return type of the slot is not compatible with the return type of the signal.");
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), sender, 0,
                            new QStaticSlotObject<Func2,
@@ -278,7 +283,9 @@ public:
         reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<typename SignalType::Object *>(0));
 
         //compilation error if the arguments does not match.
-        typedef typename QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::IncompatibleSignalSlotArguments EnsureCompatibleArguments;
+        Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
+                          "Signal and slot arguments are not compatible.");
+
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, reinterpret_cast<void **>(&slot),
                               &SignalType::Object::staticMetaObject);
     }
@@ -287,8 +294,8 @@ public:
                                   const QObject *receiver, void **zero)
     {
         // This is the overload for when one wish to disconnect a signal from any slot. (slot=0)
-        // Since the function template parametter cannot be deduced from '0', we use a
-        // dummy void ** parametter that must be equal to 0
+        // Since the function template parameter cannot be deduced from '0', we use a
+        // dummy void ** parameter that must be equal to 0
         Q_ASSERT(!zero);
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         return disconnectImpl(sender, reinterpret_cast<void **>(&signal), receiver, zero,
@@ -313,6 +320,7 @@ public:
 
 Q_SIGNALS:
     void destroyed(QObject * = 0);
+    void objectNameChanged(const QString &objectName);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }

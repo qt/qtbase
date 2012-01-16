@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -140,18 +140,18 @@ QAccessible::State QAccessibleButton::state() const
     QAbstractButton *b = button();
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
     if (b->isChecked())
-        state |= QAccessible::Checked;
+        state.checked = true;
     else if (cb && cb->checkState() == Qt::PartiallyChecked)
-        state |= QAccessible::Mixed;
+        state.checkStateMixed = true;
     if (b->isDown())
-        state |= QAccessible::Pressed;
+        state.pressed = true;
     QPushButton *pb = qobject_cast<QPushButton*>(b);
     if (pb) {
         if (pb->isDefault())
-            state |= QAccessible::DefaultButton;
+            state.defaultButton = true;
 #ifndef QT_NO_MENU
         if (pb->menu())
-            state |= QAccessible::HasPopup;
+            state.hasPopup = true;
 #endif
     }
 
@@ -171,7 +171,7 @@ QStringList QAccessibleButton::actionNames() const
             break;
         default:
             if (button()->isCheckable()) {
-                if (state() & QAccessible::Checked) {
+                if (state().checked) {
                     names <<  uncheckAction();
                 } else {
                     // FIXME
@@ -263,10 +263,10 @@ QAccessible::State QAccessibleToolButton::state() const
 {
     QAccessible::State st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
-        st |= QAccessible::HotTracked;
+        st.hotTracked = true;
 #ifndef QT_NO_MENU
     if (toolButton()->menu())
-        st |= QAccessible::HasPopup;
+        st.hasPopup = true;
 #endif
     return st;
 }
@@ -464,10 +464,11 @@ int QAccessibleDisplay::navigate(QAccessible::RelationFlag rel, int entry, QAcce
         } else {
             QGroupBox *groupbox = qobject_cast<QGroupBox*>(object());
             if (groupbox && !groupbox->title().isEmpty())
-                rel = QAccessible::Child;
+                *target = child(entry - 1);
 #endif
         }
-        *target = QAccessible::queryAccessibleInterface(targetObject);
+        if (targetObject)
+            *target = QAccessible::queryAccessibleInterface(targetObject);
         if (*target)
             return 0;
     }
@@ -482,7 +483,7 @@ void *QAccessibleDisplay::interface_cast(QAccessible::InterfaceType t)
 }
 
 /*! \internal */
-QString QAccessibleDisplay::imageDescription()
+QString QAccessibleDisplay::imageDescription() const
 {
 #ifndef QT_NO_TOOLTIP
     return widget()->toolTip();
@@ -492,7 +493,7 @@ QString QAccessibleDisplay::imageDescription()
 }
 
 /*! \internal */
-QSize QAccessibleDisplay::imageSize()
+QSize QAccessibleDisplay::imageSize() const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
@@ -504,7 +505,7 @@ QSize QAccessibleDisplay::imageSize()
 }
 
 /*! \internal */
-QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType)
+QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType) const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
@@ -587,38 +588,18 @@ QAccessible::State QAccessibleLineEdit::state() const
 
     QLineEdit *l = lineEdit();
     if (l->isReadOnly())
-        state |= QAccessible::ReadOnly;
+        state.readOnly = true;
     if (l->echoMode() != QLineEdit::Normal)
-        state |= QAccessible::Protected;
-    state |= QAccessible::Selectable;
+        state.passwordEdit = true;
+    state.selectable = true;
     if (l->hasSelectedText())
-        state |= QAccessible::Selected;
+        state.selected = true;
 
     if (l->contextMenuPolicy() != Qt::NoContextMenu
         && l->contextMenuPolicy() != Qt::PreventContextMenu)
-        state |= QAccessible::HasPopup;
+        state.hasPopup = true;
 
     return state;
-}
-
-QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method,
-                                                     const QVariantList &params)
-{
-    switch (method) {
-    case QAccessible::ListSupportedMethods: {
-        QSet<QAccessible::Method> set;
-        set << QAccessible::ListSupportedMethods << QAccessible::SetCursorPosition << QAccessible::GetCursorPosition;
-        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                QAccessibleWidget::invokeMethod(method, params)));
-    }
-    case QAccessible::SetCursorPosition:
-        setCursorPosition(params.value(0).toInt());
-        return true;
-    case QAccessible::GetCursorPosition:
-        return cursorPosition();
-    default:
-        return QAccessibleWidget::invokeMethod(method, params);
-    }
 }
 
 void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
@@ -635,30 +616,30 @@ void QAccessibleLineEdit::addSelection(int startOffset, int endOffset)
     setSelection(0, startOffset, endOffset);
 }
 
-QString QAccessibleLineEdit::attributes(int offset, int *startOffset, int *endOffset)
+QString QAccessibleLineEdit::attributes(int offset, int *startOffset, int *endOffset) const
 {
     // QLineEdit doesn't have text attributes
     *startOffset = *endOffset = offset;
     return QString();
 }
 
-int QAccessibleLineEdit::cursorPosition()
+int QAccessibleLineEdit::cursorPosition() const
 {
     return lineEdit()->cursorPosition();
 }
 
-QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/)
+QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/) const
 {
     // QLineEdit doesn't hand out character rects
     return QRect();
 }
 
-int QAccessibleLineEdit::selectionCount()
+int QAccessibleLineEdit::selectionCount() const
 {
     return lineEdit()->hasSelectedText() ? 1 : 0;
 }
 
-int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType)
+int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coordType) const
 {
     QPoint p = point;
     if (coordType == RelativeToScreen)
@@ -667,7 +648,7 @@ int QAccessibleLineEdit::offsetAtPoint(const QPoint &point, CoordinateType coord
     return lineEdit()->cursorPositionAt(p);
 }
 
-void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *endOffset)
+void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
     *startOffset = *endOffset = 0;
     if (selectionIndex != 0)
@@ -677,7 +658,7 @@ void QAccessibleLineEdit::selection(int selectionIndex, int *startOffset, int *e
     *endOffset = *startOffset + lineEdit()->selectedText().count();
 }
 
-QString QAccessibleLineEdit::text(int startOffset, int endOffset)
+QString QAccessibleLineEdit::text(int startOffset, int endOffset) const
 {
     if (startOffset > endOffset)
         return QString();
@@ -689,7 +670,7 @@ QString QAccessibleLineEdit::text(int startOffset, int endOffset)
 }
 
 QString QAccessibleLineEdit::textBeforeOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -699,7 +680,7 @@ QString QAccessibleLineEdit::textBeforeOffset(int offset, BoundaryType boundaryT
 }
 
 QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -709,7 +690,7 @@ QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryTy
 }
 
 QString QAccessibleLineEdit::textAtOffset(int offset, BoundaryType boundaryType,
-        int *startOffset, int *endOffset)
+        int *startOffset, int *endOffset) const
 {
     if (lineEdit()->echoMode() != QLineEdit::Normal) {
         *startOffset = *endOffset = -1;
@@ -739,7 +720,7 @@ void QAccessibleLineEdit::setSelection(int selectionIndex, int startOffset, int 
     lineEdit()->setSelection(startOffset, endOffset - startOffset);
 }
 
-int QAccessibleLineEdit::characterCount()
+int QAccessibleLineEdit::characterCount() const
 {
     return lineEdit()->text().count();
 }
@@ -766,17 +747,17 @@ void *QAccessibleProgressBar::interface_cast(QAccessible::InterfaceType t)
     return QAccessibleDisplay::interface_cast(t);
 }
 
-QVariant QAccessibleProgressBar::currentValue()
+QVariant QAccessibleProgressBar::currentValue() const
 {
     return progressBar()->value();
 }
 
-QVariant QAccessibleProgressBar::maximumValue()
+QVariant QAccessibleProgressBar::maximumValue() const
 {
     return progressBar()->maximum();
 }
 
-QVariant QAccessibleProgressBar::minimumValue()
+QVariant QAccessibleProgressBar::minimumValue() const
 {
     return progressBar()->minimum();
 }

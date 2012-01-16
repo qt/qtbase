@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,10 +152,10 @@ void tst_QPushButton::cleanupTestCase()
 
 void tst_QPushButton::init()
 {
-    testWidget->setAutoRepeat( FALSE );
-    testWidget->setDown( FALSE );
+    testWidget->setAutoRepeat( false );
+    testWidget->setDown( false );
     testWidget->setText("Test");
-    testWidget->setEnabled( TRUE );
+    testWidget->setEnabled( true );
     QKeySequence seq;
     testWidget->setShortcut( seq );
 
@@ -206,17 +206,17 @@ void tst_QPushButton::autoRepeat()
     QVERIFY( !tmp.autoRepeat() );
 
     // check if we can toggle the mode
-    testWidget->setAutoRepeat( TRUE );
+    testWidget->setAutoRepeat( true );
     QVERIFY( testWidget->autoRepeat() );
 
-    testWidget->setAutoRepeat( FALSE );
+    testWidget->setAutoRepeat( false );
     QVERIFY( !testWidget->autoRepeat() );
 
     resetCounters();
 
     // check that the button is down if we press space and not in autorepeat
-    testWidget->setDown( FALSE );
-    testWidget->setAutoRepeat( FALSE );
+    testWidget->setDown( false );
+    testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Space );
 
     QTest::qWait( 300 );
@@ -233,8 +233,8 @@ void tst_QPushButton::autoRepeat()
     // check that the button is down if we press space while in autorepeat
     // we can't actually confirm how many times it is fired, more than 1 is enough.
 
-    testWidget->setDown( FALSE );
-    testWidget->setAutoRepeat( TRUE );
+    testWidget->setDown( false );
+    testWidget->setAutoRepeat( true );
     QTest::keyPress( testWidget, Qt::Key_Space );
     QTest::qWait(900);
     QVERIFY( testWidget->isDown() );
@@ -248,8 +248,8 @@ void tst_QPushButton::autoRepeat()
 
     // check that pressing ENTER has no effect
     resetCounters();
-    testWidget->setDown( FALSE );
-    testWidget->setAutoRepeat( FALSE );
+    testWidget->setDown( false );
+    testWidget->setAutoRepeat( false );
     QTest::keyPress( testWidget, Qt::Key_Enter );
 
     QTest::qWait( 300 );
@@ -263,8 +263,8 @@ void tst_QPushButton::autoRepeat()
 
     // check that pressing ENTER has no effect
     resetCounters();
-    testWidget->setDown( FALSE );
-    testWidget->setAutoRepeat( TRUE );
+    testWidget->setDown( false );
+    testWidget->setAutoRepeat( true );
     QTest::keyClick( testWidget, Qt::Key_Enter );
     QTest::qWait( 300 );
     QVERIFY( !testWidget->isDown() );
@@ -307,26 +307,26 @@ void tst_QPushButton::isCheckable()
 
 void tst_QPushButton::setDown()
 {
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     QVERIFY( !testWidget->isDown() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QVERIFY( testWidget->isDown() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QTest::keyClick( testWidget, Qt::Key_Escape );
     QVERIFY( !testWidget->isDown() );
 }
 
 void tst_QPushButton::isChecked()
 {
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     QVERIFY( !testWidget->isChecked() );
 
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QVERIFY( !testWidget->isChecked() );
 
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     testWidget->toggle();
     QVERIFY( testWidget->isChecked() == testWidget->isCheckable() );
 }
@@ -335,7 +335,7 @@ void tst_QPushButton::toggle()
 {
     // the pushbutton shouldn't toggle the button.
     testWidget->toggle();
-    QVERIFY( testWidget->isChecked() == FALSE );
+    QVERIFY( testWidget->isChecked() == false );
 }
 
 void tst_QPushButton::toggled()
@@ -421,7 +421,7 @@ void tst_QPushButton::clicked()
 
     press_count = 0;
     release_count = 0;
-    testWidget->setDown(FALSE);
+    testWidget->setDown(false);
     for (uint i=0; i<10; i++)
         QTest::mouseClick( testWidget, Qt::LeftButton );
     QCOMPARE( press_count, (uint)10 );

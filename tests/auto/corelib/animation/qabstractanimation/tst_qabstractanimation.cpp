@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,9 @@ private slots:
     void loopCount();
     void state();
     void totalDuration();
+    void avoidJumpAtStart();
+    void avoidJumpAtStartWithStop();
+    void avoidJumpAtStartWithRunning();
 };
 
 class TestableQAbstractAnimation : public QAbstractAnimation
@@ -65,10 +68,15 @@ class TestableQAbstractAnimation : public QAbstractAnimation
     Q_OBJECT
 
 public:
+    TestableQAbstractAnimation() : m_duration(10) {}
     virtual ~TestableQAbstractAnimation() {};
 
-    int duration() const { return 10; }
+    int duration() const { return m_duration; }
     virtual void updateCurrentTime(int) {}
+
+    void setDuration(int duration) { m_duration = duration; }
+private:
+    int m_duration;
 };
 
 class DummyQAnimationGroup : public QAnimationGroup
@@ -149,6 +157,75 @@ void tst_QAbstractAnimation::totalDuration()
     anim.setLoopCount(5);
     QCOMPARE(anim.totalDuration(), 50);
 }
+
+void tst_QAbstractAnimation::avoidJumpAtStart()
+{
+    TestableQAbstractAnimation anim;
+    anim.setDuration(1000);
+
+    /*
+        the timer shouldn't actually start until we hit the event loop,
+        so the sleep should have no effect
+    */
+    anim.start();
+    QTest::qSleep(300);
+    QCoreApplication::processEvents();
+    QVERIFY(anim.currentTime() < 50);
+}
+
+void tst_QAbstractAnimation::avoidJumpAtStartWithStop()
+{
+    TestableQAbstractAnimation anim;
+    anim.setDuration(1000);
+
+    TestableQAbstractAnimation anim2;
+    anim2.setDuration(1000);
+
+    TestableQAbstractAnimation anim3;
+    anim3.setDuration(1000);
+
+    anim.start();
+    QTest::qWait(300);
+    anim.stop();
+
+    /*
+        same test as avoidJumpAtStart, but after there is a
+        running animation that is stopped
+    */
+    anim2.start();
+    QTest::qSleep(300);
+    anim3.start();
+    QCoreApplication::processEvents();
+    QVERIFY(anim2.currentTime() < 50);
+    QVERIFY(anim3.currentTime() < 50);
+}
+
+void tst_QAbstractAnimation::avoidJumpAtStartWithRunning()
+{
+    TestableQAbstractAnimation anim;
+    anim.setDuration(2000);
+
+    TestableQAbstractAnimation anim2;
+    anim2.setDuration(1000);
+
+    TestableQAbstractAnimation anim3;
+    anim3.setDuration(1000);
+
+    anim.start();
+    QTest::qWait(300);  //make sure timer has started
+
+    /*
+        same test as avoidJumpAtStart, but with an
+        existing running animation
+    */
+    anim2.start();
+    QTest::qSleep(300); //force large delta for next tick
+    anim3.start();
+    QCoreApplication::processEvents();
+    QVERIFY(anim2.currentTime() < 50);
+    QVERIFY(anim3.currentTime() < 50);
+}
+
 
 QTEST_MAIN(tst_QAbstractAnimation)
 

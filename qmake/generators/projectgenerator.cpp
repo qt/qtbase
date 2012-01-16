@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,7 +79,7 @@ ProjectGenerator::init()
     project->read(QMakeProject::ReadFeatures);
     project->variables()["CONFIG"].clear();
 
-    QMap<QString, QStringList> &v = project->variables();
+    QHash<QString, QStringList> &v = project->variables();
     QString templ = Option::user_template.isEmpty() ? QString("app") : Option::user_template;
     if(!Option::user_template_prefix.isEmpty())
         templ.prepend(Option::user_template_prefix);

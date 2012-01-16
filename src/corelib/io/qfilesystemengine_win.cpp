@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -160,6 +160,31 @@ typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACC
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
 static TRUSTEE_W currentUserTrusteeW;
 static TRUSTEE_W worldTrusteeW;
+static PSID currentUserSID = 0;
+static PSID worldSID = 0;
+
+/*
+    Deletes the allocated SIDs during global static cleanup
+*/
+class SidCleanup
+{
+public:
+    ~SidCleanup();
+};
+
+SidCleanup::~SidCleanup()
+{
+    qFree(currentUserSID);
+    currentUserSID = 0;
+
+    // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
+    if (worldSID) {
+        ::FreeSid(worldSID);
+        worldSID = 0;
+    }
+}
+
+Q_GLOBAL_STATIC(SidCleanup, initSidCleanup)
 
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
@@ -199,25 +224,35 @@ static void resolveLibs()
             // Create TRUSTEE for current user
             HANDLE hnd = ::GetCurrentProcess();
             HANDLE token = 0;
+            initSidCleanup();
             if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
-                TOKEN_USER tu;
-                DWORD retsize;
-                if (::GetTokenInformation(token, TokenUser, &tu, sizeof(tu), &retsize))
-                    ptrBuildTrusteeWithSidW(&currentUserTrusteeW, tu.User.Sid);
+                DWORD retsize = 0;
+                // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
+                // the SID struct. Since the SID struct can have variable number of subauthorities
+                // tacked at the end, its size is variable. Obtain the required size by first
+                // doing a dummy GetTokenInformation call.
+                ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
+                if (retsize) {
+                    void *tokenBuffer = qMalloc(retsize);
+                    if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
+                        PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
+                        DWORD sidLen = ::GetLengthSid(tokenSid);
+                        currentUserSID = reinterpret_cast<PSID>(qMalloc(sidLen));
+                        if (::CopySid(sidLen, currentUserSID, tokenSid))
+                            ptrBuildTrusteeWithSidW(&currentUserTrusteeW, currentUserSID);
+                    }
+                    qFree(tokenBuffer);
+                }
                 ::CloseHandle(token);
             }
 
             typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
             PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
-            typedef PVOID (WINAPI *PtrFreeSid)(PSID);
-            PtrFreeSid ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
-            if (ptrAllocateAndInitializeSid && ptrFreeSid) {
+            if (ptrAllocateAndInitializeSid) {
                 // Create TRUSTEE for Everyone (World)
                 SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                PSID pWorld = 0;
-                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pWorld))
-                    ptrBuildTrusteeWithSidW(&worldTrusteeW, pWorld);
-                ptrFreeSid(pWorld);
+                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
+                    ptrBuildTrusteeWithSidW(&worldTrusteeW, worldSID);
             }
         }
         HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
@@ -278,7 +313,7 @@ static QString readSymLink(const QFileSystemEntry &link)
                                0);
     if (handle != INVALID_HANDLE_VALUE) {
         DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
-        REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)qMalloc(bufsize);
+        REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)malloc(bufsize);
         DWORD retsize = 0;
         if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
             if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
@@ -296,7 +331,7 @@ static QString readSymLink(const QFileSystemEntry &link)
             if (result.size() > 4 && result.at(0) == QLatin1Char('\\') && result.at(2) == QLatin1Char('?') && result.at(3) == QLatin1Char('\\'))
                 result = result.mid(4);
         }
-        qFree(rdb);
+        free(rdb);
         CloseHandle(handle);
 
 #if !defined(QT_NO_LIBRARY)

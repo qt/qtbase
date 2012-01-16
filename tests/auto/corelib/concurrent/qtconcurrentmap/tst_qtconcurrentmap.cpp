@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,7 +74,7 @@ private slots:
     void exceptions();
 #endif
     void incrementalResults();
-    void noDetatch();
+    void noDetach();
 #ifndef QT_NO_STL
     void stlContainers();
 #endif
@@ -2279,7 +2279,7 @@ void tst_QtConcurrentMap::incrementalResults()
     Test that mapped does not cause deep copies when holding
     references to Qt containers.
 */
-void tst_QtConcurrentMap::noDetatch()
+void tst_QtConcurrentMap::noDetach()
 {
     {
         QList<int> l = QList<int>() << 1;

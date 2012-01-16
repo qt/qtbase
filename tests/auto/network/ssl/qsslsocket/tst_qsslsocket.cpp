@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -396,7 +396,7 @@ void tst_QSslSocket::constructing()
     QCOMPARE(socket.peerPort(), quint16(0));
     QCOMPARE(socket.proxy().type(), QNetworkProxy::DefaultProxy);
     QCOMPARE(socket.readBufferSize(), qint64(0));
-    QCOMPARE(socket.socketDescriptor(), -1);
+    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.socketType(), QAbstractSocket::TcpSocket);
     QVERIFY(!socket.waitForConnected(10));
     QTest::ignoreMessage(QtWarningMsg, "QSslSocket::waitForDisconnected() is not allowed in UnconnectedState");
@@ -912,7 +912,7 @@ public:
     QString m_certFile;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
         socket->setProtocol(protocol);
@@ -947,7 +947,6 @@ protected slots:
 
 void tst_QSslSocket::protocolServerSide_data()
 {
-
     QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
@@ -1046,6 +1045,10 @@ void tst_QSslSocket::protocolServerSide()
 
     QFETCH(bool, works);
     QAbstractSocket::SocketState expectedState = (works) ? QAbstractSocket::ConnectedState : QAbstractSocket::UnconnectedState;
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("ssl3-any", "QTBUG-23575 - Fails on this platform", Abort);
+    QEXPECT_FAIL("tls1.0-any", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QCOMPARE(int(client->state()), int(expectedState));
     QCOMPARE(client->isEncrypted(), works);
 }
@@ -1326,7 +1329,7 @@ void tst_QSslSocket::wildcard()
 class SslServer2 : public QTcpServer
 {
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         QSslSocket *socket = new QSslSocket(this);
         socket->ignoreSslErrors();
@@ -1546,7 +1549,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
@@ -1715,7 +1718,7 @@ public:
     QSslSocket *socket;
 
 protected:
-    void incomingConnection(int socketDescriptor)
+    void incomingConnection(qintptr socketDescriptor)
     {
         socket = new QSslSocket(this);
 
@@ -1761,6 +1764,9 @@ void tst_QSslSocket::verifyMode()
     loop.exec();
 
     QVERIFY(clientSocket.isEncrypted());
+#if defined(UBUNTU_ONEIRIC) && defined(__x86_64__)
+    QEXPECT_FAIL("", "QTBUG-23575 - Fails on this platform", Abort);
+#endif
     QVERIFY(server.socket->sslErrors().isEmpty());
 }
 

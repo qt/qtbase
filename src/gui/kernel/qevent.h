@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -266,7 +266,6 @@ public:
     inline bool gotFocus() const { return type() == FocusIn; }
     inline bool lostFocus() const { return type() == FocusOut; }
 
-    Qt::FocusReason reason();
     Qt::FocusReason reason() const;
 
 private:
@@ -639,11 +638,8 @@ public:
     QShortcutEvent(const QKeySequence &key, int id, bool ambiguous = false);
     ~QShortcutEvent();
 
-    inline const QKeySequence &key() { return sequence; }
     inline const QKeySequence &key() const { return sequence; }
-    inline int shortcutId() { return sid; }
     inline int shortcutId() const { return sid; }
-    inline bool isAmbiguous() { return ambig; }
     inline bool isAmbiguous() const { return ambig; }
 protected:
     QKeySequence sequence;
@@ -694,7 +690,7 @@ public:
     {
     public:
         enum InfoFlag {
-            Pen = 0x0001
+            Pen  = 0x0001
         };
         Q_DECLARE_FLAGS(InfoFlags, InfoFlag)
 
@@ -705,7 +701,6 @@ public:
         int id() const;
 
         Qt::TouchPointState state() const;
-        bool isPrimary() const;
 
         QPointF pos() const;
         QPointF startPos() const;
@@ -776,23 +771,23 @@ public:
                 const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
-    inline QWidget *widget() const { return _widget; }
     inline QWindow *window() const { return _window; }
+    inline QObject *target() const { return _target; }
     QT_DEPRECATED inline QTouchEvent::DeviceType deviceType() const { return static_cast<DeviceType>(int(_device->type())); }
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
     inline QTouchDevice *device() const { return _device; }
 
     // internal
-    inline void setWidget(QWidget *awidget) { _widget = awidget; }
     inline void setWindow(QWindow *awindow) { _window = awindow; }
+    inline void setTarget(QObject *atarget) { _target = atarget; }
     inline void setTouchPointStates(Qt::TouchPointStates aTouchPointStates) { _touchPointStates = aTouchPointStates; }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &atouchPoints) { _touchPoints = atouchPoints; }
-    inline void setDevice(QTouchDevice *device) { _device = device; }
+    inline void setDevice(QTouchDevice *adevice) { _device = adevice; }
 
 protected:
-    QWidget *_widget;
     QWindow *_window;
+    QObject *_target;
     QTouchDevice *_device;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;

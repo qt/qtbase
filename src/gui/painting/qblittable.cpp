@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,6 +98,12 @@ void QBlittable::unlock()
         doUnlock();
         d->locked = false;
     }
+}
+
+bool QBlittable::isLocked() const
+{
+    Q_D(const QBlittable);
+    return d->locked;
 }
 
 QT_END_NAMESPACE

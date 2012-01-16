@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,6 +73,8 @@ const int QT_RASTER_COORD_LIMIT = 32767;
 
 //#define QT_DEBUG_CONVERT
 
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
+
 /********************************************************************************
  * class QOutlineMapper
  *
@@ -90,11 +92,9 @@ public:
     QOutlineMapper() :
         m_element_types(0),
         m_elements(0),
-        m_elements_dev(0),
         m_points(0),
         m_tags(0),
         m_contours(0),
-        m_polygon_dev(0),
         m_in_clip_elements(false),
         m_round_coords(false)
     {
@@ -117,6 +117,10 @@ public:
         m_dx = m.dx();
         m_dy = m.dy();
         m_txop = m.type();
+
+        qreal scale;
+        qt_scaleForTransform(m, &scale);
+        m_curve_threshold = scale == 0 ? qreal(0.25) : (qreal(0.25) / scale);
     }
 
     void beginOutline(Qt::FillRule fillRule)
@@ -126,7 +130,6 @@ public:
 #endif
         m_valid = true;
         m_elements.reset();
-        m_elements_dev.reset();
         m_element_types.reset();
         m_points.reset();
         m_tags.reset();
@@ -161,15 +164,7 @@ public:
         m_element_types << QPainterPath::LineToElement;
     }
 
-    inline void curveTo(const QPointF &cp1, const QPointF &cp2, const QPointF &ep) {
-#ifdef QT_DEBUG_CONVERT
-        printf("QOutlineMapper::curveTo() (%f, %f)\n", ep.x(), ep.y());
-#endif
-        m_elements << cp1 << cp2 << ep;
-        m_element_types << QPainterPath::CurveToElement
-                        << QPainterPath::CurveToDataElement
-                        << QPainterPath::CurveToDataElement;
-    }
+    void curveTo(const QPointF &cp1, const QPointF &cp2, const QPointF &ep);
 
     inline void closeSubpath() {
         int element_count = m_elements.size();
@@ -209,14 +204,11 @@ public:
 public:
     QDataBuffer<QPainterPath::ElementType> m_element_types;
     QDataBuffer<QPointF> m_elements;
-    QDataBuffer<QPointF> m_elements_dev;
     QDataBuffer<QT_FT_Vector> m_points;
     QDataBuffer<char> m_tags;
     QDataBuffer<int> m_contours;
 
     QRect m_clip_rect;
-    QDataBuffer<QPointF> m_polygon_dev;
-
     QRectF controlPointRect; // only valid after endOutline()
 
     QT_FT_Outline m_outline;
@@ -234,6 +226,8 @@ public:
     qreal m_m33;
     qreal m_dx;
     qreal m_dy;
+
+    qreal m_curve_threshold;
 
     bool m_valid;
     bool m_in_clip_elements;

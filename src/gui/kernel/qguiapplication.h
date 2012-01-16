@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,6 +108,7 @@ public:
 #endif
 
     static QPalette palette();
+    static void setPalette(const QPalette &pal);
 
     static Qt::KeyboardModifiers keyboardModifiers();
     static Qt::MouseButtons mouseButtons();
@@ -118,9 +119,8 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
-    // ### move to QInputPanel
-    static QLocale keyboardInputLocale();
-    static Qt::LayoutDirection keyboardInputDirection();
+    QT_DEPRECATED static QLocale keyboardInputLocale();
+    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
 
     QStyleHints *styleHints() const;
     QInputPanel *inputPanel() const;

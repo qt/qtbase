@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1160,6 +1160,14 @@ QDataStream &operator>>(QDataStream &s, QIcon &icon)
 }
 
 #endif //QT_NO_DATASTREAM
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QIcon &i)
+{
+    dbg.nospace() << "QIcon(" << i.name() << ')';
+    return dbg.space();
+}
+#endif
 
 /*!
     \fn DataPtr &QIcon::data_ptr()

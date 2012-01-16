@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -601,7 +601,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
     10 items.
 
 */
-int QGraphicsSceneBspTreeIndex::bspTreeDepth()
+int QGraphicsSceneBspTreeIndex::bspTreeDepth() const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
     return d->bspTreeDepth;

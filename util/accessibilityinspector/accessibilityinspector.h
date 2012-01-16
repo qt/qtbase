@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -63,8 +63,6 @@ public:
     void inspectWindow(QWindow *window);
     void saveWindowGeometry();
 signals:
-
-public slots:
 
 private:
     OptionsWidget *optionsWidget;

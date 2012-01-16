@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -225,6 +225,27 @@ static int q_X509Callback(int ok, X509_STORE_CTX *ctx)
     if (!ok) {
         // Store the error and at which depth the error was detected.
         _q_sslErrorList()->errors << qMakePair<int, int>(ctx->error, ctx->error_depth);
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << "verification error: dumping bad certificate";
+        qDebug() << QSslCertificatePrivate::QSslCertificate_from_X509(ctx->current_cert).toPem();
+        qDebug() << "dumping chain";
+        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(ctx->chain)) {
+            QString certFormat(QStringLiteral("O=%1 CN=%2 L=%3 OU=%4 C=%5 ST=%6"));
+            qDebug() << "Issuer:" << "O=" << cert.issuerInfo(QSslCertificate::Organization)
+                << "CN=" << cert.issuerInfo(QSslCertificate::CommonName)
+                << "L=" << cert.issuerInfo(QSslCertificate::LocalityName)
+                << "OU=" << cert.issuerInfo(QSslCertificate::OrganizationalUnitName)
+                << "C=" << cert.issuerInfo(QSslCertificate::CountryName)
+                << "ST=" << cert.issuerInfo(QSslCertificate::StateOrProvinceName);
+            qDebug() << "Subject:" << "O=" << cert.subjectInfo(QSslCertificate::Organization)
+                << "CN=" << cert.subjectInfo(QSslCertificate::CommonName)
+                << "L=" << cert.subjectInfo(QSslCertificate::LocalityName)
+                << "OU=" << cert.subjectInfo(QSslCertificate::OrganizationalUnitName)
+                << "C=" << cert.subjectInfo(QSslCertificate::CountryName)
+                << "ST=" << cert.subjectInfo(QSslCertificate::StateOrProvinceName);
+            qDebug() << "Valid:" << cert.effectiveDate() << "-" << cert.expiryDate();
+        }
+#endif
     }
     // Always return OK to allow verification to continue. We're handle the
     // errors gracefully after collecting all errors, after verification has
@@ -343,7 +364,7 @@ init_context:
     foreach (const QSslCertificate &caCertificate, q->caCertificates()) {
         // add expired certs later, so that the
         // valid ones are used before the expired ones
-        if (caCertificate.expiryDate() > QDateTime::currentDateTime()) {
+        if (caCertificate.expiryDate() < QDateTime::currentDateTime()) {
             expiredCerts.append(caCertificate);
         } else {
             q_X509_STORE_add_cert(ctx->cert_store, reinterpret_cast<X509 *>(caCertificate.handle()));
@@ -453,11 +474,7 @@ init_context:
         if (!ace.isEmpty()
             && !QHostAddress().setAddress(tlsHostName)
             && !(configuration.sslOptions & QSsl::SslOptionDisableServerNameIndication)) {
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
-#else
-            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
-#endif
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
@@ -874,10 +891,17 @@ void QSslSocketBackendPrivate::transmit()
             int encryptedBytesRead = q_BIO_read(writeBio, data.data(), pendingBytes);
 
             // Write encrypted data from the buffer to the socket.
-            plainSocket->write(data.constData(), encryptedBytesRead);
+            qint64 actualWritten = plainSocket->write(data.constData(), encryptedBytesRead);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket";
+            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket" << actualWritten << "actual.";
 #endif
+            if (actualWritten < 0) {
+                //plain socket write fails if it was in the pending close state.
+                q->setErrorString(plainSocket->errorString());
+                q->setSocketError(plainSocket->error());
+                emit q->error(plainSocket->error());
+                return;
+            }
             transmitting = true;
         }
 
@@ -1351,7 +1375,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
     foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {
         // add expired certs later, so that the
         // valid ones are used before the expired ones
-        if (caCertificate.expiryDate() > QDateTime::currentDateTime()) {
+        if (caCertificate.expiryDate() < QDateTime::currentDateTime()) {
             expiredCerts.append(caCertificate);
         } else {
             q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));

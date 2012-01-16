@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1925,8 +1925,12 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
 #endif
 
     // handle data: URLs
-    if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0)
-        r = qDecodeDataUrl(name).second;
+    if (r.isNull() && name.scheme().compare(QLatin1String("data"), Qt::CaseInsensitive) == 0) {
+        QString mimetype;
+        QByteArray payload;
+        if (qDecodeDataUrl(name, mimetype, payload))
+            r = payload;
+    }
 
     // if resource was not loaded try to load it here
     if (!doc && r.isNull() && name.isRelative()) {

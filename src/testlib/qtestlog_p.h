@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,8 @@ public:
     static void addXPass(const char *msg, const char *file, int line);
     static void addSkip(const char *msg, const char *file, int line);
     static void addBenchmarkResult(const QBenchmarkResult &result);
-    static void addIgnoreMessage(QtMsgType type, const char *msg);
+
+    static void ignoreMessage(QtMsgType type, const char *msg);
     static int unhandledIgnoreMessages();
     static void printUnhandledIgnoreMessages();
 

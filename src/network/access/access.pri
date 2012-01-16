@@ -1,8 +1,8 @@
 # Qt network access module
 
 HEADERS += \
-    access/qftp.h \
-    access/qhttp.h \
+    access/qftp_p.h \
+    access/qhttpheader_p.h \
     access/qhttpnetworkheader_p.h \
     access/qhttpnetworkrequest_p.h \
     access/qhttpnetworkreply_p.h \
@@ -39,7 +39,7 @@ HEADERS += \
 
 SOURCES += \
     access/qftp.cpp \
-    access/qhttp.cpp \
+    access/qhttpheader.cpp \
     access/qhttpnetworkheader.cpp \
     access/qhttpnetworkrequest.cpp \
     access/qhttpnetworkreply.cpp \

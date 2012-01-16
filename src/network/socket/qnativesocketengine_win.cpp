@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -229,7 +229,7 @@ void QNativeSocketEnginePrivate::setPortAndAddress(sockaddr_in * sockAddrIPv4, q
 /*! \internal
 
 */
-static inline QAbstractSocket::SocketType qt_socket_getType(int socketDescriptor)
+static inline QAbstractSocket::SocketType qt_socket_getType(qintptr socketDescriptor)
 {
     int value = 0;
     QT_SOCKLEN_T valueSize = sizeof(value);
@@ -247,7 +247,7 @@ static inline QAbstractSocket::SocketType qt_socket_getType(int socketDescriptor
 /*! \internal
 
 */
-static inline int qt_socket_getMaxMsgSize(int socketDescriptor)
+static inline int qt_socket_getMaxMsgSize(qintptr socketDescriptor)
 {
     int value = 0;
     QT_SOCKLEN_T valueSize = sizeof(value);
@@ -422,6 +422,9 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
             n = IP_MULTICAST_LOOP;
         }
         break;
+    case QNativeSocketEngine::TypeOfServiceOption:
+        return -1;
+        break;
     }
 
     int v = -1;
@@ -501,6 +504,9 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
             level = IPPROTO_IP;
             n = IP_MULTICAST_LOOP;
         }
+        break;
+    case QNativeSocketEngine::TypeOfServiceOption:
+        return false;
         break;
     }
 

@@ -35,7 +35,7 @@ information about a particular change.
 
 - QCoreApplication::translate() will no longer return the source text when
   the translation is empty. Use lrelease -removeidentical for optimization.
-  
+
 - Qt::escape() is deprecated (but can be enabled via
   QT_DISABLE_DEPRECATED_BEFORE), use QString::toHtmlEscaped() instead.
 
@@ -44,7 +44,9 @@ information about a particular change.
 - QTestLib:
   * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.
     These macros formerly lived in tests/shared/util.h but are now provided
-    by including the <QtTest/QtTest> header.
+    by including the <QtTest/QtTest> header. In addition,
+    QTRY_VERIFY_WITH_TIMEOUT and QTRY_COMPARE_WITH_TIMEOUT are provided,
+    allowing for specifying custom timeout values.
   * The QTEST_NOOP_MAIN macro has been removed from the API.  If a test is
     known at compile-time to be inapplicable for a particular build it should
     be omitted via .pro file logic, or the test should call QSKIP in the
@@ -53,15 +55,19 @@ information about a particular change.
   * The DEPENDS_ON macro has been removed from the API.  This macro did nothing
     and misled some users to believe that they could make test functions depend
     on each other or impose an execution order on test functions.
+  * The QTest::qt_snprintf function has been removed from the API.  This was an
+    internal testlib function that was exposed in the public API due to its use
+    in a public macro.  Any calls to this function should be replaced by a call
+    to qsnprintf(), which comes from the <QtCore/QByteArray> header.
+  * The QTest::pixmapsAreEqual() function has been removed from the API.
+    Comparison of QPixmap objects should be done using QCOMPARE, which provides
+    more informative output in the event of a failure.
   * The QSKIP macro no longer has the "mode" parameter, which caused problems
     for calculating test metrics, as the SkipAll mode hid information about
     what test data was skipped.  Calling QSKIP in a test function now behaves
     like SkipSingle -- skipping a non-data-driven test function or skipping
     only the current data row of a data-driven test function.  Every skipped
     data row is now reported in the test log.
-  * The QTest::qExec(QObject*, const QStringList&) overload has been removed
-    from the API.  This function was not used in any of Qt's autotests and did
-    not provide significant benefits over QTest::qExec(QObject*, int, char**).
 
 - The QSsl::TlsV1 enum value was renamed to QSsl::TlsV1_0 .
 
@@ -99,10 +105,8 @@ information about a particular change.
     QTouchDevice pointer instead of just a DeviceType value.
 
   * TouchPointState no longer includes TouchPointStateMask and
-    TouchPointPrimary. The primary flag is now stored together with
-    other touch point flags and is accessible through
-    TouchPoint::isPrimary() or TouchPoint::flags(). As a result the
-    internally used state mask is no longer necessary.
+    TouchPointPrimary. QTouchEvent::TouchPoint::isPrimary() has
+    been removed.
 
   * QWidget *widget() has been removed and is replaced by QObject
     *target() in order to avoid QWidget dependencies.
@@ -115,6 +119,44 @@ information about a particular change.
     one QTouchDevice before sending the first touch event.
 
   * The event type parameter is removed from handleTouchEvent().
+
+- The previously exported function qt_translateRawTouchEvent() has been removed.
+  Use QWindowSystemInterface::handleTouchEvent() instead.
+
+- QAbstractEventDispatcher
+
+  * The signature for the pure-virtual registerTimer() has changed. Subclasses
+  of QAbstractEventDispatcher will need to be updated to reimplement the new
+  pure-virtual 'virtual void registerTimer(int timerId, int interval,
+  Qt::TimerType timerType, QObject *object) = 0;'
+
+  * QAbstractEventDispatcher::TimerInfo is no longer a QPair<int, int>. It is
+  now a struct with 3 members: struct TimerInfo { int timerId; int interval;
+  Qt::TimerType timerType; }; Reimplementations of
+  QAbstractEventDispatcher::registeredTimers() will need to be updated to pass
+  3 arguments to the TimerInfo constructor (instead of 2).
+
+- QUuid
+
+  * Removed implicit conversion operator QUuid::operator QString(), instead
+  QUuid::toString() function should be used.
+
+- The QHttp, QHttpHeader, QHttpResponseHeader and QHttpRequestHeader classes have
+  been removed, QNetworkAccessManager should be used instead.
+
+- The QFtp class is no longer exported, QNetworkAccessManager should be used
+  instead.
+
+- QProcess
+
+  * On Windows, QProcess::ForwardedChannels will not forward the output of GUI
+    applications anymore, if they do not create a console.
+
+- QAbstractSocket's connectToHost() and disconnectFromHost() are now virtual and
+  connectToHostImplementation() and disconnectFromHostImplementation() don't exist.
+
+- QTcpServer::incomingConnection() now takes a qintptr instead of an int.
+
 
 ****************************************************************************
 *                           General                                        *
@@ -147,6 +189,17 @@ QtCore
   should now also connect to (and disconnect from) the rowsAboutToBeMoved and
   rowsMoved signals.
 
+* The default value of the property QSortFilterProxyModel::dynamicSortFilter was
+  changed from false to true.
+
+* The signature of the virtual QAbstractItemView::dataChanged method has changed to
+  include the roles which have changed. The signature is consistent with the dataChanged
+  signal in the model.
+
+* QFileSystemWatcher is now able to return failure in case of errors whilst
+  altering the watchlist in both the singular and QStringList overloads of
+  addPath and removePath.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
@@ -159,8 +212,8 @@ QtGui
 
 QtWidgets
 ---------
-* QWidget::setInputContext() is removed. Input contexts are now platform
-  specific.
+* QWidget::setInputContext() and QApplication::setInputContext() are removed.
+  Input contexts are now platform specific.
 
 QtNetwork
 ---------
@@ -169,6 +222,9 @@ QtNetwork
 
 * QSslCertificate::serialNumber() now always returns the serial number in
   hexadecimal format.
+
+* The openssl network backend now reads the ssl configuration file allowing
+  the use of openssl engines.
 
 
 QtOpenGL
@@ -225,6 +281,10 @@ Qt for Windows CE
 
 - Build System
 
+  * Remove qttest_p4.prf file. From now on we should explicitly enable the
+    things from it which we want. Autotest .pro files should stop using
+    'load(qttest_p4)' and start using 'CONFIG+=testcase' instead.
+
 - Assistant
 
 - Designer
@@ -267,3 +327,21 @@ Qt for Windows CE
 *                   Important Behavior Changes                             *
 ****************************************************************************
 
+- QPointer
+
+   * QPointer itself is now deprecated, and the implementation of QPointer
+     has been changed to use QWeakPointer. The old guard mechanism has been
+     removed. This causes two slight changes in behavior when using
+     QPointer:
+
+     * When using QPointer on a QWidget (or a subclass of QWidget), previously
+     the QPointer would be cleared by the QWidget destructor. Now, the QPointer
+     is cleared by the QObject destructor (since this is when QWeakPointers are
+     cleared). Any QPointers tracking a widget will NOT be cleared before the
+     QWidget destructor destroys the children for the widget being tracked.
+
+     * When constructing a QSharedPointer to take ownership of an object after a
+     QPointer is already tracking the object. Previously, the shared pointer
+     construction would not be affected by the QPointer, but now that QPointer
+     is implemented using QWeakPoiner, constructing the QSharedPointer will
+     cause an abort().

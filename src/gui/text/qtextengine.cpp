@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 #include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
 #include <qguiapplication.h>
+#include <qinputpanel.h>
 #include <stdlib.h>
 
 
@@ -1408,7 +1409,7 @@ bool QTextEngine::isRightToLeft() const
         itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
-        return QGuiApplication::keyboardInputDirection() == Qt::RightToLeft;
+        return qApp ? qApp->inputPanel()->inputDirection() == Qt::RightToLeft : false;
     return layoutData->string.isRightToLeft();
 }
 
@@ -2692,7 +2693,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
             closestItem--;
         int pos = si->position + clusterStart + closestItem;
         // Jump to the next charStop
-        while (!attrs[pos].charStop && pos < end)
+        while (pos < end && !attrs[pos].charStop)
             pos++;
         return pos;
     }

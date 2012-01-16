@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@ class tst_QAnimationGroup : public QObject
 {
     Q_OBJECT
 public Q_SLOTS:
-    void init();
+    void initTestCase();
 
 private slots:
     void construction();
@@ -63,7 +63,7 @@ private slots:
     void loopWithoutStartValue();
 };
 
-void tst_QAnimationGroup::init()
+void tst_QAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
 }
@@ -138,6 +138,7 @@ void tst_QAnimationGroup::emptyGroup()
 {
     QSequentialAnimationGroup group;
     QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QVERIFY(groupStateChangedSpy.isValid());
 
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     group.start();

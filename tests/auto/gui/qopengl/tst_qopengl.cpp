@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,8 @@
 
 #include <QtTest/QtTest>
 
+#include <QSignalSpy>
+
 class tst_QOpenGL : public QObject
 {
 Q_OBJECT
@@ -62,6 +64,7 @@ private slots:
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
     void openGLPaintDevice();
+    void aboutToBeDestroyed();
 };
 
 struct SharedResourceTracker
@@ -498,6 +501,25 @@ void tst_QOpenGL::openGLPaintDevice()
     p.end();
 
     QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+}
+
+void tst_QOpenGL::aboutToBeDestroyed()
+{
+    QWindow window;
+    window.setGeometry(0, 0, 128, 128);
+    window.create();
+
+    QOpenGLContext *context = new QOpenGLContext;
+    QSignalSpy spy(context, SIGNAL(aboutToBeDestroyed()));
+
+    context->create();
+    context->makeCurrent(&window);
+
+    QCOMPARE(spy.size(), 0);
+
+    delete context;
+
+    QCOMPARE(spy.size(), 1);
 }
 
 QTEST_MAIN(tst_QOpenGL)

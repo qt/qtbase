@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,6 +107,8 @@ QOpenGLTextureCache::~QOpenGLTextureCache()
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &pixmap)
 {
+    if (pixmap.isNull())
+        return 0;
     QMutexLocker locker(&m_mutex);
     qint64 key = pixmap.cacheKey();
 
@@ -128,6 +130,8 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QPixmap &
 
 GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, const QImage &image)
 {
+    if (image.isNull())
+        return 0;
     QMutexLocker locker(&m_mutex);
     qint64 key = image.cacheKey();
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1249,36 +1249,6 @@ QString QDoubleSpinBoxPrivate::textFromValue(const QVariant &f) const
     Q_Q(const QDoubleSpinBox);
     return q->textFromValue(f.toDouble());
 }
-
-/*!
-    \fn void QSpinBox::setLineStep(int step)
-
-    Use setSingleStep() instead.
-*/
-
-/*!
-    \fn void QSpinBox::setMaxValue(int value)
-
-    Use setMaximum() instead.
-*/
-
-/*!
-    \fn void QSpinBox::setMinValue(int value)
-
-    Use setMinimum() instead.
-*/
-
-/*!
-    \fn int QSpinBox::maxValue() const
-
-    Use maximum() instead.
-*/
-
-/*!
-    \fn int QSpinBox::minValue() const
-
-    Use minimum() instead.
-*/
 
 /*! \reimp */
 bool QSpinBox::event(QEvent *event)

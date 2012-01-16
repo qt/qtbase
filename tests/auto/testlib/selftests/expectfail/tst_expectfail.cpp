@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
+
+Q_DECLARE_METATYPE(QTest::TestFailMode)
 
 class tst_ExpectFail: public QObject
 {
@@ -50,7 +52,15 @@ class tst_ExpectFail: public QObject
 private slots:
     void expectAndContinue() const;
     void expectAndAbort() const;
+    void expectTwice() const;
     void xfailWithQString() const;
+    void xpass() const;
+    void dataDrivenTest_data() const;
+    void dataDrivenTest() const;
+    void expectOnWrongRow_data() const;
+    void expectOnWrongRow() const;
+    void expectOnAnyRow_data() const;
+    void expectOnAnyRow() const;
 };
 
 void tst_ExpectFail::expectAndContinue() const
@@ -66,7 +76,19 @@ void tst_ExpectFail::expectAndAbort() const
     qDebug("begin");
     QEXPECT_FAIL("", "This should xfail", Abort);
     QVERIFY(false);
-    qDebug("this should not be reached");
+
+    // If we get here the test did not correctly abort on the previous QVERIFY.
+    QVERIFY2(false, "This should not be reached");
+}
+
+void tst_ExpectFail::expectTwice() const
+{
+    QEXPECT_FAIL("", "Calling QEXPECT_FAIL once is fine", Abort);
+    QEXPECT_FAIL("", "Calling QEXPECT_FAIL when already expecting a failure is "
+                     "an error and should abort this test function", Abort);
+
+    // If we get here the test did not correctly abort on the double call to QEXPECT_FAIL.
+    QVERIFY2(false, "This should not be reached");
 }
 
 void tst_ExpectFail::xfailWithQString() const
@@ -80,6 +102,79 @@ void tst_ExpectFail::xfailWithQString() const
     QVERIFY(false);
 }
 
-QTEST_MAIN(tst_ExpectFail)
+void tst_ExpectFail::xpass() const
+{
+    QEXPECT_FAIL("", "This test should xpass", Abort);
+    QVERIFY(true);
 
+    // If we get here the test did not correctly abort on the previous
+    // unexpected pass.
+    QVERIFY2(false, "This should not be reached");
+}
+
+void tst_ExpectFail::dataDrivenTest_data() const
+{
+    QTest::addColumn<bool>("shouldPass");
+    QTest::addColumn<QTest::TestFailMode>("failMode");
+
+    QTest::newRow("Pass 1")   << true  << QTest::Abort;
+    QTest::newRow("Pass 2")   << true  << QTest::Continue;
+    QTest::newRow("Abort")    << false << QTest::Abort;
+    QTest::newRow("Continue") << false << QTest::Continue;
+}
+
+void tst_ExpectFail::dataDrivenTest() const
+{
+    QFETCH(bool, shouldPass);
+    QFETCH(QTest::TestFailMode, failMode);
+
+    // You can't pass a variable as the last parameter of QEXPECT_FAIL,
+    // because the macro adds "QTest::" in front of the last parameter.
+    // That is why the following code appears to be a little strange.
+    if (!shouldPass) {
+        if (failMode == QTest::Abort)
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Abort);
+        else
+            QEXPECT_FAIL(QTest::currentDataTag(), "This test should xfail", Continue);
+    }
+
+    QVERIFY(shouldPass);
+
+    // If we get here, we either expected to pass or we expected to
+    // fail and the failure mode was Continue.
+    if (!shouldPass)
+        QCOMPARE(failMode, QTest::Continue);
+}
+
+void tst_ExpectFail::expectOnWrongRow_data() const
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("right row") << 0;
+}
+
+void tst_ExpectFail::expectOnWrongRow() const
+{
+    // QEXPECT_FAIL for a row that is not the current row should be ignored.
+    QEXPECT_FAIL("wrong row", "This xfail should be ignored", Abort);
+    QVERIFY(true);
+}
+
+void tst_ExpectFail::expectOnAnyRow_data() const
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("first row") << 0;
+    QTest::newRow("second row") << 1;
+}
+
+void tst_ExpectFail::expectOnAnyRow() const
+{
+    // In a data-driven test, passing an empty first parameter to QEXPECT_FAIL
+    // should mean that the failure is expected for all data rows.
+    QEXPECT_FAIL("", "This test should xfail", Abort);
+    QVERIFY(false);
+}
+
+QTEST_MAIN(tst_ExpectFail)
 #include "tst_expectfail.moc"

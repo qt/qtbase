@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,17 +38,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
-#include <QClipboard>
-#include <QStringList>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QClipboard>
+#include <QtCore/QStringList>
+
 int main(int argc, char **argv)
 {
-    QApplication app(argc, argv);
-    QClipboard *board = QApplication::clipboard();
-#ifdef Q_OS_WINCE
-    board->setText(QLatin1String("testString.!"));
-#else
-    board->setText(app.arguments().at(1));
+    QGuiApplication app(argc, argv);
+    QString paste = QStringLiteral("testString.!");
+#ifndef Q_OS_WINCE
+    const QStringList arguments = app.arguments();
+    if (arguments.size() > 1)
+        paste = arguments.at(1);
 #endif
+    QGuiApplication::clipboard()->setText(paste);
     return 0;
 }

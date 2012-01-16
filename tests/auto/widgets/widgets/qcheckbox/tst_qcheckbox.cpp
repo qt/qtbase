@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,9 +121,9 @@ void tst_QCheckBox::cleanupTestCase()
 
 void tst_QCheckBox::init()
 {
-    testWidget->setTristate( FALSE );
-    testWidget->setChecked( FALSE );
-    testWidget->setAutoRepeat( FALSE );
+    testWidget->setTristate( false );
+    testWidget->setChecked( false );
+    testWidget->setAutoRepeat( false );
 }
 
 void tst_QCheckBox::cleanup()
@@ -158,17 +158,17 @@ void tst_QCheckBox::onToggled( bool /*on*/ )
 
 void tst_QCheckBox::setChecked()
 {
-    testWidget->setChecked( TRUE );
+    testWidget->setChecked( true );
     QVERIFY( testWidget->isChecked() );
     QVERIFY( testWidget->isChecked() );
     QVERIFY( testWidget->checkState() == Qt::Checked );
 
-    testWidget->setChecked( FALSE );
+    testWidget->setChecked( false );
     QVERIFY( !testWidget->isChecked() );
     QVERIFY( !testWidget->isChecked() );
     QVERIFY( testWidget->checkState() == Qt::Unchecked );
 
-    testWidget->setChecked( FALSE );
+    testWidget->setChecked( false );
     QTest::keyClick( testWidget, ' ' );
     QVERIFY( testWidget->isChecked() );
 
@@ -178,34 +178,34 @@ void tst_QCheckBox::setChecked()
 
 void tst_QCheckBox::setTriState()
 {
-    testWidget->setTristate( TRUE );
+    testWidget->setTristate( true );
     QVERIFY( testWidget->isTristate() );
     QVERIFY( testWidget->checkState() == Qt::Unchecked );
 
     testWidget->setCheckState(Qt::PartiallyChecked);
     QVERIFY( testWidget->checkState() == Qt::PartiallyChecked );
 
-    testWidget->setChecked( TRUE );
+    testWidget->setChecked( true );
     QVERIFY( testWidget->isChecked() );
     QVERIFY( testWidget->checkState() == Qt::Checked );
 
-    testWidget->setChecked( FALSE );
+    testWidget->setChecked( false );
     QVERIFY( !testWidget->isChecked() );
     QVERIFY( testWidget->checkState() == Qt::Unchecked );
 
     testWidget->setCheckState(Qt::PartiallyChecked);
     QVERIFY( testWidget->checkState() == Qt::PartiallyChecked );
 
-    testWidget->setTristate( FALSE );
+    testWidget->setTristate( false );
     QVERIFY( !testWidget->isTristate() );
 
     testWidget->setCheckState(Qt::PartiallyChecked);
     QVERIFY( testWidget->checkState() == Qt::PartiallyChecked );
 
-    testWidget->setChecked( TRUE );
+    testWidget->setChecked( true );
     QVERIFY( testWidget->checkState() == Qt::Checked );
 
-    testWidget->setChecked( FALSE );
+    testWidget->setChecked( false );
     QVERIFY( testWidget->checkState() == Qt::Unchecked );
 }
 
@@ -237,10 +237,10 @@ void tst_QCheckBox::setText()
 
 void tst_QCheckBox::setDown()
 {
-    testWidget->setDown( TRUE );
+    testWidget->setDown( true );
     QVERIFY( testWidget->isDown() );
 
-    testWidget->setDown( FALSE );
+    testWidget->setDown( false );
     QVERIFY( !testWidget->isDown() );
 }
 
@@ -272,7 +272,7 @@ void tst_QCheckBox::pressed()
     connect(testWidget, SIGNAL(released()), this, SLOT(onReleased()));
     press_count = 0;
     release_count = 0;
-    testWidget->setDown(FALSE);
+    testWidget->setDown(false);
     QVERIFY( !testWidget->isChecked() );
 
     QTest::keyPress( testWidget, Qt::Key_Space );
@@ -315,12 +315,12 @@ void tst_QCheckBox::stateChanged()
     QSignalSpy stateChangedSpy(testWidget, SIGNAL(stateChanged(int)));
     connect(testWidget, SIGNAL(stateChanged(int)), this, SLOT(onStateChanged(int)));
     cur_state = -1;
-    testWidget->setChecked( TRUE );
+    testWidget->setChecked( true );
     qApp->processEvents();
     QCOMPARE( cur_state, (int)2 );
 
     cur_state = -1;
-    testWidget->setChecked( FALSE );
+    testWidget->setChecked( false );
     qApp->processEvents();
     QCOMPARE( cur_state, (int)0 );
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,9 +56,6 @@ class tst_QFileSystemWatcher : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QFileSystemWatcher();
-
 private slots:
     void basicTest_data();
     void basicTest();
@@ -81,44 +78,18 @@ private slots:
     void cleanup();
 
     void destroyAfterQCoreApplication();
-private:
-    QStringList do_force_engines;
-    bool do_force_native;
 };
-
-tst_QFileSystemWatcher::tst_QFileSystemWatcher()
-    : do_force_native(false)
-{
-#ifdef Q_OS_LINUX
-    // the inotify implementation in the kernel is known to be buggy in certain versions of the linux kernel
-    do_force_engines << "native";
-    do_force_engines << "dnotify";
-
-#ifdef QT_NO_INOTIFY
-    if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,13))
-        do_force_engines << "inotify";
-#else
-    if (inotify_init() != -1)
-        do_force_engines << "inotify";
-#endif
-#elif defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_FREEBSD)
-    // we have native engines for win32, macosx and freebsd
-    do_force_engines << "native";
-#endif
-}
 
 void tst_QFileSystemWatcher::basicTest_data()
 {
     QTest::addColumn<QString>("backend");
-    foreach(QString engine, do_force_engines)
-        QTest::newRow(engine.toLatin1().constData()) << engine;
-    QTest::newRow("poller") << "poller";
+    QTest::newRow("native backend") << "native";
+    QTest::newRow("poller backend") << "poller";
 }
 
 void tst_QFileSystemWatcher::basicTest()
 {
     QFETCH(QString, backend);
-    qDebug() << "Testing" << backend << "engine";
 
     // create test file
     QFile testFile("testfile.txt");
@@ -134,10 +105,10 @@ void tst_QFileSystemWatcher::basicTest()
     // create watcher, forcing it to use a specific backend
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
-    watcher.removePath(testFile.fileName());
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
+    QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -159,10 +130,7 @@ void tst_QFileSystemWatcher::basicTest()
     testFile.close();
 
     // waiting max 5 seconds for notification for file modification to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QCOMPARE(changedSpy.count(), 1);
+    QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     QString fileName = changedSpy.at(0).at(0).toString();
@@ -171,7 +139,7 @@ void tst_QFileSystemWatcher::basicTest()
     changedSpy.clear();
 
     // remove the watch and modify the file, should not get a signal from the watcher
-    watcher.removePath(testFile.fileName());
+    QVERIFY(watcher.removePath(testFile.fileName()));
     testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
     testFile.write(QByteArray("hello universe!"));
     testFile.close();
@@ -183,31 +151,25 @@ void tst_QFileSystemWatcher::basicTest()
     QCOMPARE(changedSpy.count(), 0);
 
     // readd the file watch with a relative path
-    watcher.addPath(testFile.fileName().prepend("./"));
+    QVERIFY(watcher.addPath(testFile.fileName().prepend("./")));
     testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
     testFile.write(QByteArray("hello multiverse!"));
     testFile.close();
 
-    timer.start(5000);
-    eventLoop.exec();
+    QTRY_VERIFY(changedSpy.count() > 0);
 
-    QVERIFY(changedSpy.count() > 0);
-
-    watcher.removePath(testFile.fileName().prepend("./"));
+    QVERIFY(watcher.removePath(testFile.fileName().prepend("./")));
 
     changedSpy.clear();
 
     // readd the file watch
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     // change the permissions, should get a signal from the watcher
     testFile.setPermissions(QFile::ReadOwner);
 
     // waiting max 5 seconds for notification for file permission modification to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QCOMPARE(changedSpy.count(), 1);
+    QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
@@ -216,7 +178,7 @@ void tst_QFileSystemWatcher::basicTest()
     changedSpy.clear();
 
     // remove the watch and modify file permissions, should not get a signal from the watcher
-    watcher.removePath(testFile.fileName());
+    QVERIFY(watcher.removePath(testFile.fileName()));
     testFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOther);
 
     // waiting max 5 seconds for notification for file modification to trigger
@@ -226,16 +188,15 @@ void tst_QFileSystemWatcher::basicTest()
     QCOMPARE(changedSpy.count(), 0);
 
     // readd the file watch
-    watcher.addPath(testFile.fileName());
+    QVERIFY(watcher.addPath(testFile.fileName()));
 
     // remove the file, should get a signal from the watcher
     QVERIFY(testFile.remove());
 
     // waiting max 5 seconds for notification for file removal to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
-    QVERIFY(changedSpy.count() == 1 || changedSpy.count() == 2); // removing a file on some filesystems seems to deliver 2 notifications
+    // > 0 && < 3 because some platforms may emit two changes
+    // XXX: which platforms? (QTBUG-23370)
+    QTRY_VERIFY(changedSpy.count() > 0 && changedSpy.count() < 3);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
@@ -260,7 +221,6 @@ void tst_QFileSystemWatcher::basicTest()
 void tst_QFileSystemWatcher::watchDirectory()
 {
     QFETCH(QString, backend);
-    qDebug() << "Testing" << backend << "engine";
 
     QDir().mkdir("testDir");
     QDir testDir("testDir");
@@ -270,9 +230,10 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
-    watcher.addPath(testDir.dirName());
+    QVERIFY(watcher.addPath(testDir.dirName()));
 
     QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -285,7 +246,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     QString fileName;
 
     // remove the watch, should not get notification of a new file
-    watcher.removePath(testDir.dirName());
+    QVERIFY(watcher.removePath(testDir.dirName()));
     QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.close();
 
@@ -295,7 +256,7 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QCOMPARE(changedSpy.count(), 0);
 
-    watcher.addPath(testDir.dirName());
+    QVERIFY(watcher.addPath(testDir.dirName()));
 
     // remove the file again, should get a signal from the watcher
     QVERIFY(testFile.remove());
@@ -307,13 +268,10 @@ void tst_QFileSystemWatcher::watchDirectory()
     QVERIFY(QDir().rmdir("testDir"));
 
     // waiting max 5 seconds for notification for directory removal to trigger
-    timer.start(5000);
-    eventLoop.exec();
-
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
 #endif
-    QCOMPARE(changedSpy.count(), 2);
+    QTRY_COMPARE(changedSpy.count(), 2);
     QCOMPARE(changedSpy.at(0).count(), 1);
     QCOMPARE(changedSpy.at(1).count(), 1);
 
@@ -341,30 +299,32 @@ void tst_QFileSystemWatcher::addPath()
 {
     QFileSystemWatcher watcher;
     QString home = QDir::homePath();
-    watcher.addPath(home);
+    QVERIFY(watcher.addPath(home));
     QCOMPARE(watcher.directories().count(), 1);
     QCOMPARE(watcher.directories().first(), home);
-    watcher.addPath(home);
+
+    // second watch on an already-watched path should fail
+    QVERIFY(!watcher.addPath(home));
     QCOMPARE(watcher.directories().count(), 1);
 
     // With empty string
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::addPath: path is empty");
-    watcher.addPath(QString());
+    QVERIFY(watcher.addPath(QString()));
 }
 
 void tst_QFileSystemWatcher::removePath()
 {
     QFileSystemWatcher watcher;
     QString home = QDir::homePath();
-    watcher.addPath(home);
-    watcher.removePath(home);
+    QVERIFY(watcher.addPath(home));
+    QVERIFY(watcher.removePath(home));
     QCOMPARE(watcher.directories().count(), 0);
-    watcher.removePath(home);
+    QVERIFY(!watcher.removePath(home));
     QCOMPARE(watcher.directories().count(), 0);
 
     // With empty string
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::removePath: path is empty");
-    watcher.removePath(QString());
+    QVERIFY(watcher.removePath(QString()));
 }
 
 void tst_QFileSystemWatcher::addPaths()
@@ -372,13 +332,13 @@ void tst_QFileSystemWatcher::addPaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::currentPath();
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
 
     // With empty list
     paths.clear();
     QTest::ignoreMessage(QtWarningMsg, "QFileSystemWatcher::addPaths: list is empty");
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
 }
 
 void tst_QFileSystemWatcher::removePaths()
@@ -386,9 +346,9 @@ void tst_QFileSystemWatcher::removePaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::currentPath();
-    watcher.addPaths(paths);
+    QCOMPARE(watcher.addPaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 2);
-    watcher.removePaths(paths);
+    QCOMPARE(watcher.removePaths(paths), QStringList());
     QCOMPARE(watcher.directories().count(), 0);
 
     //With empty list
@@ -418,11 +378,13 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
 
-    watcher.addPath(testDir.dirName());
-    watcher.addPath(testFileName);
+    QVERIFY(watcher.addPath(testDir.dirName()));
+    QVERIFY(watcher.addPath(testFileName));
 
     QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QVERIFY(fileChangedSpy.isValid());
+    QVERIFY(dirChangedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -436,9 +398,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     testFile.write(QByteArray("hello again"));
     testFile.close();
 
-    timer.start(3000);
-    eventLoop.exec();
-    QVERIFY(fileChangedSpy.count() > 0);
+    QTRY_VERIFY(fileChangedSpy.count() > 0);
+
     //according to Qt 4 documentation:
     //void QFileSystemWatcher::directoryChanged ( const QString & path )   [signal]
     //This signal is emitted when the directory at a specified path, is modified
@@ -447,9 +408,6 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     //of the changes might not emit this signal. However, the last change in the
     //sequence of changes will always generate this signal.
     QVERIFY(dirChangedSpy.count() < 2);
-
-    if (backend == "dnotify")
-        QSKIP("dnotify is broken, skipping the rest of the test.");
 
     fileChangedSpy.clear();
     dirChangedSpy.clear();
@@ -470,15 +428,14 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     QFile::remove(testFileName);
 
-    timer.start(3000);
-    eventLoop.exec();
-    QVERIFY(fileChangedSpy.count() > 0);
+    QTRY_VERIFY(fileChangedSpy.count() > 0);
     QCOMPARE(dirChangedSpy.count(), 1);
 
     fileChangedSpy.clear();
     dirChangedSpy.clear();
 
-    watcher.removePath(testFileName);
+    // removing a deleted file should fail
+    QVERIFY(!watcher.removePath(testFileName));
     QFile::remove(secondFileName);
 
     timer.start(3000);
@@ -503,8 +460,17 @@ void tst_QFileSystemWatcher::nonExistingFile()
 {
     // Don't crash...
     QFileSystemWatcher watcher;
-    watcher.addPath("file_that_does_not_exist.txt");
-    QVERIFY(true);
+    QVERIFY(!watcher.addPath("file_that_does_not_exist.txt"));
+
+    // Test that the paths returned in error aren't messed with
+    QCOMPARE(watcher.addPaths(QStringList() << "../..//./does-not-exist"),
+                              QStringList() << "../..//./does-not-exist");
+
+    // empty path is not actually a failure
+    QCOMPARE(watcher.addPaths(QStringList() << QString()), QStringList());
+
+    // empty path is not actually a failure
+    QCOMPARE(watcher.removePaths(QStringList() << QString()), QStringList());
 }
 
 void tst_QFileSystemWatcher::removeFileAndUnWatch()
@@ -517,17 +483,17 @@ void tst_QFileSystemWatcher::removeFileAndUnWatch()
         testFile.open(QIODevice::WriteOnly);
         testFile.close();
     }
-    watcher.addPath(filename);
+    QVERIFY(watcher.addPath(filename));
 
     QFile::remove(filename);
-    watcher.removePath(filename);
+    QVERIFY(watcher.removePath(filename));
 
     {
         QFile testFile(filename);
         testFile.open(QIODevice::WriteOnly);
         testFile.close();
     }
-    watcher.addPath(filename);
+    QVERIFY(watcher.addPath(filename));
 }
 
 class SomeSingleton : public QObject

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -191,7 +191,6 @@ void tst_QPrinter::getSetCheck()
     obj1.setPageSize(QPrinter::PageSize(QPrinter::A4));
     QCOMPARE(QPrinter::PageSize(QPrinter::A4), obj1.pageSize());
     obj1.setPageSize(QPrinter::PageSize(QPrinter::Letter));
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(QPrinter::PageSize(QPrinter::Letter), obj1.pageSize());
     obj1.setPageSize(QPrinter::PageSize(QPrinter::Legal));
     QCOMPARE(QPrinter::PageSize(QPrinter::Legal), obj1.pageSize());
@@ -316,25 +315,25 @@ void tst_QPrinter::testSetOptions()
     QPrintDialog dlg(&prn);
 
     // Verify default values
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions(QAbstractPrintDialog::PrintPageRange);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions((QAbstractPrintDialog::PrintDialogOptions(QAbstractPrintDialog::PrintSelection
                                                                     | QAbstractPrintDialog::PrintPageRange)));
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), TRUE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), true);
 
     dlg.setEnabledOptions(QAbstractPrintDialog::PrintSelection);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), FALSE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), TRUE);
-    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), FALSE);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintToFile), false);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintSelection), true);
+    MYCOMPARE(dlg.isOptionEnabled(QAbstractPrintDialog::PrintPageRange), false);
 }
 
 void tst_QPrinter::testMargins_data()
@@ -517,7 +516,6 @@ void tst_QPrinter::setGetPaperSize()
     p.setOutputFormat(QPrinter::PdfFormat);
     QSizeF size(500, 10);
     p.setPaperSize(size, QPrinter::Millimeter);
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
     QSizeF ptSize = p.paperSize(QPrinter::Point);
     //qDebug() << ptSize;
@@ -760,7 +758,6 @@ void tst_QPrinter::valuePreservation()
 
         printer.setPageSize(QPrinter::B5);
         printer.setOutputFormat(newFormat);
-        QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
         QCOMPARE(printer.pageSize(), QPrinter::B5);
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.pageSize(), QPrinter::B5);
@@ -881,7 +878,6 @@ void tst_QPrinter::testCustomPageSizes()
     p.setPaperSize(customSize, QPrinter::Inch);
 
     QSizeF paperSize = p.paperSize(QPrinter::Inch);
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
     QCOMPARE(paperSize, customSize);
 
     QPrinter p2(QPrinter::HighResolution);
@@ -975,7 +971,8 @@ void tst_QPrinter::testPdfTitle()
         QPainter painter;
         QPrinter printer;
         // This string is just the UTF-8 encoding of the string: \()f &oslash; hiragana o
-        const char title[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
+        const unsigned char titleBuf[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
+        const char *title = reinterpret_cast<const char*>(titleBuf);
         printer.setOutputFileName("file.pdf");
         printer.setDocName(QString::fromUtf8(title));
         painter.begin(&printer);
@@ -986,10 +983,11 @@ void tst_QPrinter::testPdfTitle()
     // The we expect the title to appear in the PDF as:
     // ASCII('\title (') UTF16(\\\(\)f &oslash; hiragana o) ASCII(')').
     // which has the following binary representation
-    const char expected[] = {
+    const unsigned char expectedBuf[] = {
         0x2f, 0x54, 0x69, 0x74, 0x6c, 0x65, 0x20, 0x28, 0xfe,
         0xff, 0x00, 0x5c, 0x5c, 0x00, 0x5c, 0x28, 0x00, 0x5c,
         0x29, 0x00, 0x66, 0x00, 0xf8, 0x30, 0x4a, 0x29};
+    const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,9 +148,6 @@ QT_BEGIN_NAMESPACE
    unspecified behavior from being introduced; that is behavior that usually
    occurs when the compiler implicitly casts the argument.
 
-   If you use QCOMPARE() to compare two QStringList objects, it will start
-   comparing the objects from the end of the lists.
-
    For your own classes, you can use \l QTest::toString() to format values for
    outputting into the test log.
 
@@ -163,40 +160,61 @@ QT_BEGIN_NAMESPACE
    \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
 */
 
-/*! \macro QTRY_VERIFY(condition)
+/*! \macro QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)
 
    \relates QTest
 
-   The QTRY_VERIFY() macro is similar to QVERIFY(), but checks the \a condition
-   repeatedly, until either the condition becomes true or a maximum timeout is
+   The QTRY_VERIFY_WITH_TIMEOUT() macro is similar to QVERIFY(), but checks the \a condition
+   repeatedly, until either the condition becomes true or the \a timeout is
    reached.  Between each evaluation, events will be processed.  If the timeout
    is reached, a failure is recorded in the test log and the test won't be
    executed further.
 
-   The timeout is fixed at five seconds.
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QTRY_VERIFY(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+*/
+
+
+/*! \macro QTRY_VERIFY(condition)
+
+   \relates QTest
+
+   Invokes QTRY_VERIFY_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+*/
+
+/*! \macro QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)
+
+   \relates QTest
+
+   The QTRY_COMPARE_WITH_TIMEOUT() macro is similar to QCOMPARE(), but performs the comparison
+   of the \a actual and \a expected values repeatedly, until either the two values
+   are equal or the \a timeout is reached.  Between each comparison, events
+   will be processed.  If the timeout is reached, a failure is recorded in the
+   test log and the test won't be executed further.
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   \sa QTRY_COMPARE(), QCOMPARE(), QVERIFY(), QTRY_VERIFY()
 */
 
 /*! \macro QTRY_COMPARE(actual, expected)
 
    \relates QTest
 
-   The QTRY_COMPARE() macro is similar to QCOMPARE(), but performs the comparison
-   of the \a actual and \a expected values repeatedly, until either the two values
-   are equal or a maximum timeout is reached.  Between each comparison, events
-   will be processed.  If the timeout is reached, a failure is recorded in the
-   test log and the test won't be executed further.
-
-   The timeout is fixed at five seconds.
+   Invokes QTRY_COMPARE_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QCOMPARE(), QVERIFY(), QTRY_VERIFY()
+   \sa QTRY_COMPARE_WITH_TIMEOUT(), QCOMPARE(), QVERIFY(), QTRY_VERIFY()
 */
 
 /*! \macro QFETCH(type, name)
@@ -392,14 +410,19 @@ QT_BEGIN_NAMESPACE
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
 
-    If \c QT_GUI_LIB is defined, the application object will be a QApplication,
+    If \c QT_WIDGETS_LIB is defined, the application object will be a QApplication,
+    if \c QT_GUI_LIB is defined, the application object will be a QGuiApplication,
     otherwise it will be a QCoreApplication.  If qmake is used and the configuration
-    includes \c{QT += gui}, then \c QT_GUI_LIB will be defined automatically.
+    includes \c{QT += widgets}, then \c QT_WIDGETS_LIB will be defined automatically.
+    Similarly, if qmake is used and the configuration includes \c{QT += gui}, then
+    \c QT_GUI_LIB will be defined automatically.
 
-    \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
-    this macro will forcfully disable it to simplify the usage of key events when writing
-    autotests. If you wish to write a test case that uses keypad navigation, you should
-    enable it either in the \c {initTestCase()} or \c {init()} functions of your test case.
+    \bold {Note:} On platforms that have keypad navigation enabled by default,
+    this macro will forcefully disable it if \c QT_WIDGETS_LIB is defined.  This is done
+    to simplify the usage of key events when writing autotests. If you wish to write a
+    test case that uses keypad navigation, you should enable it either in the
+    \c {initTestCase()} or \c {init()} functions of your test case by calling
+    \l {QApplication::setNavigationMode()}.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
@@ -512,7 +535,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates clicking of \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
 
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 13
@@ -526,7 +550,8 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates clicking of \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before clicking the key.
 
     Examples:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 14
@@ -534,7 +559,7 @@ QT_BEGIN_NAMESPACE
     The first example above simulates clicking the \c escape key on \c
     myWidget without any keyboard modifiers and without delay. The
     second example simulates clicking \c shift-escape on \c myWidget
-    with a following 200 ms delay of the test.
+    following a 200 ms delay of the test.
 
     \sa QTest::keyClicks()
 */
@@ -559,7 +584,7 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyPress(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay
-    is larger than 0, the test will wait for \a delay milliseconds.
+    is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -571,7 +596,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates pressing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before pressing the key.
 
     \bold {Note:} At some point you should release the key using \l keyRelease().
 
@@ -581,7 +607,8 @@ QT_BEGIN_NAMESPACE
 /*! \fn void QTest::keyRelease(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
 
     Simulates releasing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
 
     \sa QTest::keyPress(), QTest::keyClick()
 */
@@ -591,7 +618,8 @@ QT_BEGIN_NAMESPACE
     \overload
 
     Simulates releasing a \a key with an optional \a modifier on a \a widget.
-    If \a delay is larger than 0, the test will wait for \a delay milliseconds.
+    If \a delay is larger than 0, the test will wait for \a delay milliseconds
+    before releasing the key.
 
     \sa QTest::keyClick()
 */
@@ -975,37 +1003,9 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
-    static int keyVerbose = -1;
 #if defined(Q_OS_UNIX)
     static bool noCrashHandler = false;
 #endif
-
-void filter_unprintable(char *str)
-{
-    char *idx = str;
-    while (*idx) {
-        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
-            *idx = '?';
-        ++idx;
-    }
-}
-
-/*! \internal
- */
-int qt_snprintf(char *str, int size, const char *format, ...)
-{
-    va_list ap;
-    int res = 0;
-
-    va_start(ap, format);
-    qvsnprintf(str, size, format, ap);
-    va_end(ap);
-    str[size - 1] = '\0';
-
-    filter_unprintable(str);
-
-    return res;
-}
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
@@ -1018,14 +1018,6 @@ static void invokeMethod(QObject *obj, const char *methodName)
         QMetaMethod method = metaObject->method(funcIndex);
         method.invoke(obj, Qt::DirectConnection);
     }
-}
-
-bool Q_TESTLIB_EXPORT defaultKeyVerbose()
-{
-    if (keyVerbose == -1) {
-        keyVerbose = qgetenv("QTEST_KEYEVENT_VERBOSE").isEmpty() ? 0 : 1;
-    }
-    return keyVerbose == 1;
 }
 
 int defaultEventDelay()
@@ -1118,7 +1110,7 @@ static void qPrintDataTags(FILE *stream)
             slot[strlen(slot) - 2] = '\0';
             QByteArray member;
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
-            QTest::qt_snprintf(member.data(), member.size(), "%s_data()", slot);
+            qsnprintf(member.data(), member.size(), "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member.constData());
             for (int j = 0; j < table.dataCount(); ++j)
                 localTags << QLatin1String(table.testData(j)->dataTag());
@@ -1209,7 +1201,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -eventdelay ms      : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
          " -keydelay ms        : Set default delay for keyboard simulation to ms milliseconds\n"
          " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
-         " -keyevent-verbose   : Turn on verbose messages for keyboard simulation\n"
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
 #if defined(Q_OS_UNIX)
@@ -1343,8 +1334,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
 #endif
-        } else if (strcmp(argv[i], "-keyevent-verbose") == 0) {
-            QTest::keyVerbose = 1;
 #ifdef QTESTLIB_USE_VALGRIND
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (QBenchmarkValgrindUtils::haveValgrind())
@@ -1448,8 +1437,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             if (colon != -1) {
                 data = qstrdup(argv[i]+colon+1);
             }
-            QTest::qt_snprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
-            QTest::qt_snprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
+            qsnprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
+            qsnprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
             int idx = QTest::currentTestObject->metaObject()->indexOfMethod(buf);
             if (idx < 0 || !isValidSlot(QTest::currentTestObject->metaObject()->method(idx))) {
                 fprintf(stderr, "Unknown testfunction: '%s'\n", buf);
@@ -1552,9 +1541,13 @@ static void qInvokeTestMethodDataEntry(char *slot)
         if (QBenchmarkTestMethodData::current->isBenchmark() &&
             QBenchmarkGlobalData::current->verboseOutput) {
                 if (i == -1) {
-                    qDebug() << "warmup stage result      :" << QBenchmarkTestMethodData::current->result.value;
+                    QTestLog::info(qPrintable(
+                        QString::fromLatin1("warmup stage result      : %1")
+                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 } else {
-                    qDebug() << "accumulation stage result:" << QBenchmarkTestMethodData::current->result.value;
+                    QTestLog::info(qPrintable(
+                        QString::fromLatin1("accumulation stage result: %1")
+                            .arg(QBenchmarkTestMethodData::current->result.value)), 0, 0);
                 }
             }
     } while (QBenchmarkTestMethodData::current->isBenchmark()
@@ -1601,7 +1594,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
         if (curGlobalDataIndex == 0) {
             QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
-            QTest::qt_snprintf(member, 512, "%s_data()", slot);
+            qsnprintf(member, 512, "%s_data()", slot);
             invokeMethod(QTest::currentTestObject, member);
         }
 
@@ -1927,6 +1920,10 @@ FatalSignalHandler::~FatalSignalHandler()
     test that was executed with qExec() can't run another test via qExec() and
     threads are not allowed to call qExec() simultaneously.
 
+    If you have programatically created the arguments, as opposed to getting them
+    from the arguments in \c main(), it is likely of interest to use
+    QTest::qExec(QObject *, const QStringList &) since it is Unicode safe.
+
     \sa QTEST_MAIN()
 */
 
@@ -2019,6 +2016,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
     currentTestObject = 0;
+
+    QSignalDumper::endDump();
+
 #ifdef Q_WS_MAC
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
@@ -2034,6 +2034,30 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     // make sure our exit code is never going above 127
     // since that could wrap and indicate 0 test fails
     return qMin(QTestResult::failCount(), 127);
+}
+
+/*!
+  \overload
+  \since 4.4
+
+  Behaves identically to qExec(QObject *, int, char**) but takes a
+  QStringList of \a arguments instead of a \c char** list.
+ */
+int QTest::qExec(QObject *testObject, const QStringList &arguments)
+{
+    const int argc = arguments.count();
+    QVarLengthArray<char *> argv(argc);
+
+    QVector<QByteArray> args;
+    args.reserve(argc);
+
+    for (int i = 0; i < argc; ++i)
+    {
+        args.append(arguments.at(i).toLocal8Bit().constData());
+        argv[i] = args.last().data();
+    }
+
+    return qExec(testObject, argc, argv.data());
 }
 
 /*! \internal
@@ -2099,6 +2123,15 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
 
 /*! \internal
  */
+
+#ifdef Q_OS_WIN
+static inline bool isWindowsBuildDirectory(const QString &dirName)
+{
+    return dirName.compare(QStringLiteral("Debug"), Qt::CaseInsensitive) == 0
+           || dirName.compare(QStringLiteral("Release"), Qt::CaseInsensitive) == 0;
+}
+#endif
+
 QString QTest::qFindTestData(const QString& base, const char *file, int line, const char *builddir)
 {
     QString found;
@@ -2107,16 +2140,23 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
 
     //  1. relative to test binary.
     if (qApp) {
-        QString binpath = QCoreApplication::applicationDirPath();
-        QString candidate = QString::fromLatin1("%1/%2").arg(binpath).arg(base);
-        if (QFileInfo(candidate).exists()) {
-            found = candidate;
+        QDir binDirectory(QCoreApplication::applicationDirPath());
+        if (binDirectory.exists(base)) {
+            found = binDirectory.absoluteFilePath(base);
         }
+#ifdef Q_OS_WIN
+        // Windows: The executable is typically located in one of the
+        // 'Release' or 'Debug' directories.
+        else if (isWindowsBuildDirectory(binDirectory.dirName())
+                 && binDirectory.cdUp() && binDirectory.exists(base)) {
+            found = binDirectory.absoluteFilePath(base);
+        }
+#endif // Q_OS_WIN
         else if (QTestLog::verboseLevel() >= 2) {
+            const QString candidate = QDir::toNativeSeparators(QCoreApplication::applicationDirPath() + QLatin1Char('/') + base);
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to test binary [%2]; "
-                                    "checking next location")
-                    .arg(base).arg(candidate)),
+                                    "checking next location").arg(base, candidate)),
                 file, line);
         }
     }
@@ -2127,9 +2167,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
         if (testObjectName) {
             QString testsPath = QLibraryInfo::location(QLibraryInfo::TestsPath);
             QString candidate = QString::fromLatin1("%1/%2/%3")
-                .arg(testsPath)
-                .arg(QFile::decodeName(testObjectName).toLower())
-                .arg(base);
+                .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
             if (QFileInfo(candidate).exists()) {
                 found = candidate;
             }
@@ -2137,7 +2175,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
                 QTestLog::info(qPrintable(
                     QString::fromLatin1("testdata %1 not found in tests install path [%2]; "
                                         "checking next location")
-                        .arg(base).arg(candidate)),
+                        .arg(base, QDir::toNativeSeparators(candidate))),
                     file, line);
             }
         }
@@ -2154,14 +2192,14 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
             srcdir.setFile(QFile::decodeName(builddir) + QLatin1String("/") + srcdir.filePath());
         }
 
-        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath()).arg(base);
+        QString candidate = QString::fromLatin1("%1/%2").arg(srcdir.canonicalFilePath(), base);
         if (QFileInfo(candidate).exists()) {
             found = candidate;
         }
         else if (QTestLog::verboseLevel() >= 2) {
             QTestLog::info(qPrintable(
                 QString::fromLatin1("testdata %1 not found relative to source path [%2]")
-                    .arg(base).arg(candidate)),
+                    .arg(base, QDir::toNativeSeparators(candidate))),
                 file, line);
         }
     }
@@ -2173,7 +2211,7 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     }
     else if (QTestLog::verboseLevel() >= 1) {
         QTestLog::info(qPrintable(
-            QString::fromLatin1("testdata %1 was located at %2").arg(base).arg(found)),
+            QString::fromLatin1("testdata %1 was located at %2").arg(base, QDir::toNativeSeparators(found))),
             file, line);
     }
 
@@ -2247,7 +2285,7 @@ QTestData &QTest::newRow(const char *dataTag)
 {
     QTEST_ASSERT_X(dataTag, "QTest::newRow()", "Data tag can not be null");
     QTestTable *tbl = QTestTable::currentTestTable();
-    QTEST_ASSERT_X(tbl, "QTest::addColumn()", "Cannot add testdata outside of a _data slot.");
+    QTEST_ASSERT_X(tbl, "QTest::newRow()", "Cannot add testdata outside of a _data slot.");
 
     return *tbl->newData(dataTag);
 }
@@ -2386,7 +2424,7 @@ Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
-    qt_snprintf(msg, 128, #FORMAT, t); \
+    qsnprintf(msg, 128, #FORMAT, t); \
     return msg; \
 }
 
@@ -2423,7 +2461,7 @@ char *QTest::toString(const char *str)
 char *QTest::toString(const void *p)
 {
     char *msg = new char[128];
-    qt_snprintf(msg, 128, "%p", p);
+    qsnprintf(msg, 128, "%p", p);
     return msg;
 }
 

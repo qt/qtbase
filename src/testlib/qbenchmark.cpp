@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -285,11 +285,11 @@ void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 }
 
 template <typename T>
-Q_TYPENAME T::value_type qAverage(const T &container)
+typename T::value_type qAverage(const T &container)
 {
-    Q_TYPENAME T::const_iterator it = container.constBegin();
-    Q_TYPENAME T::const_iterator end = container.constEnd();
-    Q_TYPENAME T::value_type acc = Q_TYPENAME T::value_type();
+    typename T::const_iterator it = container.constBegin();
+    typename T::const_iterator end = container.constEnd();
+    typename T::value_type acc = typename T::value_type();
     int count = 0;
     while (it != end) {
         acc += *it;

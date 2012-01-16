@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,7 +163,7 @@
     issue to be aware of, though: You must make sure that enough data
     is available before attempting to read it using operator>>().
 
-    \sa QFtp, QNetworkAccessManager, QTcpServer
+    \sa QNetworkAccessManager, QTcpServer
 */
 
 /*!
@@ -315,6 +315,8 @@
            proxy) was not found.
     \value ProxyProtocolError The connection negotiation with the proxy server
            because the response from the proxy server could not be understood.
+    \value OperationError An operation was attempted while the socket was in a state that
+           did not permit it.
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()
@@ -347,18 +349,40 @@
     \enum QAbstractSocket::SocketOption
     \since 4.6
 
-    This enum represents the options that can be set on a socket.
-    If desired, they can be set after having received the connected() signal from
-    the socket or after having received a new socket from a QTcpServer.
+    This enum represents the options that can be set on a socket.  If
+    desired, they can be set after having received the connected()
+    signal from the socket or after having received a new socket from
+    a QTcpServer.
 
-    \value LowDelayOption Try to optimize the socket for low latency. For a QTcpSocket
-    this would set the TCP_NODELAY option and disable Nagle's algorithm. Set this to 1
-    to enable.
-    \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE socket option
+    \value LowDelayOption Try to optimize the socket for low
+    latency. For a QTcpSocket this would set the TCP_NODELAY option
+    and disable Nagle's algorithm. Set this to 1 to enable.
 
-    \value MulticastTtlOption Set this to an integer value to set IP_MULTICAST_TTL (TTL for multicast datagrams) socket option.
+    \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE
+    socket option
 
-    \value MulticastLoopbackOption Set this to 1 to enable the IP_MULTICAST_LOOP (multicast loopback) socket option.
+    \value MulticastTtlOption Set this to an integer value to set
+    IP_MULTICAST_TTL (TTL for multicast datagrams) socket option.
+
+    \value MulticastLoopbackOption Set this to 1 to enable the
+    IP_MULTICAST_LOOP (multicast loopback) socket option.
+
+    \value TypeOfServiceOption This option is not supported on
+    Windows. This maps to to the IP_TOS socket option.
+
+    Possible values for the \e{TypeOfServiceOption} are:
+
+    \table
+    \header \o Value \o Description
+    \row \o 224 \o Network control
+    \row \o 192 \o Internetwork control
+    \row \o 160 \o CRITIC/ECP
+    \row \o 128 \o Flash override
+    \row \o 96 \o Flash
+    \row \o 64 \o Immediate
+    \row \o 32 \o Priority
+    \row \o 0 \o Routine
+    \endtable
 
     \sa QAbstractSocket::setSocketOption(), QAbstractSocket::socketOption()
 */
@@ -939,7 +963,7 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
     if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
         addresses = hostInfo.addresses();
     } else {
-        foreach (QHostAddress address, hostInfo.addresses())
+        foreach (const QHostAddress &address, hostInfo.addresses())
             if (address.protocol() == preferredNetworkLayerProtocol)
                 addresses += address;
     }
@@ -1455,27 +1479,6 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
                                     NetworkLayerProtocol protocol)
 {
     Q_D(QAbstractSocket);
-    d->preferredNetworkLayerProtocol = protocol;
-
-    QMetaObject::invokeMethod(this, "connectToHostImplementation",
-                              Qt::DirectConnection,
-                              Q_ARG(QString, hostName),
-                              Q_ARG(quint16, port),
-                              Q_ARG(OpenMode, openMode));
-}
-
-/*!
-    \since 4.1
-
-    Contains the implementation of connectToHost().
-
-    Attempts to make a connection to \a hostName on the given \a
-    port. The socket is opened in the given \a openMode.
-*/
-void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint16 port,
-                                                  OpenMode openMode)
-{
-    Q_D(QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::connectToHost(\"%s\", %i, %i)...", qPrintable(hostName), port,
            (int) openMode);
@@ -1484,9 +1487,13 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
     if (d->state == ConnectedState || d->state == ConnectingState
         || d->state == ClosingState || d->state == HostLookupState) {
         qWarning("QAbstractSocket::connectToHost() called when already looking up or connecting/connected to \"%s\"", qPrintable(hostName));
+        d->socketError = QAbstractSocket::OperationError;
+        setErrorString(QAbstractSocket::tr("Trying to connect while connection is in progress"));
+        emit error(d->socketError);
         return;
     }
 
+    d->preferredNetworkLayerProtocol = protocol;
     d->hostName = hostName;
     d->port = port;
     d->state = UnconnectedState;
@@ -1705,7 +1712,7 @@ bool QAbstractSocket::canReadLine() const
 
     \sa setSocketDescriptor()
 */
-int QAbstractSocket::socketDescriptor() const
+qintptr QAbstractSocket::socketDescriptor() const
 {
     Q_D(const QAbstractSocket);
     return d->cachedSocketDescriptor;
@@ -1723,7 +1730,7 @@ int QAbstractSocket::socketDescriptor() const
 
     \sa socketDescriptor()
 */
-bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState socketState,
+bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState socketState,
                                           OpenMode openMode)
 {
     Q_D(QAbstractSocket);
@@ -1805,6 +1812,10 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
         case MulticastLoopbackOption:
                 d_func()->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopbackOption, value.toInt());
                 break;
+
+        case TypeOfServiceOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::TypeOfServiceOption, value.toInt());
+            break;
     }
 }
 
@@ -1840,6 +1851,10 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
                 break;
         case MulticastLoopbackOption:
                 ret = d_func()->socketEngine->option(QAbstractSocketEngine::MulticastLoopbackOption);
+                break;
+
+        case TypeOfServiceOption:
+                ret = d_func()->socketEngine->option(QAbstractSocketEngine::TypeOfServiceOption);
                 break;
     }
     if (ret == -1)
@@ -2594,17 +2609,6 @@ void QAbstractSocket::close()
     \sa connectToHost()
 */
 void QAbstractSocket::disconnectFromHost()
-{
-    QMetaObject::invokeMethod(this, "disconnectFromHostImplementation",
-                              Qt::DirectConnection);
-}
-
-/*!
-    \since 4.1
-
-    Contains the implementation of disconnectFromHost().
-*/
-void QAbstractSocket::disconnectFromHostImplementation()
 {
     Q_D(QAbstractSocket);
 #if defined(QABSTRACTSOCKET_DEBUG)

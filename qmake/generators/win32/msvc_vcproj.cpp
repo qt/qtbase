@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -467,8 +467,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         Option::qmake_mode = old_mode;
                         if(Option::debug_level) {
                             debug_msg(1, "Dumping all variables:");
-                            QMap<QString, QStringList> &vars = tmp_proj.variables();
-                            for(QMap<QString, QStringList>::Iterator it = vars.begin();
+                            QHash<QString, QStringList> &vars = tmp_proj.variables();
+                            for(QHash<QString, QStringList>::Iterator it = vars.begin();
                                 it != vars.end(); ++it) {
                                 if(it.key().left(1) != "." && !it.value().isEmpty())
                                     debug_msg(1, "%s: %s === %s", fn.toLatin1().constData(), it.key().toLatin1().constData(),
@@ -949,6 +949,10 @@ void VcprojGenerator::initCompilerTool()
         placement = ".\\";
 
     VCConfiguration &conf = vcProject.Configuration;
+    if (conf.CompilerVersion >= NET2010) {
+        // adjust compiler tool defaults for VS 2010 and above
+        conf.compiler.Optimization = optimizeDisabled;
+    }
     conf.compiler.AssemblerListingLocation = placement ;
     conf.compiler.ProgramDataBaseFileName = ".\\" ;
     conf.compiler.ObjectFile = placement ;
@@ -1571,7 +1575,7 @@ void VcprojGenerator::outputVariables()
 {
 #if 0
     qDebug("Generator: MSVC.NET: List of current variables:");
-    for(QMap<QString, QStringList>::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
+    for(QHash<QString, QStringList>::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
         qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key()), qPrintable(it.value().join(" | ")));
 #endif
 }

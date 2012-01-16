@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,7 +62,7 @@ public:
     bool defaultNameFilterDisables() const;
 
     void deleteNativeDialog_sys();
-    bool show_sys(QWindow *parent);
+    bool show_sys(ShowFlags flags, Qt::WindowFlags windowFlags, QWindow *parent);
     void hide_sys();
     QPlatformFileDialogHelper::DialogCode dialogResultCode_sys();
     void setDirectory_sys(const QString &directory);
@@ -70,12 +70,11 @@ public:
     void selectFile_sys(const QString &filename);
     QStringList selectedFiles_sys() const;
     void setFilter_sys();
-    void setNameFilters_sys(const QStringList &filters);
     void selectNameFilter_sys(const QString &filter);
     QString selectedNameFilter_sys() const;
 
 public:
-    bool showCocoaFilePanel();
+    bool showCocoaFilePanel(QWindow *parent);
     bool hideCocoaFilePanel();
 
     void createNSOpenSavePanelDelegate();

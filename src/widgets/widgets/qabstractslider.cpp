@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -942,61 +942,5 @@ bool QAbstractSlider::event(QEvent *e)
 
     return QWidget::event(e);
 }
-
-/*! \fn int QAbstractSlider::minValue() const
-
-    Use minimum() instead.
-*/
-
-/*! \fn int QAbstractSlider::maxValue() const
-
-    Use maximum() instead.
-*/
-
-/*! \fn int QAbstractSlider::lineStep() const
-
-    Use singleStep() instead.
-*/
-
-/*! \fn void QAbstractSlider::setMinValue(int v)
-
-    Use setMinimum() instead.
-*/
-
-/*! \fn void QAbstractSlider::setMaxValue(int v)
-
-    Use setMaximum() instead.
-*/
-
-/*! \fn void QAbstractSlider::setLineStep(int v)
-
-    Use setSingleStep() instead.
-*/
-
-/*! \fn void QAbstractSlider::addPage()
-
-    Use triggerAction(QAbstractSlider::SliderPageStepAdd) instead.
-*/
-
-/*! \fn void QAbstractSlider::subtractPage()
-
-    Use triggerAction(QAbstractSlider::SliderPageStepSub) instead.
-*/
-
-/*! \fn void QAbstractSlider::addLine()
-
-    Use triggerAction(QAbstractSlider::SliderSingleStepAdd) instead.
-*/
-
-/*! \fn void QAbstractSlider::subtractLine()
-
-    Use triggerAction(QAbstractSlider::SliderSingleStepSub) instead.
-*/
-
-/*! \fn void QAbstractSlider::setSteps(int single, int page)
-
-    Use setSingleStep(\a single) followed by setPageStep(\a page)
-    instead.
-*/
 
 QT_END_NAMESPACE

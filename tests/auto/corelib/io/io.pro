@@ -7,10 +7,12 @@ SUBDIRS=\
     qdir \
     qdiriterator \
     qfile \
+    largefile \
     qfileinfo \
     qfilesystementry \
     qfilesystemwatcher \
     qiodevice \
+    qnodebug \
     qprocess \
     qprocessenvironment \
     qresourceengine \

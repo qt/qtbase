@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -455,7 +455,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
 
     \sa socketDescriptor()
 */
-bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, OpenMode openMode)
+bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state, OpenMode openMode)
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
@@ -1733,16 +1733,16 @@ void QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
 /*!
     \internal
 */
-void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 port,
-                                             OpenMode openMode)
+void QSslSocket::connectToHost(const QString &hostName, quint16 port, OpenMode openMode, NetworkLayerProtocol protocol)
 {
     Q_D(QSslSocket);
+    d->preferredNetworkLayerProtocol = protocol;
     if (!d->initialized)
         d->init();
     d->initialized = false;
 
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::connectToHostImplementation("
+    qDebug() << "QSslSocket::connectToHost("
              << hostName << ',' << port << ',' << openMode << ')';
 #endif
     if (!d->plainSocket) {
@@ -1762,11 +1762,11 @@ void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 po
 /*!
     \internal
 */
-void QSslSocket::disconnectFromHostImplementation()
+void QSslSocket::disconnectFromHost()
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::disconnectFromHostImplementation()";
+    qDebug() << "QSslSocket::disconnectFromHost()";
 #endif
     if (!d->plainSocket)
         return;

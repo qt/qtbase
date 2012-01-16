@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -885,9 +885,9 @@ void QXmlStreamReaderPrivate::parseEntity(const QString &value)
 inline void QXmlStreamReaderPrivate::reallocateStack()
 {
     stack_size <<= 1;
-    sym_stack = reinterpret_cast<Value*> (qRealloc(sym_stack, stack_size * sizeof(Value)));
+    sym_stack = reinterpret_cast<Value*> (realloc(sym_stack, stack_size * sizeof(Value)));
     Q_CHECK_PTR(sym_stack);
-    state_stack = reinterpret_cast<int*> (qRealloc(state_stack, stack_size * sizeof(int)));
+    state_stack = reinterpret_cast<int*> (realloc(state_stack, stack_size * sizeof(int)));
     Q_CHECK_PTR(sym_stack);
 }
 
@@ -897,8 +897,8 @@ QXmlStreamReaderPrivate::~QXmlStreamReaderPrivate()
 #ifndef QT_NO_TEXTCODEC
     delete decoder;
 #endif
-    qFree(sym_stack);
-    qFree(state_stack);
+    free(sym_stack);
+    free(state_stack);
     delete entityParser;
 }
 

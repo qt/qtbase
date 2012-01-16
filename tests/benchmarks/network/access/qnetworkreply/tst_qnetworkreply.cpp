@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -321,7 +321,7 @@ public:
         return false;
     }
 
-    virtual bool reset() const{
+    virtual bool reset() {
         return false;
     }
 
@@ -690,15 +690,15 @@ public:
             QSharedPointer<char> data = downloadBufferAttribute.value<QSharedPointer<char> >();
         } else if (testType == DownloadBufferButUseRead) {
             // We had a download buffer but we benchmark here the "legacy" read() way to access it
-            char* replyData = (char*) qMalloc(uploadSize);
+            char* replyData = (char*) malloc(uploadSize);
             QVERIFY(reply->read(replyData, uploadSize) == uploadSize);
-            qFree(replyData);
+            free(replyData);
         } else if (testType == NoDownloadBuffer) {
             // We did not have a download buffer but we still need to benchmark having the data, e.g. reading it all.
             // This should be the slowest benchmark result.
-            char* replyData = (char*) qMalloc(uploadSize);
+            char* replyData = (char*) malloc(uploadSize);
             QVERIFY(reply->read(replyData, uploadSize) == uploadSize);
-            qFree(replyData);
+            free(replyData);
         }
 
         QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);

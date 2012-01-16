@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -67,9 +67,6 @@ void accessibilityUpdateHandler(QObject *object, int who, QAccessible::Event rea
     if (updateHandlerRecursion)
         return;
 
-    if (!qobject_cast<QQuickItem *>(object))
-        return;
-
     updateHandlerRecursion = true;
 
     if (sceneManager) {
@@ -109,14 +106,14 @@ void AccessibilityInspector::inspectWindow(QWindow *window)
 
     accessibilityView = new QGraphicsView();
     accessibilityView->setScene(accessibilityScene);
-    accessibilityView->resize(1024, 768);
+    accessibilityView->resize(640, 480);
     accessibilityView->scale(1.3, 1.3);
 
     accessibilityTreeScene = new QGraphicsScene();
 
     accessibilityTreeView = new QGraphicsView();
     accessibilityTreeView->setScene(accessibilityTreeScene);
-    accessibilityTreeView->resize(1024, 768);
+    accessibilityTreeView->resize(640, 480);
 
     sceneManager = new AccessibilitySceneManager();
     QObject::connect(optionsWidget, SIGNAL(optionsChanged()), sceneManager, SLOT(updateAccessibilitySceneItemFlags()));

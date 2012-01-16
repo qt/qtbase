@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,10 +53,15 @@
 #include <QtTest/qtestspontaneevent.h>
 
 #include <QtCore/qpointer.h>
-#include <QtWidgets/qapplication.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
 #include <QtGui/qevent.h>
-#include <QtWidgets/qwidget.h>
 #include <QtGui/qwindowsysteminterface_qpa.h>
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qapplication.h>
+#endif
 
 QT_BEGIN_HEADER
 

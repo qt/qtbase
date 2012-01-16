@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -487,24 +487,6 @@ bool QDial::event(QEvent *e)
 {
     return QAbstractSlider::event(e);
 }
-
-/*!
-    \fn void QDial::dialPressed();
-
-    Use QAbstractSlider::sliderPressed() instead.
-*/
-
-/*!
-    \fn void QDial::dialMoved(int value);
-
-    Use QAbstractSlider::sliderMoved() instead.
-*/
-
-/*!
-    \fn void QDial::dialReleased();
-
-    Use QAbstractSlider::sliderReleased() instead.
-*/
 
 QT_END_NAMESPACE
 

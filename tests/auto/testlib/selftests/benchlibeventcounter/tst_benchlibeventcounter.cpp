@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtCore>
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 /* Custom event dispatcher to ensure we don't receive any spontaneous events */
@@ -57,8 +57,7 @@ public:
     void interrupt() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) { return false; }
     void registerSocketNotifier(QSocketNotifier*) {}
-    int registerTimer(int,QObject*) { return -1; }
-    void registerTimer(int,int,QObject*) {}
+    void registerTimer(int,int,Qt::TimerType,QObject*) {}
     QList<TimerInfo> registeredTimers(QObject*) const { return QList<TimerInfo>(); }
     void unregisterSocketNotifier(QSocketNotifier*) {}
     bool unregisterTimer(int) { return false; }

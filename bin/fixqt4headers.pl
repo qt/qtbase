@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #############################################################################
 ##
-## Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -140,6 +140,7 @@ sub findQtHeaders
 
 die "This script requires the QTDIR environment variable pointing to Qt 5\n" unless $qtdir;
 
+findQtHeaders('QtCore', $qtdir);
 findQtHeaders('QtWidgets', $qtdir);
 findQtHeaders('QtPrintSupport', $qtdir);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,6 +81,10 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextLength &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextLength &);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QTextLength &);
+#endif
+
 class Q_GUI_EXPORT QTextLength
 {
 public:
@@ -124,6 +128,10 @@ inline QTextLength::QTextLength(Type atype, qreal avalue)
 #ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextFormat &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextFormat &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QTextFormat &);
 #endif
 
 class Q_GUI_EXPORT QTextFormat
@@ -172,8 +180,10 @@ public:
         // character properties
         FirstFontProperty = 0x1FE0,
         FontCapitalization = FirstFontProperty,
+        FontAbsoluteLetterSpacing = 0x2033, // if true FontLetterSpacing is absolute
         FontLetterSpacing = 0x1FE1,
         FontWordSpacing = 0x1FE2,
+        FontStretch = 0x2034,
         FontStyleHint = 0x1FE3,
         FontStyleStrategy = 0x1FE4,
         FontKerning = 0x1FE5,
@@ -420,8 +430,14 @@ public:
     { setProperty(FontCapitalization, capitalization); }
     inline QFont::Capitalization fontCapitalization() const
     { return static_cast<QFont::Capitalization>(intProperty(FontCapitalization)); }
+    inline void setFontAbsoluteLetterSpacing(qreal absoluteSpacing)
+    { setProperty(FontAbsoluteLetterSpacing, absoluteSpacing);
+      clearProperty(FontLetterSpacing); }
+    inline qreal fontAbsoluteLetterSpacing() const
+    { return doubleProperty(FontAbsoluteLetterSpacing); }
     inline void setFontLetterSpacing(qreal spacing)
-    { setProperty(FontLetterSpacing, spacing); }
+    { setProperty(FontLetterSpacing, spacing);
+      clearProperty(FontAbsoluteLetterSpacing); }
     inline qreal fontLetterSpacing() const
     { return doubleProperty(FontLetterSpacing); }
     inline void setFontWordSpacing(qreal spacing)
@@ -452,6 +468,11 @@ public:
     { setProperty(FontFixedPitch, fixedPitch); }
     inline bool fontFixedPitch() const
     { return boolProperty(FontFixedPitch); }
+
+    inline void setFontStretch(qreal factor)
+    { setProperty(FontStretch, factor); }
+    inline int fontStretch() const
+    { return intProperty(FontStretch); }
 
     inline void setFontStyleHint(QFont::StyleHint hint, QFont::StyleStrategy strategy = QFont::PreferDefault)
     { setProperty(FontStyleHint, hint); setProperty(FontStyleStrategy, strategy); }

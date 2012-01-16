@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,7 +55,8 @@ void DummyAnimation::updateCurrentValue(const QVariant &value)
         m_dummy->setRect(value.toRect());
 }
 
-void DummyAnimation::updateState(State state)
+void DummyAnimation::updateState(State newstate, State oldstate)
 {
-    Q_UNUSED(state);
+    Q_UNUSED(newstate);
+    Q_UNUSED(oldstate);
 }

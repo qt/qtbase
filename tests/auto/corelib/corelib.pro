@@ -5,6 +5,7 @@ SUBDIRS=\
    concurrent \
    global \
    io \
+   itemmodels \
    kernel \
    plugin \
    statemachine \

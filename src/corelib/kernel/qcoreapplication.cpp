@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -143,7 +143,7 @@ static inline void qt_init_symbian_apa_arguments(int &argc, char **&argv)
             TPtrC8 apaCmdLine = commandLine->TailEnd();
             int tailLen = apaCmdLine.Length();
             if (tailLen) {
-                apaTail = reinterpret_cast<char *>(qMalloc(tailLen + 1));
+                apaTail = reinterpret_cast<char *>(malloc(tailLen + 1));
                 qMemCopy(apaTail, reinterpret_cast<const char *>(apaCmdLine.Ptr()), tailLen);
                 apaTail[tailLen] = '\0';
                 apaArgv = new QVector<char *>(8);
@@ -300,7 +300,7 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 
 QCoreApplication *QCoreApplication::self = 0;
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
-uint QCoreApplicationPrivate::attribs;
+uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
 #ifdef Q_OS_UNIX
 Qt::HANDLE qt_application_thread_id = 0;
@@ -802,26 +802,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
     QScopedLoopLevelCounter loopLevelCounter(threadData);
-
-#ifdef QT_JAMBI_BUILD
-    int deleteWatch = 0;
-    int *oldDeleteWatch = QObjectPrivate::setDeleteWatch(d, &deleteWatch);
-
-    bool inEvent = d->inEventHandler;
-    d->inEventHandler = true;
-#endif
-
-    bool returnValue;
-    returnValue = notify(receiver, event);
-
-#ifdef QT_JAMBI_BUILD
-    // Restore the previous state if the object was not deleted..
-    if (!deleteWatch) {
-        d->inEventHandler = inEvent;
-    }
-    QObjectPrivate::resetDeleteWatch(d, oldDeleteWatch, deleteWatch);
-#endif
-    return returnValue;
+    return notify(receiver, event);
 }
 
 
@@ -1424,9 +1405,18 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
             if (!allowDeferredDelete) {
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
-                    // don't lose the event
-                    data->postEventList.addEvent(pe);
+                    // we must copy it first; we want to re-post the event
+                    // with the event pointer intact, but we can't delay
+                    // nulling the event ptr until after re-posting, as
+                    // addEvent may invalidate pe.
+                    QPostEvent pe_copy = pe;
+
+                    // null out the event so if sendPostedEvents recurses, it
+                    // will ignore this one, as it's been re-posted.
                     const_cast<QPostEvent &>(pe).event = 0;
+
+                    // re-post the copied event so it isn't lost
+                    data->postEventList.addEvent(pe_copy);
                 }
                 continue;
             }
@@ -1528,7 +1518,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             const_cast<QPostEvent &>(pe).event = 0;
         } else if (!data->postEventList.recursion) {
             if (i != j)
-                data->postEventList.swap(i, j);
+                qSwap(data->postEventList[i], data->postEventList[j]);
             ++j;
         }
     }
@@ -1842,9 +1832,9 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 /*!
     Returns the directory that contains the application executable.
 
-    For example, if you have installed Qt in the \c{C:\Trolltech\Qt}
+    For example, if you have installed Qt in the \c{C:\Qt}
     directory, and you run the \c{regexp} example, this function will
-    return "C:/Trolltech/Qt/examples/tools/regexp".
+    return "C:/Qt/examples/tools/regexp".
 
     On Mac OS X this will point to the directory actually containing the
     executable, which may be inside of an application bundle (if the
@@ -2585,6 +2575,14 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     be any string.
 
     \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
+*/
+
+/*!
+    \enum QCoreApplication::Type
+
+    \value Tty a console application
+    \value GuiClient a GUI application
+    \value GuiServer \e{Deprecated.} this value is only left for compatibility.
 */
 
 QT_END_NAMESPACE

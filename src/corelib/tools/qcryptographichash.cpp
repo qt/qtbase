@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,7 @@
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
 #include "../../3rdparty/sha1/sha1.cpp"
+#include <qiodevice.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -153,6 +154,28 @@ void QCryptographicHash::addData(const QByteArray &data)
 {
     addData(data.constData(), data.length());
 }
+
+/*!
+  Reads the data from the open QIODevice \a device until it ends
+  and hashes it. Returns true if reading was successful.
+ */
+bool QCryptographicHash::addData(QIODevice* device)
+{
+    if (!device->isReadable())
+        return false;
+
+    if (!device->isOpen())
+        return false;
+
+    char buffer[1024];
+    int length;
+
+    while ((length = device->read(buffer,sizeof(buffer))) > 0)
+        addData(buffer,length);
+
+    return device->atEnd();
+}
+
 
 /*!
   Returns the final hash value.

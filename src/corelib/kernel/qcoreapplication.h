@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,6 +76,12 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
     enum { ApplicationFlags = QT_VERSION
+    };
+
+    enum Type {
+        Tty,
+        GuiClient,
+        GuiServer // # deprecated
     };
 
     QCoreApplication(int &argc, char **argv, int = ApplicationFlags);

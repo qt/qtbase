@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -348,7 +348,7 @@ void tst_QRegExp::indexIn_addMoreRows(const QByteArray &stri)
 
         // miscellaneous
         QTest::newRow( stri + "misc00" ) << QString(email)
-                                << QString("troll1@trolltech.com") << 0 << 20
+                                << QString("email123@example.com") << 0 << 20
                                 << QStringList();
         QTest::newRow( stri + "misc01" ) << QString("[0-9]*\\.[0-9]+") << QString("pi = 3.14") << 5 << 4
                                 << QStringList();
@@ -791,7 +791,7 @@ void tst_QRegExp::wildcard_data()
     QTest::newRow( "data0" ) << QString("*.html") << QString("test.html") << 0;
     QTest::newRow( "data1" ) << QString("*.html") << QString("test.htm") << -1;
     QTest::newRow( "data2" ) << QString("bar*") << QString("foobarbaz") << 3;
-    QTest::newRow( "data3" ) << QString("*") << QString("Trolltech") << 0;
+    QTest::newRow( "data3" ) << QString("*") << QString("Qt Rocks!") << 0;
     QTest::newRow( "data4" ) << QString(".html") << QString("test.html") << 4;
     QTest::newRow( "data5" ) << QString(".h") << QString("test.cpp") << -1;
     QTest::newRow( "data6" ) << QString(".???l") << QString("test.html") << 4;

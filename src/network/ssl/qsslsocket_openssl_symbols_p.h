@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -325,11 +325,7 @@ int q_SSL_library_init();
 void q_SSL_load_error_strings();
 SSL *q_SSL_new(SSL_CTX *a);
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 long q_SSL_ctrl(SSL *ssl,int cmd, long larg, void *parg);
-#else
-long q_SSL_ctrl(SSL *ssl,int cmd, long larg, const void *parg);
-#endif
 #endif
 int q_SSL_read(SSL *a, void *b, int c);
 void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
@@ -431,11 +427,7 @@ DSA *q_d2i_DSAPrivateKey(DSA **a, unsigned char **pp, long length);
 					(char *)(rsa))
 #define q_EVP_PKEY_assign_DSA(pkey,dsa) q_EVP_PKEY_assign((pkey),EVP_PKEY_DSA,\
 					(char *)(dsa))
-#ifdef OPENSSL_LOAD_CONF
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
-#else
-#define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_noconf()
-#endif
 void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);

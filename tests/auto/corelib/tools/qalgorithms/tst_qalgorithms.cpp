@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -174,7 +174,7 @@ bool isSorted(ContainerType &container, LessThan lessThan)
 template <typename ContainerType>
 bool isSorted(ContainerType &container)
 {
-    return isSorted(container, qLess<Q_TYPENAME ContainerType::value_type>());
+    return isSorted(container, qLess<typename ContainerType::value_type>());
 }
 
 

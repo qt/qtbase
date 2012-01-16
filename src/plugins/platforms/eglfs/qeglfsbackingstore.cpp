@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,18 +79,18 @@ QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglBackingStore %p, %p", window, screen);
+    qWarning("QEglBackingStore %p, %p", window, window->screen());
 #endif
     m_paintDevice = new QEglFSPaintDevice(static_cast<QEglFSScreen *>(window->screen()->handle()));
 }
 
-void QEglFSBackingStore::flush(QWindow *widget, const QRegion &region, const QPoint &offset)
+void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglBackingStore::flush %p",widget);
+    qWarning("QEglBackingStore::flush %p", window);
 #endif
     static_cast<QEglFSPaintDevice *>(m_paintDevice)->context()->swapBuffers();
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,8 @@ private slots:
     void createCopy();
     void sizeOf_data();
     void sizeOf();
+    void flags_data();
+    void flags();
     void construct_data();
     void construct();
     void constructCopy_data();
@@ -319,6 +321,30 @@ struct TypeAlignment
     enum { Value = RoundToNextHighestPowerOfTwo<sizeof(T)>::Value };
 #endif
 };
+
+void tst_QGuiMetaType::flags_data()
+{
+    QTest::addColumn<int>("type");
+    QTest::addColumn<bool>("isMovable");
+    QTest::addColumn<bool>("isComplex");
+
+#define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
+    QTest::newRow(#RealType) << MetaTypeId << bool(!QTypeInfo<RealType>::isStatic) << bool(QTypeInfo<RealType>::isComplex);
+QT_FOR_EACH_STATIC_GUI_CLASS(ADD_METATYPE_TEST_ROW)
+#undef ADD_METATYPE_TEST_ROW
+}
+
+void tst_QGuiMetaType::flags()
+{
+    QFETCH(int, type);
+    QFETCH(bool, isMovable);
+    QFETCH(bool, isComplex);
+
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
+}
+
 
 void tst_QGuiMetaType::construct_data()
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -98,6 +98,15 @@ private:
 
 tst_qmake::tst_qmake()
 {
+}
+
+tst_qmake::~tst_qmake()
+{
+
+}
+
+void tst_qmake::initTestCase()
+{
     QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
     QString cmd = QString("%2/qmake \"QT_VERSION=%1\"").arg(QT_VERSION).arg(binpath);
 #ifdef Q_CC_MSVC
@@ -109,17 +118,13 @@ tst_qmake::tst_qmake()
 #else
     test_compiler.setBaseCommands( "make", cmd );
 #endif
-    QDir dir;
-    base_path = dir.currentPath();
-}
-
-tst_qmake::~tst_qmake()
-{
-
-}
-
-void tst_qmake::initTestCase()
-{
+    //Detect the location of the testdata
+    QString subProgram  = QLatin1String("testdata/simple_app/main.cpp");
+    base_path = QFINDTESTDATA(subProgram);
+    if (base_path.lastIndexOf(subProgram) > 0)
+        base_path = base_path.left(base_path.lastIndexOf(subProgram));
+    else
+        base_path = QCoreApplication::applicationDirPath();
 }
 
 void tst_qmake::cleanupTestCase()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1468,10 +1468,6 @@ QWidget::~QWidget()
 
     delete d->needsFlush;
     d->needsFlush = 0;
-
-    // set all QPointers for this object to zero
-    if (d->hasGuards)
-        QObjectPrivate::clearGuards(this);
 
     if (d->declarativeData) {
         QAbstractDeclarativeData::destroyed(d->declarativeData, this);
@@ -6559,6 +6555,9 @@ QByteArray QWidget::saveGeometry() const
 #ifdef Q_WS_MAC
            << newFramePosition
            << newNormalPosition
+#else
+           << frameGeometry()
+           << normalGeometry()
 #endif // Q_WS_MAC
            << qint32(QApplication::desktop()->screenNumber(this))
            << quint8(windowState() & Qt::WindowMaximized)
@@ -8188,26 +8187,6 @@ bool QWidget::event(QEvent *event)
             event->ignore();
         break;
 #endif
-#ifndef QT_NO_ACCESSIBILITY
-    case QEvent::AccessibilityDescription:
-    case QEvent::AccessibilityHelp: {
-        QAccessibleEvent *ev = static_cast<QAccessibleEvent *>(event);
-        switch (ev->type()) {
-#ifndef QT_NO_TOOLTIP
-        case QEvent::AccessibilityDescription:
-            ev->setValue(d->toolTip);
-            break;
-#endif
-#ifndef QT_NO_WHATSTHIS
-        case QEvent::AccessibilityHelp:
-            ev->setValue(d->whatsThis);
-            break;
-#endif
-        default:
-            return false;
-        }
-        break; }
-#endif
     case QEvent::EmbeddingControl:
         d->topData()->frameStrut.setCoords(0 ,0, 0, 0);
         data->fstrut_dirty = false;
@@ -8248,40 +8227,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
-#ifndef Q_WS_MAC
-        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
-        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
-        if (touchPoint.isPrimary() || touchEvent->device()->type() == QTouchDevice::TouchPad)
-            break;
-
-        // fake a mouse event!
-        QEvent::Type eventType = QEvent::None;
-        switch (touchEvent->type()) {
-        case QEvent::TouchBegin:
-            eventType = QEvent::MouseButtonPress;
-            break;
-        case QEvent::TouchUpdate:
-            eventType = QEvent::MouseMove;
-            break;
-        case QEvent::TouchEnd:
-            eventType = QEvent::MouseButtonRelease;
-            break;
-        default:
-            Q_ASSERT(!true);
-            break;
-        }
-        if (eventType == QEvent::None)
-            break;
-
-        QMouseEvent mouseEvent(eventType,
-                               touchPoint.pos(),
-                               touchPoint.scenePos(),
-                               touchPoint.screenPos(),
-                               Qt::LeftButton,
-                               Qt::LeftButton,
-                               touchEvent->modifiers());
-        (void) QApplication::sendEvent(this, &mouseEvent);
-#endif // Q_WS_MAC
+        event->ignore();
         break;
     }
 #ifndef QT_NO_GESTURES
@@ -10317,45 +10263,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->registerTouchWindow();
 #endif
         break;
-    case Qt::WA_LockPortraitOrientation:
-    case Qt::WA_LockLandscapeOrientation:
-    case Qt::WA_AutoOrientation: {
-        const Qt::WidgetAttribute orientations[3] = {
-            Qt::WA_LockPortraitOrientation,
-            Qt::WA_LockLandscapeOrientation,
-            Qt::WA_AutoOrientation
-        };
-
-        if (on) {
-            // We can only have one of these set at a time
-            for (int i = 0; i < 3; ++i) {
-                if (orientations[i] != attribute)
-                    setAttribute_internal(orientations[i], false, data, d);
-            }
-        }
-
-#ifdef Q_WS_S60
-        CAknAppUiBase* appUi = static_cast<CAknAppUiBase*>(CEikonEnv::Static()->EikAppUi());
-        const CAknAppUiBase::TAppUiOrientation s60orientations[] = {
-            CAknAppUiBase::EAppUiOrientationPortrait,
-            CAknAppUiBase::EAppUiOrientationLandscape,
-            CAknAppUiBase::EAppUiOrientationAutomatic
-        };
-        CAknAppUiBase::TAppUiOrientation s60orientation = CAknAppUiBase::EAppUiOrientationUnspecified;
-        for (int i = 0; i < 3; ++i) {
-            if (testAttribute(orientations[i])) {
-                s60orientation = s60orientations[i];
-                break;
-            }
-        }
-        QT_TRAP_THROWING(appUi->SetOrientationL(s60orientation));
-        S60->orientationSet = true;
-        QSymbianControl *window = static_cast<QSymbianControl *>(internalWinId());
-        if (window)
-            window->ensureFixNativeOrientation();
-#endif
-        break;
-    }
     default:
         break;
     }
@@ -10834,337 +10741,6 @@ void QWidget::stackUnder(QWidget* w)
     QApplication::sendEvent(this, &e);
 }
 
-/*!
-    \enum QWidget::BackgroundOrigin
-
-    \compat
-
-    \value WidgetOrigin
-    \value ParentOrigin
-    \value WindowOrigin
-    \value AncestorOrigin
-
-*/
-
-/*!
-    \fn bool QWidget::isVisibleToTLW() const
-
-    Use isVisible() instead.
-*/
-
-/*!
-    \fn void QWidget::iconify()
-
-    Use showMinimized() instead.
-*/
-
-/*!
-    \fn void QWidget::constPolish() const
-
-    Use ensurePolished() instead.
-*/
-
-/*!
-    \fn void QWidget::reparent(QWidget *parent, Qt::WindowFlags f, const QPoint &p, bool showIt)
-
-    Use setParent() to change the parent or the widget's widget flags;
-    use move() to move the widget, and use show() to show the widget.
-*/
-
-/*!
-    \fn void QWidget::reparent(QWidget *parent, const QPoint &p, bool showIt)
-
-    Use setParent() to change the parent; use move() to move the
-    widget, and use show() to show the widget.
-*/
-
-/*!
-    \fn void QWidget::recreate(QWidget *parent, Qt::WindowFlags f, const QPoint & p, bool showIt)
-
-    Use setParent() to change the parent or the widget's widget flags;
-    use move() to move the widget, and use show() to show the widget.
-*/
-
-/*!
-    \fn bool QWidget::hasMouse() const
-
-    Use testAttribute(Qt::WA_UnderMouse) instead.
-*/
-
-/*!
-    \fn bool QWidget::ownCursor() const
-
-    Use testAttribute(Qt::WA_SetCursor) instead.
-*/
-
-/*!
-    \fn bool QWidget::ownFont() const
-
-    Use testAttribute(Qt::WA_SetFont) instead.
-*/
-
-/*!
-    \fn void QWidget::unsetFont()
-
-    Use setFont(QFont()) instead.
-*/
-
-/*!
-    \fn bool QWidget::ownPalette() const
-
-    Use testAttribute(Qt::WA_SetPalette) instead.
-*/
-
-/*!
-    \fn void QWidget::unsetPalette()
-
-    Use setPalette(QPalette()) instead.
-*/
-
-/*!
-    \fn void QWidget::setEraseColor(const QColor &color)
-
-    Use the palette instead.
-
-    \oldcode
-    widget->setEraseColor(color);
-    \newcode
-    QPalette palette;
-    palette.setColor(widget->backgroundRole(), color);
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setErasePixmap(const QPixmap &pixmap)
-
-    Use the palette instead.
-
-    \oldcode
-    widget->setErasePixmap(pixmap);
-    \newcode
-    QPalette palette;
-    palette.setBrush(widget->backgroundRole(), QBrush(pixmap));
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setPaletteForegroundColor(const QColor &color)
-
-    Use the palette directly.
-
-    \oldcode
-    widget->setPaletteForegroundColor(color);
-    \newcode
-    QPalette palette;
-    palette.setColor(widget->foregroundRole(), color);
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setPaletteBackgroundColor(const QColor &color)
-
-    Use the palette directly.
-
-    \oldcode
-    widget->setPaletteBackgroundColor(color);
-    \newcode
-    QPalette palette;
-    palette.setColor(widget->backgroundRole(), color);
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setPaletteBackgroundPixmap(const QPixmap &pixmap)
-
-    Use the palette directly.
-
-    \oldcode
-    widget->setPaletteBackgroundPixmap(pixmap);
-    \newcode
-    QPalette palette;
-    palette.setBrush(widget->backgroundRole(), QBrush(pixmap));
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setBackgroundPixmap(const QPixmap &pixmap)
-
-    Use the palette instead.
-
-    \oldcode
-    widget->setBackgroundPixmap(pixmap);
-    \newcode
-    QPalette palette;
-    palette.setBrush(widget->backgroundRole(), QBrush(pixmap));
-    widget->setPalette(palette);
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setBackgroundColor(const QColor &color)
-
-    Use the palette instead.
-
-    \oldcode
-    widget->setBackgroundColor(color);
-    \newcode
-    QPalette palette;
-    palette.setColor(widget->backgroundRole(), color);
-    widget->setPalette(palette);
-    \endcode
-*/
-
-
-/*!
-    \fn QWidget *QWidget::parentWidget(bool sameWindow) const
-
-    Use the no-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::setKeyCompression(bool b)
-
-    Use setAttribute(Qt::WA_KeyCompression, b) instead.
-*/
-
-/*!
-    \fn void QWidget::setFont(const QFont &f, bool b)
-
-    Use the single-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::setPalette(const QPalette &p, bool b)
-
-    Use the single-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::setBackgroundOrigin(BackgroundOrigin background)
-
-    \obsolete
-*/
-
-/*!
-    \fn BackgroundOrigin QWidget::backgroundOrigin() const
-
-    \obsolete
-
-    Always returns \c WindowOrigin.
-*/
-
-/*!
-    \fn QPoint QWidget::backgroundOffset() const
-
-    \obsolete
-
-    Always returns QPoint().
-*/
-
-/*!
-    \fn void QWidget::repaint(bool b)
-
-    The boolean parameter \a b is ignored. Use the no-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::repaint(int x, int y, int w, int h, bool b)
-
-    The boolean parameter \a b is ignored. Use the four-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::repaint(const QRect &r, bool b)
-
-    The boolean parameter \a b is ignored. Use the single rect-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::repaint(const QRegion &rgn, bool b)
-
-    The boolean parameter \a b is ignored. Use the single region-argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::erase()
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your erasing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn void QWidget::erase(int x, int y, int w, int h)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your erasing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn void QWidget::erase(const QRect &rect)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your erasing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn void QWidget::drawText(const QPoint &p, const QString &s)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your drawing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn void QWidget::drawText(int x, int y, const QString &s)
-
-    Drawing may only take place in a QPaintEvent. Overload
-    paintEvent() to do your drawing and call update() to schedule a
-    replaint whenever necessary. See also QPainter.
-*/
-
-/*!
-    \fn QWidget *QWidget::childAt(const QPoint &p, bool includeThis) const
-
-    Use the single point argument overload instead.
-*/
-
-/*!
-    \fn void QWidget::setCaption(const QString &c)
-
-    Use setWindowTitle() instead.
-*/
-
-/*!
-    \fn void QWidget::setIcon(const QPixmap &i)
-
-    Use setWindowIcon() instead.
-*/
-
-/*!
-    \fn void QWidget::setIconText(const QString &it)
-
-    Use setWindowIconText() instead.
-*/
-
-/*!
-    \fn QString QWidget::caption() const
-
-    Use windowTitle() instead.
-*/
-
-/*!
-    \fn QString QWidget::iconText() const
-
-    Use windowIconText() instead.
-*/
 
 /*!
     \fn bool QWidget::isTopLevel() const
@@ -11181,84 +10757,6 @@ void QWidget::stackUnder(QWidget* w)
 /*!
     \fn bool QWidget::isLeftToRight() const
     \internal
-*/
-
-/*!
-    \fn void QWidget::setInputMethodEnabled(bool enabled)
-
-    Use setAttribute(Qt::WA_InputMethodEnabled, \a enabled) instead.
-*/
-
-/*!
-    \fn bool QWidget::isInputMethodEnabled() const
-
-    Use testAttribute(Qt::WA_InputMethodEnabled) instead.
-*/
-
-/*!
-    \fn void QWidget::setActiveWindow()
-
-    Use activateWindow() instead.
-*/
-
-/*!
-    \fn bool QWidget::isShown() const
-
-    Use !isHidden() instead (notice the exclamation mark), or use isVisible() to check whether the widget is visible.
-*/
-
-/*!
-    \fn bool QWidget::isDialog() const
-
-    Use windowType() == Qt::Dialog instead.
-*/
-
-/*!
-    \fn bool QWidget::isPopup() const
-
-    Use windowType() == Qt::Popup instead.
-*/
-
-/*!
-    \fn bool QWidget::isDesktop() const
-
-    Use windowType() == Qt::Desktop instead.
-*/
-
-/*!
-    \fn void QWidget::polish()
-
-    Use ensurePolished() instead.
-*/
-
-/*!
-    \fn QWidget *QWidget::childAt(int x, int y, bool includeThis) const
-
-    Use the childAt() overload that doesn't have an \a includeThis parameter.
-
-    \oldcode
-        return widget->childAt(x, y, true);
-    \newcode
-        QWidget *child = widget->childAt(x, y, true);
-        if (child)
-            return child;
-        if (widget->rect().contains(x, y))
-            return widget;
-    \endcode
-*/
-
-/*!
-    \fn void QWidget::setSizePolicy(QSizePolicy::Policy hor, QSizePolicy::Policy ver, bool hfw)
-    \compat
-
-    Use the \l sizePolicy property and heightForWidth() function instead.
-*/
-
-/*!
-    \fn bool QWidget::isUpdatesEnabled() const
-    \compat
-
-    Use the \l updatesEnabled property instead.
 */
 
 /*!

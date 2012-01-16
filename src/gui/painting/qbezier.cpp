@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -190,9 +190,12 @@ static inline bool findInflections(qreal a, qreal b, qreal c,
 
 void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold) const
 {
-    QBezier beziers[32];
+    QBezier beziers[10];
+    int levels[10];
     beziers[0] = *this;
+    levels[0] = 9;
     QBezier *b = beziers;
+    int *lvl = levels;
 
     while (b >= beziers) {
         // check if we can pop the top bezier curve from the stack
@@ -208,14 +211,55 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
                 qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
             l = 1.;
         }
-        if (d < bezier_flattening_threshold*l || b == beziers + 31) {
+        if (d < bezier_flattening_threshold*l || *lvl == 0) {
             // good enough, we pop it off and add the endpoint
             polygon->append(QPointF(b->x4, b->y4));
             --b;
+            --lvl;
         } else {
             // split, second half of the polygon goes lower into the stack
             b->split(b+1, b);
+            lvl[1] = --lvl[0];
             ++b;
+            ++lvl;
+        }
+    }
+}
+
+void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattening_threshold) const
+{
+    QBezier beziers[10];
+    int levels[10];
+    beziers[0] = *this;
+    levels[0] = 9;
+    QBezier *b = beziers;
+    int *lvl = levels;
+
+    while (b >= beziers) {
+        // check if we can pop the top bezier curve from the stack
+        qreal y4y1 = b->y4 - b->y1;
+        qreal x4x1 = b->x4 - b->x1;
+        qreal l = qAbs(x4x1) + qAbs(y4y1);
+        qreal d;
+        if (l > 1.) {
+            d = qAbs( (x4x1)*(b->y1 - b->y2) - (y4y1)*(b->x1 - b->x2) )
+                + qAbs( (x4x1)*(b->y1 - b->y3) - (y4y1)*(b->x1 - b->x3) );
+        } else {
+            d = qAbs(b->x1 - b->x2) + qAbs(b->y1 - b->y2) +
+                qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
+            l = 1.;
+        }
+        if (d < bezier_flattening_threshold*l || *lvl == 0) {
+            // good enough, we pop it off and add the endpoint
+            polygon.add(QPointF(b->x4, b->y4));
+            --b;
+            --lvl;
+        } else {
+            // split, second half of the polygon goes lower into the stack
+            b->split(b+1, b);
+            lvl[1] = --lvl[0];
+            ++b;
+            ++lvl;
         }
     }
 }

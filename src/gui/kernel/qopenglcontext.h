@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,7 +106,7 @@ public:
     void doneCurrent();
 
     void swapBuffers(QSurface *surface);
-    void (*getProcAddress(const QByteArray &procName)) ();
+    QFunctionPointer getProcAddress(const QByteArray &procName);
 
     QSurface *surface() const;
 
@@ -117,6 +117,9 @@ public:
     QPlatformOpenGLContext *shareHandle() const;
 
     QOpenGLFunctions *functions() const;
+
+Q_SIGNALS:
+    void aboutToBeDestroyed();
 
 private:
     friend class QGLContext;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,60 +87,6 @@ extern QPixmap qt_pixmapForBrush(int, bool); //qbrush.cpp
 void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform);
 
 
-//Implemented for qt_mac_p.h
-QMacCGContext::QMacCGContext(QPainter *p)
-{
-    QPaintEngine *pe = p->paintEngine();
-    if (pe->type() == QPaintEngine::MacPrinter)
-        pe = static_cast<QMacPrintEngine*>(pe)->paintEngine();
-    pe->syncState();
-    context = 0;
-    if(pe->type() == QPaintEngine::CoreGraphics)
-        context = static_cast<QCoreGraphicsPaintEngine*>(pe)->handle();
-
-    int devType = p->device()->devType();
-    if (pe->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget ||
-                devType == QInternal::Pixmap ||
-                devType == QInternal::Image)) {
-
-        extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());
-        uint flags = kCGImageAlphaPremultipliedFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-        flags |= kCGBitmapByteOrder32Host;
-#endif
-        const QImage *image = (const QImage *) pe->paintDevice();
-
-        context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
-
-        CGContextTranslateCTM(context, 0, image->height());
-        CGContextScaleCTM(context, 1, -1);
-
-        if (devType == QInternal::Widget) {
-            QRegion clip = p->paintEngine()->systemClip();
-            QTransform native = p->deviceTransform();
-            QTransform logical = p->combinedTransform();
-
-            if (p->hasClipping()) {
-                QRegion r = p->clipRegion();
-                r.translate(native.dx(), native.dy());
-                if (clip.isEmpty())
-                    clip = r;
-                else
-                    clip &= r;
-            }
-            qt_mac_clip_cg(context, clip, 0);
-
-            CGContextTranslateCTM(context, native.dx(), native.dy());
-        }
-    } else {
-        CGContextRetain(context);
-    }
-}
-
-
 /*****************************************************************************
   QCoreGraphicsPaintEngine utility functions
  *****************************************************************************/
@@ -150,13 +96,6 @@ inline static float qt_mac_convert_color_to_cg(int c) { return ((float)c * 1000 
 inline static int qt_mac_convert_color_from_cg(float c) { return qRound(c * 255); }
 CGAffineTransform qt_mac_convert_transform_to_cg(const QTransform &t) {
     return CGAffineTransformMake(t.m11(), t.m12(), t.m21(), t.m22(), t.dx(),  t.dy());
-}
-
-CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
-{
-    bool isWidget = (paintDevice->devType() == QInternal::Widget);
-    return QCoreGraphicsPaintEngine::macDisplayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice)
-                                                                   : 0);
 }
 
 inline static QCFType<CGColorRef> cgColorForQColor(const QColor &col, QPaintDevice *pdev)
@@ -317,46 +256,6 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macGenericColorSpace()
     return macDisplayColorSpace();
 #endif
 }
-void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
-{
-    CGAffineTransform old_xform = CGAffineTransformIdentity;
-    if(orig_xform) { //setup xforms
-        old_xform = CGContextGetCTM(hd);
-        CGContextConcatCTM(hd, CGAffineTransformInvert(old_xform));
-        CGContextConcatCTM(hd, *orig_xform);
-    }
-
-    //do the clipping
-    CGContextBeginPath(hd);
-    if(rgn.isEmpty()) {
-        CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
-    } else {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
-            QCFType<HIMutableShapeRef> shape = rgn.toHIMutableShape();
-            Q_ASSERT(!HIShapeIsEmpty(shape));
-            HIShapeReplacePathInCGContext(shape, hd);
-        } else
-#endif
-        {
-            QVector<QRect> rects = rgn.rects();
-            const int count = rects.size();
-            for(int i = 0; i < count; i++) {
-                const QRect &r = rects[i];
-                CGRect mac_r = CGRectMake(r.x(), r.y(), r.width(), r.height());
-                CGContextAddRect(hd, mac_r);
-            }
-        }
-
-    }
-    CGContextClip(hd);
-
-    if(orig_xform) {//reset xforms
-        CGContextConcatCTM(hd, CGAffineTransformInvert(CGContextGetCTM(hd)));
-        CGContextConcatCTM(hd, old_xform);
-    }
-}
-
 
 //pattern handling (tiling)
 #if 1

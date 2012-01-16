@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,8 +121,8 @@ public:
 
     private:
         const Graph *g;
-        Q_TYPENAME QHash<Vertex *, QHash<Vertex *, EdgeData *> * >::const_iterator row;
-        Q_TYPENAME QHash<Vertex *, EdgeData *>::const_iterator column;
+        typename QHash<Vertex *, QHash<Vertex *, EdgeData *> * >::const_iterator row;
+        typename QHash<Vertex *, EdgeData *>::const_iterator column;
     };
 
     const_iterator constBegin() const {
@@ -228,7 +228,7 @@ public:
         QString edges;
 
         QSet<Vertex *> setOfVertices = vertices();
-        for (Q_TYPENAME QSet<Vertex*>::const_iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it) {
+        for (typename QSet<Vertex*>::const_iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it) {
             Vertex *v = *it;
             QList<Vertex*> adjacents = adjacentVertices(v);
             for (int i = 0; i < adjacents.count(); ++i) {

@@ -1,12 +1,11 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-    qabstractitemmodel \
     qcoreapplication \
     qeventloop \
-    qitemmodel \
     qmath \
     qmetaobject \
     qmetaobjectbuilder \
+    qmetaproperty \
     qmetatype \
     qmimedata \
     qobject \
@@ -24,4 +23,3 @@ SUBDIRS=\
 # This test is only applicable on Windows
 !win32*:SUBDIRS -= qwineventnotifier
 
-mac: qabstractitemmodel.CONFIG = no_check_target # QTBUG-22748

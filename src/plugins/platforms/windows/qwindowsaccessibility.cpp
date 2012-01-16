@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -92,184 +92,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <qdebug.h>
 QT_END_INCLUDE_NAMESPACE
 
-static const char *roleString(QAccessible::Role role)
-{
-    static const char *roles[] = {
-       "NoRole"         /* = 0x00000000 */,
-       "TitleBar"       /* = 0x00000001 */,
-       "MenuBar"        /* = 0x00000002 */,
-       "ScrollBar"      /* = 0x00000003 */,
-       "Grip"           /* = 0x00000004 */,
-       "Sound"          /* = 0x00000005 */,
-       "Cursor"         /* = 0x00000006 */,
-       "Caret"          /* = 0x00000007 */,
-       "AlertMessage"   /* = 0x00000008 */,
-       "Window"         /* = 0x00000009 */,
-       "Client"         /* = 0x0000000A */,
-       "PopupMenu"      /* = 0x0000000B */,
-       "MenuItem"       /* = 0x0000000C */,
-       "ToolTip"        /* = 0x0000000D */,
-       "Application"    /* = 0x0000000E */,
-       "Document"       /* = 0x0000000F */,
-       "Pane"           /* = 0x00000010 */,
-       "Chart"          /* = 0x00000011 */,
-       "Dialog"         /* = 0x00000012 */,
-       "Border"         /* = 0x00000013 */,
-       "Grouping"       /* = 0x00000014 */,
-       "Separator"      /* = 0x00000015 */,
-       "ToolBar"        /* = 0x00000016 */,
-       "StatusBar"      /* = 0x00000017 */,
-       "Table"          /* = 0x00000018 */,
-       "ColumnHeader"   /* = 0x00000019 */,
-       "RowHeader"      /* = 0x0000001A */,
-       "Column"         /* = 0x0000001B */,
-       "Row"            /* = 0x0000001C */,
-       "Cell"           /* = 0x0000001D */,
-       "Link"           /* = 0x0000001E */,
-       "HelpBalloon"    /* = 0x0000001F */,
-       "Assistant"      /* = 0x00000020 */,
-       "List"           /* = 0x00000021 */,
-       "ListItem"       /* = 0x00000022 */,
-       "Tree"           /* = 0x00000023 */,
-       "TreeItem"       /* = 0x00000024 */,
-       "PageTab"        /* = 0x00000025 */,
-       "PropertyPage"   /* = 0x00000026 */,
-       "Indicator"      /* = 0x00000027 */,
-       "Graphic"        /* = 0x00000028 */,
-       "StaticText"     /* = 0x00000029 */,
-       "EditableText"   /* = 0x0000002A */,  // Editable, selectable, etc.
-       "PushButton"     /* = 0x0000002B */,
-       "CheckBox"       /* = 0x0000002C */,
-       "RadioButton"    /* = 0x0000002D */,
-       "ComboBox"       /* = 0x0000002E */,
-       "DropList"       /* = 0x0000002F */,    // commented out
-       "ProgressBar"    /* = 0x00000030 */,
-       "Dial"           /* = 0x00000031 */,
-       "HotkeyField"    /* = 0x00000032 */,
-       "Slider"         /* = 0x00000033 */,
-       "SpinBox"        /* = 0x00000034 */,
-       "Canvas"         /* = 0x00000035 */,
-       "Animation"      /* = 0x00000036 */,
-       "Equation"       /* = 0x00000037 */,
-       "ButtonDropDown" /* = 0x00000038 */,
-       "ButtonMenu"     /* = 0x00000039 */,
-       "ButtonDropGrid" /* = 0x0000003A */,
-       "Whitespace"     /* = 0x0000003B */,
-       "PageTabList"    /* = 0x0000003C */,
-       "Clock"          /* = 0x0000003D */,
-       "Splitter"       /* = 0x0000003E */,
-       "LayeredPane"    /* = 0x0000003F */,
-       "UserRole"       /* = 0x0000ffff*/
-   };
-
-   if (role >=0x40)
-        role = QAccessible::UserRole;
-   return roles[int(role)];
-}
-
-static const char *eventString(QAccessible::Event ev)
-{
-    static const char *events[] = {
-        "null",                                 // 0
-        "SoundPlayed"          /*= 0x0001*/,
-        "Alert"                /*= 0x0002*/,
-        "ForegroundChanged"    /*= 0x0003*/,
-        "MenuStart"            /*= 0x0004*/,
-        "MenuEnd"              /*= 0x0005*/,
-        "PopupMenuStart"       /*= 0x0006*/,
-        "PopupMenuEnd"         /*= 0x0007*/,
-        "ContextHelpStart"     /*= 0x000C*/,    // 8
-        "ContextHelpEnd"       /*= 0x000D*/,
-        "DragDropStart"        /*= 0x000E*/,
-        "DragDropEnd"          /*= 0x000F*/,
-        "DialogStart"          /*= 0x0010*/,
-        "DialogEnd"            /*= 0x0011*/,
-        "ScrollingStart"       /*= 0x0012*/,
-        "ScrollingEnd"         /*= 0x0013*/,
-        "MenuCommand"          /*= 0x0018*/,    // 16
-
-        // Values from IAccessible2
-        "ActionChanged"        /*= 0x0101*/,    // 17
-        "ActiveDescendantChanged",
-        "AttributeChanged",
-        "DocumentContentChanged",
-        "DocumentLoadComplete",
-        "DocumentLoadStopped",
-        "DocumentReload",
-        "HyperlinkEndIndexChanged",
-        "HyperlinkNumberOfAnchorsChanged",
-        "HyperlinkSelectedLinkChanged",
-        "HypertextLinkActivated",
-        "HypertextLinkSelected",
-        "HyperlinkStartIndexChanged",
-        "HypertextChanged",
-        "HypertextNLinksChanged",
-        "ObjectAttributeChanged",
-        "PageChanged",
-        "SectionChanged",
-        "TableCaptionChanged",
-        "TableColumnDescriptionChanged",
-        "TableColumnHeaderChanged",
-        "TableModelChanged",
-        "TableRowDescriptionChanged",
-        "TableRowHeaderChanged",
-        "TableSummaryChanged",
-        "TextAttributeChanged",
-        "TextCaretMoved",
-        // TextChanged, deprecated, use TextUpdated
-        //TextColumnChanged = TextCaretMoved + 2,
-        "TextInserted",
-        "TextRemoved",
-        "TextUpdated",
-        "TextSelectionChanged",
-        "VisibleDataChanged",  /*= 0x0101+32*/
-        "ObjectCreated"        /*= 0x8000*/,    // 49
-        "ObjectDestroyed"      /*= 0x8001*/,
-        "ObjectShow"           /*= 0x8002*/,
-        "ObjectHide"           /*= 0x8003*/,
-        "ObjectReorder"        /*= 0x8004*/,
-        "Focus"                /*= 0x8005*/,
-        "Selection"            /*= 0x8006*/,
-        "SelectionAdd"         /*= 0x8007*/,
-        "SelectionRemove"      /*= 0x8008*/,
-        "SelectionWithin"      /*= 0x8009*/,
-        "StateChanged"         /*= 0x800A*/,
-        "LocationChanged"      /*= 0x800B*/,
-        "NameChanged"          /*= 0x800C*/,
-        "DescriptionChanged"   /*= 0x800D*/,
-        "ValueChanged"         /*= 0x800E*/,
-        "ParentChanged"        /*= 0x800F*/,
-        "HelpChanged"          /*= 0x80A0*/,
-        "DefaultActionChanged" /*= 0x80B0*/,
-        "AcceleratorChanged"   /*= 0x80C0*/
-    };
-    int e = int(ev);
-    if (e <= 0x80c0) {
-        const int last = sizeof(events)/sizeof(char*) - 1;
-
-        if (e <= 0x07)
-            return events[e];
-        else if (e <= 0x13)
-            return events[e - 0x0c + 8];
-        else if (e == 0x18)
-            return events[16];
-        else if (e <= 0x0101 + 32)
-            return events[e - 0x101 + 17];
-        else if (e <= 0x800f)
-            return events[e - 0x8000 + 49];
-        else if (e == 0x80a0)
-            return events[last - 2];
-        else if (e == 0x80b0)
-            return events[last - 1];
-        else if (e == 0x80c0)
-            return events[last];
-    }
-    return "unknown";
-};
-
 void showDebug(const char* funcName, const QAccessibleInterface *iface)
 {
-    qDebug() << "Role:" << roleString(iface->role(0))
+    qDebug() << "Role:" << qAccessibleRoleString(iface->role(0))
              << "Name:" << iface->text(QAccessible::Name, 0)
              << "State:" << QString::number(int(iface->state(0)), 16)
              << QLatin1String(funcName);
@@ -746,38 +571,52 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::Invoke(long dispIdMember, const _G
 
 /*
   IAccessible
+
+IAccessible::accHitTest documents the value returned in pvarID like this:
+
+| *Point location*                                       | *vt member* | *Value member*          |
++========================================================+=============+=========================+
+| Outside of the object's boundaries, and either inside  | VT_EMPTY    | None.                   |
+| or outside of the object's bounding rectangle.         |             |                         |
++--------------------------------------------------------+-------------+-------------------------+
+|  Within the object but not within a child element or a | VT_I4       | lVal is CHILDID_SELF    |
+|  child object.                                         |             |                         |
++--------------------------------------------------------+-------------+-------------------------+
+| Within a child element.                                | VT_I4       | lVal contains           |
+|                                                        |             | the child ID.           |
++--------------------------------------------------------+-------------+-------------------------+
+| Within a child object.                                 | VT_DISPATCH | pdispVal is set to the  |
+|                                                        |             | child object's IDispatch|
+|                                                        |             | interface pointer       |
++--------------------------------------------------------+-------------+-------------------------+
 */
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accHitTest(long xLeft, long yTop, VARIANT *pvarID)
 {
+
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
 
-    int control = accessible->childAt(xLeft, yTop);
-    if (control == -1) {
-        (*pvarID).vt = VT_EMPTY;
-        return S_FALSE;
-    }
-    QAccessibleInterface *acc = 0;
-    if (control)
-        accessible->navigate(QAccessible::Child, control, &acc);
-    if (!acc) {
-        (*pvarID).vt = VT_I4;
-        (*pvarID).lVal = control;
-        return S_OK;
-    }
-
-    QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-    IDispatch *iface = 0;
-    wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-    if (iface) {
-        (*pvarID).vt = VT_DISPATCH;
-        (*pvarID).pdispVal = iface;
-        return S_OK;
+    QAccessibleInterface *child = accessible->childAt(xLeft, yTop);
+    if (child == 0) {
+        // no child found, return this item if it contains the coordinates
+        if (accessible->rect().contains(xLeft, yTop)) {
+            (*pvarID).vt = VT_I4;
+            (*pvarID).lVal = CHILDID_SELF;
+            return S_OK;
+        }
     } else {
-        delete wacc;
+        QWindowsAccessible* wacc = new QWindowsAccessible(child);
+        IDispatch *iface = 0;
+        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
+        if (iface) {
+            (*pvarID).vt = VT_DISPATCH;
+            (*pvarID).pdispVal = iface;
+            return S_OK;
+        }
     }
 
+    // Did not find anything
     (*pvarID).vt = VT_EMPTY;
     return S_FALSE;
 }
@@ -823,13 +662,12 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
         return E_FAIL;
 
     QAccessibleInterface *acc = 0;
-    int control = -1;
     switch (navDir) {
     case NAVDIR_FIRSTCHILD:
-        control = accessible->navigate(QAccessible::Child, 1, &acc);
+        acc = accessible->child(0);
         break;
     case NAVDIR_LASTCHILD:
-        control = accessible->navigate(QAccessible::Child, accessible->childCount(), &acc);
+        acc = accessible->child(accessible->childCount() - 1);
         break;
     case NAVDIR_NEXT:
     case NAVDIR_PREVIOUS:
@@ -838,42 +676,108 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
             if (parent) {
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
-                if (index > 0 && index <= parent->childCount())
-                    control = parent->navigate(QAccessible::Child, index, &acc);
+                if (index >= 0 && index < parent->childCount())
+                    acc = parent->child(index);
                 delete parent;
             }
         } else {
             int index = varStart.lVal;
             index += (navDir == NAVDIR_NEXT) ? 1 : -1;
             if (index > 0 && index <= accessible->childCount())
-                control = accessible->navigate(QAccessible::Child, index, &acc);
+                acc = accessible->child(index - 1);
         }
         break;
+
+    // Geometrical
     case NAVDIR_UP:
-        control = accessible->navigate(QAccessible::Up, varStart.lVal, &acc);
-        break;
     case NAVDIR_DOWN:
-        control = accessible->navigate(QAccessible::Down, varStart.lVal, &acc);
-        break;
     case NAVDIR_LEFT:
-        control = accessible->navigate(QAccessible::Left, varStart.lVal, &acc);
-        break;
     case NAVDIR_RIGHT:
-        control = accessible->navigate(QAccessible::Right, varStart.lVal, &acc);
+        if (QAccessibleInterface *pIface = accessible->parent()) {
+
+            QRect startg = accessible->rect();
+            QPoint startc = startg.center();
+            QAccessibleInterface *candidate = 0;
+            unsigned mindist = UINT_MAX;    // will work on screen sizes at least up to 46340x46340
+            const int sibCount = pIface->childCount();
+            for (int i = 0; i < sibCount; ++i) {
+                QAccessibleInterface *sibling = 0;
+                sibling = pIface->child(i);
+                Q_ASSERT(sibling);
+                if ((accessible->relationTo(sibling) & QAccessible::Self) || sibling->state().invisible) {
+                    //ignore ourself and invisible siblings
+                    delete sibling;
+                    continue;
+                }
+
+                QRect sibg = sibling->rect();
+                QPoint sibc = sibg.center();
+                QPoint sibp;
+                QPoint startp;
+                QPoint distp;
+                switch (navDir) {
+                case NAVDIR_LEFT:
+                    startp = QPoint(startg.left(), startg.top() + startg.height() / 2);
+                    sibp = QPoint(sibg.right(), sibg.top() + sibg.height() / 2);
+                    if (QPoint(sibc - startc).x() >= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_RIGHT:
+                    startp = QPoint(startg.right(), startg.top() + startg.height() / 2);
+                    sibp = QPoint(sibg.left(), sibg.top() + sibg.height() / 2);
+                    if (QPoint(sibc - startc).x() <= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_UP:
+                    startp = QPoint(startg.left() + startg.width() / 2, startg.top());
+                    sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.bottom());
+                    if (QPoint(sibc - startc).y() >= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                case NAVDIR_DOWN:
+                    startp = QPoint(startg.left() + startg.width() / 2, startg.bottom());
+                    sibp = QPoint(sibg.left() + sibg.width() / 2, sibg.top());
+                    if (QPoint(sibc - startc).y() <= 0) {
+                        delete sibling;
+                        continue;
+                    }
+                    distp = sibp - startp;
+                    break;
+                default:
+                    break;
+                }
+
+                // Since we're *comparing* (and not measuring) distances, we can compare the
+                // squared distance, (thus, no need to take the sqrt()).
+                unsigned dist = distp.x() * distp.x() + distp.y() * distp.y();
+                if (dist < mindist) {
+                    delete candidate;
+                    candidate = sibling;
+                    mindist = dist;
+                } else {
+                    delete sibling;
+                }
+            }
+            delete pIface;
+            acc = candidate;
+        }
         break;
     default:
         break;
     }
-    if (control == -1) {
+    if (!acc) {
         (*pvarEnd).vt = VT_EMPTY;
         return S_FALSE;
     }
-    if (!acc) {
-        (*pvarEnd).vt = VT_I4;
-        (*pvarEnd).lVal = control;
-        return S_OK;
-    }
-
     QWindowsAccessible* wacc = new QWindowsAccessible(acc);
 
     IDispatch *iface = 0;
@@ -911,18 +815,27 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
             acc = QAccessible::queryAccessibleInterface(ref.first);
             if (acc && ref.second) {
                 if (ref.second) {
-                    QAccessibleInterface *res;
-                    int index = acc->navigate(QAccessible::Child, ref.second, &res);
+                    QAccessibleInterface *res = acc->child(ref.second - 1);
                     delete acc;
-                    if (index == -1)
+                    if (!res)
                         return E_INVALIDARG;
                     acc = res;
                 }
             }
         }
     } else {
-        QAccessible::RelationFlag rel = childIndex ? QAccessible::Child : QAccessible::Self;
-        accessible->navigate(rel, childIndex, &acc);
+        if (childIndex) {
+            acc = accessible->child(childIndex - 1);
+        } else {
+            // Yes, some AT clients (Active Accessibility Object Inspector)
+            // actually ask for the same object. As a consequence, we need to clone ourselves:
+            if (QAccessibleInterface *par = accessible->parent()) {
+                const int indexOf = par->indexOfChild(accessible);
+                QAccessibleInterface *clone = par->child(indexOf);
+                delete par;
+                acc = clone;
+            }
+        }
     }
 
     if (acc) {
@@ -1151,8 +1064,62 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accState(VARIANT varID, VARIAN
         state = accessible->state();
     }
 
+    LONG st = 0;
+    if (state.animated)
+        st |= STATE_SYSTEM_ANIMATED;
+    if (state.busy)
+        st |= STATE_SYSTEM_BUSY;
+    if (state.checked)
+        st |= STATE_SYSTEM_CHECKED;
+    if (state.collapsed)
+        st |= STATE_SYSTEM_COLLAPSED;
+    if (state.defaultButton)
+        st |= STATE_SYSTEM_DEFAULT;
+    if (state.expanded)
+        st |= STATE_SYSTEM_EXPANDED;
+    if (state.extSelectable)
+        st |= STATE_SYSTEM_EXTSELECTABLE;
+    if (state.focusable)
+        st |= STATE_SYSTEM_FOCUSABLE;
+    if (state.focused)
+        st |= STATE_SYSTEM_FOCUSED;
+    if (state.hasPopup)
+        st |= STATE_SYSTEM_HASPOPUP;
+    if (state.hotTracked)
+        st |= STATE_SYSTEM_HOTTRACKED;
+    if (state.invisible)
+        st |= STATE_SYSTEM_INVISIBLE;
+    if (state.linked)
+        st |= STATE_SYSTEM_LINKED;
+    if (state.marqueed)
+        st |= STATE_SYSTEM_MARQUEED;
+    if (state.checkStateMixed)
+        st |= STATE_SYSTEM_MIXED;
+    if (state.movable)
+        st |= STATE_SYSTEM_MOVEABLE;
+    if (state.multiSelectable)
+        st |= STATE_SYSTEM_MULTISELECTABLE;
+    if (state.offscreen)
+        st |= STATE_SYSTEM_OFFSCREEN;
+    if (state.pressed)
+        st |= STATE_SYSTEM_PRESSED;
+    if (state.passwordEdit)
+        st |= STATE_SYSTEM_PROTECTED;
+    if (state.readOnly)
+        st |= STATE_SYSTEM_READONLY;
+    if (state.selectable)
+        st |= STATE_SYSTEM_SELECTABLE;
+    if (state.selected)
+        st |= STATE_SYSTEM_SELECTED;
+    if (state.selfVoicing)
+        st |= STATE_SYSTEM_SELFVOICING;
+    if (state.sizeable)
+        st |= STATE_SYSTEM_SIZEABLE;
+    if (state.traversed)
+        st |= STATE_SYSTEM_TRAVERSED;
+
     (*pvarState).vt = VT_I4;
-    (*pvarState).lVal = state;
+    (*pvarState).lVal = st;
     return S_OK;
 }
 
@@ -1187,6 +1154,8 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::put_accValue(VARIANT, BSTR)
 // moz: [important]
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::accSelect(long flagsSelect, VARIANT varID)
 {
+    Q_UNUSED(flagsSelect);
+    Q_UNUSED(varID);
     showDebug(__FUNCTION__, accessible);
     if (!accessible->isValid())
         return E_FAIL;
@@ -1260,7 +1229,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accSelection(VARIANT *pvarChil
         bool isSelected = false;
         QAccessibleInterface *child = accessible->child(i);
         if (child) {
-            isSelected = child->state() & QAccessible::Selected;
+            isSelected = child->state().selected;
             delete child;
         }
         if (isSelected)
@@ -1402,7 +1371,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAcce
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
-    QWindow *window = window_helper(iface);
+    QWindow *window = iface ? window_helper(iface) : 0;
 
     if (!window) {
         window = QGuiApplication::activeWindow();

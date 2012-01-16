@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,9 @@
 
 
 #include <QDomDocument>
-#include <QHttp>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
@@ -116,13 +118,16 @@ class ServerAndClient : public QObject
 public:
     ServerAndClient(QEventLoop &ev) : success(false)
                                     , eventLoop(ev)
+                                    , isBody(false)
+                                    , bodyBytesRead(0)
+                                    , bodyLength(-1)
     {
         setObjectName("serverAndClient");
         tcpServer = new QTcpServer(this);
         connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
         tcpServer->listen(QHostAddress::LocalHost, 1088);
-        httpClient = new QHttp(this);
-        connect(httpClient, SIGNAL(requestFinished(int, bool)), SLOT(requestFinished(int, bool)));
+        httpClient = new QNetworkAccessManager(this);
+        connect(httpClient, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
     }
 
     bool success;
@@ -132,25 +137,26 @@ public slots:
     void doIt()
     {
         QUrl url("http://127.0.0.1:1088");
-        httpClient->setHost( url.host(), 1088);
-        QHttpRequestHeader req_head("POST", url.path());
-        req_head.setValue("host", url.host());
-        req_head.setValue("user-agent", "xml-test");
-        req_head.setValue("keep-alive", "false");
+        QNetworkRequest req(url);
+        req.setRawHeader("POST", url.path().toAscii());
+        req.setRawHeader("user-agent", "xml-test");
+        req.setRawHeader("keep-alive", "false");
+        req.setRawHeader("host", url.host().toAscii());
 
         QByteArray xmlrpc("<methodCall>\r\n\
                 <methodName>SFD.GetVersion</methodName>\r\n\
                 <params/>\r\n\
                 </methodCall>");
-        req_head.setContentLength(xmlrpc.size());
-        req_head.setContentType("text/xml");
+        req.setHeader(QNetworkRequest::ContentLengthHeader, xmlrpc.size());
+        req.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml");
 
-        httpClient->request(req_head, xmlrpc);
+        httpClient->post(req, xmlrpc);
     }
 
-    void requestFinished(int, bool isError)
+    void requestFinished(QNetworkReply *reply)
     {
-        QVERIFY(!isError);
+        QVERIFY(reply->error() == QNetworkReply::NoError);
+        reply->deleteLater();
     }
 
 private slots:
@@ -165,32 +171,43 @@ private slots:
     void readyRead()
     {
         QTcpSocket *const s = static_cast<QTcpSocket *>(sender());
-        int bodyLength = -1;
 
-        while(s->canReadLine())
+        while (s->bytesAvailable())
         {
             const QString line(s->readLine());
 
-            if(line.startsWith("content-length:"))
+            if (line.startsWith("Content-Length:"))
                 bodyLength = line.mid(15).toInt();
 
-            if(line == "\r\n")
+            if (isBody)
             {
-                if(bodyLength == -1)
+                body.append(line);
+                bodyBytesRead += line.length();
+            }
+            else if (line == "\r\n")
+            {
+                isBody = true;
+                if (bodyLength == -1)
                 {
                     qFatal("No length was specified in the header.");
                 }
-
-                QDomDocument domDoc;
-                success = domDoc.setContent(s->read(bodyLength));
-                eventLoop.exit();
             }
+        }
+
+        if (bodyBytesRead == bodyLength)
+        {
+            QDomDocument domDoc;
+            success = domDoc.setContent(body);
+            eventLoop.exit();
         }
     }
 
 private:
+    QByteArray body;
+    int bodyBytesRead, bodyLength;
+    bool isBody;
     QTcpServer *tcpServer;
-    QHttp* httpClient;
+    QNetworkAccessManager* httpClient;
 };
 
 void tst_QXmlInputSource::waitForReadyIODevice() const

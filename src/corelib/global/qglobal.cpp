@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,17 +76,6 @@
 
 #if defined(Q_OS_MACX) && !defined(QT_NO_CORESERVICES)
 #include <CoreServices/CoreServices.h>
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-#include <e32def.h>
-#include <e32debug.h>
-#include <f32file.h>
-#include <e32math.h>
-# include "private/qcore_symbian_p.h"
-
-_LIT(qt_S60Filter, "Series60v?.*.sis");
-_LIT(qt_symbianSystemInstallDir, "z:\\system\\install\\");
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -970,22 +959,6 @@ bool qSharedBuild()
 */
 
 /*!
-    \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
-    \since 4.6
-
-    Returns the version of the Symbian operating system on which the
-    application is run (Symbian only).
-*/
-
-/*!
-    \fn QSysInfo::S60Version QSysInfo::s60Version()
-    \since 4.6
-
-    Returns the version of the S60 SDK system on which the
-    application is run (S60 only).
-*/
-
-/*!
     \enum QSysInfo::Endian
 
     \value BigEndian  Big-endian byte order (also called Network byte order)
@@ -1041,7 +1014,7 @@ bool qSharedBuild()
     \value WV_NT_based  NT-based version of Windows
     \value WV_CE_based  CE-based version of Windows
 
-    \sa MacVersion, SymbianVersion
+    \sa MacVersion
 */
 
 /*!
@@ -1072,50 +1045,7 @@ bool qSharedBuild()
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
     \value MV_LION     Apple codename for MV_10_7
 
-    \sa WinVersion, SymbianVersion
-*/
-
-/*!
-    \enum QSysInfo::SymbianVersion
-
-    This enum provides symbolic names for the various versions of the
-    Symbian operating system. On Symbian, the
-    QSysInfo::symbianVersion() function gives the version of the
-    system on which the application is run.
-
-    \value SV_9_2 Symbian OS v9.2
-    \value SV_9_3 Symbian OS v9.3
-    \value SV_9_4 Symbian OS v9.4
-    \value SV_SF_1 S60 5th Edition (Symbian^1)
-    \value SV_SF_2 Symbian^2
-    \value SV_SF_3 Symbian^3 or Symbian Anna
-    \value SV_SF_4 \e{This enum value is deprecated.}
-    \value SV_API_5_3 Symbian/S60 API version 5.3 release
-    \value SV_API_5_4 Symbian/S60 API version 5.4 release
-    \value SV_Unknown An unknown and currently unsupported platform
-
-    \sa S60Version, WinVersion, MacVersion
-*/
-
-/*!
-    \enum QSysInfo::S60Version
-
-    This enum provides symbolic names for the various versions of the
-    S60 SDK. On S60, the
-    QSysInfo::s60Version() function gives the version of the
-    SDK on which the application is run.
-
-    \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
-    \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
-    \value SV_S60_5_0 S60 5th Edition
-    \value SV_S60_5_1 \e{This enum value is deprecated.}
-    \value SV_S60_5_2 Symbian^3 and Symbian Anna
-    \value SV_S60_5_3 Symbian/S60 API version 5.3 release
-    \value SV_S60_5_4 Symbian/S60 API version 5.4 release
-    \value SV_S60_Unknown An unknown and currently unsupported platform
-    \omitvalue SV_S60_None
-
-    \sa SymbianVersion, WinVersion, MacVersion
+    \sa WinVersion
 */
 
 /*!
@@ -1625,108 +1555,6 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 
 #endif
 
-#ifdef Q_OS_SYMBIAN
-static QSysInfo::SymbianVersion cachedSymbianVersion = QSysInfo::SymbianVersion(-1);
-static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
-
-static void symbianInitVersions()
-{
-    // Use pure Symbian code, because if done using QDir, there will be a call back
-    // to this method, resulting doing this expensive operation twice before the cache kicks in.
-    // Pure Symbian code also makes this method ~10x faster, speeding up the application launch.
-    RFs rfs = qt_s60GetRFs();
-    TFindFile fileFinder(rfs);
-    CDir* contents;
-
-    // Check for platform version
-    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_symbianSystemInstallDir, contents);
-    if (err == KErrNone) {
-        QScopedPointer<CDir> contentsDeleter(contents);
-        err = contents->Sort(EDescending|ESortByName);
-        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 12) {
-            TInt major = (*contents)[0].iName[9] - '0';
-            TInt minor = (*contents)[0].iName[11] - '0';
-            if (major == 3) {
-                if (minor == 1) {
-                    cachedS60Version = QSysInfo::SV_S60_3_1;
-                    cachedSymbianVersion = QSysInfo::SV_9_2;
-                } else if (minor == 2) {
-                    cachedS60Version = QSysInfo::SV_S60_3_2;
-                    cachedSymbianVersion = QSysInfo::SV_9_3;
-                }
-            } else if (major == 5) {
-                if (minor == 0) {
-                    cachedS60Version = QSysInfo::SV_S60_5_0;
-                    cachedSymbianVersion = QSysInfo::SV_9_4;
-                } else if (minor == 1) {
-                    cachedS60Version = QSysInfo::SV_S60_5_1;
-                    cachedSymbianVersion = QSysInfo::SV_SF_2;
-                } else if (minor == 2) {
-                    cachedS60Version = QSysInfo::SV_S60_5_2;
-                    cachedSymbianVersion = QSysInfo::SV_SF_3;
-                } else if (minor == 3) {
-                    cachedS60Version = QSysInfo::SV_S60_5_3;
-                    cachedSymbianVersion = QSysInfo::SV_API_5_3;
-                } else if (minor >= 4) {
-                    cachedS60Version = QSysInfo::SV_S60_5_4;
-                    cachedSymbianVersion = QSysInfo::SV_API_5_4;
-                }
-            }
-        }
-    }
-
-#  ifdef Q_CC_NOKIAX86
-    if (cachedS60Version == -1) {
-        // Some emulator environments may not contain the version specific .sis files, so
-        // simply hardcode the version on those environments. Note that can't use
-        // S60_VERSION_* defines for S60 3.x/5.0 platforms, as they do not define them
-        // right anyway in case .sis files are not found.
-#   if defined(__SERIES60_31__)
-        cachedS60Version = QSysInfo::SV_S60_3_1;
-        cachedSymbianVersion = QSysInfo::SV_9_2;
-#   elif defined(__S60_32__)
-        cachedS60Version = QSysInfo::SV_S60_3_2;
-        cachedSymbianVersion = QSysInfo::SV_9_3;
-#   elif defined(__S60_50__)
-        cachedS60Version = QSysInfo::SV_S60_5_0;
-        cachedSymbianVersion = QSysInfo::SV_9_4;
-#   elif defined(S60_VERSION_5_2)
-        cachedS60Version = QSysInfo::SV_S60_5_2;
-        cachedSymbianVersion = QSysInfo::SV_SF_3;
-#   elif defined(S60_VERSION_5_3)
-        cachedS60Version = QSysInfo::SV_S60_5_3;
-        cachedSymbianVersion = QSysInfo::SV_API_5_3;
-#   elif defined(S60_VERSION_5_4)
-        cachedS60Version = QSysInfo::SV_S60_5_4;
-        cachedSymbianVersion = QSysInfo::SV_API_5_4;
-#   endif
-    }
-#  endif
-
-    if (cachedS60Version == -1) {
-        //If reaching here, it was not possible to determine the version
-        cachedS60Version = QSysInfo::SV_S60_Unknown;
-        cachedSymbianVersion = QSysInfo::SV_Unknown;
-    }
-}
-
-QSysInfo::SymbianVersion QSysInfo::symbianVersion()
-{
-    if (cachedSymbianVersion == -1)
-        symbianInitVersions();
-
-    return cachedSymbianVersion;
-}
-
-QSysInfo::S60Version QSysInfo::s60Version()
-{
-    if (cachedS60Version == -1)
-        symbianInitVersions();
-
-    return cachedS60Version;
-}
-#endif // ifdef Q_OS_SYMBIAN
-
 /*!
     \macro void Q_ASSERT(bool test)
     \relates <QtGlobal>
@@ -2037,18 +1865,6 @@ static void qDefaultMsgHandler(QtMsgType, const char *buf)
         QString fstr = QString::fromLatin1(buf);
         fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
-#elif defined(Q_OS_SYMBIAN)
-        // RDebug::Print has a cap of 256 characters so break it up
-        _LIT(format, "[Qt Message] %S");
-        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
-        const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = HBufC::New(qMin(maxBlockSize, ptr.Length()));
-        Q_CHECK_PTR(hbuffer);
-        for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
-            hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
-            RDebug::Print(format, hbuffer);
-        }
-        delete hbuffer;
 #else
         fprintf(stderr, "%s\n", buf);
         fflush(stderr);
@@ -2099,15 +1915,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
             _CrtDbgBreak();
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-        __DEBUGGER(); // on the emulator, get the debugger to kick in if there's one around
-        TBuf<256> tmp;
-        TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        TInt len = Min(tmp.MaxLength(), ptr.Length());
-        tmp.Copy(ptr.Left(len));
-        // Panic the current thread. We don't use real panic codes, so 0 has no special meaning.
-        User::Panic(tmp, 0);
-#elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
+#if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else
         exit(1); // goodbye cruel world
@@ -2400,7 +2208,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2431,7 +2239,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2446,7 +2254,7 @@ void qsrand(uint seed)
         srand(seed);
     }
 #else
-    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
+    // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
     // this is also valid for QT_NO_THREAD
     srand(seed);
@@ -2470,7 +2278,7 @@ void qsrand(uint seed)
 */
 int qrand()
 {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
     SeedStorage *seedStorage = randTLS();
     if (seedStorage) {
         SeedStorageType *pseed = seedStorage->localData();
@@ -2487,7 +2295,7 @@ int qrand()
         return rand();
     }
 #else
-    // On Windows and Symbian srand() and rand() already use Thread-Local-Storage
+    // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
     // this is also valid for QT_NO_THREAD
     return rand();
@@ -3160,185 +2968,15 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \sa Q_DECL_EXPORT
 */
 
-#if defined(Q_OS_SYMBIAN)
-
-#include <typeinfo>
-
-/*! \macro QT_TRAP_THROWING(function)
+/*!
+    \macro Q_DECL_CONSTEXPR
     \relates <QtGlobal>
-    \ingroup qts60
 
-    TRAP leaves from Symbian \a function and throws an appropriate
-    standard C++ exception instead.
-    This must be used when calling Symbian OS leaving functions
-    from inside Qt or standard C++ code, so that the code can respond
-    correctly to the exception.
+    This macro can be used to declare variable that should be constructed at compile-time,
+    or an inline function that can be computed at compile-time.
 
-    \warning This macro is only available on Symbian.
-
-    Example:
-
-    \code
-    // A Symbian leaving function is being called within a Qt function.
-    // Any leave must be converted to an exception
-    CAknTitlePane* titlePane = S60->titlePane();
-    if (titlePane) {
-        TPtrC captionPtr(qt_QString2TPtrC(caption));
-        QT_TRAP_THROWING(titlePane->SetTextL(captionPtr));
-    }
-    \endcode
-
-    \sa QT_TRYCATCH_ERROR(), QT_TRYCATCH_LEAVING()
+    It expands to "constexpr" if your compiler supports that C++11 keyword, or to nothing
+    otherwise.
 */
-
-/*! \macro QT_TRYCATCH_ERROR(error, function)
-    \relates <QtGlobal>
-    \ingroup qts60
-
-    Catch standard C++ exceptions from a \a function and convert them to a Symbian OS
-    \a error code, or \c KErrNone if there is no exception.
-    This must be used inside Qt or standard C++ code when using exception throwing
-    code (practically anything) and returning an error code to Symbian OS.
-
-    \warning This macro is only available on Symbian.
-
-    Example:
-
-    \code
-    // An exception might be thrown in this Symbian TInt error returning function.
-    // It is caught and translated to an error code
-    TInt QServerApp::Connect(const QString &serverName)
-    {
-        TPtrC name;
-        TInt err;
-        QT_TRYCATCH_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
-        if (err != KErrNone)
-            return err;
-        return iServer.Connect(name);
-    }
-    \endcode
-}
-
-    \sa QT_TRYCATCH_LEAVING(), QT_TRAP_THROWING()
-*/
-
-/*! \macro QT_TRYCATCH_LEAVING(function)
-    \relates <QtGlobal>
-    \ingroup qts60
-
-    Catch standard C++ exceptions from \a function and convert them to Symbian OS
-    leaves. This must be used inside Qt or standard C++ code when using exception
-    throwing code (practically anything) and returning to Symbian OS from a leaving function.
-    For example inside a Symbian active object's \c RunL function implemented with Qt code.
-
-    \warning This macro is only available on Symbian.
-
-    Example:
-
-    \code
-    // This active object signals Qt code
-    // Exceptions from the Qt code must be converted to Symbian OS leaves for the active scheduler
-    void QWakeUpActiveObject::RunL()
-    {
-        iStatus = KRequestPending;
-        SetActive();
-        QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
-    }
-    \endcode
-
-    \sa QT_TRAP_THROWING(), QT_TRYCATCH_ERROR()
-*/
-
-#include <stdexcept>
-
-class QSymbianLeaveException : public std::exception
-{
-public:
-    inline QSymbianLeaveException(int err) : error(err) {}
-    inline const char* what() const throw() { return "Symbian leave exception"; }
-
-public:
-    int error;
-};
-
-/*! \relates <QtGlobal>
-    \ingroup qts60
-
-    Throws an exception if the \a error parameter is a symbian error code.
-    This is the exception throwing equivalent of Symbian's User::LeaveIfError.
-
-    \warning This function is only available on Symbian.
-
-    \sa qt_symbian_exception2LeaveL(), qt_symbian_exception2Error()
-*/
-void qt_symbian_throwIfError(int error)
-{
-    if (error >= KErrNone)
-        return;  // do nothing - not an exception
-    switch (error) {
-    case KErrNoMemory:
-        throw std::bad_alloc();
-    case KErrArgument:
-        throw std::invalid_argument("from Symbian error");
-    case KErrOverflow:
-        throw std::overflow_error("from Symbian error");
-    case KErrUnderflow:
-        throw std::underflow_error("from Symbian error");
-    default:
-        throw QSymbianLeaveException(error);
-    }
-}
-
-/*! \relates <QtGlobal>
-    \ingroup qts60
-
-    Convert a caught standard C++ exception \a aThrow to a Symbian leave
-
-    \warning This function is only available on Symbian.
-
-    \sa qt_symbian_throwIfError(), qt_symbian_exception2Error()
-*/
-void qt_symbian_exception2LeaveL(const std::exception& aThrow)
-{
-    User::Leave(qt_symbian_exception2Error(aThrow));
-}
-
-/*! \relates <QtGlobal>
-    \ingroup qts60
-
-    Convert a caught standard C++ exception \a aThrow to a Symbian error code
-
-    \warning This function is only available on Symbian.
-
-    \sa qt_symbian_throwIfError(), qt_symbian_exception2LeaveL()
-*/
-int qt_symbian_exception2Error(const std::exception& aThrow)
-{
-    const std::type_info& atype = typeid(aThrow);
-    int err = KErrGeneral;
-
-    if(atype == typeid (std::bad_alloc))
-        err = KErrNoMemory;
-    else if(atype == typeid(QSymbianLeaveException))
-        err = static_cast<const QSymbianLeaveException&>(aThrow).error;
-    else {
-        if(atype == typeid(std::invalid_argument))
-            err =  KErrArgument;
-        else if(atype == typeid(std::out_of_range))
-            // std::out_of_range is of type logic_error which by definition means that it is
-            // "presumably detectable before the program executes".
-            // std::out_of_range is used to report an argument is not within the expected range.
-            // The description of KErrArgument says an argument is out of range. Hence the mapping.
-            err =  KErrArgument;
-        else if(atype == typeid(std::overflow_error))
-            err =  KErrOverflow;
-        else if(atype == typeid(std::underflow_error))
-            err =  KErrUnderflow;
-        qWarning("translation from std exception \"%s\" to %d", aThrow.what(), err);
-    }
-
-    return err;
-}
-#endif
 
 QT_END_NAMESPACE

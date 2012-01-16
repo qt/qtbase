@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -322,7 +322,7 @@ public:
     static void setTextureCacheLimit(int size);
     static int textureCacheLimit();
 
-    void *getProcAddress(const QString &proc) const;
+    QFunctionPointer getProcAddress(const QString &proc) const;
     QPaintDevice* device() const;
     QColor overlayTransparentColor() const;
 

@@ -16,5 +16,3 @@ wince*: {
 
 target.path += $$[QT_INSTALL_PLUGINS]/codecs
 INSTALLS += target
-
-symbian:TARGET.UID3=0x2001B2E5

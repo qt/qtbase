@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -151,15 +151,6 @@ QT_BEGIN_NAMESPACE
     \value Rounded  The tabs are drawn with a rounded look. This is the default
                     shape.
     \value Triangular  The tabs are drawn with a triangular look.
-*/
-
-/*!
-    \fn void QTabWidget::selected(const QString &tabLabel)
-
-    This signal is emitted whenever a tab is selected (raised),
-    including during the first show().
-
-    You can normally use currentChanged() instead.
 */
 
 /*!
@@ -1344,153 +1335,6 @@ void QTabWidget::clear()
     while (count())
         removeTab(0);
 }
-
-/*!
-    \fn void QTabWidget::insertTab(QWidget *widget, const QString &label, int index)
-
-    Use insertTab(index, widget, label) instead.
-*/
-
-/*!
-    \fn void QTabWidget::insertTab(QWidget *widget, const QIcon& icon, const QString &label, int index)
-
-    Use insertTab(index, widget, icon, label) instead.
-*/
-
-/*!
-    \fn void QTabWidget::changeTab(QWidget *widget, const QString
-    &label)
-
-    Use setTabText() instead.
-
-*/
-
-/*!
-    \fn void QTabWidget::changeTab(QWidget *widget, const QIcon& icon, const QString &label)
-
-    Use setTabText() and setTabIcon() instead.
-*/
-
-/*!
-    \fn bool QTabWidget::isTabEnabled( QWidget *widget) const
-
-    Use isTabEnabled(tabWidget->indexOf(widget)) instead.
-*/
-
-/*!
-    \fn void QTabWidget::setTabEnabled(QWidget *widget, bool b)
-
-    Use setTabEnabled(tabWidget->indexOf(widget), b) instead.
-*/
-
-/*!
-    \fn QString QTabWidget::tabLabel(QWidget *widget) const
-
-    Use tabText(tabWidget->indexOf(widget)) instead.
-*/
-
-/*!
-    \fn void QTabWidget::setTabLabel(QWidget *widget, const QString
-    &label)
-
-    Use setTabText(tabWidget->indexOf(widget), label) instead.
-*/
-
-/*!
-    \fn QIcon QTabWidget::tabIconSet(QWidget * widget) const
-
-    Use tabIcon(tabWidget->indexOf(widget)) instead.
-*/
-
-/*!
-    \fn void QTabWidget::setTabIconSet(QWidget * widget, const QIcon & icon)
-
-    Use setTabIcon(tabWidget->indexOf(widget), icon) instead.
-*/
-
-/*!
-    \fn void QTabWidget::removeTabToolTip(QWidget * widget)
-
-    Use setTabToolTip(tabWidget->indexOf(widget), QString()) instead.
-*/
-
-/*!
-    \fn void QTabWidget::setTabToolTip(QWidget * widget, const QString & tip)
-
-    Use setTabToolTip(tabWidget->indexOf(widget), tip) instead.
-*/
-
-/*!
-    \fn QString QTabWidget::tabToolTip(QWidget * widget) const
-
-    Use tabToolTip(tabWidget->indexOf(widget)) instead.
-*/
-
-/*!
-    \fn QWidget * QTabWidget::currentPage() const
-
-    Use currentWidget() instead.
-*/
-
-/*!
-    \fn QWidget *QTabWidget::page(int index) const
-
-    Use widget() instead.
-*/
-
-/*!
-    \fn QString QTabWidget::label(int index) const
-
-    Use tabText() instead.
-*/
-
-/*!
-    \fn int QTabWidget::currentPageIndex() const
-
-    Use currentIndex() instead.
-*/
-
-/*!
-    \fn int QTabWidget::margin() const
-
-    This function is kept only to make old code compile.
-    This functionality is no longer supported by QTabWidget.
-
-    \sa contentsRect(), setContentsMargins()
-*/
-
-/*!
-    \fn void QTabWidget::setMargin(int margin)
-
-    This function is kept only to make old code compile.
-    This functionality is no longer supported by QTabWidget.
-
-    \sa contentsRect(), setContentsMargins()
-*/
-
-/*!
-    \fn void QTabWidget::setCurrentPage(int index)
-
-    Use setCurrentIndex() instead.
-*/
-
-/*!
-    \fn void QTabWidget::showPage(QWidget *widget)
-
-    Use setCurrentIndex(indexOf(widget)) instead.
-*/
-
-/*!
-    \fn void QTabWidget::removePage(QWidget *widget)
-
-    Use removeTab(indexOf(widget)) instead.
-*/
-
-/*!
-    \fn void QTabWidget::currentChanged(QWidget *widget)
-
-    Use currentChanged(int) instead.
-*/
 
 QT_END_NAMESPACE
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,12 +152,12 @@ protected:
 };
 
 QT_BEGIN_NAMESPACE
-template<> struct QMetaTypeId<tst_QShortcut::Widget>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
-template<> struct QMetaTypeId<tst_QShortcut::Result>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
-template<> struct QMetaTypeId<tst_QShortcut::Action>
-{ enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Widget> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Result> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
+template<> struct QMetaTypeId<tst_QShortcut::Action> : public QMetaTypeId<int>
+{ static inline int qt_metatype_id() { return QMetaType::Int; } };
 QT_END_NAMESPACE
 
 class TestEdit : public QTextEdit
@@ -1254,10 +1254,8 @@ void tst_QShortcut::testElement()
 
     if (action == ClearAll) {
 	clearAllShortcuts();
-	QCOMPARE(TRUE, TRUE);
     } else if (action == SetupAccel) {
 	setupShortcut(testWidget, txt, k1, k2, k3, k4);
-	QCOMPARE(TRUE, TRUE);
     } else {
 	sendKeyEvents(k1, c1, k2, c2, k3, c3, k4, c4);
 	QCOMPARE(int(currentResult), result);

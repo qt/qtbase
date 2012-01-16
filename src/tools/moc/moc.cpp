@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,7 +165,6 @@ Type Moc::parseType()
                     type.isVolatile = true;
                 continue;
             case Q_MOC_COMPAT_TOKEN:
-            case Q_QT3_SUPPORT_TOKEN:
             case Q_INVOKABLE_TOKEN:
             case Q_SCRIPTABLE_TOKEN:
             case Q_SIGNALS_TOKEN:
@@ -323,7 +322,6 @@ bool Moc::testFunctionAttribute(Token tok, FunctionDef *def)
 {
     switch (tok) {
         case Q_MOC_COMPAT_TOKEN:
-        case Q_QT3_SUPPORT_TOKEN:
             def->isCompat = true;
             return true;
         case Q_INVOKABLE_TOKEN:

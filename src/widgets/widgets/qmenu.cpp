@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -500,7 +500,7 @@ void QMenuPrivate::hideMenu(QMenu *menu, bool justRegister)
     menu->blockSignals(false);
 #endif // QT_NO_EFFECTS
     if (!justRegister)
-        menu->hide();
+        menu->close();
 }
 
 void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)

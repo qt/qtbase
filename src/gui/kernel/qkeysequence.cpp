@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1259,13 +1259,20 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         // Rational: A modifier will contain the name AND +, so longer than 1, a length of 1 is just
         // the remaining part of the shortcut (ei. The 'C' in "Ctrl+C"), so no need to check that.
         if (sub.length() > 1) {
+            bool validModifier = false;
             for (int j = 0; j < modifs.size(); ++j) {
                 const QModifKeyName &mkf = modifs.at(j);
                 if (sub == mkf.name) {
                     ret |= mkf.qt_key;
+                    validModifier = true;
                     break; // Shortcut, since if we find an other it would/should just be a dup
                 }
             }
+            // We couldn't match the string with a modifier. This is only
+            // possible if this part is the key. The key is never followed by a
+            // '+'. And if the key is '+' the if() above would have skipped it.
+            if (!validModifier)
+                return Qt::Key_unknown;
         }
         lastI = i + 1;
     }
@@ -1309,6 +1316,9 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
             if (found)
                 break;
         }
+        // We couldn't translate the key.
+        if (!found)
+            return Qt::Key_unknown;
     }
     return ret;
 }
@@ -1335,6 +1345,11 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 {
     bool nativeText = (format == QKeySequence::NativeText);
     QString s;
+
+    // Handle -1 (Invalid Key) and Qt::Key_unknown gracefully
+    if (key == -1 || key == Qt::Key_unknown)
+        return s;
+
 #if defined(Q_OS_MAC)
     if (nativeText) {
         // On Mac OS X the order (by default) is Meta, Alt, Shift, Control.

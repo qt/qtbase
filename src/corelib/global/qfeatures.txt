@@ -192,13 +192,6 @@ Requires:
 Name: QProcess
 SeeAlso: ???
 
-Feature: TEXTSTREAM
-Description: Supports reading and writing of text.
-Section: File I/O
-Requires:
-Name: QTextStream
-SeeAlso: ???
-
 Feature: TEMPORARYFILE
 Description: Provides an I/O device that operates on temporary files.
 Section: File I/O

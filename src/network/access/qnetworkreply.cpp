@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -586,13 +586,7 @@ QVariant QNetworkReply::attribute(QNetworkRequest::Attribute code) const
 QSslConfiguration QNetworkReply::sslConfiguration() const
 {
     QSslConfiguration config;
-
-    // determine if we support this extension
-    int id = metaObject()->indexOfMethod("sslConfigurationImplementation()");
-    if (id != -1) {
-        void *arr[] = { &config, 0 };
-        const_cast<QNetworkReply *>(this)->qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
-    }
+    sslConfigurationImplementation(config);
     return config;
 }
 
@@ -602,15 +596,7 @@ QSslConfiguration QNetworkReply::sslConfiguration() const
 */
 void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
 {
-    if (config.isNull())
-        return;
-
-    int id = metaObject()->indexOfMethod("setSslConfigurationImplementation(QSslConfiguration)");
-    if (id != -1) {
-        QSslConfiguration copy(config);
-        void *arr[] = { 0, &copy };
-        qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
-    }
+    setSslConfigurationImplementation(config);
 }
 
 /*!
@@ -635,16 +621,51 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
 */
 void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 {
-    // do this cryptic trick, because we could not add a virtual method to this class later on
-    // since that breaks binary compatibility
-    int id = metaObject()->indexOfMethod("ignoreSslErrorsImplementation(QList<QSslError>)");
-    if (id != -1) {
-        QList<QSslError> copy(errors);
-        void *arr[] = { 0, &copy };
-        qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
-    }
+    ignoreSslErrorsImplementation(errors);
 }
 #endif
+
+/*!
+  \fn void QNetworkReply::sslConfigurationImplementation(QSslConfiguration &configuration) const
+  \since 5.0
+
+  This virtual method is provided to enable overriding the behavior of
+  sslConfiguration(). sslConfiguration() is a public wrapper for this method.
+  The configuration will be returned in \a configuration.
+
+  \sa sslConfiguration()
+*/
+void QNetworkReply::sslConfigurationImplementation(QSslConfiguration &) const
+{
+}
+
+/*!
+  \fn void QNetworkReply::setSslConfigurationImplementation(const QSslConfiguration &configuration)
+  \since 5.0
+
+  This virtual method is provided to enable overriding the behavior of
+  setSslConfiguration(). setSslConfiguration() is a public wrapper for this method.
+  If you override this method use \a configuration to set the SSL configuration.
+
+  \sa sslConfigurationImplementation(), setSslConfiguration()
+*/
+void QNetworkReply::setSslConfigurationImplementation(const QSslConfiguration &)
+{
+}
+
+/*!
+  \fn void QNetworkReply::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
+  \since 5.0
+
+  This virtual method is provided to enable overriding the behavior of
+  ignoreSslErrors(). ignoreSslErrors() is a public wrapper for this method.
+  \a errors contains the errors the user wishes ignored.
+
+  \sa ignoreSslErrors()
+*/
+void QNetworkReply::ignoreSslErrorsImplementation(const QList<QSslError> &)
+{
+}
 
 /*!
     If this function is called, SSL errors related to network

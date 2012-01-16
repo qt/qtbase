@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 #define QBASICTIMER_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_HEADER
 
@@ -63,6 +64,7 @@ public:
     inline int timerId() const { return id; }
 
     void start(int msec, QObject *obj);
+    void start(int msec, Qt::TimerType timerType, QObject *obj);
     void stop();
 };
 Q_DECLARE_TYPEINFO(QBasicTimer, Q_MOVABLE_TYPE);

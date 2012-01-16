@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,12 +71,12 @@ int QAccessibleMenu::childCount() const
     return menu()->actions().count();
 }
 
-int QAccessibleMenu::childAt(int x, int y) const
+QAccessibleInterface *QAccessibleMenu::childAt(int x, int y) const
 {
     QAction *act = menu()->actionAt(menu()->mapFromGlobal(QPoint(x,y)));
     if(act && act->isSeparator())
         act = 0;
-    return menu()->actions().indexOf(act) + 1;
+    return act ? new QAccessibleMenuItem(menu(), act) : 0;
 }
 
 QString QAccessibleMenu::text(QAccessible::Text t) const
@@ -111,31 +111,13 @@ QAccessibleInterface *QAccessibleMenu::parent() const
     return QAccessibleWidget::parent();
 }
 
-int QAccessibleMenu::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    Q_ASSERT(entry >= 0);
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    case QAccessible::Ancestor:
-        *target = parent();
-        return *target ? 0 : -1;
-    default:
-        return QAccessibleWidget::navigate(relation, entry, target);
-    }
-}
-
 int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child) const
 {
-    int index = -1;
     QAccessible::Role r = child->role();
     if ((r == QAccessible::MenuItem || r == QAccessible::Separator) && menu()) {
-        index = menu()->actions().indexOf(qobject_cast<QAction*>(child->object()));
-        if (index != -1)
-            ++index;
+        return menu()->actions().indexOf(qobject_cast<QAction*>(child->object()));
     }
-    return index;
+    return -1;
 }
 
 #ifndef QT_NO_MENUBAR
@@ -162,25 +144,13 @@ QAccessibleInterface *QAccessibleMenuBar::child(int index) const
     return 0;
 }
 
-int QAccessibleMenuBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
-{
-    if (relation == QAccessible::Child) {
-        *target = child(entry - 1);
-        return *target ? 0 : -1;
-    }
-    return QAccessibleWidget::navigate(relation, entry, target);
-}
-
 int QAccessibleMenuBar::indexOfChild(const QAccessibleInterface *child) const
 {
-    int index = -1;
     QAccessible::Role r = child->role();
     if ((r == QAccessible::MenuItem || r == QAccessible::Separator) && menuBar()) {
-        index = menuBar()->actions().indexOf(qobject_cast<QAction*>(child->object()));
-        if (index != -1)
-            ++index;
+        return menuBar()->actions().indexOf(qobject_cast<QAction*>(child->object()));
     }
-    return index;
+    return -1;
 }
 
 #endif // QT_NO_MENUBAR
@@ -193,17 +163,16 @@ QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action)
 QAccessibleMenuItem::~QAccessibleMenuItem()
 {}
 
-int QAccessibleMenuItem::childAt(int x, int y ) const
+QAccessibleInterface *QAccessibleMenuItem::childAt(int x, int y ) const
 {
     for (int i = childCount(); i >= 0; --i) {
         QAccessibleInterface *childInterface = child(i);
         if (childInterface->rect().contains(x,y)) {
-            delete childInterface;
-            return i;
+            return childInterface;
         }
         delete childInterface;
     }
-    return -1;
+    return 0;
 }
 
 int QAccessibleMenuItem::childCount() const
@@ -213,10 +182,8 @@ int QAccessibleMenuItem::childCount() const
 
 int QAccessibleMenuItem::indexOfChild(const QAccessibleInterface * child) const
 {
-    Q_ASSERT(child == 0);
-    if (child->role() == QAccessible::PopupMenu && child->object() == m_action->menu())
-        return 1;
-
+    if (child && child->role() == QAccessible::PopupMenu && child->object() == m_action->menu())
+        return 0;
     return -1;
 }
 
@@ -239,43 +206,10 @@ QAccessibleInterface *QAccessibleMenuItem::child(int index) const
 
 int QAccessibleMenuItem::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
+    Q_UNUSED(relation);
+    Q_UNUSED(entry);
     *target = 0;
-    if (entry < 0) {
-        return -1;
-    }
-
-    switch (relation) {
-    case QAccessible::Child:
-        *target = child(entry - 1);
-        break;
-    case QAccessible::Ancestor:
-        *target = parent();
-        break;
-    case QAccessible::Up:
-    case QAccessible::Down:{
-        QAccessibleInterface *parentIface = parent();
-        if (parentIface) {
-            int index = parentIface->indexOfChild(this);
-            if (index != -1) {
-                index += (relation == QAccessible::Down ? +1 : -1);
-                *target = parentIface->child(index - 1);
-            }
-        }
-        delete parentIface;
-        break;
-    }
-    case QAccessible::Sibling: {
-        QAccessibleInterface *parentIface = parent();
-        if (parentIface)
-            *target = parentIface->child(entry - 1);
-        delete parentIface;
-        break;
-    }
-    default:
-        break;
-
-    }
-    return *target ? 0 : -1;
+    return -1;
 }
 
 void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)
@@ -309,16 +243,6 @@ QRect QAccessibleMenuItem::rect() const
     return rect;
 }
 
-QAccessible::Relation QAccessibleMenuItem::relationTo(const QAccessibleInterface *other) const
-{
-    if (other->object() == owner()) {
-        return QAccessible::Child;
-    }
-    Q_UNUSED(other)
-    // ###
-    return QAccessible::Unrelated;
-}
-
 QAccessible::Role QAccessibleMenuItem::role() const
 {
     return m_action->isSeparator() ? QAccessible::Separator : QAccessible::MenuItem;
@@ -330,28 +254,28 @@ void QAccessibleMenuItem::setText(QAccessible::Text /*t*/, const QString & /*tex
 
 QAccessible::State QAccessibleMenuItem::state() const
 {
-    QAccessible::State s = QAccessible::Normal;
+    QAccessible::State s;
     QWidget *own = owner();
 
     if (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
-        s |= QAccessible::Invisible;
+        s.invisible = true;
     }
 
     if (QMenu *menu = qobject_cast<QMenu*>(own)) {
         if (menu->activeAction() == m_action)
-            s |= QAccessible::Focused;
+            s.focused = true;
 #ifndef QT_NO_MENUBAR
     } else if (QMenuBar *menuBar = qobject_cast<QMenuBar*>(own)) {
         if (menuBar->activeAction() == m_action)
-            s |= QAccessible::Focused;
+            s.focused = true;
 #endif
     }
     if (own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
-        s |= QAccessible::HotTracked;
+        s.hotTracked = true;
     if (m_action->isSeparator() || !m_action->isEnabled())
-        s |= QAccessible::Unavailable;
+        s.disabled = true;
     if (m_action->isChecked())
-        s |= QAccessible::Checked;
+        s.checked = true;
 
     return s;
 }

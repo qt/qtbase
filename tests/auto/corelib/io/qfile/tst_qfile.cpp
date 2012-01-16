@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -404,7 +404,7 @@ void tst_QFile::cleanupTestCase()
 void tst_QFile::exists()
 {
     QFile f( QFINDTESTDATA("testfile.txt") );
-    QCOMPARE( f.exists(), (bool)TRUE );
+    QVERIFY(f.exists());
 
     QFile file("nobodyhassuchafile");
     file.remove();
@@ -443,41 +443,41 @@ void tst_QFile::open_data()
 #endif
     QTest::newRow( "exist_readOnly"  )
         << QString(QFINDTESTDATA("testfile.txt")) << int(QIODevice::ReadOnly)
-        << (bool)TRUE << QFile::NoError;
+        << true << QFile::NoError;
 
     QTest::newRow( "exist_writeOnly" )
         << QString("readonlyfile")
         << int(QIODevice::WriteOnly)
-        << (bool)FALSE
+        << false
         << QFile::OpenError;
 
     QTest::newRow( "exist_append"    )
         << QString("readonlyfile") << int(QIODevice::Append)
-        << (bool)FALSE << QFile::OpenError;
+        << false << QFile::OpenError;
 
     QTest::newRow( "nonexist_readOnly"  )
         << QString("nonExist.txt") << int(QIODevice::ReadOnly)
-        << (bool)FALSE << QFile::OpenError;
+        << false << QFile::OpenError;
 
     QTest::newRow("emptyfile")
         << QString("")
         << int(QIODevice::ReadOnly)
-        << (bool)FALSE
+        << false
         << QFile::OpenError;
 
-    QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << (bool)FALSE
+    QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << false
         << QFile::OpenError;
 
-    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << (bool)TRUE
+    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << true
         << QFile::NoError;
 
     QTest::newRow("readonlyfile") << QString("readonlyfile") << int(QIODevice::WriteOnly)
-                                  << (bool)FALSE << QFile::OpenError;
+                                  << false << QFile::OpenError;
     QTest::newRow("noreadfile") << QString("noreadfile") << int(QIODevice::ReadOnly)
-                                << (bool)FALSE << QFile::OpenError;
+                                << false << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("//./PhysicalDrive0") << QString("//./PhysicalDrive0") << int(QIODevice::ReadOnly)
-                                        << (bool)TRUE << QFile::NoError;
+                                        << true << QFile::NoError;
     QTest::newRow("uncFile") << "//" + QtNetworkSettings::winServerName() + "/testshare/test.pri" << int(QIODevice::ReadOnly)
                              << true << QFile::NoError;
 #endif
@@ -694,7 +694,7 @@ void tst_QFile::atEnd()
 
     bool end = f.atEnd();
     f.close();
-    QCOMPARE( end, (bool)TRUE );
+    QVERIFY(end);
 }
 
 void tst_QFile::readLine()
@@ -832,7 +832,7 @@ void tst_QFile::readAllStdin()
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
-    process.start("stdinprocess/stdinprocess all");
+    process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+" all");
     QVERIFY( process.waitForStarted() );
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
@@ -867,7 +867,7 @@ void tst_QFile::readLineStdin()
 
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start((QFINDTESTDATA("stdinprocess/stdinprocess")+QString(" line %1").arg(i)), QIODevice::Text | QIODevice::ReadWrite);
         for (int i = 0; i < 5; ++i) {
             QTest::qWait(1000);
             process.write(lotsOfData);
@@ -901,7 +901,7 @@ void tst_QFile::readLineStdin_lineByLine()
 #else
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(QFINDTESTDATA("stdinprocess/stdinprocess")+ QString(" line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
         QVERIFY(process.waitForStarted());
 
         for (int j = 0; j < 3; ++j) {
@@ -1483,14 +1483,15 @@ void tst_QFile::tailFile()
     QVERIFY(tailFile.open(QFile::ReadOnly));
     tailFile.seek(file.size());
 
-    QSignalSpy readSignal(&tailFile, SIGNAL(readyRead()));
+    QSignalSpy readSignalSpy(&tailFile, SIGNAL(readyRead()));
+    QVERIFY(readSignalSpy.isValid());
 
     file.write("", 1);
 
     QTestEventLoop::instance().enterLoop(5);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(readSignal.count(), 1);
+    QCOMPARE(readSignalSpy.count(), 1);
 }
 
 void tst_QFile::flush()
@@ -1939,7 +1940,7 @@ public:
     virtual ~MyEngine() {}
 
     void setFileName(const QString &) {}
-    bool open(int ) { return false; }
+    bool open(QIODevice::OpenMode) { return false; }
     bool close() { return false; }
     bool flush() { return false; }
     qint64 size() const { return 123 + number; }

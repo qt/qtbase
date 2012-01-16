@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,8 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define POINT_DEBUG
-
 QTouchEventSenderQPA::QTouchEventSenderQPA(const QString &spec)
 {
     m_forceToActiveWindow = spec.split(QLatin1Char(':')).contains(QLatin1String("force_window"));
@@ -58,16 +56,25 @@ QTouchEventSenderQPA::QTouchEventSenderQPA(const QString &spec)
     QWindowSystemInterface::registerTouchDevice(m_device);
 }
 
-void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int y_max)
+void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int y_max,
+                                           int pressure_min, int pressure_max,
+                                           const QString &dev_name)
 {
     hw_range_x_min = x_min;
     hw_range_x_max = x_max;
     hw_range_y_min = y_min;
     hw_range_y_max = y_max;
+
+    hw_pressure_min = pressure_min;
+    hw_pressure_max = pressure_max;
+
+    m_device->setName(dev_name);
+
+    if (hw_pressure_max > hw_pressure_min)
+        m_device->setCapabilities(m_device->capabilities() | QTouchDevice::Pressure);
 }
 
-void QTouchEventSenderQPA::touch_point(QEvent::Type state,
-                                       const QList<QWindowSystemInterface::TouchPoint> &points)
+void QTouchEventSenderQPA::touch_point(const QList<QWindowSystemInterface::TouchPoint> &points)
 {
     QRect winRect;
     if (m_forceToActiveWindow) {
@@ -79,35 +86,31 @@ void QTouchEventSenderQPA::touch_point(QEvent::Type state,
         winRect = QGuiApplication::primaryScreen()->geometry();
     }
 
-#ifdef POINT_DEBUG
-    qDebug() << "QPA: Mapping" << points.size() << "points to" << winRect << state;
-#endif
+    const int hw_w = hw_range_x_max - hw_range_x_min;
+    const int hw_h = hw_range_y_max - hw_range_y_min;
 
     QList<QWindowSystemInterface::TouchPoint> touchPoints = points;
-    // Translate the coordinates and set the normalized position. QPA expects
-    // 'area' to be in screen coordinates, while the device reports them in its
-    // own system with (0, 0) being the center point of the device.
+    // Map the coordinates based on the normalized position. QPA expects 'area'
+    // to be in screen coordinates.
     for (int i = 0; i < touchPoints.size(); ++i) {
         QWindowSystemInterface::TouchPoint &tp(touchPoints[i]);
 
-        const int hw_w = hw_range_x_max - hw_range_x_min;
-        const int hw_h = hw_range_y_max - hw_range_y_min;
-
-        qreal nx = tp.normalPosition.x();
-        qreal ny = tp.normalPosition.y();
-
-        // Generate a screen position that is always inside the active window or the default screen.
-        const int wx = winRect.left() + int(nx * winRect.width());
-        const int wy = winRect.top() + int(ny * winRect.height());
+        // Generate a screen position that is always inside the active window
+        // or the primary screen.
+        const int wx = winRect.left() + int(tp.normalPosition.x() * winRect.width());
+        const int wy = winRect.top() + int(tp.normalPosition.y() * winRect.height());
         const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
-        tp.area = QRect(wx, wy, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
+        tp.area = QRect(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
+        tp.area.moveCenter(QPoint(wx, wy));
 
-#ifdef POINT_DEBUG
-        qDebug() << "    " << i << tp.area << tp.state << tp.id << tp.isPrimary << tp.pressure;
-#endif
+        // Calculate normalized pressure.
+        if (!hw_pressure_min && !hw_pressure_max)
+            tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
+        else
+            tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
     }
 
-    QWindowSystemInterface::handleTouchEvent(0, state, m_device, touchPoints);
+    QWindowSystemInterface::handleTouchEvent(0, m_device, touchPoints);
 }
 
 QT_END_NAMESPACE

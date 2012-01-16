@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -263,12 +263,15 @@ void tst_QSocketNotifier::posixSockets()
         QSocketNotifier rn(posixSocket, QSocketNotifier::Read);
         connect(&rn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy readSpy(&rn, SIGNAL(activated(int)));
+        QVERIFY(readSpy.isValid());
         QSocketNotifier wn(posixSocket, QSocketNotifier::Write);
         connect(&wn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy writeSpy(&wn, SIGNAL(activated(int)));
+        QVERIFY(writeSpy.isValid());
         QSocketNotifier en(posixSocket, QSocketNotifier::Exception);
         connect(&en, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
         QSignalSpy errorSpy(&en, SIGNAL(activated(int)));
+        QVERIFY(errorSpy.isValid());
 
         passive->write("hello",6);
         passive->waitForBytesWritten(5000);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -371,7 +371,7 @@ QSidebar::QSidebar(QWidget *parent) : QListView(parent)
 {
 }
 
-void QSidebar::init(QFileSystemModel *model, const QList<QUrl> &newUrls)
+void QSidebar::setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUrls)
 {
     // ### TODO make icon size dynamic
     setIconSize(QSize(24,24));

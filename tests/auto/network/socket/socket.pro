@@ -10,8 +10,7 @@ SUBDIRS=\
    platformsocketengine \
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
-          platformsocketengine \
-          qhttpsocketengine \
-          qsocks5socketengine \
-
-
+   platformsocketengine \
+   qtcpsocket \
+   qhttpsocketengine \
+   qsocks5socketengine \

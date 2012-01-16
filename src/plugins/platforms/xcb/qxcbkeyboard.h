@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,6 +86,7 @@ private:
     uint m_caps_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
+    xcb_keycode_t m_autorepeat_code;
 };
 
 QT_END_NAMESPACE

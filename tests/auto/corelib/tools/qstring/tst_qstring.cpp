@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,8 +121,9 @@ private slots:
     void simplified_data();
     void simplified();
     void trimmed();
-    void toLower();
     void toUpper();
+    void toLower();
+    void toCaseFolded();
     void rightJustified();
     void leftJustified();
     void mid();
@@ -811,9 +812,6 @@ void tst_QString::constructorQByteArray()
 
 void tst_QString::STL()
 {
-#ifdef Q_CC_HPACC
-    QSKIP("This test crashes on HP-UX with aCC");
-#endif
 #ifndef QT_NO_STL
 #ifndef QT_NO_CAST_TO_ASCII
     QString qt( "QString" );
@@ -851,16 +849,13 @@ void tst_QString::STL()
     QVERIFY( !stdstr3.length() );
 #endif
 
-// Skip the rest of the test if glibc is not compiled with wide character support
-#if !(defined Q_CC_GNU && !defined _GLIBCPP_USE_WCHAR_T) && !defined QT_NO_STL_WCHAR
     const wchar_t arr[] = {'h', 'e', 'l', 'l', 'o', 0};
-    QStdWString stlStr = arr;
+    std::wstring stlStr = arr;
 
     QString s = QString::fromStdWString(stlStr);
 
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
-#endif
 #else
     QSKIP( "Not tested without STL support");
 #endif
@@ -1571,14 +1566,28 @@ void tst_QString::toUpper()
 
     QCOMPARE( QString(1, QChar(0xdf)).toUpper(), QString("SS"));
 
-    QString lower;
+    QString lower, upper;
     lower += QChar(QChar::highSurrogate(0x10428));
     lower += QChar(QChar::lowSurrogate(0x10428));
-    QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
     upper += QChar(QChar::lowSurrogate(0x10400));
     QCOMPARE( lower.toUpper(), upper);
+    lower += lower;
+    upper += upper;
+    QCOMPARE( lower.toUpper(), upper);
 
+    // test for broken surrogate pair handling (low low hi low hi low)
+    lower.prepend(QChar(QChar::lowSurrogate(0x10428)));
+    lower.prepend(QChar(QChar::lowSurrogate(0x10428)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10428)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10428)));
+    QCOMPARE(lower.toUpper(), upper);
+    // test for broken surrogate pair handling (low low hi low hi low hi hi)
+    lower += QChar(QChar::highSurrogate(0x10428));
+    lower += QChar(QChar::highSurrogate(0x10428));
+    upper += QChar(QChar::highSurrogate(0x10428));
+    upper += QChar(QChar::highSurrogate(0x10428));
+    QCOMPARE(lower.toUpper(), upper);
 
 #ifdef QT_USE_ICU
     // test doesn't work with ICU support, since QChar is unaware of any locale
@@ -1616,12 +1625,27 @@ void tst_QString::toLower()
 
     QCOMPARE( QString(1, QChar(0x130)).toLower(), QString(QString(1, QChar(0x69)) + QChar(0x307)));
 
-    QString lower;
+    QString lower, upper;
     lower += QChar(QChar::highSurrogate(0x10428));
     lower += QChar(QChar::lowSurrogate(0x10428));
-    QString upper;
     upper += QChar(QChar::highSurrogate(0x10400));
     upper += QChar(QChar::lowSurrogate(0x10400));
+    QCOMPARE( upper.toLower(), lower);
+    lower += lower;
+    upper += upper;
+    QCOMPARE( upper.toLower(), lower);
+
+    // test for broken surrogate pair handling (low low hi low hi low)
+    lower.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    lower.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    QCOMPARE( upper.toLower(), lower);
+    // test for broken surrogate pair handling (low low hi low hi low hi hi)
+    lower += QChar(QChar::highSurrogate(0x10400));
+    lower += QChar(QChar::highSurrogate(0x10400));
+    upper += QChar(QChar::highSurrogate(0x10400));
+    upper += QChar(QChar::highSurrogate(0x10400));
     QCOMPARE( upper.toLower(), lower);
 
 #ifdef QT_USE_ICU
@@ -1637,6 +1661,58 @@ void tst_QString::toLower()
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
 #endif
+}
+
+void tst_QString::toCaseFolded()
+{
+    QCOMPARE( QString().toCaseFolded(), QString() );
+    QCOMPARE( QString("").toCaseFolded(), QString("") );
+    QCOMPARE( QString("text").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("Text").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("tExt").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("teXt").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("texT").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("TExt").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("teXT").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("tEXt").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("tExT").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("TEXT").toCaseFolded(), QString("text") );
+    QCOMPARE( QString("@ABYZ[").toCaseFolded(), QString("@abyz["));
+    QCOMPARE( QString("@abyz[").toCaseFolded(), QString("@abyz["));
+    QCOMPARE( QString("`ABYZ{").toCaseFolded(), QString("`abyz{"));
+    QCOMPARE( QString("`abyz{").toCaseFolded(), QString("`abyz{"));
+
+    QString lower, upper;
+    upper += QChar(QChar::highSurrogate(0x10400));
+    upper += QChar(QChar::lowSurrogate(0x10400));
+    lower += QChar(QChar::highSurrogate(0x10428));
+    lower += QChar(QChar::lowSurrogate(0x10428));
+    QCOMPARE( upper.toCaseFolded(), lower);
+    lower += lower;
+    upper += upper;
+    QCOMPARE( upper.toCaseFolded(), lower);
+
+    // test for broken surrogate pair handling (low low hi low hi low)
+    lower.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    lower.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    upper.prepend(QChar(QChar::lowSurrogate(0x10400)));
+    QCOMPARE(upper.toCaseFolded(), lower);
+    // test for broken surrogate pair handling (low low hi low hi low hi hi)
+    lower += QChar(QChar::highSurrogate(0x10400));
+    lower += QChar(QChar::highSurrogate(0x10400));
+    upper += QChar(QChar::highSurrogate(0x10400));
+    upper += QChar(QChar::highSurrogate(0x10400));
+    QCOMPARE(upper.toCaseFolded(), lower);
+
+    //### we currently don't support full case foldings
+    for (int i = 0; i < 65536; ++i) {
+        QString str(1, QChar(i));
+        QString lower = str.toCaseFolded();
+        QVERIFY(lower.length() >= 1);
+        if (lower.length() == 1)
+            QVERIFY(str.toCaseFolded() == QString(1, QChar(i).toCaseFolded()));
+    }
 }
 
 void tst_QString::trimmed()

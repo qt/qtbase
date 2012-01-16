@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include "qnetworkreply.h"
 #include "qnetworkreply_p.h"
 #include "qnetworkcookie.h"
+#include "qnetworkcookiejar.h"
 #include "qabstractnetworkcache.h"
 
 #include "QtNetwork/qnetworksession.h"
@@ -60,7 +61,7 @@
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qvector.h"
-#include "QtNetwork/qauthenticator.h"
+#include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
 #include "QtNetwork/qhttpmultipart.h"
@@ -285,11 +286,16 @@ static void ensureInitialized()
     again, without emitting the authenticationRequired() signal. If it
     rejects the credentials, this signal will be emitted again.
 
+    \note To have the request not send credentials you must not call
+    setUser() or setPassword() on the \a authenticator object. This
+    will result in the the \l finished() signal being emitted with a
+    \l QNetworkReply with error \l AuthenticationRequiredError.
+
     \note It is not possible to use a QueuedConnection to connect to
     this signal, as the connection will fail if the authenticator has
     not been filled in with new information when the signal returns.
 
-    \sa proxyAuthenticationRequired()
+    \sa proxyAuthenticationRequired(), QAuthenticator::setUser(), QAuthenticator::setPassword()
 */
 
 /*!
@@ -1115,14 +1121,8 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QNetworkPro
                                                                QNetworkProxy *lastProxyAuthentication)
 {
     Q_Q(QNetworkAccessManager);
-    // ### FIXME Tracking of successful authentications
-    // This code is a bit broken right now for SOCKS authentication
-    // first request: proxyAuthenticationRequired gets emitted, credentials gets saved
-    // second request: (proxy != backend->reply->lastProxyAuthentication) does not evaluate to true,
-    //      proxyAuthenticationRequired gets emitted again
-    // possible solution: some tracking inside the authenticator
-    //      or a new function proxyAuthenticationSucceeded(true|false)
-    if (proxy != *lastProxyAuthentication) {
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*authenticator);
+    if (proxy != *lastProxyAuthentication && (!priv || !priv->hasFailed)) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include <QtGui/QPlatformAccessibility>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qplatformscreen_qpa_p.h>
 #include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -227,12 +228,16 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return 1000;
     case KeyboardInputInterval:
         return 400;
+    case KeyboardAutoRepeatRate:
+        return 30;
     case MouseDoubleClickInterval:
         return 400;
     case StartDragDistance:
         return 10;
     case StartDragTime:
         return 500;
+    case ShowIsFullScreen:
+        return false;
     }
 
     return 0;
@@ -251,11 +256,10 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
 */
 void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
 {
-    QScreen *screen = ps ? ps->screen() : 0;
-    if (screen && !QGuiApplicationPrivate::screen_list.contains(screen)) {
-        QGuiApplicationPrivate::screen_list << screen;
-        emit qGuiApp->screenAdded(screen);
-    }
+    QScreen *screen = new QScreen(ps);
+    ps->d_func()->screen = screen;
+    QGuiApplicationPrivate::screen_list << screen;
+    emit qGuiApp->screenAdded(screen);
 }
 
 class QPlatformTheme *QPlatformIntegration::platformTheme() const

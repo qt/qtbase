@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,32 +75,31 @@ public:
     QString text(QAccessible::Text t) const;
     void setText(QAccessible::Text t, const QString &text);
 
-    QVariant invokeMethod(QAccessible::Method method, const QVariantList &params);
     void *interface_cast(QAccessible::InterfaceType t);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
-    QString attributes(int offset, int *startOffset, int *endOffset);
-    int cursorPosition();
-    QRect characterRect(int offset, QAccessible2::CoordinateType coordType);
-    int selectionCount();
-    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType);
-    void selection(int selectionIndex, int *startOffset, int *endOffset);
-    QString text(int startOffset, int endOffset);
+    QString attributes(int offset, int *startOffset, int *endOffset) const;
+    int cursorPosition() const;
+    QRect characterRect(int offset, QAccessible2::CoordinateType coordType) const;
+    int selectionCount() const;
+    int offsetAtPoint(const QPoint &point, QAccessible2::CoordinateType coordType) const;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    QString text(int startOffset, int endOffset) const;
     QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-            int *startOffset, int *endOffset);
+            int *startOffset, int *endOffset) const;
     void removeSelection(int selectionIndex);
     void setCursorPosition(int position);
     void setSelection(int selectionIndex, int startOffset, int endOffset);
-    int characterCount();
+    int characterCount() const;
     void scrollToSubstring(int startIndex, int endIndex);
 
     // QAccessibleEditableTextInterface
-    void copyText(int startOffset, int endOffset);
+    void copyText(int startOffset, int endOffset) const;
     void deleteText(int startOffset, int endOffset);
     void insertText(int offset, const QString &text);
     void cutText(int startOffset, int endOffset);
@@ -121,12 +120,10 @@ class QAccessibleStackedWidget : public QAccessibleWidget
 public:
     explicit QAccessibleStackedWidget(QWidget *widget);
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessibleInterface *child(int index) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QStackedWidget *stackedWidget() const;
@@ -154,8 +151,8 @@ public:
     explicit QAccessibleMdiArea(QWidget *widget);
 
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QMdiArea *mdiArea() const;
@@ -170,10 +167,9 @@ public:
     void setText(QAccessible::Text textType, const QString &text);
     QAccessible::State state() const;
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
     QRect rect() const;
-    int childAt(int x, int y) const;
 
 protected:
     QMdiSubWindow *mdiSubWindow() const;
@@ -187,8 +183,8 @@ public:
     explicit QAccessibleWorkspace(QWidget *widget);
 
     int childCount() const;
+    QAccessibleInterface *child(int index) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
     QWorkspace *workspace() const;
@@ -199,8 +195,6 @@ class QAccessibleDialogButtonBox : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDialogButtonBox(QWidget *widget);
-
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 };
 
 #ifndef QT_NO_TEXTBROWSER
@@ -221,12 +215,9 @@ public:
 
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
     QAccessibleInterface *child(int index) const;
 
-
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 protected:
     QCalendarWidget *calendarWidget() const;
 
@@ -260,13 +251,12 @@ public:
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     void setText(QAccessible::Text t, const QString &text);
     QString text(QAccessible::Text t) const;
     QAccessible::Role role() const;
     QRect rect () const;
     QAccessible::State state() const;
-    int childAt(int x, int y) const;
     QObject *object() const;
     bool isValid() const;
 
@@ -287,10 +277,9 @@ public:
     QAccessibleInterface *child(int index) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *iface) const;
-    int childAt(int x, int y) const;
+    QAccessibleInterface *childAt(int x, int y) const;
     QMainWindow *mainWindow() const;
 
-    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 };
 #endif //QT_NO_MAINWINDOW
 

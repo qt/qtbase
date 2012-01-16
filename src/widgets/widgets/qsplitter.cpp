@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1675,7 +1675,6 @@ void QSplitter::setStretchFactor(int index, int stretch)
 }
 
 
-#ifndef QT_NO_TEXTSTREAM
 /*!
     \relates QSplitter
     \obsolete
@@ -1706,7 +1705,6 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
     splitter.restoreState(line.toAscii());
     return ts;
 }
-#endif // QT_NO_TEXTSTREAM
 
 QT_END_NAMESPACE
 

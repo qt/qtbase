@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -931,7 +931,7 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
     QCOMPARE(qvariant_cast<bool>(value), false);
 
     MyQSideBar mySideBar;
-    mySideBar.init(model, urls);
+    mySideBar.setModelAndUrls(model, urls);
     mySideBar.show();
     mySideBar.selectUrl(QUrl::fromLocalFile(testSubDir.absolutePath()));
     QTest::qWait(1000);

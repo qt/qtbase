@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 
+#include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
 
 class tst_QCryptographicHash : public QObject
@@ -51,8 +52,9 @@ private slots:
     void intermediary_result_data();
     void intermediary_result();
     void sha1();
+    void files_data();
+    void files();
 };
-#include <QtCore>
 
 void tst_QCryptographicHash::repeated_result_data()
 {
@@ -147,6 +149,36 @@ void tst_QCryptographicHash::sha1()
         as += 'a';
     QCOMPARE(QCryptographicHash::hash(as, QCryptographicHash::Sha1).toHex().toUpper(), 
              QByteArray("34AA973CD4C4DAA4F61EEB2BDBAD27316534016F"));
+}
+
+
+Q_DECLARE_METATYPE(QCryptographicHash::Algorithm);
+
+void tst_QCryptographicHash::files_data() {
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
+    QTest::addColumn<QByteArray>("md5sum");
+    QTest::newRow("Line") << QString::fromAscii("data/2c1517dad3678f03917f15849b052fd5.md5") << QCryptographicHash::Md5 << QByteArray("2c1517dad3678f03917f15849b052fd5");
+    QTest::newRow("Line") << QString::fromAscii("data/d41d8cd98f00b204e9800998ecf8427e.md5") << QCryptographicHash::Md5 << QByteArray("d41d8cd98f00b204e9800998ecf8427e");
+}
+
+
+void tst_QCryptographicHash::files()
+{
+    QFETCH(QString, filename);
+    QFETCH(QCryptographicHash::Algorithm, algorithm);
+    QFETCH(QByteArray, md5sum);
+    {
+        QFile f(QString::fromLocal8Bit(SRCDIR) + filename);
+        QCryptographicHash hash(algorithm);
+        QVERIFY(! hash.addData(&f)); // file is not open for reading;
+        if (f.open(QIODevice::ReadOnly)) {
+            QVERIFY(hash.addData(&f));
+            QCOMPARE(hash.result().toHex(),md5sum);
+        } else {
+            QFAIL("Failed to open file for testing. should not happen");
+        }
+    }
 }
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #include <Carbon/Carbon.h>
 
 #include "qnsview.h"
+#include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include "qmultitouch_mac_p.h"
 
@@ -81,12 +82,14 @@ static QTouchDevice *touchDevice = 0;
     return self;
 }
 
-- (id)initWithQWindow:(QWindow *)window {
+- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow
+{
     self = [self init];
     if (!self)
         return 0;
 
     m_window = window;
+    m_platformWindow = platformWindow;
     m_accessibleRoot = 0;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
@@ -106,7 +109,43 @@ static QTouchDevice *touchDevice = 0;
     m_accessibleRoot = window->accessibleRoot();
 #endif
 
+    [self setPostsFrameChangedNotifications : YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                          selector:@selector(updateGeometry)
+                                          name:NSViewFrameDidChangeNotification
+                                          object:self];
+
     return self;
+}
+
+- (void)updateGeometry
+{
+    NSRect rect = [self frame];
+    NSRect windowRect = [[self window] frame];
+    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << "QNSView::udpateGeometry" << geo;
+#endif
+
+    // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
+    // doing that will initiate a geometry change it and possibly create
+    // an infinite loop when this notification is triggered again.)
+    m_platformWindow->QPlatformWindow::setGeometry(geo);
+
+    // Send a geometry change event to Qt, if it's ready to handle events
+    if (!m_platformWindow->m_inConstructor)
+        QWindowSystemInterface::handleSynchronousGeometryChange(m_window, geo);
+}
+
+- (void)windowDidBecomeKey
+{
+    QWindowSystemInterface::handleWindowActivated(m_window);
+}
+
+- (void)windowDidResignKey
+{
+    QWindowSystemInterface::handleWindowActivated(0);
 }
 
 - (void) setImage:(QImage *)image
@@ -178,6 +217,11 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
+{
+    return YES;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
@@ -204,14 +248,19 @@ static QTouchDevice *touchDevice = 0;
     QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
     QPoint qtScreenPoint;
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
-    NSRect screenRect = [[self window] convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
-    qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));                     // Qt screen coordinates
-#else
-    NSPoint screenPoint = [[self window] convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
-    qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
-#endif
 
+    NSWindow *window = [self window];
+    // Use convertRectToScreen if available (added in 10.7).
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
+        NSRect screenRect = [window convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
+        qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
+    } else
+#endif
+    {
+        NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
+        qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    }
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
@@ -295,28 +344,28 @@ static QTouchDevice *touchDevice = 0;
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchBegin, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchUpdate, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event
 {
     const NSTimeInterval timestamp = [event timestamp];
     const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
-    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd, touchDevice, points);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
 #ifndef QT_NO_WHEELEVENT
@@ -337,9 +386,20 @@ static QTouchDevice *touchDevice = 0;
         // It looks like 1/4 degrees per pixel behaves most native.
         // (NB: Qt expects the unit for delta to be 8 per degree):
         const int pixelsToDegrees = 2; // 8 * 1/4
-        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
-        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
-        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
+            deltaX = [theEvent scrollingDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent scrollingDeltaY] * pixelsToDegrees;
+            //  scrollingDeltaZ API is missing.
+        } else
+#endif
+        {
+            deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+            deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+        }
+
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:

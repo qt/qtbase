@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Network)
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 template<typename T> class QList;
 class QSslCertificate;
@@ -132,7 +132,7 @@ private:
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };
 
-#endif  // QT_NO_OPENSSL
+#endif  // QT_NO_SSL
 
 QT_END_NAMESPACE
 

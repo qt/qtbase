@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include "qnetworkreplyimpl_p.h"
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkcookie.h"
+#include "qnetworkcookiejar.h"
 #include "qabstractnetworkcache.h"
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qdatetime.h"
@@ -780,7 +781,7 @@ void QNetworkReplyImplPrivate::error(QNetworkReplyImpl::NetworkError code, const
     Q_Q(QNetworkReplyImpl);
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
-        qWarning() << "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.";
+        qWarning( "QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
 
@@ -930,13 +931,11 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 }
 
 #ifndef QT_NO_OPENSSL
-QSslConfiguration QNetworkReplyImpl::sslConfigurationImplementation() const
+void QNetworkReplyImpl::sslConfigurationImplementation(QSslConfiguration &configuration) const
 {
     Q_D(const QNetworkReplyImpl);
-    QSslConfiguration config;
     if (d->backend)
-        d->backend->fetchSslConfiguration(config);
-    return config;
+        d->backend->fetchSslConfiguration(configuration);
 }
 
 void QNetworkReplyImpl::setSslConfigurationImplementation(const QSslConfiguration &config)

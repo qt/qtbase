@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -218,12 +218,6 @@ DnDParams *macCurrentDnDParameters()
     return currentDnDParameters();
 }
 #endif
-
-bool macWindowIsTextured( void * /*OSWindowRef*/ window )
-{
-    OSWindowRef wnd = static_cast<OSWindowRef>(window);
-	return ( [wnd styleMask] & NSTexturedBackgroundWindowMask ) ? true : false;
-}
 
 void macWindowToolbarShow(const QWidget *widget, bool show )
 {

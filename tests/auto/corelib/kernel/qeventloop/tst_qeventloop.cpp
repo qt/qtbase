@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -203,6 +203,9 @@ void tst_QEventLoop::processEvents()
     QSignalSpy spy1(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()));
     QSignalSpy spy2(QAbstractEventDispatcher::instance(), SIGNAL(awake()));
 
+    QVERIFY(spy1.isValid());
+    QVERIFY(spy2.isValid());
+
     QEventLoop eventLoop;
 
     QCoreApplication::postEvent(&eventLoop, new QEvent(QEvent::User));
@@ -285,6 +288,7 @@ void tst_QEventLoop::exec()
 
         // make sure the eventloop runs
         QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+        QVERIFY(spy.isValid());
         thread.cond.wakeOne();
         thread.cond.wait(&thread.mutex);
         QVERIFY(spy.count() > 0);
@@ -322,7 +326,9 @@ void tst_QEventLoop::throwInExec()
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash
     QSKIP("This platform doesn't support propagating exceptions through the event loop");
-#elif defined(Q_OS_LINUX)
+#else
+    // exceptions compiled in, runtime tests follow.
+#if defined(Q_OS_LINUX)
     // C++ exceptions can't be passed through glib callbacks.  Skip the test if
     // we're using the glib event loop.
     QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
@@ -357,6 +363,7 @@ void tst_QEventLoop::throwInExec()
         }
         QCOMPARE(caughtExceptions, 2);
     }
+#endif
 }
 
 void tst_QEventLoop::reexec()
@@ -393,6 +400,7 @@ void tst_QEventLoop::wakeUp()
     (void) eventLoop.exec();
 
     QSignalSpy spy(QAbstractEventDispatcher::instance(&thread), SIGNAL(awake()));
+    QVERIFY(spy.isValid());
     thread.eventLoop->wakeUp();
 
     // give the thread time to wake up

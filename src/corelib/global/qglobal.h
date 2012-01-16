@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,8 +76,12 @@
 # define QT_END_NAMESPACE
 # define QT_BEGIN_INCLUDE_NAMESPACE
 # define QT_END_INCLUDE_NAMESPACE
+#ifndef QT_BEGIN_MOC_NAMESPACE
 # define QT_BEGIN_MOC_NAMESPACE
+#endif
+#ifndef QT_END_MOC_NAMESPACE
 # define QT_END_MOC_NAMESPACE
+#endif
 # define QT_FORWARD_DECLARE_CLASS(name) class name;
 # define QT_FORWARD_DECLARE_STRUCT(name) struct name;
 # define QT_MANGLE_NAMESPACE(name) name
@@ -90,8 +94,12 @@
 # define QT_END_NAMESPACE }
 # define QT_BEGIN_INCLUDE_NAMESPACE }
 # define QT_END_INCLUDE_NAMESPACE namespace QT_NAMESPACE {
+#ifndef QT_BEGIN_MOC_NAMESPACE
 # define QT_BEGIN_MOC_NAMESPACE QT_USE_NAMESPACE
+#endif
+#ifndef QT_END_MOC_NAMESPACE
 # define QT_END_MOC_NAMESPACE
+#endif
 # define QT_FORWARD_DECLARE_CLASS(name) \
     QT_BEGIN_NAMESPACE class name; QT_END_NAMESPACE \
     using QT_PREPEND_NAMESPACE(name);
@@ -450,7 +458,6 @@ namespace QT_NAMESPACE {}
 /* GCC 2.95 knows "using" but does not support it correctly */
 #  if __GNUC__ == 2 && __GNUC_MINOR__ <= 95
 #    define Q_NO_USING_KEYWORD
-#    define QT_NO_STL_WCHAR
 #  endif
 #  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
 #    define Q_ALIGNOF(type)   __alignof__(type)
@@ -480,9 +487,13 @@ namespace QT_NAMESPACE {}
 #      define QT_NO_ARM_EABI
 #    endif
 #  endif
-#  if defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+#      define Q_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__) && !defined(__clang__) /* clang C++11 enablers are found below, don't do them here */
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
+#      define Q_COMPILER_VARIADIC_MACROS
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_DECLTYPE
 #      define Q_COMPILER_STATIC_ASSERT
@@ -508,6 +519,11 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+       /* C++0x features supported in GCC 4.7: */
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_FINAL
 #    endif
 
 #  endif
@@ -541,7 +557,6 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_BOOL_TYPE
 #    define Q_NO_EXPLICIT_KEYWORD
 #    define Q_NO_USING_KEYWORD
-#    define Q_TYPENAME
 #    define Q_OUTOFLINE_TEMPLATE inline
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
@@ -575,7 +590,6 @@ namespace QT_NAMESPACE {}
 /* Apply to all versions prior to Compaq C++ V6.0-000 - observed on
    DEC C++ V5.5-004. */
 #  if __DECCXX_VER < 60060000
-#    define Q_TYPENAME
 #    define Q_BROKEN_TEMPLATE_SPECIALIZATION
 #    define Q_CANNOT_DELETE_CONSTANT
 #  endif
@@ -773,6 +787,45 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
+#ifdef Q_CC_CLANG
+/* General C++ features */
+#  if !__has_feature(cxx_exceptions)
+#    define QT_NO_EXCEPTIONS
+#  endif
+#  if !__has_feature(cxx_rtti)
+#    define QT_NO_RTTI
+#  endif
+/* C++11 features, see http://clang.llvm.org/cxx_status.html */
+#  if __cplusplus >= 201103L || __GXX_EXPERIMENTAL_CXX0X__
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 209 /* since clang 2.9 */
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_DECLTYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_STATIC_ASSERT
+#      define Q_COMPILER_VARIADIC_MACROS
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#    endif
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 300 /* since clang 3.0 */
+#      define Q_COMPILER_CLASS_ENUM
+        /* defaulted members in 3.0, deleted members in 2.9 */
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_NULLPTR
+#      define Q_COMPILER_RANGE_FOR
+#      define Q_COMPILER_UNICODE_STRINGS
+#    endif
+#    if 0 /*) not implemented in clang */
+#      define Q_COMPILER_ATOMICS
+#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_FINAL
+#      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_UNRESTRICTED_UNIONS
+#    endif
+#  endif
+#endif
+
 #ifndef Q_PACKED
 #  define Q_PACKED
 #  undef Q_NO_PACKED_REFERENCE
@@ -783,6 +836,10 @@ namespace QT_NAMESPACE {}
 #endif
 #ifndef Q_UNLIKELY
 #  define Q_UNLIKELY(x) (x)
+#endif
+
+#ifndef Q_ALLOC_SIZE
+#  define Q_ALLOC_SIZE(x)
 #endif
 
 #ifndef Q_CONSTRUCTOR_FUNCTION
@@ -885,6 +942,7 @@ template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qin
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSizeof<void*>::Unsigned quintptr;
 typedef QIntegerForSizeof<void*>::Signed qptrdiff;
+typedef qptrdiff qintptr;
 
 /*
    Useful type definitions for Qt
@@ -907,14 +965,6 @@ QT_END_INCLUDE_NAMESPACE
 */
 
 #ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-/* Symbian OS defines TRUE = 1 and FALSE = 0,
-redefine to built-in booleans to make autotests work properly */
-#ifdef Q_OS_SYMBIAN
-    #include <e32def.h> /* Symbian OS defines */
-
-    #undef TRUE
-    #undef FALSE
-#endif
 #  ifndef TRUE
 #   define TRUE true
 #   define FALSE false
@@ -1057,10 +1107,28 @@ redefine to built-in booleans to make autotests work properly */
 # define Q_NULLPTR         0
 #endif
 
+#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
+# define Q_DECL_EQ_DELETE = delete
+#else
+# define Q_DECL_EQ_DELETE
+#endif
+
 #ifdef Q_COMPILER_CONSTEXPR
 # define Q_DECL_CONSTEXPR constexpr
 #else
 # define Q_DECL_CONSTEXPR
+#endif
+
+#ifdef Q_COMPILER_EXPLICIT_OVERRIDES
+# define Q_DECL_OVERRIDE override
+#else
+# define Q_DECL_OVERRIDE
+#endif
+
+#ifdef Q_COMPILER_FINAL
+# define Q_DECL_FINAL final
+#else
+# define Q_DECL_FINAL
 #endif
 
 //defines the type for the WNDPROC on windows
@@ -1079,7 +1147,7 @@ typedef int QNoImplicitBoolCast;
 // This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
-#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE)
 typedef float qreal;
 #else
 typedef double qreal;
@@ -1175,10 +1243,10 @@ class QDataStream;
 
 
 /*
-   Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
+   Create Qt DLL if QT_DLL is defined (Windows only)
 */
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #  if defined(QT_NODLL)
 #    undef QT_MAKEDLL
 #    undef QT_DLL
@@ -1421,11 +1489,11 @@ class QDataStream;
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
-#if defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_MAKEDLL)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_MAKEDLL)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
-#elif defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_DLL)
+#elif defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_DLL)
 #    define Q_AUTOTEST_EXPORT Q_DECL_IMPORT
-#elif defined(QT_BUILD_INTERNAL) && !(defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_SHARED)
+#elif defined(QT_BUILD_INTERNAL) && !defined(Q_OS_WIN) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
 #else
 #    define Q_AUTOTEST_EXPORT
@@ -1558,35 +1626,6 @@ public:
     };
     static const MacVersion MacintoshVersion;
 #endif
-#ifdef Q_OS_SYMBIAN
-    enum SymbianVersion {
-        SV_Unknown = 1000000, // Assume unknown is something newer than what is supported
-        //These are the Symbian Ltd versions 9.2-9.4
-        SV_9_2 = 10,
-        SV_9_3 = 20,
-        SV_9_4 = 30,
-        //Following values are the symbian foundation versions, i.e. Symbian^1 == SV_SF_1
-        SV_SF_1 = SV_9_4,
-        SV_SF_2 = 40,
-        SV_SF_3 = 50,
-        SV_SF_4 = 60,  // Deprecated
-        SV_API_5_3 = 70,
-        SV_API_5_4 = 80
-    };
-    static SymbianVersion symbianVersion();
-    enum S60Version {
-        SV_S60_None = 0,
-        SV_S60_Unknown = SV_Unknown,
-        SV_S60_3_1 = SV_9_2,
-        SV_S60_3_2 = SV_9_3,
-        SV_S60_5_0 = SV_9_4,
-        SV_S60_5_1 = SV_SF_2,  // Deprecated
-        SV_S60_5_2 = SV_SF_3,
-        SV_S60_5_3 = SV_API_5_3,
-        SV_S60_5_4 = SV_API_5_4
-    };
-    static S60Version s60Version();
-#endif
 };
 
 Q_CORE_EXPORT const char *qVersion();
@@ -1601,10 +1640,6 @@ inline int qMacVersion() { return QSysInfo::MacintoshVersion; }
 #endif
 #ifndef Q_INLINE_TEMPLATE
 #  define Q_INLINE_TEMPLATE inline
-#endif
-
-#ifndef Q_TYPENAME
-#  define Q_TYPENAME typename
 #endif
 
 /*
@@ -1622,15 +1657,6 @@ inline void qUnused(T &x) { (void)x; }
 /*
    Debugging and error handling
 */
-
-/*
-   On Symbian we do not know beforehand whether we are compiling in
-   release or debug mode, so check the Symbian build define here,
-   and set the QT_NO_DEBUG define appropriately.
-*/
-#if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
-#  define QT_NO_DEBUG
-#endif
 
 #if !defined(QT_NO_DEBUG) && !defined(QT_DEBUG)
 #  define QT_DEBUG
@@ -1668,10 +1694,6 @@ Q_CORE_EXPORT void qFatal(const char *, ...) /* print fatal message and exit */
 Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
 Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 
-#if (defined(QT_NO_DEBUG_OUTPUT) || defined(QT_NO_TEXTSTREAM)) && !defined(QT_NO_DEBUG_STREAM)
-#define QT_NO_DEBUG_STREAM
-#endif
-
 /*
   Forward declarations only.
 
@@ -1679,12 +1701,18 @@ Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
 */
 class QDebug;
 class QNoDebug;
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT_INLINE QDebug qDebug();
-Q_CORE_EXPORT_INLINE QDebug qWarning();
-Q_CORE_EXPORT_INLINE QDebug qCritical();
 #else
 inline QNoDebug qDebug();
+#endif
+#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT_INLINE QDebug qWarning();
+#else
+inline QNoDebug qWarning();
+#endif
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT_INLINE QDebug qCritical();
 #endif
 
 #define QT_NO_QDEBUG_MACRO while (false) qDebug
@@ -1714,10 +1742,10 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *file, int line);
 
 #if !defined(Q_ASSERT_X)
-#  ifndef QT_NO_DEBUG
-#    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
-#  else
+#  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_ASSERT_X(cond, where, what) qt_noop()
+#  else
+#    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
 #  endif
 #endif
 
@@ -1733,7 +1761,7 @@ template <> class QStaticAssertFailure<true> {};
 #define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
 #define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
 #define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<(bool)(Condition)>)}
+    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<(Condition)>)}
 #define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
@@ -1758,7 +1786,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #elif defined(_MSC_VER)
 #  define Q_FUNC_INFO __FUNCSIG__
 #else
-#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN)
+#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
 #   else
         /* These two macros makes it possible to turn the builtin line expander into a
@@ -2027,6 +2055,19 @@ public:
     };
 };
 
+template<>
+class QTypeInfo<void>
+{
+public:
+    enum {
+        isPointer = false,
+        isComplex = false,
+        isStatic = false,
+        isLarge = false,
+        isDummy = false
+    };
+};
+
 template <typename T>
 class QTypeInfo<T*>
 {
@@ -2140,11 +2181,11 @@ Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
    These functions make it possible to use standard C++ functions with
    a similar name from Qt header files (especially template classes).
 */
-Q_CORE_EXPORT void *qMalloc(size_t size);
+Q_CORE_EXPORT void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
 Q_CORE_EXPORT void qFree(void *ptr);
-Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size);
-Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment);
-Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment);
+Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size) Q_ALLOC_SIZE(2);
+Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment) Q_ALLOC_SIZE(1);
+Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment) Q_ALLOC_SIZE(2);
 Q_CORE_EXPORT void qFreeAligned(void *ptr);
 Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
 Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
@@ -2418,15 +2459,9 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
-#ifdef Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #define Q_DISABLE_COPY(Class) \
-    Class(const Class &) = delete;\
-    Class &operator=(const Class &) = delete;
-#else
-#define Q_DISABLE_COPY(Class) \
-    Class(const Class &); \
-    Class &operator=(const Class &);
-#endif
+    Class(const Class &) Q_DECL_EQ_DELETE;\
+    Class &operator=(const Class &) Q_DECL_EQ_DELETE;
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
@@ -2440,77 +2475,6 @@ inline int qIntCast(float f) { return int(f); }
 */
 Q_CORE_EXPORT void qsrand(uint seed);
 Q_CORE_EXPORT int qrand();
-
-#if defined(Q_OS_SYMBIAN)
-
-#ifdef SYMBIAN_BUILD_GCE
-#define Q_SYMBIAN_SUPPORTS_SURFACES
-//RWsPointerCursor is fixed, so don't use low performance sprites
-#define Q_SYMBIAN_FIXED_POINTER_CURSORS
-#define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
-#define Q_SYMBIAN_WINDOW_SIZE_CACHE
-#define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
-
-//enabling new graphics resources
-#ifdef SYMBIAN_GRAPHICS_EGL_SGIMAGELITE
-#  define QT_SYMBIAN_SUPPORTS_SGIMAGE
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_SET_SURFACE_TRANSPARENCY_AVAILABLE
-#  define Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_TRANSITION_EFFECTS_SIGNALING_AVAILABLE
-#  define Q_SYMBIAN_TRANSITION_EFFECTS
-#endif
-#endif
-
-#ifdef SYMBIAN_WSERV_AND_CONE_MULTIPLE_SCREENS
-#define Q_SYMBIAN_SUPPORTS_MULTIPLE_SCREENS
-#endif
-
-#ifdef SYMBIAN_GRAPHICS_FIXNATIVEORIENTATION
-#define Q_SYMBIAN_SUPPORTS_FIXNATIVEORIENTATION
-#endif
-
-//Symbian does not support data imports from a DLL
-#define Q_NO_DATA_RELOCATION
-
-QT_END_NAMESPACE
-// forward declare std::exception
-#ifdef __cplusplus
-namespace std { class exception; }
-#endif
-QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_symbian_throwIfError(int error);
-Q_CORE_EXPORT void qt_symbian_exception2LeaveL(const std::exception& ex);
-Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
-
-#define QT_TRAP_THROWING(_f)                        \
-    {                                               \
-        TInt ____error;                             \
-        TRAP(____error, _f);                        \
-        qt_symbian_throwIfError(____error);                 \
-     }
-
-#define QT_TRYCATCH_ERROR(_err, _f)                         \
-    {                                                       \
-        _err = KErrNone;                                    \
-        try {                                               \
-            _f;                                             \
-        } catch (const std::exception &____ex) {            \
-            _err = qt_symbian_exception2Error(____ex);       \
-        }                                                   \
-    }
-
-#define QT_TRYCATCH_LEAVING(_f)                         \
-    {                                                   \
-    TInt ____err;                                       \
-    QT_TRYCATCH_ERROR(____err, _f)                      \
-    User::LeaveIfError(____err);                        \
-    }
-#endif
-
 
 /*
    This gives us the possibility to check which modules the user can

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
 
     DFBResult result = layer->CreateWindow(layer, &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
-        DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
+        DirectFBError("QDirectFbWindow: failed to create window", result);
     }
 
     m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);

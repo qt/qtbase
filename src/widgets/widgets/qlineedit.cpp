@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,10 +67,6 @@
 #include <private/qtextedit_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
-#endif
-#ifndef QT_NO_IM
-#include "qinputcontext.h"
-#include "qlist.h"
 #endif
 #include "qabstractitemview.h"
 #include "private/qstylesheetstyle_p.h"
@@ -490,9 +486,9 @@ void QLineEdit::setEchoMode(EchoMode mode)
         imHints &= ~Qt::ImhHiddenText;
     }
     if (mode != Normal) {
-        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
     } else {
-        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhSensitiveData);
     }
     setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
@@ -2061,15 +2057,6 @@ QMenu *QLineEdit::createStandardContextMenu()
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());
     d->selectAllAction = action;
     connect(action, SIGNAL(triggered()), SLOT(selectAll()));
-
-#if !defined(QT_NO_IM)
-    QInputContext *qic = inputContext();
-    if (qic) {
-        QList<QAction *> imActions = qic->actions();
-        for (int i = 0; i < imActions.size(); ++i)
-            popup->addAction(imActions.at(i));
-    }
-#endif
 
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     if (!d->control->isReadOnly() && qt_use_rtl_extensions) {

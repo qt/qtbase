@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+ ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
  ** All rights reserved.
  ** Contact: Nokia Corporation (qt-info@nokia.com)
  **
@@ -60,7 +60,7 @@ static QAccessibleInterface *acast(void *ptr)
     if (self) {
         index = aIndex;
         accessibleInterface = anQAccessibleInterface;
-        role = macRole(acast(accessibleInterface)->role());
+        role = QCocoaAccessible::macRole(acast(accessibleInterface)->role());
         parent = aParent;
 
     }
@@ -177,41 +177,62 @@ static QAccessibleInterface *acast(void *ptr)
 // actions
 
 - (NSArray *)accessibilityActionNames {
-    return [NSArray arrayWithObject:NSAccessibilityPressAction];
+    NSMutableArray * nsActions = [NSMutableArray new];
+
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QStringList supportedActionNames = actionInterface->actionNames();
+
+        foreach (const QString &qtAction, supportedActionNames) {
+            NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
+            if (nsAction)
+                [nsActions addObject : nsAction];
+        }
+    }
+
+    return nsActions;
 }
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QString qtAction = QCocoaAccessible::translateAction(action);
+        QString description = actionInterface->localizedActionDescription(qtAction);
+        if (!description.isEmpty())
+            return qt_mac_QStringToNSString(description);
+    }
+
     return NSAccessibilityActionDescription(action);
 }
 
 - (void)accessibilityPerformAction:(NSString *)action {
-    Q_UNUSED(action);
-    if (acast(accessibleInterface)->actionInterface())
-        acast(accessibleInterface)->actionInterface()->doAction(0);
+    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    if (actionInterface) {
+        QString qtAction = QCocoaAccessible::translateAction(action);
+        actionInterface->doAction(QAccessibleActionInterface::pressAction());
+    }
 }
 
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    return NO;
+    return QCocoaAccessible::shouldBeIgnrored(acast(accessibleInterface));
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-    int index = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
-    // hit outside
-    if (index == -1) {
-        return 0;
-    }
+    if (!accessibleInterface)
+        return NSAccessibilityUnignoredAncestor(self);
+    QAccessibleInterface *childInterface = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
-    // hit this element
-    if (index == 0) {
+    // No child found, meaning we hit this element.
+    if (!childInterface) {
         return NSAccessibilityUnignoredAncestor(self);
     }
 
     // hit a child, forward to child accessible interface.
-    QAccessibleInterface *childInterface = acast(accessibleInterface)->child(index - 1);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:index - 1 parent:self accessibleInterface: childInterface];
+    int childIndex = acast(accessibleInterface)->indexOfChild(childInterface);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex parent:self accessibleInterface: childInterface];
     return [accessibleElement accessibilityHitTest:point];
 }
 

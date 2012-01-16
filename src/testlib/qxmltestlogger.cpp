@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -251,7 +251,7 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         QTest::benchmarkResultFormatString(),
         quotedMetric.constData(),
         quotedTag.constData(),
-        QByteArray::number(result.value).constData(),  //no 64-bit qt_snprintf support
+        QByteArray::number(result.value).constData(),  //no 64-bit qsnprintf support
         result.iterations);
     outputString(buf.constData());
 }

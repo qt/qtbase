@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -194,19 +194,20 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
     char msg[1024];
     msg[0] = '\0';
     bool isOk = true;
-    if (t1.count() != t2.count()) {
-        qt_snprintf(msg, 1024, "Compared QStringLists have different sizes.\n"
-                    "   Actual (%s) size  : '%d'\n"
-                    "   Expected (%s) size: '%d'", actual, t1.count(), expected, t2.count());
+    const int actualSize = t1.count();
+    const int expectedSize = t2.count();
+    if (actualSize != expectedSize) {
+        qsnprintf(msg, sizeof(msg), "Compared QStringLists have different sizes.\n"
+                  "   Actual (%s) size  : '%d'\n"
+                  "   Expected (%s) size: '%d'", actual, actualSize, expected, expectedSize);
         isOk = false;
     }
-    const int min = qMin(t1.count(), t2.count());
-    for (int i = 0; isOk && i < min; ++i) {
+    for (int i = 0; isOk && i < actualSize; ++i) {
         if (t1.at(i) != t2.at(i)) {
-            qt_snprintf(msg, 1024, "Compared QStringLists differ at index %d.\n"
-                        "   Actual (%s) : '%s'\n"
-                        "   Expected (%s) : '%s'", i, actual, t1.at(i).toLatin1().constData(),
-                        expected, t2.at(i).toLatin1().constData());
+            qsnprintf(msg, sizeof(msg), "Compared QStringLists differ at index %d.\n"
+                      "   Actual (%s) : '%s'\n"
+                      "   Expected (%s) : '%s'", i, actual, t1.at(i).toLatin1().constData(),
+                      expected, t2.at(i).toLatin1().constData());
             isOk = false;
         }
     }
@@ -253,6 +254,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
@@ -266,6 +268,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QGuiApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
@@ -276,6 +279,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
@@ -286,6 +290,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     QCoreApplication app(argc, argv); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,10 +119,10 @@ void tst_QFontDialog::postKeyReturn() {
 
 void tst_QFontDialog::defaultOkButton()
 {
-    bool ok = FALSE;
+    bool ok = false;
     QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
     QFontDialog::getFont(&ok);
-    QVERIFY(ok == TRUE);
+    QVERIFY(ok);
 }
 
 
@@ -132,7 +132,7 @@ void tst_QFontDialog::setFont()
               while the font dialog was open.
 	      Task #27662
     */
-    bool ok = FALSE;
+    bool ok = false;
 #if defined Q_OS_HPUX
     QString fontName = "Courier";
     int fontSize = 25;

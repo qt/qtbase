@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,7 +63,9 @@
 
 Q_DECLARE_METATYPE(QHostAddress)
 Q_DECLARE_METATYPE(QNetworkInterface)
+#ifndef QT_NO_BEARERMANAGEMENT
 Q_DECLARE_METATYPE(QSharedPointer<QNetworkSession>)
+#endif
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
 
@@ -195,7 +197,7 @@ void tst_QUdpSocket::constructing()
     QCOMPARE((int) socket.bytesAvailable(), 0);
     QCOMPARE(socket.canReadLine(), false);
     QCOMPARE(socket.readLine(), QByteArray());
-    QCOMPARE(socket.socketDescriptor(), -1);
+    QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.error(), QUdpSocket::UnknownSocketError);
     QCOMPARE(socket.errorString(), QString("Unknown error"));
 

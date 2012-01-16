@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -123,10 +123,7 @@ void QPlatformAccessibility::initialize()
     if (isInit)
         return;
     isInit = true;      // ### not atomic
-#ifdef Q_OS_UNIX
-    if (qgetenv("QT_ACCESSIBILITY") != "1")
-        return;
-#endif
+
 #ifndef QT_NO_LIBRARY
     const QStringList l = bridgeloader()->keys();
     for (int i = 0; i < l.count(); ++i) {

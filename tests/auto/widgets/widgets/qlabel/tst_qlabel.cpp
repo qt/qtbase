@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -181,7 +181,7 @@ void tst_QLabel::init()
     testWidget->setBuddy( 0 );
     testWidget->setIndent( 0 );
     testWidget->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
-    testWidget->setScaledContents( FALSE );
+    testWidget->setScaledContents( false );
 }
 
 void tst_QLabel::cleanup()

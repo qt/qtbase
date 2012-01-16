@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,9 @@
 
 #include "qvector.h"
 #include "qtools_p.h"
+
 #include <string.h>
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +58,7 @@ const QVectorData QVectorData::shared_null = { Q_REFCOUNT_INITIALIZE_STATIC, 0, 
 
 QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init)
 {
-    QVectorData* p = (QVectorData *)qMalloc(sizeofTypedData + (size - 1) * sizeofT);
+    QVectorData* p = (QVectorData *)::malloc(sizeofTypedData + (size - 1) * sizeofT);
     Q_CHECK_PTR(p);
     ::memcpy(p, init, sizeofTypedData + (qMin(size, init->alloc) - 1) * sizeofT);
     return p;
@@ -64,14 +66,14 @@ QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVe
 
 QVectorData *QVectorData::allocate(int size, int alignment)
 {
-    return static_cast<QVectorData *>(alignment > alignmentThreshold() ? qMallocAligned(size, alignment) : qMalloc(size));
+    return static_cast<QVectorData *>(alignment > alignmentThreshold() ? qMallocAligned(size, alignment) : ::malloc(size));
 }
 
 QVectorData *QVectorData::reallocate(QVectorData *x, int newsize, int oldsize, int alignment)
 {
     if (alignment > alignmentThreshold())
         return static_cast<QVectorData *>(qReallocAligned(x, newsize, oldsize, alignment));
-    return static_cast<QVectorData *>(qRealloc(x, newsize));
+    return static_cast<QVectorData *>(realloc(x, newsize));
 }
 
 void QVectorData::free(QVectorData *x, int alignment)
@@ -79,7 +81,7 @@ void QVectorData::free(QVectorData *x, int alignment)
     if (alignment > alignmentThreshold())
         qFreeAligned(x);
     else
-        qFree(x);
+        ::free(x);
 }
 
 int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1063,15 +1063,15 @@ void tst_QDateTimeEdit::enterKey()
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("9"));
     QCOMPARE(testWidget->date(), QDate(2004, 5, 9));
 
+    // Current behaviour is that pressing the Enter key in a QDateTimeEdit
+    // causes the dateChanged() signal to be emitted, even if the date
+    // wasn't actually changed.  While this behaviour is questionable,
+    // we include this test so a change to the behaviour can't go unnoticed.
     QSignalSpy enterSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
     QTest::keyClick(testWidget, Qt::Key_Enter);
     QCOMPARE(enterSpy.count(), 1);
-
-#if 0
     QVariantList list = enterSpy.takeFirst();
-    QCOMPARE(list.at(0).toDate(), QDate(2004, 9, 15));
-#endif
-
+    QCOMPARE(list.at(0).toDate(), QDate(2004, 5, 9));
 }
 
 void tst_QDateTimeEdit::specialValueText()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -176,9 +176,8 @@ public:
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     inline int count() const { return q_hash.count(); }
-    inline const_iterator insert(const T &value) // ### Qt 5: should return an 'iterator'
-        { return static_cast<typename Hash::const_iterator>(q_hash.insert(value,
-                                                                          QHashDummyValue())); }
+    inline iterator insert(const T &value)
+        { return static_cast<typename Hash::iterator>(q_hash.insert(value, QHashDummyValue())); }
     iterator find(const T &value) { return q_hash.find(value); }
     const_iterator find(const T &value) const { return q_hash.find(value); }
     inline const_iterator constFind(const T &value) const { return find(value); }
@@ -216,17 +215,6 @@ public:
         { QSet<T> result = *this; result += other; return result; }
     inline QSet<T> operator-(const QSet<T> &other) const
         { QSet<T> result = *this; result -= other; return result; }
-#if QT_VERSION < 0x050000
-    // ### Qt 5: remove
-    inline QSet<T> operator|(const QSet<T> &other)
-        { QSet<T> result = *this; result |= other; return result; }
-    inline QSet<T> operator&(const QSet<T> &other)
-        { QSet<T> result = *this; result &= other; return result; }
-    inline QSet<T> operator+(const QSet<T> &other)
-        { QSet<T> result = *this; result += other; return result; }
-    inline QSet<T> operator-(const QSet<T> &other)
-        { QSet<T> result = *this; result -= other; return result; }
-#endif
 
     QList<T> toList() const;
     inline QList<T> values() const { return toList(); }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,8 +90,7 @@ public:
 
     QSize sizeHint() const;
 
-protected Q_SLOTS:
-    void setupViewport(QWidget *viewport);
+    virtual void setupViewport(QWidget *viewport);
 
 protected:
     QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent = 0);

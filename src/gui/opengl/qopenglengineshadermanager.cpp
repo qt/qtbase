@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -247,8 +247,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         if (!inCache)
             simpleShaderCache.store(simpleShaderProg, context);
     } else {
-        qCritical() << "Errors linking simple shader:"
-                    << simpleShaderProg->log();
+        qCritical("Errors linking simple shader: %s", qPrintable(simpleShaderProg->log()));
     }
 
     // Compile the blit shader:
@@ -289,8 +288,7 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         if (!inCache)
             blitShaderCache.store(blitShaderProg, context);
     } else {
-        qCritical() << "Errors linking blit shader:"
-                    << blitShaderProg->log();
+        qCritical("Errors linking blit shader: %s", qPrintable(blitShaderProg->log()));
     }
 
 #ifdef QT_GL_SHARED_SHADER_DEBUG

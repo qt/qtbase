@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -925,15 +925,17 @@ static inline QString toString(inlineExpansionOption option)
 static inline QString toString(optimizeOption option)
 {
     switch (option) {
-    case optimizeDisabled:
-    case optimizeFull:
     case optimizeCustom:
     case optimizeDefault:
         break;
+    case optimizeDisabled:
+        return "Disabled";
     case optimizeMinSpace:
         return "MinSpace";
     case optimizeMaxSpeed:
         return "MaxSpeed";
+    case optimizeFull:
+        return "Full";
     }
     return QString();
 }

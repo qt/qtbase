@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -301,7 +301,7 @@ private slots:
     void clean_qt_x11_enforce_cursor();
 #endif
 
-    void compatibilityChildInsertedEvents();
+    void childEvents();
     void render();
     void renderInvisible();
     void renderWithPainter();
@@ -442,16 +442,6 @@ bool tst_QWidget::ensureScreenSize(int width, int height)
     return (available.width() >= width && available.height() >= height);
 }
 
-class MyInputContext : public QInputContext
-{
-public:
-    MyInputContext() : QInputContext() {}
-    QString identifierName() { return QString("NoName"); }
-    QString language() { return QString("NoLanguage"); }
-    void reset() {}
-    bool isComposing() const { return false; }
-};
-
 // Testing get/set functions
 void tst_QWidget::getSetCheck()
 {
@@ -587,13 +577,6 @@ void tst_QWidget::getSetCheck()
     obj1.setAcceptDrops(true);
     QCOMPARE(true, obj1.acceptDrops());
 
-    // QInputContext * QWidget::inputContext()
-    MyInputContext *var13 = new MyInputContext;
-    qApp->setInputContext(var13);
-    QCOMPARE((QInputContext *)0, obj1.inputContext()); // The widget by default doesn't have the WA_InputMethodEnabled attribute
-    obj1.setAttribute(Qt::WA_InputMethodEnabled);
-    QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
-
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
     obj1.setAutoFillBackground(false);
@@ -726,7 +709,7 @@ void BezierViewer::paintEvent( QPaintEvent* )
 
     /* Write number of vertices */
     painter.setPen( Qt::red );
-    painter.setFont( QFont("Helvetica", 14, QFont::DemiBold, TRUE ) );
+    painter.setFont( QFont("Helvetica", 14, QFont::DemiBold, true ) );
     QString caption;
     caption.setNum( bezier.size() );
     caption += QString::fromLatin1( " vertices" );
@@ -759,24 +742,24 @@ void tst_QWidget::fontPropagation()
     childWidget->show();
     QCOMPARE( font, childWidget->font() );
 
-    font.setBold( TRUE );
+    font.setBold( true );
     testWidget->setFont( font );
     QCOMPARE( font, testWidget->font() );
     QCOMPARE( font, childWidget->font() );
 
     QFont newFont = font;
-    newFont.setItalic( TRUE );
+    newFont.setItalic( true );
     childWidget->setFont( newFont );
     QWidget* grandChildWidget = new QWidget( childWidget );
     QCOMPARE( font, testWidget->font() );
     QCOMPARE( newFont, grandChildWidget->font() );
 
-    font.setUnderline( TRUE );
+    font.setUnderline( true );
     testWidget->setFont( font );
 
     // the child and grand child should now have merged bold and
     // underline
-    newFont.setUnderline( TRUE );
+    newFont.setUnderline( true );
 
     QCOMPARE( newFont, childWidget->font() );
     QCOMPARE( newFont, grandChildWidget->font() );
@@ -1074,32 +1057,32 @@ void tst_QWidget::enabledPropagation()
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setDisabled( FALSE );
+    testWidget->setDisabled( false );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
     QWidget* grandChildWidget = new QWidget( childWidget );
     QVERIFY( grandChildWidget->isEnabled() );
 
-    testWidget->setDisabled( TRUE );
+    testWidget->setDisabled( true );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( FALSE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( false );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( TRUE );
-    testWidget->setEnabled( FALSE );
-    childWidget->setDisabled( TRUE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( true );
+    testWidget->setEnabled( false );
+    childWidget->setDisabled( true );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
@@ -1162,7 +1145,7 @@ void tst_QWidget::isEnabledTo()
     QVERIFY( childWidget->isEnabledTo( testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( testWidget ) );
 
-    childWidget->setEnabled( FALSE );
+    childWidget->setEnabled( false );
     QVERIFY( !childWidget->isEnabledTo( testWidget ) );
     QVERIFY( grandChildWidget->isEnabledTo( childWidget ) );
     QVERIFY( !grandChildWidget->isEnabledTo( testWidget ) );
@@ -1245,7 +1228,7 @@ void tst_QWidget::visible_setWindowOpacity()
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
 #ifdef Q_OS_WIN
-    QVERIFY(::IsWindowVisible(winHandleOf(testWidget)) ==  FALSE);
+    QVERIFY(!::IsWindowVisible(winHandleOf(testWidget)));
 #endif
     testWidget->setWindowOpacity(1.0);
 }
@@ -1638,12 +1621,12 @@ public:
 
     void tab()
     {
-	focusNextPrevChild(TRUE);
+	focusNextPrevChild(true);
     }
 
     void backTab()
     {
-	focusNextPrevChild(FALSE);
+	focusNextPrevChild(false);
     }
 };
 
@@ -5806,7 +5789,7 @@ private:
     EventList events;
 };
 
-void tst_QWidget::compatibilityChildInsertedEvents()
+void tst_QWidget::childEvents()
 {
     EventRecorder::EventList expected;
     bool accessibilityEnabled = false;
@@ -9128,23 +9111,10 @@ void tst_QWidget::openModal_taskQTBUG_5804()
     delete win;
 }
 
-class InputContextTester : public QInputContext
-{
-    Q_OBJECT
-public:
-    QString identifierName() { return QString(); }
-    bool isComposing() const { return false; }
-    QString language() { return QString(); }
-    void reset() { ++resets; }
-    int resets;
-};
-
 void tst_QWidget::focusProxyAndInputMethods()
 {
-    InputContextTester *inputContext = new InputContextTester;
     QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
     toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-    qApp->setInputContext(inputContext); // ownership is transferred
 
     QWidget *child = new QWidget(toplevel);
     child->setFocusProxy(toplevel);
@@ -9167,20 +9137,24 @@ void tst_QWidget::focusProxyAndInputMethods()
     // and that the input method gets the focus proxy passed
     // as the focus widget instead of the child widget.
     // otherwise input method queries go to the wrong widget
+    QInputContext *inputContext = qApp->inputContext();
+    if (inputContext) {
+        QCOMPARE(inputContext->focusWidget(), toplevel);
 
-    QCOMPARE(inputContext->focusWidget(), toplevel);
+        child->setAttribute(Qt::WA_InputMethodEnabled, false);
+        QVERIFY(!inputContext->focusWidget());
 
-    child->setAttribute(Qt::WA_InputMethodEnabled, false);
-    QVERIFY(!inputContext->focusWidget());
+        child->setAttribute(Qt::WA_InputMethodEnabled, true);
+        QCOMPARE(inputContext->focusWidget(), toplevel);
 
-    child->setAttribute(Qt::WA_InputMethodEnabled, true);
-    QCOMPARE(inputContext->focusWidget(), toplevel);
+        child->setEnabled(false);
+        QVERIFY(!inputContext->focusWidget());
 
-    child->setEnabled(false);
-    QVERIFY(!inputContext->focusWidget());
-
-    child->setEnabled(true);
-    QCOMPARE(inputContext->focusWidget(), toplevel);
+        child->setEnabled(true);
+        QCOMPARE(inputContext->focusWidget(), toplevel);
+    } else {
+        qDebug() << "No input context set, skipping QInputContext::focusWidget() test";
+    }
 
     delete toplevel;
 }

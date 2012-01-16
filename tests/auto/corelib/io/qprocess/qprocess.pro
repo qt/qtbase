@@ -1,27 +1,14 @@
 TEMPLATE = subdirs
 
-SUBDIRS = \
-          testProcessCrash \
-          testProcessEcho \
-          testProcessEcho2 \
-          testProcessEcho3 \
-          testProcessEnvironment \
-          testProcessLoopback \
-          testProcessNormal \
-          testProcessOutput \
-          testProcessDeadWhileReading \
-          testProcessEOF \
-          testProcessSpacesArgs/nospace.pro \
-          testExitCodes \
-          testSpaceInName \
-          testGuiProcess \
-          testDetached \
-          fileWriterProcess \
-          testSetWorkingDirectory \
-          testProcessSpacesArgs/onespace.pro \
-          testProcessSpacesArgs/twospaces.pro \
-          testSoftExit
+include(qprocess.pri)
+SUBDIRS  = $$SUBPROGRAMS
+# Add special cases
+SUBDIRS += testProcessSpacesArgs/nospace.pro \
+           testProcessSpacesArgs/onespace.pro \
+           testProcessSpacesArgs/twospaces.pro \
+           testSpaceInName
 
 win32:!wince*:SUBDIRS+=testProcessEchoGui
 
+test.depends += $$SUBDIRS
 SUBDIRS += test

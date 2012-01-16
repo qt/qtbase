@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,8 @@ private slots:
     void testUnderlinePropertyPrecedence();
     void toFormat();
     void resolveFont();
+    void testLetterSpacing();
+    void testFontStretch();
     void getSetTabs();
     void testTabsUsed();
     void testFontStyleSetters();
@@ -275,6 +277,41 @@ void tst_QTextFormat::resolveFont()
     QVERIFY(!fmt.font().underline());
     QVERIFY(!fmt.hasProperty(QTextFormat::FontUnderline));
     QVERIFY(fmt.font().strikeOut());
+}
+
+
+void tst_QTextFormat::testLetterSpacing()
+{
+    QTextCharFormat format;
+
+    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
+    QCOMPARE(format.hasProperty(QTextFormat::FontAbsoluteLetterSpacing), false);
+
+    format.setFontAbsoluteLetterSpacing(10.0);
+
+    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
+    QCOMPARE(format.property(QTextFormat::FontAbsoluteLetterSpacing).toDouble(), 10.0);
+
+    format.setFontLetterSpacing(110.0);
+
+    QCOMPARE(format.property(QTextFormat::FontLetterSpacing).toDouble(), 110.0);
+    QCOMPARE(format.hasProperty(QTextFormat::FontAbsoluteLetterSpacing), false);
+
+    format.setFontAbsoluteLetterSpacing(10.0);
+
+    QCOMPARE(format.hasProperty(QTextFormat::FontLetterSpacing), false);
+    QCOMPARE(format.property(QTextFormat::FontAbsoluteLetterSpacing).toDouble(), 10.0);
+}
+
+void tst_QTextFormat::testFontStretch()
+{
+    QTextCharFormat format;
+
+    QCOMPARE(format.hasProperty(QTextFormat::FontStretch), false);
+
+    format.setFontStretch(130.0);
+
+    QCOMPARE(format.property(QTextFormat::FontStretch).toInt(), 130);
 }
 
 void tst_QTextFormat::getSetTabs()

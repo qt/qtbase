@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -414,7 +414,7 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     If the socket type is either TCP or UDP, it is made non-blocking.
     UDP sockets are also broadcast enabled.
  */
-bool QNativeSocketEngine::initialize(int socketDescriptor, QAbstractSocket::SocketState socketState)
+bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::SocketState socketState)
 {
     Q_D(QNativeSocketEngine);
 
@@ -471,7 +471,7 @@ bool QNativeSocketEngine::isValid() const
     Returns the native socket descriptor. Any use of this descriptor
     stands the risk of being non-portable.
 */
-int QNativeSocketEngine::socketDescriptor() const
+qintptr QNativeSocketEngine::socketDescriptor() const
 {
     Q_D(const QNativeSocketEngine);
     return d->socketDescriptor;
@@ -1114,7 +1114,7 @@ bool QNativeSocketEngine::isReadNotificationEnabled() const
 class QReadNotifier : public QSocketNotifier
 {
 public:
-    QReadNotifier(int fd, QNativeSocketEngine *parent)
+    QReadNotifier(qintptr fd, QNativeSocketEngine *parent)
         : QSocketNotifier(fd, QSocketNotifier::Read, parent)
     { engine = parent; }
 

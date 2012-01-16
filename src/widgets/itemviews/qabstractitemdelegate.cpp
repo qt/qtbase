@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -347,7 +347,6 @@ QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int w
 
     \sa QHelpEvent
 */
-// ### Qt 5: Make this a virtual non-slot function
 bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
                                       QAbstractItemView *view,
                                       const QStyleOptionViewItem &option,

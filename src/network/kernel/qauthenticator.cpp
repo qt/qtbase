@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qcryptographichash.h>
-#include <qhttp.h>
+#include <private/qhttpheader_p.h>
 #include <qiodevice.h>
 #include <qdatastream.h>
 #include <qendian.h>
@@ -206,6 +206,8 @@ QString QAuthenticator::user() const
 
 /*!
   Sets the \a user used for authentication.
+
+  \sa QNetworkAccessManager::authenticationRequired()
 */
 void QAuthenticator::setUser(const QString &user)
 {
@@ -219,12 +221,6 @@ void QAuthenticator::setUser(const QString &user)
             d->realm.clear();
             d->userDomain = user.left(separatorPosn);
             d->extractedUser = user.mid(separatorPosn + 1);
-            d->user = user;
-        } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
-            //domain name is present
-            d->realm.clear();
-            d->userDomain = user.mid(separatorPosn + 1);
-            d->extractedUser = user.left(separatorPosn);
             d->user = user;
         } else {
             d->extractedUser = user;
@@ -250,6 +246,8 @@ QString QAuthenticator::password() const
 
 /*!
   Sets the \a password used for authentication.
+
+  \sa QNetworkAccessManager::authenticationRequired()
 */
 void QAuthenticator::setPassword(const QString &password)
 {
@@ -332,6 +330,7 @@ bool QAuthenticator::isNull() const
 QAuthenticatorPrivate::QAuthenticatorPrivate()
     : ref(0)
     , method(None)
+    , hasFailed(false)
     , phase(Start)
     , nonceCount(0)
 {
@@ -393,8 +392,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
 
     switch(method) {
     case Basic:
-        if(realm.isEmpty())
-            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
@@ -402,8 +400,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         // #### extract from header
         break;
     case DigestMd5: {
-        if(realm.isEmpty())
-            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
+        this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
         if (user.isEmpty() && password.isEmpty())
@@ -1381,8 +1378,9 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
     int offset = QNtlmPhase3BlockBase::Size;
     Q_ASSERT(QNtlmPhase3BlockBase::Size == sizeof(QNtlmPhase3BlockBase));
-    
-    if(ctx->userDomain.isEmpty()) {
+
+    // for kerberos style user@domain logins, NTLM domain string should be left empty
+    if (ctx->userDomain.isEmpty() && !ctx->extractedUser.contains(QLatin1Char('@'))) {
         offset = qEncodeNtlmString(pb.domain, offset, ch.targetNameStr, unicode);
         pb.domainStr = ch.targetNameStr;
     } else {

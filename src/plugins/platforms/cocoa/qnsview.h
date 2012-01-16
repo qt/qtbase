@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,18 +47,23 @@
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 
+class QCocoaWindow;
 @interface QNSView : NSView {
     CGImageRef m_cgImage;
     QWindow *m_window;
+    QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
     QAccessibleInterface *m_accessibleRoot;
 }
 
 - (id)init;
-- (id)initWithQWindow:(QWindow *)window;
+- (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
 
 - (void)setImage:(QImage *)image;
 - (void)drawRect:(NSRect)dirtyRect;
+- (void)updateGeometry;
+- (void)windowDidBecomeKey;
+- (void)windowDidResignKey;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;

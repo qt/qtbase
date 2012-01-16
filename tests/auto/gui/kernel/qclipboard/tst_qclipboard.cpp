@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,9 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>
-#include <QtWidgets/QApplication>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>
@@ -52,8 +54,9 @@ class tst_QClipboard : public QObject
 {
     Q_OBJECT
 private slots:
+    void init();
     void copy_exit_paste();
-    void capabiliyFunctions();
+    void capabilityFunctions();
     void modes();
     void testSignals();
     void setMimeData();
@@ -63,6 +66,11 @@ private:
     bool nativeClipboardWorking();
 };
 
+void tst_QClipboard::init()
+{
+    const QString testdataDir = QFileInfo(QFINDTESTDATA("copier")).absolutePath();
+    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+}
 
 bool tst_QClipboard::nativeClipboardWorking()
 {
@@ -82,9 +90,9 @@ Q_DECLARE_METATYPE(QClipboard::Mode)
     Tests that the capability functions are implemented on all
     platforms.
 */
-void tst_QClipboard::capabiliyFunctions()
+void tst_QClipboard::capabilityFunctions()
 {
-    QClipboard * const clipboard =  QApplication::clipboard();
+    QClipboard * const clipboard =  QGuiApplication::clipboard();
 
     clipboard->supportsSelection();
     clipboard->supportsFindBuffer();
@@ -99,7 +107,7 @@ void tst_QClipboard::capabiliyFunctions()
 */
 void tst_QClipboard::modes()
 {
-    QClipboard * const clipboard =  QApplication::clipboard();
+    QClipboard * const clipboard =  QGuiApplication::clipboard();
 
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup");
@@ -124,7 +132,7 @@ void tst_QClipboard::modes()
 }
 
 /*
-    Test that the appropriate signals are emitted when the cliboard
+    Test that the appropriate signals are emitted when the clipboard
     contents is changed by calling the qt functions.
 */
 void tst_QClipboard::testSignals()
@@ -134,7 +142,7 @@ void tst_QClipboard::testSignals()
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup");
 
-    QClipboard * const clipboard =  QApplication::clipboard();
+    QClipboard * const clipboard =  QGuiApplication::clipboard();
 
     QSignalSpy changedSpy(clipboard, SIGNAL(changed(QClipboard::Mode)));
     QSignalSpy dataChangedSpy(clipboard, SIGNAL(dataChanged()));
@@ -182,6 +190,44 @@ void tst_QClipboard::testSignals()
     QCOMPARE(dataChangedSpy.count(), 1);
 }
 
+static bool runHelper(const QString &program, const QStringList &arguments, QByteArray *errorMessage)
+{
+    QProcess process;
+    process.setReadChannelMode(QProcess::ForwardedChannels);
+    process.start(program, arguments);
+    if (!process.waitForStarted()) {
+        *errorMessage = "Unable to start '" + program.toLocal8Bit() + " ': "
+                        + process.errorString().toLocal8Bit();
+        return false;
+    }
+
+    // Windows: Due to implementation changes, the event loop needs
+    // to be spun since we ourselves also need to answer the
+    // WM_DRAWCLIPBOARD message as we are in the chain of clipboard
+    // viewers.
+    bool running = true;
+    for (int i = 0; i < 60 && running; ++i) {
+        QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        if (process.waitForFinished(500))
+            running = false;
+    }
+    if (running) {
+        process.kill();
+        *errorMessage = "Timeout running '" + program.toLocal8Bit() + '\'';
+        return false;
+    }
+    if (process.exitStatus() != QProcess::NormalExit) {
+        *errorMessage = "Process '" + program.toLocal8Bit() + "' crashed.";
+        return false;
+    }
+    if (process.exitCode()) {
+        *errorMessage = "Process '" + program.toLocal8Bit() + "' returns "
+                        + QByteArray::number(process.exitCode());
+        return false;
+    }
+    return true;
+}
+
 // Test that pasted text remains on the clipboard after a Qt application exits.
 void tst_QClipboard::copy_exit_paste()
 {
@@ -192,13 +238,16 @@ void tst_QClipboard::copy_exit_paste()
 #endif
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup");
-    const QStringList stringArgument = QStringList() << "Test string.";
-    QCOMPARE(QProcess::execute("copier/copier", stringArgument), 0);
+    const QStringList stringArgument(QStringLiteral("Test string."));
+    QByteArray errorMessage;
+    QVERIFY2(runHelper(QStringLiteral("copier/copier"), stringArgument, &errorMessage),
+             errorMessage.constData());
 #ifdef Q_OS_MAC
     // The Pasteboard needs a moment to breathe (at least on older Macs).
     QTest::qWait(100);
 #endif
-    QCOMPARE(QProcess::execute("paster/paster", stringArgument), 0);
+    QVERIFY2(runHelper(QStringLiteral("paster/paster"), stringArgument, &errorMessage),
+             errorMessage.constData());
 #endif
 }
 
@@ -214,33 +263,33 @@ void tst_QClipboard::setMimeData()
     mimeData->setText(QLatin1String("Qt/CE foo"));
 #endif
 
-    QApplication::clipboard()->setMimeData(mimeData);
-    QCOMPARE(QApplication::clipboard()->mimeData(), (const QMimeData *)mimeData);
-    QCOMPARE(QApplication::clipboard()->mimeData()->objectName(), TestName);
+    QGuiApplication::clipboard()->setMimeData(mimeData);
+    QCOMPARE(QGuiApplication::clipboard()->mimeData(), (const QMimeData *)mimeData);
+    QCOMPARE(QGuiApplication::clipboard()->mimeData()->objectName(), TestName);
 
     // set it to the same data again, it shouldn't delete mimeData (and crash as a result)
-    QApplication::clipboard()->setMimeData(mimeData);
-    QCOMPARE(QApplication::clipboard()->mimeData(), (const QMimeData *)mimeData);
-    QCOMPARE(QApplication::clipboard()->mimeData()->objectName(), TestName);
-    QApplication::clipboard()->clear();
-    const QMimeData *appMimeData = QApplication::clipboard()->mimeData();
+    QGuiApplication::clipboard()->setMimeData(mimeData);
+    QCOMPARE(QGuiApplication::clipboard()->mimeData(), (const QMimeData *)mimeData);
+    QCOMPARE(QGuiApplication::clipboard()->mimeData()->objectName(), TestName);
+    QGuiApplication::clipboard()->clear();
+    const QMimeData *appMimeData = QGuiApplication::clipboard()->mimeData();
     QVERIFY(appMimeData != mimeData || appMimeData->objectName() != TestName);
 
     // check for crash when using the same mimedata object on several clipboards
     QMimeData *data = new QMimeData;
     data->setText("foo");
 
-    QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
-    QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
-    QApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
 
-    QSignalSpy spySelection(QApplication::clipboard(), SIGNAL(selectionChanged()));
-    QSignalSpy spyData(QApplication::clipboard(), SIGNAL(dataChanged()));
-    QSignalSpy spyFindBuffer(QApplication::clipboard(), SIGNAL(findBufferChanged()));
+    QSignalSpy spySelection(QGuiApplication::clipboard(), SIGNAL(selectionChanged()));
+    QSignalSpy spyData(QGuiApplication::clipboard(), SIGNAL(dataChanged()));
+    QSignalSpy spyFindBuffer(QGuiApplication::clipboard(), SIGNAL(findBufferChanged()));
 
-    QApplication::clipboard()->clear(QClipboard::Clipboard);
-    QApplication::clipboard()->clear(QClipboard::Selection); // used to crash on X11
-    QApplication::clipboard()->clear(QClipboard::FindBuffer);
+    QGuiApplication::clipboard()->clear(QClipboard::Clipboard);
+    QGuiApplication::clipboard()->clear(QClipboard::Selection); // used to crash on X11
+    QGuiApplication::clipboard()->clear(QClipboard::FindBuffer);
 
 #if defined(Q_WS_X11)
     QCOMPARE(spySelection.count(), 1);
@@ -260,9 +309,9 @@ void tst_QClipboard::setMimeData()
     data = new QMimeData;
     data->setText("foo");
 
-    QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
-    QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
-    QApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+    QGuiApplication::clipboard()->setMimeData(data, QClipboard::FindBuffer);
 
     QMimeData *newData = new QMimeData;
     newData->setText("bar");
@@ -271,9 +320,9 @@ void tst_QClipboard::setMimeData()
     spyData.clear();
     spyFindBuffer.clear();
 
-    QApplication::clipboard()->setMimeData(newData, QClipboard::Clipboard);
-    QApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
-    QApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);
+    QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Clipboard);
+    QGuiApplication::clipboard()->setMimeData(newData, QClipboard::Selection); // used to crash on X11
+    QGuiApplication::clipboard()->setMimeData(newData, QClipboard::FindBuffer);
 
 #if defined(Q_WS_X11)
     QCOMPARE(spySelection.count(), 1);
@@ -292,7 +341,7 @@ void tst_QClipboard::setMimeData()
 
 void tst_QClipboard::clearBeforeSetText()
 {
-    QApplication::processEvents();
+    QGuiApplication::processEvents();
 
     if (!nativeClipboardWorking())
         QSKIP("Native clipboard not working in this setup");
@@ -300,30 +349,30 @@ void tst_QClipboard::clearBeforeSetText()
     const QString text = "tst_QClipboard::clearBeforeSetText()";
 
     // setText() should work after processEvents()
-    QApplication::clipboard()->setText(text);
-    QCOMPARE(QApplication::clipboard()->text(), text);
-    QApplication::processEvents();
-    QCOMPARE(QApplication::clipboard()->text(), text);
+    QGuiApplication::clipboard()->setText(text);
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
+    QGuiApplication::processEvents();
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
 
     // same with clear()
-    QApplication::clipboard()->clear();
-    QVERIFY(QApplication::clipboard()->text().isEmpty());
-    QApplication::processEvents();
-    QVERIFY(QApplication::clipboard()->text().isEmpty());
+    QGuiApplication::clipboard()->clear();
+    QVERIFY(QGuiApplication::clipboard()->text().isEmpty());
+    QGuiApplication::processEvents();
+    QVERIFY(QGuiApplication::clipboard()->text().isEmpty());
 
     // setText() again
-    QApplication::clipboard()->setText(text);
-    QCOMPARE(QApplication::clipboard()->text(), text);
-    QApplication::processEvents();
-    QCOMPARE(QApplication::clipboard()->text(), text);
+    QGuiApplication::clipboard()->setText(text);
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
+    QGuiApplication::processEvents();
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
 
     // clear() immediately followed by setText() should still return the text
-    QApplication::clipboard()->clear();
-    QVERIFY(QApplication::clipboard()->text().isEmpty());
-    QApplication::clipboard()->setText(text);
-    QCOMPARE(QApplication::clipboard()->text(), text);
-    QApplication::processEvents();
-    QCOMPARE(QApplication::clipboard()->text(), text);
+    QGuiApplication::clipboard()->clear();
+    QVERIFY(QGuiApplication::clipboard()->text().isEmpty());
+    QGuiApplication::clipboard()->setText(text);
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
+    QGuiApplication::processEvents();
+    QCOMPARE(QGuiApplication::clipboard()->text(), text);
 }
 
 QTEST_MAIN(tst_QClipboard)

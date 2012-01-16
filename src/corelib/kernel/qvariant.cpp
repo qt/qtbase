@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,10 @@
 #include "qstringlist.h"
 #include "qurl.h"
 #include "qlocale.h"
+#include "quuid.h"
+#ifndef QT_BOOTSTRAPPED
+#include "qabstractitemmodel.h"
+#endif
 #include "private/qvariant_p.h"
 #include "qmetatype_p.h"
 
@@ -74,6 +78,25 @@ QT_BEGIN_NAMESPACE
 #endif
 
 namespace {
+class HandlersManager
+{
+    static const QVariant::Handler *Handlers[QModulesPrivate::ModulesCount];
+public:
+    const QVariant::Handler *operator[] (const int typeId) const
+    {
+        return Handlers[QModulesPrivate::moduleForType(typeId)];
+    }
+
+    void registerHandler(const QModulesPrivate::Names name, const QVariant::Handler *handler)
+    {
+        Handlers[name] = handler;
+    }
+
+    inline void unregisterHandler(const QModulesPrivate::Names name);
+};
+}  // namespace
+
+namespace {
 template<typename T>
 struct TypeDefiniton {
     static const bool IsAvailable = true;
@@ -82,6 +105,7 @@ struct TypeDefiniton {
 // Ignore these types, as incomplete
 #ifdef QT_BOOTSTRAPPED
 template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_GEOM_VARIANT
 template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
@@ -100,7 +124,9 @@ struct CoreTypesFilter {
         static const bool IsAccepted = QTypeModuleInfo<T>::IsCore && TypeDefiniton<T>::IsAvailable;
     };
 };
-} // namspace
+} // annonymous used to hide TypeDefiniton
+
+namespace { // annonymous used to hide QVariant handlers
 
 static void construct(QVariant::Private *x, const void *copy)
 {
@@ -323,6 +349,9 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
+        case QVariant::Uuid:
+            *str = v_cast<QUuid>(d)->toString();
             break;
         default:
             return false;
@@ -688,6 +717,15 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         return *ok;
     }
 #endif
+    case QVariant::Uuid:
+        switch (d->type) {
+        case QVariant::String:
+            *static_cast<QUuid *>(result) = QUuid(*v_cast<QString>(d));
+            break;
+        default:
+            return false;
+        }
+        break;
     default:
         return false;
     }
@@ -697,101 +735,9 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    switch (v.userType()) {
-    case QVariant::Int:
-        dbg.nospace() << v.toInt();
-        break;
-    case QVariant::UInt:
-        dbg.nospace() << v.toUInt();
-        break;
-    case QVariant::LongLong:
-        dbg.nospace() << v.toLongLong();
-        break;
-    case QVariant::ULongLong:
-        dbg.nospace() << v.toULongLong();
-        break;
-    case QMetaType::Float:
-        dbg.nospace() << v.toFloat();
-        break;
-    case QMetaType::QObjectStar:
-        dbg.nospace() << qvariant_cast<QObject *>(v);
-        break;
-    case QVariant::Double:
-        dbg.nospace() << v.toDouble();
-        break;
-    case QVariant::Bool:
-        dbg.nospace() << v.toBool();
-        break;
-    case QVariant::String:
-        dbg.nospace() << v.toString();
-        break;
-    case QVariant::Char:
-        dbg.nospace() << v.toChar();
-        break;
-    case QVariant::StringList:
-        dbg.nospace() << v.toStringList();
-        break;
-    case QVariant::Map:
-        dbg.nospace() << v.toMap();
-        break;
-    case QVariant::Hash:
-        dbg.nospace() << v.toHash();
-        break;
-    case QVariant::List:
-        dbg.nospace() << v.toList();
-        break;
-    case QVariant::Date:
-        dbg.nospace() << v.toDate();
-        break;
-    case QVariant::Time:
-        dbg.nospace() << v.toTime();
-        break;
-    case QVariant::DateTime:
-        dbg.nospace() << v.toDateTime();
-        break;
-#ifndef QT_BOOTSTRAPPED
-    case QVariant::EasingCurve:
-        dbg.nospace() << v.toEasingCurve();
-        break;
-#endif
-    case QVariant::ByteArray:
-        dbg.nospace() << v.toByteArray();
-        break;
-    case QVariant::Url:
-        dbg.nospace() << v.toUrl();
-        break;
-#ifndef QT_NO_GEOM_VARIANT
-    case QVariant::Point:
-        dbg.nospace() << v.toPoint();
-        break;
-    case QVariant::PointF:
-        dbg.nospace() << v.toPointF();
-        break;
-    case QVariant::Rect:
-        dbg.nospace() << v.toRect();
-        break;
-    case QVariant::Size:
-        dbg.nospace() << v.toSize();
-        break;
-    case QVariant::SizeF:
-        dbg.nospace() << v.toSizeF();
-        break;
-    case QVariant::Line:
-        dbg.nospace() << v.toLine();
-        break;
-    case QVariant::LineF:
-        dbg.nospace() << v.toLineF();
-        break;
-    case QVariant::RectF:
-        dbg.nospace() << v.toRectF();
-        break;
-#endif
-    case QVariant::BitArray:
-        //dbg.nospace() << v.toBitArray();
-        break;
-    default:
-        break;
-    }
+    QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
+    QVariantDebugStream<CoreTypesFilter> stream(dbg, d);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
 }
 #endif
 
@@ -813,13 +759,142 @@ const QVariant::Handler qt_kernel_variant_handler = {
 #endif
 };
 
+static void dummyConstruct(QVariant::Private *, const void *) { Q_ASSERT_X(false, "QVariant", "Trying to construct an unknown type"); }
+static void dummyClear(QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to clear an unknown type"); }
+static bool dummyIsNull(const QVariant::Private *d) { Q_ASSERT_X(false, "QVariant::isNull", "Trying to call isNull on an unknown type"); return d->is_null; }
+static bool dummyCompare(const QVariant::Private *, const QVariant::Private *) { Q_ASSERT_X(false, "QVariant", "Trying to compare an unknown types"); return false; }
+static bool dummyConvert(const QVariant::Private *, QVariant::Type , void *, bool *) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); return false; }
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+static void dummyStreamDebug(QDebug, const QVariant &) { Q_ASSERT_X(false, "QVariant", "Trying to convert an unknown type"); }
+#endif
+const QVariant::Handler qt_dummy_variant_handler = {
+    dummyConstruct,
+    dummyClear,
+    dummyIsNull,
+#ifndef QT_NO_DATASTREAM
+    0,
+    0,
+#endif
+    dummyCompare,
+    dummyConvert,
+    0,
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+    dummyStreamDebug
+#else
+    0
+#endif
+};
+
+static void customConstruct(QVariant::Private *d, const void *copy)
+{
+    const uint size = QMetaType::sizeOf(d->type);
+    if (!size) {
+        d->type = QVariant::Invalid;
+        return;
+    }
+
+    // this logic should match with QVariantIntegrator::CanUseInternalSpace
+    if (size <= sizeof(QVariant::Private::Data)
+            && (QMetaType::typeFlags(d->type) & QMetaType::MovableType)) {
+        QMetaType::construct(d->type, &d->data.ptr, copy);
+        d->is_shared = false;
+    } else {
+        void *ptr = QMetaType::create(d->type, copy);
+        d->is_shared = true;
+        d->data.shared = new QVariant::PrivateShared(ptr);
+    }
+}
+
+static void customClear(QVariant::Private *d)
+{
+    if (!d->is_shared) {
+        QMetaType::destruct(d->type, &d->data.ptr);
+    } else {
+        QMetaType::destroy(d->type, d->data.shared->ptr);
+        delete d->data.shared;
+    }
+}
+
+static bool customIsNull(const QVariant::Private *d)
+{
+    return d->is_null;
+}
+
+static bool customCompare(const QVariant::Private *a, const QVariant::Private *b)
+{
+    const char *const typeName = QMetaType::typeName(a->type);
+    if (Q_UNLIKELY(!typeName) && Q_LIKELY(!QMetaType::isRegistered(a->type)))
+        qFatal("QVariant::compare: type %d unknown to QVariant.", a->type);
+
+    const void *a_ptr = a->is_shared ? a->data.shared->ptr : &(a->data.ptr);
+    const void *b_ptr = b->is_shared ? b->data.shared->ptr : &(b->data.ptr);
+
+    uint typeNameLen = qstrlen(typeName);
+    if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
+        return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
+
+    if (a->is_null && b->is_null)
+        return true;
+
+    return !memcmp(a_ptr, b_ptr, QMetaType::sizeOf(a->type));
+}
+
+static bool customConvert(const QVariant::Private *, QVariant::Type, void *, bool *ok)
+{
+    if (ok)
+        *ok = false;
+    return false;
+}
+
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+static void customStreamDebug(QDebug, const QVariant &) {}
+#endif
+
+const QVariant::Handler qt_custom_variant_handler = {
+    customConstruct,
+    customClear,
+    customIsNull,
+#ifndef QT_NO_DATASTREAM
+    0,
+    0,
+#endif
+    customCompare,
+    customConvert,
+    0,
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
+    customStreamDebug
+#else
+    0
+#endif
+};
+
+} // annonymous used to hide QVariant handlers
+
+static HandlersManager handlerManager;
+Q_STATIC_ASSERT_X(!QModulesPrivate::Core, "Initialization assumes that ModulesNames::Core is 0");
+const QVariant::Handler *HandlersManager::Handlers[QModulesPrivate::ModulesCount]
+                                        = { &qt_kernel_variant_handler, &qt_dummy_variant_handler,
+                                            &qt_dummy_variant_handler, &qt_custom_variant_handler };
+
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler()
 {
     return &qt_kernel_variant_handler;
 }
 
+inline void HandlersManager::unregisterHandler(const QModulesPrivate::Names name)
+{
+    Handlers[name] = &qt_dummy_variant_handler;
+}
 
-const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
+Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names */name, const QVariant::Handler *handler)
+{
+    handlerManager.registerHandler(static_cast<QModulesPrivate::Names>(name), handler);
+}
+
+Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Names */ name)
+{
+    handlerManager.unregisterHandler(static_cast<QModulesPrivate::Names>(name));
+}
 
 /*!
     \class QVariant
@@ -923,6 +998,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value DateTime  a QDateTime
     \value Double  a double
     \value EasingCurve a QEasingCurve
+    \value Uuid a QUuid
+    \value ModelIndex a QModelIndex
     \value Font  a QFont
     \value Hash a QVariantHash
     \value Icon  a QIcon
@@ -1018,7 +1095,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
 void QVariant::create(int type, const void *copy)
 {
     d.type = type;
-    handler->construct(&d, copy);
+    handlerManager[type]->construct(&d, copy);
 }
 
 /*!
@@ -1035,7 +1112,7 @@ void QVariant::create(int type, const void *copy)
 QVariant::~QVariant()
 {
     if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char))
-        handler->clear(&d);
+        handlerManager[d.type]->clear(&d);
 }
 
 /*!
@@ -1051,7 +1128,7 @@ QVariant::QVariant(const QVariant &p)
     if (d.is_shared) {
         d.data.shared->ref.ref();
     } else if (p.d.type > Char) {
-        handler->construct(&d, p.constData());
+        handlerManager[d.type]->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
 }
@@ -1435,7 +1512,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
         d = variant.d;
     } else if (variant.d.type > Char) {
         d.type = variant.d.type;
-        handler->construct(&d, variant.constData());
+        handlerManager[d.type]->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
     } else {
         d = variant.d;
@@ -1465,9 +1542,9 @@ void QVariant::detach()
 
     Private dd;
     dd.type = d.type;
-    handler->construct(&dd, constData());
+    handlerManager[d.type]->construct(&dd, constData());
     if (!d.data.shared->ref.deref())
-        handler->clear(&d);
+        handlerManager[d.type]->clear(&d);
     d.data.shared = dd.data.shared;
 }
 
@@ -1496,7 +1573,7 @@ const char *QVariant::typeName() const
 void QVariant::clear()
 {
     if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char))
-        handler->clear(&d);
+        handlerManager[d.type]->clear(&d);
     d.type = Invalid;
     d.is_null = true;
     d.is_shared = false;
@@ -1732,14 +1809,14 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 */
 
 template <typename T>
-inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t,
-                          const QVariant::Handler *handler, T * = 0)
+inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &handlerManager)
 {
-    if (d.type == t)
+    const QVariant::Type targetType = static_cast<const QVariant::Type>(qMetaTypeId<T>());
+    if (d.type == targetType)
         return *v_cast<T>(&d);
 
     T ret;
-    handler->convert(&d, t, &ret, 0);
+    handlerManager[d.type]->convert(&d, targetType, &ret, 0);
     return ret;
 }
 
@@ -1754,7 +1831,7 @@ inline T qVariantToHelper(const QVariant::Private &d, QVariant::Type t,
 */
 QStringList QVariant::toStringList() const
 {
-    return qVariantToHelper<QStringList>(d, StringList, handler);
+    return qVariantToHelper<QStringList>(d, handlerManager);
 }
 
 /*!
@@ -1767,7 +1844,7 @@ QStringList QVariant::toStringList() const
 */
 QString QVariant::toString() const
 {
-    return qVariantToHelper<QString>(d, String, handler);
+    return qVariantToHelper<QString>(d, handlerManager);
 }
 
 /*!
@@ -1778,7 +1855,7 @@ QString QVariant::toString() const
 */
 QVariantMap QVariant::toMap() const
 {
-    return qVariantToHelper<QVariantMap>(d, Map, handler);
+    return qVariantToHelper<QVariantMap>(d, handlerManager);
 }
 
 /*!
@@ -1789,7 +1866,7 @@ QVariantMap QVariant::toMap() const
 */
 QVariantHash QVariant::toHash() const
 {
-    return qVariantToHelper<QVariantHash>(d, Hash, handler);
+    return qVariantToHelper<QVariantHash>(d, handlerManager);
 }
 
 /*!
@@ -1805,7 +1882,7 @@ QVariantHash QVariant::toHash() const
 */
 QDate QVariant::toDate() const
 {
-    return qVariantToHelper<QDate>(d, Date, handler);
+    return qVariantToHelper<QDate>(d, handlerManager);
 }
 
 /*!
@@ -1821,7 +1898,7 @@ QDate QVariant::toDate() const
 */
 QTime QVariant::toTime() const
 {
-    return qVariantToHelper<QTime>(d, Time, handler);
+    return qVariantToHelper<QTime>(d, handlerManager);
 }
 
 /*!
@@ -1838,7 +1915,7 @@ QTime QVariant::toTime() const
 */
 QDateTime QVariant::toDateTime() const
 {
-    return qVariantToHelper<QDateTime>(d, DateTime, handler);
+    return qVariantToHelper<QDateTime>(d, handlerManager);
 }
 
 /*!
@@ -1853,7 +1930,7 @@ QDateTime QVariant::toDateTime() const
 #ifndef QT_BOOTSTRAPPED
 QEasingCurve QVariant::toEasingCurve() const
 {
-    return qVariantToHelper<QEasingCurve>(d, EasingCurve, handler);
+    return qVariantToHelper<QEasingCurve>(d, handlerManager);
 }
 #endif
 
@@ -1868,7 +1945,7 @@ QEasingCurve QVariant::toEasingCurve() const
 */
 QByteArray QVariant::toByteArray() const
 {
-    return qVariantToHelper<QByteArray>(d, ByteArray, handler);
+    return qVariantToHelper<QByteArray>(d, handlerManager);
 }
 
 #ifndef QT_NO_GEOM_VARIANT
@@ -1882,7 +1959,7 @@ QByteArray QVariant::toByteArray() const
 */
 QPoint QVariant::toPoint() const
 {
-    return qVariantToHelper<QPoint>(d, Point, handler);
+    return qVariantToHelper<QPoint>(d, handlerManager);
 }
 
 /*!
@@ -1895,7 +1972,7 @@ QPoint QVariant::toPoint() const
 */
 QRect QVariant::toRect() const
 {
-    return qVariantToHelper<QRect>(d, Rect, handler);
+    return qVariantToHelper<QRect>(d, handlerManager);
 }
 
 /*!
@@ -1908,7 +1985,7 @@ QRect QVariant::toRect() const
 */
 QSize QVariant::toSize() const
 {
-    return qVariantToHelper<QSize>(d, Size, handler);
+    return qVariantToHelper<QSize>(d, handlerManager);
 }
 
 /*!
@@ -1921,7 +1998,7 @@ QSize QVariant::toSize() const
 */
 QSizeF QVariant::toSizeF() const
 {
-    return qVariantToHelper<QSizeF>(d, SizeF, handler);
+    return qVariantToHelper<QSizeF>(d, handlerManager);
 }
 
 /*!
@@ -1934,7 +2011,7 @@ QSizeF QVariant::toSizeF() const
 */
 QRectF QVariant::toRectF() const
 {
-    return qVariantToHelper<QRectF>(d, RectF, handler);
+    return qVariantToHelper<QRectF>(d, handlerManager);
 }
 
 /*!
@@ -1947,7 +2024,7 @@ QRectF QVariant::toRectF() const
 */
 QLineF QVariant::toLineF() const
 {
-    return qVariantToHelper<QLineF>(d, LineF, handler);
+    return qVariantToHelper<QLineF>(d, handlerManager);
 }
 
 /*!
@@ -1960,7 +2037,7 @@ QLineF QVariant::toLineF() const
 */
 QLine QVariant::toLine() const
 {
-    return qVariantToHelper<QLine>(d, Line, handler);
+    return qVariantToHelper<QLine>(d, handlerManager);
 }
 
 /*!
@@ -1973,7 +2050,7 @@ QLine QVariant::toLine() const
 */
 QPointF QVariant::toPointF() const
 {
-    return qVariantToHelper<QPointF>(d, PointF, handler);
+    return qVariantToHelper<QPointF>(d, handlerManager);
 }
 
 #endif // QT_NO_GEOM_VARIANT
@@ -1988,7 +2065,7 @@ QPointF QVariant::toPointF() const
 */
 QUrl QVariant::toUrl() const
 {
-    return qVariantToHelper<QUrl>(d, Url, handler);
+    return qVariantToHelper<QUrl>(d, handlerManager);
 }
 
 /*!
@@ -2001,7 +2078,7 @@ QUrl QVariant::toUrl() const
 */
 QLocale QVariant::toLocale() const
 {
-    return qVariantToHelper<QLocale>(d, Locale, handler);
+    return qVariantToHelper<QLocale>(d, handlerManager);
 }
 
 /*!
@@ -2016,7 +2093,7 @@ QLocale QVariant::toLocale() const
 #ifndef QT_NO_REGEXP
 QRegExp QVariant::toRegExp() const
 {
-    return qVariantToHelper<QRegExp>(d, RegExp, handler);
+    return qVariantToHelper<QRegExp>(d, handlerManager);
 }
 #endif
 
@@ -2030,7 +2107,7 @@ QRegExp QVariant::toRegExp() const
 */
 QChar QVariant::toChar() const
 {
-    return qVariantToHelper<QChar>(d, Char, handler);
+    return qVariantToHelper<QChar>(d, handlerManager);
 }
 
 /*!
@@ -2041,12 +2118,12 @@ QChar QVariant::toChar() const
 */
 QBitArray QVariant::toBitArray() const
 {
-    return qVariantToHelper<QBitArray>(d, BitArray, handler);
+    return qVariantToHelper<QBitArray>(d, handlerManager);
 }
 
 template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d,
-                             const QVariant::Handler *handler, bool *ok, const T& val)
+                             const HandlersManager &handlerManager, bool *ok, const T& val)
 {
     uint t = qMetaTypeId<T>();
     if (ok)
@@ -2054,8 +2131,8 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
     if (d.type == t)
         return val;
 
-    T ret;
-    if (!handler->convert(&d, QVariant::Type(t), &ret, ok) && ok)
+    T ret = 0;
+    if (!handlerManager[d.type]->convert(&d, QVariant::Type(t), &ret, ok) && ok)
         *ok = false;
     return ret;
 }
@@ -2077,7 +2154,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d,
 */
 int QVariant::toInt(bool *ok) const
 {
-    return qNumVariantToHelper<int>(d, handler, ok, d.data.i);
+    return qNumVariantToHelper<int>(d, handlerManager, ok, d.data.i);
 }
 
 /*!
@@ -2097,7 +2174,7 @@ int QVariant::toInt(bool *ok) const
 */
 uint QVariant::toUInt(bool *ok) const
 {
-    return qNumVariantToHelper<uint>(d, handler, ok, d.data.u);
+    return qNumVariantToHelper<uint>(d, handlerManager, ok, d.data.u);
 }
 
 /*!
@@ -2112,7 +2189,7 @@ uint QVariant::toUInt(bool *ok) const
 */
 qlonglong QVariant::toLongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qlonglong>(d, handler, ok, d.data.ll);
+    return qNumVariantToHelper<qlonglong>(d, handlerManager, ok, d.data.ll);
 }
 
 /*!
@@ -2128,7 +2205,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
 */
 qulonglong QVariant::toULongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qulonglong>(d, handler, ok, d.data.ull);
+    return qNumVariantToHelper<qulonglong>(d, handlerManager, ok, d.data.ull);
 }
 
 /*!
@@ -2148,7 +2225,7 @@ bool QVariant::toBool() const
         return d.data.b;
 
     bool res = false;
-    handler->convert(&d, Bool, &res, 0);
+    handlerManager[d.type]->convert(&d, Bool, &res, 0);
 
     return res;
 }
@@ -2165,7 +2242,7 @@ bool QVariant::toBool() const
 */
 double QVariant::toDouble(bool *ok) const
 {
-    return qNumVariantToHelper<double>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<double>(d, handlerManager, ok, d.data.d);
 }
 
 /*!
@@ -2182,7 +2259,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, handler, ok, d.data.f);
+    return qNumVariantToHelper<float>(d, handlerManager, ok, d.data.f);
 }
 
 /*!
@@ -2199,7 +2276,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.real);
+    return qNumVariantToHelper<qreal>(d, handlerManager, ok, d.data.real);
 }
 
 /*!
@@ -2210,7 +2287,7 @@ qreal QVariant::toReal(bool *ok) const
 */
 QVariantList QVariant::toList() const
 {
-    return qVariantToHelper<QVariantList>(d, List, handler);
+    return qVariantToHelper<QVariantList>(d, handlerManager);
 }
 
 
@@ -2253,7 +2330,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
                 | 1 << QVariant::UInt       | 1 << QVariant::Bool       | 1 << QVariant::Double
                 | 1 << QVariant::Date       | 1 << QVariant::Time       | 1 << QVariant::DateTime
                 | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong  | 1 << QVariant::Char
-                | 1 << QVariant::Url,
+                | 1 << QVariant::Url        | 1 << QVariant::Uuid,
 
 /*QStringList*/   1 << QVariant::List       | 1 << QVariant::String,
 
@@ -2292,7 +2369,9 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QHash*/         0,
 
-/*QEasingCurve*/  0
+/*QEasingCurve*/  0,
+
+/*QUuid*/         1 << QVariant::String
 };
 
 /*!
@@ -2418,11 +2497,23 @@ bool QVariant::convert(Type t)
         return false;
 
     bool isOk = true;
-    if (!handler->convert(&oldValue.d, t, data(), &isOk))
+    if (!handlerManager[d.type]->convert(&oldValue.d, t, data(), &isOk))
         isOk = false;
     d.is_null = !isOk;
     return isOk;
 }
+
+/*!
+  \fn convert(const int type, void *ptr) const
+  \internal
+  Created for qvariant_cast() usage
+*/
+bool QVariant::convert(const int type, void *ptr) const
+{
+    Q_ASSERT(type < int(QMetaType::User));
+    return handlerManager[type]->convert(&d, QVariant::Type(type), ptr, 0);
+}
+
 
 /*!
     \fn bool operator==(const QVariant &v1, const QVariant &v2)
@@ -2490,7 +2581,7 @@ bool QVariant::cmp(const QVariant &v) const
         if (!v2.canConvert(Type(d.type)) || !v2.convert(Type(d.type)))
             return false;
     }
-    return handler->compare(&d, &v2.d);
+    return handlerManager[d.type]->compare(&d, &v2.d);
 }
 
 /*! \internal
@@ -2520,15 +2611,15 @@ void* QVariant::data()
 */
 bool QVariant::isNull() const
 {
-    return handler->isNull(&d);
+    return handlerManager[d.type]->isNull(&d);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QVariant &v)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QVariant(" << v.typeName() << ", ";
-    QVariant::handler->debugStream(dbg, v);
+    dbg.nospace() << "QVariant(" << QMetaType::typeName(v.userType()) << ", ";
+    handlerManager[v.d.type]->debugStream(dbg, v);
     dbg.nospace() << ')';
     return dbg.space();
 #else
@@ -2541,7 +2632,7 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
 QDebug operator<<(QDebug dbg, const QVariant::Type p)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QVariant::" << QVariant::typeToName(p);
+    dbg.nospace() << "QVariant::" << QMetaType::typeName(p);
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QVariant::Type to QDebug");

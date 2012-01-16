@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,7 +101,7 @@ QString BaselineServer::settingsFilePath()
     return settingsFile;
 }
 
-void BaselineServer::incomingConnection(int socketDescriptor)
+void BaselineServer::incomingConnection(qintptr socketDescriptor)
 {
     QString runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
     if (runId == lastRunId) {

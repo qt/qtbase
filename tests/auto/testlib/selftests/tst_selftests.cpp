@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,15 +39,19 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
-#include <QtTest/QtTest>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QXmlStreamReader>
+#include <QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtTest/QtTest>
+
 #include <private/cycle_p.h>
 
 class tst_Selftests: public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
     void runSubTest_data();
     void runSubTest();
     void cleanup();
@@ -285,6 +289,22 @@ static QList<LoggerSet> allLoggerSets()
     ;
 }
 
+void tst_Selftests::initTestCase()
+{
+    //Detect the location of the sub programs
+    QString subProgram = QLatin1String("float/float");
+#if defined(Q_OS_WIN)
+    subProgram = QLatin1String("float/float.exe");
+#endif
+    QString testdataDir = QFINDTESTDATA(subProgram);
+    if (testdataDir.lastIndexOf(subProgram) > 0)
+        testdataDir = testdataDir.left(testdataDir.lastIndexOf(subProgram));
+    else
+        testdataDir = QCoreApplication::applicationDirPath();
+    // chdir to our testdata path and execute helper apps relative to that.
+    QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
+}
+
 void tst_Selftests::runSubTest_data()
 {
     QTest::addColumn<QString>("subdir");
@@ -311,7 +331,7 @@ void tst_Selftests::runSubTest_data()
         << "datatable"
         << "datetime"
         << "differentexec"
-#if !defined(QT_NO_EXCEPTIONS) && (!defined(Q_CC_INTEL) || !defined(Q_OS_WIN))
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_CC_INTEL) && !defined(Q_OS_WIN)
         // Disable this test on Windows and for intel compiler, as the run-times
         // will popup dialogs with warnings that uncaught exceptions were thrown
         << "exceptionthrow"
@@ -319,7 +339,10 @@ void tst_Selftests::runSubTest_data()
         << "expectfail"
         << "failinit"
         << "failinitdata"
+#if !defined(Q_OS_WIN)
+        // Disable this test on Windows, as the run-time will popup dialogs with warnings
         << "fetchbogus"
+#endif
         << "float"
         << "globaldata"
         << "longstring"
@@ -327,6 +350,7 @@ void tst_Selftests::runSubTest_data()
         << "multiexec"
         << "printdatatags"
         << "printdatatagswithglobaltags"
+        << "qexecstringlist"
         << "singleskip"
         << "skip"
         << "skipinit"
@@ -391,6 +415,9 @@ void tst_Selftests::runSubTest_data()
                 if (subtest == "multiexec") {
                     continue;
                 }
+                if (subtest == "qexecstringlist") {
+                    continue;
+                }
                 if (subtest == "benchliboptions") {
                     continue;
                 }
@@ -430,16 +457,41 @@ static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
     const QString path = QStringLiteral("PATH");
-    result.insert(path, QProcessEnvironment::systemEnvironment().value(path));
+    const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+    result.insert(path, systemEnvironment.value(path));
+    // Preserve DISPLAY for X11 as some tests use QtGui.
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+    const QString display = QStringLiteral("DISPLAY");
+    const QString displayValue = systemEnvironment.value(display);
+    if (!displayValue.isEmpty())
+        result.insert(display, displayValue);
+#endif
+    const QString platform = QStringLiteral("QT_QPA_PLATFORM");
+    const QString platformValue = systemEnvironment.value(platform);
+    if (!platformValue.isEmpty())
+        result.insert(platform, platformValue);
     return result;
 }
 
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments)
 {
+#if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
+    if (arguments.contains("-callgrind")) {
+        QProcess checkProcess;
+        QStringList args;
+        args << QLatin1String("--version");
+        checkProcess.start(QLatin1String("valgrind"), args);
+        if (!checkProcess.waitForFinished(-1))
+            QSKIP(QString("Valgrind broken or not available. Not running %1 test!").arg(subdir).toLocal8Bit());
+    }
+#endif
+
     QProcess proc;
     static const QProcessEnvironment environment = processEnvironment();
     proc.setProcessEnvironment(environment);
-    proc.start(subdir + QLatin1Char('/') + subdir, arguments);
+    const QString path = subdir + QLatin1Char('/') + subdir;
+    proc.start(path, arguments);
+    QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
     QList<QByteArray> actualOutputs;
@@ -469,6 +521,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     // newer than the valgrind version, such that valgrind can't understand the
     // debug information on the binary.
     if (subdir != QLatin1String("exceptionthrow")
+        && subdir != QLatin1String("cmptest") // QImage comparison requires QGuiApplication
         && subdir != QLatin1String("fetchbogus")
         && subdir != QLatin1String("xunit")
         && subdir != QLatin1String("benchlibcallgrind"))
@@ -507,7 +560,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                 }
             }
         } else {
-            QCOMPARE(res.count(), exp.count());
+            QVERIFY2(res.count() == exp.count(),
+                     qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3).")
+                                .arg(res.count()).arg(exp.count()).arg(loggers.at(n))));
         }
 
         // For xml output formats, verify that the log is valid XML.
@@ -568,7 +623,9 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
 
                 QCOMPARE(actualResult, expectedResult);
             } else {
-                QCOMPARE(output, expected);
+                QVERIFY2(output == expected,
+                         qPrintable(QString::fromLatin1("Mismatch at line %1 (%2): '%3' != '%4'")
+                                    .arg(i).arg(loggers.at(n), output, expected)));
             }
 
             benchmark = line.startsWith("RESULT : ");
@@ -741,9 +798,12 @@ void tst_Selftests::cleanup()
 
     // Remove the test output files
     for (int i = 0; i < loggers.count(); ++i) {
-        QString logFile = logName(loggers[i]);
-        if (!logFile.isEmpty())
-            QVERIFY(QFile::remove(logFile));
+        QString logFileName = logName(loggers[i]);
+        if (!logFileName.isEmpty()) {
+            QFile logFile(logFileName);
+            if (logFile.exists())
+                QVERIFY2(logFile.remove(), qPrintable(QString::fromLatin1("Cannot remove file '%1': %2: ").arg(logFileName, logFile.errorString())));
+        }
     }
 }
 

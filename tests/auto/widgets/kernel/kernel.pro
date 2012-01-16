@@ -7,7 +7,6 @@ SUBDIRS=\
    qdesktopwidget \
    qformlayout \
    qgridlayout \
-   qinputcontext \
    qlayout \
    qstackedlayout \
    qtooltip \

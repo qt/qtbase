@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,8 @@ class Q_GUI_EXPORT QInputPanel : public QObject
     Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
+    Q_PROPERTY(QLocale locale READ locale NOTIFY localeChanged)
+    Q_PROPERTY(Qt::LayoutDirection inputDirection READ inputDirection NOTIFY inputDirectionChanged)
 
     Q_ENUMS(Action)
 public:
@@ -80,7 +82,7 @@ public:
     QRectF cursorRectangle() const; // ### what if we have rotations for the item?
 
     // keyboard geometry in window coords
-    QRectF keyboardRectangle();
+    QRectF keyboardRectangle() const;
 
     enum Action {
         Click,
@@ -91,6 +93,9 @@ public:
     void setVisible(bool visible);
 
     bool isAnimating() const;
+
+    QLocale locale() const;
+    Qt::LayoutDirection inputDirection() const;
 
 public Q_SLOTS:
     void show();
@@ -108,6 +113,8 @@ Q_SIGNALS:
     void keyboardRectangleChanged();
     void visibleChanged();
     void animatingChanged();
+    void localeChanged();
+    void inputDirectionChanged(Qt::LayoutDirection newDirection);
 
 private:
     friend class QGuiApplication;

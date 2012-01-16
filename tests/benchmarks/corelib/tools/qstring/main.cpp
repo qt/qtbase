@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,13 @@ private slots:
     void fromLatin1Alternatives() const;
     void fromUtf8Alternatives_data() const;
     void fromUtf8Alternatives() const;
+
+    void toUpper_data();
+    void toUpper();
+    void toLower_data();
+    void toLower();
+    void toCaseFolded_data();
+    void toCaseFolded();
 };
 
 void tst_QString::equals() const
@@ -2601,6 +2608,89 @@ void tst_QString::fromUtf8Alternatives() const
     }
 }
 
-QTEST_MAIN(tst_QString)
+void tst_QString::toUpper_data()
+{
+    QTest::addColumn<QString>("s");
+
+    QString lowerLatin1(300, QChar('a'));
+    QString upperLatin1(300, QChar('A'));
+
+    QString lowerDeseret;
+    {
+        QString pattern;
+        pattern += QChar(QChar::highSurrogate(0x10428));
+        pattern += QChar(QChar::lowSurrogate(0x10428));
+        for (int i = 0; i < 300 / pattern.size(); ++i)
+            lowerDeseret += pattern;
+    }
+    QString upperDeseret;
+    {
+        QString pattern;
+        pattern += QChar(QChar::highSurrogate(0x10400));
+        pattern += QChar(QChar::lowSurrogate(0x10400));
+        for (int i = 0; i < 300 / pattern.size(); ++i)
+            upperDeseret += pattern;
+    }
+
+    QString lowerLigature(600, QChar(0xFB03));
+
+    QTest::newRow("600<a>") << (lowerLatin1 + lowerLatin1);
+    QTest::newRow("600<A>") << (upperLatin1 + upperLatin1);
+
+    QTest::newRow("300<a>+300<A>") << (lowerLatin1 + upperLatin1);
+    QTest::newRow("300<A>+300<a>") << (upperLatin1 + lowerLatin1);
+
+    QTest::newRow("300<10428>") << (lowerDeseret + lowerDeseret);
+    QTest::newRow("300<10400>") << (upperDeseret + upperDeseret);
+
+    QTest::newRow("150<10428>+150<10400>") << (lowerDeseret + upperDeseret);
+    QTest::newRow("150<10400>+150<10428>") << (upperDeseret + lowerDeseret);
+
+    QTest::newRow("300a+150<10400>") << (lowerLatin1 + upperDeseret);
+    QTest::newRow("300a+150<10428>") << (lowerLatin1 + lowerDeseret);
+    QTest::newRow("300A+150<10400>") << (upperLatin1 + upperDeseret);
+    QTest::newRow("300A+150<10428>") << (upperLatin1 + lowerDeseret);
+
+    QTest::newRow("600<FB03> (ligature)") << lowerLigature;
+}
+
+void tst_QString::toUpper()
+{
+    QFETCH(QString, s);
+
+    QBENCHMARK {
+        s.toUpper();
+    }
+}
+
+void tst_QString::toLower_data()
+{
+    toUpper_data();
+}
+
+void tst_QString::toLower()
+{
+    QFETCH(QString, s);
+
+    QBENCHMARK {
+        s.toLower();
+    }
+}
+
+void tst_QString::toCaseFolded_data()
+{
+    toUpper_data();
+}
+
+void tst_QString::toCaseFolded()
+{
+    QFETCH(QString, s);
+
+    QBENCHMARK {
+        s.toCaseFolded();
+    }
+}
+
+QTEST_APPLESS_MAIN(tst_QString)
 
 #include "main.moc"

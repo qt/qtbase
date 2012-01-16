@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,9 +71,6 @@ public:
     virtual QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format);
     virtual void drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format);
     QImage image(QTextDocument *doc, const QTextImageFormat &imageFormat);
-
-    typedef QImage (*ExternalImageLoaderFunction)(const QString &name, const QString &context);
-    static ExternalImageLoaderFunction externalLoader; //this is needed by Qt3Support
 };
 
 QT_END_NAMESPACE

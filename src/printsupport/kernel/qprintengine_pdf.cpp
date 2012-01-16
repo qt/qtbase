@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -303,7 +303,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->pageOrder;
         break;
     case PPK_PaperSize:
-        ret = d->paperSize;
+        ret = d->printerPaperSize;
         break;
     case PPK_PaperSource:
         ret = d->paperSource;

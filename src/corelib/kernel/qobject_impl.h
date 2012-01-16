@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -441,36 +441,40 @@ namespace QtPrivate {
     /*
        Logic that check if the arguments of the slot matches the argument of the signal.
        To be used like this:
-       CheckCompatibleArguments<FunctionPointer<Signal>::Arguments, FunctionPointer<Slot>::Arguments>::IncompatibleSignalSlotArguments
-       The IncompatibleSignalSlotArguments type do not exist if the argument are incompatible and can
-       then produce error message.
+       Q_STATIC_ASSERT(CheckCompatibleArguments<FunctionPointer<Signal>::Arguments, FunctionPointer<Slot>::Arguments>::value)
     */
-    template<typename T, bool B> struct CheckCompatibleArgumentsHelper {};
-    template<typename T> struct CheckCompatibleArgumentsHelper<T, true> : T {};
     template<typename A1, typename A2> struct AreArgumentsCompatible {
         static int test(A2);
         static char test(...);
-        static A2 dummy();
+        static A1 dummy();
         enum { value = sizeof(test(dummy())) == sizeof(int) };
     };
     template<typename A1, typename A2> struct AreArgumentsCompatible<A1, A2&> { enum { value = false }; };
     template<typename A> struct AreArgumentsCompatible<A&, A&> { enum { value = true }; };
+    // void as a return value
+    template<typename A> struct AreArgumentsCompatible<void, A> { enum { value = true }; };
+    template<typename A> struct AreArgumentsCompatible<A, void> { enum { value = true }; };
+    template<> struct AreArgumentsCompatible<void, void> { enum { value = true }; };
 
 #ifndef Q_COMPILER_VARIADIC_TEMPLATES
-    template <typename List1, typename List2> struct CheckCompatibleArguments{};
-    template <> struct CheckCompatibleArguments<void, void> { typedef bool IncompatibleSignalSlotArguments; };
-    template <typename List1> struct CheckCompatibleArguments<List1, void> { typedef bool IncompatibleSignalSlotArguments; };
+    template <typename List1, typename List2> struct CheckCompatibleArguments { enum { value = false }; };
+    template <> struct CheckCompatibleArguments<void, void> { enum { value = true }; };
+    template <typename List1> struct CheckCompatibleArguments<List1, void> { enum { value = true }; };
     template <typename Arg1, typename Arg2, typename Tail1, typename Tail2> struct CheckCompatibleArguments<List<Arg1, Tail1>, List<Arg2, Tail2> >
-        : CheckCompatibleArgumentsHelper<CheckCompatibleArguments<Tail1, Tail2>, AreArgumentsCompatible<
-            typename RemoveConstRef<Arg1>::Type, typename RemoveConstRef<Arg2>::Type>::value > {};
+    {
+        enum { value = AreArgumentsCompatible<typename RemoveConstRef<Arg1>::Type, typename RemoveConstRef<Arg2>::Type>::value
+                    && CheckCompatibleArguments<Tail1, Tail2>::value };
+    };
 #else
-    template <typename List1, typename List2> struct CheckCompatibleArguments{};
-    template <> struct CheckCompatibleArguments<List<>, List<>> { typedef bool IncompatibleSignalSlotArguments; };
-    template <typename List1> struct CheckCompatibleArguments<List1, List<>> { typedef bool IncompatibleSignalSlotArguments; };
+    template <typename List1, typename List2> struct CheckCompatibleArguments { enum { value = false }; };
+    template <> struct CheckCompatibleArguments<List<>, List<>> { enum { value = true }; };
+    template <typename List1> struct CheckCompatibleArguments<List1, List<>> { enum { value = true }; };
     template <typename Arg1, typename Arg2, typename... Tail1, typename... Tail2>
     struct CheckCompatibleArguments<List<Arg1, Tail1...>, List<Arg2, Tail2...>>
-        : CheckCompatibleArgumentsHelper<CheckCompatibleArguments<List<Tail1...>, List<Tail2...>>, AreArgumentsCompatible<
-            typename RemoveConstRef<Arg1>::Type, typename RemoveConstRef<Arg2>::Type>::value > {};
+    {
+        enum { value = AreArgumentsCompatible<typename RemoveConstRef<Arg1>::Type, typename RemoveConstRef<Arg2>::Type>::value
+                    && CheckCompatibleArguments<List<Tail1...>, List<Tail2...>>::value };
+    };
 
 #endif
 

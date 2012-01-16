@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,13 +86,16 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+#ifdef XCB_USE_XLIB
 static int nullErrorHandler(Display *, XErrorEvent *)
 {
     return 0;
 }
+#endif
 
 QXcbConnection::QXcbConnection(const char *displayName)
-    : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    : m_connection(0)
+    , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
 #ifdef XCB_USE_XINPUT2_MAEMO
     , m_xinputData(0)
 #endif
@@ -108,24 +111,26 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
-    m_primaryScreen = DefaultScreen(dpy);
-    m_connection = XGetXCBConnection(dpy);
-    XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
-    XSetErrorHandler(nullErrorHandler);
-    m_xlib_display = dpy;
+    if (dpy) {
+        m_primaryScreen = DefaultScreen(dpy);
+        m_connection = XGetXCBConnection(dpy);
+        XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+        XSetErrorHandler(nullErrorHandler);
+        m_xlib_display = dpy;
 #ifdef XCB_USE_EGL
-    EGLDisplay eglDisplay = eglGetDisplay(dpy);
-    m_egl_display = eglDisplay;
-    EGLint major, minor;
-    eglBindAPI(EGL_OPENGL_ES_API);
-    m_has_egl = eglInitialize(eglDisplay,&major,&minor);
+        EGLDisplay eglDisplay = eglGetDisplay(dpy);
+        m_egl_display = eglDisplay;
+        EGLint major, minor;
+        eglBindAPI(EGL_OPENGL_ES_API);
+        m_has_egl = eglInitialize(eglDisplay,&major,&minor);
 #endif //XCB_USE_EGL
+    }
 #else
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
 
-    if (m_connection)
-        qDebug("Successfully connected to display %s", m_displayName.constData());
+    if (!m_connection)
+        qFatal("Could not connect to display %s", m_displayName.constData());
 
     m_reader = new QXcbEventReader(this);
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
@@ -568,13 +573,17 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     if (!handled) {
         // Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
         // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
-        Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent((Display*)m_xlib_display, response_type, 0);
+
+        Display *xdisplay = (Display *)m_xlib_display;
+        XLockDisplay(xdisplay);
+        Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, response_type, 0);
         if (proc) {
-            XESetWireToEvent((Display*)m_xlib_display, response_type, proc);
+            XESetWireToEvent(xdisplay, response_type, proc);
             XEvent dummy;
             event->sequence = LastKnownRequestProcessed(m_xlib_display);
-            proc((Display*)m_xlib_display, &dummy, (xEvent*)event);
+            proc(xdisplay, &dummy, (xEvent*)event);
         }
+        XUnlockDisplay(xdisplay);
     }
 #endif
 
@@ -615,7 +624,7 @@ void QXcbEventReader::addEvent(xcb_generic_event_t *event)
     m_events << event;
 }
 
-QList<xcb_generic_event_t *> *QXcbEventReader::lock()
+QXcbEventArray *QXcbEventReader::lock()
 {
     m_mutex.lock();
 #ifndef XCB_POLL_FOR_QUEUED_EVENT
@@ -648,7 +657,7 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
 
 void QXcbConnection::processXcbEvents()
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for(int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
@@ -711,7 +720,7 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
 
 xcb_generic_event_t *QXcbConnection::checkEvent(int type)
 {
-    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+    QXcbEventArray *eventqueue = m_reader->lock();
 
     for (int i = 0; i < eventqueue->size(); ++i) {
         xcb_generic_event_t *event = eventqueue->at(i);
@@ -960,6 +969,7 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
     xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, &error);
     if (error) {
         qWarning() << "QXcbConnection::atomName: bad Atom" << atom;
+        free(error);
     }
     if (reply) {
         QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));

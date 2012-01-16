@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,7 @@ class Q_CORE_EXPORT QTimer : public QObject
     Q_OBJECT
     Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot)
     Q_PROPERTY(int interval READ interval WRITE setInterval)
+    Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType)
     Q_PROPERTY(bool active READ isActive)
 public:
     explicit QTimer(QObject *parent = 0);
@@ -69,10 +70,14 @@ public:
     void setInterval(int msec);
     int interval() const { return inter; }
 
+    void setTimerType(Qt::TimerType atype) { this->type = atype; }
+    Qt::TimerType timerType() const { return Qt::TimerType(type); }
+
     inline void setSingleShot(bool singleShot);
     inline bool isSingleShot() const { return single; }
 
     static void singleShot(int msec, QObject *receiver, const char *member);
+    static void singleShot(int msec, Qt::TimerType timerType, QObject *receiver, const char *member);
 
 public Q_SLOTS:
     void start(int msec);
@@ -95,6 +100,8 @@ private:
     int id, inter, del;
     uint single : 1;
     uint nulltimer : 1;
+    uint type : 2;
+    // reserved : 28
 };
 
 inline void QTimer::setSingleShot(bool asingleShot) { single = asingleShot; }

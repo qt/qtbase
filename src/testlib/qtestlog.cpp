@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -291,7 +291,7 @@ void QTestLog::printUnhandledIgnoreMessages()
     char msg[1024];
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
-        QTest::qt_snprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
+        qsnprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
         QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
 
         list = list->next;
@@ -419,7 +419,7 @@ int QTestLog::verboseLevel()
     return QTest::verbosity;
 }
 
-void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
+void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 

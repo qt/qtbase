@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -164,11 +164,10 @@ void QWindowsUser32DLL::init()
     // MinGW (g++ 3.4.5) accepts only C casts.
     setLayeredWindowAttributes = (SetLayeredWindowAttributes)(library.resolve("SetLayeredWindowAttributes"));
     updateLayeredWindow = (UpdateLayeredWindow)(library.resolve("UpdateLayeredWindow"));
+    if (!setLayeredWindowAttributes || !updateLayeredWindow)
+        qFatal("This version of Windows is not supported (User32.dll is missing the symbols 'SetLayeredWindowAttributes', 'UpdateLayeredWindow').");
+
     updateLayeredWindowIndirect = (UpdateLayeredWindowIndirect)(library.resolve("UpdateLayeredWindowIndirect"));
-
-    Q_ASSERT(setLayeredWindowAttributes && updateLayeredWindow
-             && updateLayeredWindowIndirect);
-
     isHungAppWindow = (IsHungAppWindow)library.resolve("IsHungAppWindow");
 }
 
@@ -543,8 +542,8 @@ QWindowsMimeConverter &QWindowsContext::mimeConverter() const
 }
 
 /*!
-    \brief Convenience to create a non-visible dummy window
-    for example used as clipboard watcher or for GL.
+    \brief Convenience to create a non-visible, message-only dummy
+    window for example used as clipboard watcher or for GL.
 */
 
 HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
@@ -558,7 +557,7 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
                           windowName, style,
                           CW_USEDEFAULT, CW_USEDEFAULT,
                           CW_USEDEFAULT, CW_USEDEFAULT,
-                          0, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
+                          HWND_MESSAGE, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
 }
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -311,6 +311,8 @@ QMimeData *QWindowsClipboard::mimeData(QClipboard::Mode mode)
         qDebug() << __FUNCTION__ <<  mode;
     if (mode != QClipboard::Clipboard)
         return 0;
+    if (ownsClipboard())
+        return m_data->mimeData();
     return &m_retrievalData;
 }
 
@@ -329,7 +331,8 @@ void QWindowsClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
     const HRESULT src = OleSetClipboard(m_data);
     if (src != S_OK) {
-        qErrnoWarning("OleSetClipboard: Failed to set data on clipboard: %s",
+        qErrnoWarning("OleSetClipboard: Failed to set mime data (%s) on clipboard: %s",
+                      qPrintable(mimeData->formats().join(QStringLiteral(", "))),
                       QWindowsContext::comErrorString(src).constData());
         releaseIData();
         return;
