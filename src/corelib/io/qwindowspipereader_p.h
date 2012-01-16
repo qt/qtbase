@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-class QWinEventNotifier;
+class QWinOverlappedIoNotifier;
 
 class Q_CORE_EXPORT QWindowsPipeReader : public QObject
 {
@@ -89,7 +89,7 @@ public:
     bool waitForPipeClosed(int msecs);
 
     void startAsyncRead();
-    bool completeAsyncRead();
+    bool isReadOperationActive() const { return readSequenceStarted; }
 
 Q_SIGNALS:
     void winError(ulong, const QString &);
@@ -97,22 +97,24 @@ Q_SIGNALS:
     void pipeClosed();
 
 private Q_SLOTS:
-    bool readEventSignalled();
+    void notified(DWORD numberOfBytesRead, DWORD errorCode);
 
 private:
+    bool completeAsyncRead(DWORD bytesRead, DWORD errorCode);
     DWORD checkPipeState();
 
 private:
     HANDLE handle;
     OVERLAPPED overlapped;
-    QWinEventNotifier *dataReadNotifier;
+    QWinOverlappedIoNotifier *dataReadNotifier;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     int actualReadBufferSize;
     bool readSequenceStarted;
     QTimer *emitReadyReadTimer;
     bool pipeBroken;
-    static const qint64 initialReadBufferSize = 4096;
+    bool readyReadEmitted;
+    static const DWORD minReadBufferSize = 4096;
 };
 
 QT_END_NAMESPACE
