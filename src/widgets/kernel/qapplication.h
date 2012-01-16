@@ -226,6 +226,9 @@ public:
     QInputContext *inputContext() const;
 #endif
 
+    QT_DEPRECATED static QLocale keyboardInputLocale();
+    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
+
     static int exec();
     bool notify(QObject *, QEvent *);
 

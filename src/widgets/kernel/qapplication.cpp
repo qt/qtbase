@@ -4967,6 +4967,28 @@ QInputContext *QApplication::inputContext() const
 }
 #endif // QT_NO_IM
 
+/*!
+    \since 4.2
+    \obsolete
+
+    Returns the current keyboard input locale. Replaced with QInputPanel::locale()
+*/
+QLocale QApplication::keyboardInputLocale()
+{
+    return qApp ? qApp->inputPanel()->locale() : QLocale::c();
+}
+
+/*!
+    \since 4.2
+    \obsolete
+
+    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
+*/
+Qt::LayoutDirection QApplication::keyboardInputDirection()
+{
+    return qApp ? qApp->inputPanel()->inputDirection() : Qt::LeftToRight;
+}
+
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
     return QGuiApplication::sendSpontaneousEvent(receiver, event);

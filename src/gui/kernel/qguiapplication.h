@@ -119,9 +119,6 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
-    QT_DEPRECATED static QLocale keyboardInputLocale();
-    QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
-
     QStyleHints *styleHints() const;
     QInputPanel *inputPanel() const;
 
