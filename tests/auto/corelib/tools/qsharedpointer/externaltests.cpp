@@ -52,6 +52,7 @@
 #include <QtCore/QDirIterator>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
+#include <QtCore/QLibraryInfo>
 
 #ifndef DEFAULT_MAKESPEC
 # error DEFAULT_MAKESPEC not defined
@@ -565,7 +566,17 @@ namespace QTest {
              << makespec()
              << QLatin1String("project.pro");
         qmake.setWorkingDirectory(temporaryDirPath);
-        qmake.start(QLatin1String("qmake"), args);
+
+        QString cmd = QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake";
+#ifdef Q_OS_WIN
+        cmd.append(".exe");
+#endif
+        if (!QFile::exists(cmd)) {
+            cmd = "qmake";
+            qWarning("qmake from build not found, fallback to PATH's qmake");
+        }
+
+        qmake.start(cmd, args);
 
         std_out += "### --- stdout from qmake --- ###\n";
         std_err += "### --- stderr from qmake --- ###\n";
