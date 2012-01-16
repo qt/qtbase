@@ -1669,6 +1669,19 @@ private:
 };
 
 
+class ModelWithCustomRole : public QStringListModel
+{
+  Q_OBJECT
+public:
+  ModelWithCustomRole(QObject *parent = 0)
+    : QStringListModel(parent)
+  {
+    QHash<int, QByteArray> roleNames_ = roleNames();
+    roleNames_.insert(Qt::UserRole + 1, "custom");
+    setRoleNames(roleNames_);
+  }
+};
+
 ListenerObject::ListenerObject(QAbstractProxyModel *parent)
     : QObject(parent), m_model(parent)
 {
@@ -1722,7 +1735,7 @@ void tst_QAbstractItemModel::testReset()
     nullProxy->setSourceModel(m_model);
 
     // Makes sure the model and proxy are in a consistent state. before and after reset.
-    new ListenerObject(nullProxy);
+    ListenerObject *listener = new ListenerObject(nullProxy);
 
     ModelResetCommandFixed *resetCommand = new ModelResetCommandFixed(m_model, this);
 
@@ -1741,6 +1754,28 @@ void tst_QAbstractItemModel::testReset()
     QVERIFY(m_model->rowCount() == 9);
     QModelIndex destIndex = m_model->index(4, 0);
     QVERIFY(m_model->rowCount(destIndex) == 11);
+
+    // Delete it because its slots test things which are not true after this point.
+    delete listener;
+
+    QSignalSpy proxyBeforeResetSpy(nullProxy, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy proxyAfterResetSpy(nullProxy, SIGNAL(modelReset()));
+
+    // Before setting it, it does not have custom roles.
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
+
+    nullProxy->setSourceModel(new ModelWithCustomRole(this));
+    QVERIFY(proxyBeforeResetSpy.size() == 1);
+    QVERIFY(proxyAfterResetSpy.size() == 1);
+
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray("custom"));
+
+    nullProxy->setSourceModel(m_model);
+    QVERIFY(proxyBeforeResetSpy.size() == 2);
+    QVERIFY(proxyAfterResetSpy.size() == 2);
+
+    // After being reset the proxy must be queried again.
+    QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
 }
 
 class CustomRoleModel : public QStringListModel

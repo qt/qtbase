@@ -2141,9 +2141,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
     Sets the model's role names to \a roleNames.
 
     This function allows mapping of role identifiers to role property names in
-    Declarative UI.  This function must be called before the model is used.
-    Modifying the role names after the model has been set may result in
-    undefined behaviour.
+    scripting languages.
 
     \sa roleNames()
 */
@@ -3419,6 +3417,11 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 
     This signal is emitted when reset() is called, after the model's internal
     state (e.g. persistent model indexes) has been invalidated.
+
+    Note that if a model is reset it should be considered that all information
+    previously retrieved from it is invalid. This includes but is not limited
+    to the rowCount() and columnCount(), flags(), data retrieved through data(),
+    and roleNames().
 
     \sa endResetModel(), modelAboutToBeReset()
 */
