@@ -356,7 +356,7 @@ void tst_QHostInfo::reverseLookup_data()
     QTest::addColumn<int>("err");
     QTest::addColumn<bool>("ipv6");
 
-    QTest::newRow("trolltech.com") << QString("62.70.27.69") << QStringList(QString("diverse.troll.no")) << 0 << false;
+    QTest::newRow("google-public-dns-a.google.com") << QString("8.8.8.8") << QStringList(QString("google-public-dns-a.google.com")) << 0 << false;
     QTest::newRow("gitorious.org") << QString("87.238.52.168") << QStringList(QString("gitorious.org")) << 0 << false;
     QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1 << true;
 }
