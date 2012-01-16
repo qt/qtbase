@@ -60,6 +60,11 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     Q_UNUSED(pipe);
 }
 
+void QProcessPrivate::destroyChannel(Channel *channel)
+{
+    Q_UNUSED(channel);
+}
+
 static QString qt_create_commandline(const QString &program, const QStringList &arguments)
 {
     QString args;

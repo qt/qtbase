@@ -74,6 +74,7 @@ typedef int Q_PIPE;
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
+class QWindowsPipeReader;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
@@ -291,14 +292,19 @@ public:
     Q_PIPE childStartedPipe[2];
     Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
+    void destroyChannel(Channel *channel);
 
     QSocketNotifier *startupSocketNotifier;
     QSocketNotifier *deathNotifier;
 
+#ifdef Q_OS_WIN
     // the wonderful windows notifier
     QTimer *notifier;
+    QWindowsPipeReader *stdoutReader;
+    QWindowsPipeReader *stderrReader;
     QWindowsPipeWriter *pipeWriter;
     QWinEventNotifier *processFinishedNotifier;
+#endif
 
     void startProcess();
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)

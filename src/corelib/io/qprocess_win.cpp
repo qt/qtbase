@@ -41,10 +41,12 @@
 
 #include "qprocess.h"
 #include "qprocess_p.h"
+#include "qwindowspipereader_p.h"
 #include "qwindowspipewriter_p.h"
 
 #include <qdatetime.h>
 #include <qdir.h>
+#include <qelapsedtimer.h>
 #include <qfileinfo.h>
 #include <qregexp.h>
 #include <qtimer.h>
@@ -152,6 +154,26 @@ bool QProcessPrivate::createChannel(Channel &channel)
             qt_create_pipe(channel.pipe, isStdInChannel);
         else
             duplicateStdWriteChannel(channel.pipe, (&channel == &stdoutChannel) ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
+
+        QWindowsPipeReader *pipeReader = 0;
+        if (&channel == &stdoutChannel) {
+            if (!stdoutReader) {
+                stdoutReader = new QWindowsPipeReader(q);
+                q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+            }
+            pipeReader = stdoutReader;
+        } else if (&channel == &stderrChannel) {
+            if (!stderrReader) {
+                stderrReader = new QWindowsPipeReader(q);
+                q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
+            }
+            pipeReader = stderrReader;
+        }
+        if (pipeReader) {
+            pipeReader->setHandle(channel.pipe[0]);
+            pipeReader->startAsyncRead();
+        }
+
         return true;
     } else if (channel.type == Channel::Redirect) {
         // we're redirecting the channel to/from a file
@@ -263,11 +285,6 @@ bool QProcessPrivate::createChannel(Channel &channel)
 
 void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
 {
-    if (pipe[0] == stdinChannel.pipe[0] && pipe[1] == stdinChannel.pipe[1] && pipeWriter) {
-        delete pipeWriter;
-        pipeWriter = 0;
-    }
-
     if (pipe[0] != INVALID_Q_PIPE) {
         CloseHandle(pipe[0]);
         pipe[0] = INVALID_Q_PIPE;
@@ -278,6 +295,26 @@ void QProcessPrivate::destroyPipe(Q_PIPE pipe[2])
     }
 }
 
+void QProcessPrivate::destroyChannel(Channel *channel)
+{
+    if (channel == &stdinChannel) {
+        if (pipeWriter) {
+            delete pipeWriter;
+            pipeWriter = 0;
+        }
+    } else if (channel == &stdoutChannel) {
+        if (stdoutReader) {
+            stdoutReader->deleteLater();
+            stdoutReader = 0;
+        }
+    } else if (channel == &stderrChannel) {
+        if (stderrReader) {
+            stderrReader->deleteLater();
+            stderrReader = 0;
+        }
+    }
+    destroyPipe(channel->pipe);
+}
 
 static QString qt_create_commandline(const QString &program, const QStringList &arguments)
 {
@@ -502,8 +539,10 @@ qint64 QProcessPrivate::bytesAvailableFromStdout() const
     if (stdoutChannel.pipe[0] == INVALID_Q_PIPE)
         return 0;
 
-    DWORD bytesAvail = 0;
-	PeekNamedPipe(stdoutChannel.pipe[0], 0, 0, 0, &bytesAvail, 0);
+    if (!stdoutReader)
+        return 0;
+
+    DWORD bytesAvail = stdoutReader->bytesAvailable();
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStdout() == %d", bytesAvail);
 #endif
@@ -515,8 +554,10 @@ qint64 QProcessPrivate::bytesAvailableFromStderr() const
     if (stderrChannel.pipe[0] == INVALID_Q_PIPE)
         return 0;
 
-    DWORD bytesAvail = 0;
-	PeekNamedPipe(stderrChannel.pipe[0], 0, 0, 0, &bytesAvail, 0);
+    if (!stderrReader)
+        return 0;
+
+    DWORD bytesAvail = stderrReader->bytesAvailable();
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::bytesAvailableFromStderr() == %d", bytesAvail);
 #endif
@@ -525,22 +566,12 @@ qint64 QProcessPrivate::bytesAvailableFromStderr() const
 
 qint64 QProcessPrivate::readFromStdout(char *data, qint64 maxlen)
 {
-    DWORD read = qMin(maxlen, bytesAvailableFromStdout());
-    DWORD bytesRead = 0;
-
-    if (read > 0 && !ReadFile(stdoutChannel.pipe[0], data, read, &bytesRead, 0))
-        return -1;
-    return bytesRead;
+    return stdoutReader ? stdoutReader->read(data, maxlen) : 0;
 }
 
 qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
 {
-    DWORD read = qMin(maxlen, bytesAvailableFromStderr());
-    DWORD bytesRead = 0;
-
-    if (read > 0 && !ReadFile(stderrChannel.pipe[0], data, read, &bytesRead, 0))
-        return -1;
-    return bytesRead;
+    return stderrReader ? stderrReader->read(data, maxlen) : 0;
 }
 
 
@@ -583,6 +614,30 @@ bool QProcessPrivate::waitForStarted(int)
     return false;
 }
 
+static bool drainOutputPipes(QProcessPrivate *d)
+{
+    if (!d->stdoutReader && !d->stderrReader)
+        return false;
+
+    bool readyReadEmitted = false;
+    forever {
+        bool readOperationActive = false;
+        if (d->stdoutReader) {
+            readyReadEmitted |= d->stdoutReader->waitForReadyRead(0);
+            readOperationActive = d->stdoutReader->isReadOperationActive();
+        }
+        if (d->stderrReader) {
+            readyReadEmitted |= d->stderrReader->waitForReadyRead(0);
+            readOperationActive |= d->stderrReader->isReadOperationActive();
+        }
+        if (!readOperationActive)
+            break;
+        Sleep(100);
+    }
+
+    return readyReadEmitted;
+}
+
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
     Q_Q(QProcess);
@@ -594,26 +649,18 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             return false;
         if (pipeWriter && pipeWriter->waitForWrite(0))
             timer.resetIncrements();
-        bool readyReadEmitted = false;
-        if (bytesAvailableFromStdout() != 0) {
-            readyReadEmitted = _q_canReadStandardOutput() ? true : readyReadEmitted;
-            timer.resetIncrements();
-        }
 
-        if (bytesAvailableFromStderr() != 0) {
-            readyReadEmitted = _q_canReadStandardError() ? true : readyReadEmitted;
-            timer.resetIncrements();
-        }
-
-        if (readyReadEmitted)
+        if (processChannelMode != QProcess::ForwardedChannels
+                && ((stdoutReader && stdoutReader->waitForReadyRead(0))
+                    || (stderrReader && stderrReader->waitForReadyRead(0))))
             return true;
 
         if (!pid)
             return false;
         if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
-            // find the return value if there is noew data to read
+            bool readyReadEmitted = drainOutputPipes(this);
             _q_processDied();
-            return false;
+            return readyReadEmitted;
         }
 
         Sleep(timer.nextSleepTime());
@@ -694,7 +741,6 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     return false;
 }
 
-
 bool QProcessPrivate::waitForFinished(int msecs)
 {
     Q_Q(QProcess);
@@ -709,21 +755,18 @@ bool QProcessPrivate::waitForFinished(int msecs)
             return false;
         if (pipeWriter && pipeWriter->waitForWrite(0))
             timer.resetIncrements();
-
-        if (bytesAvailableFromStdout() != 0) {
-            _q_canReadStandardOutput();
+        if (stdoutReader && stdoutReader->waitForReadyRead(0))
             timer.resetIncrements();
-        }
-
-        if (bytesAvailableFromStderr() != 0) {
-            _q_canReadStandardError();
+        if (stderrReader && stderrReader->waitForReadyRead(0))
             timer.resetIncrements();
-        }
 
-        if (!pid)
+        if (!pid) {
+            drainOutputPipes(this);
             return true;
+        }
 
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
+            drainOutputPipes(this);
             _q_processDied();
             return true;
         }
@@ -731,6 +774,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
         if (timer.hasTimedOut())
             break;
     }
+
     processError = QProcess::Timedout;
     q->setErrorString(QProcess::tr("Process operation timed out"));
     return false;
@@ -789,12 +833,6 @@ void QProcessPrivate::_q_notified()
 
     if (!writeBuffer.isEmpty() && (!pipeWriter || pipeWriter->waitForWrite(0)))
         _q_canWrite();
-
-    if (bytesAvailableFromStdout())
-        _q_canReadStandardOutput();
-
-    if (bytesAvailableFromStderr())
-        _q_canReadStandardError();
 
     if (processState != QProcess::NotRunning)
         notifier->start(NOTIFYTIMEOUT);

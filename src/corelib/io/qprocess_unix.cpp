@@ -357,6 +357,11 @@ void QProcessPrivate::destroyPipe(int *pipe)
     }
 }
 
+void QProcessPrivate::destroyChannel(Channel *channel)
+{
+    destroyPipe(channel->pipe);
+}
+
 /*
     Create the pipes to a QProcessPrivate::Channel.
 
