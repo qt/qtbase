@@ -330,7 +330,7 @@ void tst_QMenuBar::onActivated( QAction* action )
 
 void tst_QMenuBar::accel()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation");
 #endif
 
@@ -348,7 +348,7 @@ void tst_QMenuBar::accel()
 
 void tst_QMenuBar::activatedCount()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation");
 #endif
     // create a popup menu with menu items set the accelerators later...
@@ -562,7 +562,7 @@ void tst_QMenuBar::insertItem_QString_QObject()
 
 void tst_QMenuBar::check_accelKeys()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation");
 #endif
     initComplexMenubar();
@@ -631,7 +631,7 @@ void tst_QMenuBar::check_accelKeys()
 
 void tst_QMenuBar::check_cursorKeys1()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar");
 #endif
 
@@ -662,7 +662,7 @@ void tst_QMenuBar::check_cursorKeys1()
 
 void tst_QMenuBar::check_cursorKeys2()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar");
 #endif
 
@@ -692,7 +692,7 @@ void tst_QMenuBar::check_cursorKeys2()
 */
 void tst_QMenuBar::check_cursorKeys3()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar");
 #endif
 
@@ -796,7 +796,7 @@ void tst_QMenuBar::check_endKey()
 
 void tst_QMenuBar::check_escKey()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar");
 #endif
 
@@ -939,7 +939,7 @@ void tst_QMenuBar::check_escKey()
 void
 tst_QMenuBar::allowActiveAndDisabled()
 {
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE_WM)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE_WM)
     mb->hide();
     mb->clear();
 
@@ -977,7 +977,7 @@ tst_QMenuBar::allowActiveAndDisabled()
         QCOMPARE(mb->activeAction()->text(), fileMenu.title());
 
     mb->hide();
-#endif //Q_WS_MAC
+#endif //Q_OS_MAC
 }
 
 void tst_QMenuBar::check_altPress()
@@ -999,7 +999,7 @@ void tst_QMenuBar::check_altPress()
 
 void tst_QMenuBar::check_shortcutPress()
 {
-#if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
+#if defined(Q_OS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar");
 #endif
 
@@ -1020,7 +1020,7 @@ void tst_QMenuBar::check_shortcutPress()
 
 void tst_QMenuBar::check_menuPosition()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Qt/Mac does not use the native popups/menubar");
 #endif
 #ifdef Q_OS_WINCE_WM
@@ -1234,7 +1234,7 @@ void tst_QMenuBar::menubarSizeHint()
 
 void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("On Mac, do not test the menubar with escape key");
 #endif
     QMenuBar menubar;

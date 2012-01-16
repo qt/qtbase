@@ -501,7 +501,7 @@ void tst_QGraphicsGridLayout::alignment_data()
 // public Qt::Alignment alignment(QGraphicsLayoutItem* item) const
 void tst_QGraphicsGridLayout::alignment()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
 #endif
     QFETCH(bool, hasHeightForWidth);
@@ -575,7 +575,7 @@ void tst_QGraphicsGridLayout::columnAlignment_data()
 // public Qt::Alignment columnAlignment(int column) const
 void tst_QGraphicsGridLayout::columnAlignment()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Resizing a QGraphicsWidget to effectiveSizeHint(Qt::MaximumSize) is currently not supported on mac");
 #endif
     QFETCH(bool, hasHeightForWidth);

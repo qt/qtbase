@@ -176,7 +176,7 @@ void tst_QProgressBar::format()
     bar.setFormat("%v of %m (%p%)");
     qApp->processEvents();
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     // Animated scroll bars get paint events all the time
 #ifdef Q_OS_WIN
     if (QSysInfo::WindowsVersion < QSysInfo::WV_VISTA)

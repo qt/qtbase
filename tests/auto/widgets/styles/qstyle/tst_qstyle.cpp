@@ -75,7 +75,7 @@
 
 #include <QCleanlooksStyle>
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <QMacStyle>
 #endif
 
@@ -561,7 +561,7 @@ qDebug("TEST PAINTING");
 
 void tst_QStyle::testMacStyle()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QMacStyle mstyle;
     QVERIFY(testAllFunctions(&mstyle));
 #endif

@@ -137,7 +137,7 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
     QVERIFY(sizeGrip->isVisible());
 
     widget->showMaximized();
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QVERIFY(!sizeGrip->isVisible());
 #else
     QVERIFY(sizeGrip->isVisible());

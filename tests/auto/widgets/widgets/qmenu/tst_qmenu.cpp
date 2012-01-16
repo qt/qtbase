@@ -365,7 +365,7 @@ void tst_QMenu::keyboardNavigation()
         QCOMPARE(highlighted, (QAction *)0);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 QT_BEGIN_NAMESPACE
     extern bool qt_tab_all_widgets; // from qapplication.cpp
 QT_END_NAMESPACE
@@ -378,7 +378,7 @@ void tst_QMenu::focus()
     menu.addAction("Two");
     menu.addAction("Three");
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (!qt_tab_all_widgets)
         QSKIP("Computer is currently set up to NOT tab to all widgets,"
              " this test assumes you can tab to all widgets");
@@ -418,7 +418,7 @@ void tst_QMenu::overrideMenuAction()
 
     // On Mac and Windows CE, we need to create native key events to test menu
     // action activation, so skip this part of the test.
-#if !defined(Q_WS_MAC) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
     QAction *aQuit = new QAction("Quit", &w);
     aQuit->setShortcut(QKeySequence("Ctrl+X"));
     m->addAction(aQuit);

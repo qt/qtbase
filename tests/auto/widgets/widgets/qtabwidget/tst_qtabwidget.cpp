@@ -579,7 +579,7 @@ void tst_QTabWidget::paintEventCount()
         4;
 #elif defined(Q_WS_WIN)
         2;
-#elif defined(Q_WS_MAC)
+#elif defined(Q_OS_MAC)
         5;
 #else
         2;

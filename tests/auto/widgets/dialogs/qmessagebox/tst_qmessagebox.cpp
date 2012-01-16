@@ -48,7 +48,7 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QDialogButtonBox>
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
 #if !defined(QT_NO_STYLE_CLEANLOOKS)
@@ -363,7 +363,7 @@ void tst_QMessageBox::statics()
 
 void tst_QMessageBox::shortcut()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("shortcuts are not used on MAC OS X");
 #endif
     QMessageBox msgBox;
@@ -380,7 +380,7 @@ void tst_QMessageBox::about()
     QMessageBox::about(0, "Caption", "This is an auto test");
     // On Mac, about and aboutQt are not modal, so we need to
     // explicitly run the event loop
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QTRY_COMPARE(keyToSend, -1);
 #else
     QCOMPARE(keyToSend, -1);
@@ -393,7 +393,7 @@ void tst_QMessageBox::about()
 #endif
     sendKeySoon();
     QMessageBox::aboutQt(0, "Caption");
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QTRY_COMPARE(keyToSend, -1);
 #else
     QCOMPARE(keyToSend, -1);
@@ -409,7 +409,7 @@ void tst_QMessageBox::staticSourceCompat()
     sendKeySoon();
     ret = QMessageBox::information(0, "title", "text", QMessageBox::Yes, QMessageBox::No);
     int expectedButton = int(QMessageBox::Yes);
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     if (qobject_cast<QMacStyle *>(qApp->style()))
         expectedButton = int(QMessageBox::No);
 #elif !defined(QT_NO_STYLE_CLEANLOOKS)
@@ -481,7 +481,7 @@ void tst_QMessageBox::instanceSourceCompat()
 
     QCOMPARE(exec(&mb, Qt::Key_Enter), int(QMessageBox::Yes));
     QCOMPARE(exec(&mb, Qt::Key_Escape), int(QMessageBox::Cancel));
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     // mnemonics are not used on Mac OS X
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_R), 0);
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_Z), 1);

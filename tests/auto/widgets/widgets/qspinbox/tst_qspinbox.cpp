@@ -378,7 +378,7 @@ void tst_QSpinBox::setTracking_data()
     QStringList texts1;
     QStringList texts2;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     keys.addKeyClick(Qt::Key_Right, Qt::ControlModifier);
 #else
     keys.addKeyClick(Qt::Key_End);
@@ -824,13 +824,13 @@ void tst_QSpinBox::removeAll()
     spin.setSuffix("bar");
     spin.setValue(2);
     spin.show();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QTest::keyClick(&spin, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_Home);
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QTest::keyClick(&spin, Qt::Key_Right, Qt::ControlModifier|Qt::ShiftModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_End, Qt::ShiftModifier);
@@ -845,7 +845,7 @@ void tst_QSpinBox::startWithDash()
 {
     SpinBox spin(0);
     spin.show();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QTest::keyClick(&spin, Qt::Key_Left, Qt::ControlModifier);
 #else
     QTest::keyClick(&spin, Qt::Key_Home);

@@ -53,7 +53,7 @@
 #include <qpushbutton.h>
 #include <qlineedit.h>
 #include <qtoolbutton.h>
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <qsettings.h>
 #endif
 

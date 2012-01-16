@@ -83,7 +83,7 @@ Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 //On mac we get full update. So check that the expected region is contained inside the actual
 #define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
 #else
@@ -2515,7 +2515,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
     view.viewport()->repaint();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Repaint on Mac OS X actually does require spinning the event loop.
     QTest::qWait(100);
 #endif

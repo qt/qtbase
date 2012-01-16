@@ -76,10 +76,7 @@
 # include <qscreen_qws.h>
 #endif
 
-// I *MUST* have QtTest afterwards or this test won't work with newer headers
-#if defined(Q_WS_MAC)
-# include <private/qt_mac_p.h>
-#undef verify
+#if defined(Q_OS_MAC)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
 #endif
 
@@ -139,7 +136,7 @@ bool qt_wince_is_smartphone() {
 }
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Security/AuthSession.h>
 bool macHasAccessToWindowsServer()
 {
@@ -224,7 +221,7 @@ private slots:
 #endif
 
     void widgetAt();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     void sheetOpacity();
     void setMask();
 #endif
@@ -255,7 +252,7 @@ private slots:
     void update();
     void isOpaque();
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     void scroll();
 #endif
 
@@ -340,10 +337,8 @@ private slots:
 #ifndef Q_OS_IRIX
     void doubleRepaint();
 #endif
-#ifndef Q_WS_MAC
     void resizeInPaintEvent();
     void opaqueChildren();
-#endif
 
     void setMaskInResizeEvent();
     void moveInResizeEvent();
@@ -410,7 +405,7 @@ private slots:
     void taskQTBUG_7532_tabOrderWithFocusProxy();
     void movedAndResizedAttributes();
     void childAt();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     void childAt_unifiedToolBar();
     void taskQTBUG_11373();
 #endif
@@ -2236,12 +2231,12 @@ void tst_QWidget::showMinimizedKeepsFocus()
         qApp->setActiveWindow(&window);
         QTest::qWaitForWindowShown(&window);
         QTest::qWait(30);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         if (!macHasAccessToWindowsServer())
             QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
 #endif
         QTRY_COMPARE(window.focusWidget(), firstchild);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         if (!macHasAccessToWindowsServer())
             QEXPECT_FAIL("", "When not having WindowServer access, we lose focus.", Continue);
 #endif
@@ -2627,7 +2622,7 @@ public:
 
 void tst_QWidget::lostUpdatesOnHide()
 {
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     UpdateWidget widget;
     widget.setAttribute(Qt::WA_DontShowOnScreen);
     widget.show();
@@ -2851,7 +2846,7 @@ void tst_QWidget::stackUnder()
 
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child4 ? 1 : 0;
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_OS_MAC)
         if (expectedPaintEvents == 1 && child->numPaintEvents == 2)
             QEXPECT_FAIL(0, "Mac and Windows issues double repaints for Z-Order change", Continue);
 #endif
@@ -2890,7 +2885,7 @@ void tst_QWidget::stackUnder()
 #ifdef Q_OS_WINCE
             qApp->processEvents();
 #endif
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
             QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
             QCOMPARE(child->numPaintEvents, 0);
@@ -3462,7 +3457,7 @@ void tst_QWidget::testDeletionInEventHandlers()
     delete w;
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 void tst_QWidget::sheetOpacity()
 {
     QWidget tmpWindow;
@@ -3650,7 +3645,7 @@ void tst_QWidget::optimizedResizeMove()
 
 void tst_QWidget::optimizedResize_topLevel()
 {
-#if defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_OS_MAC) || defined(Q_WS_QWS)
     QSKIP("We do not yet have static contents support for *top-levels* on this platform");
 #endif
 
@@ -4268,7 +4263,7 @@ static inline bool isOpaque(QWidget *widget)
 
 void tst_QWidget::isOpaque()
 {
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QWidget w;
     QVERIFY(::isOpaque(&w));
 
@@ -4340,7 +4335,7 @@ void tst_QWidget::isOpaque()
 #endif
 }
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 /*
     Test that scrolling of a widget invalidates the correct regions
 */
@@ -4727,7 +4722,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -4796,7 +4791,7 @@ void tst_QWidget::windowMoveResize()
             widget.move(r.topLeft());
             widget.resize(r.size());
             QApplication::processEvents();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
             if (r.width() == 0 && r.height() > 0) {
                 widget.move(r.topLeft());
                 widget.resize(r.size());
@@ -4925,7 +4920,7 @@ void tst_QWidget::moveChild()
     QTRY_COMPARE(pos, child.pos());
 
     QCOMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
-#if !defined(Q_WS_MAC)
+#if !defined(Q_OS_MAC)
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
@@ -6563,7 +6558,7 @@ void tst_QWidget::render_systemClip()
     // rrrrrrrrrr
     // ...
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     for (int i = 0; i < image.height(); ++i) {
         for (int j = 0; j < image.width(); ++j) {
             if (i < 50 && j < i)
@@ -7526,11 +7521,6 @@ void tst_QWidget::updateGeometry()
 
 void tst_QWidget::sendUpdateRequestImmediately()
 {
-#ifdef Q_WS_MAC
-    if (!QApplicationPrivate::graphicsSystem())
-        QSKIP("We only send update requests on the Mac when passing -graphicssystem");
-#endif
-
     UpdateWidget updateWidget;
     updateWidget.show();
 #ifdef Q_WS_X11
@@ -7552,7 +7542,7 @@ void tst_QWidget::sendUpdateRequestImmediately()
 #ifndef Q_OS_IRIX
 void tst_QWidget::doubleRepaint()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
 #endif
@@ -7583,8 +7573,6 @@ void tst_QWidget::doubleRepaint()
 }
 #endif
 
-#ifndef Q_WS_MAC
-// This test only makes sense on the Mac when passing -graphicssystem.
 void tst_QWidget::resizeInPaintEvent()
 {
     QWidget window;
@@ -7648,7 +7636,6 @@ void tst_QWidget::opaqueChildren()
     greatGrandChild.setAutoFillBackground(false);
     QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), QRegion());
 }
-#endif
 
 
 class MaskSetWidget : public QWidget
@@ -8250,7 +8237,7 @@ void tst_QWidget::setClearAndResizeMask()
     QTRY_COMPARE(child.mask(), childMask);
     QTest::qWait(50);
     // and ensure that the child widget doesn't get any update.
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QCOMPARE(child.numPaintEvents, 1);
@@ -8273,7 +8260,7 @@ void tst_QWidget::setClearAndResizeMask()
     // and ensure that that the child widget gets an update for the area outside the old mask.
     QTRY_COMPARE(child.numPaintEvents, 1);
     outsideOldMask = child.rect();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (!child.internalWinId())
 #endif
@@ -8288,7 +8275,7 @@ void tst_QWidget::setClearAndResizeMask()
     // Mask child widget with a mask that is bigger than the rect
     child.setMask(QRegion(0, 0, 1000, 1000));
     QTest::qWait(100);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(child.numPaintEvents, 1);
@@ -8301,7 +8288,7 @@ void tst_QWidget::setClearAndResizeMask()
     // ...and the same applies when clearing the mask.
     child.clearMask();
     QTest::qWait(100);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_VERIFY(child.numPaintEvents > 0);
@@ -8331,7 +8318,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     QTimer::singleShot(100, &resizeChild, SLOT(shrinkMask()));
     QTest::qWait(200);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
@@ -8343,7 +8330,7 @@ void tst_QWidget::setClearAndResizeMask()
     const QRegion oldMask = resizeChild.mask();
     QTimer::singleShot(0, &resizeChild, SLOT(enlargeMask()));
     QTest::qWait(100);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
     if (child.internalWinId())
         QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
@@ -9218,7 +9205,7 @@ void tst_QWidget::childAt()
     QCOMPARE(parent.childAt(120, 120), grandChild);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 void tst_QWidget::childAt_unifiedToolBar()
 {
     QLabel *label = new QLabel(QLatin1String("foo"));

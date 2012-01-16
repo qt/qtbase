@@ -732,7 +732,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                    << 1                                  // delta
                                    << int(Qt::Vertical)                  // orientation of slider
                                    << int(Qt::Vertical)                  // orientation of wheel
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
                                    << 1                                  // expected position after
 #else
                                    // We don't restrict scrolling to pageStep on Mac
@@ -750,7 +750,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Vertical)             // orientation of wheel
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
                                         << 1                             // expected position after
 #else
                                         // We don't restrict scrolling to pageStep on Mac
@@ -769,7 +769,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 1                             // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Vertical)             // orientation of wheel
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
                                         << 1                             // expected position after
 #else
                                         // We don't restrict scrolling to pageStep on Mac

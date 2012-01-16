@@ -1575,7 +1575,7 @@ void tst_QApplication::focusChanged()
     QTestMouseEvent click(QTest::MouseClick, Qt::LeftButton, 0, QPoint(5, 5), 0);
 
     bool tabAllControls = true;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Mac has two modes, one where you tab to everything, one where you can
     // only tab to input controls, here's what we get. Determine which ones we
     // should get.

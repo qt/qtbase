@@ -81,7 +81,7 @@ Q_DECLARE_METATYPE(QRectF)
 #define Q_CHECK_PAINTEVENTS
 #endif
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
 // On mac (cocoa) we always get full update.
 // So check that the expected region is contained inside the actual
 #define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
@@ -6095,7 +6095,7 @@ void tst_QGraphicsItem::untransformable()
 
 // Painting with the DiagCrossPattern is really slow on Mac
 // when zoomed out. (The test times out). Task to fix is 155567.
-#if !defined(Q_WS_MAC) || 1
+#if !defined(Q_OS_MAC) || 1
     view.setBackgroundBrush(QBrush(Qt::black, Qt::DiagCrossPattern));
 #endif
 
@@ -8120,7 +8120,7 @@ void tst_QGraphicsItem::sorting()
     _paintedItems.clear();
 
     view.viewport()->repaint();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     // There's no difference between repaint and update on the Mac,
     // so we have to process events here to make sure we get the event.
     QTest::qWait(100);
@@ -8155,7 +8155,7 @@ void tst_QGraphicsItem::itemHasNoContents()
     _paintedItems.clear();
 
     view.viewport()->repaint();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // There's no difference between update() and repaint() on the Mac,
     // so we have to process events here to make sure we get the event.
     QTest::qWait(10);

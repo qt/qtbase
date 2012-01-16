@@ -198,7 +198,7 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle_data()
     QTest::newRow("always set title, not appName") << true << true << validPath << QString() << windowTitle << windowTitle << windowTitle;
 
     QString platString =
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         fileNameOnly;
 #else
         fileAndApp;

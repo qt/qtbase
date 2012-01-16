@@ -90,7 +90,7 @@ void tst_QToolTip::task183679_data()
 {
     QTest::addColumn<Qt::Key>("key");
     QTest::addColumn<bool>("visible");
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     const bool visibleAfterNonModifier = false;
 #else
     const bool visibleAfterNonModifier = true;

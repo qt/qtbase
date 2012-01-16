@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+// some versions of CALayer.h use 'slots' as an identifier
+#define QT_NO_KEYWORDS
+
 #include "tst_qwidget_mac_helpers.h"
 #include <QApplication>
 #include <QPlatformNativeInterface>

@@ -53,7 +53,7 @@
 #include "qclipboard.h"
 #endif
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Carbon/Carbon.h> // For the random function.
 #include <cstdlib> // For the random function.
 #endif
@@ -1408,7 +1408,7 @@ void tst_QLineEdit::undo_keypressevents()
 #ifndef QT_NO_CLIPBOARD
 static bool nativeClipboardWorking()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     PasteboardRef pasteboard;
     OSStatus status = PasteboardCreate(0, &pasteboard);
     if (status == noErr)
@@ -1811,7 +1811,7 @@ void tst_QLineEdit::isReadOnly()
 
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     static bool tst_lineedit_randomized = false;
     // Mac has 3 different ways of accomplishing this (same for moving to the back)
     // So I guess we should just randomly do this for now. Which may get people mad, but if
@@ -2015,14 +2015,14 @@ void tst_QLineEdit::cursorPositionChanged_data()
     keys.addKeyClick(Qt::Key_Home);
     keys.addKeyClick(Qt::Key_Right, Qt::ControlModifier);
     QTest::newRow("abc efg<home><ctrl-right>") << keys
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
         << 0 << 4;
 #else
         << 6 << 7;
 #endif
     keys.clear();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     keys.addKeyClick(Qt::Key_A);
     keys.addKeyClick(Qt::Key_B);
     keys.addKeyClick(Qt::Key_C);
@@ -2045,13 +2045,13 @@ void tst_QLineEdit::cursorPositionChanged_data()
     keys.addKeyClick(Qt::Key_F);
     keys.addKeyClick(Qt::Key_Left, Qt::ControlModifier);
     QTest::newRow("abc efg<ctrl-left>") << keys << 7
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
         << 4;
 #else
         << 0;
 #endif
     keys.clear();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     keys.addKeyClick(Qt::Key_A);
     keys.addKeyClick(Qt::Key_B);
     keys.addKeyClick(Qt::Key_C);
@@ -2793,7 +2793,7 @@ void tst_QLineEdit::setSelection()
 #ifndef QT_NO_CLIPBOARD
 void tst_QLineEdit::cut()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     {
         PasteboardRef pasteboard;
         OSStatus status = PasteboardCreate(0, &pasteboard);
@@ -3123,7 +3123,7 @@ void tst_QLineEdit::inlineCompletion()
     QCOMPARE(testWidget->selectedText(), QString("tem1"));
 
     Qt::KeyboardModifiers keyboardModifiers = Qt::ControlModifier;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     keyboardModifiers |= Qt::AltModifier;
 #endif
     QTest::keyClick(testWidget, Qt::Key_Down, keyboardModifiers);

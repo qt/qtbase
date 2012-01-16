@@ -45,7 +45,7 @@
 #include <QtWidgets>
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
 #ifdef Q_WS_X11
@@ -2727,7 +2727,7 @@ void tst_QGraphicsProxyWidget::childPos()
         QVERIFY(proxyChild);
         QVERIFY(proxyChild->isVisible());
         qreal expectedXPosition = 0.0;
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
         // The Mac style wants the popup to show up at QPoint(4 - 11, 1).
         // See QMacStyle::subControlRect SC_ComboBoxListBoxPopup.
         if (qobject_cast<QMacStyle *>(QApplication::style()))

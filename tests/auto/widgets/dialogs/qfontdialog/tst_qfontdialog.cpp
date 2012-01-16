@@ -102,7 +102,6 @@ void tst_QFontDialog::cleanup()
 
 
 void tst_QFontDialog::postKeyReturn() {
-#ifndef Q_WS_MAC
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i=0; i<list.count(); ++i) {
 	QFontDialog *dialog = qobject_cast<QFontDialog*>(list[i]);
@@ -111,10 +110,6 @@ void tst_QFontDialog::postKeyReturn() {
 	    return;
 	}
     }
-#else
-    extern void click_cocoa_button();
-    click_cocoa_button();
-#endif
 }
 
 void tst_QFontDialog::defaultOkButton()

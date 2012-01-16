@@ -125,7 +125,7 @@ public:
             opt.palette = palette();
             opt.state = QStyle::State_None;
             style()->drawPrimitive(QStyle::PE_FrameFocusRect, &opt, &p, this);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
             p.setPen(Qt::red);
             p.drawRect(r);
 #endif
@@ -361,17 +361,17 @@ void tst_QAbstractButton::setText()
     QCOMPARE( testWidget->text(), QString("simple") );
     testWidget->setText("&ampersand");
     QCOMPARE( testWidget->text(), QString("&ampersand") );
-#ifndef Q_WS_MAC // no mneonics on Mac.
+#ifndef Q_OS_MAC // no mneonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence("ALT+A"));
 #endif
     testWidget->setText("te&st");
     QCOMPARE( testWidget->text(), QString("te&st") );
-#ifndef Q_WS_MAC // no mneonics on Mac.
+#ifndef Q_OS_MAC // no mneonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence("ALT+S"));
 #endif
     testWidget->setText("foo");
     QCOMPARE( testWidget->text(), QString("foo") );
-#ifndef Q_WS_MAC // no mneonics on Mac.
+#ifndef Q_OS_MAC // no mneonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence());
 #endif
 }

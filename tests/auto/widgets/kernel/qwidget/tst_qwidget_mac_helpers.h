@@ -40,7 +40,7 @@
 ****************************************************************************/
 #include <QtCore/QString>
 #include <QtCore/QPair>
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #pragma once // Yeah, it's deprecated in general, but it's standard practive for Mac OS X.
 

@@ -440,7 +440,7 @@ public slots:
 
 void tst_QDialog::throwInExec()
 {
-#if defined(Q_WS_MAC) || (defined(Q_WS_WINCE) && defined(_ARM_))
+#if defined(Q_OS_MAC) || (defined(Q_WS_WINCE) && defined(_ARM_))
     QSKIP("Throwing exceptions in exec() is not supported on this platform.");
 #endif
 #if defined(Q_OS_LINUX)

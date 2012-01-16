@@ -909,7 +909,7 @@ void tst_QFiledialog::selectFiles()
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
         fd.selectFile(fd.directory().path() + "/" + list.at(i));
-#if defined(Q_WS_MAC) || defined(Q_WS_WIN)
+#if defined(Q_OS_MAC) || defined(Q_WS_WIN)
     QEXPECT_FAIL("", "This test does not work on Mac or Windows", Abort);
 #endif
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
@@ -1223,7 +1223,7 @@ void tst_QFiledialog::clearLineEdit()
     list->setEditFocus(true);
 #endif
     QTest::keyClick(list, Qt::Key_Down);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);
@@ -1240,7 +1240,7 @@ void tst_QFiledialog::clearLineEdit()
 
     QTest::qWait(1000);
     QTest::keyClick(list, Qt::Key_Down);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::keyClick(list, Qt::Key_Return);
 #else
     QTest::keyClick(list, Qt::Key_O, Qt::ControlModifier);

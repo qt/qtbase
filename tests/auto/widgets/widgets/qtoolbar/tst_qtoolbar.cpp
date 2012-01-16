@@ -1020,7 +1020,7 @@ void tst_QToolBar::widgetAction()
 
 void tst_QToolBar::accel()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     extern void qt_set_sequence_auto_mnemonic(bool b);
     qt_set_sequence_auto_mnemonic(true);
 #endif
@@ -1040,7 +1040,7 @@ void tst_QToolBar::accel()
     QTest::qWait(300);
 
     QTRY_COMPARE(spy.count(), 1);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(false);
 #endif
 }

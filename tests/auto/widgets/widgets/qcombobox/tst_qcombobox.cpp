@@ -58,7 +58,7 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -455,7 +455,7 @@ void tst_QComboBox::setEditable()
 
 void tst_QComboBox::setPalette()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (qobject_cast<QMacStyle *>(testWidget->style())) {
         QSKIP("This test doesn't make sense for pixmap-based styles");
     }
