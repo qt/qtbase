@@ -58,6 +58,10 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 
+    int fails = 0;
+    int passes = 0;
+    int skips = 0;
+
     struct IgnoreResultList
     {
         inline IgnoreResultList(QtMsgType tp, const char *message)
@@ -305,12 +309,16 @@ void QTestLog::addPass(const char *msg)
 
     QTEST_ASSERT(msg);
 
+    ++QTest::passes;
+
     QTest::TestLoggers::addIncident(QAbstractTestLogger::Pass, msg);
 }
 
 void QTestLog::addFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
+
+    ++QTest::fails;
 
     QTest::TestLoggers::addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
@@ -328,6 +336,8 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
+    ++QTest::fails;
+
     QTest::TestLoggers::addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
@@ -335,6 +345,8 @@ void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
+
+    ++QTest::skips;
 
     QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, msg, file, line);
 }
@@ -445,6 +457,28 @@ bool QTestLog::printAvailableTags = false;
 void QTestLog::setPrintAvailableTagsMode()
 {
     printAvailableTags = true;
+}
+
+int QTestLog::passCount()
+{
+    return QTest::passes;
+}
+
+int QTestLog::failCount()
+{
+    return QTest::fails;
+}
+
+int QTestLog::skipCount()
+{
+    return QTest::skips;
+}
+
+void QTestLog::resetCounters()
+{
+    QTest::passes = 0;
+    QTest::fails = 0;
+    QTest::skips = 0;
 }
 
 QT_END_NAMESPACE

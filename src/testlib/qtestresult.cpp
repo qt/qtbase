@@ -62,10 +62,6 @@ namespace QTest
     static bool skipCurrentTest = false;
     static QTestResult::TestLocation location = QTestResult::NoWhere;
 
-    static int fails = 0;
-    static int passes = 0;
-    static int skips = 0;
-
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
 }
@@ -80,12 +76,10 @@ void QTestResult::reset()
     QTest::dataFailed = false;
     QTest::location = QTestResult::NoWhere;
 
-    QTest::fails = 0;
-    QTest::passes = 0;
-    QTest::skips = 0;
-
     QTest::expectFailComment = 0;
     QTest::expectFailMode = 0;
+
+    QTestLog::resetCounters();
 }
 
 bool QTestResult::currentTestFailed()
@@ -140,7 +134,6 @@ void QTestResult::finishedCurrentTestFunction()
 
     if (!QTest::failed && !QTest::skipCurrentTest) {
         QTestLog::addPass("");
-        ++QTest::passes;
     }
     QTest::currentTestFunc = 0;
     QTest::failed = false;
@@ -211,7 +204,6 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
             bool doContinue = (QTest::expectFailMode == QTest::Continue);
             clearExpectFail();
             QTest::failed = true;
-            ++QTest::fails;
             return doContinue;
         }
         return true;
@@ -277,7 +269,6 @@ void QTestResult::addFailure(const char *message, const char *file, int line)
     QTestLog::addFail(message, file, line);
     QTest::failed = true;
     QTest::dataFailed = true;
-    ++QTest::fails;
 }
 
 void QTestResult::addSkip(const char *message, const char *file, int line)
@@ -285,7 +276,6 @@ void QTestResult::addSkip(const char *message, const char *file, int line)
     clearExpectFail();
 
     QTestLog::addSkip(message, file, line);
-    ++QTest::skips;
 }
 
 QTestResult::TestLocation QTestResult::currentTestLocation()
@@ -310,17 +300,17 @@ const char *QTestResult::currentTestObjectName()
 
 int QTestResult::passCount()
 {
-    return QTest::passes;
+    return QTestLog::passCount();
 }
 
 int QTestResult::failCount()
 {
-    return QTest::fails;
+    return QTestLog::failCount();
 }
 
 int QTestResult::skipCount()
 {
-    return QTest::skips;
+    return QTestLog::skipCount();
 }
 
 void QTestResult::ignoreMessage(QtMsgType type, const char *msg)

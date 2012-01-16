@@ -2025,7 +2025,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
      }
 #endif
 
-     saveCoverageTool(argv[0], QTestResult::failCount());
+     saveCoverageTool(argv[0], QTestLog::failCount());
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)
@@ -2033,7 +2033,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
     // make sure our exit code is never going above 127
     // since that could wrap and indicate 0 test fails
-    return qMin(QTestResult::failCount(), 127);
+    return qMin(QTestLog::failCount(), 127);
 }
 
 /*!

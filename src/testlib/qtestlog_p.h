@@ -96,6 +96,12 @@ public:
 
     static void setPrintAvailableTagsMode();
 
+    static int passCount();
+    static int failCount();
+    static int skipCount();
+
+    static void resetCounters();
+
 private:
     QTestLog();
     ~QTestLog();

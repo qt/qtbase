@@ -344,14 +344,14 @@ void QPlainTestLogger::stopLogging()
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {
         qsnprintf(buf, sizeof(buf), "Totals: %d passed, %d failed, %d skipped\n",
-                  QTestResult::passCount(), QTestResult::failCount(),
-                  QTestResult::skipCount());
+                  QTestLog::passCount(), QTestLog::failCount(),
+                  QTestLog::skipCount());
     } else {
         qsnprintf(buf, sizeof(buf),
                   "Totals: %d passed, %d failed, %d skipped\n"
                   "********* Finished testing of %s *********\n",
-                  QTestResult::passCount(), QTestResult::failCount(),
-                  QTestResult::skipCount(), QTestResult::currentTestObjectName());
+                  QTestLog::passCount(), QTestLog::failCount(),
+                  QTestLog::skipCount(), QTestResult::currentTestObjectName());
     }
     outputMessage(buf);
 
