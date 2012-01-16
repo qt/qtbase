@@ -300,7 +300,7 @@ void tst_QPixmap::convertFromImage_data()
 {
     QTest::addColumn<QImage>("img1");
     QTest::addColumn<QImage>("img2");
-    const QString prefix = QLatin1String(SRCDIR) + "/convertFromImage";
+    const QString prefix = QFINDTESTDATA("convertFromImage");
 
     {
         QImage img1;
@@ -994,7 +994,7 @@ void tst_QPixmap::toWinHICON_data()
     QTest::addColumn<int>("width");
     QTest::addColumn<int>("height");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/convertFromToHICON";
+    const QString prefix = QFINDTESTDATA("convertFromToHICON");
 
     QTest::newRow("32bpp_16x16") << prefix + QLatin1String("/icon_32bpp") << 16 << 16;
     QTest::newRow("32bpp_32x32") << prefix + QLatin1String("/icon_32bpp") << 32 << 32;
@@ -1290,7 +1290,7 @@ void tst_QPixmap::loadFromDataImage_data()
 {
     QTest::addColumn<QString>("imagePath");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
 
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     // When no extension is provided we try all extensions that has been registered by image providers
@@ -1324,7 +1324,7 @@ void tst_QPixmap::fromImageReader_data()
 {
     QTest::addColumn<QString>("imagePath");
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
 
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
     QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
@@ -1362,7 +1362,7 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
 {
     QFETCH(QString, imagePath);
 
-    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+    const QString prefix = QFINDTESTDATA("loadFromData");
     const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
