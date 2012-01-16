@@ -993,11 +993,6 @@ int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry,
     return -1;
 }
 
-QAccessible::Relation QAccessibleTitleBar::relationTo(const QAccessibleInterface * /*otherChild*/) const
-{
-    return QAccessible::Unrelated;   //###
-}
-
 int QAccessibleTitleBar::indexOfChild(const QAccessibleInterface * /*child*/) const
 {
     return -1;

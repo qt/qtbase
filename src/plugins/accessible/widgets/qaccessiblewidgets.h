@@ -251,7 +251,6 @@ public:
     int navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
     QAccessibleInterface *childAt(int x, int y) const;
     void setText(QAccessible::Text t, const QString &text);
     QString text(QAccessible::Text t) const;

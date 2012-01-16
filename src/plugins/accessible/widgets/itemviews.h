@@ -78,7 +78,6 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     void *interface_cast(QAccessible::InterfaceType t);
 
@@ -160,8 +159,6 @@ public:
 
     int rowCount() const;
 
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
-
     // table interface
     QAccessibleInterface *cellAt(int row, int column) const;
     QString rowDescription(int row) const;
@@ -240,7 +237,6 @@ public:
     QAccessibleInterface *parent() const;
     QAccessibleInterface *child(int index) const;
     int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
 private:
     QAbstractItemView *view;
@@ -285,11 +281,6 @@ public:
         Q_UNUSED(relation);
         Q_UNUSED(iface);
         return -1;
-    }
-
-    QAccessible::Relation relationTo(const QAccessibleInterface *) const
-    {
-        return QAccessible::Unrelated;
     }
 
 private:

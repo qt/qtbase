@@ -450,11 +450,6 @@ int QAccessibleTable::navigate(QAccessible::RelationFlag relation, int index, QA
     return -1;
 }
 
-QAccessible::Relation QAccessibleTable::relationTo(const QAccessibleInterface *) const
-{
-    return QAccessible::Unrelated;
-}
-
 void *QAccessibleTable::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TableInterface)
@@ -557,11 +552,6 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
     }
     // FIXME: add scrollbars and don't just ignore them
     return -1;
-}
-
-QAccessible::Relation QAccessibleTree::relationTo(const QAccessibleInterface *) const
-{
-    return QAccessible::Unrelated;
 }
 
 QAccessibleInterface *QAccessibleTree::cellAt(int row, int column) const
@@ -922,11 +912,6 @@ int QAccessibleTableHeaderCell::navigate(QAccessible::RelationFlag relation, int
     Q_UNUSED(iface);
 
     return -1;
-}
-
-QAccessible::Relation QAccessibleTableHeaderCell::relationTo(const QAccessibleInterface *) const
-{
-    return QAccessible::Unrelated;
 }
 
 #endif // QT_NO_ITEMVIEWS
