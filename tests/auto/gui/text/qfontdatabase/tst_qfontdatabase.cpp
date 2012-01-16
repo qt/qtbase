@@ -63,7 +63,7 @@ private slots:
     void fixedPitch_data();
     void fixedPitch();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     void trickyFonts_data();
     void trickyFonts();
 #endif
@@ -132,7 +132,7 @@ void tst_QFontDatabase::fixedPitch_data()
     QTest::newRow( "Andale Mono" ) << QString( "Andale Mono" ) << true;
     QTest::newRow( "Courier" ) << QString( "Courier" ) << true;
     QTest::newRow( "Courier New" ) << QString( "Courier New" ) << true;
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::newRow( "Script" ) << QString( "Script" ) << false;
     QTest::newRow( "Lucida Console" ) << QString( "Lucida Console" ) << true;
     QTest::newRow( "DejaVu Sans" ) << QString( "DejaVu Sans" ) << false;
@@ -162,7 +162,7 @@ void tst_QFontDatabase::fixedPitch()
     QCOMPARE(fi.fixedPitch(), fixedPitch);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 void tst_QFontDatabase::trickyFonts_data()
 {
     QTest::addColumn<QString>("font");
@@ -247,7 +247,7 @@ void tst_QFontDatabase::addAppFont()
 #endif
     QCOMPARE(fontDbChangedSpy.count(), 1);
 // addApplicationFont is supported on Mac, don't skip the test if it breaks.
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     if (id == -1)
         QSKIP("Skip the test since app fonts are not supported on this system");
 #endif

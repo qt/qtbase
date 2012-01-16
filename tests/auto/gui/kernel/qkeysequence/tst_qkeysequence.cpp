@@ -47,7 +47,7 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
 struct MacSpecialKey {
     int key;
@@ -144,7 +144,7 @@ private slots:
 private:
     QTranslator *ourTranslator;
     QTranslator *qtTranslator;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     static const QString MacCtrl;
     static const QString MacMeta;
     static const QString MacAlt;
@@ -154,7 +154,7 @@ private:
 
 };
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 const QString tst_QKeySequence::MacCtrl = QString(QChar(0x2318));
 const QString tst_QKeySequence::MacMeta = QString(QChar(0x2303));
 const QString tst_QKeySequence::MacAlt = QString(QChar(0x2325));
@@ -195,7 +195,7 @@ void tst_QKeySequence::operatorQString_data()
 
     QTest::newRow( "No modifier" ) << 0 << int(Qt::Key_Aring | Qt::UNICODE_ACCEL) << QString( "\x0c5" );
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::newRow( "Ctrl+Left" ) << int(Qt::CTRL) << int(Qt::Key_Left) << QString( "Ctrl+Left" );
     QTest::newRow( "Ctrl+," ) << int(Qt::CTRL) << int(Qt::Key_Comma) << QString( "Ctrl+," );
     QTest::newRow( "Alt+Left" ) << int(Qt::ALT) << int(Qt::Key_Left) << QString( "Alt+Left" );
@@ -339,7 +339,7 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("zoomOut") << (int)QKeySequence::ZoomOut<< QString("CTRL+-");
     QTest::newRow("whatsthis") << (int)QKeySequence::WhatsThis<< QString("SHIFT+F1");
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("Ctrl+?");
     QTest::newRow("nextChild") << (int)QKeySequence::NextChild << QString("CTRL+}");
     QTest::newRow("previousChild") << (int)QKeySequence::PreviousChild << QString("CTRL+{");
@@ -371,7 +371,7 @@ void tst_QKeySequence::keyBindings()
 {
     QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::Copy);
     QList<QKeySequence> expected;
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     expected  << QKeySequence("CTRL+C");
 #elif defined Q_WS_X11
     expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
@@ -402,7 +402,7 @@ void tst_QKeySequence::mnemonic_data()
 
 void tst_QKeySequence::mnemonic()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("mnemonics are not used on Mac OS X");
 #endif
     QFETCH(QString, string);
@@ -429,7 +429,7 @@ void tst_QKeySequence::toString_data()
     QTest::addColumn<QString>("platformString");
 
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     QTest::newRow("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left") << QString("Ctrl+Left");
     QTest::newRow("Alt+Left") << QString("Alt+Left") << QString("Alt+Left") << QString("Alt+Left");
     QTest::newRow("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left") << QString("Alt+Shift+Left");
@@ -608,7 +608,7 @@ void tst_QKeySequence::translated()
 {
     QFETCH(QString, transKey);
     QFETCH(QString, compKey);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("No need to translate modifiers on Mac OS X");
 #elif defined(Q_OS_WINCE)
     QSKIP("No need to translate modifiers on WinCE");

@@ -453,7 +453,7 @@ QRgb qt_compose_alpha(QRgb source, QRgb dest)
 */
 void tst_QPainter::drawPixmap_comp()
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QSKIP("Mac has other ideas about alpha composition");
 #endif
     QFETCH(uint, dest);
@@ -1363,7 +1363,7 @@ void tst_QPainter::drawRoundRect()
     QFETCH(QRect, rect);
     QFETCH(bool, usePen);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (QTest::currentDataTag() == QByteArray("rect(6, 12, 3, 14) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(6, 17, 3, 25) with pen") ||
         QTest::currentDataTag() == QByteArray("rect(10, 6, 10, 3) with pen") ||

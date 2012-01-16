@@ -98,7 +98,7 @@ private slots:
     void rawFontSetPixelSize_data();
     void rawFontSetPixelSize();
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
+#if defined(Q_WS_X11) || defined(Q_OS_MAC)
     void multipleRawFontsFromData();
 #endif
 private:
@@ -867,7 +867,7 @@ void tst_QRawFont::rawFontSetPixelSize()
     QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
+#if defined(Q_WS_X11) || defined(Q_OS_MAC)
 void tst_QRawFont::multipleRawFontsFromData()
 {
     QFile file(testFont);

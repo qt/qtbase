@@ -613,7 +613,7 @@ void tst_QFont::lastResortFont()
 
 void tst_QFont::styleName()
 {
-#if !defined(Q_WS_MAC)
+#if !defined(Q_OS_MAC)
     QSKIP("Only tested on Mac");
 #else
     QFont font("Helvetica Neue");

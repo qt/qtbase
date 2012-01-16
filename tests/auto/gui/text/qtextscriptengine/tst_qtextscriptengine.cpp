@@ -56,7 +56,7 @@
 
 
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
+#if defined(Q_WS_X11) || defined(Q_OS_MAC)
 #define private public
 #include <private/qtextengine_p.h>
 #include <qtextlayout.h>
@@ -1163,7 +1163,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 
 void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     QString s;
     s.append(QChar(0x0061));
     s.append(QChar(0x0062));
@@ -1213,7 +1213,7 @@ void tst_QTextScriptEngine::mirroredChars_data()
 
 void tst_QTextScriptEngine::mirroredChars()
 {
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     QSKIP("Not supported on Mac");
 #endif
     QFETCH(int, hintingPreference);
