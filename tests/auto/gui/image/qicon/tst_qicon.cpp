@@ -54,9 +54,6 @@ public:
     tst_QIcon();
 
 private slots:
-    void init();
-    void cleanup();
-
     void actualSize_data(); // test with 1 pixmap
     void actualSize();
     void actualSize2_data(); // test with 2 pixmaps with different aspect ratio
@@ -82,30 +79,12 @@ private slots:
 private:
     bool haveImageFormat(QByteArray const&);
 
-    QString oldCurrentDir;
-
     const static QIcon staticIcon;
 };
 
 // Creating an icon statically should not cause a crash. 
 // But we do not officially support this. See QTBUG-8666
 const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
-
-void tst_QIcon::init()
-{
-    QString srcdir(QLatin1String(SRCDIR));
-    if (!srcdir.isEmpty()) {
-        oldCurrentDir = QDir::current().absolutePath();
-        QDir::setCurrent(srcdir);
-    }
-}
-
-void tst_QIcon::cleanup()
-{
-    if (!oldCurrentDir.isEmpty()) {
-        QDir::setCurrent(oldCurrentDir);
-    }
-}
 
 bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 {
@@ -136,7 +115,7 @@ void tst_QIcon::actualSize_data()
     QTest::newRow("resource9") << ":/rect.png" << QSize( 15,  50) << QSize( 15,  30);
     QTest::newRow("resource10") << ":/rect.png" << QSize( 25,  50) << QSize( 20,  40);
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     QTest::newRow("external0") << prefix + "image.png" << QSize(128, 128) << QSize(128, 128);
     QTest::newRow("external1") << prefix + "image.png" << QSize( 64,  64) << QSize( 64,  64);
     QTest::newRow("external2") << prefix + "image.png" << QSize( 32,  64) << QSize( 32,  32);
@@ -191,7 +170,7 @@ void tst_QIcon::actualSize2_data()
 void tst_QIcon::actualSize2()
 {
     QIcon icon;
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
 
     icon.addPixmap(QPixmap(prefix + "image.png"));
     icon.addPixmap(QPixmap(prefix + "rect.png"));
@@ -209,7 +188,7 @@ void tst_QIcon::svgActualSize()
         QSKIP("SVG support is not available");
     }
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     QIcon icon(prefix + "rect.svg");
     QCOMPARE(icon.actualSize(QSize(16, 16)), QSize(16, 2));
     QCOMPARE(icon.pixmap(QSize(16, 16)).size(), QSize(16, 2));
@@ -252,7 +231,7 @@ void tst_QIcon::isNull() {
     QVERIFY(!iconNoFileSuffix.isNull());
     QVERIFY(!iconNoFileSuffix.actualSize(QSize(32, 32)).isValid());
 
-    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    const QString prefix = QFileInfo(QFINDTESTDATA("icons")).absolutePath() + "/";
     // test string constructor with existing file but unsupported format
     QIcon iconUnsupportedFormat = QIcon(prefix + "tst_qicon.cpp");
     QVERIFY(!iconUnsupportedFormat.isNull());
