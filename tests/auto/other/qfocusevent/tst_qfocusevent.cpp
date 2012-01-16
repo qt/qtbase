@@ -136,7 +136,7 @@ void tst_QFocusEvent::initTestCase()
     testFocusWidget->resize( 200,100 );
     testFocusWidget->show();
 // Applications don't get focus when launched from the command line on Mac.
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     testFocusWidget->raise();
 #endif
 }
@@ -279,7 +279,7 @@ void tst_QFocusEvent::checkReason_Popup()
     QVERIFY( !childFocusWidgetTwo->focusOutEventRecieved );
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 QT_BEGIN_NAMESPACE
     extern void qt_set_sequence_auto_mnemonic(bool);
 QT_END_NAMESPACE
@@ -288,7 +288,7 @@ QT_END_NAMESPACE
 void tst_QFocusEvent::checkReason_Shortcut()
 {
     initWidget();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(true);
 #endif
     QLabel* label = new QLabel( "&Test", testFocusWidget );
@@ -318,7 +318,7 @@ void tst_QFocusEvent::checkReason_Shortcut()
     label->hide();
     QVERIFY( childFocusWidgetTwo->hasFocus() );
     QVERIFY( !childFocusWidgetOne->hasFocus() );
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     qt_set_sequence_auto_mnemonic(false);
 #endif
 }

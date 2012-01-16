@@ -1259,7 +1259,7 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iSeparator->role(), QAccessible::Separator);
     QCOMPARE(iHelp->role(), QAccessible::MenuItem);
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
 #ifdef Q_OS_WINCE
     if (!IsValidCEPlatform())
         QSKIP("Tests do not work on Mobile platforms due to native menus");
@@ -2687,7 +2687,7 @@ void tst_QAccessibility::accelerators()
     label->setText(tr("Q &&A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator), QString());
 
-#if !defined(QT_NO_DEBUG) && !defined(Q_WS_MAC)
+#if !defined(QT_NO_DEBUG) && !defined(Q_OS_MAC)
     QTest::ignoreMessage(QtWarningMsg, "QKeySequence::mnemonic: \"Q &A&B\" contains multiple occurrences of '&'");
 #endif
     label->setText(tr("Q &A&B"));
