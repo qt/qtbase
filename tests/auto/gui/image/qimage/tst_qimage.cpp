@@ -261,7 +261,10 @@ void tst_QImage::formatHandlersInput_data()
 {
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
-    const QString prefix = QLatin1String(SRCDIR) + "/images/";
+
+    const QString prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("can not find images directory!");
 
     // add a new line here when a file is added
     QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
