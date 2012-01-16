@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = test copier paster 
-
-
+SUBDIRS = copier paster
+test.depends += $$SUBDIRS
+SUBDIRS += test
