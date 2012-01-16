@@ -80,8 +80,6 @@ private:
 
 tst_QIcoImageFormat::tst_QIcoImageFormat()
 {
-    m_IconPath = QLatin1String(SRCDIR) + "/icons";
-    qDebug() << m_IconPath;
 }
 
 tst_QIcoImageFormat::~tst_QIcoImageFormat()
@@ -101,7 +99,9 @@ void tst_QIcoImageFormat::cleanup()
 
 void tst_QIcoImageFormat::initTestCase()
 {
-
+    m_IconPath = QFINDTESTDATA("icons");
+    if (m_IconPath.isEmpty())
+        QFAIL("Cannot find icons directory containing testdata!");
 }
 
 void tst_QIcoImageFormat::cleanupTestCase()
