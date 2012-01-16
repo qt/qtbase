@@ -228,6 +228,9 @@ void tst_QTemporaryDir::autoRemove()
 void tst_QTemporaryDir::nonWritableCurrentDir()
 {
 #ifdef Q_OS_UNIX
+    if (::geteuid() == 0)
+        QSKIP("not valid running this test as root");
+
     struct ChdirOnReturn
     {
         ChdirOnReturn(const QString& d) : dir(d) {}
