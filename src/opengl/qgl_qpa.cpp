@@ -231,10 +231,10 @@ void QGLContext::swapBuffers() const
     d->guiGlContext->swapBuffers(widget->windowHandle());
 }
 
-void *QGLContext::getProcAddress(const QString &procName) const
+QFunctionPointer QGLContext::getProcAddress(const QString &procName) const
 {
     Q_D(const QGLContext);
-    return (void *)d->guiGlContext->getProcAddress(procName.toAscii());
+    return d->guiGlContext->getProcAddress(procName.toAscii());
 }
 
 void QGLWidget::setContext(QGLContext *context,

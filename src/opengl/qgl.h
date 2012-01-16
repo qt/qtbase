@@ -322,7 +322,7 @@ public:
     static void setTextureCacheLimit(int size);
     static int textureCacheLimit();
 
-    void *getProcAddress(const QString &proc) const;
+    QFunctionPointer getProcAddress(const QString &proc) const;
     QPaintDevice* device() const;
     QColor overlayTransparentColor() const;
 
