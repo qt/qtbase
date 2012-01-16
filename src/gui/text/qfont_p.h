@@ -242,9 +242,10 @@ public:
     EngineCache engineCache;
 
     QFontEngine *findEngine(const Key &key);
-    void insertEngine(const Key &key, QFontEngine *engine);
-    void removeEngine(QFontEngine *engine);
 
+    void updateHitCountAndTimeStamp(Engine &value);
+    void insertEngine(const Key &key, QFontEngine *engine, bool insertMulti = false);
+    void removeEngine(QFontEngine *engine);
 
     private:
     void increaseCost(uint cost);

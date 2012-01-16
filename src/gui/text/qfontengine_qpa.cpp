@@ -46,8 +46,10 @@
 #include <QtCore/QDir>
 #include <QtCore/QBuffer>
 
-#include <QtGui/QPlatformFontDatabase>
 #include <QtGui/private/qpaintengine_raster_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QPlatformFontDatabase>
+#include <QtGui/QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
 
@@ -662,6 +664,20 @@ void QPAGenerator::writeTaggedQFixed(QFontEngineQPA::HeaderTag tag, QFixed value
 QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script, const QStringList &fallbacks)
     : QFontEngineMulti(fallbacks.size() + 1),
       fallbackFamilies(fallbacks), script(_script)
+    , fallbacksQueried(true)
+{
+    init(fe);
+}
+
+QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script)
+    : QFontEngineMulti(2)
+    , script(_script)
+    , fallbacksQueried(false)
+{
+    init(fe);
+}
+
+void QFontEngineMultiQPA::init(QFontEngine *fe)
 {
     Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
     engines[0] = fe;
@@ -672,18 +688,73 @@ QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script, const QSt
 
 void QFontEngineMultiQPA::loadEngine(int at)
 {
+    bool canLoadFallbackEngine = true;
+    if (!fallbacksQueried) {
+        // Original FontEngine to restore after the fill.
+        QFontEngine *fe = engines[0];
+        fallbackFamilies = QGuiApplicationPrivate::instance()->platformIntegration()->fontDatabase()->fallbacksForFamily(fe->fontDef.family, QFont::Style(fe->fontDef.style)
+                                                                                                                         , QFont::AnyStyle, QUnicodeTables::Script(script));
+        if (fallbackFamilies.size() > 1) {
+            engines.fill(0, fallbackFamilies.size() + 1);
+            engines[0] = fe;
+        } else {
+            // Turns out we lied about having any fallback at all.
+            canLoadFallbackEngine = false;
+            engines[1] = fe;
+        }
+        fallbacksQueried = true;
+    }
     Q_ASSERT(at < engines.size());
     Q_ASSERT(engines.at(at) == 0);
-
     QFontDef request = fontDef;
-    request.styleStrategy |= QFont::NoFontMerging;
-    request.family = fallbackFamilies.at(at-1);
-    engines[at] = QFontDatabase::findFont(script,
-                                          /*fontprivate*/0,
-                                          request, false);
+    if (canLoadFallbackEngine) {
+        request.styleStrategy |= QFont::NoFontMerging;
+        request.family = fallbackFamilies.at(at-1);
+        engines[at] = QFontDatabase::findFont(script,
+                                              /*fontprivate = */0,
+                                              request, /*multi = */false);
+    }
     Q_ASSERT(engines[at]);
     engines[at]->ref.ref();
     engines[at]->fontDef = request;
+}
+
+/*
+  This is used indirectly by QtWebKit when using QTextLayout::setRawFont
+
+  The purpose of this is to provide the necessary font fallbacks when drawing complex
+  text. Since QtWebKit ends up repeatedly creating QTextLayout instances and passing them
+  the same raw font over and over again, we want to cache the corresponding multi font engine
+  as it may contain fallback font engines already.
+*/
+QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int script)
+{
+    QFontEngine *engine = 0;
+    QFontCache::Key key(fe->fontDef, script, /*multi = */true);
+    QFontCache *fc = QFontCache::instance();
+    //  We can't rely on the fontDef (and hence the cache Key)
+    //  alone to distinguish webfonts, since these should not be
+    //  accidentally shared, even if the resulting fontcache key
+    //  is strictly identical. See:
+    //   http://www.w3.org/TR/css3-fonts/#font-face-rule
+    const bool faceIsLocal = !fe->faceId().filename.isEmpty();
+    QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
+            end = fc->engineCache.end();
+    while (it != end && it.key() == key) {
+        QFontEngineMulti *cachedEngine = qobject_cast<QFontEngineMulti *>(it.value().data);
+        if (faceIsLocal || (cachedEngine && fe == cachedEngine->engine(0))) {
+            engine = cachedEngine;
+            fc->updateHitCountAndTimeStamp(it.value());
+            break;
+        }
+        it++;
+    }
+    if (!engine) {
+        engine = new QFontEngineMultiQPA(fe, script);
+        QFontCache::instance()->insertEngine(key, engine, /* insertMulti */ !faceIsLocal);
+    }
+    Q_ASSERT(engine);
+    return engine;
 }
 
 QT_END_NAMESPACE

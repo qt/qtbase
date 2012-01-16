@@ -2715,18 +2715,22 @@ QFontEngine *QFontCache::findEngine(const Key &key)
     EngineCache::Iterator it = engineCache.find(key),
                          end = engineCache.end();
     if (it == end) return 0;
-
     // found... update the hitcount and timestamp
-    it.value().hits++;
-    it.value().timestamp = ++current_timestamp;
+    updateHitCountAndTimeStamp(it.value());
+
+    return it.value().data;
+}
+
+void QFontCache::updateHitCountAndTimeStamp(Engine &value)
+{
+    value.hits++;
+    value.timestamp = ++current_timestamp;
 
     FC_DEBUG("QFontCache: found font engine\n"
              "  %p: timestamp %4u hits %3u ref %2d/%2d, type '%s'",
-             it.value().data, it.value().timestamp, it.value().hits,
-             it.value().data->ref.load(), it.value().data->cache_count,
-             it.value().data->name());
-
-    return it.value().data;
+             value.data, value.timestamp, value.hits,
+             value.data->ref.load(), value.data->cache_count,
+             value.data->name());
 }
 
 void QFontCache::removeEngine(QFontEngine *engine)
@@ -2743,14 +2747,17 @@ void QFontCache::removeEngine(QFontEngine *engine)
     }
 }
 
-void QFontCache::insertEngine(const Key &key, QFontEngine *engine)
+void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMulti)
 {
     FC_DEBUG("QFontCache: inserting new engine %p", engine);
 
     Engine data(engine);
     data.timestamp = ++current_timestamp;
 
-    engineCache.insert(key, data);
+    if (insertMulti)
+        engineCache.insertMulti(key, data);
+    else
+        engineCache.insert(key, data);
 
     // only increase the cost if this is the first time we insert the engine
     if (engine->cache_count == 0)

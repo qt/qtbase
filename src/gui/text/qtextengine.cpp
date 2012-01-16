@@ -59,6 +59,7 @@
 #include <qinputmethod.h>
 #include <stdlib.h>
 
+#include "qfontengine_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1708,7 +1709,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         if (feCache.prevFontEngine && feCache.prevFontEngine->type() == QFontEngine::Multi && feCache.prevScript == script) {
             engine = feCache.prevFontEngine;
         } else {
-            engine = QFontDatabase::findFont(script, /*fontPrivate*/0, rawFont.d->fontEngine->fontDef, true);
+            engine = QFontEngineMultiQPA::createMultiFontEngine(rawFont.d->fontEngine, script);
             feCache.prevFontEngine = engine;
             feCache.prevScript = script;
             engine->ref.ref();
@@ -1720,7 +1721,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = feCache.prevScaledFontEngine;
             } else {
                 QFontEngine *scEngine = rawFont.d->fontEngine->cloneWithSize(smallCapsFraction * rawFont.pixelSize());
-                scaledEngine = QFontDatabase::findFont(script, /*fontPrivate*/0, scEngine->fontDef, true);
+                scaledEngine = QFontEngineMultiQPA::createMultiFontEngine(scEngine, script);
                 scaledEngine->ref.ref();
                 feCache.prevScaledFontEngine = scaledEngine;
             }
