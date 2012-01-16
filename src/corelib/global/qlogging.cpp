@@ -147,9 +147,7 @@ QDebug QMessageLogger::debug()
 {
     QDebug dbg = QDebug(QtDebugMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 
@@ -174,9 +172,7 @@ QDebug QMessageLogger::warning()
 {
     QDebug dbg = QDebug(QtWarningMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 #endif
@@ -196,9 +192,7 @@ QDebug QMessageLogger::critical()
 {
     QDebug dbg = QDebug(QtCriticalMsg);
     QMessageLogContext &ctxt = dbg.stream->context;
-    ctxt.file = context.file;
-    ctxt.line = context.line;
-    ctxt.function = context.function;
+    ctxt.copy(context);
     return dbg;
 }
 #endif
@@ -369,6 +363,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
 }
 
 // tokens as recognized in QT_MESSAGE_PATTERN
+static const char categoryTokenC[] = "%{category}";
 static const char typeTokenC[] = "%{type}";
 static const char messageTokenC[] = "%{message}";
 static const char fileTokenC[] = "%{file}";
@@ -438,7 +433,9 @@ QMessagePattern::QMessagePattern()
             // placeholder
             if (lexeme == QLatin1String(typeTokenC)) {
                 tokens[i] = typeTokenC;
-            } else if (lexeme == QLatin1String(messageTokenC))
+            } else if (lexeme == QLatin1String(categoryTokenC))
+                tokens[i] = categoryTokenC;
+            else if (lexeme == QLatin1String(messageTokenC))
                 tokens[i] = messageTokenC;
             else if (lexeme == QLatin1String(fileTokenC))
                 tokens[i] = fileTokenC;
@@ -505,6 +502,8 @@ Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogC
         const char *token = pattern->tokens[i];
         if (token == messageTokenC) {
             message.append(str);
+        } else if (token == categoryTokenC) {
+            message.append(context.category);
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append("debug"); break;
@@ -681,4 +680,11 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
     return old;
 }
 
+void QMessageLogContext::copy(const QMessageLogContext &logContext)
+{
+    this->category = logContext.category;
+    this->file = logContext.file;
+    this->line = logContext.line;
+    this->function = logContext.function;
+}
 QT_END_NAMESPACE
