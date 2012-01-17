@@ -832,14 +832,23 @@ void tst_QStyleSheetStyle::hoverColors()
         QTest::mouseMove ( widget, QPoint(6,6));
         QTest::qWait(60);
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
         frame.render(&image);
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                   (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain background color #e8ff66").toLocal8Bit().constData());
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Numerous failures related to Qt::WA_UnderMouse, see QTBUGT-23685", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                  (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain text color #ff0084").toLocal8Bit().constData());
