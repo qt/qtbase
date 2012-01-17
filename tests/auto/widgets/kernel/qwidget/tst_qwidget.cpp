@@ -225,7 +225,6 @@ private slots:
 
     void widgetAt();
 #ifdef Q_WS_MAC
-    void retainHIView();
     void sheetOpacity();
     void setMask();
 #endif
@@ -3464,98 +3463,6 @@ void tst_QWidget::testDeletionInEventHandlers()
 }
 
 #ifdef Q_WS_MAC
-
-/*
-    Test that retaining and releasing the HIView returned by QWidget::winId()
-    works even if the widget itself is deleted.
-*/
-void tst_QWidget::retainHIView()
-{
-    // Single window
-    {
-        const WidgetViewPair window  = createAndRetain();
-        delete window.first;
-        QVERIFY(testAndRelease(window.second));
-    }
-
-    // Child widget
-    {
-        const WidgetViewPair parent = createAndRetain();
-        const WidgetViewPair child = createAndRetain(parent.first);
-
-        delete parent.first;
-        QVERIFY(testAndRelease(parent.second));
-        QVERIFY(testAndRelease(child.second));
-    }
-
-    // Multiple children
-    {
-        const WidgetViewPair parent = createAndRetain();
-        const WidgetViewPair child1 = createAndRetain(parent.first);
-        const WidgetViewPair child2 = createAndRetain(parent.first);
-
-        delete parent.first;
-        QVERIFY(testAndRelease(parent.second));
-        QVERIFY(testAndRelease(child1.second));
-        QVERIFY(testAndRelease(child2.second));
-    }
-
-    // Grandchild widget
-    {
-        const WidgetViewPair parent = createAndRetain();
-        const WidgetViewPair child = createAndRetain(parent.first);
-        const WidgetViewPair grandchild = createAndRetain(child.first);
-
-        delete parent.first;
-        QVERIFY(testAndRelease(parent.second));
-        QVERIFY(testAndRelease(child.second));
-        QVERIFY(testAndRelease(grandchild.second));
-    }
-
-    // Reparent child widget
-    {
-        const WidgetViewPair parent1 = createAndRetain();
-        const WidgetViewPair parent2 = createAndRetain();
-        const WidgetViewPair child = createAndRetain(parent1.first);
-
-        child.first->setParent(parent2.first);
-
-        delete parent1.first;
-        QVERIFY(testAndRelease(parent1.second));
-        delete parent2.first;
-        QVERIFY(testAndRelease(parent2.second));
-        QVERIFY(testAndRelease(child.second));
-    }
-
-    // Reparent window
-    {
-        const WidgetViewPair window1 = createAndRetain();
-        const WidgetViewPair window2 = createAndRetain();
-        const WidgetViewPair child1 = createAndRetain(window1.first);
-        const WidgetViewPair child2 = createAndRetain(window2.first);
-
-        window2.first->setParent(window1.first);
-
-        delete window2.first;
-        QVERIFY(testAndRelease(window2.second));
-        QVERIFY(testAndRelease(child2.second));
-        delete window1.first;
-        QVERIFY(testAndRelease(window1.second));
-        QVERIFY(testAndRelease(child1.second));
-    }
-
-    // Delete child widget
-    {
-        const WidgetViewPair parent = createAndRetain();
-        const WidgetViewPair child = createAndRetain(parent.first);
-
-        delete child.first;
-        QVERIFY(testAndRelease(child.second));
-        delete parent.first;
-        QVERIFY(testAndRelease(parent.second));
-    }
-}
-
 void tst_QWidget::sheetOpacity()
 {
     QWidget tmpWindow;

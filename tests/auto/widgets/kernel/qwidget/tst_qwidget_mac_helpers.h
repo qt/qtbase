@@ -46,7 +46,3 @@
 
 QString nativeWindowTitle(QWidget *widget, Qt::WindowState state);
 bool nativeWindowModified(QWidget *widget);
-
-typedef QPair<QWidget *, WId> WidgetViewPair;
-bool testAndRelease(const WId);
-WidgetViewPair createAndRetain(QWidget * const parent = 0);

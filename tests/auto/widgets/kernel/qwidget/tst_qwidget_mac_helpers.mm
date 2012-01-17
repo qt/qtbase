@@ -60,24 +60,3 @@ bool nativeWindowModified(QWidget *widget)
 {
     return [qt_mac_window_for(widget) isDocumentEdited];
 }
-
-bool testAndRelease(const WId view)
-{
-    if ([id(view) retainCount] != 2)
-        return false;
-    [id(view) release];
-    [id(view) release];
-    return true;
-}
-
-WidgetViewPair createAndRetain(QWidget * const parent)
-{
-    QWidget * const widget = new QWidget(parent);
-    const WId view = widget->winId();
-    // Retain twice so we can safely call retainCount even if the retain count
-    // is off by one because of a double release.
-    [id(view) retain];
-    [id(view) retain];
-    return qMakePair(widget, view);
-}
-
