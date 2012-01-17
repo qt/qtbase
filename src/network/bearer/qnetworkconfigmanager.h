@@ -90,6 +90,9 @@ Q_SIGNALS:
     void configurationChanged(const QNetworkConfiguration &config);
     void onlineStateChanged(bool isOnline);
     void updateCompleted();
+
+private:
+    Q_DISABLE_COPY(QNetworkConfigurationManager)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)

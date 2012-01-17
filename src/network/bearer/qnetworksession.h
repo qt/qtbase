@@ -129,6 +129,7 @@ protected:
     virtual void disconnectNotify(const char *signal);
 
 private:
+    Q_DISABLE_COPY(QNetworkSession)
     friend class QNetworkSessionPrivate;
     QNetworkSessionPrivate *d;
 };
