@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QDebug
 {
+    friend class QMessageLogger;
     struct Stream {
         Stream(QIODevice *device) : ts(device), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
         Stream(QString *string) : ts(string, QIODevice::WriteOnly), ref(1), type(QtDebugMsg), space(true), message_output(false) {}
@@ -70,6 +71,7 @@ class Q_CORE_EXPORT QDebug
         QtMsgType type;
         bool space;
         bool message_output;
+        QMessageLogContext context;
     } *stream;
 public:
     inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
@@ -81,7 +83,9 @@ public:
         if (!--stream->ref) {
             if(stream->message_output) {
                 QT_TRY {
-                    qt_message_output(stream->type, stream->buffer.toLocal8Bit().data());
+                    qt_message_output(stream->type,
+                                      stream->context,
+                                      stream->buffer.toLocal8Bit().data());
                 } QT_CATCH(std::bad_alloc&) { /* We're out of memory - give up. */ }
             }
             delete stream;
@@ -268,27 +272,6 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     debug << ')';
     return debug.space();
 }
-
-#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
-#else
-#undef qDebug
-inline QNoDebug qDebug() { return QNoDebug(); }
-#define qDebug QT_NO_QDEBUG_MACRO
-#endif
-
-#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qWarning() { return QDebug(QtWarningMsg); }
-#else
-#undef qWarning
-inline QNoDebug qWarning() { return QNoDebug(); }
-#define qWarning QT_NO_QWARNING_MACRO
-#endif
-
-#if !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qCritical() { return QDebug(QtCriticalMsg); }
-#endif
-
 
 QT_END_NAMESPACE
 

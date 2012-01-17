@@ -1637,64 +1637,11 @@ inline void qUnused(T &x) { (void)x; }
 #  define qPrintable(string) QString(string).toLocal8Bit().constData()
 #endif
 
-Q_CORE_EXPORT void qDebug(const char *, ...) /* print debug message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-
-Q_CORE_EXPORT void qWarning(const char *, ...) /* print warning message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-
 class QString;
 Q_CORE_EXPORT QString qt_error_string(int errorCode = -1);
-Q_CORE_EXPORT void qCritical(const char *, ...) /* print critical message */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
-Q_CORE_EXPORT void qFatal(const char *, ...) /* print fatal message and exit */
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-    __attribute__ ((format (printf, 1, 2)))
-#endif
-;
 
 Q_CORE_EXPORT void qErrnoWarning(int code, const char *msg, ...);
 Q_CORE_EXPORT void qErrnoWarning(const char *msg, ...);
-
-/*
-  Forward declarations only.
-
-  In order to use the qDebug() stream, you must #include<QDebug>
-*/
-class QDebug;
-class QNoDebug;
-#if !defined(QT_NO_DEBUG_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qDebug();
-#else
-inline QNoDebug qDebug();
-#endif
-#if !defined(QT_NO_WARNING_OUTPUT) && !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qWarning();
-#else
-inline QNoDebug qWarning();
-#endif
-#if !defined(QT_NO_DEBUG_STREAM)
-Q_CORE_EXPORT_INLINE QDebug qCritical();
-#endif
-
-#define QT_NO_QDEBUG_MACRO while (false) qDebug
-#ifdef QT_NO_DEBUG_OUTPUT
-#  define qDebug QT_NO_QDEBUG_MACRO
-#endif
-#define QT_NO_QWARNING_MACRO while (false) qWarning
-#ifdef QT_NO_WARNING_OUTPUT
-#  define qWarning QT_NO_QWARNING_MACRO
-#endif
-
 
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
@@ -1774,12 +1721,6 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #   endif
 #endif
 
-enum QtMsgType { QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg, QtSystemMsg = QtCriticalMsg };
-
-Q_CORE_EXPORT void qt_message_output(QtMsgType, const char *buf);
-
-typedef void (*QtMsgHandler)(QtMsgType, const char *);
-Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
 typedef void (*QFunctionPointer)();
 
@@ -2498,6 +2439,9 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 
 QT_END_NAMESPACE
 QT_END_HEADER
+
+// qDebug and friends
+#include "qlogging.h"
 
 #endif /* __cplusplus */
 

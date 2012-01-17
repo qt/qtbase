@@ -51,6 +51,7 @@ SOURCES += \
            ../../corelib/codecs/qtextcodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
+           ../../corelib/global/qlogging.cpp \
            ../../corelib/global/qmalloc.cpp \
            ../../corelib/global/qnumeric.cpp \
            ../../corelib/io/qabstractfileengine.cpp \

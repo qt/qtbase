@@ -5,13 +5,15 @@ HEADERS +=  \
 	global/qnamespace.h \
         global/qendian.h \
         global/qnumeric_p.h \
-        global/qnumeric.h
+        global/qnumeric.h \
+        global/qlogging.h
 
 SOURCES += \
 	global/qglobal.cpp \
         global/qlibraryinfo.cpp \
 	global/qmalloc.cpp \
-        global/qnumeric.cpp
+        global/qnumeric.cpp \
+        global/qlogging.cpp
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global

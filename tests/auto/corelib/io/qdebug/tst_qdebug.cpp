@@ -74,11 +74,17 @@ void tst_QDebug::assignment() const
 
 static QtMsgType s_msgType;
 static QByteArray s_msg;
+static QByteArray s_file;
+static int s_line;
+static QByteArray s_function;
 
-static void myMessageHandler(QtMsgType type, const char *msg)
+static void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const char *msg)
 {
     s_msg = msg;
     s_msgType = type;
+    s_file = context.file;
+    s_line = context.line;
+    s_function = context.function;
 }
 
 // Helper class to ensure that the testlib message handler gets
@@ -87,17 +93,17 @@ static void myMessageHandler(QtMsgType type, const char *msg)
 class MessageHandlerSetter
 {
 public:
-    MessageHandlerSetter(QtMsgHandler newMsgHandler)
-        : oldMsgHandler(qInstallMsgHandler(newMsgHandler))
+    MessageHandlerSetter(QMessageHandler newMessageHandler)
+        : oldMessageHandler(qInstallMessageHandler(newMessageHandler))
     { }
 
     ~MessageHandlerSetter()
     {
-        qInstallMsgHandler(oldMsgHandler);
+        qInstallMessageHandler(oldMessageHandler);
     }
 
 private:
-    QtMsgHandler oldMsgHandler;
+    QMessageHandler oldMessageHandler;
 };
 
 /*! \internal
@@ -107,8 +113,12 @@ void tst_QDebug::warningWithoutDebug() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
     { qWarning() << "A qWarning() message"; }
+    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtWarningMsg);
     QCOMPARE(QString::fromLatin1(s_msg.data()), QString::fromLatin1("A qWarning() message "));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
 /*! \internal
@@ -118,16 +128,24 @@ void tst_QDebug::criticalWithoutDebug() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
     { qCritical() << "A qCritical() message"; }
+    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtCriticalMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("A qCritical() message "));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
 void tst_QDebug::debugWithBool() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
     { qDebug() << false << true; }
+    QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtDebugMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("false true "));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
 void tst_QDebug::veryLongWarningMessage() const
@@ -140,8 +158,12 @@ void tst_QDebug::veryLongWarningMessage() const
             test.append(part);
         qWarning("Test output:\n%s\nend", qPrintable(test));
     }
+    QString file = __FILE__; int line = __LINE__ - 2; QString function = Q_FUNC_INFO;
     QCOMPARE(s_msgType, QtWarningMsg);
     QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("Test output:\n")+test+QString::fromLatin1("\nend"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
 void tst_QDebug::qDebugQStringRef() const
@@ -153,8 +175,12 @@ void tst_QDebug::qDebugQStringRef() const
 
         MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inRef; }
+        QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
         QCOMPARE(s_msgType, QtDebugMsg);
         QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("\"input\" "));
+        QCOMPARE(QString::fromLatin1(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QString::fromLatin1(s_function), function);
     }
 
     /* Use a null QStringRef. */
@@ -163,19 +189,23 @@ void tst_QDebug::qDebugQStringRef() const
 
         MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inRef; }
+        QString file = __FILE__; int line = __LINE__ - 1; QString function = Q_FUNC_INFO;
         QCOMPARE(s_msgType, QtDebugMsg);
         QCOMPARE(QString::fromLatin1(s_msg), QString::fromLatin1("\"\" "));
+        QCOMPARE(QString::fromLatin1(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QString::fromLatin1(s_function), function);
     }
 }
 
 void tst_QDebug::defaultMessagehandler() const
 {
     MessageHandlerSetter mhs(0);
-    QtMsgHandler defaultMessageHandler1 = qInstallMsgHandler(0);
-    QtMsgHandler defaultMessageHandler2 = qInstallMsgHandler(myMessageHandler);
+    QMessageHandler defaultMessageHandler1 = qInstallMessageHandler(0);
+    QMessageHandler defaultMessageHandler2 = qInstallMessageHandler(myMessageHandler);
     bool same = (*defaultMessageHandler1 == *defaultMessageHandler2);
     QVERIFY(same);
-    QtMsgHandler messageHandler = qInstallMsgHandler(0);
+    QMessageHandler messageHandler = qInstallMessageHandler(0);
     same = (*messageHandler == *myMessageHandler);
     QVERIFY(same);
 }

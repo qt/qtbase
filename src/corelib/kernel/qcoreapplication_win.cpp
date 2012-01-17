@@ -161,6 +161,10 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
     staticCriticalSection.unlock();
 }
 
+Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogContext &, const char* str)
+{
+    qWinMsgHandler(t, str);
+}
 
 /*****************************************************************************
   qWinMain() - Initializes Windows. Called from WinMain() in qtmain_win.cpp
