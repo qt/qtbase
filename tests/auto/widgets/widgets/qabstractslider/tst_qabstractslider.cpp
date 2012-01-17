@@ -868,6 +868,11 @@ void tst_QAbstractSlider::wheelEvent()
     QWheelEvent event(slider->rect().bottomRight() + distanceFromBottomRight, WHEEL_DELTA * deltaMultiple,
                       Qt::NoButton, k, orientation);
     QVERIFY(applicationInstance->sendEvent(slider,&event));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
+    QEXPECT_FAIL("Different orientation", "QTBUG-23679", Continue);
+    QEXPECT_FAIL("Different orientation2", "QTBUG-23679", Continue);
+#endif
     QCOMPARE(slider->sliderPosition(),expectedSliderPosition);
 
     slider->setSliderPosition(initialSliderPosition);
@@ -877,6 +882,11 @@ void tst_QAbstractSlider::wheelEvent()
     QSignalSpy spy1(slider, SIGNAL(actionTriggered(int)));
     QSignalSpy spy2(slider, SIGNAL(valueChanged(int)));
     QVERIFY(applicationInstance->sendEvent(slider,&event));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
+    QEXPECT_FAIL("Different orientation", "QTBUG-23679", Continue);
+    QEXPECT_FAIL("Different orientation2", "QTBUG-23679", Continue);
+#endif
     QCOMPARE(slider->sliderPosition(),expectedSliderPosition);
     int expectedSignalCount = (initialSliderPosition == expectedSliderPosition) ? 0 : 1;
     QCOMPARE(spy1.count(), expectedSignalCount);
@@ -972,8 +982,14 @@ void tst_QAbstractSlider::sliderPressedReleased()
                                                  QStyle::SubControl(subControl), slider);
 
     QTest::mousePress(slider, Qt::LeftButton, 0, QPoint(rect.center().x() + 2, rect.center().y() + 2));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("scrollbar on the groove", "QTBUG-23679", Continue);
+#endif
     QCOMPARE(spy1.count(), expectedCount);
     QTest::mouseRelease(slider, Qt::LeftButton, 0, rect.center());
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("scrollbar on the groove", "QTBUG-23679", Continue);
+#endif
     QCOMPARE(spy2.count(), expectedCount);
 
     delete slider;
