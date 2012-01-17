@@ -233,12 +233,19 @@ void tst_QWidget_window::tst_windowFilePathAndwindowTitle()
         widget.setWindowTitle(indyWindowTitle);
     }
     widget.setWindowFilePath(filePath);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
+    QEXPECT_FAIL("set title after only, yes AppName", "QTBUG-23682", Continue);
+#endif
     QCOMPARE(finalTitleBefore, widget.windowTitle());
     QCOMPARE(widget.windowFilePath(), filePath);
 
     if (setWindowTitleAfter) {
         widget.setWindowTitle(indyWindowTitle);
     }
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("never Set Title, yes AppName", "QTBUG-23682", Continue);
+#endif
     QCOMPARE(finalTitleAfter, widget.windowTitle());
     QCOMPARE(widget.windowFilePath(), filePath);
 }
