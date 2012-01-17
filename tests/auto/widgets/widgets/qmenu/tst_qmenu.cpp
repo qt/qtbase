@@ -942,6 +942,10 @@ private:
 
 void tst_QMenu::QTBUG_10735_crashWithDialog()
 {
+#ifdef Q_OS_MAC
+    QSKIP("Test currently hangs on Mac OS X, see QTBUG-23677");
+#endif
+
     MyMenu menu;
 
     QTimer::singleShot(1000, &menu, SLOT(activateLastAction()));
