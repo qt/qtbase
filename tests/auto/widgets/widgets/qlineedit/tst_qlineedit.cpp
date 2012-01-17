@@ -273,6 +273,7 @@ private slots:
     void bidiLogicalMovement();
 
     void selectAndCursorPosition();
+    void inputMethod();
     void inputMethodSelection();
     void inputMethodTentativeCommit();
 
@@ -3803,6 +3804,18 @@ void tst_QLineEdit::selectAndCursorPosition()
     QCOMPARE(testWidget->cursorPosition(), 5);
     testWidget->setSelection(5, -5);
     QCOMPARE(testWidget->cursorPosition(), 0);
+}
+
+void tst_QLineEdit::inputMethod()
+{
+    // widget accepts input
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+    QApplication::sendEvent(testWidget, &queryEvent);
+    QCOMPARE(queryEvent.value(Qt::ImEnabled).toBool(), true);
+
+    testWidget->setEnabled(false);
+    QApplication::sendEvent(testWidget, &queryEvent);
+    QCOMPARE(queryEvent.value(Qt::ImEnabled).toBool(), false);
 }
 
 void tst_QLineEdit::inputMethodSelection()

@@ -7929,6 +7929,8 @@ bool QWidget::event(QEvent *event)
                 Qt::InputMethodQuery q = (Qt::InputMethodQuery)(int)(queries & (1<<i));
                 if (q) {
                     QVariant v = inputMethodQuery(q);
+                    if (q == Qt::ImEnabled && !v.isValid() && isEnabled())
+                        v = QVariant(true); // special case for Qt4 compatibility
                     query->setValue(q, v);
                 }
             }

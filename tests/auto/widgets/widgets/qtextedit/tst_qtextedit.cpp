@@ -2407,11 +2407,16 @@ void tst_QTextEdit::inputMethodQuery()
     ed->setText(text);
     ed->selectAll();
 
-    QInputMethodQueryEvent event(Qt::ImQueryInput);
+    QInputMethodQueryEvent event(Qt::ImQueryInput | Qt::ImEnabled);
     QGuiApplication::sendEvent(ed, &event);
     int anchor = event.value(Qt::ImAnchorPosition).toInt();
     int position = event.value(Qt::ImCursorPosition).toInt();
     QCOMPARE(qAbs(position - anchor), text.length());
+    QCOMPARE(event.value(Qt::ImEnabled).toBool(), true);
+
+    ed->setEnabled(false);
+    QGuiApplication::sendEvent(ed, &event);
+    QCOMPARE(event.value(Qt::ImEnabled).toBool(), false);
 }
 
 QTEST_MAIN(tst_QTextEdit)
