@@ -108,10 +108,6 @@ public:
     Type type() const;
     Purpose purpose() const;
 
-#ifdef QT_DEPRECATED
-    // Required to maintain source compatibility with Qt Mobility.
-    QT_DEPRECATED inline QString bearerName() const { return bearerTypeName(); }
-#endif
     BearerType bearerType() const;
     QString bearerTypeName() const;
 

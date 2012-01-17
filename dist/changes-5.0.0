@@ -157,6 +157,8 @@ information about a particular change.
 
 - QTcpServer::incomingConnection() now takes a qintptr instead of an int.
 
+- QNetworkConfiguration::bearerName() removed, and bearerTypeName() should be used.
+
 
 ****************************************************************************
 *                           General                                        *

@@ -397,14 +397,6 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 }
 
 /*!
-    \fn QString QNetworkConfiguration::bearerName() const
-    \deprecated
-
-    This function is deprecated.  It is equivalent to calling bearerTypeName(), however
-    bearerType() should be used in preference.
-*/
-
-/*!
     Returns the type of bearer used by this network configuration.
 
     If the bearer type is \l {QNetworkConfiguration::BearerUnknown}{unknown} the bearerTypeName()
