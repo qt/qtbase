@@ -128,8 +128,8 @@ do {\
 #define QSKIP(statement, ...) \
 do {\
     if (strcmp(#__VA_ARGS__, "") != 0)\
-        QTest::qWarn("The two argument version of QSKIP is deprecated and will be removed soon. "\
-                     "Please update this test by removing the second parameter.", __FILE__, __LINE__);\
+        QTest::qFail("The two argument version of QSKIP is no longer available. "\
+                     "Please update this test by removing the second argument in each QSKIP.", __FILE__, __LINE__);\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
 } while (0)
