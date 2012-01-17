@@ -243,6 +243,10 @@ namespace QXcbAtom {
         AbsMTTrackingID,
         MaxContacts,
 
+#if XCB_USE_MAEMO_WINDOW_PROPERTIES
+        MeegoTouchOrientationAngle,
+#endif
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,

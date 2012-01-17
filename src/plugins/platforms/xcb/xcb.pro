@@ -46,11 +46,14 @@ contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
     LIBS += -lX11 -lX11-xcb
 
-    linux-g++-maemo:contains(QT_CONFIG, xinput2) {
-        # XInput2 support for Harmattan.
-        DEFINES += XCB_USE_XINPUT2_MAEMO
-        SOURCES += qxcbconnection_maemo.cpp
-        LIBS += -lXi
+    linux-g++-maemo {
+        contains(QT_CONFIG, xinput2) {
+            # XInput2 support for Harmattan.
+            DEFINES += XCB_USE_XINPUT2_MAEMO
+            SOURCES += qxcbconnection_maemo.cpp
+            LIBS += -lXi
+        }
+        DEFINES += XCB_USE_MAEMO_WINDOW_PROPERTIES
     }
 }
 

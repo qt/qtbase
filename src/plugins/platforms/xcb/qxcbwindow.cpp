@@ -1148,6 +1148,23 @@ void QXcbWindow::requestActivateWindow()
     connection()->sync();
 }
 
+#if XCB_USE_MAEMO_WINDOW_PROPERTIES
+void QXcbWindow::setOrientation(Qt::ScreenOrientation orientation)
+{
+    int angle = 0;
+    switch (orientation) {
+        case Qt::PortraitOrientation: angle = 270; break;
+        case Qt::LandscapeOrientation: angle = 0; break;
+        case Qt::InvertedPortraitOrientation: angle = 90; break;
+        case Qt::InvertedLandscapeOrientation: angle = 180; break;
+        case Qt::UnknownOrientation: break;
+    }
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::MeegoTouchOrientationAngle), XCB_ATOM_CARDINAL, 32,
+                                   1, &angle));
+}
+#endif
+
 QSurfaceFormat QXcbWindow::format() const
 {
     // ### return actual format

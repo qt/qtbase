@@ -909,6 +909,9 @@ static const char * xcb_atomnames = {
     "Abs MT Pressure\0"
     "Abs MT Tracking ID\0"
     "Max Contacts\0"
+#if XCB_USE_MAEMO_WINDOW_PROPERTIES
+    "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
+#endif
 };
 
 xcb_atom_t QXcbConnection::atom(QXcbAtom::Atom atom)
