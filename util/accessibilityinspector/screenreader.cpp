@@ -44,10 +44,6 @@
 #include "accessibilityscenemanager.h"
 #include <QtGui>
 
-#ifdef Q_OS_MAC
-#include <private/qt_mac_p.h>
-#endif
-
 ScreenReader::ScreenReader(QObject *parent) :
     QObject(parent)
 {
@@ -128,12 +124,6 @@ void ScreenReader::activate()
     }
 }
 
-#ifdef Q_OS_MAC
-
-    // screenreader.mm
-
-#else
-
 void ScreenReader::speak(const QString &text, const QString &/*voice*/)
 {
     QFile f("festivalspeachhack");
@@ -145,5 +135,4 @@ void ScreenReader::speak(const QString &text, const QString &/*voice*/)
     process->start("/usr/bin/festival", QStringList() << "--tts" << "festivalspeachhack");
 }
 
-#endif
 

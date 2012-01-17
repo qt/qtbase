@@ -116,9 +116,8 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
 
         updateItem(item, interface);
         for (int i = 0; i < interface->childCount(); ++i) {
-           QAccessibleInterface *child = 0;
-           int ret = interface->navigate(QAccessible::Child, i + 1, &child);
-           if (ret == 0 && child) {
+           QAccessibleInterface *child = interface->child(i);
+           if (child) {
                updateItem(m_graphicsItems.value(child->object()), child);
                delete child;
             }
@@ -143,8 +142,8 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
         qDebug() << "ObjectCreated ScrollingStart" << object;
         QAccessibleInterface *child = 0;
         for (int i = 0; i < interface->childCount(); ++i) {
-            int ret = interface->navigate(QAccessible::Child, i + 1, &child);
-            if (ret == 0 && child) {
+            QAccessibleInterface *child = interface->child(i);
+            if (child) {
                 m_animatedObjects.insert(child->object());
                 delete child;
             }
@@ -243,7 +242,7 @@ void AccessibilitySceneManager::updateItemFlags(QGraphicsRectItem *item, QAccess
     }
 
     if (m_optionsWidget->hideOffscreenItems()) {
-        if (interface->state() & QAccessible::Offscreen) {
+        if (interface->state().offscreen) {
             shouldShow = false;
         }
     }
@@ -398,7 +397,7 @@ void AccessibilitySceneManager::addGraphicsItems(AccessibilitySceneManager::Tree
     else
         graphicsItem->setBrush(QColor(Qt::white));
 
-    if (item.state & QAccessible::Invisible) {
+    if (item.state.offscreen) {
         QPen linePen;
         linePen.setStyle(Qt::DashLine);
         graphicsItem->setPen(linePen);
@@ -470,7 +469,7 @@ bool AccessibilitySceneManager::isHidden(QAccessibleInterface *interface)
     QAccessibleInterface *current = interface;
     while (current) {
 
-        if (current->state() & QAccessible::Invisible) {
+        if (current->state().invisible) {
             return true;
         }
 

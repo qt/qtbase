@@ -50,8 +50,8 @@
 /*
     A Simple screen reader for touch-based user interfaces.
 
-    Requires a text-to-speach backend. Currently implemented on
-    Mac OS X and using festival on unix.
+    Requires a text-to-speach backend. Currently implemented
+    using festival on unix.
 */
 class OptionsWidget;
 class ScreenReader : public QObject
