@@ -792,9 +792,10 @@ static bool tryFindFallback(const QFileSystemEntry &fname, QFileSystemMetaData &
     int errorCode = GetLastError();
     if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
         WIN32_FIND_DATA findData;
-        if (getFindData(fname.nativeFilePath(), findData)
+        const QString nativeFilePath = fname.nativeFilePath();
+        if (getFindData(nativeFilePath, findData)
             && findData.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
-            data.fillFromFindData(findData, true, fname.isDriveRoot());
+            data.fillFromFindData(findData, true, fname.isDriveRoot(), nativeFilePath);
             filledData = true;
         }
     }
@@ -875,8 +876,9 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         data.knownFlagsMask |= QFileSystemMetaData::LinkType;
         if (data.fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT) {
             WIN32_FIND_DATA findData;
-            if (getFindData(fname.nativeFilePath(), findData))
-                data.fillFromFindData(findData, true);
+            const QString nativeFilePath = fname.nativeFilePath();
+            if (getFindData(nativeFilePath, findData))
+                data.fillFromFindData(findData, true, false, nativeFilePath);
         }
     }
     data.knownFlagsMask |= what;

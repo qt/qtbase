@@ -234,7 +234,7 @@ public:
 
 #if defined(Q_OS_WIN)
     inline void fillFromFileAttribute(DWORD fileAttribute, bool isDriveRoot = false);
-    inline void fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType = false, bool isDriveRoot = false);
+    inline void fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType = false, bool isDriveRoot = false, const QString &nativeFullFilePath = QString());
     inline void fillFromFindInfo(BY_HANDLE_FILE_INFORMATION &fileInfo);
 #endif
 private:
@@ -350,7 +350,7 @@ inline void QFileSystemMetaData::fillFromFileAttribute(DWORD fileAttribute,bool 
     knownFlagsMask |= FileType | DirectoryType | HiddenAttribute | ExistsAttribute;
 }
 
-inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType, bool isDriveRoot)
+inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType, bool isDriveRoot, const QString &nativeFullFilePath)
 {
     fillFromFileAttribute(findData.dwFileAttributes, isDriveRoot);
     creationTime_ = findData.ftCreationTime;
@@ -368,12 +368,23 @@ inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, boo
         knownFlagsMask |=  LinkType;
         entryFlags &= ~LinkType;
 #if !defined(Q_OS_WINCE)
-        if ((fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT)
-            && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
-            entryFlags |= LinkType;
+        if (fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT) {
+            if (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK) {
+                entryFlags |= LinkType;
+            } else if (findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT) {
+                // Junctions and mount points are implemented as NTFS reparse points.
+                // But mount points cannot be treated as symlinks because they might
+                // not have a link target.
+                wchar_t buf[50];
+                QString path = nativeFullFilePath;
+                if (!path.endsWith(QLatin1Char('\\')))
+                    path.append(QLatin1Char('\\'));
+                BOOL isMountPoint = GetVolumeNameForVolumeMountPoint(reinterpret_cast<const wchar_t*>(path.utf16()), buf, sizeof(buf) / sizeof(wchar_t));
+                if (!isMountPoint)
+                    entryFlags |= LinkType;
+            }
         }
 #endif
-
     }
 }
 
