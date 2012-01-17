@@ -476,26 +476,24 @@ QString QNetworkConfiguration::bearerTypeName() const
 
     switch (d->bearerType) {
     case BearerUnknown:
-        return d->bearerTypeName();
+        return QStringLiteral("Unknown");
     case BearerEthernet:
-        return QLatin1String("Ethernet");
+        return QStringLiteral("Ethernet");
     case BearerWLAN:
-        return QLatin1String("WLAN");
+        return QStringLiteral("WLAN");
     case Bearer2G:
-        return QLatin1String("2G");
+        return QStringLiteral("2G");
     case BearerCDMA2000:
-        return QLatin1String("CDMA2000");
+        return QStringLiteral("CDMA2000");
     case BearerWCDMA:
-        return QLatin1String("WCDMA");
+        return QStringLiteral("WCDMA");
     case BearerHSPA:
-        return QLatin1String("HSPA");
+        return QStringLiteral("HSPA");
     case BearerBluetooth:
-        return QLatin1String("Bluetooth");
+        return QStringLiteral("Bluetooth");
     case BearerWiMAX:
-        return QLatin1String("WiMAX");
+        return QStringLiteral("WiMAX");
     }
-
-    return QLatin1String("Unknown");
 }
 
 QT_END_NAMESPACE

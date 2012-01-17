@@ -78,11 +78,6 @@ public:
         serviceNetworkMembers.clear();
     }
 
-    virtual QString bearerTypeName() const
-    {
-        return QLatin1String("Unknown");
-    }
-
     QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
     mutable QMutex mutex;
