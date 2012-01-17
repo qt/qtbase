@@ -3361,9 +3361,6 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "This will fail with Cocoa because paint events are not send in the order expected by graphicsview", Continue);
-#endif
     COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
@@ -4319,7 +4316,9 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
             {
 //                qDebug() << event->region();
 //                qDebug() << updateRegion;
+#ifndef Q_OS_MAC
                 QEXPECT_FAIL("", "The event region doesn't include the original item position region. See QTBUG-4416", Continue);
+#endif
                 QCOMPARE(event->region(), updateRegion);
             }
         }
