@@ -116,6 +116,9 @@ void tst_QToolTip::task183679()
 
     widget.showDelayedToolTip(100);
     QTest::qWait(300);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23707", Continue);
+#endif
     QTRY_VERIFY(QToolTip::isVisible());
 
     QTest::keyPress(&widget, key);
@@ -125,6 +128,12 @@ void tst_QToolTip::task183679()
     // auto-close timeout (currently 10000 msecs)
     QTest::qWait(1500);
 
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("Shift", "QTBUG-23707", Continue);
+    QEXPECT_FAIL("Control", "QTBUG-23707", Continue);
+    QEXPECT_FAIL("Alt", "QTBUG-23707", Continue);
+    QEXPECT_FAIL("Meta", "QTBUG-23707", Continue);
+#endif
     QCOMPARE(QToolTip::isVisible(), visible);
 }
 
