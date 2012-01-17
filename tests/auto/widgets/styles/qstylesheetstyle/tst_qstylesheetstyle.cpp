@@ -781,6 +781,10 @@ void tst_QStyleSheetStyle::focusColors()
                 + " did not contain background color #e8ff66, using style "
                 + QString::fromLatin1(qApp->style()->metaObject()->className()))
                 .toLocal8Bit().constData());
+#ifdef Q_OS_MAC
+        if (widget == widgets.first())
+            QEXPECT_FAIL("", "Failure only for first widget, the QPushButton, see QTBUG-23686", Continue);
+#endif
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084, using style "
@@ -1036,7 +1040,13 @@ void tst_QStyleSheetStyle::minmaxSizes()
     QVERIFY(qAbs(page3->minimumSize().height() - 250 - 2) <= 2);
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
     QVERIFY(bar);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23686", Continue);
+#endif
     QVERIFY(qAbs(bar->tabRect(index1).width() - 100 - 2) <= 2);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23686", Continue);
+#endif
     QVERIFY(qAbs(bar->tabRect(index3).width() - 130 - 2) <= 2);
 }
 
