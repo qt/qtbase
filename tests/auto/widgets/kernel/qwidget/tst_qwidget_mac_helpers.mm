@@ -40,23 +40,28 @@
 ****************************************************************************/
 
 #include "tst_qwidget_mac_helpers.h"
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+#include <QApplication>
+#include <QPlatformNativeInterface>
+#include <private/qcore_mac_p.h>
 
+#include <Cocoa/Cocoa.h>
 
 QString nativeWindowTitle(QWidget *window, Qt::WindowState state)
 {
-    OSWindowRef windowRef = qt_mac_window_for(window);
+    QWindow *qwindow = window->windowHandle();
+    NSWindow *nswindow = (NSWindow *) qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", qwindow);
     QCFString macTitle;
     if (state == Qt::WindowMinimized) {
-        macTitle = reinterpret_cast<CFStringRef>([[windowRef miniwindowTitle] retain]);
+        macTitle = reinterpret_cast<CFStringRef>([[nswindow miniwindowTitle] retain]);
     } else {
-        macTitle = reinterpret_cast<CFStringRef>([[windowRef title] retain]);
+        macTitle = reinterpret_cast<CFStringRef>([[nswindow title] retain]);
     }
     return macTitle;
 }
 
 bool nativeWindowModified(QWidget *widget)
 {
-    return [qt_mac_window_for(widget) isDocumentEdited];
+    QWindow *qwindow = widget->windowHandle();
+    NSWindow *nswindow = (NSWindow *) qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", qwindow);
+    return [nswindow isDocumentEdited];
 }

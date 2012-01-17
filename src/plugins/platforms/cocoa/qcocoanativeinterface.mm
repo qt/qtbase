@@ -61,6 +61,8 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
         return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
     } else if (resourceString == "nsview") {
         return static_cast<QCocoaWindow *>(window->handle())->m_contentView;
+    } else if (resourceString == "nswindow") {
+        return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
     return 0;
 }
