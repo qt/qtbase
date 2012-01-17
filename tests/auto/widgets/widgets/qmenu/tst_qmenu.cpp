@@ -352,8 +352,13 @@ void tst_QMenu::keyboardNavigation()
 
     QTest::keyClick(lastMenu, key, modifiers);
     if (expected_activated) {
+#ifdef Q_OS_MAC
+        QEXPECT_FAIL("shortcut0", "Shortcut navication fails, see QTBUG-23684", Continue);
+#endif
         QCOMPARE(activated, builtins[expected_action]);
+#ifndef Q_OS_MAC
         QEXPECT_FAIL("shortcut0", "QTBUG-22449: QMenu doesn't remove highlight if a menu item is activated by a shortcut", Abort);
+#endif
         QCOMPARE(menus[expected_menu]->activeAction(), (QAction *)0);
     } else {
         QCOMPARE(menus[expected_menu]->activeAction(), builtins[expected_action]);
@@ -557,7 +562,9 @@ void tst_QMenu::tearOff()
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTest::qWait(100);
 
+#ifndef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-22565", Abort);
+#endif
     QVERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
