@@ -56,6 +56,7 @@
 #include <private/qtextureglyphcache_p.h>
 #include <private/qgl_p.h>
 #include <qglshaderprogram.h>
+#include <qglframebufferobject.h>
 
 // #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
@@ -67,10 +68,11 @@ struct QGLGlyphTexture : public QOpenGLSharedResource
 {
     QGLGlyphTexture(const QGLContext *ctx)
         : QOpenGLSharedResource(ctx->contextHandle()->shareGroup())
+        , m_fbo(0)
         , m_width(0)
         , m_height(0)
     {
-        if (ctx && !ctx->d_ptr->workaround_brokenFBOReadBack)
+        if (ctx && QGLFramebufferObject::hasOpenGLFramebufferObjects() && !ctx->d_ptr->workaround_brokenFBOReadBack)
             glGenFramebuffers(1, &m_fbo);
 
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
@@ -84,7 +86,7 @@ struct QGLGlyphTexture : public QOpenGLSharedResource
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
         qDebug("~QGLGlyphTexture() %p for context %p.", this, ctx);
 #endif
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+        if (m_fbo)
             glDeleteFramebuffers(1, &m_fbo);
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);

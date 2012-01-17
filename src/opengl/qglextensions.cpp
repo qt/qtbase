@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qgl_p.h"
+#include <qglframebufferobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -395,9 +396,6 @@ bool qt_resolve_version_2_0_functions(QGLContext *ctx)
         gl2supported = false;
 
     if (!qt_resolve_version_1_3_functions(ctx))
-        gl2supported = false;
-
-    if (!qt_resolve_framebufferobject_extensions(ctx))
         gl2supported = false;
 
     if (glStencilOpSeparate)
