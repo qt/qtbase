@@ -599,6 +599,11 @@ void tst_QPushButton::sizeHint()
 {
     QFETCH(QString, stylename);
 
+#ifdef Q_OS_MAC
+    if (stylename == "mac")
+        QSKIP("QStyleFactory cannot create the Mac style, see QTBUG-23680");
+#endif
+
     QStyle *style = QStyleFactory::create(stylename);
     if (!style)
         QFAIL(qPrintable(QString::fromLatin1("Cannot create style: %1").arg(stylename)));
