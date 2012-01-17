@@ -82,6 +82,31 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
 }
 
 /*!
+    Constructs a QDBusServer with the given \a parent. The server will listen
+    for connections in \c {/tmp}.
+*/
+QDBusServer::QDBusServer(QObject *parent)
+    : QObject(parent)
+{
+    const QString address = QLatin1String("unix:tmpdir=/tmp");
+
+    if (!qdbus_loadLibDBus()) {
+        d = 0;
+        return;
+    }
+    d = new QDBusConnectionPrivate(this);
+
+    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+    QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(d)), d);
+
+    QObject::connect(d, SIGNAL(newServerConnection(QDBusConnection)),
+                     this, SIGNAL(newConnection(QDBusConnection)));
+
+    QDBusErrorInternal error;
+    d->setServer(q_dbus_server_listen(address.toUtf8().constData(), error), error);
+}
+
+/*!
     Destructs a QDBusServer
 */
 QDBusServer::~QDBusServer()
