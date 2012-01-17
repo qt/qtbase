@@ -47,10 +47,13 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QHash>
+#include <QtCore/QDir>
+#include <QtCore/QDirIterator>
 
 #include <QtTest/QTest>
 
 #include <QtCore/QDebug>
+#include "../../../../shared/filesystem.h"
 
 class tst_QAbstractFileEngine
     : public QObject
@@ -65,6 +68,8 @@ private slots:
     void fileIO_data();
     void fileIO();
 
+    void mounting_data();
+    void mounting();
 private:
     QStringList filesForRemoval;
 };
@@ -74,7 +79,7 @@ class ReferenceFileEngine
 {
 public:
     ReferenceFileEngine(const QString &fileName)
-        : fileName_(fileName)
+        : fileName_(QDir::cleanPath(fileName))
         , position_(-1)
         , openForRead_(false)
         , openForWrite_(false)
@@ -491,6 +496,60 @@ private:
     mutable QSharedPointer<File> openFile_;
 };
 
+class MountingFileEngine : public QFSFileEngine
+{
+public:
+    class Iterator : public QAbstractFileEngineIterator
+    {
+    public:
+        Iterator(QDir::Filters filters, const QStringList &filterNames)
+            : QAbstractFileEngineIterator(filters, filterNames)
+        {
+            names.append("foo");
+            names.append("bar");
+            index = -1;
+        }
+        QString currentFileName() const
+        {
+            return names.at(index);
+        }
+        bool hasNext() const
+        {
+            return index < names.size() - 1;
+        }
+        QString next()
+        {
+            if (!hasNext())
+                return QString();
+            ++index;
+            return currentFilePath();
+        }
+        QStringList names;
+        int index;
+    };
+    MountingFileEngine(QString fileName)
+        : QFSFileEngine(fileName)
+    {
+    }
+    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+    {
+        return new Iterator(filters, filterNames);
+    }
+    FileFlags fileFlags(FileFlags type) const
+    {
+        if (fileName(DefaultName).endsWith(".tar")) {
+            FileFlags ret = QFSFileEngine::fileFlags(type);
+            //make this file in file system appear to be a directory
+            ret &= ~FileType;
+            ret |= DirectoryType;
+            return ret;
+        } else {
+            //file inside the archive
+            return ExistsFlag | FileType;
+        }
+    }
+};
+
 QMutex ReferenceFileEngine::fileSystemMutex;
 QHash<uint, QString> ReferenceFileEngine::fileSystemUsers, ReferenceFileEngine::fileSystemGroups;
 QHash<QString, QSharedPointer<ReferenceFileEngine::File> > ReferenceFileEngine::fileSystem;
@@ -500,6 +559,8 @@ class FileEngineHandler
 {
     QAbstractFileEngine *create(const QString &fileName) const
     {
+        if (fileName.endsWith(".tar") || fileName.contains(".tar/"))
+            return new MountingFileEngine(fileName);
         if (fileName.startsWith("QFSFileEngine:"))
             return new QFSFileEngine(fileName.mid(14));
         if (fileName.startsWith("reference-file-engine:"))
@@ -801,6 +862,36 @@ void tst_QAbstractFileEngine::fileIO()
     //
     // File content is: readContent
     //
+}
+
+void tst_QAbstractFileEngine::mounting_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::newRow("native") << "test.tar";
+    QTest::newRow("Forced QFSFileEngine") << "QFSFileEngine:test.tar";
+}
+
+void tst_QAbstractFileEngine::mounting()
+{
+    FileSystem fs;
+    QVERIFY(fs.createFile("test.tar"));
+    FileEngineHandler handler;
+
+    QFETCH(QString, fileName);
+
+    QVERIFY(QFileInfo(fileName).isDir());
+    QDir dir(fileName);
+    QCOMPARE(dir.entryList(), (QStringList() << "bar" << "foo"));
+    QDir dir2;
+    bool found = false;
+    foreach (QFileInfo info, dir2.entryInfoList()) {
+        if (info.fileName() == QLatin1String("test.tar")) {
+            QVERIFY(!found);
+            found = true;
+            QVERIFY(info.isDir());
+        }
+    }
+    QVERIFY(found);
 }
 
 QTEST_APPLESS_MAIN(tst_QAbstractFileEngine)
