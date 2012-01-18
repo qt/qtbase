@@ -6,6 +6,7 @@ SUBDIRS=\
    global \
    io \
    itemmodels \
+   json \
    kernel \
    plugin \
    statemachine \

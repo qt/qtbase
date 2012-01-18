@@ -1,0 +1,118 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \group json
+    \title JSON Classes
+*/
+
+/*!
+    \page json.html
+    \title JSON Support in Qt
+    \ingroup qt-basic-concepts
+    \brief An overview over the JSON support in Qt.
+
+    \ingroup frameworks-technologies
+
+    \keyword JSON
+
+    Qt provides support for dealing with JSON data. JSON is a
+    format to encode object data derived from Javascript, but
+    now widely used as a data exchange format on the internet.
+
+    The JSON support in Qt provides an easy to use C++ API to parse,
+    modify and save JSON data. It also contains support for saving this
+    data in a binary format that is directly mmap'able and very fast to
+    access.
+
+    More details about the JSON data format can be found at \link json.org
+    and in \l{http://tools.ietf.org/html/rfc4627}{RFC-4627}.
+
+    \tableofcontents
+
+    \section1 Overview
+
+    JSON is a format to store structured data. It has 6 basic data types:
+
+    \list
+    \o bool
+    \o double
+    \o string
+    \o array
+    \o object
+    \o null
+    \endlist
+
+    Any value can be any of the above type. A boolean value is represented by the
+    strings true or false in JSON. JSON doesn't explicitly specify the valid range
+    for numbers, but the support in Qt is limited to the valid range and precision of
+    doubles. A string can be any valid unicode string. An array is a list of values, and an
+    object is a dictionary of key/value pairs. All keys in an object are strings, and
+    an object cannot contain any duplicated keys.
+
+    The text representation, of JSON encloses arrays in square brackets ([ ... ]) and
+    objects in curly brackets ({ ... }). The different entries in arrays and objects
+    are separated by commas. The separator between keys and values in an object is a
+    colon (:).
+
+    A simple JSON document encoding a person, its age, address and phone numbers could
+    look like:
+
+    \code
+    {
+        "FirstName": "John",
+        "LastName": "Doe",
+        "Age": 43,
+        "Address": {
+            "Street": "Downing Street 10",
+            "City": "London",
+            "Country": "Great Britain"
+        },
+        "Phone numbers": [
+            "+44 1234567",
+            "+44 2345678"
+        ]
+    }
+    \endcode
+
+    The above example consists of an object with 5 key/value pairs. Two of the values are strings,
+    one is a number, one is another object and the last one an array.
+
+    A valid JSON document is either an array or an object, so a document always starts
+    with a square or curly bracket.
+
+    The JSON support in Qt consists of a set of 4 classes.
+
+
+    \section1 The JSON Classes
+
+    The JSON support in Qt consists of these classes:
+
+    \annotatedlist json
+
+    All JSON classes are value based, implicitly shared classes.
+*/
