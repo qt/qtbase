@@ -86,9 +86,7 @@ struct QScopedPointerPodDeleter
 template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
-#ifndef Q_CC_NOKIAX86
     typedef T *QScopedPointer:: *RestrictedBool;
-#endif
 public:
     explicit inline QScopedPointer(T *p = 0) : d(p)
     {
@@ -118,7 +116,7 @@ public:
         return !d;
     }
 
-#if defined(Q_CC_NOKIAX86) || defined(Q_QDOC)
+#if defined(Q_QDOC)
     inline operator bool() const
     {
         return isNull() ? 0 : &QScopedPointer::d;

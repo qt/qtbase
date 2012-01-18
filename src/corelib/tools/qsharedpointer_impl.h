@@ -130,9 +130,7 @@ namespace QtSharedPointer {
     template <class T>
     class Basic
     {
-#ifndef Q_CC_NOKIAX86
         typedef T *Basic:: *RestrictedBool;
-#endif
     public:
         typedef T Type;
         typedef T element_type;
@@ -145,11 +143,7 @@ namespace QtSharedPointer {
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
-#ifndef Q_CC_NOKIAX86
         inline operator RestrictedBool() const { return isNull() ? 0 : &Basic::value; }
-#else
-        inline operator bool() const { return isNull() ? 0 : &Basic::value; }
-#endif
         inline bool operator !() const { return isNull(); }
         inline T &operator*() const { return *data(); }
         inline T *operator->() const { return data(); }
@@ -563,9 +557,7 @@ public:
 template <class T>
 class QWeakPointer
 {
-#ifndef Q_CC_NOKIAX86
     typedef T *QWeakPointer:: *RestrictedBool;
-#endif
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
@@ -578,11 +570,7 @@ public:
     typedef qptrdiff difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref.load() == 0 || value == 0; }
-#ifndef Q_CC_NOKIAX86
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
-#else
-    inline operator bool() const { return isNull() ? 0 : &QWeakPointer::value; }
-#endif
     inline bool operator !() const { return isNull(); }
     inline T *data() const { return d == 0 || d->strongref.load() == 0 ? 0 : value; }
 

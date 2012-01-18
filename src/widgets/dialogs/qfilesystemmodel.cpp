@@ -402,8 +402,6 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     {
         if (!pathElements.at(0).contains(QLatin1String(":"))) {
-            // The reason we express it like this instead of with anonymous, temporary
-            // variables, is to workaround a compiler crash with Q_CC_NOKIAX86.
             QString rootPath = QDir(longPath).rootPath();
             pathElements.prepend(rootPath);
         }

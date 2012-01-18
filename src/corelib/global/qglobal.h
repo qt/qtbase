@@ -760,9 +760,6 @@ namespace QT_NAMESPACE {}
 #  endif
 #  define Q_NO_USING_KEYWORD /* ### check "using" status */
 
-#elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
-#  define Q_CC_NOKIAX86
-
 #else
 #  error "Qt has not been tested with this compiler - talk to qt-info@nokia.com"
 #endif
@@ -1220,7 +1217,7 @@ class QDataStream;
 #endif
 
 #ifndef Q_DECL_EXPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1231,7 +1228,7 @@ class QDataStream;
 #  endif
 #endif
 #ifndef Q_DECL_IMPORT
-#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_RVCT)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
@@ -1797,7 +1794,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #   endif
     /* The MIPSpro and RVCT compilers postpones macro expansion,
        and therefore macros must be in scope when being used. */
-#   if !defined(Q_CC_MIPS) && !defined(Q_CC_RVCT) && !defined(Q_CC_NOKIAX86)
+#   if !defined(Q_CC_MIPS) && !defined(Q_CC_RVCT)
 #       undef QT_STRINGIFY2
 #       undef QT_STRINGIFY
 #   endif
