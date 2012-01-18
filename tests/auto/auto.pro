@@ -20,5 +20,4 @@ cross_compile:                              SUBDIRS -= tools
 # disable 'make check' on Mac OS X for the following subdirs for the time being
 mac {
     network.CONFIG += no_check_target
-    widgets.CONFIG += no_check_target
 }
