@@ -232,7 +232,7 @@ void QGenericEngine::doRequestUpdate()
             name = interface.name();
 
         QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
-        if((interface.flags() & QNetworkInterface::IsUp) && !interface.addressEntries().isEmpty())
+        if ((interface.flags() & QNetworkInterface::IsRunning) && !interface.addressEntries().isEmpty())
             state |= QNetworkConfiguration::Active;
 
         if (accessPointConfigurations.contains(id)) {
