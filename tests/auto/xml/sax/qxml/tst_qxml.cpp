@@ -196,7 +196,10 @@ void tst_QXml::interpretedAs0D() const
                            QChar(0x010D) + 
                            QLatin1String("reated-by=\"an attr value\"/>"));
 
-    QFile f("0x010D.xml");
+    QString testFile = QFINDTESTDATA("0x010D.xml");
+    if (testFile.isEmpty())
+        QFAIL("Cannot find test file 0x010D.xml!");
+    QFile f(testFile);
     QVERIFY(f.open(QIODevice::ReadOnly));
     QXmlInputSource data(&f);
 

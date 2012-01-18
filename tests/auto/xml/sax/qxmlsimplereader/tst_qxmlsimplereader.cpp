@@ -141,7 +141,7 @@ class tst_QXmlSimpleReader : public QObject
 	~tst_QXmlSimpleReader();
 
     private slots:
-
+        void initTestCase();
 	void testGoodXmlFile();
 	void testGoodXmlFile_data();
 	void testBadXmlFile();
@@ -164,6 +164,7 @@ class tst_QXmlSimpleReader : public QObject
     private:
         static QDomDocument fromByteArray(const QString &title, const QByteArray &ba, bool *ok);
         XmlServer *server;
+        QString prefix;
 };
 
 tst_QXmlSimpleReader::tst_QXmlSimpleReader()
@@ -209,6 +210,14 @@ public:
     }
 
 };
+
+void tst_QXmlSimpleReader::initTestCase()
+{
+    prefix = QFileInfo(QFINDTESTDATA("xmldocs")).absolutePath();
+    if (prefix.isEmpty())
+        QFAIL("Cannot find xmldocs testdata!");
+    QDir::setCurrent(prefix);
+}
 
 void tst_QXmlSimpleReader::idsInParseException1()
 {
