@@ -61,6 +61,7 @@ struct QWindowsScreenData
     int depth;
     QImage::Format format;
     bool primary;
+    QString name;
 };
 
 class QWindowsScreen : public QPlatformScreen
@@ -76,6 +77,7 @@ public:
     virtual QImage::Format format() const { return m_data.format; }
     virtual QSizeF physicalSize() const { return m_data.physicalSizeMM; }
     virtual QDpi logicalDpi() const { return m_data.dpi; }
+    virtual QString name() const { return m_data.name; }
 
     virtual QWindow *topLevelAt(const QPoint &point) const
         {  return QWindowsScreen::findTopLevelAt(point, CWP_SKIPINVISIBLE);  }

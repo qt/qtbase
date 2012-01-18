@@ -108,6 +108,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data.availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
     data.primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0;
+    data.name = QString::fromWCharArray(info.szDevice);
     result->append(data);
     return TRUE;
 }
