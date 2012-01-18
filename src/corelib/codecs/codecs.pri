@@ -1,23 +1,23 @@
 # Qt core library codecs module
 
 HEADERS += \
-	codecs/qisciicodec_p.h \
-	codecs/qlatincodec_p.h \
-	codecs/qsimplecodec_p.h \
-	codecs/qtextcodec_p.h \
-	codecs/qtextcodec.h \
-	codecs/qtsciicodec_p.h \
-	codecs/qutfcodec_p.h \
-	codecs/qtextcodecplugin.h
+    codecs/qisciicodec_p.h \
+    codecs/qlatincodec_p.h \
+    codecs/qsimplecodec_p.h \
+    codecs/qtextcodec_p.h \
+    codecs/qtextcodec.h \
+    codecs/qtsciicodec_p.h \
+    codecs/qutfcodec_p.h \
+    codecs/qtextcodecplugin.h
 
 SOURCES += \
-	codecs/qisciicodec.cpp \
-	codecs/qlatincodec.cpp \
-	codecs/qsimplecodec.cpp \
-	codecs/qtextcodec.cpp \
-	codecs/qtsciicodec.cpp \
-	codecs/qutfcodec.cpp \
-	codecs/qtextcodecplugin.cpp
+    codecs/qisciicodec.cpp \
+    codecs/qlatincodec.cpp \
+    codecs/qsimplecodec.cpp \
+    codecs/qtextcodec.cpp \
+    codecs/qtsciicodec.cpp \
+    codecs/qutfcodec.cpp \
+    codecs/qtextcodecplugin.cpp
 
 unix {
 	SOURCES += codecs/qfontlaocodec.cpp
@@ -28,7 +28,6 @@ unix {
         } else:contains(QT_CONFIG,gnu-libiconv) {
                 HEADERS += codecs/qiconvcodec_p.h
                 SOURCES += codecs/qiconvcodec.cpp
-
                 DEFINES += GNU_LIBICONV
                 !mac:LIBS_PRIVATE *= -liconv
         } else:contains(QT_CONFIG,sun-libiconv) {
@@ -50,7 +49,7 @@ unix {
                         ../plugins/codecs/jp/qjpunicode.cpp \
                         ../plugins/codecs/jp/qeucjpcodec.cpp \
                         ../plugins/codecs/jp/qjiscodec.cpp \
-                        ../plugins/codecs/jp/qsjiscodec.cpp \ 
+                        ../plugins/codecs/jp/qsjiscodec.cpp \
                         ../plugins/codecs/kr/qeuckrcodec.cpp \
                         ../plugins/codecs/tw/qbig5codec.cpp \
                         ../plugins/codecs/jp/qfontjpcodec.cpp
