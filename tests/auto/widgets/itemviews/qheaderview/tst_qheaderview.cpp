@@ -181,6 +181,7 @@ private slots:
     void QTBUG7833_sectionClicked();
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
+    void QTBUG14242_hideSectionAutoSize();
 
     void initialSortOrderRole();
 
@@ -2070,6 +2071,26 @@ void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
     QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton);
     QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
+}
+
+void tst_QHeaderView::QTBUG14242_hideSectionAutoSize()
+{
+    QTableView qtv;
+    QStandardItemModel amodel(4, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.verticalHeader();
+    hv->setDefaultSectionSize(25);
+    hv->setResizeMode(QHeaderView::ResizeToContents);
+    qtv.show();
+
+    hv->hideSection(0);
+    int afterlength = hv->length();
+
+    int calced_length = 0;
+    for (int u = 0; u < hv->count(); ++u)
+        calced_length += hv->sectionSize(u);
+
+    QVERIFY(calced_length == afterlength);
 }
 
 void tst_QHeaderView::initialSortOrderRole()

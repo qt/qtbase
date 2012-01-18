@@ -517,6 +517,8 @@ void QHeaderView::setOffsetToLastSection()
 int QHeaderView::length() const
 {
     Q_D(const QHeaderView);
+    d->executePostedLayout();
+    d->executePostedResize();
     //Q_ASSERT(d->headerLength() == d->length);
     return d->length;
 }
