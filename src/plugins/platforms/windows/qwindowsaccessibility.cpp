@@ -60,7 +60,7 @@
 #include <QtGui/qplatformnativeinterface_qpa.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qaccessible2.h>
-#include <OleAcc.h>
+#include <oleacc.h>
 
 //#include <uiautomationcoreapi.h>
 #ifndef UiaRootObjectId

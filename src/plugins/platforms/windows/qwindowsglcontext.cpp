@@ -48,8 +48,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QPlatformNativeInterface>
 
-#include <WinGDI.h>
-#include <GL/Gl.h>
+#include <wingdi.h>
+#include <GL/gl.h>
 
 // #define DEBUG_GL
 

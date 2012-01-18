@@ -66,8 +66,8 @@
 #include "qtwindows_additional.h"
 
 #define STRICT_TYPED_ITEMIDS
-#include <ShlObj.h>
-#include <Shlwapi.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 
 // #define USE_NATIVE_COLOR_DIALOG /* Testing purposes only */
 
