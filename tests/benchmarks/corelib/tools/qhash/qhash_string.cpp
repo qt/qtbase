@@ -83,6 +83,7 @@ class tst_QHash : public QObject
 private slots:
     void qhash_qt4();
     void qhash_faster();
+    void javaString();
 
 private:
     QString data();
@@ -125,6 +126,21 @@ void tst_QHash::qhash_faster()
         }
     }
 }
+
+void tst_QHash::javaString()
+{
+    QList<JavaString> items;
+    foreach (const QString &s, data().split(QLatin1Char('\n')))
+        items.append(s);
+    QHash<JavaString, int> hash;
+
+    QBENCHMARK {
+        for (int i = 0, n = items.size(); i != n; ++i) {
+            hash[items.at(i)] = i;
+        }
+    }
+}
+
 
 QTEST_MAIN(tst_QHash)
 

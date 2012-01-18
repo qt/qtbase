@@ -87,4 +87,17 @@ uint qHash(const String &str)
     return h;
 }
 
+uint qHash(const JavaString &str)
+{
+    const unsigned short *p = (unsigned short *)str.constData();
+    const int len = str.size();
+
+    uint h = 0;
+
+    for (int i = 0; i < len; ++i)
+        h = 31 * h + p[i];
+
+    return h;
+}
+
 QT_END_NAMESPACE
