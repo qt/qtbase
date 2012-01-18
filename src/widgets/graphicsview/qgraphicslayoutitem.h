@@ -122,7 +122,7 @@ private:
     friend class QGraphicsLayout;
 };
 
-Q_DECLARE_INTERFACE(QGraphicsLayoutItem, "com.trolltech.Qt.QGraphicsLayoutItem")
+Q_DECLARE_INTERFACE(QGraphicsLayoutItem, "org.qt-project.Qt.QGraphicsLayoutItem")
 
 inline void QGraphicsLayoutItem::setMinimumSize(qreal aw, qreal ah)
 { setMinimumSize(QSizeF(aw, ah)); }

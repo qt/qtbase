@@ -60,7 +60,7 @@ struct Q_WIDGETS_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
 };
 
 #define QIconEngineFactoryInterface_iid \
-    "com.trolltech.Qt.QIconEngineFactoryInterface"
+    "org.qt-project.Qt.QIconEngineFactoryInterface"
 Q_DECLARE_INTERFACE(QIconEngineFactoryInterface, QIconEngineFactoryInterface_iid)
 
 class Q_WIDGETS_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
@@ -82,7 +82,7 @@ struct Q_WIDGETS_EXPORT QIconEngineFactoryInterfaceV2 : public QFactoryInterface
 };
 
 #define QIconEngineFactoryInterfaceV2_iid \
-    "com.trolltech.Qt.QIconEngineFactoryInterfaceV2"
+    "org.qt-project.Qt.QIconEngineFactoryInterfaceV2"
 Q_DECLARE_INTERFACE(QIconEngineFactoryInterfaceV2, QIconEngineFactoryInterfaceV2_iid)
 
 class Q_WIDGETS_EXPORT QIconEnginePluginV2 : public QObject, public QIconEngineFactoryInterfaceV2

@@ -58,7 +58,7 @@ struct Q_WIDGETS_EXPORT QStyleFactoryInterface : public QFactoryInterface
     virtual QStyle *create(const QString &key) = 0;
 };
 
-#define QStyleFactoryInterface_iid "com.trolltech.Qt.QStyleFactoryInterface"
+#define QStyleFactoryInterface_iid "org.qt-project.Qt.QStyleFactoryInterface"
 
 Q_DECLARE_INTERFACE(QStyleFactoryInterface, QStyleFactoryInterface_iid)
 

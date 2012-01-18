@@ -71,7 +71,7 @@ struct Q_NETWORK_EXPORT QBearerEngineFactoryInterface : public QFactoryInterface
     virtual QBearerEngine *create(const QString &key) const = 0;
 };
 
-#define QBearerEngineFactoryInterface_iid "com.trolltech.Qt.QBearerEngineFactoryInterface"
+#define QBearerEngineFactoryInterface_iid "org.qt-project.Qt.QBearerEngineFactoryInterface"
 Q_DECLARE_INTERFACE(QBearerEngineFactoryInterface, QBearerEngineFactoryInterface_iid)
 
 class Q_NETWORK_EXPORT QBearerEnginePlugin : public QObject, public QBearerEngineFactoryInterface

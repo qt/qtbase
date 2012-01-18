@@ -71,7 +71,7 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
     Q_UNUSED(toolbar);
-    return [NSArray arrayWithObject:@"com.trolltech.qt.nstoolbar-qtoolbar"];
+    return [NSArray arrayWithObject:@"org.qt-project.qt.nstoolbar-qtoolbar"];
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar

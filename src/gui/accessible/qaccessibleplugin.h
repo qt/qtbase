@@ -61,7 +61,7 @@ struct Q_GUI_EXPORT QAccessibleFactoryInterface : public QFactoryInterface
     virtual QAccessibleInterface* create(const QString &key, QObject *object) = 0;
 };
 
-#define QAccessibleFactoryInterface_iid "com.trolltech.Qt.QAccessibleFactoryInterface"
+#define QAccessibleFactoryInterface_iid "org.qt-project.Qt.QAccessibleFactoryInterface"
 Q_DECLARE_INTERFACE(QAccessibleFactoryInterface, QAccessibleFactoryInterface_iid)
 
 class QAccessiblePluginPrivate;

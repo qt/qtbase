@@ -88,7 +88,7 @@ private:
     friend class QGraphicsWidget;
 };
 
-Q_DECLARE_INTERFACE(QGraphicsLayout, "com.trolltech.Qt.QGraphicsLayout")
+Q_DECLARE_INTERFACE(QGraphicsLayout, "org.qt-project.Qt.QGraphicsLayout")
 
 #endif
 

@@ -54,10 +54,10 @@ QT_BEGIN_NAMESPACE
 // namespace up the stuff
 #define SS(x) #x
 #define S0(x) SS(x)
-#define S "com.trolltech.qt-" S0(QT_NAMESPACE) ".qmainwindow.qtoolbarInHIToolbar"
-#define SToolbar "com.trolltech.qt-" S0(QT_NAMESPACE) ".hitoolbar-qtoolbar"
-#define SNSToolbar "com.trolltech.qt-" S0(QT_NAMESPACE) ".qtoolbarInNSToolbar"
-#define MacToolbar "com.trolltech.qt-" S0(QT_NAMESPACE) ".qmainwindow.mactoolbar"
+#define S "org.qt-project.qt-" S0(QT_NAMESPACE) ".qmainwindow.qtoolbarInHIToolbar"
+#define SToolbar "org.qt-project.qt-" S0(QT_NAMESPACE) ".hitoolbar-qtoolbar"
+#define SNSToolbar "org.qt-project.qt-" S0(QT_NAMESPACE) ".qtoolbarInNSToolbar"
+#define MacToolbar "org.qt-project.qt-" S0(QT_NAMESPACE) ".qmainwindow.mactoolbar"
 
 static NSString *kQToolBarNSToolbarIdentifier = @SNSToolbar;
 static CFStringRef kQMainWindowMacToolbarID = CFSTR(MacToolbar);
@@ -69,8 +69,8 @@ static CFStringRef kQMainWindowMacToolbarID = CFSTR(MacToolbar);
 #undef MacToolbar
 
 #else
-static NSString *kQToolBarNSToolbarIdentifier = @"com.trolltech.qt.qmainwindow.qtoolbarInNSToolbar";
-static CFStringRef kQMainWindowMacToolbarID = CFSTR("com.trolltech.qt.qmainwindow.mactoolbar");
+static NSString *kQToolBarNSToolbarIdentifier = @"org.qt-project.qt.qmainwindow.qtoolbarInNSToolbar";
+static CFStringRef kQMainWindowMacToolbarID = CFSTR("org.qt-project.qt.qmainwindow.mactoolbar");
 #endif // QT_NAMESPACE
 
 

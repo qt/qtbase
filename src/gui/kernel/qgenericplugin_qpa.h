@@ -60,7 +60,7 @@ QT_MODULE(Gui)
     virtual QObject* create(const QString &name, const QString &spec) = 0;
 };
 
-#define QGenericPluginFactoryInterface_iid "com.trolltech.Qt.QGenericPluginFactoryInterface"
+#define QGenericPluginFactoryInterface_iid "org.qt-project.Qt.QGenericPluginFactoryInterface"
 Q_DECLARE_INTERFACE(QGenericPluginFactoryInterface, QGenericPluginFactoryInterface_iid)
 
 class Q_GUI_EXPORT QGenericPlugin : public QObject, public QGenericPluginFactoryInterface

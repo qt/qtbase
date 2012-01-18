@@ -68,7 +68,7 @@ struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
     virtual QAccessibleBridge *create(const QString& name) = 0;
 };
 
-#define QAccessibleBridgeFactoryInterface_iid "com.trolltech.Qt.QAccessibleBridgeFactoryInterface"
+#define QAccessibleBridgeFactoryInterface_iid "org.qt-project.Qt.QAccessibleBridgeFactoryInterface"
 Q_DECLARE_INTERFACE(QAccessibleBridgeFactoryInterface, QAccessibleBridgeFactoryInterface_iid)
 
 class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface

@@ -426,7 +426,7 @@ public:
 private:
 };
 
-#define QAccessibleInterface_iid "com.trolltech.Qt.QAccessibleInterface"
+#define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
 
 Q_GUI_EXPORT const char *qAccessibleRoleString(QAccessible::Role role);
