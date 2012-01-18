@@ -361,9 +361,6 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     if (inverse & QAccessible::Label)
         relation |= QAccessible::Labelled;
 
-    if(o == object())
-        relation |= QAccessible::Self;
-
     return relation;
 }
 

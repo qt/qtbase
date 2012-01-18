@@ -231,10 +231,6 @@ QAccessible::Relation QAccessibleApplication::relationTo(const QAccessibleInterf
     if (!o)
         return QAccessible::Unrelated;
 
-    if(o == object()) {
-        return QAccessible::Self;
-    }
-
     return QAccessible::Unrelated;
 }
 

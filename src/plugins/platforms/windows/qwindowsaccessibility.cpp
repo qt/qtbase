@@ -694,7 +694,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
     case NAVDIR_LEFT:
     case NAVDIR_RIGHT:
         if (QAccessibleInterface *pIface = accessible->parent()) {
-
+            const int indexOfOurself = pIface->indexOfChild(accessible);
             QRect startg = accessible->rect();
             QPoint startc = startg.center();
             QAccessibleInterface *candidate = 0;
@@ -704,7 +704,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
                 QAccessibleInterface *sibling = 0;
                 sibling = pIface->child(i);
                 Q_ASSERT(sibling);
-                if ((accessible->relationTo(sibling) & QAccessible::Self) || sibling->state().invisible) {
+                if (i == indexOfOurself || sibling->state().invisible) {
                     //ignore ourself and invisible siblings
                     delete sibling;
                     continue;

@@ -306,7 +306,6 @@ public:
 
     enum RelationFlag {
         Unrelated     = 0x00000000,
-        Self          = 0x00000001,
         FocusChild    = 0x00010000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,
