@@ -54,7 +54,8 @@ use warnings;
 # use packages -------------------------------------------------------
 use File::Basename;
 use File::Path 'mkpath';
-use File::Spec::Functions;
+use File::Spec::Functions qw/ :ALL /;
+use File::Temp qw/ :POSIX /;
 use Cwd;
 use Cwd 'abs_path';
 use Config;
@@ -76,7 +77,9 @@ my $generator = $ARGV[3];
 
 our %configtests;
 
-my $qmakeCachePath = catfile($out_basedir, ".qmake.cache");
+my $absOutDir = abs_path($out_basedir);
+my $qmakeCachePath = catfile($absOutDir, '.qmake.cache');
+my $configLogPath = catfile($absOutDir, 'config.log');
 
 my $QMAKE = catfile($qtbasedir, "bin", ($^O =~ /win32/i) ? 'qmake.exe' : 'qmake');
 if (!-x $QMAKE) {
@@ -162,36 +165,51 @@ sub hashesAreDifferent {
     }
 }
 
+
 ######################################################################
-# Syntax:  executeSomething
-# Params:  A list of things.
+# Syntax:  executeLoggedCommand()
+# Params:  path to executable, arguments
 #
-# Purpose: Executes the first arg, passing the list.
-#          stderr is redirected to stdout, and the output is captured.
-# Returns: The output.
+# This function is equivalent to system(), except that the command
+# details and output is placed in the configure log (only).
+#
+# Purpose: run a command and log the output
+# Returns: exit code and output.
 ######################################################################
-sub executeSomething {
-    my ($program, @args) = @_;
+sub executeLoggedCommand {
+    my (@command_with_args) = @_;
 
-    my $pid = open(KID_TO_READ, "-|");
+    # Redirect all stdout, stderr into the config.log
+    my ($save_stdout, $save_stderr);
+    open($save_stdout, '>&', STDOUT) || die "save STDOUT: $!";
+    open($save_stderr, '>&', STDERR) || die "save STDERR: $!";
 
-    my $output;
+    my $tmpName = File::Temp::tempnam(File::Spec->tmpdir(), 'log');
+    open(STDOUT, '>', $tmpName) || die "open $tmpName: $!";
+    open(STDERR, '>&', STDOUT) || die "redirect STDERR to STDOUT: $!";
 
-    if ($pid) {   # parent
-        while (<KID_TO_READ>) {
-            $output = $output . $_;
-        }
-        close(KID_TO_READ) || $! == 0 || warn "\nFailed to execute $program: exited $?";
-    } else {
-        # redirect STDERR to STDOUT
-        open STDERR, ">&STDOUT";
+    print "+ @command_with_args\n";
+    my $exitCode = system(@command_with_args) >> 8;
 
-        # Exec something
-        exec ($program, @args) || die "\nCan't exec $program: $!\n";
-        # NOTREACHED
+    # Put them back.
+    close(STDOUT);
+    close(STDERR);
+    open(STDOUT, '>&', $save_stdout) || die "restoring STDOUT: $!";
+    open(STDERR, '>&', $save_stderr) || die "restoring STDERR: $!";
+
+    # Append output to config log and return it.
+    my ($tmpFile, $configLog);
+    my $out = '';
+    open($tmpFile, '<', $tmpName) || die "open $tmpName: $!";
+    open($configLog, '>>', $configLogPath) || die "open $configLogPath: $!";
+    while (my $line = <$tmpFile>) {
+        print $configLog $line;
+        $out .= $line;
     }
-
-    return $output;
+    close($tmpFile);
+    close($configLog);
+    unlink($tmpName);
+    return ($exitCode, $out);
 }
 
 ######################################################################
@@ -211,12 +229,19 @@ sub executeSomething {
 sub executeTest {
     my ($testName) = @_;
 
+    {
+        my $fh;
+        open($fh, '>>', $configLogPath) || die "open $configLogPath: $!";
+        print $fh 'executing config test "',$testName, "\":\n";
+        close($fh);
+    }
+
     my $oldWorkingDir = getcwd();
     my $ret = 0;
 
     my @QMAKEARGS = ('CONFIG-=debug_and_release', 'CONFIG-=app_bundle');
 
-    my $testOutDir = catdir($out_basedir, 'config.tests', $testName);
+    my $testOutDir = catdir($absOutDir, 'config.tests', $testName);
 
     # Since we might be cross compiling, look for barename (Linux) and .exe (Win32/Symbian)
     my $testOutFile1 = catfile($testOutDir, "$testName.exe");
@@ -236,15 +261,15 @@ sub executeTest {
     # First remove existing stuff (XXX this probably needs generator specific code, but hopefully
     # the target removal below will suffice)
     if (-e "Makefile") {
-        executeSomething($MAKE, 'distclean');
+        executeLoggedCommand($MAKE, 'distclean');
     }
 
     # and any targets that we might find that weren't distcleaned
     unlink $testOutFile1, $testOutFile2;
 
     # Run qmake && make
-    executeSomething($QMAKE, @QMAKEARGS);
-    my $makeOutput = executeSomething(($MAKE));
+    executeLoggedCommand($QMAKE, @QMAKEARGS);
+    my ($makeExitCode, $makeOutput) = executeLoggedCommand($MAKE);
 
     # If make prints "blah blah blah\nSkipped." we consider this a skipped test
     if ($makeOutput !~ qr(^Skipped\.$)ms) {
@@ -256,8 +281,18 @@ sub executeTest {
         $ret = 2;
     }
 
+    my $fh;
+    open($fh, '>>', $configLogPath) || die "open $configLogPath: $!";
+    print $fh 'config test "',$testName, '" completed with result ',$ret, "\n";
+    close($fh);
+
     chdir $oldWorkingDir or die "\nUnable to restore working directory: $!\n";
     return $ret;
+}
+
+# Remove existing config.log
+if (-e $configLogPath) {
+    unlink($configLogPath) || die "unlink $configLogPath: $!";
 }
 
 # Now run configuration tests
@@ -296,6 +331,11 @@ if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
 
     # Turn off buffering
     $| = 1;
+
+    # Remove existing config.log
+    if (-e $configLogPath) {
+        unlink($configLogPath) || die "unlink $configLogPath: $!";
+    }
 
     # Now run the configuration tests
     print "Configuration tests:\n" if (%configtests);
