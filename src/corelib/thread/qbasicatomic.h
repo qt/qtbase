@@ -63,8 +63,9 @@ QT_MODULE(Core)
 // New atomics
 
 template <typename T>
-struct QBasicAtomicInteger
+class QBasicAtomicInteger
 {
+public:
     typedef QAtomicOps<T> Ops;
     // static check that this is a valid integer
     typedef char PermittedIntegerType[QAtomicIntegerTraits<T>::IsInteger ? 1 : -1];
@@ -133,8 +134,9 @@ struct QBasicAtomicInteger
 typedef QBasicAtomicInteger<int> QBasicAtomicInt;
 
 template <typename X>
-struct QBasicAtomicPointer
+class QBasicAtomicPointer
 {
+public:
     typedef X *Type;
     typedef QAtomicOps<Type> Ops;
     typedef typename Ops::Type AtomicType;
