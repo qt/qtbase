@@ -262,9 +262,6 @@ int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
     QObject *targetObject = 0;
 
     switch (relation) {
-    case QAccessible::Self:
-        targetObject = object();
-        break;
     case QAccessible::FocusChild:
         if (QWindow *window = QGuiApplication::activeWindow()) {
             *target = window->accessibleRoot();
