@@ -258,7 +258,7 @@ T QBasicAtomicOps<size>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiv
     asm volatile("lock\n"
                  "xadd %0,%1"
                  : "=r" (result), "+m" (_q_value)
-                 : "0" (valueToAdd * QAtomicAdditiveType<T>::AddScale)
+                 : "0" (T(valueToAdd * QAtomicAdditiveType<T>::AddScale))
                  : "memory");
     return result;
 }
@@ -270,7 +270,7 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
     asm volatile("lock\n"
                  "xadd %0,%1"
                  : "=q" (result), "+m" (_q_value)
-                 : "0" (valueToAdd * QAtomicAdditiveType<T>::AddScale)
+                 : "0" (T(valueToAdd * QAtomicAdditiveType<T>::AddScale))
                  : "memory");
     return result;
 }
