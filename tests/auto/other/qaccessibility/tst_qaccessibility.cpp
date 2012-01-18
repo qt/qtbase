@@ -1685,7 +1685,7 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->childCount(), 0);
     QVERIFY(iface->state().sizeable);
     QVERIFY(iface->state().movable);
-    QCOMPARE(bool(iface->state().focusable), le->isActiveWindow());
+    QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
     QVERIFY(iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
@@ -1714,7 +1714,7 @@ void tst_QAccessibility::lineEditTest()
     QApplication::processEvents();
     QVERIFY(!(iface->state().sizeable));
     QVERIFY(!(iface->state().movable));
-    QCOMPARE(bool(iface->state().focusable), le->isActiveWindow());
+    QVERIFY(iface->state().focusable);
     QVERIFY(iface->state().selectable);
     QVERIFY(iface->state().hasPopup);
     QCOMPARE(bool(iface->state().focused), le->hasFocus());
