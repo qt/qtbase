@@ -3380,6 +3380,9 @@ void tst_QGraphicsProxyWidget::updateAndDelete()
     proxy->update();
     proxy->hide();
     QTRY_COMPARE(view.npaints, 1);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23700", Continue);
+#endif
     QCOMPARE(view.paintEventRegion, expectedRegion);
 
     proxy->show();
