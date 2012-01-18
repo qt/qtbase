@@ -307,11 +307,6 @@ public:
     enum RelationFlag {
         Unrelated     = 0x00000000,
         Self          = 0x00000001,
-
-        Covers        = 0x00001000,
-        Covered       = 0x00002000,
-        GeometryMask  = 0x0000ff00,
-
         FocusChild    = 0x00010000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,

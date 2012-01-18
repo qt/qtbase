@@ -361,34 +361,8 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     if (inverse & QAccessible::Label)
         relation |= QAccessible::Labelled;
 
-    if(o == object()) {
-        return relation | QAccessible::Self;
-    }
-
-    QObject *parent = object()->parent();
-    if (o->parent() == parent) {
-        QAccessibleInterface *sibIface = QAccessible::queryAccessibleInterface(o);
-        Q_ASSERT(sibIface);
-        QRect wg = rect();
-        QRect sg = sibIface->rect();
-        if (wg.intersects(sg)) {
-            QAccessibleInterface *pIface = 0;
-            pIface = sibIface->parent();
-            if (pIface && !(sibIface->state().invisible | state().invisible)) {
-                int wi = pIface->indexOfChild(this);
-                int si = pIface->indexOfChild(sibIface);
-
-                if (wi > si)
-                    relation |= QAccessible::Covers;
-                else
-                    relation |= QAccessible::Covered;
-            }
-            delete pIface;
-        }
-        delete sibIface;
-
-        return relation;
-    }
+    if(o == object())
+        relation |= QAccessible::Self;
 
     return relation;
 }
@@ -422,69 +396,6 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
     QObject *targetObject = 0;
 
     switch (relation) {
-    case QAccessible::Covers:
-        if (entry > 0) {
-            QAccessibleInterface *pIface = parent();
-            if (!pIface)
-                return -1;
-
-            QRect r = rect();
-            int sibCount = pIface->childCount();
-            QAccessibleInterface *sibling = 0;
-            // FIXME: this code looks very suspicious
-            // why start at this index?
-            for (int i = pIface->indexOfChild(this) + 2; i <= sibCount && entry; ++i) {
-                sibling = pIface->child(i - 1);
-                if (!sibling || (sibling->state().invisible)) {
-                    delete sibling;
-                    sibling = 0;
-                    continue;
-                }
-                if (sibling->rect().intersects(r))
-                    --entry;
-                if (!entry)
-                    break;
-                delete sibling;
-                sibling = 0;
-            }
-            delete pIface;
-            *target = sibling;
-            if (*target)
-                return 0;
-        }
-        break;
-    case QAccessible::Covered:
-        if (entry > 0) {
-            QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());
-            if (!pIface)
-                return -1;
-
-            QRect r = rect();
-            int index = pIface->indexOfChild(this);
-            QAccessibleInterface *sibling = 0;
-            // FIXME: why end at index?
-            for (int i = 0; i < index && entry; ++i) {
-                sibling = pIface->child(i);
-                Q_ASSERT(sibling);
-                if (!sibling || (sibling->state().invisible)) {
-                    delete sibling;
-                    sibling = 0;
-                    continue;
-                }
-                if (sibling->rect().intersects(r))
-                    --entry;
-                if (!entry)
-                    break;
-                delete sibling;
-                sibling = 0;
-            }
-            delete pIface;
-            *target = sibling;
-            if (*target)
-                return 0;
-        }
-        break;
-
     // Logical
     case QAccessible::FocusChild:
         {
