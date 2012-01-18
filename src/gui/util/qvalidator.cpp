@@ -131,6 +131,12 @@ QT_BEGIN_NAMESPACE
     \omitvalue Valid
 */
 
+/*!
+    \fn void QValidator::changed()
+
+    This signal is emitted when any property that may affect the validity of
+    a string has changed.
+*/
 
 /*!
     \fn void QIntValidator::topChanged(int top)
@@ -247,7 +253,10 @@ QLocale QValidator::locale() const
 void QValidator::setLocale(const QLocale &locale)
 {
     Q_D(QValidator);
-    d->locale = locale;
+    if (d->locale != locale) {
+        d->locale = locale;
+        emit changed();
+    }
 }
 
 /*!
@@ -452,15 +461,21 @@ void QIntValidator::fixup(QString &input) const
 
 void QIntValidator::setRange(int bottom, int top)
 {
+    bool rangeChanged = false;
     if (b != bottom) {
         b = bottom;
+        rangeChanged = true;
         emit bottomChanged(b);
     }
 
     if (t != top) {
         t = top;
+        rangeChanged = true;
         emit topChanged(t);
     }
+
+    if (rangeChanged)
+        emit changed();
 }
 
 
@@ -697,20 +712,26 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
 void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
 {
+    bool rangeChanged = false;
     if (b != minimum) {
         b = minimum;
+        rangeChanged = true;
         emit bottomChanged(b);
     }
 
     if (t != maximum) {
         t = maximum;
+        rangeChanged = true;
         emit topChanged(t);
     }
 
     if (dec != decimals) {
         dec = decimals;
+        rangeChanged = true;
         emit decimalsChanged(dec);
     }
+    if (rangeChanged)
+        emit changed();
 }
 
 /*!
@@ -772,6 +793,7 @@ void QDoubleValidator::setNotation(Notation newNotation)
     if (d->notation != newNotation) {
         d->notation = newNotation;
         emit notationChanged(d->notation);
+        emit changed();
     }
 }
 
@@ -888,6 +910,7 @@ void QRegExpValidator::setRegExp(const QRegExp& rx)
     if (r != rx) {
         r = rx;
         emit regExpChanged(r);
+        emit changed();
     }
 }
 

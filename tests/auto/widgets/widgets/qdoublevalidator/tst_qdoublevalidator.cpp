@@ -247,25 +247,31 @@ void tst_QDoubleValidator::validate()
 }
 void tst_QDoubleValidator::notifySignals()
 {
+    QLocale::setDefault(QLocale("C"));
+
     QDoubleValidator dv(0.1, 0.9, 10, 0);
     QSignalSpy topSpy(&dv, SIGNAL(topChanged(double)));
     QSignalSpy bottomSpy(&dv, SIGNAL(bottomChanged(double)));
     QSignalSpy decSpy(&dv, SIGNAL(decimalsChanged(int)));
+    QSignalSpy changedSpy(&dv, SIGNAL(changed()));
 
     qRegisterMetaType<QDoubleValidator::Notation>("QDoubleValidator::Notation");
     QSignalSpy notSpy(&dv, SIGNAL(notationChanged(QDoubleValidator::Notation)));
 
     dv.setTop(0.8);
     QCOMPARE(topSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 1);
     QVERIFY(dv.top() == 0.8);
     dv.setBottom(0.2);
     QCOMPARE(bottomSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 2);
     QVERIFY(dv.bottom() == 0.2);
 
     dv.setRange(0.2, 0.7);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 1);
     QCOMPARE(decSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 3);
     QVERIFY(dv.bottom() == 0.2);
     QVERIFY(dv.top() == 0.7);
     QVERIFY(dv.decimals() == 0.);
@@ -273,6 +279,7 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(0.3, 0.7);
     QCOMPARE(topSpy.count(), 2);
     QCOMPARE(bottomSpy.count(), 2);
+    QCOMPARE(changedSpy.count(), 4);
     QVERIFY(dv.bottom() == 0.3);
     QVERIFY(dv.top() == 0.7);
     QVERIFY(dv.decimals() == 0.);
@@ -280,12 +287,14 @@ void tst_QDoubleValidator::notifySignals()
     dv.setRange(0.4, 0.6);
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 5);
     QVERIFY(dv.bottom() == 0.4);
     QVERIFY(dv.top() == 0.6);
     QVERIFY(dv.decimals() == 0.);
 
     dv.setDecimals(10);
     QCOMPARE(decSpy.count(), 2);
+    QCOMPARE(changedSpy.count(), 6);
     QVERIFY(dv.decimals() == 10.);
 
 
@@ -293,13 +302,31 @@ void tst_QDoubleValidator::notifySignals()
     QCOMPARE(topSpy.count(), 3);
     QCOMPARE(bottomSpy.count(), 3);
     QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 7);
     QVERIFY(dv.bottom() == 0.4);
     QVERIFY(dv.top() == 0.6);
     QVERIFY(dv.decimals() == 100.);
 
     dv.setNotation(QDoubleValidator::StandardNotation);
     QCOMPARE(notSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 8);
     QVERIFY(dv.notation() == QDoubleValidator::StandardNotation);
+
+    dv.setRange(dv.bottom(), dv.top(), dv.decimals());
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(decSpy.count(), 3);
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setNotation(dv.notation());
+    QCOMPARE(notSpy.count(), 1);
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setLocale(QLocale("C"));
+    QCOMPARE(changedSpy.count(), 8);
+
+    dv.setLocale(QLocale("en"));
+    QCOMPARE(changedSpy.count(), 9);
 }
 
 void tst_QDoubleValidator::validateIntEquiv_data()

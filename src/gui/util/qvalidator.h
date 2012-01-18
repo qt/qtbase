@@ -76,6 +76,9 @@ public:
     virtual State validate(QString &, int &) const = 0;
     virtual void fixup(QString &) const;
 
+Q_SIGNALS:
+    void changed();
+
 protected:
     QValidator(QObjectPrivate &d, QObject *parent);
     QValidator(QValidatorPrivate &d, QObject *parent);

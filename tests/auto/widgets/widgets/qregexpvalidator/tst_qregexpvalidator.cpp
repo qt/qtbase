@@ -113,11 +113,13 @@ void tst_QRegExpValidator::validate()
 
     QRegExpValidator rv( 0 );
     QSignalSpy spy(&rv, SIGNAL(regExpChanged(const QRegExp&)));
+    QSignalSpy changedSpy(&rv, SIGNAL(changed()));
 
     rv.setRegExp( QRegExp( rx ) );
     int dummy;
     QCOMPARE( (int)rv.validate( value, dummy ), state );
     QCOMPARE(spy.count(), 1);
+    QCOMPARE(changedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QRegExpValidator)
