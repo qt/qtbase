@@ -368,7 +368,7 @@ void tst_QWidgetAction::popup()
     {
         QMenu menu;
         menu.addAction(&action);
-        QTimer::singleShot(0, &menu, SLOT(close()));
+        QTimer::singleShot(100, &menu, SLOT(close()));
         menu.exec();
     }
 
