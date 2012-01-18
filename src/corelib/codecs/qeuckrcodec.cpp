@@ -65,8 +65,8 @@
     QString toUnicode(const char* chars, int len) const;
 */
 
-#include "qeuckrcodec.h"
-#include "cp949codetbl.h"
+#include "qeuckrcodec_p.h"
+#include "cp949codetbl_p.h"
 
 QT_BEGIN_NAMESPACE
 

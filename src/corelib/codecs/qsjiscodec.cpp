@@ -48,7 +48,7 @@
     \internal
 */
 
-#include "qsjiscodec.h"
+#include "qsjiscodec_p.h"
 #include "qlist.h"
 
 QT_BEGIN_NAMESPACE

@@ -73,7 +73,7 @@
  * SUCH DAMAGE.
  */
 
-#include "qeucjpcodec.h"
+#include "qeucjpcodec_p.h"
 
 QT_BEGIN_NAMESPACE
 

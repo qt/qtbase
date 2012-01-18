@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qbig5codec.h"
+#include "qbig5codec_p.h"
 
 QT_BEGIN_NAMESPACE
 

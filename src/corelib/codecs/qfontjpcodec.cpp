@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qfontjpcodec.h"
+#include "qfontjpcodec_p.h"
 
-#include "qjpunicode.h"
+#include "qjpunicode_p.h"
 
 QT_BEGIN_NAMESPACE
 

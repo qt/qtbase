@@ -44,7 +44,7 @@
     \internal
 */
 
-#include "qjpunicode.h"
+#include "qjpunicode_p.h"
 
 #include "qbytearray.h"
 #include <stdlib.h>

@@ -44,7 +44,7 @@
   \internal
 */
 
-#include "qgb18030codec.h"
+#include "qgb18030codec_p.h"
 
 #ifndef QT_NO_TEXTCODEC
 

@@ -71,7 +71,7 @@
 #ifndef QEUCJPCODEC_H
 #define QEUCJPCODEC_H
 
-#include "qjpunicode.h"
+#include "qjpunicode_p.h"
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
 
