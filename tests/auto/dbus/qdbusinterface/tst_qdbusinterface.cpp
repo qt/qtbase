@@ -46,7 +46,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/qvariant.h>
 #include <QtDBus/QtDBus>
-
+#include <qdebug.h>
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
 

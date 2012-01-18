@@ -59,7 +59,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
-#include <qdbusmacros.h>
+#include "qdbusmacros.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -150,16 +150,9 @@ public:
     {
         QString service;
         QString path;
-        QString introspection;
 
         QStringList interfaces;
         QStringList childObjects;
-    };
-
-    struct ObjectTree: public Object
-    {
-        Interfaces interfaceData;
-        Objects childObjectData;
     };
 
 public:
@@ -167,9 +160,6 @@ public:
     static Interfaces parseInterfaces(const QString &xml);
     static Object parseObject(const QString &xml, const QString &service = QString(),
                               const QString &path = QString());
-    static ObjectTree parseObjectTree(const QString &xml,
-                                      const QString &service,
-                                      const QString &path);
 
 private:
     QDBusIntrospection();
