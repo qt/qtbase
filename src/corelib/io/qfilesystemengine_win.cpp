@@ -357,7 +357,7 @@ static QString readSymLink(const QFileSystemEntry &link)
 static QString readLink(const QFileSystemEntry &link)
 {
 #if !defined(Q_OS_WINCE)
-#if !defined(QT_NO_LIBRARY) && !defined(Q_CC_MWERKS)
+#if !defined(QT_NO_LIBRARY)
     QString ret;
 
     bool neededCoInit = false;

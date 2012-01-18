@@ -210,8 +210,6 @@ namespace QT_NAMESPACE {}
 #  else
 #    define Q_OS_WIN32
 #  endif
-#elif defined(__MWERKS__) && defined(__INTEL__)
-#  define Q_OS_WIN32
 #elif defined(__sun) || defined(sun)
 #  define Q_OS_SOLARIS
 #elif defined(hpux) || defined(__hpux)
@@ -330,7 +328,6 @@ namespace QT_NAMESPACE {}
    The compiler, must be one of: (Q_CC_x)
 
      SYM      - Digital Mars C/C++ (used to be Symantec C++)
-     MWERKS   - Metrowerks CodeWarrior
      MSVC     - Microsoft Visual C/C++, Intel C++ for Windows
      BOR      - Borland/Turbo C++
      WAT      - Watcom C++
@@ -366,13 +363,6 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_EXPLICIT_KEYWORD
 #  endif
 #  define Q_NO_USING_KEYWORD
-
-#elif defined(__MWERKS__)
-#  define Q_CC_MWERKS
-#  if defined(__EMU_SYMBIAN_OS__)
-#    define Q_CC_NOKIAX86
-#  endif
-/* "explicit" recognized since 4.0d1 */
 
 #elif defined(_MSC_VER)
 #  define Q_CC_MSVC
@@ -890,7 +880,7 @@ typedef short qint16;              /* 16 bit signed */
 typedef unsigned short quint16;    /* 16 bit unsigned */
 typedef int qint32;                /* 32 bit signed */
 typedef unsigned int quint32;      /* 32 bit unsigned */
-#if defined(Q_OS_WIN) && !defined(Q_CC_GNU) && !defined(Q_CC_MWERKS)
+#if defined(Q_OS_WIN) && !defined(Q_CC_GNU)
 #  define Q_INT64_C(c) c ## i64    /* signed 64 bit constant */
 #  define Q_UINT64_C(c) c ## ui64   /* unsigned 64 bit constant */
 typedef __int64 qint64;            /* 64 bit signed */

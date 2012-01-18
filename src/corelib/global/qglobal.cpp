@@ -1232,14 +1232,6 @@ bool qSharedBuild()
 */
 
 /*!
-    \macro Q_CC_MWERKS
-    \relates <QtGlobal>
-
-    Defined if the application is compiled using Metrowerks
-    CodeWarrior.
-*/
-
-/*!
     \macro Q_CC_MSVC
     \relates <QtGlobal>
 
@@ -1722,20 +1714,6 @@ void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 
 static QtMsgHandler handler = 0;                // pointer to debug handler
 
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
-extern bool qt_is_gui_used;
-static void mac_default_handler(const char *msg)
-{
-    if (qt_is_gui_used) {
-        Str255 pmsg;
-        qt_mac_to_pascal_string(msg, pmsg);
-        DebugStr(pmsg);
-    } else {
-        fprintf(stderr, msg);
-    }
-}
-#endif // Q_CC_MWERKS && Q_OS_MACX
-
 #if !defined(Q_OS_WIN) && !defined(QT_NO_THREAD) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX) && \
     defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L
 namespace {
@@ -1859,9 +1837,7 @@ extern Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str);
 */
 static void qDefaultMsgHandler(QtMsgType, const char *buf)
 {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
-        mac_default_handler(buf);
-#elif defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE)
         QString fstr = QString::fromLatin1(buf);
         fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
