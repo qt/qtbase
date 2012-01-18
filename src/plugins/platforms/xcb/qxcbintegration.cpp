@@ -90,13 +90,14 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif
+    m_nativeInterface.reset(new QXcbNativeInterface);
 
-    m_connections << new QXcbConnection;
+    m_connections << new QXcbConnection(m_nativeInterface.data());
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
         qDebug() << parameters.at(i) << parameters.at(i+1);
         QString display = parameters.at(i) + ':' + parameters.at(i+1);
-        m_connections << new QXcbConnection(display.toAscii().constData());
+        m_connections << new QXcbConnection(m_nativeInterface.data(), display.toAscii().constData());
     }
 
     foreach (QXcbConnection *connection, m_connections)
@@ -104,7 +105,6 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
             screenAdded(screen);
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
-    m_nativeInterface.reset(new QXcbNativeInterface);
     m_inputContext.reset(QPlatformInputContextFactory::create());
     m_accessibility.reset(new QPlatformAccessibility());
 }

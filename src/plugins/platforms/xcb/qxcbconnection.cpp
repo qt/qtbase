@@ -49,11 +49,13 @@
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
 #include "qxcbwmsupport.h"
+#include "qxcbnativeinterface.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
 #include <QTimer>
+#include <QByteArray>
 
 #include <stdio.h>
 #include <errno.h>
@@ -93,9 +95,10 @@ static int nullErrorHandler(Display *, XErrorEvent *)
 }
 #endif
 
-QXcbConnection::QXcbConnection(const char *displayName)
+QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName)
     : m_connection(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
+    , m_nativeInterface(nativeInterface)
 #ifdef XCB_USE_XINPUT2_MAEMO
     , m_xinputData(0)
 #endif
@@ -493,72 +496,77 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         m_callLog.remove(0, i);
     }
 #endif
-    bool handled = true;
+    bool handled = false;
+
+    if (QPlatformNativeInterface::EventFilter filter = m_nativeInterface->eventFilterForEventType(QByteArrayLiteral("xcb_generic_event_t")))
+        handled = filter(event, 0);
 
     uint response_type = event->response_type & ~0x80;
 
-    switch (response_type) {
-    case XCB_EXPOSE:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-    case XCB_BUTTON_PRESS:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-    case XCB_BUTTON_RELEASE:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-    case XCB_MOTION_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
-    case XCB_CONFIGURE_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
-    case XCB_MAP_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
-    case XCB_UNMAP_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
-    case XCB_CLIENT_MESSAGE:
-        handleClientMessageEvent((xcb_client_message_event_t *)event);
-    case XCB_ENTER_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
-    case XCB_LEAVE_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
-    case XCB_FOCUS_IN:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
-    case XCB_FOCUS_OUT:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
-    case XCB_KEY_PRESS:
-        HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
-    case XCB_KEY_RELEASE:
-        HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-    case XCB_MAPPING_NOTIFY:
-        m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
-        break;
-    case XCB_SELECTION_REQUEST:
-    {
-        xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
-        if (sr->selection == atom(QXcbAtom::XdndSelection))
-            m_drag->handleSelectionRequest(sr);
-        else
-            m_clipboard->handleSelectionRequest(sr);
-        break;
-    }
-    case XCB_SELECTION_CLEAR:
-        setTime(((xcb_selection_clear_event_t *)event)->time);
-        m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
-        handled = true;
-        break;
-    case XCB_SELECTION_NOTIFY:
-        setTime(((xcb_selection_notify_event_t *)event)->time);
-        qDebug() << "XCB_SELECTION_NOTIFY";
-        handled = false;
-        break;
-    case XCB_PROPERTY_NOTIFY:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
-        break;
-#ifdef XCB_USE_XINPUT2_MAEMO
-    case GenericEvent:
-        handleGenericEvent((xcb_ge_event_t*)event);
-        break;
-#endif
-    default:
-        handled = false;
-        break;
+    if (!handled) {
+        switch (response_type) {
+        case XCB_EXPOSE:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+        case XCB_BUTTON_PRESS:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
+        case XCB_BUTTON_RELEASE:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
+        case XCB_MOTION_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+        case XCB_CONFIGURE_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+        case XCB_MAP_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
+        case XCB_UNMAP_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
+        case XCB_CLIENT_MESSAGE:
+            handleClientMessageEvent((xcb_client_message_event_t *)event);
+        case XCB_ENTER_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+        case XCB_LEAVE_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+        case XCB_FOCUS_IN:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+        case XCB_FOCUS_OUT:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+        case XCB_KEY_PRESS:
+            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+        case XCB_KEY_RELEASE:
+            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+        case XCB_MAPPING_NOTIFY:
+            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+            break;
+        case XCB_SELECTION_REQUEST:
+        {
+            xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
+            if (sr->selection == atom(QXcbAtom::XdndSelection))
+                m_drag->handleSelectionRequest(sr);
+            else
+                m_clipboard->handleSelectionRequest(sr);
+            break;
+        }
+        case XCB_SELECTION_CLEAR:
+            setTime(((xcb_selection_clear_event_t *)event)->time);
+            m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
+            handled = true;
+            break;
+        case XCB_SELECTION_NOTIFY:
+            setTime(((xcb_selection_notify_event_t *)event)->time);
+            qDebug() << "XCB_SELECTION_NOTIFY";
+            handled = false;
+            break;
+        case XCB_PROPERTY_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
+            break;
+    #ifdef XCB_USE_XINPUT2_MAEMO
+        case GenericEvent:
+            handleGenericEvent((xcb_ge_event_t*)event);
+            break;
+    #endif
+        default:
+            handled = false;
+            break;
+        }
     }
 
     if (!handled) {

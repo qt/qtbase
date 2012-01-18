@@ -66,6 +66,7 @@ class QXcbDrag;
 class QXcbKeyboard;
 class QXcbClipboard;
 class QXcbWMSupport;
+class QXcbNativeInterface;
 
 typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
@@ -289,7 +290,7 @@ class QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    QXcbConnection(const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName = 0);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -390,6 +391,7 @@ private:
     QXcbClipboard *m_clipboard;
     QXcbDrag *m_drag;
     QScopedPointer<QXcbWMSupport> m_wmSupport;
+    QXcbNativeInterface *m_nativeInterface;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
 class QAbstractEventDispatcher;
+class QXcbNativeInterface;
 
 class QXcbIntegration : public QPlatformIntegration
 {
@@ -80,7 +81,7 @@ private:
     QList<QXcbConnection *> m_connections;
 
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
-    QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
+    QScopedPointer<QXcbNativeInterface> m_nativeInterface;
 
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
