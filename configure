@@ -6058,7 +6058,7 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMakeVar add DEFINES QT_NO_CORESERVICES
     fi
 
-    if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ]; then
+    if [ "$PLATFORM_QPA" = "yes" ] && [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ]; then
         if [ "$CFG_XCB" = "no" ] && [ "$CFG_WAYLAND" = "no" ]; then
             if [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_WAYLAND" = "auto" ]; then
                 echo "No QPA platform plugin enabled!"
