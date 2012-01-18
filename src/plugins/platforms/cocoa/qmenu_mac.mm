@@ -776,9 +776,9 @@ void QCocoaMenu::setMenuEnabled(bool enable)
 /*****************************************************************************
   QMenuBar bindings
  *****************************************************************************/
-typedef QHash<QWidget *, QMenuBar *> MenuBarHash;
+typedef QHash<QWidget *, QWeakPointer<QMenuBar> > MenuBarHash;
 Q_GLOBAL_STATIC(MenuBarHash, menubars)
-static QMenuBar *fallback = 0;
+static QWeakPointer<QMenuBar> fallback;
 
 QCocoaMenuBar::QCocoaMenuBar(QMenuBar *a_qtMenuBar) : menu(0), apple_menu(0), qtMenuBar(a_qtMenuBar)
 {
@@ -956,8 +956,8 @@ void QCocoaMenuBar::macCreateMenuBar(QWidget *parent)
 void QCocoaMenuBar::macDestroyMenuBar()
 {
     QCocoaAutoReleasePool pool;
-    if (fallback == qtMenuBar)
-        fallback = 0;
+    if (fallback.data() == qtMenuBar)
+        fallback.clear();
     QWidget *tlw = qtMenuBar->window();
     menubars()->remove(tlw);
 
@@ -1038,7 +1038,7 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
     if (!modalWidget)
         return false;
 
-    if (menuBar && menuBar == menubars()->value(modalWidget))
+    if (menuBar && menuBar == menubars()->value(modalWidget).data())
         // The menu bar is owned by the modal widget.
         // In that case we should enable it:
         return false;
@@ -1098,7 +1098,7 @@ static QMenuBar *findMenubarForWindow(QWidget *w)
 {
     QMenuBar *mb = 0;
     if (w) {
-        mb = menubars()->value(w);
+        mb = menubars()->value(w).data();
 
 #if 0
 // ###
@@ -1111,13 +1111,13 @@ static QMenuBar *findMenubarForWindow(QWidget *w)
         }
 #endif
         while(w && !mb)
-            mb = menubars()->value((w = w->parentWidget()));
+            mb = menubars()->value((w = w->parentWidget())).data();
     }
 
     if (!mb) {
         // We could not find a menu bar for the window. Lets
         // check if we have a global (parentless) menu bar instead:
-        mb = fallback;
+        mb = fallback.data();
     }
 
     return mb;
