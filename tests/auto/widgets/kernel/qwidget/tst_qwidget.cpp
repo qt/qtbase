@@ -56,7 +56,6 @@
 #include <qstyle.h>
 #include <qwidget.h>
 #include <qwindowsstyle.h>
-#include <qinputcontext.h>
 #include <qdesktopwidget.h>
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
@@ -8994,15 +8993,11 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 void tst_QWidget::inputFocus_task257832()
 {
       QLineEdit *widget = new QLineEdit;
-      QInputContext *context = widget->inputContext();
-      if (!context)
-            QSKIP("No input context");
       widget->setFocus();
       widget->winId();    // make sure, widget has been created
-      context->setFocusWidget(widget);
-      QCOMPARE(context->focusWidget(), static_cast<QWidget*>(widget));
+      QCOMPARE(qApp->inputPanel()->inputItem(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
-      QVERIFY(!context->focusWidget());
+      QVERIFY(!qApp->inputPanel()->inputItem());
       delete widget;
 }
 
@@ -9137,24 +9132,19 @@ void tst_QWidget::focusProxyAndInputMethods()
     // and that the input method gets the focus proxy passed
     // as the focus widget instead of the child widget.
     // otherwise input method queries go to the wrong widget
-    QInputContext *inputContext = qApp->inputContext();
-    if (inputContext) {
-        QCOMPARE(inputContext->focusWidget(), toplevel);
+    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
 
-        child->setAttribute(Qt::WA_InputMethodEnabled, false);
-        QVERIFY(!inputContext->focusWidget());
+    child->setAttribute(Qt::WA_InputMethodEnabled, false);
+    QVERIFY(!qApp->inputPanel()->inputItem());
 
-        child->setAttribute(Qt::WA_InputMethodEnabled, true);
-        QCOMPARE(inputContext->focusWidget(), toplevel);
+    child->setAttribute(Qt::WA_InputMethodEnabled, true);
+    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
 
-        child->setEnabled(false);
-        QVERIFY(!inputContext->focusWidget());
+    child->setEnabled(false);
+    QVERIFY(!qApp->inputPanel()->inputItem());
 
-        child->setEnabled(true);
-        QCOMPARE(inputContext->focusWidget(), toplevel);
-    } else {
-        qDebug() << "No input context set, skipping QInputContext::focusWidget() test";
-    }
+    child->setEnabled(true);
+    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
 
     delete toplevel;
 }
