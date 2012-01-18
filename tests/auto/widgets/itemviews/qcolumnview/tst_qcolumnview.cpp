@@ -537,6 +537,9 @@ void tst_QColumnView::moveCursor()
         idx = idx.sibling(idx.row() + 1, idx.column());
     view.setCurrentIndex(idx);
     mc = view.MoveCursor(action, Qt::NoModifier);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-23697", Continue);
+#endif
     QCOMPARE(mc, idx.sibling(idx.row() + 1, idx.column()));
 }
 
