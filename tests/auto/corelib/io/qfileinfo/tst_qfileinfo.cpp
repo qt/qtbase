@@ -1390,7 +1390,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         junction = "mountpoint";
         rootVolume.replace("\\\\?\\","\\??\\");
         FileSystem::createNtfsJunction(rootVolume, junction);
-        QTest::newRow("mountpoint") << junction << false <<  QString() << QFileInfo(junction).canonicalFilePath();
+        QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
     }
 }
 
