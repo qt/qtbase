@@ -39,33 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-
-////////////////////////////////////////////////////////////////////
-
-This benchmark serves as reality check on the idea that hashing the complete
-string is a good idea.
-
-  Executive summary: It is not a good idea.
-
-////////////////////////////////////////////////////////////////////
-
-********* Start testing of tst_QHash *********
-Config: Using QTest library 5.0.0, Qt 5.0.0
-PASS   : tst_QHash::initTestCase()
-RESULT : tst_QHash::qhash_qt4():
-     0.041 msecs per iteration (total: 85, iterations: 2048)
-PASS   : tst_QHash::qhash_qt4()
-RESULT : tst_QHash::qhash_faster():
-     0.0122 msecs per iteration (total: 100, iterations: 8192)
-PASS   : tst_QHash::qhash_faster()
-PASS   : tst_QHash::cleanupTestCase()
-Totals: 4 passed, 0 failed, 0 skipped
-
-////////////////////////////////////////////////////////////////////
-
-*/
-
 #include "main.h"
 
 #include <QFile>
