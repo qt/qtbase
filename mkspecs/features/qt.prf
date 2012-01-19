@@ -1,14 +1,5 @@
 CONFIG *= moc thread
 
-contains(QT, declarative)|contains(QT, declarative-private):!contains(DEFINES, QT_BUILD_QUICK_LIB):!contains(QT, quick):!contains(QT, quick-private) {
-    warning("This project is using the declarative module, but not the quick module.")
-    warning("If you're using QtQuick-specific APIs (QQuickItem, SceneGraph et al), you should add")
-    warning("  QT += quick")
-    warning("to your project's .pro file.")
-    contains(QT, declarative-private):QT += quick-private
-    else:QT += quick
-}
-
 #handle defines
 win32 {
    qt_static:DEFINES += QT_NODLL
