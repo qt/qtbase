@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWindow
-    \brief The QWindow class encapsulates an independent windw in a Windowing System.
+    \brief The QWindow class encapsulates an independent window in a Windowing System.
 
     A window that is supplied a parent become a native child window of
     their parent window.
