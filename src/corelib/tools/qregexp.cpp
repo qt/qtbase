@@ -773,7 +773,7 @@ static QString wc2rx(const QString &wc_str, const bool enableEscaping)
                 if (isEscaping) {
                     rx += QLatin1String("\\\\");
                 } // we insert the \\ later if necessary
-                if (i+1 == wclen) { // the end
+                if (i == wclen) { // the end
                     rx += QLatin1String("\\\\");
                 }
             } else {
