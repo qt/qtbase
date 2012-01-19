@@ -1255,10 +1255,21 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     int lastI = 0;
     while ((i = sl.indexOf(QLatin1Char('+'), i + 1)) != -1) {
         const QString sub = sl.mid(lastI, i - lastI + 1);
-        // Just shortcut the check here if we only have one character.
-        // Rational: A modifier will contain the name AND +, so longer than 1, a length of 1 is just
-        // the remaining part of the shortcut (ei. The 'C' in "Ctrl+C"), so no need to check that.
-        if (sub.length() > 1) {
+        // If we get here the shortcuts contains at least one '+'. We break up
+        // along the following strategy:
+        //      Meta+Ctrl++   ( "Meta+", "Ctrl+", "+" )
+        //      Super+Shift+A ( "Super+", "Shift+" )
+        //      4+3+2=1       ( "4+", "3+" )
+        // In other words, everything we try to handle HAS to be a modifier
+        // except for a single '+' at the end of the string.
+
+        // Only '+' can have length 1.
+        if (sub.length() == 1) {
+            // Make sure we only encounter a single '+' at the end of the accel
+            if (accel.lastIndexOf(QLatin1Char('+')) != accel.length()-1)
+                return Qt::Key_unknown;
+        } else {
+            // Identify the modifier
             bool validModifier = false;
             for (int j = 0; j < modifs.size(); ++j) {
                 const QModifKeyName &mkf = modifs.at(j);
@@ -1268,9 +1279,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                     break; // Shortcut, since if we find an other it would/should just be a dup
                 }
             }
-            // We couldn't match the string with a modifier. This is only
-            // possible if this part is the key. The key is never followed by a
-            // '+'. And if the key is '+' the if() above would have skipped it.
+
             if (!validModifier)
                 return Qt::Key_unknown;
         }
