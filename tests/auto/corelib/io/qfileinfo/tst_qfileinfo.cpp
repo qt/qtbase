@@ -1028,6 +1028,19 @@ void tst_QFileInfo::fileTimes()
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
+#ifdef Q_OS_WIN
+    HKEY key;
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+        0, KEY_READ, &key)) {
+            DWORD disabledAccessTimes = 0;
+            DWORD size = sizeof(DWORD);
+            LONG error = RegQueryValueEx(key, L"NtfsDisableLastAccessUpdate"
+                , NULL, NULL, (LPBYTE)&disabledAccessTimes, &size);
+            if (ERROR_SUCCESS == error && disabledAccessTimes)
+                QEXPECT_FAIL("", "File access times are disabled in windows registry (this is the default setting)", Continue);
+            RegCloseKey(key);
+    }
+#endif
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("simple", "WinCE only stores date of access data, not the time", Continue);
 #endif
