@@ -1734,10 +1734,6 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
                                           OpenMode openMode)
 {
     Q_D(QAbstractSocket);
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->setSocketDescriptor(socketDescriptor, socketState, openMode);
-#endif
 
     d->resetSocketLayer();
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
@@ -1786,13 +1782,6 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
-        sslSocket->setSocketOption(option, value);
-        return;
-    }
-#endif
-
     if (!d_func()->socketEngine)
         return;
 
@@ -1827,12 +1816,6 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
 */
 QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 {
-#ifndef QT_NO_OPENSSL
-    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
-        return sslSocket->socketOption(option);
-    }
-#endif
-
     if (!d_func()->socketEngine)
         return QVariant();
 
@@ -1912,13 +1895,6 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         return true;
     }
-
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; this function is not virtual, but has an overload
-    // in QSslSocket.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->waitForConnected(msecs);
-#endif
 
     bool wasPendingClose = d->pendingClose;
     d->pendingClose = false;
@@ -2139,12 +2115,6 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 bool QAbstractSocket::waitForDisconnected(int msecs)
 {
     Q_D(QAbstractSocket);
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; this function is not virtual, but has an overload
-    // in QSslSocket.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this))
-        return socket->waitForDisconnected(msecs);
-#endif
 
     // require calling connectToHost() before waitForDisconnected()
     if (state() == UnconnectedState) {
@@ -2755,15 +2725,6 @@ qint64 QAbstractSocket::readBufferSize() const
 void QAbstractSocket::setReadBufferSize(qint64 size)
 {
     Q_D(QAbstractSocket);
-
-#ifndef QT_NO_OPENSSL
-    // Manual polymorphism; setReadBufferSize() isn't virtual, but QSslSocket overloads
-    // it.
-    if (QSslSocket *socket = qobject_cast<QSslSocket *>(this)) {
-        socket->setReadBufferSize(size);
-        return;
-    }
-#endif
 
     if (d->readBufferMaxSize == size)
         return;

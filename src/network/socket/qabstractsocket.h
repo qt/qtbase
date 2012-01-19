@@ -148,20 +148,17 @@ public:
     QHostAddress peerAddress() const;
     QString peerName() const;
 
-    // ### Qt 5: Make setReadBufferSize() virtual
     qint64 readBufferSize() const;
-    void setReadBufferSize(qint64 size);
+    virtual void setReadBufferSize(qint64 size);
 
     void abort();
 
-    // ### Qt 5: Make socketDescriptor() and setSocketDescriptor() virtual.
-    qintptr socketDescriptor() const;
-    bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
+    virtual qintptr socketDescriptor() const;
+    virtual bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
-    // ### Qt 5: Make virtual?
-    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
-    QVariant socketOption(QAbstractSocket::SocketOption option);
+    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    virtual QVariant socketOption(QAbstractSocket::SocketOption option);
 
     SocketType socketType() const;
     SocketState state() const;
@@ -174,11 +171,10 @@ public:
     bool flush();
 
     // for synchronous access
-    // ### Qt 5: Make waitForConnected() and waitForDisconnected() virtual.
-    bool waitForConnected(int msecs = 30000);
+    virtual bool waitForConnected(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);
     bool waitForBytesWritten(int msecs = 30000);
-    bool waitForDisconnected(int msecs = 30000);
+    virtual bool waitForDisconnected(int msecs = 30000);
 
 #ifndef QT_NO_NETWORKPROXY
     void setProxy(const QNetworkProxy &networkProxy);
