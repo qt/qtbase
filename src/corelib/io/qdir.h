@@ -131,9 +131,6 @@ public:
     QString absoluteFilePath(const QString &fileName) const;
     QString relativeFilePath(const QString &fileName) const;
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED static QString convertSeparators(const QString &pathName);
-#endif
     static QString toNativeSeparators(const QString &pathName);
     static QString fromNativeSeparators(const QString &pathName);
 

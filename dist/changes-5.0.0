@@ -159,9 +159,12 @@ information about a particular change.
 
 - QNetworkConfiguration::bearerName() removed, and bearerTypeName() should be used.
 
-- qmake
+- QDir::convertSeparators() (deprecated since Qt 4.2) has been removed. Use
+  QDir::toNativeSeparators() instead.
 
+- qmake
   * several functions and built-in variables were modified to return normalized paths.
+
 
 ****************************************************************************
 *                           General                                        *

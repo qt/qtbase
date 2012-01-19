@@ -403,7 +403,7 @@ void OutputFilesPage::initializePage()
     QString className = field("className").toString();
     headerLineEdit->setText(className.toLower() + ".h");
     implementationLineEdit->setText(className.toLower() + ".cpp");
-    outputDirLineEdit->setText(QDir::convertSeparators(QDir::tempPath()));
+    outputDirLineEdit->setText(QDir::toNativeSeparators(QDir::tempPath()));
 }
 //! [17]
 
