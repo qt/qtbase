@@ -52,6 +52,14 @@ private slots:
     void isValid();
     void julianDay_data();
     void julianDay();
+    void dayOfWeek_data();
+    void dayOfWeek();
+    void dayOfYear_data();
+    void dayOfYear();
+    void daysInMonth_data();
+    void daysInMonth();
+    void daysInYear();
+    void getDate();
     void weekNumber_invalid_data();
     void weekNumber_invalid();
     void weekNumber_data();
@@ -62,6 +70,7 @@ private slots:
     void addMonths();
     void addYears_data();
     void addYears();
+    void daysTo();
     void operator_eq_eq();
     void operator_not_eq();
     void operator_lt();
@@ -191,6 +200,126 @@ void tst_QDate::julianDay()
         QCOMPARE(d.month(), month);
         QCOMPARE(d.day(), day);
     }
+}
+
+void tst_QDate::dayOfWeek_data()
+{
+    QTest::addColumn<int>("year");
+    QTest::addColumn<int>("month");
+    QTest::addColumn<int>("day");
+    QTest::addColumn<int>("dayOfWeek");
+
+    QTest::newRow("data1")  <<  2000 <<  1 <<  3 << 1;
+    QTest::newRow("data2")  <<  2000 <<  1 <<  4 << 2;
+    QTest::newRow("data3")  <<  2000 <<  1 <<  5 << 3;
+    QTest::newRow("data4")  <<  2000 <<  1 <<  6 << 4;
+    QTest::newRow("data5")  <<  2000 <<  1 <<  7 << 5;
+    QTest::newRow("data6")  <<  2000 <<  1 <<  8 << 6;
+    QTest::newRow("data7")  <<  2000 <<  1 <<  9 << 7;
+    QTest::newRow("data8")  <<  1815 <<  6 << 15 << 4;
+    QTest::newRow("data9")  <<  1815 <<  6 << 15 << 4;
+    QTest::newRow("data10") <<  1500 <<  1 <<  1 << 3;
+    QTest::newRow("data11") << -1500 <<  1 <<  1 << 7;
+    QTest::newRow("data12") << -4713 <<  1 <<  2 << 2;
+}
+
+void tst_QDate::dayOfWeek()
+{
+    QFETCH(int, year);
+    QFETCH(int, month);
+    QFETCH(int, day);
+    QFETCH(int, dayOfWeek);
+
+    QDate dt(year, month, day);
+    QCOMPARE(dt.dayOfWeek(), dayOfWeek);
+}
+
+void tst_QDate::dayOfYear_data()
+{
+    QTest::addColumn<int>("year");
+    QTest::addColumn<int>("month");
+    QTest::addColumn<int>("day");
+    QTest::addColumn<int>("dayOfYear");
+
+    QTest::newRow("data1")  <<  2000 <<  1 <<  1 <<   1;
+    QTest::newRow("data2")  <<  2000 <<  1 <<  2 <<   2;
+    QTest::newRow("data3")  <<  2000 <<  1 <<  3 <<   3;
+    QTest::newRow("data4")  <<  2000 << 12 << 31 << 366;
+    QTest::newRow("data5")  <<  2001 << 12 << 31 << 365;
+    QTest::newRow("data6")  <<  1815 <<  1 <<  1 <<   1;
+    QTest::newRow("data7")  <<  1815 << 12 << 31 << 365;
+    QTest::newRow("data8")  <<  1582 <<  1 <<  1 <<   1;
+    QTest::newRow("data9")  <<  1582 << 12 << 31 << 355;
+    QTest::newRow("data10") <<  1500 <<  1 <<  1 <<   1;
+    QTest::newRow("data11") << -1500 << 12 << 31 << 365;
+    QTest::newRow("data12") << -4713 <<  1 <<  2 <<   2;
+    QTest::newRow("data13") << -4713 << 12 << 31 << 366;
+}
+
+void tst_QDate::dayOfYear()
+{
+    QFETCH(int, year);
+    QFETCH(int, month);
+    QFETCH(int, day);
+    QFETCH(int, dayOfYear);
+
+    QDate dt(year, month, day);
+    QCOMPARE(dt.dayOfYear(), dayOfYear);
+}
+
+void tst_QDate::daysInMonth_data()
+{
+    QTest::addColumn<int>("year");
+    QTest::addColumn<int>("month");
+    QTest::addColumn<int>("day");
+    QTest::addColumn<int>("daysInMonth");
+
+    QTest::newRow("data1")  <<  2000 <<  1 <<  1 <<  31;
+    QTest::newRow("data2")  <<  2000 <<  2 <<  1 <<  29;
+    QTest::newRow("data3")  <<  2000 <<  3 <<  1 <<  31;
+    QTest::newRow("data4")  <<  2000 <<  4 <<  1 <<  30;
+    QTest::newRow("data5")  <<  2000 <<  5 <<  1 <<  31;
+    QTest::newRow("data6")  <<  2000 <<  6 <<  1 <<  30;
+    QTest::newRow("data7")  <<  2000 <<  7 <<  1 <<  31;
+    QTest::newRow("data8")  <<  2000 <<  8 <<  1 <<  31;
+    QTest::newRow("data9")  <<  2000 <<  9 <<  1 <<  30;
+    QTest::newRow("data10") <<  2000 << 10 <<  1 <<  31;
+    QTest::newRow("data11") <<  2000 << 11 <<  1 <<  30;
+    QTest::newRow("data12") <<  2000 << 12 <<  1 <<  31;
+    QTest::newRow("data13") <<  2001 <<  2 <<  1 <<  28;
+}
+
+void tst_QDate::daysInMonth()
+{
+    QFETCH(int, year);
+    QFETCH(int, month);
+    QFETCH(int, day);
+    QFETCH(int, daysInMonth);
+
+    QDate dt(year, month, day);
+    QCOMPARE(dt.daysInMonth(), daysInMonth);
+}
+
+void tst_QDate::daysInYear()
+{
+    QDate dt(2000, 1, 1);
+    QCOMPARE(dt.daysInYear(), 366);
+    dt.setDate(2001, 1, 1);
+    QCOMPARE(dt.daysInYear(), 365);
+    dt.setDate(4, 1, 1);
+    QCOMPARE(dt.daysInYear(), 366);
+    dt.setDate(5, 1, 1);
+    QCOMPARE(dt.daysInYear(), 365);
+}
+
+void tst_QDate::getDate()
+{
+    int y, m, d;
+    QDate dt(2000, 1, 1);
+    dt.getDate(&y, &m, &d);
+    QCOMPARE(y, 2000);
+    QCOMPARE(m, 1);
+    QCOMPARE(d, 1);
 }
 
 void tst_QDate::weekNumber_data()
@@ -400,6 +529,14 @@ void tst_QDate::addYears_data()
     QTest::newRow( "data17" ) << -2000 << 1 << 1 << 1999 << -1 << 1 << 1;
     QTest::newRow( "data18" ) << -2000 << 1 << 1 << 2000 << 1 << 1 << 1;
     QTest::newRow( "data19" ) << -2000 << 1 << 1 << 2001 << 2 << 1 << 1;
+}
+
+void tst_QDate::daysTo()
+{
+    QDate dt1(2000, 1, 1);
+    QDate dt2(2000, 1, 5);
+    QCOMPARE(dt1.daysTo(dt2),  4);
+    QCOMPARE(dt2.daysTo(dt1), -4);
 }
 
 void tst_QDate::operator_eq_eq()
