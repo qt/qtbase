@@ -339,10 +339,6 @@ QAccessible::Relation QAccessibleWidget::relationTo(const QAccessibleInterface *
     if (!o)
         return relation;
 
-    QWidget *focus = widget()->focusWidget();
-    if (object() == focus && isAncestor(o, focus))
-        relation |= QAccessible::FocusChild;
-
     QACConnectionObject *connectionObject = (QACConnectionObject*)object();
     for (int sig = 0; sig < d->primarySignals.count(); ++sig) {
         if (connectionObject->isSender(o, d->primarySignals.at(sig).toAscii())) {
@@ -383,6 +379,20 @@ QAccessibleInterface *QAccessibleWidget::child(int index) const
 }
 
 /*! \reimp */
+QAccessibleInterface *QAccessibleWidget::focusChild() const
+{
+    if (widget()->hasFocus())
+        return QAccessible::queryAccessibleInterface(object());
+
+    QWidget *fw = widget()->focusWidget();
+    if (!fw)
+        return 0;
+
+    if (isAncestor(widget(), fw) || fw == widget())
+        return QAccessible::queryAccessibleInterface(fw);
+}
+
+/*! \reimp */
 int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
                                 QAccessibleInterface **target) const
 {
@@ -394,29 +404,6 @@ int QAccessibleWidget::navigate(QAccessible::RelationFlag relation, int entry,
 
     switch (relation) {
     // Logical
-    case QAccessible::FocusChild:
-        {
-            if (widget()->hasFocus()) {
-                targetObject = object();
-                break;
-            }
-
-            QWidget *fw = widget()->focusWidget();
-            if (!fw)
-                return -1;
-
-            if (isAncestor(widget(), fw) || fw == widget())
-                targetObject = fw;
-            /* ###
-            QWidget *parent = fw;
-            while (parent && !targetObject) {
-                parent = parent->parentWidget();
-                if (parent == widget())
-                    targetObject = fw;
-            }
-            */
-        }
-        break;
     case QAccessible::Label:
         if (entry > 0) {
             QAccessibleInterface *pIface = QAccessible::queryAccessibleInterface(parentObject());

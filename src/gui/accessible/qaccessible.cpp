@@ -910,6 +910,16 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 }
 
 /*!
+    Returns the object that has the keyboard focus.
+
+    The object returned can be any descendant, including itself.
+*/
+QAccessibleInterface *QAccessibleInterface::focusChild() const
+{
+    return 0;
+}
+
+/*!
     \fn QAccessibleInterface *QAccessibleInterface::childAt(int x, int y) const
 
     Returns the QAccessibleInterface of a child that contains the screen coordinates (\a x, \a y).
@@ -991,6 +1001,14 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 
     \sa relationTo(), childCount(), parent(), child()
 */
+int QAccessibleInterface::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **target) const
+{
+    Q_UNUSED(entry);
+    Q_UNUSED(relation);
+    *target = 0;
+    return -1;
+}
+
 
 /*!
     \fn QString QAccessibleInterface::text(QAccessible::Text t) const

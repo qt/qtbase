@@ -1189,29 +1189,18 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accFocus(VARIANT *pvarID)
     if (!accessible->isValid())
         return E_FAIL;
 
-    QAccessibleInterface *acc = 0;
-    int control = accessible->navigate(QAccessible::FocusChild, 1, &acc);
-    if (control == -1) {
-        (*pvarID).vt = VT_EMPTY;
-        return S_FALSE;
+    if (QAccessibleInterface *acc = accessible->focusChild()) {
+        QWindowsAccessible* wacc = new QWindowsAccessible(acc);
+        IDispatch *iface = 0;
+        wacc->QueryInterface(IID_IDispatch, (void**)&iface);
+        if (iface) {
+            (*pvarID).vt = VT_DISPATCH;
+            (*pvarID).pdispVal = iface;
+            return S_OK;
+        } else {
+            delete wacc;
+        }
     }
-    if (!acc || control == 0) {
-        (*pvarID).vt = VT_I4;
-        (*pvarID).lVal = control ? control : CHILDID_SELF;
-        return S_OK;
-    }
-
-    QWindowsAccessible* wacc = new QWindowsAccessible(acc);
-    IDispatch *iface = 0;
-    wacc->QueryInterface(IID_IDispatch, (void**)&iface);
-    if (iface) {
-        (*pvarID).vt = VT_DISPATCH;
-        (*pvarID).pdispVal = iface;
-        return S_OK;
-    } else {
-        delete wacc;
-    }
-
     (*pvarID).vt = VT_EMPTY;
     return S_FALSE;
 }

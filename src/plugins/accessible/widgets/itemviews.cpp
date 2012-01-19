@@ -442,14 +442,6 @@ QAccessibleInterface *QAccessibleTable::child(int index) const
     return childFromLogical(index + 1);
 }
 
-int QAccessibleTable::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
-{
-    Q_UNUSED(relation);
-    Q_UNUSED(index);
-    *iface = 0;
-    return -1;
-}
-
 void *QAccessibleTable::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TableInterface)
@@ -780,41 +772,6 @@ QAccessibleInterface *QAccessibleTableCell::child(int) const
     return 0;
 }
 
-int QAccessibleTableCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
-{
-    Q_UNUSED(index);
-    Q_UNUSED(relation);
-
-//  switch (relation) {
-// From table1 implementation:
-//    case Up:
-//    case Down:
-//    case Left:
-//    case Right: {
-//        // This is in the "not so nice" category. In order to find out which item
-//        // is geometrically around, we have to set the current index, navigate
-//        // and restore the index as well as the old selection
-//        view->setUpdatesEnabled(false);
-//        const QModelIndex oldIdx = view->currentIndex();
-//        QList<QModelIndex> kids = children();
-//        const QModelIndex currentIndex = index ? kids.at(index - 1) : QModelIndex(row);
-//        const QItemSelection oldSelection = view->selectionModel()->selection();
-//        view->setCurrentIndex(currentIndex);
-//        const QModelIndex idx = view->moveCursor(toCursorAction(relation), Qt::NoModifier);
-//        view->setCurrentIndex(oldIdx);
-//        view->selectionModel()->select(oldSelection, QItemSelectionModel::ClearAndSelect);
-//        view->setUpdatesEnabled(true);
-//        if (!idx.isValid())
-//            return -1;
-
-//        if (idx.parent() != row.parent() || idx.row() != row.row())
-//            *iface = cell(idx);
-//        return index ? kids.indexOf(idx) + 1 : 0; }
-//    }
-    *iface = 0;
-    return -1;
-}
-
 QAccessibleTableHeaderCell::QAccessibleTableHeaderCell(QAbstractItemView *view_, int index_, Qt::Orientation orientation_)
     : view(view_), index(index_), orientation(orientation_)
 {
@@ -903,15 +860,6 @@ QAccessibleInterface *QAccessibleTableHeaderCell::parent() const
 QAccessibleInterface *QAccessibleTableHeaderCell::child(int) const
 {
     return 0;
-}
-
-int QAccessibleTableHeaderCell::navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const
-{
-    Q_UNUSED(relation);
-    Q_UNUSED(index);
-    Q_UNUSED(iface);
-
-    return -1;
 }
 
 #endif // QT_NO_ITEMVIEWS

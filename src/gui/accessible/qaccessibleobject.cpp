@@ -237,28 +237,13 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
     return 0;
 }
 
+
 /*! \reimp */
-int QAccessibleApplication::navigate(QAccessible::RelationFlag relation, int,
-                                     QAccessibleInterface **target) const
+QAccessibleInterface *QAccessibleApplication::focusChild() const
 {
-    if (!target)
-        return -1;
-
-    *target = 0;
-    QObject *targetObject = 0;
-
-    switch (relation) {
-    case QAccessible::FocusChild:
-        if (QWindow *window = QGuiApplication::activeWindow()) {
-            *target = window->accessibleRoot();
-            return 0;
-        }
-        break;
-    default:
-        break;
-    }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0 : -1;
+    if (QWindow *window = QGuiApplication::activeWindow())
+        return window->accessibleRoot();
+    return 0;
 }
 
 /*! \reimp */

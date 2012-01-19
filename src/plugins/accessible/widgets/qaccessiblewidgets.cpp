@@ -965,34 +965,6 @@ QAccessibleInterface *QAccessibleTitleBar::child(int index) const
     return 0;
 }
 
-int QAccessibleTitleBar::navigate(QAccessible::RelationFlag relation, int entry, QAccessibleInterface **iface) const
-{
-    switch (relation) {
-    case QAccessible::FocusChild:
-        // ###
-        if (entry >= 1) {
-            QDockWidgetLayout *layout = dockWidgetLayout();
-            int index = 1;
-            int role;
-            for (role = QDockWidgetLayout::CloseButton; role <= QDockWidgetLayout::FloatButton; ++role) {
-                QWidget *w = layout->widgetForRole((QDockWidgetLayout::Role)role);
-                if (!w->isVisible())
-                    continue;
-                if (index == entry)
-                    break;
-                ++index;
-            }
-            *iface = 0;
-            return role > QDockWidgetLayout::FloatButton ? -1 : index;
-        }
-        break;
-    default:
-        break;
-    }
-    *iface = 0;
-    return -1;
-}
-
 int QAccessibleTitleBar::indexOfChild(const QAccessibleInterface * /*child*/) const
 {
     return -1;

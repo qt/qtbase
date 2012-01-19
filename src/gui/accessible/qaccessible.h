@@ -307,7 +307,6 @@ public:
 
     enum RelationFlag {
         Unrelated     = 0x00000000,
-        FocusChild    = 0x00010000,
         Label         = 0x00020000,
         Labelled      = 0x00040000,
         Controller    = 0x00080000,
@@ -382,6 +381,7 @@ public:
     // relations
     virtual QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
     virtual QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations() const;
+    virtual QAccessibleInterface *focusChild() const;
 
     virtual QAccessibleInterface *childAt(int x, int y) const = 0;
 
@@ -390,7 +390,7 @@ public:
     virtual QAccessibleInterface *child(int index) const = 0;
     virtual int childCount() const = 0;
     virtual int indexOfChild(const QAccessibleInterface *) const = 0;
-    virtual int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
+    virtual int navigate(QAccessible::RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     // properties and state
     virtual QString text(QAccessible::Text t) const = 0;

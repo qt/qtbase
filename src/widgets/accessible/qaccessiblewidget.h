@@ -62,6 +62,7 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
+    QAccessibleInterface *focusChild() const;
 
     QRect rect() const;
 
