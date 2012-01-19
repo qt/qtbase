@@ -54,12 +54,15 @@ class tst_QHash : public QObject
     Q_OBJECT
 
 private slots:
+    void qhash_qt4_data() { data(); }
     void qhash_qt4();
+    void qhash_faster_data() { data(); }
     void qhash_faster();
+    void javaString_data() { data(); }
     void javaString();
 
 private:
-    QString data();
+    void data();
 };
 
 const int N = 1000000;
@@ -67,49 +70,57 @@ extern double s;
 
 ///////////////////// QHash /////////////////////
 
-QString tst_QHash::data()
+void tst_QHash::data()
 {
-    QFile file("data.txt");
-    file.open(QIODevice::ReadOnly);
-    return QString::fromLatin1(file.readAll());
+    QFile smallPathsData("paths_small_data.txt");
+    smallPathsData.open(QIODevice::ReadOnly);
+
+    QTest::addColumn<QStringList>("items");
+    QTest::newRow("paths-small")
+            << QString::fromLatin1(smallPathsData.readAll()).split(QLatin1Char('\n'));
 }
 
 void tst_QHash::qhash_qt4()
 {
-    QStringList items = data().split(QLatin1Char('\n'));
+    QFETCH(QStringList, items);
+    QStringList realitems = items; // for copy/paste ease between benchmarks
     QHash<QString, int> hash;
-    
+
     QBENCHMARK {
-        for (int i = 0, n = items.size(); i != n; ++i) {
-            hash[items.at(i)] = i;
+        for (int i = 0, n = realitems.size(); i != n; ++i) {
+            hash[realitems.at(i)] = i;
         }
     }
 }
 
 void tst_QHash::qhash_faster()
 {
-    QList<String> items;
-    foreach (const QString &s, data().split(QLatin1Char('\n')))
-        items.append(s);
+    QFETCH(QStringList, items);
     QHash<String, int> hash;
-    
+
+    QList<String> realitems;
+    foreach (const QString &s, items)
+        realitems.append(s);
+
     QBENCHMARK {
-        for (int i = 0, n = items.size(); i != n; ++i) {
-            hash[items.at(i)] = i;
+        for (int i = 0, n = realitems.size(); i != n; ++i) {
+            hash[realitems.at(i)] = i;
         }
     }
 }
 
 void tst_QHash::javaString()
 {
-    QList<JavaString> items;
-    foreach (const QString &s, data().split(QLatin1Char('\n')))
-        items.append(s);
+    QFETCH(QStringList, items);
     QHash<JavaString, int> hash;
 
+    QList<JavaString> realitems;
+    foreach (const QString &s, items)
+        realitems.append(s);
+
     QBENCHMARK {
-        for (int i = 0, n = items.size(); i != n; ++i) {
-            hash[items.at(i)] = i;
+        for (int i = 0, n = realitems.size(); i != n; ++i) {
+            hash[realitems.at(i)] = i;
         }
     }
 }
