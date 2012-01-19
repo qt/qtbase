@@ -1964,7 +1964,7 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
 
     if (enable) {
         if (bytesDownloaded) {
-            qDebug("setCachingEnabled: %d bytesDownloaded", bytesDownloaded);
+            qDebug("setCachingEnabled: %lld bytesDownloaded", bytesDownloaded);
             // refuse to enable in this case
             qCritical("QNetworkReplyImpl: backend error: caching was enabled after some bytes had been written");
             return;

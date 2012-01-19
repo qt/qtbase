@@ -475,8 +475,6 @@ QString QNetworkConfiguration::bearerTypeName() const
         return QString();
 
     switch (d->bearerType) {
-    case BearerUnknown:
-        return QStringLiteral("Unknown");
     case BearerEthernet:
         return QStringLiteral("Ethernet");
     case BearerWLAN:
@@ -493,7 +491,10 @@ QString QNetworkConfiguration::bearerTypeName() const
         return QStringLiteral("Bluetooth");
     case BearerWiMAX:
         return QStringLiteral("WiMAX");
+    case BearerUnknown:
+        break;
     }
+    return QStringLiteral("Unknown");
 }
 
 QT_END_NAMESPACE
