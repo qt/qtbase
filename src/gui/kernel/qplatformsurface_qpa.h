@@ -56,12 +56,12 @@ class Q_GUI_EXPORT QPlatformSurface
 public:
     virtual QSurfaceFormat format() const = 0;
 
-    QSurface::SurfaceType surfaceType() const;
+    QSurface::SurfaceClass surfaceClass() const;
 
 private:
-    QPlatformSurface(QSurface::SurfaceType type);
+    QPlatformSurface(QSurface::SurfaceClass type);
 
-    QSurface::SurfaceType m_type;
+    QSurface::SurfaceClass m_type;
 
     friend class QPlatformWindow;
 };

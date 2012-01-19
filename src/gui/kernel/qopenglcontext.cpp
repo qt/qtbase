@@ -288,6 +288,12 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!surface->surfaceHandle())
         return false;
 
+    if (surface->surfaceType() != QSurface::OpenGLSurface) {
+        qWarning() << "QOpenGLContext::makeBuffers() called with non-opengl surface";
+        return false;
+    }
+
+
     if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
         QOpenGLContextPrivate::setCurrentContext(this);
         d->surface = surface;
@@ -353,6 +359,11 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         qWarning() << "QOpenGLContext::swapBuffers() called with null argument";
         return;
     }
+
+    if (surface->surfaceType() != QSurface::OpenGLSurface) {
+         qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
+         return;
+     }
 
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
     if (!surfaceHandle)

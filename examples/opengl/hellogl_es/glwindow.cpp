@@ -64,6 +64,8 @@ inline void Normalize(qreal &x, qreal &y, qreal &z)
 
 GLWindow::GLWindow()
 {
+    setSurfaceType(OpenGLSurface);
+
     qtLogo = true;
     createdVertices = 0;
     createdNormals = 0;

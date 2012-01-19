@@ -93,7 +93,6 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
 
 public:
-    enum SurfaceType { RasterSurface, OpenGLSurface };
 
     QWindow(QScreen *screen = 0);
     QWindow(QWindow *parent);

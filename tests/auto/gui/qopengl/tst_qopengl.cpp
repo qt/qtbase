@@ -130,6 +130,7 @@ struct SharedResource : public QOpenGLSharedResource
 void tst_QOpenGL::sharedResourceCleanup()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
 
@@ -152,6 +153,7 @@ void tst_QOpenGL::sharedResourceCleanup()
     QOpenGLContext *ctx2 = new QOpenGLContext;
     ctx2->setShareContext(ctx);
     ctx2->create();
+
     delete ctx;
 
     resource->free();
@@ -191,6 +193,7 @@ void tst_QOpenGL::sharedResourceCleanup()
 void tst_QOpenGL::multiGroupSharedResourceCleanup()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
 
@@ -212,6 +215,7 @@ void tst_QOpenGL::multiGroupSharedResourceCleanup()
 void tst_QOpenGL::multiGroupSharedResourceCleanupCustom()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
 
@@ -348,6 +352,7 @@ void qt_opengl_check_test_pattern(const QImage& img)
 void tst_QOpenGL::fboSimpleRendering()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
     QOpenGLContext ctx;
@@ -391,6 +396,7 @@ void tst_QOpenGL::fboRendering()
 #endif
 
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
     QOpenGLContext ctx;
@@ -430,6 +436,7 @@ void tst_QOpenGL::fboRendering()
 void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 10, 10);
     window.create();
 
@@ -459,6 +466,7 @@ void tst_QOpenGL::openGLPaintDevice()
 #endif
 
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 128, 128);
     window.create();
 
@@ -506,6 +514,7 @@ void tst_QOpenGL::openGLPaintDevice()
 void tst_QOpenGL::aboutToBeDestroyed()
 {
     QWindow window;
+    window.setSurfaceType(QWindow::OpenGLSurface);
     window.setGeometry(0, 0, 128, 128);
     window.create();
 
