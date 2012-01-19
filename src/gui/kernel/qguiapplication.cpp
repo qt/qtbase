@@ -437,8 +437,6 @@ void QGuiApplicationPrivate::init()
     if (platform_integration == 0)
         createPlatformIntegration();
 
-    init_plugins(pluginList);
-
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
     // and QImage conversion functions
@@ -454,6 +452,8 @@ void QGuiApplicationPrivate::init()
     qRegisterGuiVariant();
 
     is_app_running = true;
+    init_plugins(pluginList);
+    QWindowSystemInterface::sendWindowSystemEvents(QCoreApplicationPrivate::eventDispatcher, QEventLoop::AllEvents);
 }
 
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
