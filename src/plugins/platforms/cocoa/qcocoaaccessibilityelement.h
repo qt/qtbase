@@ -48,16 +48,13 @@
 @class QCocoaAccessibleElement;
 
 @interface QCocoaAccessibleElement : NSObject {
-    NSUInteger index;
     NSString *role;
     NSObject * parent;
     void *accessibleInterface;
-
 }
 
-- (id)initWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
-+ (QCocoaAccessibleElement *)elementWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface;
-- (NSUInteger)index;
+- (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
++ (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
 
 @end
 

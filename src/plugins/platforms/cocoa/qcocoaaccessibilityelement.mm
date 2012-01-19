@@ -54,23 +54,21 @@ static QAccessibleInterface *acast(void *ptr)
 
 @implementation QCocoaAccessibleElement
 
-- (id)initWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface
+- (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
 {
     self = [super init];
     if (self) {
-        index = aIndex;
         accessibleInterface = anQAccessibleInterface;
         role = QCocoaAccessible::macRole(acast(accessibleInterface)->role());
         parent = aParent;
-
     }
 
     return self;
 }
 
-+ (QCocoaAccessibleElement *)elementWithIndex:(int)aIndex parent:(id)aParent accessibleInterface:(void *)anQAccessibleInterface
++ (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
 {
-    return [[[self alloc] initWithIndex:aIndex parent:aParent accessibleInterface:anQAccessibleInterface] autorelease];
+    return [[[self alloc] initWithInterface:anQAccessibleInterface parent:aParent] autorelease];
 }
 
 - (void)dealloc {
@@ -80,17 +78,14 @@ static QAccessibleInterface *acast(void *ptr)
 - (BOOL)isEqual:(id)object {
     if ([object isKindOfClass:[QCocoaAccessibleElement class]]) {
         QCocoaAccessibleElement *other = object;
-        return (index == other->index) && [role isEqualToString:other->role] && [parent isEqual:other->parent];
-    } else
+        return acast(other->accessibleInterface)->object() == acast(accessibleInterface)->object();
+    } else {
         return NO;
+    }
 }
 
 - (NSUInteger)hash {
-    return [parent hash] + index;
-}
-
-- (NSUInteger)index {
-    return index;
+    return qHash(acast(accessibleInterface)->object());
 }
 
 //
@@ -129,7 +124,7 @@ static QAccessibleInterface *acast(void *ptr)
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
             QAccessibleInterface *childInterface = acast(accessibleInterface)->child(i);
-            [kids addObject:[QCocoaAccessibleElement elementWithIndex:i parent:self accessibleInterface:(void*)childInterface]];
+            [kids addObject:[QCocoaAccessibleElement elementWithInterface:(void*)childInterface parent:self]];
         }
 
         return NSAccessibilityUnignoredChildren(kids);
@@ -232,8 +227,7 @@ static QAccessibleInterface *acast(void *ptr)
     }
 
     // hit a child, forward to child accessible interface.
-    int childIndex = acast(accessibleInterface)->indexOfChild(childInterface);
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithIndex:childIndex parent:self accessibleInterface: childInterface];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithInterface:childInterface parent:self];
     return [accessibleElement accessibilityHitTest:point];
 }
 
