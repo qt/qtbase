@@ -224,16 +224,6 @@ int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) cons
     return tlw.indexOf(child->object());
 }
 
-/*! \reimp */
-QAccessible::Relation QAccessibleApplication::relationTo(const QAccessibleInterface *other) const
-{
-    QObject *o = other ? other->object() : 0;
-    if (!o)
-        return QAccessible::Unrelated;
-
-    return QAccessible::Unrelated;
-}
-
 QAccessibleInterface *QAccessibleApplication::parent() const
 {
     return 0;

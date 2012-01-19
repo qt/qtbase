@@ -86,7 +86,6 @@ public:
     // relations
     int childCount() const;
     int indexOfChild(const QAccessibleInterface*) const;
-    QAccessible::Relation relationTo(const QAccessibleInterface *other) const;
 
     // navigation
     QAccessibleInterface *parent() const;
