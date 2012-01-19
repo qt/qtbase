@@ -96,11 +96,8 @@ public:
     available.
 
     \omitvalue X11ExcludeTimers
-    \omitvalue ExcludeUserInput
-    \omitvalue WaitForMore
     \omitvalue EventLoopExec
     \omitvalue DialogExec
-    \value DeferredDeletion deprecated - do not use.
 
     \sa processEvents()
 */
@@ -144,8 +141,6 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     Q_D(QEventLoop);
     if (!d->threadData->eventDispatcher)
         return false;
-    if (flags & DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     return d->threadData->eventDispatcher->processEvents(flags);
 }
 
@@ -252,13 +247,9 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 
     QElapsedTimer start;
     start.start();
-    if (flags & DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     while (processEvents(flags & ~WaitForMoreEvents)) {
         if (start.elapsed() > maxTime)
             break;
-        if (flags & DeferredDeletion)
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
 }
 

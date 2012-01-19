@@ -66,12 +66,9 @@ public:
         ExcludeUserInputEvents = 0x01,
         ExcludeSocketNotifiers = 0x02,
         WaitForMoreEvents = 0x04,
-	X11ExcludeTimers = 0x08
-#ifdef QT_DEPRECATED
-	, DeferredDeletion = 0x10
-#endif
-        , EventLoopExec = 0x20
-        , DialogExec = 0x40
+        X11ExcludeTimers = 0x08,
+        EventLoopExec = 0x20,
+        DialogExec = 0x40
     };
     Q_DECLARE_FLAGS(ProcessEventsFlags, ProcessEventsFlag)
 

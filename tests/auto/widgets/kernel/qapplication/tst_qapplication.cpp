@@ -1258,15 +1258,12 @@ public slots:
     {
         QApplication::processEvents();
     }
-    void processEventsWithDeferredDeletion()
-    {
-        QApplication::processEvents(QEventLoop::DeferredDeletion);
-    }
     void sendPostedEventsWithDeferredDelete()
     {
         QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
-    void deleteLaterAndProcessEvents1()
+
+    void deleteLaterAndProcessEvents()
     {
         QEventLoop eventLoop;
 
@@ -1276,48 +1273,6 @@ public slots:
         // trying to delete this object in a deeper eventloop just won't work
         QMetaObject::invokeMethod(this,
                                   "processEventsOnly",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "processEventsWithDeferredDeletion",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "sendPostedEventsWithDeferredDelete",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-
-        // trying to delete it from this eventloop still doesn't work
-        QApplication::processEvents();
-        QVERIFY(p);
-
-        // however, it *will* work with this magic incantation
-        QApplication::processEvents(QEventLoop::DeferredDeletion);
-        QVERIFY(!p);
-    }
-
-    void deleteLaterAndProcessEvents2()
-    {
-        QEventLoop eventLoop;
-
-        QPointer<QObject> p = this;
-        deleteLater();
-
-        // trying to delete this object in a deeper eventloop just won't work
-        QMetaObject::invokeMethod(this,
-                                  "processEventsOnly",
-                                  Qt::QueuedConnection);
-        QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
-        eventLoop.exec();
-        QVERIFY(p);
-        QMetaObject::invokeMethod(this,
-                                  "processEventsWithDeferredDeletion",
                                   Qt::QueuedConnection);
         QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
         eventLoop.exec();
@@ -1355,16 +1310,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         QApplication app(argc, 0, QApplication::GuiServer);
         // If you call processEvents() with an event dispatcher present, but
         // outside any event loops, deferred deletes are not processed unless
-        // QEventLoop::DeferredDeletion is passed.
-        object = new QObject;
-        p = object;
-        object->deleteLater();
-        app.processEvents();
-        QVERIFY(p);
-        app.processEvents(QEventLoop::ProcessEventsFlag(0x10)); // 0x10 == QEventLoop::DeferredDeletion
-        QVERIFY(!p);
-
-        // sendPostedEvents(0, DeferredDelete); also works
+        // sendPostedEvents(0, DeferredDelete) is called.
         object = new QObject;
         p = object;
         object->deleteLater();
@@ -1423,22 +1369,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         EventLoopNester *nester = new EventLoopNester();
         p = nester;
         QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents1()));
-
-        loop.exec();
-        QVERIFY(!p);
-    }
-
-    {
-        // when the event loop that calls deleteLater() also calls
-        // processEvents() immediately afterwards, the object should
-        // not die until the parent loop continues
-        QApplication app(argc, 0, QApplication::GuiServer);
-        QEventLoop loop;
-        EventLoopNester *nester = new EventLoopNester();
-        p = nester;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents2()));
+        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents()));
 
         loop.exec();
         QVERIFY(!p);

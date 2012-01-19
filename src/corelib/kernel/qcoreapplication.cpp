@@ -952,8 +952,6 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     QThreadData *data = QThreadData::current();
     if (!data->eventDispatcher)
         return;
-    if (flags & QEventLoop::DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     data->eventDispatcher->processEvents(flags);
 }
 
@@ -980,13 +978,9 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int m
         return;
     QElapsedTimer start;
     start.start();
-    if (flags & QEventLoop::DeferredDeletion)
-        QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     while (data->eventDispatcher->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
         if (start.elapsed() > maxtime)
             break;
-        if (flags & QEventLoop::DeferredDeletion)
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     }
 }
 
