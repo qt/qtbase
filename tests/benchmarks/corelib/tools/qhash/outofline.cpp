@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qhash_string.h"
+#include "main.h"
 
 static void doHash(const unsigned short *p, uint &h)
 {

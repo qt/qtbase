@@ -66,7 +66,7 @@ Totals: 4 passed, 0 failed, 0 skipped
 
 */
 
-#include "qhash_string.h"
+#include "main.h"
 
 #include <QFile>
 #include <QHash>
@@ -144,4 +144,4 @@ void tst_QHash::javaString()
 
 QTEST_MAIN(tst_QHash)
 
-#include "qhash_string.moc"
+#include "main.moc"
