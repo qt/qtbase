@@ -97,6 +97,13 @@ bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
     return rc;
 }
 
+void QWindowsGuiEventDispatcher::sendPostedEvents()
+{
+    QWindowsGuiEventDispatcher::DispatchContext context = currentDispatchContext();
+    Q_ASSERT(context.first != 0);
+    QWindowSystemInterface::sendWindowSystemEvents(context.first, context.second);
+}
+
 QWindowsGuiEventDispatcher::DispatchContext QWindowsGuiEventDispatcher::currentDispatchContext()
 {
     const DispatchContextStack &stack = *dispatchContextStack();

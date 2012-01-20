@@ -408,7 +408,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         const int localSerialNumber = d->serialNumber.load();
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
-            QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+            q->sendPostedEvents();
         }
         return 0;
     } else if (message == WM_TIMER) {
@@ -761,7 +761,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     if (!seenWM_QT_SENDPOSTEDEVENTS && (flags & QEventLoop::EventLoopExec) == 0) {
         // when called "manually", always send posted events
-        QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+        sendPostedEvents();
     }
 
     if (needWM_QT_SENDPOSTEDEVENTS)
@@ -1074,6 +1074,12 @@ bool QEventDispatcherWin32::event(QEvent *e)
         d->sendTimerEvent(te->timerId());
     }
     return QAbstractEventDispatcher::event(e);
+}
+
+void QEventDispatcherWin32::sendPostedEvents()
+{
+    Q_D(QEventDispatcherWin32);
+    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
 }
 
 QT_END_NAMESPACE

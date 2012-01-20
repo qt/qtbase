@@ -747,18 +747,11 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
     LRESULT result;
     const QtWindows::WindowsEventType et = windowsEventType(message, wParam);
     const bool handled = QWindowsContext::instance()->windowsProc(hwnd, message, et, wParam, lParam, &result);
-    const bool guiEventsQueued = QWindowSystemInterface::windowSystemEventsQueued();
     if (QWindowsContext::verboseEvents > 1)
         if (const char *eventName = QWindowsGuiEventDispatcher::windowsMessageName(message))
-            qDebug("EVENT: hwd=%p %s msg=0x%x et=0x%x wp=%d at %d,%d handled=%d gui=%d",
+            qDebug("EVENT: hwd=%p %s msg=0x%x et=0x%x wp=%d at %d,%d handled=%d",
                    hwnd, eventName, message, et, int(wParam),
-                   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), handled, guiEventsQueued);
-    if (guiEventsQueued) {
-        const QWindowsGuiEventDispatcher::DispatchContext dispatchContext =
-            QWindowsGuiEventDispatcher::currentDispatchContext();
-        if (dispatchContext.first)
-            QWindowSystemInterface::sendWindowSystemEvents(dispatchContext.first, dispatchContext.second);
-    }
+                   GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), handled);
     if (!handled)
         result = DefWindowProc(hwnd, message, wParam, lParam);
     return result;

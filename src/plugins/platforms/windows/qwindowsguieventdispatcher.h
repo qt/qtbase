@@ -64,6 +64,7 @@ public:
     static const char *windowsMessageName(UINT msg);
 
     virtual bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags);
+    virtual void sendPostedEvents();
 };
 
 QT_END_NAMESPACE
