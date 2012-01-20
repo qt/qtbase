@@ -1838,7 +1838,7 @@ void tst_QTreeWidget::setData()
                     item->setBackground(j, backgroundColor);
                     QCOMPARE(itemChangedSpy.count(), 0);
 
-                    QColor textColor((i == i) ? Qt::green : Qt::cyan);
+                    QColor textColor((i == 1) ? Qt::green : Qt::cyan);
                     item->setTextColor(j, textColor);
                     QCOMPARE(item->textColor(j), textColor);
                     QCOMPARE(itemChangedSpy.count(), 1);
