@@ -231,6 +231,8 @@ QtWidgets
 * QWidget::setInputContext() and QApplication::setInputContext() are removed.
   Input contexts are now platform specific.
 
+* QInputDialog::getInteger() has been obsoleted. Use QInputDialog::getInt() instead.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is
