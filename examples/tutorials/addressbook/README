@@ -38,5 +38,3 @@ You can do this by typing the following at the command line:
 qmake -spec macx-xcode
 
 Then open the generated Xcode project in Xcode and build it.
-
-Feel free to send comments about the tutorial to qt-info@nokia.com.

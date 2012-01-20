@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     Window window1;
     QStringList headers;
     headers << "Subject: Hello World"
-            << "From: qt-info@nokia.com";
+            << "From: address@example.com";
     QString body = "This is a test.\r\n";
     Message message(body, headers);
     window1.setMessage(message);
