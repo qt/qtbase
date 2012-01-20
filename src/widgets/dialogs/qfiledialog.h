@@ -85,7 +85,6 @@ public:
     enum AcceptMode { AcceptOpen, AcceptSave };
     enum DialogLabel { LookIn, FileName, FileType, Accept, Reject };
 
-    // ### Rename to FileDialogOption and FileDialogOptions for Qt 5.0
     enum Option
     {
         ShowDirsOnly          = 0x00000001,
