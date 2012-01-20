@@ -196,6 +196,24 @@ QWindow *QGuiApplication::focusWindow()
     return QGuiApplicationPrivate::focus_window;
 }
 
+/*!
+    \fn QGuiApplication::focusObjectChanged(QObject *focusObject)
+
+    This signal is emitted when final receiver of events tied to focus is changed.
+    \sa focusObject()
+*/
+
+/*!
+    Returns the QObject in currently active window that will be final receiver of events
+    tied focus, such as key events.
+ */
+QObject *QGuiApplication::focusObject()
+{
+    if (focusWindow())
+        return focusWindow()->focusObject();
+    return 0;
+}
+
 QWindowList QGuiApplication::topLevelWindows()
 {
     return QGuiApplicationPrivate::window_list;
@@ -792,9 +810,13 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (previous == QGuiApplicationPrivate::focus_window)
         return;
 
+    QObject *previousFocusObject = previous ? previous->focusObject() : 0;
+
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
+        QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
+                            qApp, SIGNAL(focusObjectChanged(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -803,6 +825,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (QGuiApplicationPrivate::focus_window) {
         QFocusEvent focusIn(QEvent::FocusIn);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
+        QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
+                         qApp, SIGNAL(focusObjectChanged(QObject*)));
     } else {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
@@ -810,6 +834,9 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
 
     if (self)
         self->notifyActiveWindowChange(previous);
+
+    if (previousFocusObject != qApp->focusObject())
+        emit qApp->focusObjectChanged(qApp->focusObject());
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)

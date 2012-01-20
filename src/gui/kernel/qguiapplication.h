@@ -88,6 +88,7 @@ public:
     static QT_DEPRECATED QWindow *activeWindow() { return focusWindow(); }
 #endif
     static QWindow *focusWindow();
+    static QObject *focusObject();
 
     static QScreen *primaryScreen();
     static QList<QScreen *> screens();
@@ -133,6 +134,7 @@ Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
     void lastWindowClosed();
+    void focusObjectChanged(QObject *focusObject);
 
 protected:
     bool event(QEvent *);

@@ -68,11 +68,11 @@ class Q_GUI_EXPORT QInputPanel : public QObject
 
     Q_ENUMS(Action)
 public:
-    QObject *inputItem() const;
-    void setInputItem(QObject *inputItemChanged);
+    QT_DEPRECATED QObject *inputItem() const;
+    QT_DEPRECATED void setInputItem(QObject *inputItemChanged);
 
     // the window containing the editor
-    QWindow *inputWindow() const;
+    QT_DEPRECATED QWindow *inputWindow() const;
 
     QTransform inputItemTransform() const;
     void setInputItemTransform(const QTransform &transform);
@@ -121,6 +121,9 @@ private:
     friend class QPlatformInputContext;
     QInputPanel();
     ~QInputPanel();
+
+    Q_PRIVATE_SLOT(d_func(), void q_connectFocusObject());
+    Q_PRIVATE_SLOT(d_func(), void q_checkFocusObject(QObject* object));
 };
 
 QT_END_NAMESPACE

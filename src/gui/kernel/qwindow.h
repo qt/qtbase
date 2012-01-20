@@ -262,6 +262,8 @@ Q_SIGNALS:
     void visibleChanged(bool arg);
     void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
+    void focusObjectChanged(QObject *object);
+
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);
 

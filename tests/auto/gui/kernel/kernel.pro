@@ -15,3 +15,4 @@ SUBDIRS=\
    qshortcut \
    qtouchevent \
    qwindow \
+   qguiapplication \

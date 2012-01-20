@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 class QInputPanelPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QInputPanel)
+
 public:
     inline QInputPanelPrivate() : testContext(0)
     {}
@@ -66,6 +68,8 @@ public:
     {
         return inputPanel->d_func();
     }
+    void q_connectFocusObject();
+    void q_checkFocusObject(QObject *object);
 
     QTransform inputItemTransform;
     QWeakPointer<QObject> inputItem;

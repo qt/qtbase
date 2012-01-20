@@ -797,6 +797,13 @@ QAccessibleInterface *QWindow::accessibleRoot() const
 }
 
 /*!
+    \fn QWindow::focusObjectChanged(QObject *focusObject)
+
+    This signal is emitted when final receiver of events tied to focus is changed.
+    \sa focusObject()
+*/
+
+/*!
   Returns the QObject that will be the final receiver of events tied focus, such
   as key events.
 */

@@ -41,6 +41,8 @@
 
 #include <qinputpanel.h>
 #include <private/qinputpanel_p.h>
+#include <qguiapplication.h>
+#include <qtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +52,8 @@ QT_BEGIN_NAMESPACE
 QInputPanel::QInputPanel()
     : QObject(*new QInputPanelPrivate)
 {
+    // might be instantiated before QGuiApplication is fully done, need to connect later
+    QTimer::singleShot(0, this, SLOT(q_connectFocusObject()));
 }
 
 /*!
@@ -74,6 +78,7 @@ QInputPanel::~QInputPanel()
 /*!
     \property QInputPanel::inputItem
     \brief Focused item that accepts text input
+    \obsolete
 
     Input item is set and unset by the focused window. In QML Scene Graph this is done by
     QQuickCanvas and the input item is either TextInput or TextEdit element. Any QObject can
@@ -101,6 +106,8 @@ void QInputPanel::setInputItem(QObject *inputItem)
 
 /*!
     Returns the currently focused window containing the input item.
+
+    \obsolete
 */
 QWindow *QInputPanel::inputWindow() const
 {
@@ -288,8 +295,8 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
 {
     Q_D(QInputPanel);
 
-    if (!d->inputItem)
-        return;
+    if (queries & Qt::ImEnabled)
+        d->q_checkFocusObject(qApp->focusObject());
 
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
@@ -340,6 +347,28 @@ void QInputPanel::invokeAction(Action a, int cursorPosition)
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->invokeAction(a, cursorPosition);
+}
+
+// temporary handlers for updating focus item based on application focus
+void QInputPanelPrivate::q_connectFocusObject()
+{
+    Q_Q(QInputPanel);
+    QObject::connect(qApp, SIGNAL(focusObjectChanged(QObject*)),
+                     q, SLOT(q_checkFocusObject(QObject*)));
+    q_checkFocusObject(qApp->focusObject());
+}
+
+void QInputPanelPrivate::q_checkFocusObject(QObject *object)
+{
+    Q_Q(QInputPanel);
+
+    bool enabled = false;
+    if (object) {
+        QInputMethodQueryEvent query(Qt::ImEnabled);
+        QGuiApplication::sendEvent(object, &query);
+        enabled = query.value(Qt::ImEnabled).toBool();
+    }
+    q->setInputItem(enabled ? object : 0);
 }
 
 QT_END_NAMESPACE
