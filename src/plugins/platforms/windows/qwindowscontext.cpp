@@ -52,6 +52,7 @@
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
+#include <QtGui/QPlatformNativeInterface>
 
 #include <QtCore/QSet>
 #include <QtCore/QHash>
@@ -219,6 +220,14 @@ QWindowsContext *QWindowsContext::m_instance = 0;
 typedef QHash<HWND, QWindowsWindow *> HandleBaseWindowHash;
 
 struct QWindowsContextPrivate {
+    typedef QPlatformNativeInterface::EventFilter EventFilter;
+
+    enum EventFilterType
+    {
+        GenericWindowsEventFilter,
+        EventFilterTypeCount
+    };
+
     QWindowsContextPrivate();
 
     unsigned m_systemInfo;
@@ -232,6 +241,7 @@ struct QWindowsContextPrivate {
     QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
     const HRESULT m_oleInitializeResult;
+    EventFilter m_eventFilters[EventFilterTypeCount];
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
@@ -252,6 +262,7 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }
+    qFill(m_eventFilters, m_eventFilters + EventFilterTypeCount, EventFilter(0));
 }
 
 QWindowsContext::QWindowsContext() :
@@ -613,6 +624,27 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 }
 
 /*!
+     \brief Set event filter.
+
+     \sa QWindowsNativeInterface
+*/
+
+QWindowsContext::EventFilter QWindowsContext::setEventFilter(const QByteArray &eventType, EventFilter filter)
+{
+    int eventFilterType = -1;
+    if (eventType == QByteArrayLiteral("windows_generic_MSG"))
+        eventFilterType = QWindowsContextPrivate::GenericWindowsEventFilter;
+    if (eventFilterType < 0) {
+        qWarning("%s: Attempt to set unsupported event filter '%s'.",
+                 __FUNCTION__, eventType.constData());
+        return 0;
+    }
+    const EventFilter previous = d->m_eventFilters[eventFilterType];
+    d->m_eventFilters[eventFilterType] = filter;
+    return previous;
+}
+
+/*!
      \brief Main windows procedure registered for windows.
 
      \sa QWindowsGuiEventDispatcher
@@ -623,6 +655,22 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                                   WPARAM wParam, LPARAM lParam, LRESULT *result)
 {
     *result = 0;
+
+    MSG msg;
+    msg.hwnd = hwnd;         // re-create MSG structure
+    msg.message = message;   // time and pt fields ignored
+    msg.wParam = wParam;
+    msg.lParam = lParam;
+    msg.pt.x = GET_X_LPARAM(lParam);
+    msg.pt.y = GET_Y_LPARAM(lParam);
+
+    if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter]) {
+        long filterResult = 0;
+        if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter](&msg, &filterResult)) {
+            *result = LRESULT(filterResult);
+            return true;
+        }
+    }
     // Events without an associated QWindow or events we are not interested in.
     switch (et) {
     case QtWindows::DeactivateApplicationEvent:
@@ -684,14 +732,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                  QWindowsGuiEventDispatcher::windowsMessageName(message), hwnd);
         return false;
     }
-
-    MSG msg;
-    msg.hwnd = hwnd;         // re-create MSG structure
-    msg.message = message;   // time and pt fields ignored
-    msg.wParam = wParam;
-    msg.lParam = lParam;
-    msg.pt.x = GET_X_LPARAM(lParam);
-    msg.pt.y = GET_Y_LPARAM(lParam);
 
     switch (et) {
     case QtWindows::KeyDownEvent:

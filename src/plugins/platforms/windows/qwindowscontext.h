@@ -103,6 +103,8 @@ class QWindowsContext
 {
     Q_DISABLE_COPY(QWindowsContext)
 public:
+    typedef bool (*EventFilter)(void *message, long *result);
+
     enum SystemInfoFlags
     {
         SI_RTL_Extensions = 0x1,
@@ -135,6 +137,8 @@ public:
 
     HDC displayContext() const;
     int screenDepth() const;
+
+    EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter);
 
     static QWindowsContext *instance();
 

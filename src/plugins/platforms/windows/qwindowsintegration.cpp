@@ -87,6 +87,8 @@ public:
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
+    virtual EventFilter setEventFilter(const QByteArray &eventType, EventFilter filter)
+        { return QWindowsContext::instance()->setEventFilter(eventType, filter); }
 };
 
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
