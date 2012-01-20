@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
