@@ -65,19 +65,26 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
-#ifndef QT_NO_STYLE_S60
-#include <qs60style.h>
-#endif
-
-#ifdef Q_WS_WINCE
-extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
-extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
-extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
-
-#include "qguifunctions_wince.h"
+#ifdef Q_OS_WIN
+#    include <QtCore/qt_windows.h>
+#    include <QtGui/QPlatformNativeInterface>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#ifdef Q_OS_WIN
+static inline HMENU qt_getWindowsSystemMenu(const QWidget *w)
+{
+    QWindow *window = w->windowHandle();
+    if (!window)
+        if (const QWidget *nativeParent = w->nativeParentWidget())
+            window = nativeParent->windowHandle();
+    if (window)
+        if (void *handle = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window))
+            return GetSystemMenu(reinterpret_cast<HWND>(handle), FALSE);
+    return 0;
+}
+#endif
 
 enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5, Old_Retry = 6,
               Old_Ignore = 7, Old_YesAll = 8, Old_NoAll = 9, Old_ButtonMask = 0xFF,
@@ -1480,13 +1487,10 @@ void QMessageBox::showEvent(QShowEvent *e)
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::updateAccessibility(this, 0, QAccessible::Alert);
 #endif
-#ifdef Q_WS_WIN
-    HMENU systemMenu = GetSystemMenu((HWND)winId(), FALSE);
-    if (!d->detectedEscapeButton) {
-        EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
-    }
-    else {
-        EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_ENABLED);
+#ifdef Q_OS_WIN
+    if (const HMENU systemMenu = qt_getWindowsSystemMenu(this)) {
+        EnableMenuItem(systemMenu, SC_CLOSE, d->detectedEscapeButton ?
+                       MF_BYCOMMAND|MF_ENABLED : MF_BYCOMMAND|MF_GRAYED);
     }
 #endif
     QDialog::showEvent(e);
