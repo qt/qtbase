@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2011 Richard J. Moore <rich@kde.org>
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **

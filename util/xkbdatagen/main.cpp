@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the utils of the Qt Toolkit.
 **
@@ -418,7 +418,7 @@ int main(int argc, char **argv)
            "**\n"
            "** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).\n"
            "** All rights reserved.\n"
-           "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
+           "** Contact: http://www.qt-project.org/\n"
            "**\n"
            "** This file is part of the QtGui module of the Qt Toolkit.\n"
            "**\n"

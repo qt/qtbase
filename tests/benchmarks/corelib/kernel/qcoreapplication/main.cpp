@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2011 Robin Burchell <robin+qt@viroteck.net>
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
