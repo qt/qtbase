@@ -42,12 +42,15 @@
 #include "qwindowsscreen.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
+#include "qwindowsintegration.h"
 #include "qwindowscursor.h"
+#include "qwindowscontext.h"
 
 #include "qtwindows_additional.h"
 
 #include <QtGui/QPixmap>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QWindowSystemInterface>
 #include <QtGui/QScreen>
 
 #include <QtCore/QDebug>
@@ -55,9 +58,8 @@
 QT_BEGIN_NAMESPACE
 
 QWindowsScreenData::QWindowsScreenData() :
-    dpi(96, 96),
-    depth(32),
-    format(QImage::Format_ARGB32_Premultiplied), primary(false)
+    dpi(96, 96), depth(32), format(QImage::Format_ARGB32_Premultiplied),
+    flags(VirtualDesktop), orientation(Qt::LandscapeOrientation)
 {
 }
 
@@ -98,6 +100,8 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     if (HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL)) {
         data.dpi = deviceDPI(hdc);
+        data.depth = GetDeviceCaps(hdc, BITSPIXEL);
+        data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
         data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
         DeleteDC(hdc);
     } else {
@@ -107,45 +111,52 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     }
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data.availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
-    data.primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0;
+    data.orientation = data.geometry.height() > data.geometry.width() ?
+                       Qt::PortraitOrientation : Qt::LandscapeOrientation;
+    // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
+    // virtual desktop screens.
+    data.flags = QWindowsScreenData::VirtualDesktop;
+    if (info.dwFlags & MONITORINFOF_PRIMARY)
+        data.flags |= QWindowsScreenData::PrimaryScreen;
     data.name = QString::fromWCharArray(info.szDevice);
     result->append(data);
     return TRUE;
+}
+
+static inline WindowsScreenDataList monitorData()
+{
+    WindowsScreenDataList result;
+    EnumDisplayMonitors(0, 0, monitorEnumCallback, (LPARAM)&result);
+    return result;
+}
+
+static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
+{
+    QDebug nospace =  dbg.nospace();
+    nospace << "Screen " << d.name << ' '
+            << d.geometry.width() << 'x' << d.geometry.height() << '+' << d.geometry.x() << '+' << d.geometry.y()
+            << " avail: "
+            << d.availableGeometry.width() << 'x' << d.availableGeometry.height() << '+' << d.availableGeometry.x() << '+' << d.availableGeometry.y()
+            << " physical: " << d.physicalSizeMM.width() <<  'x' << d.physicalSizeMM.height()
+            << " DPI: " << d.dpi.first << 'x' << d.dpi.second << " Depth: " << d.depth
+            << " Format: " << d.format;
+    if (d.flags & QWindowsScreenData::PrimaryScreen)
+        nospace << " primary";
+    if (d.flags & QWindowsScreenData::VirtualDesktop)
+        nospace << " virtual desktop";
+    return dbg;
 }
 
 /*!
     \class QWindowsScreen
     \brief Windows screen.
     \ingroup qt-lighthouse-win
+    \sa QWindowsScreenManager
 */
 
 QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
     m_data(data), m_cursor(this)
 {
-}
-
-QList<QPlatformScreen *> QWindowsScreen::screens()
-{
-    // Retrieve monitors and add static depth information to each.
-    WindowsScreenDataList data;
-    EnumDisplayMonitors(0, 0, monitorEnumCallback, (LPARAM)&data);
-
-    const int depth = QWindowsContext::instance()->screenDepth();
-    const QImage::Format format = depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
-    QList<QPlatformScreen *> result;
-
-    const WindowsScreenDataList::const_iterator scend = data.constEnd();
-    for (WindowsScreenDataList::const_iterator it = data.constBegin(); it != scend; ++it) {
-        QWindowsScreenData d = *it;
-        d.depth = depth;
-        d.format = format;
-        if (QWindowsContext::verboseIntegration)
-            qDebug() << "Screen" << d.geometry << d.availableGeometry << d.primary
-                     << " physical " << d.physicalSizeMM << " DPI" << d.dpi
-                     << "Depth: " << d.depth << " Format: " << d.format;
-        result.append(new QWindowsScreen(d));
-    }
-    return result;
 }
 
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
@@ -225,6 +236,151 @@ QWindowsScreen *QWindowsScreen::screenOf(const QWindow *w)
         if (QPlatformScreen *ppscr = ps->handle())
             return static_cast<QWindowsScreen *>(ppscr);
     return 0;
+}
+
+/*!
+    \brief Determine siblings in a virtual desktop system.
+
+    Self is by definition a sibling, else collect all screens
+    within virtual desktop.
+*/
+
+QList<QPlatformScreen *> QWindowsScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen *> result;
+    if (m_data.flags & QWindowsScreenData::VirtualDesktop) {
+        foreach (QWindowsScreen *screen, QWindowsContext::instance()->screenManager().screens())
+            if (screen->data().flags & QWindowsScreenData::VirtualDesktop)
+                result.push_back(screen);
+    } else {
+        result.push_back(const_cast<QWindowsScreen *>(this));
+    }
+    return result;
+}
+
+/*!
+    \brief Notify QWindowSystemInterface about changes of a screen and synchronize data.
+*/
+
+void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
+{
+    if (m_data.geometry != newData.geometry) {
+        m_data.geometry = newData.geometry;
+        QWindowSystemInterface::handleScreenGeometryChange(screen(),
+                                                           newData.geometry);
+    }
+    if (m_data.availableGeometry != newData.availableGeometry) {
+        m_data.availableGeometry = newData.availableGeometry;
+        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(),
+                                                                    newData.availableGeometry);
+    }
+    if (!qFuzzyCompare(m_data.dpi.first, newData.dpi.first)
+        || !qFuzzyCompare(m_data.dpi.second, newData.dpi.second)) {
+        m_data.dpi = newData.dpi;
+        QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(),
+                                                                     newData.dpi.first,
+                                                                     newData.dpi.second);
+    }
+    if (m_data.orientation != newData.orientation) {
+        m_data.orientation = newData.orientation;
+        QWindowSystemInterface::handleScreenOrientationChange(screen(),
+                                                              newData.orientation);
+    }
+}
+
+/*!
+    \class QWindowsScreenManager
+    \brief Manages a list of QWindowsScreen.
+
+    Listens for changes and notifies QWindowSystemInterface about changed/
+    added/deleted screens.
+
+    \ingroup qt-lighthouse-win
+    \sa QWindowsScreen
+*/
+
+QWindowsScreenManager::QWindowsScreenManager() :
+    m_lastDepth(-1), m_lastHorizontalResolution(0), m_lastVerticalResolution(0)
+{
+}
+
+QWindowsScreenManager::~QWindowsScreenManager()
+{
+    qDeleteAll(m_screens);
+}
+
+/*!
+    \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).
+
+    Subsequent events are compressed since WM_DISPLAYCHANGE is sent to
+    each top level window.
+*/
+
+bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
+{
+    const int newDepth = (int)wParam;
+    const WORD newHorizontalResolution = LOWORD(lParam);
+    const WORD newVerticalResolution = HIWORD(lParam);
+    if (newDepth != m_lastDepth || newHorizontalResolution != m_lastHorizontalResolution
+        || newVerticalResolution != m_lastVerticalResolution) {
+        m_lastDepth = newDepth;
+        m_lastHorizontalResolution = newHorizontalResolution;
+        m_lastVerticalResolution = newVerticalResolution;
+        if (QWindowsContext::verboseWindows)
+            qDebug("%s: Depth=%d, resolution=%hux%hu",
+                   __FUNCTION__, newDepth, newHorizontalResolution, newVerticalResolution);
+        handleScreenChanges();
+    }
+    return false;
+}
+
+static inline int indexOfMonitor(const QList<QWindowsScreen *> &screens,
+                                 const QString &monitorName)
+{
+    for (int i= 0; i < screens.size(); ++i)
+        if (screens.at(i)->data().name == monitorName)
+            return i;
+    return -1;
+}
+
+static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
+                                 const QString &monitorName)
+{
+    for (int i = 0; i < screenData.size(); ++i)
+        if (screenData.at(i).name == monitorName)
+            return i;
+    return -1;
+}
+
+/*!
+    \brief Synchronizes the screen list, adds new screens, removes deleted
+    ones and propagates resolution changes to QWindowSystemInterface.
+*/
+
+void QWindowsScreenManager::handleScreenChanges()
+{
+    // Look for changed monitors, add new ones
+    const WindowsScreenDataList newDataList = monitorData();
+    foreach (const QWindowsScreenData &newData, newDataList) {
+        const int existingIndex = indexOfMonitor(m_screens, newData.name);
+        if (existingIndex != -1) {
+            m_screens.at(existingIndex)->handleChanges(newData);
+        } else {
+            QWindowsScreen *newScreen = new QWindowsScreen(newData);
+            m_screens.push_back(newScreen);
+            QWindowsIntegration::instance()->emitScreenAdded(newScreen);
+            if (QWindowsContext::verboseWindows)
+                qDebug() << "New Monitor: " << newData;
+        }    // exists
+    }        // for new screens.
+    // Remove deleted ones.
+    for (int i = m_screens.size() - 1; i >= 0; --i) {
+        if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1) {
+            if (QWindowsContext::verboseWindows)
+                qDebug() << "Removing Monitor: " << m_screens.at(i) ->data();
+            delete m_screens.takeAt(i);
+        } // not found
+    }     // for existing screens
 }
 
 QT_END_NAMESPACE

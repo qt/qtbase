@@ -48,6 +48,7 @@
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowsaccessibility.h"
+#include "qwindowsscreen.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -228,6 +229,7 @@ struct QWindowsContextPrivate {
     QWindowsKeyMapper m_keyMapper;
     QWindowsMouseHandler m_mouseHandler;
     QWindowsMimeConverter m_mimeConverter;
+    QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
     const HRESULT m_oleInitializeResult;
 };
@@ -541,6 +543,11 @@ QWindowsMimeConverter &QWindowsContext::mimeConverter() const
     return d->m_mimeConverter;
 }
 
+QWindowsScreenManager &QWindowsContext::screenManager()
+{
+    return d->m_screenManager;
+}
+
 /*!
     \brief Convenience to create a non-visible, message-only dummy
     window for example used as clipboard watcher or for GL.
@@ -641,6 +648,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
         return QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(hwnd, wParam, lParam, result);
+    case QtWindows::DisplayChangedEvent:
+        return d->m_screenManager.handleDisplayChange(wParam, lParam);
     default:
         break;
     }

@@ -178,8 +178,7 @@ QWindowsIntegration::QWindowsIntegration() :
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
     d->m_clipboard.registerViewer();
-    foreach (QPlatformScreen *pscr, QWindowsScreen::screens())
-        screenAdded(pscr);
+    d->m_context.screenManager().handleScreenChanges();
 }
 
 QWindowsIntegration::~QWindowsIntegration()

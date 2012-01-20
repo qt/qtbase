@@ -74,6 +74,8 @@ public:
 
     static QWindowsIntegration *instance();
 
+    inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
+
 private:
     QScopedPointer<QWindowsIntegrationPrivate> d;
 };

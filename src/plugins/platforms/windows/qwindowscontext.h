@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 class QPlatformScreen;
+class QWindowsScreenManager;
 class QWindowsWindow;
 class QWindowsMimeConverter;
 struct QWindowCreationContext;
@@ -162,6 +163,7 @@ public:
     unsigned systemInfo() const;
 
     QWindowsMimeConverter &mimeConverter() const;
+    QWindowsScreenManager &screenManager();
 
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;

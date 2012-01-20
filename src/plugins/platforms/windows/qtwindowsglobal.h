@@ -95,6 +95,7 @@ enum WindowsEventType // Simplify event types
     InputMethodOpenCandidateWindowEvent = InputMethodEventFlag + 4,
     InputMethodCloseCandidateWindowEvent = InputMethodEventFlag + 5,
     InputMethodRequest = InputMethodEventFlag + 6,
+    DisplayChangedEvent = 437,
     UnknownEvent = 542
 };
 
@@ -169,6 +170,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
          }
     case WM_GETOBJECT:
         return QtWindows::AccessibleObjectFromWindowRequest;
+    case WM_DISPLAYCHANGE:
+        return QtWindows::DisplayChangedEvent;
     default:
         break;
     }

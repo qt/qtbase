@@ -202,7 +202,8 @@ messageDebugEntries[] = {
     {WM_IME_COMPOSITION, "WM_IME_COMPOSITION"},
     {WM_IME_ENDCOMPOSITION, "WM_IME_ENDCOMPOSITION"},
     {WM_IME_NOTIFY, "WM_IME_NOTIFY"},
-    {WM_IME_REQUEST, "WM_IME_REQUEST"}
+    {WM_IME_REQUEST, "WM_IME_REQUEST"},
+    {WM_DISPLAYCHANGE, "WM_DISPLAYCHANGE"}
 };
 
 static inline const MessageDebugEntry *messageDebugEntry(UINT msg)
