@@ -192,10 +192,12 @@ private slots:
     void readFromClosedSocket();
     void writeBigChunk();
     void blacklistedCertificates();
-    void setEmptyDefaultConfiguration();
     void versionAccessors();
     void sslOptions();
     void encryptWithoutConnecting();
+    void resume_data();
+    void resume();
+    void setEmptyDefaultConfiguration(); // this test should be last
 
     static void exitLoop()
     {
@@ -2058,22 +2060,6 @@ void tst_QSslSocket::blacklistedCertificates()
     QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);
 }
 
-void tst_QSslSocket::setEmptyDefaultConfiguration()
-{
-    // used to produce a crash in QSslConfigurationPrivate::deepCopyDefaultConfiguration, QTBUG-13265
-
-    if (!QSslSocket::supportsSsl())
-        return;
-
-    QSslConfiguration emptyConf;
-    QSslConfiguration::setDefaultConfiguration(emptyConf);
-
-    QSslSocketPtr socket = newSocket();
-    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
-    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
-    QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
-}
-
 void tst_QSslSocket::versionAccessors()
 {
     if (!QSslSocket::supportsSsl())
@@ -2141,7 +2127,97 @@ void tst_QSslSocket::encryptWithoutConnecting()
     sock.startClientEncryption();
 }
 
+void tst_QSslSocket::resume_data()
+{
+    QTest::addColumn<bool>("ignoreErrorsAfterPause");
+    QTest::addColumn<QList<QSslError> >("errorsToIgnore");
+    QTest::addColumn<bool>("expectSuccess");
+
+    QList<QSslError> errorsList;
+    QTest::newRow("DoNotIgnoreErrors") << false << QList<QSslError>() << false;
+    QTest::newRow("ignoreAllErrors") << true << QList<QSslError>() << true;
+
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    QSslError rightError(QSslError::SelfSignedCertificate, certs.at(0));
+    QSslError wrongError(QSslError::SelfSignedCertificate);
+    errorsList.append(wrongError);
+    QTest::newRow("ignoreSpecificErrors-Wrong") << true << errorsList << false;
+    errorsList.clear();
+    errorsList.append(rightError);
+    QTest::newRow("ignoreSpecificErrors-Right") << true << errorsList << true;
+}
+
+void tst_QSslSocket::resume()
+{
+    // make sure the server certificate is not in the list of accepted certificates,
+    // we want to trigger the sslErrors signal
+    QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
+
+    QFETCH(bool, ignoreErrorsAfterPause);
+    QFETCH(QList<QSslError>, errorsToIgnore);
+    QFETCH(bool, expectSuccess);
+
+    QSslSocket socket;
+    socket.setPauseMode(QAbstractSocket::PauseOnNotify);
+
+    QSignalSpy sslErrorSpy(&socket, SIGNAL(sslErrors(QList<QSslError>)));
+    QSignalSpy encryptedSpy(&socket, SIGNAL(encrypted()));
+    QSignalSpy errorSpy(&socket, SIGNAL(error(QAbstractSocket::SocketError)));
+
+    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(encrypted()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(sslErrorSpy.count(), 1);
+    QCOMPARE(errorSpy.count(), 0);
+    QCOMPARE(encryptedSpy.count(), 0);
+    QVERIFY(!socket.isEncrypted());
+    if (ignoreErrorsAfterPause) {
+        if (errorsToIgnore.empty())
+            socket.ignoreSslErrors();
+        else
+            socket.ignoreSslErrors(errorsToIgnore);
+    }
+    socket.resume();
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout()); // quit by encrypted() or error() signal
+    if (expectSuccess) {
+        QCOMPARE(encryptedSpy.count(), 1);
+        QVERIFY(socket.isEncrypted());
+        QCOMPARE(errorSpy.count(), 0);
+        socket.disconnectFromHost();
+        QVERIFY(socket.waitForDisconnected(10000));
+    } else {
+        QCOMPARE(encryptedSpy.count(), 0);
+        QVERIFY(!socket.isEncrypted());
+        QCOMPARE(errorSpy.count(), 1);
+        QCOMPARE(socket.error(), QAbstractSocket::SslHandshakeFailedError);
+    }
+}
+
+void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects
+{
+    // used to produce a crash in QSslConfigurationPrivate::deepCopyDefaultConfiguration, QTBUG-13265
+
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslConfiguration emptyConf;
+    QSslConfiguration::setDefaultConfiguration(emptyConf);
+
+    QSslSocketPtr socket = newSocket();
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
+}
+
 #endif // QT_NO_OPENSSL
 
 QTEST_MAIN(tst_QSslSocket)
+
 #include "tst_qsslsocket.moc"

@@ -295,6 +295,7 @@ bool QSslSocketBackendPrivate::initSslContext()
     bool client = (mode == QSslSocket::SslClientMode);
 
     bool reinitialized = false;
+
 init_context:
     switch (configuration.protocol) {
     case QSsl::SslV2:
@@ -950,6 +951,9 @@ void QSslSocketBackendPrivate::transmit()
                 qDebug() << "QSslSocketBackendPrivate::transmit: connection lost";
 #endif
                 break;
+            } else if (paused) {
+                // just wait until the user continues
+                return;
             } else {
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: encryption not done yet";
@@ -1188,46 +1192,25 @@ bool QSslSocketBackendPrivate::startHandshake()
         sslErrors = errors;
         emit q->sslErrors(errors);
 
-        bool doEmitSslError;
-        if (!ignoreErrorsList.empty()) {
-            // check whether the errors we got are all in the list of expected errors
-            // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
-            // was called)
-            doEmitSslError = false;
-            for (int a = 0; a < errors.count(); a++) {
-                if (!ignoreErrorsList.contains(errors.at(a))) {
-                    doEmitSslError = true;
-                    break;
-                }
-            }
-        } else {
-            // if QSslSocket::ignoreSslErrors(const QList<QSslError> &errors) was not called and
-            // we get an SSL error, emit a signal unless we ignored all errors (by calling
-            // QSslSocket::ignoreSslErrors() )
-            doEmitSslError = !ignoreAllSslErrors;
-        }
+        bool doEmitSslError = !verifyErrorsHaveBeenIgnored();
         // check whether we need to emit an SSL handshake error
         if (doVerifyPeer && doEmitSslError) {
-            q->setErrorString(sslErrors.first().errorString());
-            q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
-            emit q->error(QAbstractSocket::SslHandshakeFailedError);
-            plainSocket->disconnectFromHost();
+            if (q->pauseMode() == QAbstractSocket::PauseOnNotify) {
+                pauseSocketNotifiers(q);
+                paused = true;
+            } else {
+                q->setErrorString(sslErrors.first().errorString());
+                q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+                emit q->error(QAbstractSocket::SslHandshakeFailedError);
+                plainSocket->disconnectFromHost();
+            }
             return false;
         }
     } else {
         sslErrors.clear();
     }
 
-    // if we have a max read buffer size, reset the plain socket's to 1k
-    if (readBufferMaxSize)
-        plainSocket->setReadBufferSize(1024);
-
-    connectionEncrypted = true;
-    emit q->encrypted();
-    if (autoStartHandshake && pendingClose) {
-        pendingClose = false;
-        q->disconnectFromHost();
-    }
+    continueHandshake();
     return true;
 }
 
@@ -1269,6 +1252,21 @@ QSslCipher QSslSocketBackendPrivate::sessionCipher() const
     SSL_CIPHER *sessionCipher = q_SSL_get_current_cipher(ssl);
 #endif
     return sessionCipher ? QSslCipher_from_SSL_CIPHER(sessionCipher) : QSslCipher();
+}
+
+void QSslSocketBackendPrivate::continueHandshake()
+{
+    Q_Q(QSslSocket);
+    // if we have a max read buffer size, reset the plain socket's to match
+    if (readBufferMaxSize)
+        plainSocket->setReadBufferSize(readBufferMaxSize);
+
+    connectionEncrypted = true;
+    emit q->encrypted();
+    if (autoStartHandshake && pendingClose) {
+        pendingClose = false;
+        q->disconnectFromHost();
+    }
 }
 
 QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509)

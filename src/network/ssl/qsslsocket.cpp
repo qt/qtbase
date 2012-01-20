@@ -356,6 +356,24 @@ QSslSocket::~QSslSocket()
 }
 
 /*!
+    \reimp
+
+    \since 5.0
+
+    Continues data transfer on the socket after it has been paused. If
+    "setPauseMode(QAbstractSocket::PauseOnNotify);" has been called on
+    this socket and a sslErrors() signal is received, calling this method
+    is necessary for the socket to continue.
+
+    \sa QAbstractSocket::pauseMode(), QAbstractSocket::setPauseMode()
+*/
+void QSslSocket::resume()
+{
+    // continuing might emit signals, rather do this through the event loop
+    QMetaObject::invokeMethod(this, "_q_resumeImplementation", Qt::QueuedConnection);
+}
+
+/*!
     Starts an encrypted connection to the device \a hostName on \a
     port, using \a mode as the \l OpenMode. This is equivalent to
     calling connectToHost() to establish the connection, followed by a
@@ -1860,6 +1878,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , readyReadEmittedPointer(0)
     , allowRootCertOnDemandLoading(true)
     , plainSocket(0)
+    , paused(false)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
 }
@@ -2114,6 +2133,11 @@ void QSslSocketPrivate::resumeSocketNotifiers(QSslSocket *socket)
     QAbstractSocketPrivate::resumeSocketNotifiers(socket->d_func()->plainSocket);
 }
 
+bool QSslSocketPrivate::isPaused() const
+{
+    return paused;
+}
+
 /*!
     \internal
 */
@@ -2255,6 +2279,55 @@ void QSslSocketPrivate::_q_flushReadBuffer()
     // trigger a read from the plainSocket into SSL
     if (mode != QSslSocket::UnencryptedMode)
         transmit();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_resumeImplementation()
+{
+    Q_Q(QSslSocket);
+    if (plainSocket)
+        plainSocket->resume();
+    paused = false;
+    if (!connectionEncrypted) {
+        if (verifyErrorsHaveBeenIgnored()) {
+            continueHandshake();
+        } else {
+            q->setErrorString(sslErrors.first().errorString());
+            q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
+            emit q->error(QAbstractSocket::SslHandshakeFailedError);
+            plainSocket->disconnectFromHost();
+            return;
+        }
+    }
+    transmit();
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
+{
+    bool doEmitSslError;
+    if (!ignoreErrorsList.empty()) {
+        // check whether the errors we got are all in the list of expected errors
+        // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
+        // was called)
+        doEmitSslError = false;
+        for (int a = 0; a < sslErrors.count(); a++) {
+            if (!ignoreErrorsList.contains(sslErrors.at(a))) {
+                doEmitSslError = true;
+                break;
+            }
+        }
+    } else {
+        // if QSslSocket::ignoreSslErrors(const QList<QSslError> &errors) was not called and
+        // we get an SSL error, emit a signal unless we ignored all errors (by calling
+        // QSslSocket::ignoreSslErrors() )
+        doEmitSslError = !ignoreAllSslErrors;
+    }
+    return !doEmitSslError;
 }
 
 /*!

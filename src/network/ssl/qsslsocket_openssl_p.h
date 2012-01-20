@@ -115,6 +115,7 @@ public:
     void disconnectFromHost();
     void disconnected();
     QSslCipher sessionCipher() const;
+    void continueHandshake();
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(SSL_CIPHER *cipher);

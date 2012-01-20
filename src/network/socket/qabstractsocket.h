@@ -123,9 +123,17 @@ public:
         ReuseAddressHint = 0x4
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
+    enum PauseMode {
+        PauseNever,
+        PauseOnNotify
+    };
 
     QAbstractSocket(SocketType socketType, QObject *parent);
     virtual ~QAbstractSocket();
+
+    virtual void resume(); // to continue after proxy authentication required, SSL errors etc.
+    PauseMode pauseMode() const;
+    void setPauseMode(PauseMode pauseMode);
 
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);

@@ -425,6 +425,19 @@
     + ReuseAddressHint), and on Windows, its equivalent to ShareAddress.
 */
 
+/*! \enum QAbstractSocket::PauseMode
+    \since 5.0
+
+    This enum describes the behavior of when the socket should hold
+    back with continuing data transfer.
+
+    \value PauseNever Do not pause data transfer on the socket. This is the
+    default and matches the behaviour of Qt 4.
+    \value PauseOnNotify Pause data transfer on the socket upon receiving a
+    notification. The only notification currently supported is
+    QSslSocket::sslErrors().
+*/
+
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
 
@@ -529,6 +542,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       abortCalled(false),
       closeCalled(false),
       pendingClose(false),
+      pauseMode(QAbstractSocket::PauseNever),
       port(0),
       localPort(0),
       peerPort(0),
@@ -1349,6 +1363,55 @@ QAbstractSocket::~QAbstractSocket()
 #endif
     if (d->state != UnconnectedState)
         abort();
+}
+
+/*!
+    \since 5.0
+
+    Continues data transfer on the socket. This method should only be used
+    after the socket has been set to pause upon notifications and a
+    notification has been received.
+    The only notification currently supported is QSslSocket::sslErrors().
+    Calling this method if the socket is not paused results in undefined
+    behavior.
+
+    \sa pauseMode(), setPauseMode()
+*/
+void QAbstractSocket::resume()
+{
+    Q_D(QAbstractSocket);
+    d->resumeSocketNotifiers(this);
+}
+
+/*!
+    \since 5.0
+
+    Returns the pause mode of this socket.
+
+    \sa setPauseMode(), resume()
+*/
+QAbstractSocket::PauseMode QAbstractSocket::pauseMode() const
+{
+    return d_func()->pauseMode;
+}
+
+
+/*!
+    \since 5.0
+
+    Controls whether to pause upon receiving a notification. The only notification
+    currently supported is QSslSocket::sslErrors(). If set to PauseOnNotify,
+    data transfer on the socket will be paused and needs to be enabled explicitly
+    again by calling resume().
+    By default this option is set to PauseNever.
+    This option must be called before connecting to the server, otherwise it will
+    result in undefined behavior.
+
+    \sa pauseMode(), resume()
+*/
+void QAbstractSocket::setPauseMode(PauseMode pauseMode)
+{
+    d_func()->pauseMode = pauseMode;
 }
 
 /*!
