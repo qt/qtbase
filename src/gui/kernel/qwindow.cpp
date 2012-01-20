@@ -845,8 +845,28 @@ void QWindow::showNormal()
 
 bool QWindow::close()
 {
-    //should we have close?
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    Q_D(QWindow);
+
+    // Do not close non top level windows
+    if (parent())
+        return false;
+
+    if (QGuiApplicationPrivate::focus_window == this)
+        QGuiApplicationPrivate::focus_window = 0;
+
+    QObjectList childrenWindows = children();
+    for (int i = 0; i < childrenWindows.size(); i++) {
+        QObject *object = childrenWindows.at(i);
+        if (object->isWindowType()) {
+            QWindow *w = static_cast<QWindow*>(object);
+            QGuiApplicationPrivate::window_list.removeAll(w);
+            w->destroy();
+        }
+    }
+
+    QGuiApplicationPrivate::window_list.removeAll(this);
+    destroy();
+    d->maybeQuitOnLastWindowClosed();
     return true;
 }
 

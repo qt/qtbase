@@ -58,6 +58,7 @@ private slots:
     void mouseToTouchTranslation();
     void mouseToTouchLoop();
     void orientation();
+    void close();
     void initTestCase()
     {
         touchDevice = new QTouchDevice;
@@ -501,6 +502,21 @@ void tst_QWindow::orientation()
     QSignalSpy spy(&window, SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)));
     window.reportContentOrientationChange(Qt::LandscapeOrientation);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QWindow::close()
+{
+    QWindow a;
+    QWindow b;
+    QWindow c(&a);
+
+    a.show();
+    b.show();
+
+    // we can not close a non top level window
+    QVERIFY(!c.close());
+    QVERIFY(a.close());
+    QVERIFY(b.close());
 }
 
 #include <tst_qwindow.moc>
