@@ -40,6 +40,7 @@
 
 #include <QGuiApplication>
 #include <QScreen>
+#include <QRect>
 
 #include "window.h"
 
@@ -63,6 +64,9 @@ int main(int argc, char **argv)
         if (screen == app.primaryScreen())
             continue;
         Window *window = new Window(screen);
+        QRect geometry = window->geometry();
+        geometry.moveCenter(screen->availableGeometry().center());
+        window->setGeometry(geometry);
         window->setVisible(true);
         window->setWindowTitle(screen->name());
     }
