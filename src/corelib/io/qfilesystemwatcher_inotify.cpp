@@ -277,7 +277,7 @@ QStringList QInotifyFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                        | IN_MOVE_SELF
                                        | IN_DELETE_SELF
                                        )));
-        if (wd <= 0) {
+        if (wd < 0) {
             perror("QInotifyFileSystemWatcherEngine::addPaths: inotify_add_watch failed");
             continue;
         }
