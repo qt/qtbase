@@ -62,7 +62,6 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_ENUMS(Icon)
     Q_FLAGS(StandardButtons)
     Q_PROPERTY(QString text READ text WRITE setText)
-    // ### Qt 5: Rename 'icon' 'standardIcon' and 'iconPixmap' 'icon' (and use QIcon?)
     Q_PROPERTY(Icon icon READ icon WRITE setIcon)
     Q_PROPERTY(QPixmap iconPixmap READ iconPixmap WRITE setIconPixmap)
     Q_PROPERTY(Qt::TextFormat textFormat READ textFormat WRITE setTextFormat)
