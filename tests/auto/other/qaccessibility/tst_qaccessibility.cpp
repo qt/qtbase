@@ -1590,6 +1590,22 @@ void tst_QAccessibility::textEditTest()
     iface->editableTextInterface()->cutText(12, 16);
     QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
     QCOMPARE(iface->textInterface()->text(12, 15), QLatin1String("are"));
+
+    QTestAccessibility::clearEvents();
+
+    // select text
+    QTextCursor c = edit.textCursor();
+    c.setPosition(2);
+    c.setPosition(4, QTextCursor::KeepAnchor);
+    edit.setTextCursor(c);
+    QAccessibleTextSelectionEvent sel(&edit, 2, 4);
+    QVERIFY_EVENT(&sel);
+
+    edit.selectAll();
+    int end = edit.textCursor().position();
+    sel.setCursorPosition(end);
+    sel.setSelection(0, end);
+    QVERIFY_EVENT(&sel);
     }
     QTestAccessibility::clearEvents();
 }
@@ -1923,7 +1939,6 @@ void tst_QAccessibility::lineEditTest()
     QVERIFY_EVENT(&cursor);
 
     lineEdit->setText("foo");
-    qDebug() << QTestAccessibility::events();
     cursorEvent.setCursorPosition(3);
     QVERIFY_EVENT(&cursorEvent);
 

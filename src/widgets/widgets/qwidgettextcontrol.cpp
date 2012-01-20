@@ -79,6 +79,7 @@
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
+#include <QtGui/qaccessible.h>
 
 #ifndef QT_NO_SHORTCUT
 #include "private/qapplication_p.h"
@@ -577,8 +578,15 @@ void QWidgetTextControlPrivate::repaintOldAndNewSelection(const QTextCursor &old
 void QWidgetTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged /*=false*/)
 {
     Q_Q(QWidgetTextControl);
-    if (forceEmitSelectionChanged)
+    if (forceEmitSelectionChanged) {
         emit q->selectionChanged();
+#ifndef QT_NO_ACCESSIBILITY
+        if (q->parent()) {
+            QAccessibleTextSelectionEvent ev(q->parent(), cursor.anchor(), cursor.position());
+            QAccessible::updateAccessibility(&ev);
+        }
+#endif
+    }
 
     if (cursor.position() == lastSelectionPosition
         && cursor.anchor() == lastSelectionAnchor)
@@ -593,9 +601,15 @@ void QWidgetTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged 
         && (selectionStateChange
             || (cursor.hasSelection()
                 && (cursor.position() != lastSelectionPosition
-                    || cursor.anchor() != lastSelectionAnchor))))
+                    || cursor.anchor() != lastSelectionAnchor)))) {
         emit q->selectionChanged();
-
+#ifndef QT_NO_ACCESSIBILITY
+        if (q->parent()) {
+            QAccessibleTextSelectionEvent ev(q->parent(), cursor.anchor(), cursor.position());
+            QAccessible::updateAccessibility(&ev);
+        }
+#endif
+    }
     emit q->microFocusChanged();
     lastSelectionPosition = cursor.position();
     lastSelectionAnchor = cursor.anchor();
