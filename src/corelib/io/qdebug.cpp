@@ -165,14 +165,6 @@
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(QBool t)
-    \internal
-
-    Writes the boolean value, \a t, to the stream and returns a reference to the
-    stream.
-*/
-
-/*!
     \fn QDebug &QDebug::operator<<(bool t)
 
     Writes the boolean value, \a t, to the stream and returns a reference to the

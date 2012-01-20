@@ -266,7 +266,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 
 
 /*!
-    \fn QBool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
+    \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
     Returns true if the list contains the string \a str; otherwise
     returns false. The search is case insensitive if \a cs is
@@ -274,15 +274,15 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 
     \sa indexOf(), lastIndexOf(), QString::contains()
  */
-QBool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
-                                      Qt::CaseSensitivity cs)
+bool QtPrivate::QStringList_contains(const QStringList *that, const QString &str,
+                                     Qt::CaseSensitivity cs)
 {
     for (int i = 0; i < that->size(); ++i) {
         const QString & string = that->at(i);
         if (string.length() == str.length() && str.compare(string, cs) == 0)
-            return QBool(true);
+            return true;
     }
-    return QBool(false);
+    return false;
 }
 
 #ifndef QT_NO_REGEXP

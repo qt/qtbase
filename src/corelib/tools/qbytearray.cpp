@@ -1143,7 +1143,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \overload
 */
 
-/*! \fn QBool QByteArray::contains(const QByteArray &ba) const
+/*! \fn bool QByteArray::contains(const QByteArray &ba) const
 
     Returns true if the byte array contains an occurrence of the byte
     array \a ba; otherwise returns false.
@@ -1151,7 +1151,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \sa indexOf(), count()
 */
 
-/*! \fn QBool QByteArray::contains(const char *str) const
+/*! \fn bool QByteArray::contains(const char *str) const
 
     \overload
 
@@ -1159,7 +1159,7 @@ QByteArray &QByteArray::operator=(const char *str)
     otherwise returns false.
 */
 
-/*! \fn QBool QByteArray::contains(char ch) const
+/*! \fn bool QByteArray::contains(char ch) const
 
     \overload
 

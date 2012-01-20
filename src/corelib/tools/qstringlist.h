@@ -77,7 +77,7 @@ public:
     inline QString join(const QString &sep) const;
 
     inline QStringList filter(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     inline QStringList &replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs = Qt::CaseSensitive);
 
@@ -114,7 +114,7 @@ namespace QtPrivate {
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QString &str,
                                                Qt::CaseSensitivity cs);
 
-    QBool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
+    bool Q_CORE_EXPORT QStringList_contains(const QStringList *that, const QString &str, Qt::CaseSensitivity cs);
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QString &before, const QString &after,
                                       Qt::CaseSensitivity cs);
 
@@ -148,7 +148,7 @@ inline QStringList QStringList::filter(const QString &str, Qt::CaseSensitivity c
     return QtPrivate::QStringList_filter(this, str, cs);
 }
 
-inline QBool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
+inline bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 {
     return QtPrivate::QStringList_contains(this, str, cs);
 }

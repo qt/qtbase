@@ -2324,15 +2324,6 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 }
 
 /*!
-    \internal
-    \overload
-*/
-QTextStream &QTextStream::operator<<(QBool b)
-{
-    return *this << bool(b);
-}
-
-/*!
     Writes the character \a c to the stream, then returns a reference
     to the QTextStream.
 

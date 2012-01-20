@@ -170,7 +170,7 @@ public:
     void swap(int i, int j);
     int indexOf(const T &t, int from = 0) const;
     int lastIndexOf(const T &t, int from = -1) const;
-    QBool contains(const T &t) const;
+    bool contains(const T &t) const;
     int count(const T &t) const;
 
     class const_iterator;
@@ -859,14 +859,14 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::lastIndexOf(const T &t, int from) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QBool QList<T>::contains(const T &t) const
+Q_OUTOFLINE_TEMPLATE bool QList<T>::contains(const T &t) const
 {
     Node *b = reinterpret_cast<Node *>(p.begin());
     Node *i = reinterpret_cast<Node *>(p.end());
     while (i-- != b)
         if (i->t() == t)
-            return QBool(true);
-    return QBool(false);
+            return true;
+    return false;
 }
 
 template <typename T>

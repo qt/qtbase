@@ -266,9 +266,9 @@ public:
     int lastIndexOf(const QLatin1String &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QStringRef &s, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
-    inline QBool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -276,12 +276,12 @@ public:
 #ifndef QT_NO_REGEXP
     int indexOf(const QRegExp &, int from = 0) const;
     int lastIndexOf(const QRegExp &, int from = -1) const;
-    inline QBool contains(const QRegExp &rx) const { return QBool(indexOf(rx) != -1); }
+    inline bool contains(const QRegExp &rx) const { return indexOf(rx) != -1; }
     int count(const QRegExp &) const;
 
     int indexOf(QRegExp &, int from = 0) const;
     int lastIndexOf(QRegExp &, int from = -1) const;
-    inline QBool contains(QRegExp &rx) const { return QBool(indexOf(rx) != -1); }
+    inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
 #endif
 
     enum SectionFlag {
@@ -910,12 +910,12 @@ inline QString::const_iterator QString::end() const
 { return reinterpret_cast<const QChar*>(d->data() + d->size); }
 inline QString::const_iterator QString::constEnd() const
 { return reinterpret_cast<const QChar*>(d->data() + d->size); }
-inline QBool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(s, 0, cs) != -1); }
-inline QBool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(s, 0, cs) != -1); }
-inline QBool QString::contains(QChar c, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(c, 0, cs) != -1); }
+inline bool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
+inline bool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
+inline bool QString::contains(QChar c, Qt::CaseSensitivity cs) const
+{ return indexOf(c, 0, cs) != -1; }
 
 
 inline bool operator==(QString::Null, QString::Null) { return true; }
@@ -1115,10 +1115,10 @@ public:
     int lastIndexOf(QLatin1String str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int lastIndexOf(const QStringRef &str, int from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
-    inline QBool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    inline QBool contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    inline bool contains(const QStringRef &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     int count(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -1258,14 +1258,14 @@ inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QString &s
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 
-inline QBool QStringRef::contains(const QString &s, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(s, 0, cs) != -1); }
-inline QBool QStringRef::contains(QLatin1String s, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(s, 0, cs) != -1); }
-inline QBool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(c, 0, cs) != -1); }
-inline QBool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
-{ return QBool(indexOf(s, 0, cs) != -1); }
+inline bool QStringRef::contains(const QString &s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
+inline bool QStringRef::contains(QLatin1String s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
+inline bool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
+{ return indexOf(c, 0, cs) != -1; }
+inline bool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
+{ return indexOf(s, 0, cs) != -1; }
 
 namespace Qt {
 #if QT_DEPRECATED_SINCE(5, 0)

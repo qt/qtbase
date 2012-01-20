@@ -869,7 +869,7 @@ void **QListData::erase(void **xi)
     \sa indexOf()
 */
 
-/*! \fn QBool QList::contains(const T &value) const
+/*! \fn bool QList::contains(const T &value) const
 
     Returns true if the list contains an occurrence of \a value;
     otherwise returns false.

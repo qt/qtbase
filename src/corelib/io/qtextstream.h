@@ -175,7 +175,6 @@ public:
     QTextStream &operator>>(QByteArray &array);
     QTextStream &operator>>(char *c);
 
-    QTextStream &operator<<(QBool b);
     QTextStream &operator<<(QChar ch);
     QTextStream &operator<<(char ch);
     QTextStream &operator<<(signed short i);
