@@ -112,11 +112,9 @@ Q_SIGNALS:
 protected:
     void changeEvent(QEvent *event);
     void done(int result);
-
-private:
-    // ### Qt 5: make protected
     bool eventFilter(QObject *object, QEvent *event);
 
+private:
     Q_DISABLE_COPY(QFontDialog)
 
     Q_PRIVATE_SLOT(d_func(), void _q_sizeChanged(const QString &))
