@@ -385,23 +385,6 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
 
 /*!
     \overload
-    \since 4.5
-*/
-QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title)
-{
-    return QFontDialogPrivate::getFont(ok, initial, parent, title, 0);
-}
-
-/*!
-    \overload
-*/
-QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent)
-{
-    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), 0);
-}
-
-/*!
-    \overload
 
   Executes a modal font dialog and returns a font.
 

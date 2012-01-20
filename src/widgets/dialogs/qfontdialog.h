@@ -97,13 +97,9 @@ public:
 
     void setVisible(bool visible);
 
-    // ### Qt 5: merge overloads
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title,
-                         FontDialogOptions options);
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent, const QString &title);
-    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0);
     static QFont getFont(bool *ok, QWidget *parent = 0);
-
+    static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = 0, const QString &title = QString(),
+                         FontDialogOptions options = 0);
 
 Q_SIGNALS:
     void currentFontChanged(const QFont &font);
