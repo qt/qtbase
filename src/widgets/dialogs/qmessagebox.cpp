@@ -1810,15 +1810,6 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
 #endif
 }
 
-/*!
-    \internal
-*/
-QSize QMessageBox::sizeHint() const
-{
-    // ### Qt 5: remove
-    return QDialog::sizeHint();
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Source and binary compatibility routines for 4.0 and 4.1
 

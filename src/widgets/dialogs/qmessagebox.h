@@ -203,8 +203,6 @@ public:
     static void about(QWidget *parent, const QString &title, const QString &text);
     static void aboutQt(QWidget *parent, const QString &title = QString());
 
-    QSize sizeHint() const;
-
     // the following functions are obsolete:
 
     QMessageBox(const QString &title, const QString &text, Icon icon,
