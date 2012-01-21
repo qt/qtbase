@@ -10,6 +10,7 @@ SUBDIRS = \
         qstring \
         qstringbuilder \
         qstringlist \
-        qvector
+        qvector \
+        qalgorithms
 
 !*g++*: SUBDIRS -= qstring
