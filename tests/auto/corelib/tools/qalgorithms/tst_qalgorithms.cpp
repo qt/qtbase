@@ -105,29 +105,24 @@ QVector<DataType> generateData(QString dataSetType, const int length)
 {
     QVector<DataType> container;
     if (dataSetType == "Random") {
-        for(int i=0; i < length; ++i)
+        for (int i = 0; i < length; ++i)
             container.append(rand());
-    }
-    else if (dataSetType == "Ascending") {
-        for (int i=0; i < length; ++i)
+    } else if (dataSetType == "Ascending") {
+        for (int i = 0; i < length; ++i)
             container.append(i);
-    }
-    else if (dataSetType == "Descending") {
-        for (int i=0; i < length; ++i)
+    } else if (dataSetType == "Descending") {
+        for (int i = 0; i < length; ++i)
             container.append(length - i);
-    }
-    else if (dataSetType == "Equal") {
-        for (int i=0; i < length; ++i)
+    } else if (dataSetType == "Equal") {
+        for (int i = 0; i < length; ++i)
             container.append(43);
-    }
-    else if (dataSetType == "Duplicates") {
-        for (int i=0; i < length; ++i)
+    } else if (dataSetType == "Duplicates") {
+        for (int i = 0; i < length; ++i)
             container.append(i % 10);
-    }
-    else if (dataSetType == "Almost Sorted") {
-        for (int i=0; i < length; ++i)
+    } else if (dataSetType == "Almost Sorted") {
+        for (int i = 0; i < length; ++i)
             container.append(i);
-        for(int i = 0; i<= length / 10; ++i) {
+        for (int i = 0; i <= length / 10; ++i) {
             const int iswap = i * 9;
             DataType tmp = container.at(iswap);
             container[iswap] = container.at(iswap + 1);
