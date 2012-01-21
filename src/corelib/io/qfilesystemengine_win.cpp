@@ -180,7 +180,7 @@ public:
 
 SidCleanup::~SidCleanup()
 {
-    qFree(currentUserSID);
+    free(currentUserSID);
     currentUserSID = 0;
 
     // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
@@ -232,15 +232,15 @@ static void resolveLibs()
                 // doing a dummy GetTokenInformation call.
                 ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
                 if (retsize) {
-                    void *tokenBuffer = qMalloc(retsize);
+                    void *tokenBuffer = malloc(retsize);
                     if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
                         PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
                         DWORD sidLen = ::GetLengthSid(tokenSid);
-                        currentUserSID = reinterpret_cast<PSID>(qMalloc(sidLen));
+                        currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
                         if (::CopySid(sidLen, currentUserSID, tokenSid))
                             ptrBuildTrusteeWithSidW(&currentUserTrusteeW, currentUserSID);
                     }
-                    qFree(tokenBuffer);
+                    free(tokenBuffer);
                 }
                 ::CloseHandle(token);
             }
