@@ -167,7 +167,6 @@ public:
 
     void setVisible(bool visible);
 
-#ifdef Q_QDOC
     static QString getText(QWidget *parent, const QString &title, const QString &label,
                            QLineEdit::EchoMode echo = QLineEdit::Normal,
                            const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
@@ -176,22 +175,7 @@ public:
                            const QStringList &items, int current = 0, bool editable = true,
                            bool *ok = 0, Qt::WindowFlags flags = 0,
                            Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
-#else
-    static QString getText(QWidget *parent, const QString &title, const QString &label,
-                           QLineEdit::EchoMode echo = QLineEdit::Normal,
-                           const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0);
-    static QString getItem(QWidget *parent, const QString &title, const QString &label,
-                           const QStringList &items, int current = 0, bool editable = true,
-                           bool *ok = 0, Qt::WindowFlags flags = 0);
-    static QString getText(QWidget *parent, const QString &title, const QString &label,
-                           QLineEdit::EchoMode echo,
-                           const QString &text, bool *ok, Qt::WindowFlags flags,
-                           Qt::InputMethodHints inputMethodHints);
-    static QString getItem(QWidget *parent, const QString &title, const QString &label,
-                           const QStringList &items, int current, bool editable,
-                           bool *ok, Qt::WindowFlags flags,
-                           Qt::InputMethodHints inputMethodHints);
-#endif
+
     static int getInt(QWidget *parent, const QString &title, const QString &label, int value = 0,
                       int minValue = -2147483647, int maxValue = 2147483647,
                       int step = 1, bool *ok = 0, Qt::WindowFlags flags = 0);

@@ -1173,17 +1173,6 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
 }
 
 /*!
-    \internal
-*/
-// ### Qt 5: Use only the version above.
-QString QInputDialog::getText(QWidget *parent, const QString &title, const QString &label,
-                              QLineEdit::EchoMode mode, const QString &text, bool *ok,
-                              Qt::WindowFlags flags)
-{
-    return getText(parent, title, label, mode, text, ok, flags, Qt::ImhNone);
-}
-
-/*!
     \since 4.5
 
     Static convenience function to get an integer input from the user.
@@ -1339,17 +1328,6 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     } else {
         return text;
     }
-}
-
-/*!
-    \internal
-*/
-// ### Qt 5: Use only the version above.
-QString QInputDialog::getItem(QWidget *parent, const QString &title, const QString &label,
-                              const QStringList &items, int current, bool editable, bool *ok,
-                              Qt::WindowFlags flags)
-{
-    return getItem(parent, title, label, items, current, editable, ok, flags, Qt::ImhNone);
 }
 
 /*!
