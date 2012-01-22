@@ -2254,25 +2254,6 @@ static const char * const qt_minimize_xpm[] = {
     "            ",
     "            "};
 
-#if 0 // ### not used???
-static const char * const qt_normalize_xpm[] = {
-    "12 12 2 1",
-    "       s None  c None",
-    ".      c black",
-    "            ",
-    "            ",
-    "  .         ",
-    "  ..        ",
-    "  ...       ",
-    "  ....      ",
-    "  .....     ",
-    "  ......    ",
-    "  .......   ",
-    "            ",
-    "            ",
-    "            "};
-#endif
-
 static const char * const qt_normalizeup_xpm[] = {
     "12 12 2 1",
     "       s None  c None",
