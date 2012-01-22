@@ -481,15 +481,17 @@ void QHeaderView::setOffset(int newOffset)
 
 /*!
     \since 4.2
-    Sets the offset to the start of the section at the given \a visualIndex.
+    Sets the offset to the start of the section at the given \a visualSectionNumber.
+    \a visualSectionNumber is the actual visible section when hiddenSections are
+    not considered. That is not always the same as \a visualIndex.
 
     \sa setOffset(), sectionPosition()
 */
-void QHeaderView::setOffsetToSectionPosition(int visualIndex)
+void QHeaderView::setOffsetToSectionPosition(int visualSectionNumber)
 {
     Q_D(QHeaderView);
-    if (visualIndex > -1 && visualIndex < d->sectionCount) {
-        int position = d->headerSectionPosition(d->adjustedVisualIndex(visualIndex));
+    if (visualSectionNumber > -1 && visualSectionNumber < d->sectionCount) {
+        int position = d->headerSectionPosition(d->adjustedVisualIndex(visualSectionNumber));
         setOffset(position);
     }
 }
