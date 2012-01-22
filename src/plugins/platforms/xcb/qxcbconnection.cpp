@@ -498,7 +498,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #endif
     bool handled = false;
 
-    if (QPlatformNativeInterface::EventFilter filter = m_nativeInterface->eventFilterForEventType(QByteArrayLiteral("xcb_generic_event_t")))
+    if (QPlatformNativeInterface::EventFilter filter = m_nativeInterface->eventFilter(QXcbNativeInterface::GenericEventFilter))
         handled = filter(event, 0);
 
     uint response_type = event->response_type & ~0x80;

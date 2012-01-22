@@ -76,6 +76,11 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
+QXcbNativeInterface::QXcbNativeInterface()
+{
+    qFill(m_eventFilters, m_eventFilters + EventFilterCount, EventFilter(0));
+}
+
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
@@ -120,14 +125,17 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
 
 QPlatformNativeInterface::EventFilter QXcbNativeInterface::setEventFilter(const QByteArray &eventType, QPlatformNativeInterface::EventFilter filter)
 {
-    EventFilter oldFilter = m_eventFilters.value(eventType);
-    m_eventFilters.insert(eventType, filter);
+    int type = -1;
+    if (eventType == QByteArrayLiteral("xcb_generic_event_t"))
+        type = GenericEventFilter;
+    if (type == -1) {
+        qWarning("%s: Attempt to set invalid event filter type '%s'.",
+                 Q_FUNC_INFO, eventType.constData());
+        return 0;
+    }
+    const EventFilter oldFilter = m_eventFilters[type];
+    m_eventFilters[type] = filter;
     return oldFilter;
-}
-
-QPlatformNativeInterface::EventFilter QXcbNativeInterface::eventFilterForEventType(const QByteArray& eventType) const
-{
-    return m_eventFilters.value(eventType);
 }
 
 QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
