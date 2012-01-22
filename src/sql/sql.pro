@@ -24,14 +24,3 @@ SQL_P = sql
 include(kernel/kernel.pri)
 include(drivers/drivers.pri)
 include(models/models.pri)
-
-symbian: {
-    TARGET.UID3=0x2001E61D
-
-    # Problems using data exports from this DLL mean that we can't page it on releases that don't support
-    # data exports (currently that's any release before Symbian^3)
-    pagingBlock = "$${LITERAL_HASH}ifndef SYMBIAN_DLL_DATA_EXPORTS_SUPPORTED" \
-                  "UNPAGED" \
-                  "$${LITERAL_HASH}endif"
-    MMP_RULES += pagingBlock
-}
