@@ -78,8 +78,11 @@ public:
 
 QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
 {
-    for (int i = 0; i < libraryList.count(); ++i)
-        libraryList.at(i)->release();
+    for (int i = 0; i < libraryList.count(); ++i) {
+        QLibraryPrivate *library = libraryList.at(i);
+        library->unload();
+        library->release();
+    }
 }
 
 QFactoryLoader::QFactoryLoader(const char *iid,
@@ -142,7 +145,10 @@ void QFactoryLoader::update()
                 library->release();
                 continue;
             }
-            QObject *instance = library->instance();
+
+            if (!library->inst)
+                library->inst = library->instance();
+            QObject *instance = library->inst.data();
             if (!instance) {
                 library->release();
                 // ignore plugins that have a valid signature but cannot be loaded.
@@ -215,8 +221,11 @@ QObject *QFactoryLoader::instance(const QString &key) const
     QString lowered = d->cs ? key : key.toLower();
     if (QLibraryPrivate* library = d->keyMap.value(lowered)) {
         if (library->instance || library->loadPlugin()) {
-            if (QObject *obj = library->instance()) {
-                if (obj && !obj->parent())
+            if (!library->inst)
+                library->inst = library->instance();
+            QObject *obj = library->inst.data();
+            if (obj) {
+                if (!obj->parent())
                     obj->moveToThread(QCoreApplicationPrivate::mainThread());
                 return obj;
             }
