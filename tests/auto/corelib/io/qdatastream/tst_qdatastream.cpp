@@ -285,6 +285,7 @@ void tst_QDataStream::getSetCheck()
 void tst_QDataStream::cleanupTestCase()
 {
     QFile::remove(QLatin1String("qdatastream.out"));
+    QFile::remove(QLatin1String("datastream.tmp"));
 }
 
 static int dataIndex(const QString &tag)
