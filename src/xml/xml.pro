@@ -25,5 +25,3 @@ win32-borland {
 
 include(dom/dom.pri)
 include(sax/sax.pri)
-
-symbian:TARGET.UID3=0x2001B2E0

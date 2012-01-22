@@ -625,11 +625,6 @@ private:
     bool cdata;
     bool nsProcessing;
     QXmlLocator *locator;
-
-#ifdef Q_OS_SYMBIAN
-    // Workaround crash in elf2e32 under Wine.
-    virtual void dummy() {}
-#endif
 };
 
 /**************************************************************
