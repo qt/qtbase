@@ -143,17 +143,6 @@ void QmlApplicationViewer::addImportPath(const QString &path)
 
 void QmlApplicationViewer::setOrientation(ScreenOrientation orientation)
 {
-//#if defined(Q_OS_SYMBIAN)
-//    // If the version of Qt on the device is < 4.7.2, that attribute won't work
-//    if (orientation != ScreenOrientationAuto) {
-//        const QStringList v = QString::fromAscii(qVersion()).split(QLatin1Char('.'));
-//        if (v.count() == 3 && (v.at(0).toInt() << 16 | v.at(1).toInt() << 8 | v.at(2).toInt()) < 0x040702) {
-//            qWarning("Screen orientation locking only supported with Qt 4.7.2 and above");
-//            return;
-//        }
-//    }
-//#endif // Q_OS_SYMBIAN
-//
 //    Qt::WidgetAttribute attribute;
 //    switch (orientation) {
 //#if QT_VERSION < 0x040702
@@ -186,11 +175,5 @@ void QmlApplicationViewer::setOrientation(ScreenOrientation orientation)
 
 void QmlApplicationViewer::showExpanded()
 {
-#ifdef Q_OS_SYMBIAN
-    showFullScreen();
-#elif defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
-    showMaximized();
-#else
     show();
-#endif
 }
