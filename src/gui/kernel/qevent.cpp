@@ -2743,7 +2743,7 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac OS X and Symbian only.
+    \note This class is currently supported for Mac OS X only.
 */
 
 QFileOpenEventPrivate::~QFileOpenEventPrivate()
@@ -2807,8 +2807,6 @@ QUrl QFileOpenEvent::url() const
 
     This is necessary as some files cannot be opened by name, but require specific
     information stored in this event.
-    For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
-    the QFile could only be opened from the Symbian RFile used in the construction of this event.
 
     \since 4.8
 */
