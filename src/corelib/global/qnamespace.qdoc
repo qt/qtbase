@@ -150,19 +150,6 @@
            Command+C on the keyboard regardless of the value set, though what is output for
            QKeySequence::toString(QKeySequence::PortableText) will be different).
 
-    \value AA_S60DontConstructApplicationPanes Stops Qt from initializing the S60 status
-           pane and softkey pane on Symbian. This is useful to save memory and reduce
-           startup time for applications that will run in fullscreen mode during their
-           whole lifetime. This attribute must be set before QApplication is
-           constructed.
-
-    \omitvalue AA_S60DisablePartialScreenInputMode By default in Symbian^3,
-           a separate editing window is opened on top of an application. This is exactly
-           like editing on previous versions of Symbian behave. When this attribute
-           is true, a virtual keyboard window is shown on top of application and it
-           is ensured that the focused text widget is visible. This is only supported in
-           Symbian^3. (internal)
-
     \value AA_X11InitThreads Calls XInitThreads() as part of the QApplication
            construction in order to make Xlib calls thread-safe. This
            attribute must be set before QApplication is constructed.
@@ -811,7 +798,7 @@
 
     \value WA_InputMethodEnabled Enables input methods for Asian languages.
     Must be set when creating custom text editing widgets.
-    On Windows CE and Symbian this flag can be used in addition to
+    On Windows CE this flag can be used in addition to
     QApplication::autoSipEnabled to automatically display the SIP when
     entering a widget.
 

@@ -1416,11 +1416,7 @@ public:
     };
     Q_DECLARE_FLAGS(MatchFlags, MatchFlag)
 
-#if defined(Q_OS_SYMBIAN)
-    typedef unsigned long int HANDLE; // equivalent to TUint32
-#else
     typedef void * HANDLE;
-#endif
     typedef WindowFlags WFlags;
 
     enum WindowModality {

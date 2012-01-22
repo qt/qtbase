@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#if !defined(Q_OS_SYMBIAN) || (defined(Q_OS_SYMBIAN) && !defined(Q_CC_RVCT))
-
 #include "qplatformdefs.h"
 
 #include <QtCore/qatomic.h>
@@ -120,4 +118,3 @@ void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff
     return returnValue;
 }
 QT_END_NAMESPACE
-#endif //!defined(Q_OS_SYMBIAN) && !defined(Q_CC_RVCT)

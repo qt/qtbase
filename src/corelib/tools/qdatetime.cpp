@@ -73,10 +73,6 @@
 #include <private/qcore_mac_p.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-#include <e32std.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -2926,76 +2922,6 @@ qint64 QDateTime::currentMSecsSinceEpoch()
                    - julianDayFromGregorianDate(1970, 1, 1)) * Q_INT64_C(86400000);
 }
 
-#elif defined(Q_OS_SYMBIAN)
-QDate QDate::currentDate()
-{
-    QDate d;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1 );
-    return d;
-}
-
-QTime QTime::currentTime()
-{
-    QTime ct;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
-                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
-    return ct;
-}
-
-QDateTime QDateTime::currentDateTime()
-{
-    QDate d;
-    QTime ct;
-    TTime localTime;
-    localTime.HomeTime();
-    TDateTime localDateTime = localTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1);
-    ct.mds = msecsFromDecomposed(localDateTime.Hour(), localDateTime.Minute(),
-                                 localDateTime.Second(), localDateTime.MicroSecond() / 1000);
-    return QDateTime(d, ct);
-}
-
-QDateTime QDateTime::currentDateTimeUtc()
-{
-    QDate d;
-    QTime ct;
-    TTime gmTime;
-    gmTime.UniversalTime();
-    TDateTime gmtDateTime = gmTime.DateTime();
-    // months and days are zero indexed
-    d.jd = julianDayFromDate(gmtDateTime.Year(), gmtDateTime.Month() + 1, gmtDateTime.Day() + 1);
-    ct.mds = msecsFromDecomposed(gmtDateTime.Hour(), gmtDateTime.Minute(),
-                                 gmtDateTime.Second(), gmtDateTime.MicroSecond() / 1000);
-    return QDateTime(d, ct, Qt::UTC);
-}
-
-qint64 QDateTime::currentMSecsSinceEpoch()
-{
-    QDate d;
-    QTime ct;
-    TTime gmTime;
-    gmTime.UniversalTime();
-    TDateTime gmtDateTime = gmTime.DateTime();
-
-    // according to the documentation, the value is:
-    // "a date and time as a number of microseconds since midnight, January 1st, 0 AD nominal Gregorian"
-    qint64 value = gmTime.Int64();
-
-    // whereas 1970-01-01T00:00:00 is (in the same representation):
-    //   ((1970 * 365) + (1970 / 4) - (1970 / 100) + (1970 / 400) - 13) * 86400 * 1000000
-    static const qint64 unixEpoch = Q_INT64_C(0xdcddb30f2f8000);
-
-    return (value - unixEpoch) / 1000;
-}
-
 #elif defined(Q_OS_UNIX)
 QDate QDate::currentDate()
 {
@@ -3877,27 +3803,6 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     res.tm_mon = sysTime.wMonth - 1;
     res.tm_year = sysTime.wYear - 1900;
     brokenDown = &res;
-#elif defined(Q_OS_SYMBIAN)
-    // months and days are zero index based
-    _LIT(KUnixEpoch, "19700000:000000.000000");
-    TTimeIntervalSeconds utcOffset = User::UTCOffset();
-    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
-    TTime epochTTime;
-    TInt err = epochTTime.Set(KUnixEpoch);
-    tm res;
-    if(err == KErrNone) {
-        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        utcTTime = utcTTime + utcOffset;
-        TDateTime utcDateTime = utcTTime.DateTime();
-        res.tm_sec = utcDateTime.Second();
-        res.tm_min = utcDateTime.Minute();
-        res.tm_hour = utcDateTime.Hour();
-        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
-        res.tm_mon = utcDateTime.Month();
-        res.tm_year = utcDateTime.Year() - 1900;
-        res.tm_isdst = 0;
-        brokenDown = &res;
-    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
     tzset();
@@ -3943,7 +3848,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_mon = fakeDate.month() - 1;
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE)
     time_t secsSince1Jan1970UTC = (toMSecsSinceEpoch_helper(fakeDate.toJulianDay(), QTime().msecsTo(time)) / 1000);
 #else
 #if defined(Q_OS_WIN)
@@ -3968,27 +3873,6 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     res.tm_year = sysTime.wYear - 1900;
     res.tm_isdst = (int)isdst;
     brokenDown = &res;
-#elif defined(Q_OS_SYMBIAN)
-    // months and days are zero index based
-    _LIT(KUnixEpoch, "19700000:000000.000000");
-    TTimeIntervalSeconds utcOffset = TTimeIntervalSeconds(0 - User::UTCOffset().Int());
-    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
-    TTime epochTTime;
-    TInt err = epochTTime.Set(KUnixEpoch);
-    tm res;
-    if(err == KErrNone) {
-        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        utcTTime = utcTTime + utcOffset;
-        TDateTime utcDateTime = utcTTime.DateTime();
-        res.tm_sec = utcDateTime.Second();
-        res.tm_min = utcDateTime.Minute();
-        res.tm_hour = utcDateTime.Hour();
-        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
-        res.tm_mon = utcDateTime.Month();
-        res.tm_year = utcDateTime.Year() - 1900;
-        res.tm_isdst = (int)isdst;
-        brokenDown = &res;
-    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of gmtime() where available
     tm res;
@@ -5709,42 +5593,6 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
 {
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }
-
-#ifdef Q_OS_SYMBIAN
-const static TTime UnixEpochOffset(I64LIT(0xdcddb30f2f8000));
-const static TInt64 MinimumMillisecondTime(KMinTInt64 / 1000);
-const static TInt64 MaximumMillisecondTime(KMaxTInt64 / 1000);
-QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time)
-{
-    TTimeIntervalMicroSeconds absolute = time.MicroSecondsFrom(UnixEpochOffset);
-
-    return QDateTime::fromMSecsSinceEpoch(absolute.Int64() / 1000);
-}
-
-TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime)
-{
-    qint64 absolute = datetime.toMSecsSinceEpoch();
-    if(absolute > MaximumMillisecondTime)
-        return TTime(KMaxTInt64);
-    if(absolute < MinimumMillisecondTime)
-        return TTime(KMinTInt64);
-    return TTime(absolute * 1000);
-}
-
-time_t qt_symbian_TTime_To_time_t(const TTime& time)
-{
-    TTimeIntervalSeconds interval;
-    TInt err = time.SecondsFrom(UnixEpochOffset, interval);
-    if (err || interval.Int() < 0)
-        return (time_t) 0;
-    return (time_t) interval.Int();
-}
-
-TTime qt_symbian_time_t_To_TTime(time_t time)
-{
-    return UnixEpochOffset + TTimeIntervalSeconds(time);
-}
-#endif //Q_OS_SYMBIAN
 
 #endif // QT_BOOTSTRAPPED
 

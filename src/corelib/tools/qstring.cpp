@@ -69,10 +69,6 @@
 #include <winnls.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <e32cmn.h>
-#endif
-
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
@@ -4745,10 +4741,6 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
-#elif defined(Q_OS_SYMBIAN)
-    TPtrC p1 = TPtrC16(reinterpret_cast<const TUint16 *>(data1), length1);
-    TPtrC p2 = TPtrC16(reinterpret_cast<const TUint16 *>(data2), length2);
-    return p1.CompareC(p2);
 #elif defined(Q_OS_UNIX)
 #  if defined(QT_USE_ICU)
     int res;

@@ -76,11 +76,6 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-void qt_symbianUpdateSystemPrivate();
-void qt_symbianInitSystemLocale();
-#endif
-
 #ifndef QT_NO_SYSTEMLOCALE
 static QSystemLocale *_systemLocale = 0;
 Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
@@ -474,9 +469,6 @@ static const QSystemLocale *systemLocale()
 {
     if (_systemLocale)
         return _systemLocale;
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianInitSystemLocale();
-#endif
     return QSystemLocale_globalSystemLocale();
 }
 
@@ -490,10 +482,6 @@ void QLocalePrivate::updateSystemPrivate()
     sys_locale->query(QSystemLocale::LocaleChanged, QVariant());
 
     *system_lp = *sys_locale->fallbackLocale().d();
-
-#if defined(Q_OS_SYMBIAN)
-    qt_symbianUpdateSystemPrivate();
-#endif
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {

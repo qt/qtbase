@@ -59,10 +59,6 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-class CEnvironmentChangeNotifier;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 struct Q_CORE_EXPORT QLocalePrivate
@@ -256,20 +252,6 @@ inline char QLocalePrivate::digitToCLocale(const QChar &in) const
 
     return 0;
 }
-
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-class QEnvironmentChangeNotifier
-{
-public:
-    QEnvironmentChangeNotifier();
-    ~QEnvironmentChangeNotifier();
-
-    static TInt localeChanged(TAny *data);
-
-private:
-    CEnvironmentChangeNotifier *iChangeNotifier;
-};
-#endif
 
 QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);

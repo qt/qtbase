@@ -45,14 +45,3 @@ QMAKE_LIBS += $$QMAKE_LIBS_CORE
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
-
-symbian: {
-    TARGET.UID3=0x2001B2DC
-
-    # Problems using data exports from this DLL mean that we can't page it on releases that don't support
-    # data exports (currently that's any release before Symbian^3)
-    pagingBlock = "$${LITERAL_HASH}ifndef SYMBIAN_DLL_DATA_EXPORTS_SUPPORTED" \
-                  "UNPAGED" \
-                  "$${LITERAL_HASH}endif"
-    MMP_RULES += pagingBlock
-}

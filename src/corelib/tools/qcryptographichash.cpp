@@ -41,10 +41,6 @@
 
 #include <qcryptographichash.h>
 
-#ifdef Q_OS_SYMBIAN
-#define _MD5_H_ // Needed to disable system header
-#endif
-
 #include "../../3rdparty/md5/md5.h"
 #include "../../3rdparty/md5/md5.cpp"
 #include "../../3rdparty/md4/md4.h"

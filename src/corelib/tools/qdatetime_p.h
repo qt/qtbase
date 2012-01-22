@@ -274,13 +274,6 @@ Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDat
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::Sections)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::FieldInfo)
 
-#ifdef Q_OS_SYMBIAN
-QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time);
-TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime);
-time_t qt_symbian_TTime_To_time_t(const TTime& time);
-TTime qt_symbian_time_t_To_TTime(time_t time);
-#endif //Q_OS_SYMBIAN
-
 #endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE
