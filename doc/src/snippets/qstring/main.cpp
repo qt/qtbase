@@ -737,20 +737,15 @@ void Widget::toDoubleFunction()
     d = QString( "1234.56e-02" ).toDouble(&ok); // ok == true, d == 12.3456
     //! [67]
 
-    //! [68] //! [69]
-    QLocale::setDefault(QLocale::C);
-    d = QString( "1234,56" ).toDouble(&ok); // ok == false
     //! [68]
+    d = QString( "1234,56" ).toDouble(&ok); // ok == false
     d = QString( "1234.56" ).toDouble(&ok); // ok == true, d == 1234.56
+    //! [68]
 
-    //! [69] //! [70]
-    QLocale::setDefault(QLocale::German);
-    d = QString( "1234,56" ).toDouble(&ok); // ok == true, d == 1234.56
-    d = QString( "1234.56" ).toDouble(&ok); // ok == true, d == 1234.56
-
-    //! [70]
-    QLocale::setDefault(QLocale::C);
+    //! [69]
     d = QString( "1,234,567.89" ).toDouble(&ok); // ok == false
+    d = QString( "1234567.89" ).toDouble(&ok); // ok == true
+     //! [69]
 }
 
 void Widget::toFloatFunction()

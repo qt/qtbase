@@ -240,6 +240,12 @@ QtCore
   now return an empty QString, QStringRef or QByteArray respectively.
   in Qt 4 they returned a null QString or a null QStringRef.
 
+* QString methods toLongLong(), toULongLong(), toLong(), toULong(), toInt(),
+  toUInt(), toShort(), toUShort(), toDouble(), and toFloat() no longer use the
+  default or system locale, they will always use the C locale. This is to
+  guarantee consistent default conversion of strings. For locale-aware conversions
+  use the equivalent QLocale methods.
+
 * QDate, QTime, and QDateTime have undergone important behavioural changes:
   * QDate only implements the Gregorian calendar, the switch to the Julian
     calendar before 1582 has been removed. This means all QDate methods will
