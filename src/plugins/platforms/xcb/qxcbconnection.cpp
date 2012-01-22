@@ -132,7 +132,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
 
-    if (!m_connection)
+    if (!m_connection || xcb_connection_has_error(m_connection))
         qFatal("Could not connect to display %s", m_displayName.constData());
 
     m_reader = new QXcbEventReader(this);
