@@ -201,9 +201,8 @@ Q_SIGNALS:
     void doubleValueChanged(double value);
     void doubleValueSelected(double value);
 
-
 public:
-    void done(int result); // ### Qt 5: Make protected.
+    void done(int result);
 
 private:
     Q_DISABLE_COPY(QInputDialog)
