@@ -7319,14 +7319,6 @@ if [ "$CFG_EXCEPTIONS" = "no" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG exceptions_off"
 fi
 
-# Set the minimum deployment target.
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    QMakeVar add QMAKE_CFLAGS "-mmacosx-version-min=10.6"
-    QMakeVar add QMAKE_CXXFLAGS "-mmacosx-version-min=10.6"
-    QMakeVar add QMAKE_LFLAGS "-mmacosx-version-min=10.6"
-    QMakeVar add QMAKE_OBJECTIVE_CFLAGS "-mmacosx-version-min=10.6"
-fi
-
 case "$COMPILER" in
 g++*)
     # GNU C++
