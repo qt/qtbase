@@ -39,5 +39,5 @@
 **
 ****************************************************************************/
 
-#include "../../common/mac/qplatformdefs.h"
+#include "../common/mac/qplatformdefs.h"
 
