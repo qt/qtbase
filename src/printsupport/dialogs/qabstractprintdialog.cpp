@@ -66,9 +66,6 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     customize settings shown in print dialogs, but it is not used directly.
     Use QPrintDialog to display a print dialog in your application.
 
-    In Symbian, there is no support for printing. Hence, this dialog should not
-    be used in Symbian.
-
     \sa QPrintDialog, QPrinter, {Printing with Qt}
 */
 
