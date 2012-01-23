@@ -367,7 +367,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     // ### TODO can we use bool QAbstractFileEngine::caseSensitive() const?
     QStringList pathElements = absolutePath.split(QLatin1Char('/'), QString::SkipEmptyParts);
     if ((pathElements.isEmpty())
-#if (!defined(Q_OS_WIN) || defined(Q_OS_WINCE)) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
         && QDir::fromNativeSeparators(longPath) != QLatin1String("/")
 #endif
         )
@@ -399,7 +399,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     } else
 #endif
 
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     {
         if (!pathElements.at(0).contains(QLatin1String(":"))) {
             QString rootPath = QDir(longPath).rootPath();
@@ -1312,7 +1312,7 @@ QString QFileSystemModelPrivate::filePath(const QModelIndex &index) const
     if ((fullPath.length() > 2) && fullPath[0] == QLatin1Char('/') && fullPath[1] == QLatin1Char('/'))
         fullPath = fullPath.mid(1);
 #endif
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     if (fullPath.length() == 2 && fullPath.endsWith(QLatin1Char(':')))
         fullPath.append(QLatin1Char('/'));
 #endif
@@ -1653,25 +1653,13 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
     if (parentNode->children.count() == 0)
         return;
     QStringList toRemove;
-#if defined(Q_OS_SYMBIAN)
-    // Filename case must be exact in qBinaryFind below, so create a list of all lowercase names.
-    QStringList newFiles;
-    for(int i = 0; i < files.size(); i++) {
-        newFiles << files.at(i).toLower();
-    }
-#else
     QStringList newFiles = files;
-#endif
     qSort(newFiles.begin(), newFiles.end());
     QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
     while (i != parentNode->children.constEnd()) {
         QStringList::iterator iterator;
         iterator = qBinaryFind(newFiles.begin(), newFiles.end(),
-#if defined(Q_OS_SYMBIAN)
-                    i.value()->fileName.toLower());
-#else
                     i.value()->fileName);
-#endif
         if (iterator == newFiles.end()) {
             toRemove.append(i.value()->fileName);
         }

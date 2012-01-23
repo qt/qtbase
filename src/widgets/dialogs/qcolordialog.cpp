@@ -64,10 +64,6 @@
 #include "qspinbox.h"
 #include "qdialogbuttonbox.h"
 
-#ifdef MAEMO_UI
-#  define QT_SMALL_COLORDIALOG
-#endif
-
 QT_BEGIN_NAMESPACE
 
 //////////// QWellArray BEGIN
@@ -1064,14 +1060,6 @@ QColorShower::QColorShower(QColorDialog *parent)
     gl->setMargin(gl->spacing());
     lab = new QColorShowLabel(this);
 
-#ifdef QT_SMALL_COLORDIALOG
-#  ifdef Q_WS_S60
-    const bool nonTouchUI = !S60->hasTouchscreen;
-#  elif defined Q_WS_MAEMO_5
-    const bool nonTouchUI = false;
-#  endif
-#endif
-
 #ifndef Q_WS_WINCE
 #ifdef QT_SMALL_COLORDIALOG
     lab->setMinimumHeight(60);
@@ -1081,7 +1069,6 @@ QColorShower::QColorShower(QColorDialog *parent)
     lab->setMinimumWidth(20);
 #endif
 
-// In S60, due to small screen and different screen layouts need to re-arrange the widgets.
 // For QVGA screens only the comboboxes and color label are visible.
 // For nHD screens only color and luminence pickers and color label are visible.
 #if !defined(QT_SMALL_COLORDIALOG)
@@ -1479,14 +1466,6 @@ void QColorDialogPrivate::init(const QColor &initial)
         leftLay = new QVBoxLayout;
         topLay->addLayout(leftLay);
     }
-
-#if defined(QT_SMALL_COLORDIALOG)
-#  if defined(Q_WS_S60)
-    const bool nonTouchUI = !S60->hasTouchscreen;
-#  elif defined(Q_WS_MAEMO_5)
-    const bool nonTouchUI = false;
-#  endif
-#endif
 
     if (!smallDisplay) {
         standard = new QColorWell(q, 6, 8, QColorDialogOptions::standardColors());

@@ -349,15 +349,6 @@ void QMessageBoxPrivate::updateSize()
             width = hardLimit;
         }
     }
-#ifdef Q_WS_S60
-        // in S60 portait messageBoxes should always occupy maximum width
-        if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width()){
-            width = hardLimit;
-        } else {
-            // in landscape the messageBoxes should be of same width as in portrait
-            width = qMin(QApplication::desktop()->size().height(), hardLimit);
-        }
-#endif
 
     if (informativeLabel) {
         label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -387,15 +378,6 @@ void QMessageBoxPrivate::updateSize()
     int height = (layout->hasHeightForWidth())
                      ? layout->totalHeightForWidth(width)
                      : layout->totalMinimumSize().height();
-
-#ifndef QT_NO_STYLE_S60
-        QS60Style *s60Style = 0;
-        s60Style = qobject_cast<QS60Style *>(QApplication::style());
-
-        //use custom pixel metric to deduce the minimum height of the messagebox
-        if (s60Style)
-            height = qMax(height, s60Style->pixelMetric((QStyle::PixelMetric)PM_MessageBoxHeight));
-#endif
 
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);

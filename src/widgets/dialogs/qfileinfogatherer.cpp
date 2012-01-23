@@ -264,8 +264,6 @@ QString QFileInfoGatherer::translateDriveName(const QFileInfo &drive) const
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if (driveName.startsWith(QLatin1Char('/'))) // UNC host
         return drive.fileName();
-#endif
-#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     if (driveName.endsWith(QLatin1Char('/')))
         driveName.chop(1);
 #endif

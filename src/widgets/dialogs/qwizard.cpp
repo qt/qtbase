@@ -2975,11 +2975,7 @@ QSize QWizard::sizeHint() const
 {
     Q_D(const QWizard);
     QSize result = d->mainLayout->totalSizeHint();
-#ifdef Q_WS_S60
-    QSize extra(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
-#else
     QSize extra(500, 360);
-#endif
     if (d->wizStyle == MacStyle && d->current != -1) {
         QSize pixmap(currentPage()->pixmap(BackgroundPixmap).size());
         extra.setWidth(616);

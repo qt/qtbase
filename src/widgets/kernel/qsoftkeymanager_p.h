@@ -79,9 +79,6 @@ public:
     };
 
     static void updateSoftKeys();
-#ifdef Q_WS_S60
-    static bool handleCommand(int);
-#endif
 
     static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
     static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);

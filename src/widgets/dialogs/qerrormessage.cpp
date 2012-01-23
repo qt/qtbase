@@ -71,9 +71,6 @@ extern bool qt_wince_is_high_dpi();  //defined in qguifunctions_wince.cpp
 #if defined(QT_SOFTKEYS_ENABLED)
 #include <qaction.h>
 #endif
-#ifdef Q_WS_S60
-#include "private/qt_s60_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -134,14 +131,7 @@ QSize QErrorMessageTextView::sizeHint() const
     else
       return QSize(300, 100);
 #else
-
-#ifdef Q_WS_S60
-    const int smallerDimension = qMin(S60->screenHeightInPixels, S60->screenWidthInPixels);
-    // In S60 layout data, error messages seem to be one third of the screen height (in portrait) minus two.
-    return QSize(smallerDimension, smallerDimension/3-2);
-#else
     return QSize(250, 75);
-#endif //Q_WS_S60
 #endif //Q_WS_WINCE
 }
 
@@ -265,7 +255,7 @@ QErrorMessage::QErrorMessage(QWidget * parent)
 #endif
 
 
-#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_WS_WINCE)
     d->ok->setFixedSize(0,0);
 #endif
     connect(d->ok, SIGNAL(clicked()), this, SLOT(accept()));

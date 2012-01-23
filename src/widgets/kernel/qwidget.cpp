@@ -107,9 +107,6 @@
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
 
-#ifdef Q_WS_S60
-#include <aknappui.h>
-#endif
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -407,8 +404,7 @@ bool QWidget::hasEditFocus() const
     normally; otherwise, Qt::Key_Up and Qt::Key_Down are used to
     change focus.
 
-    This feature is only available in Qt for Embedded Linux and Qt
-    for Symbian.
+    This feature is only available in Qt for Embedded Linux.
 
     \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
 */
@@ -2052,14 +2048,6 @@ void QWidgetPrivate::updateIsOpaque()
     }
 #endif
 
-#ifdef Q_WS_S60
-    if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
-                && S60->avkonComponentsSupportTransparency) {
-        setOpaque(false);
-        return;
-    }
-#endif
-
     if (q->testAttribute(Qt::WA_OpaquePaintEvent) || q->testAttribute(Qt::WA_PaintOnScreen)) {
         setOpaque(true);
         return;
@@ -2126,11 +2114,6 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
         extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
         qt_mac_fill_background(painter, rgn, brush);
 #else
-#if !defined(QT_NO_STYLE_S60)
-        // Defined in qs60style.cpp
-        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
-        if (!qt_s60_fill_background(painter, rgn, brush))
-#endif // !defined(QT_NO_STYLE_S60)
         {
             const QRect rect(rgn.boundingRect());
             painter->setClipRegion(rgn);

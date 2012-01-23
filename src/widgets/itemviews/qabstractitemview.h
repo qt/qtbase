@@ -367,7 +367,6 @@ private:
 
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QListModeViewBase;
-    friend class QListViewPrivate; // needed to compile for Symbian emulator
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)

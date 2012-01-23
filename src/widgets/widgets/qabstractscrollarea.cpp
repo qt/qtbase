@@ -306,11 +306,6 @@ void QAbstractScrollAreaPrivate::init()
     viewport->grabGesture(Qt::PanGesture);
 #  endif
 #endif
-#ifdef Q_WS_MAEMO_5
-#  ifndef QT_NO_GESTURES
-    // viewport->grabGesture(Qt::TouchFlickGesture);
-#  endif
-#endif
 }
 
 #ifdef Q_WS_WIN
@@ -562,11 +557,6 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
 #ifndef Q_WS_MAC
 #ifndef QT_NO_GESTURES
         d->viewport->grabGesture(Qt::PanGesture);
-#endif
-#endif
-#ifdef Q_WS_MAEMO_5
-#ifndef QT_NO_GESTURES
-//        d->viewport->grabGesture(Qt::TouchFlickGesture);
 #endif
 #endif
         d->layoutChildren();

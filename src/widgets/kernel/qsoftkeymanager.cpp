@@ -46,14 +46,6 @@
 #include "private/qaction_p.h"
 #include "private/qsoftkeymanager_common_p.h"
 
-#ifdef Q_WS_S60
-#include "private/qsoftkeymanager_s60_p.h"
-#endif
-
-#ifdef SYMBIAN_VERSION_SYMBIAN3
-#include "private/qt_s60_p.h"
-#endif
-
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
@@ -94,41 +86,13 @@ QSoftKeyManager *QSoftKeyManager::instance()
 }
 
 QSoftKeyManager::QSoftKeyManager() :
-#ifdef Q_WS_S60
-    QObject(*(new QSoftKeyManagerPrivateS60), 0)
-#else
     QObject(*(new QSoftKeyManagerPrivate), 0)
-#endif
 {
 }
 
 QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
     QAction *action = new QAction(standardSoftKeyText(standardKey), actionWidget);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
-    int key = 0;
-    switch (standardKey) {
-    case OkSoftKey:
-        key = EAknSoftkeyOk;
-        break;
-    case SelectSoftKey:
-        key = EAknSoftkeySelect;
-        break;
-    case DoneSoftKey:
-        key = EAknSoftkeyDone;
-        break;
-    case MenuSoftKey:
-        key = EAknSoftkeyOptions;
-        break;
-    case CancelSoftKey:
-        key = EAknSoftkeyCancel;
-        break;
-    default:
-        break;
-    };
-    if (key != 0)
-        QSoftKeyManager::instance()->d_func()->softKeyCommandActions.insert(action, key);
-#endif
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
     case MenuSoftKey: // FALL-THROUGH
@@ -171,9 +135,6 @@ void QSoftKeyManager::cleanupHash(QObject *obj)
     Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(obj);
     d->keyedActions.remove(action);
-#ifdef SYMBIAN_VERSION_SYMBIAN3
-    d->softKeyCommandActions.remove(action);
-#endif
 }
 
 void QSoftKeyManager::sendKeyEvent()
@@ -304,16 +265,6 @@ bool QSoftKeyManager::event(QEvent *e)
 #endif //QT_NO_ACTION
     return false;
 }
-
-#ifdef Q_WS_S60
-bool QSoftKeyManager::handleCommand(int command)
-{
-    if (QSoftKeyManager::instance()->d_func()->pendingUpdate)
-        (void)QSoftKeyManager::instance()->handleUpdateSoftKeys();
-
-    return static_cast<QSoftKeyManagerPrivateS60*>(QSoftKeyManager::instance()->d_func())->handleCommand(command);
-}
-#endif
 
 QT_END_NAMESPACE
 #endif //QT_NO_SOFTKEYMANAGER

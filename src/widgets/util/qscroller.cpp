@@ -568,7 +568,7 @@ void QScroller::stop()
 
     \note Please note that this value should be physically correct. The actual DPI settings
     that Qt returns for the display may be reported wrongly on purpose by the underlying
-    windowing system, for example on Mac OS X or Maemo 5.
+    windowing system, for example on Mac OS X.
 */
 QPointF QScroller::pixelPerMeter() const
 {
@@ -1018,16 +1018,7 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
 
 QPointF QScrollerPrivate::realDpi(int screen)
 {
-#  ifdef Q_WS_MAEMO_5
-    Q_UNUSED(screen);
-
-    // The DPI value is hardcoded to 96 on Maemo5:
-    // https://projects.maemo.org/bugzilla/show_bug.cgi?id=152525
-    // This value (260) is only correct for the N900 though, but
-    // there's no way to get the real DPI at run time.
-    return QPointF(260, 260);
-
-#  elif defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
+#  if defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
     if (X11 && X11->use_xrandr && X11->ptrXRRSizes && X11->ptrXRRRootToScreen) {
         int nsizes = 0;
         // QDesktopWidget is based on Xinerama screens, which do not always

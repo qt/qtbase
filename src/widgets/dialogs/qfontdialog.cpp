@@ -65,10 +65,6 @@
 #include <private/qdialog_p.h>
 #include <private/qfont_p.h>
 
-#if defined(Q_WS_S60)
-#include <QtWidgets/qdesktopwidget.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QFontListView : public QListView
@@ -322,8 +318,6 @@ void QFontDialogPrivate::init()
 
 #if defined(Q_WS_WINCE)
     q->resize(180, 120);
-#elif defined(Q_WS_S60)
-    q->resize(QApplication::desktop()->availableGeometry(QCursor::pos()).size());
 #else
     q->resize(500, 360);
 #endif // Q_WS_WINCE
@@ -765,11 +759,7 @@ void QFontDialogPrivate::retranslateStrings()
     familyAccel->setText(QFontDialog::tr("&Font"));
     styleAccel->setText(QFontDialog::tr("Font st&yle"));
     sizeAccel->setText(QFontDialog::tr("&Size"));
-#ifndef Q_WS_S60
-    // Removed the title due to lack of screen estate in small S60 screen.
-    // The effects are descriptive without a title (strikeout, underline).
     effects->setTitle(QFontDialog::tr("Effects"));
-#endif
     strikeout->setText(QFontDialog::tr("Stri&keout"));
     underline->setText(QFontDialog::tr("&Underline"));
     sample->setTitle(QFontDialog::tr("Sample"));

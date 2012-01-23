@@ -1204,7 +1204,7 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     a virtual keyboard on devices which have very few or no keys.
 
     \bold{ The property only has an effect on platforms which use software input
-    panels, such as Windows CE and Symbian.}
+    panels, such as Windows CE.}
 
     The default is platform dependent.
 */
@@ -4657,18 +4657,12 @@ void QApplicationPrivate::emitLastWindowClosed()
 /*!
     Sets the kind of focus navigation Qt should use to \a mode.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
+    This feature is available in Qt for Embedded Linux, and Windows CE
     only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-
-    \note On Symbian, setting the mode to Qt::NavigationModeCursorAuto will enable a
-          virtual mouse cursor on non touchscreen devices, which is controlled
-          by the cursor keys if there is no analog pointer device.
-          On other platforms and on touchscreen devices, it has the same
-          meaning as Qt::NavigationModeNone.
 
     \since 4.6
 
@@ -4682,15 +4676,11 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
 /*!
     Returns what kind of focus navigation Qt is using.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
           QT_KEYPAD_NAVIGATION defined.
-
-    \note On Symbian, the default mode is Qt::NavigationModeNone for touch
-          devices, and Qt::NavigationModeKeypadDirectional.
 
     \since 4.6
 
@@ -4705,8 +4695,7 @@ Qt::NavigationMode QApplication::navigationMode()
     Sets whether Qt should use focus navigation suitable for use with a
     minimal keypad.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with
@@ -4727,10 +4716,9 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
 
 /*!
     Returns true if Qt is set to use keypad navigation; otherwise returns
-    false.  The default value is true on Symbian, but false on other platforms.
+    false.  The default value is false.
 
-    This feature is available in Qt for Embedded Linux, Symbian and Windows CE
-    only.
+    This feature is available in Qt for Embedded Linux, and Windows CE only.
 
     \note On Windows CE this feature is disabled by default for touch device
           mkspecs. To enable keypad navigation, build Qt with

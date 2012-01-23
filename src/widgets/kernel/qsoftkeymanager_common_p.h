@@ -74,9 +74,6 @@ protected:
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;
     bool pendingUpdate;
-#ifdef SYMBIAN_VERSION_SYMBIAN3
-    QHash<QAction*, int> softKeyCommandActions;
-#endif
 };
 
 QT_END_NAMESPACE

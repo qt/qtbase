@@ -1723,25 +1723,6 @@ extern QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
 extern QString qt_win_get_existing_directory(const QFileDialogArgs &args);
 #endif
 
-/*
-    For Symbian file dialogs
-*/
-#if defined(Q_WS_S60)
-extern QString qtSymbianGetOpenFileName(const QString &caption,
-                                        const QString &dir,
-                                        const QString &filter);
-
-extern QStringList qtSymbianGetOpenFileNames(const QString &caption,
-                                             const QString &dir,
-                                             const QString &filter);
-
-extern QString qtSymbianGetSaveFileName(const QString &caption,
-                                        const QString &dir);
-
-extern QString qtSymbianGetExistingDirectory(const QString &caption,
-                                             const QString &dir);
-#endif
-
 /*!
     This is a convenience static function that returns an existing file
     selected by the user. If the user presses Cancel, it returns a null string.
@@ -1770,7 +1751,7 @@ extern QString qtSymbianGetExistingDirectory(const QString &caption,
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, Mac OS X and Symbian^3, this static function will use the
+    On Windows, and Mac OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -1782,10 +1763,6 @@ extern QString qtSymbianGetExistingDirectory(const QString &caption,
     the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}. If
     \a options includes DontResolveSymlinks, the file dialog will treat
     symlinks as regular directories.
-
-    On Symbian^3 the parameter \a selectedFilter has no meaning and the
-    \a options parameter is only used to define if the native file dialog is
-    used.
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1802,10 +1779,6 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
 {
     if (qt_filedialog_open_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filename_hook(parent, caption, dir, filter, selectedFilter, options);
-#if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
-        return qtSymbianGetOpenFileName(caption, dir, filter);
-#endif
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -1856,7 +1829,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified
     then a default caption will be used.
 
-    On Windows, Mac OS X and Symbian^3, this static function will use the
+    On Windows, and Mac OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -1875,10 +1848,6 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
 
     \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 10
 
-    On Symbian^3 the parameter \a selectedFilter has no meaning and the
-    \a options parameter is only used to define if the native file dialog is
-    used. On Symbian^3, this function can only return a single filename.
-
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
     QFileDialog constructors.
@@ -1894,10 +1863,6 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
 {
     if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
-#if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
-        return qtSymbianGetOpenFileNames(caption, dir, filter);
-#endif
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -1955,7 +1920,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     The dialog's caption is set to \a caption. If \a caption is not specified,
     a default caption will be used.
 
-    On Windows, Mac OS X and Symbian^3, this static function will use the
+    On Windows, and Mac OS X, this static function will use the
     native file dialog and not a QFileDialog.
 
     On Windows the dialog will spin a blocking modal event loop that will not
@@ -1968,10 +1933,6 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}. If
     \a options includes DontResolveSymlinks the file dialog will treat symlinks
     as regular directories.
-
-    On Symbian^3 the parameters \a filter and \a selectedFilter have no
-    meaning. The \a options parameter is only used to define if the native file
-    dialog is used.
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -1988,10 +1949,6 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
 {
     if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
-#if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
-        return qtSymbianGetSaveFileName(caption, dir);
-#endif
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -2040,7 +1997,7 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     pass. To ensure a native file dialog, \l{QFileDialog::}{ShowDirsOnly} must
     be set.
 
-    On Windows, Mac OS X and Symbian^3, this static function will use the
+    On Windows, and Mac OS X, this static function will use the
     native file dialog and not a QFileDialog. On Windows CE, if the device has
     no native file dialog, a QFileDialog will be used.
 
@@ -2053,9 +2010,6 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     On Windows the dialog will spin a blocking modal event loop that will not
     dispatch any QTimers, and if \a parent is not 0 then it will position the
     dialog just below the parent's title bar.
-
-    On Symbian^3 the \a options parameter is only used to define if the native
-    file dialog is used.
 
     \warning Do not delete \a parent during the execution of the dialog. If you
     want to do this, you should create the dialog yourself using one of the
@@ -2070,10 +2024,6 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
 {
     if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
-#if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
-        return qtSymbianGetExistingDirectory(caption, dir);
-#endif
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
@@ -3437,10 +3387,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 
     QString pathCopy = QDir::toNativeSeparators(path);
     QString sep = QDir::separator();
-#if defined(Q_OS_SYMBIAN)
-    if (pathCopy == QLatin1String("\\"))
-        return QStringList(pathCopy);
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
         return QStringList(pathCopy);
     QString doubleSlash(QLatin1String("\\\\"));
@@ -3463,11 +3410,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 
     QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
-#if defined(Q_OS_SYMBIAN)
-    QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);
-    if (pathCopy.endsWith(sep))
-        parts.append(QString());
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);
     if (!doubleSlash.isEmpty() && !parts.isEmpty())
         parts[0].prepend(doubleSlash);
