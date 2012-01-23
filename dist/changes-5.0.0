@@ -317,6 +317,11 @@ QtCore
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.
 
+* A new set of classes for doing pattern matching with Perl-compatible regular
+  expressions has been added: QRegularExpression, QRegularExpressionMatch and
+  QRegularExpressionMatchIterator. They aim to replace QRegExp with a more
+  powerful and flexible regular expression engine.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

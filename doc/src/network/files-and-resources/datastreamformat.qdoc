@@ -298,6 +298,11 @@
             \li Regular expression syntax (quint8)
             \li Minimal matching (quint8)
             \endlist
+    \row \li QRegularExpression
+         \li \list
+            \li The regular expression pattern (QString)
+            \li The pattern options (quint32)
+            \endlist
     \row \li QRegion
          \li \list
             \li The size of the data, i.e. 8 + 16 * (number of rectangles) (quint32)
