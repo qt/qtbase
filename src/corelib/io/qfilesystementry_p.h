@@ -56,7 +56,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qbytearray.h>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #define QFILESYSTEMENTRY_NATIVE_PATH_IS_UTF16
 #endif
 
@@ -93,7 +93,7 @@ public:
     bool isRelative() const;
     bool isClean() const;
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     bool isDriveRoot() const;
 #endif
     bool isRoot() const;

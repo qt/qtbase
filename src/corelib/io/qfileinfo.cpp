@@ -1019,7 +1019,7 @@ bool QFileInfo::isRoot() const
         return true;
     if (d->fileEngine == 0) {
         if (d->fileEntry.isRoot()) {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN) 
+#if defined(Q_OS_WIN)
             //the path is a drive root, but the drive may not exist
             //for backward compatibility, return true only if the drive exists
             if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::ExistsAttribute))

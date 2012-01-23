@@ -108,15 +108,10 @@ static qint64 getticks()
     return (ts.tv_sec * 1000000000) + ts.tv_nsec;
 #else
 
-#ifdef Q_OS_SYMBIAN
-    return clock();
-#else
     // no clock_gettime(), fall back to wall time
     struct timeval tv;
     gettimeofday(&tv, 0);
     return (tv.tv_sec * 1000000) + tv.tv_usec;
-#endif
-
 #endif
 }
 

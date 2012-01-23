@@ -65,10 +65,7 @@
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
 // Platform-specific headers
-#if defined(Q_OS_WIN)
-#elif defined (Q_OS_SYMBIAN)
-#include <f32file.h>
-#else
+#if !defined(Q_OS_WIN)
 #include <QtCore/qscopedpointer.h>
 #endif
 
@@ -95,11 +92,6 @@ private:
     bool uncFallback;
     int uncShareIndex;
     bool onlyDirs;
-#elif defined (Q_OS_SYMBIAN)
-    RDir dirHandle;
-    TEntryArray entries;
-    TInt lastError;
-    TInt entryIndex;
 #else
     QT_DIR *dir;
     QT_DIRENT *dirEntry;

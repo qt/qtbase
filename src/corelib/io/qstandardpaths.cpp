@@ -105,12 +105,6 @@ QT_BEGIN_NAMESPACE
 
     \note The storage location returned can be a directory that does not exist; i.e., it
     may need to be created by the system or the user.
-
-    \note On Symbian OS, ApplicationsLocation always point /sys/bin folder on the same drive
-    with executable. FontsLocation always points to folder on ROM drive. Symbian OS does not
-    have desktop concept, DesktopLocation returns same path as DocumentsLocation.
-    Rest of the standard locations point to folder on same drive with executable, except
-    that if executable is in ROM the folder from C drive is returned.
 */
 
 
@@ -232,7 +226,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     QStringList searchPaths = paths;
     if (paths.isEmpty()) {
         QByteArray pEnv = qgetenv("PATH");
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
         const QLatin1Char pathSep(';');
 #else
         const QLatin1Char pathSep(':');

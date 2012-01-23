@@ -152,7 +152,6 @@ namespace QT_NAMESPACE {}
    The operating system, must be one of: (Q_OS_x)
 
      DARWIN   - Darwin OS (synonym for Q_OS_MAC)
-     SYMBIAN  - Symbian
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
      OS2EMX   - XFree86 on OS/2 (not PM)
@@ -191,10 +190,6 @@ namespace QT_NAMESPACE {}
 #  else
 #    define Q_OS_DARWIN32
 #  endif
-#elif defined(__SYMBIAN32__) || defined(SYMBIAN)
-#  define Q_OS_SYMBIAN
-#  define Q_NO_POSIX_SIGNALS
-#  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
 #elif !defined(SAG_COM) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))
@@ -342,9 +337,7 @@ namespace QT_NAMESPACE {}
      HIGHC    - MetaWare High C/C++
      PGI      - Portland Group C++
      GHS      - Green Hills Optimizing C++ Compilers
-     GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
-     NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
      CLANG    - C++ front-end for the LLVM compiler
 
 
@@ -401,14 +394,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WATCOMC__)
 #  define Q_CC_WAT
-
-/* Symbian GCCE */
-#elif defined(__GCCE__)
-#  define Q_CC_GCCE
-#  define QT_VISIBILITY_AVAILABLE
-#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
-#    define QT_HAVE_ARMV6
-#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
@@ -901,7 +886,7 @@ typedef quint64 qulonglong;
 #ifndef QT_POINTER_SIZE
 #  if defined(Q_OS_WIN64)
 #   define QT_POINTER_SIZE 8
-#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+#  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #   define QT_POINTER_SIZE 4
 #  endif
 #endif

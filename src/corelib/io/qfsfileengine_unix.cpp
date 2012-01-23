@@ -56,12 +56,6 @@
 #include <sys/mman.h>
 #include <stdlib.h>
 #include <limits.h>
-#if defined(Q_OS_SYMBIAN)
-# include <sys/syslimits.h>
-# include <f32file.h>
-# include <pathinfo.h>
-# include "private/qcore_symbian_p.h"
-#endif
 #include <errno.h>
 #if !defined(QWS) && defined(Q_OS_MAC)
 # include <private/qcore_mac_p.h>
@@ -69,23 +63,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-/*!
-    \internal
-
-    Returns true if supplied path is a relative path
-*/
-static bool isRelativePathSymbian(const QString& fileName)
-{
-    return !(fileName.startsWith(QLatin1Char('/'))
-             || (fileName.length() >= 2
-             && ((fileName.at(0).isLetter() && fileName.at(1) == QLatin1Char(':'))
-             || (fileName.at(0) == QLatin1Char('/') && fileName.at(1) == QLatin1Char('/')))));
-}
-
-#endif
-
-#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
@@ -125,7 +102,6 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QF
 
     return mode;
 }
-#endif
 
 /*!
     \internal
@@ -155,7 +131,6 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
-#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
@@ -166,151 +141,7 @@ static inline bool setCloseOnExec(int fd)
 {
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
-#endif
 
-#ifdef Q_OS_SYMBIAN
-/*!
-    \internal
-*/
-bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
-{
-    Q_Q(QFSFileEngine);
-	
-	fh = 0;
-	fd = -1;
-
-    QString fn(QFileSystemEngine::absoluteName(fileEntry).nativeFilePath());
-    RFs& fs = qt_s60GetRFs();
-
-    TUint symbianMode = 0;
-
-    if(openMode & QIODevice::ReadOnly)
-        symbianMode |= EFileRead;
-    if(openMode & QIODevice::WriteOnly)
-        symbianMode |= EFileWrite;
-    if(openMode & QIODevice::Text)
-        symbianMode |= EFileStreamText;
-
-    // pre Symbian 9.4, file I/O is always unbuffered, and the enum values don't exist
-    if(QSysInfo::symbianVersion() >= QSysInfo::SV_9_4) {
-        if (openMode & QFile::Unbuffered) {
-            if (openMode & QIODevice::WriteOnly)
-                symbianMode |= 0x00001000; //EFileWriteDirectIO;
-            // ### Unbuffered read is not used, because it prevents file open in /resource
-            // ### and has no obvious benefits
-        } else {
-            if (openMode & QIODevice::WriteOnly)
-                symbianMode |= 0x00000800; //EFileWriteBuffered;
-            // use implementation defaults for read buffering
-        }
-    }
-
-    // Until Qt supports file sharing, we can't support EFileShareReadersOrWriters safely,
-    // but Qt does this on other platforms and autotests rely on it.
-    // The reason is that Unix locks are only advisory - the application needs to test the
-    // lock after opening the file. Symbian and Windows locks are mandatory - opening a
-    // locked file will fail.
-    symbianMode |= EFileShareReadersOrWriters;
-
-    TInt r;
-    //note QIODevice::Truncate only has meaning for read/write access
-    //write-only files are always truncated unless append is specified
-    //reference openModeToOpenFlags in qfsfileengine_unix.cpp
-    if ((openMode & QIODevice::Truncate) || (!(openMode & QIODevice::ReadOnly) && !(openMode & QIODevice::Append))) {
-        r = symbianFile.Replace(fs, qt_QString2TPtrC(fn), symbianMode);
-    } else {
-        r = symbianFile.Open(fs, qt_QString2TPtrC(fn), symbianMode);
-        if (r == KErrNotFound && (openMode & QIODevice::WriteOnly)) {
-            r = symbianFile.Create(fs, qt_QString2TPtrC(fn), symbianMode);
-        }
-    }
-
-    if (r == KErrNone) {
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        TInt64 size;
-#else
-        TInt size;
-#endif
-        r = symbianFile.Size(size);
-        if (r==KErrNone) {
-            if (openMode & QIODevice::Append)
-                symbianFilePos = size;
-            else
-                symbianFilePos = 0;
-            //TODO: port this (QFileSystemMetaData in open?)
-            //cachedSize = size;
-        }
-    }
-
-    if (r != KErrNone) {
-        q->setError(QFile::OpenError, QSystemError(r, QSystemError::NativeError).toString());
-        symbianFile.Close();
-        return false;
-    }
-
-    closeFileHandle = true;
-    return true;
-}
-
-bool QFSFileEngine::open(QIODevice::OpenMode openMode, const RFile &file, QFile::FileHandleFlags handleFlags)
-{
-    Q_D(QFSFileEngine);
-
-    // Append implies WriteOnly.
-    if (openMode & QFile::Append)
-        openMode |= QFile::WriteOnly;
-
-    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
-    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
-        openMode |= QFile::Truncate;
-
-    d->openMode = openMode;
-    d->lastFlushFailed = false;
-    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
-    d->fileEntry.clear();
-    d->fh = 0;
-    d->fd = -1;
-    d->tried_stat = 0;
-
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-    //RFile64 adds only functions to RFile, no data members
-    d->symbianFile = static_cast<const RFile64&>(file);
-#else
-    d->symbianFile = file;
-#endif
-    TInt ret;
-    d->symbianFilePos = 0;
-    if (openMode & QFile::Append) {
-        // Seek to the end when in Append mode.
-        ret = d->symbianFile.Size(d->symbianFilePos);
-    } else {
-        // Seek to current otherwise
-        ret = d->symbianFile.Seek(ESeekCurrent, d->symbianFilePos);
-    }
-
-    if (ret != KErrNone) {
-        setError(QFile::OpenError, QSystemError(ret, QSystemError::NativeError).toString());
-
-        d->openMode = QIODevice::NotOpen;
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        d->symbianFile = RFile64();
-#else
-        d->symbianFile = RFile();
-#endif
-        return false;
-    }
-
-    // Extract filename (best effort)
-    TFileName fn;
-    TInt err = d->symbianFile.FullName(fn);
-    if (err == KErrNone)
-        d->fileEntry = QFileSystemEntry(qt_TDesC2QString(fn), QFileSystemEntry::FromNativePath());
-    else
-        d->fileEntry.clear();
-
-    return true;
-}
-#else
 /*!
     \internal
 */
@@ -407,7 +238,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     closeFileHandle = true;
     return true;
 }
-#endif
 
 /*!
     \internal
@@ -423,10 +253,6 @@ bool QFSFileEnginePrivate::nativeClose()
 */
 bool QFSFileEnginePrivate::nativeFlush()
 {
-#ifdef Q_OS_SYMBIAN
-    if (symbianFile.SubSessionHandle())
-        return (KErrNone == symbianFile.Flush());
-#endif
     return fh ? flushFh() : fd != -1;
 }
 
@@ -437,24 +263,6 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 {
     Q_Q(QFSFileEngine);
 
-#ifdef Q_OS_SYMBIAN
-    if (symbianFile.SubSessionHandle()) {
-        if(len > KMaxTInt) {
-            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
-            q->setError(QFile::ReadError, QLatin1String("Maximum 2GB in single read on this platform"));
-            return -1;
-        }
-        TPtr8 ptr(reinterpret_cast<TUint8*>(data), static_cast<TInt>(len));
-        TInt r = symbianFile.Read(symbianFilePos, ptr);
-        if (r != KErrNone)
-        {
-            q->setError(QFile::ReadError, QSystemError(r, QSystemError::NativeError).toString());
-            return -1;
-        }
-        symbianFilePos += ptr.Length();
-        return qint64(ptr.Length());
-    }
-#endif
     if (fh && nativeIsSequential()) {
         size_t readBytes = 0;
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
@@ -522,40 +330,6 @@ qint64 QFSFileEnginePrivate::nativeReadLine(char *data, qint64 maxlen)
 */
 qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 {
-#ifdef Q_OS_SYMBIAN
-    Q_Q(QFSFileEngine);
-    if (symbianFile.SubSessionHandle()) {
-        if(len > KMaxTInt) {
-            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
-            q->setError(QFile::WriteError, QLatin1String("Maximum 2GB in single write on this platform"));
-            return -1;
-        }
-        const TPtrC8 ptr(reinterpret_cast<const TUint8*>(data), static_cast<TInt>(len));
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        TInt64 eofpos = 0;
-#else
-        TInt eofpos = 0;
-#endif
-        //The end of file position is not cached because QFile is read/write sharable, therefore another
-        //process may have altered the file size.
-        TInt r = symbianFile.Seek(ESeekEnd, eofpos);
-        if (r == KErrNone && symbianFilePos > eofpos) {
-            //seek position is beyond end of file so file needs to be extended before write.
-            //note that SetSize does not zero-initialise (c.f. posix lseek)
-            r = symbianFile.SetSize(symbianFilePos);
-        }
-        if (r == KErrNone) {
-            //write to specific position in the file (i.e. use our own cursor rather than calling seek)
-            r = symbianFile.Write(symbianFilePos, ptr);
-        }
-        if (r != KErrNone) {
-            q->setError(QFile::WriteError, QSystemError(r, QSystemError::NativeError).toString());
-            return -1;
-        }
-        symbianFilePos += len;
-        return len;
-    }
-#endif
     return writeFdFh(data, len);
 }
 
@@ -564,12 +338,6 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 */
 qint64 QFSFileEnginePrivate::nativePos() const
 {
-#ifdef Q_OS_SYMBIAN
-    const Q_Q(QFSFileEngine);
-    if (symbianFile.SubSessionHandle()) {
-        return symbianFilePos;
-    }
-#endif
     return posFdFh();
 }
 
@@ -578,19 +346,6 @@ qint64 QFSFileEnginePrivate::nativePos() const
 */
 bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 {
-#ifdef Q_OS_SYMBIAN
-    Q_Q(QFSFileEngine);
-    if (symbianFile.SubSessionHandle()) {
-#ifndef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        if(pos > KMaxTInt) {
-            q->setError(QFile::PositionError, QLatin1String("Maximum 2GB file position on this platform"));
-            return false;
-        }
-#endif
-        symbianFilePos = pos;
-        return true;
-    }
-#endif
     return seekFdFh(pos);
 }
 
@@ -602,31 +357,11 @@ int QFSFileEnginePrivate::nativeHandle() const
     return fh ? fileno(fh) : fd;
 }
 
-#ifdef Q_OS_SYMBIAN
-int QFSFileEnginePrivate::getMapHandle()
-{
-    if (symbianFile.SubSessionHandle()) {
-        // Symbian file handle can't be used for open C mmap() so open the file with open C as well.
-        if (fileHandleForMaps < 0) {
-            int flags = openModeToOpenFlags(openMode);
-            flags &= ~(O_CREAT | O_TRUNC);
-            fileHandleForMaps = ::wopen((wchar_t*)(fileEntry.nativeFilePath().utf16()), flags, 0666);
-        }
-        return fileHandleForMaps;
-    }
-    return nativeHandle();
-}
-#endif
-
 /*!
     \internal
 */
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
-#ifdef Q_OS_SYMBIAN
-    if (symbianFile.SubSessionHandle())
-        return false;
-#endif
     return isSequentialFdFh();
 }
 
@@ -679,22 +414,6 @@ bool QFSFileEngine::link(const QString &newName)
 
 qint64 QFSFileEnginePrivate::nativeSize() const
 {
-#ifdef Q_OS_SYMBIAN
-    const Q_Q(QFSFileEngine);
-    if (symbianFile.SubSessionHandle()) {
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        qint64 size;
-#else
-        TInt size;
-#endif
-        TInt err = symbianFile.Size(size);
-        if(err != KErrNone) {
-            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QSystemError(err, QSystemError::NativeError).toString());
-            return 0;
-        }
-        return size;
-    }
-#endif
     return sizeFdFh();
 }
 
@@ -710,11 +429,7 @@ bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) co
 
 bool QFSFileEngine::caseSensitive() const
 {
-#if defined(Q_OS_SYMBIAN)
-    return false;
-#else
     return true;
-#endif
 }
 
 bool QFSFileEngine::setCurrentPath(const QString &path)
@@ -745,25 +460,7 @@ QString QFSFileEngine::tempPath()
 QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
-#if defined(Q_OS_SYMBIAN)
-    TDriveList driveList;
-    RFs rfs = qt_s60GetRFs();
-    TInt err = rfs.DriveList(driveList);
-    if (err == KErrNone) {
-        char driveName[] = "A:/";
-
-        for (char i = 0; i < KMaxDrives; i++) {
-            if (driveList[i]) {
-                driveName[0] = 'A' + i;
-                ret.append(QFileInfo(QLatin1String(driveName)));
-            }
-        }
-    } else {
-        qWarning("QFSFileEngine::drives: Getting drives failed");
-    }
-#else
     ret.append(QFileInfo(rootPath()));
-#endif
     return ret;
 }
 
@@ -900,11 +597,7 @@ QString QFSFileEngine::fileName(FileName file) const
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
-#if defined(Q_OS_SYMBIAN)
-    return isRelativePathSymbian(d->fileEntry.filePath());
-#else
     return d->fileEntry.filePath().length() ? d->fileEntry.filePath()[0] != QLatin1Char('/') : true;
-#endif
 }
 
 uint QFSFileEngine::ownerId(FileOwner own) const
@@ -920,13 +613,9 @@ uint QFSFileEngine::ownerId(FileOwner own) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
-#ifndef Q_OS_SYMBIAN
     if (own == OwnerUser)
         return QFileSystemEngine::resolveUserName(ownerId(own));
     return QFileSystemEngine::resolveGroupName(ownerId(own));
-#else
-    return QString();
-#endif
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
@@ -940,44 +629,6 @@ bool QFSFileEngine::setPermissions(uint perms)
     return true;
 }
 
-#ifdef Q_OS_SYMBIAN
-bool QFSFileEngine::setSize(qint64 size)
-{
-    Q_D(QFSFileEngine);
-    bool ret = false;
-    TInt err = KErrNone;
-    if (d->symbianFile.SubSessionHandle()) {
-        TInt err = d->symbianFile.SetSize(size);
-        ret = (err == KErrNone);
-        if (ret && d->symbianFilePos > size)
-            d->symbianFilePos = size;
-    }
-    else if (d->fd != -1)
-        ret = QT_FTRUNCATE(d->fd, size) == 0;
-    else if (d->fh)
-        ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
-    else {
-        RFile tmp;
-        QString symbianFilename(d->fileEntry.nativeFilePath());
-        err = tmp.Open(qt_s60GetRFs(), qt_QString2TPtrC(symbianFilename), EFileWrite);
-        if (err == KErrNone)
-        {
-            err = tmp.SetSize(size);
-            tmp.Close();
-        }
-        ret = (err == KErrNone);
-    }
-    if (!ret) {
-        QSystemError error;
-        if (err)
-            error = QSystemError(err, QSystemError::NativeError);
-        else
-            error = QSystemError(errno, QSystemError::StandardLibraryError);
-        setError(QFile::ResizeError, error.toString());
-    }
-    return ret;
-}
-#else
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
@@ -992,7 +643,6 @@ bool QFSFileEngine::setSize(qint64 size)
         setError(QFile::ResizeError, qt_error_string(errno));
     return ret;
 }
-#endif
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const
 {
@@ -1045,19 +695,8 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     QT_OFF_T realOffset = QT_OFF_T(offset);
     realOffset &= ~(QT_OFF_T(pageSize - 1));
 
-#ifdef Q_OS_SYMBIAN
-    void *mapAddress;
-    TRAPD(err,     mapAddress = QT_MMAP((void*)0, realSize,
-                   access, MAP_SHARED, getMapHandle(), realOffset));
-    if (err != KErrNone) {
-        qWarning("OpenC bug: leave from mmap %d", err);
-        mapAddress = MAP_FAILED;
-        errno = EINVAL;
-    }
-#else
     void *mapAddress = QT_MMAP((void*)0, realSize,
                    access, MAP_SHARED, nativeHandle(), realOffset);
-#endif
     if (MAP_FAILED != mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
         maps[address] = QPair<int,size_t>(extra, realSize);

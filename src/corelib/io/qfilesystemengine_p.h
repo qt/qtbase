@@ -71,7 +71,7 @@ public:
     static QString resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QString resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     static QString resolveUserName(uint userId);
     static QString resolveGroupName(uint groupId);
 #endif

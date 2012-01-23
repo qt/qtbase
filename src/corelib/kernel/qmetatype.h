@@ -194,7 +194,7 @@ public:
 // This logic must match the one in qglobal.h
 #if defined(QT_COORD_TYPE)
         QReal = 0,
-#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+#elif defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE)
         QReal = Float,
 #else
         QReal = Double,

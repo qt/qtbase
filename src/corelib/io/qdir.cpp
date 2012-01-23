@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 static QString driveSpec(const QString &path)
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     if (path.size() < 2)
         return QString();
     char c = path.at(0).toAscii();
@@ -162,7 +162,7 @@ inline void QDirPrivate::setPath(const QString &path)
     QString p = QDir::fromNativeSeparators(path);
     if (p.endsWith(QLatin1Char('/'))
             && p.length() > 1
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
         && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
 #endif
     ) {
@@ -736,8 +736,6 @@ QString QDir::relativeFilePath(const QString &fileName) const
     if (fileDrive.toLower() != dirDrive.toLower()
         || (file.startsWith(QLatin1String("//"))
         && !dir.startsWith(QLatin1String("//"))))
-#elif defined(Q_OS_SYMBIAN)
-    if (fileDrive.toLower() != dirDrive.toLower())
 #else
     if (fileDrive != dirDrive)
 #endif
@@ -753,7 +751,7 @@ QString QDir::relativeFilePath(const QString &fileName) const
 
     int i = 0;
     while (i < dirElts.size() && i < fileElts.size() &&
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
            dirElts.at(i).toLower() == fileElts.at(i).toLower())
 #else
            dirElts.at(i) == fileElts.at(i))
@@ -789,7 +787,7 @@ QString QDir::relativeFilePath(const QString &fileName) const
 */
 QString QDir::toNativeSeparators(const QString &pathName)
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     int i = pathName.indexOf(QLatin1Char('/'));
     if (i != -1) {
         QString n(pathName);
@@ -822,7 +820,7 @@ QString QDir::toNativeSeparators(const QString &pathName)
 */
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     int i = pathName.indexOf(QLatin1Char('\\'));
     if (i != -1) {
         QString n(pathName);
@@ -1802,7 +1800,7 @@ QFileInfoList QDir::drives()
 */
 QChar QDir::separator()
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
     return QLatin1Char('\\');
 #else
     return QLatin1Char('/');
@@ -1882,7 +1880,7 @@ QString QDir::currentPath()
 
     Under non-Windows operating systems the \c HOME environment
     variable is used if it exists, otherwise the path returned by the
-    rootPath(). On Symbian always the same as the path returned by the rootPath().
+    rootPath().
 
     \sa home(), currentPath(), rootPath(), tempPath()
 */
@@ -1937,8 +1935,7 @@ QString QDir::tempPath()
     Returns the absolute path of the root directory.
 
     For Unix operating systems this returns "/". For Windows file
-    systems this normally returns "c:/". On Symbian this typically returns
-    "c:/data", i.e. the same as native PathInfo::PhoneMemoryRootPath().
+    systems this normally returns "c:/".
 
     \sa root(), drives(), currentPath(), homePath(), tempPath()
 */
@@ -2070,7 +2067,7 @@ QString QDir::cleanPath(const QString &path)
                     levels++;
                 }
             } else if (last != -1 && iwrite - last == 1) {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
                 eaten = (iwrite > 2);
 #else
                 eaten = true;
@@ -2105,7 +2102,7 @@ QString QDir::cleanPath(const QString &path)
     QString ret = (used == len ? name : QString(out, used));
     // Strip away last slash except for root directories
     if (ret.length() > 1 && ret.endsWith(QLatin1Char('/'))) {
-#if defined (Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+#if defined (Q_OS_WIN)
         if (!(ret.length() == 3 && ret.at(1) == QLatin1Char(':')))
 #endif
             ret.chop(1);

@@ -69,9 +69,6 @@ protected:
 
     bool openExternalFile(int flags, int fd, QFile::FileHandleFlags handleFlags);
     bool openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handleFlags);
-#ifdef Q_OS_SYMBIAN
-    bool openExternalFile(int flags, const RFile& f, QFile::FileHandleFlags handleFlags);
-#endif
 
     QString fileName;
     mutable QAbstractFileEngine *fileEngine;

@@ -156,7 +156,7 @@ public:
     virtual bool winEventFilter(MSG *message, long *result);
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     static void watchUnixSignal(int signal, bool watch);
 #endif
 

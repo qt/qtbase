@@ -274,9 +274,8 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
-// - Open C does not (yet?) implement these on Symbian OS
 // - VxWorks doesn't have processes
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_VXWORKS)
+#if !defined(Q_OS_VXWORKS)
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])
 {
@@ -298,16 +297,13 @@ static inline int qt_safe_execvp(const char *file, char *const argv[])
     EINTR_LOOP(ret, ::execvp(file, argv));
     return ret;
 }
-#endif
 
-#ifndef Q_OS_VXWORKS // no processes on VxWorks
 static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 {
     register int ret;
     EINTR_LOOP(ret, ::waitpid(pid, status, options));
     return ret;
 }
-
 #endif // Q_OS_VXWORKS
 
 #if !defined(_POSIX_MONOTONIC_CLOCK)

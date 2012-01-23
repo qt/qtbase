@@ -1370,13 +1370,6 @@ bool qSharedBuild()
  */
 
 /*!
-  \macro Q_OS_SYMBIAN
-  \relates <QtGlobal>
-
-  Defined on Symbian.
- */
-
-/*!
   \macro QT_DISABLE_DEPRECATED_BEFORE
   \relates <QtGlobal>
 

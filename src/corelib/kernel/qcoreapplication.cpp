@@ -66,15 +66,7 @@
 #include <private/qfunctions_p.h>
 #include <private/qlocale_p.h>
 
-#ifdef Q_OS_SYMBIAN
-#  include <exception>
-#  include <f32file.h>
-#  include <e32ldr.h>
-#  include "qeventdispatcher_symbian_p.h"
-#  include "private/qcore_symbian_p.h"
-#  include "private/qfilesystemengine_p.h"
-#  include <apacmdln.h>
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
 #  endif
@@ -115,62 +107,6 @@ private:
 
     QMutex *mtx;
 };
-
-#ifdef Q_OS_SYMBIAN
-typedef TDriveNumber (*SystemDriveFunc)(RFs&);
-static SystemDriveFunc PtrGetSystemDrive = 0;
-static CApaCommandLine* apaCommandLine = 0;
-static char *apaTail = 0;
-static QVector<char *> *apaArgv = 0;
-
-static void qt_cleanup_apa_cmd_line()
-{
-    delete apaCommandLine;
-    apaCommandLine = 0;
-    delete apaArgv;
-    apaArgv = 0;
-    delete apaTail;
-    apaTail = 0;
-}
-
-static inline void qt_init_symbian_apa_arguments(int &argc, char **&argv)
-{
-    // If app is launched via CApaCommandLine::StartApp(), normal arguments only contain
-    // application name.
-    if (argc == 1) {
-        CApaCommandLine* commandLine = QCoreApplicationPrivate::symbianCommandLine();
-        if(commandLine) {
-            TPtrC8 apaCmdLine = commandLine->TailEnd();
-            int tailLen = apaCmdLine.Length();
-            if (tailLen) {
-                apaTail = reinterpret_cast<char *>(malloc(tailLen + 1));
-                qMemCopy(apaTail, reinterpret_cast<const char *>(apaCmdLine.Ptr()), tailLen);
-                apaTail[tailLen] = '\0';
-                apaArgv = new QVector<char *>(8);
-                // Reuse windows command line parsing
-                *apaArgv = qWinCmdLine<char>(apaTail, tailLen, argc);
-                apaArgv->insert(0, argv[0]);
-                argc++;
-                argv = apaArgv->data();
-            }
-        }
-    }
-}
-
-CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
-{
-    // Getting of Apa command line needs to be static as it can only be called successfully
-	// once per process.
-    if (!apaCommandLine) {
-        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(apaCommandLine);
-        if (err == KErrNone) {
-            qAddPostRoutine(qt_cleanup_apa_cmd_line);
-        }
-    }
-    return apaCommandLine;
-}
-
-#endif
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
@@ -347,10 +283,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     }
     QCoreApplicationPrivate::is_app_closing = false;
 
-#ifdef Q_OS_SYMBIAN
-    qt_init_symbian_apa_arguments(argc, argv);
-#endif
-
 #ifdef Q_OS_UNIX
     qt_application_thread_id = QThread::currentThreadId();
 #endif
@@ -393,9 +325,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
 void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
-#if defined(Q_OS_SYMBIAN)
-    eventDispatcher = new QEventDispatcherSymbian(q);
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
@@ -443,11 +373,6 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(currentThread);
     Q_UNUSED(thr);
 }
-#elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
-// no implementation in release builds, but keep the symbol present
-void QCoreApplicationPrivate::checkReceiverThread(QObject * /* receiver */)
-{
-}
 #endif
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
@@ -455,17 +380,10 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QStringList *app_libpaths = coreappdata()->app_libpaths;
     Q_ASSERT(app_libpaths);
-# if defined(Q_OS_SYMBIAN)
-    QString app_location( QCoreApplication::applicationDirPath() );
-    // File existence check for application's private dir requires additional '\' or
-    // platform security will not allow it.
-    if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location + QLatin1Char('\\')) && !app_libpaths->contains(app_location))
-# else
     QString app_location( QCoreApplication::applicationFilePath() );
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
-# endif
         app_libpaths->append(app_location);
 #endif
 }
@@ -607,17 +525,6 @@ QCoreApplication::QCoreApplication(int &argc, char **argv, int _internal)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if defined(Q_OS_SYMBIAN)
-#ifndef QT_NO_LIBRARY
-    // Refresh factoryloader, as text codecs are requested during lib path
-    // resolving process and won't be therefore properly loaded.
-    // Unknown if this is symbian specific issue.
-    QFactoryLoader::refreshAll();
-#endif
-#ifndef QT_NO_SYSTEMLOCALE
-    d_func()->symbianInit();
-#endif
-#endif //Q_OS_SYMBIAN
 }
 
 
@@ -633,12 +540,6 @@ void QCoreApplication::init()
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
-
-#ifdef Q_OS_SYMBIAN
-    //ensure temp and working directories exist
-    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::tempPath()), true);
-    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::currentPath()), true);
-#endif
 
 #ifndef QT_NO_THREAD
     QThread::initialize();
@@ -677,15 +578,6 @@ void QCoreApplication::init()
 
     qt_startup_hook();
 }
-
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-void QCoreApplicationPrivate::symbianInit()
-{
-    if (!environmentChangeNotifier)
-        environmentChangeNotifier.reset(new QEnvironmentChangeNotifier);
-}
-#endif
-
 
 /*!
     Destroys the QCoreApplication object.
@@ -1819,11 +1711,6 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
-    In Symbian this function will return the application private directory,
-    not the path to executable itself, as those are always in \c {/sys/bin}.
-    If the application is in a read only drive, i.e. ROM, then the private path
-    on the system drive will be returned.
-
     \sa applicationFilePath()
 */
 QString QCoreApplication::applicationDirPath()
@@ -1835,49 +1722,7 @@ QString QCoreApplication::applicationDirPath()
 
     QCoreApplicationPrivate *d = self->d_func();
     if (d->cachedApplicationDirPath.isNull())
-#if defined(Q_OS_SYMBIAN)
-    {
-        QString appPath;
-        RFs& fs = qt_s60GetRFs();
-        TChar driveChar;
-        QChar qDriveChar;
-        driveChar = (RProcess().FileName())[0];
-
-        //Check if the process is installed in a read only drive (typically ROM),
-        //and use the system drive (typically C:) if so.
-        TInt drive;
-        TDriveInfo driveInfo;
-        TInt err = fs.CharToDrive(driveChar, drive);
-        if (err == KErrNone) {
-            err = fs.Drive(driveInfo, drive);
-        }
-        if (err != KErrNone || (driveInfo.iDriveAtt & KDriveAttRom) || (driveInfo.iMediaAtt
-            & KMediaAttWriteProtected)) {
-            if(!PtrGetSystemDrive)
-                PtrGetSystemDrive = reinterpret_cast<SystemDriveFunc>(qt_resolveS60PluginFunc(S60Plugin_GetSystemDrive));
-            Q_ASSERT(PtrGetSystemDrive);
-            drive = PtrGetSystemDrive(fs);
-            fs.DriveToChar(drive, driveChar);
-        }
-
-        qDriveChar = QChar(QLatin1Char(driveChar)).toUpper();
-
-        TFileName privatePath;
-        fs.PrivatePath(privatePath);
-        appPath = qt_TDesC2QString(privatePath);
-        appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
-
-        // Create the appPath if it doesn't exist. Non-existing appPath will cause
-        // Platform Security violations later on if the app doesn't have AllFiles capability.
-        err = fs.CreatePrivatePath(drive);
-        if (err != KErrNone)
-            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
-
-        d->cachedApplicationDirPath = QFileInfo(appPath).path();
-    }
-#else
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
-#endif
     return d->cachedApplicationDirPath;
 }
 
@@ -1918,20 +1763,7 @@ QString QCoreApplication::applicationFilePath()
         return d->cachedApplicationFilePath;
     }
 #endif
-#if defined(Q_OS_SYMBIAN)
-    QString appPath;
-    RProcess proc;
-    TInt err = proc.Open(proc.Id());
-    if (err == KErrNone) {
-        TFileName procName = proc.FileName();
-        appPath.append(QString(reinterpret_cast<const QChar*>(procName.Ptr()), procName.Length()));
-        proc.Close();
-    }
-
-    d->cachedApplicationFilePath = appPath;
-    return d->cachedApplicationFilePath;
-
-#elif defined( Q_OS_UNIX )
+#if defined( Q_OS_UNIX )
 #  ifdef Q_OS_LINUX
     // Try looking for a /proc/<pid>/exe symlink first which points to
     // the absolute path of the executable
@@ -2044,12 +1876,6 @@ char **QCoreApplication::argv()
     \l{http://msdn2.microsoft.com/en-us/library/ms683156(VS.85).aspx}{GetCommandLine()}.
     As a result of this, the string given by arguments().at(0) might not be
     the program name on Windows, depending on how the application was started.
-
-    For Symbian applications started with \c RApaLsSession::StartApp one can specify
-    arguments using \c CApaCommandLine::SetTailEndL function. Such arguments are only
-    available via this method; they will not be passed to \c main function. Also note
-    that only 8-bit string data set with \c CApaCommandLine::SetTailEndL is supported
-    by this function.
 
     \sa applicationFilePath()
 */
@@ -2229,34 +2055,12 @@ QStringList QCoreApplication::libraryPaths()
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
-#if defined(Q_OS_SYMBIAN)
-        // Add existing path on all drives for relative PluginsPath in Symbian
-        if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
-            QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
-                tempPath += QDir::separator();
-            }
-            RFs& fs = qt_s60GetRFs();
-            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
-            TFindFile finder(fs);
-            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
-            while (err == KErrNone) {
-                QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
-                                 finder.File().Length());
-                foundDir = QDir(foundDir).canonicalPath();
-                if (!app_libpaths->contains(foundDir))
-                    app_libpaths->append(foundDir);
-                err = finder.Find();
-            }
-        }
-#else
         if (QFile::exists(installPathPlugins)) {
             // Make sure we convert from backslashes to slashes.
             installPathPlugins = QDir(installPathPlugins).canonicalPath();
             if (!app_libpaths->contains(installPathPlugins))
                 app_libpaths->append(installPathPlugins);
         }
-#endif
 
         // If QCoreApplication is not yet instantiated,
         // make sure we add the application path when we construct the QCoreApplication
@@ -2264,7 +2068,7 @@ QStringList QCoreApplication::libraryPaths()
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
             QLatin1Char pathSep(';');
 #else
             QLatin1Char pathSep(':');
@@ -2290,10 +2094,6 @@ QStringList QCoreApplication::libraryPaths()
     \a paths. All existing paths will be deleted and the path list
     will consist of the paths given in \a paths.
 
-    In Symbian this function is only useful for setting paths for
-    finding Qt extension plugin stubs, since the OS can only
-    load libraries from the \c{/sys/bin} directory.
-
     \sa libraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
@@ -2315,10 +2115,6 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
   directory for plugins.  The default installation directory for plugins
   is \c INSTALL/plugins, where \c INSTALL is the directory where Qt was
   installed.
-
-  In Symbian this function is only useful for adding paths for
-  finding Qt extension plugin stubs, since the OS can only
-  load libraries from the \c{/sys/bin} directory.
 
   \sa removeLibraryPath(), libraryPaths(), setLibraryPaths()
  */

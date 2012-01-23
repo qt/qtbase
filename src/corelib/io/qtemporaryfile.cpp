@@ -49,11 +49,7 @@
 #include "private/qsystemerror_p.h"
 #include "private/qfilesystemengine_p.h"
 
-#if defined(Q_OS_SYMBIAN)
-#include "private/qcore_symbian_p.h"
-#endif
-
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN)
 #include "private/qcore_unix_p.h"       // overrides QT_OPEN
 #include <errno.h>
 #endif
@@ -64,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 typedef ushort Char;
 
 static inline Char Latin1Char(char ch)
@@ -72,15 +68,7 @@ static inline Char Latin1Char(char ch)
     return ushort(uchar(ch));
 }
 
-# ifdef Q_OS_WIN
 typedef HANDLE NativeFileHandle;
-# else // Q_OS_SYMBIAN
-#  ifdef  SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-typedef RFile64 NativeFileHandle;
-#  else
-typedef RFile NativeFileHandle;
-#  endif
-# endif
 
 #else // POSIX
 typedef char Char;
@@ -161,10 +149,6 @@ static bool createFileFromTemplate(NativeFileHandle &file,
         }
     }
 
-#ifdef Q_OS_SYMBIAN
-    RFs& fs = qt_s60GetRFs();
-#endif
-
     for (;;) {
         // Atomically create file and obtain handle
 #if defined(Q_OS_WIN)
@@ -178,17 +162,6 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 
         DWORD err = GetLastError();
         if (err != ERROR_FILE_EXISTS) {
-            error = QSystemError(err, QSystemError::NativeError);
-            return false;
-        }
-#elif defined(Q_OS_SYMBIAN)
-        TInt err = file.Create(fs, qt_QString2TPtrC(path),
-                EFileRead | EFileWrite | EFileShareReadersOrWriters);
-
-        if (err == KErrNone)
-            return true;
-
-        if (err != KErrAlreadyExists) {
             error = QSystemError(err, QSystemError::NativeError);
             return false;
         }
@@ -283,9 +256,6 @@ bool QTemporaryFileEngine::isReallyOpen()
     Q_D(QFSFileEngine);
 
     if (!((0 == d->fh) && (-1 == d->fd)
-#if defined (Q_OS_SYMBIAN)
-                && (0 == d->symbianFile.SubSessionHandle())
-#endif
 #if defined Q_OS_WIN
                 && (INVALID_HANDLE_VALUE == d->fileHandle)
 #endif
@@ -377,8 +347,6 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     QSystemError error;
 #if defined(Q_OS_WIN)
     NativeFileHandle &file = d->fileHandle;
-#elif defined(Q_OS_SYMBIAN)
-    NativeFileHandle &file = d->symbianFile;
 #else // POSIX
     NativeFileHandle &file = d->fd;
 #endif

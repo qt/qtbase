@@ -123,10 +123,6 @@ QT_BEGIN_NAMESPACE
   resource and then exits without releasing it, Unix will release that
   resource.
 
-  \o Symbian: QSystemSemaphore behaves the same as Windows semaphores.
-  In other words, the operating system owns the semaphore and ignores
-  QSystemSemaphore::AccessMode.
-
   \endlist
 
   \sa QSharedMemory, QSemaphore
@@ -151,7 +147,7 @@ QT_BEGIN_NAMESPACE
   creates a new semaphore for that key and sets its resource count to
   \a initialValue.
 
-  In Windows and in Symbian, \a mode is ignored, and the system always tries to
+  In Windows, \a mode is ignored, and the system always tries to
   create a semaphore for the specified \a key. If the system does not
   already have a semaphore identified as \a key, it creates the
   semaphore and sets its resource count to \a initialValue. But if the
@@ -201,7 +197,7 @@ QSystemSemaphore::~QSystemSemaphore()
   enable handling the problem in Unix implementations of semaphores
   that survive a crash. In Unix, when a semaphore survives a crash, we
   need a way to force it to reset its resource count, when the system
-  reuses the semaphore. In Windows and in Symbian, where semaphores can't survive a
+  reuses the semaphore. In Windows, where semaphores can't survive a
   crash, this enum has no effect.
 
   \value Open If the semaphore already exists, its initial resource
@@ -214,7 +210,7 @@ QSystemSemaphore::~QSystemSemaphore()
   This value should be passed to the constructor, when the first
   semaphore for a particular key is constructed and you know that if
   the semaphore already exists it could only be because of a crash. In
-  Windows and in Symbian, where a semaphore can't survive a crash, Create and Open
+  Windows, where a semaphore can't survive a crash, Create and Open
   have the same behavior.
 */
 
@@ -234,7 +230,7 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
         return;
     d->error = NoError;
     d->errorString = QString();
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN)
     // optimization to not destroy/create the file & semaphore
     if (key == d->key && mode == Create && d->createdSemaphore && d->createdFile) {
         d->initialValue = initialValue;

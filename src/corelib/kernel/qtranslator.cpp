@@ -58,7 +58,7 @@
 #include "qtranslator_p.h"
 #include "qlocale.h"
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
 #include "private/qcore_unix_p.h"
 #endif
@@ -518,7 +518,7 @@ static QString find_translation(const QLocale & locale,
     // see http://www.unicode.org/reports/tr35/#LanguageMatching for inspiration
 
     QStringList languages = locale.uiLanguages();
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     for (int i = languages.size()-1; i >= 0; --i) {
         QString lang = languages.at(i);
         QString lowerLang = lang.toLower();

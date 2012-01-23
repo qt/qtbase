@@ -66,8 +66,6 @@ static QByteArray locale_encode(const QString &f)
 #if defined(Q_OS_DARWIN)
     // Mac always expects UTF-8... and decomposed...
     return f.normalized(QString::NormalizationForm_D).toUtf8();
-#elif defined(Q_OS_SYMBIAN)
-    return f.toUtf8();
 #else
     return f.toLocal8Bit();
 #endif
@@ -78,8 +76,6 @@ static QString locale_decode(const QByteArray &f)
 #if defined(Q_OS_DARWIN)
     // Mac always gives us UTF-8 and decomposed, we want that composed...
     return QString::fromUtf8(f).normalized(QString::NormalizationForm_C);
-#elif defined(Q_OS_SYMBIAN)
-    return QString::fromUtf8(f);
 #else
     return QString::fromLocal8Bit(f);
 #endif
@@ -133,23 +129,6 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
     return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
 #endif
 }
-
-#ifdef Q_OS_SYMBIAN
-bool QFilePrivate::openExternalFile(int flags, const RFile &f, QFile::FileHandleFlags handleFlags)
-{
-#ifdef QT_NO_FSFILEENGINE
-    Q_UNUSED(flags);
-    Q_UNUSED(fh);
-    return false;
-#else
-    delete fileEngine;
-    fileEngine = 0;
-    QFSFileEngine *fe = new QFSFileEngine;
-    fileEngine = fe;
-    return fe->open(QIODevice::OpenMode(flags), f, handleFlags);
-#endif
-}
-#endif
 
 inline bool QFilePrivate::ensureFlushed() const
 {
@@ -815,9 +794,6 @@ QFile::rename(const QString &oldName, const QString &newName)
 
     \note To create a valid link on Windows, \a linkName must have a \c{.lnk} file extension.
 
-    \note On Symbian, no link is created and false is returned if fileName()
-    currently specifies a directory.
-
     \sa setFileName()
 */
 
@@ -1019,14 +995,8 @@ bool QFile::open(OpenMode mode)
         return false;
     }
 
-#ifdef Q_OS_SYMBIAN
-    // For symbian, the unbuffered flag is used to control write-behind cache behaviour
-    if (fileEngine()->open(mode))
-#else
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (fileEngine()->open(mode | QIODevice::Unbuffered))
-#endif
-    {
+    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
@@ -1246,63 +1216,6 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
     }
     return false;
 }
-
-#ifdef Q_OS_SYMBIAN
-/*!
-    \overload
-
-    Opens the existing file object \a f in the given \a mode.
-    Returns true if successful; otherwise returns false.
-
-    When a QFile is opened using this function, behaviour of close() is
-    controlled by the AutoCloseHandle flag.
-    If AutoCloseHandle is specified, and this function succeeds,
-    then calling close() closes the adopted handle.
-    Otherwise, close() does not actually close the file, but only flushes it.
-
-    \warning If the file handle is adopted from another process,
-             you may not be able to use this QFile with a QFileInfo.
-
-    \sa close()
-*/
-bool QFile::open(const RFile &f, OpenMode mode, FileHandleFlags handleFlags)
-{
-    Q_D(QFile);
-    if (isOpen()) {
-        qWarning("QFile::open: File (%s) already open", qPrintable(fileName()));
-        return false;
-    }
-    if (mode & Append)
-        mode |= WriteOnly;
-    unsetError();
-    if ((mode & (ReadOnly | WriteOnly)) == 0) {
-        qWarning("QFile::open: File access not specified");
-        return false;
-    }
-    if (d->openExternalFile(mode, f, handleFlags)) {
-        bool ok = QIODevice::open(mode);
-        if (ok) {
-            if (mode & Append) {
-                ok = seek(size());
-            } else {
-                qint64 pos = 0;
-                TInt err;
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-                err = static_cast<const RFile64&>(f).Seek(ESeekCurrent, pos);
-#else
-                TInt pos32 = 0;
-                err = f.Seek(ESeekCurrent, pos32);
-                pos = pos32;
-#endif
-                ok = ok && (err == KErrNone);
-                ok = ok && seek(pos);
-            }
-        }
-        return ok;
-    }
-    return false;
-}
-#endif
 
 /*!
   Returns the file handle of the file.
