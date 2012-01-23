@@ -42,6 +42,8 @@
 #ifndef QOPENGLFUNCTIONS_H
 #define QOPENGLFUNCTIONS_H
 
+#ifndef QT_NO_OPENGL
+
 #ifdef __GLEW_H__
 #warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
 #warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
@@ -2419,5 +2421,7 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif

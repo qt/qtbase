@@ -42,6 +42,8 @@
 #ifndef QOPENGL_H
 #define QOPENGL_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
@@ -78,5 +80,7 @@ QT_MODULE(Gui)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif // QOPENGL_H

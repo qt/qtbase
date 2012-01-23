@@ -43,8 +43,10 @@
 
 #include "qplatformwindow_qpa.h"
 #include "qsurfaceformat.h"
+#ifndef QT_NO_OPENGL
 #include "qplatformopenglcontext_qpa.h"
 #include "qopenglcontext.h"
+#endif
 #include "qscreen.h"
 
 #include "qwindow_p.h"

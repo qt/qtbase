@@ -42,6 +42,8 @@
 #ifndef QOPENGLFRAMEBUFFEROBJECT_H
 #define QOPENGLFRAMEBUFFEROBJECT_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtGui/qopengl.h>
 #include <QtGui/qpaintdevice.h>
 
@@ -159,4 +161,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
+
 #endif // QOPENGLFRAMEBUFFEROBJECT_H

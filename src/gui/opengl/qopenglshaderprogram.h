@@ -42,6 +42,8 @@
 #ifndef QOPENGLSHADERPROGRAM_H
 #define QOPENGLSHADERPROGRAM_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtGui/qopengl.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
@@ -313,5 +315,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif

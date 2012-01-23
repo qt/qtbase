@@ -42,6 +42,8 @@
 #ifndef QOPENGLBUFFER_H
 #define QOPENGLBUFFER_H
 
+#ifndef QT_NO_OPENGL
+
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qopengl.h>
 
@@ -128,5 +130,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif

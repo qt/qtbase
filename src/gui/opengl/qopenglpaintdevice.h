@@ -42,6 +42,8 @@
 #ifndef QOPENGLPAINTDEVICE_H
 #define QOPENGLPAINTDEVICE_H
 
+#ifndef QT_NO_OPENGL
+
 //
 //  W A R N I N G
 //  -------------
@@ -99,5 +101,7 @@ protected:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_OPENGL
 
 #endif // QOPENGLPAINTDEVICE_H
