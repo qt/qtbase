@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qcoreapplication \
+    qeventdispatcher \
     qeventloop \
     qmath \
     qmetaobject \
