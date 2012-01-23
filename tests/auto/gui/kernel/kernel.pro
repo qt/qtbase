@@ -4,6 +4,7 @@ SUBDIRS=\
    qdrag \
    qevent \
    qfileopenevent \
+   qguieventdispatcher \
    qguimetatype \
    qguivariant \
    qinputmethod \

@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
+#ifdef QT_GUI_LIB
+#  include <QtGui/QGuiApplication>
+#else
+#  include <QtCore/QCoreApplication>
+#endif
 #include <QtTest/QtTest>
 
 enum {
@@ -68,6 +72,7 @@ public:
     { }
 
 private slots:
+    void initTestCase();
     void registerTimer();
     /* void registerSocketNotifier(); */ // Not implemented here, see tst_QSocketNotifier instead
     /* void registerEventNotifiier(); */ // Not implemented here, see tst_QWinEventNotifier instead
@@ -86,6 +91,16 @@ bool tst_QEventDispatcher::event(QEvent *e)
         break;
     }
     return QObject::event(e);
+}
+
+// drain the system event queue after the test starts to avoid destabilizing the test functions
+void tst_QEventDispatcher::initTestCase()
+{
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+    while (!elapsedTimer.hasExpired(CoarseTimerInterval) && eventDispatcher->processEvents(QEventLoop::AllEvents)) {
+            ;
+    }
 }
 
 // test that the eventDispatcher's timer implementation is complete and working
