@@ -1896,17 +1896,17 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
     return img;
 }
 
-QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, int margin, const QTransform &t)
+QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
 {
     if (t.type() > QTransform::TxTranslate)
-        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, margin, t);
+        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 
     lockFace();
 
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, Format_A32);
     if (!glyph) {
         unlockFace();
-        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, margin, t);
+        return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
     }
 
     QImage img(glyph->width, glyph->height, QImage::Format_RGB32);

@@ -118,7 +118,7 @@ public:
 
     virtual QImage alphaMapForGlyph(glyph_t t) { return alphaMapForGlyph(t, QTransform()); }
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &xform);
-    virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
+    virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform);
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
 

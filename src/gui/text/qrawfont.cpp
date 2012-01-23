@@ -250,7 +250,7 @@ QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialias
         return QImage();
 
     if (antialiasingType == SubPixelAntialiasing)
-        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), 0, transform);
+        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), transform);
 
     return d->fontEngine->alphaMapForGlyph(glyphIndex, QFixed(), transform);
 }

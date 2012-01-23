@@ -108,7 +108,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 #endif
 
     m_current_fontengine = fontEngine;
-    const int margin = glyphMargin();
+    const int margin = m_current_fontengine->glyphMargin(m_type);
     const int paddingDoubled = glyphPadding() * 2;
 
     bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
@@ -274,7 +274,7 @@ void QTextureGlyphCache::fillInPendingGlyphs()
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const
 {
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, glyphMargin(), m_transform);
+        return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, m_transform);
     else
         return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
 
@@ -309,11 +309,6 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
         m_image = QImage(width, height, QImage::Format_RGB32);
         break;
     }
-}
-
-int QImageTextureGlyphCache::glyphMargin() const
-{
-    return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
 }
 
 void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subPixelPosition)
@@ -400,7 +395,8 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
 #ifdef CACHE_DEBUG
 //     QPainter p(&m_image);
 //     p.drawLine(
-    QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
+    int margin = m_current_fontengine ? m_current_fontengine->glyphMargin(m_type) : 0;
+    QPoint base(c.x + margin, c.y + margin + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
     m_image.save(QString::fromLatin1("cache-%1.png").arg(qint64(this)));

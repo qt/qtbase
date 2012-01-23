@@ -120,7 +120,6 @@ public:
 
     virtual void createTextureData(int width, int height) = 0;
     virtual void resizeTextureData(int width, int height) = 0;
-    virtual int glyphMargin() const { return 0; }
     virtual int glyphPadding() const { return 0; }
 
     virtual void fillTexture(const Coord &coord, glyph_t glyph, QFixed subPixelPosition) = 0;
@@ -170,7 +169,6 @@ class Q_GUI_EXPORT QImageTextureGlyphCache : public QTextureGlyphCache
 public:
     QImageTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
         : QTextureGlyphCache(type, matrix) { }
-    virtual int glyphMargin() const;
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
     virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition);

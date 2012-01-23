@@ -408,7 +408,7 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int /*margin*/, bool aa)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
@@ -464,7 +464,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
 QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, 0, false);
+    QImage im = imageForGlyph(glyph, subPixelPosition, false);
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
@@ -485,12 +485,12 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     return indexed;
 }
 
-QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, const QTransform &x)
+QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
 {
     if (x.type() >= QTransform::TxScale)
-        return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, margin, x);
+        return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
 
-    QImage im = imageForGlyph(glyph, subPixelPosition, margin, true);
+    QImage im = imageForGlyph(glyph, subPixelPosition, true);
     qGamma_correct_back_to_linear_cs(&im);
     return im;
 }

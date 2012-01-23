@@ -2747,7 +2747,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         else if (depth == 1)
             rightShift = 3; // divide by 8
 
-        int margin = cache->glyphMargin();
+        int margin = fontEngine->glyphMargin(glyphType);
         const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {

@@ -1581,7 +1581,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 
     transferMode(TextDrawingMode);
 
-    int margin = cache->glyphMargin();
+    int margin = fe->glyphMargin(glyphType);
 
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();

@@ -189,7 +189,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),
@@ -231,6 +231,7 @@ public:
     virtual Type type() const = 0;
 
     virtual int glyphCount() const;
+    virtual int glyphMargin(QFontEngineGlyphCache::Type type) { return type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0; }
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
@@ -370,7 +371,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
 
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;
