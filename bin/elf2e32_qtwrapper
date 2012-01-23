@@ -1,3 +1,0 @@
-#!/bin/sh
-scriptpath=`dirname $0`
-perl $scriptpath/elf2e32_qtwrapper.pl "$@"

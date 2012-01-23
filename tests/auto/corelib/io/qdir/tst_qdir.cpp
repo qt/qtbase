@@ -1848,8 +1848,6 @@ void tst_QDir::equalityOperator_data()
     //need a path in the root directory that is unlikely to be a symbolic link.
 #if defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
-#elif defined (Q_OS_SYMBIAN)
-    QString pathinroot("c:/data/..");
 #else
     QString pathinroot("/sbin/..");
 #endif

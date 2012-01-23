@@ -25,5 +25,4 @@ wince* {
     DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES+= SRCDIR=\\\"$$PWD\\\"
-    TARGET.CAPABILITY = NetworkServices
 }

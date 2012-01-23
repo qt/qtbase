@@ -253,10 +253,6 @@ protected:
     void resizeEvent(QResizeEvent*) {
 #if defined(Q_OS_WINCE_WM)
         touchDevice = true;
-#elif defined(Q_OS_SYMBIAN)
-        // FIXME: use HAL
-        if (width() > 480 || height() > 480)
-            touchDevice = true;
 #else
         touchDevice = false;
 #endif

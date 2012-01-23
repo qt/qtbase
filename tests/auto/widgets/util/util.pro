@@ -5,7 +5,3 @@ SUBDIRS=\
    qsystemtrayicon \
    qundogroup \
    qundostack \
-
-symbian:SUBDIRS -= \
-    qsystemtrayicon \
-

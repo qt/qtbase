@@ -47,29 +47,8 @@
     \c /usr/share/icons/hicolor/64x64/apps directory
     and desktop files in the \c /usr/share/applications/hildon directory.
 
-    \section1 Creating an icon for Symbian
-
-    Symbian uses Scalable Vector Graphics (SVG Tiny 1.1+) to render
-    application icons in the application menu. Therefore icons could be
-    created manually with a text editor, since SVG files are plain text with
-    XML syntax, but usually you would use a vector graphics program that is
-    able to output SVG files. Popular graphics programs such as Adobe
-    Illustrator or Inkscape are able to do so.
-
-    For best results, the icon should be created on a 44x44 pixel canvas.
-    Otherwise the image might be scaled in unexpected ways.
-
-    Once you have created your icon, make sure that it is stored according to
-    the SVG-Tiny 1.1+ standard. Inkscape, for instance, is not able to save
-    images that way, but there are tools that can convert general SVG files
-    into the Tiny format. For instance, the svg2svgt tool that is bundled with
-    Symbian 3rd and 5th editon SDKs under the folder s60tools can do this
-    conversion to some extent. Another tool to convert SVG to SVG Tiny is SVG
-    Pony.
-
     \section1 Adding the icons to the project
 
-    Edit the .pro file and specify the ICON variable for the symbian target. 
     For Maemo, we need to add that the \c .desktop and icon file should be
     installed.
 

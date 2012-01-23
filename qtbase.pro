@@ -35,9 +35,9 @@ contains(PROJECTS, tests) {
     message(Unknown PROJECTS: $$PROJECTS)
 }
 
-!symbian: confclean.depends += clean
+confclean.depends += clean
 confclean.commands =
-unix:!symbian {
+unix {
   confclean.commands += (cd config.tests/unix/stl && $(MAKE) distclean); \
 			(cd config.tests/unix/endian && $(MAKE) distclean); \
 			(cd config.tests/unix/ipv6 && $(MAKE) distclean); \
@@ -87,32 +87,6 @@ win32 {
 			-$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
 			(cd qmake && $(MAKE) distclean)
-}
-symbian {
-  confclean.depends += distclean
-  contains(QMAKE_HOST.os, "Windows") {
-    confclean.commands += \
-            (cd src\\tools\\moc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            (cd src\\tools\\rcc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            (cd src\\tools\\uic && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) mkspecs\\qmodule.pri $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
-            (cd qmake && $(MAKE) distclean)
-  } else {
-    confclean.commands += \
-            (cd src/tools/moc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            (cd src/tools/rcc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            (cd src/tools/uic && $(MAKE) distclean) $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) src/corelib/global/qconfig.h $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) src/corelib/global/qconfig.cpp $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) mkspecs/qconfig.pri $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) mkspecs/qmodule.pri $$escape_expand(\\n\\t) \
-            -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
-            (cd qmake && $(MAKE) distclean)
-  }
 }
 QMAKE_EXTRA_TARGETS += confclean
 qmakeclean.commands += (cd qmake && $(MAKE) clean)

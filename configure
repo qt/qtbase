@@ -7172,9 +7172,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 
-# ATM we need this define to compile Qt. Remove later!
-QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_S60"
-
 # X11/Unix/Mac only configs
 [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"

@@ -9,8 +9,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/imageviewer
 INSTALLS += target sources
 
 
-#Symbian has built-in component named imageviewer so we use different target
-
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
