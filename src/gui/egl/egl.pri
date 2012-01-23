@@ -23,8 +23,4 @@ contains(QT_CONFIG, egl): {
         }
 
         SOURCES += egl/qegl_qpa.cpp
-} else:symbian: {
-    DEFINES += QT_NO_EGL
-    SOURCES += egl/qegl_stub.cpp
-    SOURCES += egl/qeglproperties_stub.cpp
 }

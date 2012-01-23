@@ -113,9 +113,6 @@ QT_BEGIN_NAMESPACE
 #define EGLAPIENTRY
 #endif
 
-// Try to get some info to debug the symbian build failues:
-
-
 // Declare/define the bits of EGL_KHR_image_base we need:
 #if !defined(EGL_KHR_image) && !defined(EGL_KHR_image_base)
 typedef void *EGLImageKHR;

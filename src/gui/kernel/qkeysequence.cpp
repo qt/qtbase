@@ -224,72 +224,72 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     corresponds to the \key Control keys.
 
     \table
-    \header \i StandardKey      \i Windows                              \i Mac OS X                 \i KDE          \i GNOME                                 \i S60
-    \row    \i HelpContents     \i F1                                   \i Ctrl+?                   \i F1           \i F1                                    \i F2
-    \row    \i WhatsThis        \i Shift+F1                             \i Shift+F1                 \i Shift+F1     \i Shift+F1                              \i Shift+F1
-    \row    \i Open             \i Ctrl+O                               \i Ctrl+O                   \i Ctrl+O       \i Ctrl+O                                \i (none)
-    \row    \i Close            \i Ctrl+F4, Ctrl+W                      \i Ctrl+W, Ctrl+F4          \i Ctrl+W       \i Ctrl+W                                \i (none)
-    \row    \i Save             \i Ctrl+S                               \i Ctrl+S                   \i Ctrl+S       \i Ctrl+S                                \i (none)
-    \row    \i Quit             \i                                      \i Ctrl+Q                   \i Qtrl+Q       \i Qtrl+Q                                \i (none)
-    \row    \i SaveAs           \i                                      \i Ctrl+Shift+S             \i              \i Ctrl+Shift+S                          \i (none)
-    \row    \i New              \i Ctrl+N                               \i Ctrl+N                   \i Ctrl+N       \i Ctrl+N                                \i (none)
-    \row    \i Delete           \i Del                                  \i Del, Meta+D              \i Del, Ctrl+D  \i Del, Ctrl+D                           \i Del
-    \row    \i Cut              \i Ctrl+X, Shift+Del                    \i Ctrl+X                   \i Ctrl+X, F20, Shift+Del \i Ctrl+X, F20, Shift+Del      \i Ctrl+X
-    \row    \i Copy             \i Ctrl+C, Ctrl+Ins                     \i Ctrl+C                   \i Ctrl+C, F16, Ctrl+Ins  \i Ctrl+C, F16, Ctrl+Ins       \i Ctrl+C
-    \row    \i Paste            \i Ctrl+V, Shift+Ins                    \i Ctrl+V                   \i Ctrl+V, F18, Shift+Ins \i Ctrl+V, F18, Shift+Ins      \i Ctrl+V
-    \row    \i Preferences      \i                                      \i Ctrl+,                   \i              \i                                       \i (none)
-    \row    \i Undo             \i Ctrl+Z, Alt+Backspace                \i Ctrl+Z                   \i Ctrl+Z, F14  \i Ctrl+Z, F14                           \i Ctrl+Z
-    \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z        \i Ctrl+Shift+Z \i Ctrl+Shift+Z                     \i (none)
-    \row    \i Back             \i Alt+Left, Backspace                  \i Ctrl+[                   \i Alt+Left     \i Alt+Left                              \i (none)
-    \row    \i Forward          \i Alt+Right, Shift+Backspace           \i Ctrl+]                   \i Alt+Right    \i Alt+Right                             \i (none)
-    \row    \i Refresh          \i F5                                   \i F5                       \i F5           \i Ctrl+R, F5                            \i (none)
-    \row    \i ZoomIn           \i Ctrl+Plus                            \i Ctrl+Plus                \i Ctrl+Plus    \i Ctrl+Plus                             \i (none)
-    \row    \i ZoomOut          \i Ctrl+Minus                           \i Ctrl+Minus               \i Ctrl+Minus   \i Ctrl+Minus                            \i (none)
-    \row    \i Print            \i Ctrl+P                               \i Ctrl+P                   \i Ctrl+P       \i Ctrl+P                                \i (none)
-    \row    \i AddTab           \i Ctrl+T                               \i Ctrl+T                   \i Ctrl+Shift+N, Ctrl+T \i Ctrl+T                        \i (none)
-    \row    \i NextChild        \i Ctrl+Tab, Forward, Ctrl+F6           \i Ctrl+}, Forward, Ctrl+Tab \i Ctrl+Tab, Forward, Ctrl+Comma \i Ctrl+Tab, Forward   \i (none)
-    \row    \i PreviousChild    \i Ctrl+Shift+Tab, Back, Ctrl+Shift+F6  \i Ctrl+{, Back, Ctrl+Shift+Tab \i Ctrl+Shift+Tab, Back, Ctrl+Period \i Ctrl+Shift+Tab, Back \i (none)
-    \row    \i Find             \i Ctrl+F                               \i Ctrl+F                   \i Ctrl+F         \i Ctrl+F                              \i (none)
-    \row    \i FindNext         \i F3, Ctrl+G                           \i Ctrl+G                   \i F3             \i Ctrl+G, F3                          \i (none)
-    \row    \i FindPrevious     \i Shift+F3, Ctrl+Shift+G               \i Ctrl+Shift+G             \i Shift+F3       \i Ctrl+Shift+G, Shift+F3              \i (none)
-    \row    \i Replace          \i Ctrl+H                               \i (none)                   \i Ctrl+R         \i Ctrl+H                              \i (none)
-    \row    \i SelectAll        \i Ctrl+A                               \i Ctrl+A                   \i Ctrl+A         \i Ctrl+A                              \i (none)
-    \row    \i Bold             \i Ctrl+B                               \i Ctrl+B                   \i Ctrl+B         \i Ctrl+B                              \i (none)
-    \row    \i Italic           \i Ctrl+I                               \i Ctrl+I                   \i Ctrl+I         \i Ctrl+I                              \i (none)
-    \row    \i Underline        \i Ctrl+U                               \i Ctrl+U                   \i Ctrl+U         \i Ctrl+U                              \i (none)
-    \row    \i MoveToNextChar       \i Right                            \i Right                    \i Right          \i Right                               \i Right
-    \row    \i MoveToPreviousChar   \i Left                             \i Left                     \i Left           \i Left                                \i Left
-    \row    \i MoveToNextWord       \i Ctrl+Right                       \i Alt+Right                \i Ctrl+Right     \i Ctrl+Right                          \i Ctrl+Right
-    \row    \i MoveToPreviousWord   \i Ctrl+Left                        \i Alt+Left                 \i Ctrl+Left      \i Ctrl+Left                           \i Ctrl+Left
-    \row    \i MoveToNextLine       \i Down                             \i Down                     \i Down           \i Down                                \i Down
-    \row    \i MoveToPreviousLine   \i Up                               \i Up                       \i Up             \i Up                                  \i Up
-    \row    \i MoveToNextPage       \i PgDown                           \i PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\i PgDown \i PgDown                     \i PgDown
-    \row    \i MoveToPreviousPage   \i PgUp                             \i PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \i PgUp   \i PgUp                       \i PgUp
-    \row    \i MoveToStartOfLine    \i Home                             \i Ctrl+Left, Meta+Left   \i Home            \i Home                                 \i Home
-    \row    \i MoveToEndOfLine      \i End                              \i Ctrl+Right, Meta+Right \i End             \i End                                  \i End
-    \row    \i MoveToStartOfBlock   \i (none)                           \i Alt+Up, Meta+A         \i (none)          \i (none)                               \i (none)
-    \row    \i MoveToEndOfBlock     \i (none)                           \i Alt+Down, Meta+E       \i (none)          \i (none)                               \i (none)
-    \row    \i MoveToStartOfDocument\i Ctrl+Home                        \i Ctrl+Up, Home          \i Ctrl+Home       \i Ctrl+Home                            \i Ctrl+Home
-    \row    \i MoveToEndOfDocument  \i Ctrl+End                         \i Ctrl+Down, End         \i Ctrl+End        \i Ctrl+End                             \i Ctrl+End
-    \row    \i SelectNextChar       \i Shift+Right                      \i Shift+Right            \i Shift+Right     \i Shift+Right                          \i Shift+Right
-    \row    \i SelectPreviousChar   \i Shift+Left                       \i Shift+Left             \i Shift+Left      \i Shift+Left                           \i Shift+Left
-    \row    \i SelectNextWord       \i Ctrl+Shift+Right                 \i Alt+Shift+Right        \i Ctrl+Shift+Right \i Ctrl+Shift+Right                    \i Ctrl+Shift+Right
-    \row    \i SelectPreviousWord   \i Ctrl+Shift+Left                  \i Alt+Shift+Left         \i Ctrl+Shift+Left \i Ctrl+Shift+Left                      \i Ctrl+Shift+Left
-    \row    \i SelectNextLine       \i Shift+Down                       \i Shift+Down             \i Shift+Down     \i Shift+Down                            \i Shift+Down
-    \row    \i SelectPreviousLine   \i Shift+Up                         \i Shift+Up               \i Shift+Up       \i Shift+Up                              \i Shift+Up
-    \row    \i SelectNextPage       \i Shift+PgDown                     \i Shift+PgDown           \i Shift+PgDown   \i Shift+PgDown                          \i Shift+PgDown
-    \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp                            \i Shift+PgUp
-    \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home                            \i Shift+Home
-    \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End                             \i Shift+End
-    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)                                \i (none)
-    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)                                \i (none)
-    \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home           \i Ctrl+Shift+Home
-    \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End             \i Ctrl+Shift+End
-    \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace                        \i (none)
-    \row    \i DeleteEndOfWord      \i Ctrl+Del                         \i (none)                 \i Ctrl+Del       \i Ctrl+Del                              \i (none)
-    \row    \i DeleteEndOfLine      \i (none)                           \i (none)                 \i Ctrl+K         \i Ctrl+K                                \i (none)
-    \row    \i InsertParagraphSeparator     \i Enter                    \i Enter                  \i Enter          \i Enter                                 \i (none)
-    \row    \i InsertLineSeparator          \i Shift+Enter              \i Meta+Enter             \i Shift+Enter    \i Shift+Enter                           \i (none)
+    \header \i StandardKey      \i Windows                              \i Mac OS X                 \i KDE          \i GNOME
+    \row    \i HelpContents     \i F1                                   \i Ctrl+?                   \i F1           \i F1
+    \row    \i WhatsThis        \i Shift+F1                             \i Shift+F1                 \i Shift+F1     \i Shift+F1
+    \row    \i Open             \i Ctrl+O                               \i Ctrl+O                   \i Ctrl+O       \i Ctrl+O
+    \row    \i Close            \i Ctrl+F4, Ctrl+W                      \i Ctrl+W, Ctrl+F4          \i Ctrl+W       \i Ctrl+W
+    \row    \i Save             \i Ctrl+S                               \i Ctrl+S                   \i Ctrl+S       \i Ctrl+S
+    \row    \i Quit             \i                                      \i Ctrl+Q                   \i Qtrl+Q       \i Qtrl+Q
+    \row    \i SaveAs           \i                                      \i Ctrl+Shift+S             \i              \i Ctrl+Shift+S
+    \row    \i New              \i Ctrl+N                               \i Ctrl+N                   \i Ctrl+N       \i Ctrl+N
+    \row    \i Delete           \i Del                                  \i Del, Meta+D              \i Del, Ctrl+D  \i Del, Ctrl+D
+    \row    \i Cut              \i Ctrl+X, Shift+Del                    \i Ctrl+X                   \i Ctrl+X, F20, Shift+Del \i Ctrl+X, F20, Shift+Del
+    \row    \i Copy             \i Ctrl+C, Ctrl+Ins                     \i Ctrl+C                   \i Ctrl+C, F16, Ctrl+Ins  \i Ctrl+C, F16, Ctrl+Ins
+    \row    \i Paste            \i Ctrl+V, Shift+Ins                    \i Ctrl+V                   \i Ctrl+V, F18, Shift+Ins \i Ctrl+V, F18, Shift+Ins
+    \row    \i Preferences      \i                                      \i Ctrl+,                   \i              \i
+    \row    \i Undo             \i Ctrl+Z, Alt+Backspace                \i Ctrl+Z                   \i Ctrl+Z, F14  \i Ctrl+Z, F14
+    \row    \i Redo             \i Ctrl+Y, Shift+Ctrl+Z, Alt+Shift+Backspace \i Ctrl+Shift+Z        \i Ctrl+Shift+Z \i Ctrl+Shift+Z
+    \row    \i Back             \i Alt+Left, Backspace                  \i Ctrl+[                   \i Alt+Left     \i Alt+Left
+    \row    \i Forward          \i Alt+Right, Shift+Backspace           \i Ctrl+]                   \i Alt+Right    \i Alt+Right
+    \row    \i Refresh          \i F5                                   \i F5                       \i F5           \i Ctrl+R, F5
+    \row    \i ZoomIn           \i Ctrl+Plus                            \i Ctrl+Plus                \i Ctrl+Plus    \i Ctrl+Plus
+    \row    \i ZoomOut          \i Ctrl+Minus                           \i Ctrl+Minus               \i Ctrl+Minus   \i Ctrl+Minus
+    \row    \i Print            \i Ctrl+P                               \i Ctrl+P                   \i Ctrl+P       \i Ctrl+P
+    \row    \i AddTab           \i Ctrl+T                               \i Ctrl+T                   \i Ctrl+Shift+N, Ctrl+T \i Ctrl+T
+    \row    \i NextChild        \i Ctrl+Tab, Forward, Ctrl+F6           \i Ctrl+}, Forward, Ctrl+Tab \i Ctrl+Tab, Forward, Ctrl+Comma \i Ctrl+Tab, Forward
+    \row    \i PreviousChild    \i Ctrl+Shift+Tab, Back, Ctrl+Shift+F6  \i Ctrl+{, Back, Ctrl+Shift+Tab \i Ctrl+Shift+Tab, Back, Ctrl+Period \i Ctrl+Shift+Tab, Back
+    \row    \i Find             \i Ctrl+F                               \i Ctrl+F                   \i Ctrl+F         \i Ctrl+F
+    \row    \i FindNext         \i F3, Ctrl+G                           \i Ctrl+G                   \i F3             \i Ctrl+G, F3
+    \row    \i FindPrevious     \i Shift+F3, Ctrl+Shift+G               \i Ctrl+Shift+G             \i Shift+F3       \i Ctrl+Shift+G, Shift+F3
+    \row    \i Replace          \i Ctrl+H                               \i (none)                   \i Ctrl+R         \i Ctrl+H
+    \row    \i SelectAll        \i Ctrl+A                               \i Ctrl+A                   \i Ctrl+A         \i Ctrl+A
+    \row    \i Bold             \i Ctrl+B                               \i Ctrl+B                   \i Ctrl+B         \i Ctrl+B
+    \row    \i Italic           \i Ctrl+I                               \i Ctrl+I                   \i Ctrl+I         \i Ctrl+I
+    \row    \i Underline        \i Ctrl+U                               \i Ctrl+U                   \i Ctrl+U         \i Ctrl+U
+    \row    \i MoveToNextChar       \i Right                            \i Right                    \i Right          \i Right
+    \row    \i MoveToPreviousChar   \i Left                             \i Left                     \i Left           \i Left
+    \row    \i MoveToNextWord       \i Ctrl+Right                       \i Alt+Right                \i Ctrl+Right     \i Ctrl+Right
+    \row    \i MoveToPreviousWord   \i Ctrl+Left                        \i Alt+Left                 \i Ctrl+Left      \i Ctrl+Left
+    \row    \i MoveToNextLine       \i Down                             \i Down                     \i Down           \i Down
+    \row    \i MoveToPreviousLine   \i Up                               \i Up                       \i Up             \i Up
+    \row    \i MoveToNextPage       \i PgDown                           \i PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\i PgDown \i PgDown
+    \row    \i MoveToPreviousPage   \i PgUp                             \i PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \i PgUp   \i PgUp
+    \row    \i MoveToStartOfLine    \i Home                             \i Ctrl+Left, Meta+Left   \i Home            \i Home
+    \row    \i MoveToEndOfLine      \i End                              \i Ctrl+Right, Meta+Right \i End             \i End
+    \row    \i MoveToStartOfBlock   \i (none)                           \i Alt+Up, Meta+A         \i (none)          \i (none)
+    \row    \i MoveToEndOfBlock     \i (none)                           \i Alt+Down, Meta+E       \i (none)          \i (none)
+    \row    \i MoveToStartOfDocument\i Ctrl+Home                        \i Ctrl+Up, Home          \i Ctrl+Home       \i Ctrl+Home
+    \row    \i MoveToEndOfDocument  \i Ctrl+End                         \i Ctrl+Down, End         \i Ctrl+End        \i Ctrl+End
+    \row    \i SelectNextChar       \i Shift+Right                      \i Shift+Right            \i Shift+Right     \i Shift+Right
+    \row    \i SelectPreviousChar   \i Shift+Left                       \i Shift+Left             \i Shift+Left      \i Shift+Left
+    \row    \i SelectNextWord       \i Ctrl+Shift+Right                 \i Alt+Shift+Right        \i Ctrl+Shift+Right \i Ctrl+Shift+Right
+    \row    \i SelectPreviousWord   \i Ctrl+Shift+Left                  \i Alt+Shift+Left         \i Ctrl+Shift+Left \i Ctrl+Shift+Left
+    \row    \i SelectNextLine       \i Shift+Down                       \i Shift+Down             \i Shift+Down     \i Shift+Down
+    \row    \i SelectPreviousLine   \i Shift+Up                         \i Shift+Up               \i Shift+Up       \i Shift+Up
+    \row    \i SelectNextPage       \i Shift+PgDown                     \i Shift+PgDown           \i Shift+PgDown   \i Shift+PgDown
+    \row    \i SelectPreviousPage   \i Shift+PgUp                       \i Shift+PgUp             \i Shift+PgUp     \i Shift+PgUp
+    \row    \i SelectStartOfLine    \i Shift+Home                       \i Ctrl+Shift+Left        \i Shift+Home     \i Shift+Home
+    \row    \i SelectEndOfLine      \i Shift+End                        \i Ctrl+Shift+Right       \i Shift+End      \i Shift+End
+    \row    \i SelectStartOfBlock   \i (none)                           \i Alt+Shift+Up, Meta+Shift+A \i (none)     \i (none)
+    \row    \i SelectEndOfBlock     \i (none)                           \i Alt+Shift+Down, Meta+Shift+E \i (none)   \i (none)
+    \row    \i SelectStartOfDocument\i Ctrl+Shift+Home                  \i Ctrl+Shift+Up, Shift+Home          \i Ctrl+Shift+Home\i Ctrl+Shift+Home
+    \row    \i SelectEndOfDocument  \i Ctrl+Shift+End                   \i Ctrl+Shift+Down, Shift+End        \i Ctrl+Shift+End \i Ctrl+Shift+End
+    \row    \i DeleteStartOfWord    \i Ctrl+Backspace                   \i Alt+Backspace          \i Ctrl+Backspace \i Ctrl+Backspace
+    \row    \i DeleteEndOfWord      \i Ctrl+Del                         \i (none)                 \i Ctrl+Del       \i Ctrl+Del
+    \row    \i DeleteEndOfLine      \i (none)                           \i (none)                 \i Ctrl+K         \i Ctrl+K
+    \row    \i InsertParagraphSeparator     \i Enter                    \i Enter                  \i Enter          \i Enter
+    \row    \i InsertLineSeparator          \i Shift+Enter              \i Meta+Enter             \i Shift+Enter    \i Shift+Enter
     \endtable
 
     Note that, since the key sequences used for the standard shortcuts differ
@@ -646,9 +646,9 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Return,                         QGuiApplicationPrivate::KB_All},
     {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Enter,                          QGuiApplicationPrivate::KB_All},
     {QKeySequence::Delete,                  1,          Qt::Key_Delete,                         QGuiApplicationPrivate::KB_All},
-    {QKeySequence::MoveToStartOfLine,       0,          Qt::Key_Home,                           QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::Key_Home,                           QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::MoveToStartOfDocument,   0,          Qt::Key_Home,                           QGuiApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToEndOfLine,         0,          Qt::Key_End,                            QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::Key_End,                            QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::MoveToEndOfDocument,     0,          Qt::Key_End,                            QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::MoveToPreviousChar,      0,          Qt::Key_Left,                           QGuiApplicationPrivate::KB_All},
     {QKeySequence::MoveToPreviousLine,      0,          Qt::Key_Up,                             QGuiApplicationPrivate::KB_All},
@@ -657,7 +657,6 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::MoveToPreviousPage,      1,          Qt::Key_PageUp,                         QGuiApplicationPrivate::KB_All},
     {QKeySequence::MoveToNextPage,          1,          Qt::Key_PageDown,                       QGuiApplicationPrivate::KB_All},
     {QKeySequence::HelpContents,            0,          Qt::Key_F1,                             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
-    {QKeySequence::HelpContents,            0,          Qt::Key_F2,                             QGuiApplicationPrivate::KB_S60},
     {QKeySequence::FindNext,                0,          Qt::Key_F3,                             QGuiApplicationPrivate::KB_X11},
     {QKeySequence::FindNext,                1,          Qt::Key_F3,                             QGuiApplicationPrivate::KB_Win},
     {QKeySequence::Refresh,                 0,          Qt::Key_F5,                             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
@@ -668,14 +667,13 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::PreviousChild,           0,          Qt::Key_Back,                           QGuiApplicationPrivate::KB_All},
     {QKeySequence::NextChild,               0,          Qt::Key_Forward,                        QGuiApplicationPrivate::KB_All}, 
     {QKeySequence::Forward,                 0,          Qt::SHIFT | Qt::Key_Backspace,          QGuiApplicationPrivate::KB_Win},
-    {QKeySequence::Delete,                  0,          Qt::SHIFT | Qt::Key_Backspace,          QGuiApplicationPrivate::KB_S60},
     {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Return,             QGuiApplicationPrivate::KB_All},
     {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Enter,              QGuiApplicationPrivate::KB_All},
     {QKeySequence::Paste,                   0,          Qt::SHIFT | Qt::Key_Insert,             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11}, 
     {QKeySequence::Cut,                     0,          Qt::SHIFT | Qt::Key_Delete,             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11}, //## Check if this should work on mac
-    {QKeySequence::SelectStartOfLine,       0,          Qt::SHIFT | Qt::Key_Home,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectStartOfLine,       0,          Qt::SHIFT | Qt::Key_Home,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::SelectStartOfDocument,   0,          Qt::SHIFT | Qt::Key_Home,               QGuiApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectEndOfLine,         0,          Qt::SHIFT | Qt::Key_End,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectEndOfLine,         0,          Qt::SHIFT | Qt::Key_End,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::SelectEndOfDocument,     0,          Qt::SHIFT | Qt::Key_End,                QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::SelectPreviousChar,      0,          Qt::SHIFT | Qt::Key_Left,               QGuiApplicationPrivate::KB_All},
     {QKeySequence::SelectPreviousLine,      0,          Qt::SHIFT | Qt::Key_Up,                 QGuiApplicationPrivate::KB_All},
@@ -716,7 +714,7 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_W,                   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   QGuiApplicationPrivate::KB_All},
-    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QGuiApplicationPrivate::KB_Win},
     {QKeySequence::Undo,                    1,          Qt::CTRL | Qt::Key_Z,                   QGuiApplicationPrivate::KB_All},
     {QKeySequence::Back,                    1,          Qt::CTRL | Qt::Key_BracketLeft,         QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::Forward,                 1,          Qt::CTRL | Qt::Key_BracketRight,        QGuiApplicationPrivate::KB_Mac},
@@ -727,15 +725,15 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::DeleteStartOfWord,       0,          Qt::CTRL | Qt::Key_Backspace,           QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win},
     {QKeySequence::Copy,                    0,          Qt::CTRL | Qt::Key_Insert,              QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win}, 
     {QKeySequence::DeleteEndOfWord,         0,          Qt::CTRL | Qt::Key_Delete,              QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win},
-    {QKeySequence::MoveToStartOfDocument,   0,          Qt::CTRL | Qt::Key_Home,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToEndOfDocument,     0,          Qt::CTRL | Qt::Key_End,                 QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToStartOfDocument,   0,          Qt::CTRL | Qt::Key_Home,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::MoveToEndOfDocument,     0,          Qt::CTRL | Qt::Key_End,                 QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::Back,                    0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac}, 
-    {QKeySequence::MoveToPreviousWord,      0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToPreviousWord,      0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::MoveToStartOfLine,       0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac },
     {QKeySequence::MoveToStartOfDocument,   1,          Qt::CTRL | Qt::Key_Up,                  QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::Forward,                 0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac}, 
     {QKeySequence::MoveToEndOfLine,         0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac },
-    {QKeySequence::MoveToNextWord,          0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToNextWord,          0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::MoveToEndOfDocument,     1,          Qt::CTRL | Qt::Key_Down,                QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  QGuiApplicationPrivate::KB_Win},
     {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  QGuiApplicationPrivate::KB_Mac},
@@ -744,17 +742,17 @@ const QKeyBinding QKeySequencePrivate::keyBindings[] = {
     {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QGuiApplicationPrivate::KB_Win},
     {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       QGuiApplicationPrivate::KB_KDE},
     {QKeySequence::SaveAs,                  0,          Qt::CTRL | Qt::SHIFT | Qt::Key_S,       QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_Mac},
-    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QGuiApplicationPrivate::KB_Mac },//different priority from above 
     {QKeySequence::Paste,                   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Insert,  QGuiApplicationPrivate::KB_X11},
-    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Home,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
-    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_End,     QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
-    {QKeySequence::SelectPreviousWord,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Home,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_End,     QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::SelectPreviousWord,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::SelectStartOfLine,       1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Mac },
     {QKeySequence::SelectStartOfDocument,   1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Up,      QGuiApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectNextWord,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectNextWord,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
     {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Mac },
     {QKeySequence::SelectEndOfDocument,     1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Down,    QGuiApplicationPrivate::KB_Mac},
     {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      QGuiApplicationPrivate::KB_Win},

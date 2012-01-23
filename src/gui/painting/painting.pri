@@ -103,19 +103,6 @@ if(mmx|3dnow|sse|sse2|iwmmxt) {
     IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 }
 
-symbian {
-        HEADERS += painting/qdrawhelper_arm_simd_p.h
-        armccIfdefBlock = \
-        "$${LITERAL_HASH}if defined(ARMV6)" \
-        "MACRO QT_HAVE_ARM_SIMD" \
-        "SOURCEPATH 	painting" \
-        "SOURCE			qdrawhelper_arm_simd.cpp" \
-        "$${LITERAL_HASH}endif"
-
-        MMP_RULES += armccIfdefBlock
-        QMAKE_CXXFLAGS.ARMCC *= -O3
-}
-
 NEON_SOURCES += painting/qdrawhelper_neon.cpp
 NEON_HEADERS += painting/qdrawhelper_neon_p.h
 NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S

@@ -161,7 +161,6 @@ private:
     friend class QFontDialogPrivate;
     friend class QFontEngineMultiXLFD;
     friend class QFontEngineMultiQWS;
-    friend class QFontEngineMultiS60;
     friend class QFontEngineMultiQPA;
 #ifdef QT_BUILD_INTERNAL
     friend class ::tst_QFont;
