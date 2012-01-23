@@ -1417,6 +1417,10 @@ void tst_QString::mid()
 
     QCOMPARE(a.mid(3,3),(QString)"DEF");
     QCOMPARE(a.mid(0,0),(QString)"");
+    QVERIFY(!a.mid(15,0).isNull());
+    QVERIFY(a.mid(15,0).isEmpty());
+    QVERIFY(!a.mid(15,1).isNull());
+    QVERIFY(a.mid(15,1).isEmpty());
     QVERIFY(a.mid(9999).isNull());
     QVERIFY(a.mid(9999,1).isNull());
 
@@ -1439,6 +1443,10 @@ void tst_QString::midRef()
 
     QCOMPARE(a.midRef(3,3).toString(),(QString)"DEF");
     QCOMPARE(a.midRef(0,0).toString(),(QString)"");
+    QVERIFY(!a.midRef(15,0).toString().isNull());
+    QVERIFY(a.midRef(15,0).toString().isEmpty());
+    QVERIFY(!a.midRef(15,1).toString().isNull());
+    QVERIFY(a.midRef(15,1).toString().isEmpty());
     QVERIFY(a.midRef(9999).toString().isEmpty());
     QVERIFY(a.midRef(9999,1).toString().isEmpty());
 

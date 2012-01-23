@@ -1310,8 +1310,8 @@ void tst_Collections::byteArray()
     QVERIFY(hello.mid(0, hello.size()+1) == hello);
 
     QVERIFY(hello.mid(hello.size()-0) == "");
-
-    QVERIFY(hello.mid(hello.size()-0).isNull()); // weird but valid 3.x semantics
+    QVERIFY(hello.mid(hello.size()-0).isEmpty());
+    QVERIFY(!hello.mid(hello.size()-0).isNull());
     QVERIFY(hello.mid(hello.size()-1) == "o");
     QVERIFY(hello.mid(hello.size()-2) == "lo");
     QVERIFY(hello.mid(hello.size()-200) == "hello");
@@ -2030,8 +2030,8 @@ void tst_Collections::qstring()
     QVERIFY(hello.mid(0, hello.size()+1) == hello);
 
     QVERIFY(hello.mid(hello.size()-0) == "");
-
-    QVERIFY(hello.mid(hello.size()-0).isNull());
+    QVERIFY(hello.mid(hello.size()-0).isEmpty());
+    QVERIFY(!hello.mid(hello.size()-0).isNull());
     QVERIFY(hello.mid(hello.size()-1) == "o");
     QVERIFY(hello.mid(hello.size()-2) == "lo");
     QVERIFY(hello.mid(hello.size()-200) == "hello");

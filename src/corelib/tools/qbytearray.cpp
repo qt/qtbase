@@ -2660,7 +2660,7 @@ QByteArray QByteArray::right(int len) const
 
 QByteArray QByteArray::mid(int pos, int len) const
 {
-    if (d == &shared_null.ba || d == &shared_empty.ba || pos >= d->size)
+    if (d == &shared_null.ba || d == &shared_empty.ba || pos > d->size)
         return QByteArray();
     if (len < 0)
         len = d->size - pos;

@@ -221,6 +221,11 @@ QtCore
   altering the watchlist in both the singular and QStringList overloads of
   addPath and removePath.
 
+* QString::mid, QString::midRef and QByteArray::mid, if the position passed
+  is equal to the length (that is, right after the last character/byte),
+  now return an empty QString, QStringRef or QByteArray respectively.
+  in Qt 4 they returned a null QString or a null QStringRef.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

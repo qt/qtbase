@@ -3385,7 +3385,7 @@ QString QString::right(int n) const
 
 QString QString::mid(int position, int n) const
 {
-    if (d == &shared_null.str || position >= d->size)
+    if (d == &shared_null.str || position > d->size)
         return QString();
     if (n < 0)
         n = d->size - position;
@@ -8024,7 +8024,7 @@ QStringRef QString::rightRef(int n) const
     Returns a substring reference to \a n characters of this string,
     starting at the specified \a position.
 
-    If the \a position exceeds the length of the string, an empty
+    If the \a position exceeds the length of the string, a null
     reference is returned.
 
     If there are less than \a n characters available in the string,
@@ -8041,7 +8041,7 @@ QStringRef QString::rightRef(int n) const
 
 QStringRef QString::midRef(int position, int n) const
 {
-    if (d == &shared_null.str || position >= d->size)
+    if (d == &shared_null.str || position > d->size)
         return QStringRef();
     if (n < 0)
         n = d->size - position;
