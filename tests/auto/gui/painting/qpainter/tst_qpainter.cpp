@@ -89,6 +89,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void drawPixmap_comp_data();
@@ -362,6 +363,13 @@ void tst_QPainter::init()
 
 void tst_QPainter::cleanup()
 {
+}
+
+void tst_QPainter::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("dest.png"));
+    QFile::remove(QLatin1String("expected.png"));
+    QFile::remove(QLatin1String("foo.png"));
 }
 
 static const char* const maskSource_data[] = {

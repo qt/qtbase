@@ -54,7 +54,8 @@ class tst_QPainterPath : public QObject
     Q_OBJECT
 
 public:
-
+public slots:
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void swap();
@@ -114,6 +115,11 @@ private slots:
 
     void lineWithinBounds();
 };
+
+void tst_QPainterPath::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("data"));
+}
 
 // Testing get/set functions
 void tst_QPainterPath::getSetCheck()
