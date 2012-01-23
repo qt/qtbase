@@ -186,6 +186,9 @@ void tst_QNetworkDiskCache::initTestCase()
 // It is only called once.
 void tst_QNetworkDiskCache::cleanupTestCase()
 {
+    QDir workingDir("foo");
+    if (workingDir.exists())
+        workingDir.removeRecursively();
 }
 
 // This will be called before each test function is executed.
