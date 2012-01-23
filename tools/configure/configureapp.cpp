@@ -188,7 +188,7 @@ Configure::Configure(int& argc, char** argv)
             if (syncqt_bat.open(QFile::WriteOnly)) {
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
-                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -outdir \"") << fixSeparators(buildPath) << "\" \"" << fixSeparators(sourcePath) << "\"" << endl;
+                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -qtdir \"") << fixSeparators(buildPath) << "\" %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -3091,6 +3091,7 @@ void Configure::generateHeaders()
             cout << "Running syncqt..." << endl;
             QStringList args;
             args += buildPath + "/bin/syncqt.bat";
+            args += sourcePath;
             QStringList env;
             env += QString("QTDIR=" + sourcePath);
             env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
