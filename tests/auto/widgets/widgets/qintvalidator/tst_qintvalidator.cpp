@@ -214,6 +214,12 @@ void tst_QIntValidator::validateFrench()
     QCOMPARE(validator.validate(s, i), QValidator::Intermediate);
     validator.fixup(s);
     QCOMPARE(s, validator.locale().toString(1000));
+
+    // Confim no fallback to C locale
+    s = QLatin1String("1,000");
+    QCOMPARE(validator.validate(s, i), QValidator::Invalid);
+    validator.setLocale(QLocale::C);
+    QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
 }
 
 void tst_QIntValidator::validate()

@@ -76,7 +76,7 @@ void tst_QDoubleValidator::validateThouSep_data()
     QTest::newRow("1.000de") << "de" << QString("1.000") << ACC;
 
     QTest::newRow(".C") << "C" << QString(".") << ITM;
-    QTest::newRow(".de") << "de" << QString(".") << ITM;
+    QTest::newRow(".de") << "de" << QString(".") << INV;
     QTest::newRow(",C") << "C" << QString(",") << INV;
     QTest::newRow(",de") << "de" << QString(",") << ITM;
 }
@@ -173,7 +173,7 @@ void tst_QDoubleValidator::validate_data()
     QTest::newRow("data_de8")  << "de" << -100.0 << 100.0 << 1 << QString("-100") << ACC << ACC;
     QTest::newRow("data_de9")  << "de" << -100.0 << -10.0 << 1 << QString("10") << ITM << ITM;
     QTest::newRow("data_de10") << "de" << 0.3 << 0.5 << 5 << QString("0,34567") << ACC << ACC;
-    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << ITM << INV;
+    QTest::newRow("data_de11") << "de" << -0.3 << -0.5 << 5 << QString("-0,345678") << INV << INV;
     QTest::newRow("data_de12") << "de" << -0.32 << 0.32 << 1 << QString("0") << ACC << ACC;
     QTest::newRow("data_de13") << "de" << 0.0 << 100.0 << 1 << QString("3456a") << INV << INV;
     QTest::newRow("data_de14") << "de" << -100.0 << 100.0 << 1 << QString("-3456a") << INV << INV;
@@ -216,12 +216,9 @@ void tst_QDoubleValidator::validate_data()
     arabicNum += QChar(1636);
     QTest::newRow("arabic") << "ar" << 0.0 << 20.0 << 2 << arabicNum << ACC << ACC;
 
-    QTest::newRow("data_QTBUG_14935-1") << "de" << 0.0 << 1.0 << 5 << QString("0.31") << ACC << ACC;
-    QTest::newRow("data_QTBUG_14935-2") << "de" << 0.0 << 1000000.0 << 5 << QString("3.123") << ACC << ACC;
-    QTest::newRow("data_QTBUG_14935-3") << "de" << 0.0 << 1000000.0 << 5 << QString("123,345.678") << ACC << ACC;
-
-    QTest::newRow("data_de_problem-1") << "de" << 0.0 << 10.0 << 0 << QString("1.0") << ITM << ITM;
-    QTest::newRow("data_de_problem-2") << "de" << 0.0 << 10.0 << 0 << QString("0.1") << INV << INV;
+    // Confim no fallback to C locale
+    QTest::newRow("data_C1") << "de" << 0.0 << 1000.0 << 2 << QString("1.000,00") << ACC << ACC;
+    QTest::newRow("data_C2") << "de" << 0.0 << 1000.0 << 2 << QString("1,000.00") << INV << INV;
 }
 
 void tst_QDoubleValidator::validate()
@@ -233,9 +230,6 @@ void tst_QDoubleValidator::validate()
     QFETCH(QString, value);
     QFETCH(QValidator::State, scientific_state);
     QFETCH(QValidator::State, standard_state);
-
-    QEXPECT_FAIL("data_de_problem-1", "To be fixed. See QTBUG-15210.", Abort);
-    QEXPECT_FAIL("data_de_problem-2", "To be fixed. See QTBUG-15210.", Abort);
 
     QLocale::setDefault(QLocale(localeName));
 

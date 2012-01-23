@@ -246,6 +246,9 @@ QtCore
     a valid QDate/QTime.
 
 
+* QIntValidator and QDoubleValidator no longer fall back to using the C locale if
+  the requested locale fails to validate the input.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

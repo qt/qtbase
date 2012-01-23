@@ -321,9 +321,7 @@ void QValidator::fixup(QString &) const
     or individually with setBottom() and setTop().
 
     QIntValidator uses its locale() to interpret the number. For example,
-    in Arabic locales, QIntValidator will accept Arabic digits. In addition,
-    QIntValidator is always guaranteed to accept a number formatted according
-    to the "C" locale.
+    in Arabic locales, QIntValidator will accept Arabic digits.
 
     \sa QDoubleValidator, QRegExpValidator, {Line Edits Example}
 */
@@ -403,9 +401,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
 {
     QByteArray buff;
     if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
-        QLocale cl(QLocale::C);
-        if (!cl.d()->validateChars(input, QLocalePrivate::IntegerMode, &buff))
-            return Invalid;
+        return Invalid;
     }
 
     if (buff.isEmpty())
@@ -444,9 +440,7 @@ void QIntValidator::fixup(QString &input) const
 {
     QByteArray buff;
     if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
-        QLocale cl(QLocale::C);
-        if (!cl.d()->validateChars(input, QLocalePrivate::IntegerMode, &buff))
-            return;
+        return;
     }
     bool ok, overflow;
     qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
@@ -561,10 +555,6 @@ public:
     in the German locale, "1,234" will be accepted as the fractional number
     1.234. In Arabic locales, QDoubleValidator will accept Arabic digits.
 
-    In addition, QDoubleValidator is always guaranteed to accept a number
-    formatted according to the "C" locale. QDoubleValidator will not accept
-    numbers with thousand-separators.
-
     \sa QIntValidator, QRegExpValidator, {Line Edits Example}
 */
 
@@ -658,11 +648,7 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
             break;
     }
 
-    State currentLocaleValidation = d->validateWithLocale(input, numMode, locale());
-    if (currentLocaleValidation == Acceptable || locale().language() == QLocale::C)
-        return currentLocaleValidation;
-    State cLocaleValidation = d->validateWithLocale(input, numMode, QLocale(QLocale::C));
-    return qMax(currentLocaleValidation, cLocaleValidation);
+    return d->validateWithLocale(input, numMode, locale());
 }
 
 QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocalePrivate::NumberMode numMode, const QLocale &locale) const
