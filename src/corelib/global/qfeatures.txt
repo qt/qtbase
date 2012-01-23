@@ -858,7 +858,7 @@ SeeAlso: ???
 Feature: IMAGEFORMAT_XPM
 Description: Supports the X11 Pixmap image file format.
 Section: Images
-Requires: TEXTSTREAM
+Requires:
 Name: XPM Image Format
 SeeAlso: ???
 
@@ -917,7 +917,7 @@ SeeAlso: ???
 Feature: PRINTER
 Description: Supports printing
 Section: Painting
-Requires: TEXTSTREAM PICTURE TEMPORARYFILE
+Requires: PICTURE TEMPORARYFILE
 Name: QPrinter
 SeeAlso: ???
 
@@ -1037,7 +1037,7 @@ SeeAlso: ???
 Feature: HOSTINFO
 Description: Supports host name lookups.
 Section: Networking
-Requires: TEXTSTREAM
+Requires:
 Name: QHostInfo
 SeeAlso: ???
 
