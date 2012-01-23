@@ -79,6 +79,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 
 private slots:
     void swap();
@@ -213,6 +214,11 @@ void tst_QPixmap::init()
 
 void tst_QPixmap::cleanup()
 {
+}
+
+void tst_QPixmap::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("temp_image.png"));
 }
 
 void tst_QPixmap::swap()
