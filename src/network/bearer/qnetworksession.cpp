@@ -575,8 +575,6 @@ void QNetworkSession::migrate()
 */
 void QNetworkSession::ignore()
 {
-    // Needed on mobile platforms (was needed for Symbian/S60): the roaming must be explicitly
-    // ignore()'d or migrate()'d
     if (d)
         d->ignore();
 }

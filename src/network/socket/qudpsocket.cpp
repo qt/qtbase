@@ -318,9 +318,6 @@ qint64 QUdpSocket::pendingDatagramSize() const
     fragmented by the IP layer before arriving at their final
     destination.
 
-    \warning In S60 5.0 and earlier versions, the writeDatagram return
-    value is not reliable for large datagrams.
-
     \warning Calling this function on a connected UDP socket may
     result in an error and no packet being sent. If you are using a
     connected socket, use write() to send datagrams.
