@@ -814,6 +814,7 @@ CFG_COREWLAN=auto
 CFG_NOPROCESS=no
 CFG_ICU=auto
 CFG_FORCE_ASSERTS=no
+CFG_PCRE=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2317,6 +2318,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    pcre)
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "system" ]; then
+            CFG_PCRE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -3559,6 +3567,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-script] [-script] [-no-scripttools] [-scripttools] 
         [-no-declarative] [-declarative] [-no-declarative-debug] [-declarative-debug]
         [-no-location] [-location]
+        [-qt-pcre] [-system-pcre]
         [additional platform specific options (see below)]
 
 
@@ -3794,6 +3803,9 @@ Third Party Libraries:
     -no-openssl ........ Do not compile support for OpenSSL.
  +  -openssl ........... Enable run-time OpenSSL support.
     -openssl-linked .... Enabled linked OpenSSL support.
+
+    -qt-pcre ........... Use the PCRE library bundled with Qt.
+ +  -system-pcre ....... Use the PCRE library from the operating system.
 
 Additional options:
 
@@ -6410,6 +6422,23 @@ if [ "$CFG_OPENSSL" != "no" ]; then
     fi
 fi
 
+# detect PCRE
+if [ "$CFG_PCRE" != "qt" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pcre "PCRE" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_PCRE=system
+    else
+        if [ "$CFG_PCRE" = "system" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "PCRE support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_PCRE=qt
+        fi
+    fi
+fi
+
 # detect OpenVG support
 if [ "$CFG_OPENVG" != "no" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
@@ -6929,6 +6958,10 @@ fi
 
 if [ "$CFG_FORCE_ASSERTS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_asserts"
+fi
+
+if [ "$CFG_PCRE" = "qt" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG pcre"
 fi
 
 #
@@ -8078,6 +8111,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"
 fi
 echo "libICU support ......... $CFG_ICU"
+echo "PCRE support ........... $CFG_PCRE"
 if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "Xcb support ............ limited (old version)"
 else

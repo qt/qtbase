@@ -305,6 +305,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "ZLIB" ]            = "auto";
 
+    dictionary[ "PCRE" ]            = "auto";
+
     dictionary[ "GIF" ]             = "auto";
     dictionary[ "TIFF" ]            = "auto";
     dictionary[ "JPEG" ]            = "auto";
@@ -543,6 +545,12 @@ void Configure::parseCmdLine()
             dictionary[ "ZLIB" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-zlib") {
             dictionary[ "ZLIB" ] = "system";
+        }
+
+        else if (configCmdLine.at(i) == "-qt-pcre") {
+            dictionary[ "PCRE" ] = "qt";
+        } else if (configCmdLine.at(i) == "-system-pcre") {
+            dictionary[ "PCRE" ] = "system";
         }
 
         // Image formats --------------------------------------------
@@ -1522,8 +1530,8 @@ bool Configure::displayHelp()
                     "[-no-qmake] [-qmake] [-dont-process] [-process]\n"
                     "[-no-style-<style>] [-qt-style-<style>] [-redo]\n"
                     "[-saveconfig <config>] [-loadconfig <config>]\n"
-                    "[-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng]\n"
-                    "[-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
+                    "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
+                    "[-no-libpng] [-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
                     "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
                     "[-mmx] [-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
@@ -1642,6 +1650,9 @@ bool Configure::displayHelp()
 
         desc("ZLIB", "qt",      "-qt-zlib",             "Use the zlib bundled with Qt.");
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
+
+        desc("PCRE", "qt",       "-qt-pcre",            "Use the PCRE library bundled with Qt.");
+        desc("PCRE", "qt",       "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
 
@@ -1857,6 +1868,7 @@ QString Configure::defaultTo(const QString &option)
 {
     // We prefer using the system version of the 3rd party libs
     if (option == "ZLIB"
+        || option == "PCRE"
         || option == "LIBJPEG"
         || option == "LIBPNG"
         || option == "LIBTIFF")
@@ -1912,6 +1924,9 @@ bool Configure::checkAvailability(const QString &part)
 
     else if (part == "ZLIB")
         available = findFile("zlib.h");
+
+    else if (part == "PCRE")
+        available = findFile("pcre.h");
 
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
@@ -2034,6 +2049,10 @@ void Configure::autoDetection()
     // Compression detection
     if (dictionary["ZLIB"] == "auto")
         dictionary["ZLIB"] =  checkAvailability("ZLIB") ? defaultTo("ZLIB") : "qt";
+
+    // PCRE detection
+    if (dictionary["PCRE"] == "auto")
+        dictionary["PCRE"] = checkAvailability("PCRE") ? defaultTo("PCRE") : "qt";
 
     // Image format detection
     if (dictionary["GIF"] == "auto")
@@ -2250,6 +2269,10 @@ void Configure::generateOutputVars()
         qtConfig += "zlib";
     else if (dictionary[ "ZLIB" ] == "system")
         qtConfig += "system-zlib";
+
+    // PCRE ---------------------------------------------------------
+    if (dictionary[ "PCRE" ] == "qt")
+        qmakeConfig += "pcre";
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
