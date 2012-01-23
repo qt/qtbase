@@ -1289,8 +1289,9 @@ inline int qIntCast(float f) { return int(f); }
 
 #define QT_MODULE(x)
 
-#if !defined(QT_BOOTSTRAPPED) && defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && \
-    (!defined(__PIC__) || (defined(__PIE__) && defined(Q_CC_GNU) && Q_CC_GNU >= 500))
+#if defined(QT_BOOTSTRAPPED) || defined(QT_USE_PROTECTED_VISIBILITY) || !defined(__ELF__) || defined(__PIC__)
+// this is fine
+#elif defined(QT_REDUCE_RELOCATIONS)
 #  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
          "Compile your code with -fPIC (and not with -fPIE)."
 #endif

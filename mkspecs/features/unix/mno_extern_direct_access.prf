@@ -1,0 +1,2 @@
+QMAKE_CFLAGS += -mno-direct-extern-access
+QMAKE_CXXFLAGS += -mno-direct-extern-access

@@ -30,6 +30,9 @@ function(qt_internal_setup_public_platform_target)
         target_compile_options(Platform INTERFACE "-stdlib=libc++")
         target_link_options(Platform INTERFACE "-stdlib=libc++")
     endif()
+    if (QT_FEATURE_no_extern_direct_access)
+        target_compile_options(Platform INTERFACE "-mno-direct-extern-access")
+    endif()
 
     qt_set_msvc_cplusplus_options(Platform INTERFACE)
 

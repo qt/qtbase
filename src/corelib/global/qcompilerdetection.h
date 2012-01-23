@@ -214,7 +214,12 @@
 #    define Q_DECL_EXPORT     __declspec(dllexport)
 #    define Q_DECL_IMPORT     __declspec(dllimport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
-#    define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#    define Q_DECL_EXPORT_OVERRIDABLE __attribute__((visibility("default"), weak))
+#    ifdef QT_USE_PROTECTED_VISIBILITY
+#      define Q_DECL_EXPORT     __attribute__((visibility("protected")))
+#    else
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#    endif
 #    define Q_DECL_IMPORT     __attribute__((visibility("default")))
 #    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #  endif
@@ -1150,6 +1155,9 @@
 #endif
 #ifndef Q_DECL_EXPORT
 #  define Q_DECL_EXPORT
+#endif
+#ifndef Q_DECL_EXPORT_OVERRIDABLE
+#  define Q_DECL_EXPORT_OVERRIDABLE Q_DECL_EXPORT
 #endif
 #ifndef Q_DECL_IMPORT
 #  define Q_DECL_IMPORT

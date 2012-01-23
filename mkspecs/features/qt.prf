@@ -58,6 +58,13 @@ qaxserver {
 
 !force_import_plugins:!contains(TEMPLATE, ".*app"):!if(contains(TEMPLATE, ".*lib"):dll): \
     CONFIG -= import_plugins
+unix {
+    contains(QT_CONFIG, no_extern_direct_access): CONFIG += mno_extern_direct_access
+    else:contains(QT_CONFIG, reduce_relocations):!contains(TEMPLATE, .*lib): {
+        QMAKE_CFLAGS += $$QMAKE_CFLAGS_PIC
+        QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_PIC
+    }
+}
 
 # qmake variables cannot contain dashes, so normalize the names first
 CLEAN_QT = $$replace(QT, -private$, _private)

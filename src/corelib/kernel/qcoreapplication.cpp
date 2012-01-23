@@ -255,7 +255,7 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
-extern "C" void Q_CORE_EXPORT qt_startup_hook()
+extern "C" void Q_DECL_EXPORT_OVERRIDABLE qt_startup_hook()
 {
 }
 
