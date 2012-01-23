@@ -8889,6 +8889,8 @@ void tst_QWidget::inputFocus_task257832()
       QLineEdit *widget = new QLineEdit;
       widget->setFocus();
       widget->winId();    // make sure, widget has been created
+      widget->show();
+      QTRY_VERIFY(widget->hasFocus());
       QCOMPARE(qApp->inputPanel()->inputItem(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
       QVERIFY(!qApp->inputPanel()->inputItem());
@@ -9028,16 +9030,10 @@ void tst_QWidget::focusProxyAndInputMethods()
     // otherwise input method queries go to the wrong widget
     QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
 
-    child->setAttribute(Qt::WA_InputMethodEnabled, false);
+    toplevel->setAttribute(Qt::WA_InputMethodEnabled, false);
     QVERIFY(!qApp->inputPanel()->inputItem());
 
-    child->setAttribute(Qt::WA_InputMethodEnabled, true);
-    QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
-
-    child->setEnabled(false);
-    QVERIFY(!qApp->inputPanel()->inputItem());
-
-    child->setEnabled(true);
+    toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
     QCOMPARE(qApp->inputPanel()->inputItem(), toplevel);
 
     delete toplevel;

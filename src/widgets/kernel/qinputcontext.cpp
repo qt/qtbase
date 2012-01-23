@@ -172,7 +172,13 @@ QInputContext::~QInputContext()
 */
 QWidget *QInputContext::focusWidget() const
 {
-    return qobject_cast<QWidget *>(qApp->inputPanel()->inputItem());
+    bool enabled = false;
+    if (qApp->focusWidget()) {
+        QInputMethodQueryEvent query(Qt::ImEnabled);
+        QGuiApplication::sendEvent(qApp->focusWidget(), &query);
+        enabled = query.value(Qt::ImEnabled).toBool();
+    }
+    return enabled ? qobject_cast<QWidget *>(qApp->focusWidget()) : 0;
 }
 
 
@@ -186,7 +192,7 @@ QWidget *QInputContext::focusWidget() const
 */
 void QInputContext::setFocusWidget(QWidget *widget)
 {
-    qApp->inputPanel()->setInputItem(widget);
+    // not honored
 }
 
 /*!

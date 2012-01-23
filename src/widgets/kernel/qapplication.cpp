@@ -1981,7 +1981,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                      || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
                                           || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
             qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
         }
 #endif //QT_NO_IM
 
@@ -2005,13 +2004,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &out);
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
-#ifndef QT_NO_IM
-                if (focus->testAttribute(Qt::WA_InputMethodEnabled)
-                    && focus->testAttribute(Qt::WA_WState_Created)
-                    && focus->isEnabled()) {
-                    qApp->inputPanel()->setInputItem(focus);
-                }
-#endif //QT_NO_IM
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
                 QApplication::sendEvent(focus, &in);
@@ -2019,6 +2011,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &in);
             }
             emit qApp->focusChanged(prev, focus_widget);
+            emit qApp->focusObjectChanged(focus_widget);
         }
     }
 }

@@ -355,7 +355,7 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
 void QWidgetPrivate::updateWidgetTransform()
 {
     Q_Q(QWidget);
-    if (q == qApp->inputPanel()->inputItem()) {
+    if (q == qGuiApp->focusObject()) {
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
@@ -3125,10 +3125,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
         if (enable) {
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
-                qApp->inputPanel()->setInputItem(focusWidget);
+                qApp->inputPanel()->update(Qt::ImEnabled);
         } else {
             qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+            qApp->inputPanel()->update(Qt::ImEnabled);
         }
     }
 #endif //QT_NO_IM
@@ -10137,7 +10137,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
             qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+            qApp->inputPanel()->update(Qt::ImEnabled);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
 #ifdef Q_WS_MAC
@@ -10151,7 +10151,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createWinId();
         if (isEnabled() && focusWidget->isEnabled()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->setInputItem(focusWidget);
+            qApp->inputPanel()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -10184,13 +10184,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        QWidget *focusWidget = d->effectiveFocusWidget();
-        if (on && hasFocus() && isEnabled()
-            && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->setInputItem(focusWidget);
-        } else if (!on && qApp->inputPanel()->inputItem() == focusWidget) {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->setInputItem(0);
+        if (qApp->focusObject() == this) {
+            if (!on)
+                qApp->inputPanel()->reset();
+            qApp->inputPanel()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
