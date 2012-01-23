@@ -65,8 +65,8 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
                                                   |DWDESC_OPTIONS
 #endif
                                                   |DWDESC_CAPS);
-    description.width = tlw->width();
-    description.height = tlw->height();
+    description.width = qMax(1, tlw->width());
+    description.height = qMax(1, tlw->height());
     description.posx = tlw->x();
     description.posy = tlw->y();
 
