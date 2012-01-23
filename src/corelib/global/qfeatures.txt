@@ -976,13 +976,6 @@ SeeAlso: ???
 
 # Internationalization
 
-Feature: TEXTCODECPLUGIN
-Description: Supports custom text codecs that can be loaded dynamically into applications.
-Section: Internationalization
-Requires: TEXTCODEC LIBRARY
-Name: QTextCodecPlugin
-SeeAlso: ???
-
 Feature: TRANSLATION
 Description: Supports translations using QObject::tr().
 Section: Internationalization
