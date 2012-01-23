@@ -48,9 +48,12 @@
 QT_BEGIN_NAMESPACE
 
 QMinimalBackingStore::QMinimalBackingStore(QWindow *window)
-    : QPlatformBackingStore(window)
+    : QPlatformBackingStore(window),mDebug(false)
 {
-    //qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (long)this;
+    if (QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_BACKINGSTORE").toInt() > 0)
+        mDebug = true;
+    if (mDebug)
+        qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (long)this;
 }
 
 QMinimalBackingStore::~QMinimalBackingStore()
@@ -59,7 +62,9 @@ QMinimalBackingStore::~QMinimalBackingStore()
 
 QPaintDevice *QMinimalBackingStore::paintDevice()
 {
-    //qDebug() << "QMinimalBackingStore::paintDevice";
+    if (mDebug)
+        qDebug() << "QMinimalBackingStore::paintDevice";
+
     return &mImage;
 }
 
@@ -69,15 +74,16 @@ void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const Q
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    static int c = 0;
-    QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
-    qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
-    mImage.save(filename);
+    if (mDebug) {
+        static int c = 0;
+        QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+        qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
+        mImage.save(filename);
+    }
 }
 
 void QMinimalBackingStore::resize(const QSize &size, const QRegion &)
 {
-    //qDebug() << "QMinimalBackingStore::setGeometry:" << (long)this << rect;
     QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
     if (mImage.size() != size)
         mImage = QImage(size, format);
