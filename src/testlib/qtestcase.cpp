@@ -947,22 +947,6 @@ static void installCoverageTool(const char * appname, const char * testname)
 #endif
 }
 
-static void saveCoverageTool(const char * appname, bool testfailed)
-{
-#ifdef __COVERAGESCANNER__
-    // install again to make sure the filename is correct.
-    // without this, a plugin or similar may have changed the filename.
-    __coveragescanner_install(appname);
-    __coveragescanner_teststate(testfailed ? "FAILED" : "PASSED");
-    __coveragescanner_save();
-    __coveragescanner_testname("");
-    __coveragescanner_clear();
-#else
-    Q_UNUSED(appname);
-    Q_UNUSED(testfailed);
-#endif
-}
-
 namespace QTest
 {
     static QObject *currentTestObject = 0;
@@ -1970,10 +1954,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
 
+    QTestResult::setCurrentTestObject(metaObject->className());
+    QTestResult::setCurrentAppname(argv[0]);
+
+    qtest_qParseArgs(argc, argv, false);
+
     installCoverageTool(argv[0], metaObject->className());
 
-    QTestResult::setCurrentTestObject(metaObject->className());
-    qtest_qParseArgs(argc, argv, false);
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         const QStringList origAppArgs(QCoreApplication::arguments());
@@ -2024,8 +2011,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          IOPMAssertionRelease(powerID);
      }
 #endif
-
-     saveCoverageTool(argv[0], QTestLog::failCount());
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)

@@ -56,6 +56,22 @@
 
 QT_BEGIN_NAMESPACE
 
+static void saveCoverageTool(const char * appname, bool testfailed)
+{
+#ifdef __COVERAGESCANNER__
+    // install again to make sure the filename is correct.
+    // without this, a plugin or similar may have changed the filename.
+    __coveragescanner_install(appname);
+    __coveragescanner_teststate(testfailed ? "FAILED" : "PASSED");
+    __coveragescanner_save();
+    __coveragescanner_testname("");
+    __coveragescanner_clear();
+#else
+    Q_UNUSED(appname);
+    Q_UNUSED(testfailed);
+#endif
+}
+
 namespace QTest {
 
     int fails = 0;
@@ -368,6 +384,7 @@ void QTestLog::stopLogging()
     QTest::TestLoggers::stopLogging();
     QTest::TestLoggers::destroyLoggers();
     QTest::loggerUsingStdout = false;
+    saveCoverageTool(QTestResult::currentAppname(), failCount() != 0);
 }
 
 void QTestLog::addLogger(LogMode mode, const char *filename)

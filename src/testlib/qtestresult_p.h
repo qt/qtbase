@@ -95,6 +95,9 @@ public:
     static void setSkipCurrentTest(bool value);
     static bool skipCurrentTest();
 
+    static void setCurrentAppname(const char *appname);
+    static const char *currentAppname();
+
 private:
     Q_DISABLE_COPY(QTestResult)
 };

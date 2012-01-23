@@ -64,6 +64,8 @@ namespace QTest
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
+
+    static const char *currentAppname = 0;
 }
 
 void QTestResult::reset()
@@ -311,6 +313,16 @@ void QTestResult::setSkipCurrentTest(bool value)
 bool QTestResult::skipCurrentTest()
 {
     return QTest::skipCurrentTest;
+}
+
+void QTestResult::setCurrentAppname(const char *appname)
+{
+    QTest::currentAppname = appname;
+}
+
+const char *QTestResult::currentAppname()
+{
+    return QTest::currentAppname;
 }
 
 QT_END_NAMESPACE
