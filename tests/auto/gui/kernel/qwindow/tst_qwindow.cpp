@@ -246,16 +246,26 @@ public:
         keyReleaseCode = event->key();
     }
     void mousePressEvent(QMouseEvent *event) {
-        if (ignoreMouse)
+        if (ignoreMouse) {
             event->ignore();
-        else
+        } else {
             mousePressButton = event->button();
+            mousePressScreenPos = event->screenPos();
+        }
     }
     void mouseReleaseEvent(QMouseEvent *event) {
         if (ignoreMouse)
             event->ignore();
         else
             mouseReleaseButton = event->button();
+    }
+    void mouseMoveEvent(QMouseEvent *event) {
+        if (ignoreMouse) {
+            event->ignore();
+        } else {
+            mouseMoveButton = event->button();
+            mouseMoveScreenPos = event->screenPos();
+        }
     }
     void touchEvent(QTouchEvent *event) {
         if (ignoreTouch) {
@@ -285,7 +295,8 @@ public:
     }
 
     int keyPressCode, keyReleaseCode;
-    int mousePressButton, mouseReleaseButton;
+    int mousePressButton, mouseReleaseButton, mouseMoveButton;
+    QPointF mousePressScreenPos, mouseMoveScreenPos;
     int touchPressedCount, touchReleasedCount;
 
     bool ignoreMouse, ignoreTouch;
@@ -339,10 +350,23 @@ void tst_QWindow::touchToMouseTranslation()
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
+    const QRectF pressArea(101, 102, 4, 4);
+    const QRectF moveArea(105, 108, 4, 4);
     tp1.id = 1;
     tp1.state = Qt::TouchPointPressed;
+    tp1.area = pressArea;
     tp2.id = 2;
     tp2.state = Qt::TouchPointPressed;
+    points << tp1 << tp2;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    // Now an update but with changed list order. The mouse event should still
+    // be generated from the point with id 1.
+    tp1.id = 2;
+    tp1.state = Qt::TouchPointStationary;
+    tp2.id = 1;
+    tp2.state = Qt::TouchPointMoved;
+    tp2.area = moveArea;
+    points.clear();
     points << tp1 << tp2;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
     points[0].state = Qt::TouchPointReleased;
@@ -352,6 +376,8 @@ void tst_QWindow::touchToMouseTranslation()
 
     QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
     QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mousePressScreenPos, pressArea.center());
+    QTRY_COMPARE(window.mouseMoveScreenPos, moveArea.center());
 
     window.mousePressButton = 0;
     window.mouseReleaseButton = 0;

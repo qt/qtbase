@@ -206,6 +206,7 @@ private:
 
     static QGuiApplicationPrivate *self;
     static QTouchDevice *m_fakeTouchDevice;
+    static int m_fakeMouseSourcePointId;
 };
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k);

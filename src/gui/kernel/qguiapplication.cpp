@@ -114,6 +114,7 @@ static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 QTouchDevice *QGuiApplicationPrivate::m_fakeTouchDevice = 0;
+int QGuiApplicationPrivate::m_fakeMouseSourcePointId = 0;
 
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
@@ -1036,11 +1037,22 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchEvent.device()->type() != QTouchDevice::TouchPad) {
                 Qt::MouseButtons b = eventType == QEvent::TouchEnd ? Qt::NoButton : Qt::LeftButton;
 
-                const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().first();
+                QList<QTouchEvent::TouchPoint> touchPoints = touchEvent.touchPoints();
+                if (eventType == QEvent::TouchBegin)
+                    m_fakeMouseSourcePointId = touchPoints.first().id();
 
-                QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp, touchPoint.pos(), touchPoint.screenPos(), b, e->modifiers);
-                fake.synthetic = true;
-                processMouseEvent(&fake);
+                for (int i = 0; i < touchPoints.count(); ++i) {
+                    const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
+                    if (touchPoint.id() == m_fakeMouseSourcePointId) {
+                        QWindowSystemInterfacePrivate::MouseEvent fake(w, e->timestamp,
+                                                                       touchPoint.pos(),
+                                                                       touchPoint.screenPos(),
+                                                                       b, e->modifiers);
+                        fake.synthetic = true;
+                        processMouseEvent(&fake);
+                        break;
+                    }
+                }
             }
         }
     }
