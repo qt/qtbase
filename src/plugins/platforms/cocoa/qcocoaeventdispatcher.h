@@ -149,6 +149,8 @@ class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 public:
     QCocoaEventDispatcherPrivate();
 
+    uint processEventsFlags;
+
     // timer handling
     QTimerInfoList timerInfoList;
     CFRunLoopTimerRef runLoopTimerRef;
@@ -173,6 +175,7 @@ public:
     void beginModalSession(QWindow *widget);
     void endModalSession(QWindow *widget);
     void cancelWaitForMoreEvents();
+    void maybeCancelWaitForMoreEvents();
     void cleanupModalSessions();
     void ensureNSAppInitialized();
 

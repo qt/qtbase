@@ -114,6 +114,7 @@ void QCocoaEventDispatcherPrivate::activateTimer(CFRunLoopTimerRef, void *info)
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
     (void) d->timerInfoList.activateTimers();
     d->maybeStartCFRunLoopTimer();
+    d->maybeCancelWaitForMoreEvents();
 }
 
 void QCocoaEventDispatcherPrivate::maybeStartCFRunLoopTimer()
@@ -275,6 +276,8 @@ void qt_mac_socket_callback(CFSocketRef s, CFSocketCallBackType callbackType, CF
         if (socketInfo->writeNotifier)
             QGuiApplication::sendEvent(socketInfo->writeNotifier, &notifierEvent);
     }
+
+    eventDispatcher->maybeCancelWaitForMoreEvents();
 }
 
 /*
@@ -508,13 +511,12 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     bool interruptLater = false;
     QtCocoaInterruptDispatcher::cancelInterruptLater();
 
-    // In case we end up recursing while we now process events, make sure
-    // that we send remaining posted Qt events before this call returns:
-    wakeUp();
     emit awake();
 
     bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
     bool retVal = false;
+    uint oldflags = d->processEventsFlags;
+    d->processEventsFlags = flags;
     forever {
         if (d->interrupt)
             break;
@@ -567,6 +569,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
             retVal = true;
         } else {
+            bool hadModalSession = d->currentModalSessionCached != 0;
             // We cannot block the thread (and run in a tight loop).
             // Instead we will process all current pending events and return.
             d->ensureNSAppInitialized();
@@ -628,17 +631,13 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
             } while (!d->interrupt && event != nil);
 
-            // Be sure to flush the Qt posted events when not using exec mode
-            // (exec mode will always do this call from the event loop source):
-            if (!d->interrupt)
-                QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
-
             // Since the window that holds modality might have changed while processing
             // events, we we need to interrupt when we return back the previous process
             // event recursion to ensure that we spin the correct modal session.
             // We do the interruptLater at the end of the function to ensure that we don't
             // disturb the 'wait for more events' below (as deleteLater will post an event):
-            interruptLater = true;
+            if (hadModalSession && d->currentModalSessionCached == 0)
+                interruptLater = true;
         }
         bool canWait = (d->threadData->canWait
                 && !retVal
@@ -655,6 +654,8 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             break;
         }
     }
+
+    d->processEventsFlags = oldflags;
 
     // If we're interrupted, we need to interrupt the _current_
     // recursion as well to check if it is  still supposed to be
@@ -878,7 +879,8 @@ void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
 }
 
 QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
-    : runLoopTimerRef(0),
+    : processEventsFlags(0),
+      runLoopTimerRef(0),
       blockSendPostedEvents(false),
       currentExecIsNSAppRun(false),
       nsAppRunCalledByQt(false),
@@ -1007,7 +1009,9 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 
 void QCocoaEventDispatcherPrivate::postedEventsSourcePerformCallback(void *info)
 {
-    static_cast<QCocoaEventDispatcherPrivate *>(info)->processPostedEvents();
+    QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
+    d->processPostedEvents();
+    d->maybeCancelWaitForMoreEvents();
 }
 
 void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
@@ -1018,6 +1022,16 @@ void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
     [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
         subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];
+}
+
+void QCocoaEventDispatcherPrivate::maybeCancelWaitForMoreEvents()
+{
+    if ((processEventsFlags & (QEventLoop::EventLoopExec | QEventLoop::WaitForMoreEvents)) == QEventLoop::WaitForMoreEvents) {
+        // RunLoop sources are not NSEvents, but they do generate Qt events. If
+        // WaitForMoreEvents was set, but EventLoopExec is not, processEvents()
+        // should return after a source has sent some Qt events.
+        cancelWaitForMoreEvents();
+    }
 }
 
 void QCocoaEventDispatcher::interrupt()
