@@ -44,7 +44,6 @@
 #include <QTextDocumentWriter>
 #include <QTextLayout>
 #include <QTextCursor>
-#include <private/qtextcontrol_p.h>
 #include <qmath.h>
 #include <QFile>
 #include <QPainter>
@@ -73,7 +72,6 @@ private slots:
     void odfWriting_text();
     void odfWriting_images();
 
-    void constructControl();
     void constructDocument();
 
     void newLineReplacement();
@@ -89,10 +87,6 @@ private slots:
     void document();
     void paintDocToPixmap();
     void paintDocToPixmap_painterFill();
-
-    void control();
-    void paintControlToPixmap();
-    void paintControlToPixmap_painterFill();
 
 private:
     QSize setupTextLayout(QTextLayout *layout, bool wrap = true, int wrapWidth = 100);
@@ -253,17 +247,6 @@ QSize tst_QText::setupTextLayout(QTextLayout *layout, bool wrap, int wrapWidth)
         height += int(line.height());
     }
     return QSize(qCeil(widthUsed), height);
-}
-
-void tst_QText::constructControl()
-{
-    QTextControl *control = new QTextControl;
-    delete control;
-
-    QBENCHMARK {
-        QTextControl *control = new QTextControl;
-        delete control;
-    }
 }
 
 void tst_QText::constructDocument()
@@ -438,52 +421,6 @@ void tst_QText::paintDocToPixmap_painterFill()
         p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
         doc->drawContents(&p);
-    }
-}
-
-void tst_QText::control()
-{
-    QTextControl *control = new QTextControl(m_shortLorem);
-    Q_UNUSED(control);
-
-    QBENCHMARK {
-        QTextControl *control = new QTextControl;
-        QTextDocument *doc = control->document();
-        doc->setHtml(m_shortLorem);
-    }
-}
-
-void tst_QText::paintControlToPixmap()
-{
-    QTextControl *control = new QTextControl;
-    QTextDocument *doc = control->document();
-    doc->setHtml(m_shortLorem);
-    doc->setTextWidth(300);
-    QSize size = doc->size().toSize();
-
-    QBENCHMARK {
-        QPixmap img(size);
-        img.fill(Qt::transparent);
-        QPainter p(&img);
-        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
-    }
-}
-
-void tst_QText::paintControlToPixmap_painterFill()
-{
-    QTextControl *control = new QTextControl;
-    QTextDocument *doc = control->document();
-    doc->setHtml(m_shortLorem);
-    doc->setTextWidth(300);
-    QSize size = doc->size().toSize();
-
-    QBENCHMARK {
-        QPixmap img(size);
-        QPainter p(&img);
-        p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
-        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
     }
 }
 

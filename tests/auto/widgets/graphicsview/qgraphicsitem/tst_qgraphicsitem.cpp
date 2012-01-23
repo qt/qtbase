@@ -4243,14 +4243,14 @@ void tst_QGraphicsItem::textControlGetterSetter()
 {
     QGraphicsTextItem *item = new QGraphicsTextItem;
     QVERIFY(item->textControl()->parent() == item);
-    QPointer<QTextControl> control = item->textControl();
+    QPointer<QWidgetTextControl> control = item->textControl();
     delete item;
     QVERIFY(!control);
 
     item = new QGraphicsTextItem;
 
-    QPointer<QTextControl> oldControl = control;
-    control = new QTextControl;
+    QPointer<QWidgetTextControl> oldControl = control;
+    control = new QWidgetTextControl;
 
     item->setTextControl(control);
     QVERIFY(item->textControl() == control);
@@ -4269,7 +4269,7 @@ void tst_QGraphicsItem::textControlGetterSetter()
     // test that on setting a control the item size
     // is adjusted
     oldControl = control;
-    control = new QTextControl;
+    control = new QWidgetTextControl;
     control->setPlainText("foo!");
     item->setTextControl(control);
     QCOMPARE(item->boundingRect().size(), control->document()->documentLayout()->documentSize());
