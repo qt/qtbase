@@ -76,6 +76,7 @@ public:
 public slots:
     void init();
     void cleanup();
+    void cleanupTestCase();
 private slots:
     void getSetCheck();
     void isEmpty();
@@ -231,7 +232,6 @@ tst_QTextDocument::tst_QTextDocument()
 
 tst_QTextDocument::~tst_QTextDocument()
 {
-    QFile::remove(QLatin1String("foo.png"));
 }
 
 void tst_QTextDocument::init()
@@ -256,6 +256,11 @@ void tst_QTextDocument::cleanup()
     cursor = QTextCursor();
     delete doc;
     doc = 0;
+}
+
+void tst_QTextDocument::cleanupTestCase()
+{
+    QFile::remove(QLatin1String("foo.png"));
 }
 
 void tst_QTextDocument::isEmpty()
