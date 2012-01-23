@@ -247,14 +247,8 @@ bool QDirectFbBlitterPlatformPixmap::fromFile(const QString &filename, const cha
         return QBlittablePlatformPixmap::fromFile(filename, format, flags);
 
     // Deal with resources
-    if (filename.startsWith(QLatin1Char(':'))) { // resource
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly))
-            return false;
-        const QByteArray data = file.readAll();
-        file.close();
-        return fromData(reinterpret_cast<const uchar*>(data.constData()), data.size(), format, flags);
-    }
+    if (filename.startsWith(QLatin1Char(':')))
+        return QBlittablePlatformPixmap::fromFile(filename, format, flags);
 
     // Try to use directfb to load it.
     DFBDataBufferDescription description;
