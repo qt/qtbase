@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTriangulatingStroker
+class Q_GUI_EXPORT QTriangulatingStroker
 {
 public:
     QTriangulatingStroker() : m_vertices(0) {}
