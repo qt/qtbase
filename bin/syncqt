@@ -694,10 +694,6 @@ while ( @ARGV ) {
     } elsif($arg eq "-qtdir") {
         $var = "qtdir";
         $val = shift @ARGV;
-    } elsif($arg eq "-base-dir") {
-        # skip, it's been dealt with at the top of the file
-        shift @ARGV;
-        next;
     } elsif($arg eq "-generator") {
         $var = "makefile_generator";
         $val = shift @ARGV;
