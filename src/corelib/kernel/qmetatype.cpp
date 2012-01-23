@@ -1546,8 +1546,10 @@ class TypeDestructor {
                 if (!qMetaTypeWidgetsHelper)
                     return;
                 dtor = qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].destructor;
-            } else
+            } else {
                 customTypeDestructor(type, where);
+                return;
+            }
             dtor(where);
         }
     };
