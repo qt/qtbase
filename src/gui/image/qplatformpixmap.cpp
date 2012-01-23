@@ -133,6 +133,8 @@ bool QPlatformPixmap::fromData(const uchar *buf, uint len, const char *format, Q
     QBuffer b(&a);
     b.open(QIODevice::ReadOnly);
     QImage image = QImageReader(&b, format).read();
+    if (image.isNull())
+        return false;
     fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
     return !isNull();
 }
