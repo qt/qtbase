@@ -798,10 +798,6 @@ while ( @ARGV ) {
     }
 }
 
-# if the $qtbasedir neither has 'qtbase' somewhere in its path, nor a
-# '.qmake.cache' file in its directory, we assume it's not a valid path
-# (remember that a yet-to-be-built qtbase doesn't have this file either,
-# thus the 'qtbase' path check!)
 die "Cannot automatically detect/use provided path to QtBase's build directory!\n" .
     "QTDIR detected/provided: " . (defined $qtbasedir ? $qtbasedir : "-none-") . "\n" .
     "Please use the -qtdir option to provide the correct path.\nsyncqt failed"
