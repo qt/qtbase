@@ -106,6 +106,8 @@ public:
 #endif
 };
 
+Q_DECLARE_TYPEINFO(QStringList, Q_MOVABLE_TYPE);
+
 namespace QtPrivate {
     void Q_CORE_EXPORT QStringList_sort(QStringList *that);
     int Q_CORE_EXPORT QStringList_removeDuplicates(QStringList *that);
