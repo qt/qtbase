@@ -1753,6 +1753,23 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 }
 
 /*!
+    Returns whether a model can accept a drop of data.
+
+    This can be used to indicate whether a drop of certain data is allowed, for example
+    by using a 'forbidden' emblem on a mouse cursor during a drag operation.
+
+    This method returns true by default.
+
+    \sa dropMimeData(), {Using drag and drop with item views}
+ */
+bool QAbstractItemModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                         int row, int column,
+                                         const QModelIndex &parent) const
+{
+    return true;
+}
+
+/*!
     Handles the \a data supplied by a drag and drop operation that ended with
     the given \a action.
 
@@ -1773,7 +1790,7 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     greater than or equal zero, it means that the drop occurred just before the
     specified \a row and \a column in the specified \a parent.
 
-    \sa supportedDropActions(), {Using drag and drop with item views}
+    \sa supportedDropActions(), canDropMimeData(), {Using drag and drop with item views}
 */
 bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)

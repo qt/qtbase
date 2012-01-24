@@ -72,6 +72,7 @@ private slots:
     void match();
     void dropMimeData_data();
     void dropMimeData();
+    void canDropMimeData();
     void changePersistentIndex();
     void movePersistentIndex();
 
@@ -149,6 +150,9 @@ public:
     bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
                      const QModelIndex &destinationParent, int destinationChild);
     void reset();
+
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const;
 
     int cCount, rCount;
     mutable bool wrongIndex;
@@ -313,6 +317,25 @@ bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
 void QtTestModel::reset()
 {
     QAbstractItemModel::reset();
+}
+
+bool QtTestModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
+                                 int row, int column, const QModelIndex &parent) const
+{
+    Q_UNUSED(data);
+    Q_UNUSED(action);
+
+    // For testing purposes, we impose some arbitrary rules on what may be dropped.
+    if (!parent.isValid() && row < 0 && column < 0) {
+        // a drop in emtpy space in the view is allowed.
+        // For example, in a filesystem view, a file may be dropped into empty space
+        // if it represents a writable directory.
+        return true;
+    }
+
+    // We then arbitrarily decide to only allow drops on odd rows.
+    // A filesystem view/model might be able to drop onto (writable) directories.
+    return row % 2 == 0;
 }
 
 /**
@@ -753,6 +776,15 @@ void tst_QAbstractItemModel::dropMimeData()
             QCOMPARE(dst_data , res_data);
         }
     }
+}
+
+void tst_QAbstractItemModel::canDropMimeData()
+{
+    QtTestModel model(3, 3);
+
+    QVERIFY(model.canDropMimeData(0, Qt::CopyAction, -1, -1, QModelIndex()));
+    QVERIFY(model.canDropMimeData(0, Qt::CopyAction, 0, 0, QModelIndex()));
+    QVERIFY(!model.canDropMimeData(0, Qt::CopyAction, 1, 0, QModelIndex()));
 }
 
 void tst_QAbstractItemModel::changePersistentIndex()
