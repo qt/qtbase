@@ -6,7 +6,6 @@
         <file>images/YCbCr_cmyk.png</file>
         <file>images/YCbCr_rgb.jpg</file>
         <file>images/away.png</file>
-        <file>images/ball.mng</file>
         <file>images/bat1.gif</file>
         <file>images/bat2.gif</file>
         <file>images/beavis.jpg</file>
@@ -18,12 +17,10 @@
         <file>images/corrupt.bmp</file>
         <file>images/corrupt.gif</file>
         <file>images/corrupt.jpg</file>
-        <file>images/corrupt.mng</file>
         <file>images/corrupt.png</file>
         <file>images/corrupt.xbm</file>
         <file>images/crash-signed-char.bmp</file>
         <file>images/earth.gif</file>
-        <file>images/fire.mng</file>
         <file>images/font.bmp</file>
         <file>images/gnus.xbm</file>
         <file>images/image.pbm</file>

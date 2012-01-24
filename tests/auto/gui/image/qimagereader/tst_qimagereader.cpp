@@ -256,9 +256,6 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("GIF: earth") << QString("earth.gif") << true << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << true << QByteArray("gif");
 
-    QTest::newRow("MNG: ball") << QString("ball.mng") << true << QByteArray("mng");
-    QTest::newRow("MNG: fire") << QString("fire.mng") << true << QByteArray("mng");
-
     QTest::newRow("SVG: rect") << QString("rect.svg") << true << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << true << QByteArray("svgz");
 }
@@ -374,9 +371,6 @@ void tst_QImageReader::setScaledSize_data()
     QTest::newRow("GIF: earth") << "earth" << QSize(200, 200) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QSize(200, 200) << QByteArray("gif");
 
-    QTest::newRow("MNG: ball") << "ball" << QSize(200, 200) << QByteArray("mng");
-    QTest::newRow("MNG: fire") << "fire" << QSize(200, 200) << QByteArray("mng");
-
     QTest::newRow("SVG: rect") << "rect" << QSize(200, 200) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QSize(200, 200) << QByteArray("svgz");
 }
@@ -441,9 +435,6 @@ void tst_QImageReader::setClipRect_data()
     QTest::newRow("GIF: earth") << "earth" << QRect(0, 0, 50, 50) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QRect(0, 0, 50, 50) << QByteArray("gif");
 
-    QTest::newRow("MNG: ball") << "ball" << QRect(0, 0, 50, 50) << QByteArray("mng");
-    QTest::newRow("MNG: fire") << "fire" << QRect(0, 0, 50, 50) << QByteArray("mng");
-
     QTest::newRow("SVG: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svgz");
 }
@@ -488,9 +479,6 @@ void tst_QImageReader::setScaledClipRect_data()
 
     QTest::newRow("GIF: earth") << "earth" << QRect(0, 0, 50, 50) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QRect(0, 0, 50, 50) << QByteArray("gif");
-
-    QTest::newRow("MNG: ball") << "ball" << QRect(0, 0, 50, 50) << QByteArray("mng");
-    QTest::newRow("MNG: fire") << "fire" << QRect(0, 0, 50, 50) << QByteArray("mng");
 
     QTest::newRow("SVG: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svgz");
@@ -545,8 +533,6 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
-    QTest::newRow("mng-1") << QString("ball.mng") << QByteArray("mng") << QImage::Format_Invalid;
-    QTest::newRow("mng-2") << QString("fire.mng") << QByteArray("mng") << QImage::Format_Invalid;
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg") << QImage::Format_ARGB32_Premultiplied;
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz") << QImage::Format_ARGB32_Premultiplied;
 }
@@ -625,9 +611,6 @@ void tst_QImageReader::setBackgroundColor_data()
     QTest::newRow("GIF: earth") << QString("earth.gif") << QColor(Qt::cyan);
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << QColor(Qt::magenta);
 
-    QTest::newRow("MNG: ball") << QString("ball.mng") << QColor(Qt::yellow);
-    QTest::newRow("MNG: fire") << QString("fire.mng") << QColor(Qt::gray);
-
     QTest::newRow("SVG: rect") << QString("rect.svg") << QColor(Qt::darkGreen);
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << QColor(Qt::darkGreen);
 }
@@ -664,9 +647,6 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("GIF: earth") << QString("earth.gif") << true;
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << true;
 
-    QTest::newRow("MNG: ball") << QString("ball.mng") << true;
-    QTest::newRow("MNG: fire") << QString("fire.mng") << true;
-
     QTest::newRow("SVG: rect") << QString("rect.svg") << false;
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << false;
 }
@@ -693,10 +673,6 @@ void tst_QImageReader::sizeBeforeRead()
 
     QImageReader reader(prefix + fileName);
     QVERIFY(reader.canRead());
-    if (format == "mng") {
-        QCOMPARE(reader.size(), QSize());
-        return;
-    }
 
     QSize size = reader.size();
     QVERIFY(reader.canRead());
@@ -1043,9 +1019,6 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
 
-    QTest::newRow("mng-1") << QString("ball.mng") << QByteArray("mng");
-    QTest::newRow("mng-2") << QString("fire.mng") << QByteArray("mng");
-
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg");
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz");
 #if defined QTEST_HAVE_TGA
@@ -1165,7 +1138,7 @@ void tst_QImageReader::readFromFileAfterJunk()
     if (format == "ppm" || format == "pbm" || format == "pgm" || format == "svg" || format == "svgz")
         iterations = 1;
 
-    if (format == "mng" || !QImageWriter::supportedImageFormats().contains(format)) {
+    if (!QImageWriter::supportedImageFormats().contains(format)) {
         for (int i = 0; i < iterations; ++i) {
             junkFile.write("deadbeef", 9);
             QCOMPARE(junkFile.write(imageData), qint64(imageData.size()));
@@ -1321,15 +1294,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("qtbug13653-no_eoi.jpg") << QString("qtbug13653-no_eoi.jpg")
                                         << QByteArray("jpg") << QSize(240, 180)
                                         << QString("");
-    QTest::newRow("corrupt.mng") << QString("corrupt.mng")
-                                        << QByteArray("mng") << QSize(0, 0)
-                                        << QString("MNG error 901: Application signalled I/O error; chunk IHDR; subcode 0:0");
-    QTest::newRow("fire.mng") << QString("fire.mng")
-                                     << QByteArray("mng") << QSize(30, 60)
-                                     << QString("");
-    QTest::newRow("ball.mng") << QString("ball.mng")
-                                     << QByteArray("mng") << QSize(32, 32)
-                                     << QString("");
     QTest::newRow("rect.svg") << QString("rect.svg")
                                      << QByteArray("svg") << QSize(105, 137)
                                      << QString("");
@@ -1497,9 +1461,6 @@ void tst_QImageReader::readCorruptImage_data()
                                   << QString("JPEG datastream contains no image")
                                   << QByteArray("jpeg");
     QTest::newRow("corrupt gif") << QString("corrupt.gif") << true << QString("") << QByteArray("gif");
-    QTest::newRow("corrupt mng") << QString("corrupt.mng") << true
-                                 << QString("MNG error 901: Application signalled I/O error; chunk IHDR; subcode 0:0")
-                                 << QByteArray("mng");
     QTest::newRow("corrupt png") << QString("corrupt.png") << true << QString("") << QByteArray("png");
     QTest::newRow("corrupt bmp") << QString("corrupt.bmp") << true << QString("") << QByteArray("bmp");
     QTest::newRow("corrupt xpm (colors)") << QString("corrupt-colors.xpm") << true
@@ -1859,8 +1820,6 @@ void tst_QImageReader::testIgnoresFormatAndExtension_data()
     QTest::newRow("bat1.gif") << "bat1" << "gif" << "gif";
 
     QTest::newRow("beavis.jpg") << "beavis" << "jpg" << "jpeg";
-
-    QTest::newRow("fire.mng") << "fire" << "mng" << "mng";
 
     QTest::newRow("image_100dpi.tif") << "image_100dpi" << "tif" << "tiff";
 

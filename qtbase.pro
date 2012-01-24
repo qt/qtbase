@@ -59,7 +59,6 @@ unix:!symbian {
 			(cd config.tests/unix/ibase && $(MAKE) distclean); \
 			(cd config.tests/unix/ipv6ifname && $(MAKE) distclean); \
 			(cd config.tests/unix/zlib && $(MAKE) distclean); \
-			(cd config.tests/unix/libmng && $(MAKE) distclean); \
 			(cd config.tests/unix/sqlite2 && $(MAKE) distclean); \
 			(cd config.tests/unix/libjpeg && $(MAKE) distclean); \
 			(cd config.tests/unix/libpng && $(MAKE) distclean); \

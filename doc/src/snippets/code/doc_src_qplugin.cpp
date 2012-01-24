@@ -60,5 +60,5 @@ Q_IMPORT_PLUGIN(qjpeg)
 
 //! [3]
 TEMPLATE      = app
-QTPLUGIN     += qjpeg qgif qmng    # image formats
+QTPLUGIN     += qjpeg qgif    # image formats
 //! [3]

@@ -117,9 +117,6 @@
 #ifndef QT_NO_IMAGEFORMAT_JPEG
 #include <private/qjpeghandler_p.h>
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-#include <private/qmnghandler_p.h>
-#endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
 #include <private/qtiffhandler_p.h>
 #endif
@@ -185,10 +182,6 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 #ifndef QT_NO_IMAGEFORMAT_JPEG
         } else if (testFormat == "jpg" || testFormat == "jpeg") {
             handler = new QJpegHandler;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-        } else if (testFormat == "mng") {
-            handler = new QMngHandler;
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
         } else if (testFormat == "tif" || testFormat == "tiff") {
@@ -704,9 +697,6 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     formats << "jpg" << "jpeg";
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    formats << "mng";
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
     formats << "tif" << "tiff";

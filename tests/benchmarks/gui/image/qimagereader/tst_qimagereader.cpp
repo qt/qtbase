@@ -117,10 +117,6 @@ tst_QImageReader::tst_QImageReader()
     images << QPair<QString, QByteArray>(QLatin1String("earth.gif"), QByteArray("gif"));
     images << QPair<QString, QByteArray>(QLatin1String("trolltech.gif"), QByteArray("gif"));
 #endif
-#if defined QTEST_HAVE_MNG
-    images << QPair<QString, QByteArray>(QLatin1String("ball.mng"), QByteArray("mng"));
-    images << QPair<QString, QByteArray>(QLatin1String("fire.mng"), QByteArray("mng"));
-#endif
 }
 
 tst_QImageReader::~tst_QImageReader()

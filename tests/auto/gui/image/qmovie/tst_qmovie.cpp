@@ -137,10 +137,6 @@ void tst_QMovie::playMovie_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("frameCount");
-#if defined(QTEST_HAVE_MNG) && !defined(Q_OS_WINCE)
-    // Qt/WinCE runs out of memory for this one...
-    QTest::newRow("home") << QString("animations/dutch.mng") << 10;
-#endif
 #ifdef QTEST_HAVE_GIF
     QTest::newRow("comicsecard") << QString("animations/comicsecard.gif") << 5;
     QTest::newRow("trolltech") << QString("animations/trolltech.gif") << 34;

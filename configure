@@ -665,8 +665,6 @@ CFG_PNG=yes
 CFG_LIBPNG=auto
 CFG_JPEG=auto
 CFG_LIBJPEG=auto
-CFG_MNG=auto
-CFG_LIBMNG=auto
 CFG_XCURSOR=runtime
 CFG_XRANDR=runtime
 CFG_XRENDER=auto
@@ -1802,14 +1800,6 @@ while [ "$#" -gt 0 ]; do
         [ "$VAL" = "yes" ] && VAL=qt
         if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    libmng)
-        [ "$VAL" = "yes" ] && VAL=qt
-        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
-            CFG_LIBMNG="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3566,8 +3556,8 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
         [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
-        [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
-        [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
+        [-no-libpng] [-qt-libpng] [-system-libpng]
+        [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
@@ -3809,11 +3799,6 @@ Third Party Libraries:
     -qt-libpng ......... Use the libpng bundled with Qt.
  +  -system-libpng ..... Use libpng from the operating system.
                          See http://www.libpng.org/pub/png
-
-    -no-libmng ......... Do not compile MNG support.
-    -qt-libmng ......... Use the libmng bundled with Qt.
- +  -system-libmng ..... Use libmng from the operating system.
-                         See http://www.libmng.com
 
     -no-libjpeg ........ Do not compile JPEG support.
     -qt-libjpeg ........ Use the libjpeg bundled with Qt.
@@ -4962,23 +4947,6 @@ if [ "$CFG_LIBTIFF" = "auto" ]; then
         CFG_LIBTIFF=system
     else
         CFG_LIBTIFF=qt
-    fi
-fi
-
-# detect how mng should be built
-if [ "$CFG_MNG" = "auto" ]; then
-    if [ "$CFG_SHARED" = "yes" ]; then
-        CFG_MNG=plugin
-    else
-        CFG_MNG=yes
-    fi
-fi
-# detect mng
-if [ "$CFG_LIBMNG" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libmng "libmng" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-       CFG_LIBMNG=system
-    else
-       CFG_LIBMNG=qt
     fi
 fi
 
@@ -6765,16 +6733,6 @@ if [ "$CFG_JPEG" = "no" ]; then
 elif [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
-if [ "$CFG_LIBMNG" = "no" ]; then
-    CFG_MNG="no"
-elif [ "$CFG_LIBMNG" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-mng"
-fi
-if [ "$CFG_MNG" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-mng"
-elif [ "$CFG_MNG" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG mng"
-fi
 if [ "$CFG_LIBPNG" = "no" ]; then
     CFG_PNG="no"
 fi
@@ -7550,7 +7508,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_TIFF" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_TIFF"
 [ "$CFG_PNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_PNG"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
-[ "$CFG_MNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_MNG"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
 [ "$CFG_EXCEPTIONS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EXCEPTIONS"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
@@ -8048,11 +8005,6 @@ if [ "$CFG_PNG" = "no" ]; then
     echo "PNG support ............ $CFG_PNG"
 else
     echo "PNG support ............ $CFG_PNG ($CFG_LIBPNG)"
-fi
-if [ "$CFG_MNG" = "no" ]; then
-    echo "MNG support ............ $CFG_MNG"
-else
-    echo "MNG support ............ $CFG_MNG ($CFG_LIBMNG)"
 fi
 echo "zlib support ........... $CFG_ZLIB"
 echo "Session management ..... $CFG_SM"

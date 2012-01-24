@@ -144,9 +144,6 @@
 #ifndef QT_NO_IMAGEFORMAT_JPEG
 #include <private/qjpeghandler_p.h>
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-#include <private/qmnghandler_p.h>
-#endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
 #include <private/qtiffhandler_p.h>
 #endif
@@ -167,9 +164,6 @@ enum _qt_BuiltInFormatType {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     _qt_JpgFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    _qt_MngFormat,
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
     _qt_TifFormat,
@@ -205,9 +199,6 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     {_qt_JpgFormat, "jpg"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-    {_qt_MngFormat, "mng"},
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
     {_qt_TifFormat, "tif"},
@@ -344,10 +335,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         } else if (testFormat == "jpg" || testFormat == "jpeg") {
             handler = new QJpegHandler;
 #endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-        } else if (testFormat == "mng") {
-            handler = new QMngHandler;
-#endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
         } else if (testFormat == "tif" || testFormat == "tiff") {
             handler = new QTiffHandler;
@@ -438,12 +425,6 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             case _qt_JpgFormat:
                 if (QJpegHandler::canRead(device))
                     handler = new QJpegHandler;
-                break;
-#endif
-#ifndef QT_NO_IMAGEFORMAT_MNG
-            case _qt_MngFormat:
-                if (QMngHandler::canRead(device))
-                    handler = new QMngHandler;
                 break;
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
@@ -1466,7 +1447,6 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     \row    \o GIF    \o Graphic Interchange Format (optional)
     \row    \o JPG    \o Joint Photographic Experts Group
     \row    \o JPEG   \o Joint Photographic Experts Group
-    \row    \o MNG    \o Multiple-image Network Graphics
     \row    \o PNG    \o Portable Network Graphics
     \row    \o PBM    \o Portable Bitmap
     \row    \o PGM    \o Portable Graymap
