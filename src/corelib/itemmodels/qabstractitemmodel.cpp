@@ -2927,19 +2927,14 @@ void QAbstractItemModel::endMoveColumns()
 }
 
 /*!
+    \obsolete
+
     Resets the model to its original state in any attached views.
 
     \note Use beginResetModel() and endResetModel() instead whenever possible.
     Use this method only if there is no way to call beginResetModel() before invalidating the model.
     Otherwise it could lead to unexpected behaviour, especially when used with proxy models.
 */
-void QAbstractItemModel::reset()
-{
-    Q_D(QAbstractItemModel);
-    emit modelAboutToBeReset();
-    d->invalidatePersistentIndexes();
-    emit modelReset();
-}
 
 /*!
     Begins a model reset operation.

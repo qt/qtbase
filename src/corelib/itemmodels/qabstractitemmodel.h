@@ -306,7 +306,14 @@ protected:
     bool beginMoveColumns(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationColumn);
     void endMoveColumns();
 
-    void reset();
+
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED void reset()
+    {
+        beginResetModel();
+        endResetModel();
+    }
+#endif
 
     void beginResetModel();
     void endResetModel();
