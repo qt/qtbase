@@ -60,6 +60,14 @@
 
 typedef struct sqlite_vm sqlite_vm;
 
+QT_BEGIN_NAMESPACE namespace QtPrivate {
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite_vm*> {
+    enum { Value = false };
+};
+template <> struct IsPointerToTypeDerivedFromQObject<sqlite*> {
+    enum { Value = false };
+};
+} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(sqlite_vm*)
 Q_DECLARE_METATYPE(sqlite*)
 
