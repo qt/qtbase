@@ -3880,7 +3880,7 @@ void QUrlPrivate::parse(ParseOptions parseOptions) const
 
         if (parseData.scheme) {
             QByteArray s(parseData.scheme, parseData.schemeLength);
-            that->scheme = fromPercentEncodingMutable(&s);
+            that->scheme = fromPercentEncodingMutable(&s).toLower();
         }
 
         that->setEncodedUserInfo(&parseData);
@@ -4041,7 +4041,6 @@ const QByteArray &QUrlPrivate::normalized() const
     QURL_SETFLAG(that->stateFlags, QUrlPrivate::Normalized);
 
     QUrlPrivate tmp = *this;
-    tmp.scheme = tmp.scheme.toLower();
     tmp.host = tmp.canonicalHost();
 
     // ensure the encoded and normalized parts of the URL
@@ -4467,12 +4466,14 @@ void QUrl::setScheme(const QString &scheme)
     detach();
     QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized);
 
-    d->scheme = scheme;
+    d->scheme = scheme.toLower();
 }
 
 /*!
     Returns the scheme of the URL. If an empty string is returned,
     this means the scheme is undefined and the URL is then relative.
+
+    The returned scheme is always lowercase, for convenience.
 
     \sa setScheme(), isRelative()
 */

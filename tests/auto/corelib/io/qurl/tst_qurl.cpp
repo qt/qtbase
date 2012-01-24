@@ -375,7 +375,7 @@ void tst_QUrl::setUrl()
     {
         QUrl url("hTTp://www.foo.bar:80");
         QVERIFY(url.isValid());
-        QCOMPARE(url.scheme(), QString::fromLatin1("hTTp"));
+        QCOMPARE(url.scheme(), QString::fromLatin1("http"));
         QCOMPARE(url.path(), QString());
         QVERIFY(url.encodedQuery().isEmpty());
         QVERIFY(url.userInfo().isEmpty());
@@ -385,7 +385,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.port(), 80);
 
         QUrl url2("//www1.foo.bar");
-        QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("hTTp://www1.foo.bar"));
+        QCOMPARE(url.resolved(url2).toString(), QString::fromLatin1("http://www1.foo.bar"));
     }
 
     {
