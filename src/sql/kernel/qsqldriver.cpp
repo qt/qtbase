@@ -238,6 +238,16 @@ bool QSqlDriver::isOpenError() const
 */
 
 /*!
+    \enum QSqlDriver::NotificationSource
+
+    This enum contains a list of SQL notification sources.
+
+    \value Unknown The notification source is unknown
+    \value Self The notification source is the own connection
+    \value Other The notification source is another connection
+*/
+
+/*!
     \fn bool QSqlDriver::hasFeature(DriverFeature feature) const
 
     Returns true if the driver supports feature \a feature; otherwise

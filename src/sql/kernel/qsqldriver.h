@@ -78,6 +78,8 @@ public:
 
     enum IdentifierType { FieldName, TableName };
 
+    enum NotificationSource { Unknown, Self, Other };
+
     explicit QSqlDriver(QObject *parent=0);
     ~QSqlDriver();
     virtual bool isOpen() const;
@@ -120,6 +122,7 @@ public:
 
 Q_SIGNALS:
     void notification(const QString &name);
+    void notification(const QString &name, NotificationSource source);
 
 protected:
     virtual void setOpen(bool o);
