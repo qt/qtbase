@@ -161,6 +161,18 @@ public:
     quint32 flags; // same as QMetaType::TypeFlags
 };
 
+template<>
+struct QMetaTypeInterface::Impl<void> {
+    static void *creator(const void *) { return 0; }
+    static void deleter(void *) {}
+#ifndef QT_NO_DATASTREAM
+    static void saver(QDataStream &, const void *) {}
+    static void loader(QDataStream &, void *) {}
+#endif // QT_NO_DATASTREAM
+    static void destructor(void *){}
+    static void *constructor(void *, const void *) { return 0; }
+};
+
 #ifndef QT_NO_DATASTREAM
 #  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
     /*saveOp*/(reinterpret_cast<QMetaType::SaveOperator>(QMetaTypeInterface::Impl<Type>::saver)), \
@@ -176,7 +188,7 @@ public:
     QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
     /*constructor*/(reinterpret_cast<QMetaType::Constructor>(QMetaTypeInterface::Impl<Type>::constructor)), \
     /*destructor*/(reinterpret_cast<QMetaType::Destructor>(QMetaTypeInterface::Impl<Type>::destructor)), \
-    /*size*/(sizeof(Type)), \
+    /*size*/(QTypeInfo<Type>::sizeOf), \
     /*flags*/(!QTypeInfo<Type>::isStatic * QMetaType::MovableType) \
             | (QTypeInfo<Type>::isComplex * QMetaType::NeedsConstruction) \
             | (QTypeInfo<Type>::isComplex * QMetaType::NeedsDestruction) \
