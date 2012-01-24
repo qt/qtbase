@@ -244,8 +244,8 @@ void tst_QUrl::constructing()
 
     QList<QPair<QString, QString> > query;
     query += qMakePair(QString("type"), QString("login"));
-    query += qMakePair(QString("name"), QString("åge nissemannsen"));
-    query += qMakePair(QString("ole&du"), QString("anne+jørgen=sant"));
+    query += qMakePair(QString("name"), QString::fromUtf8("Ã¥ge nissemannsen"));
+    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jÃ¸rgen=sant"));
     query += qMakePair(QString("prosent"), QString("%"));
     url.setQueryItems(query);
     QVERIFY(!url.isEmpty());
@@ -268,8 +268,8 @@ void tst_QUrl::constructing()
     url.setHost("qt.nokia.com");
 
     QCOMPARE(url.toString(),
-            QString::fromLatin1("http://qt.nokia.com?type>login/name>åge nissemannsen"
-                          "/ole&du>anne+jørgen=sant/prosent>%#top"));
+            QString::fromUtf8("http://qt.nokia.com?type>login/name>Ã¥ge nissemannsen"
+                              "/ole&du>anne+jÃ¸rgen=sant/prosent>%#top"));
 
     QUrl justHost("qt.nokia.com");
     QVERIFY(!justHost.isEmpty());
@@ -665,11 +665,11 @@ void tst_QUrl::i18n_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QByteArray>("punyOutput");
 
-    QTest::newRow("øl") << QString::fromLatin1("http://ole:passord@www.øl.no/index.html?ole=æsemann&ilder gud=hei#top")
+    QTest::newRow("Ã¸l") << QString::fromUtf8("http://ole:passord@www.Ã¸l.no/index.html?ole=Ã¦semann&ilder gud=hei#top")
                      <<          QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
-    QTest::newRow("räksmörgås") << QString::fromLatin1("http://www.räksmörgås.no/")
+    QTest::newRow("rÃ¤ksmÃ¶rgÃ¥s") << QString::fromUtf8("http://www.rÃ¤ksmÃ¶rgÃ¥s.no/")
                              << QByteArray("http://www.xn--rksmrgs-5wao1o.no/");
-    QTest::newRow("bühler") << QString::fromLatin1("http://www.bühler.no/")
+    QTest::newRow("bÃ¼hler") << QString::fromUtf8("http://www.bÃ¼hler.no/")
                          << QByteArray("http://www.xn--bhler-kva.no/");
     QTest::newRow("non-latin1")
         << QString::fromUtf8("http://www.\316\261\316\270\316\256\316\275\316\261.info")
@@ -1338,7 +1338,7 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://qt.nokia.com");
     QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QString("http://qt nokia com");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
-    QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString("Française");
+    QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString::fromUtf8("FranÃ§aise");
 }
 
 void tst_QUrl::compat_decode()
@@ -1360,7 +1360,7 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
     QTest::newRow("HTTPUrlEncoded") << QString("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
-    QTest::newRow("Task27166") << QString::fromLatin1("Française") << QByteArray("Fran%C3%A7aise");
+    QTest::newRow("Task27166") << QString::fromUtf8("FranÃ§aise") << QByteArray("Fran%C3%A7aise");
 }
 
 void tst_QUrl::compat_encode()
@@ -1393,7 +1393,7 @@ void tst_QUrl::percentEncoding_data()
     QTest::addColumn<QByteArray>("encoded");
 
     QTest::newRow("test_01") << QString::fromLatin1("sdfsdf") << QByteArray("sdfsdf");
-    QTest::newRow("test_02") << QString::fromLatin1("æss") << QByteArray("%C3%A6ss");
+    QTest::newRow("test_02") << QString::fromUtf8("Ã¦ss") << QByteArray("%C3%A6ss");
     // not unreserved or reserved
     QTest::newRow("test_03") << QString::fromLatin1("{}") << QByteArray("%7B%7D");
 }
@@ -1460,15 +1460,15 @@ void tst_QUrl::swap()
 
 void tst_QUrl::symmetry()
 {
-    QUrl url(QString::fromLatin1("http://www.räksmörgås.se/pub?a=b&a=dø&a=f#vræl"));
+    QUrl url(QString::fromUtf8("http://www.rÃ¤ksmÃ¶rgÃ¥s.se/pub?a=b&a=dÃ¸&a=f#vrÃ¦l"));
     QCOMPARE(url.scheme(), QString::fromLatin1("http"));
-    QCOMPARE(url.host(), QString::fromLatin1("www.räksmörgås.se"));
+    QCOMPARE(url.host(), QString::fromUtf8("www.rÃ¤ksmÃ¶rgÃ¥s.se"));
     QCOMPARE(url.path(), QString::fromLatin1("/pub"));
     // this will be encoded ...
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
     // unencoded
-    QCOMPARE(url.allQueryItemValues("a").join("").toLatin1().constData(), "bdøf");
-    QCOMPARE(url.fragment(), QString::fromLatin1("vræl"));
+    QCOMPARE(url.allQueryItemValues("a").join(""), QString::fromUtf8("bdÃ¸f"));
+    QCOMPARE(url.fragment(), QString::fromUtf8("vrÃ¦l"));
 
     QUrl onlyHost("//qt.nokia.com");
     QCOMPARE(onlyHost.toString(), QString::fromLatin1("//qt.nokia.com"));
@@ -1567,9 +1567,9 @@ void tst_QUrl::punycode_data()
     QTest::addColumn<QString>("original");
     QTest::addColumn<QByteArray>("encoded");
 
-    QTest::newRow("øl") << QString::fromLatin1("øl") << QByteArray("xn--l-4ga");
-    QTest::newRow("Bühler") << QString::fromLatin1("Bühler") << QByteArray("xn--Bhler-kva");
-    QTest::newRow("räksmörgås") << QString::fromLatin1("räksmörgås") << QByteArray("xn--rksmrgs-5wao1o");
+    QTest::newRow("Ã¸l") << QString::fromUtf8("Ã¸l") << QByteArray("xn--l-4ga");
+    QTest::newRow("BÃ¼hler") << QString::fromUtf8("BÃ¼hler") << QByteArray("xn--Bhler-kva");
+    QTest::newRow("rÃ¤ksmÃ¶rgÃ¥s") << QString::fromUtf8("rÃ¤ksmÃ¶rgÃ¥s") << QByteArray("xn--rksmrgs-5wao1o");
 }
 
 void tst_QUrl::punycode()
@@ -2695,7 +2695,7 @@ void tst_QUrl::tldRestrictions()
 {
     QFETCH(QString, tld);
 
-    // www.brød.tld
+    // www.brÃ¸d.tld
     QByteArray ascii = "www.xn--brd-1na." + tld.toLatin1();
     QString unicode = QLatin1String("www.br\370d.") + tld;
     QString encoded = QUrl::fromAce(ascii);
