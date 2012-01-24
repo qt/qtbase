@@ -2020,7 +2020,8 @@ public:
         isComplex = true,
         isStatic = true,
         isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false
+        isDummy = false,
+        sizeOf = sizeof(T)
     };
 };
 
@@ -2033,7 +2034,8 @@ public:
         isComplex = false,
         isStatic = false,
         isLarge = false,
-        isDummy = false
+        isDummy = false,
+        sizeOf = 0
     };
 };
 
@@ -2046,7 +2048,8 @@ public:
         isComplex = false,
         isStatic = false,
         isLarge = false,
-        isDummy = false
+        isDummy = false,
+        sizeOf = sizeof(T*)
     };
 };
 
@@ -2062,7 +2065,8 @@ public: \
         isComplex = true, \
         isStatic = false, \
         isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
-        isDummy = false \
+        isDummy = false, \
+        sizeOf = sizeof(CONTAINER<T>) \
     }; \
 };
 
@@ -2100,7 +2104,8 @@ public: \
         isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
         isLarge = (sizeof(TYPE)>sizeof(void*)), \
         isPointer = false, \
-        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0) \
+        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
+        sizeOf = sizeof(TYPE) \
     }; \
     static inline const char *name() { return #TYPE; } \
 }

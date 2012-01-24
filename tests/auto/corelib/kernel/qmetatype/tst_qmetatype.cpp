@@ -571,15 +571,12 @@ FOR_EACH_CORE_METATYPE(RETURN_CREATE_COPY_FUNCTION)
     TypeTestFunctionGetter::get(type)();
 }
 
-template<typename T> struct SafeSizeOf { enum {Size = sizeof(T)}; };
-template<> struct SafeSizeOf<void> { enum {Size = 0}; };
-
 void tst_QMetaType::sizeOf_data()
 {
     QTest::addColumn<QMetaType::Type>("type");
     QTest::addColumn<int>("size");
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
-    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(SafeSizeOf<RealType>::Size);
+    QTest::newRow(#RealType) << QMetaType::MetaTypeName << int(QTypeInfo<RealType>::sizeOf);
 FOR_EACH_CORE_METATYPE(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
 }

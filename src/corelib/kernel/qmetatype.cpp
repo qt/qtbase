@@ -1606,7 +1606,7 @@ namespace {
 class SizeOf {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct SizeOfImpl {
-        static int Size(const int) { return sizeof(T); }
+        static int Size(const int) { return QTypeInfo<T>::sizeOf; }
     };
     template<typename T>
     struct SizeOfImpl<T, /* IsAcceptedType = */ false> {
@@ -1632,7 +1632,6 @@ public:
 
     template<typename T>
     int delegate(const T*) { return SizeOfImpl<T>::Size(m_type); }
-    int delegate(const void*) { return 0; }
     int delegate(const QMetaTypeSwitcher::UnknownType*) { return customTypeSizeOf(m_type); }
 private:
     static int customTypeSizeOf(const int type)
