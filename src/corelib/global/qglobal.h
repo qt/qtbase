@@ -797,15 +797,24 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_RANGE_FOR
 #      define Q_COMPILER_UNICODE_STRINGS
 #    endif
-#    if 0 /*) not implemented in clang */
-#      define Q_COMPILER_ATOMICS
+        /* not implemented in clang yet */
+#    if __has_feature(cxx_constexpr)
 #      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if __has_feature(cxx_lambdas)
 #      define Q_COMPILER_LAMBDA
+#    endif
+#    if __has_feature(cxx_generalized_initializers)
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if __has_feature(cxx_unrestricted_unions)
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #    endif
+#    if 0
+#      define Q_COMPILER_ATOMICS
+#    endif
 #  endif
-#endif
+#endif // Q_CC_CLANG
 
 #ifndef Q_PACKED
 #  define Q_PACKED
