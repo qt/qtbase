@@ -2058,7 +2058,7 @@ bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
 
 QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
 {
-    QFontDef fontDef;
+    QFontDef fontDef(this->fontDef);
     fontDef.pixelSize = pixelSize;
     QFontEngineFT *fe = new QFontEngineFT(fontDef);
     if (!fe->initFromFontEngine(this)) {
