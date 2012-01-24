@@ -545,7 +545,7 @@ void tst_QKeySequence::parseString_data()
     // Invalid Keys
     QTest::newRow("Meta+Trolls") << "Meta+Trolls" << QKeySequence(Qt::Key_unknown);
     QTest::newRow("Meta+Period") << "Meta+Period" << QKeySequence(Qt::Key_unknown);
-    QTest::newRow("Meta+Ypsilon") << "Meta+Period" << QKeySequence(Qt::Key_unknown);
+    QTest::newRow("Meta+Ypsilon") << "Meta+Ypsilon" << QKeySequence(Qt::Key_unknown);
 
     // Garbage
     QTest::newRow("4+3=2") << "4+3=2" <<  QKeySequence(Qt::Key_unknown);
