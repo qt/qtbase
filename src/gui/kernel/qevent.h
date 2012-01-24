@@ -764,10 +764,12 @@ public:
         friend class QApplicationPrivate;
     };
 
+#if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED enum DeviceType {
         TouchScreen,
         TouchPad
     };
+#endif
 
     QTouchEvent(QEvent::Type eventType,
                 QTouchDevice *device = 0,
@@ -778,7 +780,9 @@ public:
 
     inline QWindow *window() const { return _window; }
     inline QObject *target() const { return _target; }
+#if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QTouchEvent::DeviceType deviceType() const { return static_cast<DeviceType>(int(_device->type())); }
+#endif
     inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
     inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
     inline QTouchDevice *device() const { return _device; }

@@ -4257,11 +4257,6 @@ void QRegion::setRects(const QRect *rects, int num)
     }
 }
 
-int QRegion::numRects() const
-{
-    return (d->qt_rgn ? d->qt_rgn->numRects : 0);
-}
-
 int QRegion::rectCount() const
 {
     return (d->qt_rgn ? d->qt_rgn->numRects : 0);

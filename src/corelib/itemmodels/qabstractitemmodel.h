@@ -201,10 +201,8 @@ public:
 
     virtual Qt::DropActions supportedDragActions() const;
 #if QT_DEPRECATED_SINCE(5, 0)
-    void setSupportedDragActions(Qt::DropActions actions)
-    {
-      doSetSupportedDragActions(actions);
-    }
+    QT_DEPRECATED void setSupportedDragActions(Qt::DropActions actions)
+    { doSetSupportedDragActions(actions); }
 #endif
 
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());

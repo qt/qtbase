@@ -1311,7 +1311,7 @@ void tst_QRegExp::posAndCapConsistency()
     QFETCH( QString, cap2 );
 
     QRegExp re(reStr);
-    QCOMPARE(re.numCaptures(), 2);
+    QCOMPARE(re.captureCount(), 2);
     QCOMPARE(re.capturedTexts().size(), 3);
 
     QCOMPARE(re.indexIn(text), matchIndex);

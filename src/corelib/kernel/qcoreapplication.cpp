@@ -1774,7 +1774,7 @@ QString QCoreApplication::applicationFilePath()
     }
 #  endif
 
-    QString argv0 = QFile::decodeName(QByteArray(argv()[0]));
+    QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
     QString absPath;
 
     if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
@@ -1819,35 +1819,6 @@ qint64 QCoreApplication::applicationPid()
 #else
     return getpid();
 #endif
-}
-
-/*!
-    \obsolete
-
-    Use arguments().size() instead.
-*/
-int QCoreApplication::argc()
-{
-    if (!self) {
-        qWarning("QCoreApplication::argc: Please instantiate the QApplication object first");
-        return 0;
-    }
-    return self->d_func()->argc;
-}
-
-
-/*!
-    \obsolete
-
-    Use arguments() instead.
-*/
-char **QCoreApplication::argv()
-{
-    if (!self) {
-        qWarning("QCoreApplication::argv: Please instantiate the QApplication object first");
-        return 0;
-    }
-    return self->d_func()->argv;
 }
 
 /*!

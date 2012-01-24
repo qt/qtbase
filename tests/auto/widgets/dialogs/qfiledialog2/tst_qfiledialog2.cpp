@@ -266,7 +266,7 @@ void tst_QFileDialog2::showNameFilterDetails()
     filterChoices << "Image files (*.png *.xpm *.jpg)"
                   << "Text files (*.txt)"
                   << "Any files (*.*)";
-    fd.setFilters(filterChoices);
+    fd.setNameFilters(filterChoices);
 
     fd.setNameFilterDetailsVisible(false);
     QCOMPARE(filters->itemText(0), QString("Image files"));

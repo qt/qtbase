@@ -127,7 +127,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.argc(), 1);
+        QCOMPARE(app.arguments().count(), 1);
     }
 
     {
@@ -135,7 +135,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication", "arg1", "arg2", "arg3" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 4);
-        QCOMPARE(app.argc(), 4);
+        QCOMPARE(app.arguments().count(), 4);
     }
 
     {
@@ -143,7 +143,7 @@ void tst_QCoreApplication::argc()
         char **argv = 0;
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 0);
-        QCOMPARE(app.argc(), 0);
+        QCOMPARE(app.arguments().count(), 0);
     }
 
     {
@@ -151,7 +151,7 @@ void tst_QCoreApplication::argc()
         char *argv[] = { "tst_qcoreapplication", "-qmljsdebugger=port:3768,block" };
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 1);
-        QCOMPARE(app.argc(), 1);
+        QCOMPARE(app.arguments().count(), 1);
     }
 }
 

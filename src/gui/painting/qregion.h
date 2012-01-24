@@ -113,9 +113,6 @@ public:
     QRect boundingRect() const;
     QVector<QRect> rects() const;
     void setRects(const QRect *rect, int num);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numRects() const;
-#endif
     int rectCount() const;
 
     const QRegion operator|(const QRegion &r) const;

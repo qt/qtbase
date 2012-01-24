@@ -502,7 +502,7 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
     return v;
 }
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
 inline QT_DEPRECATED T qVariantValue(const QVariant &variant)
 { return qvariant_cast<T>(variant); }

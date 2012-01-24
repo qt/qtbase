@@ -70,7 +70,7 @@ struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
 #if QT_DEPRECATED_SINCE(5, 0)
-class Q_GUI_EXPORT QImageTextKeyLang {
+class QT_DEPRECATED QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
     QImageTextKeyLang() { }
@@ -270,11 +270,11 @@ public:
     void setText(const QString &key, const QString &value);
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    inline QString text(const char* key, const char* lang=0) const;
-    inline QList<QImageTextKeyLang> textList() const;
-    inline QStringList textLanguages() const;
-    inline QString text(const QImageTextKeyLang&) const;
-    inline void setText(const char* key, const char* lang, const QString&);
+    QT_DEPRECATED inline QString text(const char* key, const char* lang=0) const;
+    QT_DEPRECATED inline QList<QImageTextKeyLang> textList() const;
+    QT_DEPRECATED inline QStringList textLanguages() const;
+    QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;
+    QT_DEPRECATED inline void setText(const char* key, const char* lang, const QString&);
 #endif
 #endif
 
@@ -382,6 +382,7 @@ inline void QImage::setText(const char* key, const char* lang, const QString &s)
     setText(k, s);
 }
 #endif
+
 inline int QImage::numColors() const
 {
     return colorCount();

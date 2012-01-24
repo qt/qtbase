@@ -81,9 +81,6 @@ public:
     ViewMode viewMode() const;
     ZoomMode zoomMode() const;
     int currentPage() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numPages() const;
-#endif
     int pageCount() const;
     void setVisible(bool visible);
 

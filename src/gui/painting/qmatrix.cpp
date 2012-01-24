@@ -923,15 +923,6 @@ QMatrix &QMatrix::rotate(qreal a)
 */
 
 /*!
-    \obsolete
-    \fn qreal QMatrix::det() const
-
-    Returns the matrix's determinant.
-
-    \sa determinant()
-*/
-
-/*!
     \since 4.6
     \fn qreal QMatrix::determinant() const
 

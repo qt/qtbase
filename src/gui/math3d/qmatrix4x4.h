@@ -1088,7 +1088,7 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QMatrix4x4 &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix4x4 &);
 #endif
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
 template <int N, int M>
 QT_DEPRECATED QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
 {

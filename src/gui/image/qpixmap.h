@@ -145,7 +145,7 @@ public:
     inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = 0);
     void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = 0);
 
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED int serialNumber() const;
 #endif
     qint64 cacheKey() const;

@@ -141,8 +141,6 @@ private:
 
 tst_QMessageBox::tst_QMessageBox() : keyToSend(-1)
 {
-    int argc = qApp->argc();
-    QT_REQUIRE_VERSION(argc, qApp->argv(), "4.6.2")
 }
 
 int tst_QMessageBox::exec(QMessageBox *msgBox, int key)

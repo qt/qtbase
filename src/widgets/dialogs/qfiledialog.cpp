@@ -1097,15 +1097,6 @@ void QFileDialog::setNameFilter(const QString &filter)
     setNameFilters(qt_make_filter_list(filter));
 }
 
-/*!
-  \obsolete
-
-  Use setNameFilter() instead.
-*/
-void QFileDialog::setFilter(const QString &filter)
-{
-    setNameFilter(filter);
-}
 
 /*!
     \property QFileDialog::nameFilterDetailsVisible
@@ -1178,16 +1169,6 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 }
 
 /*!
-    \obsolete
-
-    Use setNameFilters() instead.
-*/
-void QFileDialog::setFilters(const QStringList &filters)
-{
-    setNameFilters(filters);
-}
-
-/*!
     \since 4.4
 
     Returns the file type filters that are in operation on this file
@@ -1196,17 +1177,6 @@ void QFileDialog::setFilters(const QStringList &filters)
 QStringList QFileDialog::nameFilters() const
 {
     return d_func()->options->nameFilters();
-}
-
-/*!
-    \obsolete
-
-    Use nameFilters() instead.
-*/
-
-QStringList QFileDialog::filters() const
-{
-    return nameFilters();
 }
 
 /*!
@@ -1237,17 +1207,6 @@ void QFileDialog::selectNameFilter(const QString &filter)
 }
 
 /*!
-    \obsolete
-
-    Use selectNameFilter() instead.
-*/
-
-void QFileDialog::selectFilter(const QString &filter)
-{
-    selectNameFilter(filter);
-}
-
-/*!
     \since 4.4
 
     Returns the filter that the user selected in the file dialog.
@@ -1261,16 +1220,6 @@ QString QFileDialog::selectedNameFilter() const
         return d->selectedNameFilter_sys();
 
     return d->qFileDialogUi->fileTypeCombo->currentText();
-}
-
-/*!
-    \obsolete
-
-    Use selectedNameFilter() instead.
-*/
-QString QFileDialog::selectedFilter() const
-{
-    return selectedNameFilter();
 }
 
 /*!
@@ -1799,7 +1748,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedFilter();
+            *selectedFilter = dialog.selectedNameFilter();
         return dialog.selectedFiles().value(0);
     }
     return QString();
@@ -1884,7 +1833,7 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedFilter();
+            *selectedFilter = dialog.selectedNameFilter();
         return dialog.selectedFiles();
     }
     return QStringList();
@@ -1971,7 +1920,7 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
         dialog.selectNameFilter(*selectedFilter);
     if (dialog.exec() == QDialog::Accepted) {
         if (selectedFilter)
-            *selectedFilter = dialog.selectedFilter();
+            *selectedFilter = dialog.selectedNameFilter();
         return dialog.selectedFiles().value(0);
     }
 

@@ -43,9 +43,7 @@
 #define QDESKTOPSERVICES_H
 
 #include <QtCore/qstring.h>
-#if QT_DEPRECATED_SINCE(5, 0)
 #include <QtCore/qstandardpaths.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -66,7 +64,7 @@ public:
     static void unsetUrlHandler(const QString &scheme);
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    enum StandardLocation {
+    QT_DEPRECATED enum StandardLocation {
         DesktopLocation,
         DocumentsLocation,
         FontsLocation,

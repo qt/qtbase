@@ -436,7 +436,7 @@ T qFindChild(const QObject *o, const QString &name = QString());
 QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
 QList<T> qFindChildren(const QObject *o, const QRegExp &re);
 #endif
-#ifdef QT_DEPRECATED
+#if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
 inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())
 { return o->findChild<T>(name); }

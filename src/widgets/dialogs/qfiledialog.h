@@ -110,13 +110,6 @@ public:
     void selectFile(const QString &filename);
     QStringList selectedFiles() const;
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED void setFilter(const QString &filter);
-    QT_DEPRECATED void setFilters(const QStringList &filters);
-    QT_DEPRECATED QStringList filters() const;
-    QT_DEPRECATED void selectFilter(const QString &filter);
-    QT_DEPRECATED QString selectedFilter() const;
-#endif
     void setNameFilterDetailsVisible(bool enabled);
     bool isNameFilterDetailsVisible() const;
 

@@ -4316,18 +4316,13 @@ int QRegExp::matchedLength() const
 
 #ifndef QT_NO_REGEXP_CAPTURE
 
-#ifndef QT_NO_DEPRECATED
 /*!
+  \fn int QRegExp::numCaptures() const
   \obsolete
   Returns the number of captures contained in the regular expression.
 
   \sa captureCount()
  */
-int QRegExp::numCaptures() const
-{
-    return captureCount();
-}
-#endif
 
 /*!
   \since 4.6

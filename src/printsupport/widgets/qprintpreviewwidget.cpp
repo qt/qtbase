@@ -668,17 +668,6 @@ void QPrintPreviewWidget::setZoomFactor(qreal factor)
 }
 
 /*!
-    \obsolete
-    Returns the number of pages in the preview.
-    \sa pageCount()
-*/
-int QPrintPreviewWidget::numPages() const
-{
-    Q_D(const QPrintPreviewWidget);
-    return d->pages.size();
-}
-
-/*!
     \since 4.6
     Returns the number of pages in the preview.
 */
