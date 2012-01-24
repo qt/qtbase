@@ -737,7 +737,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(char),
                 Q_ALIGNOF(QTypedArrayData<char>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<char>::allocate(10, false);
+        QArrayData *array = QTypedArrayData<char>::allocate(10);
         keeper.headers.append(array);
 
         QVERIFY(array);
@@ -757,7 +757,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(short),
                 Q_ALIGNOF(QTypedArrayData<short>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<short>::allocate(10, false);
+        QArrayData *array = QTypedArrayData<short>::allocate(10);
         keeper.headers.append(array);
 
         QVERIFY(array);
@@ -777,7 +777,7 @@ void tst_QArrayData::typedData()
     {
         Deallocator keeper(sizeof(double),
                 Q_ALIGNOF(QTypedArrayData<double>::AlignmentDummy));
-        QArrayData *array = QTypedArrayData<double>::allocate(10, false);
+        QArrayData *array = QTypedArrayData<double>::allocate(10);
         keeper.headers.append(array);
 
         QVERIFY(array);
