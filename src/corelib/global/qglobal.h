@@ -2050,6 +2050,31 @@ public:
     };
 };
 
+
+#define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
+template <typename T> class CONTAINER; \
+template <typename T> \
+class QTypeInfo< CONTAINER<T> > \
+{ \
+public: \
+    enum { \
+        isPointer = false, \
+        isComplex = true, \
+        isStatic = false, \
+        isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
+        isDummy = false \
+    }; \
+};
+
+Q_DECLARE_MOVABLE_CONTAINER(QList)
+Q_DECLARE_MOVABLE_CONTAINER(QVector)
+Q_DECLARE_MOVABLE_CONTAINER(QQueue)
+Q_DECLARE_MOVABLE_CONTAINER(QStack)
+Q_DECLARE_MOVABLE_CONTAINER(QLinkedList)
+Q_DECLARE_MOVABLE_CONTAINER(QSet)
+
+#undef Q_DECLARE_MOVABLE_CONTAINER
+
 /*
    Specialize a specific type with:
 

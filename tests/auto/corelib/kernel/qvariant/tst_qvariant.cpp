@@ -3254,6 +3254,34 @@ void tst_QVariant::moreCustomTypes()
         PLAY_WITH_VARIANT(d, false, QString(), 0, false);
     }
     QCOMPARE(MyMovable::count, 0);
+
+    {
+        QList<QList<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QList<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QVector<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QVector<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QSet<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QSet<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
+
+    {
+        QList<QLinkedList<int> > data;
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+        data << (QLinkedList<int>() << 42);
+        PLAY_WITH_VARIANT(data, false, QString(), 0, false);
+    }
 }
 
 void tst_QVariant::movabilityTest()
