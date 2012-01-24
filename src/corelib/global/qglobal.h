@@ -513,7 +513,6 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
        /* C++0x features supported in GCC 4.7: */
 #      define Q_COMPILER_EXPLICIT_OVERRIDES
-#      define Q_COMPILER_FINAL
 #    endif
 
 #  endif
@@ -805,7 +804,6 @@ namespace QT_NAMESPACE {}
 #    if 0 /*) not implemented in clang */
 #      define Q_COMPILER_ATOMICS
 #      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_FINAL
 #      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
@@ -1108,13 +1106,9 @@ QT_END_INCLUDE_NAMESPACE
 
 #ifdef Q_COMPILER_EXPLICIT_OVERRIDES
 # define Q_DECL_OVERRIDE override
-#else
-# define Q_DECL_OVERRIDE
-#endif
-
-#ifdef Q_COMPILER_FINAL
 # define Q_DECL_FINAL final
 #else
+# define Q_DECL_OVERRIDE
 # define Q_DECL_FINAL
 #endif
 
