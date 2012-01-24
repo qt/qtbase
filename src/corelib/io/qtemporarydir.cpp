@@ -95,6 +95,42 @@ static QString defaultTemplateName()
     return QDir::tempPath() + QLatin1Char('/') + baseName + QLatin1String("-XXXXXX");
 }
 
+#ifdef Q_OS_QNX
+static char *mkdtemp(char *templateName)
+{
+    static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    const int length = strlen(templateName);
+
+    char *XXXXXX = templateName + length - 6;
+
+    if ((length < 6) || strncmp(XXXXXX, "XXXXXX", 6))
+        return 0;
+
+    for (int i = 0; i < 256; ++i) {
+        int v = qrand();
+
+        /* Fill in the random bits.  */
+        XXXXXX[0] = letters[v % 62];
+        v /= 62;
+        XXXXXX[1] = letters[v % 62];
+        v /= 62;
+        XXXXXX[2] = letters[v % 62];
+        v /= 62;
+        XXXXXX[3] = letters[v % 62];
+        v /= 62;
+        XXXXXX[4] = letters[v % 62];
+        v /= 62;
+        XXXXXX[5] = letters[v % 62];
+
+        if (!mkdir(templateName, 0700))
+            return templateName;
+    }
+
+    return 0;
+}
+#endif
+
 void QTemporaryDirPrivate::create(const QString &templateName)
 {
 #ifdef Q_OS_WIN
