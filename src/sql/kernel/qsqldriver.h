@@ -78,7 +78,7 @@ public:
 
     enum IdentifierType { FieldName, TableName };
 
-    enum NotificationSource { Unknown, Self, Other };
+    enum NotificationSource { UnknownSource, SelfSource, OtherSource };
 
     explicit QSqlDriver(QObject *parent=0);
     ~QSqlDriver();

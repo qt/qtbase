@@ -1370,8 +1370,13 @@ void QPSQLDriver::_q_handleNotification(int)
     PGnotify *notify = 0;
     while((notify = PQnotifies(d->connection)) != 0) {
         QString name(QLatin1String(notify->relname));
-        if (d->seid.contains(name))
+        if (d->seid.contains(name)) {
             emit notification(name);
+            if (notify->be_pid == PQbackendPID(d->connection))
+                emit notification(name, QSqlDriver::SelfSource);
+            else
+                emit notification(name, QSqlDriver::OtherSource);
+        }
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
                     qPrintable(name));

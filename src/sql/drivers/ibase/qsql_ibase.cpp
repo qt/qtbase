@@ -1845,8 +1845,10 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
         isc_event_counts(counts, eBuffer->bufferLength, eBuffer->eventBuffer, eBuffer->resultBuffer);
         if (counts[0]) {
 
-            if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed)
+            if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed) {
                 emit notification(i.key());
+                emit notification(i.key(), QSqlDriver::UnknownSource);
+            }
             else if (eBuffer->subscriptionState == QIBaseEventBuffer::Starting)
                 eBuffer->subscriptionState = QIBaseEventBuffer::Subscribed;
 

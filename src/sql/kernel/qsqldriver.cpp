@@ -131,6 +131,17 @@ QSqlDriver::~QSqlDriver()
 */
 
 /*!
+    \since 5.0
+
+    \fn QSqlDriver::notification(const QString &name, NotificationSource source)
+
+    This signal is emitted when the database posts an event notification
+    that the driver subscribes to. \a name identifies the event notification, \a source indicates the signal source.
+
+    \sa subscribeToNotification()
+*/
+
+/*!
     \fn bool QSqlDriver::open(const QString &db, const QString &user, const QString& password,
                               const QString &host, int port, const QString &options)
 
@@ -242,9 +253,9 @@ bool QSqlDriver::isOpenError() const
 
     This enum contains a list of SQL notification sources.
 
-    \value Unknown The notification source is unknown
-    \value Self The notification source is the own connection
-    \value Other The notification source is another connection
+    \value UnknownSource The notification source is unknown
+    \value SelfSource The notification source is this connection
+    \value OtherSource The notification source is another connection
 */
 
 /*!
