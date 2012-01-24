@@ -41,6 +41,8 @@
 
 #include "qmetaobjectbuilder_p.h"
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
