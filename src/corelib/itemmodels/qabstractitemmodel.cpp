@@ -2931,9 +2931,20 @@ void QAbstractItemModel::endMoveColumns()
 
     Resets the model to its original state in any attached views.
 
+    This function emits the signals modelAboutToBeReset() and modelReset().
+
     \note Use beginResetModel() and endResetModel() instead whenever possible.
     Use this method only if there is no way to call beginResetModel() before invalidating the model.
     Otherwise it could lead to unexpected behaviour, especially when used with proxy models.
+
+    For example, in this code both signals modelAboutToBeReset() and modelReset()
+    are emitted \e after the data changes:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 10
+
+    Instead you should use:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 11
 */
 
 /*!
@@ -2954,6 +2965,8 @@ void QAbstractItemModel::endMoveColumns()
     You must call this function before resetting any internal data structures in your model
     or proxy model.
 
+    This function emits the signal modelAboutToBeReset().
+
     \sa modelAboutToBeReset(), modelReset(), endResetModel()
     \since 4.6
 */
@@ -2967,6 +2980,8 @@ void QAbstractItemModel::beginResetModel()
 
     You must call this function after resetting any internal data structure in your model
     or proxy model.
+
+    This function emits the signal modelReset().
 
     \sa beginResetModel()
     \since 4.6
@@ -3452,8 +3467,8 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     \fn QAbstractItemModel::modelReset()
     \since 4.1
 
-    This signal is emitted when reset() is called, after the model's internal
-    state (e.g. persistent model indexes) has been invalidated.
+    This signal is emitted when reset() or endResetModel() is called, after the
+    model's internal state (e.g. persistent model indexes) has been invalidated.
 
     Note that if a model is reset it should be considered that all information
     previously retrieved from it is invalid. This includes but is not limited

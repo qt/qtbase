@@ -86,3 +86,14 @@ beginMoveRows(parent, 2, 2, parent, 0);
 //! [9]
 beginMoveRows(parent, 2, 2, parent, 4);
 //! [9]
+
+//! [10]
+myData.clear();
+reset();
+//! [10]
+
+//! [11]
+beginResetModel();
+myData.clear();
+endResetModel();
+//! [11]
