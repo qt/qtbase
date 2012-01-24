@@ -206,7 +206,7 @@ void QWidgetLineControl::commitPreedit()
     if (!composeMode())
         return;
 
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
 
     if (!m_tentativeCommit.isEmpty()) {
         internalInsert(m_tentativeCommit);

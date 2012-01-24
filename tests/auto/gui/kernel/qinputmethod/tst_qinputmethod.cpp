@@ -42,7 +42,7 @@
 #include <QtTest/QtTest>
 
 #include <private/qguiapplication_p.h>
-#include <private/qinputpanel_p.h>
+#include <private/qinputmethod_p.h>
 #include <qplatforminputcontext_qpa.h>
 
 class PlatformInputContext : public QPlatformInputContext
@@ -57,7 +57,7 @@ public:
         m_localeCallCount(0),
         m_inputDirectionCallCount(0),
         m_lastQueries(Qt::ImhNone),
-        m_action(QInputPanel::Click),
+        m_action(QInputMethod::Click),
         m_cursorPosition(0),
         m_lastEventType(QEvent::None)
     {}
@@ -72,7 +72,7 @@ public:
         m_updateCallCount++;
         m_lastQueries = queries;
     }
-    virtual void invokeAction(QInputPanel::Action action, int cursorPosition)
+    virtual void invokeAction(QInputMethod::Action action, int cursorPosition)
     {
         m_action = action;
         m_cursorPosition = cursorPosition;
@@ -112,7 +112,7 @@ public:
     mutable int m_localeCallCount;
     mutable int m_inputDirectionCallCount;
     Qt::InputMethodQueries m_lastQueries;
-    QInputPanel::Action m_action;
+    QInputMethod::Action m_action;
     int m_cursorPosition;
     int m_lastEventType;
     QRectF m_keyboardRect;
@@ -139,12 +139,12 @@ public:
     Qt::InputMethodQueries m_lastQueries;
 };
 
-class tst_qinputpanel : public QObject
+class tst_qinputmethod : public QObject
 {
     Q_OBJECT
 public:
-    tst_qinputpanel() {}
-    virtual ~tst_qinputpanel() {}
+    tst_qinputmethod() {}
+    virtual ~tst_qinputmethod() {}
 private slots:
     void initTestCase();
     void visible();
@@ -164,158 +164,158 @@ private:
     PlatformInputContext m_platformInputContext;
 };
 
-void tst_qinputpanel::initTestCase()
+void tst_qinputmethod::initTestCase()
 {
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = &m_platformInputContext;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &m_platformInputContext;
 }
 
-void tst_qinputpanel::visible()
+void tst_qinputmethod::visible()
 {
-    QCOMPARE(qApp->inputPanel()->visible(), false);
-    qApp->inputPanel()->show();
-    QCOMPARE(qApp->inputPanel()->visible(), true);
+    QCOMPARE(qApp->inputMethod()->visible(), false);
+    qApp->inputMethod()->show();
+    QCOMPARE(qApp->inputMethod()->visible(), true);
 
-    qApp->inputPanel()->hide();
-    QCOMPARE(qApp->inputPanel()->visible(), false);
+    qApp->inputMethod()->hide();
+    QCOMPARE(qApp->inputMethod()->visible(), false);
 
-    qApp->inputPanel()->setVisible(true);
-    QCOMPARE(qApp->inputPanel()->visible(), true);
+    qApp->inputMethod()->setVisible(true);
+    QCOMPARE(qApp->inputMethod()->visible(), true);
 
-    qApp->inputPanel()->setVisible(false);
-    QCOMPARE(qApp->inputPanel()->visible(), false);
+    qApp->inputMethod()->setVisible(false);
+    QCOMPARE(qApp->inputMethod()->visible(), false);
 }
 
-void tst_qinputpanel::animating()
+void tst_qinputmethod::animating()
 {
-    QCOMPARE(qApp->inputPanel()->isAnimating(), false);
+    QCOMPARE(qApp->inputMethod()->isAnimating(), false);
 
     m_platformInputContext.m_animating = true;
-    QCOMPARE(qApp->inputPanel()->isAnimating(), true);
+    QCOMPARE(qApp->inputMethod()->isAnimating(), true);
 
     m_platformInputContext.m_animating = false;
-    QCOMPARE(qApp->inputPanel()->isAnimating(), false);
+    QCOMPARE(qApp->inputMethod()->isAnimating(), false);
 
-    QSignalSpy spy(qApp->inputPanel(), SIGNAL(animatingChanged()));
+    QSignalSpy spy(qApp->inputMethod(), SIGNAL(animatingChanged()));
     m_platformInputContext.emitAnimatingChanged();
     QCOMPARE(spy.count(), 1);
 }
 
-void tst_qinputpanel::keyboarRectangle()
+void tst_qinputmethod::keyboarRectangle()
 {
-    QCOMPARE(qApp->inputPanel()->keyboardRectangle(), QRectF());
+    QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF());
 
     m_platformInputContext.m_keyboardRect = QRectF(10, 20, 30, 40);
-    QCOMPARE(qApp->inputPanel()->keyboardRectangle(), QRectF(10, 20, 30, 40));
+    QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF(10, 20, 30, 40));
 
-    QSignalSpy spy(qApp->inputPanel(), SIGNAL(keyboardRectangleChanged()));
+    QSignalSpy spy(qApp->inputMethod(), SIGNAL(keyboardRectangleChanged()));
     m_platformInputContext.emitKeyboardRectChanged();
     QCOMPARE(spy.count(), 1);
 }
 
-void tst_qinputpanel::inputItem()
+void tst_qinputmethod::inputItem()
 {
-    QVERIFY(!qApp->inputPanel()->inputItem());
-    QSignalSpy spy(qApp->inputPanel(), SIGNAL(inputItemChanged()));
+    QVERIFY(!qApp->inputMethod()->inputItem());
+    QSignalSpy spy(qApp->inputMethod(), SIGNAL(inputItemChanged()));
 
-    qApp->inputPanel()->setInputItem(&m_inputItem);
+    qApp->inputMethod()->setInputItem(&m_inputItem);
 
-    QCOMPARE(qApp->inputPanel()->inputItem(), &m_inputItem);
+    QCOMPARE(qApp->inputMethod()->inputItem(), &m_inputItem);
     QCOMPARE(spy.count(), 1);
 
     // reset
-    qApp->inputPanel()->setInputItem(0);
+    qApp->inputMethod()->setInputItem(0);
 }
 
-void tst_qinputpanel::inputItemTransform()
+void tst_qinputmethod::inputItemTransform()
 {
-    QCOMPARE(qApp->inputPanel()->inputItemTransform(), QTransform());
-    QSignalSpy spy(qApp->inputPanel(), SIGNAL(cursorRectangleChanged()));
+    QCOMPARE(qApp->inputMethod()->inputItemTransform(), QTransform());
+    QSignalSpy spy(qApp->inputMethod(), SIGNAL(cursorRectangleChanged()));
 
     QTransform transform;
     transform.translate(10, 10);
     transform.scale(2, 2);
     transform.shear(2, 2);
-    qApp->inputPanel()->setInputItemTransform(transform);
+    qApp->inputMethod()->setInputItemTransform(transform);
 
-    QCOMPARE(qApp->inputPanel()->inputItemTransform(), transform);
+    QCOMPARE(qApp->inputMethod()->inputItemTransform(), transform);
     QCOMPARE(spy.count(), 1);
 
     // reset
-    qApp->inputPanel()->setInputItemTransform(QTransform());
+    qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
-void tst_qinputpanel::cursorRectangle()
+void tst_qinputmethod::cursorRectangle()
 {
-    QCOMPARE(qApp->inputPanel()->cursorRectangle(), QRectF());
+    QCOMPARE(qApp->inputMethod()->cursorRectangle(), QRectF());
 
     QTransform transform;
     transform.translate(10, 10);
     transform.scale(2, 2);
     transform.shear(2, 2);
-    qApp->inputPanel()->setInputItemTransform(transform);
-    qApp->inputPanel()->setInputItem(&m_inputItem);
+    qApp->inputMethod()->setInputItemTransform(transform);
+    qApp->inputMethod()->setInputItem(&m_inputItem);
 
-    QCOMPARE(qApp->inputPanel()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
+    QCOMPARE(qApp->inputMethod()->cursorRectangle(), transform.mapRect(QRectF(1, 2, 3, 4)));
 
     // reset
-    qApp->inputPanel()->setInputItem(0);
-    qApp->inputPanel()->setInputItemTransform(QTransform());
+    qApp->inputMethod()->setInputItem(0);
+    qApp->inputMethod()->setInputItemTransform(QTransform());
 }
 
-void tst_qinputpanel::invokeAction()
+void tst_qinputmethod::invokeAction()
 {
-    QCOMPARE(m_platformInputContext.m_action, QInputPanel::Click);
+    QCOMPARE(m_platformInputContext.m_action, QInputMethod::Click);
     QCOMPARE(m_platformInputContext.m_cursorPosition, 0);
 
-    qApp->inputPanel()->invokeAction(QInputPanel::ContextMenu, 5);
-    QCOMPARE(m_platformInputContext.m_action, QInputPanel::ContextMenu);
+    qApp->inputMethod()->invokeAction(QInputMethod::ContextMenu, 5);
+    QCOMPARE(m_platformInputContext.m_action, QInputMethod::ContextMenu);
     QCOMPARE(m_platformInputContext.m_cursorPosition, 5);
 }
 
-void tst_qinputpanel::reset()
+void tst_qinputmethod::reset()
 {
     QCOMPARE(m_platformInputContext.m_resetCallCount, 0);
 
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
     QCOMPARE(m_platformInputContext.m_resetCallCount, 1);
 
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
     QCOMPARE(m_platformInputContext.m_resetCallCount, 2);
 }
 
-void tst_qinputpanel::commit()
+void tst_qinputmethod::commit()
 {
     QCOMPARE(m_platformInputContext.m_commitCallCount, 0);
 
-    qApp->inputPanel()->commit();
+    qApp->inputMethod()->commit();
     QCOMPARE(m_platformInputContext.m_commitCallCount, 1);
 
-    qApp->inputPanel()->commit();
+    qApp->inputMethod()->commit();
     QCOMPARE(m_platformInputContext.m_commitCallCount, 2);
 }
 
-void tst_qinputpanel::update()
+void tst_qinputmethod::update()
 {
-    qApp->inputPanel()->setInputItem(&m_inputItem);
+    qApp->inputMethod()->setInputItem(&m_inputItem);
     QCOMPARE(m_platformInputContext.m_updateCallCount, 0);
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImhNone));
 
-    qApp->inputPanel()->update(Qt::ImQueryInput);
+    qApp->inputMethod()->update(Qt::ImQueryInput);
     QCOMPARE(m_platformInputContext.m_updateCallCount, 1);
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImQueryInput));
 
-    qApp->inputPanel()->update(Qt::ImQueryAll);
+    qApp->inputMethod()->update(Qt::ImQueryAll);
     QCOMPARE(m_platformInputContext.m_updateCallCount, 2);
     QCOMPARE(int(m_platformInputContext.m_lastQueries), int(Qt::ImQueryAll));
 
-    QCOMPARE(qApp->inputPanel()->keyboardRectangle(), QRectF(10, 20, 30, 40));
+    QCOMPARE(qApp->inputMethod()->keyboardRectangle(), QRectF(10, 20, 30, 40));
 
     // reset
-    qApp->inputPanel()->setInputItem(0);
+    qApp->inputMethod()->setInputItem(0);
 }
 
-void tst_qinputpanel::query()
+void tst_qinputmethod::query()
 {
     QInputMethodQueryEvent query(Qt::InputMethodQueries(Qt::ImPreferredLanguage | Qt::ImCursorRectangle));
     QGuiApplication::sendEvent(&m_inputItem, &query);
@@ -327,16 +327,16 @@ void tst_qinputpanel::query()
     QCOMPARE(cursorRectangle, QRect(1,2,3,4));
 }
 
-void tst_qinputpanel::inputDirection()
+void tst_qinputmethod::inputDirection()
 {
     QCOMPARE(m_platformInputContext.m_inputDirectionCallCount, 0);
-    qApp->inputPanel()->inputDirection();
+    qApp->inputMethod()->inputDirection();
     QCOMPARE(m_platformInputContext.m_inputDirectionCallCount, 1);
 
     QCOMPARE(m_platformInputContext.m_localeCallCount, 0);
-    qApp->inputPanel()->locale();
+    qApp->inputMethod()->locale();
     QCOMPARE(m_platformInputContext.m_localeCallCount, 1);
 }
 
-QTEST_MAIN(tst_qinputpanel)
-#include "tst_qinputpanel.moc"
+QTEST_MAIN(tst_qinputmethod)
+#include "tst_qinputmethod.moc"

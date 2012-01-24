@@ -243,7 +243,7 @@
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qtooltip.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include <QtGui/qaccessible.h>
@@ -822,7 +822,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             // the views, but if we are changing focus, we have to
             // do it ourselves.
             if (qApp)
-                qApp->inputPanel()->reset();
+                qApp->inputMethod()->reset();
         }
 
         focusItem = 0;

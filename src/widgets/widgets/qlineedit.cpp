@@ -1202,7 +1202,7 @@ void QLineEdit::insert(const QString &newText)
 void QLineEdit::clear()
 {
     Q_D(QLineEdit);
-    d->resetInputPanel();
+    d->resetInputMethod();
     d->control->clear();
 }
 
@@ -1215,7 +1215,7 @@ void QLineEdit::clear()
 void QLineEdit::undo()
 {
     Q_D(QLineEdit);
-    d->resetInputPanel();
+    d->resetInputMethod();
     d->control->undo();
 }
 
@@ -1226,7 +1226,7 @@ void QLineEdit::undo()
 void QLineEdit::redo()
 {
     Q_D(QLineEdit);
-    d->resetInputPanel();
+    d->resetInputMethod();
     d->control->redo();
 }
 

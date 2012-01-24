@@ -78,7 +78,7 @@
 #include "qinputcontext.h"
 #include "qfileinfo.h"
 #include "private/qsoftkeymanager_p.h"
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -354,7 +354,7 @@ void QWidgetPrivate::updateWidgetTransform()
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
-        qApp->inputPanel()->setInputItemTransform(t);
+        qApp->inputMethod()->setInputItemTransform(t);
     }
 }
 
@@ -3106,10 +3106,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
         if (enable) {
             if (focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
-                qApp->inputPanel()->update(Qt::ImEnabled);
+                qApp->inputMethod()->update(Qt::ImEnabled);
         } else {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->update(Qt::ImEnabled);
+            qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
     }
 #endif //QT_NO_IM
@@ -8811,7 +8811,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 #ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
-    qApp->inputPanel()->update(Qt::ImHints);
+    qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
 }
 
@@ -10030,8 +10030,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->reset();
-            qApp->inputPanel()->update(Qt::ImEnabled);
+            qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
         if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
 #ifdef Q_WS_MAC
@@ -10045,7 +10045,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createWinId();
         if (isEnabled() && focusWidget->isEnabled()
             && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {
-            qApp->inputPanel()->update(Qt::ImEnabled);
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -10080,8 +10080,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #ifndef QT_NO_IM
         if (qApp->focusObject() == this) {
             if (!on)
-                qApp->inputPanel()->reset();
-            qApp->inputPanel()->update(Qt::ImEnabled);
+                qApp->inputMethod()->reset();
+            qApp->inputMethod()->update(Qt::ImEnabled);
         }
 #endif //QT_NO_IM
         break;
@@ -10513,7 +10513,7 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 void QWidget::updateMicroFocus()
 {
     // updating everything since this is currently called for any kind of state change
-    qApp->inputPanel()->update(Qt::ImQueryAll);
+    qApp->inputMethod()->update(Qt::ImQueryAll);
 
 #ifndef QT_NO_ACCESSIBILITY
     if (isVisible()) {

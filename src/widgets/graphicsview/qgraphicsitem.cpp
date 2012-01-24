@@ -743,7 +743,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
@@ -7379,7 +7379,7 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
     QWidget *fw = QApplication::focusWidget();
     if (!fw)
         return;
-    qApp->inputPanel()->update(Qt::ImHints);
+    qApp->inputMethod()->update(Qt::ImHints);
 }
 
 /*!
@@ -7397,7 +7397,7 @@ void QGraphicsItem::updateMicroFocus()
             for (int i = 0 ; i < scene()->views().count() ; ++i) {
                 if (scene()->views().at(i) == fw) {
                     if (qApp)
-                        qApp->inputPanel()->update(Qt::ImQueryAll);
+                        qApp->inputMethod()->update(Qt::ImQueryAll);
 
 #ifndef QT_NO_ACCESSIBILITY
                     // ##### is this correct
@@ -10215,9 +10215,9 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
         if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut) {
-            qApp->inputPanel()->reset();
+            qApp->inputMethod()->reset();
         } else {
-            qApp->inputPanel()->update(Qt::ImQueryInput);
+            qApp->inputMethod()->update(Qt::ImQueryInput);
         }
         break;
     case QEvent::ShortcutOverride:

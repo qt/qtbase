@@ -69,7 +69,7 @@
 #include "qmessagebox.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 
 #include "qinputcontext.h"
 #include "private/qkeymapper_p.h"
@@ -1976,7 +1976,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                      // or it is not created fully yet.
                      || (focus_widget && (!focus_widget->testAttribute(Qt::WA_InputMethodEnabled)
                                           || !focus_widget->testAttribute(Qt::WA_WState_Created))))) {
-            qApp->inputPanel()->reset();
+            qApp->inputMethod()->reset();
         }
 #endif //QT_NO_IM
 
@@ -3873,10 +3873,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
-        inputPanel()->show();
+        inputMethod()->show();
         break;
     case QEvent::CloseSoftwareInputPanel:
-        inputPanel()->hide();
+        inputMethod()->hide();
         break;
 
 #ifndef QT_NO_GESTURES
@@ -4886,22 +4886,22 @@ QInputContext *QApplication::inputContext() const
     \since 4.2
     \obsolete
 
-    Returns the current keyboard input locale. Replaced with QInputPanel::locale()
+    Returns the current keyboard input locale. Replaced with QInputMethod::locale()
 */
 QLocale QApplication::keyboardInputLocale()
 {
-    return qApp ? qApp->inputPanel()->locale() : QLocale::c();
+    return qApp ? qApp->inputMethod()->locale() : QLocale::c();
 }
 
 /*!
     \since 4.2
     \obsolete
 
-    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
+    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
 */
 Qt::LayoutDirection QApplication::keyboardInputDirection()
 {
-    return qApp ? qApp->inputPanel()->inputDirection() : Qt::LeftToRight;
+    return qApp ? qApp->inputMethod()->inputDirection() : Qt::LeftToRight;
 }
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)

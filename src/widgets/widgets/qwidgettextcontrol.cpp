@@ -75,7 +75,7 @@
 #include <qvariant.h>
 #include <qurl.h>
 #include <qdesktopservices.h>
-#include <qinputpanel.h>
+#include <qinputmethod.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
 #include <QtWidgets/qlineedit.h>
@@ -1689,7 +1689,7 @@ void QWidgetTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button
             _q_updateCurrentCharFormatAndSelection();
 #ifndef QT_NO_IM
             if (contextWidget)
-                qApp->inputPanel()->update(Qt::ImQueryInput);
+                qApp->inputMethod()->update(Qt::ImQueryInput);
 #endif //QT_NO_IM
         } else {
             //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
@@ -1836,7 +1836,7 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
 
         if (cursorPos >= 0) {
             if (e->type() == QEvent::MouseButtonRelease)
-                qApp->inputPanel()->invokeAction(QInputPanel::Click, cursorPos);
+                qApp->inputMethod()->invokeAction(QInputMethod::Click, cursorPos);
 
             e->setAccepted(true);
             return true;
@@ -2755,7 +2755,7 @@ void QWidgetTextControlPrivate::commitPreedit()
         return;
 
     cursor.beginEditBlock();
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
 
     if (!tentativeCommit.isEmpty()) {
         cursor.insertText(tentativeCommit);

@@ -72,7 +72,7 @@
 #include <private/qgraphicsview_p.h>
 #include "../../../platformquirks.h"
 #include "../../shared/platforminputcontext.h"
-#include <private/qinputpanel_p.h>
+#include <private/qinputmethod_p.h>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -264,8 +264,8 @@ void tst_QGraphicsView::initTestCase()
 void tst_QGraphicsView::cleanup()
 {
     // ensure not even skipped tests with custom input context leave it dangling
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = 0;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
 }
 
 void tst_QGraphicsView::construction()
@@ -4109,8 +4109,8 @@ void tst_QGraphicsView::inputMethodSensitivity()
 void tst_QGraphicsView::inputContextReset()
 {
     PlatformInputContext inputContext;
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = &inputContext;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &inputContext;
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);

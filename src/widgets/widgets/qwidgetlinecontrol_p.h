@@ -62,7 +62,7 @@
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
 #include "QtGui/qclipboard.h"
-#include "QtGui/qinputpanel.h"
+#include "QtGui/qinputmethod.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
 #include "QtCore/qthread.h"
@@ -232,7 +232,7 @@ public:
     void setText(const QString &txt)
     {
         if (composeMode())
-            qApp->inputPanel()->reset();
+            qApp->inputMethod()->reset();
         m_tentativeCommit.clear();
         internalSetText(txt, -1, false);
     }
@@ -318,7 +318,7 @@ public:
     Qt::LayoutDirection layoutDirection() const {
         if (m_layoutDirection == Qt::LayoutDirectionAuto) {
             if (m_text.isEmpty())
-                return qApp->inputPanel()->inputDirection();
+                return qApp->inputMethod()->inputDirection();
             return m_text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
         }
         return m_layoutDirection;

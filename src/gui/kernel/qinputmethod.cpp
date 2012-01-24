@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <qinputpanel.h>
-#include <private/qinputpanel_p.h>
+#include <qinputmethod.h>
+#include <private/qinputmethod_p.h>
 #include <qguiapplication.h>
 #include <qtimer.h>
 
@@ -49,8 +49,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
 */
-QInputPanel::QInputPanel()
-    : QObject(*new QInputPanelPrivate)
+QInputMethod::QInputMethod()
+    : QObject(*new QInputMethodPrivate)
 {
     // might be instantiated before QGuiApplication is fully done, need to connect later
     QTimer::singleShot(0, this, SLOT(q_connectFocusObject()));
@@ -59,24 +59,24 @@ QInputPanel::QInputPanel()
 /*!
     \internal
 */
-QInputPanel::~QInputPanel()
+QInputMethod::~QInputMethod()
 {
 }
 
 /*!
-    \class QInputPanel
-    \brief The QInputPanel class provides access to the active text input method.
+    \class QInputMethod
+    \brief The QInputMethod class provides access to the active text input method.
 
-    QInputPanel is used by the text editors for integrating to the platform text input
+    QInputMethod is used by the text editors for integrating to the platform text input
     methods and more commonly by application views for querying various text input method-related
     information like virtual keyboard visibility and keyboard dimensions.
 
-    Qt Quick also provides access to QInputPanel in QML through \l{QmlGlobalQtObject}{Qt global object}
+    Qt Quick also provides access to QInputMethod in QML through \l{QmlGlobalQtObject}{Qt global object}
     as \c Qt.application.inputPanel property.
 */
 
 /*!
-    \property QInputPanel::inputItem
+    \property QInputMethod::inputItem
     \brief Focused item that accepts text input
     \obsolete
 
@@ -87,15 +87,15 @@ QInputPanel::~QInputPanel()
 
     \sa inputItemTransform, inputWindow, QInputMethodQueryEvent, QInputMethodEvent
 */
-QObject *QInputPanel::inputItem() const
+QObject *QInputMethod::inputItem() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     return d->inputItem.data();
 }
 
-void QInputPanel::setInputItem(QObject *inputItem)
+void QInputMethod::setInputItem(QObject *inputItem)
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
 
     if (d->inputItem.data() == inputItem)
         return;
@@ -109,7 +109,7 @@ void QInputPanel::setInputItem(QObject *inputItem)
 
     \obsolete
 */
-QWindow *QInputPanel::inputWindow() const
+QWindow *QInputMethod::inputWindow() const
 {
     return qApp->activeWindow();
 }
@@ -117,9 +117,9 @@ QWindow *QInputPanel::inputWindow() const
 /*!
     Returns the transformation from input item coordinates to the window coordinates.
 */
-QTransform QInputPanel::inputItemTransform() const
+QTransform QInputMethod::inputItemTransform() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     return d->inputItemTransform;
 }
 
@@ -128,9 +128,9 @@ QTransform QInputPanel::inputItemTransform() const
     Item transform needs to be updated by the focused window like QQuickCanvas whenever
     item is moved inside the scene.
 */
-void QInputPanel::setInputItemTransform(const QTransform &transform)
+void QInputMethod::setInputItemTransform(const QTransform &transform)
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     if (d->inputItemTransform == transform)
         return;
 
@@ -139,15 +139,15 @@ void QInputPanel::setInputItemTransform(const QTransform &transform)
 }
 
 /*!
-    \property QInputPanel::cursorRectangle
+    \property QInputMethod::cursorRectangle
     \brief Input item's cursor rectangle in window coordinates.
 
     Cursor rectangle is often used by various text editing controls
     like text prediction popups for following the text being typed.
 */
-QRectF QInputPanel::cursorRectangle() const
+QRectF QInputMethod::cursorRectangle() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
 
     if (!d->inputItem)
         return QRectF();
@@ -162,12 +162,12 @@ QRectF QInputPanel::cursorRectangle() const
 }
 
 /*!
-    \property QInputPanel::keyboardRectangle
+    \property QInputMethod::keyboardRectangle
     \brief Virtual keyboard's geometry in window coordinates.
 */
-QRectF QInputPanel::keyboardRectangle() const
+QRectF QInputMethod::keyboardRectangle() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->keyboardRect();
@@ -183,9 +183,9 @@ QRectF QInputPanel::keyboardRectangle() const
     function, keyboard should automatically open when
     the text editor gains focus.
 */
-void QInputPanel::show()
+void QInputMethod::show()
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->showInputPanel();
@@ -198,26 +198,26 @@ void QInputPanel::show()
     keyboard should automatically close when the text editor loses
     focus, for example when the parent view is closed.
 */
-void QInputPanel::hide()
+void QInputMethod::hide()
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->hideInputPanel();
 }
 
 /*!
-    \property QInputPanel::visible
+    \property QInputMethod::visible
     \brief Virtual keyboard's visibility on the screen
 
-    Input panel visibility remains false for devices
+    Input method visibility remains false for devices
     with no virtual keyboards.
 
     \sa show(), hide()
 */
-bool QInputPanel::visible() const
+bool QInputMethod::visible() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->isInputPanelVisible();
@@ -230,13 +230,13 @@ bool QInputPanel::visible() const
 
     \sa show(), hide()
 */
-void QInputPanel::setVisible(bool visible)
+void QInputMethod::setVisible(bool visible)
 {
     visible ? show() : hide();
 }
 
 /*!
-    \property QInputPanel::animating
+    \property QInputMethod::animating
     \brief True when the virtual keyboard is being opened or closed.
 
     Animating is false when keyboard is fully open or closed.
@@ -245,9 +245,9 @@ void QInputPanel::setVisible(bool visible)
     false keyboard is being closed.
 */
 
-bool QInputPanel::isAnimating() const
+bool QInputMethod::isAnimating() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->isAnimating();
@@ -255,12 +255,12 @@ bool QInputPanel::isAnimating() const
 }
 
 /*!
-    \property QInputPanel::locale
+    \property QInputMethod::locale
     \brief Current input locale.
 */
-QLocale QInputPanel::locale() const
+QLocale QInputMethod::locale() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->locale();
@@ -268,12 +268,12 @@ QLocale QInputPanel::locale() const
 }
 
 /*!
-    \property QInputPanel::inputDirection
+    \property QInputMethod::inputDirection
     \brief Current input direction.
 */
-Qt::LayoutDirection QInputPanel::inputDirection() const
+Qt::LayoutDirection QInputMethod::inputDirection() const
 {
-    Q_D(const QInputPanel);
+    Q_D(const QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->inputDirection();
@@ -291,9 +291,9 @@ Qt::LayoutDirection QInputPanel::inputDirection() const
     to change as well. The attributes that often change together with cursor position
     have been grouped in Qt::ImQueryInput value for convenience.
 */
-void QInputPanel::update(Qt::InputMethodQueries queries)
+void QInputMethod::update(Qt::InputMethodQueries queries)
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
 
     if (queries & Qt::ImEnabled)
         d->q_checkFocusObject(qApp->focusObject());
@@ -312,9 +312,9 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
 
     Input method resets automatically when the focused editor changes.
 */
-void QInputPanel::reset()
+void QInputMethod::reset()
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->reset();
@@ -328,9 +328,9 @@ void QInputPanel::reset()
     interrupts the text composing needs to flush the composing state by calling the
     commit() function, for example when the cursor is moved elsewhere.
 */
-void QInputPanel::commit()
+void QInputMethod::commit()
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->commit();
@@ -341,26 +341,26 @@ void QInputPanel::commit()
     the user. Input methods often use this information to offer more word
     suggestions to the user.
 */
-void QInputPanel::invokeAction(Action a, int cursorPosition)
+void QInputMethod::invokeAction(Action a, int cursorPosition)
 {
-    Q_D(QInputPanel);
+    Q_D(QInputMethod);
     QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->invokeAction(a, cursorPosition);
 }
 
 // temporary handlers for updating focus item based on application focus
-void QInputPanelPrivate::q_connectFocusObject()
+void QInputMethodPrivate::q_connectFocusObject()
 {
-    Q_Q(QInputPanel);
+    Q_Q(QInputMethod);
     QObject::connect(qApp, SIGNAL(focusObjectChanged(QObject*)),
                      q, SLOT(q_checkFocusObject(QObject*)));
     q_checkFocusObject(qApp->focusObject());
 }
 
-void QInputPanelPrivate::q_checkFocusObject(QObject *object)
+void QInputMethodPrivate::q_checkFocusObject(QObject *object)
 {
-    Q_Q(QInputPanel);
+    Q_Q(QInputMethod);
 
     bool enabled = false;
     if (object) {
@@ -373,4 +373,4 @@ void QInputPanelPrivate::q_checkFocusObject(QObject *object)
 
 QT_END_NAMESPACE
 
-#include "moc_qinputpanel.cpp"
+#include "moc_qinputmethod.cpp"

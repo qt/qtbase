@@ -39,19 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QINPUTPANEL_H
-#define QINPUTPANEL_H
+#ifndef QINPUTMETHOD_P_H
+#define QINPUTMETHOD_P_H
 
-#include <QtGui/qinputmethod.h>
+#include <qinputmethod.h>
+#include <private/qobject_p.h>
+#include <QtCore/QWeakPointer>
+#include <QTransform>
+#include <qplatforminputcontext_qpa.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-#pragma qt_class(QInputPanel)
-#endif
-#define QInputPanel QInputMethod
+class QInputMethodPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QInputMethod)
+
+public:
+    inline QInputMethodPrivate() : testContext(0)
+    {}
+    QPlatformInputContext *platformInputContext() const
+    {
+        return testContext ? testContext : QGuiApplicationPrivate::platformIntegration()->inputContext();
+    }
+    static inline QInputMethodPrivate *get(QInputMethod *inputMethod)
+    {
+        return inputMethod->d_func();
+    }
+    void q_connectFocusObject();
+    void q_checkFocusObject(QObject *object);
+
+    QTransform inputItemTransform;
+    QWeakPointer<QObject> inputItem;
+    QPlatformInputContext *testContext;
+};
 
 QT_END_NAMESPACE
 

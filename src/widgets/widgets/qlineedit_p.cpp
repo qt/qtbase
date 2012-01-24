@@ -51,7 +51,7 @@
 #include "qaccessible.h"
 #endif
 #ifndef QT_NO_IM
-#include "qinputpanel.h"
+#include "qinputmethod.h"
 #include "qlist.h"
 #endif
 
@@ -242,17 +242,17 @@ void QLineEditPrivate::updatePasswordEchoEditing(bool editing)
     q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod());
 }
 
-void QLineEditPrivate::resetInputPanel()
+void QLineEditPrivate::resetInputMethod()
 {
     Q_Q(QLineEdit);
     if (q->hasFocus() && qApp) {
-        qApp->inputPanel()->reset();
+        qApp->inputMethod()->reset();
     }
 }
 
 /*!
   This function is not intended as polymorphic usage. Just a shared code
-  fragment that calls QInputPanel::invokeAction for this
+  fragment that calls QInputMethod::invokeAction for this
   class.
 */
 bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
@@ -266,7 +266,7 @@ bool QLineEditPrivate::sendMouseEventToInputContext( QMouseEvent *e )
 
         if (mousePos >= 0) {
             if (e->type() == QEvent::MouseButtonRelease)
-                qApp->inputPanel()->invokeAction(QInputPanel::Click, mousePos);
+                qApp->inputMethod()->invokeAction(QInputMethod::Click, mousePos);
 
             return true;
         }

@@ -181,7 +181,7 @@ public:
     static QFont *app_font;
 
     QStyleHints *styleHints;
-    QInputPanel *inputPanel;
+    QInputMethod *inputMethod;
 
     static QList<QObject *> generic_plugin_list;
 #ifndef QT_NO_SHORTCUT

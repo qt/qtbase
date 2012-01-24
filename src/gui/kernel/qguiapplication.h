@@ -44,6 +44,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtGui/qinputpanel.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
@@ -58,7 +59,6 @@ class QPlatformNativeInterface;
 class QPalette;
 class QScreen;
 class QStyleHints;
-class QInputPanel;
 
 #if defined(qApp)
 #undef qApp
@@ -121,7 +121,8 @@ public:
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
     QStyleHints *styleHints() const;
-    QInputPanel *inputPanel() const;
+    QT_DEPRECATED QInputPanel *inputPanel() const;
+    QInputMethod *inputMethod() const;
 
     static QPlatformNativeInterface *platformNativeInterface();
 

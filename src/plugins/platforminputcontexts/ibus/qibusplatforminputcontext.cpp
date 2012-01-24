@@ -88,7 +88,7 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
     }
-    QInputPanel *p = qApp->inputPanel();
+    QInputMethod *p = qApp->inputMethod();
     connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
     connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
 }
@@ -103,12 +103,12 @@ bool QIBusPlatformInputContext::isValid() const
     return d->valid;
 }
 
-void QIBusPlatformInputContext::invokeAction(QInputPanel::Action a, int x)
+void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int x)
 {
     if (!d->valid)
         return;
 
-    if (a == QInputPanel::Click)
+    if (a == QInputMethod::Click)
         commit();
 }
 
@@ -130,7 +130,7 @@ void QIBusPlatformInputContext::commit()
     if (!d->valid)
         return;
 
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input) {
         d->predit = QString();
         return;
@@ -155,11 +155,11 @@ void QIBusPlatformInputContext::cursorRectChanged()
     if (!d->valid)
         return;
 
-    QRect r = qApp->inputPanel()->cursorRectangle().toRect();
+    QRect r = qApp->inputMethod()->cursorRectangle().toRect();
     if(!r.isValid())
         return;
 
-    QWindow *inputWindow = qApp->inputPanel()->inputWindow();
+    QWindow *inputWindow = qApp->inputMethod()->inputWindow();
     if (!inputWindow)
         return;
     r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
@@ -173,7 +173,7 @@ void QIBusPlatformInputContext::inputItemChanged()
     if (!d->valid)
         return;
 
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (debug)
         qDebug() << "setFocusObject" << input;
     if (input)
@@ -184,7 +184,7 @@ void QIBusPlatformInputContext::inputItemChanged()
 
 void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 
@@ -206,7 +206,7 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 

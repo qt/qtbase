@@ -65,7 +65,7 @@
 #include "qmenu.h"
 #include "qtextformat.h"
 #include "qpalette.h"
-#include <QtGui/qinputpanel.h>
+#include <QtGui/qinputmethod.h>
 #include <QtGui/qevent.h>
 
 #include <stdlib.h>
@@ -228,7 +228,7 @@ void QInputContext::setFocusWidget(QWidget *widget)
 void QInputContext::sendEvent(const QInputMethodEvent &event)
 {
 
-    QObject *focus = qApp->inputPanel()->inputItem();
+    QObject *focus = qApp->inputMethod()->inputItem();
     if (!focus)
 	return;
 
@@ -257,7 +257,7 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
 void QInputContext::mouseHandler(int x, QMouseEvent *event)
 {
     if (event->type() == QEvent::MouseButtonRelease)
-        qApp->inputPanel()->invokeAction(QInputPanel::Click, x);
+        qApp->inputMethod()->invokeAction(QInputMethod::Click, x);
 }
 
 
@@ -280,7 +280,7 @@ QFont QInputContext::font() const
 */
 void QInputContext::update()
 {
-    qApp->inputPanel()->update(Qt::ImQueryAll);
+    qApp->inputMethod()->update(Qt::ImQueryAll);
 }
 
 /*!
@@ -291,7 +291,7 @@ void QInputContext::update()
 void QInputContext::widgetDestroyed(QWidget *widget)
 {
     Q_UNUSED(widget)
-    // nothing to be done here, as we use a weak pointer in the input panel
+    // nothing to be done here, as we use a weak pointer in the input method
 }
 
 /*!
@@ -316,7 +316,7 @@ void QInputContext::widgetDestroyed(QWidget *widget)
 */
 void QInputContext::reset()
 {
-    qApp->inputPanel()->reset();
+    qApp->inputMethod()->reset();
 }
 
 

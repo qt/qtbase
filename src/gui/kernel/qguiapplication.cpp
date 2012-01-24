@@ -183,7 +183,7 @@ QGuiApplication::~QGuiApplication()
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
       styleHints(0),
-      inputPanel(0)
+      inputMethod(0)
 {
     self = this;
     application_type = QCoreApplication::GuiClient;
@@ -522,7 +522,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     cleanupThreadData();
 
     delete styleHints;
-    delete inputPanel;
+    delete inputMethod;
 
     delete platform_integration;
     platform_integration = 0;
@@ -1572,12 +1572,17 @@ QStyleHints *QGuiApplication::styleHints() const
 
   \sa QInputPanel
   */
-QInputPanel *QGuiApplication::inputPanel() const
+QInputMethod *QGuiApplication::inputMethod() const
 {
     Q_D(const QGuiApplication);
-    if (!d->inputPanel)
-        const_cast<QGuiApplicationPrivate *>(d)->inputPanel = new QInputPanel();
-    return d->inputPanel;
+    if (!d->inputMethod)
+        const_cast<QGuiApplicationPrivate *>(d)->inputMethod = new QInputMethod();
+    return d->inputMethod;
+}
+
+QInputPanel *QGuiApplication::inputPanel() const
+{
+    return inputMethod();
 }
 
 

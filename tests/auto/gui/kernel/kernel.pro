@@ -6,7 +6,7 @@ SUBDIRS=\
    qfileopenevent \
    qguimetatype \
    qguivariant \
-   qinputpanel \
+   qinputmethod \
    qkeysequence \
    qmouseevent \
    qmouseevent_modal \

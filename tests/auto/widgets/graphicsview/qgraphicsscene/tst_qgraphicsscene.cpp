@@ -52,7 +52,7 @@
 #include <math.h>
 #include "../../../gui/painting/qpathclipper/pathcompare.h"
 #include "../../shared/platforminputcontext.h"
-#include <private/qinputpanel_p.h>
+#include <private/qinputmethod_p.h>
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -295,8 +295,8 @@ void tst_QGraphicsScene::initTestCase()
 void tst_QGraphicsScene::cleanup()
 {
     // ensure not even skipped tests with custom input context leave it dangling
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = 0;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = 0;
 }
 
 void tst_QGraphicsScene::construction()
@@ -3766,8 +3766,8 @@ public:
 void tst_QGraphicsScene::inputMethod()
 {
     PlatformInputContext inputContext;
-    QInputPanelPrivate *inputPanelPrivate = QInputPanelPrivate::get(qApp->inputPanel());
-    inputPanelPrivate->testContext = &inputContext;
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    inputMethodPrivate->testContext = &inputContext;
 
     QFETCH(int, flags);
     QFETCH(bool, callFocusItem);

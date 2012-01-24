@@ -2458,7 +2458,7 @@ void QComboBox::showPopup()
     }
 
     if (qApp) {
-        qApp->inputPanel()->reset();
+        qApp->inputMethod()->reset();
     }
 
     QScrollBar *sb = view()->horizontalScrollBar();

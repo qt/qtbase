@@ -167,7 +167,7 @@ QWindowsInputContext::QWindowsInputContext() :
     m_WM_MSIME_MOUSE(RegisterWindowMessage(L"MSIMEMouseOperation")),
     m_endCompositionRecursionGuard(false)
 {
-    connect(qApp->inputPanel(), SIGNAL(cursorRectangleChanged()),
+    connect(qApp->inputMethod(), SIGNAL(cursorRectangleChanged()),
             this, SLOT(cursorRectChanged()));
 }
 
@@ -184,7 +184,7 @@ void QWindowsInputContext::reset()
     QPlatformInputContext::reset();
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = qApp->inputPanel()->inputItem();
+    QObject *fo = qApp->inputMethod()->inputItem();
     if (QWindowsContext::verboseInputMethods)
         qDebug() << __FUNCTION__<< fo;
     if (!fo)
@@ -213,8 +213,8 @@ void QWindowsInputContext::cursorRectChanged()
 {
     if (!m_compositionContext.hwnd)
         return;
-    const QInputPanel *inputPanel = qApp->inputPanel();
-    QRect cursorRectangle = inputPanel->cursorRectangle().toRect();
+    const QInputMethod *inputMethod = qApp->inputMethod();
+    QRect cursorRectangle = inputMethod->cursorRectangle().toRect();
     if (!cursorRectangle.isValid())
         return;
 
@@ -249,9 +249,9 @@ void QWindowsInputContext::cursorRectChanged()
     ImmReleaseContext(m_compositionContext.hwnd, himc);
 }
 
-void QWindowsInputContext::invokeAction(QInputPanel::Action action, int cursorPosition)
+void QWindowsInputContext::invokeAction(QInputMethod::Action action, int cursorPosition)
 {
-    if (action != QInputPanel::Click || !m_compositionContext.hwnd) {
+    if (action != QInputMethod::Click || !m_compositionContext.hwnd) {
         QPlatformInputContext::invokeAction(action, cursorPosition);
         return;
     }
@@ -329,11 +329,11 @@ static inline QTextFormat standardFormat(StandardFormat format)
 
 bool QWindowsInputContext::startComposition(HWND hwnd)
 {
-    const QObject *fo = qApp->inputPanel()->inputItem();
+    const QObject *fo = qApp->inputMethod()->inputItem();
     if (!fo)
         return false;
     // This should always match the object.
-    QWindow *window = qApp->inputPanel()->inputWindow();
+    QWindow *window = qApp->inputMethod()->inputWindow();
     if (!window)
         return false;
     if (QWindowsContext::verboseInputMethods)
@@ -397,7 +397,7 @@ static inline QList<QInputMethodEvent::Attribute>
 
 bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 {
-    QObject *fo = qApp->inputPanel()->inputItem();
+    QObject *fo = qApp->inputMethod()->inputItem();
     const int lParam = int(lParamIn);
     if (QWindowsContext::verboseInputMethods)
         qDebug() << '>' << __FUNCTION__ << fo << debugComposition(lParam)
@@ -459,7 +459,7 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     // against that.
     if (m_endCompositionRecursionGuard || m_compositionContext.hwnd != hwnd)
         return false;
-    QObject *fo = qApp->inputPanel()->inputItem();
+    QObject *fo = qApp->inputMethod()->inputItem();
     if (!fo)
         return false;
 
@@ -537,7 +537,7 @@ bool QWindowsInputContext::handleIME_Request(WPARAM wParam,
 
 int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
 {
-    QObject *fo = qApp->inputPanel()->inputItem();
+    QObject *fo = qApp->inputMethod()->inputItem();
     if (!fo)
         return false;
 

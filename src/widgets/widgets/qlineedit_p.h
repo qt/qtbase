@@ -102,7 +102,7 @@ public:
 
     void updatePasswordEchoEditing(bool);
 
-    void resetInputPanel();
+    void resetInputMethod();
 
     inline bool shouldEnableInputMethod() const
     {

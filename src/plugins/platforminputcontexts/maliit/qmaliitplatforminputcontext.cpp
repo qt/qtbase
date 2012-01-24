@@ -182,8 +182,8 @@ QMaliitPlatformInputContext::QMaliitPlatformInputContext()
 {
     if (debug)
         qDebug() << "QMaliitPlatformInputContext::QMaliitPlatformInputContext()";
-    QInputPanel *p = qApp->inputPanel();
-    connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
+    QInputMethod *im = qApp->inputMethod();
+    connect(im, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
 QMaliitPlatformInputContext::~QMaliitPlatformInputContext(void)
@@ -196,13 +196,13 @@ bool QMaliitPlatformInputContext::isValid() const
     return d->valid;
 }
 
-void QMaliitPlatformInputContext::invokeAction(QInputPanel::Action action, int x)
+void QMaliitPlatformInputContext::invokeAction(QInputMethod::Action action, int x)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 
-    if (action == QInputPanel::Click) {
+    if (action == QInputMethod::Click) {
         if (x < 0 || x >= d->preedit.length()) {
             reset();
             return;
@@ -220,7 +220,7 @@ void QMaliitPlatformInputContext::invokeAction(QInputPanel::Action action, int x
 
 void QMaliitPlatformInputContext::reset()
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
 
     const bool hadPreedit = !d->preedit.isEmpty();
     if (hadPreedit && input) {
@@ -238,8 +238,8 @@ void QMaliitPlatformInputContext::reset()
 
 void QMaliitPlatformInputContext::update(Qt::InputMethodQueries queries)
 {
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
+    QInputMethod *method = qApp->inputMethod();
+    QObject *input = method->inputItem();
     if (!input)
         return;
 
@@ -254,8 +254,8 @@ void QMaliitPlatformInputContext::update(Qt::InputMethodQueries queries)
         d->imState["anchorPosition"] = query.value(Qt::ImAnchorPosition);
     if (queries & Qt::ImCursorRectangle) {
         QRect rect = query.value(Qt::ImCursorRectangle).toRect();
-        rect = panel->inputItemTransform().mapRect(rect);
-        QWindow *window = panel->inputWindow();
+        rect = method->inputItemTransform().mapRect(rect);
+        QWindow *window = method->inputWindow();
         if (window)
             d->imState["cursorRectangle"] = QRect(window->mapToGlobal(rect.topLeft()), rect.size());
     }
@@ -289,7 +289,7 @@ void QMaliitPlatformInputContext::activationLostEvent()
 
 void QMaliitPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int cursorPos)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 
@@ -305,7 +305,7 @@ void QMaliitPlatformInputContext::commitString(const QString &string, int replac
 
 void QMaliitPlatformInputContext::updatePreedit(const QDBusMessage &message)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 
@@ -421,7 +421,7 @@ void QMaliitPlatformInputContext::paste()
 bool QMaliitPlatformInputContext::preeditRectangle(int &x, int &y, int &width, int &height)
 {
     // ###
-    QRect r = qApp->inputPanel()->cursorRectangle().toRect();
+    QRect r = qApp->inputMethod()->cursorRectangle().toRect();
     if (!r.isValid())
         return false;
     x = r.x();
@@ -435,7 +435,7 @@ bool QMaliitPlatformInputContext::selection(QString &selection)
 {
     selection.clear();
 
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return false;
 
@@ -471,7 +471,7 @@ void QMaliitPlatformInputContext::setRedirectKeys(bool)
 
 void QMaliitPlatformInputContext::setSelection(int start, int length)
 {
-    QObject *input = qApp->inputPanel()->inputItem();
+    QObject *input = qApp->inputMethod()->inputItem();
     if (!input)
         return;
 
@@ -497,9 +497,9 @@ void QMaliitPlatformInputContext::inputItemChanged()
     if (!d->valid)
         return;
 
-    QInputPanel *panel = qApp->inputPanel();
-    QObject *input = panel->inputItem();
-    QWindow *window = panel->inputWindow();
+    QInputMethod *method = qApp->inputMethod();
+    QObject *input = method->inputItem();
+    QWindow *window = method->inputWindow();
     if (window != d->window.data()) {
        if (d->window)
            disconnect(d->window.data(), SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)),
@@ -533,8 +533,8 @@ void QMaliitPlatformInputContext::showInputPanel()
     if (debug)
         qDebug() << "showInputPanel";
 
-    QInputPanel *panel = qApp->inputPanel();
-    if (!panel->inputItem() || !panel->inputWindow())
+    QInputMethod *method = qApp->inputMethod();
+    if (!method->inputItem() || !method->inputWindow())
         d->visibility = InputPanelShowRequested;
     else {
         d->server->showInputMethod();

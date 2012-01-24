@@ -8891,9 +8891,9 @@ void tst_QWidget::inputFocus_task257832()
       widget->winId();    // make sure, widget has been created
       widget->show();
       QTRY_VERIFY(widget->hasFocus());
-      QCOMPARE(qApp->inputPanel()->inputItem(), static_cast<QWidget*>(widget));
+      QCOMPARE(qApp->inputMethod()->inputItem(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
-      QVERIFY(!qApp->inputPanel()->inputItem());
+      QVERIFY(!qApp->inputMethod()->inputItem());
       delete widget;
 }
 
