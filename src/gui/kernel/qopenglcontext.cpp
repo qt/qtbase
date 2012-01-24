@@ -168,6 +168,8 @@ bool QOpenGLContext::create()
 
     Q_D(QOpenGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformOpenGLContext(this);
+    if (!d->platformGLContext)
+        return false;
     d->platformGLContext->setContext(this);
     if (!d->platformGLContext->isSharing())
         d->shareContext = 0;
