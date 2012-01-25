@@ -277,9 +277,6 @@ void tst_QImage::formatHandlersInput_data()
     QTest::newRow("PPM") << "PPM" << prefix + "image.ppm";
     QTest::newRow("XBM") << "XBM" << prefix + "image.xbm";
     QTest::newRow("XPM") << "XPM" << prefix + "image.xpm";
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF") << "TIFF" << prefix + "image.tif";
-#endif
 }
 
 void tst_QImage::formatHandlersInput()

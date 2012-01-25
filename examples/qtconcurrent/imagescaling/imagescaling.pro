@@ -13,7 +13,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent/imagescaling
 INSTALLS += target sources
 
 
-wince*: DEPLOYMENT_PLUGIN += qgif qjpeg qtiff
+wince*: DEPLOYMENT_PLUGIN += qgif qjpeg
 QT += widgets
 
 simulator: warning(This example does not work on Simulator platform)

@@ -300,10 +300,8 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "PCRE" ]            = "auto";
 
     dictionary[ "GIF" ]             = "auto";
-    dictionary[ "TIFF" ]            = "auto";
     dictionary[ "JPEG" ]            = "auto";
     dictionary[ "PNG" ]             = "auto";
-    dictionary[ "LIBTIFF" ]         = "auto";
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
@@ -402,7 +400,7 @@ void Configure::parseCmdLine()
 {
     int argCount = configCmdLine.size();
     int i = 0;
-    const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg" << "tiff";
+    const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg";
 
 #if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
@@ -548,15 +546,6 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
-
-        else if (configCmdLine.at(i) == "-no-libtiff") {
-            dictionary[ "TIFF"] = "no";
-            dictionary[ "LIBTIFF" ] = "no";
-        } else if (configCmdLine.at(i) == "-qt-libtiff") {
-            dictionary[ "LIBTIFF" ] = "qt";
-        } else if (configCmdLine.at(i) == "-system-libtiff") {
-            dictionary[ "LIBTIFF" ] = "system";
-        }
 
         else if (configCmdLine.at(i) == "-no-libjpeg") {
             dictionary[ "JPEG" ] = "no";
@@ -1483,8 +1472,8 @@ bool Configure::displayHelp()
                     "[-no-style-<style>] [-qt-style-<style>] [-redo]\n"
                     "[-saveconfig <config>] [-loadconfig <config>]\n"
                     "[-qt-zlib] [-system-zlib] [-qt-pcre] [-system-pcre] [-no-gif]\n"
-                    "[-no-libpng] [-qt-libpng] [-system-libpng] [-no-libtiff] [-qt-libtiff]\n"
-                    "[-system-libtiff] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
+                    "[-no-libpng] [-qt-libpng] [-system-libpng]\n"
+                    "[-no-libjpeg] [-qt-libjpeg] [-system-libjpeg]\n"
                     "[-mmx] [-no-mmx] [-3dnow] [-no-3dnow] [-sse] [-no-sse] [-sse2] [-no-sse2]\n"
                     "[-no-iwmmxt] [-iwmmxt] [-openssl] [-openssl-linked]\n"
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
@@ -1593,10 +1582,6 @@ bool Configure::displayHelp()
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
         desc("LIBPNG", "system","-system-libpng",       "Use libpng from the operating system.\nSee http://www.libpng.org/pub/png\n");
-
-        desc("LIBTIFF", "no",    "-no-libtiff",         "Do not compile TIFF support.");
-        desc("LIBTIFF", "qt",    "-qt-libtiff",         "Use the libtiff bundled with Qt.");
-        desc("LIBTIFF", "system","-system-libtiff",     "Use libtiff from the operating system.\nSee http://www.libtiff.org\n");
 
         desc("LIBJPEG", "no",    "-no-libjpeg",         "Do not compile JPEG support.");
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
@@ -1789,8 +1774,7 @@ QString Configure::defaultTo(const QString &option)
     if (option == "ZLIB"
         || option == "PCRE"
         || option == "LIBJPEG"
-        || option == "LIBPNG"
-        || option == "LIBTIFF")
+        || option == "LIBPNG")
         return "system";
 
     // PNG is always built-in, never a plugin
@@ -1811,7 +1795,6 @@ QString Configure::defaultTo(const QString &option)
             || option == "SQL_SQLITE2"
             || option == "SQL_IBASE"
             || option == "JPEG"
-            || option == "TIFF"
             || option == "GIF")
             return "plugin";
     }
@@ -1851,8 +1834,6 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("jpeglib.h");
     else if (part == "LIBPNG")
         available = findFile("png.h");
-    else if (part == "LIBTIFF")
-        available = findFile("tiffio.h");
     else if (part == "SQL_MYSQL")
         available = findFile("mysql.h") && findFile("libmySQL.lib");
     else if (part == "SQL_ODBC")
@@ -1969,14 +1950,10 @@ void Configure::autoDetection()
         dictionary["JPEG"] = defaultTo("JPEG");
     if (dictionary["PNG"] == "auto")
         dictionary["PNG"] = defaultTo("PNG");
-    if (dictionary["TIFF"] == "auto")
-        dictionary["TIFF"] = dictionary["ZLIB"] == "no" ? "no" : defaultTo("TIFF");
     if (dictionary["LIBJPEG"] == "auto")
         dictionary["LIBJPEG"] = checkAvailability("LIBJPEG") ? defaultTo("LIBJPEG") : "qt";
     if (dictionary["LIBPNG"] == "auto")
         dictionary["LIBPNG"] = checkAvailability("LIBPNG") ? defaultTo("LIBPNG") : "qt";
-    if (dictionary["LIBTIFF"] == "auto")
-        dictionary["LIBTIFF"] = checkAvailability("LIBTIFF") ? defaultTo("LIBTIFF") : "qt";
 
     // SQL detection (not on by default)
     if (dictionary["SQL_MYSQL"] == "auto")
@@ -2098,7 +2075,6 @@ bool Configure::verifyConfiguration()
      system-jpeg no-jpeg jpeg
      system-png no-png png
      system-zlib no-zlib zlib
-     system-tiff no-tiff tiff
      no-gif gif
      dll staticlib
 
@@ -2163,13 +2139,6 @@ void Configure::generateOutputVars()
         qtConfig += "no-gif";
     else if (dictionary[ "GIF" ] == "yes")
         qtConfig += "gif";
-
-    if (dictionary[ "TIFF" ] == "no")
-        qtConfig += "no-tiff";
-    else if (dictionary[ "TIFF" ] == "yes")
-        qtConfig += "tiff";
-    if (dictionary[ "LIBTIFF" ] == "system")
-        qtConfig += "system-tiff";
 
     if (dictionary[ "JPEG" ] == "no")
         qtConfig += "no-jpeg";
@@ -2739,7 +2708,6 @@ void Configure::generateConfigfiles()
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
         if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
         if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
-        if (dictionary["TIFF"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
         if (dictionary["ZLIB"] == "no") {
             qconfigList += "QT_NO_ZLIB";
             qconfigList += "QT_NO_COMPRESS";
@@ -3022,7 +2990,6 @@ void Configure::displayConfig()
     cout << "Third Party Libraries:" << endl;
     cout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
     cout << "    GIF support............." << dictionary[ "GIF" ] << endl;
-    cout << "    TIFF support............" << dictionary[ "TIFF" ] << endl;
     cout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     cout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     cout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;

@@ -61,7 +61,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
        DECORATIONPLUGINS = qdecorationdefault qdecorationstyled qdecorationwindows
        GFXDRIVERPLUGINS = qgfxvnc qscreenvfb qgfxtransformed qgfxshadowfb qgfxpvregl qscreenlinuxfb qeglnullws qdirectfbscreen qahiscreen
        GRAPHICSSYSTEMPLUGINS = qmeegographicssystem qglgraphicssystem qvggraphicssystem qshivavggraphicssystem
-       IMAGEPLUGINS = qgif qico qjpeg qsvg qtiff
+       IMAGEPLUGINS = qgif qico qjpeg qsvg
        INPUTPLUGINS = qimsw-multi
        KBDDRIVERPLUGINS = qlinuxinputkbddriver
        MOUSEDRIVERPLUGINS = qtslibmousehandler qpcmousedriver qlinuxtpmousedriver

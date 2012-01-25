@@ -657,8 +657,6 @@ CFG_XFIXES=runtime
 CFG_ZLIB=auto
 CFG_SQLITE=qt
 CFG_GIF=auto
-CFG_TIFF=auto
-CFG_LIBTIFF=auto
 CFG_PNG=yes
 CFG_LIBPNG=auto
 CFG_JPEG=auto
@@ -940,7 +938,6 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
     CFG_MEDIASERVICES=no
     CFG_SQLITE=no
     CFG_SQL_sqlite=no
-    CFG_LIBTIFF=no
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS tests"
     QT_CONFIG="$QT_CONFIG nacl"
 fi
@@ -1772,14 +1769,6 @@ while [ "$#" -gt 0 ]; do
         [ "$VAL" = "yes" ] && VAL=qt
         if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
             CFG_LIBJPEG="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    libtiff)
-        [ "$VAL" = "yes" ] && VAL=qt
-        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
-            CFG_LIBTIFF="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3419,8 +3408,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
-        [-no-libpng] [-qt-libpng] [-system-libpng]
+        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libpng] [-qt-libpng] [-system-libpng]
         [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
@@ -3614,11 +3602,6 @@ Third Party Libraries:
                          See http://www.gzip.org/zlib
 
     -no-gif ............ Do not compile GIF reading support.
-
-    -no-libtiff ........ Do not compile TIFF support.
-    -qt-libtiff ........ Use the libtiff bundled with Qt.
- +  -system-libtiff .... Use libtiff from the operating system.
-                         See http://www.libtiff.org
 
     -no-libpng ......... Do not compile PNG support.
     -qt-libpng ......... Use the libpng bundled with Qt.
@@ -4757,24 +4740,6 @@ if [ "$CFG_GIF" = "auto" ]; then
         CFG_GIF=plugin
     else
         CFG_GIF=yes
-    fi
-fi
-
-# detect how tiff should be built
-if [ "$CFG_TIFF" = "auto" ]; then
-    if [ "$CFG_SHARED" = "yes" ]; then
-        CFG_TIFF=plugin
-    else
-        CFG_TIFF=yes
-    fi
-fi
-
-# detect tiff
-if [ "$CFG_LIBTIFF" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libtiff "libtiff" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-        CFG_LIBTIFF=system
-    else
-        CFG_LIBTIFF=qt
     fi
 fi
 
@@ -6539,16 +6504,6 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBTIFF" = "no" ]; then
-    CFG_TIFF="no"
-elif [ "$CFG_LIBTIFF" = "system" ]; then
-    QT_CONFIG="$QT_CONFIG system-tiff"
-fi
-if [ "$CFG_TIFF" = "no" ]; then
-    QT_CONFIG="$QT_CONFIG no-tiff"
-elif [ "$CFG_TIFF" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG tiff"
-fi
 if [ "$CFG_LIBFREETYPE" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-freetype"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FREETYPE"
@@ -7164,7 +7119,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 
 # Add other configuration options to the qconfig.h file
 [ "$CFG_GIF" = "yes" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_BUILTIN_GIF_READER=1"
-[ "$CFG_TIFF" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_TIFF"
 [ "$CFG_PNG" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_PNG"
 [ "$CFG_JPEG" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IMAGEFORMAT_JPEG"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
@@ -7619,11 +7573,6 @@ echo "GStreamer support ...... $CFG_GSTREAMER"
 echo "PulseAudio support ..... $CFG_PULSEAUDIO"
 echo "Large File support ..... $CFG_LARGEFILE"
 echo "GIF support ............ $CFG_GIF"
-if [ "$CFG_TIFF" = "no" ]; then
-    echo "TIFF support ........... $CFG_TIFF"
-else
-    echo "TIFF support ........... $CFG_TIFF ($CFG_LIBTIFF)"
-fi
 if [ "$CFG_JPEG" = "no" ]; then
     echo "JPEG support ........... $CFG_JPEG"
 else
