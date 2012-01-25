@@ -38,7 +38,7 @@ SeeAlso: ???
 Feature: DRAGANDDROP
 Description: Supports the drag and drop mechansim.
 Section: Kernel
-Requires: QWS_PROPERTIES IMAGEFORMAT_XPM
+Requires: IMAGEFORMAT_XPM
 Name: Drag and drop
 SeeAlso: ???
 
@@ -80,7 +80,7 @@ SeeAlso: ???
 Feature: CLIPBOARD
 Description: Supports cut and paste operations.
 Section: Kernel
-Requires: QWS_PROPERTIES
+Requires:
 Name: QClipboard
 SeeAlso: ???
 
@@ -892,13 +892,6 @@ SeeAlso: ???
 
 # Painting
 
-Feature: DIRECTPAINTER
-Description: Supports direct access to the video hardware.
-Section: Painting
-Requires:
-Name: QDirectPainter
-SeeAlso: ???
-
 Feature: PICTURE
 Description: Supports recording and replaying QPainter commands.
 Section: Painting
@@ -958,22 +951,6 @@ Requires:
 Name: Freetype Font Engine
 SeeAlso: ???
 
-Feature: QWS_QPF
-Description: Supports Qt's pre-rendered fonts, a light-weight non-scalable font format
-specific to Qt for Embedded Linux.
-Section: Fonts
-Requires:
-Name: Qt Prerendered Font Format
-SeeAlso: ???
-
-Feature: QWS_QPF2
-Description: Supports Qt's second generation of pre-rendered fonts, a light-weight
-non-scalable font format specific to Qt for Embedded Linux.
-Section: Fonts
-Requires:
-Name: Qt Prerendered Font Format 2
-SeeAlso: ???
-
 # Internationalization
 
 Feature: TRANSLATION
@@ -1009,13 +986,6 @@ Description: Supports big codecs, e.g. CJK.
 Section: Internationalization
 Requires:
 Name: Big Codecs
-SeeAlso: ???
-
-Feature: QWS_INPUTMETHODS
-Description: Supports international input methods.
-Section: Internationalization
-Requires: IM
-Name: QWSInputMethod
 SeeAlso: ???
 
 # Networking
@@ -1067,15 +1037,6 @@ Description: Supports SOCKS v5 network proxy.
 Section: Networking
 Requires: NETWORKPROXY
 Name:  SOCKS5
-SeeAlso: ???
-
-Feature: COP
-Description: Supports the QCOP protocol, which is a many-to-many
-communication protocol for transferring messages on various
-channels, and Inter Process Communications (IPC).
-Section: Networking
-Requires:
-Name: QCopChannel
 SeeAlso: ???
 
 Feature: NETWORKINTERFACE
@@ -1186,188 +1147,6 @@ Requires:
 Name: Gesture
 SeeAlso: ???
 
-# SVG
-
-Feature: SVG
-Description: Provides classes for displaying the contents of SVG files.
-Section: SVG
-Requires: XMLSTREAMREADER CSSPARSER
-Name: QtSvg module
-SeeAlso: ???
-
-Feature: GRAPHICSSVGITEM
-Description: Provides a QGraphicsItem that can be used to render the contents of SVG files.
-Section: SVG
-Requires: SVGRENDERER GRAPHICSVIEW
-Name: QGraphicsSvgItem
-SeeAlso: ???
-
-Feature: SVGGENERATOR
-Description: Provides a paint device that is used to create SVG drawings.
-Section: SVG
-Requires: SVG
-Name: QSvgGenerator
-SeeAlso: ???
-
-Feature: SVGRENDERER
-Description: Provides a class used to draw the contents of SVG files onto paint devices.
-Section: SVG
-Requires: SVG
-Name: QSvgRenderer
-SeeAlso: ???
-
-Feature: SVGWIDGET
-Description: Provides a widget that is used to display the contents of SVG files.
-Section: SVG
-Requires: SVGRENDERER
-Name: QSvgWidget
-SeeAlso: ???
-
-
-# Qt for Embedded Linux
-
-Feature: QWS_SOUNDSERVER
-Description: Supports servers playing sounds.
-Section: Qt for Embedded Linux
-Requires: SOUND HOSTINFO QWS_MULTIPROCESS
-Name: Sound Server
-SeeAlso: ???
-
-Feature: QWS_MULTIPROCESS
-Description: Supports multi-process architecture.
-Section: Qt for Embedded Linux
-Requires:
-Name: Multi-Process
-SeeAlso: ???
-
-Feature: QWS_KEYBOARD
-Description: Supports the console keyboard.
-Section: Qt for Embedded Linux
-Requires:
-Name: Keyboard
-SeeAlso: ???
-
-Feature: QWS_CURSOR
-Description: Supports visible cursors.
-Section: Qt for Embedded Linux
-Requires: CURSOR
-Name: Cursor
-SeeAlso: ???
-
-Feature: QWS_ALPHA_CURSOR
-Description: Supports alpha-blended cursors.
-Section: Qt for Embedded Linux
-Requires:
-Name: Alpha Cursor
-SeeAlso: ???
-
-Feature: QWS_MANAGER
-Description: Supports the window manager.
-Section: Qt for Embedded Linux
-Requires: QWS_DECORATION_DEFAULT
-Name: Manager
-SeeAlso: ???
-
-Feature: QWS_DECORATION_DEFAULT
-Description: Supports default decoration of the top level windows.
-Section: Qt for Embedded Linux
-Requires:
-Name: Decoration
-SeeAlso: ???
-
-Feature: QWS_DECORATION_WINDOWS
-Description: Supports a "Windows" style decoration of the top level windows.
-Section: Qt for Embedded Linux
-Requires: QWS_DECORATION_DEFAULT
-Name: Decoration (Windows Style)
-SeeAlso: ???
-
-Feature: QWS_DECORATION_STYLED
-Description: Supports styled decoration of the top level windows.
-Section: Qt for Embedded Linux
-Requires: QWS_DECORATION_DEFAULT
-Name: Decoration (Styled)
-SeeAlso: ???
-
-Feature: QWS_MOUSE
-Description: Supports mouse drivers.
-Section: Qt for Embedded Linux
-Requires:
-Name: Mouse
-SeeAlso: ???
-
-Feature: QWS_MOUSE_AUTO
-Description: Supports auto-detected mouse drivers.
-Section: Qt for Embedded Linux
-Requires:
-Name: Mouse (Auto)
-SeeAlso: ???
-
-Feature: QWS_MOUSE_MANUAL
-Description: Supports non-autodetected mouse drivers.
-Section: Qt for Embedded Linux
-Requires:
-Name: Mouse (Non-Auto)
-SeeAlso: ???
-
-Feature: QWS_PROPERTIES
-Description: Supports window system properties.
-Section: Qt for Embedded Linux
-Requires:
-Name: Properties
-SeeAlso: ???
-
-Feature: SXE
-Description: Supports Safe Execution Environment (experimental).
-Section: Qt for Embedded Linux
-Requires: QWS_MULTIPROCESS
-Name: SXE
-SeeAlso: ???
-
-Feature: QWSEMBEDWIDGET
-Description: Provides embedding of a top-level window.
-Section: Qt for Embedded Linux
-Requires:
-Name: QWSEmbedWidget
-SeeAlso: ???
-
-Feature: QWS_PROXYSCREEN
-Description: Provides a proxy helper class used by some screen drivers.
-Section: Qt for Embedded Linux
-Requires:
-Name: QProxyScreen
-SeeAlso: ???
-
-Feature: QWS_VNC
-Description: Provides VNC screen driver
-Section: Qt for Embedded Linux
-Requires: QWS_PROXYSCREEN
-Name: QVncScreen
-SeeAlso: ???
-
-Feature: QWS_TRANSFORMED
-Description: Provides Transformed screen driver
-Section: Qt for Embedded Linux
-Requires: QWS_PROXYSCREEN
-Name: QVncTransformed
-SeeAlso: ???
-
-Feature: QWS_DYNAMICSCREENTRANSFORMATION
-Description: Enables dynamic setting of screen transformation/rotation.
-Section: Qt for Embedded Linux
-Requires: QWS_PROXYSCREEN
-Name: Dynamic screen transformation.
-SeeAlso: ???
-
-# Windows
-
-Feature: WIN_ACTIVEQT
-Description: Support for ActiveQt
-Section: Windows
-Requires: PROPERTIES
-Name: ActiveQt
-SeeAlso: ???
-
 # D-Bus
 
 Feature: DBUS
@@ -1377,97 +1156,3 @@ Requires: PROPERTIES DOM
 Name: QtDBus module
 SeeAlso: ???
 
-# Phonon
-
-Feature: PHONON_PLATFORMPLUGIN
-Description: Support for platform plugin
-Section: Phonon
-Requires: LIBRARY
-Name: Phonon::PlatformPlugin
-SeeAlso: ???
-
-Feature: PHONON_EFFECT
-Description: Support for Audio Effect
-Section: Phonon
-Requires:
-Name: Phonon::Effect
-SeeAlso: ???
-
-Feature: PHONON_AUDIOCAPTURE
-Description: Support for Audio Capture
-Section: Phonon
-Requires:
-Name: Support for Audio Capture
-SeeAlso: ???
-
-Feature: PHONON_EFFECTWIDGET
-Description: Support for Audio Effect Widget
-Section: Phonon
-Requires: PHONON_EFFECT COMBOBOX SPINBOX
-Name: Phonon::EffectWidget
-SeeAlso: ???
-
-Feature: PHONON_VOLUMEFADEREFFECT
-Description: Support for Volume Fader Effect class
-Section: Phonon
-Requires: PHONON_EFFECT
-Name: Phonon::VolumeFaderEffect
-SeeAlso: ???
-
-
-Feature: PHONON_OBJECTDESCRIPTIONMODEL
-Description: Support for Object Description Model
-Section: Phonon
-Requires:
-Name: Phonon::ObjectDescriptionModel
-SeeAlso: ???
-
-Feature: PHONON_VIDEO
-Description: Support for Video
-Section: Phonon
-Requires:
-Name: Phonon::VideoWidget
-SeeAlso: ???
-
-Feature: PHONON_VIDEOPLAYER
-Description: Support for the Video Player class
-Section: Phonon
-Requires: PHONON_VIDEO
-Name: Phonon::VideoPlayer
-SeeAlso: ???
-
-
-Feature: PHONON_SEEKSLIDER
-Description: Support for the Seek Slider class
-Section: Phonon
-Requires: SLIDER
-Name: Phonon::SeekSlider
-SeeAlso: ???
-
-Feature: PHONON_VOLUMESLIDER
-Description: Support for the Volume Slider class
-Section: Phonon
-Requires: SLIDER TOOLBUTTON
-Name: Phonon::VolumeSlider
-SeeAlso: ???
-
-Feature: PHONON_MEDIACONTROLLER
-Description: Support for the MediaController class
-Section: Phonon
-Requires:
-Name: Phonon::MediaController
-SeeAlso: ???
-
-Feature: PHONON_ABSTRACTMEDIASTREAM
-Description: Support for streaming of raw data (QIODevice...)
-Section: Phonon
-Requires:
-Name: Phonon::AbstractMediaStream
-SeeAlso: ???
-
-Feature: PHONON_SETTINGSGROUP
-Description: Phonon settingsgroup
-Section: Phonon
-Requires: SETTINGS
-Name: Phonon::AbstractMediaStream
-SeeAlso: ???
