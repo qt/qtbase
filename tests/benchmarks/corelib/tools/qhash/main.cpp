@@ -65,9 +65,6 @@ private:
     void data();
 };
 
-const int N = 1000000;
-extern double s;
-
 ///////////////////// QHash /////////////////////
 
 void tst_QHash::data()
