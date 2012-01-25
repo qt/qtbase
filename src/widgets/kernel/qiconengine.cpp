@@ -52,8 +52,6 @@ QT_BEGIN_NAMESPACE
   \ingroup painting
   \inmodule QtWidgets
 
-  \bold {Use QIconEngineV2 instead.}
-
   An icon engine provides the rendering functions for a QIcon. Each icon has a
   corresponding icon engine that is responsible for drawing the icon with a
   requested size, mode and state.
@@ -67,7 +65,7 @@ QT_BEGIN_NAMESPACE
   The paint(), pixmap(), and addPixmap() functions are all virtual, and can
   therefore be reimplemented in subclasses of QIconEngine.
 
-  \sa QIconEngineV2, QIconEnginePlugin
+  \sa QIconEnginePlugin
 
 */
 
@@ -136,45 +134,8 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 }
 
 
-
-// version 2 functions
-
-
 /*!
-    \class QIconEngineV2
-
-    \brief The QIconEngineV2 class provides an abstract base class for QIcon renderers.
-
-    \ingroup painting
-    \inmodule QtWidgets
-
-    \since 4.3
-
-    An icon engine renders \l{QIcon}s. With icon engines, you can
-    customize icons. Qt provides a default engine that makes icons
-    adhere to the current style by scaling the icons and providing a
-    disabled appearance.
-
-    An engine is installed on an icon either through a QIcon
-    constructor or through a QIconEnginePluginV2. The plugins are used
-    by Qt if a specific engine is not given when the icon is created.
-    See the QIconEngineV2 class description to learn how to create
-    icon engine plugins.
-
-    An icon engine provides the rendering functions for a QIcon. Each
-    icon has a corresponding icon engine that is responsible for drawing
-    the icon with a requested size, mode and state.
-
-    QIconEngineV2 extends the API of QIconEngine to allow streaming of
-    the icon engine contents, and should be used instead of QIconEngine
-    for implementing new icon engines.
-
-    \sa QIconEnginePluginV2
-
-*/
-
-/*!
-    \enum QIconEngineV2::IconEngineHook
+    \enum QIconEngine::IconEngineHook
     \since 4.5
 
     These enum values are used for virtual_hook() to allow additional
@@ -194,33 +155,33 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
  */
 
 /*!
-    \class QIconEngineV2::AvailableSizesArgument
+    \class QIconEngine::AvailableSizesArgument
     \since 4.5
 
     \inmodule QtWidgets
 
     This struct represents arguments to virtual_hook() function when
-    \a id parameter is QIconEngineV2::AvailableSizesHook.
+    \a id parameter is QIconEngine::AvailableSizesHook.
 
-    \sa virtual_hook(), QIconEngineV2::IconEngineHook
+    \sa virtual_hook(), QIconEngine::IconEngineHook
  */
 
 /*!
-    \variable QIconEngineV2::AvailableSizesArgument::mode
+    \variable QIconEngine::AvailableSizesArgument::mode
     \brief the requested mode of an image.
 
     \sa QIcon::Mode
 */
 
 /*!
-    \variable QIconEngineV2::AvailableSizesArgument::state
+    \variable QIconEngine::AvailableSizesArgument::state
     \brief the requested state of an image.
 
     \sa QIcon::State
 */
 
 /*!
-    \variable QIconEngineV2::AvailableSizesArgument::sizes
+    \variable QIconEngine::AvailableSizesArgument::sizes
 
     \brief image sizes that are available with specified \a mode and
     \a state. This is an output parameter and is filled after call to
@@ -232,26 +193,23 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 /*!
     Returns a key that identifies this icon engine.
  */
-QString QIconEngineV2::key() const
+QString QIconEngine::key() const
 {
     return QString();
 }
 
-/*!
-    Returns a clone of this icon engine.
+/*! \fn QIconEngine *QIconEngine::clone() const
+
+    Reimplement this method to return a clone of this icon engine.
  */
-QIconEngineV2 *QIconEngineV2::clone() const
-{
-    return 0;
-}
 
 /*!
     Reads icon engine contents from the QDataStream \a in. Returns
     true if the contents were read; otherwise returns false.
 
-    QIconEngineV2's default implementation always return false.
+    QIconEngine's default implementation always return false.
  */
-bool QIconEngineV2::read(QDataStream &)
+bool QIconEngine::read(QDataStream &)
 {
     return false;
 }
@@ -260,9 +218,9 @@ bool QIconEngineV2::read(QDataStream &)
     Writes the contents of this engine to the QDataStream \a out.
     Returns true if the contents were written; otherwise returns false.
 
-    QIconEngineV2's default implementation always return false.
+    QIconEngine's default implementation always return false.
  */
-bool QIconEngineV2::write(QDataStream &) const
+bool QIconEngine::write(QDataStream &) const
 {
     return false;
 }
@@ -270,19 +228,19 @@ bool QIconEngineV2::write(QDataStream &) const
 /*!
     \since 4.5
 
-    Additional method to allow extending QIconEngineV2 without
+    Additional method to allow extending QIconEngine without
     adding new virtual methods (and without breaking binary compatibility).
     The actual action and format of \a data depends on \a id argument
     which is in fact a constant from IconEngineHook enum.
 
     \sa IconEngineHook
 */
-void QIconEngineV2::virtual_hook(int id, void *data)
+void QIconEngine::virtual_hook(int id, void *data)
 {
     switch (id) {
-    case QIconEngineV2::AvailableSizesHook: {
-        QIconEngineV2::AvailableSizesArgument &arg =
-            *reinterpret_cast<QIconEngineV2::AvailableSizesArgument*>(data);
+    case QIconEngine::AvailableSizesHook: {
+        QIconEngine::AvailableSizesArgument &arg =
+            *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
         arg.sizes.clear();
         break;
     }
@@ -301,12 +259,12 @@ void QIconEngineV2::virtual_hook(int id, void *data)
     virtual_hook() method, hence this method depends on icon engine support
     and may not work with all icon engines.
  */
-QList<QSize> QIconEngineV2::availableSizes(QIcon::Mode mode, QIcon::State state)
+QList<QSize> QIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state) const
 {
     AvailableSizesArgument arg;
     arg.mode = mode;
     arg.state = state;
-    virtual_hook(QIconEngineV2::AvailableSizesHook, reinterpret_cast<void*>(&arg));
+    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::AvailableSizesHook, reinterpret_cast<void*>(&arg));
     return arg.sizes;
 }
 
@@ -319,10 +277,10 @@ QList<QSize> QIconEngineV2::availableSizes(QIcon::Mode mode, QIcon::State state)
     virtual_hook() method, hence this method depends on icon engine support
     and may not work with all icon engines.
  */
-QString QIconEngineV2::iconName()
+QString QIconEngine::iconName() const
 {
     QString name;
-    virtual_hook(QIconEngineV2::IconNameHook, reinterpret_cast<void*>(&name));
+    const_cast<QIconEngine *>(this)->virtual_hook(QIconEngine::IconNameHook, reinterpret_cast<void*>(&name));
     return name;
 }
 

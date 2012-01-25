@@ -62,23 +62,11 @@ public:
     virtual void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state);
     virtual void addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state);
 
-#if 0
-    virtual int frameCount(QIcon::Mode fromMode, QIcon::State fromState, QIcon::Mode toMode, QIcon::State toState);
-    virtual void paintFrame(QPainter *painter, const QRect &rect, int frameNumber, QIcon::Mode fromMode, QIcon::State fromState, QIcon::Mode toMode, QIcon::State toState);
-#endif
-};
-
-// ### Qt 5: move the below into QIconEngine
-class Q_WIDGETS_EXPORT QIconEngineV2 : public QIconEngine
-{
-public:
     virtual QString key() const;
-    virtual QIconEngineV2 *clone() const;
+    virtual QIconEngine *clone() const = 0;
     virtual bool read(QDataStream &in);
     virtual bool write(QDataStream &out) const;
-    virtual void virtual_hook(int id, void *data);
 
-public:
     enum IconEngineHook { AvailableSizesHook = 1, IconNameHook };
 
     struct AvailableSizesArgument
@@ -88,12 +76,12 @@ public:
         QList<QSize> sizes;
     };
 
-    // ### Qt 5: make this function const and virtual.
-    QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal,
-                                QIcon::State state = QIcon::Off);
+    virtual QList<QSize> availableSizes(QIcon::Mode mode = QIcon::Normal,
+                                    QIcon::State state = QIcon::Off) const;
 
-    // ### Qt 5: make this function const and virtual.
-    QString iconName();
+    virtual QString iconName() const;
+
+    virtual void virtual_hook(int id, void *data);
 };
 
 QT_END_NAMESPACE

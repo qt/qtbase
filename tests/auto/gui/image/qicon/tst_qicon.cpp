@@ -74,7 +74,6 @@ private slots:
 
     void task184901_badCache();
     void task223279_inconsistentAddFile();
-    void task239461_custom_iconengine_crash();
 
 private:
     bool haveImageFormat(QByteArray const&);
@@ -719,33 +718,6 @@ void tst_QIcon::task223279_inconsistentAddFile()
     QCOMPARE(pm1.size(), QSize(16,16));
     QCOMPARE(pm1.isNull(), pm2.isNull());
     QCOMPARE(pm1.size(), pm2.size());
-}
-
-
-// During detach, v2 engines are cloned, while v1 engines are only
-// passed on, so v1 engines need to be referenced counted. This test
-// verifies that the engine is destroyed once and only once.
-
-class IconEngine : public QIconEngine
-{
-public:
-    ~IconEngine() { destructorCalled++; }
-    virtual void paint(QPainter *, const QRect &, QIcon::Mode, QIcon::State) { }
-    static int destructorCalled;
-};
-int IconEngine::destructorCalled = 0;
-
-void tst_QIcon::task239461_custom_iconengine_crash()
-{
-    QIconEngine *engine = new IconEngine();
-    {
-        QIcon icon(engine);
-        QIcon icon2 = icon;
-
-        QPixmap pixmap(32, 32);
-        icon.addPixmap(pixmap);
-    }
-    QCOMPARE(IconEngine::destructorCalled, 1);
 }
 
 

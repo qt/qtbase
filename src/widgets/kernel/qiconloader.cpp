@@ -45,6 +45,7 @@
 #include <private/qicon_p.h>
 #include <private/qguiplatformplugin_p.h>
 
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
 #include <QtWidgets/QIconEngine>
@@ -104,7 +105,7 @@ void QIconLoader::ensureInitialized()
         if (m_systemTheme.isEmpty())
             m_systemTheme = fallbackTheme();
 #ifndef QT_NO_LIBRARY
-        QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterfaceV2_iid,
+        QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterface_iid,
                                          QLatin1String("/iconengines"),
                                          Qt::CaseInsensitive);
         if (iconFactoryLoader.keys().contains(QLatin1String("svg")))
@@ -322,13 +323,13 @@ QIconLoaderEngine::~QIconLoaderEngine()
 }
 
 QIconLoaderEngine::QIconLoaderEngine(const QIconLoaderEngine &other)
-        : QIconEngineV2(other),
+        : QIconEngine(other),
         m_iconName(other.m_iconName),
         m_key(0)
 {
 }
 
-QIconEngineV2 *QIconLoaderEngine::clone() const
+QIconEngine *QIconLoaderEngine::clone() const
 {
     return new QIconLoaderEngine(*this);
 }
@@ -477,7 +478,7 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
             return QSize(result, result);
         }
     }
-    return QIconEngineV2::actualSize(size, mode, state);
+    return QIconEngine::actualSize(size, mode, state);
 }
 
 QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
@@ -489,7 +490,6 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
     if (basePixmap.isNull())
         basePixmap.load(filename);
 
-#if 0 // ### Qt5
     int actualSize = qMin(size.width(), size.height());
     QString key = QLatin1Literal("$qt_theme_")
                   % HexString<qint64>(basePixmap.cacheKey())
@@ -507,9 +507,6 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
         QPixmapCache::insert(key, cachedPixmap);
     }
     return cachedPixmap;
-#else
-    return basePixmap;
-#endif
 }
 
 QPixmap ScalableEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
@@ -543,10 +540,10 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
     ensureLoaded();
 
     switch (id) {
-    case QIconEngineV2::AvailableSizesHook:
+    case QIconEngine::AvailableSizesHook:
         {
-            QIconEngineV2::AvailableSizesArgument &arg
-                    = *reinterpret_cast<QIconEngineV2::AvailableSizesArgument*>(data);
+            QIconEngine::AvailableSizesArgument &arg
+                    = *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
             const QList<QIconDirInfo> directoryKey = iconLoaderInstance()->theme().keyList();
             arg.sizes.clear();
 
@@ -557,14 +554,14 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
             }
         }
         break;
-    case QIconEngineV2::IconNameHook:
+    case QIconEngine::IconNameHook:
         {
             QString &name = *reinterpret_cast<QString*>(data);
             name = m_iconName;
         }
         break;
     default:
-        QIconEngineV2::virtual_hook(id, data);
+        QIconEngine::virtual_hook(id, data);
     }
 }
 

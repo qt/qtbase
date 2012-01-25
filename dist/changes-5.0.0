@@ -181,6 +181,9 @@ information about a particular change.
 - QDir::convertSeparators() (deprecated since Qt 4.2) has been removed. Use
   QDir::toNativeSeparators() instead.
 
+- QIconEngineV2 was merged into QIconEngine
+  You might need to adjust your code if it used a QIconEngine.
+
 - qmake
   * several functions and built-in variables were modified to return normalized paths.
 

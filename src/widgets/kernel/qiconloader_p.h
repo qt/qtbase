@@ -109,7 +109,7 @@ struct PixmapEntry : public QIconLoaderEngineEntry
 
 typedef QList<QIconLoaderEngineEntry*> QThemeIconEntries;
 
-class QIconLoaderEngine : public QIconEngineV2
+class QIconLoaderEngine : public QIconEngine
 {
 public:
     QIconLoaderEngine(const QString& iconName = QString());
@@ -118,7 +118,7 @@ public:
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state);
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);
-    QIconEngineV2 *clone() const;
+    QIconEngine *clone() const;
     bool read(QDataStream &in);
     bool write(QDataStream &out) const;
 
