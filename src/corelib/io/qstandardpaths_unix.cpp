@@ -40,8 +40,6 @@
 ****************************************************************************/
 
 #include "qstandardpaths.h"
-#include <qprocess.h>
-#include <qurl.h>
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
