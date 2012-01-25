@@ -81,6 +81,8 @@ private slots:
     void effectiveTLDs();
     void getSetCheck();
     void constructing();
+    void hashInPath();
+    void unc();
     void assignment();
     void comparison();
     void copying();
@@ -134,6 +136,7 @@ private slots:
     void toPercentEncoding();
     void isRelative_data();
     void isRelative();
+    void setQueryItems();
     void queryItems();
     void hasQuery_data();
     void hasQuery();
@@ -242,35 +245,6 @@ void tst_QUrl::constructing()
     QCOMPARE(url.port(), -1);
     QCOMPARE(url.toString(), QString());
 
-    QList<QPair<QString, QString> > query;
-    query += qMakePair(QString("type"), QString("login"));
-    query += qMakePair(QString("name"), QString::fromUtf8("åge nissemannsen"));
-    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jørgen=sant"));
-    query += qMakePair(QString("prosent"), QString("%"));
-    url.setQueryItems(query);
-    QVERIFY(!url.isEmpty());
-
-    QCOMPARE(url.encodedQuery().constData(),
-            QByteArray("type=login&name=%C3%A5ge%20nissemannsen&ole%26du="
-                       "anne+j%C3%B8rgen%3Dsant&prosent=%25").constData());
-
-    url.setQueryDelimiters('>', '/');
-    url.setQueryItems(query);
-
-    QCOMPARE(url.encodedQuery(),
-            QByteArray("type>login/name>%C3%A5ge%20nissemannsen/ole&du>"
-                       "anne+j%C3%B8rgen=sant/prosent>%25"));
-
-    url.setFragment(QString::fromLatin1("top"));
-    QCOMPARE(url.fragment(), QString::fromLatin1("top"));
-
-    url.setScheme("http");
-    url.setHost("qt.nokia.com");
-
-    QCOMPARE(url.toString(),
-            QString::fromUtf8("http://qt.nokia.com?type>login/name>åge nissemannsen"
-                              "/ole&du>anne+jørgen=sant/prosent>%#top"));
-
     QUrl justHost("qt.nokia.com");
     QVERIFY(!justHost.isEmpty());
     QVERIFY(justHost.host().isEmpty());
@@ -279,16 +253,22 @@ void tst_QUrl::constructing()
     QUrl hostWithSlashes("//qt.nokia.com");
     QVERIFY(hostWithSlashes.path().isEmpty());
     QCOMPARE(hostWithSlashes.host(), QString::fromLatin1("qt.nokia.com"));
+}
 
-
+void tst_QUrl::hashInPath()
+{
     QUrl withHashInPath;
     withHashInPath.setPath(QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.path(), QString::fromLatin1("hi#mum.txt"));
     QCOMPARE(withHashInPath.toEncoded(), QByteArray("hi%23mum.txt"));
+    QCOMPARE(withHashInPath.toString(), QString("hi%23mum.txt"));
+
     QUrl fromHashInPath = QUrl::fromEncoded(withHashInPath.toEncoded());
     QVERIFY(withHashInPath == fromHashInPath);
+}
 
-
+void tst_QUrl::unc()
+{
     QUrl buildUNC;
     buildUNC.setScheme(QString::fromLatin1("file"));
     buildUNC.setHost(QString::fromLatin1("somehost"));
@@ -564,7 +544,7 @@ void tst_QUrl::setUrl()
         QCOMPARE(url15581.toEncoded().constData(), QByteArray("http://alain.knaff.linux.lu/bug-reports/kde/spaces%20in%20url.html").constData());
 
         QUrl url15582("http://alain.knaff.linux.lu/bug-reports/kde/percentage%in%url.html");
-        QCOMPARE(url15582.toString(), QString::fromLatin1("http://alain.knaff.linux.lu/bug-reports/kde/percentage%in%url.html"));
+        QCOMPARE(url15582.toString(), QString::fromLatin1("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
         QCOMPARE(url15582.toEncoded(), QByteArray("http://alain.knaff.linux.lu/bug-reports/kde/percentage%25in%25url.html"));
     }
 
@@ -666,7 +646,7 @@ void tst_QUrl::i18n_data()
     QTest::addColumn<QByteArray>("punyOutput");
 
     QTest::newRow("øl") << QString::fromUtf8("http://ole:passord@www.øl.no/index.html?ole=æsemann&ilder gud=hei#top")
-                     <<          QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
+                        << QByteArray("http://ole:passord@www.xn--l-4ga.no/index.html?ole=%C3%A6semann&ilder%20gud=hei#top");
     QTest::newRow("räksmörgås") << QString::fromUtf8("http://www.räksmörgås.no/")
                              << QByteArray("http://www.xn--rksmrgs-5wao1o.no/");
     QTest::newRow("bühler") << QString::fromUtf8("http://www.bühler.no/")
@@ -1407,6 +1387,7 @@ void tst_QUrl::percentEncoding()
     QVERIFY(QUrl::fromEncoded(QUrl(original).toEncoded()) == QUrl(original));
     QCOMPARE(QUrl::fromEncoded(QUrl(original).toEncoded()).toString(), original);
     QVERIFY(QUrl::fromEncoded(encoded) == QUrl(original));
+    QCOMPARE(QUrl(QUrl(original).toString()).toString(), original);
 }
 
 void tst_QUrl::toPercentEncoding_data()
@@ -1480,14 +1461,16 @@ void tst_QUrl::symmetry()
         QByteArray b = urlPreviewList.toEncoded();
         QCOMPARE(b.constData(), "http://desktop:33326/upnp/%7B32f525a6-6f31-426e-91ca-01c2e6c2c57e%7D");
         QCOMPARE(QUrl::fromEncoded(b).toString(), urlString);
-
-    }{
+        QCOMPARE(QUrl(b).toString(), urlString);
+    }
+    {
         QString urlString = QString::fromLatin1("http://desktop:53423/deviceDescription?uuid={7977c17b-00bf-4af9-894e-fed28573c3a9}");
         QUrl urlPreviewList(urlString);
         QCOMPARE(urlPreviewList.toString(), urlString);
         QByteArray b = urlPreviewList.toEncoded();
         QCOMPARE(b.constData(), "http://desktop:53423/deviceDescription?uuid=%7B7977c17b-00bf-4af9-894e-fed28573c3a9%7D");
         QCOMPARE(QUrl::fromEncoded(b).toString(), urlString);
+        QCOMPARE(QUrl(b).toString(), urlString);
     }
 }
 
@@ -1606,6 +1589,43 @@ void tst_QUrl::isRelative()
     QFETCH(bool, trueFalse);
 
     QCOMPARE(QUrl(url).isRelative(), trueFalse);
+}
+
+void tst_QUrl::setQueryItems()
+{
+    QUrl url;
+
+    QList<QPair<QString, QString> > query;
+    query += qMakePair(QString("type"), QString("login"));
+    query += qMakePair(QString("name"), QString::fromUtf8("åge nissemannsen"));
+    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jørgen=sant"));
+    query += qMakePair(QString("prosent"), QString("%"));
+    url.setQueryItems(query);
+    QVERIFY(!url.isEmpty());
+
+    QCOMPARE(url.encodedQuery().constData(),
+            QByteArray("type=login&name=%C3%A5ge%20nissemannsen&ole%26du="
+                       "anne+j%C3%B8rgen%3Dsant&prosent=%25").constData());
+
+    url.setQueryDelimiters('>', '/');
+    url.setQueryItems(query);
+
+    QCOMPARE(url.encodedQuery(),
+            QByteArray("type>login/name>%C3%A5ge%20nissemannsen/ole&du>"
+                       "anne+j%C3%B8rgen=sant/prosent>%25"));
+
+    url.setFragment(QString::fromLatin1("top"));
+    QCOMPARE(url.fragment(), QString::fromLatin1("top"));
+
+    url.setScheme("http");
+    url.setHost("qt.nokia.com");
+
+    QCOMPARE(url.toEncoded().constData(),
+             "http://qt.nokia.com?type>login/name>%C3%A5ge%20nissemannsen/ole&du>"
+             "anne+j%C3%B8rgen=sant/prosent>%25#top");
+    QCOMPARE(url.toString(),
+            QString::fromUtf8("http://qt.nokia.com?type>login/name>åge nissemannsen"
+                              "/ole&du>anne+jørgen=sant/prosent>%25#top"));
 }
 
 void tst_QUrl::queryItems()
@@ -1844,8 +1864,7 @@ void tst_QUrl::tolerantParser()
         QCOMPARE(url.path(), QString("/path with spaces.html"));
         QCOMPARE(url.toEncoded(), QByteArray("http://www.example.com/path%20with%20spaces.html"));
         url.setUrl("http://www.example.com/path%20with spaces.html", QUrl::StrictMode);
-        QVERIFY(url.isValid());
-        QCOMPARE(url.toEncoded(), QByteArray("http://www.example.com/path%2520with%20spaces.html"));
+        QVERIFY(!url.isValid());
     }
     {
         QUrl url = QUrl::fromEncoded("http://www.example.com/path%20with spaces.html");
@@ -1940,7 +1959,7 @@ void tst_QUrl::correctEncodedMistakes_data()
 {
     QTest::addColumn<QByteArray>("encodedUrl");
     QTest::addColumn<bool>("result");
-    QTest::addColumn<QString>("toString");
+    QTest::addColumn<QString>("toDecoded");
     QTest::addColumn<QByteArray>("toEncoded");
 
     QTest::newRow("%") << QByteArray("%") << true << QString("%") << QByteArray("%25");
@@ -1957,13 +1976,14 @@ void tst_QUrl::correctEncodedMistakes()
 {
     QFETCH(QByteArray, encodedUrl);
     QFETCH(bool, result);
-    QFETCH(QString, toString);
+    QFETCH(QString, toDecoded);
     QFETCH(QByteArray, toEncoded);
 
     QUrl url = QUrl::fromEncoded(encodedUrl);
     QCOMPARE(url.isValid(), result);
     if (url.isValid()) {
-        QCOMPARE(url.toString(), toString);
+        Q_UNUSED(toDecoded); // no full-decoding available at the moment
+        QCOMPARE(url.toString(), QString::fromLatin1(toEncoded));
         QCOMPARE(url.toEncoded(), toEncoded);
     }
 }
@@ -1972,7 +1992,7 @@ void tst_QUrl::correctDecodedMistakes_data()
 {
     QTest::addColumn<QString>("decodedUrl");
     QTest::addColumn<bool>("result");
-    QTest::addColumn<QString>("toString");
+    QTest::addColumn<QString>("toDecoded");
     QTest::addColumn<QByteArray>("toEncoded");
 
     QTest::newRow("%") << QString("%") << true << QString("%") << QByteArray("%25");
@@ -1982,20 +2002,21 @@ void tst_QUrl::correctDecodedMistakes_data()
     QTest::newRow("13%!!") << QString("13%!!") << true << QString("13%!!") << QByteArray("13%25!!");
     QTest::newRow("13%a") << QString("13%a") << true << QString("13%a") << QByteArray("13%25a");
     QTest::newRow("13%az") << QString("13%az") << true << QString("13%az") << QByteArray("13%25az");
-    QTest::newRow("13%25") << QString("13%25") << true << QString("13%25") << QByteArray("13%2525");
+    QTest::newRow("13%25") << QString("13%25") << true << QString("13%25") << QByteArray("13%25");
 }
 
 void tst_QUrl::correctDecodedMistakes()
 {
     QFETCH(QString, decodedUrl);
     QFETCH(bool, result);
-    QFETCH(QString, toString);
+    QFETCH(QString, toDecoded);
     QFETCH(QByteArray, toEncoded);
 
     QUrl url(decodedUrl);
     QCOMPARE(url.isValid(), result);
     if (url.isValid()) {
-        QCOMPARE(url.toString(), toString);
+        Q_UNUSED(toDecoded); // no full-decoding available at the moment
+        QCOMPARE(url.toString(), QString::fromLatin1(toEncoded));
         QCOMPARE(url.toEncoded(), toEncoded);
     }
 }

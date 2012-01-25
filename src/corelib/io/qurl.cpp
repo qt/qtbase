@@ -4280,8 +4280,8 @@ void QUrl::clear()
 /*!
     Constructs a URL by parsing the contents of \a url.
 
-    \a url is assumed to be in unicode format, with no percent
-    encoding.
+    \a url is assumed to be in unicode format, and encoded,
+    such as URLs produced by url().
 
     The parsing mode \a parsingMode is used for parsing \a url.
 
@@ -4293,12 +4293,10 @@ void QUrl::clear()
 void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
     detach();
-    // escape all reserved characters and delimiters
-    // reserved      = gen-delims / sub-delims
-    if (parsingMode != TolerantMode) {
-        setEncodedUrl(toPercentEncodingHelper(url, ABNF_reserved), parsingMode);
+
+    setEncodedUrl(url.toUtf8(), parsingMode);
+    if (isValid() || parsingMode == StrictMode)
         return;
-    }
 
     // Tolerant preprocessing
     QString tmp = url;
@@ -5656,6 +5654,32 @@ bool QUrl::isRelative() const
     return d->scheme.isEmpty();
 }
 
+// Encodes only what really needs to be encoded.
+// \a input must be decoded.
+static QString toPrettyPercentEncoding(const QString &input, bool forFragment)
+{
+    const int len = input.length();
+    QString result;
+    result.reserve(len);
+    for (int i = 0; i < len; ++i) {
+        const QChar c = input.at(i);
+        register ushort u = c.unicode();
+        if (u < 0x20
+        || (!forFragment && u == '?') // don't escape '?' in fragments
+        || u == '#' || u == '%'
+        || (u == ' ' && (i+1 == len|| input.at(i+1).unicode() == ' '))) {
+            static const char hexdigits[] = "0123456789ABCDEF";
+            result += QLatin1Char('%');
+            result += QLatin1Char(hexdigits[(u & 0xf0) >> 4]);
+            result += QLatin1Char(hexdigits[u & 0xf]);
+        } else {
+            result += c;
+        }
+    }
+
+    return result;
+}
+
 /*!
     Returns the human-displayable string representation of the
     URL. The output can be customized by passing flags with \a
@@ -5690,7 +5714,7 @@ QString QUrl::toString(FormattingOptions options) const
         if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority
             && !d->authority(options).isEmpty() && !ourPath.isEmpty() && ourPath.at(0) != QLatin1Char('/'))
             url += QLatin1Char('/');
-        url += ourPath;
+        url += toPrettyPercentEncoding(ourPath, false);
         // check if we need to remove trailing slashes
         while ((options & StripTrailingSlash) && url.endsWith(QLatin1Char('/')))
             url.chop(1);
@@ -5698,7 +5722,8 @@ QString QUrl::toString(FormattingOptions options) const
 
     if (!(options & QUrl::RemoveQuery) && d->hasQuery) {
         url += QLatin1Char('?');
-        url += fromPercentEncoding(d->query);
+        // query is already encoded, but possibly more than necessary.
+        url += toPrettyPercentEncoding(fromPercentEncoding(d->query), true);
     }
     if (!(options & QUrl::RemoveFragment) && d->hasFragment) {
         url += QLatin1Char('#');
