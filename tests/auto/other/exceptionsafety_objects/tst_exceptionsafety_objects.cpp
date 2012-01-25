@@ -99,11 +99,6 @@ struct AbstractTester
 Q_DECLARE_METATYPE(AbstractTester *)
 
 typedef void (*TestFunction)(QObject*);
-QT_BEGIN_NAMESPACE namespace QtPrivate {
-template <> struct IsPointerToTypeDerivedFromQObject<TestFunction> {
-    enum { Value = false };
-};
-} QT_END_NAMESPACE
 Q_DECLARE_METATYPE(TestFunction)
 
 template <typename T>

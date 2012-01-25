@@ -931,5 +931,18 @@ void tst_QMetaType::automaticTemplateRegistration()
   }
 }
 
+// Compile-time test, it should be possible to register function pointer types
+class Undefined;
+
+typedef Undefined (*UndefinedFunction0)();
+typedef Undefined (*UndefinedFunction1)(Undefined);
+typedef Undefined (*UndefinedFunction2)(Undefined, Undefined);
+typedef Undefined (*UndefinedFunction3)(Undefined, Undefined, Undefined);
+
+Q_DECLARE_METATYPE(UndefinedFunction0);
+Q_DECLARE_METATYPE(UndefinedFunction1);
+Q_DECLARE_METATYPE(UndefinedFunction2);
+Q_DECLARE_METATYPE(UndefinedFunction3);
+
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"
