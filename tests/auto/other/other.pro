@@ -17,7 +17,6 @@ SUBDIRS=\
    networkselftest \
    qaccessibility \
    qcomplextext \
-   qdirectpainter \
    qfocusevent \
    qmultiscreen \
    qnetworkaccessmanager_and_qprogressdialog \
