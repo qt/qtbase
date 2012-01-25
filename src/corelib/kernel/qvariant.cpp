@@ -980,6 +980,7 @@ Q_CORE_EXPORT void QVariantPrivate::unregisterHandler(const int /* Modules::Name
 */
 
 /*!
+    \obsolete Use QMetaType::Type instead
     \enum QVariant::Type
 
     This enum type defines the types of variable that a QVariant can
