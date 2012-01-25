@@ -351,6 +351,8 @@ QRect QScreen::availableVirtualGeometry() const
     will change based on the device is being held, and a desktop display
     might be rotated so that it's in portrait mode.
 
+    Qt::PrimaryOrientation is never returned.
+
     \sa primaryOrientation(), orientationChanged()
 */
 Qt::ScreenOrientation QScreen::orientation() const

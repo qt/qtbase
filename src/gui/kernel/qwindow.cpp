@@ -411,24 +411,26 @@ bool QWindow::isActive() const
 void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
     Q_D(QWindow);
+    if (d->contentOrientation == orientation)
+        return;
     if (!d->platformWindow)
         create();
     Q_ASSERT(d->platformWindow);
     d->contentOrientation = orientation;
     d->platformWindow->handleContentOrientationChange(orientation);
+    emit contentOrientationChanged(orientation);
 }
 
 /*!
   Returns the actual content orientation.
 
-  This is the last value set with reportContentOrientationChange(),
-  except Qt::PrimaryOrientation gets converted to the screen's
-  primary orientation.
+  This is the last value set with reportContentOrientationChange(). It defaults
+  to Qt::PrimaryOrientation.
 */
 Qt::ScreenOrientation QWindow::contentOrientation() const
 {
     Q_D(const QWindow);
-    return d->contentOrientation == Qt::PrimaryOrientation ? screen()->primaryOrientation() : d->contentOrientation;
+    return d->contentOrientation;
 }
 
 /*!
@@ -461,12 +463,14 @@ bool QWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
 /*!
   Returns the actual window orientation.
 
+  The default value is Qt::PrimaryOrientation.
+
   \sa requestWindowOrientation()
 */
 Qt::ScreenOrientation QWindow::windowOrientation() const
 {
     Q_D(const QWindow);
-    return d->windowOrientation == Qt::PrimaryOrientation ? screen()->primaryOrientation() : d->windowOrientation;
+    return d->windowOrientation;
 }
 
 Qt::WindowState QWindow::windowState() const
