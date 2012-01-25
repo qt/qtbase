@@ -159,14 +159,14 @@ HTHEME XPThemeData::handle()
         return 0;
 
     if (!htheme && QWindowsXPStylePrivate::handleMap)
-        htheme = QWindowsXPStylePrivate::handleMap->operator[](name);
+        htheme = QWindowsXPStylePrivate::handleMap->value(name);
 
     if (!htheme) {
         htheme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), (wchar_t*)name.utf16());
         if (htheme) {
             if (!QWindowsXPStylePrivate::handleMap)
-                QWindowsXPStylePrivate::handleMap = new QMap<QString, HTHEME>;
-            QWindowsXPStylePrivate::handleMap->operator[](name) = htheme;
+                QWindowsXPStylePrivate::handleMap = new QWindowsXPStylePrivate::ThemeHandleMap;
+            QWindowsXPStylePrivate::handleMap->insert(name, htheme);
         }
     }
 
@@ -209,7 +209,6 @@ HRGN XPThemeData::mask(QWidget *widget)
 
 // QWindowsXPStylePrivate -------------------------------------------------------------------------
 // Static initializations
-QWidget *QWindowsXPStylePrivate::limboWidget = 0;
 QPixmap *QWindowsXPStylePrivate::tabbody = 0;
 QMap<QString,HTHEME> *QWindowsXPStylePrivate::handleMap = 0;
 bool QWindowsXPStylePrivate::use_xp = false;
@@ -289,14 +288,7 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 
     use_xp = false;
     cleanupHandleMap();
-    if (limboWidget) {
-        if (QApplication::closingDown())
-            delete limboWidget;
-        else
-            limboWidget->deleteLater();
-    }
     delete tabbody;
-    limboWidget = 0;
     tabbody = 0;
 }
 
@@ -307,11 +299,13 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 */
 void QWindowsXPStylePrivate::cleanupHandleMap()
 {
+    typedef ThemeHandleMap::const_iterator ConstIterator;
+
     if (!handleMap)
         return;
 
-    QMap<QString, HTHEME>::Iterator it;
-    for (it = handleMap->begin(); it != handleMap->end(); ++it)
+    const ConstIterator cend = handleMap->constEnd();
+    for (ConstIterator it = handleMap->constBegin(); it != cend; ++it)
         pCloseThemeData(it.value());
     delete handleMap;
     handleMap = 0;
@@ -325,20 +319,22 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
 */
 HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 {
-    if (widget && widget->internalWinId()) {
-        QWidget *w = const_cast<QWidget *>(widget);
-        return QApplicationPrivate::getHWNDForWidget(w);
-    }
-    if (!limboWidget) {
-        limboWidget = new QWidget(0);
-        limboWidget->createWinId();
-        limboWidget->setObjectName(QLatin1String("xp_limbo_widget"));
-        // We don't need this internal widget to appear in QApplication::topLevelWidgets()
-        if (QWidgetPrivate::allWidgets)
-            QWidgetPrivate::allWidgets->remove(limboWidget);
-    }
+    if (widget)
+        if (const HWND hwnd = QApplicationPrivate::getHWNDForWidget(const_cast<QWidget *>(widget)))
+            return hwnd;
 
-    return QApplicationPrivate::getHWNDForWidget(limboWidget);
+    const QWidgetList toplevels = QApplication::topLevelWidgets();
+    if (!toplevels.isEmpty())
+        if (const HWND topLevelHwnd = QApplicationPrivate::getHWNDForWidget(toplevels.front()))
+            return topLevelHwnd;
+
+    if (QDesktopWidget *desktop = qApp->desktop())
+        if (const HWND desktopHwnd = QApplicationPrivate::getHWNDForWidget(desktop))
+            return desktopHwnd;
+
+    Q_ASSERT(false);
+
+    return 0;
 }
 
 /*! \internal

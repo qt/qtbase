@@ -286,6 +286,8 @@ class QWindowsXPStylePrivate : public QWindowsStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsXPStyle)
 public:
+    typedef QMap<QString, HTHEME> ThemeHandleMap;
+
     QWindowsXPStylePrivate()
         : QWindowsStylePrivate(), hasInitColors(false), bufferDC(0), bufferBitmap(0), nullBitmap(0),
           bufferPixels(0), bufferW(0), bufferH(0)
@@ -326,7 +328,7 @@ public:
     QRgb sliderTickColor;
     bool hasInitColors;
 
-    static QMap<QString,HTHEME> *handleMap;
+    static ThemeHandleMap *handleMap;
 
     QIcon dockFloat, dockClose;
 
@@ -338,7 +340,6 @@ private:
 
     static QBasicAtomicInt ref;
     static bool use_xp;
-    static QWidget *limboWidget;
     static QPixmap *tabbody;
 
     QHash<ThemeMapKey, ThemeMapData> alphaCache;
