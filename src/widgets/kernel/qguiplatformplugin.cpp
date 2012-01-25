@@ -135,7 +135,7 @@ QString QGuiPlatformPlugin::styleName()
         return QLatin1String("WindowsMobile");
     else
         return QLatin1String("WindowsCE");
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
         && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
         return QLatin1String("WindowsVista");
