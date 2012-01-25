@@ -350,11 +350,23 @@ public:
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
                                bool spontaneous = true);
     void sendSyntheticEnterLeave(QWidget *widget);
-#ifdef Q_OS_WIN
-    static HWND getHWNDForWidget(QWidget *widget)
+
+    static QWindow *windowForWidget(const QWidget *widget)
     {
-        QWindow *window = widget->windowHandle();
-        return static_cast<HWND> (QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window));
+        if (QWindow *window = widget->windowHandle())
+            return window;
+        if (const QWidget *nativeParent = widget->nativeParentWidget())
+            return nativeParent->windowHandle();
+        return 0;
+    }
+
+#ifdef Q_OS_WIN
+    static HWND getHWNDForWidget(const QWidget *widget)
+    {
+        if (QWindow *window = windowForWidget(widget))
+            return static_cast<HWND> (QGuiApplication::platformNativeInterface()->
+                                      nativeResourceForWindow(QByteArrayLiteral("handle"), window));
+        return 0;
     }
 #endif
 
