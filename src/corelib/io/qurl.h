@@ -85,9 +85,7 @@ public:
 #ifdef QT_NO_URL_CAST_FROM_STRING
     explicit
 #endif
-    QUrl(const QString &url);
-    QUrl(const QString &url, ParsingMode mode);
-    // ### Qt 5: merge the two constructors, with mode = TolerantMode
+    QUrl(const QString &url, ParsingMode mode = TolerantMode);
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
 #ifndef QT_NO_URL_CAST_FROM_STRING
@@ -101,12 +99,8 @@ public:
 
     inline void swap(QUrl &other) { qSwap(d, other.d); }
 
-    void setUrl(const QString &url);
-    void setUrl(const QString &url, ParsingMode mode);
-    // ### Qt 5: merge the two setUrl() functions, with mode = TolerantMode
-    void setEncodedUrl(const QByteArray &url);
-    void setEncodedUrl(const QByteArray &url, ParsingMode mode);
-    // ### Qt 5: merge the two setEncodedUrl() functions, with mode = TolerantMode
+    void setUrl(const QString &url, ParsingMode mode = TolerantMode);
+    void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode);
 
     bool isValid() const;
 
@@ -139,9 +133,7 @@ public:
     QByteArray encodedHost() const;
 
     void setPort(int port);
-    int port() const;
-    int port(int defaultPort) const;
-    // ### Qt 5: merge the two port() functions, with defaultPort = -1
+    int port(int defaultPort = -1) const;
 
     void setPath(const QString &path);
     QString path() const;
@@ -196,9 +188,7 @@ public:
     QString toString(FormattingOptions options = None) const;
 
     QByteArray toEncoded(FormattingOptions options = None) const;
-    static QUrl fromEncoded(const QByteArray &url);
-    static QUrl fromEncoded(const QByteArray &url, ParsingMode mode);
-    // ### Qt 5: merge the two fromEncoded() functions, with mode = TolerantMode
+    static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode);
 
     static QUrl fromUserInput(const QString &userInput);
 

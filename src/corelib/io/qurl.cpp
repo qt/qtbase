@@ -4179,6 +4179,8 @@ QString QUrlPrivate::createErrorString()
     readable representation, with no percent encoding. QUrl will automatically
     percent encode all characters that are not allowed in a URL.
 
+    The parsing mode \a parsingMode is used for parsing \a url.
+
     Example:
 
     \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 0
@@ -4188,19 +4190,6 @@ QString QUrlPrivate::createErrorString()
     \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 1
 
     \sa setUrl(), setEncodedUrl(), fromEncoded(), TolerantMode
-*/
-QUrl::QUrl(const QString &url) : d(0)
-{
-    if (!url.isEmpty())
-        setUrl(url);
-}
-
-/*!
-    \overload
-
-    Parses the \a url using the parser mode \a parsingMode.
-
-    \sa setUrl()
 */
 QUrl::QUrl(const QString &url, ParsingMode parsingMode) : d(0)
 {
@@ -4294,20 +4283,10 @@ void QUrl::clear()
     \a url is assumed to be in unicode format, with no percent
     encoding.
 
+    The parsing mode \a parsingMode is used for parsing \a url.
+
     Calling isValid() will tell whether or not a valid URL was
     constructed.
-
-    \sa setEncodedUrl()
-*/
-void QUrl::setUrl(const QString &url)
-{
-    setUrl(url, TolerantMode);
-}
-
-/*!
-    \overload
-
-    Parses \a url using the parsing mode \a parsingMode.
 
     \sa setEncodedUrl()
 */
@@ -4353,21 +4332,6 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     setEncodedUrl(encodedUrl, StrictMode);
 }
 
-/*!
-    Constructs a URL by parsing the contents of \a encodedUrl.
-
-    \a encodedUrl is assumed to be a URL string in percent encoded
-    form, containing only ASCII characters.
-
-    Use isValid() to determine if a valid URL was constructed.
-
-    \sa setUrl()
-*/
-void QUrl::setEncodedUrl(const QByteArray &encodedUrl)
-{
-    setEncodedUrl(encodedUrl, TolerantMode);
-}
-
 inline static bool isHex(char c)
 {
     c |= 0x20;
@@ -4380,8 +4344,16 @@ static inline char toHex(quint8 c)
 }
 
 /*!
-    Constructs a URL by parsing the contents of \a encodedUrl using
-    the given \a parsingMode.
+    Constructs a URL by parsing the contents of \a encodedUrl.
+
+    \a encodedUrl is assumed to be a URL string in percent encoded
+    form, containing only ASCII characters.
+
+    The parsing mode \a parsingMode is used for parsing \a encodedUrl.
+
+    Use isValid() to determine if a valid URL was constructed.
+
+    \sa setUrl()
 */
 void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
 {
@@ -4808,18 +4780,6 @@ void QUrl::setPort(int port)
 }
 
 /*!
-    Returns the port of the URL, or -1 if the port is unspecified.
-*/
-int QUrl::port() const
-{
-    if (!d) return -1;
-    if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
-    if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Validated)) d->validate();
-    return d->port;
-}
-
-/*!
-    \overload
     \since 4.1
 
     Returns the port of the URL, or \a defaultPort if the port is
@@ -5701,6 +5661,8 @@ bool QUrl::isRelative() const
     URL. The output can be customized by passing flags with \a
     options.
 
+    The resulting QString can be passed back to a QUrl later on.
+
     \sa FormattingOptions, toEncoded()
 */
 QString QUrl::toString(FormattingOptions options) const
@@ -5765,21 +5727,7 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
     Parses \a input and returns the corresponding QUrl. \a input is
     assumed to be in encoded form, containing only ASCII characters.
 
-    The URL is parsed using TolerantMode.
-
-    \sa toEncoded(), setUrl()
-*/
-QUrl QUrl::fromEncoded(const QByteArray &input)
-{
-    QUrl tmp;
-    tmp.setEncodedUrl(input, TolerantMode);
-    return tmp;
-}
-
-/*!
-    \overload
-
-    Parses the URL using \a parsingMode.
+    The URL is parsed using \a parsingMode.
 
     \sa toEncoded(), setUrl()
 */
