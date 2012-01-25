@@ -42,6 +42,7 @@
 #include "qglxconvenience_p.h"
 
 #include <QtCore/QVector>
+#include <QtCore/QVarLengthArray>
 
 #ifndef QT_NO_XRENDER
 #include <X11/extensions/Xrender.h>
@@ -131,14 +132,19 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
                     glXGetFBConfigAttrib(display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
                     if (alphaSize > 0) {
                         XVisualInfo *visual = glXGetVisualFromFBConfig(display, chosenConfig);
+                        bool hasAlpha = false;
+
 #if !defined(QT_NO_XRENDER)
                         XRenderPictFormat *pictFormat = XRenderFindVisualFormat(display, visual->visual);
-                        if (pictFormat->direct.alphaMask > 0)
-                            break;
+                        hasAlpha = pictFormat->direct.alphaMask > 0;
 #else
-                        if (visual->depth == 32)
-                            break;
+                        hasAlpha = visual->depth == 32;
 #endif
+
+                        XFree(visual);
+
+                        if (hasAlpha)
+                            break;
                     }
                 } else {
                     break; // Just choose the first in the list if there's no alpha requested
@@ -150,16 +156,59 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat 
         reducedFormat = qglx_reduceSurfaceFormat(reducedFormat,&reduced);
     }
 
-    if (!chosenConfig)
-        qWarning("Warning: no suitable glx confiuration found");
-
     return chosenConfig;
 }
 
 XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QSurfaceFormat &format)
 {
+    XVisualInfo *visualInfo = 0;
+
     GLXFBConfig config = qglx_findConfig(display,screen,format);
-    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display,config);
+    if (config)
+        visualInfo = glXGetVisualFromFBConfig(display, config);
+
+    // attempt to fall back to glXChooseVisual
+    bool reduced = true;
+    QSurfaceFormat reducedFormat = format;
+    while (!visualInfo && reduced) {
+        QVarLengthArray<int, 13> attribs;
+        attribs.append(GLX_RGBA);
+
+        if (reducedFormat.redBufferSize() > 0) {
+            attribs.append(GLX_RED_SIZE);
+            attribs.append(reducedFormat.redBufferSize());
+        }
+
+        if (reducedFormat.greenBufferSize() > 0) {
+            attribs.append(GLX_GREEN_SIZE);
+            attribs.append(reducedFormat.greenBufferSize());
+        }
+
+        if (reducedFormat.blueBufferSize() > 0) {
+            attribs.append(GLX_BLUE_SIZE);
+            attribs.append(reducedFormat.blueBufferSize());
+        }
+
+        if (reducedFormat.stencilBufferSize() > 0) {
+            attribs.append(GLX_STENCIL_SIZE);
+            attribs.append(reducedFormat.stencilBufferSize());
+        }
+
+        if (reducedFormat.depthBufferSize() > 0) {
+            attribs.append(GLX_DEPTH_SIZE);
+            attribs.append(reducedFormat.depthBufferSize());
+        }
+
+        if (reducedFormat.swapBehavior() != QSurfaceFormat::SingleBuffer)
+            attribs.append(GLX_DOUBLEBUFFER);
+
+        attribs.append(XNone);
+
+        visualInfo = glXChooseVisual(display, screen, attribs.data());
+
+        reducedFormat = qglx_reduceSurfaceFormat(reducedFormat, &reduced);
+    }
+
     return visualInfo;
 }
 
@@ -208,7 +257,13 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
     QSurfaceFormat retFormat = format;
     *reduced = true;
 
-    if (retFormat.samples() > 1) {
+    if (retFormat.redBufferSize() > 1) {
+        retFormat.setRedBufferSize(1);
+    } else if (retFormat.greenBufferSize() > 1) {
+        retFormat.setGreenBufferSize(1);
+    } else if (retFormat.blueBufferSize() > 1) {
+        retFormat.setBlueBufferSize(1);
+    } else if (retFormat.samples() > 1) {
         retFormat.setSamples(0);
     } else if (retFormat.stereo()) {
         retFormat.setStereo(false);
@@ -218,6 +273,8 @@ QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *redu
         retFormat.setAlphaBufferSize(0);
     }else if (retFormat.depthBufferSize() > 0) {
         retFormat.setDepthBufferSize(0);
+    }else if (retFormat.swapBehavior() != QSurfaceFormat::SingleBuffer) {
+        retFormat.setSwapBehavior(QSurfaceFormat::SingleBuffer);
     }else{
         *reduced = false;
     }

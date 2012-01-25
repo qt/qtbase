@@ -70,9 +70,19 @@ QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPla
     if (share)
         shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
 
-    GLXFBConfig config = qglx_findConfig(screen->display()->nativeDisplay(),screen->xScreenNumber(),format);
-    m_context = glXCreateNewContext(screen->display()->nativeDisplay(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
-    m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(screen->display()->nativeDisplay(),config,m_context);
+    Display *xDisplay = screen->display()->nativeDisplay();
+
+    GLXFBConfig config = qglx_findConfig(xDisplay,screen->xScreenNumber(),format);
+    if (config) {
+        m_context = glXCreateNewContext(xDisplay,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+        m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(xDisplay,config,m_context);
+    } else {
+        XVisualInfo *visualInfo = qglx_findVisualInfo(xDisplay, screen->xScreenNumber(), format);
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
+        m_context = glXCreateContext(xDisplay, visualInfo, shareGlxContext, true);
+        XFree(visualInfo);
+    }
 
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;

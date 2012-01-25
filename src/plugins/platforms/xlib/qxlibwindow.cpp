@@ -87,6 +87,8 @@ QXlibWindow::QXlibWindow(QWindow *window)
 #if !defined(QT_OPENGL_ES_2)
         XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber(),
                                                       window->format());
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
@@ -101,23 +103,22 @@ QXlibWindow::QXlibWindow(QWindow *window)
         XVisualInfo *visualInfo;
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(mScreen->display()->nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
+        if (!visualInfo)
+            qFatal("Could not initialize EGL");
 #endif //!defined(QT_OPENGL_ES_2)
-        if (visualInfo) {
-            mDepth = visualInfo->depth;
-            mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
-            mVisual = visualInfo->visual;
-            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(), mScreen->rootWindow(), visualInfo->visual, AllocNone);
+        mDepth = visualInfo->depth;
+        mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        mVisual = visualInfo->visual;
+        Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(), mScreen->rootWindow(), visualInfo->visual, AllocNone);
 
-            XSetWindowAttributes a;
-            a.background_pixel = WhitePixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
-            a.border_pixel = BlackPixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
-            a.colormap = cmap;
-            x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
-                                     0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                     CWBackPixel|CWBorderPixel|CWColormap, &a);
-        } else {
-            qFatal("no window!");
-        }
+        XSetWindowAttributes a;
+        a.background_pixel = WhitePixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
+        a.border_pixel = BlackPixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
+        a.colormap = cmap;
+        x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
+                                 0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                 CWBackPixel|CWBorderPixel|CWColormap, &a);
+        XFree(visualInfo);
     } else
 #endif //!defined(QT_NO_OPENGL)
     {

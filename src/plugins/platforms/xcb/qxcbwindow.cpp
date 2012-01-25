@@ -130,10 +130,8 @@ static inline QImage::Format imageFormatForDepth(int depth)
         case 32: return QImage::Format_ARGB32_Premultiplied;
         case 24: return QImage::Format_RGB32;
         case 16: return QImage::Format_RGB16;
-        default: break;
+        default: return QImage::Format_Invalid;
     }
-    qFatal("Unsupported display depth %d", depth);
-    return QImage::Format_Invalid;
 }
 
 QXcbWindow::QXcbWindow(QWindow *window)
@@ -211,7 +209,8 @@ void QXcbWindow::create()
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->format());
-
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->format(), true);
@@ -224,25 +223,25 @@ void QXcbWindow::create()
         XVisualInfo *visualInfo;
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
+        if (!visualInfo)
+            qFatal("Could not initialize EGL");
 #endif //XCB_USE_GLX
-        if (visualInfo) {
-            m_depth = visualInfo->depth;
-            m_imageFormat = imageFormatForDepth(m_depth);
-            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
+        m_depth = visualInfo->depth;
+        m_imageFormat = imageFormatForDepth(m_depth);
+        Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
-            XSetWindowAttributes a;
-            a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
-            a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
-            a.colormap = cmap;
+        XSetWindowAttributes a;
+        a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
+        a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
+        a.colormap = cmap;
 
-            m_visualId = visualInfo->visualid;
+        m_visualId = visualInfo->visualid;
 
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
-                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                      CWBackPixel|CWBorderPixel|CWColormap, &a);
-        } else {
-            qFatal("no window!");
-        }
+        m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
+                                  0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                  CWBackPixel|CWBorderPixel|CWColormap, &a);
+
+        XFree(visualInfo);
     } else
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
