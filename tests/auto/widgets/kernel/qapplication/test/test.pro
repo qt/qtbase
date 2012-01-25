@@ -6,14 +6,6 @@ QT += core-private gui-private
 SOURCES += ../tst_qapplication.cpp
 TARGET = ../tst_qapplication
 
-wince* {
-  additional.files = ../desktopsettingsaware/desktopsettingsaware.exe
-  additional.path = desktopsettingsaware
-  someTest.files = test.pro
-  someTest.path = test
-  DEPLOYMENT += additional deploy someTest
-}
-
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qapplication
@@ -23,3 +15,13 @@ win32 {
 }
 
 mac*:CONFIG+=insignificant_test
+
+TESTDATA = ../test/test.pro ../tmp/README
+
+SUBPROGRAMS = desktopsettingsaware modal
+win32: !wince*: SUBPROGRAMS += wincmdline
+
+load(testcase) # for target.path and installTestHelperApp()
+for(file, SUBPROGRAMS): installTestHelperApp("../$${file}/$${file}",$${file},$${file})
+
+
