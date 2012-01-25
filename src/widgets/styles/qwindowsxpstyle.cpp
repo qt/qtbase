@@ -665,7 +665,7 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
             - Theme part is flipped (mirrored horizontally)
         else use drawBackgroundDirectly().
 */
-void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
+void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData, bool forceFallback)
 {
     if (themeData.rect.isEmpty())
         return;
@@ -693,14 +693,13 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
         dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore ));
     }
 
-    bool useFallback = dc == 0
+    const bool useFallback = forceFallback || dc == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
                        || complexXForm
                        || themeData.mirrorVertically
                        || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
                        || translucentToplevel;
-
     if (!useFallback)
         drawBackgroundDirectly(themeData);
     else
