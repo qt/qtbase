@@ -191,6 +191,7 @@ BUILD_ON_MAC=no
 PLATFORM_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
+    PLATFORM_MAC=maybe
 fi
 
 #-----------------------------------------------------------------------------
@@ -2941,21 +2942,6 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             esac
         esac
         ;;
-    Darwin:*:*)
-        case "$UNAME_MACHINE" in
-            Power?Macintosh)
-                if [ "$OPT_VERBOSE" = "yes" ]; then
-                    echo "    32-bit Apple PowerPC (powerpc)"
-                fi
-                ;;
-            x86)
-                if [ "$OPT_VERBOSE" = "yes" ]; then
-                    echo "    32-bit Intel 80x86 (i386)"
-                fi
-                ;;
-        esac
-        CFG_HOST_ARCH=macosx
-        ;;
     AIX:*:00????????00)
         if [ "$OPT_VERBOSE" = "yes" ]; then
         echo "    64-bit IBM PowerPC (powerpc)"
@@ -3119,7 +3105,7 @@ fi
 
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
-    if [ "$CFG_ARCH" = "macosx" -o "$XPLATFORM_MINGW" = "yes" ]; then
+    if [ "$PLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_DEBUG_RELEASE=yes
         CFG_DEBUG=yes
     elif [ "$CFG_DEV" = "yes" ]; then
@@ -3184,7 +3170,7 @@ if [ '!' -z "$CFG_SDK" ]; then
 fi
 
 # find the default framework value
-if [ "$CFG_ARCH" = "macosx" ]; then
+if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3306,7 +3292,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 
 # find the default framework value
-if [ "$CFG_ARCH" = "macosx" ]; then
+if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -5828,7 +5814,7 @@ fi
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
     # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
-    if [ "$CFG_ARCH" = "macosx" ]; then
+    if [ "$PLATFORM_MAC" = "yes" ]; then
         CFG_OPENGL=desktop
     elif [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -6549,7 +6535,7 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
 fi
 
 # Set the default arch if there are no "-arch" arguments on the configure line
-if [ "$CFG_ARCH" = "macosx" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
+if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
     CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
@@ -6701,7 +6687,7 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
-[ "$CFG_ARCH" = "macosx" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
+[ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -6864,7 +6850,7 @@ fi
 [ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
 [ '!' -z "$l_FLAGS" ] && QMakeVar add LIBS "$l_FLAGS"
 
-if [ "$CFG_ARCH" = "macosx" ]; then
+if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi
@@ -7172,7 +7158,7 @@ fi
 
 
 case "$CFG_ARCH" in
-i386|x86_64|arm|mips|macosx) ;;
+i386|x86_64|arm|mips) ;;
 *) canBuildV8="no";;
 esac
 
