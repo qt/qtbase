@@ -220,6 +220,8 @@ private slots:
     void reserve();
     void toHtmlEscaped_data();
     void toHtmlEscaped();
+
+    void operatorGreaterWithQLatin1String();
 };
 
 typedef QList<int> IntList;
@@ -5173,6 +5175,16 @@ void tst_QString::toHtmlEscaped()
     QFETCH(QString, expected);
 
     QCOMPARE(original.toHtmlEscaped(), expected);
+}
+
+void tst_QString::operatorGreaterWithQLatin1String()
+{
+    QLatin1String latin1foo("fooZZ", 3);
+    QString stringfoo = QString::fromLatin1("foo");
+    QVERIFY(stringfoo >= latin1foo);
+    QVERIFY(!(stringfoo > latin1foo));
+    QVERIFY(stringfoo <= latin1foo);
+    QVERIFY(!(stringfoo < latin1foo));
 }
 
 QTEST_APPLESS_MAIN(tst_QString)

@@ -61,6 +61,7 @@ private Q_SLOTS:
     void testNumbers();
 
     void testObjectSimple();
+    void testObjectSmallKeys();
     void testArraySimple();
     void testValueObject();
     void testValueArray();
@@ -275,6 +276,22 @@ void TestQtJson::testObjectSimple()
     QString before = object.value("string").toString();
     object.insert("string", QString::fromLatin1("foo"));
     QVERIFY2(object.value("string").toString() != before, "value should have been updated");
+}
+
+void TestQtJson::testObjectSmallKeys()
+{
+    QJsonObject data1;
+    data1.insert(QStringLiteral("1"), 123);
+    QVERIFY(data1.contains(QStringLiteral("1")));
+    QCOMPARE(data1.value(QStringLiteral("1")).toDouble(), (double)123);
+    data1.insert(QStringLiteral("12"), 133);
+    QCOMPARE(data1.value(QStringLiteral("12")).toDouble(), (double)133);
+    QVERIFY(data1.contains(QStringLiteral("12")));
+    data1.insert(QStringLiteral("123"), 323);
+    QCOMPARE(data1.value(QStringLiteral("12")).toDouble(), (double)133);
+    QVERIFY(data1.contains(QStringLiteral("123")));
+    QCOMPARE(data1.value(QStringLiteral("123")).type(), QJsonValue::Double);
+    QCOMPARE(data1.value(QStringLiteral("123")).toDouble(), (double)323);
 }
 
 void TestQtJson::testArraySimple()

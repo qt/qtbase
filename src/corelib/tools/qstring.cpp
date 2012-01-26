@@ -2232,7 +2232,7 @@ bool QString::operator<(const QLatin1String &other) const
         ++uc;
         ++c;
     }
-    return (uc == (d->data() + d->size) ? *c : *uc < *c);
+    return (uc == e ? d->size < other.size() : *uc < *c);
 }
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
@@ -2325,7 +2325,7 @@ bool QString::operator>(const QLatin1String &other) const
     if (!c || *c == '\0')
         return !isEmpty();
 
-    const ushort *uc = d->data();;
+    const ushort *uc = d->data();
     const ushort *e = uc + qMin(d->size, other.size());
 
     while (uc < e) {
@@ -2334,7 +2334,7 @@ bool QString::operator>(const QLatin1String &other) const
         ++uc;
         ++c;
     }
-    return (uc == (d->data() + d->size) ? false : *uc > *c);
+    return (uc == e) ? d->size > other.size() : *uc > *c;
 }
 
 /*! \fn bool QString::operator>(const QByteArray &other) const

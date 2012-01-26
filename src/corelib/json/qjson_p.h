@@ -469,7 +469,7 @@ inline bool String::operator<(const Latin1String &str) const
         ++uc;
         ++c;
     }
-    return (uc == (d->utf16 + d->length) ? *c : (ushort)*uc < *c);
+    return (uc == e ? (int)d->length < (int)str.d->length : (ushort)*uc < *c);
 
 }
 
