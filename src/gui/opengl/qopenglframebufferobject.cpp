@@ -1142,8 +1142,24 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
                                                QOpenGLFramebufferObject *source,
                                                GLbitfield buffers, GLenum filter)
 {
-    blitFramebuffer(target, QRect(QPoint(0, 0), target->size()),
-                    source, QRect(QPoint(0, 0), source->size()),
+    if (!target && !source)
+        return;
+
+    QSize targetSize;
+    QSize sourceSize;
+
+    if (target)
+        targetSize = target->size();
+    if (source)
+        sourceSize = source->size();
+
+    if (targetSize.isEmpty())
+        targetSize = sourceSize;
+    else if (sourceSize.isEmpty())
+        sourceSize = targetSize;
+
+    blitFramebuffer(target, QRect(QPoint(0, 0), targetSize),
+                    source, QRect(QPoint(0, 0), sourceSize),
                     buffers, filter);
 }
 
