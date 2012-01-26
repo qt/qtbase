@@ -6893,7 +6893,7 @@ if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
         ;;
     esac
 else
-    if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" == "arm" ]; then
+    if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" = "arm" ]; then
         # QEMU crashes when building inside Scratchbox with an ARM target
         canUseV8Snapshot="no"
     fi
