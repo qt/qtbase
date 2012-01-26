@@ -385,7 +385,7 @@ void tst_QIcon::detach()
     img.fill(0xffff0000);
     QIcon icon1(QPixmap::fromImage(img));
     QIcon icon2 = icon1;
-    icon2.addFile("image.png", QSize(64, 64));
+    icon2.addFile(QFINDTESTDATA("image.png"), QSize(64, 64));
 
     QImage img1 = icon1.pixmap(64, 64).toImage();
     QImage img2 = icon2.pixmap(64, 64).toImage();
@@ -627,7 +627,7 @@ static inline bool operator<(const QSize &lhs, const QSize &rhs)
 
 void tst_QIcon::task184901_badCache()
 {
-    QPixmap pm("image.png");
+    QPixmap pm(QFINDTESTDATA("image.png"));
     QIcon icon(pm);
 
     //the disabled icon must have an effect (grayed)
