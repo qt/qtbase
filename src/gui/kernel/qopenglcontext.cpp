@@ -68,6 +68,11 @@ public:
 
 static QThreadStorage<QGuiGLThreadContext *> qwindow_context_storage;
 
+#ifndef QT_NO_DEBUG
+QHash<QOpenGLContext *, bool> QOpenGLContextPrivate::makeCurrentTracker;
+QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
+#endif
+
 void QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
     QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
@@ -204,6 +209,10 @@ void QOpenGLContext::destroy()
 QOpenGLContext::~QOpenGLContext()
 {
     destroy();
+
+#ifndef QT_NO_DEBUG
+    QOpenGLContextPrivate::cleanMakeCurrentTracker(this);
+#endif
 }
 
 /*!
@@ -227,6 +236,29 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     if (!d->functions)
         const_cast<QOpenGLFunctions *&>(d->functions) = new QOpenGLExtensions(QOpenGLContext::currentContext());
     return d->functions;
+}
+
+/*!
+  Call this to get the default framebuffer object for the current surface.
+
+  On some platforms the default framebuffer object depends on the surface being rendered to,
+  and might be different from 0. Thus, instead of calling glBindFramebuffer(0), you should
+  call glBindFramebuffer(ctx->defaultFramebufferObject()) if you want your application to
+  work across different Qt platforms.
+
+  If you use the glBindFramebuffer() in QOpenGLFunctions you do not have to worry about this,
+  as it automatically binds the current context's defaultFramebufferObject() when 0 is passed.
+*/
+GLuint QOpenGLContext::defaultFramebufferObject() const
+{
+    if (!isValid())
+        return 0;
+
+    Q_D(const QOpenGLContext);
+    if (!d->surface || !d->surface->surfaceHandle())
+        return 0;
+
+    return d->platformGLContext->defaultFramebufferObject(d->surface->surfaceHandle());
 }
 
 /*!
@@ -259,6 +291,10 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
         d->surface = surface;
 
         d->shareGroup->d_func()->deletePendingResources(this);
+
+#ifndef QT_NO_DEBUG
+        QOpenGLContextPrivate::toggleMakeCurrentTracker(this, true);
+#endif
 
         return true;
     }
@@ -294,6 +330,17 @@ QSurface *QOpenGLContext::surface() const
 }
 
 
+/*!
+    Swap the back and front buffers of the given surface.
+
+    Call this to finish a frame of OpenGL rendering, and make sure to
+    call makeCurrent() again before you begin a new frame.
+
+    If you have bound a non-default framebuffer object, you need to
+    use bindDefaultFramebufferObject() to make sure that the default
+    framebuffer object is bound before calling swapBuffers(), as
+    some Qt platforms assume that the default framebuffer object is bound.
+*/
 void QOpenGLContext::swapBuffers(QSurface *surface)
 {
     Q_D(QOpenGLContext);
@@ -306,8 +353,28 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
     }
 
     QPlatformSurface *surfaceHandle = surface->surfaceHandle();
-    if (surfaceHandle)
-        d->platformGLContext->swapBuffers(surfaceHandle);
+    if (!surfaceHandle)
+        return;
+
+#if !defined(QT_NO_DEBUG)
+    if (currentContext() != this)
+        qWarning() << "QOpenGLContext::swapBuffers() called with non-current surface";
+    else if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
+        qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
+
+#ifndef GL_FRAMEBUFFER_BINDING
+#define GL_FRAMEBUFFER_BINDING 0x8CA6
+#endif
+
+    GLint framebufferBinding = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferBinding);
+
+    GLint platformFramebuffer = GLint(d->platformGLContext->defaultFramebufferObject(surfaceHandle));
+    if (framebufferBinding != platformFramebuffer)
+        qWarning() << "QOpenGLContext::swapBuffers() called with non-default framebuffer object bound";
+#endif
+
+    d->platformGLContext->swapBuffers(surfaceHandle);
 }
 
 QFunctionPointer QOpenGLContext::getProcAddress(const QByteArray &procName)

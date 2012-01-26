@@ -47,6 +47,10 @@
 #include <private/qobject_p.h>
 #include <qmutex.h>
 
+#ifndef QT_NO_DEBUG
+#include <QtCore/QHash>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -185,7 +189,6 @@ public:
         , surface(0)
         , functions(0)
         , current_fbo(0)
-        , default_fbo(0)
         , workaround_brokenFBOReadBack(false)
         , workaround_brokenTexSubImage(false)
         , active_engine(0)
@@ -210,7 +213,6 @@ public:
     QOpenGLFunctions *functions;
 
     GLuint current_fbo;
-    GLuint default_fbo;
 
     bool workaround_brokenFBOReadBack;
     bool workaround_brokenTexSubImage;
@@ -220,6 +222,23 @@ public:
     static void setCurrentContext(QOpenGLContext *context);
 
     int maxTextureSize() const { return 1024; }
+
+#if !defined(QT_NO_DEBUG)
+    static bool toggleMakeCurrentTracker(QOpenGLContext *context, bool value)
+    {
+        QMutexLocker locker(&makeCurrentTrackerMutex);
+        bool old = makeCurrentTracker.value(context, false);
+        makeCurrentTracker.insert(context, value);
+        return old;
+    }
+    static void cleanMakeCurrentTracker(QOpenGLContext *context)
+    {
+        QMutexLocker locker(&makeCurrentTrackerMutex);
+        makeCurrentTracker.remove(context);
+    }
+    static QHash<QOpenGLContext *, bool> makeCurrentTracker;
+    static QMutex makeCurrentTrackerMutex;
+#endif
 };
 
 QT_END_NAMESPACE

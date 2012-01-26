@@ -41,6 +41,8 @@
 
 #include "qplatformopenglcontext_qpa.h"
 
+#include <QOpenGLFunctions>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -92,6 +94,16 @@ QPlatformOpenGLContext::QPlatformOpenGLContext()
 
 QPlatformOpenGLContext::~QPlatformOpenGLContext()
 {
+}
+
+/*!
+    Reimplement in subclass if your platform uses framebuffer objects for surfaces.
+
+    The default implementation returns 0.
+*/
+GLuint QPlatformOpenGLContext::defaultFramebufferObject(QPlatformSurface *) const
+{
+    return 0;
 }
 
 QOpenGLContext *QPlatformOpenGLContext::context() const

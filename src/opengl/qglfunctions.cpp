@@ -395,6 +395,9 @@ void QGLFunctions::initializeGLFunctions(const QGLContext *context)
 
     Convenience function that calls glBindFramebuffer(\a target, \a framebuffer).
 
+    Note that Qt will translate a \a framebuffer argument of 0 to the currently
+    bound QOpenGLContext's defaultFramebufferObject().
+
     For more information, see the OpenGL/ES 2.0 documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man/glBindFramebuffer.xml}{glBindFramebuffer()}.
 */

@@ -48,6 +48,7 @@
 #endif
 
 #include <QtOpenGL/qgl.h>
+#include <QtGui/qopenglcontext.h>
 
 QT_BEGIN_HEADER
 
@@ -450,6 +451,8 @@ inline void QGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 
 inline void QGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
+    if (framebuffer == 0)
+        framebuffer = QOpenGLContext::currentContext()->defaultFramebufferObject();
 #if defined(QT_OPENGL_ES_2)
     ::glBindFramebuffer(target, framebuffer);
 #else

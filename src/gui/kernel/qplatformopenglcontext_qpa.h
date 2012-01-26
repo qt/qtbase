@@ -45,6 +45,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/qopengl.h>
 
 QT_BEGIN_HEADER
 
@@ -63,6 +64,8 @@ public:
     virtual QSurfaceFormat format() const = 0;
 
     virtual void swapBuffers(QPlatformSurface *surface) = 0;
+
+    virtual GLuint defaultFramebufferObject(QPlatformSurface *surface) const;
 
     virtual bool makeCurrent(QPlatformSurface *surface) = 0;
     virtual void doneCurrent() = 0;

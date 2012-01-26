@@ -50,10 +50,16 @@
 
 #include <QtGui/QSurfaceFormat>
 
+#ifdef __GLEW_H__
+#warning qopenglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
+#warning To use GLEW with Qt, do not include <qopengl.h> or <QOpenGLFunctions> after glew.h
+#endif
+
+#include <QtGui/qopengl.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 
 class QOpenGLContextPrivate;
 class QOpenGLContextGroupPrivate;
@@ -102,6 +108,8 @@ public:
     QOpenGLContext *shareContext() const;
     QOpenGLContextGroup *shareGroup() const;
     QScreen *screen() const;
+
+    GLuint defaultFramebufferObject() const;
 
     bool makeCurrent(QSurface *surface);
     void doneCurrent();

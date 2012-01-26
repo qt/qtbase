@@ -892,8 +892,8 @@ bool QOpenGLFramebufferObject::release()
 #endif
 
     if (current) {
-        current->d_func()->current_fbo = current->d_func()->default_fbo;
-        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->default_fbo);
+        current->d_func()->current_fbo = current->defaultFramebufferObject();
+        d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, current->d_func()->current_fbo);
     }
 
     return true;
@@ -1057,8 +1057,8 @@ bool QOpenGLFramebufferObject::bindDefault()
     QOpenGLFunctions functions(ctx);
 
     if (ctx) {
-        ctx->d_func()->current_fbo = ctx->d_func()->default_fbo;
-        functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->default_fbo);
+        ctx->d_func()->current_fbo = ctx->defaultFramebufferObject();
+        functions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
 #ifdef QT_DEBUG
     } else {
         qWarning("QOpenGLFramebufferObject::bindDefault() called without current context.");

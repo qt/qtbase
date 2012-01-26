@@ -478,6 +478,8 @@ inline void QOpenGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 
 inline void QOpenGLFunctions::glBindFramebuffer(GLenum target, GLuint framebuffer)
 {
+    if (framebuffer == 0)
+        framebuffer = QOpenGLContext::currentContext()->defaultFramebufferObject();
 #if defined(QT_OPENGL_ES_2)
     ::glBindFramebuffer(target, framebuffer);
 #else
