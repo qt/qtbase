@@ -187,7 +187,7 @@ void tst_QMovie::jumpToFrame_data()
 void tst_QMovie::jumpToFrame()
 {
     QFETCH(QString, fileName);
-    QMovie movie(fileName);
+    QMovie movie(QFINDTESTDATA(fileName));
     movie.start();
     movie.stop();
     QVERIFY(movie.jumpToFrame(-1) == false);
