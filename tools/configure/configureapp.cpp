@@ -2501,6 +2501,8 @@ void Configure::generateOutputVars()
 
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
+    // We currently have no switch for QtConcurrent, so add it unconditionally.
+    qtConfig += "concurrent";
 
     if (dictionary[ "V8" ] == "yes") {
         qtConfig += "v8";
