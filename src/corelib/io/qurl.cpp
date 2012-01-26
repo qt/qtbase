@@ -114,9 +114,6 @@
     \list
     \o When creating an QString to contain a URL from a QByteArray or a
        char*, always use QString::fromUtf8().
-    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
-       QUrl(string) and QUrl::toString() when converting a QUrl to or from
-       a string.
     \endlist
 
     \sa QUrlInfo
@@ -318,6 +315,7 @@ public:
     QString userInfo(QUrl::FormattingOptions options = QUrl::None) const;
     void setEncodedAuthority(const QByteArray &authority);
     void setEncodedUserInfo(const QUrlParseData *parseData);
+    void setEncodedUrl(const QByteArray&, QUrl::ParsingMode);
 
     QByteArray mergePaths(const QByteArray &relativePath) const;
 
@@ -4185,11 +4183,7 @@ QString QUrlPrivate::createErrorString()
 
     \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 0
 
-    To construct a URL from an encoded string, call fromEncoded():
-
-    \snippet doc/src/snippets/code/src_corelib_io_qurl.cpp 1
-
-    \sa setUrl(), setEncodedUrl(), fromEncoded(), TolerantMode
+    \sa setUrl(), TolerantMode
 */
 QUrl::QUrl(const QString &url, ParsingMode parsingMode) : d(0)
 {
@@ -4294,7 +4288,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
     detach();
 
-    setEncodedUrl(url.toUtf8(), parsingMode);
+    d->setEncodedUrl(url.toUtf8(), parsingMode);
     if (isValid() || parsingMode == StrictMode)
         return;
 
@@ -4327,7 +4321,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     } else {
         encodedUrl = toPercentEncodingHelper(tmp, ABNF_reserved);
     }
-    setEncodedUrl(encodedUrl, StrictMode);
+    d->setEncodedUrl(encodedUrl, StrictMode);
 }
 
 inline static bool isHex(char c)
@@ -4342,6 +4336,7 @@ static inline char toHex(quint8 c)
 }
 
 /*!
+    \fn void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
     Constructs a URL by parsing the contents of \a encodedUrl.
 
     \a encodedUrl is assumed to be a URL string in percent encoded
@@ -4349,16 +4344,17 @@ static inline char toHex(quint8 c)
 
     The parsing mode \a parsingMode is used for parsing \a encodedUrl.
 
-    Use isValid() to determine if a valid URL was constructed.
+    \obsolete Use setUrl(QString::fromUtf8(encodedUrl), parsingMode)
 
     \sa setUrl()
 */
-void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
+
+
+void QUrlPrivate::setEncodedUrl(const QByteArray &encodedUrl, QUrl::ParsingMode parsingMode)
 {
     QByteArray tmp = encodedUrl;
-    if (!d) d = new QUrlPrivate;
-    else d->clear();
-    if ((d->parsingMode = parsingMode) == TolerantMode) {
+    clear();
+    if ((parsingMode = parsingMode) == QUrl::TolerantMode) {
         // Replace stray % with %25
         QByteArray copy = tmp;
         for (int i = 0, j = 0; i < copy.size(); ++i, ++j) {
@@ -4409,7 +4405,7 @@ void QUrl::setEncodedUrl(const QByteArray &encodedUrl, ParsingMode parsingMode)
         }
     }
 
-    d->encodedOriginal = tmp;
+    encodedOriginal = tmp;
 }
 
 /*!
@@ -5687,7 +5683,9 @@ static QString toPrettyPercentEncoding(const QString &input, bool forFragment)
 
     The resulting QString can be passed back to a QUrl later on.
 
-    \sa FormattingOptions, toEncoded()
+    Synonym for url(options).
+
+    \sa FormattingOptions, toEncoded(), url()
 */
 QString QUrl::toString(FormattingOptions options) const
 {
@@ -5734,6 +5732,22 @@ QString QUrl::toString(FormattingOptions options) const
 }
 
 /*!
+    Returns the human-displayable string representation of the
+    URL. The output can be customized by passing flags with \a
+    options.
+
+    The resulting QString can be passed back to a QUrl later on.
+
+    Synonym for toString(options).
+
+    \sa FormattingOptions, toEncoded(), toString()
+*/
+QString QUrl::url(FormattingOptions options) const
+{
+    return toString(options);
+}
+
+/*!
     Returns the encoded representation of the URL if it's valid;
     otherwise an empty QByteArray is returned. The output can be
     customized by passing flags with \a options.
@@ -5749,19 +5763,18 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
 }
 
 /*!
+    \fn QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode parsingMode)
+    \obsolete
+
     Parses \a input and returns the corresponding QUrl. \a input is
     assumed to be in encoded form, containing only ASCII characters.
 
     The URL is parsed using \a parsingMode.
 
+    Use QUrl(QString::fromUtf8(input), parsingMode) instead.
+
     \sa toEncoded(), setUrl()
 */
-QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode parsingMode)
-{
-    QUrl tmp;
-    tmp.setEncodedUrl(input, parsingMode);
-    return tmp;
-}
 
 /*!
     Returns a decoded copy of \a input. \a input is first decoded from
@@ -6215,7 +6228,7 @@ QDataStream &operator>>(QDataStream &in, QUrl &url)
 {
     QByteArray u;
     in >> u;
-    url = QUrl::fromEncoded(u);
+    url = QUrl(QString::fromUtf8(u));
     return in;
 }
 #endif // QT_NO_DATASTREAM
@@ -6319,8 +6332,8 @@ QUrl QUrl::fromUserInput(const QString &userInput)
     if (QDir::isAbsolutePath(trimmedString))
         return QUrl::fromLocalFile(trimmedString);
 
-    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    QUrl urlPrepended = QUrl::fromEncoded("http://" + trimmedString.toUtf8(), QUrl::TolerantMode);
+    QUrl url(trimmedString, QUrl::TolerantMode);
+    QUrl urlPrepended(QString::fromLatin1("http://") + trimmedString, QUrl::TolerantMode);
 
     // Check the most common case of a valid url with scheme and host
     // We check if the port would be valid by adding the scheme to handle the case host:port

@@ -524,13 +524,11 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QUrl notPretty;
-        notPretty.setEncodedUrl("http://ferret.lmh.ox.ac.uk/%7Ekdecvs/");
+        QUrl notPretty("http://ferret.lmh.ox.ac.uk/%7Ekdecvs/");
         QVERIFY(notPretty.isValid());
         QCOMPARE(notPretty.toString(), QString::fromLatin1("http://ferret.lmh.ox.ac.uk/~kdecvs/"));
 
-        QUrl notPretty2;
-        notPretty2.setEncodedUrl("file:/home/test/directory%20with%20spaces");
+        QUrl notPretty2("file:/home/test/directory%20with%20spaces");
         QVERIFY(notPretty2.isValid());
         QCOMPARE(notPretty2.toString(), QString::fromLatin1("file:///home/test/directory with spaces"));
 
@@ -557,8 +555,7 @@ void tst_QUrl::setUrl()
         charles.setPath("/home/charles/foo%20moo");
         QCOMPARE(charles.path(), QString::fromLatin1("/home/charles/foo%20moo"));
 
-        QUrl charles2;
-        charles2.setEncodedUrl("file:/home/charles/foo%20moo");
+        QUrl charles2("file:/home/charles/foo%20moo");
         QCOMPARE(charles2.path(), QString::fromLatin1("/home/charles/foo moo"));
     }
 
@@ -622,8 +619,7 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QUrl url;
-        url.setEncodedUrl("data:text/javascript,d5%20%3D%20'five\\u0027s'%3B");
+        QUrl url("data:text/javascript,d5%20%3D%20'five\\u0027s'%3B");
         QVERIFY(url.isValid());
         QCOMPARE(url.scheme(), QString("data"));
         QCOMPARE(url.host(), QString());

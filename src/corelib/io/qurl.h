@@ -100,7 +100,8 @@ public:
     inline void swap(QUrl &other) { qSwap(d, other.d); }
 
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
-    void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode);
+    QString url(FormattingOptions options = None) const;
+    QString toString(FormattingOptions options = None) const;
 
     bool isValid() const;
 
@@ -185,10 +186,7 @@ public:
     QString toLocalFile() const;
     bool isLocalFile() const;
 
-    QString toString(FormattingOptions options = None) const;
-
     QByteArray toEncoded(FormattingOptions options = None) const;
-    static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode);
 
     static QUrl fromUserInput(const QString &userInput);
 
@@ -211,6 +209,13 @@ public:
     static void setIdnWhitelist(const QStringList &);
 
     QString errorString() const;
+
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode)
+    { setUrl(QString::fromUtf8(url), mode); }
+    QT_DEPRECATED static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode)
+    { return QUrl(QString::fromUtf8(url), mode); }
+#endif
 
 private:
     QUrlPrivate *d;
