@@ -93,9 +93,8 @@ public:
     void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void disconnectFromHost();
 
-    // ### Qt 5: Make virtual
-    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
-    QVariant socketOption(QAbstractSocket::SocketOption option);
+    virtual void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    virtual QVariant socketOption(QAbstractSocket::SocketOption option);
 
     SslMode mode() const;
     bool isEncrypted() const;
