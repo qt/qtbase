@@ -142,6 +142,7 @@ void tst_qstandardpaths::testLocateAll()
 
     setCustomLocations();
     const QStringList allFiles = QStandardPaths::locateAll(QStandardPaths::ConfigLocation, "qstandardpaths.pro");
+    QVERIFY2(allFiles.count() > 0, "qstandardpaths.pro not found in config locations!");
     QCOMPARE(allFiles.first(), QString(m_thisDir + QString::fromLatin1("/qstandardpaths.pro")));
 #endif
 }
