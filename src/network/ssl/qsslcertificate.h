@@ -83,8 +83,7 @@ public:
     };
 
     QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
-    QSslCertificate( // ### s/encoded/data (to be consistent with signature in .cpp file) ?
-        const QByteArray &encoded = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
+    QSslCertificate(const QByteArray &data = QByteArray(), QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate(const QSslCertificate &other);
     ~QSslCertificate();
     QSslCertificate &operator=(const QSslCertificate &other);
