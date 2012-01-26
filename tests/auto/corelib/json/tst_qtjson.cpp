@@ -1044,7 +1044,7 @@ void TestQtJson::fromJson()
 
 void TestQtJson::fromBinary()
 {
-    QFile file(QLatin1String("test.json"));
+    QFile file(QLatin1String(SRCDIR "test.json"));
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -1053,7 +1053,7 @@ void TestQtJson::fromBinary()
     QVERIFY(!outdoc.isNull());
     QVERIFY(doc == outdoc);
 
-    QFile bfile(QLatin1String("test.bjson"));
+    QFile bfile(QLatin1String(SRCDIR "test.bjson"));
     bfile.open(QFile::ReadOnly);
     QByteArray binary = bfile.readAll();
 
@@ -1066,8 +1066,8 @@ void TestQtJson::fromBinary()
 void TestQtJson::toAndFromBinary_data()
 {
     QTest::addColumn<QString>("filename");
-    QTest::newRow("test.json") << QString::fromLatin1("test.json");
-    QTest::newRow("test2.json") << QString::fromLatin1("test2.json");
+    QTest::newRow("test.json") << QString::fromLatin1(SRCDIR "test.json");
+    QTest::newRow("test2.json") << QString::fromLatin1(SRCDIR "test2.json");
 }
 
 void TestQtJson::toAndFromBinary()
@@ -1246,7 +1246,7 @@ void TestQtJson::parseDuplicateKeys()
 
 void TestQtJson::testParser()
 {
-    QFile file(QLatin1String("test.json"));
+    QFile file(QLatin1String(SRCDIR "test.json"));
     file.open(QFile::ReadOnly);
     QByteArray testJson = file.readAll();
 
@@ -1331,9 +1331,10 @@ void TestQtJson::compactObject()
 void TestQtJson::validation()
 {
     // this basically tests that we don't crash on corrupt data
-    QFile file(QLatin1String("test.json"));
-    file.open(QFile::ReadOnly);
+    QFile file(QLatin1String(SRCDIR "test.json"));
+    QVERIFY(file.open(QFile::ReadOnly));
     QByteArray testJson = file.readAll();
+    QVERIFY(!testJson.isEmpty());
 
     QJsonDocument doc = QJsonDocument::fromJson(testJson);
 
@@ -1350,9 +1351,11 @@ void TestQtJson::validation()
     }
 
 
-    QFile file2(QLatin1String("foo.json"));
+    QFile file2(QLatin1String(SRCDIR "foo.json"));
+//    QVERIFY(file2.open(QFile::ReadOnly)); // ### the file is missing o_O
     file2.open(QFile::ReadOnly);
     testJson = file2.readAll();
+//    QVERIFY(!testJson.isEmpty());
 
     doc = QJsonDocument::fromJson(testJson);
 
