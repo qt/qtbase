@@ -83,15 +83,15 @@ QPlatformMenuBar *QPlatformTheme::createPlatformMenuBar(QMenuBar *menuBar) const
     return 0;
 }
 
-bool QPlatformTheme::usePlatformNativeDialog(const QDialog *dialog) const
+bool QPlatformTheme::usePlatformNativeDialog(DialogType type) const
 {
-    Q_UNUSED(dialog);
+    Q_UNUSED(type);
     return false;
 }
 
-QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(QDialog *dialog) const
+QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType type) const
 {
-    Q_UNUSED(dialog);
+    Q_UNUSED(type);
     return 0;
 }
 

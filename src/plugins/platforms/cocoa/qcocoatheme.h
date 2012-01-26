@@ -57,8 +57,8 @@ public:
     QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
-    bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    bool usePlatformNativeDialog(DialogType dialogType) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const;
 };
 
 QT_END_NAMESPACE

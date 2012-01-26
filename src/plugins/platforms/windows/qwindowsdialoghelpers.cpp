@@ -341,17 +341,6 @@ void eatMouseMove()
         qDebug("%s triggered=%d" , __FUNCTION__, msg.message == WM_MOUSEMOVE);
 }
 
-Type dialogType(const QDialog *dialog)
-{
-    if (qobject_cast<const QFileDialog *>(dialog))
-        return FileDialog;
-    if (qobject_cast<const QFontDialog *>(dialog))
-        return FontDialog;
-    if (qobject_cast<const QColorDialog *>(dialog))
-        return ColorDialog;
-    return UnknownType;
-}
-
 } // namespace QWindowsDialogs
 
 /*!
@@ -1359,40 +1348,36 @@ QWindowsNativeDialogBase *QWindowsColorDialogHelper::createNativeDialog()
 namespace QWindowsDialogs {
 
 // QWindowsDialogHelperBase creation functions
-bool useHelper(const QDialog *dialog)
+bool useHelper(QPlatformTheme::DialogType type)
 {
-    if (dialog) {
-        switch (QWindowsDialogs::dialogType(dialog)) {
-        case QWindowsDialogs::FileDialog:
-            return true;
-        case QWindowsDialogs::ColorDialog:
+    switch (type) {
+    case QPlatformTheme::FileDialog:
+        return true;
+        break;
+    case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
-            return true;
+        return true;
+#else
+        break;
 #endif
-        case QWindowsDialogs::FontDialog:
-        case QWindowsDialogs::UnknownType:
-            break;
-        }
+    case QPlatformTheme::FontDialog:
+        break;
     }
     return false;
 }
 
-QPlatformDialogHelper *createHelper(QDialog *dialog)
+QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
 {
-    if (QWindowsContext::verboseDialogs)
-        qDebug("%s %p %s" , __FUNCTION__, dialog, dialog->metaObject()->className());
-    if (!dialog)
-        return 0;
-
-    switch (QWindowsDialogs::dialogType(dialog)) {
-    case QWindowsDialogs::FileDialog:
+    switch (type) {
+    case QPlatformTheme::FileDialog:
         return new QWindowsFileDialogHelper();
-    case QWindowsDialogs::ColorDialog:
+    case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
         return new QWindowsColorDialogHelper();
+#else
+        break;
 #endif
-    case QWindowsDialogs::FontDialog:
-    case QWindowsDialogs::UnknownType:
+    case QPlatformTheme::FontDialog:
         break;
     }
     return 0;

@@ -68,24 +68,17 @@ QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar(QMenuBar *menuBar) const
 }
 
 
-bool QCocoaTheme::usePlatformNativeDialog(const QDialog *dialog) const
+bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {
-    Q_UNUSED(dialog);
-    return true;
-#if 0
-    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
-    if (fileDialog) {
+    if (dialogType == QPlatformTheme::FileDialog)
         return true;
-    }
     return false;
-#endif
 }
 
-QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(QDialog *dialog) const
+QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
 {
-    QFileDialog *fileDialog = qobject_cast<QFileDialog*>(dialog);
-    if (fileDialog) {
-        return new QCocoaFileDialogHelper(fileDialog);
+    if (dialogType == QPlatformTheme::FileDialog) {
+        return new QCocoaFileDialogHelper();
     }
     return 0;
 }

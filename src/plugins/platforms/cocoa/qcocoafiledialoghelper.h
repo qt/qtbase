@@ -53,7 +53,7 @@ class QFileDialogPrivate;
 class QCocoaFileDialogHelper : public QPlatformFileDialogHelper
 {
 public:
-    QCocoaFileDialogHelper(QFileDialog *dialog);
+    QCocoaFileDialogHelper();
     virtual ~QCocoaFileDialogHelper();
 
     void platformNativeDialogModalHelp();
@@ -84,7 +84,6 @@ public:
     void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
 
 private:
-    QFileDialog *qtFileDialog;
     void *mDelegate;
 };
 

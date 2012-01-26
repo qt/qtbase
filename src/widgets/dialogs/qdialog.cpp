@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qdialog.h"
-
+#include "qcolordialog.h"
+#include "qfontdialog.h"
+#include "qfiledialog.h"
 
 #include "qevent.h"
 #include "qdesktopwidget.h"
@@ -59,22 +60,36 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline int themeDialogType(const QDialog *dialog)
+{
+    if (qobject_cast<const QFileDialog *>(dialog))
+        return QPlatformTheme::FileDialog;
+    if (qobject_cast<const QColorDialog *>(dialog))
+        return QPlatformTheme::ColorDialog;
+    if (qobject_cast<const QFontDialog *>(dialog))
+        return QPlatformTheme::FontDialog;
+    return -1;
+}
+
 QPlatformDialogHelper *QDialogPrivate::platformHelper() const
 {
     // Delayed creation of the platform, ensuring that
     // that qobject_cast<> on the dialog works in the plugin.
     if (!m_platformHelperCreated) {
-        QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         m_platformHelperCreated = true;
+        QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
         QDialog *dialog = ncThis->q_func();
-        m_platformHelper = QGuiApplicationPrivate::platformTheme()
-                                       ->createPlatformDialogHelper(dialog);
-        if (m_platformHelper) {
-            QObject::connect(m_platformHelper, SIGNAL(accept()), dialog, SLOT(accept()));
-            QObject::connect(m_platformHelper, SIGNAL(reject()), dialog, SLOT(reject()));
-            QObject::connect(m_platformHelper, SIGNAL(launchNativeAppModalPanel()),
-                             dialog, SLOT(_q_platformRunNativeAppModalPanel()));
-            ncThis->initHelper(m_platformHelper);
+        const int type = themeDialogType(dialog);
+        if (type >= 0) {
+            m_platformHelper = QGuiApplicationPrivate::platformTheme()
+                    ->createPlatformDialogHelper(static_cast<QPlatformTheme::DialogType>(type));
+            if (m_platformHelper) {
+                QObject::connect(m_platformHelper, SIGNAL(accept()), dialog, SLOT(accept()));
+                QObject::connect(m_platformHelper, SIGNAL(reject()), dialog, SLOT(reject()));
+                QObject::connect(m_platformHelper, SIGNAL(launchNativeAppModalPanel()),
+                                 dialog, SLOT(_q_platformRunNativeAppModalPanel()));
+                ncThis->initHelper(m_platformHelper);
+            }
         }
     }
     return m_platformHelper;

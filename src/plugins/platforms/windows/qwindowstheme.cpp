@@ -81,14 +81,14 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     return QVariant();
 }
 
-bool QWindowsTheme::usePlatformNativeDialog(const QDialog *dialog) const
+bool QWindowsTheme::usePlatformNativeDialog(DialogType type) const
 {
-    return QWindowsDialogs::useHelper(dialog);
+    return QWindowsDialogs::useHelper(type);
 }
 
-QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(QDialog *dialog) const
+QPlatformDialogHelper *QWindowsTheme::createPlatformDialogHelper(DialogType type) const
 {
-    return QWindowsDialogs::createHelper(dialog);
+    return QWindowsDialogs::createHelper(type);
 }
 
 QT_END_NAMESPACE

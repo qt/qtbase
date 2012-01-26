@@ -92,7 +92,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     NSView *mAccessoryView;
     NSPopUpButton *mPopUpButton;
     NSTextField *mTextField;
-    QFileDialog *mFileDialog;
     QCocoaFileDialogHelper *mHelper;
     NSString *mCurrentDir;
 
@@ -126,12 +125,10 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 - (id)initWithAcceptMode:
     (const QString &)selectFile
-    fileDialog:(QFileDialog *)fileDialog
     options:(SharedPointerFileDialogOptions)options
     helper:(QCocoaFileDialogHelper *)helper
 {
     self = [super init];
-    mFileDialog = fileDialog;
     mOptions = options;
     if (mOptions->acceptMode() == QT_PREPEND_NAMESPACE(QFileDialogOptions::AcceptOpen)){
         mOpenPanel = [NSOpenPanel openPanel];
@@ -149,7 +146,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     mLastFilterCheckPath = new QString;
     mQDirFilterEntryList = new QStringList;
     mNameFilterDropDownList = new QStringList(mOptions->nameFilters());
-    QString selectedVisualNameFilter = mFileDialog->selectedNameFilter();
+    QString selectedVisualNameFilter = mOptions->initiallySelectedNameFilter();
     mSelectedNameFilter = new QStringList([self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter]);
 
     QFileInfo sel(selectFile);
@@ -518,8 +515,8 @@ static bool qt_mac_is_macsheet(const QWidget *w)
     return w->parentWidget() && (modality == Qt::WindowModal || w->windowType() == Qt::Sheet);
 }
 
-QCocoaFileDialogHelper::QCocoaFileDialogHelper(QFileDialog *dialog) :
-    qtFileDialog(dialog), mDelegate(0)
+QCocoaFileDialogHelper::QCocoaFileDialogHelper()
+    :mDelegate(0)
 {
 }
 
@@ -624,16 +621,12 @@ void QCocoaFileDialogHelper::deleteNativeDialog_sys()
 
 void QCocoaFileDialogHelper::hide_sys()
 {
-    if (!qtFileDialog->isHidden())
-        hideCocoaFilePanel();
+    hideCocoaFilePanel();
 }
 
 bool QCocoaFileDialogHelper::show_sys(ShowFlags /* flags */, Qt::WindowFlags windowFlags, QWindow *parent)
 {
 //    Q_Q(QFileDialog);
-    if (!qtFileDialog->isHidden())
-        return false;
-
     if (windowFlags & Qt::WindowStaysOnTopHint) {
         // The native file dialog tries all it can to stay
         // on the NSModalPanel level. And it might also show
@@ -657,7 +650,6 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) alloc]
         initWithAcceptMode:
             selection
-            fileDialog:qtFileDialog
             options:opts
             helper:this];
 
@@ -669,7 +661,7 @@ bool QCocoaFileDialogHelper::showCocoaFilePanel(QWindow *parent)
 //    Q_Q(QFileDialog);
     createNSOpenSavePanelDelegate();
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
-    if (qt_mac_is_macsheet(qtFileDialog))
+    if (0 /*qt_mac_is_macsheet(qtFileDialog)*/) // ### sheet support.
         [delegate showWindowModalSheet:parent];
     else
         [delegate showModelessPanel];

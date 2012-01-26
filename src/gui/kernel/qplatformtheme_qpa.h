@@ -54,7 +54,6 @@ class QMenuBar;
 class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
-class QDialog;
 class QVariant;
 
 class Q_GUI_EXPORT QPlatformTheme
@@ -66,11 +65,17 @@ public:
         MaximumScrollBarDragDistance
     };
 
+    enum DialogType {
+        FileDialog,
+        ColorDialog,
+        FontDialog
+    };
+
     virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
     virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
-    virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
 };

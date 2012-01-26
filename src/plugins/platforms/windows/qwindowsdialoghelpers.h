@@ -46,6 +46,7 @@
 
 #include "qtwindows_additional.h"
 #include <QtWidgets/qplatformdialoghelper_qpa.h>
+#include <QtGui/QPlatformTheme>
 #include <QtCore/QStringList>
 
 QT_BEGIN_NAMESPACE
@@ -56,13 +57,10 @@ class QWindowsNativeDialogBase;
 
 namespace QWindowsDialogs
 {
-    enum Type { UnknownType, ColorDialog, FontDialog, FileDialog };
-
-    Type dialogType(const QDialog *dialog);
     void eatMouseMove();
 
-    bool useHelper(const QDialog *dialog = 0);
-    QPlatformDialogHelper *createHelper(QDialog *dialog = 0);
+    bool useHelper(QPlatformTheme::DialogType type);
+    QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type);
 } // namespace QWindowsDialogs
 
 template <class BaseClass>

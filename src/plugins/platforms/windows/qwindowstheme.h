@@ -51,8 +51,8 @@ class QWindowsTheme : public QPlatformTheme
 public:
     QWindowsTheme();
 
-    virtual bool usePlatformNativeDialog(const QDialog *dialog = 0) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(QDialog *dialog = 0) const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
     virtual QVariant themeHint(ThemeHint) const;
 };
 
