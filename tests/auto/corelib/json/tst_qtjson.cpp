@@ -1337,6 +1337,7 @@ void TestQtJson::validation()
     QVERIFY(!testJson.isEmpty());
 
     QJsonDocument doc = QJsonDocument::fromJson(testJson);
+    QVERIFY(!doc.isNull());
 
     QByteArray binary = doc.toBinaryData();
 
@@ -1351,13 +1352,13 @@ void TestQtJson::validation()
     }
 
 
-    QFile file2(QLatin1String(SRCDIR "foo.json"));
-//    QVERIFY(file2.open(QFile::ReadOnly)); // ### the file is missing o_O
+    QFile file2(QLatin1String(SRCDIR "test3.json"));
     file2.open(QFile::ReadOnly);
     testJson = file2.readAll();
-//    QVERIFY(!testJson.isEmpty());
+    QVERIFY(!testJson.isEmpty());
 
     doc = QJsonDocument::fromJson(testJson);
+    QVERIFY(!doc.isNull());
 
     binary = doc.toBinaryData();
 
