@@ -645,7 +645,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
         if (paren != name.length() || !slotname.startsWith(name))
             continue;
 
-        int returnType = qDBusNameToTypeId(mm.typeName());
+        int returnType = QMetaType::type(mm.typeName());
         bool isAsync = qDBusCheckAsyncTag(mm.tag());
         bool isScriptable = mm.attributes() & QMetaMethod::Scriptable;
 

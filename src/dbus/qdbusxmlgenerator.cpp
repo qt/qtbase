@@ -101,7 +101,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
             if (mp.isWritable())
                 access |= 2;
 
-            int typeId = qDBusNameToTypeId(mp.typeName());
+            int typeId = mp.userType();
             if (!typeId)
                 continue;
             const char *signature = QDBusMetaType::typeToSignature(typeId);
@@ -150,7 +150,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                       .arg(QLatin1String(signature.left(paren)));
 
         // check the return type first
-        int typeId = qDBusNameToTypeId(mm.typeName());
+        int typeId = QMetaType::type(mm.typeName());
         if (typeId) {
             const char *typeName = QDBusMetaType::typeToSignature(typeId);
             if (typeName) {

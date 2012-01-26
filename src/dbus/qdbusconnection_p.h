@@ -336,7 +336,6 @@ public:
 
 // in qdbusmisc.cpp
 extern int qDBusParametersForMethod(const QMetaMethod &mm, QList<int>& metaTypes);
-extern int qDBusNameToTypeId(const char *name);
 extern bool qDBusCheckAsyncTag(const char *tag);
 extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
 extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
