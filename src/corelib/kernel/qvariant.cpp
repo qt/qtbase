@@ -1784,8 +1784,8 @@ void QVariant::save(QDataStream &s) const
     }
 
     if (!QMetaType::save(s, d.type, constData())) {
+        qWarning("QVariant::save: unable to save type '%s' (type id: %d).\n", QMetaType::typeName(d.type), d.type);
         Q_ASSERT_X(false, "QVariant::save", "Invalid type to save");
-        qWarning("QVariant::save: unable to save type %d.", d.type);
     }
 }
 
