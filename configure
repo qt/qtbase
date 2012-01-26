@@ -642,9 +642,6 @@ CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
 CFG_GUI=auto # (yes|no|auto)
-CFG_SCRIPT=auto # (yes|no|auto)
-CFG_SCRIPTTOOLS=auto # (yes|no|auto)
-CFG_XMLPATTERNS=auto # (yes|no|auto)
 CFG_INCREMENTAL=auto
 CFG_QCONFIG=full
 CFG_DEBUG=auto
@@ -686,18 +683,10 @@ QT_DEFAULT_BUILD_PARTS="libs examples tests"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
-CFG_PHONON=auto
-CFG_PHONON_BACKEND=yes
-CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
-CFG_SVG=auto
-CFG_V8=auto
 CFG_V8SNAPSHOT=auto
-CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
-CFG_WEBKIT=auto # (yes|no|auto|debug)
 CFG_JAVASCRIPTCORE_JIT=auto
-CFG_LOCATION=auto
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
 CFG_GFX_ON="linuxfb multiscreen"
@@ -947,14 +936,8 @@ if [ "$CFG_EMBEDDED" = "nacl" ]; then
         L_FLAGS="$L_FLAGS -I${CFG_NACL_PATH}/toolchain/mac_x86/sdk/nacl-sdk/lib"
     fi
 
-    echo "-no-multimedia -no-webkit -no-phonon -no-nultimedia -no-mediaservices -no-xmlpatterns -no-script -no-sql-sqlite -nomake tests"
-    CFG_MULTIMEDIA=no
-    CFG_WEBKIT=no
-    CFG_PHONON=no
-    CFG_MULTIMEDIA=no
+    echo "-no-mediaservices -no-sql-sqlite -nomake tests"
     CFG_MEDIASERVICES=no
-    CFG_XMLPATTERNS=no
-    CFG_SCRIPT=no
     CFG_SQLITE=no
     CFG_SQL_sqlite=no
     CFG_LIBTIFF=no
@@ -997,26 +980,13 @@ while [ "$#" -gt 0 ]; do
         VAR=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
         VAL=`echo $1 | sed "s,^-\([^-]*\).*,\1,"`
         ;;
-    #WebKit options
-    -webkit)
-        VAR="webkit"
-        VAL="yes"
-        ;;
-    -webkit-debug)
-        VAR="webkit"
-        VAL="debug"
-        ;;
-    -no-webkit)
-        VAR="webkit"
-        VAL="no"
-        ;;
     #Qt style no options
     -no-*)
         VAR=`echo $1 | sed "s,^-no-\(.*\),\1,"`
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-xinput2|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-debug-and-release|-exceptions|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-phonon-backend|-audio-backend|-declarative-debug|-javascript-jit|-rpath|-force-pkg-config|-icu|-force-asserts|-testcocoon)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1930,7 +1900,7 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
         ;;
-    qdbus|dbus)
+    dbus)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] || [ "$VAL" = "linked" ]; then
             CFG_DBUS="$VAL"
 	elif [ "$VAL" = "runtime" ]; then
@@ -1974,72 +1944,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    xmlpatterns)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
-            CFG_XMLPATTERNS="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_XMLPATTERNS="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-        ;;
-    script)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
-            CFG_SCRIPT="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_SCRIPT="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-        ;;
-    scripttools)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
-            CFG_SCRIPTTOOLS="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_SCRIPTTOOLS="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-        ;;
-    svg)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
-            CFG_SVG="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_SVG="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-        ;;
-    v8)
-        if [ "$VAL" = "yes" ]; then
-            CFG_V8="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_V8="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-        ;;
-    declarative)
-        if [ "$VAL" = "yes" ]; then
-            CFG_DECLARATIVE="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_DECLARATIVE="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-	;;
     declarative-debug)
         if [ "$VAL" = "yes" ]; then
             CFG_DECLARATIVE_DEBUG="yes"
@@ -2051,21 +1955,6 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
         ;;
-    webkit)
-        [ "$VAL" = "auto" ] && VAL="yes"
-        CFG_WEBKIT="$VAL"
-        ;;
-    location)
-        if [ "$VAL" = "yes" ]; then
-            CFG_LOCATION="yes"
-        else
-            if [ "$VAL" = "no" ]; then
-                CFG_LOCATION="no"
-            else
-                UNKNOWN_OPT=yes
-            fi
-        fi
-	;;
     javascript-jit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
             CFG_JAVASCRIPTCORE_JIT="$VAL"
@@ -2270,23 +2159,9 @@ while [ "$#" -gt 0 ]; do
     silent)
         CFG_SILENT="$VAL"
         ;;
-    phonon)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_PHONON="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     phonon-backend)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_PHONON_BACKEND="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    multimedia)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_MULTIMEDIA="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2498,11 +2373,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     # symlink the doc directory
     rm -rf "$outpath/doc"
     ln -s "$relpath/doc" "$outpath/doc"
-
-    # make sure q3porting.xml can be found
-    mkdir -p "$outpath/tools/porting/src"
-    rm -f "$outpath/tools/porting/src/q3porting.xml"
-    ln -s "$relpath/tools/porting/src/q3porting.xml" "$outpath/tools/porting/src"
 fi
 
 # symlink fonts to be able to run application from build directory
@@ -3558,15 +3428,12 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
-        [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
-        [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
+        [-no-phonon-backend] [-phonon-backend] [-no-media-backend] [-media-backend]
+        [-no-audio-backend] [-audio-backend]
+        [-no-javascript-jit] [-javascript-jit] [-no-declarative-debug] [-declarative-debug]
+        [-no-optimized-qmake] [-optimized-qmake]
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-webkit-debug]
-        [-no-javascript-jit] [-javascript-jit]
-        [-no-script] [-script] [-no-scripttools] [-scripttools] 
-        [-no-declarative] [-declarative] [-no-declarative-debug] [-declarative-debug]
-        [-no-location] [-location]
+        [-no-gtkstyle] [-gtkstyle]
         [-qt-pcre] [-system-pcre]
         [additional platform specific options (see below)]
 
@@ -3690,51 +3557,14 @@ fi
 
     -system-sqlite ..... Use sqlite from the operating system.
 
-    -no-xmlpatterns .... Do not build the QtXmlPatterns module.
- +  -xmlpatterns ....... Build the QtXmlPatterns module.
-                         QtXmlPatterns is built if a decent C++ compiler
-                         is used and exceptions are enabled.
-
-    -no-multimedia ..... Do not build the QtMultimedia module.
- +  -multimedia ........ Build the QtMultimedia module.
-
-    -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
- +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
-
-    -no-phonon ......... Do not build the Phonon module.
- +  -phonon ............ Build the Phonon module.
-                         Phonon is built if a decent C++ compiler is used.
     -no-phonon-backend.. Do not build the platform phonon plugin.
  +  -phonon-backend..... Build the platform phonon plugin.
-
-    -no-svg ............ Do not build the SVG module.
- +  -svg ............... Build the SVG module.
-
-    -no-webkit ......... Do not build the WebKit module.
- +  -webkit ............ Build the WebKit module.
-                         WebKit is built if a decent C++ compiler is used.
-    -webkit-debug ...... Build the WebKit module with debug symbols.
 
     -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
  +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
 
-    -no-script ......... Do not build the QtScript module.
- +  -script ............ Build the QtScript module.
-
-    -no-scripttools .... Do not build the QtScriptTools module.
- +  -scripttools ....... Build the QtScriptTools module.
-
-    -no-v8 ............. Do not build the V8 module.
- +  -v8 ................ Build the V8 module.
-
-    -no-declarative ..... Do not build the declarative module.
- +  -declarative ....... Build the declarative module.
-
     -no-declarative-debug ..... Do not build the declarative debugging support.
  +  -declarative-debug ....... Build the declarative debugging support.
-
-    -no-location ....... Do not build the QtLocation module.
- +  -location .......... Build the QtLocation module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -5294,15 +5124,6 @@ if [ "$CFG_DBUS" != "no" ]; then
     fi
 fi
 
-if [ "$CFG_MULTIMEDIA" = "auto" ]; then
-    CFG_MULTIMEDIA="$CFG_GUI"
-fi
-
-if [ "$CFG_MULTIMEDIA" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
-    echo "QtMultimedia requested, but it can't be built without QtGui"
-    exit 1
-fi
-
 # X11/QWS/Lighthouse
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
@@ -5329,64 +5150,29 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
         fi
     fi
 
-    if [ "$CFG_GUI" = "no" ]; then
-        if [ "$CFG_PHONON" = "auto" ]; then
-            CFG_PHONON=no
+    # ### Vestige
+    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
         fi
-        if [ "$CFG_PHONON" != "no" ]; then
-            echo "Phonon enabled, but GUI disabled."
-            echo " You might need to either enable the GUI or disable Phonon"
-            exit 1
-        fi
-    fi
-
-    # Auto-detect GStreamer support (needed for Phonon)
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-            if [ -n "$PKG_CONFIG" ]; then
-                QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-            fi
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-                CFG_GSTREAMER=yes
-                QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-                QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-            else
-                if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                    echo "Gstreamer support cannot be enabled due to functionality tests!"
-                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                    echo " If you believe this message is in error you may use the continue"
-                    echo " switch (-continue) to $0 to continue."
-                    exit 101
-                else
-                    CFG_GSTREAMER=no
-                fi
-            fi
-        elif [ "$CFG_GLIB" = "no" ]; then
-            CFG_GSTREAMER=no
-        fi
-    else
-        CFG_GSTREAMER=no
-    fi
-
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
-            if [ "$CFG_GSTREAMER" = "yes" ]; then
-                CFG_PHONON=yes
-            else
-                if [ "$CFG_PHONON" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                    echo "Phonon support cannot be enabled due to functionality tests!"
-                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                    echo " If you believe this message is in error you may use the continue"
-                    echo " switch (-continue) to $0 to continue."
-                    exit 101
-                else
-                    CFG_PHONON=no
-                fi
-            fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
+            CFG_GSTREAMER=yes
+            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
         else
-            CFG_PHONON=yes
+            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "Gstreamer support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
+                CFG_GSTREAMER=no
+            fi
         fi
+    elif [ "$CFG_GLIB" = "no" ]; then
+        CFG_GSTREAMER=no
     fi
 
     # auto-detect libicu support
@@ -5607,12 +5393,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		CFG_XRENDER=no
 	    fi
 	fi
-    fi
-
-    # Additional check to decide if WebKit support will be included
-    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
-        echo "Warning: -no-xrender will disable the QtWebkit module."
-        CFG_WEBKIT="no"
     fi
 
     # auto-detect MIT-SHM support
@@ -6569,15 +6349,10 @@ if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
-# enable Phonon
-if [ "$CFG_PHONON" = "yes" ]; then
-    # No longer needed after modularization
-    #QT_CONFIG="$QT_CONFIG phonon"
-    if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG phonon-backend"
-    fi
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PHONON"
+
+# ### Vestige
+if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG phonon-backend"
 fi
 
 # disable accessibility
@@ -6971,17 +6746,8 @@ fi
 # See Qt documentation for more information on which features are
 # supported and on which compilers.
 #
-canBuildQtXmlPatterns="yes"
-canBuildWebKit="$HAVE_STL"
 canBuildQtConcurrent="yes"
-canBuildV8="yes"
 canUseV8Snapshot="yes"
-
-# WebKit requires stdint.h
-"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stdint "Stdint" $L_FLAGS $I_FLAGS $l_FLAGS
-if [ $? != "0" ]; then
-    canBuildWebKit="no"
-fi
 
 case "$XPLATFORM" in
     hpux-g++*)
@@ -7106,172 +6872,46 @@ else
     QT_CONFIG="$QT_CONFIG concurrent"
 fi
 
-if [ "$CFG_XMLPATTERNS" = "yes" -a "$CFG_EXCEPTIONS" = "no" ]; then
-    echo "QtXmlPatterns was requested, but it can't be built due to exceptions being disabled."
-    exit 1
-fi
-if [ "$CFG_XMLPATTERNS" = "auto" -a "$CFG_EXCEPTIONS" != "no" ]; then
-    CFG_XMLPATTERNS="$canBuildQtXmlPatterns"
-elif [ "$CFG_EXCEPTIONS" = "no" ]; then
-    CFG_XMLPATTERNS="no"
-fi
-# No longer needed after modularization
-#if [ "$CFG_XMLPATTERNS" = "yes" ]; then
-#    QT_CONFIG="$QT_CONFIG xmlpatterns"
-#else
-#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
-#fi
-
-# No longer needed after modularization
-#if [ "$CFG_MULTIMEDIA" = "no" ]; then
-#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
-#else
-#    QT_CONFIG="$QT_CONFIG multimedia"
-#fi
-
+# ### Vestige
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
 fi
 
-if [ "$CFG_SVG" = "auto" ]; then
-    CFG_SVG=$CFG_GUI
+# ### Vestige
+if [ "$CFG_WEBKIT" = "debug" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
 fi
 
-if [ "$CFG_SVG" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
-    echo "QtSvg requested, but it can't be built without QtGui"
-    exit 1
-fi
-
-if [ "$CFG_SVG" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG svg"
+# ### Vestige
+QT_CONFIG="$QT_CONFIG v8"
+# Detect snapshot support
+if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
+    case "$CFG_HOST_ARCH,$CFG_ARCH" in
+        i386,arm)
+        ;;
+    *) canUseV8Snapshot="no"
+        ;;
+    esac
 else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
-fi
-
-if [ "$CFG_WEBKIT" != "no" ]; then
-    CFG_WEBKIT="$canBuildWebKit"
-fi
-
-if [ "$CFG_WEBKIT" != "no" ]; then
-    # No longer needed after modularization
-    #QT_CONFIG="$QT_CONFIG webkit"
-    # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
-    if [ "$CFG_WEBKIT" = "debug" ]; then
-        QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
+    if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" == "arm" ]; then
+        # QEMU crashes when building inside Scratchbox with an ARM target
+        canUseV8Snapshot="no"
     fi
 fi
-
-if [ "$CFG_SCRIPT" = "auto" ]; then
-    CFG_SCRIPT="yes"
+if [ "$CFG_V8SNAPSHOT" = "auto" ]; then
+    CFG_V8SNAPSHOT="$canUseV8Snapshot"
 fi
-
-# No longer needed after modularization
-#if [ "$CFG_SCRIPT" = "yes" ]; then
-#    QT_CONFIG="$QT_CONFIG script"
-#else
-#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
-#fi
-
-if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
-    echo "QtScriptTools was requested, but it can't be built due to QtScript being disabled."
+if [ "$CFG_V8SNAPSHOT" = "yes" -a "$canUseV8Snapshot" = "no" ]; then
+    echo "Error: V8 snapshot was requested, but is not supported on this platform."
     exit 1
 fi
-if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
-    CFG_SCRIPTTOOLS="yes"
-elif [ "$CFG_SCRIPT" = "no" ]; then
-    CFG_SCRIPTTOOLS="no"
+if [ "$CFG_V8SNAPSHOT" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG v8snapshot"
 fi
 
-# No longer needed after modularization
-#if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
-#    QT_CONFIG="$QT_CONFIG scripttools"
-#else
-#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-#fi
-
-
-case "$CFG_ARCH" in
-i386|x86_64|arm|mips) ;;
-*) canBuildV8="no";;
-esac
-
-if [ "$CFG_V8" = "yes" -a "$canBuildV8" = "no" ]; then
-    echo "Error: V8 was requested, but is not supported on this platform."
-    exit 1
-fi
-
-if [ "$CFG_V8" = "auto" ]; then
-    CFG_V8="$canBuildV8"
-fi
-
-if [ "$CFG_V8" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_V8"
-else
-    QT_CONFIG="$QT_CONFIG v8"
-    # Detect snapshot support
-    if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
-        case "$CFG_HOST_ARCH,$CFG_ARCH" in
-            i386,arm)
-            ;;
-        *) canUseV8Snapshot="no"
-            ;;
-        esac
-    else
-        if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" == "arm" ]; then
-            # QEMU crashes when building inside Scratchbox with an ARM target
-            canUseV8Snapshot="no"
-        fi
-    fi
-    if [ "$CFG_V8SNAPSHOT" = "auto" ]; then
-        CFG_V8SNAPSHOT="$canUseV8Snapshot"
-    fi
-    if [ "$CFG_V8SNAPSHOT" = "yes" -a "$canUseV8Snapshot" = "no" ]; then
-        echo "Error: V8 snapshot was requested, but is not supported on this platform."
-        exit 1
-    fi
-    if [ "$CFG_V8SNAPSHOT" = "yes" ]; then
-        QT_CONFIG="$QT_CONFIG v8snapshot"
-    fi
-fi
-
-if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    if [ "$CFG_V8" = "no" -o "$CFG_GUI" = "no" ]; then
-        echo "Error: QtDeclarative was requested, but it can't be built due to QtV8 or QtGui being disabled."
-        exit 1
-    fi
-fi
-if [ "$CFG_DECLARATIVE" = "auto" ]; then
-    if [ "$CFG_V8" = "no" -o "$CFG_GUI" = "no" ]; then
-            CFG_DECLARATIVE=no
-    else
-            CFG_DECLARATIVE=yes
-    fi
-fi
-
-if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    # No longer needed after modularization
-    #QT_CONFIG="$QT_CONFIG declarative"
-    if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
-    fi
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
-fi
-
-if [ "$CFG_LOCATION" = "auto" ]; then
-    CFG_LOCATION="$CFG_GUI"
-fi
-
-if [ "$CFG_LOCATION" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
-    echo "QtLocation requested, but it can't be built without QtGui"
-    exit 1
-fi
-
-#Disable QtLocation until ready
-CFG_LOCATION="no"
-
-if [ "$CFG_LOCATION" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_LOCATION"
+# ### Vestige
+if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -7823,7 +7463,6 @@ QT_BUILD_PARTS = $CFG_BUILD_PARTS
 QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
 QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
 QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
-QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
@@ -7907,15 +7546,6 @@ EOF
 *) ;;
 esac
 
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "no" ]  && [ "$CFG_WEBKIT" != "no" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    cat <<EOF
-        WARNING: DWARF2 debug symbols are not enabled. Linking webkit
-        in debug mode will run out of memory on systems with 2GB or less.
-        Install Xcode 2.4.1 or higher to enable DWARF2, or configure with
-         -no-webkit or -release to skip webkit debug.
-EOF
-fi
-
 echo
 if [ "$XPLATFORM" = "$PLATFORM" ]; then
     echo "Build type:    $PLATFORM"
@@ -7965,30 +7595,12 @@ fi
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
 echo "QtConcurrent code ...... $CFG_CONCURRENT"
 echo "QtGui module ........... $CFG_GUI"
-echo "QtScript module ........ $CFG_SCRIPT"
-echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
-echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
-echo "Phonon module .......... $CFG_PHONON"
-echo "Multimedia module ...... $CFG_MULTIMEDIA"
-echo "SVG module ............. $CFG_SVG"
-case "$CFG_WEBKIT" in
-    yes)   echo "WebKit module .......... yes" ;;
-    debug) echo "WebKit module .......... yes (debug)" ;;
-    no)    echo "WebKit module .......... no" ;;
-esac
-if [ "$CFG_WEBKIT" != "no" ] || [ "$CFG_SCRIPT" != "no" ]; then
-    if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-        echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
-    else
-        echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
-    fi
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
+    echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
+else
+    echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
 fi
-echo "V8 module .............. $CFG_V8"
-echo "Declarative module ..... $CFG_DECLARATIVE"
-if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
-fi
-echo "Location module ........ $CFG_LOCATION"
+echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
@@ -8292,7 +7904,7 @@ PART_ROOTS=
 for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
-    libs) PART_ROOTS="$PART_ROOTS src tools/linguist/lrelease" ;;
+    libs) PART_ROOTS="$PART_ROOTS src" ;;
     translations) PART_ROOTS="$PART_ROOTS translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples" ;;
     *) ;;
@@ -8322,16 +7934,8 @@ for file in .projects .projects.3; do
                 continue
             fi
             SPEC=$XQMAKESPEC ;;
-        *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
-        *tools/mkv8snapshot/*)
-            if [ "$CFG_V8" = "yes" -a "$CFG_V8SNAPSHOT" = "yes" ]; then
-                SPEC=$QMAKESPEC
-            else
-                continue
-            fi
-            ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
            else
