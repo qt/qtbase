@@ -1737,8 +1737,8 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 
 
 #ifdef Q_COMPILER_STATIC_ASSERT
-#define Q_STATIC_ASSERT(Condition) static_assert(Condition, #Condition)
-#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(Condition, Message)
+#define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
+#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
 #else
 // Intentionally undefined
 template <bool Test> class QStaticAssertFailure;
