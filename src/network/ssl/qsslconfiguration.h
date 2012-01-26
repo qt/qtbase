@@ -86,7 +86,7 @@ public:
     inline bool operator!=(const QSslConfiguration &other) const
     { return !(*this == other); }
 
-    bool isNull() const; // ### Qt 5: remove; who would need this?
+    bool isNull() const;
 
     QSsl::SslProtocol protocol() const;
     void setProtocol(QSsl::SslProtocol protocol);
