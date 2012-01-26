@@ -86,6 +86,7 @@ public Q_SLOTS:
     void setRedirectKeys(bool );
     void setSelection(int start, int length);
     void updateInputMethodArea(int x, int y, int width, int height);
+    void updateServerWindowOrientation(Qt::ScreenOrientation orientation);
 
 private:
     QMeeGoPlatformInputContextPrivate *d;

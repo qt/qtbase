@@ -151,6 +151,7 @@ public:
     bool correctionEnabled;
     QRect keyboardRect;
     QString preedit;
+    QWeakPointer<QWindow> window;
     QMeeGoPlatformInputContext *q;
 };
 
@@ -447,6 +448,11 @@ void QMeeGoPlatformInputContext::updateInputMethodArea(int x, int y, int width, 
     emitKeyboardRectChanged();
 }
 
+void QMeeGoPlatformInputContext::updateServerWindowOrientation(Qt::ScreenOrientation orientation)
+{
+    d->server->appOrientationChanged(orientationAngle(orientation));
+}
+
 void QMeeGoPlatformInputContext::inputItemChanged()
 {
     if (!d->valid)
@@ -455,6 +461,15 @@ void QMeeGoPlatformInputContext::inputItemChanged()
     QInputPanel *panel = qApp->inputPanel();
     QObject *input = panel->inputItem();
     QWindow *window = panel->inputWindow();
+    if (window != d->window.data()) {
+       if (d->window)
+           disconnect(d->window.data(), SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)),
+                      this, SLOT(updateServerWindowOrientation(Qt::ScreenOrientation)));
+        d->window = window;
+        if (d->window)
+            connect(d->window.data(), SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)),
+                    this, SLOT(updateServerWindowOrientation(Qt::ScreenOrientation)));
+    }
 
     d->imState["focusState"] = input != 0;
     if (input) {
@@ -465,9 +480,8 @@ void QMeeGoPlatformInputContext::inputItemChanged()
             d->active = true;
             d->server->activateContext();
 
-            // ### react to orientation changes, too
             if (window)
-                d->server->appOrientationChanged(orientationAngle(window->screen()->orientation()));
+                d->server->appOrientationChanged(orientationAngle(window->contentOrientation()));
         }
     }
     d->sendStateUpdate(/*focusChanged*/true);
