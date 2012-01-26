@@ -87,6 +87,7 @@ class QString;
 #define Q_INVOKABLE
 #define Q_SIGNAL
 #define Q_SLOT
+#endif // QT_NO_META_MACROS
 
 #ifndef QT_NO_TRANSLATION
 # ifndef QT_NO_TEXTCODEC
@@ -106,7 +107,6 @@ class QString;
 // inherit the ones from QObject
 # define QT_TR_FUNCTIONS
 #endif
-#endif // QT_NO_META_MACROS
 
 #if defined(QT_NO_QOBJECT_CHECK)
 /* tmake ignore Q_OBJECT */
