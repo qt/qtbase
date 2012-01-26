@@ -2,8 +2,9 @@ TEMPLATE = subdirs
 
 SUBDIRS = hellothread \
           hellothreadpool \
-          helloconcurrent \
           clock \
           movedobject 
+
+contains(QT_CONFIG, concurrent): SUBDIRS += helloconcurrent
 
 QT += widgets
