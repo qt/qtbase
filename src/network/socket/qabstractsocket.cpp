@@ -317,6 +317,10 @@
            because the response from the proxy server could not be understood.
     \value OperationError An operation was attempted while the socket was in a state that
            did not permit it.
+    \value SslInternalError The SSL library being used reported a internal error, this is
+           probably the result of a bad installation or misconfiguration of the library.
+    \value SslInvalidUserDataError Invalid data(certificate, key, cypher, etc.) was
+           provided and its use resulted in an error in the SSL library.
 
     \value UnknownSocketError An unidentified error occurred.
     \sa QAbstractSocket::error()

@@ -97,6 +97,8 @@ public:
         ProxyNotFoundError,
         ProxyProtocolError,
         OperationError,
+        SslInternalError,                       /* 20 */
+        SslInvalidUserDataError,
 
         UnknownSocketError = -1
     };
