@@ -73,13 +73,9 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_WIN
-static inline HMENU qt_getWindowsSystemMenu(const QWidget *w)
+HMENU qt_getWindowsSystemMenu(const QWidget *w)
 {
-    QWindow *window = w->windowHandle();
-    if (!window)
-        if (const QWidget *nativeParent = w->nativeParentWidget())
-            window = nativeParent->windowHandle();
-    if (window)
+    if (QWindow *window = QApplicationPrivate::windowForWidget(w))
         if (void *handle = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window))
             return GetSystemMenu(reinterpret_cast<HWND>(handle), FALSE);
     return 0;

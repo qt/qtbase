@@ -54,8 +54,9 @@
 
 #if defined(Q_WS_X11)
 #include <private/qt_x11_p.h>
-#elif defined (Q_WS_WIN)
-#include "qt_windows.h"
+#elif defined (Q_OS_WIN)
+#    include <QtCore/qt_windows.h>
+#    include "private/qapplication_p.h"
 #endif
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -64,12 +65,17 @@
 #include <private/qwidget_p.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
-#define SZ_SIZEBOTTOMRIGHT  0xf008
-#define SZ_SIZEBOTTOMLEFT   0xf007
-#define SZ_SIZETOPLEFT      0xf004
-#define SZ_SIZETOPRIGHT     0xf005
-
 QT_BEGIN_NAMESPACE
+
+#if defined (Q_OS_WIN)
+#    define SZ_SIZEBOTTOMRIGHT  0xf008
+#    define SZ_SIZEBOTTOMLEFT   0xf007
+#    define SZ_SIZETOPLEFT      0xf004
+#    define SZ_SIZETOPRIGHT     0xf005
+
+HMENU qt_getWindowsSystemMenu(const QWidget *w);
+
+#endif
 
 static QWidget *qt_sizegrip_topLevelWidget(QWidget* w)
 {
@@ -317,7 +323,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
         return;
     }
 #endif // Q_WS_X11
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (tlw->isWindow() && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
         uint orientation = 0;
         if (d->atBottom())
@@ -326,10 +332,10 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
             orientation = d->atLeft() ? SZ_SIZETOPLEFT : SZ_SIZETOPRIGHT;
 
         ReleaseCapture();
-        PostMessage(tlw->winId(), WM_SYSCOMMAND, orientation, 0);
+        PostMessage(QApplicationPrivate::getHWNDForWidget(tlw), WM_SYSCOMMAND, orientation, 0);
         return;
     }
-#endif // Q_WS_WIN
+#endif // Q_OS_WIN
 
     // Find available desktop/workspace geometry.
     QRect availableGeometry;
@@ -411,12 +417,13 @@ void QSizeGrip::mouseMoveEvent(QMouseEvent * e)
         && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth())
         return;
 #endif
-#ifdef Q_WS_WIN
-    if (tlw->isWindow() && GetSystemMenu(tlw->winId(), FALSE) != 0 && internalWinId()
-        && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
-        MSG msg;
-        while(PeekMessage(&msg, winId(), WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE));
-        return;
+#ifdef Q_OS_WIN
+    if (tlw->isWindow() && qt_getWindowsSystemMenu(tlw) && !tlw->testAttribute(Qt::WA_DontShowOnScreen) && !qt_widget_private(tlw)->hasHeightForWidth()) {
+        if (const HWND hwnd = QApplicationPrivate::getHWNDForWidget(tlw)) {
+            MSG msg;
+            while (PeekMessage(&msg, hwnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) ;
+            return;
+        }
     }
 #endif
 
@@ -540,14 +547,6 @@ bool QSizeGrip::event(QEvent *event)
 {
     return QWidget::event(event);
 }
-
-#ifdef Q_WS_WIN
-/*! \reimp */
-bool QSizeGrip::winEvent( MSG *m, long *result )
-{
-    return QWidget::winEvent(m, result);
-}
-#endif
 
 QT_END_NAMESPACE
 
