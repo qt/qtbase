@@ -1919,7 +1919,7 @@ void tst_QVariant::typeName_data()
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
     QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
-    QTest::newRow("42") << int(QVariant::UserType) << QByteArray("UserType");
+    QTest::newRow("42") << int(QVariant::UserType) << QByteArray();
     QTest::newRow("43") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
@@ -1961,6 +1961,8 @@ void tst_QVariant::typeToName()
     QVERIFY( QVariant::nameToType( 0 ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "" ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "foo" ) == QVariant::Invalid );
+
+    QCOMPARE(QVariant::nameToType("UserType"), QVariant::Invalid);
 
     // We don't support these old (Qt3) types anymore.
     QCOMPARE(QVariant::nameToType("QIconSet"), QVariant::Invalid);
