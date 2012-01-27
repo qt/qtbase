@@ -202,9 +202,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         // verify that it's a valid one
         if (!typeName.isEmpty()) {
             // type name found
-            type = QVariant::nameToType(typeName);
-            if (type == QVariant::UserType)
-                type = QMetaType::type(typeName);
+            type = QMetaType::type(typeName);
         }
 
         if (type == QVariant::Invalid || signature != QDBusMetaType::typeToSignature(type)) {
