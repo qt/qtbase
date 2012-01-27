@@ -102,16 +102,16 @@ public:
     inline QItemEditorFactory() {}
     virtual ~QItemEditorFactory();
 
-    virtual QWidget *createEditor(QVariant::Type type, QWidget *parent) const;
-    virtual QByteArray valuePropertyName(QVariant::Type type) const;
+    virtual QWidget *createEditor(int userType, QWidget *parent) const;
+    virtual QByteArray valuePropertyName(int userType) const;
 
-    void registerEditor(QVariant::Type type, QItemEditorCreatorBase *creator);
+    void registerEditor(int userType, QItemEditorCreatorBase *creator);
 
     static const QItemEditorFactory *defaultFactory();
     static void setDefaultFactory(QItemEditorFactory *factory);
 
 private:
-    QHash<QVariant::Type, QItemEditorCreatorBase *> creatorMap;
+    QHash<int, QItemEditorCreatorBase *> creatorMap;
 };
 
 #endif // QT_NO_ITEMVIEWS

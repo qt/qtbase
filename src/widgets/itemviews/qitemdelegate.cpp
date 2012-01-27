@@ -527,11 +527,10 @@ QWidget *QItemDelegate::createEditor(QWidget *parent,
     Q_D(const QItemDelegate);
     if (!index.isValid())
         return 0;
-    QVariant::Type t = static_cast<QVariant::Type>(index.data(Qt::EditRole).userType());
     const QItemEditorFactory *factory = d->f;
     if (factory == 0)
         factory = QItemEditorFactory::defaultFactory();
-    return factory->createEditor(t, parent);
+    return factory->createEditor(index.data(Qt::EditRole).userType(), parent);
 }
 
 /*!
@@ -568,7 +567,7 @@ void QItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) con
 
     // ### Qt 5: give QComboBox a USER property
     if (n.isEmpty() && editor->inherits("QComboBox"))
-        n = d->editorFactory()->valuePropertyName(static_cast<QVariant::Type>(v.userType()));
+        n = d->editorFactory()->valuePropertyName(v.userType());
     if (!n.isEmpty()) {
         if (!v.isValid())
             v = QVariant(editor->property(n).userType(), (const void *)0);
@@ -603,7 +602,7 @@ void QItemDelegate::setModelData(QWidget *editor,
     QByteArray n = editor->metaObject()->userProperty().name();
     if (n.isEmpty())
         n = d->editorFactory()->valuePropertyName(
-            static_cast<QVariant::Type>(model->data(index, Qt::EditRole).userType()));
+            model->data(index, Qt::EditRole).userType());
     if (!n.isEmpty())
         model->setData(index, editor->property(n), Qt::EditRole);
 #endif

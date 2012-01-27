@@ -125,6 +125,11 @@ information about a particular change.
   * It is no longer possible to use Q_DECLARE_METATYPE(Foo*) where Foo is only
     forward declared - it must be fully defined.
 
+- QItemEditorFactory
+
+  * The signature of the createEditor and valuePropertyName methods
+    have been changed to take arguments of type int instead of QVariant::Type.
+
 - QWindowSystemInterface:
 
   * The signature of all handleTouchEvent() variants have changed,
