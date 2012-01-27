@@ -407,12 +407,12 @@ void tst_QLabel::task226479_movieResize()
     QMovie *movie = new QMovie( &label );
     label.setMovie(movie);
     QTest::qWaitForWindowShown(&label);
-    movie->setFileName(SRCDIR "red.png");
+    movie->setFileName(QFINDTESTDATA("red.png"));
     movie->start();
     QTest::qWait(50);
     movie->stop();
     label.paintedRegion = QRegion();
-    movie->setFileName(SRCDIR "green.png");
+    movie->setFileName(QFINDTESTDATA("green.png"));
     movie->start();
     QTest::qWait(50);
 
