@@ -73,6 +73,7 @@ public:
     public:
         explicit WindowSystemEvent(EventType t)
             : type(t), synthetic(false) { }
+        virtual ~WindowSystemEvent() { }
         EventType type;
         bool synthetic;
     };
