@@ -241,6 +241,7 @@ struct QWindowsContextPrivate {
     QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
     const HRESULT m_oleInitializeResult;
+    const QByteArray m_eventType;
     EventFilter m_eventFilters[EventFilterTypeCount];
 };
 
@@ -248,7 +249,8 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_systemInfo(0),
     m_displayContext(GetDC(0)),
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
-    m_oleInitializeResult(OleInitialize(NULL))
+    m_oleInitializeResult(OleInitialize(NULL)),
+    m_eventType(QByteArrayLiteral("windows_generic_MSG"))
 {
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
@@ -633,7 +635,7 @@ QByteArray QWindowsContext::comErrorString(HRESULT hr)
 QWindowsContext::EventFilter QWindowsContext::setEventFilter(const QByteArray &eventType, EventFilter filter)
 {
     int eventFilterType = -1;
-    if (eventType == QByteArrayLiteral("windows_generic_MSG"))
+    if (eventType == d->m_eventType)
         eventFilterType = QWindowsContextPrivate::GenericWindowsEventFilter;
     if (eventFilterType < 0) {
         qWarning("%s: Attempt to set unsupported event filter '%s'.",
@@ -665,8 +667,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.pt.x = GET_X_LPARAM(lParam);
     msg.pt.y = GET_Y_LPARAM(lParam);
 
+    long filterResult = 0;
     if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter]) {
-        long filterResult = 0;
         if (d->m_eventFilters[QWindowsContextPrivate::GenericWindowsEventFilter](&msg, &filterResult)) {
             *result = LRESULT(filterResult);
             return true;
@@ -732,6 +734,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                  __FUNCTION__, message,
                  QWindowsGuiEventDispatcher::windowsMessageName(message), hwnd);
         return false;
+    }
+
+    filterResult = 0;
+    if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
+        *result = LRESULT(filterResult);
+        return true;
     }
 
     switch (et) {

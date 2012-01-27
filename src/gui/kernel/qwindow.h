@@ -288,6 +288,7 @@ protected:
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     QWindow(QWindowPrivate &dd, QWindow *parent);
 

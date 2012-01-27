@@ -660,19 +660,7 @@ protected:
 
     virtual void showEvent(QShowEvent *);
     virtual void hideEvent(QHideEvent *);
-
-#if defined(Q_WS_MAC)
-    virtual bool macEvent(EventHandlerCallRef, EventRef);
-#endif
-#if defined(Q_WS_WIN)
-    virtual bool winEvent(MSG *message, long *result);
-#endif
-#if defined(Q_WS_X11)
-    virtual bool x11Event(XEvent *);
-#endif
-#if defined(Q_WS_QWS)
-    virtual bool qwsEvent(QWSEvent *);
-#endif
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
     // Misc. protected functions
     virtual void changeEvent(QEvent *);

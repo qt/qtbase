@@ -431,4 +431,9 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
     QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
 }
 
+bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    return m_widget->nativeEvent(eventType, message, result);
+}
+
 QT_END_NAMESPACE

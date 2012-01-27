@@ -60,6 +60,17 @@ QMutex QWindowSystemInterfacePrivate::queueMutex;
 
 extern QPointer<QWindow> qt_last_mouse_receiver;
 
+/*!
+    \class QWindowSystemInterface
+    \since 5.0
+    \internal
+    \preliminary
+    \ingroup qpa
+    \brief The QWindowSystemInterface provides an event queue for the QPA platform.
+
+    The platform plugins call the various functions to notify about events. The events are queued
+    until sendWindowSystemEvents() is called by the event dispatcher.
+*/
 
 void QWindowSystemInterface::handleEnterEvent(QWindow *tlw)
 {
@@ -377,6 +388,19 @@ Qt::DropAction QWindowSystemInterface::handleDrag(QWindow *w, QMimeData *dropDat
 Qt::DropAction QWindowSystemInterface::handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
 {
     return QGuiApplicationPrivate::processDrop(w, dropData, p);
+}
+
+/*!
+    \fn static QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
+    \brief Passes a native event identified by \a eventType to the \a window.
+
+    \note This function can only be called from the GUI thread.
+    \sa QPlatformNativeInterface::setEventFilter()
+*/
+
+bool QWindowSystemInterface::handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
+{
+    return QGuiApplicationPrivate::processNativeEvent(window, eventType, message, result);
 }
 
 QT_END_NAMESPACE

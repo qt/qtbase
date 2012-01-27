@@ -120,6 +120,8 @@ public:
     static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
     static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
+    static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
+
     // Changes to the screen
     static void handleScreenOrientationChange(QScreen *screen, Qt::ScreenOrientation newOrientation);
     static void handleScreenGeometryChange(QScreen *screen, const QRect &newGeometry);

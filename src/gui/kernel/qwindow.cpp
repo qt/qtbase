@@ -1035,6 +1035,14 @@ void QWindow::touchEvent(QTouchEvent *ev)
     ev->ignore();
 }
 
+bool QWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    Q_UNUSED(eventType);
+    Q_UNUSED(message);
+    Q_UNUSED(result);
+    return false;
+}
+
 /*!
     \fn QPoint QWindow::mapToGlobal(const QPoint &pos) const
 

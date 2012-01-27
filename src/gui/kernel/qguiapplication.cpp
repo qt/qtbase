@@ -571,6 +571,11 @@ bool QGuiApplication::compressEvent(QEvent *event, QObject *receiver, QPostEvent
     return QCoreApplication::compressEvent(event, receiver, postedEvents);
 }
 
+bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result)
+{
+    return window->nativeEvent(eventType, message, result);
+}
+
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
     switch(e->type) {

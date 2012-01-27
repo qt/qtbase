@@ -3205,16 +3205,17 @@ void QWizard::paintEvent(QPaintEvent * event)
 #endif
 }
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 /*!
     \reimp
 */
-bool QWizard::winEvent(MSG *message, long *result)
+bool QWizard::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
     Q_D(QWizard);
-    if (d->isVistaThemeEnabled()) {
-        const bool winEventResult = d->vistaHelper->handleWinEvent(message, result);
+    if (d->isVistaThemeEnabled() && eventType == QByteArrayLiteral("windows_generic_MSG")) {
+        MSG *windowsMessage = static_cast<MSG *>(message);
+        const bool winEventResult = d->vistaHelper->handleWinEvent(windowsMessage, result);
         if (QVistaHelper::vistaState() != d->vistaState) {
             d->vistaState = QVistaHelper::vistaState();
             d->vistaStateChanged = true;
@@ -3222,10 +3223,10 @@ bool QWizard::winEvent(MSG *message, long *result)
         }
         return winEventResult;
     } else {
-        return QDialog::winEvent(message, result);
+        return QDialog::nativeEvent(eventType, message, result);
     }
 #else
-    return QDialog::winEvent(message, result);
+    return QDialog::nativeEvent(eventType, message, result);
 #endif
 }
 #endif

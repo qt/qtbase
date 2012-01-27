@@ -211,17 +211,13 @@ protected:
     virtual bool focusNextPrevChild(bool next);
     void focusOutEvent(QFocusEvent *event);
     virtual void hideEvent(QHideEvent *event);
-    //virtual bool macEvent(EventHandlerCallRef caller, EventRef event);
     //virtual int metric(PaintDeviceMetric m ) const;
     virtual void moveEvent(QGraphicsSceneMoveEvent *event);
     virtual void polishEvent();
-    //virtual bool qwsEvent(QWSEvent *event);
     //void resetInputContext ();
     virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
     virtual void showEvent(QShowEvent *event);
     //virtual void tabletEvent(QTabletEvent *event);
-    //virtual bool winEvent(MSG *message, long *result);
-    //virtual bool x11Event(XEvent *event);
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     virtual void grabMouseEvent(QEvent *event);

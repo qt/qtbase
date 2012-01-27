@@ -79,6 +79,7 @@ protected:
     void handleDragEvent(QEvent *);
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
 private:
     void updateGeometry();
