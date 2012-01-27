@@ -136,7 +136,24 @@ static const int windowsRightBorder      = 12; // right border on windows
 extern Q_WIDGETS_EXPORT HDC qt_win_display_dc();
 extern QRegion qt_region_from_HRGN(HRGN rgn);
 
+static inline QBackingStore *backingStoreForWidget(const QWidget *widget)
+{
+    if (QBackingStore *backingStore = widget->backingStore())
+        return backingStore;
+    if (const QWidget *topLevel = widget->nativeParentWidget())
+        if (QBackingStore *topLevelBackingStore = topLevel->backingStore())
+            return topLevelBackingStore;
+    return 0;
+}
 
+static inline HDC hdcForWidgetBackingStore(const QWidget *widget)
+{
+    if (QBackingStore *backingStore = backingStoreForWidget(widget)) {
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        return static_cast<HDC>(nativeInterface->nativeResourceForBackingStore(QByteArrayLiteral("getDC"), backingStore));
+    }
+    return 0;
+}
 
 // Theme data helper ------------------------------------------------------------------------------
 /* \internal
@@ -197,11 +214,8 @@ HRGN XPThemeData::mask(QWidget *widget)
 
     HRGN hrgn;
     HDC dc = 0;
-    if (widget) {
-        QBackingStore *backingStore = widget->backingStore();
-        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
-    }
+    if (widget)
+        dc = hdcForWidgetBackingStore(widget);
     RECT nativeRect = toRECT(rect);
     pGetThemeBackgroundRegion(handle(), dc, partId, stateId, &nativeRect, &hrgn);
     return hrgn;
@@ -661,7 +675,7 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
             - Theme part is flipped (mirrored horizontally)
         else use drawBackgroundDirectly().
 */
-void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData, bool forceFallback)
+void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 {
     if (themeData.rect.isEmpty())
         return;
@@ -682,24 +696,18 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData, bool forceFa
         translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
     }
 
-    HDC dc = 0;
-    if (themeData.widget) {
-        QBackingStore *backingStore = themeData.widget->backingStore();
-        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore ));
-    }
-
-    const bool useFallback = forceFallback || dc == 0
-                       || painter->opacity() != 1.0
-                       || themeData.rotate
-                       || complexXForm
-                       || themeData.mirrorVertically
-                       || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
-                       || translucentToplevel;
-    if (!useFallback)
+    // Draw on backing store DC only for real widgets.
+    const bool useFallback = !themeData.widget || painter->device()->devType() != QInternal::Widget
+        || painter->opacity() != 1.0 || themeData.rotate
+        || complexXForm  || themeData.mirrorVertically
+        || (themeData.mirrorHorizontally && pDrawThemeBackgroundEx == 0)
+        || translucentToplevel;
+    const HDC dc = useFallback ? HDC(0) : hdcForWidgetBackingStore(themeData.widget);
+    if (dc && !useFallback) {
         drawBackgroundDirectly(themeData);
-    else
+    } else {
         drawBackgroundThruNativeBuffer(themeData);
+    }
 
     painter->restore();
 }
@@ -713,11 +721,8 @@ void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 {
     QPainter *painter = themeData.painter;
     HDC dc = 0;
-    if (themeData.widget) {
-        QBackingStore *backingStore = themeData.widget->backingStore();
-        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
-    }
+    if (themeData.widget)
+        dc = hdcForWidgetBackingStore(themeData.widget);
 
     QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
                             int(painter->deviceMatrix().dy()));

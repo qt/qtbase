@@ -1010,12 +1010,12 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                             QPainter startPainter(&startImage);
                             stateId = PBS_DEFAULTED;
                             XPThemeData theme(widget, &startPainter, name, partId, stateId, rect);
-                            d->drawBackground(theme, true); // Do not draw on HDC of backing store.
+                            d->drawBackground(theme);
 
                             QPainter alternatePainter(&alternateImage);
                             theme.stateId = PBS_DEFAULTED_ANIMATING;
                             theme.painter = &alternatePainter;
-                            d->drawBackground(theme, true); // Do not draw on HDC of backing store.
+                            d->drawBackground(theme);
                             pulse->setPrimaryImage(startImage);
                             pulse->setAlternateImage(alternateImage);
                             pulse->setStartTime(QTime::currentTime());

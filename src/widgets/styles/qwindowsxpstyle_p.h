@@ -314,7 +314,7 @@ public:
     QRegion region(XPThemeData &themeData);
 
     void setTransparency(QWidget *widget, XPThemeData &themeData);
-    void drawBackground(XPThemeData &themeData, bool forceFallback = false);
+    void drawBackground(XPThemeData &themeData);
     void drawBackgroundThruNativeBuffer(XPThemeData &themeData);
     void drawBackgroundDirectly(XPThemeData &themeData);
 
