@@ -214,9 +214,36 @@ QObject *QGuiApplication::focusObject()
     return 0;
 }
 
-QWindowList QGuiApplication::topLevelWindows()
+/*!
+    \fn QGuiApplication::allWindows()
+
+    Returns a list of all the windows in the application.
+
+    The list is empty if there are no windows.
+
+    \sa topLevelWindows()
+ */
+QWindowList QGuiApplication::allWindows()
 {
     return QGuiApplicationPrivate::window_list;
+}
+
+/*!
+    \fn QGuiApplication::topLevelWindows()
+
+    Returns a list of the top-level windows in the application.
+
+    \sa allWindows()
+ */
+QWindowList QGuiApplication::topLevelWindows()
+{
+    const QWindowList &list = QGuiApplicationPrivate::window_list;
+    QWindowList topLevelWindows;
+    for (int i = 0; i < list.size(); i++) {
+        if (!list.at(i)->parent())
+            topLevelWindows.prepend(list.at(i));
+    }
+    return topLevelWindows;
 }
 
 QScreen *QGuiApplication::primaryScreen()

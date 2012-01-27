@@ -81,6 +81,7 @@ public:
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QGuiApplication();
 
+    static QWindowList allWindows();
     static QWindowList topLevelWindows();
     static QWindow *topLevelAt(const QPoint &pos);
 

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QWindow>
 #include <QDebug>
 
 class tst_QGuiApplication: public QObject
@@ -50,6 +51,8 @@ class tst_QGuiApplication: public QObject
 
 private slots:
     void focusObject();
+    void allWindows();
+    void topLevelWindows();
 };
 
 class DummyWindow : public QWindow
@@ -115,6 +118,39 @@ void tst_QGuiApplication::focusObject()
     QCOMPARE(app.focusObject(), &obj3);
 }
 
+void tst_QGuiApplication::allWindows()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    QWindow *window1 = new QWindow;
+    QWindow *window2 = new QWindow(window1);
+    QVERIFY(app.allWindows().contains(window1));
+    QVERIFY(app.allWindows().contains(window2));
+    QCOMPARE(app.allWindows().count(), 2);
+    delete window1;
+    window1 = 0;
+    window2 = 0;
+    QVERIFY(!app.allWindows().contains(window2));
+    QVERIFY(!app.allWindows().contains(window1));
+    QCOMPARE(app.allWindows().count(), 0);
+}
+
+void tst_QGuiApplication::topLevelWindows()
+{
+    int argc = 0;
+    QGuiApplication app(argc, 0);
+    QWindow *window1 = new QWindow;
+    QWindow *window2 = new QWindow(window1);
+    QVERIFY(app.topLevelWindows().contains(window1));
+    QVERIFY(!app.topLevelWindows().contains(window2));
+    QCOMPARE(app.topLevelWindows().count(), 1);
+    delete window1;
+    window1 = 0;
+    window2 = 0;
+    QVERIFY(!app.topLevelWindows().contains(window2));
+    QVERIFY(!app.topLevelWindows().contains(window1));
+    QCOMPARE(app.topLevelWindows().count(), 0);
+}
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
 #include "tst_qguiapplication.moc"
