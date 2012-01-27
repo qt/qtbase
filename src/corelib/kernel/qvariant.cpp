@@ -1631,7 +1631,7 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QVariant::Size,
     QVariant::Color,
     QVariant::Palette,
-    63, // ColorGroup
+    0, // ColorGroup
     QVariant::Icon,
     QVariant::Point,
     QVariant::Image,
