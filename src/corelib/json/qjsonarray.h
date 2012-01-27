@@ -42,7 +42,7 @@
 #ifndef QJSONARRAY_H
 #define QJSONARRAY_H
 
-#include <qjsonvalue.h>
+#include <QtCore/qjsonvalue.h>
 
 QT_BEGIN_HEADER
 

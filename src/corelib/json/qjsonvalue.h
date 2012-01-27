@@ -42,8 +42,8 @@
 #ifndef QJSONVALUE_H
 #define QJSONVALUE_H
 
-#include <qglobal.h>
-#include <qstring.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_HEADER
 

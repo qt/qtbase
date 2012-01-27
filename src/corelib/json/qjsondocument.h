@@ -42,7 +42,7 @@
 #ifndef QJSONDOCUMENT_H
 #define QJSONDOCUMENT_H
 
-#include <qjsonvalue.h>
+#include <QtCore/qjsonvalue.h>
 
 QT_BEGIN_HEADER
 

@@ -63,7 +63,7 @@
 #endif
 
 #ifdef QT_OLD_ATOMICS
-# include "qoldbasicatomic.h"
+# include "QtCore/qoldbasicatomic.h"
 # undef QT_OLD_ATOMICS
 #else
 
