@@ -198,7 +198,7 @@ void tst_QSplitter::setSizes_data()
     QTest::addColumn<IntList>("collapsibleStates");
     QTest::addColumn<bool>("childrenCollapse");
 
-    QFile file(SRCDIR "setSizes3.dat");
+    QFile file(QFINDTESTDATA("setSizes3.dat"));
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << "Can't open file, reason:" << file.errorString();
         return;
