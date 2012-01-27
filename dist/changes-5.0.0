@@ -193,6 +193,11 @@ information about a particular change.
 - QDir::NoDotAndDotDot is QDir::NoDot|QDir::NoDotDot therefore there is no need
   to use or check both.
 
+- QLocale
+  * toShort(), toUShort(), toInt(), toUInt(), toLongLong() and toULongLong() no
+    longer take a parameter for base, they will only perform localised base 10
+    conversions. For converting other bases use the QString methods instead.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

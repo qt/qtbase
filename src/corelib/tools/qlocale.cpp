@@ -1021,11 +1021,7 @@ QString QLocale::scriptToString(QLocale::Script script)
 }
 
 /*!
-    Returns the short int represented by the localized string \a s,
-    using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1037,9 +1033,9 @@ QString QLocale::scriptToString(QLocale::Script script)
     \sa toUShort(), toString()
 */
 
-short QLocale::toShort(const QString &s, bool *ok, int base) const
+short QLocale::toShort(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok, base);
+    qlonglong i = toLongLong(s, ok);
     if (i < SHRT_MIN || i > SHRT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1049,11 +1045,7 @@ short QLocale::toShort(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the unsigned short int represented by the localized string
-    \a s, using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the unsigned short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1065,9 +1057,9 @@ short QLocale::toShort(const QString &s, bool *ok, int base) const
     \sa toShort(), toString()
 */
 
-ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
+ushort QLocale::toUShort(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok, base);
+    qulonglong i = toULongLong(s, ok);
     if (i > USHRT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1077,11 +1069,7 @@ ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the int represented by the localized string \a s, using
-    base \a base. If \a base is 0 the base is determined automatically
-    using the following rules: If the string begins with "0x", it is
-    assumed to be hexadecimal; if it begins with "0", it is assumed to
-    be octal; otherwise it is assumed to be decimal.
+    Returns the int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1093,9 +1081,9 @@ ushort QLocale::toUShort(const QString &s, bool *ok, int base) const
     \sa toUInt(), toString()
 */
 
-int QLocale::toInt(const QString &s, bool *ok, int base) const
+int QLocale::toInt(const QString &s, bool *ok) const
 {
-    qlonglong i = toLongLong(s, ok, base);
+    qlonglong i = toLongLong(s, ok);
     if (i < INT_MIN || i > INT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1105,11 +1093,7 @@ int QLocale::toInt(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the unsigned int represented by the localized string \a s,
-    using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the unsigned int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1121,9 +1105,9 @@ int QLocale::toInt(const QString &s, bool *ok, int base) const
     \sa toInt(), toString()
 */
 
-uint QLocale::toUInt(const QString &s, bool *ok, int base) const
+uint QLocale::toUInt(const QString &s, bool *ok) const
 {
-    qulonglong i = toULongLong(s, ok, base);
+    qulonglong i = toULongLong(s, ok);
     if (i > UINT_MAX) {
         if (ok != 0)
             *ok = false;
@@ -1133,11 +1117,7 @@ uint QLocale::toUInt(const QString &s, bool *ok, int base) const
 }
 
 /*!
-    Returns the long long int represented by the localized string \a
-    s, using base \a base. If \a base is 0 the base is determined
-    automatically using the following rules: If the string begins with
-    "0x", it is assumed to be hexadecimal; if it begins with "0", it
-    is assumed to be octal; otherwise it is assumed to be decimal.
+    Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1150,25 +1130,21 @@ uint QLocale::toUInt(const QString &s, bool *ok, int base) const
 */
 
 
-qlonglong QLocale::toLongLong(const QString &s, bool *ok, int base) const
+qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 {
     QLocalePrivate::GroupSeparatorMode mode
         = p.numberOptions & RejectGroupSeparator
             ? QLocalePrivate::FailOnGroupSeparators
             : QLocalePrivate::ParseGroupSeparators;
 
-    return d()->stringToLongLong(s, base, ok, mode);
+    return d()->stringToLongLong(s, 10, ok, mode);
 }
 
 // ### Qt5: make the return type for toULongLong() qulonglong.
 
 /*!
     Returns the unsigned long long int represented by the localized
-    string \a s, using base \a base. If \a base is 0 the base is
-    determined automatically using the following rules: If the string
-    begins with "0x", it is assumed to be hexadecimal; if it begins
-    with "0", it is assumed to be octal; otherwise it is assumed to be
-    decimal.
+    string \a s.
 
     If the conversion fails the function returns 0.
 
@@ -1180,14 +1156,14 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok, int base) const
     \sa toLongLong(), toInt(), toDouble(), toString()
 */
 
-qlonglong QLocale::toULongLong(const QString &s, bool *ok, int base) const
+qlonglong QLocale::toULongLong(const QString &s, bool *ok) const
 {
     QLocalePrivate::GroupSeparatorMode mode
         = p.numberOptions & RejectGroupSeparator
             ? QLocalePrivate::FailOnGroupSeparators
             : QLocalePrivate::ParseGroupSeparators;
 
-    return d()->stringToUnsLongLong(s, base, ok, mode);
+    return d()->stringToUnsLongLong(s, 10, ok, mode);
 }
 
 /*!

@@ -990,11 +990,11 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
         bool ok = false;
-        num = locale.toInt(copy, &ok, 10);
+        num = locale.toInt(copy, &ok);
         if (!ok && copy.contains(locale.groupSeparator()) && (max >= 1000 || min <= -1000)) {
             QString copy2 = copy;
             copy2.remove(locale.groupSeparator());
-            num = locale.toInt(copy2, &ok, 10);
+            num = locale.toInt(copy2, &ok);
         }
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
         if (!ok) {

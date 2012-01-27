@@ -4697,7 +4697,7 @@ int QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionInde
             const int max = qMin(sectionmaxsize, sectiontextSize);
             for (int digits = max; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
-                int tmp = (int)loc.toUInt(digitsStr, &ok, 10);
+                int tmp = (int)loc.toUInt(digitsStr, &ok);
                 if (ok && sn.type == Hour12Section) {
                     if (tmp > 12) {
                         tmp = -1;

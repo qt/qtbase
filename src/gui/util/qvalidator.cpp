@@ -422,7 +422,7 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
         return Invalid;
 
     if (entered >= b && entered <= t) {
-        locale().toInt(input, &ok, 10);
+        locale().toInt(input, &ok);
         return ok ? Acceptable : Intermediate;
     }
 
