@@ -484,6 +484,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         delete generic_plugin_list.at(i);
     generic_plugin_list.clear();
 
+    delete app_font;
+    app_font = 0;
     QFont::cleanup();
 
 #ifndef QT_NO_CURSOR
