@@ -1322,8 +1322,8 @@ void tst_QSslSocket::wildcard()
     QVERIFY2(socket->waitForEncrypted(3000), qPrintable(socket->errorString()));
 
     QSslCertificate certificate = socket->peerCertificate();
-    QCOMPARE(certificate.subjectInfo(QSslCertificate::CommonName), QString(QtNetworkSettings::serverLocalName() + ".*." + QtNetworkSettings::serverDomainName()));
-    QCOMPARE(certificate.issuerInfo(QSslCertificate::CommonName), QtNetworkSettings::serverName());
+    QVERIFY(certificate.subjectInfo(QSslCertificate::CommonName).contains(QString(QtNetworkSettings::serverLocalName() + ".*." + QtNetworkSettings::serverDomainName())));
+    QVERIFY(certificate.issuerInfo(QSslCertificate::CommonName).contains(QtNetworkSettings::serverName()));
 
     socket->close();
 }
