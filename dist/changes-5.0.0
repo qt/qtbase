@@ -198,6 +198,8 @@ information about a particular change.
     longer take a parameter for base, they will only perform localised base 10
     conversions. For converting other bases use the QString methods instead.
 
+- QSystemLocale has been removed from the public API.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

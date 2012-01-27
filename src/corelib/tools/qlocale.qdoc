@@ -711,6 +711,7 @@
 */
 
 /*!
+    \internal
     \class QSystemLocale
     \brief The QSystemLocale class can be used to finetune the system locale
     of the user.
