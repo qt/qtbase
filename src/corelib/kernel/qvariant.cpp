@@ -1608,14 +1608,6 @@ QVariant::Type QVariant::nameToType(const char *name)
 {
     if (!name || !*name)
         return Invalid;
-    if (strcmp(name, "Q3CString") == 0)
-        return ByteArray;
-    if (strcmp(name, "Q_LLONG") == 0)
-        return LongLong;
-    if (strcmp(name, "Q_ULLONG") == 0)
-        return ULongLong;
-    if (strcmp(name, "QIconSet") == 0)
-        return Icon;
     if (strcmp(name, "UserType") == 0)
         return UserType;
 

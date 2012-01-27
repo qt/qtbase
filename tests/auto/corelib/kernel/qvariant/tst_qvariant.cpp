@@ -1961,7 +1961,12 @@ void tst_QVariant::typeToName()
     QVERIFY( QVariant::nameToType( 0 ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "" ) == QVariant::Invalid );
     QVERIFY( QVariant::nameToType( "foo" ) == QVariant::Invalid );
-    QCOMPARE(QVariant::nameToType("QIconSet"), QVariant::Icon);
+
+    // We don't support these old (Qt3) types anymore.
+    QCOMPARE(QVariant::nameToType("QIconSet"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q3CString"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q_LLONG"), QVariant::Invalid);
+    QCOMPARE(QVariant::nameToType("Q_ULLONG"), QVariant::Invalid);
 }
 
 void tst_QVariant::streamInvalidVariant()
