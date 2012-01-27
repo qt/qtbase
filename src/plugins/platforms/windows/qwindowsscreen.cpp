@@ -304,11 +304,6 @@ QWindowsScreenManager::QWindowsScreenManager() :
 {
 }
 
-QWindowsScreenManager::~QWindowsScreenManager()
-{
-    qDeleteAll(m_screens);
-}
-
 /*!
     \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).
 

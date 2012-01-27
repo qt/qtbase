@@ -114,7 +114,8 @@ public:
     typedef QList<QWindowsScreen *> WindowsScreenList;
 
     QWindowsScreenManager();
-    ~QWindowsScreenManager();
+
+    inline void clearScreens() { qDeleteAll(m_screens); m_screens.clear(); }
 
     void handleScreenChanges();
     bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
