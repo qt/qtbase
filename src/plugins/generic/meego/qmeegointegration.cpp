@@ -62,7 +62,7 @@ QMeeGoIntegration::~QMeeGoIntegration()
 void QMeeGoIntegration::updateScreenOrientation(const QVariant& topEdgeValue)
 {
     QString edge = topEdgeValue.toString();
-    Qt::ScreenOrientation orientation = Qt::UnknownOrientation;
+    Qt::ScreenOrientation orientation = Qt::PrimaryOrientation;
 
     // ### FIXME: This isn't perfect. We should obey the video_route (tv connected) and
     // the keyboard slider.

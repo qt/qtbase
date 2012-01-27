@@ -1156,7 +1156,7 @@ void QXcbWindow::setOrientation(Qt::ScreenOrientation orientation)
         case Qt::LandscapeOrientation: angle = 0; break;
         case Qt::InvertedPortraitOrientation: angle = 90; break;
         case Qt::InvertedLandscapeOrientation: angle = 180; break;
-        case Qt::UnknownOrientation: break;
+        case Qt::PrimaryOrientation: break;
     }
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::MeegoTouchOrientationAngle), XCB_ATOM_CARDINAL, 32,

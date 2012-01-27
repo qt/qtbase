@@ -75,7 +75,7 @@ enum MaliitOrientationAngle {
 static int orientationAngle(Qt::ScreenOrientation orientation)
 {
     switch (orientation) {
-    case Qt::UnknownOrientation: // Urgh.
+    case Qt::PrimaryOrientation: // Urgh.
     case Qt::PortraitOrientation:
         return Angle270;
     case Qt::LandscapeOrientation:
