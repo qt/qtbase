@@ -47,6 +47,7 @@
 #include <qevent.h>
 #include <qscreen.h>
 
+#include "serveraddressproxy.h"
 #include "serverproxy.h"
 #include "contextadaptor.h"
 
@@ -124,6 +125,19 @@ static TextContentType contentTypeFromHints(Qt::InputMethodHints hints)
         type = UrlContentType;
 
     return type;
+}
+
+static QString maliitServerAddress()
+{
+    org::maliit::Server::Address serverAddress(QStringLiteral("org.maliit.server"), QStringLiteral("/org/maliit/server/address"), QDBusConnection::sessionBus());
+
+    QString address(serverAddress.address());
+
+    // Fallback to old socket when org.maliit.server service is not available
+    if (address.isEmpty())
+        return QStringLiteral("unix:path=/tmp/meego-im-uiserver/imserver_dbus");
+
+    return address;
 }
 
 class QMeeGoPlatformInputContextPrivate
@@ -517,7 +531,7 @@ bool QMeeGoPlatformInputContext::isInputPanelVisible() const
 }
 
 QMeeGoPlatformInputContextPrivate::QMeeGoPlatformInputContextPrivate(QMeeGoPlatformInputContext* qq)
-    : connection(QDBusConnection::connectToPeer(QStringLiteral("unix:path=/tmp/meego-im-uiserver/imserver_dbus"), QLatin1String("MeeGoIMProxy")))
+    : connection(QDBusConnection::connectToPeer(maliitServerAddress(), QLatin1String("MeeGoIMProxy")))
     , server(0)
     , adaptor(0)
     , visibility(InputPanelHidden)
