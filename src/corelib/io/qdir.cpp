@@ -1363,7 +1363,6 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     \sa rmdir()
 */
-// ### Qt5: behaviour when directory already exists should be made consistent for mkdir and mkpath
 bool QDir::mkdir(const QString &dirName) const
 {
     const QDirPrivate* d = d_ptr.constData();
@@ -1416,7 +1415,6 @@ bool QDir::rmdir(const QString &dirName) const
 
     \sa rmpath()
 */
-// ### Qt5: behaviour when directory already exists should be made consistent for mkdir and mkpath
 bool QDir::mkpath(const QString &dirPath) const
 {
     const QDirPrivate* d = d_ptr.constData();
