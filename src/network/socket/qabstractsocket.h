@@ -124,16 +124,17 @@ public:
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
     enum PauseMode {
-        PauseNever,
-        PauseOnNotify
+        PauseNever = 0x0,
+        PauseOnNotify = 0x1
     };
+    Q_DECLARE_FLAGS(PauseModes, PauseMode)
 
     QAbstractSocket(SocketType socketType, QObject *parent);
     virtual ~QAbstractSocket();
 
     virtual void resume(); // to continue after proxy authentication required, SSL errors etc.
-    PauseMode pauseMode() const;
-    void setPauseMode(PauseMode pauseMode);
+    PauseModes pauseMode() const;
+    void setPauseMode(PauseModes pauseMode);
 
     bool bind(const QHostAddress &address, quint16 port = 0, BindMode mode = DefaultForPlatform);
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
@@ -226,6 +227,7 @@ private:
 
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocket::BindMode)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractSocket::PauseModes)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QAbstractSocket::SocketError);

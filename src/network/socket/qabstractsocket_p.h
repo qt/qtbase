@@ -106,7 +106,7 @@ public:
     bool closeCalled;
     bool pendingClose;
 
-    QAbstractSocket::PauseMode pauseMode;
+    QAbstractSocket::PauseModes pauseMode;
 
     QString hostName;
     quint16 port;

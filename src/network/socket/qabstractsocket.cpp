@@ -1390,7 +1390,7 @@ void QAbstractSocket::resume()
 
     \sa setPauseMode(), resume()
 */
-QAbstractSocket::PauseMode QAbstractSocket::pauseMode() const
+QAbstractSocket::PauseModes QAbstractSocket::pauseMode() const
 {
     return d_func()->pauseMode;
 }
@@ -1409,7 +1409,7 @@ QAbstractSocket::PauseMode QAbstractSocket::pauseMode() const
 
     \sa pauseMode(), resume()
 */
-void QAbstractSocket::setPauseMode(PauseMode pauseMode)
+void QAbstractSocket::setPauseMode(PauseModes pauseMode)
 {
     d_func()->pauseMode = pauseMode;
 }
