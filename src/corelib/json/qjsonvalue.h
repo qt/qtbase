@@ -62,7 +62,7 @@ namespace QJsonPrivate {
     class Array;
     class Value;
     class Entry;
-};
+}
 
 class Q_CORE_EXPORT QJsonValue
 {
