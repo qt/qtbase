@@ -108,7 +108,11 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
 
     free(reply);
 
-    m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
+    const xcb_query_extension_reply_t *sync_reply = xcb_get_extension_data(xcb_connection(), &xcb_sync_id);
+    if (!sync_reply || !sync_reply->present)
+        m_syncRequestSupported = false;
+    else
+        m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
 
     m_clientLeader = xcb_generate_id(xcb_connection());
     Q_XCB_CALL2(xcb_create_window(xcb_connection(),
