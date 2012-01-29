@@ -7066,6 +7066,11 @@ else
     echo "#define QT_POINTER_SIZE $?" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
+#REDUCE_RELOCATIONS is a elf/unix only thing, so not in windows configure.exe
+if [ "$CFG_REDUCE_RELOCATIONS" = "yes" ]; then
+    echo "#define QT_REDUCE_RELOCATIONS" >>"$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 

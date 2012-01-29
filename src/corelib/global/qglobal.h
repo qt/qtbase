@@ -62,6 +62,7 @@
 #include <QtCore/qconfig.h>
 #endif
 
+
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qprocessordetection.h>
@@ -1781,6 +1782,11 @@ Q_CORE_EXPORT int qrand();
 #  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
 #    define Q_OF_ELF
 #  endif
+#endif
+
+#if defined(QT_REDUCE_RELOCATIONS) && defined(__ELF__) && !defined(__PIC__)
+#  error "You must build your code with position independent code if Qt was built with -reduce-relocations. "\
+         "Compile your code with -fPIC or -fPIE."
 #endif
 
 namespace QtPrivate {

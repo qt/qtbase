@@ -4152,9 +4152,6 @@ void tst_QObject::pointerConnect()
     QVERIFY( connect( s, &SenderObject::signal1 , r2, &ReceiverObject::slot1 ) );
     QVERIFY( connect( s, &SenderObject::signal1 , r1, &ReceiverObject::slot3 ) );
     QVERIFY( connect( s, &SenderObject::signal3 , r1, &ReceiverObject::slot3 ) );
-#if defined(Q_CC_GNU) && defined(Q_OS_UNIX)
-    QEXPECT_FAIL("", "Test may fail due to failing comparison of pointers to member functions caused by problems with -reduce-relocations on this platform.", Continue);
-#endif
     QVERIFY2( connect( &timer, &QTimer::timeout, r1, &ReceiverObject::deleteLater ),
              "Signal connection failed most likely due to failing comparison of pointers to member functions caused by problems with -reduce-relocations on this platform.");
 
