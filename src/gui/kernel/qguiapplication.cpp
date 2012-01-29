@@ -123,7 +123,7 @@ QList<QScreen *> QGuiApplicationPrivate::screen_list;
 QWindowList QGuiApplicationPrivate::window_list;
 QWindow *QGuiApplicationPrivate::focus_window = 0;
 
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
+static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 
 extern void qRegisterGuiVariant();
@@ -1327,7 +1327,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
 
 QFont QGuiApplication::font()
 {
-    QMutexLocker locker(applicationFontMutex());
+    QMutexLocker locker(&applicationFontMutex);
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font =
             new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
@@ -1336,7 +1336,7 @@ QFont QGuiApplication::font()
 
 void QGuiApplication::setFont(const QFont &font)
 {
-    QMutexLocker locker(applicationFontMutex());
+    QMutexLocker locker(&applicationFontMutex);
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font = new QFont(font);
     else

@@ -55,7 +55,6 @@
 QT_BEGIN_NAMESPACE
 
 static QBasicAtomicPointer<QNetworkConfigurationManagerPrivate> connManager_ptr;
-Q_GLOBAL_STATIC(QMutex, connManager_mutex)
 
 static void connManager_cleanup()
 {
@@ -74,7 +73,8 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
     QNetworkConfigurationManagerPrivate *ptr = connManager_ptr.loadAcquire();
     if (!ptr) {
-        QMutexLocker locker(connManager_mutex());
+        static QBasicMutex connManager_mutex;
+        QMutexLocker locker(&connManager_mutex);
         if (!(ptr = connManager_ptr.loadAcquire())) {
             ptr = new QNetworkConfigurationManagerPrivate;
 

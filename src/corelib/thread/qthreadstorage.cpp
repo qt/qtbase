@@ -71,13 +71,13 @@ void qtsDebug(const char *fmt, ...)
 #  define DEBUG_MSG if(false)qDebug
 #endif
 
-Q_GLOBAL_STATIC(QMutex, mutex)
+static QBasicMutex destructorsMutex;
 typedef QVector<void (*)(void *)> DestructorMap;
 Q_GLOBAL_STATIC(DestructorMap, destructors)
 
 QThreadStorageData::QThreadStorageData(void (*func)(void *))
 {
-    QMutexLocker locker(mutex());
+    QMutexLocker locker(&destructorsMutex);
     DestructorMap *destr = destructors();
     if (!destr) {
         /*
@@ -109,7 +109,7 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
 QThreadStorageData::~QThreadStorageData()
 {
     DEBUG_MSG("QThreadStorageData: Released id %d", id);
-    QMutexLocker locker(mutex());
+    QMutexLocker locker(&destructorsMutex);
     if (destructors())
         (*destructors())[id] = 0;
 }
@@ -153,7 +153,7 @@ void **QThreadStorageData::set(void *p)
                 value,
                 data->thread);
 
-        QMutexLocker locker(mutex());
+        QMutexLocker locker(&destructorsMutex);
         DestructorMap *destr = destructors();
         void (*destructor)(void *) = destr ? destr->value(id) : 0;
         locker.unlock();
@@ -174,7 +174,7 @@ void **QThreadStorageData::set(void *p)
 void QThreadStorageData::finish(void **p)
 {
     QVector<void *> *tls = reinterpret_cast<QVector<void *> *>(p);
-    if (!tls || tls->isEmpty() || !mutex())
+    if (!tls || tls->isEmpty() || !destructors())
         return; // nothing to do
 
     DEBUG_MSG("QThreadStorageData: Destroying storage for thread %p", QThread::currentThread());
@@ -190,7 +190,7 @@ void QThreadStorageData::finish(void **p)
             continue;
         }
 
-        QMutexLocker locker(mutex());
+        QMutexLocker locker(&destructorsMutex);
         void (*destructor)(void *) = destructors()->value(i);
         locker.unlock();
 

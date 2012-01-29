@@ -1425,20 +1425,16 @@ QPictureHandler::QPictureHandler(const char *f, const char *h, const QByteArray&
 typedef QList<QPictureHandler *> QPHList;
 Q_GLOBAL_STATIC(QPHList, pictureHandlers)
 
-#ifndef QT_NO_LIBRARY
-Q_GLOBAL_STATIC(QMutex, mutex)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, factoryLoader,
-                          (QPictureFormatInterface_iid,
-                           QLatin1String("/pictureformats")))
-#endif
 void qt_init_picture_plugins()
 {
 #ifndef QT_NO_LIBRARY
-    QMutexLocker locker(mutex());
-    QFactoryLoader *loader = factoryLoader();
-    QStringList keys = loader->keys();
+    static QBasicMutex mutex;
+    QMutexLocker locker(&mutex);
+    static QFactoryLoader loader(QPictureFormatInterface_iid,
+                                 QStringLiteral("/pictureformats"));
+    QStringList keys = loader.keys();
     for (int i = 0; i < keys.count(); ++i)
-        if (QPictureFormatInterface *format = qobject_cast<QPictureFormatInterface*>(loader->instance(keys.at(i))))
+        if (QPictureFormatInterface *format = qobject_cast<QPictureFormatInterface*>(loader.instance(keys.at(i))))
             format->installIOHandler(keys.at(i));
 #endif
 }
