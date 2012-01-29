@@ -4798,6 +4798,13 @@ void tst_QString::compare()
         QCOMPARE(sign(QString::compare(s1, QLatin1String(s2.toLatin1()), Qt::CaseInsensitive)), cir);
         QCOMPARE(sign(QStringRef::compare(r1, QLatin1String(s2.toLatin1()))), csr);
         QCOMPARE(sign(QStringRef::compare(r1, QLatin1String(s2.toLatin1()), Qt::CaseInsensitive)), cir);
+        QByteArray l1 = s2.toLatin1();
+        l1 += "x";
+        QLatin1String l1str(l1.constData(), l1.size() - 1);
+        QCOMPARE(sign(QString::compare(s1, l1str)), csr);
+        QCOMPARE(sign(QString::compare(s1, l1str, Qt::CaseInsensitive)), cir);
+        QCOMPARE(sign(QStringRef::compare(r1, l1str)), csr);
+        QCOMPARE(sign(QStringRef::compare(r1, l1str, Qt::CaseInsensitive)), cir);
     }
 
     if (isLatin(s1)) {

@@ -162,7 +162,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const u
 }
 
 // Case-insensitive comparison between a Unicode string and a QLatin1String
-static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
+static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b, const uchar *be)
 {
     if (a == 0) {
         if (b == 0)
@@ -172,7 +172,11 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     if (b == 0)
         return -1;
 
-    while (a < ae && *b) {
+    const ushort *e = ae;
+    if (be - b < ae - a)
+        e = a + (be - b);
+
+    while (a < e) {
         int diff = foldCase(*a) - foldCase(*b);
         if ((diff))
             return diff;
@@ -180,7 +184,7 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
         ++b;
     }
     if (a == ae) {
-        if (!*b)
+        if (b == be)
             return 0;
         return -1;
     }
@@ -1455,7 +1459,7 @@ QString &QString::insert(int i, const QLatin1String &str)
     if (i < 0 || !s || !(*s))
         return *this;
 
-    int len = qstrlen(str.latin1());
+    int len = str.size();
     expand(qMax(d->size, i) + len - 1);
 
     ::memmove(d->data() + i + len, d->data() + i, (d->size - i - len) * sizeof(QChar));
@@ -1556,7 +1560,7 @@ QString &QString::append(const QLatin1String &str)
 {
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
-        int len = qstrlen((char *)s);
+        int len = str.size();
         if (d->ref != 1 || d->size + len > int(d->alloc))
             realloc(grow(d->size + len));
         ushort *i = d->data() + d->size;
@@ -2053,11 +2057,11 @@ QString &QString::replace(const QLatin1String &before,
                           const QLatin1String &after,
                           Qt::CaseSensitivity cs)
 {
-    int alen = qstrlen(after.latin1());
+    int alen = after.size();
     QVarLengthArray<ushort> a(alen);
     for (int i = 0; i < alen; ++i)
         a[i] = (uchar)after.latin1()[i];
-    int blen = qstrlen(before.latin1());
+    int blen = before.size();
     QVarLengthArray<ushort> b(blen);
     for (int i = 0; i < blen; ++i)
         b[i] = (uchar)before.latin1()[i];
@@ -4606,22 +4610,31 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
                             Qt::CaseSensitivity cs)
 {
     const ushort *uc = reinterpret_cast<const ushort *>(data1);
-    const ushort *e = uc + length1;
+    const ushort *uce = uc + length1;
     const uchar *c = (uchar *)s2.latin1();
 
     if (!c)
         return length1;
 
     if (cs == Qt::CaseSensitive) {
-        while (uc < e && *c && *uc == *c)
+        const ushort *e = uc + length1;
+        if (s2.size() < length1)
+            e = uc + s2.size();
+        while (uc < e) {
+            int diff = *uc - *c;
+            if (diff)
+                return diff;
             uc++, c++;
+        }
 
-        if (uc == e)
-            return -*c;
-
-        return *uc - *c;
+        if (uc == uce) {
+            if (c == (const uchar *)s2.latin1() + s2.size())
+                return 0;
+            return -1;
+        }
+        return 1;
     } else {
-        return ucstricmp(uc, e, c);
+        return ucstricmp(uc, uce, c, c + s2.size());
     }
 }
 
@@ -7174,6 +7187,11 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Returns the Latin-1 string stored in this object.
 */
 
+/*! \fn int QLatin1String::size() const
+
+    Returns the size of the Latin-1 string stored in this object.
+*/
+
 /*! \fn bool QLatin1String::operator==(const QString &other) const
 
     Returns true if this string is equal to string \a other;
@@ -7329,37 +7347,37 @@ QString &QString::setRawData(const QChar *unicode, int size)
 
 
 
-/* \fn bool operator==(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator==(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically equal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically unequal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator<(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically smaller than or equal to string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator>(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than string \a s2; otherwise
    returns false.
 */
-/* \fn bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
+/*! \fn bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
    \relates QLatin1String
 
    Returns true if string \a s1 is lexically greater than or equal to
@@ -7683,6 +7701,9 @@ bool operator==(const QString &s1,const QStringRef &s2)
 */
 bool operator==(const QLatin1String &s1, const QStringRef &s2)
 {
+    if (s1.size() != s2.size())
+        return false;
+
     const ushort *uc = reinterpret_cast<const ushort *>(s2.unicode());
     const ushort *e = uc + s2.size();
     const uchar *c = reinterpret_cast<const uchar *>(s1.latin1());
