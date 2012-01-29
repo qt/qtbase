@@ -645,7 +645,7 @@ class QLatin1String
 {
 public:
     Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
-    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int size) : m_size(size), m_data(s) {}
+    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s, int sz) : m_size(sz), m_data(s) {}
 
     inline const char *latin1() const { return m_data; }
     inline int size() const { return m_size; }
