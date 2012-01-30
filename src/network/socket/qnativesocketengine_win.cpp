@@ -1335,10 +1335,10 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     if (ret != -2) {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %l) == %li",
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %li) == %li",
                data, qt_prettyDebug(data, qMin((int)bytesRead, 16), (int)bytesRead).data(), (int)maxLength, (int)ret);
     } else {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %l) == -2 (WOULD BLOCK)",
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %li) == -2 (WOULD BLOCK)",
                data, int(maxLength));
     }
 #endif
