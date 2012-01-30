@@ -38,34 +38,60 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QMALIITPLATFORMINPUTCONTEXT_H
+#define QMALIITPLATFORMINPUTCONTEXT_H
 
-#include <private/qplatforminputcontextplugin_qpa_p.h>
-#include <QtCore/QStringList>
-#include "qmeegoplatforminputcontext.h"
+#include <QPlatformInputContext>
+#include <QDBusArgument>
 
 QT_BEGIN_NAMESPACE
 
-class QMeeGoPlatformInputContextPlugin : public QPlatformInputContextPlugin
+class QMaliitPlatformInputContextPrivate;
+class QDBusVariant;
+class QDBusMessage;
+
+class QMaliitPlatformInputContext : public QPlatformInputContext
 {
+    Q_OBJECT
 public:
-    QStringList keys() const;
-    QPlatformInputContext *create(const QString&, const QStringList&);
+    QMaliitPlatformInputContext();
+    ~QMaliitPlatformInputContext();
+
+    bool isValid() const;
+
+    void invokeAction(QInputPanel::Action action, int x);
+    void reset(void);
+    void update(Qt::InputMethodQueries);
+    virtual QRectF keyboardRect() const;
+
+    virtual void showInputPanel();
+    virtual void hideInputPanel();
+    virtual bool isInputPanelVisible() const;
+
+public Q_SLOTS:
+    void inputItemChanged();
+
+    void activationLostEvent();
+    void commitString(const QString &in0, int in1, int in2, int in3);
+    void updatePreedit(const QDBusMessage &message);
+    void copy();
+    void imInitiatedHide();
+    void keyEvent(int , int , int , const QString &, bool , int , uchar );
+    void paste();
+    bool preeditRectangle(int &x, int &y, int &width, int &height);
+    bool selection(QString &selection);
+    void setDetectableAutoRepeat(bool in0);
+    void setGlobalCorrectionEnabled(bool enable);
+    void setLanguage(const QString &);
+    void setRedirectKeys(bool );
+    void setSelection(int start, int length);
+    void updateInputMethodArea(int x, int y, int width, int height);
+    void updateServerWindowOrientation(Qt::ScreenOrientation orientation);
+
+private:
+    QMaliitPlatformInputContextPrivate *d;
 };
 
-QStringList QMeeGoPlatformInputContextPlugin::keys() const
-{
-    return QStringList(QStringLiteral("meego"));
-}
-
-QPlatformInputContext *QMeeGoPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)
-{
-    Q_UNUSED(paramList);
-
-    if (system.compare(system, QStringLiteral("meego"), Qt::CaseInsensitive) == 0)
-        return new QMeeGoPlatformInputContext;
-    return 0;
-}
-
-Q_EXPORT_PLUGIN2(meegoplatforminputcontextplugin, QMeeGoPlatformInputContextPlugin)
-
 QT_END_NAMESPACE
+
+#endif

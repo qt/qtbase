@@ -38,60 +38,34 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QMEEGOPLATFORMINPUTCONTEXT_H
-#define QMEEGOPLATFORMINPUTCONTEXT_H
 
-#include <QPlatformInputContext>
-#include <QDBusArgument>
+#include <private/qplatforminputcontextplugin_qpa_p.h>
+#include <QtCore/QStringList>
+#include "qmaliitplatforminputcontext.h"
 
 QT_BEGIN_NAMESPACE
 
-class QMeeGoPlatformInputContextPrivate;
-class QDBusVariant;
-class QDBusMessage;
-
-class QMeeGoPlatformInputContext : public QPlatformInputContext
+class QMaliitPlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
-    Q_OBJECT
 public:
-    QMeeGoPlatformInputContext();
-    ~QMeeGoPlatformInputContext();
-
-    bool isValid() const;
-
-    void invokeAction(QInputPanel::Action action, int x);
-    void reset(void);
-    void update(Qt::InputMethodQueries);
-    virtual QRectF keyboardRect() const;
-
-    virtual void showInputPanel();
-    virtual void hideInputPanel();
-    virtual bool isInputPanelVisible() const;
-
-public Q_SLOTS:
-    void inputItemChanged();
-
-    void activationLostEvent();
-    void commitString(const QString &in0, int in1, int in2, int in3);
-    void updatePreedit(const QDBusMessage &message);
-    void copy();
-    void imInitiatedHide();
-    void keyEvent(int , int , int , const QString &, bool , int , uchar );
-    void paste();
-    bool preeditRectangle(int &x, int &y, int &width, int &height);
-    bool selection(QString &selection);
-    void setDetectableAutoRepeat(bool in0);
-    void setGlobalCorrectionEnabled(bool enable);
-    void setLanguage(const QString &);
-    void setRedirectKeys(bool );
-    void setSelection(int start, int length);
-    void updateInputMethodArea(int x, int y, int width, int height);
-    void updateServerWindowOrientation(Qt::ScreenOrientation orientation);
-
-private:
-    QMeeGoPlatformInputContextPrivate *d;
+    QStringList keys() const;
+    QPlatformInputContext *create(const QString&, const QStringList&);
 };
 
-QT_END_NAMESPACE
+QStringList QMaliitPlatformInputContextPlugin::keys() const
+{
+    return QStringList(QStringLiteral("maliit"));
+}
 
-#endif
+QPlatformInputContext *QMaliitPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)
+{
+    Q_UNUSED(paramList);
+
+    if (system.compare(system, QStringLiteral("maliit"), Qt::CaseInsensitive) == 0)
+        return new QMaliitPlatformInputContext;
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(maliitplatforminputcontextplugin, QMaliitPlatformInputContextPlugin)
+
+QT_END_NAMESPACE

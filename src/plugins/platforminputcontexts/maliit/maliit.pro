@@ -1,16 +1,16 @@
-TARGET = meegoplatforminputcontextplugin
+TARGET = maliitplatforminputcontextplugin
 load(qt_plugin)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforminputcontexts
 
 QT += dbus platformsupport-private
-SOURCES += $$PWD/qmeegoplatforminputcontext.cpp \
+SOURCES += $$PWD/qmaliitplatforminputcontext.cpp \
            $$PWD/serverproxy.cpp \
            $$PWD/serveraddressproxy.cpp \
            $$PWD/contextadaptor.cpp \
            $$PWD/main.cpp
 
-HEADERS += $$PWD/qmeegoplatforminputcontext.h \
+HEADERS += $$PWD/qmaliitplatforminputcontext.h \
            $$PWD/serverproxy.h \
            $$PWD/serveraddressproxy.h \
            $$PWD/contextadaptor.h

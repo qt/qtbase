@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qmeegoplatforminputcontext.h"
+#include "qmaliitplatforminputcontext.h"
 
 #include <QtDebug>
 #include <QTextCharFormat>
@@ -140,11 +140,11 @@ static QString maliitServerAddress()
     return address;
 }
 
-class QMeeGoPlatformInputContextPrivate
+class QMaliitPlatformInputContextPrivate
 {
 public:
-    QMeeGoPlatformInputContextPrivate(QMeeGoPlatformInputContext *qq);
-    ~QMeeGoPlatformInputContextPrivate()
+    QMaliitPlatformInputContextPrivate(QMaliitPlatformInputContext *qq);
+    ~QMaliitPlatformInputContextPrivate()
     {
         delete adaptor;
         delete server;
@@ -166,30 +166,30 @@ public:
     QRect keyboardRect;
     QString preedit;
     QWeakPointer<QWindow> window;
-    QMeeGoPlatformInputContext *q;
+    QMaliitPlatformInputContext *q;
 };
 
 
-QMeeGoPlatformInputContext::QMeeGoPlatformInputContext()
-    : d(new QMeeGoPlatformInputContextPrivate(this))
+QMaliitPlatformInputContext::QMaliitPlatformInputContext()
+    : d(new QMaliitPlatformInputContextPrivate(this))
 {
     if (debug)
-        qDebug() << "QMeeGoPlatformInputContext::QMeeGoPlatformInputContext()";
+        qDebug() << "QMaliitPlatformInputContext::QMaliitPlatformInputContext()";
     QInputPanel *p = qApp->inputPanel();
     connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
-QMeeGoPlatformInputContext::~QMeeGoPlatformInputContext(void)
+QMaliitPlatformInputContext::~QMaliitPlatformInputContext(void)
 {
     delete d;
 }
 
-bool QMeeGoPlatformInputContext::isValid() const
+bool QMaliitPlatformInputContext::isValid() const
 {
     return d->valid;
 }
 
-void QMeeGoPlatformInputContext::invokeAction(QInputPanel::Action action, int x)
+void QMaliitPlatformInputContext::invokeAction(QInputPanel::Action action, int x)
 {
     QObject *input = qApp->inputPanel()->inputItem();
     if (!input)
@@ -211,7 +211,7 @@ void QMeeGoPlatformInputContext::invokeAction(QInputPanel::Action action, int x)
     }
 }
 
-void QMeeGoPlatformInputContext::reset()
+void QMaliitPlatformInputContext::reset()
 {
     QObject *input = qApp->inputPanel()->inputItem();
 
@@ -229,7 +229,7 @@ void QMeeGoPlatformInputContext::reset()
         reply.waitForFinished();
 }
 
-void QMeeGoPlatformInputContext::update(Qt::InputMethodQueries queries)
+void QMaliitPlatformInputContext::update(Qt::InputMethodQueries queries)
 {
     QInputPanel *panel = qApp->inputPanel();
     QObject *input = panel->inputItem();
@@ -269,18 +269,18 @@ void QMeeGoPlatformInputContext::update(Qt::InputMethodQueries queries)
     d->sendStateUpdate(/*focusChanged*/true);
 }
 
-QRectF QMeeGoPlatformInputContext::keyboardRect() const
+QRectF QMaliitPlatformInputContext::keyboardRect() const
 {
     return d->keyboardRect;
 }
 
-void QMeeGoPlatformInputContext::activationLostEvent()
+void QMaliitPlatformInputContext::activationLostEvent()
 {
     d->active = false;
     d->visibility = InputPanelHidden;
 }
 
-void QMeeGoPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int cursorPos)
+void QMaliitPlatformInputContext::commitString(const QString &string, int replacementStart, int replacementLength, int cursorPos)
 {
     QObject *input = qApp->inputPanel()->inputItem();
     if (!input)
@@ -296,7 +296,7 @@ void QMeeGoPlatformInputContext::commitString(const QString &string, int replace
     QCoreApplication::sendEvent(input, &event);
 }
 
-void QMeeGoPlatformInputContext::updatePreedit(const QDBusMessage &message)
+void QMaliitPlatformInputContext::updatePreedit(const QDBusMessage &message)
 {
     QObject *input = qApp->inputPanel()->inputItem();
     if (!input)
@@ -304,7 +304,7 @@ void QMeeGoPlatformInputContext::updatePreedit(const QDBusMessage &message)
 
     QList<QVariant> arguments = message.arguments();
     if (arguments.count() != 5) {
-        qWarning() << "QMeeGoPlatformInputContext::updatePreedit: Received message from input method server with wrong parameters.";
+        qWarning() << "QMaliitPlatformInputContext::updatePreedit: Received message from input method server with wrong parameters.";
         return;
     }
 
@@ -371,29 +371,29 @@ void QMeeGoPlatformInputContext::updatePreedit(const QDBusMessage &message)
     QCoreApplication::sendEvent(input, &event);
 }
 
-void QMeeGoPlatformInputContext::copy()
+void QMaliitPlatformInputContext::copy()
 {
     // Not supported at the moment.
 }
 
-void QMeeGoPlatformInputContext::imInitiatedHide()
+void QMaliitPlatformInputContext::imInitiatedHide()
 {
     d->visibility = InputPanelHidden;
     emitInputPanelVisibleChanged();
     // ### clear focus
 }
 
-void QMeeGoPlatformInputContext::keyEvent(int, int, int, const QString &, bool, int, uchar)
+void QMaliitPlatformInputContext::keyEvent(int, int, int, const QString &, bool, int, uchar)
 {
     // Not supported at the moment.
 }
 
-void QMeeGoPlatformInputContext::paste()
+void QMaliitPlatformInputContext::paste()
 {
     // Not supported at the moment.
 }
 
-bool QMeeGoPlatformInputContext::preeditRectangle(int &x, int &y, int &width, int &height)
+bool QMaliitPlatformInputContext::preeditRectangle(int &x, int &y, int &width, int &height)
 {
     // ###
     QRect r = qApp->inputPanel()->cursorRectangle().toRect();
@@ -406,7 +406,7 @@ bool QMeeGoPlatformInputContext::preeditRectangle(int &x, int &y, int &width, in
     return true;
 }
 
-bool QMeeGoPlatformInputContext::selection(QString &selection)
+bool QMaliitPlatformInputContext::selection(QString &selection)
 {
     selection.clear();
 
@@ -424,27 +424,27 @@ bool QMeeGoPlatformInputContext::selection(QString &selection)
     return true;
 }
 
-void QMeeGoPlatformInputContext::setDetectableAutoRepeat(bool)
+void QMaliitPlatformInputContext::setDetectableAutoRepeat(bool)
 {
     // Not supported.
 }
 
-void QMeeGoPlatformInputContext::setGlobalCorrectionEnabled(bool enable)
+void QMaliitPlatformInputContext::setGlobalCorrectionEnabled(bool enable)
 {
     d->correctionEnabled = enable;
 }
 
-void QMeeGoPlatformInputContext::setLanguage(const QString &)
+void QMaliitPlatformInputContext::setLanguage(const QString &)
 {
     // Unused at the moment.
 }
 
-void QMeeGoPlatformInputContext::setRedirectKeys(bool)
+void QMaliitPlatformInputContext::setRedirectKeys(bool)
 {
     // Not supported.
 }
 
-void QMeeGoPlatformInputContext::setSelection(int start, int length)
+void QMaliitPlatformInputContext::setSelection(int start, int length)
 {
     QObject *input = qApp->inputPanel()->inputItem();
     if (!input)
@@ -456,18 +456,18 @@ void QMeeGoPlatformInputContext::setSelection(int start, int length)
     QGuiApplication::sendEvent(input, &event);
 }
 
-void QMeeGoPlatformInputContext::updateInputMethodArea(int x, int y, int width, int height)
+void QMaliitPlatformInputContext::updateInputMethodArea(int x, int y, int width, int height)
 {
     d->keyboardRect = QRect(x, y, width, height);
     emitKeyboardRectChanged();
 }
 
-void QMeeGoPlatformInputContext::updateServerWindowOrientation(Qt::ScreenOrientation orientation)
+void QMaliitPlatformInputContext::updateServerWindowOrientation(Qt::ScreenOrientation orientation)
 {
     d->server->appOrientationChanged(orientationAngle(orientation));
 }
 
-void QMeeGoPlatformInputContext::inputItemChanged()
+void QMaliitPlatformInputContext::inputItemChanged()
 {
     if (!d->valid)
         return;
@@ -503,7 +503,7 @@ void QMeeGoPlatformInputContext::inputItemChanged()
         showInputPanel();
 }
 
-void QMeeGoPlatformInputContext::showInputPanel()
+void QMaliitPlatformInputContext::showInputPanel()
 {
     if (debug)
         qDebug() << "showInputPanel";
@@ -518,20 +518,20 @@ void QMeeGoPlatformInputContext::showInputPanel()
     }
 }
 
-void QMeeGoPlatformInputContext::hideInputPanel()
+void QMaliitPlatformInputContext::hideInputPanel()
 {
     d->server->hideInputMethod();
     d->visibility = InputPanelHidden;
     emitInputPanelVisibleChanged();
 }
 
-bool QMeeGoPlatformInputContext::isInputPanelVisible() const
+bool QMaliitPlatformInputContext::isInputPanelVisible() const
 {
     return d->visibility == InputPanelShown;
 }
 
-QMeeGoPlatformInputContextPrivate::QMeeGoPlatformInputContextPrivate(QMeeGoPlatformInputContext* qq)
-    : connection(QDBusConnection::connectToPeer(maliitServerAddress(), QLatin1String("MeeGoIMProxy")))
+QMaliitPlatformInputContextPrivate::QMaliitPlatformInputContextPrivate(QMaliitPlatformInputContext* qq)
+    : connection(QDBusConnection::connectToPeer(maliitServerAddress(), QLatin1String("MaliitIMProxy")))
     , server(0)
     , adaptor(0)
     , visibility(InputPanelHidden)
@@ -541,7 +541,7 @@ QMeeGoPlatformInputContextPrivate::QMeeGoPlatformInputContextPrivate(QMeeGoPlatf
     , q(qq)
 {
     if (!connection.isConnected()) {
-        qDebug("QMeeGoPlatformInputContext: not connected.");
+        qDebug("QMaliitPlatformInputContext: not connected.");
         return;
     }
 
@@ -566,7 +566,7 @@ QMeeGoPlatformInputContextPrivate::QMeeGoPlatformInputContextPrivate(QMeeGoPlatf
     valid = true;
 }
 
-void QMeeGoPlatformInputContextPrivate::sendStateUpdate(bool focusChanged)
+void QMaliitPlatformInputContextPrivate::sendStateUpdate(bool focusChanged)
 {
     server->updateWidgetInformation(imState, focusChanged);
 }

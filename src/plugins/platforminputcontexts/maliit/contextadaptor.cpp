@@ -48,7 +48,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 
-#include "qmeegoplatforminputcontext.h"
+#include "qmaliitplatforminputcontext.h"
 
 /*
  * Implementation of adaptor class Inputcontext1Adaptor
@@ -111,13 +111,13 @@ void Inputcontext1Adaptor::paste()
 bool Inputcontext1Adaptor::preeditRectangle(int &out1, int &out2, int &out3, int &out4)
 {
     // handle method call com.meego.inputmethod.inputcontext1.preeditRectangle
-    return static_cast<QMeeGoPlatformInputContext *>(parent())->preeditRectangle(out1, out2, out3, out4);
+    return static_cast<QMaliitPlatformInputContext *>(parent())->preeditRectangle(out1, out2, out3, out4);
 }
 
 bool Inputcontext1Adaptor::selection(QString &out1)
 {
     // handle method call com.meego.inputmethod.inputcontext1.selection
-    return static_cast<QMeeGoPlatformInputContext *>(parent())->selection(out1);
+    return static_cast<QMaliitPlatformInputContext *>(parent())->selection(out1);
 }
 
 void Inputcontext1Adaptor::setDetectableAutoRepeat(bool in0)

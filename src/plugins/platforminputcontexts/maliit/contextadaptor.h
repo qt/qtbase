@@ -43,13 +43,13 @@
 #define CONTEXT_H_1318935171
 
 #include <QtCore/QObject>
+#include <QtCore/QByteArray>
+#include <QtCore/QList>
+#include <QtCore/QMap>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
-class QByteArray;
-template<class T> class QList;
-template<class Key, class Value> class QMap;
-class QString;
-class QStringList;
-class QVariant;
 
 /*
  * Adaptor class for interface com.meego.inputmethod.inputcontext1
