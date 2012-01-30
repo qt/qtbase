@@ -47,7 +47,10 @@
 #include <QtGui/QImage>
 #include <QtGui/QAccessible>
 
+QT_BEGIN_NAMESPACE
 class QCocoaWindow;
+QT_END_NAMESPACE
+
 @interface QNSView : NSView {
     CGImageRef m_cgImage;
     QWindow *m_window;

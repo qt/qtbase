@@ -44,6 +44,8 @@
 #include <QtCore/QSettings>
 #import <Foundation/Foundation.h>
 
+QT_BEGIN_NAMESPACE
+
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
 static const char *languageForWritingSystem[] = {
@@ -320,6 +322,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString family, cons
     return fallbackLists[styleHint];
 }
 
+OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     ATSFontContainerRef fontContainer;
@@ -330,7 +333,6 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
                                       kATSFontContextLocal, kATSFontFormatUnspecified, NULL,
                                       kATSOptionFlagsDefault, &fontContainer);
     } else {
-        OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref);
         FSRef ref;
         if (qt_mac_create_fsref(fileName, &ref) != noErr)
             return QStringList();
@@ -370,4 +372,6 @@ QFont QCoreTextFontDatabase::defaultFont() const
 
     return QFont(defaultFontName);
 }
+
+QT_END_NAMESPACE
 

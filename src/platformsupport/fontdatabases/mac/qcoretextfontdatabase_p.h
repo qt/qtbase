@@ -44,6 +44,8 @@
 
 #include <QPlatformFontDatabase>
 
+QT_BEGIN_NAMESPACE
+
 class QCoreTextFontDatabase : public QPlatformFontDatabase
 {
 public:
@@ -60,5 +62,7 @@ private:
     mutable QString defaultFontName;
     QHash<QFont::StyleHint, QStringList> fallbackLists;
 };
+
+QT_END_NAMESPACE
 
 #endif // QCORETEXTFONTDATABASE_H

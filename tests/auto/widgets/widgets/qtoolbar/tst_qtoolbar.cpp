@@ -1018,10 +1018,15 @@ void tst_QToolBar::widgetAction()
     delete a;
 }
 
+#ifdef Q_OS_MAC
+QT_BEGIN_NAMESPACE
+extern void qt_set_sequence_auto_mnemonic(bool b);
+QT_END_NAMESPACE
+#endif
+
 void tst_QToolBar::accel()
 {
 #ifdef Q_OS_MAC
-    extern void qt_set_sequence_auto_mnemonic(bool b);
     qt_set_sequence_auto_mnemonic(true);
 #endif
     QMainWindow mw;

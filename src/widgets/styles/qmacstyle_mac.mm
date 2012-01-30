@@ -2105,7 +2105,7 @@ void QMacStyle::unpolish(QWidget* w)
         }
     }
 
-    if (QRubberBand *rubber = ::qobject_cast<QRubberBand*>(w)) {
+    if (QRubberBand *rubber = qobject_cast<QRubberBand*>(w)) {
         rubber->setWindowOpacity(1.0);
         rubber->setAttribute(Qt::WA_PaintOnScreen, true);
         rubber->setAttribute(Qt::WA_NoSystemBackground, true);
@@ -3538,7 +3538,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         QCommonStyle::drawControl(ce, opt, p, w);
         break;
     case CE_PushButtonBevel:
-        if (const QStyleOptionButton *btn = ::qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (!(btn->state & (State_Raised | State_Sunken | State_On)))
                 break;
 
