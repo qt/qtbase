@@ -1647,6 +1647,12 @@ BOOL IsUserAdmin()
 }
 #endif
 
+#if defined(Q_OS_WIN)
+QT_BEGIN_NAMESPACE
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+QT_END_NAMESPACE
+#endif
+
 void tst_QFileInfo::owner()
 {
     QString userName;
@@ -1687,7 +1693,6 @@ void tst_QFileInfo::owner()
                 NetApiBufferFree(pBuf);
         }
     }
-    extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
     qt_ntfs_permission_lookup = 1;
 #endif
     if (userName.isEmpty())

@@ -859,12 +859,14 @@ void tst_QPixmap::convertFromImageDetach()
 
 #if defined(Q_OS_WIN)
 
+QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p);
 Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h);
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+QT_END_NAMESPACE
 
 void tst_QPixmap::toWinHBITMAP_data()
 {
