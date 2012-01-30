@@ -190,6 +190,8 @@ private slots:
 
     void isReadable();
 
+    void cdBelowRoot();
+
 private:
     QString m_dataPath;
 };
@@ -1940,6 +1942,33 @@ void tst_QDir::isReadable()
     QVERIFY(0 == ::chmod("nonreadabledir", S_IRUSR | S_IWUSR | S_IXUSR));
     QVERIFY(dir.rmdir("nonreadabledir"));
 #endif
+}
+
+void tst_QDir::cdBelowRoot()
+{
+#if defined (Q_OS_UNIX)
+#define ROOT QString("/")
+#define DIR QString("/tmp")
+#define CD_INTO "tmp"
+#else
+#define ROOT QString::fromLocal8Bit(qgetenv("SystemDrive"))+"/"
+#define DIR QString::fromLocal8Bit(qgetenv("SystemRoot")).replace('\\', '/')
+#define CD_INTO QString::fromLocal8Bit(qgetenv("SystemRoot")).mid(3)
+#endif
+
+    QDir root(ROOT);
+    QVERIFY(!root.cd(".."));
+    QCOMPARE(root.path(), ROOT);
+    QVERIFY(root.cd(CD_INTO));
+    QCOMPARE(root.path(), DIR);
+
+    QDir dir(DIR);
+    QVERIFY(!dir.cd("../.."));
+    QCOMPARE(dir.path(), DIR);
+    QVERIFY(!dir.cd("../abs/../.."));
+    QCOMPARE(dir.path(), DIR);
+    QVERIFY(dir.cd(".."));
+    QCOMPARE(dir.path(), ROOT);
 }
 
 QTEST_MAIN(tst_QDir)

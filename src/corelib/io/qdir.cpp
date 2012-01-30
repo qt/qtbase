@@ -861,19 +861,28 @@ bool QDir::cd(const QString &dirName)
     if (isAbsolutePath(dirName)) {
         newPath = cleanPath(dirName);
     } else {
-        if (isRoot()) {
-            if (dirName == QLatin1String(".."))
-                return false;
+        if (isRoot())
             newPath = d->dirEntry.filePath();
-        } else {
+        else
             newPath = d->dirEntry.filePath() % QLatin1Char('/');
-        }
-
         newPath += dirName;
         if (dirName.indexOf(QLatin1Char('/')) >= 0
             || dirName == QLatin1String("..")
             || d->dirEntry.filePath() == QLatin1String(".")) {
             newPath = cleanPath(newPath);
+#if defined (Q_OS_UNIX)
+            //After cleanPath() if path is "/.." or starts with "/../" it means trying to cd above root.
+            if (newPath.startsWith(QLatin1String("/../")) || newPath == QLatin1String("/.."))
+#else
+            /*
+              cleanPath() already took care of replacing '\' with '/'.
+              We can't use startsWith here because the letter of the drive is unknown.
+              After cleanPath() if path is "[A-Z]:/.." or starts with "[A-Z]:/../" it means trying to cd above root.
+             */
+
+            if (newPath.midRef(1, 4) == QLatin1String(":/..") && (newPath.length() == 5 || newPath.at(5) == QLatin1Char('/')))
+#endif
+                return false;
             /*
               If newPath starts with .., we convert it to absolute to
               avoid infinite looping on
