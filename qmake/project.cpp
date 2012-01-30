@@ -1257,7 +1257,7 @@ QMakeProject::read(const QString &project, uchar cmd)
 bool
 QMakeProject::read(uchar cmd)
 {
-    if(cfile.isEmpty()) {
+    if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
         base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
         base_vars["QMAKE_EXT_C"] = Option::c_ext;
@@ -1266,12 +1266,12 @@ QMakeProject::read(uchar cmd)
         if(!Option::user_template_prefix.isEmpty())
             base_vars["TEMPLATE_PREFIX"] = QStringList(Option::user_template_prefix);
 
-        if ((cmd & ReadSetup) && Option::mkfile::do_cache) {        // parse the cache
+        if (Option::mkfile::do_cache) {        // parse the cache
             if (Option::output_dir.startsWith(Option::mkfile::project_build_root))
                 Option::mkfile::cachefile_depth =
                         Option::output_dir.mid(Option::mkfile::project_build_root.length()).count('/');
         }
-        if (cmd & ReadSetup) {             // parse mkspec
+        {             // parse mkspec
             QString qmakespec = Option::mkfile::qmakespec;
             while(qmakespec.endsWith(QLatin1Char('/')))
                 qmakespec.truncate(qmakespec.length()-1);
@@ -1307,7 +1307,6 @@ QMakeProject::read(uchar cmd)
 
     //before commandline
     if (cmd & ReadSetup) {
-        cfile = pfile;
         parser.file = "(internal)";
         parser.from_file = false;
         parser.line_no = 1; //really arg count now.. duh
