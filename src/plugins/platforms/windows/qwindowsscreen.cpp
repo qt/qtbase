@@ -159,10 +159,10 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
 {
 }
 
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
+
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
-
     if (QWindowsContext::verboseIntegration)
         qDebug() << __FUNCTION__ << window << x << y << width << height;
     RECT r;

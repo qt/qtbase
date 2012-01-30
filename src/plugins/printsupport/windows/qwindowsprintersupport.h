@@ -45,6 +45,8 @@
 #include <QtCore/QList>
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
 
 class QWin32PrintEngine;
 
@@ -64,5 +66,8 @@ private:
     QList<QPrinterInfo> mPrinterList;
     QPrinter::PrinterMode mCurrentMode;
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // WINDOWSPRINTERSUPPORT_H

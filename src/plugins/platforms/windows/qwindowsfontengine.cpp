@@ -89,8 +89,6 @@ QT_BEGIN_NAMESPACE
 
 // common DC for all fonts
 
-QT_BEGIN_NAMESPACE
-
 typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
 static bool resolvedGetCharWidthI = false;

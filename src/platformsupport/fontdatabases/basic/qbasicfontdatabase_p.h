@@ -46,6 +46,8 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
 
+QT_BEGIN_NAMESPACE
+
 struct FontFile
 {
     QString fileName;
@@ -65,5 +67,7 @@ public:
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
     static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
 };
+
+QT_END_NAMESPACE
 
 #endif // QBASICFONTDATABASE_H

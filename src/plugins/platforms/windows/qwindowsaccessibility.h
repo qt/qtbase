@@ -45,6 +45,9 @@
 #include "qtwindowsglobal.h"
 #include <QtGui/QPlatformAccessibility>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 class QWindowsAccessibility : public QPlatformAccessibility
 {
 public:
@@ -57,5 +60,8 @@ public:
     virtual void cleanup();
     */
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QWINDOWSACCESSIBILITY_H

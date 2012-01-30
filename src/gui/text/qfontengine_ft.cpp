@@ -205,6 +205,8 @@ HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     return HB_Err_Ok;
 }
 
+extern QByteArray qt_fontdata_from_index(int);
+
 /*
  * One font file can contain more than one font (bold/italic for example)
  * find the right one and return it.
@@ -232,7 +234,6 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             QFile file(QString::fromUtf8(face_id.filename));
             if (face_id.filename.startsWith(":qmemoryfonts/")) {
                 // from qfontdatabase.cpp
-                extern QByteArray qt_fontdata_from_index(int);
                 QByteArray idx = face_id.filename;
                 idx.remove(0, 14); // remove ':qmemoryfonts/'
                 bool ok = false;

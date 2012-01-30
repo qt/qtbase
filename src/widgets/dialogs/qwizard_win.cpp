@@ -318,10 +318,10 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
     return value;
 }
 
+Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
+
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
-    Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
-
     Q_ASSERT(backButton_);
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
     QBackingStore *backingStore = backButton_->backingStore();

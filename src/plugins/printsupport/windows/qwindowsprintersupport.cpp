@@ -47,6 +47,8 @@
 #include <private/qpaintengine_alpha_p.h>
 #include <private/qprinterinfo_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QWindowsPrinterSupport::QWindowsPrinterSupport()
     : QPlatformPrinterSupport()
 {
@@ -100,3 +102,5 @@ QList<QPrinterInfo> QWindowsPrinterSupport::availablePrinters()
 {
     return mPrinterList;
 }
+
+QT_END_NAMESPACE

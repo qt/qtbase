@@ -52,8 +52,6 @@
 #  include <commctrl.h>
 #  include <objbase.h>
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
-
 #elif defined(Q_WS_MAC)
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -72,6 +70,10 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#if defined (Q_OS_WIN)
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+#endif
 
 /*!
   \class QFileIconProvider
