@@ -158,9 +158,11 @@ QJsonObject QJsonObject::fromVariantMap(const QVariantMap &map)
 QVariantMap QJsonObject::toVariantMap() const
 {
     QVariantMap map;
-    for (uint i = 0; i < o->length; ++i) {
-        QJsonPrivate::Entry *e = o->entryAt(i);
-        map.insert(e->key(), QJsonValue(d, o, e->value).toVariant());
+    if (o) {
+        for (uint i = 0; i < o->length; ++i) {
+            QJsonPrivate::Entry *e = o->entryAt(i);
+            map.insert(e->key(), QJsonValue(d, o, e->value).toVariant());
+        }
     }
     return map;
 }

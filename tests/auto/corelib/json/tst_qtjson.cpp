@@ -88,6 +88,7 @@ private Q_SLOTS:
 
     void fromVariantMap();
     void toVariantMap();
+    void toVariantList();
 
     void toJson();
     void fromJson();
@@ -883,6 +884,9 @@ void TestQtJson::fromVariantMap()
 void TestQtJson::toVariantMap()
 {
     QJsonObject object;
+    QVariantMap map = object.toVariantMap();
+    QVERIFY(map.isEmpty());
+
     object.insert("Key", QString("Value"));
     object.insert("null", QJsonValue());
     QJsonArray array;
@@ -892,7 +896,7 @@ void TestQtJson::toVariantMap()
     array.append(QJsonValue());
     object.insert("Array", array);
 
-    QVariantMap map = object.toVariantMap();
+    map = object.toVariantMap();
 
     QCOMPARE(map.size(), 3);
     QCOMPARE(map.value("Key"), QVariant(QString("Value")));
@@ -904,6 +908,35 @@ void TestQtJson::toVariantMap()
     QCOMPARE(list.at(1), QVariant(999.));
     QCOMPARE(list.at(2), QVariant(QLatin1String("string")));
     QCOMPARE(list.at(3), QVariant());
+}
+
+void TestQtJson::toVariantList()
+{
+    QJsonArray array;
+    QVariantList list = array.toVariantList();
+    QVERIFY(list.isEmpty());
+
+    array.append(QString("Value"));
+    array.append(QJsonValue());
+    QJsonArray inner;
+    inner.append(true);
+    inner.append(999.);
+    inner.append(QLatin1String("string"));
+    inner.append(QJsonValue());
+    array.append(inner);
+
+    list = array.toVariantList();
+
+    QCOMPARE(list.size(), 3);
+    QCOMPARE(list[0], QVariant(QString("Value")));
+    QCOMPARE(list[1], QVariant());
+    QCOMPARE(list[2].type(), QVariant::List);
+    QVariantList vlist = list[2].toList();
+    QCOMPARE(vlist.size(), 4);
+    QCOMPARE(vlist.at(0), QVariant(true));
+    QCOMPARE(vlist.at(1), QVariant(999.));
+    QCOMPARE(vlist.at(2), QVariant(QLatin1String("string")));
+    QCOMPARE(vlist.at(3), QVariant());
 }
 
 void TestQtJson::toJson()
