@@ -42,17 +42,16 @@
 #ifndef QATOMIC_WINDOWS_H
 #define QATOMIC_WINDOWS_H
 
-#ifndef Q_CC_MSVC
+#ifdef Q_CC_MSVC
 
-// Mingw and other GCC platforms get inline assembly
+#include <QtCore/qgenericatomic.h>
 
-# ifdef __i386__
-#  include "QtCore/qatomic_i386.h"
-# else
-#  include "QtCore/qatomic_x86_64.h"
-# endif
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
 
-#else // Q_CC_MSVC
+#if 0
+#pragma qt_sync_stop_processing
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +73,7 @@
 #  include <winbase.h>
 
 // It's safer to remove the volatile and let the compiler add it as needed.
-#  define QT_INTERLOCKED_NO_VOLATILE
+#  define QT_INTERLOCKED_VOLATILE
 
 # else // _WIN32_WCE >= 0x600 || !_X86_
 
@@ -87,7 +86,7 @@
 #    define QT_INTERLOCKED_INTRINSIC
 #   endif
 #  else
-#   define QT_INTERLOCKED_NO_VOLATILE
+#   define QT_INTERLOCKED_VOLATILE
 #  endif
 
 # endif // _WIN32_WCE >= 0x600 || !_X86_
@@ -111,12 +110,8 @@
     QT_INTERLOCKED_CONCAT( \
         QT_INTERLOCKED_CONCAT(QT_INTERLOCKED_PREFIX, Interlocked), name)
 
-#ifdef QT_INTERLOCKED_NO_VOLATILE
-# define QT_INTERLOCKED_VOLATILE
-# define QT_INTERLOCKED_REMOVE_VOLATILE(a) qt_interlocked_remove_volatile(a)
-#else
+#ifndef QT_INTERLOCKED_VOLATILE
 # define QT_INTERLOCKED_VOLATILE volatile
-# define QT_INTERLOCKED_REMOVE_VOLATILE(a) a
 #endif
 
 #ifndef QT_INTERLOCKED_PREFIX
@@ -173,297 +168,194 @@ extern "C" {
 // Interlocked* replacement macros
 
 #define QT_INTERLOCKED_INCREMENT(value) \
-    QT_INTERLOCKED_FUNCTION( Increment )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ) )
+    QT_INTERLOCKED_FUNCTION(Increment)(value)
 
 #define QT_INTERLOCKED_DECREMENT(value) \
-    QT_INTERLOCKED_FUNCTION( Decrement )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ) )
+    QT_INTERLOCKED_FUNCTION(Decrement)(value)
 
 #define QT_INTERLOCKED_COMPARE_EXCHANGE(value, newValue, expectedValue) \
-    QT_INTERLOCKED_FUNCTION( CompareExchange )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
-            newValue, \
-            expectedValue )
+    QT_INTERLOCKED_FUNCTION(CompareExchange)((value), (newValue), (expectedValue))
 
 #define QT_INTERLOCKED_EXCHANGE(value, newValue) \
-    QT_INTERLOCKED_FUNCTION( Exchange )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
-            newValue )
+    QT_INTERLOCKED_FUNCTION(Exchange)((value), (newValue))
 
 #define QT_INTERLOCKED_EXCHANGE_ADD(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION( ExchangeAdd )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
-            valueToAdd )
+    QT_INTERLOCKED_FUNCTION(ExchangeAdd)((value), (valueToAdd))
 
 #if defined(Q_OS_WINCE) || defined(__i386__) || defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     reinterpret_cast<void *>( \
-        QT_INTERLOCKED_FUNCTION( CompareExchange )( \
-                QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
-                (long)( newValue ), \
-                (long)( expectedValue ) ))
+        QT_INTERLOCKED_FUNCTION(CompareExchange)( \
+                reinterpret_cast<long QT_INTERLOCKED_VOLATILE *>(value), \
+                long(newValue), \
+                long(expectedValue)))
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
-    QT_INTERLOCKED_FUNCTION( Exchange )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
-            (quintptr)( newValue ) )
+    QT_INTERLOCKED_FUNCTION(Exchange)( \
+            reinterpret_cast<long QT_INTERLOCKED_VOLATILE *>(value), \
+            long(newValue))
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION( ExchangeAdd )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
-            valueToAdd )
+    QT_INTERLOCKED_FUNCTION(ExchangeAdd)( \
+            reinterpret_cast<long QT_INTERLOCKED_VOLATILE *>(value), \
+            (valueToAdd))
 
 #else // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
-    QT_INTERLOCKED_FUNCTION( CompareExchangePointer )( \
-            (void * QT_INTERLOCKED_VOLATILE *)( QT_INTERLOCKED_REMOVE_VOLATILE(value) ), \
-            newValue, \
-            expectedValue )
+    QT_INTERLOCKED_FUNCTION(CompareExchangePointer)( \
+            (void * QT_INTERLOCKED_VOLATILE *)(value), \
+            (void *) (newValue), \
+            (void *) (expectedValue))
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
-    QT_INTERLOCKED_FUNCTION( ExchangePointer )( \
-            (void * QT_INTERLOCKED_VOLATILE *)( QT_INTERLOCKED_REMOVE_VOLATILE(value) ), \
-            newValue )
+    QT_INTERLOCKED_FUNCTION(ExchangePointer)( \
+            (void * QT_INTERLOCKED_VOLATILE *)(value), \
+            (void *) (newValue))
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
-    QT_INTERLOCKED_FUNCTION( ExchangeAdd64 )( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
-            valueToAdd )
+    QT_INTERLOCKED_FUNCTION(ExchangeAdd64)( \
+            reinterpret_cast<qint64 QT_INTERLOCKED_VOLATILE *>(value), \
+            (valueToAdd))
 
 #endif // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_WAIT_FREE
-
-inline bool QBasicAtomicInt::isReferenceCountingNative()
-{ return true; }
-inline bool QBasicAtomicInt::isReferenceCountingWaitFree()
-{ return true; }
 
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_WAIT_FREE
 
-inline bool QBasicAtomicInt::isTestAndSetNative()
-{ return true; }
-inline bool QBasicAtomicInt::isTestAndSetWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_WAIT_FREE
-
-inline bool QBasicAtomicInt::isFetchAndStoreNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndStoreWaitFree()
-{ return true; }
 
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_WAIT_FREE
 
-inline bool QBasicAtomicInt::isFetchAndAddNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndAddWaitFree()
-{ return true; }
+#define Q_ATOMIC_INT32_IS_SUPPORTED
+
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_WAIT_FREE
 
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_WAIT_FREE
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_WAIT_FREE
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_WAIT_FREE
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
-{ return true; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef QT_INTERLOCKED_NO_VOLATILE
-template <class T>
-Q_INLINE_TEMPLATE T *qt_interlocked_remove_volatile(T volatile *t)
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
+
+// No definition, needs specialization
+template <int N> struct QAtomicOpsBySize;
+
+template <>
+struct QAtomicOpsBySize<4> : QGenericAtomicOps<QAtomicOpsBySize<4> >
 {
-    return const_cast<T *>(t);
-}
-#endif // !QT_INTERLOCKED_NO_VOLATILE
+    // The 32-bit Interlocked*() API takes paramters as longs.
+    typedef long Type;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+    static inline bool isReferenceCountingNative() { return true; }
+    static inline bool isReferenceCountingWaitFree() { return true; }
+    static bool ref(long &_q_value);
+    static bool deref(long &_q_value);
 
-inline bool QBasicAtomicInt::ref()
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return true; }
+    static bool testAndSetRelaxed(long &_q_value, long expectedValue, long newValue);
+
+    static inline bool isFetchAndStoreNative() { return true; }
+    static inline bool isFetchAndStoreWaitFree() { return true; }
+    static long fetchAndStoreRelaxed(long &_q_value, long newValue);
+
+    static inline bool isFetchAndAddNative() { return true; }
+    static inline bool isFetchAndAddWaitFree() { return true; }
+    static long fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd);
+};
+
+template <typename T>
+struct QAtomicOps : QAtomicOpsBySize<sizeof(T)>
+{ };
+
+inline bool QAtomicOpsBySize<4>::ref(long &_q_value)
 {
     return QT_INTERLOCKED_INCREMENT(&_q_value) != 0;
 }
 
-inline bool QBasicAtomicInt::deref()
+inline bool QAtomicOpsBySize<4>::deref(long &_q_value)
 {
     return QT_INTERLOCKED_DECREMENT(&_q_value) != 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
+inline bool QAtomicOpsBySize<4>::testAndSetRelaxed(long &_q_value, long expectedValue, long newValue)
 {
-    return QT_INTERLOCKED_COMPARE_EXCHANGE(&_q_value, newValue, expectedValue)
-            == expectedValue;
+    return QT_INTERLOCKED_COMPARE_EXCHANGE(&_q_value, newValue, expectedValue) == expectedValue;
 }
 
-inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
+inline long QAtomicOpsBySize<4>::fetchAndStoreRelaxed(long &_q_value, long newValue)
 {
     return QT_INTERLOCKED_EXCHANGE(&_q_value, newValue);
 }
 
-inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
+inline long QAtomicOpsBySize<4>::fetchAndAddRelaxed(long &_q_value, QAtomicAdditiveType<long>::AdditiveT valueToAdd)
 {
-    return QT_INTERLOCKED_EXCHANGE_ADD(&_q_value, valueToAdd);
+    return QT_INTERLOCKED_EXCHANGE_ADD(&_q_value, valueToAdd * QAtomicAdditiveType<long>::AddScale);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+// Specialization for pointer types, since we have Interlocked*Pointer() variants in some configurations
+template <typename T>
+struct QAtomicOps<T *> : QGenericAtomicOps<QAtomicOps<T *> >
+{
+    typedef T *Type;
+
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return true; }
+    static bool testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue);
+
+    static inline bool isFetchAndStoreNative() { return true; }
+    static inline bool isFetchAndStoreWaitFree() { return true; }
+    static T *fetchAndStoreRelaxed(T *&_q_value, T *newValue);
+
+    static inline bool isFetchAndAddNative() { return true; }
+    static inline bool isFetchAndAddWaitFree() { return true; }
+    static T *fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd);
+};
 
 template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
+inline bool QAtomicOps<T *>::testAndSetRelaxed(T *&_q_value, T *expectedValue, T *newValue)
 {
-    return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, (void*)newValue, (void*)expectedValue)
-            == expectedValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T* newValue)
-{
-    return reinterpret_cast<T *>(
-            QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, (void*)newValue));
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
-{
-    return reinterpret_cast<T *>(
-            QT_INTERLOCKED_EXCHANGE_ADD_POINTER(&_q_value, valueToAdd * sizeof(T)));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
+    return QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(&_q_value, newValue, expectedValue) == expectedValue;
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
+inline T *QAtomicOps<T *>::fetchAndStoreRelaxed(T *&_q_value, T *newValue)
 {
-    return testAndSetOrdered(expectedValue, newValue);
+    return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_POINTER(&_q_value, newValue));
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
+inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd)
 {
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
+    return reinterpret_cast<T *>(QT_INTERLOCKED_EXCHANGE_ADD_POINTER(&_q_value, valueToAdd * sizeof(T)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -474,9 +366,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef QT_INTERLOCKED_FUNCTION
 #undef QT_INTERLOCKED_PREFIX
 
-#undef QT_INTERLOCKED_NO_VOLATILE
 #undef QT_INTERLOCKED_VOLATILE
-#undef QT_INTERLOCKED_REMOVE_VOLATILE
 
 #undef QT_INTERLOCKED_INCREMENT
 #undef QT_INTERLOCKED_DECREMENT
@@ -488,7 +378,6 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef QT_INTERLOCKED_EXCHANGE_ADD_POINTER
 
 QT_END_NAMESPACE
-
 QT_END_HEADER
 
 #endif // Q_CC_MSVC

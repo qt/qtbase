@@ -86,8 +86,8 @@ template <typename BaseClass> struct QGenericAtomicOps
         return _q_value;
     }
 
-    template <typename T> static inline always_inline
-    void store(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    void store(T &_q_value, X newValue)
     {
         _q_value = newValue;
     }
@@ -100,8 +100,8 @@ template <typename BaseClass> struct QGenericAtomicOps
         return tmp;
     }
 
-    template <typename T> static inline always_inline
-    void storeRelease(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    void storeRelease(T &_q_value, X newValue)
     {
         BaseClass::releaseMemoryFence();
         *static_cast<volatile T *>(&_q_value) = newValue;
@@ -128,27 +128,27 @@ template <typename BaseClass> struct QGenericAtomicOps
     // Archictectures must implement them
     static inline bool isTestAndSetNative();
     static inline bool isTestAndSetWaitFree();
-    template <typename T> static inline
-    bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
+    template <typename T, typename X> static inline
+    bool testAndSetRelaxed(T &_q_value, X expectedValue, X newValue);
 #endif
 
-    template <typename T> static inline always_inline
-    bool testAndSetAcquire(T &_q_value, T expectedValue, T newValue)
+    template <typename T, typename X> static inline always_inline
+    bool testAndSetAcquire(T &_q_value, X expectedValue, X newValue)
     {
         bool tmp = BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
         BaseClass::acquireMemoryFence();
         return tmp;
     }
 
-    template <typename T> static inline always_inline
-    bool testAndSetRelease(T &_q_value, T expectedValue, T newValue)
+    template <typename T, typename X> static inline always_inline
+    bool testAndSetRelease(T &_q_value, X expectedValue, X newValue)
     {
         BaseClass::releaseMemoryFence();
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
     }
 
-    template <typename T> static inline always_inline
-    bool testAndSetOrdered(T &_q_value, T expectedValue, T newValue)
+    template <typename T, typename X> static inline always_inline
+    bool testAndSetOrdered(T &_q_value, X expectedValue, X newValue)
     {
         BaseClass::orderedMemoryFence();
         return BaseClass::testAndSetRelaxed(_q_value, expectedValue, newValue);
@@ -157,8 +157,8 @@ template <typename BaseClass> struct QGenericAtomicOps
     static inline bool isFetchAndStoreNative() { return false; }
     static inline bool isFetchAndStoreWaitFree() { return false; }
 
-    template <typename T> static inline always_inline
-    T fetchAndStoreRelaxed(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    T fetchAndStoreRelaxed(T &_q_value, X newValue)
     {
         // implement fetchAndStore on top of testAndSet
         Q_FOREVER {
@@ -168,23 +168,23 @@ template <typename BaseClass> struct QGenericAtomicOps
         }
     }
 
-    template <typename T> static inline always_inline
-    T fetchAndStoreAcquire(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    T fetchAndStoreAcquire(T &_q_value, X newValue)
     {
         T tmp = BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
         BaseClass::acquireMemoryFence();
         return tmp;
     }
 
-    template <typename T> static inline always_inline
-    T fetchAndStoreRelease(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    T fetchAndStoreRelease(T &_q_value, X newValue)
     {
         BaseClass::releaseMemoryFence();
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
     }
 
-    template <typename T> static inline always_inline
-    T fetchAndStoreOrdered(T &_q_value, T newValue)
+    template <typename T, typename X> static inline always_inline
+    T fetchAndStoreOrdered(T &_q_value, X newValue)
     {
         BaseClass::orderedMemoryFence();
         return BaseClass::fetchAndStoreRelaxed(_q_value, newValue);
