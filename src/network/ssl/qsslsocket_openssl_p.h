@@ -99,6 +99,7 @@ public:
 
     // SSL context
     bool initSslContext();
+    void destroySslContext();
     SSL *ssl;
     SSL_CTX *ctx;
     EVP_PKEY *pkey;
