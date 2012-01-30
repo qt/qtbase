@@ -190,6 +190,9 @@ information about a particular change.
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs
   are now built into QtCore.
 
+- QDir::NoDotAndDotDot is QDir::NoDot|QDir::NoDotDot therefore there is no need
+  to use or check both.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

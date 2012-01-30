@@ -77,9 +77,9 @@ public:
 
                   AllDirs       = 0x400,
                   CaseSensitive = 0x800,
-                  NoDotAndDotDot = 0x1000, // ### Qt5 NoDotAndDotDot = NoDot|NoDotDot
                   NoDot         = 0x2000,
                   NoDotDot      = 0x4000,
+                  NoDotAndDotDot = NoDot | NoDotDot,
 
                   NoFilter = -1
     };

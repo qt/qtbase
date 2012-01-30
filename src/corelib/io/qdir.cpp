@@ -2217,7 +2217,6 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::Files) flags << QLatin1String("Files");
         if (filters & QDir::Drives) flags << QLatin1String("Drives");
         if (filters & QDir::NoSymLinks) flags << QLatin1String("NoSymLinks");
-        if (filters & QDir::NoDotAndDotDot) flags << QLatin1String("NoDotAndDotDot"); // ### Qt5: remove (because NoDotAndDotDot=NoDot|NoDotDot)
         if (filters & QDir::NoDot) flags << QLatin1String("NoDot");
         if (filters & QDir::NoDotDot) flags << QLatin1String("NoDotDot");
         if ((filters & QDir::AllEntries) == QDir::AllEntries) flags << QLatin1String("AllEntries");

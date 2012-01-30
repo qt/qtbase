@@ -330,8 +330,6 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
         return false;
     if ((filters & QDir::NoDotDot) && dotOrDotDot && fileNameSize == 2)
         return false;
-    if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot) // ### Qt5 remove (NoDotAndDotDot == NoDot|NoDotDot)
-        return false;
 
     // name filter
 #ifndef QT_NO_REGEXP

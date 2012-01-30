@@ -1964,8 +1964,8 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
     const bool hideHidden        = !(filters & QDir::Hidden);
     const bool hideSystem        = !(filters & QDir::System);
     const bool hideSymlinks      = (filters & QDir::NoSymLinks);
-    const bool hideDot           = (filters & QDir::NoDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
-    const bool hideDotDot        = (filters & QDir::NoDotDot) || (filters & QDir::NoDotAndDotDot); // ### Qt5: simplify (because NoDotAndDotDot=NoDot|NoDotDot)
+    const bool hideDot           = (filters & QDir::NoDot);
+    const bool hideDotDot        = (filters & QDir::NoDotDot);
 
     // Note that we match the behavior of entryList and not QFileInfo on this and this
     // incompatibility won't be fixed until Qt 5 at least
