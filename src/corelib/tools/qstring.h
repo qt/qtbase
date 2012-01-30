@@ -605,9 +605,6 @@ private:
     Data *d;
     inline QString(Data *dd, int /*dummy*/) : d(dd) {}
 
-#ifndef QT_NO_TEXTCODEC
-    static QTextCodec *codecForCStrings;
-#endif
     static int grow(int);
     static void free(Data *);
     void realloc();
@@ -927,9 +924,6 @@ inline bool operator!=(const QString &s, QString::Null) { return !s.isNull(); }
 #ifndef QT_NO_CAST_FROM_ASCII
 inline bool qStringComparisonHelper(const QString &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2, s2 ? int(strlen(s2)) : -1));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 inline bool QString::operator==(const char *s) const
@@ -1216,9 +1210,6 @@ inline bool operator>=(const QStringRef &s1, const QStringRef &s2)
 
 inline bool qStringComparisonHelper(const QStringRef &s1, const char *s2)
 {
-#  ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings) return (s1 == QString::fromAscii(s2, s2 ? int(strlen(s2)) : -1));
-#  endif
     return (s1 == QLatin1String(s2));
 }
 

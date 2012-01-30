@@ -295,6 +295,10 @@ QtCore
     * The QDate::addDays() and QDateTime::addDays() methods now take a qint64
     * The QDate::daysTo() and QDateTime::daysTo() methods now return a qint64
 
+* QTextCodec::codecForCStrings() and QTextCodec::setCodecForCStrings() have both
+  been removed. This was removed due to issues with breaking other code from
+  libraries, creating uncertainty/bugs in using QString easily, and (to a lesser
+  extent) performance issues.
 
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.

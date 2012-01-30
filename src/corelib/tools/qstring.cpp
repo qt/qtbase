@@ -96,10 +96,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_TEXTCODEC
-QTextCodec *QString::codecForCStrings;
-#endif
-
 #ifdef QT_USE_ICU
 // qlocale_icu.cpp
 extern bool qt_ucol_strcoll(const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result);
@@ -471,9 +467,8 @@ const QString::Null QString::null = { };
     \snippet doc/src/snippets/qstring/main.cpp 0
 
     QString converts the \c{const char *} data into Unicode using the
-    fromAscii() function. By default, fromAscii() treats character
-    above 128 as Latin-1 characters, but this can be changed by
-    calling QTextCodec::setCodecForCStrings().
+    fromAscii() function. fromAscii() treats ordinals above 128 as Latin-1
+    characters.
 
     In all of the QString functions that take \c{const char *}
     parameters, the \c{const char *} is interpreted as a classic
@@ -611,9 +606,7 @@ const QString::Null QString::null = { };
     toLatin1(), toUtf8(), and toLocal8Bit().
 
     \list
-    \o toAscii() returns an 8-bit string encoded using the codec
-       specified by QTextCodec::codecForCStrings (by default, that is
-       Latin 1).
+    \o toAscii() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toLatin1() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toUtf8() returns a UTF-8 encoded 8-bit string. UTF-8 is a
        superset of US-ASCII (ANSI X3.4-1986) that supports the entire
@@ -721,11 +714,11 @@ const QString::Null QString::null = { };
     \section1 More Efficient String Construction
 
     Many strings are known at compile time. But the trivial
-    constructor QString("Hello"), will convert the string literal
-    to a QString using the codecForCStrings(). To avoid this one
-    can use the QStringLiteral macro to directly create the required
-    data at compile time. Constructing a QString out of the literal
-    does then not cause any overhead at runtime.
+    constructor QString("Hello"), will copy the contents of the string,
+    treating the contents as Latin-1. To avoid this one can use the
+    QStringLiteral macro to directly create the required data at compile
+    time. Constructing a QString out of the literal does then not cause
+    any overhead at runtime.
 
     A slightly less efficient way is to use QLatin1String. This class wraps
     a C string literal, precalculates it length at compile time and can
@@ -3652,9 +3645,7 @@ QByteArray QString::toLatin1() const
 /*!
     Returns an 8-bit representation of the string as a QByteArray.
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert Unicode to 8-bit char; otherwise this
-    function does the same as toLatin1().
+    This function does the same as toLatin1().
 
     Note that, despite the name, this function does not necessarily return an US-ASCII
     (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
@@ -3663,10 +3654,6 @@ QByteArray QString::toLatin1() const
 */
 QByteArray QString::toAscii() const
 {
-#ifndef QT_NO_TEXTCODEC
-    if (codecForCStrings)
-        return codecForCStrings->fromUnicode(*this);
-#endif // QT_NO_TEXTCODEC
     return toLatin1();
 }
 
@@ -3800,23 +3787,6 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
 
 QString::Data *QString::fromAscii_helper(const char *str, int size)
 {
-#ifndef QT_NO_TEXTCODEC
-    if (codecForCStrings) {
-        Data *d;
-        if (!str) {
-            d = const_cast<Data *>(&shared_null.str);
-        } else if (size == 0 || (!*str && size < 0)) {
-            d = const_cast<Data *>(&shared_empty.str);
-        } else {
-            if (size < 0)
-                size = qstrlen(str);
-            QString s = codecForCStrings->toUnicode(str, size);
-            d = s.d;
-            d->ref.ref();
-        }
-        return d;
-    }
-#endif
     return fromLatin1_helper(str, size);
 }
 
@@ -3865,11 +3835,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     If \a size is -1 (default), it is taken to be strlen(\a
     str).
 
-    Note that, despite the name, this function actually uses the codec
-    defined by QTextCodec::setCodecForCStrings() to convert \a str to
-    Unicode. Depending on the codec, it may not accept valid US-ASCII (ANSI
-    X3.4-1986) input. If no codec has been set, this function does the same
-    as fromLatin1().
+    This function does the same as fromLatin1().
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
@@ -5138,19 +5104,8 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     const char *c = cformat;
     for (;;) {
         // Copy non-escape chars to result
-#ifndef QT_NO_TEXTCODEC
-        int i = 0;
-        while (*(c + i) != '\0' && *(c + i) != '%')
-            ++i;
-        if (codecForCStrings)
-            result.append(codecForCStrings->toUnicode(c, i));
-        else
-            result.append(fromLatin1(c, i));
-        c += i;
-#else
         while (*c != '\0' && *c != '%')
             result.append(QLatin1Char(*c++));
-#endif
 
         if (*c == '\0')
             break;
@@ -7062,8 +7017,7 @@ bool QString::isRightToLeft() const
     This operator is mostly useful to pass a QString to a function
     that accepts a std::string object.
 
-    If the QString contains Unicode characters that the
-    QTextCodec::codecForCStrings() codec cannot handle, using this operator
+    If the QString contains non-Latin1 Unicode characters, using this
     can lead to loss of information.
 
     This operator is only available if Qt is configured with STL
@@ -8736,9 +8690,7 @@ QByteArray QStringRef::toLatin1() const
 
     Returns an 8-bit representation of the string as a QByteArray.
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert Unicode to 8-bit char; otherwise this
-    function does the same as toLatin1().
+    This function does the same as toLatin1().
 
     Note that, despite the name, this function does not necessarily return an US-ASCII
     (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
@@ -8747,10 +8699,6 @@ QByteArray QStringRef::toLatin1() const
 */
 QByteArray QStringRef::toAscii() const
 {
-#ifndef QT_NO_TEXTCODEC
-    if (QString::codecForCStrings)
-        return QString::codecForCStrings->fromUnicode(unicode(), length());
-#endif // QT_NO_TEXTCODEC
     return toLatin1();
 }
 

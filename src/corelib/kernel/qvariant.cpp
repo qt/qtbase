@@ -1162,8 +1162,8 @@ QVariant::QVariant(QDataStream &s)
   \fn QVariant::QVariant(const char *val)
 
     Constructs a new variant with a string value of \a val.
-    The variant creates a deep copy of \a val, using the encoding
-    set by QTextCodec::setCodecForCStrings().
+    The variant creates a deep copy of \a val into a QString assuming
+    UTF-8 encoding on the input \a val.
 
     Note that \a val is converted to a QString for storing in the
     variant and QVariant::type() will return QMetaType::QString for
@@ -1171,8 +1171,6 @@ QVariant::QVariant(QDataStream &s)
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications.
-
-    \sa QTextCodec::setCodecForCStrings()
 */
 
 #ifndef QT_NO_CAST_FROM_ASCII
