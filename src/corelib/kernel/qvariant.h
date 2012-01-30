@@ -153,7 +153,7 @@ class Q_CORE_EXPORT QVariant
         Icon = QMetaType::QIcon,
         SizePolicy = QMetaType::QSizePolicy,
 
-        UserType = 127,
+        UserType = QMetaType::User,
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 

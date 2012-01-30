@@ -1704,6 +1704,7 @@ void tst_QObject::property()
     QVERIFY(!property.isEnumType());
     QCOMPARE(property.typeName(), "CustomType*");
     QCOMPARE(property.type(), QVariant::UserType);
+    QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
     CustomType *customPointer = 0;
     QVariant customVariant = object.property("custom");
@@ -1718,6 +1719,7 @@ void tst_QObject::property()
     QVERIFY(property.isWritable());
     QCOMPARE(property.typeName(), "CustomType*");
     QCOMPARE(property.type(), QVariant::UserType);
+    QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
     QVERIFY(object.setProperty("custom", customVariant));
     QCOMPARE(object.custom(), customPointer);

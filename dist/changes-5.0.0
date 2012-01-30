@@ -437,6 +437,13 @@ Qt for Windows CE
      cause an abort().
 
 
+- QVariant
+
+  * Definition of QVariant::UserType changed. Currently it is the same as
+    QMetaType::User, which means that it points to the first registered custom
+    type, instead of a nonexistent type.
+
+
 - QMessageBox
 
      * The static function QMessageBox::question has changed the default argument

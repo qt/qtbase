@@ -1842,10 +1842,6 @@ void tst_QVariant::operator_eq_eq_data()
 
         QTest::newRow("HashSecondLarger") << QVariant(hash1) << QVariant(hash2) << false;
     }
-
-    QTest::newRow( "UserType" ) << QVariant(QVariant::UserType) << QVariant(QVariant::UserType) << true;
-    QVariant mUserType(QVariant::UserType);
-    QTest::newRow( "Shared UserType" ) << mUserType << mUserType << true;
 }
 
 void tst_QVariant::operator_eq_eq()
@@ -1919,7 +1915,6 @@ void tst_QVariant::typeName_data()
     QTest::newRow("39") << int(QVariant::RectF) << QByteArray("QRectF");
     QTest::newRow("40") << int(QVariant::PointF) << QByteArray("QPointF");
     QTest::newRow("41") << int(QVariant::RegExp) << QByteArray("QRegExp");
-    QTest::newRow("42") << int(QVariant::UserType) << QByteArray();
     QTest::newRow("43") << int(QVariant::Matrix) << QByteArray("QMatrix");
     QTest::newRow("44") << int(QVariant::Transform) << QByteArray("QTransform");
     QTest::newRow("45") << int(QVariant::Hash) << QByteArray("QVariantHash");
@@ -2031,10 +2026,10 @@ void tst_QVariant::userType()
             qVariantSetValue(userVar, data);
 
             QCOMPARE(userVar.type(), QVariant::UserType);
+            QCOMPARE(userVar.userType(), qMetaTypeId<MyType>());
             QCOMPARE(userVar.typeName(), "MyType");
             QVERIFY(!userVar.isNull());
             QVERIFY(!userVar.canConvert(QVariant::String));
-            QVERIFY(!userVar.canConvert(QVariant::UserType));
 
             QVariant userVar2(userVar);
             QVERIFY(userVar == userVar2);
@@ -2060,10 +2055,10 @@ void tst_QVariant::userType()
             qVariantSetValue(userVar, &data);
 
             QCOMPARE(userVar.type(), QVariant::UserType);
+            QCOMPARE(userVar.userType(), qMetaTypeId<MyType*>());
             QCOMPARE(userVar.typeName(), "MyType*");
             QVERIFY(!userVar.isNull());
             QVERIFY(!userVar.canConvert(QVariant::String));
-            QVERIFY(!userVar.canConvert(QVariant::UserType));
 
             QVariant userVar2(userVar);
             QVERIFY(userVar == userVar2);
@@ -2696,7 +2691,7 @@ Q_DECLARE_METATYPE( MyClass )
 void tst_QVariant::loadUnknownUserType()
 {
     qRegisterMetaType<MyClass>("MyClass");
-    char data[] = {0, 0, 0, 127, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
+    char data[] = {0, 0, 1, 0, 0, 0, 0, 0, 8, 77, 121, 67, 108, 97, 115, 115, 0};
 
     QByteArray ba(data, sizeof(data));
     QDataStream ds(&ba, QIODevice::ReadOnly);
@@ -3306,6 +3301,7 @@ void tst_QVariant::movabilityTest()
 
         memcpy(buffer, &variant, sizeof(QVariant));
         QCOMPARE(buffer[0].type(), QVariant::UserType);
+        QCOMPARE(buffer[0].userType(), qMetaTypeId<MyNotMovable>());
         MyNotMovable tmp(buffer[0].value<MyNotMovable>());
 
         new (&variant) QVariant();

@@ -2243,9 +2243,8 @@ QVariant QMetaProperty::read(const QObject *object) const
             t = QMetaType::type(typeName);
         if (t == QVariant::Invalid)
             t = QVariant::nameToType(typeName);
-        if (t == QVariant::Invalid || t == QVariant::UserType) {
-            if (t == QVariant::Invalid)
-                qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
+        if (t == QVariant::Invalid) {
+            qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
             return QVariant();
         }
     }

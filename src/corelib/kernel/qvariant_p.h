@@ -348,14 +348,6 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_x->type == QVariant::UserType) {
-            // TODO get rid of it
-            // And yes! we can support historical magic, unkonwn/unconstructed user type isn't that
-            // awesome? this QVariant::isValid will be true!
-            m_x->is_null = !m_copy;
-            m_x->is_shared = false;
-            return;
-        }
         qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
         m_x->type = QVariant::Invalid;
     }
@@ -406,8 +398,6 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_d->type == QVariant::UserType)
-            return;
         qWarning("Trying to destruct an instance of an invalid type, type id: %i", m_d->type);
     }
     // Ignore nonconstructible type
@@ -454,10 +444,7 @@ public:
 
     void delegate(const QMetaTypeSwitcher::UnknownType*)
     {
-        if (m_d->type == QVariant::UserType)
-            m_debugStream.nospace() << "QVariant::UserType";
-        else
-            qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
+        qWarning("Trying to stream an instance of an invalid type, type id: %i", m_d->type);
     }
     void delegate(const void*)
     {

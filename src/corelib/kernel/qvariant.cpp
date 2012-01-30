@@ -1608,7 +1608,7 @@ QVariant::Type QVariant::nameToType(const char *name)
         return Invalid;
 
     int metaType = QMetaType::type(name);
-    return metaType <= int(LastGuiType) ? QVariant::Type(metaType) : UserType;
+    return metaType <= int(UserType) ? QVariant::Type(metaType) : UserType;
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -1670,7 +1670,9 @@ void QVariant::load(QDataStream &s)
             return;
         typeId = mapIdFromQt3ToCurrent[typeId];
     } else if (s.version() < QDataStream::Qt_5_0) {
-        if (typeId >= 128 && typeId != QVariant::UserType) {
+        if (typeId == 127 /* QVariant::UserType */) {
+            typeId = QMetaType::User;
+        } else if (typeId >= 128 && typeId != QVariant::UserType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId -= 97;
@@ -1741,7 +1743,9 @@ void QVariant::save(QDataStream &s) const
             return;
         }
     } else if (s.version() < QDataStream::Qt_5_0) {
-        if (typeId >= 128 - 97 && typeId <= LastCoreType) {
+        if (typeId == QMetaType::User) {
+            typeId = 127; // QVariant::UserType had this value in Qt4
+        } else if (typeId >= 128 - 97 && typeId <= LastCoreType) {
             // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
             // by moving all ids down by 97.
             typeId += 97;
@@ -1762,7 +1766,7 @@ void QVariant::save(QDataStream &s) const
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
-    if (typeId == QVariant::UserType) {
+    if (d.type >= QVariant::UserType) {
         s << QMetaType::typeName(userType());
     }
 
