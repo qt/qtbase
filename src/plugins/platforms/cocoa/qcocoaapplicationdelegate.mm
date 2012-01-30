@@ -219,7 +219,7 @@ static void cleanupCocoaApplicationDelegate()
     Q_UNUSED(sender);
 /*
     for (NSString *fileName in filenames) {
-        QString qtFileName = qt_mac_NSStringToQString(fileName);
+        QString qtFileName = QCFString::toQString(fileName);
         if (inLaunch) {
             // We need to be careful because Cocoa will be nice enough to take
             // command line arguments and send them to us as events. Given the history
@@ -336,7 +336,7 @@ static void cleanupCocoaApplicationDelegate()
     Q_UNUSED(replyEvent);
 /*
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    QUrl url(qt_mac_NSStringToQString(urlString));
+    QUrl url(QCFString::toQString(urlString));
     QFileOpenEvent qtEvent(url);
     qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
 */

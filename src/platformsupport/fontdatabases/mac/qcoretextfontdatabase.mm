@@ -86,9 +86,6 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
-inline QString qt_mac_NSStringToQString(const NSString *nsstr)
-{ return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
-
 int qt_antialiasing_threshold = 0;
 bool qt_enable_font_smoothing = true;
 
@@ -141,7 +138,7 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
 static QString familyNameFromPostScriptName(QHash<QString, QString> &psNameToFamily,
                                             NSString *psName)
 {
-    QString name = qt_mac_NSStringToQString(psName);
+    QString name = QCFString::toQString(psName);
     if (psNameToFamily.contains(name))
         return psNameToFamily[name];
     else {
@@ -240,7 +237,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
                                             pixelSize, fixedPitch, writingSystems, (void *) font);
         CFStringRef psName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);
         // we need PostScript Name to family name mapping for fallback list construction
-        psNameToFamily[qt_mac_NSStringToQString((NSString *) psName)] = familyName;
+        psNameToFamily[QCFString::toQString((NSString *) psName)] = familyName;
         CFRelease(psName);
     }
 

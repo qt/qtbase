@@ -35,6 +35,7 @@ mac|darwin {
     contains(QT_CONFIG, coreservices) {
         LIBS_PRIVATE += -framework ApplicationServices
         LIBS_PRIVATE += -framework CoreServices
+        LIBS_PRIVATE += -framework Foundation
     }
     LIBS_PRIVATE += -framework CoreFoundation
 }

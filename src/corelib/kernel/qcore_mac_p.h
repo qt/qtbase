@@ -78,6 +78,10 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
+#ifdef __OBJC__
+#include <Foundation/Foundation.h>
+#endif
+
 #undef DEBUG
 #ifdef OLD_DEBUG
 #  define DEBUG OLD_DEBUG
@@ -144,6 +148,11 @@ public:
     operator CFStringRef() const;
     static QString toQString(CFStringRef cfstr);
     static CFStringRef toCFStringRef(const QString &str);
+#ifdef __OBJC__
+    static QString toQString(const NSString *nsstr);
+    static  NSString *toNSString(const QString &string);
+#endif
+
 private:
     QString string;
 };

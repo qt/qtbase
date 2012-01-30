@@ -68,12 +68,6 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
 inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)
 { return reinterpret_cast<NSMutableArray *>(qt_mac_QStringListToNSMutableArrayVoid(qstrlist)); }
 
-inline QString qt_mac_NSStringToQString(const NSString *nsstr)
-{ return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
-
-inline NSString *qt_mac_QStringToNSString(const QString &qstr)
-{ return [const_cast<NSString *>(reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr))) autorelease]; }
-
 CGImageRef qt_mac_image_to_cgimage(const QImage &image);
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
 NSImage *qt_mac_create_nsimage(const QPixmap &pm);

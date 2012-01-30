@@ -58,7 +58,7 @@ QStringList qt_mac_NSArrayToQStringList(void *nsarray)
     QStringList result;
     NSArray *array = static_cast<NSArray *>(nsarray);
     for (NSUInteger i=0; i<[array count]; ++i)
-        result << qt_mac_NSStringToQString([array objectAtIndex:i]);
+        result << QCFString::toQString([array objectAtIndex:i]);
     return result;
 }
 

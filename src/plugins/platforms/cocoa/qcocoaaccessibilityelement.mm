@@ -148,7 +148,7 @@ static QAccessibleInterface *acast(void *ptr)
         QSize qtSize = acast(accessibleInterface)->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return qt_mac_QStringToNSString(acast(accessibleInterface)->text(QAccessible::Name));
+        return QCFString::toNSString(acast(accessibleInterface)->text(QAccessible::Name));
     }
 
     return nil;
@@ -195,7 +195,7 @@ static QAccessibleInterface *acast(void *ptr)
     // Return a description from the action interface if this action is not known to the OS.
     if (qtAction.isEmpty()) {
         QString description = actionInterface->localizedActionDescription(qtAction);
-        return qt_mac_QStringToNSString(description);
+        return QCFString::toNSString(description);
     }
 
     return NSAccessibilityActionDescription(action);

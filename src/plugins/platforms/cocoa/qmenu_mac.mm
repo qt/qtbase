@@ -237,7 +237,7 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 static NSMenuItem *createNSMenuItem(const QString &title)
 {
     NSMenuItem *item = [[NSMenuItem alloc] 
-                         initWithTitle:qt_mac_QStringToNSString(title)
+                         initWithTitle:QCFString::toNSString(title)
                          action:@selector(qtDispatcherToQAction:) keyEquivalent:@""];
     [item setTarget:nil];
     return item;
@@ -636,22 +636,22 @@ void QCocoaMenu::syncAction(QCocoaMenuAction *action)
     // Cocoa Font and title
     if (action->action->font().resolve()) {
         const QFont &actionFont = action->action->font();
-        NSFont *customMenuFont = [NSFont fontWithName:qt_mac_QStringToNSString(actionFont.family())
+        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(actionFont.family())
                                   size:actionFont.pointSize()];
         NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
         NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
         NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
-        NSAttributedString *str = [[[NSAttributedString alloc] initWithString:qt_mac_QStringToNSString(finalString)
+        NSAttributedString *str = [[[NSAttributedString alloc] initWithString:QCFString::toNSString(finalString)
                                  attributes:attributes] autorelease];
        [item setAttributedTitle: str];
     } else {
-            [item setTitle: qt_mac_QStringToNSString(finalString)];
+            [item setTitle: QCFString::toNSString(finalString)];
     }
 
     if (action->action->menuRole() == QAction::AboutRole || action->action->menuRole() == QAction::QuitRole)
-        [item setTitle:qt_mac_QStringToNSString(text)];
+        [item setTitle:QCFString::toNSString(text)];
     else
-        [item setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(text))];
+        [item setTitle:QCFString::toNSString(qt_mac_removeMnemonics(text))];
 
     // Cocoa Enabled
     [item setEnabled: action->action->isEnabled()];
@@ -873,7 +873,7 @@ void QCocoaMenuBar::syncAction(QCocoaMenuAction *action)
     if (submenu) {
         bool visible = actualMenuItemVisibility(this, action);
         [item setSubmenu: submenu];
-        [submenu setTitle:qt_mac_QStringToNSString(qt_mac_removeMnemonics(action->action->text()))];
+        [submenu setTitle:QCFString::toNSString(qt_mac_removeMnemonics(action->action->text()))];
         syncNSMenuItemVisiblity(item, visible);
         if (release_submenu) { //no pointers to it
             [submenu release];
@@ -978,7 +978,7 @@ OSMenuRef QCocoaMenuBar::macMenu()
         if (GetCurrentProcess(&mine) == noErr && GetFrontProcess(&front) == noErr) {
             if (!qt_mac_no_menubar_merge && !apple_menu) {
                 apple_menu = qt_mac_create_menu(qtMenuBar);
-                [apple_menu setTitle:qt_mac_QStringToNSString(QString(QChar(0x14)))];
+                [apple_menu setTitle:QCFString::toNSString(QString(QChar(0x14)))];
                 NSMenuItem *apple_menuItem = [[NSMenuItem alloc] init];
                 [apple_menuItem setSubmenu:menu];
                 [apple_menu addItem:apple_menuItem];
