@@ -68,14 +68,51 @@ typedef QList<QAccessibleEvent*> EventList;
 
 bool operator==(const QAccessibleEvent &l, const QAccessibleEvent &r)
 {
-    if (l.type() != r.type() ||
-            l.object() != r.object() ||
-            l.child() != r.child())
+    if (l.type() != r.type()) {
+//        qDebug() << "QAccessibleEvent with wrong type: " << qAccessibleEventString(l.type()) << " and " << qAccessibleEventString(r.type());
         return false;
+    }
+    if (l.object() != r.object() ||
+            l.child() != r.child()) {
+//        qDebug() << "QAccessibleEvent for wrong object: " << l.object() << " and " << r.object() << " child: " << l.child() << " and " << r.child();
+        return false;
+    }
 
     if (l.type() == QAccessible::StateChanged) {
         return static_cast<const QAccessibleStateChangeEvent*>(&l)->changedStates()
                 == static_cast<const QAccessibleStateChangeEvent*>(&r)->changedStates();
+    } else if (l.type() == QAccessible::TextCaretMoved) {
+        return static_cast<const QAccessibleTextCursorEvent*>(&l)->cursorPosition()
+                == static_cast<const QAccessibleTextCursorEvent*>(&r)->cursorPosition();
+    } else if (l.type() == QAccessible::TextSelectionChanged) {
+        const QAccessibleTextSelectionEvent *le = static_cast<const QAccessibleTextSelectionEvent*>(&l);
+        const QAccessibleTextSelectionEvent *re = static_cast<const QAccessibleTextSelectionEvent*>(&r);
+        return  le->cursorPosition() == re->cursorPosition() &&
+                le->selectionStart() == re->selectionStart() &&
+                le->selectionEnd() == re->selectionEnd();
+    } else if (l.type() == QAccessible::TextInserted) {
+        const QAccessibleTextInsertEvent *le = static_cast<const QAccessibleTextInsertEvent*>(&l);
+        const QAccessibleTextInsertEvent *re = static_cast<const QAccessibleTextInsertEvent*>(&r);
+        return  le->cursorPosition() == re->cursorPosition() &&
+                le->changePosition() == re->changePosition() &&
+                le->textInserted() == re->textInserted();
+    } else if (l.type() == QAccessible::TextRemoved) {
+        const QAccessibleTextRemoveEvent *le = static_cast<const QAccessibleTextRemoveEvent*>(&l);
+        const QAccessibleTextRemoveEvent *re = static_cast<const QAccessibleTextRemoveEvent*>(&r);
+        return  le->cursorPosition() == re->cursorPosition() &&
+                le->changePosition() == re->changePosition() &&
+                le->textRemoved() == re->textRemoved();
+    } else if (l.type() == QAccessible::TextUpdated) {
+        const QAccessibleTextUpdateEvent *le = static_cast<const QAccessibleTextUpdateEvent*>(&l);
+        const QAccessibleTextUpdateEvent *re = static_cast<const QAccessibleTextUpdateEvent*>(&r);
+        return  le->cursorPosition() == re->cursorPosition() &&
+                le->changePosition() == re->changePosition() &&
+                le->textInserted() == re->textInserted() &&
+                le->textRemoved() == re->textRemoved();
+    } else if (l.type() == QAccessible::ValueChanged) {
+        const QAccessibleValueChangeEvent *le = static_cast<const QAccessibleValueChangeEvent*>(&l);
+        const QAccessibleValueChangeEvent *re = static_cast<const QAccessibleValueChangeEvent*>(&r);
+        return le->value() == re->value();
     }
     return true;
 }
@@ -108,7 +145,7 @@ public:
         return res;
     }
     static bool containsEvent(QAccessibleEvent *event) {
-        Q_FOREACH (QAccessibleEvent *ev, eventList()) {
+        Q_FOREACH (const QAccessibleEvent *ev, eventList()) {
             if (*ev == *event)
                 return true;
         }
@@ -146,9 +183,34 @@ private:
     }
     static QAccessibleEvent *copyEvent(QAccessibleEvent *event)
     {
-        if (event->type() == QAccessible::StateChanged)
-            return new QAccessibleStateChangeEvent(static_cast<const QAccessibleStateChangeEvent*>(event)->changedStates(),
+        if (event->type() == QAccessible::StateChanged) {
+            return new QAccessibleStateChangeEvent(static_cast<QAccessibleStateChangeEvent*>(event)->changedStates(),
                                                    event->object(), event->child());
+        } else if (event->type() == QAccessible::TextCaretMoved) {
+            return new QAccessibleTextCursorEvent(static_cast<QAccessibleTextCursorEvent*>(event)->cursorPosition(), event->object(), event->child());
+        } else if (event->type() == QAccessible::TextSelectionChanged) {
+            const QAccessibleTextSelectionEvent *original = static_cast<QAccessibleTextSelectionEvent*>(event);
+            QAccessibleTextSelectionEvent *ev = new QAccessibleTextSelectionEvent(original->selectionStart(), original->selectionEnd(), event->object(), event->child());
+            ev->setCursorPosition(original->cursorPosition());
+            return ev;
+        } else if (event->type() == QAccessible::TextInserted) {
+            const QAccessibleTextInsertEvent *original = static_cast<QAccessibleTextInsertEvent*>(event);
+            QAccessibleTextInsertEvent *ev = new QAccessibleTextInsertEvent(original->changePosition(), original->textInserted(), event->object(), event->child());
+            ev->setCursorPosition(original->cursorPosition());
+            return ev;
+        } else if (event->type() == QAccessible::TextRemoved) {
+            const QAccessibleTextRemoveEvent *original = static_cast<QAccessibleTextRemoveEvent*>(event);
+            QAccessibleTextRemoveEvent *ev = new QAccessibleTextRemoveEvent(original->changePosition(), original->textRemoved(), event->object(), event->child());
+            ev->setCursorPosition(original->cursorPosition());
+            return ev;
+        } else if (event->type() == QAccessible::TextUpdated) {
+            const QAccessibleTextUpdateEvent *original = static_cast<QAccessibleTextUpdateEvent*>(event);
+            QAccessibleTextUpdateEvent *ev = new QAccessibleTextUpdateEvent(original->changePosition(), original->textRemoved(), original->textInserted(), event->object(), event->child());
+            ev->setCursorPosition(original->cursorPosition());
+            return ev;
+        } else if (event->type() == QAccessible::ValueChanged) {
+            return new QAccessibleValueChangeEvent(static_cast<QAccessibleValueChangeEvent*>(event)->value(), event->object(), event->child());
+        }
         return new QAccessibleEvent(event->type(), event->object(), event->child());
     }
 

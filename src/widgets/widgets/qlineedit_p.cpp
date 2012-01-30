@@ -144,8 +144,9 @@ void QLineEditPrivate::_q_selectionChanged()
 
     emit q->selectionChanged();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleEvent event(QAccessible::TextSelectionChanged, q);
-    QAccessible::updateAccessibility(&event);
+    QAccessibleTextSelectionEvent ev(control->selectionStart(), control->selectionEnd(), q);
+    ev.setCursorPosition(control->cursorPosition());
+    QAccessible::updateAccessibility(&ev);
 #endif
 }
 

@@ -145,7 +145,9 @@ public:
         ParentChanged        = 0x800F,
         HelpChanged          = 0x80A0,
         DefaultActionChanged = 0x80B0,
-        AcceleratorChanged   = 0x80C0
+        AcceleratorChanged   = 0x80C0,
+
+        InvalidEvent
     };
 
     // 64 bit enums seem hard on some platforms (windows...)
@@ -436,6 +438,15 @@ public:
         : m_type(typ), m_object(obj), m_child(chld)
     {
         Q_ASSERT(obj);
+        // All events below have a subclass of QAccessibleEvent.
+        // Use the subclass, since it's expected that it's possible to cast to that.
+        Q_ASSERT(m_type != QAccessible::ValueChanged);
+        Q_ASSERT(m_type != QAccessible::StateChanged);
+        Q_ASSERT(m_type != QAccessible::TextCaretMoved);
+        Q_ASSERT(m_type != QAccessible::TextSelectionChanged);
+        Q_ASSERT(m_type != QAccessible::TextInserted);
+        Q_ASSERT(m_type != QAccessible::TextRemoved);
+        Q_ASSERT(m_type != QAccessible::TextUpdated);
     }
 
     virtual ~QAccessibleEvent()
@@ -448,7 +459,6 @@ public:
     QAccessibleInterface *accessibleInterface() const;
 
 protected:
-
     QAccessible::Event m_type;
     QObject *m_object;
     int m_child;
@@ -458,8 +468,10 @@ class Q_GUI_EXPORT QAccessibleStateChangeEvent :public QAccessibleEvent
 {
 public:
     inline QAccessibleStateChangeEvent(QAccessible::State state, QObject *obj, int chld = -1)
-        : QAccessibleEvent(QAccessible::StateChanged, obj, chld), m_changedStates(state)
-    {}
+        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld), m_changedStates(state)
+    {
+        m_type = QAccessible::StateChanged;
+    }
 
     QAccessible::State changedStates() const {
         return m_changedStates;
@@ -469,6 +481,133 @@ protected:
     QAccessible::State m_changedStates;
 };
 
+// Update the cursor and optionally the selection.
+class Q_GUI_EXPORT QAccessibleTextCursorEvent : public QAccessibleEvent
+{
+public:
+    inline QAccessibleTextCursorEvent(int cursorPos, QObject *obj, int chld = -1)
+        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld)
+      , m_cursorPosition(cursorPos)
+    {
+        m_type = QAccessible::TextCaretMoved;
+    }
+
+    void setCursorPosition(int position) { m_cursorPosition = position; }
+    int cursorPosition() const { return m_cursorPosition; }
+
+protected:
+    int m_cursorPosition;
+};
+
+// Updates the cursor position simultaneously. By default the cursor is set to the end of the selection.
+class Q_GUI_EXPORT QAccessibleTextSelectionEvent : public QAccessibleTextCursorEvent
+{
+public:
+    inline QAccessibleTextSelectionEvent(int start, int end, QObject *obj, int chld = -1)
+        : QAccessibleTextCursorEvent((start == -1) ? 0 : end, obj, chld)
+        , m_selectionStart(start), m_selectionEnd(end)
+    {
+        m_type = QAccessible::TextSelectionChanged;
+    }
+
+    void setSelection(int start, int end) {
+        m_selectionStart = start;
+        m_selectionEnd = end;
+    }
+
+    int selectionStart() const { return m_selectionStart; }
+    int selectionEnd() const { return m_selectionEnd; }
+
+protected:
+        int m_selectionStart;
+        int m_selectionEnd;
+};
+
+class Q_GUI_EXPORT QAccessibleTextInsertEvent : public QAccessibleTextCursorEvent
+{
+public:
+    inline QAccessibleTextInsertEvent(int position, const QString &text, QObject *obj, int chld = -1)
+        : QAccessibleTextCursorEvent(position + text.length(), obj, chld)
+        , m_position(position), m_text(text)
+    {
+        m_type = QAccessible::TextInserted;
+    }
+
+    QString textInserted() const {
+        return m_text;
+    }
+    int changePosition() const {
+        return m_position;
+    }
+
+protected:
+    int m_position;
+    QString m_text;
+};
+
+class Q_GUI_EXPORT QAccessibleTextRemoveEvent : public QAccessibleTextCursorEvent
+{
+public:
+    inline QAccessibleTextRemoveEvent(int position, const QString &text, QObject *obj, int chld = -1)
+        : QAccessibleTextCursorEvent(position, obj, chld)
+        , m_position(position), m_text(text)
+    {
+        m_type = QAccessible::TextRemoved;
+    }
+
+    QString textRemoved() const {
+        return m_text;
+    }
+    int changePosition() const {
+        return m_position;
+    }
+
+protected:
+    int m_position;
+    QString m_text;
+};
+
+class Q_GUI_EXPORT QAccessibleTextUpdateEvent : public QAccessibleTextCursorEvent
+{
+public:
+    inline QAccessibleTextUpdateEvent(int position, const QString &oldText, const QString &text, QObject *obj, int chld = -1)
+        : QAccessibleTextCursorEvent(position + text.length(), obj, chld)
+        , m_position(position), m_oldText(oldText), m_text(text)
+    {
+        m_type = QAccessible::TextUpdated;
+    }
+    QString textRemoved() const {
+        return m_oldText;
+    }
+    QString textInserted() const {
+        return m_text;
+    }
+    int changePosition() const {
+        return m_position;
+    }
+
+protected:
+    int m_position;
+    QString m_oldText;
+    QString m_text;
+};
+
+class Q_GUI_EXPORT QAccessibleValueChangeEvent : public QAccessibleEvent
+{
+public:
+    inline QAccessibleValueChangeEvent(const QVariant &val, QObject *obj, int chld = -1)
+        : QAccessibleEvent(QAccessible::InvalidEvent, obj, chld)
+      , m_value(val)
+    {
+        m_type = QAccessible::ValueChanged;
+    }
+
+    void setValue(const QVariant & val) { m_value= val; }
+    QVariant value() const { return m_value; }
+
+protected:
+    QVariant m_value;
+};
 
 #define QAccessibleInterface_iid "org.qt-project.Qt.QAccessibleInterface"
 Q_DECLARE_INTERFACE(QAccessibleInterface, QAccessibleInterface_iid)
