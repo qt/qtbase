@@ -381,19 +381,21 @@ void QGraphicsViewPrivate::recalculateContentSize()
     if (frameOnlyAround)
         scrollBarExtent += frameWidth * 2;
 
-    bool useHorizontalScrollBar = (viewRect.width() > width) && hbarpolicy != Qt::ScrollBarAlwaysOff;
-    bool useVerticalScrollBar = (viewRect.height() > height) && vbarpolicy != Qt::ScrollBarAlwaysOff;
-    if (useHorizontalScrollBar && !useVerticalScrollBar) {
+    // We do not need to subtract the width scrollbars whose policy is
+    // Qt::ScrollBarAlwaysOn, this was already done by maximumViewportSize().
+    bool useHorizontalScrollBar = (viewRect.width() > width) && hbarpolicy == Qt::ScrollBarAsNeeded;
+    bool useVerticalScrollBar = (viewRect.height() > height) && vbarpolicy == Qt::ScrollBarAsNeeded;
+    if (useHorizontalScrollBar && vbarpolicy == Qt::ScrollBarAsNeeded) {
         if (viewRect.height() > height - scrollBarExtent)
             useVerticalScrollBar = true;
     }
-    if (useVerticalScrollBar && !useHorizontalScrollBar) {
+    if (useVerticalScrollBar && hbarpolicy == Qt::ScrollBarAsNeeded) {
         if (viewRect.width() > width - scrollBarExtent)
             useHorizontalScrollBar = true;
     }
-    if (useHorizontalScrollBar && hbarpolicy != Qt::ScrollBarAlwaysOn)
+    if (useHorizontalScrollBar)
         height -= scrollBarExtent;
-    if (useVerticalScrollBar && vbarpolicy != Qt::ScrollBarAlwaysOn)
+    if (useVerticalScrollBar)
         width -= scrollBarExtent;
 
     // Setting the ranges of these scroll bars can/will cause the values to
