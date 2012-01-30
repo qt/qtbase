@@ -3056,9 +3056,8 @@ else
 fi
 
 QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
-TEST_COMPILER="$CXX"
 
-[ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
+TEST_COMPILER=$QMAKE_CONF_COMPILER
 if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if [ -z "$TEST_COMPILER" ]; then
         echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -4472,14 +4471,12 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
 
-	[ -n "$CC" ] && echo "CC = $CC" >> "$mkfile"
-	[ -n "$CXX" ] && echo "CXX = $CXX" >> "$mkfile"
         if [ "$CFG_SILENT" = "yes" ]; then
-            [ -z "$CC" ] && setBootstrapVariable QMAKE_CC 's,QMAKE_CC.*=,CC=\@,'
-            [ -z "$CXX" ] && setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX.*=,CXX=\@,'
+            setBootstrapVariable QMAKE_CC 's,QMAKE_CC.*=,CC=\@,'
+            setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX.*=,CXX=\@,'
         else
-            [ -z "$CC" ] && setBootstrapVariable QMAKE_CC 's,QMAKE_CC,CC,'
-            [ -z "$CXX" ] && setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX,CXX,'
+            setBootstrapVariable QMAKE_CC 's,QMAKE_CC,CC,'
+            setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX,CXX,'
         fi
         setBootstrapVariable QMAKE_CFLAGS
         setBootstrapVariable QMAKE_CXXFLAGS 's,\$\$QMAKE_CFLAGS,\$(QMAKE_CFLAGS),'
