@@ -324,6 +324,8 @@ public:
     QStandardItemModel(int rows, int columns, QObject *parent = 0);
     ~QStandardItemModel();
 
+    void setItemRoleNames(const QHash<int,QByteArray> &roleNames);
+
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &child) const;
 

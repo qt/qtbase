@@ -2080,6 +2080,15 @@ QStandardItemModel::~QStandardItemModel()
 }
 
 /*!
+    Sets the item role names to \a roleNames.
+*/
+void QStandardItemModel::setItemRoleNames(const QHash<int,QByteArray> &roleNames)
+{
+    Q_D(QStandardItemModel);
+    d->roleNames = roleNames;
+}
+
+/*!
     Removes all items (including header items) from the model and sets the
     number of rows and columns to zero.
 
