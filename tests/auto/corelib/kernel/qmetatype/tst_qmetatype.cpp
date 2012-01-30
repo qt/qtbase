@@ -85,6 +85,7 @@ private slots:
     void constructCopy_data();
     void constructCopy();
     void typedefs();
+    void registerType();
     void isRegistered_data();
     void isRegistered();
     void registerStreamBuiltin();
@@ -826,6 +827,44 @@ void tst_QMetaType::typedefs()
     typedef Whity<double> WhityDouble;
     qRegisterMetaType<WhityDouble>("WhityDouble");
     QCOMPARE(QMetaType::type("WhityDouble"), ::qMetaTypeId<WhityDouble>());
+}
+
+void tst_QMetaType::registerType()
+{
+    // Built-in
+    QCOMPARE(qRegisterMetaType<QString>("QString"), int(QMetaType::QString));
+    QCOMPARE(qRegisterMetaType<QString>("QString"), int(QMetaType::QString));
+
+    // Custom
+    int fooId = qRegisterMetaType<TestSpace::Foo>("TestSpace::Foo");
+    QVERIFY(fooId >= int(QMetaType::User));
+    QCOMPARE(qRegisterMetaType<TestSpace::Foo>("TestSpace::Foo"), fooId);
+
+    int movableId = qRegisterMetaType<CustomMovable>("CustomMovable");
+    QVERIFY(movableId >= int(QMetaType::User));
+    QCOMPARE(qRegisterMetaType<CustomMovable>("CustomMovable"), movableId);
+
+    // Alias to built-in
+    typedef QString MyString;
+
+    QCOMPARE(qRegisterMetaType<MyString>("MyString"), int(QMetaType::QString));
+    QCOMPARE(qRegisterMetaType<MyString>("MyString"), int(QMetaType::QString));
+
+    QCOMPARE(QMetaType::type("MyString"), int(QMetaType::QString));
+
+    // Alias to custom type
+    typedef CustomMovable MyMovable;
+    typedef TestSpace::Foo MyFoo;
+
+    QCOMPARE(qRegisterMetaType<MyMovable>("MyMovable"), movableId);
+    QCOMPARE(qRegisterMetaType<MyMovable>("MyMovable"), movableId);
+
+    QCOMPARE(QMetaType::type("MyMovable"), movableId);
+
+    QCOMPARE(qRegisterMetaType<MyFoo>("MyFoo"), fooId);
+    QCOMPARE(qRegisterMetaType<MyFoo>("MyFoo"), fooId);
+
+    QCOMPARE(QMetaType::type("MyFoo"), fooId);
 }
 
 class IsRegisteredDummyType { };

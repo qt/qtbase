@@ -465,6 +465,8 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
     int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
                                   normalizedTypeName.size());
 
+    int previousSize = 0;
+    int previousFlags = 0;
     if (!idx) {
         QWriteLocker locker(customTypesLock());
         idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
@@ -485,8 +487,33 @@ int QMetaType::registerType(const char *typeName, Deleter deleter,
             inf.flags = flags;
             idx = ct->size() + User;
             ct->append(inf);
+            return idx;
+        }
+
+        if (idx >= User) {
+            previousSize = ct->at(idx - User).size;
+            previousFlags = ct->at(idx - User).flags;
         }
     }
+
+    if (idx < User) {
+        previousSize = QMetaType::sizeOf(idx);
+        previousFlags = QMetaType::typeFlags(idx);
+    }
+
+    if (previousSize != size) {
+        qFatal("QMetaType::registerType: Binary compatibility break "
+            "-- Size mismatch for type '%s' [%i]. Previously registered "
+            "size %i, now registering size %i.",
+            normalizedTypeName.constData(), idx, previousSize, size);
+    }
+    if (previousFlags != flags) {
+        qFatal("QMetaType::registerType: Binary compatibility break "
+            "-- Type flags for type '%s' [%i] don't match. Previously "
+            "registered TypeFlags(0x%x), now registering TypeFlags(0x%x).",
+            normalizedTypeName.constData(), idx, previousFlags, int(flags));
+    }
+
     return idx;
 }
 
@@ -510,25 +537,30 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
     int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
                                   normalizedTypeName.size());
 
-    if (idx) {
-        Q_ASSERT(idx == aliasId);
-        return idx;
+    if (!idx) {
+        QWriteLocker locker(customTypesLock());
+        idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                               normalizedTypeName.size());
+
+        if (!idx) {
+            QCustomTypeInfo inf;
+            inf.typeName = normalizedTypeName;
+            inf.alias = aliasId;
+            inf.creator = 0;
+            inf.deleter = 0;
+            ct->append(inf);
+            return aliasId;
+        }
     }
 
-    QWriteLocker locker(customTypesLock());
-    idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
-                                           normalizedTypeName.size());
-
-    if (idx)
-        return idx;
-
-    QCustomTypeInfo inf;
-    inf.typeName = normalizedTypeName;
-    inf.alias = aliasId;
-    inf.creator = 0;
-    inf.deleter = 0;
-    ct->append(inf);
-    return aliasId;
+    if (idx != aliasId) {
+        qFatal("QMetaType::registerTypedef: Binary compatibility break "
+            "-- Type name '%s' previously registered as typedef of '%s' [%i], "
+            "now registering as typedef of '%s' [%i].",
+            normalizedTypeName.constData(), QMetaType::typeName(idx), idx,
+            QMetaType::typeName(aliasId), aliasId);
+    }
+    return idx;
 }
 
 /*!
