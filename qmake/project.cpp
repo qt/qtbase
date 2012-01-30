@@ -1491,6 +1491,7 @@ QMakeProject::read(uchar cmd)
             QString orig_spec = first(QLatin1String("QMAKESPEC_ORIGINAL"));
             real_spec = orig_spec.isEmpty() ? qmakespec : orig_spec;
 #endif
+            vars["QMAKESPEC"] << real_spec;
             short_spec = QFileInfo(real_spec).fileName();
             doProjectInclude("spec_post", IncludeFlagFeature, vars);
             // The spec extends the feature search path, so invalidate the cache.

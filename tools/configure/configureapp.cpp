@@ -2674,19 +2674,6 @@ void Configure::generateCachefile()
         moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
         moduleStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
 
-        QString hostSpec = dictionary[ "QMAKESPEC" ];
-        QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : hostSpec;
-        QString xmkspec_path = sourcePath + "/mkspecs/" + targetSpec;
-        if (QFile::exists(xmkspec_path))
-            moduleStream << "XQMAKESPEC      = " << xmkspec_path << endl;
-        else
-            moduleStream << "XQMAKESPEC      = " << targetSpec << endl;
-        QString mkspec_path = sourcePath + "/mkspecs/" + hostSpec;
-        if (QFile::exists(mkspec_path))
-            moduleStream << "QMAKESPEC       = " << mkspec_path << endl;
-        else
-            moduleStream << "QMAKESPEC       = " << hostSpec << endl;
-
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
 

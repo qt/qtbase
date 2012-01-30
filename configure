@@ -5914,18 +5914,6 @@ CONFIG += dylib depend_includepath fix_output_dirs no_private_qt_headers_warning
 
 EOF
 
-#dump the qmake spec
-if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "XQMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
-else
-   echo "XQMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
-fi
-if [ -d "$outpath/mkspecs/$PLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$PLATFORM" >> "$CACHEFILE.tmp"
-else
-   echo "QMAKESPEC = $PLATFORM" >> "$CACHEFILE.tmp"
-fi
-
 # replace .qmake.cache if it differs from the newly created temp file
 if cmp -s "$CACHEFILE.tmp" "$CACHEFILE"; then
     rm -f "$CACHEFILE.tmp"
