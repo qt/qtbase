@@ -2978,6 +2978,10 @@ void tst_QTreeWidget::task191552_rtl()
     QStyleOptionViewItem opt;
     opt.initFrom(&tw);
     opt.rect = tw.visualItemRect(item);
+    // mimic QStyledItemDelegate::initStyleOption logic
+    opt.features = QStyleOptionViewItem::HasDisplay | QStyleOptionViewItem::HasCheckIndicator;
+    opt.checkState = Qt::Checked;
+    opt.widget = &tw;
     const QRect checkRect = tw.style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt, &tw);
     QTest::mouseClick(tw.viewport(), Qt::LeftButton, Qt::NoModifier, checkRect.center());
     QTest::qWait(200);

@@ -269,6 +269,16 @@ QtWidgets
 
 * QInputDialog::getInteger() has been obsoleted. Use QInputDialog::getInt() instead.
 
+* In Qt 4, many QStyleOption subclasses were introduced in order to keep
+  binary compatibility -- QStyleOption was designed to be extended this way,
+  in fact it embeds a version number. In Qt 5 the various QStyleOption*V{2,3,4}
+  classes have been removed, and their members merged into the respective
+  base classes. Those classes were left as typedefs to keep existing code
+  working. Still, some minor adjustements could be necessary, especially in code
+  that uses QStyleOption directly and does not initialize all the members using
+  the proper Qt API: due to the version bump, QStyle will try to use the additional
+  QStyleOption members, which are left default-initialized.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is

@@ -1033,6 +1033,9 @@ void tst_QItemDelegate::editorEvent()
     QStyleOptionViewItem option;
     option.rect = rect;
     option.state |= QStyle::State_Enabled;
+    // mimic QStyledItemDelegate::initStyleOption logic
+    option.features |= QStyleOptionViewItem::HasCheckIndicator | QStyleOptionViewItem::HasDisplay;
+    option.checkState = Qt::CheckState(checkState);
 
     const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
     QPoint pos = inCheck ? qApp->style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0) : QPoint(200,200);
@@ -1181,6 +1184,9 @@ void tst_QItemDelegate::QTBUG4435_keepSelectionOnCheck()
     QTest::qWaitForWindowShown(&view);
     QStyleOptionViewItem option;
     option.rect = view.visualRect(model.index(0, 0));
+    // mimic QStyledItemDelegate::initStyleOption logic
+    option.features = QStyleOptionViewItem::HasDisplay | QStyleOptionViewItem::HasCheckIndicator;
+    option.checkState = Qt::CheckState(model.index(0, 0).data(Qt::CheckStateRole).toInt());
     const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
     QPoint pos = qApp->style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &option, 0).center()
                  + QPoint(checkMargin, 0);
