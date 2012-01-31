@@ -130,7 +130,8 @@ private slots:
     void byteRefDetaching() const;
 
     void reserve();
-
+    void movablity_data();
+    void movablity();
     void literals();
 };
 
@@ -1495,6 +1496,85 @@ void tst_QByteArray::reserve()
     nil2.squeeze();
     nil1.squeeze();
     nil2.reserve(0);
+}
+
+void tst_QByteArray::movablity_data()
+{
+    QTest::addColumn<QByteArray>("array");
+
+    QTest::newRow("0x00000000") << QByteArray("\x00\x00\x00\x00", 4);
+    QTest::newRow("0x000000ff") << QByteArray("\x00\x00\x00\xff", 4);
+    QTest::newRow("0xffffffff") << QByteArray("\xff\xff\xff\xff", 4);
+    QTest::newRow("empty") << QByteArray("");
+    QTest::newRow("null") << QByteArray();
+    QTest::newRow("sss") << QByteArray(3, 's');
+}
+
+void tst_QByteArray::movablity()
+{
+    QFETCH(QByteArray, array);
+
+    QVERIFY(!QTypeInfo<QByteArray>::isStatic);
+
+    const int size = array.size();
+    const bool isEmpty = array.isEmpty();
+    const bool isNull = array.isNull();
+    const int capacity = array.capacity();
+
+    QByteArray memSpace;
+
+    // we need only memory space not the instance
+    memSpace.~QByteArray();
+    // move array -> memSpace
+    memcpy(&memSpace, &array, sizeof(QByteArray));
+    // reconstruct empty QByteArray
+    new (&array) QByteArray;
+
+    QCOMPARE(memSpace.size(), size);
+    QCOMPARE(memSpace.isEmpty(), isEmpty);
+    QCOMPARE(memSpace.isNull(), isNull);
+    QCOMPARE(memSpace.capacity(), capacity);
+
+    // try to not crash
+    memSpace.toLower();
+    memSpace.toUpper();
+    memSpace.prepend('a');
+    memSpace.append("b", 1);
+    memSpace.squeeze();
+    memSpace.reserve(array.size() + 16);
+
+    QByteArray copy(memSpace);
+
+    // reinitialize base values
+    const int newSize = size + 2;
+    const bool newIsEmpty = false;
+    const bool newIsNull = false;
+    const int newCapacity = 16;
+
+    // move back memSpace -> array
+    array.~QByteArray();
+    memcpy(&array, &memSpace, sizeof(QByteArray));
+    // reconstruct empty QByteArray
+    new (&memSpace) QByteArray;
+
+    QCOMPARE(array.size(), newSize);
+    QCOMPARE(array.isEmpty(), newIsEmpty);
+    QCOMPARE(array.isNull(), newIsNull);
+    QCOMPARE(array.capacity(), newCapacity);
+    QVERIFY(array.startsWith("a"));
+    QVERIFY(array.endsWith("b"));
+
+    QCOMPARE(copy.size(), newSize);
+    QCOMPARE(copy.isEmpty(), newIsEmpty);
+    QCOMPARE(copy.isNull(), newIsNull);
+    QCOMPARE(copy.capacity(), newCapacity);
+    QVERIFY(copy.startsWith("a"));
+    QVERIFY(copy.endsWith("b"));
+
+    // try to not crash
+    array.squeeze();
+    array.reserve(array.size() + 3);
+    QVERIFY(true);
 }
 
 void tst_QByteArray::literals()
