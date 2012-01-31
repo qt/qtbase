@@ -2101,29 +2101,6 @@ void QApplication::aboutQt()
 #endif // QT_NO_MESSAGEBOX
 }
 
-
-/*!
-    \fn void QApplication::lastWindowClosed()
-
-    This signal is emitted from QApplication::exec() when the last visible
-    primary window (i.e. window with no parent) with the Qt::WA_QuitOnClose
-    attribute set is closed.
-
-    By default,
-
-    \list
-        \o  this attribute is set for all widgets except transient windows such
-            as splash screens, tool windows, and popup menus
-
-        \o  QApplication implicitly quits when this signal is emitted.
-    \endlist
-
-    This feature can be turned off by setting \l quitOnLastWindowClosed to
-    false.
-
-    \sa QWidget::close()
-*/
-
 /*!
     \since 4.1
     \fn void QApplication::focusChanged(QWidget *old, QWidget *now)
@@ -4596,33 +4573,6 @@ void QSessionManager::requestPhase2()
 bool QApplicationPrivate::inPopupMode() const
 {
     return QApplicationPrivate::popupWidgets != 0;
-}
-
-/*!
-    \property QApplication::quitOnLastWindowClosed
-
-    \brief whether the application implicitly quits when the last window is
-    closed.
-
-    The default is true.
-
-    If this property is true, the applications quits when the last visible
-    primary window (i.e. window with no parent) with the Qt::WA_QuitOnClose
-    attribute set is closed. By default this attribute is set for all widgets
-    except for sub-windows. Refer to \l{Qt::WindowType} for a detailed list of
-    Qt::Window objects.
-
-    \sa quit(), QWidget::close()
- */
-
-void QApplication::setQuitOnLastWindowClosed(bool quit)
-{
-    QCoreApplication::setQuitLockEnabled(quit);
-}
-
-bool QApplication::quitOnLastWindowClosed()
-{
-    return QCoreApplication::isQuitLockEnabled();
 }
 
 /*! \variable QApplication::NormalColors
