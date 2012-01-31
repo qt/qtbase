@@ -150,6 +150,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case ThreadedPixmaps: return true;
     case OpenGL : return true;
     case ThreadedOpenGL : return true;
+    case BufferQueueingOpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

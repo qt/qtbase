@@ -172,6 +172,27 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
+    \enum QPlatformIntegration::Capability
+
+    Capabilities are used to determing specific features of a platform integration
+
+    \value ThreadedPixmaps The platform uses a pixmap implementation that is reentrant
+    and can be used from multiple threads, like the raster paint engine and QImage based
+    pixmaps.
+
+    \value OpenGL The platform supports OpenGL
+
+    \value ThreadedOpenGL The platform supports using OpenGL outside the GUI thread.
+
+    \value SharedGraphicsCache The platform supports a shared graphics cache
+
+    \value BufferQueueingOpenGL The OpenGL implementation on the platform will queue
+    up buffers when swapBuffers() is called and block only when its buffer pipeline
+    is full, rather than block immediately.
+ */
+
+
+/*!
 
     \fn QAbstractEventDispatcher *QPlatformIntegration::guiThreadEventDispatcher() const = 0
 

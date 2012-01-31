@@ -74,7 +74,9 @@ public:
         ThreadedPixmaps = 1,
         OpenGL = 2,
         ThreadedOpenGL = 3,
-        SharedGraphicsCache = 4
+        SharedGraphicsCache = 4,
+        BufferQueueingOpenGL = 5
+
     };
 
     virtual ~QPlatformIntegration() { }
