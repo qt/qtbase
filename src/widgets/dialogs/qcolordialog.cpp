@@ -1440,7 +1440,7 @@ void QColorDialogPrivate::init(const QColor &initial)
     q->setSizeGripEnabled(false);
     q->setWindowTitle(QColorDialog::tr("Select Color"));
 
-    nativeDialogInUse = false;
+    nativeDialogInUse = (platformColorDialogHelper() != 0);
 
     nextCust = 0;
     QVBoxLayout *mainLay = new QVBoxLayout(q);
@@ -1697,10 +1697,6 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->selectColor(color);
     d->setCurrentAlpha(color.alpha());
 
-#ifdef Q_WS_MAC
-    d->setCurrentQColor(color);
-    d->setCocoaPanelColor(color);
-#endif
     // ### fixme: Call helper
     if (d->nativeDialogInUse)
         d->platformColorDialogHelper()->setCurrentColor_sys(color);

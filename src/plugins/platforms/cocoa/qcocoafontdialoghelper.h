@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,67 +39,44 @@
 **
 ****************************************************************************/
 
-#include "qcocoatheme.h"
+#ifndef QCOCOAFONTDIALOGHELPER_H
+#define QCOCOAFONTDIALOGHELPER_H
 
-#include "qmenu_mac.h"
-#include "qcocoacolordialoghelper.h"
-#include "qcocoafiledialoghelper.h"
-#include "qcocoafontdialoghelper.h"
+#include <QObject>
+#include <qplatformdialoghelper_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
-QCocoaTheme::QCocoaTheme()
+class QFontDialog;
+class QFontDialogPrivate;
+
+class QCocoaFontDialogHelper : public QPlatformFontDialogHelper
 {
+public:
+    QCocoaFontDialogHelper();
+    virtual ~QCocoaFontDialogHelper();
 
-}
+    void platformNativeDialogModalHelp();
+    void _q_platformRunNativeAppModalPanel();
+    void deleteNativeDialog_sys();
 
-QCocoaTheme::~QCocoaTheme()
-{
+    bool show_sys(ShowFlags showFlags, Qt::WindowFlags windowFlags, QWindow *parent);
+    void hide_sys();
 
-}
+    QPlatformDialogHelper::DialogCode dialogResultCode_sys();
 
-QPlatformMenu *QCocoaTheme::createPlatformMenu(QMenu *menu) const
-{
-    return new QCocoaMenu(menu);
-}
+    void setCurrentFont_sys(const QFont &);
+    QFont currentFont_sys() const;
 
-QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar(QMenuBar *menuBar) const
-{
-    return new QCocoaMenuBar(menuBar);
-}
+protected:
+    void createNSFontPanelDelegate();
+    bool showCocoaFontPanel(QWindow *parent);
+    bool hideCocoaFontPanel();
 
-
-bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
-{
-    if (dialogType == QPlatformTheme::FileDialog)
-        return true;
-#ifndef QT_NO_COLORDIALOG
-    if (dialogType == QPlatformTheme::ColorDialog)
-        return true;
-#endif
-#ifndef QT_NO_FONTDIALOG
-    if (dialogType == QPlatformTheme::FontDialog)
-        return true;
-#endif
-    return false;
-}
-
-QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
-{
-    switch (dialogType) {
-    case QPlatformTheme::FileDialog:
-        return new QCocoaFileDialogHelper();
-#ifndef QT_NO_COLORDIALOG
-    case QPlatformTheme::ColorDialog:
-        return new QCocoaColorDialogHelper();
-#endif
-#ifndef QT_NO_FONTDIALOG
-    case QPlatformTheme::FontDialog:
-        return new QCocoaFontDialogHelper();
-#endif
-    default:
-        return 0;
-    }
-}
+private:
+    void *mDelegate;
+};
 
 QT_END_NAMESPACE
+
+#endif // QCOCOAFONTDIALOGHELPER_H
