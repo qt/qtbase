@@ -471,6 +471,16 @@ inline int qRegisterMetaTypeStreamOperators()
 }
 #endif
 
+#define Q_DECLARE_OPAQUE_POINTER(POINTER)                               \
+    QT_BEGIN_NAMESPACE namespace QtPrivate {                            \
+        template <>                                                     \
+        struct IsPointerToTypeDerivedFromQObject<POINTER >              \
+        {                                                               \
+            enum { Value = false };                                     \
+        };                                                              \
+    } QT_END_NAMESPACE                                                  \
+    /**/
+
 #define Q_DECLARE_METATYPE(TYPE)                                        \
     QT_BEGIN_NAMESPACE                                                  \
     template <>                                                         \

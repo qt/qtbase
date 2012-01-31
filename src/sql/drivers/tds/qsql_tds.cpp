@@ -63,6 +63,9 @@
 
 #include <stdlib.h>
 
+Q_DECLARE_OPAQUE_POINTER(LOGINREC*)
+Q_DECLARE_OPAQUE_POINTER(DBPROCESS*)
+
 QT_BEGIN_NAMESPACE
 
 #ifdef DBNTWIN32
@@ -126,18 +129,6 @@ QT_BEGIN_NAMESPACE
 #ifndef CS_PUBLIC
 #define CS_PUBLIC
 #endif
-
-namespace QtPrivate {
-template <> struct IsPointerToTypeDerivedFromQObject<LOGINREC*> {
-    enum { Value = false };
-};
-}
-
-namespace QtPrivate {
-template <> struct IsPointerToTypeDerivedFromQObject<DBPROCESS*> {
-    enum { Value = false };
-};
-}
 
 QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = -1)
 {

@@ -116,6 +116,16 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
 #endif
 } // namespace
 
+/*!
+    \macro Q_DECLARE_OPAQUE_POINTER(Pointer)
+    \relates QMetaType
+
+    This macro enables pointers to forward-declared types to be registered with
+    QMetaType using either Q_DECLARE_METATYPE() or qRegisterMetaType().
+
+    \sa Q_DECLARE_METATYPE(), qRegisterMetaType()
+
+*/
 
 /*!
     \macro Q_DECLARE_METATYPE(Type)
@@ -125,6 +135,11 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
     provides a public default constructor, a public copy constructor and
     a public destructor.
     It is needed to use the type \a Type as a custom type in QVariant.
+
+    This macro requires that \a Type is a fully defined type at the point where
+    it is used. For pointer types, it also requires that the pointed to type is
+    fully defined. Use in conjunction with Q_DECLARE_OPAQUE_POINTER() to
+    register pointers to forward declared types.
 
     Ideally, this macro should be placed below the declaration of
     the class or struct. If that is not possible, it can be put in
@@ -1629,6 +1644,11 @@ QMetaType::TypeFlags QMetaType::typeFlags(int type)
     the internal ID used by QMetaType. Any class or struct that has a
     public default constructor, a public copy constructor and a public
     destructor can be registered.
+
+    This function requires that \c{T} is a fully defined type at the point
+    where the function is called. For pointer types, it also requires that the
+    pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
+    to register pointers to forward declared types.
 
     After a type has been registered, you can create and destroy
     objects of that type dynamically at run-time.
