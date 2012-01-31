@@ -4,4 +4,4 @@ SUBPROGRAMS = subtest warnings maxwarnings cmptest globaldata skip \
           exceptionthrow qexecstringlist datatable commandlinedata\
           benchlibwalltime benchlibcallgrind benchlibeventcounter benchlibtickcounter \
           benchliboptions xunit badxml longstring float printdatatags \
-          printdatatagswithglobaltags findtestdata
+          printdatatagswithglobaltags findtestdata counting

@@ -327,6 +327,7 @@ void tst_Selftests::runSubTest_data()
         << "benchliboptions"
         << "cmptest"
         << "commandlinedata"
+        << "counting"
         << "crashes"
         << "datatable"
         << "datetime"
