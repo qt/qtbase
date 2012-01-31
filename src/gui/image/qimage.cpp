@@ -124,7 +124,8 @@ QImageData::QImageData()
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
-      is_cached(false), is_locked(false), paintEngine(0)
+      is_cached(false), is_locked(false), cleanupFunction(0), cleanupInfo(0),
+      paintEngine(0)
 {
 }
 
@@ -206,6 +207,8 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
 
 QImageData::~QImageData()
 {
+    if (cleanupFunction)
+        cleanupFunction(cleanupInfo);
     if (is_cached)
         QImagePixmapCleanupHooks::executeImageHooks((((qint64) ser_no) << 32) | ((qint64) detach_no));
     delete paintEngine;
@@ -616,6 +619,18 @@ bool QImageData::checkForAlphaPixels() const
 */
 
 /*!
+    \typedef QImageCleanupFunction
+    \since 5.0
+
+    A function with the following signature that can be used to
+    implement basic image memory management:
+
+    \code
+    void myImageCleanupHandler(void *info);
+    \endcode
+*/
+
+/*!
     \enum QImage::InvertMode
 
     This enum type is used to describe how pixel values should be
@@ -771,7 +786,7 @@ QImage::QImage(const QSize &size, Format format)
 
 
 
-QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QImage::Format format, bool readOnly)
+QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
 {
     QImageData *d = 0;
 
@@ -814,6 +829,9 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     d->bytes_per_line = bpl;
     d->nbytes = d->bytes_per_line * height;
 
+    d->cleanupFunction = cleanupFunction;
+    d->cleanupInfo = cleanupInfo;
+
     return d;
 }
 
@@ -823,17 +841,21 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
     and \a height must be specified in pixels, \a data must be 32-bit aligned,
     and each scanline of data in the image must also be 32-bit aligned.
 
-    The buffer must remain valid throughout the life of the
-    QImage. The image does not delete the buffer at destruction.
+    The buffer must remain valid throughout the life of the QImage and
+    all copies that have not been modified or otherwise detached from
+    the original buffer. The image does not delete the buffer at destruction.
+    You can provide a function pointer \a cleanupFunction along with an
+    extra pointer \a cleanupInfo that will be called when the last copy
+    is destroyed.
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
     setColorCount() or setColorTable() before the image is used.
 */
-QImage::QImage(uchar* data, int width, int height, Format format)
+QImage::QImage(uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
     : QPaintDevice()
 {
-    d = QImageData::create(data, width, height, 0, format, false);
+    d = QImageData::create(data, width, height, 0, format, false, cleanupFunction, cleanupInfo);
 }
 
 /*!
@@ -845,8 +867,10 @@ QImage::QImage(uchar* data, int width, int height, Format format)
 
     The buffer must remain valid throughout the life of the QImage and
     all copies that have not been modified or otherwise detached from
-    the original buffer. The image does not delete the buffer at
-    destruction.
+    the original buffer. The image does not delete the buffer at destruction.
+    You can provide a function pointer \a cleanupFunction along with an
+    extra pointer \a cleanupInfo that will be called when the last copy
+    is destroyed.
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
@@ -859,10 +883,10 @@ QImage::QImage(uchar* data, int width, int height, Format format)
     constructing a QImage from raw data, without the possibility of the raw
     data being changed.
 */
-QImage::QImage(const uchar* data, int width, int height, Format format)
+QImage::QImage(const uchar* data, int width, int height, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
     : QPaintDevice()
 {
-    d = QImageData::create(const_cast<uchar*>(data), width, height, 0, format, true);
+    d = QImageData::create(const_cast<uchar*>(data), width, height, 0, format, true, cleanupFunction, cleanupInfo);
 }
 
 /*!
@@ -871,17 +895,21 @@ QImage::QImage(const uchar* data, int width, int height, Format format)
     and \a height must be specified in pixels. \a bytesPerLine
     specifies the number of bytes per line (stride).
 
-    The buffer must remain valid throughout the life of the
-    QImage. The image does not delete the buffer at destruction.
+    The buffer must remain valid throughout the life of the QImage and
+    all copies that have not been modified or otherwise detached from
+    the original buffer. The image does not delete the buffer at destruction.
+    You can provide a function pointer \a cleanupFunction along with an
+    extra pointer \a cleanupInfo that will be called when the last copy
+    is destroyed.
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
     setColorCount() or setColorTable() before the image is used.
 */
-QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format)
+QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
     :QPaintDevice()
 {
-    d = QImageData::create(data, width, height, bytesPerLine, format, false);
+    d = QImageData::create(data, width, height, bytesPerLine, format, false, cleanupFunction, cleanupInfo);
 }
 
 
@@ -891,8 +919,12 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
     and \a height must be specified in pixels. \a bytesPerLine
     specifies the number of bytes per line (stride).
 
-    The buffer must remain valid throughout the life of the
-    QImage. The image does not delete the buffer at destruction.
+    The buffer must remain valid throughout the life of the QImage and
+    all copies that have not been modified or otherwise detached from
+    the original buffer. The image does not delete the buffer at destruction.
+    You can provide a function pointer \a cleanupFunction along with an
+    extra pointer \a cleanupInfo that will be called when the last copy
+    is destroyed.
 
     If \a format is an indexed color format, the image color table is
     initially empty and must be sufficiently expanded with
@@ -906,10 +938,10 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
     data being changed.
 */
 
-QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format)
+QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
     :QPaintDevice()
 {
-    d = QImageData::create(const_cast<uchar*>(data), width, height, bytesPerLine, format, true);
+    d = QImageData::create(const_cast<uchar*>(data), width, height, bytesPerLine, format, true, cleanupFunction, cleanupInfo);
 }
 
 /*!

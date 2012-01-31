@@ -88,6 +88,7 @@ public:
 #endif
 #endif //QT_NO_IMAGE_TEXT
 
+typedef void (*QImageCleanupFunction)(void*);
 
 class Q_GUI_EXPORT QImage : public QPaintDevice
 {
@@ -128,10 +129,10 @@ public:
     QImage();
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
-    QImage(uchar *data, int width, int height, Format format);
-    QImage(const uchar *data, int width, int height, Format format);
-    QImage(uchar *data, int width, int height, int bytesPerLine, Format format);
-    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format);
+    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
+    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
     explicit QImage(const char * const xpm[]);

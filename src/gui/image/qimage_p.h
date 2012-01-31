@@ -69,7 +69,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
     ~QImageData();
     static QImageData *create(const QSize &size, QImage::Format format, int numColors = 0);
-    static QImageData *create(uchar *data, int w, int h,  int bpl, QImage::Format format, bool readOnly);
+    static QImageData *create(uchar *data, int w, int h,  int bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0);
 
     QAtomicInt ref;
 
@@ -93,6 +93,9 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     uint has_alpha_clut : 1;
     uint is_cached : 1;
     uint is_locked : 1;
+
+    QImageCleanupFunction cleanupFunction;
+    void* cleanupInfo;
 
     bool checkForAlphaPixels() const;
 

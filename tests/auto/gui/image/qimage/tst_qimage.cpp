@@ -144,6 +144,8 @@ private slots:
 
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
+
+    void cleanupFunctions();
 };
 
 tst_QImage::tst_QImage()
@@ -1995,6 +1997,41 @@ void tst_QImage::scaled_QTBUG19157()
     QImage foo(5000, 1, QImage::Format_RGB32);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+static void cleanupFunction(void* info)
+{
+    bool *called = static_cast<bool*>(info);
+    *called = true;
+}
+
+void tst_QImage::cleanupFunctions()
+{
+    QImage bufferImage(64, 64, QImage::Format_ARGB32);
+    bufferImage.fill(0);
+
+    bool called;
+
+    {
+        called = false;
+        {
+            QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+        }
+        QVERIFY(called);
+    }
+
+    {
+        called = false;
+        QImage *copy = 0;
+        {
+            QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+            copy = new QImage(image);
+        }
+        QVERIFY(!called);
+        delete copy;
+        QVERIFY(called);
+    }
+
 }
 
 QTEST_MAIN(tst_QImage)
