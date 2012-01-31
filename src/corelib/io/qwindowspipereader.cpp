@@ -67,7 +67,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
 QWindowsPipeReader::~QWindowsPipeReader()
 {
     if (readSequenceStarted) {
-        CancelIoEx(handle, &overlapped);
+        CancelIo(handle);
         dataReadNotifier->waitForNotified(-1);
     }
 }
@@ -175,6 +175,7 @@ void QWindowsPipeReader::notified(DWORD numberOfBytesRead, DWORD errorCode)
  */
 void QWindowsPipeReader::startAsyncRead()
 {
+    const DWORD minReadBufferSize = 4096;
     DWORD bytesToRead = qMax(checkPipeState(), minReadBufferSize);
     if (pipeBroken)
         return;

@@ -113,7 +113,6 @@ private:
     QTimer *emitReadyReadTimer;
     bool pipeBroken;
     bool readyReadEmitted;
-    static const DWORD minReadBufferSize = 4096;
 };
 
 QT_END_NAMESPACE

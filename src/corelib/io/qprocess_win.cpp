@@ -56,6 +56,9 @@
 
 #include "private/qfsfileengine_p.h" // for longFileName
 
+#ifndef PIPE_REJECT_REMOTE_CLIENTS
+#define PIPE_REJECT_REMOTE_CLIENTS 0x08
+#endif
 
 #ifndef QT_NO_PROCESS
 
@@ -80,7 +83,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     forever {
         // ### The user must make sure to call qsrand() to make the pipe names less predictable.
         // ### Replace the call to qrand() with a secure version, once we have it in Qt.
-        swprintf_s(pipeName, sizeof(pipeName) / sizeof(wchar_t), L"\\\\.\\pipe\\qt-%X", qrand());
+        swprintf(pipeName, L"\\\\.\\pipe\\qt-%X", qrand());
 
         const DWORD dwPipeBufferSize = 1024 * 1024;
         hRead = CreateNamedPipe(pipeName,
