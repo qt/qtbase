@@ -127,16 +127,76 @@ getQMakeConf1()
     esac; done < "$1"
 }
 
+getQMakeConf2()
+{
+    $AWK '
+BEGIN {
+    values["LITERAL_WHITESPACE"] = " "
+    values["LITERAL_DOLLAR"] = "$"
+}
+/^[_A-Z0-9.]+ *\+?=/ {
+    valStart = index($0, "=") + 1
+
+    append = 0
+    if (substr($0, valStart - 2, 1) == "+") {
+        append = 1
+    }
+
+    variable = substr($0, 0, valStart - 2 - append)
+    value = substr($0, valStart)
+    gsub("[ \t]+", "", variable)
+    gsub("^[ \t]+", "", value)
+    gsub("[ \t]+$", "", value)
+
+    ovalue = ""
+    while (match(value, /\$\$(\{[_A-Z0-9.]+\}|[_A-Z0-9.]+)/)) {
+        ovalue = ovalue substr(value, 1, RSTART - 1)
+        var = substr(value, RSTART + 2, RLENGTH - 2)
+        value = substr(value, RSTART + RLENGTH)
+        if (var ~ /^{/) {
+            var = substr(var, 2, length(var) - 2)
+        }
+        ovalue = ovalue values[var]
+    }
+    ovalue = ovalue value
+
+    combinedValue = values[variable]
+    if (append == 1 && length(combinedValue) > 0) {
+        combinedValue = combinedValue " " ovalue
+    } else {
+        combinedValue = ovalue
+    }
+    values[variable] = combinedValue
+}
+END {
+    for (var in values) {
+        print var "=" values[var]
+    }
+}
+'
+}
+
+getQMakeConf3()
+{
+    echo "$2" | $AWK "/^($1)=/ { print substr(\$0, index(\$0, \"=\") + 1) }"
+}
 
 # relies on $QMAKESPEC being set correctly. parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf()
 {
-    tmpSPEC="$QMAKESPEC"
-    if [ -n "$1" ]; then
-        tmpSPEC="$1"
+    if [ -z "$specvals" ]; then
+        specvals=`getQMakeConf1 "$QMAKESPEC/qmake.conf" | getQMakeConf2`
     fi
-    getQMakeConf1 "$tmpSPEC/qmake.conf"
+    getQMakeConf3 "$1" "$specvals"
+}
+
+getXQMakeConf()
+{
+    if [ -z "$xspecvals" ]; then
+        xspecvals=`getQMakeConf1 "$XQMAKESPEC/qmake.conf" | getQMakeConf2`
+    fi
+    getQMakeConf3 "$1" "$xspecvals"
 }
 
 # relies on $TEST_COMPILER being set correctly
@@ -2698,7 +2758,7 @@ fi
 
 # now look at the configs and figure out what platform we are config'd for
 [ "$CFG_EMBEDDED" = "no" ] && [ "$PLATFORM_QPA" != "yes" ] \
-  && [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ] \
+  && [ -n "`getXQMakeConf QMAKE_LIBS_X11`" ] \
   && PLATFORM_X11=yes
 ### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
 
@@ -2943,7 +3003,7 @@ fi
 
 if [ -z "$PKG_CONFIG" ]; then
     # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%PKG_CONFIG[^_].*=%%p' | tr '\n' ' '`
+    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
 fi
 if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
@@ -3004,7 +3064,7 @@ else
     CFG_FRAMEWORK=no
 fi
 
-QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
+QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
 if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
@@ -3052,9 +3112,9 @@ fi
 
 # auto-detect support for separate debug info in objcopy
 if [ "$CFG_SEPARATE_DEBUG_INFO" != "no" ] && [ "$CFG_SHARED" = "yes" ]; then
-    TEST_COMPILER_CFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
-    TEST_COMPILER_CXXFLAGS=`getQMakeConf "$XQMAKESPEC" | sed -n -e 's%QMAKE_CXXFLAGS[^_=]*[+*]*=%%p' | tr '\n' ' '`
-    TEST_OBJCOPY=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_OBJCOPY" | sed "s%.* *= *\(.*\)$%\1%" | tail -1`
+    TEST_COMPILER_CFLAGS=`getXQMakeConf QMAKE_CFLAGS`
+    TEST_COMPILER_CXXFLAGS=`getXQMakeConf QMAKE_CXXFLAGS`
+    TEST_OBJCOPY=`getXQMakeConf QMAKE_OBJCOPY`
     COMPILER_WITH_FLAGS="$TEST_COMPILER $TEST_COMPILER_CXXFLAGS"
     COMPILER_WITH_FLAGS=`echo "$COMPILER_WITH_FLAGS" | sed -e "s%\\$\\$QMAKE_CFLAGS%$TEST_COMPILER_CFLAGS%g"`
     if "$unixtests/objcopy.test" "$COMPILER_WITH_FLAGS" "$TEST_OBJCOPY" "$OPT_VERBOSE"; then
@@ -3995,7 +4055,7 @@ elif [ "$PLATFORM_QPA" = "yes" ]; then
     Platform="Qt Lighthouse"
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     Platform="Qt for Windows"
-elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
+elif [ -n "`getXQMakeConf grep QMAKE_LIBS_X11`" ]; then
     PLATFORM_X11=yes
     Platform="Qt for Linux/X11"
 fi
@@ -4319,43 +4379,14 @@ if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
     fi
 fi
 
-# $1: variable name
-# $2: optional transformation
+# $1: input variable name (awk regexp)
+# $2: optional output variable name
+# $3: optional value transformation (sed command)
 # relies on $QMAKESPEC, $COMPILER_CONF and $mkfile being set correctly, as the latter
 # is where the resulting variable is written to
-# Assumes that the optional transformation produces the same variable name for each hit
 setBootstrapVariable()
 {
-    getQMakeConf | $AWK '/^('"$1"')[^_A-Z0-9]/ { print $0; }' | ( [ -n "$2" ] && sed "$2" ; [ -z "$2" ] && cat ) | $AWK '
-BEGIN {
-    variable = ""
-    combinedValue = ""
-}
-{
-    valStart = index($0, "=") + 1
-
-    append = 0
-    if (substr($0, valStart - 2, 1) == "+") {
-        append = 1
-    }
-
-    variable = substr($0, 0, valStart - 2 - append)
-    value = substr($0, valStart)
-    gsub("[ \t]+", "", variable)
-    gsub("^[ \t]+", "", value)
-    gsub("[ \t]+$", "", value)
-
-    if (append == 1 && length(combinedValue) > 0) {
-        combinedValue = combinedValue " " value
-    } else {
-        combinedValue = value
-    }
-}
-END {
-    if (length(combinedValue) > 0) {
-        printf "%s = %s\n", variable, combinedValue
-    }
-}' >> "$mkfile"
+    getQMakeConf "$1" | echo ${2-$1} = `if [ -n "$3" ]; then sed "$3"; else cat; fi` >> "$mkfile"
 }
 
 # build qmake
@@ -4416,15 +4447,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
 
-        if [ "$CFG_SILENT" = "yes" ]; then
-            setBootstrapVariable QMAKE_CC 's,QMAKE_CC.*=,CC=\@,'
-            setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX.*=,CXX=\@,'
-        else
-            setBootstrapVariable QMAKE_CC 's,QMAKE_CC,CC,'
-            setBootstrapVariable QMAKE_CXX 's,QMAKE_CXX,CXX,'
-        fi
+        [ "$CFG_SILENT" = "yes" ] && CC_TRANSFORM='s,^,\@,' || CC_TRANSFORM=
+        setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
+        setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CFLAGS
-        setBootstrapVariable QMAKE_CXXFLAGS 's,\$\$QMAKE_CFLAGS,\$(QMAKE_CFLAGS),'
+        setBootstrapVariable QMAKE_CXXFLAGS
         setBootstrapVariable QMAKE_LFLAGS
 
         if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
@@ -4433,18 +4460,18 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
-            setBootstrapVariable QMAKE_CXXFLAGS_RELEASE 's,\$\$QMAKE_CFLAGS_RELEASE,\$(QMAKE_CFLAGS_RELEASE),'
+            setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_RELEASE)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
         elif [ "$CFG_DEBUG" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_DEBUG
-            setBootstrapVariable QMAKE_CXXFLAGS_DEBUG 's,\$\$QMAKE_CFLAGS_DEBUG,\$(QMAKE_CFLAGS_DEBUG),'
+            setBootstrapVariable QMAKE_CXXFLAGS_DEBUG
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(QMAKE_CFLAGS_DEBUG)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
         fi
 
-        if [ '!' -z "$RPATH_FLAGS" ] && [ '!' -z "`getQMakeConf \"$QMAKESPEC\" | $AWK '/QMAKE_(LFLAGS_)?RPATH/ {print $3;}'`" ]; then
-            setBootstrapVariable "QMAKE_(LFLAGS_)?RPATH" 's,\$\$LITERAL_WHITESPACE, ,;s,QMAKE_RPATH,QMAKE_LFLAGS_RPATH,'
+        if [ -n "$RPATH_FLAGS" ] && [ -n "`getQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
+            setBootstrapVariable "QMAKE_(LFLAGS_)?RPATH" QMAKE_LFLAGS_RPATH
             for rpath in $RPATH_FLAGS; do
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
@@ -6576,7 +6603,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi
-elif [ -z "`getQMakeConf \"$XQMAKESPEC\" | $AWK '/QMAKE_(LFLAGS_)?RPATH/ {print $3;}'`" ]; then
+elif [ -z "`getXQMakeConf 'QMAKE_(LFLAGS_)?RPATH'`" ]; then
     if [ -n "$RPATH_FLAGS" ]; then
         echo
         echo "ERROR: -R cannot be used on this platform as \$QMAKE_LFLAGS_RPATH is"
