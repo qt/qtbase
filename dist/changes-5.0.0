@@ -310,6 +310,10 @@ QtCore
   libraries, creating uncertainty/bugs in using QString easily, and (to a lesser
   extent) performance issues.
 
+* QTextCodec::codecForTr() and QTextCodec::setCodecForTr() have been removed,
+  QCoreApplication::Encoding value CodecForTr is now obsolete, use
+  DefaultCodec instead. For reasoning, see the codecForCStrings() removal above.
+
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
   the requested locale fails to validate the input.
 
