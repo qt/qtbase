@@ -367,6 +367,7 @@ private:
 
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QListModeViewBase;
+    friend class QListViewPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)
