@@ -265,6 +265,34 @@ static inline void positionCluster(HB_ShaperItem *item, int gfrom,  int glast)
     //qreal offsetBase = (size - 4) / 4 + qMin<qreal>(size, 4) + 1;
 //     qDebug("offset = %f", offsetBase);
 
+    // To fix some Thai character heights check for two above glyphs
+    if (nmarks == 2 && (attributes[gfrom+1].combiningClass == HB_Combining_AboveRight ||
+            attributes[gfrom+1].combiningClass  == HB_Combining_AboveLeft ||
+            attributes[gfrom+1].combiningClass == HB_Combining_Above))
+        if (attributes[gfrom+2].combiningClass == 23 ||
+            attributes[gfrom+2].combiningClass == 24 ||
+            attributes[gfrom+2].combiningClass == 25 ||
+            attributes[gfrom+2].combiningClass == 27 ||
+            attributes[gfrom+2].combiningClass == 28 ||
+            attributes[gfrom+2].combiningClass == 30 ||
+            attributes[gfrom+2].combiningClass == 31 ||
+            attributes[gfrom+2].combiningClass == 33 ||
+            attributes[gfrom+2].combiningClass == 34 ||
+            attributes[gfrom+2].combiningClass == 35 ||
+            attributes[gfrom+2].combiningClass == 36 ||
+            attributes[gfrom+2].combiningClass == 107 ||
+            attributes[gfrom+2].combiningClass == 122) {
+            // Two above glyphs, check total height
+            int markTotalHeight = baseMetrics.height;
+            HB_GlyphMetrics markMetrics;
+            item->font->klass->getGlyphMetrics(item->font, glyphs[gfrom+1], &markMetrics);
+            markTotalHeight += markMetrics.height;
+            item->font->klass->getGlyphMetrics(item->font, glyphs[gfrom+2], &markMetrics);
+            markTotalHeight += markMetrics.height;
+            if ((markTotalHeight + 2 * offsetBase) > (size * 10))
+                offsetBase = ((size * 10) - markTotalHeight) / 2; // Use offset that just fits
+        }
+
     bool rightToLeft = item->item.bidiLevel % 2;
 
     int i;
