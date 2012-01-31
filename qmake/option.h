@@ -196,6 +196,7 @@ struct Option
     //QMAKE_GENERATE_MAKEFILE options
     struct mkfile {
         static QString qmakespec;
+        static QString xqmakespec;
         static bool do_cache;
         static bool do_deps;
         static bool do_mocs;
@@ -206,6 +207,7 @@ struct Option
         static int cachefile_depth;
         static QStringList project_files;
         static QString qmakespec_commandline;
+        static QString xqmakespec_commandline;
     };
 
 private:

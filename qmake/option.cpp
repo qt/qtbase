@@ -107,6 +107,7 @@ QStringList Option::projfile::project_dirs;
 
 //QMAKE_GENERATE_MAKEFILE stuff
 QString Option::mkfile::qmakespec;
+QString Option::mkfile::xqmakespec;
 int Option::mkfile::cachefile_depth = -1;
 bool Option::mkfile::do_deps = true;
 bool Option::mkfile::do_mocs = true;
@@ -117,6 +118,7 @@ bool Option::mkfile::do_cache = true;
 QString Option::mkfile::cachefile;
 QStringList Option::mkfile::project_files;
 QString Option::mkfile::qmakespec_commandline;
+QString Option::mkfile::xqmakespec_commandline;
 
 static Option::QMAKE_MODE default_mode(QString progname)
 {
@@ -327,6 +329,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     } else if(opt == "platform" || opt == "spec") {
                         Option::mkfile::qmakespec = cleanSpec(argv[++x]);
                         Option::mkfile::qmakespec_commandline = argv[x];
+                    } else if (opt == "xplatform" || opt == "xspec") {
+                        Option::mkfile::xqmakespec = cleanSpec(argv[++x]);
+                        Option::mkfile::xqmakespec_commandline = argv[x];
                     } else {
                         fprintf(stderr, "***Unknown option -%s\n", opt.toLatin1().constData());
                         return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -380,6 +385,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
 
     if (!user_configs.isEmpty())
         Option::before_user_vars += "CONFIG += " + user_configs.join(" ");
+
+    if (Option::mkfile::xqmakespec.isEmpty())
+        Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
 
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
@@ -536,8 +544,13 @@ Option::init(int argc, char **argv)
     //last chance for defaults
     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
         Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
-        if(Option::mkfile::qmakespec.isNull() || Option::mkfile::qmakespec.isEmpty())
+        if (Option::mkfile::xqmakespec.isEmpty())
+            Option::mkfile::xqmakespec = QString::fromLocal8Bit(qgetenv("XQMAKESPEC").constData());
+        if (Option::mkfile::qmakespec.isEmpty()) {
             Option::mkfile::qmakespec = QString::fromLocal8Bit(qgetenv("QMAKESPEC").constData());
+            if (Option::mkfile::xqmakespec.isEmpty())
+                Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+        }
 
         //try REALLY hard to do it for them, lazy..
         if(Option::mkfile::project_files.isEmpty()) {

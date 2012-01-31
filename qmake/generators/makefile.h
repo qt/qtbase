@@ -187,7 +187,7 @@ protected:
 
     //subclasses can use these to query information about how the generator was "run"
     QString buildArgs(const QString &outdir=QString());
-    QString specdir(const QString &outdir=QString());
+    QString specdir(const QString &outdir = QString(), int host_build = -1);
 
     virtual QStringList &findDependencies(const QString &file);
     virtual bool doDepends() const { return Option::mkfile::do_deps; }

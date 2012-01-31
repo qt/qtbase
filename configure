@@ -3491,8 +3491,9 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     mv -f "$QMAKE_QCONFIG_H" "$QCONFIG_H"
 
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
-    rm -rf mkspecs/default
+    rm -rf mkspecs/default mkspecs/default-host
     ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
+    ln -s `echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default-host
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
@@ -5906,9 +5907,14 @@ EOF
 
 #dump the qmake spec
 if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "XQMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
 else
-   echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "XQMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+fi
+if [ -d "$outpath/mkspecs/$PLATFORM" ]; then
+   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$PLATFORM" >> "$CACHEFILE.tmp"
+else
+   echo "QMAKESPEC = $PLATFORM" >> "$CACHEFILE.tmp"
 fi
 
 # replace .qmake.cache if it differs from the newly created temp file

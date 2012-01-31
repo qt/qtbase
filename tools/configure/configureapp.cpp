@@ -2583,13 +2583,18 @@ void Configure::generateCachefile()
         moduleStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
         moduleStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
 
-
-        QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
-        QString mkspec_path = fixSeparators(sourcePath + "/mkspecs/" + targetSpec);
+        QString hostSpec = dictionary[ "QMAKESPEC" ];
+        QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : hostSpec;
+        QString xmkspec_path = fixSeparators(sourcePath + "/mkspecs/" + targetSpec);
+        if (QFile::exists(xmkspec_path))
+            moduleStream << "XQMAKESPEC      = " << escapeSeparators(xmkspec_path) << endl;
+        else
+            moduleStream << "XQMAKESPEC      = " << fixSeparators(targetSpec, true) << endl;
+        QString mkspec_path = fixSeparators(sourcePath + "/mkspecs/" + hostSpec);
         if (QFile::exists(mkspec_path))
             moduleStream << "QMAKESPEC       = " << escapeSeparators(mkspec_path) << endl;
         else
-            moduleStream << "QMAKESPEC       = " << fixSeparators(targetSpec, true) << endl;
+            moduleStream << "QMAKESPEC       = " << fixSeparators(hostSpec, true) << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
@@ -3109,7 +3114,8 @@ void Configure::generateConfigfiles()
     }
 
     QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    if (!copySpec("default", "", spec))
+    if (!copySpec("default", "", spec)
+        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"]))
         return;
 
     // Generate the new qconfig.cpp file

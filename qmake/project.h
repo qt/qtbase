@@ -79,6 +79,8 @@ class QMakeProject
     QHash<QString, FunctionBlock*> testFunctions, replaceFunctions;
 
     bool recursive;
+    bool host_build;
+    bool need_restart;
     bool own_prop;
     bool backslashWarned;
     QString pfile;
@@ -107,6 +109,7 @@ class QMakeProject
     bool doVariableReplace(QString &str, QHash<QString, QStringList> &place);
     QStringList doVariableReplaceExpand(const QString &str, QHash<QString, QStringList> &place, bool *ok=0);
     void init(QMakeProperty *);
+    void cleanup();
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     void validateModes();
     void resolveSpec(QString *spec, const QString &qmakespec);
@@ -160,6 +163,7 @@ public:
     QHash<QString, QStringList> &variables(); // No compat mapping and magic, obviously
 
     bool isRecursive() const { return recursive; }
+    bool isHostBuild() const { return host_build; }
 
 protected:
     friend class MakefileGenerator;

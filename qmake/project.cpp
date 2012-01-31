@@ -531,7 +531,7 @@ static void qmake_error_msg(const QString &msg)
    1) features/(unix|win32|macx)/
    2) features/
 */
-QStringList qmake_feature_paths(QMakeProperty *prop=0)
+QStringList qmake_feature_paths(QMakeProperty *prop, bool host_build)
 {
     const QString mkspecs_concat = QLatin1String("/mkspecs");
     const QString base_concat = QLatin1String("/features");
@@ -578,12 +578,13 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
                     feature_roots << ((*it) + mkspecs_concat + (*concat_it));
         }
     }
-    if(!Option::mkfile::qmakespec.isEmpty()) {
+    QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
+    if (!specp->isEmpty()) {
         // The spec is already platform-dependent, so no subdirs here.
-        feature_roots << Option::mkfile::qmakespec + base_concat;
+        feature_roots << *specp + base_concat;
 
         // Also check directly under the root directory of the mkspecs collection
-        QFileInfo specfi(Option::mkfile::qmakespec);
+        QFileInfo specfi(*specp);
         QDir specrootdir(specfi.absolutePath());
         while (!specrootdir.isRoot()) {
             const QString specrootpath = specrootdir.path();
@@ -629,16 +630,7 @@ QMakeProject::~QMakeProject()
 {
     if(own_prop)
         delete prop;
-    for(QHash<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it) {
-        if(!it.value()->deref())
-            delete it.value();
-    }
-    replaceFunctions.clear();
-    for(QHash<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it) {
-        if(!it.value()->deref())
-            delete it.value();
-    }
-    testFunctions.clear();
+    cleanup();
 }
 
 
@@ -653,7 +645,21 @@ QMakeProject::init(QMakeProperty *p)
         own_prop = false;
     }
     recursive = false;
+    host_build = false;
     reset();
+}
+
+void
+QMakeProject::cleanup()
+{
+    for (QHash<QString, FunctionBlock*>::iterator it = replaceFunctions.begin(); it != replaceFunctions.end(); ++it)
+        if (!it.value()->deref())
+            delete it.value();
+    replaceFunctions.clear();
+    for (QHash<QString, FunctionBlock*>::iterator it = testFunctions.begin(); it != testFunctions.end(); ++it)
+        if (!it.value()->deref())
+            delete it.value();
+    testFunctions.clear();
 }
 
 // Duplicate project. It is *not* allowed to call the complex read() functions on the copy.
@@ -661,6 +667,7 @@ QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *_
 {
     init(p->properties());
     vars = _vars ? *_vars : p->variables();
+    host_build = p->host_build;
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());
@@ -680,6 +687,7 @@ QMakeProject::reset()
     iterator = 0;
     function = 0;
     backslashWarned = false;
+    need_restart = false;
 }
 
 bool
@@ -1226,6 +1234,8 @@ QMakeProject::read(QTextStream &file, QHash<QString, QStringList> &place)
                 }
                 s = "";
                 numLines = 0;
+                if (need_restart)
+                    break;
             }
         }
     }
@@ -1271,7 +1281,7 @@ QMakeProject::read(const QString &file, QHash<QString, QStringList> &place)
         if(!using_stdin)
             qfile.close();
     }
-    if(scope_blocks.count() != 1) {
+    if (!need_restart && scope_blocks.count() != 1) {
         qmake_error_msg("Unterminated conditional block at end of file");
         ret = false;
     }
@@ -1290,6 +1300,7 @@ QMakeProject::read(const QString &project, uchar cmd)
 bool
 QMakeProject::read(uchar cmd)
 {
+  again:
     if ((cmd & ReadSetup) && base_vars.isEmpty()) {
         // hack to get the Option stuff in there
         base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
@@ -1320,8 +1331,13 @@ QMakeProject::read(uchar cmd)
                 Option::mkfile::cachefile.clear();
                 goto no_cache;
             }
-            if (Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty())
+            if (Option::mkfile::xqmakespec.isEmpty() && !cache["XQMAKESPEC"].isEmpty())
+                Option::mkfile::xqmakespec = cache["XQMAKESPEC"].first();
+            if (Option::mkfile::qmakespec.isEmpty() && !cache["QMAKESPEC"].isEmpty()) {
                 Option::mkfile::qmakespec = cache["QMAKESPEC"].first();
+                if (Option::mkfile::xqmakespec.isEmpty())
+                    Option::mkfile::xqmakespec = Option::mkfile::qmakespec;
+            }
 
             if (Option::output_dir.startsWith(project_build_root))
                 Option::mkfile::cachefile_depth =
@@ -1355,9 +1371,10 @@ QMakeProject::read(uchar cmd)
         }
 
         {             // parse mkspec
-            QString qmakespec = Option::mkfile::qmakespec;
+            QString *specp = host_build ? &Option::mkfile::qmakespec : &Option::mkfile::xqmakespec;
+            QString qmakespec = *specp;
             if (qmakespec.isEmpty())
-                qmakespec = "default";
+                qmakespec = host_build ? "default-host" : "default";
             if (QDir::isRelativePath(qmakespec)) {
                     QStringList mkspec_roots = qmake_mkspec_paths();
                     debug_msg(2, "Looking for mkspec %s in (%s)", qmakespec.toLatin1().constData(),
@@ -1367,7 +1384,7 @@ QMakeProject::read(uchar cmd)
                         QString mkspec = (*it) + QLatin1Char('/') + qmakespec;
                         if (QFile::exists(mkspec)) {
                             found_mkspec = true;
-                            Option::mkfile::qmakespec = qmakespec = mkspec;
+                            *specp = qmakespec = mkspec;
                             break;
                         }
                     }
@@ -1441,6 +1458,11 @@ QMakeProject::read(uchar cmd)
             pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
+        if (need_restart) {
+            base_vars.clear();
+            cleanup();
+            goto again;
+        }
     }
 
     if (cmd & ReadSetup) {
@@ -1537,7 +1559,7 @@ QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
 {
     if (spec->isEmpty()) {
         *spec = QFileInfo(qmakespec).fileName();
-        if (*spec == "default") {
+        if (*spec == "default" || *spec == "default-host") {
 #ifdef Q_OS_UNIX
             char buffer[1024];
             int l = readlink(qmakespec.toLatin1().constData(), buffer, 1023);
@@ -1586,9 +1608,14 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
         return Option::target_mode == Option::TARG_WIN_MODE;
     }
 
+    if (x == "host_build")
+        return host_build ? "true" : "false";
+
     //mkspecs
-    static QString spec;
-    resolveSpec(&spec, Option::mkfile::qmakespec);
+    static QString hspec, xspec;
+    resolveSpec(&hspec, Option::mkfile::qmakespec);
+    resolveSpec(&xspec, Option::mkfile::xqmakespec);
+    const QString &spec = host_build ? hspec : xspec;
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
@@ -1646,9 +1673,10 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             file += Option::prf_ext;
         validateModes(); // init dir_sep
         if(file.indexOf(QLatin1Char('/')) == -1 || !QFile::exists(file)) {
-            static QStringList *feature_roots = 0;
+            static QStringList *all_feature_roots[2] = { 0, 0 };
+            QStringList *&feature_roots = all_feature_roots[host_build];
             if(!feature_roots) {
-                feature_roots = new QStringList(qmake_feature_paths(prop));
+                feature_roots = new QStringList(qmake_feature_paths(prop, host_build));
                 qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
@@ -2742,6 +2770,11 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QHash<QS
         }
         if (args.first() == "recursive") {
             recursive = true;
+        } else if (args.first() == "host_build") {
+            if (!host_build && isActiveConfig("cross_compile")) {
+                host_build = true;
+                need_restart = true;
+            }
         } else {
             fprintf(stderr, "%s:%d: unrecognized option() argument '%s'.\n",
                     parser.file.toLatin1().constData(), parser.line_no,

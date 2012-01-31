@@ -2193,7 +2193,9 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
     if(!Option::mkfile::do_dep_heuristics)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
-        ret += " -spec " + specdir(outdir);
+        ret += " -spec " + specdir(outdir, 1);
+    if (!Option::mkfile::xqmakespec_commandline.isEmpty())
+        ret += " -xspec " + specdir(outdir, 0);
     if (Option::target_mode_overridden) {
         if (Option::target_mode == Option::TARG_MACX_MODE)
             ret += " -macx";
@@ -3046,13 +3048,14 @@ QStringList
 }
 
 QString
-MakefileGenerator::specdir(const QString &outdir)
+MakefileGenerator::specdir(const QString &outdir, int host_build)
 {
 #if 0
     if(!spec.isEmpty())
         return spec;
 #endif
-    spec = fileFixify(Option::mkfile::qmakespec, outdir);
+    spec = fileFixify((host_build >= 0 ? bool(host_build) : project->isHostBuild())
+                      ? Option::mkfile::qmakespec : Option::mkfile::xqmakespec, outdir);
     return spec;
 }
 
