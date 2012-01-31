@@ -1022,61 +1022,42 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
     Constructs a string initialized with the first \a size characters
     of the QChar array \a unicode.
 
+    If \a unicode is 0, a null string is constructed.
+
+    If \a size is negative, \a unicode is assumed to point to a nul-terminated
+    array and its length is determined dynamically. The terminating
+    nul-character is not considered part of the string.
+
     QString makes a deep copy of the string data. The unicode data is copied as
     is and the Byte Order Mark is preserved if present.
+
+    \sa fromRawData()
 */
 QString::QString(const QChar *unicode, int size)
 {
    if (!unicode) {
         d = const_cast<Data *>(&shared_null.str);
-    } else if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.str);
     } else {
-        d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-        Q_CHECK_PTR(d);
-        d->ref.initializeOwned();
-        d->size = size;
-        d->alloc = (uint) size;
-        d->capacityReserved = false;
-        d->offset = 0;
-        memcpy(d->data(), unicode, size * sizeof(QChar));
-        d->data()[size] = '\0';
+        if (size < 0) {
+            size = 0;
+            while (unicode[size] != 0)
+                ++size;
+        }
+        if (!size) {
+            d = const_cast<Data *>(&shared_empty.str);
+        } else {
+            d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
+            Q_CHECK_PTR(d);
+            d->ref.initializeOwned();
+            d->size = size;
+            d->alloc = (uint) size;
+            d->capacityReserved = false;
+            d->offset = 0;
+            memcpy(d->data(), unicode, size * sizeof(QChar));
+            d->data()[size] = '\0';
+        }
     }
 }
-
-/*!
-    \since 4.7
-
-    Constructs a string initialized with the characters of the QChar array
-    \a unicode, which must be terminated with a 0.
-
-    QString makes a deep copy of the string data. The unicode data is copied as
-    is and the Byte Order Mark is preserved if present.
-*/
-QString::QString(const QChar *unicode)
-{
-     if (!unicode) {
-         d = const_cast<Data *>(&shared_null.str);
-     } else {
-         int size = 0;
-         while (unicode[size] != 0)
-             ++size;
-         if (!size) {
-             d = const_cast<Data *>(&shared_empty.str);
-         } else {
-             d = (Data*) ::malloc(sizeof(Data)+(size+1)*sizeof(QChar));
-             Q_CHECK_PTR(d);
-             d->ref.initializeOwned();
-             d->size = size;
-             d->alloc = (uint) size;
-             d->capacityReserved = false;
-             d->offset = 0;
-             memcpy(d->data(), unicode, size * sizeof(QChar));
-             d->data()[size] = '\0';
-         }
-     }
-}
-
 
 /*!
     Constructs a string of the given \a size with every character set

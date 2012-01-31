@@ -158,8 +158,7 @@ public:
     typedef QStringData Data;
 
     inline QString();
-    QString(const QChar *unicode, int size); // Qt5: don't cap size < 0
-    explicit QString(const QChar *unicode); // Qt5: merge with the above
+    explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
     QString(int size, QChar c);
     inline QString(const QLatin1String &latin1);

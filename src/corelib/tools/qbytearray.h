@@ -180,8 +180,7 @@ private:
 
 public:
     inline QByteArray();
-    QByteArray(const char *);
-    QByteArray(const char *, int size);
+    QByteArray(const char *, int size = -1);
     QByteArray(int size, char c);
     QByteArray(int size, Qt::Initialization);
     inline QByteArray(const QByteArray &);

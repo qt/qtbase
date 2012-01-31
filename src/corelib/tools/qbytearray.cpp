@@ -1287,37 +1287,15 @@ void QByteArray::chop(int n)
     \sa isEmpty()
 */
 
-/*! \fn QByteArray::QByteArray(const char *str)
-
-    Constructs a byte array initialized with the string \a str.
-
-    QByteArray makes a deep copy of the string data.
-*/
-
-QByteArray::QByteArray(const char *str)
-{
-    if (!str) {
-        d = const_cast<Data *>(&shared_null.ba);
-    } else if (!*str) {
-        d = const_cast<Data *>(&shared_empty.ba);
-    } else {
-        int len = qstrlen(str);
-        d = static_cast<Data *>(malloc(sizeof(Data) + len + 1));
-        Q_CHECK_PTR(d);
-        d->ref.initializeOwned();
-        d->size = len;
-        d->alloc = len;
-        d->capacityReserved = false;
-        d->offset = 0;
-        memcpy(d->data(), str, len+1); // include null terminator
-    }
-}
-
 /*!
     Constructs a byte array containing the first \a size bytes of
     array \a data.
 
     If \a data is 0, a null byte array is constructed.
+
+    If \a size is negative, \a data is assumed to point to a nul-terminated
+    string and its length is determined dynamically. The terminating
+    nul-character is not considered part of the byte array.
 
     QByteArray makes a deep copy of the string data.
 
@@ -1328,18 +1306,22 @@ QByteArray::QByteArray(const char *data, int size)
 {
     if (!data) {
         d = const_cast<Data *>(&shared_null.ba);
-    } else if (size <= 0) {
-        d = const_cast<Data *>(&shared_empty.ba);
     } else {
-        d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
-        Q_CHECK_PTR(d);
-        d->ref.initializeOwned();
-        d->size = size;
-        d->alloc = size;
-        d->capacityReserved = false;
-        d->offset = 0;
-        memcpy(d->data(), data, size);
-        d->data()[size] = '\0';
+        if (size < 0)
+            size = strlen(data);
+        if (!size) {
+            d = const_cast<Data *>(&shared_empty.ba);
+        } else {
+            d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
+            Q_CHECK_PTR(d);
+            d->ref.initializeOwned();
+            d->size = size;
+            d->alloc = size;
+            d->capacityReserved = false;
+            d->offset = 0;
+            memcpy(d->data(), data, size);
+            d->data()[size] = '\0';
+        }
     }
 }
 
