@@ -127,6 +127,13 @@ static TextContentType contentTypeFromHints(Qt::InputMethodHints hints)
     return type;
 }
 
+/// From Maliit's namespace.h
+enum MaliitEventRequestType {
+    EventRequestBoth,         //!< Both a Qt::KeyEvent and a signal
+    EventRequestSignalOnly,   //!< Only a signal
+    EventRequestEventOnly     //!< Only a Qt::KeyEvent
+};
+
 static QString maliitServerAddress()
 {
     org::maliit::Server::Address serverAddress(QStringLiteral("org.maliit.server"), QStringLiteral("/org/maliit/server/address"), QDBusConnection::sessionBus());
@@ -383,9 +390,27 @@ void QMaliitPlatformInputContext::imInitiatedHide()
     // ### clear focus
 }
 
-void QMaliitPlatformInputContext::keyEvent(int, int, int, const QString &, bool, int, uchar)
+void QMaliitPlatformInputContext::keyEvent(int type, int key, int modifiers, const QString &text,
+                                          bool autoRepeat, int count, uchar requestType_)
 {
-    // Not supported at the moment.
+    MaliitEventRequestType requestType = MaliitEventRequestType(requestType_);
+    if (requestType == EventRequestSignalOnly) {
+        qWarning() << "Maliit: Signal emitted key events are not supported.";
+        return;
+    }
+
+    // HACK: This code relies on QEvent::Type for key events and modifiers to be binary compatible between
+    // Qt 4 and 5.
+    QEvent::Type eventType = static_cast<QEvent::Type>(type);
+    if (type != QEvent::KeyPress && type != QEvent::KeyRelease) {
+        qWarning() << "Maliit: Unknown key event type" << type;
+        return;
+    }
+
+    QKeyEvent event(eventType, key, static_cast<Qt::KeyboardModifiers>(modifiers),
+                    text, autoRepeat, count);
+    if (d->window)
+        QCoreApplication::sendEvent(d->window.data(), &event);
 }
 
 void QMaliitPlatformInputContext::paste()

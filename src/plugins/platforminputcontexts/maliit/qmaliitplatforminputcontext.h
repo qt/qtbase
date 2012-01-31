@@ -76,7 +76,7 @@ public Q_SLOTS:
     void updatePreedit(const QDBusMessage &message);
     void copy();
     void imInitiatedHide();
-    void keyEvent(int , int , int , const QString &, bool , int , uchar );
+    void keyEvent(int type, int key, int modifiers, const QString &text, bool autoRepeat, int count, uchar requestType_);
     void paste();
     bool preeditRectangle(int &x, int &y, int &width, int &height);
     bool selection(QString &selection);
