@@ -47,11 +47,9 @@
 #include <private/qmutexpool_p.h>
 
 #include <sys/types.h>
-#include <netdb.h>
-#if defined(Q_OS_MAC)
+#include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <arpa/nameser_compat.h>
-#endif
 #include <resolv.h>
 
 QT_BEGIN_NAMESPACE
