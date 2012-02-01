@@ -972,17 +972,21 @@ inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QLatin1String &s
 { return (QString::fromAscii(s1, s1 ? int(strlen(s1)) : -1) >= s2); }
 
 inline bool operator==(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) == 0); }
+{ return (s1.size() == s2.size() && !memcmp(s1.latin1(), s2.latin1(), s1.size())); }
 inline bool operator!=(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) != 0); }
+{ return (s1.size() != s2.size() || memcmp(s1.latin1(), s2.latin1(), s1.size())); }
 inline bool operator<(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) < 0); }
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r < 0) || (r == 0 && s1.size() < s2.size()); }
 inline bool operator<=(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) <= 0); }
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r < 0) || (r == 0 && s1.size() <= s2.size()); }
 inline bool operator>(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) > 0); }
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r > 0) || (r == 0 && s1.size() > s2.size()); }
 inline bool operator>=(const QLatin1String &s1, const QLatin1String &s2)
-{ return (qstrcmp(s1.latin1(), s2.latin1()) >= 0); }
+{ int r = memcmp(s1.latin1(), s2.latin1(), qMin(s1.size(), s2.size()));
+  return (r > 0) || (r == 0 && s1.size() >= s2.size()); }
 
 
 inline bool QString::operator==(const QByteArray &s) const

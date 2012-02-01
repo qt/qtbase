@@ -222,6 +222,7 @@ private slots:
     void toHtmlEscaped();
 
     void operatorGreaterWithQLatin1String();
+    void compareQLatin1Strings();
 };
 
 typedef QList<int> IntList;
@@ -5192,6 +5193,88 @@ void tst_QString::operatorGreaterWithQLatin1String()
     QVERIFY(!(stringfoo > latin1foo));
     QVERIFY(stringfoo <= latin1foo);
     QVERIFY(!(stringfoo < latin1foo));
+}
+
+void tst_QString::compareQLatin1Strings()
+{
+    QLatin1String abc("abc");
+    QLatin1String abcd("abcd");
+    QLatin1String cba("cba");
+    QLatin1String de("de");
+
+    QVERIFY(abc == abc);
+    QVERIFY(!(abc == cba));
+    QVERIFY(!(cba == abc));
+    QVERIFY(!(abc == abcd));
+    QVERIFY(!(abcd == abc));
+
+    QVERIFY(abc != cba);
+    QVERIFY(!(abc != abc));
+    QVERIFY(cba != abc);
+    QVERIFY(abc != abcd);
+    QVERIFY(abcd != abc);
+
+    QVERIFY(abc < abcd);
+    QVERIFY(abc < cba);
+    QVERIFY(abc < de);
+    QVERIFY(abcd < cba);
+    QVERIFY(!(abc < abc));
+    QVERIFY(!(abcd < abc));
+    QVERIFY(!(de < cba));
+
+    QVERIFY(abcd > abc);
+    QVERIFY(cba > abc);
+    QVERIFY(de > abc);
+    QVERIFY(!(abc > abc));
+    QVERIFY(!(abc > abcd));
+    QVERIFY(!(abcd > cba));
+
+    QVERIFY(abc <= abc);
+    QVERIFY(abc <= abcd);
+    QVERIFY(abc <= cba);
+    QVERIFY(abc <= de);
+    QVERIFY(!(abcd <= abc));
+    QVERIFY(!(cba <= abc));
+    QVERIFY(!(cba <= abcd));
+    QVERIFY(!(de <= abc));
+
+    QVERIFY(abc >= abc);
+    QVERIFY(abcd >= abc);
+    QVERIFY(!(abc >= abcd));
+    QVERIFY(cba >= abc);
+    QVERIFY(!(abc >= cba));
+    QVERIFY(de >= abc);
+    QVERIFY(!(abc >= de));
+
+    QLatin1String subfoo("fooZZ", 3);
+    QLatin1String foo("foo");
+    QVERIFY(subfoo == foo);
+    QVERIFY(foo == subfoo);
+    QVERIFY(!(subfoo != foo));
+    QVERIFY(!(foo != subfoo));
+    QVERIFY(!(foo < subfoo));
+    QVERIFY(!(subfoo < foo));
+    QVERIFY(foo >= subfoo);
+    QVERIFY(subfoo >= foo);
+    QVERIFY(!(foo > subfoo));
+    QVERIFY(!(subfoo > foo));
+    QVERIFY(foo <= subfoo);
+    QVERIFY(subfoo <= foo);
+
+    QLatin1String subabc("abcZZ", 3);
+    QLatin1String subab("abcZZ", 2);
+    QVERIFY(subabc != subab);
+    QVERIFY(subab != subabc);
+    QVERIFY(!(subabc == subab));
+    QVERIFY(!(subab == subabc));
+    QVERIFY(subab < subabc);
+    QVERIFY(!(subabc < subab));
+    QVERIFY(subabc > subab);
+    QVERIFY(!(subab > subabc));
+    QVERIFY(subab <= subabc);
+    QVERIFY(!(subabc <= subab));
+    QVERIFY(subabc >= subab);
+    QVERIFY(!(subab >= subabc));
 }
 
 QTEST_APPLESS_MAIN(tst_QString)
