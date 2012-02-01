@@ -2062,6 +2062,10 @@
            even the softkeys are invisible i.e. the window is displayed with
            \c showFullscreen(). Only supported for Symbian.
 
+    \value WindowOverridesSystemGesturesHint Informs the window system that this window
+           implements its own set of gestures and that system level gestures, like for
+           instance three-finger desktop switching, should be disabled.
+
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
 
