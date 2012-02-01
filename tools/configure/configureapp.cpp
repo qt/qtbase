@@ -2245,6 +2245,9 @@ void Configure::generateOutputVars()
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
+    if (dictionary["MSVC_MP"] == "yes")
+        qmakeConfig += "msvc_mp";
+
     if (dictionary[ "SHARED" ] == "yes") {
         QString version = dictionary[ "VERSION" ];
         if (!version.isEmpty()) {
@@ -2450,7 +2453,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental depend_includepath no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2546,8 +2549,6 @@ void Configure::generateCachefile()
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
-        if (dictionary[ "MSVC_MP" ] == "yes")
-            configStream << " msvc_mp";
         if (dictionary[ "STL" ] == "yes")
             configStream << " stl";
         if (dictionary[ "EXCEPTIONS" ] == "yes")
