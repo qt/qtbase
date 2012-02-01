@@ -2533,6 +2533,21 @@ QTextStream &QTextStream::operator<<(const QString &string)
 /*!
     \overload
 
+    Writes \a string to the stream, and returns a reference to the
+    QTextStream. The contents of \a string are converted with the
+    QString constructor that takes a QLatin1String as argument.
+*/
+QTextStream &QTextStream::operator<<(const QLatin1String &string)
+{
+    Q_D(QTextStream);
+    CHECK_VALID_STREAM(*this);
+    d->putString(QString(string));
+    return *this;
+}
+
+/*!
+    \overload
+
     Writes \a array to the stream. The contents of \a array are
     converted with QString::fromAscii().
 */
