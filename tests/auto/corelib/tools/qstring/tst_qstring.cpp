@@ -223,6 +223,7 @@ private slots:
 
     void operatorGreaterWithQLatin1String();
     void compareQLatin1Strings();
+    void fromQLatin1StringWithLength();
 };
 
 typedef QList<int> IntList;
@@ -5275,6 +5276,14 @@ void tst_QString::compareQLatin1Strings()
     QVERIFY(!(subabc <= subab));
     QVERIFY(subabc >= subab);
     QVERIFY(!(subab >= subabc));
+}
+
+void tst_QString::fromQLatin1StringWithLength()
+{
+    QLatin1String latin1foo("foobar", 3);
+    QString foo(latin1foo);
+    QCOMPARE(foo.size(), latin1foo.size());
+    QCOMPARE(foo, QString::fromLatin1("foo"));
 }
 
 QTEST_APPLESS_MAIN(tst_QString)

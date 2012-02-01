@@ -685,7 +685,7 @@ private:
 typedef QLatin1String QLatin1Literal;
 
 
-inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLatin1.latin1()))
+inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLatin1.latin1(), aLatin1.size()))
 { }
 inline int QString::length() const
 { return d->size; }
