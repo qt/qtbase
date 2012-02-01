@@ -242,7 +242,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v1.isNull());
     QVERIFY(v2.isNull());
     QVERIFY(v3.isNull());
-    QVERIFY(!v4.isNull());
+    QVERIFY(v4.isNull());
     QVERIFY(!v5.isNull());
     QVERIFY(!v6.isNull());
     QVERIFY(!v7.isNull());
@@ -306,7 +306,7 @@ void tst_QArrayData::simpleVector()
 
     QVERIFY(v1.isSharedWith(v2));
     QVERIFY(v1.isSharedWith(v3));
-    QVERIFY(!v1.isSharedWith(v4));
+    QVERIFY(v1.isSharedWith(v4));
     QVERIFY(!v1.isSharedWith(v5));
     QVERIFY(!v1.isSharedWith(v6));
 

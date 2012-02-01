@@ -141,7 +141,7 @@ public:
     void clear()
     {
         QArrayDataPointer tmp(d);
-        d = Data::allocate(0);
+        d = Data::sharedNull();
     }
 
     bool detach()
