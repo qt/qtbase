@@ -158,8 +158,8 @@ public:
         inline const_iterator &operator+=(int j) { i += j; return *this; }
         inline const_iterator &operator-=(int j) { i -= j; return *this; }
 
-        inline bool operator==(const iterator &o) const { return i == o.i; }
-        inline bool operator!=(const iterator &o) const { return i != o.i; }
+        inline bool operator==(const iterator &other) const { return i == other.i; }
+        inline bool operator!=(const iterator &other) const { return i != other.i; }
     };
     friend class const_iterator;
 
