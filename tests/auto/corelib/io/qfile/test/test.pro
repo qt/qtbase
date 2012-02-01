@@ -9,13 +9,6 @@ TESTDATA += ../dosfile.txt ../noendofline.txt ../testfile.txt \
             ../Makefile ../forCopying.txt ../forRenaming.txt \
             ../resources/file1.ext1
 
-win32 {
-    CONFIG(debug, debug|release) {
-        TARGET = ../../debug/tst_qfile
-    } else {
-        TARGET = ../../release/tst_qfile
-    }
-    LIBS+=-lole32 -luuid
-}
+win32: LIBS+=-lole32 -luuid
 
 mac*:CONFIG+=insignificant_test
