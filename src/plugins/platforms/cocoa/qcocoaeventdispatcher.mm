@@ -488,32 +488,16 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
     return result;
 }
 
-static inline void qt_mac_waitForMoreEvents()
+static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRunLoopMode)
 {
     // If no event exist in the cocoa event que, wait
     // (and free up cpu time) until at least one event occur.
     // This implementation is a bit on the edge, but seems to
     // work fine:
-    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-        untilDate:[NSDate distantFuture]
-        inMode:NSDefaultRunLoopMode
-        dequeue:YES];
-    if (event)
-        [NSApp postEvent:event atStart:YES];
-}
-
-static inline void qt_mac_waitForMoreModalSessionEvents()
-{
-    // If no event exist in the cocoa event que, wait
-    // (and free up cpu time) until at least one event occur.
-    // This implementation is a bit on the edge, but seems to
-    // work fine:
-    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-        untilDate:[NSDate distantFuture]
-        inMode:NSModalPanelRunLoopMode
-        dequeue:YES];
-    if (event)
-        [NSApp postEvent:event atStart:YES];
+    [NSApp nextEventMatchingMask:NSAnyEventMask
+                       untilDate:[NSDate distantFuture]
+                          inMode:runLoopMode
+                         dequeue:NO];
 }
 
 bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
@@ -568,7 +552,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (NSModalSession session = d->currentModalSession()) {
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
                 while ([NSApp runModalSession:session] == NSRunContinuesResponse && !d->interrupt)
-                    qt_mac_waitForMoreModalSessionEvents();
+                    qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
 
                 if (!d->interrupt && session == d->currentModalSessionCached) {
                     // Someone called [NSApp stopModal:] from outside the event
@@ -592,7 +576,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     // Since we can dispatch all kinds of events, we choose
                     // to use cocoa's native way of running modal sessions:
                     if (flags & QEventLoop::WaitForMoreEvents)
-                        qt_mac_waitForMoreModalSessionEvents();
+                        qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
                     NSInteger status = [NSApp runModalSession:session];
                     if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
                         // INVARIANT: Someone called [NSApp stopModal:] from outside the event
