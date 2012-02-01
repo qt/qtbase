@@ -1512,6 +1512,33 @@ void QMakeProject::validateModes()
     }
 }
 
+void
+QMakeProject::resolveSpec(QString *spec, const QString &qmakespec)
+{
+    if (spec->isEmpty()) {
+        *spec = QFileInfo(qmakespec).fileName();
+        if (*spec == "default") {
+#ifdef Q_OS_UNIX
+            char buffer[1024];
+            int l = readlink(qmakespec.toLatin1(), buffer, 1023);
+            if (l != -1) {
+                buffer[l] = '\0';
+                *spec = QString::fromLatin1(buffer);
+#else
+            // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
+            // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
+            const QStringList &spec_org = base_vars["QMAKESPEC_ORIGINAL"];
+            if (!spec_org.isEmpty()) {
+                *spec = spec_org.at(0);
+#endif
+                int lastSlash = spec->lastIndexOf(QLatin1Char('/'));
+                if (lastSlash != -1)
+                    spec->remove(lastSlash + 1);
+            }
+        }
+    }
+}
+
 bool
 QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStringList> *place)
 {
@@ -1538,44 +1565,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QHash<QString, QStrin
 
     //mkspecs
     static QString spec;
-    if(spec.isEmpty())
-        spec = QFileInfo(Option::mkfile::qmakespec).fileName();
+    resolveSpec(&spec, Option::mkfile::qmakespec);
     QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
-#ifdef Q_OS_UNIX
-    else if(spec == "default") {
-        static char *buffer = NULL;
-        if(!buffer) {
-            buffer = (char *)malloc(1024);
-            qmakeAddCacheClear(qmakeFreeCacheClear, (void**)&buffer);
-        }
-        int l = readlink(Option::mkfile::qmakespec.toLatin1(), buffer, 1024);
-        if(l != -1) {
-            buffer[l] = '\0';
-            QString r = buffer;
-            if(r.lastIndexOf('/') != -1)
-                r = r.mid(r.lastIndexOf('/') + 1);
-            if((regex && re.exactMatch(r)) || (!regex && r == x))
-                return true;
-        }
-    }
-#elif defined(Q_OS_WIN)
-    else if(spec == "default") {
-        // We can't resolve symlinks as they do on Unix, so configure.exe puts the source of the
-        // qmake.conf at the end of the default/qmake.conf in the QMAKESPEC_ORG variable.
-        const QStringList &spec_org = (place ? (*place)["QMAKESPEC_ORIGINAL"]
-                                             : vars["QMAKESPEC_ORIGINAL"]);
-        if (!spec_org.isEmpty()) {
-            spec = spec_org.at(0);
-            int lastSlash = spec.lastIndexOf('/');
-            if(lastSlash != -1)
-                spec = spec.mid(lastSlash + 1);
-            if((regex && re.exactMatch(spec)) || (!regex && spec == x))
-                return true;
-        }
-    }
-#endif
 
     //simple matching
     const QStringList &configs = (place ? (*place)["CONFIG"] : vars["CONFIG"]);

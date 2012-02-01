@@ -108,6 +108,7 @@ class QMakeProject
     void init(QMakeProperty *, const QHash<QString, QStringList> *);
     QStringList &values(const QString &v, QHash<QString, QStringList> &place);
     void validateModes();
+    void resolveSpec(QString *spec, const QString &qmakespec);
 
 public:
     QMakeProject() { init(0, 0); }
