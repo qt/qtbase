@@ -202,7 +202,7 @@ static QObjectList topLevelObjects()
         if (w->windowType() != Qt::Popup && w->windowType() != Qt::Desktop) {
             if (QAccessibleInterface *root = w->accessibleRoot()) {
                 if (root->object())
-                    list.append(w->accessibleRoot()->object());
+                    list.append(root->object());
                 delete root;
             }
         }
