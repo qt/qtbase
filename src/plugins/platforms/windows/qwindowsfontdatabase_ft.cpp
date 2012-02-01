@@ -172,17 +172,40 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     const QSettings fontRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
                                 QSettings::NativeFormat);
 
+    struct FontKey
+    {
+        FontKey() {}
+        FontKey(const QString &k) : key(k) {}
+
+        QString key;
+        QStringList fonts;
+    };
+    static QVector<FontKey> allFonts;
+    if (allFonts.isEmpty()) {
+        const QStringList allKeys = fontRegistry.allKeys();
+        allFonts.reserve(allKeys.size());
+        const QString trueType = QStringLiteral("(TrueType)");
+        foreach (const QString &key, allKeys) {
+            FontKey fontKey(key);
+
+            QString realKey = key;
+            realKey = realKey.remove(trueType);
+            const QStringList fonts = realKey.trimmed().split(QLatin1Char('&'));
+            foreach (const QString &font, fonts)
+                fontKey.fonts.push_back(font.trimmed());
+
+            allFonts.push_back(fontKey);
+        }
+    }
+
     QByteArray value;
     int index = 0;
-    foreach (const QString &key, fontRegistry.allKeys()) {
-        QString realKey = key;
-        realKey = realKey.replace("(TrueType)", "");
-        realKey = realKey.trimmed();
-        QStringList fonts = realKey.split('&');
-        for (int i = 0; i < fonts.length(); ++i) {
-            const QString font = fonts[i].trimmed();
+    for (int k = 0; k < allFonts.size(); ++k) {
+        const FontKey &fontKey = allFonts.at(k);
+        for (int i = 0; i < fontKey.fonts.length(); ++i) {
+            const QString font = fontKey.fonts[i];
             if (font == faceName || (faceName != fullName && fullName == font)) {
-                value = fontRegistry.value(key).toByteArray();
+                value = fontRegistry.value(fontKey.key).toByteArray();
                 index = i;
                 break;
             }
