@@ -220,7 +220,11 @@ WId QWindow::winId() const
     Q_D(const QWindow);
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
-    return d->platformWindow->winId();
+
+    WId id = d->platformWindow->winId();
+    // See the QPlatformWindow::winId() documentation
+    Q_ASSERT(id != WId(0));
+    return id;
 }
 
 QWindow *QWindow::parent() const
