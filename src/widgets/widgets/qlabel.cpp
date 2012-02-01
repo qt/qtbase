@@ -316,7 +316,7 @@ void QLabel::setText(const QString &text)
 
 #ifndef QT_NO_ACCESSIBILITY
     if (accessibleName().isEmpty())
-        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 #endif
 }
 

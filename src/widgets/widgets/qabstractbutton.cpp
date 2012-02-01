@@ -503,7 +503,7 @@ void QAbstractButtonPrivate::refresh()
         return;
     q->update();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(q, 0, QAccessible::StateChanged);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::StateChanged, q, 0));
 #endif
 }
 
@@ -645,7 +645,7 @@ void QAbstractButton::setText(const QString &text)
     update();
     updateGeometry();
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::NameChanged, this, 0));
 #endif
 }
 

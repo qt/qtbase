@@ -1112,7 +1112,7 @@ void QAbstractItemView::reset()
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(this)->table2Interface()->modelReset();
-        QAccessible::updateAccessibility(this, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, this, 0));
     }
 #endif
 #endif
@@ -3342,7 +3342,7 @@ void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int star
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsRemoved(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3422,7 +3422,7 @@ void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int s
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsRemoved(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3445,7 +3445,7 @@ void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int sta
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsInserted(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3469,7 +3469,7 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int 
 #ifdef Q_WS_X11
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsInserted(index, start, end);
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3497,7 +3497,7 @@ void QAbstractItemViewPrivate::_q_layoutChanged()
     Q_Q(QAbstractItemView);
     if (QAccessible::isActive()) {
         QAccessible::queryAccessibleInterface(q)->table2Interface()->modelReset();
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif

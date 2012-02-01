@@ -538,7 +538,7 @@ void QAbstractSlider::setValue(int value)
             emit sliderMoved((d->position = value));
     }
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
+    QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::ValueChanged, this, 0));
 #endif
     sliderChange(SliderValueChange);
     emit valueChanged(value);

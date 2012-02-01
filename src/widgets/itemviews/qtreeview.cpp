@@ -2937,7 +2937,7 @@ void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_OS_UNIX
     if (QAccessible::isActive()) {
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -2955,7 +2955,7 @@ void QTreeViewPrivate::removeViewItems(int pos, int count)
 #ifndef QT_NO_ACCESSIBILITY
 #ifdef Q_OS_UNIX
     if (QAccessible::isActive()) {
-        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::TableModelChanged, q, 0));
     }
 #endif
 #endif
@@ -3769,7 +3769,7 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     if (QAccessible::isActive() && current.isValid()) {
 #ifdef Q_OS_UNIX
         int entry = (visualIndex(current) + (header()?1:0))*current.model()->columnCount()+current.column() + 1;
-        QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+        QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Focus, this, entry));
 #else
         int entry = visualIndex(current) + 1;
         if (header())
@@ -3794,13 +3794,13 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         if (sel.isValid()) {
             int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column() + 1;
             Q_ASSERT(entry > 0);
-            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::Selection, this, entry));
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
             int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column() + 1;
             Q_ASSERT(entry > 0);
-            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+            QAccessible::updateAccessibility(QAccessibleEvent(QAccessible::SelectionRemove, this, entry));
         }
     }
 #endif
