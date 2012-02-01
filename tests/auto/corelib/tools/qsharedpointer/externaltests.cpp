@@ -465,7 +465,11 @@ namespace QTest {
             "SOURCES  += project.cpp\n"
             "QT       -= core gui\n"
             "INCLUDEPATH += . ");
-        projectFile.write(QFile::encodeName(QDir::currentPath()));
+
+        QString workingDir = QDir::currentPath();
+        if (extraProgramSources.count() > 0)
+            workingDir = QFileInfo(extraProgramSources.first()).absolutePath();
+        projectFile.write(QFile::encodeName(workingDir));
 
 #ifndef QT_NO_DEBUG
             projectFile.write("\nCONFIG  += debug\n");
