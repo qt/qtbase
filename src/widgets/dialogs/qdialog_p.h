@@ -58,7 +58,7 @@
 #include "QtCore/qpointer.h"
 #include "QtWidgets/qdialog.h"
 #include "QtWidgets/qpushbutton.h"
-#include "QtWidgets/qplatformdialoghelper_qpa.h"
+#include <QtGui/QPlatformDialogHelper>
 
 QT_BEGIN_NAMESPACE
 

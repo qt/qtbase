@@ -4,8 +4,6 @@ load(qt_plugin)
 QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
-# ### fixme: Remove widgets dependencies of dialog helpers
-QT *= widgets
 
 INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms

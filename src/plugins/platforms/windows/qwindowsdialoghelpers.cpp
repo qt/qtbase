@@ -41,8 +41,6 @@
 
 #include "qwindowsdialoghelpers.h"
 
-#ifdef QT_WIDGETS_LIB
-
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 
@@ -1387,5 +1385,3 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
 QT_END_NAMESPACE
 
 #include "qwindowsdialoghelpers.moc"
-
-#endif // QT_WIDGETS_LIB

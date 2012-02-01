@@ -65,7 +65,7 @@ class QColorDialogOptionsPrivate;
 class QFontDialogOptionsPrivate;
 class QFileDialogOptionsPrivate;
 
-class Q_WIDGETS_EXPORT QPlatformDialogHelper : public QObject
+class Q_GUI_EXPORT QPlatformDialogHelper : public QObject
 {
     Q_OBJECT
 public:
@@ -106,7 +106,7 @@ protected Q_SLOTS:
     void emitLaunchNativeAppModalPanel();
 };
 
-class Q_WIDGETS_EXPORT QColorDialogOptions
+class Q_GUI_EXPORT QColorDialogOptions
 {
 public:
     enum ColorDialogOption {
@@ -143,7 +143,7 @@ private:
     QSharedDataPointer<QColorDialogOptionsPrivate> d;
 };
 
-class Q_WIDGETS_EXPORT QPlatformColorDialogHelper : public QPlatformDialogHelper
+class Q_GUI_EXPORT QPlatformColorDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
@@ -161,7 +161,7 @@ private:
     QSharedPointer<QColorDialogOptions> m_options;
 };
 
-class Q_WIDGETS_EXPORT QFontDialogOptions
+class Q_GUI_EXPORT QFontDialogOptions
 {
 public:
     enum FontDialogOption {
@@ -188,7 +188,7 @@ private:
     QSharedDataPointer<QFontDialogOptionsPrivate> d;
 };
 
-class Q_WIDGETS_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
+class Q_GUI_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:
@@ -206,7 +206,7 @@ private:
     QSharedPointer<QFontDialogOptions> m_options;
 };
 
-class Q_WIDGETS_EXPORT QFileDialogOptions
+class Q_GUI_EXPORT QFileDialogOptions
 {
 public:
     enum ViewMode { Detail, List };
@@ -280,7 +280,7 @@ private:
     QSharedDataPointer<QFileDialogOptionsPrivate> d;
 };
 
-class Q_WIDGETS_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
+class Q_GUI_EXPORT QPlatformFileDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
 public:

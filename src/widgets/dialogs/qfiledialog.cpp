@@ -45,7 +45,6 @@
 
 #ifndef QT_NO_FILEDIALOG
 #include "qfiledialog_p.h"
-#include "qplatformdialoghelper_qpa.h"
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
 #include <qaction.h>

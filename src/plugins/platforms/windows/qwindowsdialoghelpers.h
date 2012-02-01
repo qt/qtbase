@@ -42,10 +42,8 @@
 #ifndef QWINDOWSDIALOGHELPER_H
 #define QWINDOWSDIALOGHELPER_H
 
-#ifdef QT_WIDGETS_LIB
-
 #include "qtwindows_additional.h"
-#include <QtWidgets/qplatformdialoghelper_qpa.h>
+#include <QtGui/QPlatformDialogHelper>
 #include <QtGui/QPlatformTheme>
 #include <QtCore/QStringList>
 
@@ -95,5 +93,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_WIDGETS_LIB
 #endif // QWINDOWSDIALOGHELPER_H
