@@ -60,6 +60,8 @@ private slots:
     void xfailOnWrongRow() const;
     void xfailOnAnyRow_data() const;
     void xfailOnAnyRow() const;
+    void xfailWithoutVerify_data() const;
+    void xfailWithoutVerify() const;
     void xpass() const;
     void xpassDataDriven_data() const;
     void xpassDataDriven() const;
@@ -166,6 +168,20 @@ void tst_ExpectFail::xfailOnAnyRow() const
     // should mean that the failure is expected for all data rows.
     QEXPECT_FAIL("", "This test should xfail", Abort);
     QVERIFY(false);
+}
+
+void tst_ExpectFail::xfailWithoutVerify_data() const
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("first row") << 0;
+    QTest::newRow("second row") << 1;
+}
+
+void tst_ExpectFail::xfailWithoutVerify() const
+{
+    QVERIFY(true);
+    QEXPECT_FAIL("", "This expected failure should be ignored", Abort);
 }
 
 void tst_ExpectFail::xpass() const

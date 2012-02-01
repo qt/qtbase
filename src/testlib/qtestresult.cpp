@@ -127,6 +127,13 @@ static void clearExpectFail()
     QTest::expectFailComment = 0;
 }
 
+void QTestResult::finishedCurrentTestData()
+{
+    if (QTest::expectFailMode)
+        addFailure("QEXPECT_FAIL was called without any subsequent verification statements", 0, 0);
+    clearExpectFail();
+}
+
 void QTestResult::finishedCurrentTestFunction()
 {
     if (!QTest::failed && QTestLog::unhandledIgnoreMessages()) {
@@ -143,8 +150,6 @@ void QTestResult::finishedCurrentTestFunction()
     QTest::location = NoWhere;
 
     QTestLog::leaveTestFunction();
-
-    clearExpectFail();
 }
 
 const char *QTestResult::currentTestFunction()

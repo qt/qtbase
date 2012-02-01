@@ -73,6 +73,7 @@ public:
     static TestLocation currentTestLocation();
     static const char *currentDataTag();
     static const char *currentGlobalDataTag();
+    static void finishedCurrentTestData();
     static void finishedCurrentTestFunction();
     static void reset();
 

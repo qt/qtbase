@@ -1506,6 +1506,8 @@ static void qInvokeTestMethodDataEntry(char *slot)
             if (!invokeOk)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
+            QTestResult::finishedCurrentTestData();
+
             QTestResult::setCurrentTestLocation(QTestResult::CleanupFunc);
             invokeMethod(QTest::currentTestObject, "cleanup()");
             QTestResult::setCurrentTestLocation(QTestResult::NoWhere);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="11" failures="3" tests="11" name="tst_ExpectFail">
+<testsuite errors="11" failures="5" tests="12" name="tst_ExpectFail">
   <properties>
     <property value="5.0.0" name="QTestVersion"/>
     <property value="5.0.0" name="QtVersion"/>
@@ -29,6 +29,10 @@
   <testcase result="xfail" name="xfailOnAnyRow">
     <!-- tag="first row" message="This test should xfail" type="info" -->
     <!-- tag="second row" message="This test should xfail" type="info" -->
+  </testcase>
+  <testcase result="fail" name="xfailWithoutVerify">
+    <failure tag="first row" message="QEXPECT_FAIL was called without any subsequent verification statements" result="fail"/>
+    <failure tag="second row" message="QEXPECT_FAIL was called without any subsequent verification statements" result="fail"/>
   </testcase>
   <testcase result="xpass" name="xpass">
     <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
