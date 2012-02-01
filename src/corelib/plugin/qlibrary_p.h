@@ -53,14 +53,14 @@
 // We mean it.
 //
 
-#ifdef Q_OS_WIN
-# include "QtCore/qt_windows.h"
-#endif
 #include "QtCore/qlibrary.h"
 #include "QtCore/qpointer.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qplugin.h"
 #include "QtCore/qsharedpointer.h"
+#ifdef Q_OS_WIN
+#  include "QtCore/qt_windows.h"
+#endif
 
 #ifndef QT_NO_LIBRARY
 

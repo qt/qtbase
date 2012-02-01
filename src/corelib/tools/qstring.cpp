@@ -64,23 +64,25 @@
 
 #include <private/qfunctions_p.h>
 
-#if defined(Q_OS_WINCE)
-#include <windows.h>
-#include <winnls.h>
-#endif
-
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-#ifdef truncate
-#undef truncate
-#endif
-
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#  ifdef Q_OS_WINCE
+#    include <winnls.h>
+#  endif
+#endif
+
+#ifdef truncate
+#  undef truncate
+#endif
 
 #ifndef LLONG_MAX
 #define LLONG_MAX qint64_C(9223372036854775807)
@@ -4709,12 +4711,6 @@ int QString::localeAwareCompare(const QString &other) const
 {
     return localeAwareCompare_helper(constData(), length(), other.constData(), other.length());
 }
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-QT_END_NAMESPACE
-#include "qt_windows.h"
-QT_BEGIN_NAMESPACE
-#endif
 
 /*!
     \internal

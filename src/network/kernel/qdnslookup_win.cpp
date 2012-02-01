@@ -45,7 +45,7 @@
 #include <private/qmutexpool_p.h>
 #include <private/qsystemlibrary_p.h>
 
-#include <windows.h>
+#include <qt_windows.h>
 #include <windns.h>
 
 QT_BEGIN_NAMESPACE

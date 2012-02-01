@@ -552,11 +552,6 @@ public:
     struct ApplicationFont {
         QString fileName;
         QByteArray data;
-#if defined(Q_OS_WIN)
-        HANDLE handle;
-        bool memoryFont;
-        QVector<FONTSIGNATURE> signatures;
-#endif
         QStringList families;
     };
     QVector<ApplicationFont> applicationFonts;

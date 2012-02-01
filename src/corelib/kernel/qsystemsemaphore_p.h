@@ -76,7 +76,7 @@ public:
     }
 
 #ifdef Q_OS_WIN
-    HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    Qt::HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);
 #else
     key_t handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
@@ -89,8 +89,8 @@ public:
     QString fileName;
     int initialValue;
 #ifdef Q_OS_WIN
-    HANDLE semaphore;
-    HANDLE semaphoreLock;
+    Qt::HANDLE semaphore;
+    Qt::HANDLE semaphoreLock;
 #else
     int semaphore;
     bool createdFile;

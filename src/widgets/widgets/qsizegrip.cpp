@@ -52,18 +52,17 @@
 #include "qdebug.h"
 #include <QDesktopWidget>
 
-#if defined(Q_WS_X11)
-#include <private/qt_x11_p.h>
-#elif defined (Q_OS_WIN)
-#    include <QtCore/qt_windows.h>
-#    include "private/qapplication_p.h"
-#endif
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
 #endif
 
 #include <private/qwidget_p.h>
 #include <QtWidgets/qabstractscrollarea.h>
+
+#ifdef  Q_OS_WIN
+#  include <QtCore/qt_windows.h>
+#  include "private/qapplication_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

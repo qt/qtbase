@@ -69,10 +69,8 @@ namespace QSharedMemoryPrivate
 #include "qsystemsemaphore.h"
 #include "private/qobject_p.h"
 
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#else
-#include <sys/sem.h>
+#ifndef Q_OS_WIN
+#  include <sys/sem.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -131,7 +129,7 @@ public:
     static QString makePlatformSafeKey(const QString &key,
             const QString &prefix = QLatin1String("qipc_sharedmemory_"));
 #ifdef Q_OS_WIN
-    HANDLE handle();
+    Qt::HANDLE handle();
 #else
     key_t handle();
 #endif
@@ -156,7 +154,7 @@ public:
 
 private:
 #ifdef Q_OS_WIN
-    HANDLE hand;
+    Qt::HANDLE hand;
 #else
     key_t unix_key;
 #endif

@@ -71,16 +71,16 @@
 //   #include "qbezier_p.h"
 #include "qoutlinemapper_p.h"
 
-#if defined(Q_OS_WIN)
-#  include <qt_windows.h>
+#include <limits.h>
+
+#ifdef Q_OS_WIN
 #  include <qvarlengtharray.h>
 #  include <private/qfontengine_p.h>
+#  include <qt_windows.h>
+#ifdef Q_OS_WIN64
+#    include <malloc.h>
+#  endif
 #endif
-
-#if defined(Q_OS_WIN64)
-#  include <malloc.h>
-#endif
-#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 

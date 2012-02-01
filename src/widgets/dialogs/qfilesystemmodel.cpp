@@ -49,10 +49,8 @@
 #include <qapplication.h>
 
 #ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
-#ifdef Q_OS_WIN32
-#include <QtCore/QVarLengthArray>
+#  include <QtCore/QVarLengthArray>
+#  include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE

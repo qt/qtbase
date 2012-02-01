@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PROCESS
 
-#if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)) || defined(qdoc)
+#if !defined(Q_OS_WIN) || defined(qdoc)
 typedef qint64 Q_PID;
 #else
 QT_END_NAMESPACE

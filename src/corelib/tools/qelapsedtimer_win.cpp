@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
-#include <windows.h>
+#include <qt_windows.h>
 
 typedef ULONGLONG (WINAPI *PtrGetTickCount64)(void);
 static PtrGetTickCount64 ptrGetTickCount64 = 0;

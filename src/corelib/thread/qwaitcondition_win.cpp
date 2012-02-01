@@ -45,13 +45,13 @@
 #include "qreadwritelock.h"
 #include "qlist.h"
 #include "qalgorithms.h"
-#include "qt_windows.h"
 
 #ifndef QT_NO_THREAD
 
 #define Q_MUTEX_T void*
 #include <private/qmutex_p.h>
 #include <private/qreadwritelock_p.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

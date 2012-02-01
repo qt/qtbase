@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#include <qt_windows.h>
-
 #include "qmutex.h"
 #include <qatomic.h>
 #include "qmutex_p.h"
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

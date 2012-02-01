@@ -45,6 +45,7 @@
 
 #ifndef QT_NO_FILEDIALOG
 #include "qfiledialog_p.h"
+#include "qplatformdialoghelper_qpa.h"
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
 #include <qaction.h>
@@ -67,11 +68,12 @@
 #if defined(Q_OS_WINCE)
 extern bool qt_priv_ptr_valid;
 #endif
+#endif
 #if defined(Q_OS_UNIX)
 #include <pwd.h>
+#elif defined(Q_OS_WIN)
+#  include <QtCore/qt_windows.h>
 #endif
-#endif
-#include "qplatformdialoghelper_qpa.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1384,6 +1386,25 @@ QAbstractItemView *QFileDialogPrivate::currentView() const {
 
 QLineEdit *QFileDialogPrivate::lineEdit() const {
     return (QLineEdit*)qFileDialogUi->fileNameEdit;
+}
+
+int QFileDialogPrivate::maxNameLength(const QString &path)
+{
+#if defined(Q_OS_UNIX)
+    return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
+#elif defined(Q_OS_WINCE)
+    Q_UNUSED(path);
+    return MAX_PATH;
+#elif defined(Q_OS_WIN)
+    DWORD maxLength;
+    const QString drive = path.left(3);
+    if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == FALSE)
+        return -1;
+    return maxLength;
+#else
+    Q_UNUSED(path);
+#endif
+    return -1;
 }
 
 /*

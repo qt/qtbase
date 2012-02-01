@@ -44,8 +44,8 @@
 #include "qpixmap_raster_p.h"
 
 #include <qglobal.h>
-#include <qt_windows.h>
 #include <QScopedArrayPointer>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -47,11 +47,11 @@
 #include <qstringlist.h>
 #include <qregexp.h>
 #include <qurl.h>
+#include <private/qsystemlibrary_p.h>
 
 #include <string.h>
 #include <qt_windows.h>
 #include <wininet.h>
-#include <private/qsystemlibrary_p.h>
 
 /*
  * Information on the WinHTTP DLL:

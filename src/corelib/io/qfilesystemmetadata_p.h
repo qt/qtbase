@@ -59,10 +59,11 @@
 #include <QtCore/qabstractfileengine.h>
 
 // Platform-specific includes
-#if defined(Q_OS_WIN)
-#ifndef IO_REPARSE_TAG_SYMLINK
-#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
-#endif
+#ifdef Q_OS_WIN
+#  include <QtCore/qt_windows.h>
+#  ifndef IO_REPARSE_TAG_SYMLINK
+#     define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE

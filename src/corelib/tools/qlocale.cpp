@@ -67,12 +67,12 @@ QT_END_NAMESPACE
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qstringbuilder.h"
-#if defined(Q_OS_WIN)
-#   include "qt_windows.h"
-#   include <time.h>
-#endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"
+#ifdef Q_OS_WIN
+#   include <qt_windows.h>
+#   include <time.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

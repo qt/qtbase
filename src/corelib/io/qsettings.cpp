@@ -68,16 +68,16 @@
 #include "qcoreapplication.h"
 #endif
 
-#ifdef Q_OS_WIN // for homedirpath reading from registry
-#include "qt_windows.h"
-#include <private/qsystemlibrary_p.h>
-#endif
-
 #ifdef Q_OS_VXWORKS
 #  include <ioLib.h>
 #endif
 
 #include <stdlib.h>
+
+#ifdef Q_OS_WIN // for homedirpath reading from registry
+#  include <private/qsystemlibrary_p.h>
+#  include <qt_windows.h>
+#endif
 
 #ifndef CSIDL_COMMON_APPDATA
 #define CSIDL_COMMON_APPDATA	0x0023  // All Users\Application Data

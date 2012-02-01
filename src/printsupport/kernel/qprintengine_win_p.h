@@ -55,12 +55,11 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "qt_windows.h"
-
 #include <QtGui/qpaintengine.h>
 #include <QtPrintSupport/QPrintEngine>
 #include <QtPrintSupport/QPrinter>
 #include <private/qpaintengine_alpha_p.h>
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

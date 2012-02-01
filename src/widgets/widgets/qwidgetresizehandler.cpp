@@ -48,9 +48,6 @@
 #include "qcursor.h"
 #include "qsizegrip.h"
 #include "qevent.h"
-#if defined(Q_WS_WIN)
-#include "qt_windows.h"
-#endif
 #include "qdebug.h"
 #include "private/qlayoutengine_p.h"
 

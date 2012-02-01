@@ -71,9 +71,6 @@ QT_BEGIN_HEADER
 #  include <emmintrin.h>
 #  undef posix_memalign
 #else
-#  ifdef Q_CC_MINGW
-#    include <windows.h>
-#  endif
 #  include <emmintrin.h>
 #endif
 

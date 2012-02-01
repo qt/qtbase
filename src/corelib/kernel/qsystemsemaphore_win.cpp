@@ -43,6 +43,7 @@
 #include "qsystemsemaphore_p.h"
 #include "qcoreapplication.h"
 #include <qdebug.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
         

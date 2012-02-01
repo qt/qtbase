@@ -60,10 +60,6 @@
 #include <private/qobject_p.h>
 #include <qabstractanimation.h>
 
-#ifdef Q_OS_WIN
-#include <qt_windows.h>
-#endif
-
 #ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE

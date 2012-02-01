@@ -51,7 +51,7 @@
 #pragma message("QT_NO_LIBRARY is not supported on Windows")
 #endif
 
-#include "qt_windows.h"
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,6 +43,7 @@
 #include "qsharedmemory_p.h"
 #include "qsystemsemaphore.h"
 #include <qdebug.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

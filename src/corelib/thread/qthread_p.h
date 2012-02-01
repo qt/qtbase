@@ -167,16 +167,13 @@ public:
 
 #endif // Q_OS_UNIX
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    HANDLE handle;
-    unsigned int id;
-    int waiters;
-
+#ifdef Q_OS_WIN
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
-#endif // Q_OS_WIN32
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+    Qt::HANDLE handle;
+    unsigned int id;
+    int waiters;
     bool terminationEnabled, terminatePending;
 # endif
     QThreadData *data;

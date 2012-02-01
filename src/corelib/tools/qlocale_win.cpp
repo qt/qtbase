@@ -50,8 +50,8 @@
 
 #include "qdebug.h"
 
-#if defined(Q_OS_WIN)
-#   include "qt_windows.h"
+#ifdef Q_OS_WIN
+#   include <qt_windows.h>
 #   include <time.h>
 #endif
 

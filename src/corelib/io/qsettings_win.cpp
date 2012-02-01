@@ -46,8 +46,8 @@
 #include "qsettings_p.h"
 #include "qvector.h"
 #include "qmap.h"
-#include "qt_windows.h"
 #include "qdebug.h"
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

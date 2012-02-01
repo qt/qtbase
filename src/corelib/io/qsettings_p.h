@@ -64,10 +64,6 @@
 #endif
 #include "private/qscopedpointer_p.h"
 
-#ifdef Q_OS_WIN
-#include "QtCore/qt_windows.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #define QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER

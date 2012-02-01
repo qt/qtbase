@@ -52,7 +52,14 @@
 #include <qdir.h>
 #include <qtextstream.h>
 
+#include <qt_windows.h>
+
 QT_BEGIN_NAMESPACE
+
+QWindowsFileSystemWatcherEngine::Handle::Handle()
+    : handle(INVALID_HANDLE_VALUE), flags(0u)
+{
+}
 
 QWindowsFileSystemWatcherEngine::~QWindowsFileSystemWatcherEngine()
 {

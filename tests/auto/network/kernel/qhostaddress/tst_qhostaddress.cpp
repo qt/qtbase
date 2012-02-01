@@ -48,6 +48,9 @@
 #include <qhash.h>
 #include <qbytearray.h>
 #include <qdatastream.h>
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
 
 class tst_QHostAddress : public QObject
 {

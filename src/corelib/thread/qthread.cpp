@@ -52,24 +52,6 @@
 #include "qthread_p.h"
 #include "private/qcoreapplication_p.h"
 
-/*
-#ifdef Q_OS_WIN32
-# include "qt_windows.h"
-#else
-# include <unistd.h>
-# include <netinet/in.h>
-# include <sys/utsname.h>
-# include <sys/socket.h>
-*/
-/*
-#  elif defined(Q_OS_HPUX)
-#   include <sys/pstat.h>
-#  elif defined(Q_OS_FREEBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_MAC)
-#   include <sys/sysctl.h>
-#  endif
-#endif
-*/
-
 QT_BEGIN_NAMESPACE
 
 /*

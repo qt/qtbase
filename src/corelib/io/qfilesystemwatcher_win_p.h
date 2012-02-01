@@ -57,8 +57,6 @@
 
 #ifndef QT_NO_FILESYSTEMWATCHER
 
-#include <qt_windows.h>
-
 #include <QtCore/qdatetime.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
@@ -90,15 +88,10 @@ public:
     class Handle
     {
     public:
-        HANDLE handle;
+        Qt::HANDLE handle;
         uint flags;
 
-        Handle()
-                : handle(INVALID_HANDLE_VALUE), flags(0u)
-        { }
-        Handle(const Handle &other)
-                : handle(other.handle), flags(other.flags)
-        { }
+        Handle();
     };
 
     class PathInfo {
@@ -147,12 +140,12 @@ public:
     void wakeup();
 
     QMutex mutex;
-    QVector<HANDLE> handles;
+    QVector<Qt::HANDLE> handles;
     int msg;
 
     QHash<QString, QWindowsFileSystemWatcherEngine::Handle> handleForDir;
 
-    QHash<HANDLE, QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> > pathInfoForHandle;
+    QHash<Qt::HANDLE, QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> > pathInfoForHandle;
 
 Q_SIGNALS:
     void fileChanged(const QString &path, bool removed);

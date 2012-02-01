@@ -64,7 +64,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <windows.h>
 
 #define Q_FS_FAT
 #ifdef QT_LARGEFILE_SUPPORT

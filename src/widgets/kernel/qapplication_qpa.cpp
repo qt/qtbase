@@ -64,6 +64,10 @@
 #include "qdesktopwidget_qpa_p.h"
 #include "qwidgetwindow_qpa_p.h"
 
+#ifdef Q_OS_WIN
+#  include <QtCore/qt_windows.h> // for qt_win_display_dc()
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static QString appName;
@@ -398,6 +402,7 @@ void qt_init(QApplicationPrivate *priv, int type)
 }
 
 #ifdef Q_OS_WIN
+// #fixme: Remove.
 static HDC         displayDC        = 0;                // display device context
 
 Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC

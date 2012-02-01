@@ -143,25 +143,7 @@ public:
 
     QLineEdit *lineEdit() const;
 
-    int maxNameLength(const QString &path) {
-#if defined(Q_OS_UNIX)
-        return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
-#elif defined(Q_OS_WIN)
-#ifndef Q_OS_WINCE
-        DWORD maxLength;
-        QString drive = path.left(3);
-        if (::GetVolumeInformation(reinterpret_cast<const wchar_t *>(drive.utf16()), NULL, 0, NULL, &maxLength, NULL, NULL, 0) == FALSE)
-            return -1;
-        return maxLength;
-#else
-        Q_UNUSED(path);
-        return MAX_PATH;
-#endif //Q_OS_WINCE
-#else
-        Q_UNUSED(path);
-#endif
-        return -1;
-    }
+    static int maxNameLength(const QString &path);
 
     QString basename(const QString &path) const
     {

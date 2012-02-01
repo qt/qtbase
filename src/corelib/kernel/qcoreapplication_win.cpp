@@ -42,13 +42,13 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 #include "qstringlist.h"
-#include "qt_windows.h"
 #include "qvector.h"
 #include "qmutex.h"
 #include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
 #include <private/qthread_p.h>
 #include <ctype.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 

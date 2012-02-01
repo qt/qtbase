@@ -60,6 +60,7 @@
 #endif
 #endif
 
+#define NOMINMAX
 #include <windows.h>
 
 #ifdef _WIN32_WCE

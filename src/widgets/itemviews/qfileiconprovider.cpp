@@ -46,6 +46,9 @@
 #include <qapplication.h>
 #include <qdir.h>
 #include <qpixmapcache.h>
+#include <private/qfunctions_p.h>
+#include <private/qguiplatformplugin_p.h>
+
 #if defined(Q_OS_WIN)
 #  define _WIN32_IE 0x0500
 #  include <qt_windows.h>
@@ -55,9 +58,6 @@
 #elif defined(Q_WS_MAC)
 #  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
-
-#include <private/qfunctions_p.h>
-#include <private/qguiplatformplugin_p.h>
 
 #if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>

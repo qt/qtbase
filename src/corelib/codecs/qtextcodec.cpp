@@ -85,8 +85,11 @@
 #include <langinfo.h>
 #endif
 
-#if defined(Q_OS_WINCE)
-#  define QT_NO_SETLOCALE
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#  if defined(Q_OS_WINCE)
+#    define QT_NO_SETLOCALE
+#  endif
 #endif
 
 

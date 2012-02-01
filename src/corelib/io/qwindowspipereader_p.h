@@ -56,9 +56,9 @@
 #include <qbytearray.h>
 #include <qobject.h>
 #include <qtimer.h>
-#include <qt_windows.h>
-
 #include <private/qringbuffer_p.h>
+
+#include <qt_windows.h>
 
 QT_BEGIN_HEADER
 

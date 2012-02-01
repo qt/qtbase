@@ -48,16 +48,16 @@
 #include "qdatetime.h"
 #include "qregexp.h"
 #include "qdebug.h"
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include <qt_windows.h>
-#endif
 #ifndef Q_OS_WIN
 #include <locale.h>
 #endif
 
 #include <time.h>
-#if defined(Q_OS_WINCE)
-#include "qfunctions_wince.h"
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#  ifdef Q_OS_WINCE
+#    include "qfunctions_wince.h"
+#  endif
 #endif
 
 //#define QDATETIMEPARSER_DEBUG
