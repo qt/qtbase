@@ -261,7 +261,7 @@ static void objectContentToJson(const QJsonPrivate::Object *o, QByteArray &json,
 
 void Writer::objectToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact)
 {
-    json.reserve(json.size() + (o ? o->size : 16));
+    json.reserve(json.size() + (o ? (int)o->size : 16));
     json += compact ? "{" : "{\n";
     objectContentToJson(o, json, indent + (compact ? 0 : 1), compact);
     json += QByteArray(4*indent, ' ');
@@ -270,7 +270,7 @@ void Writer::objectToJson(const QJsonPrivate::Object *o, QByteArray &json, int i
 
 void Writer::arrayToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact)
 {
-    json.reserve(json.size() + (a ? a->size : 16));
+    json.reserve(json.size() + (a ? (int)a->size : 16));
     json += compact ? "[" : "[\n";
     arrayContentToJson(a, json, indent + (compact ? 0 : 1), compact);
     json += QByteArray(4*indent, ' ');

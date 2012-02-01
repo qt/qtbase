@@ -257,7 +257,7 @@ void QJsonArray::prepend(const QJsonValue &value)
  */
 void QJsonArray::append(const QJsonValue &value)
 {
-    insert(a ? a->length : 0, value);
+    insert(a ? (int)a->length : 0, value);
 }
 
 /*!
@@ -330,7 +330,7 @@ QJsonValue QJsonArray::takeAt(int i)
  */
 void QJsonArray::insert(int i, const QJsonValue &value)
 {
-    Q_ASSERT (i >= 0 && i <= (int)(a ? a->length : 0));
+    Q_ASSERT (i >= 0 && i <= (a ? (int)a->length : 0));
 
     bool compressed;
     int valueSize = QJsonPrivate::Value::requiredStorage(value, &compressed);

@@ -127,7 +127,7 @@ void Data::compact()
 
     free(header);
     header = h;
-    alloc = alloc;
+    this->alloc = alloc;
     compactionCounter = 0;
 }
 
