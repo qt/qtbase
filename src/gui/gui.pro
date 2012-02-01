@@ -21,7 +21,7 @@ testcocoon {
     load(testcocoon)
 }
 
-HEADERS += $$OUT_PWD/qtguiversion.h
+HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)

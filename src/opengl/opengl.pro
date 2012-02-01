@@ -17,7 +17,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 load(qt_module_config)
 
-HEADERS += $$OUT_PWD/qtopenglversion.h
+HEADERS += $$QT_SOURCE_TREE/src/opengl/qtopenglversion.h
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1

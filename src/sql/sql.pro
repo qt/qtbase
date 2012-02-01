@@ -15,7 +15,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
-HEADERS += $$OUT_PWD/qtsqlversion.h
+HEADERS += $$QT_SOURCE_TREE/src/sql/qtsqlversion.h
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
