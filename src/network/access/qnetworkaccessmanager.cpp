@@ -985,7 +985,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 #endif // QT_NO_HTTP
 
     // first step: create the reply
-    QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
     if (!isLocalFile) {
