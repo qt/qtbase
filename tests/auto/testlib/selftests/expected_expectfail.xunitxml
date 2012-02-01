@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuite errors="11" failures="2" tests="10" name="tst_ExpectFail">
   <properties>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
-    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="5.0.0" name="QTestVersion"/>
+    <property value="5.0.0" name="QtVersion"/>
   </properties>
   <testcase result="pass" name="initTestCase"/>
-  <testcase result="xfail" name="expectAndContinue">
+  <testcase result="xfail" name="xfailAndContinue">
     <!-- message="begin" type="qdebug" -->
     <!-- message="This should xfail" type="info" -->
     <!-- message="after" type="qdebug" -->
   </testcase>
-  <testcase result="xfail" name="expectAndAbort">
+  <testcase result="xfail" name="xfailAndAbort">
     <!-- message="begin" type="qdebug" -->
     <!-- message="This should xfail" type="info" -->
   </testcase>
-  <testcase result="fail" name="expectTwice">
+  <testcase result="fail" name="xfailTwice">
     <failure message="Already expecting a fail" result="fail"/>
   </testcase>
   <testcase result="xfail" name="xfailWithQString">
     <!-- message="A string" type="info" -->
     <!-- message="Bug 5 (The message)" type="info" -->
   </testcase>
-  <testcase result="xpass" name="xpass">
-    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
-  </testcase>
-  <testcase result="xfail" name="dataDrivenTest">
+  <testcase result="xfail" name="xfailDataDriven">
     <!-- tag="Abort" message="This test should xfail" type="info" -->
     <!-- tag="Continue" message="This test should xfail" type="info" -->
   </testcase>
-  <testcase result="pass" name="expectOnWrongRow"/>
-  <testcase result="xfail" name="expectOnAnyRow">
+  <testcase result="pass" name="xfailOnWrongRow"/>
+  <testcase result="xfail" name="xfailOnAnyRow">
     <!-- tag="first row" message="This test should xfail" type="info" -->
     <!-- tag="second row" message="This test should xfail" type="info" -->
+  </testcase>
+  <testcase result="xpass" name="xpass">
+    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
