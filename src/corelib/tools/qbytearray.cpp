@@ -1338,7 +1338,7 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        d = const_cast<Data *>(&shared_null.ba);
+        d = const_cast<Data *>(&shared_empty.ba);
     } else {
         d = static_cast<Data *>(malloc(sizeof(Data) + size + 1));
         Q_CHECK_PTR(d);
