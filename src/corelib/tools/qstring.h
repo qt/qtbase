@@ -711,7 +711,7 @@ inline bool QString::isDetached() const
 { return d->ref == 1; }
 inline QString &QString::operator=(const QLatin1String &s)
 {
-    *this = fromLatin1(s.latin1());
+    *this = fromLatin1(s.latin1(), s.size());
     return *this;
 }
 inline void QString::clear()
