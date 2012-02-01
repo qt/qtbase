@@ -61,6 +61,8 @@ private slots:
     void xfailOnAnyRow_data() const;
     void xfailOnAnyRow() const;
     void xpass() const;
+    void xpassDataDriven_data() const;
+    void xpassDataDriven() const;
 };
 
 void tst_ExpectFail::xfailAndContinue() const
@@ -174,6 +176,27 @@ void tst_ExpectFail::xpass() const
     // If we get here the test did not correctly abort on the previous
     // unexpected pass.
     QVERIFY2(false, "This should not be reached");
+}
+
+void tst_ExpectFail::xpassDataDriven_data() const
+{
+    QTest::addColumn<bool>("shouldXPass");
+
+    QTest::newRow("XPass")  << true;
+    QTest::newRow("Pass")   << false;
+}
+
+void tst_ExpectFail::xpassDataDriven() const
+{
+    QFETCH(bool, shouldXPass);
+
+    if (shouldXPass)
+        QEXPECT_FAIL(QTest::currentDataTag(), "This test should xpass", Abort);
+
+    QVERIFY(true);
+
+    // We should only get here if the test wasn't supposed to xpass.
+    QVERIFY2(!shouldXPass, "Test failed to terminate on XPASS");
 }
 
 QTEST_MAIN(tst_ExpectFail)

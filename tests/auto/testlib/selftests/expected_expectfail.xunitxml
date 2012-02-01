@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="11" failures="2" tests="10" name="tst_ExpectFail">
+<testsuite errors="11" failures="3" tests="11" name="tst_ExpectFail">
   <properties>
     <property value="5.0.0" name="QTestVersion"/>
     <property value="5.0.0" name="QtVersion"/>
@@ -32,6 +32,9 @@
   </testcase>
   <testcase result="xpass" name="xpass">
     <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
+  </testcase>
+  <testcase result="xpass" name="xpassDataDriven">
+    <failure tag="XPass" message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
