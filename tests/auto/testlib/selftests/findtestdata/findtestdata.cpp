@@ -134,11 +134,17 @@ void FindTestData::paths()
     // __FILE__ may be absolute or relative path; test both.
 
     // absolute:
+#if defined(Q_OS_WIN)
+    QCOMPARE(QTest::qFindTestData(TESTFILE, qPrintable(app_path + "/fakesrc/fakefile.cpp"), __LINE__).toLower(), testfile_path3.toLower());
+#else
     QCOMPARE(QTest::qFindTestData(TESTFILE, qPrintable(app_path + "/fakesrc/fakefile.cpp"), __LINE__), testfile_path3);
-
+#endif
     // relative: (pretend that we were compiled within fakebuild directory, pointing at files in ../fakesrc)
+#if defined(Q_OS_WIN)
+    QCOMPARE(QTest::qFindTestData(TESTFILE, "../fakesrc/fakefile.cpp", __LINE__, qPrintable(app_path + "/fakebuild")).toLower(), testfile_path3.toLower());
+#else
     QCOMPARE(QTest::qFindTestData(TESTFILE, "../fakesrc/fakefile.cpp", __LINE__, qPrintable(app_path + "/fakebuild")), testfile_path3);
-
+#endif
     QVERIFY(QFile(testfile_path3).remove());
 
     // Note, this is expected to generate a warning.
