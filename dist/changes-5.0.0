@@ -124,8 +124,9 @@ information about a particular change.
 
 - QMetaType
 
-  * It is no longer possible to use Q_DECLARE_METATYPE(Foo*) where Foo is only
-    forward declared - it must be fully defined.
+  * Q_DECLARE_METATYPE(Foo*) now requires that Foo is fully defined. In
+    cases where a forward declared type should be used as a metatype,
+    Q_DECLARE_OPAQUE_POINTER(Foo*) can be used to allow that.
 
 - QItemEditorFactory
 
