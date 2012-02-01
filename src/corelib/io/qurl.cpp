@@ -4350,11 +4350,12 @@ static inline char toHex(quint8 c)
 */
 
 
-void QUrlPrivate::setEncodedUrl(const QByteArray &encodedUrl, QUrl::ParsingMode parsingMode)
+void QUrlPrivate::setEncodedUrl(const QByteArray &encodedUrl, QUrl::ParsingMode mode)
 {
     QByteArray tmp = encodedUrl;
     clear();
-    if ((parsingMode = parsingMode) == QUrl::TolerantMode) {
+    parsingMode = mode;
+    if (parsingMode == QUrl::TolerantMode) {
         // Replace stray % with %25
         QByteArray copy = tmp;
         for (int i = 0, j = 0; i < copy.size(); ++i, ++j) {
