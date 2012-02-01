@@ -62,7 +62,6 @@ class QDesktopWidget;
 class QStyle;
 class QEventLoop;
 class QIcon;
-class QInputContext;
 template <typename T> class QList;
 class QLocale;
 class QPlatformNativeInterface;
@@ -220,10 +219,6 @@ public:
     virtual void saveState(QSessionManager& sm);
 #endif
 
-#ifndef QT_NO_IM
-    QInputContext *inputContext() const;
-#endif
-
     QT_DEPRECATED static QLocale keyboardInputLocale();
     QT_DEPRECATED static Qt::LayoutDirection keyboardInputDirection();
 
@@ -300,7 +295,6 @@ private:
     friend class QAction;
 
 #if defined(Q_WS_QWS)
-    friend class QInputContext;
     friend class QWSDirectPainterSurface;
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;

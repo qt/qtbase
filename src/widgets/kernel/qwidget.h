@@ -90,7 +90,6 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QShowEvent;
 class QHideEvent;
-class QInputContext;
 class QIcon;
 class QBackingStore;
 class QPlatformWindow;
@@ -598,8 +597,6 @@ public:
     QPaintEngine *paintEngine() const;
 
     void ensurePolished() const;
-
-    QInputContext *inputContext();
 
     bool isAncestorOf(const QWidget *child) const;
 

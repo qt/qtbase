@@ -1594,7 +1594,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value RSIP_OnMouseClick Requests an input panel if the user clicks on the
            widget.
 
-    \sa QEvent::RequestSoftwareInputPanel, QInputContext
+    \sa QInputMethod
 */
 
 /*!

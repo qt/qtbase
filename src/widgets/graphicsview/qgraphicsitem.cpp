@@ -7327,7 +7327,7 @@ void QGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
     surrounding text and reconversions. \a query specifies which
     property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEvent, QInputContext
+    \sa inputMethodEvent(), QInputMethodEvent
 */
 QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -7354,7 +7354,7 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 
     \since 4.6
 
-    \sa setInputMethodHints(), inputMethodQuery(), QInputContext
+    \sa setInputMethodHints(), inputMethodQuery()
 */
 Qt::InputMethodHints QGraphicsItem::inputMethodHints() const
 {
@@ -7367,7 +7367,7 @@ Qt::InputMethodHints QGraphicsItem::inputMethodHints() const
 
     \since 4.6
 
-    \sa inputMethodHints(), inputMethodQuery(), QInputContext
+    \sa inputMethodHints(), inputMethodQuery()
 */
 void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 {
@@ -7387,7 +7387,7 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 
     \since 4.7
 
-    \sa QInputContext
+    \sa QInputMethod
 */
 void QGraphicsItem::updateMicroFocus()
 {
@@ -7695,7 +7695,7 @@ void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
 
     \since 4.7
 
-    \sa QInputContext
+    \sa QInputMethod
 */
 void QGraphicsObject::updateMicroFocus()
 {

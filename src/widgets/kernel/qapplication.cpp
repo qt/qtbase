@@ -71,7 +71,6 @@
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
 
-#include "qinputcontext.h"
 #include "private/qkeymapper_p.h"
 
 #ifdef Q_WS_X11
@@ -140,8 +139,6 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT void qt_call_post_routines();
 
 QApplicationPrivate *QApplicationPrivate::self = 0;
-
-QInputContext *QApplicationPrivate::inputContext = 0;
 
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
@@ -4846,41 +4843,6 @@ int QApplication::keyboardInputInterval()
 
     \sa QCoreApplication::instance()
 */
-
-#ifndef QT_NO_IM
-// ************************************************************************
-// Input Method support
-// ************************************************************************
-
-/*
-    This function replaces the QInputContext instance used by the application
-    with \a inputContext.
-
-    Qt takes ownership of the given \a inputContext.
-*/
-void QApplicationPrivate::setInputContext(QInputContext *newInputContext)
-{
-    Q_Q(QApplication);
-
-    if (newInputContext == inputContext)
-        return;
-    if (!newInputContext) {
-        qWarning("QApplicationPrivate::setInputContext: called with 0 input context");
-        return;
-    }
-    delete inputContext;
-    inputContext = newInputContext;
-    inputContext->setParent(q);
-}
-
-/*!
-    Returns the QInputContext instance used by the application.
-*/
-QInputContext *QApplication::inputContext() const
-{
-    return QApplicationPrivate::inputContext;
-}
-#endif // QT_NO_IM
 
 /*!
     \since 4.2

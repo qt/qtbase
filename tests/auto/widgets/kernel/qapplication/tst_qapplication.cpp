@@ -56,7 +56,6 @@
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QInputContext>
 #include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPushButton>

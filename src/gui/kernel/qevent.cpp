@@ -1510,7 +1510,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
        Cursor attributes and render them as specified.
     \endlist
 
-    \sa QInputContext
+    \sa QInputMethod
 */
 
 /*!

@@ -79,7 +79,6 @@ QT_BEGIN_NAMESPACE
 
 class QClipboard;
 class QGraphicsScene;
-class QInputContext;
 class QObject;
 class QWidget;
 class QSocketNotifier;
@@ -248,12 +247,6 @@ public:
     QBasicTimer toolTipWakeUp, toolTipFallAsleep;
     QPoint toolTipPos, toolTipGlobalPos, hoverGlobalPos;
     QPointer<QWidget> toolTipWidget;
-
-#ifndef QT_NO_IM
-    void setInputContext(QInputContext *);
-#endif
-
-    static QInputContext *inputContext;
 
     static Qt::MouseButtons mouse_buttons;
     static Qt::KeyboardModifiers modifier_buttons;

@@ -54,7 +54,6 @@
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include <qdesktopwidget.h>
 
-#include <qinputcontext.h>
 #include <QPlatformCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
@@ -395,10 +394,6 @@ void qt_init(QApplicationPrivate *priv, int type)
     QColormap::initialize();
 
     qApp->setObjectName(appName);
-
-#ifndef QT_NO_QWS_INPUTMETHODS
-    priv->setInputContext(new QInputContext(qApp));
-#endif
 }
 
 #ifdef Q_OS_WIN
@@ -418,8 +413,6 @@ void qt_cleanup()
 {
     QPixmapCache::clear();
     QColormap::cleanup();
-    delete QApplicationPrivate::inputContext;
-    QApplicationPrivate::inputContext = 0;
 
     QApplicationPrivate::active_window = 0; //### this should not be necessary
 #ifdef Q_OS_WIN

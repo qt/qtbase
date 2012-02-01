@@ -75,7 +75,6 @@
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
-#include "qinputcontext.h"
 #include "qfileinfo.h"
 #include "private/qsoftkeymanager_p.h"
 #include <QtGui/qinputmethod.h>
@@ -356,24 +355,6 @@ void QWidgetPrivate::updateWidgetTransform()
         t.translate(p.x(), p.y());
         qApp->inputMethod()->setInputItemTransform(t);
     }
-}
-
-/*!
-    This function returns the QInputContext for this widget. By
-    default the input context is inherited from the widgets
-    parent. For toplevels it is inherited from QApplication.
-
-    You can override this and set a special input context for this
-    widget by using the setInputContext() method.
-
-    \sa setInputContext()
-*/
-QInputContext *QWidget::inputContext()
-{
-    if (!testAttribute(Qt::WA_InputMethodEnabled))
-        return 0;
-
-    return qApp->inputContext();
 }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -8752,7 +8733,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 
     \a query specifies which property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEvent, QInputContext, inputMethodHints
+    \sa inputMethodEvent(), QInputMethodEven, inputMethodHints
 */
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -8790,7 +8771,7 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 
     \since 4.6
 
-    \sa inputMethodQuery(), QInputContext
+    \sa inputMethodQuery()
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
@@ -10507,8 +10488,6 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 
 /*!
     Updates the widget's micro focus.
-
-    \sa QInputContext
 */
 void QWidget::updateMicroFocus()
 {

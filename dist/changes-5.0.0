@@ -264,7 +264,7 @@ QtGui
 
 QtWidgets
 ---------
-* QWidget::setInputContext() and QApplication::setInputContext() are removed.
+* QInputContext removed as well as related getters and setters on QWidget and QApplication.
   Input contexts are now platform specific.
 
 * QInputDialog::getInteger() has been obsoleted. Use QInputDialog::getInt() instead.
