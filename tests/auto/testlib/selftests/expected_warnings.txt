@@ -11,6 +11,12 @@ PASS   : tst_Warnings::testWarnings()
 INFO   : tst_Warnings::testMissingWarnings() Did not receive message: "Warning0"
 INFO   : tst_Warnings::testMissingWarnings() Did not receive message: "Warning1"
 FAIL!  : tst_Warnings::testMissingWarnings() Not all expected messages were received
+INFO   : tst_Warnings::testMissingWarningsWithData(first row) Did not receive message: "Warning0"
+INFO   : tst_Warnings::testMissingWarningsWithData(first row) Did not receive message: "Warning1"
+FAIL!  : tst_Warnings::testMissingWarningsWithData(first row) Not all expected messages were received
+INFO   : tst_Warnings::testMissingWarningsWithData(second row) Did not receive message: "Warning0"
+INFO   : tst_Warnings::testMissingWarningsWithData(second row) Did not receive message: "Warning1"
+FAIL!  : tst_Warnings::testMissingWarningsWithData(second row) Not all expected messages were received
 PASS   : tst_Warnings::cleanupTestCase()
-Totals: 3 passed, 1 failed, 0 skipped
+Totals: 3 passed, 3 failed, 0 skipped
 ********* Finished testing of tst_Warnings *********

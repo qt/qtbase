@@ -37,6 +37,32 @@
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
 </TestFunction>
+<TestFunction name="testMissingWarningsWithData">
+<Message type="info" file="" line="0">
+    <DataTag><![CDATA[first row]]></DataTag>
+    <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
+</Message>
+<Message type="info" file="" line="0">
+    <DataTag><![CDATA[first row]]></DataTag>
+    <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
+</Message>
+<Incident type="fail" file="" line="0">
+    <DataTag><![CDATA[first row]]></DataTag>
+    <Description><![CDATA[Not all expected messages were received]]></Description>
+</Incident>
+<Message type="info" file="" line="0">
+    <DataTag><![CDATA[second row]]></DataTag>
+    <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
+</Message>
+<Message type="info" file="" line="0">
+    <DataTag><![CDATA[second row]]></DataTag>
+    <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
+</Message>
+<Incident type="fail" file="" line="0">
+    <DataTag><![CDATA[second row]]></DataTag>
+    <Description><![CDATA[Not all expected messages were received]]></Description>
+</Incident>
+</TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
 </TestFunction>

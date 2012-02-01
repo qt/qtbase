@@ -302,7 +302,6 @@ void QTestLog::leaveTestFunction()
     if (printAvailableTags)
         return;
 
-    QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
     QTest::TestLoggers::leaveTestFunction();
 }
 
@@ -316,6 +315,11 @@ void QTestLog::printUnhandledIgnoreMessages()
 
         list = list->next;
     }
+}
+
+void QTestLog::clearIgnoreMessages()
+{
+    QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
 }
 
 void QTestLog::addPass(const char *msg)

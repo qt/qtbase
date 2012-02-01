@@ -49,6 +49,8 @@ class tst_Warnings: public QObject
 private slots:
     void testWarnings();
     void testMissingWarnings();
+    void testMissingWarningsWithData_data();
+    void testMissingWarningsWithData();
 };
 
 void tst_Warnings::testWarnings()
@@ -74,6 +76,23 @@ void tst_Warnings::testWarnings()
 }
 
 void tst_Warnings::testMissingWarnings()
+{
+    QTest::ignoreMessage(QtWarningMsg, "Warning0");
+    QTest::ignoreMessage(QtWarningMsg, "Warning1");
+    QTest::ignoreMessage(QtWarningMsg, "Warning2");
+
+    qWarning("Warning2");
+}
+
+void tst_Warnings::testMissingWarningsWithData_data()
+{
+    QTest::addColumn<int>("dummy");
+
+    QTest::newRow("first row") << 0;
+    QTest::newRow("second row") << 1;
+}
+
+void tst_Warnings::testMissingWarningsWithData()
 {
     QTest::ignoreMessage(QtWarningMsg, "Warning0");
     QTest::ignoreMessage(QtWarningMsg, "Warning1");
