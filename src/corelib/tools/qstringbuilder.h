@@ -376,9 +376,8 @@ template <int N> struct QConcatenable<QStaticByteArrayDataPtr<N> > : private QAb
 #endif
     static inline void appendTo(const type &ba, char *&out)
     {
-        const char *a = ba.ptr->data;
-        while (*a)
-            *out++ = *a++;
+        ::memcpy(out, ba.ptr->data, N);
+        out += N;
     }
 };
 
