@@ -319,6 +319,15 @@ int QIdentityProxyModel::rowCount(const QModelIndex& parent) const
 /*!
     \reimp
  */
+QVariant QIdentityProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    Q_D(const QIdentityProxyModel);
+    return d->model->headerData(section, orientation, role);
+}
+
+/*!
+    \reimp
+ */
 void QIdentityProxyModel::setSourceModel(QAbstractItemModel* sourceModel)
 {
     beginResetModel();
