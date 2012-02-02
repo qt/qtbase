@@ -8,15 +8,26 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testPassPass">
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 1]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="testPassSkip">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 1]]></DataTag>
+</Incident>
 <Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="102">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="testPassFail">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 1]]></DataTag>
+</Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="99">
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
@@ -27,7 +38,9 @@
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="testSkipSkip">
 <Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="102">
@@ -53,6 +66,9 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/counting/tst_counting.cpp" line="99">
     <DataTag><![CDATA[row 1]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
 </TestFunction>
 <TestFunction name="testFailSkip">

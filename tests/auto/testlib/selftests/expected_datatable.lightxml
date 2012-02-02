@@ -12,7 +12,21 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="fiveTablePasses">
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data 1]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data 2]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data 3]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data 4]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data 5]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="fiveTableFailures">
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="91">
@@ -41,17 +55,53 @@
     <DataTag><![CDATA[startsWithFailure_data 1]]></DataTag>
     <Description><![CDATA['test' returned FALSE. ()]]></Description>
 </Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[startsWithFailure_data 2]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[startsWithFailure_data 3]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[startsWithFailure_data 4]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[startsWithFailure_data 5]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="endsWithFailure">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[endsWithFailure 1]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[endsWithFailure 2]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[endsWithFailure 3]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[endsWithFailure 4]]></DataTag>
+</Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="91">
     <DataTag><![CDATA[endsWithFailure 5]]></DataTag>
     <Description><![CDATA['test' returned FALSE. ()]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="failureInMiddle">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[failureInMiddle_data 1]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[failureInMiddle_data 2]]></DataTag>
+</Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp" line="91">
     <DataTag><![CDATA[failureInMiddle_data 3]]></DataTag>
     <Description><![CDATA['test' returned FALSE. ()]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[failureInMiddle_data 4]]></DataTag>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[failureInMiddle_data 5]]></DataTag>
 </Incident>
 </TestFunction>
 <TestFunction name="fiveIsolatedFailures">

@@ -1518,6 +1518,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
 
             QTestResult::setCurrentTestLocation(QTestResult::CleanupFunc);
             invokeMethod(QTest::currentTestObject, "cleanup()");
+            QTestResult::finishedCurrentTestDataCleanup();
             QTestResult::setCurrentTestLocation(QTestResult::NoWhere);
 
             // If this test method has a benchmark, repeat until all measurements are
@@ -1749,8 +1750,10 @@ static void qInvokeTestMethods(QObject *testObject)
         QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
         invokeMethod(testObject, "initTestCase()");
 
-        // finishedCurrentTestFunction() resets QTestResult::testFailed(), so use a local copy.
-        const bool previousFailed = QTestResult::testFailed();
+        // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
+        const bool previousFailed = QTestResult::currentTestFailed();
+        QTestResult::finishedCurrentTestData();
+        QTestResult::finishedCurrentTestDataCleanup();
         QTestResult::finishedCurrentTestFunction();
 
         if (!QTestResult::skipCurrentTest() && !previousFailed) {
@@ -1782,6 +1785,8 @@ static void qInvokeTestMethods(QObject *testObject)
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
         invokeMethod(testObject, "cleanupTestCase()");
+        QTestResult::finishedCurrentTestData();
+        QTestResult::finishedCurrentTestDataCleanup();
     }
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setCurrentTestFunction(0);

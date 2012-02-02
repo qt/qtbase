@@ -22,11 +22,14 @@ FAIL!  : tst_BadXml::badDataTag(all > " mixed ]]> up > " in < the ]]> hopes < of
 RESULT : tst_BadXml::badDataTag():"all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs":
      0 events per iteration (total: 0, iterations: 1)
 QDEBUG : tst_BadXml::badMessage(string 0) end cdata ]]> text ]]> more text
+PASS   : tst_BadXml::badMessage(string 0)
 QDEBUG : tst_BadXml::badMessage(string 1) quotes " text" more text
+PASS   : tst_BadXml::badMessage(string 1)
 QDEBUG : tst_BadXml::badMessage(string 2) xml close > open < tags < text
+PASS   : tst_BadXml::badMessage(string 2)
 QDEBUG : tst_BadXml::badMessage(string 3) all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs
-PASS   : tst_BadXml::badMessage()
+PASS   : tst_BadXml::badMessage(string 3)
 FAIL!  : tst_BadXml::failWithNoFile() failure message
 PASS   : tst_BadXml::cleanupTestCase()
-Totals: 3 passed, 5 failed, 0 skipped
+Totals: 6 passed, 5 failed, 0 skipped
 ********* Finished testing of tst_BadXml *********

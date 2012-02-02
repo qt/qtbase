@@ -15,6 +15,9 @@
 </Incident>
 </TestFunction>
 <TestFunction name="qurl">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[empty urls]]></DataTag>
+</Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp" line="74">
     <DataTag><![CDATA[empty rhs]]></DataTag>
     <Description><![CDATA[Compared values are not the same
@@ -26,6 +29,9 @@
     <Description><![CDATA[Compared values are not the same
    Actual (operandA): 
    Expected (operandB): http://example.com]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[same urls]]></DataTag>
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">

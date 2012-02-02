@@ -50,19 +50,30 @@
     <DataTag><![CDATA[string 0]]></DataTag>
     <Description><![CDATA[end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[string 0]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 1]]></DataTag>
     <Description><![CDATA[quotes " text" more text]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[string 1]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 2]]></DataTag>
     <Description><![CDATA[xml close > open < tags < text]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[string 2]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[string 3]]></DataTag>
     <Description><![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[string 3]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="failWithNoFile">
 <Incident type="fail" file="" line="0">

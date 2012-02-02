@@ -25,6 +25,9 @@
     <DataTag><![CDATA[1:local 1]]></DataTag>
     <Description><![CDATA[cleanup testGlobal local 1 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[init testGlobal local 2 ]]></Description>
@@ -41,6 +44,9 @@
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[cleanup testGlobal local 2 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[init testGlobal local 1 ]]></Description>
@@ -57,6 +63,9 @@
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[cleanup testGlobal local 1 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[2:local 2]]></DataTag>
     <Description><![CDATA[init testGlobal local 2 ]]></Description>
@@ -73,7 +82,9 @@
     <DataTag><![CDATA[2:local 2]]></DataTag>
     <Description><![CDATA[cleanup testGlobal local 2 ]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="skip">
 <Message type="skip" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="129">
@@ -120,6 +131,9 @@
     <DataTag><![CDATA[1:local 1]]></DataTag>
     <Description><![CDATA[cleanup skipSingle local 1 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[init skipSingle local 2 ]]></Description>
@@ -132,6 +146,9 @@
     <DataTag><![CDATA[1:local 2]]></DataTag>
     <Description><![CDATA[cleanup skipSingle local 2 ]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+</Incident>
 <Message type="qdebug" file="" line="0">
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[init skipSingle local 1 ]]></Description>
@@ -156,7 +173,9 @@
     <DataTag><![CDATA[2:local 2]]></DataTag>
     <Description><![CDATA[cleanup skipSingle local 2 ]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Message type="qdebug" file="" line="0">

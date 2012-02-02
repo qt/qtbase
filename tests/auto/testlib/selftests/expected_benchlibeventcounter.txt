@@ -1,21 +1,27 @@
 ********* Start testing of tst_BenchlibEventCounter *********
 Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibEventCounter::initTestCase()
+PASS   : tst_BenchlibEventCounter::events(0)
 RESULT : tst_BenchlibEventCounter::events():"0":
      0 events per iteration (total: 0, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(1)
 RESULT : tst_BenchlibEventCounter::events():"1":
      1 events per iteration (total: 1, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(10)
 RESULT : tst_BenchlibEventCounter::events():"10":
      10 events per iteration (total: 10, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(100)
 RESULT : tst_BenchlibEventCounter::events():"100":
      100 events per iteration (total: 100, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(500)
 RESULT : tst_BenchlibEventCounter::events():"500":
      500 events per iteration (total: 500, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(5000)
 RESULT : tst_BenchlibEventCounter::events():"5000":
-     5,000 events per iteration (total: 5000, iterations: 1)
+     5,000 events per iteration (total: 5,000, iterations: 1)
+PASS   : tst_BenchlibEventCounter::events(100000)
 RESULT : tst_BenchlibEventCounter::events():"100000":
-     100,000 events per iteration (total: 100000, iterations: 1)
-PASS   : tst_BenchlibEventCounter::events()
+     100,000 events per iteration (total: 100,000, iterations: 1)
 PASS   : tst_BenchlibEventCounter::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped
+Totals: 9 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_BenchlibEventCounter *********

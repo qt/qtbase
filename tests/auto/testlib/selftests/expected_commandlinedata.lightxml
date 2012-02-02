@@ -10,30 +10,46 @@
     <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
+</Incident>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data2]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data2]]></DataTag>
+</Incident>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data3]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data3]]></DataTag>
+</Incident>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data4]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data4]]></DataTag>
+</Incident>
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data5]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data5]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="fiveTablePasses">
 <Message type="info" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
     <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
     <Description><![CDATA[QVERIFY(test)]]></Description>
 </Message>
-<Incident type="pass" file="" line="0" />
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
+</Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />

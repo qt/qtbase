@@ -74,6 +74,7 @@ public:
     static const char *currentDataTag();
     static const char *currentGlobalDataTag();
     static void finishedCurrentTestData();
+    static void finishedCurrentTestDataCleanup();
     static void finishedCurrentTestFunction();
     static void reset();
 
@@ -92,7 +93,6 @@ public:
                            QTest::TestFailMode mode, const char *file, int line);
     static bool verify(bool statement, const char *statementStr, const char *extraInfo,
                        const char *file, int line);
-    static bool testFailed();
     static void setSkipCurrentTest(bool value);
     static bool skipCurrentTest();
 

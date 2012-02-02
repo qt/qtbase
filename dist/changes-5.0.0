@@ -50,6 +50,11 @@ information about a particular change.
   * QMetaType::unregisterType() has been removed.
 
 - QTestLib:
+  * The plain-text, xml and lightxml test output formats have been changed to
+    show a test result for every row of test data in data-driven tests.  In
+    Qt4, only fails and skips were shown for individual data rows and passes
+    were not shown for individual data rows, preventing accurate calculation
+    of test run rates and pass rates.
   * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.
     These macros formerly lived in tests/shared/util.h but are now provided
     by including the <QtTest/QtTest> header. In addition,

@@ -5,6 +5,7 @@ FAIL!  : tst_DateTime::dateTime() Compared values are not the same
    Actual (local): 2000/05/03 04:03:04.000[local time]
    Expected (utc): 2000/05/03 04:03:04.000[UTC]
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(33)]
+PASS   : tst_DateTime::qurl(empty urls)
 FAIL!  : tst_DateTime::qurl(empty rhs) Compared values are not the same
    Actual (operandA): http://example.com
    Expected (operandB): 
@@ -13,6 +14,7 @@ FAIL!  : tst_DateTime::qurl(empty lhs) Compared values are not the same
    Actual (operandA): 
    Expected (operandB): http://example.com
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(41)]
+PASS   : tst_DateTime::qurl(same urls)
 PASS   : tst_DateTime::cleanupTestCase()
-Totals: 2 passed, 3 failed, 0 skipped
+Totals: 4 passed, 3 failed, 0 skipped
 ********* Finished testing of tst_DateTime *********

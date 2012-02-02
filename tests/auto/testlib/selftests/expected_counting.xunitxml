@@ -6,7 +6,7 @@
   </properties>
   <testcase result="pass" name="initTestCase"/>
   <testcase result="pass" name="testPassPass"/>
-  <testcase name="testPassSkip">
+  <testcase result="pass" name="testPassSkip">
     <!-- tag="row 2" message="Skipping" type="skip" -->
   </testcase>
   <testcase result="fail" name="testPassFail">

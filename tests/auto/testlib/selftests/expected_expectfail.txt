@@ -17,23 +17,28 @@ XFAIL  : tst_ExpectFail::xfailWithQString() A string
 XFAIL  : tst_ExpectFail::xfailWithQString() Bug 5 (The message)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(106)]
 PASS   : tst_ExpectFail::xfailWithQString()
+PASS   : tst_ExpectFail::xfailDataDriven(Pass 1)
+PASS   : tst_ExpectFail::xfailDataDriven(Pass 2)
 XFAIL  : tst_ExpectFail::xfailDataDriven(Abort) This test should xfail
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(135)]
+PASS   : tst_ExpectFail::xfailDataDriven(Abort)
 XFAIL  : tst_ExpectFail::xfailDataDriven(Continue) This test should xfail
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(135)]
-PASS   : tst_ExpectFail::xfailDataDriven()
-PASS   : tst_ExpectFail::xfailOnWrongRow()
+PASS   : tst_ExpectFail::xfailDataDriven(Continue)
+PASS   : tst_ExpectFail::xfailOnWrongRow(right row)
 XFAIL  : tst_ExpectFail::xfailOnAnyRow(first row) This test should xfail
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(170)]
+PASS   : tst_ExpectFail::xfailOnAnyRow(first row)
 XFAIL  : tst_ExpectFail::xfailOnAnyRow(second row) This test should xfail
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(170)]
-PASS   : tst_ExpectFail::xfailOnAnyRow()
+PASS   : tst_ExpectFail::xfailOnAnyRow(second row)
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(first row) QEXPECT_FAIL was called without any subsequent verification statements
 FAIL!  : tst_ExpectFail::xfailWithoutVerify(second row) QEXPECT_FAIL was called without any subsequent verification statements
 XPASS  : tst_ExpectFail::xpass() 'true' returned FALSE. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(190)]
 XPASS  : tst_ExpectFail::xpassDataDriven(XPass) 'true' returned FALSE. ()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/expectfail/tst_expectfail.cpp(212)]
+PASS   : tst_ExpectFail::xpassDataDriven(Pass)
 PASS   : tst_ExpectFail::cleanupTestCase()
-Totals: 8 passed, 5 failed, 0 skipped
+Totals: 13 passed, 5 failed, 0 skipped
 ********* Finished testing of tst_ExpectFail *********
