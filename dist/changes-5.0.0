@@ -199,6 +199,7 @@ information about a particular change.
   You might need to adjust your code if it used a QIconEngine.
 
 - qmake
+  * Projects which explicitly set an empty TARGET are considered broken now.
   * several functions and built-in variables were modified to return normalized paths.
 
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs

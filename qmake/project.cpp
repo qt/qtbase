@@ -1444,9 +1444,6 @@ QMakeProject::read(uchar cmd)
         parse("CONFIG += " + Option::after_user_configs.join(" "), vars);
     }
 
-    if(pfile != "-" && vars["TARGET"].isEmpty())
-        vars["TARGET"].append(QFileInfo(pfile).baseName());
-
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_post: %s", vars["CONFIG"].join("::").toLatin1().constData());
         doProjectInclude("default_post", IncludeFlagFeature, vars);
