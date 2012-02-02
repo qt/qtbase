@@ -90,6 +90,7 @@ public:
     bool setSocketDescriptor(qintptr socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 
+    using QAbstractSocket::connectToHost;
     void connectToHost(const QString &hostName, quint16 port, OpenMode openMode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void disconnectFromHost();
 
