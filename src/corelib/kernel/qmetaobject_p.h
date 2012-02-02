@@ -109,6 +109,8 @@ class QMutex;
 
 struct QMetaObjectPrivate
 {
+    enum { OutputRevision = 6 }; // Used by moc and qmetaobjectbuilder
+
     int revision;
     int className;
     int classInfoCount, classInfoData;

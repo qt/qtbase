@@ -1136,7 +1136,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         }
     }
     if (buf) {
-        pmeta->revision = 4;
+        Q_STATIC_ASSERT_X(QMetaObjectPrivate::OutputRevision == 6, "QMetaObjectBuilder should generate the same version as moc");
+        pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
         pmeta->className = 0;   // Class name is always the first string.
         //pmeta->signalCount is handled in the "output method loop" as an optimization.
