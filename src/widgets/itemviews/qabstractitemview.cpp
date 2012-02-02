@@ -3608,38 +3608,37 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
 QStyleOptionViewItem QAbstractItemView::viewOptions() const
 {
     Q_D(const QAbstractItemView);
-    QStyleOptionViewItem option;
-    option.init(this);
-    option.state &= ~QStyle::State_MouseOver;
-    option.font = font();
-
-#ifndef Q_WS_MAC
-    // On mac the focus appearance follows window activation
-    // not widget activation
-    if (!hasFocus())
-        option.state &= ~QStyle::State_Active;
-#endif
-
-    option.state &= ~QStyle::State_HasFocus;
-    if (d->iconSize.isValid()) {
-        option.decorationSize = d->iconSize;
-    } else {
-        int pm = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
-        option.decorationSize = QSize(pm, pm);
-    }
-    option.decorationPosition = QStyleOptionViewItem::Left;
-    option.decorationAlignment = Qt::AlignCenter;
-    option.displayAlignment = Qt::AlignLeft|Qt::AlignVCenter;
-    option.textElideMode = d->textElideMode;
-    option.rect = QRect();
-    option.showDecorationSelected = style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, this);
-    return option;
+    return d->viewOptionsV4();
 }
 
 QStyleOptionViewItemV4 QAbstractItemViewPrivate::viewOptionsV4() const
 {
     Q_Q(const QAbstractItemView);
-    QStyleOptionViewItemV4 option = q->viewOptions();
+    QStyleOptionViewItemV4 option;
+    option.init(q);
+    option.state &= ~QStyle::State_MouseOver;
+    option.font = q->font();
+
+#ifndef Q_WS_MAC
+    // On mac the focus appearance follows window activation
+    // not widget activation
+    if (!q->hasFocus())
+        option.state &= ~QStyle::State_Active;
+#endif
+
+    option.state &= ~QStyle::State_HasFocus;
+    if (iconSize.isValid()) {
+        option.decorationSize = iconSize;
+    } else {
+        int pm = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+        option.decorationSize = QSize(pm, pm);
+    }
+    option.decorationPosition = QStyleOptionViewItem::Left;
+    option.decorationAlignment = Qt::AlignCenter;
+    option.displayAlignment = Qt::AlignLeft|Qt::AlignVCenter;
+    option.textElideMode = textElideMode;
+    option.rect = QRect();
+    option.showDecorationSelected = q->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, q);
     if (wrapItemText)
         option.features = QStyleOptionViewItemV2::WrapText;
     option.locale = q->locale();
