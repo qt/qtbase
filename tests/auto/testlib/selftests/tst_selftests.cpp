@@ -456,23 +456,26 @@ void tst_Selftests::runSubTest_data()
     }
 }
 
+static void insertEnvironmentVariable(QString const& name, QProcessEnvironment &result)
+{
+    const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+    const QString value = systemEnvironment.value(name);
+    if (!value.isEmpty())
+        result.insert(name, value);
+}
+
 static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
-    const QString path = QStringLiteral("PATH");
-    const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
-    result.insert(path, systemEnvironment.value(path));
+    insertEnvironmentVariable(QStringLiteral("PATH"), result);
     // Preserve DISPLAY for X11 as some tests use QtGui.
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    const QString display = QStringLiteral("DISPLAY");
-    const QString displayValue = systemEnvironment.value(display);
-    if (!displayValue.isEmpty())
-        result.insert(display, displayValue);
+    insertEnvironmentVariable(QStringLiteral("DISPLAY"), result);
 #endif
-    const QString platform = QStringLiteral("QT_QPA_PLATFORM");
-    const QString platformValue = systemEnvironment.value(platform);
-    if (!platformValue.isEmpty())
-        result.insert(platform, platformValue);
+    insertEnvironmentVariable(QStringLiteral("QT_QPA_PLATFORM"), result);
+#ifdef __COVERAGESCANNER__
+    insertEnvironmentVariable(QStringLiteral("QT_TESTCOCOON_ACTIVE"), result);
+#endif
     return result;
 }
 

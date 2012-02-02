@@ -934,16 +934,24 @@ QT_BEGIN_NAMESPACE
     QTouchEventSequence is called (ie when the object returned runs out of scope).
 */
 
-static void installCoverageTool(const char * appname, const char * testname)
+static bool installCoverageTool(const char * appname, const char * testname)
 {
 #ifdef __COVERAGESCANNER__
+    if (!qgetenv("QT_TESTCOCOON_ACTIVE").isEmpty())
+        return false;
+    // Set environment variable QT_TESTCOCOON_ACTIVE to prevent an eventual subtest from
+    // being considered as a stand-alone test regarding the coverage analysis.
+    qputenv("QT_TESTCOCOON_ACTIVE", "1");
+
     // Install Coverage Tool
     __coveragescanner_install(appname);
     __coveragescanner_testname(testname);
     __coveragescanner_clear();
+    return true;
 #else
     Q_UNUSED(appname);
     Q_UNUSED(testname);
+    return false;
 #endif
 }
 
@@ -1962,7 +1970,8 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     qtest_qParseArgs(argc, argv, false);
 
-    installCoverageTool(argv[0], metaObject->className());
+    bool installedTestCoverage = installCoverageTool(argv[0], metaObject->className());
+    QTestLog::setInstalledTestCoverage(installedTestCoverage);
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {

@@ -103,6 +103,9 @@ public:
 
     static void resetCounters();
 
+    static void setInstalledTestCoverage(bool installed);
+    static bool installedTestCoverage();
+
 private:
     QTestLog();
     ~QTestLog();
