@@ -84,6 +84,10 @@ public:
     virtual void virtual_hook(int id, void *data);
 };
 
+#if QT_DEPRECATED_SINCE(5, 0)
+typedef QIconEngine QIconEngineV2;
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
