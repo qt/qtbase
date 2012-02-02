@@ -68,10 +68,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_s390.h"
 #elif defined(QT_ARCH_SPARC)
 #  include "QtCore/qatomic_sparc.h"
-#elif defined(QT_ARCH_WINDOWS)
-#  include "QtCore/qatomic_windows.h"
-#elif defined(QT_ARCH_WINDOWSCE)
-#  include "QtCore/qatomic_windowsce.h"
 #elif defined(QT_ARCH_SH)
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)

@@ -1,4 +1,4 @@
-win32:HEADERS += arch/qatomic_windows.h \
+win32:HEADERS += arch/qatomic_msvc.h \
                  arch/qatomic_generic.h
 
 win32-g++*:HEADERS += arch/qatomic_i386.h \
@@ -35,7 +35,7 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_cxx11.h
 
 QT_ARCH_CPP = $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH
-DEPENDPATH += $$QT_ARCH_CPP
-!isEmpty(QT_ARCH) {
-	include($$QT_ARCH_CPP/arch.pri, "", true)
+exists($$QT_ARCH_CPP) {
+    DEPENDPATH += $$QT_ARCH_CPP
+    include($$QT_ARCH_CPP/arch.pri, "", true)
 }

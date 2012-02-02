@@ -39,10 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QATOMIC_WINDOWS_H
-#define QATOMIC_WINDOWS_H
-
-#ifdef Q_CC_MSVC
+#ifndef QATOMIC_MSVC_H
+#define QATOMIC_MSVC_H
 
 #include <QtCore/qgenericatomic.h>
 
@@ -380,6 +378,4 @@ inline T *QAtomicOps<T *>::fetchAndAddRelaxed(T *&_q_value, qptrdiff valueToAdd)
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#endif // Q_CC_MSVC
-
-#endif // QATOMIC_WINDOWS_H
+#endif // QATOMIC_MSVC_H

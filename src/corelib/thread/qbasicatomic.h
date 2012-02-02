@@ -46,8 +46,8 @@
 
 #if defined(QT_MOC) || defined(QT_BUILD_QMAKE) || defined(QT_RCC) || defined(QT_UIC) || defined(QT_BOOTSTRAPPED)
 #  include <QtCore/qatomic_bootstrap.h>
-#elif defined(Q_OS_WIN) && defined(Q_CC_MSVC)
-#  include <QtCore/qatomic_windows.h>
+#elif defined(Q_CC_MSVC)
+#  include <QtCore/qatomic_msvc.h>
 #elif defined(__arm__) || defined(__TARGET_ARCH_ARM)
 #  include <QtCore/qatomic_arm.h>
 #elif defined(__i386) || defined(__i386__)
