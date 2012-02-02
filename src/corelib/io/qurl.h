@@ -212,9 +212,9 @@ public:
 
 #if QT_DEPRECATED_SINCE(5,0)
     QT_DEPRECATED void setEncodedUrl(const QByteArray &url, ParsingMode mode = TolerantMode)
-    { setUrl(QString::fromUtf8(url), mode); }
+    { setUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
     QT_DEPRECATED static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode)
-    { return QUrl(QString::fromUtf8(url), mode); }
+    { return QUrl(QString::fromUtf8(url.constData(), url.size()), mode); }
 #endif
 
 private:
