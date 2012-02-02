@@ -29,13 +29,15 @@ CMAKE_BIN_DIR = $$replace(CMAKE_BINS, ^.*/, )
 
 CMAKE_RELATIVE_INSTALL_DIR = "../../../"
 
+static|staticlib:CMAKE_STATIC_TYPE = true
+
 macx {
     CONFIG(qt_framework, qt_framework|qt_no_framework) {
         CMAKE_LIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
         CMAKE_LIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.framework/Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
         CMAKE_BUILD_IS_FRAMEWORK = "true"
     } else {
-        static {
+        !isEmpty(CMAKE_STATIC_TYPE) {
             CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
             CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
         } else {
@@ -44,7 +46,7 @@ macx {
         }
     }
 } else:win32 {
-    static {
+    !isEmpty(CMAKE_STATIC_TYPE) {
         CMAKE_IMPLIB_FILE_LOCATION_DEBUG = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}d.lib
         CMAKE_IMPLIB_FILE_LOCATION_RELEASE = Qt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.lib
     } else {
@@ -55,7 +57,7 @@ macx {
     }
     CMAKE_BIN_SUFFIX = ".exe"
 } else {
-    static {
+    !isEmpty(CMAKE_STATIC_TYPE) {
         CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
         CMAKE_LIB_FILE_LOCATION_RELEASE = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}.a
     } else {
@@ -71,8 +73,6 @@ debug_and_release|debug:debug_type = debug
 debug_and_release|release:release_type = release
 
 INSTALLS += cmake_qt5_module_files
-
-static:CMAKE_STATIC_TYPE = true
 
 cmake_config_file.input = $$PWD/../cmake/Qt5BasicConfig.cmake.in
 cmake_config_file.output = $$eval(QT.$${MODULE}.libs)/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
