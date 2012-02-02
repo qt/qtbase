@@ -375,7 +375,7 @@ qint64 PeerWireClient::uploadSpeed() const
     return sum / (8 * 2);
 }
 
-void PeerWireClient::setReadBufferSize(int size)
+void PeerWireClient::setReadBufferSize(qint64 size)
 {
     socket.setReadBufferSize(size);
 }

@@ -116,7 +116,7 @@ public:
     qint64 socketBytesAvailable() const { return socket.bytesAvailable(); }
     qint64 socketBytesToWrite() const { return socket.bytesToWrite(); }
 
-    void setReadBufferSize(int size);
+    void setReadBufferSize(qint64 size);
 
 signals:
     void infoHashReceived(const QByteArray &infoHash);
