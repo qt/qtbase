@@ -3567,9 +3567,8 @@ QTouchEvent::TouchPoint::~TouchPoint()
 /*!
     Returns the id number of this touch point.
 
-    Id numbers are globally sequential, starting at zero, meaning the
-    first touch point in the application has id 0, the second has id 1,
-    and so on.
+    Do not assume that id numbers start at zero or that they are sequential.
+    Such an assumption is often false due to the way the underlying drivers work.
 */
 int QTouchEvent::TouchPoint::id() const
 {
