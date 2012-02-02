@@ -109,7 +109,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
 
-    const int separatorPos = familyName.indexOf("::");
+    const int separatorPos = familyName.indexOf(QStringLiteral("::"));
     const QString faceName =
             separatorPos != -1 ? familyName.left(separatorPos) : familyName;
     const QString fullName =
@@ -169,7 +169,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             writingSystems.setSupported(ws);
     }
 
-    const QSettings fontRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
+    const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
                                 QSettings::NativeFormat);
 
     struct FontKey
@@ -189,7 +189,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             FontKey fontKey(key);
 
             QString realKey = key;
-            realKey = realKey.remove(trueType);
+            realKey.remove(trueType);
             const QStringList fonts = realKey.trimmed().split(QLatin1Char('&'));
             foreach (const QString &font, fonts)
                 fontKey.fonts.push_back(font.trimmed());
@@ -198,14 +198,14 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         }
     }
 
-    QByteArray value;
+    QString value;
     int index = 0;
     for (int k = 0; k < allFonts.size(); ++k) {
         const FontKey &fontKey = allFonts.at(k);
         for (int i = 0; i < fontKey.fonts.length(); ++i) {
             const QString font = fontKey.fonts[i];
             if (font == faceName || (faceName != fullName && fullName == font)) {
-                value = fontRegistry.value(fontKey.key).toByteArray();
+                value = fontRegistry.value(fontKey.key).toString();
                 index = i;
                 break;
             }
@@ -218,7 +218,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         return false;
 
     if (!QDir::isAbsolutePath(value))
-        value = qgetenv("windir") + "\\Fonts\\" + value;
+        value.prepend(QString::fromLocal8Bit(qgetenv("windir") + "\\Fonts\\"));
 
     // Pointer is deleted in QBasicFontDatabase::releaseHandle(void *handle)
     FontFile *fontFile = new FontFile;
@@ -244,7 +244,9 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
                               int type, LPARAM namesSetIn)
 {
     typedef QSet<QString> StringSet;
-    const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName) + "::" + QString::fromWCharArray(f->elfFullName);
+    const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName)
+                               + QStringLiteral("::")
+                               + QString::fromWCharArray(f->elfFullName);
     const QString script = QString::fromWCharArray(f->elfScript);
 
     const FONTSIGNATURE signature = textmetric->ntmFontSig;

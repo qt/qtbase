@@ -346,7 +346,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
 
     uint style = 0;
     bool icon = false;
-    QString cname = "Qt5";
+    QString cname = QStringLiteral("Qt5");
     if (w && isGL) {
         cname += QStringLiteral("QGLWindow");
         style = CS_DBLCLKS|CS_OWNDC;

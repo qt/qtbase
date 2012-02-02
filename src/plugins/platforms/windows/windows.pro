@@ -14,6 +14,8 @@ win32-g++: LIBS *= -luuid
 # For the dialog helpers:
 LIBS *= -lshlwapi -lShell32
 
+DEFINES *= QT_NO_CAST_FROM_ASCII
+
 contains(QT_CONFIG, directwrite) {
     LIBS *= -ldwrite
     SOURCES += qwindowsfontenginedirectwrite.cpp
