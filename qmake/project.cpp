@@ -1447,13 +1447,6 @@ QMakeProject::read(uchar cmd)
     if(pfile != "-" && vars["TARGET"].isEmpty())
         vars["TARGET"].append(QFileInfo(pfile).baseName());
 
-    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
-        parser.file = "(configs)";
-        parser.from_file = false;
-        parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::user_configs.join(" "), base_vars);
-    }
-
     if(cmd & ReadFeatures) {
         debug_msg(1, "Processing default_post: %s", vars["CONFIG"].join("::").toLatin1().constData());
         doProjectInclude("default_post", IncludeFlagFeature, vars);
