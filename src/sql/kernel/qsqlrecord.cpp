@@ -243,8 +243,9 @@ int QSqlRecord::indexOf(const QString& name) const
 }
 
 /*!
-    Returns the field at position \a index. If the position is out of
-    range, an empty field is returned.
+    Returns the field at position \a index. If the \a index
+    is out of range, function returns
+    a \l{default-constructed value}.
  */
 QSqlField QSqlRecord::field(int index) const
 {

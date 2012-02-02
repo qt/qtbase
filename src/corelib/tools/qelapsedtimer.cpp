@@ -230,7 +230,7 @@ void QElapsedTimer::invalidate()
 }
 
 /*!
-    Returns true if this object was invalidated by a call to invalidate() and
+    Returns false if this object was invalidated by a call to invalidate() and
     has not been restarted since.
 
     \sa invalidate(), start(), restart()

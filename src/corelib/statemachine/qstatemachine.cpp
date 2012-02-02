@@ -2346,7 +2346,7 @@ QStateMachine::SignalEvent::~SignalEvent()
 /*!
   \class QStateMachine::WrappedEvent
 
-  \brief The WrappedEvent class holds a clone of an event associated with a QObject.
+  \brief The WrappedEvent class inherits QEvent and holds a clone of an event associated with a QObject.
 
   \since 4.6
   \ingroup statemachine
