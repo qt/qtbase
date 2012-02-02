@@ -54,6 +54,7 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/qdir.h>
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
@@ -384,8 +385,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     // TODO (msorvig): Create proper cross-platform solution for loading
     // deployed platform plugins
 #ifdef Q_OS_MAC
-    if (platformPluginPath.isEmpty()) {
-        platformPluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
+    const QString bundlePluginPath = QCoreApplication::applicationDirPath() + QLatin1String("../Plugins/");
+    if (platformPluginPath.isEmpty() && QDir(bundlePluginPath).exists()) {
+        platformPluginPath = bundlePluginPath;
     }
 #endif
 
