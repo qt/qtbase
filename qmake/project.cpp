@@ -1321,14 +1321,6 @@ QMakeProject::read(uchar cmd)
         }
     }
 
-    //commandline configs
-    if ((cmd & ReadSetup) && !Option::user_configs.isEmpty()) {
-        parser.file = "(configs)";
-        parser.from_file = false;
-        parser.line_no = 1; //really arg count now.. duh
-        parse("CONFIG += " + Option::user_configs.join(" "), vars);
-    }
-
     // After user configs, to override them
     if (!extra_configs.isEmpty()) {
         parser.file = "(extra configs)";

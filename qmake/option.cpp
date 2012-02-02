@@ -91,7 +91,6 @@ QString Option::output_dir;
 Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
-QStringList Option::user_configs;
 QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;
@@ -219,6 +218,8 @@ bool usage(const char *a0)
 int
 Option::parseCommandLine(int argc, char **argv, int skip)
 {
+    QStringList user_configs;
+
     bool before = true;
     for(int x = skip; x < argc; x++) {
         if(*argv[x] == '-' && strlen(argv[x]) > 1) { /* options */
@@ -303,7 +304,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "nr" || opt == "norecursive") {
                 Option::recursive = Option::QMAKE_RECURSIVE_NO;
             } else if(opt == "config") {
-                Option::user_configs += argv[++x];
+                user_configs += argv[++x];
             } else {
                 if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
                    Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
@@ -375,6 +376,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             }
         }
     }
+
+    if (!user_configs.isEmpty())
+        Option::before_user_vars += "CONFIG += " + user_configs.join(" ");
 
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
