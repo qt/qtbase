@@ -100,6 +100,7 @@ mkspecs/qconfig.pri
 moc_*.cpp
 qmake/qmake.exe
 qmake/Makefile.bak
+qmake/qmake_pch.pch
 src/corelib/global/qconfig.cpp
 src/corelib/global/qconfig.h
 src/corelib/global/qconfig.h.qmake
