@@ -62,7 +62,8 @@ PieView::PieView(QWidget *parent)
 }
 
 void PieView::dataChanged(const QModelIndex &topLeft,
-                          const QModelIndex &bottomRight)
+                          const QModelIndex &bottomRight,
+                          const QSet<int> &)
 {
     QAbstractItemView::dataChanged(topLeft, bottomRight);
 
