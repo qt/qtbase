@@ -1871,6 +1871,7 @@ void QAbstractItemModel::doSetSupportedDragActions(Qt::DropActions actions)
 /*!
     \since 4.2
     \obsolete
+    \fn void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
 
     Sets the supported drag \a actions for the items in the model.
 
