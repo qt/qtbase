@@ -46,8 +46,42 @@
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
 #include "../../3rdparty/sha1/sha1.cpp"
+
+/*
+    These 2 functions replace macros of the same name in sha224-256.c and
+    sha384-512.c. Originally, these macros relied on a global static 'addTemp'
+    variable. We do not want this for 2 reasons:
+
+    1. since we are including the sources directly, the declaration of the 2 conflict
+
+    2. static variables are not thread-safe, we do not want multiple threads
+    computing a hash to corrupt one another
+*/
+// Header from rfc6234 without modifications
+#include "../../3rdparty/rfc6234/sha.h"
+static int SHA224_256AddLength(SHA256Context *context, unsigned int length);
+static int SHA384_512AddLength(SHA512Context *context, unsigned int length);
+
+// Sources from rfc6234, with 4 modifications:
+// sha224-256.c - commented out 'static uint32_t addTemp;' on line 68
+// sha224-256.c - appended 'M' to the SHA224_256AddLength macro on line 70
+#include "../../3rdparty/rfc6234/sha224-256.c"
+// sha384-512.c - commented out 'static uint64_t addTemp;' on line 302
+// sha384-512.c - appended 'M' to the SHA224_256AddLength macro on line 304
+#include "../../3rdparty/rfc6234/sha384-512.c"
+
 #include <qiodevice.h>
 
+static inline int SHA224_256AddLength(SHA256Context *context, unsigned int length)
+{
+  uint32_t addTemp;
+  return SHA224_256AddLengthM(context, length);
+}
+static inline int SHA384_512AddLength(SHA512Context *context, unsigned int length)
+{
+  uint64_t addTemp;
+  return SHA384_512AddLengthM(context, length);
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -59,6 +93,10 @@ public:
         MD5Context md5Context;
         md4_context md4Context;
         Sha1State sha1Context;
+        SHA224Context sha224Context;
+        SHA256Context sha256Context;
+        SHA384Context sha384Context;
+        SHA512Context sha512Context;
     };
     QByteArray result;
 };
@@ -75,7 +113,7 @@ public:
 
   QCryptographicHash can be used to generate cryptographic hashes of binary or text data.
 
-  Currently MD4, MD5, and SHA-1 are supported.
+  Currently MD4, MD5, SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512 are supported.
 */
 
 /*!
@@ -83,7 +121,11 @@ public:
 
   \value Md4 Generate an MD4 hash sum
   \value Md5 Generate an MD5 hash sum
-  \value Sha1 Generate an SHA1 hash sum
+  \value Sha1 Generate an SHA-1 hash sum
+  \value Sha224 Generate an SHA-224 hash sum
+  \value Sha256 Generate an SHA-256 hash sum
+  \value Sha384 Generate an SHA-384 hash sum
+  \value Sha512 Generate an SHA-512 hash sum
 */
 
 /*!
@@ -119,6 +161,18 @@ void QCryptographicHash::reset()
     case Sha1:
         sha1InitState(&d->sha1Context);
         break;
+    case Sha224:
+        SHA224Reset(&d->sha224Context);
+        break;
+    case Sha256:
+        SHA256Reset(&d->sha256Context);
+        break;
+    case Sha384:
+        SHA384Reset(&d->sha384Context);
+        break;
+    case Sha512:
+        SHA512Reset(&d->sha512Context);
+        break;
     }
     d->result.clear();
 }
@@ -138,6 +192,18 @@ void QCryptographicHash::addData(const char *data, int length)
         break;
     case Sha1:
         sha1Update(&d->sha1Context, (const unsigned char *)data, length);
+        break;
+    case Sha224:
+        SHA224Input(&d->sha224Context, reinterpret_cast<const unsigned char *>(data), length);
+        break;
+    case Sha256:
+        SHA256Input(&d->sha256Context, reinterpret_cast<const unsigned char *>(data), length);
+        break;
+    case Sha384:
+        SHA384Input(&d->sha384Context, reinterpret_cast<const unsigned char *>(data), length);
+        break;
+    case Sha512:
+        SHA512Input(&d->sha512Context, reinterpret_cast<const unsigned char *>(data), length);
         break;
     }    
     d->result.clear();
@@ -201,6 +267,31 @@ QByteArray QCryptographicHash::result() const
         d->result.resize(20);
         sha1FinalizeState(&copy);
         sha1ToHash(&copy, (unsigned char *)d->result.data());
+        break;
+    }
+    case Sha224: {
+        SHA224Context copy = d->sha224Context;
+        d->result.resize(SHA224HashSize);
+        SHA224Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
+        break;
+    }
+    case Sha256:{
+        SHA256Context copy = d->sha256Context;
+        d->result.resize(SHA256HashSize);
+        SHA256Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
+        break;
+    }
+    case Sha384:{
+        SHA384Context copy = d->sha384Context;
+        d->result.resize(SHA384HashSize);
+        SHA384Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
+        break;
+    }
+    case Sha512:{
+        SHA512Context copy = d->sha512Context;
+        d->result.resize(SHA512HashSize);
+        SHA512Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
+        break;
     }
     }
     return d->result;
