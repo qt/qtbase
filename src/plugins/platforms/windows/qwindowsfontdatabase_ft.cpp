@@ -105,6 +105,8 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
                               const FONTSIGNATURE *signature,
                               int type)
 {
+    typedef QPair<QString, QStringList> FontKey;
+
     // the "@family" fonts are just the same as "family". Ignore them.
     if (familyName.at(0) == QLatin1Char('@') || familyName.startsWith(QStringLiteral("WST_")))
         return false;
@@ -172,29 +174,19 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     const QSettings fontRegistry(QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"),
                                 QSettings::NativeFormat);
 
-    struct FontKey
-    {
-        FontKey() {}
-        FontKey(const QString &k) : key(k) {}
-
-        QString key;
-        QStringList fonts;
-    };
     static QVector<FontKey> allFonts;
     if (allFonts.isEmpty()) {
         const QStringList allKeys = fontRegistry.allKeys();
         allFonts.reserve(allKeys.size());
         const QString trueType = QStringLiteral("(TrueType)");
         foreach (const QString &key, allKeys) {
-            FontKey fontKey(key);
-
             QString realKey = key;
             realKey.remove(trueType);
-            const QStringList fonts = realKey.trimmed().split(QLatin1Char('&'));
-            foreach (const QString &font, fonts)
-                fontKey.fonts.push_back(font.trimmed());
-
-            allFonts.push_back(fontKey);
+            QStringList fonts;
+            const QStringList fontNames = realKey.trimmed().split(QLatin1Char('&'));
+            foreach (const QString &fontName, fontNames)
+                fonts.push_back(fontName.trimmed());
+            allFonts.push_back(FontKey(key, fonts));
         }
     }
 
@@ -202,10 +194,10 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     int index = 0;
     for (int k = 0; k < allFonts.size(); ++k) {
         const FontKey &fontKey = allFonts.at(k);
-        for (int i = 0; i < fontKey.fonts.length(); ++i) {
-            const QString font = fontKey.fonts[i];
+        for (int i = 0; i < fontKey.second.length(); ++i) {
+            const QString &font = fontKey.second.at(i);
             if (font == faceName || (faceName != fullName && fullName == font)) {
-                value = fontRegistry.value(fontKey.key).toString();
+                value = fontRegistry.value(fontKey.first).toString();
                 index = i;
                 break;
             }

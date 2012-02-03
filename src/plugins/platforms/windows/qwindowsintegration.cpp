@@ -293,6 +293,7 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::StartDragDistance:
     case QPlatformIntegration::MouseDoubleClickInterval:
     case QPlatformIntegration::KeyboardInputInterval:
+    case QPlatformIntegration::ShowIsFullScreen:
         break; // Not implemented
     }
     return QPlatformIntegration::styleHint(hint);
