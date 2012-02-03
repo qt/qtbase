@@ -352,7 +352,7 @@ void tst_QTextLayout::threeLineBoundingRect()
     QCOMPARE(qRound(line.naturalTextWidth()), thirdLineWidth);
     y += qRound(line.ascent() + line.descent());
 
-    QCOMPARE(layout.boundingRect(), QRectF(0, 0, longestLine, y + 1));
+    QCOMPARE(layout.boundingRect(), QRectF(0, 0, longestLine, y));
 }
 
 void tst_QTextLayout::boundingRectWithLongLineAndNoWrap()
@@ -386,7 +386,7 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(line.textStart(), pos);
     QCOMPARE(line.textLength(),2);
     QCOMPARE(qRound(line.naturalTextWidth()),testFont.pixelSize());
-    QCOMPARE((int) line.height(), testFont.pixelSize() + 1); // + 1 baseline
+    QCOMPARE((int) line.height(), testFont.pixelSize());
     QCOMPARE(line.xToCursor(0), line.textStart());
     pos += line.textLength();
 
@@ -395,7 +395,7 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(line.textStart(),pos);
     QCOMPARE(line.textLength(),1);
     QCOMPARE(qRound(line.naturalTextWidth()), 0);
-    QCOMPARE((int) line.height(), testFont.pixelSize() + 1); // + 1 baseline
+    QCOMPARE((int) line.height(), testFont.pixelSize());
     QCOMPARE(line.xToCursor(0), line.textStart());
     pos += line.textLength();
 
@@ -404,7 +404,7 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(line.textStart(),pos);
     QCOMPARE(line.textLength(),2);
     QCOMPARE(qRound(line.naturalTextWidth()),testFont.pixelSize());
-    QCOMPARE(qRound(line.height()), testFont.pixelSize() + 1); // + 1 baseline
+    QCOMPARE(qRound(line.height()), testFont.pixelSize());
     QCOMPARE(line.xToCursor(0), line.textStart());
     pos += line.textLength();
 
@@ -413,7 +413,7 @@ void tst_QTextLayout::forcedBreaks()
     QCOMPARE(line.textStart(),pos);
     QCOMPARE(line.textLength(),1);
     QCOMPARE(qRound(line.naturalTextWidth()), testFont.pixelSize());
-    QCOMPARE((int) line.height(), testFont.pixelSize() + 1); // + 1 baseline
+    QCOMPARE((int) line.height(), testFont.pixelSize());
     QCOMPARE(line.xToCursor(0), line.textStart());
 }
 

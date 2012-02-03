@@ -1429,9 +1429,9 @@ qreal QTextLine::descent() const
 }
 
 /*!
-    Returns the line's height. This is equal to ascent() + descent() + 1
+    Returns the line's height. This is equal to ascent() + descent()
     if leading is not included. If leading is included, this equals to
-    ascent() + descent() + leading() + 1.
+    ascent() + descent() + leading().
 
     \sa ascent(), descent(), leading(), setLeadingIncluded()
 */

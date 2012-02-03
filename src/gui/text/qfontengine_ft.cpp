@@ -1173,8 +1173,7 @@ QFixed QFontEngineFT::ascent() const
 
 QFixed QFontEngineFT::descent() const
 {
-    // subtract a pixel to work around QFontMetrics's built-in + 1
-    return QFixed::fromFixed(-metrics.descender - 64);
+    return QFixed::fromFixed(-metrics.descender);
 }
 
 QFixed QFontEngineFT::leading() const
@@ -1589,7 +1588,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
     glyph_metrics_t overall;
     // initialize with line height, we get the same behaviour on all platforms
     overall.y = -ascent();
-    overall.height = ascent() + descent() + 1;
+    overall.height = ascent() + descent();
 
     QFixed ymax = 0;
     QFixed xmax = 0;

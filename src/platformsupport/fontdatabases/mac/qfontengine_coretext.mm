@@ -255,9 +255,7 @@ QFixed QCoreTextFontEngine::descent() const
     if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
         d = d.round();
 
-    // subtract a pixel to even out the historical +1 in QFontMetrics::height().
-    // Fix in Qt 5.
-    return d - 1;
+    return d;
 }
 QFixed QCoreTextFontEngine::leading() const
 {
