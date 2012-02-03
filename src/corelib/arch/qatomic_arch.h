@@ -52,8 +52,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_vxworks.h"
 #elif defined(QT_ARCH_ALPHA)
 #  include "QtCore/qatomic_alpha.h"
-#elif defined(QT_ARCH_AVR32)
-#  include "QtCore/qatomic_avr32.h"
 #elif defined(QT_ARCH_BFIN)
 #  include "QtCore/qatomic_bfin.h"
 #elif defined(QT_ARCH_GENERIC)
