@@ -125,7 +125,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
 
     // is this metatype registered?
     const char *expectedSignature = "";
-    if (mp.type() != 0xff) {
+    if (int(mp.type()) != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(where.userType());
         if (expectedSignature == 0) {
             qWarning("QDBusAbstractInterface: type %s must be registered with QtDBus before it can be "
@@ -164,7 +164,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
     const char *foundType = 0;
     QVariant value = qvariant_cast<QDBusVariant>(reply.arguments().at(0)).variant();
 
-    if (value.userType() == where.userType() || mp.type() == 0xff
+    if (value.userType() == where.userType() || mp.userType() == QMetaType::QVariant
         || (expectedSignature[0] == 'v' && expectedSignature[1] == '\0')) {
         // simple match
         where = value;
