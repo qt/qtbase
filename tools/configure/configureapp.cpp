@@ -3196,14 +3196,7 @@ void Configure::buildHostTools()
     QString pwd = QDir::currentPath();
     QStringList hostToolsDirs;
     hostToolsDirs
-        << "src/tools"
-        << "tools/linguist/lrelease";
-
-    if (dictionary["XQMAKESPEC"].startsWith("wince"))
-        hostToolsDirs << "tools/checksdk";
-
-    if (dictionary[ "CETEST" ] == "yes")
-        hostToolsDirs << "tools/qtestlib/wince/cetest";
+        << "src/tools";
 
     for (int i = 0; i < hostToolsDirs.count(); ++i) {
         cout << "Creating " << hostToolsDirs.at(i) << " ..." << endl;
