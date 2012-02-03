@@ -345,47 +345,7 @@ template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_NOT_NATIVE
 
 #else
-
-extern "C" {
-    Q_CORE_EXPORT int q_atomic_test_and_set_int(volatile int *ptr, int expected, int newval);
-    Q_CORE_EXPORT int q_atomic_test_and_set_ptr(volatile void *ptr, void *expected, void *newval);
-    Q_CORE_EXPORT int q_atomic_increment(volatile int *ptr);
-    Q_CORE_EXPORT int q_atomic_decrement(volatile int *ptr);
-    Q_CORE_EXPORT int q_atomic_set_int(volatile int *ptr, int newval);
-    Q_CORE_EXPORT void *q_atomic_set_ptr(volatile void *ptr, void *newval);
-    Q_CORE_EXPORT int q_atomic_fetch_and_add_int(volatile int *ptr, int value);
-    Q_CORE_EXPORT void *q_atomic_fetch_and_add_ptr(volatile void *ptr, int value);
-} // extern "C"
-
-template<> template<typename T> inline
-bool QBasicAtomicOps<4>::ref(T &_q_value)
-{
-    return q_atomic_increment((int *)&_q_value) != 0;
-}
-
-template<> template <typename T> inline
-bool QBasicAtomicOps<4>::deref(T &_q_value)
-{
-    return q_atomic_decrement((int *)&_q_value) != 0;
-}
-
-template<> template <typename T> inline
-bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
-{
-    return q_atomic_test_and_set_int((int*)&_q_value, int(expectedValue), int(newValue));
-}
-
-template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
-{
-    return T(q_atomic_set_int((int*)&_q_value, int(newValue));
-}
-
-template<> template <typename T> inline
-T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
-{
-    return T(q_atomic_fetch_and_add_int((int *)&_q_value, valueToAdd * QAtomicAdditiveType<T>::AddScale));
-}
+#  error "This compiler for i386 is not supported"
 #endif
 
 QT_END_NAMESPACE
