@@ -627,10 +627,11 @@ QMakeProject::init(QMakeProperty *p)
     reset();
 }
 
-QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *vars)
+// Duplicate project. It is *not* allowed to call the complex read() functions on the copy.
+QMakeProject::QMakeProject(QMakeProject *p, const QHash<QString, QStringList> *_vars)
 {
     init(p->properties());
-    base_vars = vars ? *vars : p->variables();
+    vars = _vars ? *_vars : p->variables();
     for(QHash<QString, FunctionBlock*>::iterator it = p->replaceFunctions.begin(); it != p->replaceFunctions.end(); ++it) {
         it.value()->ref();
         replaceFunctions.insert(it.key(), it.value());

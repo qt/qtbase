@@ -178,7 +178,6 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     }
                     if(tmp_proj.first("TEMPLATE") == "subdirs") {
                         QMakeProject *pp = new QMakeProject(&tmp_proj);
-                        pp->read(0);
                         pb_subdirs += new ProjectBuilderSubDirs(pp, dir);
                     } else if(tmp_proj.first("TEMPLATE") == "app" || tmp_proj.first("TEMPLATE") == "lib") {
                         QString pbxproj = qmake_getpwd() + Option::dir_sep + tmp_proj.first("TARGET") + projectSuffix();
