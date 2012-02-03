@@ -1635,10 +1635,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             // possible to use "place" everywhere. Instead just set variables and grab them later
             QMakeProject proj(this, &place);
             if(flags & IncludeFlagNewParser) {
-#if 1
-                if(proj.doProjectInclude("default_pre", IncludeFlagFeature, proj.variables()) == IncludeNoExist)
-                    proj.doProjectInclude("default", IncludeFlagFeature, proj.variables());
-#endif
                 parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
             } else {
                 parsed = proj.read(file); // parse all aux files (load/include into)
