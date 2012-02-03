@@ -1,3 +1,0 @@
-#
-# Native Client architecture
-#
