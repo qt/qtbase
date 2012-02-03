@@ -9,18 +9,12 @@
         <file>expected_badxml.txt</file>
         <file>expected_badxml.xml</file>
         <file>expected_badxml.xunitxml</file>
-        <file>expected_benchlibcallgrind.lightxml</file>
         <file>expected_benchlibcallgrind.txt</file>
-        <file>expected_benchlibcallgrind.xml</file>
-        <file>expected_benchlibcallgrind.xunitxml</file>
         <file>expected_benchlibeventcounter.lightxml</file>
         <file>expected_benchlibeventcounter.txt</file>
         <file>expected_benchlibeventcounter.xml</file>
         <file>expected_benchlibeventcounter.xunitxml</file>
-        <file>expected_benchliboptions.lightxml</file>
         <file>expected_benchliboptions.txt</file>
-        <file>expected_benchliboptions.xml</file>
-        <file>expected_benchliboptions.xunitxml</file>
         <file>expected_benchlibtickcounter.lightxml</file>
         <file>expected_benchlibtickcounter.txt</file>
         <file>expected_benchlibtickcounter.xml</file>
@@ -41,9 +35,6 @@
         <file>expected_counting.txt</file>
         <file>expected_counting.xml</file>
         <file>expected_counting.xunitxml</file>
-        <file>expected_crashes.lightxml</file>
-        <file>expected_crashes.xml</file>
-        <file>expected_crashes.xunitxml</file>
         <file>expected_crashes_1.txt</file>
         <file>expected_crashes_2.txt</file>
         <file>expected_crashes_3.txt</file>
@@ -81,10 +72,7 @@
         <file>expected_fetchbogus.txt</file>
         <file>expected_fetchbogus.xml</file>
         <file>expected_fetchbogus.xunitxml</file>
-        <file>expected_float.lightxml</file>
         <file>expected_float.txt</file>
-        <file>expected_float.xml</file>
-        <file>expected_float.xunitxml</file>
         <file>expected_globaldata.lightxml</file>
         <file>expected_globaldata.txt</file>
         <file>expected_globaldata.xml</file>
@@ -97,10 +85,7 @@
         <file>expected_maxwarnings.txt</file>
         <file>expected_maxwarnings.xml</file>
         <file>expected_maxwarnings.xunitxml</file>
-        <file>expected_multiexec.lightxml</file>
         <file>expected_multiexec.txt</file>
-        <file>expected_multiexec.xml</file>
-        <file>expected_multiexec.xunitxml</file>
         <file>expected_printdatatags.txt</file>
         <file>expected_printdatatagswithglobaltags.txt</file>
         <file>expected_qexecstringlist.txt</file>
@@ -124,10 +109,7 @@
         <file>expected_skipinitdata.txt</file>
         <file>expected_skipinitdata.xml</file>
         <file>expected_skipinitdata.xunitxml</file>
-        <file>expected_sleep.lightxml</file>
         <file>expected_sleep.txt</file>
-        <file>expected_sleep.xml</file>
-        <file>expected_sleep.xunitxml</file>
         <file>expected_strcmp.lightxml</file>
         <file>expected_strcmp.txt</file>
         <file>expected_strcmp.xml</file>
