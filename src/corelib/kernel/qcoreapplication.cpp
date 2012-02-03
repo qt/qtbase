@@ -593,7 +593,6 @@ QCoreApplication::~QCoreApplication()
     QCoreApplicationPrivate::is_app_running = false;
 
 #if !defined(QT_NO_THREAD)
-#if !defined(QT_NO_CONCURRENT)
     // Synchronize and stop the global thread pool threads.
     QThreadPool *globalThreadPool = 0;
     QT_TRY {
@@ -603,7 +602,6 @@ QCoreApplication::~QCoreApplication()
     }
     if (globalThreadPool)
         globalThreadPool->waitForDone();
-#endif
     QThread::cleanup();
 #endif
 

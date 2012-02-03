@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include <QtCore>
+#include <QtConcurrent>
+
 /*
  says hello from main thread and secondary thread using QtConcurrent
 */

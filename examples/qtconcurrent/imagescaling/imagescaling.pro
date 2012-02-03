@@ -1,6 +1,7 @@
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
+QT += concurrent
 
 # Input
 SOURCES += main.cpp imagescaling.cpp

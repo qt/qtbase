@@ -10,6 +10,7 @@ SUBDIRS += \
     testlib \
     tools \
     xml \
+    concurrent \
     other \
     widgets \
 
@@ -21,3 +22,6 @@ cross_compile:                              SUBDIRS -= tools
 mac {
     network.CONFIG += no_check_target
 }
+
+!contains(QT_CONFIG, concurrent): SUBDIRS -= concurrent
+

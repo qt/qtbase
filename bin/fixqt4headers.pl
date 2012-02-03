@@ -141,6 +141,7 @@ sub findQtHeaders
 die "This script requires the QTDIR environment variable pointing to Qt 5\n" unless $qtdir;
 
 findQtHeaders('QtCore', $qtdir);
+findQtHeaders('QtConcurrent', $qtdir);
 findQtHeaders('QtWidgets', $qtdir);
 findQtHeaders('QtPrintSupport', $qtdir);
 

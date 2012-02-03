@@ -8,6 +8,7 @@ SRC_SUBDIRS += src_corelib
 SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
+contains(QT_CONFIG, concurrent):SRC_SUBDIRS += src_concurrent
 
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 
@@ -40,6 +41,8 @@ src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
 src_testlib.target = sub-testlib
 src_platformsupport.subdir = $$QT_SOURCE_TREE/src/platformsupport
 src_platformsupport.target = sub-platformsupport
+src_concurrent.subdir = $$QT_SOURCE_TREE/src/concurrent
+src_concurrent.target = sub-concurrent
 
 
 #CONFIG += ordered
@@ -50,6 +53,7 @@ src_platformsupport.target = sub-platformsupport
    src_platformsupport.depends = src_corelib src_gui src_network
    src_widgets.depends = src_corelib src_gui src_tools_uic
    src_xml.depends = src_corelib
+   src_concurrent.depends = src_corelib
    src_dbus.depends = src_corelib
    src_network.depends = src_corelib
    src_opengl.depends = src_gui src_widgets

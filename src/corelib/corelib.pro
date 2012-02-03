@@ -18,7 +18,6 @@ HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
 
 include(animation/animation.pri)
 include(arch/arch.pri)
-include(concurrent/concurrent.pri)
 include(global/global.pri)
 include(thread/thread.pri)
 include(tools/tools.pri)

@@ -47,7 +47,6 @@
 #include <qtextdocument.h>
 #include <time.h>
 #include <qprocess.h>
-#include <QtConcurrentMap>
 #include <QThreadPool>
 
 class tst_QTextCodec : public QObject
@@ -55,9 +54,7 @@ class tst_QTextCodec : public QObject
     Q_OBJECT
 
 private slots:
-#ifndef QT_NO_CONCURRENT
     void threadSafety();
-#endif
 
     void toUnicode_data();
     void toUnicode();
@@ -1939,48 +1936,75 @@ void tst_QTextCodec::toLocal8Bit()
 }
 #endif
 
-static QByteArray loadAndConvert(const QByteArray &codecName)
+class LoadAndConvert: public QRunnable
 {
-    QTextCodec *c = QTextCodec::codecForName(codecName);
-    if (!c) {
-        qWarning() << "WARNING" << codecName << "not found?";
-        return QByteArray();
+public:
+    LoadAndConvert(const QByteArray &source, QByteArray *destination)
+        : codecName(source), target(destination)
+    {}
+    QByteArray codecName;
+    QByteArray *target;
+    void run()
+    {
+        QTextCodec *c = QTextCodec::codecForName(codecName);
+        if (!c) {
+            qWarning() << "WARNING" << codecName << "not found?";
+            return;
+        }
+        QString str = QString::fromLatin1(codecName);
+        QByteArray b = c->fromUnicode(str);
+        c->toUnicode(b);
+        *target = codecName;
     }
-    QString str = QString::fromLatin1(codecName);
-    QByteArray b = c->fromUnicode(str);
-    c->toUnicode(b);
-    return codecName;
-}
+};
 
-static int loadAndConvertMIB(int mib)
+class LoadAndConvertMIB: public QRunnable
 {
-    QTextCodec *c = QTextCodec::codecForMib(mib);
-    if (!c) {
-        qWarning() << "WARNING" << mib << "not found?";
-        return 0;
+public:
+    LoadAndConvertMIB(int mib, int *target)
+        : mib(mib), target(target)
+    {}
+    int mib;
+    int *target;
+    void run()
+    {
+        QTextCodec *c = QTextCodec::codecForMib(mib);
+        if (!c) {
+            qWarning() << "WARNING" << mib << "not found?";
+            return;
+        }
+        QString str = QString::number(mib);
+        QByteArray b = c->fromUnicode(str);
+        c->toUnicode(b);
+        *target = mib;
     }
-    QString str = QString::number(mib);
-    QByteArray b = c->fromUnicode(str);
-    c->toUnicode(b);
-    return mib;
-}
+};
 
 
-#ifndef QT_NO_CONCURRENT
 void tst_QTextCodec::threadSafety()
 {
     QList<QByteArray> codecList = QTextCodec::availableCodecs();
     QList<int> mibList = QTextCodec::availableMibs();
     QThreadPool::globalInstance()->setMaxThreadCount(12);
 
-    QFuture<QByteArray> res = QtConcurrent::mapped(codecList, loadAndConvert);
+    QVector<QByteArray> res;
+    res.resize(codecList.size());
+    for (int i = 0; i < codecList.size(); ++i) {
+        QThreadPool::globalInstance()->start(new LoadAndConvert(codecList.at(i), &res[i]));
+    }
 
-    QFuture<int> res2 = QtConcurrent::mapped(mibList, loadAndConvertMIB);
+    QVector<int> res2;
+    res2.resize(mibList.size());
+    for (int i = 0; i < mibList.size(); ++i) {
+        QThreadPool::globalInstance()->start(new LoadAndConvertMIB(mibList.at(i), &res2[i]));
+    }
 
-    QCOMPARE(res.results(), codecList);
-    QCOMPARE(res2.results(), mibList);
+    // wait for all threads to finish working
+    QThreadPool::globalInstance()->waitForDone();
+
+    QCOMPARE(res.toList(), codecList);
+    QCOMPARE(res2.toList(), mibList);
 }
-#endif
 
 void tst_QTextCodec::invalidNames()
 {

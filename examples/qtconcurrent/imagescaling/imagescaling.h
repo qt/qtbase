@@ -41,6 +41,7 @@
 #define IMAGESCALING_H
 
 #include <QtWidgets>
+#include <QtConcurrent>
 
 #ifndef QT_NO_CONCURRENT
 

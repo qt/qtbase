@@ -2,9 +2,11 @@
 
 # public headers
 HEADERS += thread/qmutex.h \
+           thread/qrunnable.h \
            thread/qreadwritelock.h \
            thread/qsemaphore.h \
            thread/qthread.h \
+           thread/qthreadpool.h \
            thread/qthreadstorage.h \
            thread/qwaitcondition.h \
            thread/qatomic.h \
@@ -17,14 +19,17 @@ HEADERS += thread/qmutex_p.h \
            thread/qmutexpool_p.h \
            thread/qorderedmutexlocker_p.h \
            thread/qreadwritelock_p.h \
-           thread/qthread_p.h
+           thread/qthread_p.h \
+           thread/qthreadpool_p.h
 
 SOURCES += thread/qatomic.cpp \
            thread/qmutex.cpp \
            thread/qreadwritelock.cpp \
+           thread/qrunnable.cpp \
            thread/qmutexpool.cpp \
            thread/qsemaphore.cpp \
            thread/qthread.cpp \
+           thread/qthreadpool.cpp \
            thread/qthreadstorage.cpp
 
 unix:SOURCES += thread/qthread_unix.cpp \

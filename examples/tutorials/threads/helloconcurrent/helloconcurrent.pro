@@ -1,4 +1,5 @@
 QT -= gui
+QT += concurrent
 
 CONFIG += console
 CONFIG -= app_bundle

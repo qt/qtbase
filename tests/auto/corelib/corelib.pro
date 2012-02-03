@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
    animation \
    codecs \
-   concurrent \
    global \
    io \
    itemmodels \
@@ -14,4 +13,3 @@ SUBDIRS=\
    tools \
    xml
 
-!contains(QT_CONFIG, concurrent): SUBDIRS -= concurrent
