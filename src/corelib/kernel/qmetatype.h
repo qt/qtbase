@@ -247,7 +247,6 @@ public:
     static void destroy(int type, void *data);
     static void *construct(int type, void *where, const void *copy);
     static void destruct(int type, void *where);
-    static void unregisterType(const char *typeName);
 
 #ifndef QT_NO_DATASTREAM
     static bool save(QDataStream &stream, int type, const void *data);

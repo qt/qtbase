@@ -45,7 +45,9 @@ information about a particular change.
   in Qt4, so these methods return a bool now. If your code used the undocumented
   QBool, simply replace it with bool.
 
-- QMetaType::construct() has been renamed to QMetaType::create().
+- QMetaType:
+  * QMetaType::construct() has been renamed to QMetaType::create().
+  * QMetaType::unregisterType() has been removed.
 
 - QTestLib:
   * The QTRY_VERIFY and QTRY_COMPARE macros have been moved into QTestLib.

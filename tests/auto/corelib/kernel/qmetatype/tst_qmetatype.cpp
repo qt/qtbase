@@ -87,7 +87,6 @@ private slots:
     void typedefs();
     void isRegistered_data();
     void isRegistered();
-    void unregisterType();
     void registerStreamBuiltin();
     void automaticTemplateRegistration();
 };
@@ -855,28 +854,6 @@ void tst_QMetaType::isRegistered()
     QFETCH(int, typeId);
     QFETCH(bool, registered);
     QCOMPARE(QMetaType::isRegistered(typeId), registered);
-}
-
-class RegUnreg
-{
-public:
-    RegUnreg() {};
-    RegUnreg(const RegUnreg &) {};
-    ~RegUnreg() {};
-};
-
-void tst_QMetaType::unregisterType()
-{
-    // cannot unregister standard types
-    int typeId = qRegisterMetaType<QList<QVariant> >("QList<QVariant>");
-    QCOMPARE(QMetaType::isRegistered(typeId), true);
-    QMetaType::unregisterType("QList<QVariant>");
-    QCOMPARE(QMetaType::isRegistered(typeId), true);
-    // allow unregister user types
-    typeId = qRegisterMetaType<RegUnreg>("RegUnreg");
-    QCOMPARE(QMetaType::isRegistered(typeId), true);
-    QMetaType::unregisterType("RegUnreg");
-    QCOMPARE(QMetaType::isRegistered(typeId), false);
 }
 
 void tst_QMetaType::registerStreamBuiltin()

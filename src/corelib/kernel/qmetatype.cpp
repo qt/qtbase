@@ -532,36 +532,6 @@ int QMetaType::registerTypedef(const char* typeName, int aliasId)
 }
 
 /*!
-    \since 4.4
-
-    Unregisters a user type, with \a typeName.
-
-    \sa type(), typeName()
- */
-void QMetaType::unregisterType(const char *typeName)
-{
-    QVector<QCustomTypeInfo> *ct = customTypes();
-    if (!ct || !typeName)
-        return;
-
-#ifdef QT_NO_QOBJECT
-    NS(QByteArray) normalizedTypeName = typeName;
-#else
-    NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
-#endif
-    QWriteLocker locker(customTypesLock());
-    for (int v = 0; v < ct->count(); ++v) {
-        if (ct->at(v).typeName == typeName) {
-            QCustomTypeInfo &inf = (*ct)[v];
-            inf.typeName.clear();
-            inf.creator = 0;
-            inf.deleter = 0;
-            inf.alias = -1;
-        }
-    }
-}
-
-/*!
     Returns true if the datatype with ID \a type is registered;
     otherwise returns false.
 
