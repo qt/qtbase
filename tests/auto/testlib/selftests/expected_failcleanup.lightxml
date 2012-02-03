@@ -1,0 +1,15 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="aTestFunction">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp" line="59">
+    <Description><![CDATA['false' returned FALSE. (Fail inside cleanupTestCase)]]></Description>
+</Incident>
+</TestFunction>

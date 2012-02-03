@@ -64,6 +64,10 @@
         <file>expected_expectfail.txt</file>
         <file>expected_expectfail.xml</file>
         <file>expected_expectfail.xunitxml</file>
+        <file>expected_failcleanup.lightxml</file>
+        <file>expected_failcleanup.txt</file>
+        <file>expected_failcleanup.xml</file>
+        <file>expected_failcleanup.xunitxml</file>
         <file>expected_failinit.lightxml</file>
         <file>expected_failinit.txt</file>
         <file>expected_failinit.xml</file>
@@ -108,6 +112,10 @@
         <file>expected_skip.txt</file>
         <file>expected_skip.xml</file>
         <file>expected_skip.xunitxml</file>
+        <file>expected_skipcleanup.lightxml</file>
+        <file>expected_skipcleanup.txt</file>
+        <file>expected_skipcleanup.xml</file>
+        <file>expected_skipcleanup.xunitxml</file>
         <file>expected_skipinit.lightxml</file>
         <file>expected_skipinit.txt</file>
         <file>expected_skipinit.xml</file>

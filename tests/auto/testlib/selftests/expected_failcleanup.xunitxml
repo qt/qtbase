@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="3" name="tst_FailCleanup">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="aTestFunction"/>
+  <testcase result="fail" name="cleanupTestCase">
+    <failure message="&apos;false&apos; returned FALSE. (Fail inside cleanupTestCase)" result="fail"/>
+  </testcase>
+  <system-err/>
+</testsuite>

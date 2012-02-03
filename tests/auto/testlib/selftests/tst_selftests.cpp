@@ -338,6 +338,7 @@ void tst_Selftests::runSubTest_data()
         << "exceptionthrow"
 #endif
         << "expectfail"
+        << "failcleanup"
         << "failinit"
         << "failinitdata"
 #if !defined(Q_OS_WIN)
@@ -354,6 +355,7 @@ void tst_Selftests::runSubTest_data()
         << "qexecstringlist"
         << "singleskip"
         << "skip"
+        << "skipcleanup"
         << "skipinit"
         << "skipinitdata"
         << "sleep"
