@@ -30,7 +30,7 @@
     \title Dir View Example
 
     The Dir View example shows a tree view onto the local filing system. It uses the
-    QDirModel class to provide supply file and directory information.
+    QDirModel class to provide file and directory information.
 
     \image dirview-example.png
 */

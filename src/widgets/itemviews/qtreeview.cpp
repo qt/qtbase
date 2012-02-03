@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 
     It is simple to construct a tree view displaying data from a
     model. In the following example, the contents of a directory are
-    supplied by a QDirModel and displayed as a tree:
+    supplied by a QFileSystemModel and displayed as a tree:
 
     \snippet doc/src/snippets/shareddirmodel/main.cpp 3
     \snippet doc/src/snippets/shareddirmodel/main.cpp 6

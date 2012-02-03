@@ -1167,10 +1167,10 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
     \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 1
 
-    If you need to insert a new item into the list at a particular position, it
-    is more required to construct the item without a parent widget and use the
-    insertItem() function to place it within the list. The list widget will
-    take ownership of the item.
+    If you need to insert a new item into the list at a particular position,
+    then it should be constructed without a parent widget. The insertItem()
+    function should then be used to place it within the list. The list widget
+    will take ownership of the item.
 
     \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 6
     \snippet doc/src/snippets/qlistwidget-using/mainwindow.cpp 7
