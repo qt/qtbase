@@ -79,40 +79,40 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 template<typename T>
-struct TypeDefiniton {
+struct TypeDefinition {
     static const bool IsAvailable = true;
 };
 
 struct DefinedTypesFilter {
     template<typename T>
     struct Acceptor {
-        static const bool IsAccepted = TypeDefiniton<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
+        static const bool IsAccepted = TypeDefinition<T>::IsAvailable && QTypeModuleInfo<T>::IsCore;
     };
 };
 
 // Ignore these types, as incomplete
 #ifdef QT_NO_GEOM_VARIANT
-template<> struct TypeDefiniton<QRect> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QRectF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSize> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QSizeF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLine> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QLineF> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPoint> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QPointF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRect> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRectF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSize> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QSizeF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLine> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QLineF> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPoint> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_BOOTSTRAPPED
-template<> struct TypeDefiniton<QVariantMap> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariantHash> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariantList> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QVariant> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QBitArray> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QUrl> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QEasingCurve> { static const bool IsAvailable = false; };
-template<> struct TypeDefiniton<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantMap> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantHash> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariantList> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QVariant> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QBitArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_REGEXP
-template<> struct TypeDefiniton<QRegExp> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
 #endif
 } // namespace
 
