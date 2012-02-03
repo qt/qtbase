@@ -108,8 +108,8 @@ void QLocalSocketPrivate::_q_winError(ulong windowsError, const QString &functio
 
 QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        handle(INVALID_HANDLE_VALUE),
-       pipeReader(0),
        pipeWriter(0),
+       pipeReader(0),
        error(QLocalSocket::UnknownSocketError),
        state(QLocalSocket::UnconnectedState)
 {

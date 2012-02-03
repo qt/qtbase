@@ -98,7 +98,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
             break;
         DWORD dwError = GetLastError();
         if (dwError != ERROR_PIPE_BUSY || !--attempts) {
-            qErrnoWarning(dwError, "QProcess: CreateNamedPipe failed.", GetLastError());
+            qErrnoWarning(dwError, "QProcess: CreateNamedPipe failed.");
             return;
         }
     }
@@ -115,7 +115,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
                         FILE_FLAG_OVERLAPPED,
                         NULL);
     if (hWrite == INVALID_HANDLE_VALUE) {
-        qWarning("QProcess: CreateFile failed with error code %d.\n", GetLastError());
+        qErrnoWarning("QProcess: CreateFile failed.");
         CloseHandle(hRead);
         return;
     }

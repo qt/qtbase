@@ -84,7 +84,7 @@ public:
         : hPort(INVALID_HANDLE_VALUE)
     {
         setObjectName(QLatin1String("I/O completion port thread"));
-        HANDLE hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0);
+        HANDLE hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
         if (!hIOCP) {
             qErrnoWarning("CreateIoCompletionPort failed.");
             return;
@@ -94,7 +94,7 @@ public:
 
     ~QWinIoCompletionPort()
     {
-        PostQueuedCompletionStatus(hPort, 0, NULL, NULL);
+        PostQueuedCompletionStatus(hPort, 0, 0, NULL);
         QThread::wait();
         CloseHandle(hPort);
     }

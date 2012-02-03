@@ -53,10 +53,7 @@
 // We mean it.
 //
 
-// Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
-#define QT_BUILD_GUI_LIB
 #include <QtGui/private/qfontengine_p.h>
-#undef QT_BUILD_GUI_LIB
 
 #include <QtGui/QImage>
 #include <QtCore/QSharedPointer>

@@ -732,6 +732,8 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
             ipv6only = 1;
             ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
         }
+#else
+        Q_UNUSED(ipv6only)
 #endif
         break;
     case QAbstractSocket::IPv4Protocol:
