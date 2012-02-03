@@ -6290,13 +6290,11 @@ for file in .projects .projects.3; do
             if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_MINGW" != "yes" ]; then
                 continue
             fi
-            SPEC=$XQMAKESPEC ;;
+            ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*|*tools/qdbusxml2cpp*|*tools/qdbuscpp2xml*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*tools/qdoc*|*tools/qdbusxml2cpp*|*tools/qdbuscpp2xml*) ;;
         *) if [ "$CFG_NOPROCESS" = "yes" ]; then
               continue
-           else
-              SPEC=$XQMAKESPEC
            fi;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
@@ -6310,11 +6308,9 @@ for file in .projects .projects.3; do
             [ "$OPT_VERBOSE" = "yes" ] && echo "  skipping $a"
             continue;
         fi
-        QMAKE_SPEC_ARGS="-spec $SPEC"
         echo $ECHO_N "  for $a$ECHO_C"
 
         QMAKE="$outpath/bin/qmake"
-	QMAKE_ARGS="$QMAKE_SWITCHES $QMAKE_SPEC_ARGS"
         if [ "$file" = ".projects.3" ]; then
             echo " (fast)"
 
@@ -6329,7 +6325,7 @@ EOF
             cat >>"${OUTDIR}/Makefile" <<EOF
 QMAKE = "$QMAKE"
 all clean install qmake first Makefile: FORCE
-	\$(QMAKE) $QMAKE_ARGS -o "$OUTDIR" "$a"
+	\$(QMAKE) $QMAKE_SWITCHES -o "$OUTDIR" "$a"
 	cd "$OUTDIR"
 	\$(MAKE) \$@
 
@@ -6337,15 +6333,13 @@ FORCE:
 
 EOF
         else
+            echo
             if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo " (`basename $SPEC`)"
-                echo "$QMAKE" $QMAKE_ARGS -o "$OUTDIR" "$a"
-	    else
-		echo
+                echo "$QMAKE" $QMAKE_SWITCHES -o "$OUTDIR" "$a"
             fi
 
             [ -f "${OUTDIR}/Makefile" ] && chmod +w "${OUTDIR}/Makefile"
-            QTDIR="$outpath" "$QMAKE" $QMAKE_ARGS -o "$OUTDIR" "$a"
+            QTDIR="$outpath" "$QMAKE" $QMAKE_SWITCHES -o "$OUTDIR" "$a"
        fi
     done
 done

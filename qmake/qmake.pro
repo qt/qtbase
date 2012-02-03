@@ -3,6 +3,7 @@
 #once you are boot strapped though, the qmake.pro will offer better coverage of a
 #platform than either of the generic makefiles
 
+option(host_build)
 CONFIG += console bootstrap
 CONFIG -= qt shared app_bundle uic
 DEFINES += QT_BUILD_QMAKE QT_BOOTSTRAPPED

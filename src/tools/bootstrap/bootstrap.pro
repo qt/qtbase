@@ -1,3 +1,4 @@
+option(host_build)
 TEMPLATE = lib
 TARGET = bootstrap
 CONFIG += staticlib

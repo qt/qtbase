@@ -1,4 +1,4 @@
-
+option(host_build)
 TEMPLATE = app
 TARGET = qdbuscpp2xml
 

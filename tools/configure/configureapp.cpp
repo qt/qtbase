@@ -3642,7 +3642,6 @@ void Configure::generateMakefiles()
                     printf("Generating Makefiles...\n");
                     generate = false; // Now Makefiles will be done
                 }
-                // don't pass -spec - .qmake.cache has it already
                 args << "-r";
                 args << (sourcePath + "/qtbase.pro");
                 args << "-o";
@@ -3682,8 +3681,6 @@ void Configure::generateMakefiles()
                     cout << "For " << qPrintable(dirPath + projectName) << endl;
                     args << "-o";
                     args << it->target;
-                    args << "-spec";
-                    args << spec;
                     if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())
                         args << dictionary[ "QMAKEADDITIONALARGS" ];
 

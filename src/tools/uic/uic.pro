@@ -1,3 +1,4 @@
+option(host_build)
 TEMPLATE = app
 TARGET = uic
 
