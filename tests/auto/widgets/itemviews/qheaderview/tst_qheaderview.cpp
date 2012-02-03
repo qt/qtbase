@@ -204,6 +204,7 @@ private slots:
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
+    void ensureNoIndexAtLength();
 
     void initialSortOrderRole();
 
@@ -2156,6 +2157,17 @@ void tst_QHeaderView::QTBUG14242_hideSectionAutoSize()
     QVERIFY(calced_length == afterlength);
 }
 
+void tst_QHeaderView::ensureNoIndexAtLength()
+{
+    QTableView qtv;
+    QStandardItemModel amodel(4, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.verticalHeader();
+    QVERIFY(hv->visualIndexAt(hv->length()) == -1);
+    hv->resizeSection(hv->count() - 1, 0);
+    QVERIFY(hv->visualIndexAt(hv->length()) == -1);
+}
+
 void tst_QHeaderView::initialSortOrderRole()
 {
     QTableView view; // ### Shadowing member view (of type QHeaderView)
@@ -2341,8 +2353,8 @@ void tst_QHeaderView::calculateAndCheck(int cppline, const int precalced_compare
     QVERIFY2(chk_logical           == x[1], verifytext);
     QVERIFY2(chk_sizes             == x[2], verifytext);
     QVERIFY2(chk_hidden_size       == x[3], verifytext);
-    QVERIFY2(chk_lookup_visual     == x[4], verifytext);  // Here the semantic can change. See final note (*).
-    QVERIFY2(chk_lookup_logical    == x[5], verifytext);  // Here the semantic can change. See final note (*).
+    QVERIFY2(chk_lookup_visual     == x[4], verifytext);
+    QVERIFY2(chk_lookup_logical    == x[5], verifytext);
     QVERIFY2(header_lenght         == x[6], verifytext);
 }
 
@@ -2438,10 +2450,10 @@ void tst_QHeaderView::logicalIndexAtTest()
     //qDebug() << "logicalIndexAtTest" << check1 << check2;
     const int precalced_check1 = 106327;
     const int precalced_check2 = 29856418;
-    QVERIFY(precalced_check1 == check1); // Here the semantic can change. See final note (*)
-    QVERIFY(precalced_check2 == check2); // Here the semantic can change. See final note (*)
+    QVERIFY(precalced_check1 == check1);
+    QVERIFY(precalced_check2 == check2);
 
-    const int precalced_results[] = { 1145298384, -1710423344, -650981936, 372919464, 2139446944, 854793816, 12124 };
+    const int precalced_results[] = { 1145298384, -1710423344, -650981936, 372919464, -1544372176, -426463328, 12124 };
     calculateAndCheck(__LINE__, precalced_results);
 }
 
@@ -2466,10 +2478,10 @@ void tst_QHeaderView::visualIndexAtTest()
     //qDebug() << "visualIndexAtTest" << check1 << check2;
     const int precalced_check1 = 72665;
     const int precalced_check2 = 14015890;
-    QVERIFY(precalced_check1 == check1); // Here the semantic can change. See final note (*)
-    QVERIFY(precalced_check2 == check2); // Here the semantic can change. See final note (*)
+    QVERIFY(precalced_check1 == check1);
+    QVERIFY(precalced_check2 == check2);
 
-    const int precalced_results[] = { 1145298384, -1710423344, -1457520212, 169223959, 726651072, -2105938696, 5453 };
+    const int precalced_results[] = { 1145298384, -1710423344, -1457520212, 169223959, 557466160, -324939600, 5453 };
     calculateAndCheck(__LINE__, precalced_results);
 }
 
@@ -2598,7 +2610,7 @@ void tst_QHeaderView::mixedTests()
     model->setRowCount(model->rowCount() - 10);
 
     if (m_using_reset_model) {
-        const int precalced_results[] = { 898296472, 337096378, -543340640, 1, 703951756, 250831536, 9250 };
+        const int precalced_results[] = { 898296472, 337096378, -543340640, 1, -1251526424, -568618976, 9250 };
         calculateAndCheck(__LINE__, precalced_results);
     } else {
         const int precalced_results[] = { 1911338224, 1693514365, -613398968, -1912534953, 1582159424, -1851079000, 9300 };
@@ -2632,9 +2644,6 @@ void tst_QHeaderView::resizeToContentTest()
     const int precalced_results[] =  { -1523279360, -1523279360, -1347156568, 1, 1719705216, 1719705216, 12500 };
     calculateAndCheck(__LINE__, precalced_results);
 }
-
-// (*) Currently qheaderview position lookup acts a bit strange. It can return sections with size 0.
-// This could be changed in the future.
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

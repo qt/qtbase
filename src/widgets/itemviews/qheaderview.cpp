@@ -3496,8 +3496,8 @@ int QHeaderViewPrivate::headerVisualIndexAt(int position) const
         const QHeaderViewPrivate::SectionSpan &currentSection = sectionSpans.at(i);
         int next_span_start_section = span_start_section + currentSection.count;
         int next_span_position = span_position + currentSection.size;
-        if (position == span_position)
-            return span_start_section; // spans with no size
+        if (position == span_position && currentSection.size > 0)
+            return span_start_section;
         if (position > span_position && position < next_span_position) {
             int position_in_span = position - span_position;
             return span_start_section + (position_in_span / currentSection.sectionSize());
