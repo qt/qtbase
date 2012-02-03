@@ -1712,9 +1712,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
         warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
                  pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
     } else {
-        QStack<ScopeBlock> sc = scope_blocks;
-        IteratorBlock *it = iterator;
-        FunctionBlock *fu = function;
         if(flags & (IncludeFlagNewProject|IncludeFlagNewParser)) {
             // The "project's variables" are used in other places (eg. export()) so it's not
             // possible to use "place" everywhere. Instead just set variables and grab them later
@@ -1730,11 +1727,14 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QHash<QString, QString
             }
             place = proj.variables();
         } else {
+            QStack<ScopeBlock> sc = scope_blocks;
+            IteratorBlock *it = iterator;
+            FunctionBlock *fu = function;
             parsed = read(file, place);
+            iterator = it;
+            function = fu;
+            scope_blocks = sc;
         }
-        iterator = it;
-        function = fu;
-        scope_blocks = sc;
     }
     if(parsed) {
         if(place["QMAKE_INTERNAL_INCLUDED_FILES"].indexOf(orig_file) == -1)
