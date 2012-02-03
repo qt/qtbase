@@ -10,7 +10,7 @@ OUTDIR=$4
 
 # build and run a test program
 test -d "$OUTDIR/config.tests/unix/endian" || mkdir -p "$OUTDIR/config.tests/unix/endian"
-"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/config.tests/unix/endian/endiantest.pro" -o "$OUTDIR/config.tests/unix/endian/Makefile" >/dev/null 2>&1
+"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "QMAKE_LFLAGS+=$SYSROOT_FLAG" "$SRCDIR/config.tests/unix/endian/endiantest.pro" -o "$OUTDIR/config.tests/unix/endian/Makefile" >/dev/null 2>&1
 cd "$OUTDIR/config.tests/unix/endian"
 
 
