@@ -95,7 +95,8 @@ QTOBJS= \
 	qmetatype.o \
 	qxmlstream.o \
 	qxmlutils.o \
-	qnumeric.o
+	qnumeric.o \
+	qlogging.o
 
 qmake.exe: $(OBJS) $(QTOBJS)
 	$(LINKQMAKE)
@@ -337,3 +338,6 @@ qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
 
 qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+
+qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlogging.cpp

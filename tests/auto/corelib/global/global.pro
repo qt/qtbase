@@ -6,4 +6,4 @@ SUBDIRS=\
     qglobal \
     qnumeric \
     qrand \
-    qmessagehandler
+    qlogging

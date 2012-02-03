@@ -118,8 +118,8 @@ QTOBJS= \
 	qmetatype.obj \
 	qxmlstream.obj \
 	qxmlutils.obj \
-	qnumeric.obj
-
+	qnumeric.obj \
+	qlogging.obj
 
 first all: qmake.exe
 

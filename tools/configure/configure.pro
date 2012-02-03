@@ -46,6 +46,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.h \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.h \
            $$QT_SOURCE_TREE/src/corelib/global/qnumeric.h \
+           $$QT_SOURCE_TREE/src/corelib/global/qlogging.h \
            $$QT_SOURCE_TREE/src/corelib/io/qbuffer.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.h \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.h \
@@ -89,6 +90,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qnumeric.cpp \
+           $$QT_SOURCE_TREE/src/corelib/global/qlogging.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qbuffer.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdatastream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.cpp \

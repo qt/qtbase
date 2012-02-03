@@ -22,7 +22,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qgl
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
       qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o qvariant.o qvsnprintf.o \
       qlocale.o qlocale_tools.o qlocale_unix.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o \
-      qxmlstream.o qxmlutils.o \
+      qxmlstream.o qxmlutils.o qlogging.o \
       $(QTOBJS)
 
 
@@ -66,6 +66,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
+	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
 	   $(QTSRCS)
 
 CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
@@ -315,6 +316,9 @@ qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
 
 qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+
+qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
 
 #default rules
 .cpp.o:

@@ -1862,27 +1862,32 @@ extern Q_CORE_EXPORT void qWinMessageHandler(QtMsgType t, const QMessageLogConte
                                              const char *str);
 #endif
 
+// defined in qlogging.cpp
+extern Q_CORE_EXPORT QByteArray qMessageFormatString(QtMsgType type, const QMessageLogContext &context,
+                                                     const char *str);
+
 /*!
     \internal
 */
-static void qDefaultMsgHandler(QtMsgType, const char *buf)
+static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const char *buf)
 {
+    QByteArray logMessage = qMessageFormatString(type, context, buf);
 #if defined(Q_OS_WINCE)
-        QString fstr = QString::fromLatin1(buf);
-        fstr += QLatin1Char('\n');
-        OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
+    QString fstr = QString::fromLocal8Bit(logMessage);
+    OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
 #else
-        fprintf(stderr, "%s\n", buf);
-        fflush(stderr);
+    fprintf(stderr, "%s", logMessage.constData());
+    fflush(stderr);
 #endif
 }
 
 /*!
     \internal
 */
-static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &, const char *buf)
+static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 {
-    qDefaultMsgHandler(type, buf);
+    QMessageLogContext emptyContext;
+    qDefaultMessageHandler(type, emptyContext, buf);
 }
 
 QMessageHandler qInstallMessageHandler(QMessageHandler h)
