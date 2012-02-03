@@ -482,8 +482,19 @@ bool QFileDialog::restoreState(const QByteArray &state)
         history.pop_front();
     setHistory(history);
     setDirectory(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
-    if (!d->qFileDialogUi->treeView->header()->restoreState(headerData))
+    QHeaderView *headerView = d->qFileDialogUi->treeView->header();
+    if (!headerView->restoreState(headerData))
         return false;
+
+    QList<QAction*> actions = headerView->actions();
+    QAbstractItemModel *abstractModel = d->model;
+#ifndef QT_NO_PROXYMODEL
+    if (d->proxyModel)
+        abstractModel = d->proxyModel;
+#endif
+    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.count() + 1);
+    for (int i = 1; i < total; ++i)
+        actions.at(i - 1)->setChecked(!headerView->isSectionHidden(i));
 
     setViewMode(ViewMode(viewMode));
     return true;
