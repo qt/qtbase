@@ -106,10 +106,12 @@ public:
             (QMetaMethod::MethodType _methodType,
              const QByteArray& _signature,
              const QByteArray& _returnType = QByteArray(),
-             QMetaMethod::Access _access = QMetaMethod::Public)
+             QMetaMethod::Access _access = QMetaMethod::Public,
+             int _revision = 0)
         : signature(QMetaObject::normalizedSignature(_signature.constData())),
           returnType(QMetaObject::normalizedType(_returnType)),
-          attributes(((int)_access) | (((int)_methodType) << 2))
+          attributes(((int)_access) | (((int)_methodType) << 2)),
+          revision(_revision)
     {
     }
 
@@ -118,6 +120,7 @@ public:
     QList<QByteArray> parameterNames;
     QByteArray tag;
     int attributes;
+    int revision;
 
     QMetaMethod::MethodType methodType() const
     {
@@ -139,10 +142,12 @@ class QMetaPropertyBuilderPrivate
 {
 public:
     QMetaPropertyBuilderPrivate
-            (const QByteArray& _name, const QByteArray& _type, int notifierIdx=-1)
+            (const QByteArray& _name, const QByteArray& _type, int notifierIdx=-1,
+             int _revision = 0)
         : name(_name),
           type(QMetaObject::normalizedType(_type.constData())),
-          flags(Readable | Writable | Scriptable), notifySignal(-1)
+          flags(Readable | Writable | Scriptable), notifySignal(-1),
+          revision(_revision)
     {
         if (notifierIdx >= 0) {
             flags |= Notify;
@@ -154,6 +159,7 @@ public:
     QByteArray type;
     int flags;
     int notifySignal;
+    int revision;
 
     bool flag(int f) const
     {
@@ -193,6 +199,9 @@ public:
         staticMetacallFunction = 0;
     }
 
+    bool hasRevisionedProperties() const;
+    bool hasRevisionedMethods() const;
+
     QByteArray className;
     const QMetaObject *superClass;
     QMetaObjectBuilder::StaticMetacallFunction staticMetacallFunction;
@@ -205,6 +214,24 @@ public:
     QList<const QMetaObject *> relatedMetaObjects;
     int flags;
 };
+
+bool QMetaObjectBuilderPrivate::hasRevisionedProperties() const
+{
+    for (int i = 0; i < properties.size(); ++i) {
+        if (properties.at(i).revision)
+            return true;
+    }
+    return false;
+}
+
+bool QMetaObjectBuilderPrivate::hasRevisionedMethods() const
+{
+    for (int i = 0; i < methods.size(); ++i) {
+        if (methods.at(i).revision)
+            return true;
+    }
+    return false;
+}
 
 /*!
     Constructs a new QMetaObjectBuilder.
@@ -443,6 +470,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod& prototype)
     method.setTag(prototype.tag());
     method.setAccess(prototype.access());
     method.setAttributes(prototype.attributes());
+    method.setRevision(prototype.revision());
     return method;
 }
 
@@ -556,6 +584,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     property.setEnumOrFlag(prototype.isEnumType());
     property.setConstant(prototype.isConstant());
     property.setFinal(prototype.isFinal());
+    property.setRevision(prototype.revision());
     if (prototype.hasNotifySignal()) {
         // Find an existing method for the notify signal, or add a new one.
         QMetaMethod method = prototype.notifySignal();
@@ -1109,6 +1138,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int dataIndex;
     int enumIndex;
     int index;
+    bool hasRevisionedMethods = d->hasRevisionedMethods();
+    bool hasRevisionedProperties = d->hasRevisionedProperties();
     bool hasNotifySignals = false;
 
     if (relocatable &&
@@ -1149,11 +1180,15 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         pmeta->methodCount = d->methods.size();
         pmeta->methodData = dataIndex;
         dataIndex += 5 * d->methods.size();
+        if (hasRevisionedMethods)
+            dataIndex += d->methods.size();
 
         pmeta->propertyCount = d->properties.size();
         pmeta->propertyData = dataIndex;
         dataIndex += 3 * d->properties.size();
         if (hasNotifySignals)
+            dataIndex += d->properties.size();
+        if (hasRevisionedProperties)
             dataIndex += d->properties.size();
 
         pmeta->enumeratorCount = d->enumerators.size();
@@ -1166,8 +1201,12 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     } else {
         dataIndex += 2 * d->classInfoNames.size();
         dataIndex += 5 * d->methods.size();
+        if (hasRevisionedMethods)
+            dataIndex += d->methods.size();
         dataIndex += 3 * d->properties.size();
         if (hasNotifySignals)
+            dataIndex += d->properties.size();
+        if (hasRevisionedProperties)
             dataIndex += d->properties.size();
         dataIndex += 4 * d->enumerators.size();
         dataIndex += 5 * d->constructors.size();
@@ -1241,6 +1280,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         }
         dataIndex += 5;
     }
+    if (hasRevisionedMethods) {
+        for (index = 0; index < d->methods.size(); ++index) {
+            QMetaMethodBuilderPrivate *method = &(d->methods[index]);
+            if (buf)
+                data[dataIndex] = method->revision;
+            ++dataIndex;
+        }
+    }
 
     // Output the properties in the class.
     for (index = 0; index < d->properties.size(); ++index) {
@@ -1271,6 +1318,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 else
                     data[dataIndex] = 0;
             }
+            ++dataIndex;
+        }
+    }
+    if (hasRevisionedProperties) {
+        for (index = 0; index < d->properties.size(); ++index) {
+            QMetaPropertyBuilderPrivate *prop = &(d->properties[index]);
+            if (buf)
+                data[dataIndex] = prop->revision;
             ++dataIndex;
         }
     }
@@ -1506,6 +1561,8 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
         stream << method->parameterNames;
         stream << method->tag;
         stream << method->attributes;
+        if (method->revision)
+            stream << method->revision;
     }
 
     // Write the properties.
@@ -1515,6 +1572,8 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
         stream << property->type;
         stream << property->flags;
         stream << property->notifySignal;
+        if (property->revision)
+            stream << property->revision;
     }
 
     // Write the enumerators.
@@ -1645,6 +1704,8 @@ void QMetaObjectBuilder::deserialize
         stream >> method->parameterNames;
         stream >> method->tag;
         stream >> method->attributes;
+        if (method->attributes & MethodRevisioned)
+            stream >> method->revision;
         if (method->methodType() == QMetaMethod::Constructor) {
             // Cannot add a constructor in this set of methods.
             stream.setStatus(QDataStream::ReadCorruptData);
@@ -1675,6 +1736,8 @@ void QMetaObjectBuilder::deserialize
             stream.setStatus(QDataStream::ReadCorruptData);
             return;
         }
+        if (property->flags & Revisioned)
+            stream >> property->revision;
     }
 
     // Read the enumerators.
@@ -1926,6 +1989,37 @@ void QMetaMethodBuilder::setAttributes(int value)
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
         d->attributes = ((d->attributes & 0x0f) | (value << 4));
+}
+
+/*!
+    Returns the revision of this method.
+
+    \sa setRevision()
+*/
+int QMetaMethodBuilder::revision() const
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (d)
+        return d->revision;
+    return 0;
+
+}
+
+/*!
+    Sets the \a revision of this method.
+
+    \sa revision()
+*/
+void QMetaMethodBuilder::setRevision(int revision)
+{
+    QMetaMethodBuilderPrivate *d = d_func();
+    if (d) {
+        d->revision = revision;
+        if (revision)
+            d->attributes |= MethodRevisioned;
+        else
+            d->attributes &= ~MethodRevisioned;
+    }
 }
 
 /*!
@@ -2368,6 +2462,34 @@ void QMetaPropertyBuilder::setFinal(bool value)
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
         d->setFlag(Final, value);
+}
+
+/*!
+    Returns the revision of this property.
+
+    \sa setRevision()
+*/
+int QMetaPropertyBuilder::revision() const
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d)
+        return d->revision;
+    return 0;
+
+}
+
+/*!
+    Sets the \a revision of this property.
+
+    \sa revision()
+*/
+void QMetaPropertyBuilder::setRevision(int revision)
+{
+    QMetaPropertyBuilderPrivate *d = d_func();
+    if (d) {
+        d->revision = revision;
+        d->setFlag(Revisioned, revision != 0);
+    }
 }
 
 

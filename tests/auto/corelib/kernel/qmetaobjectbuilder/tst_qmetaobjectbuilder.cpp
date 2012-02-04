@@ -91,6 +91,7 @@ class SomethingOfEverything : public QObject
     Q_CLASSINFO("ci_bar", "DEF")
     Q_PROPERTY(QString prop READ prop WRITE setProp NOTIFY propChanged)
     Q_PROPERTY(QString prop2 READ prop WRITE setProp)
+    Q_PROPERTY(QString revisionProp READ prop WRITE setProp REVISION 42)
     Q_PROPERTY(SomethingEnum eprop READ eprop)
     Q_PROPERTY(SomethingFlagEnum fprop READ fprop)
     Q_PROPERTY(QLocale::Language language READ language)
@@ -124,6 +125,7 @@ public:
 public slots:
     void slot1(const QString&) {}
     void slot2(int, const QString&) {}
+    Q_REVISION(24) void revisionSlot() {}
 
 private slots:
     void slot3() {}
@@ -219,6 +221,7 @@ void tst_QMetaObjectBuilder::method()
     QVERIFY(nullMethod.tag().isEmpty());
     QVERIFY(nullMethod.access() == QMetaMethod::Public);
     QCOMPARE(nullMethod.attributes(), 0);
+    QCOMPARE(nullMethod.revision(), 0);
     QCOMPARE(nullMethod.index(), 0);
 
     // Add a method and check its attributes.
@@ -230,6 +233,7 @@ void tst_QMetaObjectBuilder::method()
     QVERIFY(method1.tag().isEmpty());
     QVERIFY(method1.access() == QMetaMethod::Public);
     QCOMPARE(method1.attributes(), 0);
+    QCOMPARE(method1.revision(), 0);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(builder.methodCount(), 1);
 
@@ -242,6 +246,7 @@ void tst_QMetaObjectBuilder::method()
     QVERIFY(method2.tag().isEmpty());
     QVERIFY(method2.access() == QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
+    QCOMPARE(method2.revision(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
 
@@ -256,6 +261,7 @@ void tst_QMetaObjectBuilder::method()
     method1.setTag("tag");
     method1.setAccess(QMetaMethod::Private);
     method1.setAttributes(42);
+    method1.setRevision(123);
 
     // Check that method1 is changed, but method2 is not.
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
@@ -265,6 +271,7 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(method1.tag(), QByteArray("tag"));
     QVERIFY(method1.access() == QMetaMethod::Private);
     QCOMPARE(method1.attributes(), 42);
+    QCOMPARE(method1.revision(), 123);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Method);
@@ -273,6 +280,7 @@ void tst_QMetaObjectBuilder::method()
     QVERIFY(method2.tag().isEmpty());
     QVERIFY(method2.access() == QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
+    QCOMPARE(method2.revision(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
 
@@ -282,6 +290,7 @@ void tst_QMetaObjectBuilder::method()
     method2.setTag("Q_FOO");
     method2.setAccess(QMetaMethod::Protected);
     method2.setAttributes(24);
+    method2.setRevision(321);
 
     // This time check that only method2 changed.
     QCOMPARE(method1.signature(), QByteArray("foo(QString,int)"));
@@ -291,6 +300,7 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(method1.tag(), QByteArray("tag"));
     QVERIFY(method1.access() == QMetaMethod::Private);
     QCOMPARE(method1.attributes(), 42);
+    QCOMPARE(method1.revision(), 123);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Method);
@@ -299,6 +309,7 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(method2.tag(), QByteArray("Q_FOO"));
     QVERIFY(method2.access() == QMetaMethod::Protected);
     QCOMPARE(method2.attributes(), 24);
+    QCOMPARE(method2.revision(), 321);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
 
@@ -313,6 +324,7 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(method2.tag(), QByteArray("Q_FOO"));
     QVERIFY(method2.access() == QMetaMethod::Protected);
     QCOMPARE(method2.attributes(), 24);
+    QCOMPARE(method2.revision(), 321);
     QCOMPARE(method2.index(), 0);
 
     // Perform index-based lookup again.
@@ -542,6 +554,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!nullProp.isConstant());
     QVERIFY(!nullProp.isFinal());
     QCOMPARE(nullProp.index(), 0);
+    QCOMPARE(nullProp.revision(), 0);
 
     // Add a property and check its attributes.
     QMetaPropertyBuilder prop1 = builder.addProperty("foo", "const QString &");
@@ -560,6 +573,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop1.isEnumOrFlag());
     QVERIFY(!prop1.isConstant());
     QVERIFY(!prop1.isFinal());
+    QCOMPARE(prop1.revision(), 0);
     QCOMPARE(prop1.index(), 0);
     QCOMPARE(builder.propertyCount(), 1);
 
@@ -580,6 +594,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isEnumOrFlag());
     QVERIFY(!prop2.isConstant());
     QVERIFY(!prop2.isFinal());
+    QCOMPARE(prop2.revision(), 0);
     QCOMPARE(prop2.index(), 1);
     QCOMPARE(builder.propertyCount(), 2);
 
@@ -603,6 +618,7 @@ void tst_QMetaObjectBuilder::property()
     prop1.setEnumOrFlag(true);
     prop1.setConstant(true);
     prop1.setFinal(true);
+    prop1.setRevision(123);
 
     // Check that prop1 is changed, but prop2 is not.
     QCOMPARE(prop1.name(), QByteArray("foo"));
@@ -619,6 +635,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop1.isEnumOrFlag());
     QVERIFY(prop1.isConstant());
     QVERIFY(prop1.isFinal());
+    QCOMPARE(prop1.revision(), 123);
     QVERIFY(prop2.isReadable());
     QVERIFY(prop2.isWritable());
     QCOMPARE(prop2.name(), QByteArray("bar"));
@@ -633,6 +650,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isEnumOrFlag());
     QVERIFY(!prop2.isConstant());
     QVERIFY(!prop2.isFinal());
+    QCOMPARE(prop2.revision(), 0);
 
     // Remove prop1 and check that prop2 becomes index 0.
     builder.removeProperty(0);
@@ -650,6 +668,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isEnumOrFlag());
     QVERIFY(!prop2.isConstant());
     QVERIFY(!prop2.isFinal());
+    QCOMPARE(prop2.revision(), 0);
     QCOMPARE(prop2.index(), 0);
 
     // Perform index-based lookup again.
@@ -1163,6 +1182,9 @@ static bool sameMethod(const QMetaMethod& method1, const QMetaMethod& method2)
     if (method1.attributes() != method2.attributes())
         return false;
 
+    if (method1.revision() != method2.revision())
+        return false;
+
     return true;
 }
 
@@ -1192,6 +1214,9 @@ static bool sameProperty(const QMetaProperty& prop1, const QMetaProperty& prop2)
         if (prop1.notifySignalIndex() != prop2.notifySignalIndex())
             return false;
     }
+
+    if (prop1.revision() != prop2.revision())
+        return false;
 
     return true;
 }
