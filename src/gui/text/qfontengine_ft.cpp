@@ -49,7 +49,7 @@
 #ifndef QT_NO_FREETYPE
 
 #include "qfile.h"
-#include "qabstractfileengine.h"
+#include "qfileinfo.h"
 #include "qthreadstorage.h"
 #include <qmath.h>
 
@@ -231,7 +231,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
         if (!face_id.filename.isEmpty()) {
-            QFile file(QString::fromUtf8(face_id.filename));
+            QString fileName = QString::fromUtf8(face_id.filename);
             if (face_id.filename.startsWith(":qmemoryfonts/")) {
                 // from qfontdatabase.cpp
                 QByteArray idx = face_id.filename;
@@ -240,7 +240,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
                 newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
                 if (!ok)
                     newFreetype->fontData = QByteArray();
-            } else if (!(file.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
+            } else if (!QFileInfo(fileName).isNativePath()) {
+                QFile file(fileName);
                 if (!file.open(QIODevice::ReadOnly)) {
                     return 0;
                 }

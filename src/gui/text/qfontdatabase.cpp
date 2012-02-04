@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <qdir.h>
 #include "qfontdatabase.h"
 #include "qdebug.h"
 #include "qalgorithms.h"
@@ -47,12 +46,13 @@
 #include "qvarlengtharray.h" // here or earlier - workaround for VC++6
 #include "qthread.h"
 #include "qmutex.h"
+#include "qfile.h"
+#include "qfileinfo.h"
 #include "private/qunicodetables_p.h"
 #include "qfontengine_p.h"
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformfontdatabase_qpa.h>
-#include "qabstractfileengine.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -2203,8 +2203,8 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
 int QFontDatabase::addApplicationFont(const QString &fileName)
 {
     QByteArray data;
-    QFile f(fileName);
-    if (!(f.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
+    if (!QFileInfo(fileName).isNativePath()) {
+        QFile f(fileName);
         if (!f.open(QIODevice::ReadOnly))
             return -1;
         data = f.readAll();
