@@ -130,6 +130,13 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
 #endif
 }
 
+QAbstractFileEngine *QFilePrivate::engine() const
+{
+    if (!fileEngine)
+        fileEngine = QAbstractFileEngine::create(fileName);
+    return fileEngine;
+}
+
 inline bool QFilePrivate::ensureFlushed() const
 {
     // This function ensures that the write buffer has been flushed (const
@@ -424,7 +431,8 @@ QFile::~QFile()
 */
 QString QFile::fileName() const
 {
-    return fileEngine()->fileName(QAbstractFileEngine::DefaultName);
+    Q_D(const QFile);
+    return d->engine()->fileName(QAbstractFileEngine::DefaultName);
 }
 
 /*!
@@ -569,8 +577,9 @@ QFile::setDecodingFunction(DecoderFn f)
 bool
 QFile::exists() const
 {
+    Q_D(const QFile);
     // 0x1000000 = QAbstractFileEngine::Refresh, forcing an update
-    return (fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask
+    return (d->engine()->fileFlags(QAbstractFileEngine::FlagsMask
                                     | QAbstractFileEngine::FileFlag(0x1000000)) & QAbstractFileEngine::ExistsFlag);
 }
 
@@ -608,7 +617,8 @@ QFile::exists(const QString &fileName)
 QString
 QFile::readLink() const
 {
-    return fileEngine()->fileName(QAbstractFileEngine::LinkName);
+    Q_D(const QFile);
+    return d->engine()->fileName(QAbstractFileEngine::LinkName);
 }
 
 /*!
@@ -654,7 +664,7 @@ QFile::remove()
     unsetError();
     close();
     if(error() == QFile::NoError) {
-        if(fileEngine()->remove()) {
+        if (d->engine()->remove()) {
             unsetError();
             return true;
         }
@@ -709,7 +719,7 @@ QFile::rename(const QString &newName)
     unsetError();
     close();
     if(error() == QFile::NoError) {
-        if (fileEngine()->rename(newName)) {
+        if (d->engine()->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
             d->fileEngine->setFileName(newName);
@@ -806,7 +816,7 @@ QFile::link(const QString &linkName)
         return false;
     }
     QFileInfo fi(linkName);
-    if(fileEngine()->link(fi.absoluteFilePath())) {
+    if (d->engine()->link(fi.absoluteFilePath())) {
         unsetError();
         return true;
     }
@@ -861,7 +871,7 @@ QFile::copy(const QString &newName)
     unsetError();
     close();
     if(error() == QFile::NoError) {
-        if(fileEngine()->copy(newName)) {
+        if (d->engine()->copy(newName)) {
             unsetError();
             return true;
         } else {
@@ -996,7 +1006,7 @@ bool QFile::open(OpenMode mode)
     }
 
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
+    if (d->engine()->open(mode | QIODevice::Unbuffered)) {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
@@ -1271,7 +1281,7 @@ QFile::handle() const
 uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 {
     Q_D(QFile);
-    if (fileEngine()
+    if (d->engine()
             && d->fileEngine->supportsExtension(QAbstractFileEngine::MapExtension)) {
         unsetError();
         uchar *address = d->fileEngine->map(offset, size, flags);
@@ -1293,7 +1303,7 @@ uchar *QFile::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 bool QFile::unmap(uchar *address)
 {
     Q_D(QFile);
-    if (fileEngine()
+    if (d->engine()
         && d->fileEngine->supportsExtension(QAbstractFileEngine::UnMapExtension)) {
         unsetError();
         bool success = d->fileEngine->unmap(address);
@@ -1320,7 +1330,7 @@ QFile::resize(qint64 sz)
     Q_D(QFile);
     if (!d->ensureFlushed())
         return false;
-    fileEngine();
+    d->engine();
     if (isOpen() && d->fileEngine->pos() > sz)
         seek(sz);
     if(d->fileEngine->setSize(sz)) {
@@ -1360,7 +1370,8 @@ QFile::resize(const QString &fileName, qint64 sz)
 QFile::Permissions
 QFile::permissions() const
 {
-    QAbstractFileEngine::FileFlags perms = fileEngine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
+    Q_D(const QFile);
+    QAbstractFileEngine::FileFlags perms = d->engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
     return QFile::Permissions((int)perms); //ewww
 }
 
@@ -1389,7 +1400,7 @@ bool
 QFile::setPermissions(Permissions permissions)
 {
     Q_D(QFile);
-    if(fileEngine()->setPermissions(permissions)) {
+    if (d->engine()->setPermissions(permissions)) {
         unsetError();
         return true;
     }
@@ -1490,7 +1501,7 @@ qint64 QFile::size() const
     Q_D(const QFile);
     if (!d->ensureFlushed())
         return 0;
-    d->cachedSize = fileEngine()->size();
+    d->cachedSize = d->engine()->size();
     return d->cachedSize;
 }
 
@@ -1728,18 +1739,6 @@ QFile::writeData(const char *data, qint64 len)
     else
         ::memcpy(writePointer, data, len);
     return len;
-}
-
-/*!
-    \internal
-    Returns the QIOEngine for this QFile object.
-*/
-QAbstractFileEngine *QFile::fileEngine() const
-{
-    Q_D(const QFile);
-    if(!d->fileEngine)
-        d->fileEngine = QAbstractFileEngine::create(d->fileName);
-    return d->fileEngine;
 }
 
 /*!

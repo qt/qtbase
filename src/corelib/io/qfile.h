@@ -54,8 +54,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-
-class QAbstractFileEngine;
+class QTemporaryFile;
 class QFilePrivate;
 
 class Q_CORE_EXPORT QFile : public QIODevice
@@ -174,8 +173,6 @@ public:
     uchar *map(qint64 offset, qint64 size, MemoryMapFlags flags = NoOptions);
     bool unmap(uchar *address);
 
-    virtual QAbstractFileEngine *fileEngine() const;
-
 protected:
 #ifdef QT_NO_QOBJECT
     QFile(QFilePrivate &dd);
@@ -188,6 +185,7 @@ protected:
     qint64 readLineData(char *data, qint64 maxlen);
 
 private:
+    friend class QTemporaryFile;
     Q_DISABLE_COPY(QFile)
 };
 
