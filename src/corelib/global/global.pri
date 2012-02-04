@@ -9,7 +9,8 @@ HEADERS +=  \
         global/qendian.h \
         global/qnumeric_p.h \
         global/qnumeric.h \
-        global/qlogging.h
+        global/qlogging.h \
+        global/qtypeinfo.h
 
 SOURCES += \
 	global/qglobal.cpp \

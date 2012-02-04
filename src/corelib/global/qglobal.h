@@ -1266,122 +1266,6 @@ static inline bool qIsNull(float f)
 #  define Q_DUMMY_COMPARISON_OPERATOR(C)
 #endif
 
-
-/*
-   QTypeInfo     - type trait functionality
-   qIsDetached   - data sharing functionality
-*/
-
-/*
-  The catch-all template.
-*/
-
-template <typename T> inline bool qIsDetached(T &) { return true; }
-
-template <typename T>
-class QTypeInfo
-{
-public:
-    enum {
-        isPointer = false,
-        isComplex = true,
-        isStatic = true,
-        isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false,
-        sizeOf = sizeof(T)
-    };
-};
-
-template<>
-class QTypeInfo<void>
-{
-public:
-    enum {
-        isPointer = false,
-        isComplex = false,
-        isStatic = false,
-        isLarge = false,
-        isDummy = false,
-        sizeOf = 0
-    };
-};
-
-template <typename T>
-class QTypeInfo<T*>
-{
-public:
-    enum {
-        isPointer = true,
-        isComplex = false,
-        isStatic = false,
-        isLarge = false,
-        isDummy = false,
-        sizeOf = sizeof(T*)
-    };
-};
-
-
-#define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
-template <typename T> class CONTAINER; \
-template <typename T> \
-class QTypeInfo< CONTAINER<T> > \
-{ \
-public: \
-    enum { \
-        isPointer = false, \
-        isComplex = true, \
-        isStatic = false, \
-        isLarge = (sizeof(CONTAINER<T>) > sizeof(void*)), \
-        isDummy = false, \
-        sizeOf = sizeof(CONTAINER<T>) \
-    }; \
-};
-
-Q_DECLARE_MOVABLE_CONTAINER(QList)
-Q_DECLARE_MOVABLE_CONTAINER(QVector)
-Q_DECLARE_MOVABLE_CONTAINER(QQueue)
-Q_DECLARE_MOVABLE_CONTAINER(QStack)
-Q_DECLARE_MOVABLE_CONTAINER(QLinkedList)
-Q_DECLARE_MOVABLE_CONTAINER(QSet)
-
-#undef Q_DECLARE_MOVABLE_CONTAINER
-
-/*
-   Specialize a specific type with:
-
-     Q_DECLARE_TYPEINFO(type, flags);
-
-   where 'type' is the name of the type to specialize and 'flags' is
-   logically-OR'ed combination of the flags below.
-*/
-enum { /* TYPEINFO flags */
-    Q_COMPLEX_TYPE = 0,
-    Q_PRIMITIVE_TYPE = 0x1,
-    Q_STATIC_TYPE = 0,
-    Q_MOVABLE_TYPE = 0x2,
-    Q_DUMMY_TYPE = 0x4
-};
-
-#define Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS) \
-class QTypeInfo<TYPE > \
-{ \
-public: \
-    enum { \
-        isComplex = (((FLAGS) & Q_PRIMITIVE_TYPE) == 0), \
-        isStatic = (((FLAGS) & (Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE)) == 0), \
-        isLarge = (sizeof(TYPE)>sizeof(void*)), \
-        isPointer = false, \
-        isDummy = (((FLAGS) & Q_DUMMY_TYPE) != 0), \
-        sizeOf = sizeof(TYPE) \
-    }; \
-    static inline const char *name() { return #TYPE; } \
-}
-
-#define Q_DECLARE_TYPEINFO(TYPE, FLAGS) \
-template<> \
-Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
-
-
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
@@ -1394,54 +1278,6 @@ inline void qSwap(T &value1, T &value2)
     swap(value1, value2);
 #endif
 }
-
-/*
-   Specialize a shared type with:
-
-     Q_DECLARE_SHARED(type);
-
-   where 'type' is the name of the type to specialize.  NOTE: shared
-   types must declare a 'bool isDetached(void) const;' member for this
-   to work.
-*/
-#ifdef QT_NO_STL
-#define Q_DECLARE_SHARED_STL(TYPE)
-#else
-#define Q_DECLARE_SHARED_STL(TYPE) \
-QT_END_NAMESPACE \
-namespace std { \
-    template<> inline void swap<QT_PREPEND_NAMESPACE(TYPE)>(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
-    { swap(value1.data_ptr(), value2.data_ptr()); } \
-} \
-QT_BEGIN_NAMESPACE
-#endif
-
-#define Q_DECLARE_SHARED(TYPE)                                          \
-template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
-template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
-{ qSwap(value1.data_ptr(), value2.data_ptr()); } \
-Q_DECLARE_SHARED_STL(TYPE)
-
-/*
-   QTypeInfo primitive specializations
-*/
-Q_DECLARE_TYPEINFO(bool, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(char, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(signed char, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(uchar, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(short, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(ushort, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(int, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(uint, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(long, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(ulong, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(qint64, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(quint64, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(float, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(double, Q_PRIMITIVE_TYPE);
-#ifndef Q_OS_DARWIN
-Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
-#endif
 
 /*
    These functions make it possible to use standard C++ functions with
@@ -1775,6 +1611,8 @@ QT_END_HEADER
 
 // qDebug and friends
 #include <QtCore/qlogging.h>
+
+#include <QtCore/qtypeinfo.h>
 
 #endif /* __cplusplus */
 
