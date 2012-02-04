@@ -502,6 +502,8 @@ void QGuiApplicationPrivate::init()
     QWindowSystemInterface::sendWindowSystemEvents(QCoreApplicationPrivate::eventDispatcher, QEventLoop::AllEvents);
 }
 
+extern void qt_cleanupFontDatabase();
+
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
     is_app_closing = true;
@@ -525,6 +527,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     delete styleHints;
     delete inputMethod;
+
+    qt_cleanupFontDatabase();
 
     delete platform_integration;
     platform_integration = 0;

@@ -196,7 +196,7 @@ struct QtFontStyle
             // bitfield count-- in while condition does not work correctly in mwccsym2
             count--;
             QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
-            if (integration) { //on shut down there will be some that we don't release.
+            if (integration) {
                 integration->fontDatabase()->releaseHandle(pixelSizes[count].handle);
             }
         }
@@ -795,6 +795,14 @@ static QStringList familyList(const QFontDef &req)
 
 Q_GLOBAL_STATIC(QFontDatabasePrivate, privateDb)
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
+
+// used in qguiapplication.cpp
+void qt_cleanupFontDatabase()
+{
+    QFontDatabasePrivate *db = privateDb();
+    if (db)
+        db->free();
+}
 
 // used in qfontengine_x11.cpp
 QMutex *qt_fontdatabase_mutex()

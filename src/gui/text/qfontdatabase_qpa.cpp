@@ -58,28 +58,33 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
                                    const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
-    //    qDebug() << "Adding font" << familyName << weight << style << pixelSize << antialiased;
-        QtFontStyle::Key styleKey;
-        styleKey.style = style;
-        styleKey.weight = weight;
-        styleKey.stretch = stretch;
-        QtFontFamily *f = d->family(familyName, true);
-        f->fixedPitch = fixedPitch;
+//    qDebug() << "Adding font" << familyName << weight << style << pixelSize << antialiased;
+    QtFontStyle::Key styleKey;
+    styleKey.style = style;
+    styleKey.weight = weight;
+    styleKey.stretch = stretch;
+    QtFontFamily *f = d->family(familyName, true);
+    f->fixedPitch = fixedPitch;
 
-        for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
-            if (writingSystems.supported(QFontDatabase::WritingSystem(i))) {
-                f->writingSystems[i] = QtFontFamily::Supported;
-            } else {
-                f->writingSystems[i] = QtFontFamily::Unsupported;
-            }
+    for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+        if (writingSystems.supported(QFontDatabase::WritingSystem(i))) {
+            f->writingSystems[i] = QtFontFamily::Supported;
+        } else {
+            f->writingSystems[i] = QtFontFamily::Unsupported;
         }
+    }
 
-        QtFontFoundry *foundry = f->foundry(foundryname, true);
-        QtFontStyle *fontStyle = foundry->style(styleKey, QString(), true);
-        fontStyle->smoothScalable = scalable;
-        fontStyle->antialiased = antialiased;
-        QtFontSize *size = fontStyle->pixelSize(pixelSize?pixelSize:SMOOTH_SCALABLE, true);
-        size->handle = handle;
+    QtFontFoundry *foundry = f->foundry(foundryname, true);
+    QtFontStyle *fontStyle = foundry->style(styleKey, QString(), true);
+    fontStyle->smoothScalable = scalable;
+    fontStyle->antialiased = antialiased;
+    QtFontSize *size = fontStyle->pixelSize(pixelSize ? pixelSize : SMOOTH_SCALABLE, true);
+    if (size->handle) {
+        QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
+        if (integration)
+            integration->fontDatabase()->releaseHandle(size->handle);
+    }
+    size->handle = handle;
 }
 
 static QStringList fallbackFamilies(const QString &family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script)
