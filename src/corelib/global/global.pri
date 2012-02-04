@@ -3,6 +3,7 @@
 HEADERS +=  \
 	global/qglobal.h \
         global/qsystemdetection.h \
+        global/qcompilerdetection.h \
 	global/qnamespace.h \
         global/qendian.h \
         global/qnumeric_p.h \
