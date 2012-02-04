@@ -2949,29 +2949,6 @@ arm*)
     ;;
 esac
 
-if [ -d "$relpath/src/corelib/arch/$CFG_ARCH" ]; then
-    if [ "$OPT_VERBOSE" = "yes" ]; then
-        echo "    '$CFG_ARCH' is supported"
-    fi
-else
-    if [ "$OPT_VERBOSE" = "yes" ]; then
-        echo "    '$CFG_ARCH' is unsupported, using 'generic'"
-    fi
-    CFG_ARCH=generic
-fi
-if [ "$CFG_HOST_ARCH" != "$CFG_ARCH" ]; then
-    if [ -d "$relpath/src/corelib/arch/$CFG_HOST_ARCH" ]; then
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    '$CFG_HOST_ARCH' is supported"
-        fi
-    else
-        if [ "$OPT_VERBOSE" = "yes" ]; then
-            echo "    '$CFG_HOST_ARCH' is unsupported, using 'generic'"
-        fi
-        CFG_HOST_ARCH=generic
-    fi
-fi
-
 if [ "$OPT_VERBOSE" = "yes" ]; then
     echo "System architecture: '$CFG_ARCH'"
     if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
