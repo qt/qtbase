@@ -472,11 +472,6 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
     data.lastWriteTime_ = FILETIME();
 }
 
-bool QFileSystemEngine::isCaseSensitive()
-{
-    return false;
-}
-
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
                                                   QFileSystemMetaData &data)

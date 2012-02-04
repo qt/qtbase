@@ -63,7 +63,14 @@ QT_BEGIN_NAMESPACE
 class QFileSystemEngine
 {
 public:
-    static bool isCaseSensitive();
+    static bool isCaseSensitive()
+    {
+#ifndef Q_OS_WIN
+        return true;
+#else
+        return false;
+#endif
+    }
 
     static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data);

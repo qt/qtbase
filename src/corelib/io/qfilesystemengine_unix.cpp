@@ -87,11 +87,6 @@ static inline bool _q_isMacHidden(const char *nativePath)
 }
 #endif
 
-bool QFileSystemEngine::isCaseSensitive()
-{
-    return true;
-}
-
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
