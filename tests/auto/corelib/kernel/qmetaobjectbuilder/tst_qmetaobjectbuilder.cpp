@@ -1341,11 +1341,11 @@ class TestObject : public QObject
     // Manually expanded from Q_OBJECT macro
 public:
     Q_OBJECT_CHECK
+    static QMetaObject staticMetaObject;
     virtual const QMetaObject *metaObject() const;
     virtual void *qt_metacast(const char *);
     virtual int qt_metacall(QMetaObject::Call, int, void **);
 private:
-    Q_DECL_HIDDEN static const QMetaObjectExtraData staticMetaObjectExtraData;
     Q_DECL_HIDDEN static void qt_static_metacall(QObject *, QMetaObject::Call, int, void **);
 
     //Q_PROPERTY(int intProp READ intProp WRITE setIntProp NOTIFY intPropChanged)
@@ -1378,14 +1378,15 @@ private:
     int m_voidSlotIntArg;
 };
 
-const QMetaObjectExtraData TestObject::staticMetaObjectExtraData = {
-    0,  qt_static_metacall
+QMetaObject TestObject::staticMetaObject = {
+    { 0, 0, 0, 0 }
 };
 
 TestObject::TestObject(QObject *parent)
     : QObject(parent), m_metaObject(buildMetaObject()),
       m_intProp(-1), m_voidSlotIntArg(-1)
 {
+    staticMetaObject = *m_metaObject;
 }
 
 TestObject::~TestObject()
@@ -1481,9 +1482,6 @@ void TestObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
           }
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
-        // This code is currently unreachable because it's only used by the
-        // template-based versions of connect() and disconnect(), which don't
-        // work with dynamically generated meta-objects (see test).
         int *result = reinterpret_cast<int *>(_a[0]);
         void **func = reinterpret_cast<void **>(_a[1]);
         {
@@ -1504,7 +1502,6 @@ void TestObject::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
                 *result = 2;
             }
         }
-        qFatal("You forgot to add one or more IndexOfMethod cases");
     }
 }
 
@@ -1668,11 +1665,22 @@ void tst_QMetaObjectBuilder::usage_templateConnect()
 {
     QScopedPointer<TestObject> testObject(new TestObject);
 
-    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in QObject");
     QMetaObject::Connection con = QObject::connect(testObject.data(), &TestObject::intPropChanged,
                                                    testObject.data(), &TestObject::voidSlotInt);
-    QEXPECT_FAIL("", "template-based connect() fails because meta-object is deduced at compile-time", Abort);
     QVERIFY(con);
+
+    QVERIFY(testObject->voidSlotIntArgument() == -1);
+    testObject->setProperty("intProp", 123);
+    QCOMPARE(testObject->voidSlotIntArgument(), 123);
+
+    QVERIFY(QObject::disconnect(testObject.data(), &TestObject::intPropChanged,
+                                testObject.data(), &TestObject::voidSlotInt));
+
+    // Something that isn't a signal
+    QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in TestObject");
+    con = QObject::connect(testObject.data(), &TestObject::setIntProp,
+                           testObject.data(), &TestObject::intPropChanged);
+    QVERIFY(!con);
 }
 
 QTEST_MAIN(tst_QMetaObjectBuilder)
