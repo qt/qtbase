@@ -19,7 +19,6 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_arch.h \
                        arch/qatomic_generic.h \
                        arch/qatomic_powerpc.h \
-                       arch/qatomic_arm.h \
                        arch/qatomic_armv5.h \
                        arch/qatomic_armv6.h \
                        arch/qatomic_armv7.h \

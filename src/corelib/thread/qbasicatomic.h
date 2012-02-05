@@ -48,15 +48,19 @@
 #  include <QtCore/qatomic_bootstrap.h>
 #elif defined(Q_CC_MSVC)
 #  include <QtCore/qatomic_msvc.h>
-#elif defined(__arm__) || defined(__TARGET_ARCH_ARM)
-#  include <QtCore/qatomic_arm.h>
-#elif defined(__i386) || defined(__i386__)
-#  include <QtCore/qatomic_i386.h>
-#elif defined(__ia64) || defined(__ia64__)
+#elif defined(Q_PROCESSOR_ARM_V7)
+# include "QtCore/qatomic_armv7.h"
+#elif defined(Q_PROCESSOR_ARM_V6)
+# include "QtCore/qatomic_armv6.h"
+#elif defined(Q_PROCESSOR_ARM_V5)
+# include "QtCore/qatomic_armv5.h"
+#elif defined(Q_PROCESSOR_IA64)
 #  include "QtCore/qatomic_ia64.h"
-#elif defined(__mips) || defined(__mips__)
+#elif defined(Q_PROCESSOR_MIPS)
 #  include "QtCore/qatomic_mips.h"
-#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64)
+#elif defined(Q_PROCESSOR_X86_32)
+#  include <QtCore/qatomic_i386.h>
+#elif defined(Q_PROCESSOR_X86_64)
 #  include <QtCore/qatomic_x86_64.h>
 #elif defined(Q_COMPILER_ATOMICS) && defined(Q_COMPILER_CONSTEXPR)
 #  include <QtCore/qatomic_cxx11.h>
