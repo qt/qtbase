@@ -400,7 +400,7 @@ QString QJsonValue::toString() const
     if (t != String)
         return QString();
     stringData->ref.ref(); // the constructor below doesn't add a ref.
-    return QString(*(const QConstStringData<1> *)stringData);
+    return QString(*(const QStaticStringData<1> *)stringData);
 }
 
 /*!
