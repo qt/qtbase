@@ -42,7 +42,7 @@
 #ifndef QTCONCURRENT_RUNBASE_H
 #define QTCONCURRENT_RUNBASE_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 

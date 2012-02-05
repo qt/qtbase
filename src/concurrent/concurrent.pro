@@ -31,6 +31,7 @@ SOURCES += \
         qtconcurrentexception.cpp
 
 HEADERS += \
+        qtconcurrent_global.h \
         qfuture.h \
         qfutureinterface.h \
         qfuturesynchronizer.h \

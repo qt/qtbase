@@ -43,7 +43,7 @@
 #ifndef QTCONCURRENT_STOREDFUNCTIONCALL_H
 #define QTCONCURRENT_STOREDFUNCTIONCALL_H
 
-#include <QtCore/qglobal.h>
+#include <QtConcurrent/qtconcurrent_global.h>
 
 #ifndef QT_NO_CONCURRENT
 #include <QtConcurrent/qtconcurrentrunbase.h>

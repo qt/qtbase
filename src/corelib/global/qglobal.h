@@ -671,11 +671,6 @@ class QDataStream;
 #      define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    endif
 #    define Q_TEMPLATEDLL
-#    if defined(QT_BUILD_CONCURRENT_LIB)
-#      define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
-#    endif
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
 #    define Q_GUI_EXPORT Q_DECL_IMPORT
@@ -697,7 +692,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    define Q_COMPAT_EXPORT Q_DECL_IMPORT
 #    define Q_DBUS_EXPORT Q_DECL_IMPORT
-#    define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
 #    define Q_TEMPLATEDLL
 #  endif
 #  define Q_NO_DECLARED_NOT_DEFINED
@@ -731,7 +725,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
 #    define Q_COMPAT_EXPORT Q_DECL_EXPORT
 #    define Q_DBUS_EXPORT Q_DECL_EXPORT
-#    define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
@@ -752,7 +745,6 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT
 #    define Q_COMPAT_EXPORT
 #    define Q_DBUS_EXPORT
-#    define Q_CONCURRENT_EXPORT
 #  endif
 #endif
 
@@ -1751,17 +1743,6 @@ Q_CORE_EXPORT void qsrand(uint seed);
 Q_CORE_EXPORT int qrand();
 
 #define QT_MODULE(x)
-
-#ifdef QT_NO_CONCURRENT
-#  define QT_NO_QFUTURE
-#endif
-
-// gcc 3 version has problems with some of the
-// map/filter overloads.
-#if defined(Q_CC_GNU) && (__GNUC__ < 4)
-#  define QT_NO_CONCURRENT_MAP
-#  define QT_NO_CONCURRENT_FILTER
-#endif
 
 #ifdef Q_OS_QNX
 // QNX doesn't have SYSV style shared memory. Multiprocess QWS apps,

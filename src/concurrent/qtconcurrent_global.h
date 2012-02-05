@@ -39,84 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QFUTRUESYNCHRONIZER_H
-#define QFUTRUESYNCHRONIZER_H
+#ifndef QTCONCURRENT_GLOBAL_H
+#define QTCONCURRENT_GLOBAL_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
+#include <QtCore/qglobal.h>
 
-#include <QtConcurrent/qfuture.h>
+#ifdef QT_NO_CONCURRENT
+#  define QT_NO_QFUTURE
+#endif
 
-#ifndef QT_NO_CONCURRENT
+#if defined(Q_OS_WIN) && !defined(QT_NODLL)
+#  if defined(QT_MAKEDLL)
+#    if defined(QT_BUILD_CONCURRENT_LIB)
+#      define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
+#    endif
+#  elif defined(QT_DLL)
+#    define Q_CONCURRENT_EXPORT Q_DECL_IMPORT
+#  endif
+#endif
 
-QT_BEGIN_HEADER
-QT_BEGIN_NAMESPACE
+#if !defined(Q_CONCURRENT_EXPORT)
+#  if defined(QT_SHARED)
+#    define Q_CONCURRENT_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_CONCURRENT_EXPORT
+#  endif
+#endif
 
+// gcc 3 version has problems with some of the
+// map/filter overloads.
+#if defined(Q_CC_GNU) && (__GNUC__ < 4)
+#  define QT_NO_CONCURRENT_MAP
+#  define QT_NO_CONCURRENT_FILTER
+#endif
 
-template <typename T>
-class QFutureSynchronizer
-{
-    Q_DISABLE_COPY(QFutureSynchronizer)
+#if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
+#  define QT_TYPENAME
+#else
+#  define QT_TYPENAME typename
+#endif
 
-public:
-    QFutureSynchronizer() : m_cancelOnWait(false) { }
-    explicit QFutureSynchronizer(const QFuture<T> &future)
-        : m_cancelOnWait(false)
-    { addFuture(future); }
-    ~QFutureSynchronizer()  { waitForFinished(); }
-
-    void setFuture(const QFuture<T> &future)
-    {
-        waitForFinished();
-        m_futures.clear();
-        addFuture(future);
-    }
-
-    void addFuture(const QFuture<T> &future)
-    {
-        m_futures.append(future);
-    }
-
-    void waitForFinished()
-    {
-        if (m_cancelOnWait) {
-            for (int i = 0; i < m_futures.count(); ++i) {
-                 m_futures[i].cancel();
-            }
-        }
-        
-        for (int i = 0; i < m_futures.count(); ++i) {
-             m_futures[i].waitForFinished();
-         }
-    }
-
-    void clearFutures()
-    {
-        m_futures.clear();
-    }
-
-    QList<QFuture<T> > futures() const
-    {
-        return m_futures;
-    }
-
-    void setCancelOnWait(bool enabled)
-    {
-        m_cancelOnWait = enabled;
-    }
-
-    bool cancelOnWait() const
-    {
-        return m_cancelOnWait;
-    }
-
-protected:
-    QList<QFuture<T> > m_futures;
-    bool m_cancelOnWait;
-};
-
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif // QT_NO_CONCURRENT
-
-#endif // QFUTRUESYNCHRONIZER_H
+#endif // include guard
