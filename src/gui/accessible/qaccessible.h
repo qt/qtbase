@@ -292,6 +292,7 @@ public:
         // Additional Qt roles where enum value does not map directly to MSAA:
         LayeredPane    = 0x0000003F,
         Terminal       = 0x00000040,
+        Desktop        = 0x00000041,
         UserRole       = 0x0000ffff
     };
 
