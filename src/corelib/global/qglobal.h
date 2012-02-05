@@ -64,6 +64,7 @@
 
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qcompilerdetection.h>
+#include <QtCore/qprocessordetection.h>
 
 #ifdef __cplusplus
 
