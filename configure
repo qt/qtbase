@@ -727,6 +727,8 @@ CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
 CFG_WAYLAND=auto
+CFG_LIBUDEV=auto
+CFG_EVDEV=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1839,6 +1841,20 @@ while [ "$#" -gt 0 ]; do
     wayland)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_WAYLAND="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    libudev)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_LIBUDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    evdev)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_EVDEV="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5648,6 +5664,32 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         else
             CFG_WAYLAND=no
             QMakeVar add DEFINES QT_NO_WAYLAND
+        fi
+    fi
+
+    if [ "$CFG_LIBUDEV" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/libudev "libudev" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_LIBUDEV=yes
+            QT_CONFIG="$QT_CONFIG libudev"
+        elif [ "$CFG_LIBUDEV" = "yes" ]; then
+            echo "The libudev functionality test failed!"
+            exit 1
+        else
+            CFG_LIBUDEV=no
+            QMakeVar add DEFINES QT_NO_LIBUDEV
+        fi
+    fi
+
+    if [ "$CFG_EVDEV" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/evdev "evdev" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_EVDEV=yes
+            QT_CONFIG="$QT_CONFIG evdev"
+        elif [ "$CFG_EVDEV" = "yes" ]; then
+            echo "The evdev functionality test failed!"
+            exit 1
+        else
+            CFG_EVDEV=no
+            QMakeVar add DEFINES QT_NO_EVDEV
         fi
     fi
 

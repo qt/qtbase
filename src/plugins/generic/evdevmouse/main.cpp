@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,66 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHSCREEN_H
-#define QTOUCHSCREEN_H
-
-#include <QObject>
-#include <QString>
-#include <QList>
-#include <QThread>
-#include <QWindowSystemInterface>
-
-QT_BEGIN_HEADER
+#include <qgenericplugin_qpa.h>
+#include "qevdevmouse.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-class QTouchScreenData;
-
-class QTouchScreenObserver
+class QEvdevMousePlugin : public QGenericPlugin
 {
 public:
-    virtual void touch_configure(int x_min, int x_max, int y_min, int y_max,
-                                 int pressure_min, int pressure_max, const QString &dev_name) = 0;
-    virtual void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points) = 0;
+    QEvdevMousePlugin();
+
+    QStringList keys() const;
+    QObject* create(const QString &key, const QString &specification);
 };
 
-class QTouchScreenHandler : public QObject
+QEvdevMousePlugin::QEvdevMousePlugin()
+    : QGenericPlugin()
 {
-    Q_OBJECT
+}
 
-public:
-    QTouchScreenHandler(const QString &spec = QString());
-    ~QTouchScreenHandler();
-    void addObserver(QTouchScreenObserver *observer);
-
-private slots:
-    void readData();
-
-private:
-    void try_udev(QString *path);
-
-    QSocketNotifier *m_notify;
-    int m_fd;
-    QTouchScreenData *d;
-};
-
-class QTouchScreenHandlerThread : public QThread
+QStringList QEvdevMousePlugin::keys() const
 {
-public:
-    QTouchScreenHandlerThread(const QString &spec, QTouchScreenObserver *observer);
-    ~QTouchScreenHandlerThread();
-    void run();
-    QTouchScreenHandler *handler() { return m_handler; }
+    return (QStringList()
+            << QLatin1String("EvdevMouse"));
+}
 
-private:
-    QString m_spec;
-    QTouchScreenHandler *m_handler;
-    QTouchScreenObserver *m_observer;
-};
+QObject* QEvdevMousePlugin::create(const QString &key,
+                                   const QString &specification)
+{
+    if (!key.compare(QLatin1String("EvdevMouse"), Qt::CaseInsensitive))
+        return new QEvdevMouseHandler(key, specification);
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(qevdevmouseplugin, QEvdevMousePlugin)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QTOUCHSCREEN_H

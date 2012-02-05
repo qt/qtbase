@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QTOUCHEVENTSENDERQPA_H
-#define QTOUCHEVENTSENDERQPA_H
+#include <linux/input.h>
 
-#include "qtouchscreen.h"
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QTouchDevice;
-
-class QTouchEventSenderQPA : public QTouchScreenObserver
-{
-public:
-    QTouchEventSenderQPA(const QString &spec = QString());
-    void touch_configure(int x_min, int x_max, int y_min, int y_max,
-                         int pressure_min, int pressure_max, const QString &dev_name);
-    void touch_point(const QList<QWindowSystemInterface::TouchPoint> &points);
-
-private:
-    bool m_forceToActiveWindow;
-    int hw_range_x_min;
-    int hw_range_x_max;
-    int hw_range_y_min;
-    int hw_range_y_max;
-    int hw_pressure_min;
-    int hw_pressure_max;
-    QString hw_dev_name;
-    QTouchDevice *m_device;
+enum {
+    e1 = ABS_MT_POSITION_X,
+    e2 = ABS_MT_TRACKING_ID,
+    e3 = ABS_PRESSURE,
+    e4 = ABS_X,
+    e5 = REL_X,
+    e6 = SYN_REPORT,
+    e7 = SYN_MT_REPORT
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QTOUCHEVENTSENDERQPA_H
+int main()
+{
+    ::input_event buf[32];
+    (void) buf;
+    return 0;
+}

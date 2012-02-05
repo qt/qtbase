@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the plugins module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,42 +39,56 @@
 **
 ****************************************************************************/
 
-#include <qgenericplugin_qpa.h>
-#include "qtouchscreen.h"
-#include "qtoucheventsenderqpa.h"
+#ifndef QEVDEVTOUCH_H
+#define QEVDEVTOUCH_H
+
+#include <QObject>
+#include <QString>
+#include <QList>
+#include <QThread>
+#include <QWindowSystemInterface>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTouchScreenPlugin : public QGenericPlugin
-{
-public:
-    QTouchScreenPlugin();
+class QSocketNotifier;
+class QTouchScreenData;
 
-    QStringList keys() const;
-    QObject* create(const QString &key, const QString &specification);
+class QTouchScreenHandler : public QObject
+{
+    Q_OBJECT
+
+public:
+    QTouchScreenHandler(const QString &spec = QString());
+    ~QTouchScreenHandler();
+
+private slots:
+    void readData();
+
+private:
+    void pathFromUdev(QString *path);
+
+    QSocketNotifier *m_notify;
+    int m_fd;
+    QTouchScreenData *d;
 };
 
-QTouchScreenPlugin::QTouchScreenPlugin()
+class QTouchScreenHandlerThread : public QThread
 {
-}
+public:
+    QTouchScreenHandlerThread(const QString &spec);
+    ~QTouchScreenHandlerThread();
+    void run();
+    QTouchScreenHandler *handler() { return m_handler; }
 
-QStringList QTouchScreenPlugin::keys() const
-{
-    return QStringList() << "LinuxTouchScreen";
-}
-
-QObject* QTouchScreenPlugin::create(const QString &key,
-                                   const QString &spec)
-{
-    if (!key.compare(QLatin1String("LinuxTouchScreen"), Qt::CaseInsensitive)) {
-        QTouchScreenObserver *obs = new QTouchEventSenderQPA(spec);
-        QTouchScreenHandlerThread *h = new QTouchScreenHandlerThread(spec, obs);
-        return h;
-    }
-
-    return 0;
-    }
-
-Q_EXPORT_PLUGIN2(qtouchscreenplugin, QTouchScreenPlugin)
+private:
+    QString m_spec;
+    QTouchScreenHandler *m_handler;
+};
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QEVDEVTOUCH_H

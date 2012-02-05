@@ -39,13 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qtouchscreen.h"
+#include "qevdevtouch.h"
 #include <QStringList>
 #include <QHash>
 #include <QSocketNotifier>
+#include <QGuiApplication>
+#include <QDebug>
 #include <QtCore/private/qcore_unix_p.h>
+#include <QtPlatformSupport/private/qudevhelper_p.h>
 #include <linux/input.h>
-#include <libudev.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,6 +79,8 @@ public:
     Contact m_currentData;
 
     int findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist);
+    void reportPoints();
+    void registerDevice();
 
     int hw_range_x_min;
     int hw_range_x_max;
@@ -85,8 +89,8 @@ public:
     int hw_pressure_min;
     int hw_pressure_max;
     QString hw_name;
-
-    QList<QTouchScreenObserver *> m_observers;
+    bool m_forceToActiveWindow;
+    QTouchDevice *m_device;
 };
 
 QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args)
@@ -96,23 +100,37 @@ QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList
       hw_range_y_min(0), hw_range_y_max(0),
       hw_pressure_min(0), hw_pressure_max(0)
 {
-    Q_UNUSED(args);
+    m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
+}
+
+void QTouchScreenData::registerDevice()
+{
+    m_device = new QTouchDevice;
+    m_device->setName(hw_name);
+    m_device->setType(QTouchDevice::TouchScreen);
+    m_device->setCapabilities(QTouchDevice::Position | QTouchDevice::Area);
+    if (hw_pressure_max > hw_pressure_min)
+        m_device->setCapabilities(m_device->capabilities() | QTouchDevice::Pressure);
+
+    QWindowSystemInterface::registerTouchDevice(m_device);
 }
 
 QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
     : m_notify(0), m_fd(-1), d(0)
 {
-    setObjectName(QLatin1String("Linux Touch Handler"));
+    setObjectName(QLatin1String("Evdev Touch Handler"));
 
-    QString dev = QLatin1String("/dev/input/event5");
-    try_udev(&dev);
+    QString dev;
+    q_udev_devicePath(UDev_Touchpad | UDev_Touchscreen, &dev);
+    if (dev.isEmpty())
+        dev = QLatin1String("/dev/input/event0");
 
     QStringList args = spec.split(QLatin1Char(':'));
     for (int i = 0; i < args.count(); ++i)
         if (args.at(i).startsWith(QLatin1String("/dev/")))
             dev = args.at(i);
 
-    qDebug("Using device '%s'", qPrintable(dev));
+    qDebug("evdevtouch: Using device %s", qPrintable(dev));
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
 
     if (m_fd >= 0) {
@@ -149,6 +167,8 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         d->hw_name = QString::fromLocal8Bit(name);
         qDebug("device name: %s", name);
     }
+
+    d->registerDevice();
 }
 
 QTouchScreenHandler::~QTouchScreenHandler()
@@ -157,38 +177,6 @@ QTouchScreenHandler::~QTouchScreenHandler()
         QT_CLOSE(m_fd);
 
     delete d;
-}
-
-void QTouchScreenHandler::addObserver(QTouchScreenObserver *observer)
-{
-    if (!d || !observer)
-        return;
-    d->m_observers.append(observer);
-    observer->touch_configure(d->hw_range_x_min, d->hw_range_x_max,
-                              d->hw_range_y_min, d->hw_range_y_max,
-                              d->hw_pressure_min, d->hw_pressure_max,
-                              d->hw_name);
-}
-
-void QTouchScreenHandler::try_udev(QString *path)
-{
-    *path = QString();
-    udev *u = udev_new();
-    udev_enumerate *ue = udev_enumerate_new(u);
-    udev_enumerate_add_match_subsystem(ue, "input");
-    udev_enumerate_add_match_property(ue, "ID_INPUT_TOUCHPAD", "1");
-    udev_enumerate_scan_devices(ue);
-    udev_list_entry *entry;
-    udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(ue)) {
-        const char *syspath = udev_list_entry_get_name(entry);
-        udev_device *udevice = udev_device_new_from_syspath(u, syspath);
-        QString candidate = QString::fromLocal8Bit(udev_device_get_devnode(udevice));
-        udev_device_unref(udevice);
-        if (path->isEmpty() && candidate.startsWith("/dev/input/event"))
-            *path = candidate;
-    }
-    udev_enumerate_unref(ue);
-    udev_unref(u);
 }
 
 void QTouchScreenHandler::readData()
@@ -289,7 +277,7 @@ void QTouchScreenData::processInputEvent(input_event *data)
             tp.state = contact.state;
             combinedStates |= tp.state;
 
-            // Store the HW coordinates. Observers can then map it to screen space or something else.
+            // Store the HW coordinates for now, will be updated later.
             tp.area = QRectF(0, 0, contact.maj, contact.maj);
             tp.area.moveCenter(QPoint(contact.x, contact.y));
             tp.pressure = contact.pressure;
@@ -307,10 +295,8 @@ void QTouchScreenData::processInputEvent(input_event *data)
         m_lastContacts = m_contacts;
         m_contacts.clear();
 
-        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary) {
-            for (int i = 0; i < m_observers.count(); ++i)
-                m_observers.at(i)->touch_point(m_touchPoints);
-        }
+        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
+            reportPoints();
     }
 
     m_lastEventType = data->type;
@@ -369,10 +355,48 @@ void QTouchScreenData::assignIds()
     m_contacts = newContacts;
 }
 
+void QTouchScreenData::reportPoints()
+{
+    QRect winRect;
+    if (m_forceToActiveWindow) {
+        QWindow *win = QGuiApplication::activeWindow();
+        if (!win)
+            return;
+        winRect = win->geometry();
+    } else {
+        winRect = QGuiApplication::primaryScreen()->geometry();
+    }
 
-QTouchScreenHandlerThread::QTouchScreenHandlerThread(const QString &spec,
-                                                     QTouchScreenObserver *observer)
-    : m_spec(spec), m_handler(0), m_observer(observer)
+    const int hw_w = hw_range_x_max - hw_range_x_min;
+    const int hw_h = hw_range_y_max - hw_range_y_min;
+
+    // Map the coordinates based on the normalized position. QPA expects 'area'
+    // to be in screen coordinates.
+    const int pointCount = m_touchPoints.count();
+    for (int i = 0; i < pointCount; ++i) {
+        QWindowSystemInterface::TouchPoint &tp(m_touchPoints[i]);
+
+        // Generate a screen position that is always inside the active window
+        // or the primary screen.
+        const int wx = winRect.left() + int(tp.normalPosition.x() * winRect.width());
+        const int wy = winRect.top() + int(tp.normalPosition.y() * winRect.height());
+        const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
+        tp.area = QRect(0, 0, tp.area.width() * sizeRatio, tp.area.height() * sizeRatio);
+        tp.area.moveCenter(QPoint(wx, wy));
+
+        // Calculate normalized pressure.
+        if (!hw_pressure_min && !hw_pressure_max)
+            tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
+        else
+            tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
+    }
+
+    QWindowSystemInterface::handleTouchEvent(0, m_device, m_touchPoints);
+}
+
+
+QTouchScreenHandlerThread::QTouchScreenHandlerThread(const QString &spec)
+    : m_spec(spec), m_handler(0)
 {
     start();
 }
@@ -386,7 +410,6 @@ QTouchScreenHandlerThread::~QTouchScreenHandlerThread()
 void QTouchScreenHandlerThread::run()
 {
     m_handler = new QTouchScreenHandler(m_spec);
-    m_handler->addObserver(m_observer);
     exec();
     delete m_handler;
     m_handler = 0;

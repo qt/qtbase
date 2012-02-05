@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,11 @@
 **
 ****************************************************************************/
 
-#include <qgenericplugin_qpa.h>
-#include "qlinuxinput.h"
+#include <libudev.h>
 
-QT_BEGIN_NAMESPACE
-
-class QLinuxInputPlugin : public QGenericPlugin
+int main()
 {
-public:
-    QLinuxInputPlugin();
-
-    QStringList keys() const;
-    QObject* create(const QString &key, const QString &specification);
-};
-
-QLinuxInputPlugin::QLinuxInputPlugin()
-    : QGenericPlugin()
-{
-}
-
-QStringList QLinuxInputPlugin::keys() const
-{
-    return (QStringList()
-            << QLatin1String("LinuxInputMouse"));
-}
-
-QObject* QLinuxInputPlugin::create(const QString &key,
-                                                 const QString &specification)
-{
-    if (!key.compare(QLatin1String("LinuxInputMouse"), Qt::CaseInsensitive))
-        return new QLinuxInputMouseHandler(key, specification);
+    udev *u = udev_new();
+    udev_unref(u);
     return 0;
-    }
-
-Q_EXPORT_PLUGIN2(qlinuxinputplugin, QLinuxInputPlugin)
-
-QT_END_NAMESPACE
+}

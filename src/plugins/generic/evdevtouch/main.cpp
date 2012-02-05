@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef QLINUXINPUT_H
-#define QLINUXINPUT_H
-
-#include <qobject.h>
-#include <Qt>
-#include <termios.h>
-
-QT_BEGIN_HEADER
+#include <qgenericplugin_qpa.h>
+#include "qevdevtouch.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSocketNotifier;
-
-class QLinuxInputMouseHandlerData;
-
-class QLinuxInputMouseHandler : public QObject
+class QTouchScreenPlugin : public QGenericPlugin
 {
-    Q_OBJECT
 public:
-    QLinuxInputMouseHandler(const QString &key, const QString &specification);
-    ~QLinuxInputMouseHandler();
+    QTouchScreenPlugin();
 
-private slots:
-    void readMouseData();
-
-private:
-    void sendMouseEvent(int x, int y, Qt::MouseButtons buttons);
-    QSocketNotifier *          m_notify;
-    int                        m_fd;
-    int                        m_x, m_y;
-    int m_prevx, m_prevy;
-    int m_xoffset, m_yoffset;
-    int m_smoothx, m_smoothy;
-    Qt::MouseButtons           m_buttons;
-    bool m_compression;
-    bool m_smooth;
-    int m_jitterLimitSquared;
-    QLinuxInputMouseHandlerData *d;
+    QStringList keys() const;
+    QObject* create(const QString &key, const QString &specification);
 };
 
+QTouchScreenPlugin::QTouchScreenPlugin()
+{
+}
+
+QStringList QTouchScreenPlugin::keys() const
+{
+    return QStringList() << "EvdevTouch";
+}
+
+QObject* QTouchScreenPlugin::create(const QString &key,
+                                    const QString &spec)
+{
+    if (!key.compare(QLatin1String("EvdevTouch"), Qt::CaseInsensitive))
+        return new QTouchScreenHandlerThread(spec);
+
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(qevdevtouchplugin, QTouchScreenPlugin)
+
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QLINUXINPUT_H
