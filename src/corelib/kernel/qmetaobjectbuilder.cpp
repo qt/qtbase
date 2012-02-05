@@ -1132,8 +1132,9 @@ static QByteArray buildParameterNames
 // build the QMetaObject.  Returns -1 if the metaobject if
 // relocatable is set, but the metaobject contains extradata.
 static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
-                           bool relocatable)
+                           int expectedSize, bool relocatable)
 {
+    Q_UNUSED(expectedSize); // Avoid warning in release mode
     int size = 0;
     int dataIndex;
     int enumIndex;
@@ -1248,6 +1249,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int empty = buildString(buf, str, &offset, QByteArray(), -1);
 
     // Output the class infos,
+    Q_ASSERT(!buf || dataIndex == pmeta->classInfoData);
     for (index = 0; index < d->classInfoNames.size(); ++index) {
         int name = buildString(buf, str, &offset, d->classInfoNames[index], empty);
         int value = buildString(buf, str, &offset, d->classInfoValues[index], empty);
@@ -1259,6 +1261,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Output the methods in the class.
+    Q_ASSERT(!buf || dataIndex == pmeta->methodData);
     for (index = 0; index < d->methods.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->methods[index]);
         int sig = buildString(buf, str, &offset, method->signature, empty);
@@ -1290,6 +1293,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Output the properties in the class.
+    Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
     for (index = 0; index < d->properties.size(); ++index) {
         QMetaPropertyBuilderPrivate *prop = &(d->properties[index]);
         int name = buildString(buf, str, &offset, prop->name, empty);
@@ -1331,6 +1335,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Output the enumerators in the class.
+    Q_ASSERT(!buf || dataIndex == pmeta->enumeratorData);
     for (index = 0; index < d->enumerators.size(); ++index) {
         QMetaEnumBuilderPrivate *enumerator = &(d->enumerators[index]);
         int name = buildString(buf, str, &offset, enumerator->name, empty);
@@ -1355,6 +1360,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Output the constructors in the class.
+    Q_ASSERT(!buf || dataIndex == pmeta->constructorData);
     for (index = 0; index < d->constructors.size(); ++index) {
         QMetaMethodBuilderPrivate *method = &(d->constructors[index]);
         int sig = buildString(buf, str, &offset, method->signature, empty);
@@ -1411,6 +1417,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Align the final size and return it.
     ALIGN(size, void *);
+    Q_ASSERT(!buf || size == expectedSize);
     return size;
 }
 
@@ -1426,10 +1433,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 */
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
-    int size = buildMetaObject(d, 0, false);
+    int size = buildMetaObject(d, 0, 0, false);
     char *buf = reinterpret_cast<char *>(malloc(size));
     memset(buf, 0, size);
-    buildMetaObject(d, buf, false);
+    buildMetaObject(d, buf, size, false);
     return reinterpret_cast<QMetaObject *>(buf);
 }
 
@@ -1449,7 +1456,7 @@ QMetaObject *QMetaObjectBuilder::toMetaObject() const
 */
 QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
 {
-    int size = buildMetaObject(d, 0, true);
+    int size = buildMetaObject(d, 0, 0, true);
     if (size == -1) {
         if (ok) *ok = false;
         return QByteArray();
@@ -1459,7 +1466,7 @@ QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
     data.resize(size);
     char *buf = data.data();
     memset(buf, 0, size);
-    buildMetaObject(d, buf, true);
+    buildMetaObject(d, buf, size, true);
     if (ok) *ok = true;
     return data;
 }
